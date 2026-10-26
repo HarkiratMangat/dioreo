@@ -12,6 +12,19 @@ async function resolveWeapon(mode, rawQuery) {
     const weaponKey = rawQuery.toLowerCase().replace(/\s+/g, '');
     let builds = await Loadout.find({ weaponKey, mode }).lean();
 
+    // An EXACT catalogue name beats a partial match (found click-testing 2026-10-25 19:34 EDT: Search "m4" opened the XM4, because M4 has no build and "m4" is inside "XM4"). So a name the CODM catalogue knows exactly is that weapon: its builds under any spacing of the key, or its no-build card. MP only, as below.
+    if (!builds.length && mode === 'MP') {
+        const { normKey } = require('./catalogue');
+        const key = normKey(rawQuery);
+        const CatalogueItem = require('../models/CatalogueItem');
+        const weapon = key ? await CatalogueItem.findOne({ kind: 'weapon', key, dmzOnly: { $ne: true } }).lean() : null;
+        if (weapon) {
+            const named = (await Loadout.find({ mode }).lean()).filter(b => normKey(b.weaponName) === key);
+            if (!named.length) return { missing: { weaponName: weapon.name.toUpperCase(), category: weapon.category } };
+            builds = named;
+        }
+    }
+
     // Short/partial-query fallback (2026-07-18, v2 quick-wins batch) -- the exact weaponKey lookup above only reliably matches when the option came from an actual autocomplete pick, so a short/partial free-typed query (e.g. "loc") used to just fail with no explanation. Fuzzy- match the raw query against every candidate weapon's real name in this mode before giving up -- an unambiguous single match auto-resolves, 2+ matches asks the user to pick one instead of silently guessing which they meant.
     if (!builds.length) {
         const { findWeaponMatches } = require('./search');
@@ -38,24 +51,31 @@ async function resolveWeapon(mode, rawQuery) {
     return { none: true };
 }
 
+// A class's weapons in the CODM catalogue with no real build (Harkirat, 2026-10-25 16:12-16:21 EDT: "implement the weapons into the command that currently dont have builds"), A-Z, for the weapon dropdown's "N more with no build yet..." and the no-build pager. Matched by the catalogue's own key (utils/catalogue.js normKey) on the weapon NAME: a weaponKey is spaced differently and missed 8 Assault Rifles that have builds.
+async function missingWeapons(category) {
+    if (!category) return [];
+    const { normKey } = require('./catalogue');
+    const CatalogueItem = require('../models/CatalogueItem');
+    const built = new Set((await Loadout.find({ mode: 'MP', category }).select('weaponName attachments').lean()).filter(b => !isPlaceholderBuild(b)).map(b => normKey(b.weaponName)));
+    return (await CatalogueItem.find({ kind: 'weapon', category, dmzOnly: { $ne: true } }).lean())
+        .filter(w => !built.has(w.key || normKey(w.name)))
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map(w => ({ name: w.name.toUpperCase(), key: w.key || normKey(w.name), category }));
+}
+
 // Draws what resolveWeapon found onto the interaction's message, which the caller has already deferred (a reply for the slash command, an update for the card's Search).
 async function renderResolved(interaction, mode, found, { isEphemeral, buildIndex = 0 }) {
     const idPrefix = mode === 'DMZ' ? 'dmz' : 'mp';
     if (found.missing) {
         const { weaponName, category } = found.missing;
         const categoryBuilds = mode === 'DMZ' ? await Loadout.find({ mode: 'DMZ' }).lean() : await Loadout.find({ category, mode: 'MP' }).lean();
-        const payload = buildMissingWeaponCard({ weaponName, category, mode, isEphemeral, categoryBuilds });
+        const payload = buildMissingWeaponCard({ weaponName, category, mode, isEphemeral, categoryBuilds, missing: mode === 'MP' ? await missingWeapons(category) : [] });
         return await sendV2Payload(interaction, payload.components, { flags: payload.flags });
     }
+    // Drawn inside the weapon's class, so the arrows walk its class (Harkirat, 2026-10-25 19:02 EDT); DMZ has no classes and walks every DMZ build. renderScopeBrowse notes the opened build for Your Stats.
     const { builds } = found;
-    const index = Math.min(Math.max(buildIndex, 0), builds.length - 1);
-    // Category-wide build list for the "Browse other builds" dropdown. MP scopes to the found weapon's own category (matches every /<category> command's old per-category scope); DMZ has no per-category split (models/Loadout.js -- categoryRank is never set for DMZ builds), so its dropdown scope is every DMZ build, same as /dmz always did.
-    const categoryBuilds = mode === 'DMZ'
-        ? await Loadout.find({ mode: 'DMZ' }).lean()
-        : await Loadout.find({ category: builds[0].category, mode: 'MP' }).lean();
-    const cardPayload = buildLoadoutCard(builds, index, { color: getMpCategoryAccent(builds[0].category), idPrefix, isEphemeral, categoryBuilds });
-    require('./userStats').noteBuildOpenedSafely(interaction.user?.id, builds[index]?._id); // Your Stats: a build this user opened
-    return await sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
+    const { renderScopeBrowse } = require('../commands/gunsmith');
+    return await renderScopeBrowse(interaction, { mode, category: mode === 'DMZ' ? null : undefined, metaOnly: false }, 0, { deferred: true, isEphemeral, weaponKey: builds[0].weaponKey, buildIndex });
 }
 
 // The words for a name that found no single weapon, shared by the slash command and the card's Search.
@@ -92,4 +112,12 @@ async function lookupAndRenderWeapon(interaction, { mode, rawQuery, requestedBui
     await renderResolved(interaction, mode, found, { isEphemeral, buildIndex: requestedBuild ? requestedBuild - 1 : 0 });
 }
 
-module.exports = { lookupAndRenderWeapon, resolveWeapon, renderResolved, notFoundText };
+// The one-box search pop-up (Harkirat, 2026-10-24 09:45 EDT: "can we make the flow of searching for another weapon or build much more fluid?"), opened by a card's Search..., its dropdown's search option, and since 2026-10-25 23:12 EDT by /gunsmith's own "▸ Type a name to search all N weapons" suggestion (his ask: open the search pop-up instead of the browse's first weapon). A select menu cannot autocomplete, so the box takes a typed name and resolves it the way /gunsmith does (resolveWeapon). `visibility` is the slash command's choice, carried in the id because the pop-up's answer has no options of its own.
+function searchModal(mode, visibility = null) {
+    return {
+        title: `Search ${mode} weapons`, custom_id: `gsb~find~${mode}${visibility ? `~v${visibility}` : ''}`,
+        components: [{ type: 1, components: [{ type: 4, custom_id: 'q', label: 'Weapon name', style: 1, required: true, max_length: 60, placeholder: mode === 'DMZ' ? 'Fennec, AS VAL…' : 'AK117, Locus, BP50…' }] }],
+    };
+}
+
+module.exports = { lookupAndRenderWeapon, resolveWeapon, renderResolved, notFoundText, missingWeapons, searchModal };

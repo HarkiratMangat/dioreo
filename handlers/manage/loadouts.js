@@ -23,7 +23,7 @@ const BUILD_NAME_MAX = 32;
 //
 // A FAILED upload does not fail the save: the raw URL is stored as the imageKey instead. That is a supported state, not a fudge -- utils/loadoutRender.js's buildImageUrl passes an `http`-prefixed imageKey straight through as the card's image URL (it exists for the originally-imgur-hosted LOCUS rows) -- and it mirrors utils/cloudinaryCache.js's resolveThumbnail, which falls back to the raw URL for the same reason so a draw still saves when Cloudinary is unreachable or a dev instance is write-blocked.
 async function resolveImageInput({ raw, weaponName, mode, existingKey = null }) {
-    const { isHttpImageSource, deriveImageKey, uploadLoadoutImage } = require('../../utils/loadoutImageCache');
+    const { isHttpImageSource, deriveImageKey, uploadLoadoutImage, takenKeyPattern } = require('../../utils/loadoutImageCache');
     const value = (raw || '').trim();
     if (!isHttpImageSource(value)) return { imageKey: value, uploaded: false, note: null };
 
@@ -32,9 +32,8 @@ async function resolveImageInput({ raw, weaponName, mode, existingKey = null }) 
         ? existingKey
         : null;
     if (!imageKey) {
-        // Only the keys that could actually collide with the one about to be minted -- a full-collection scan would work too, but this stays correct as the collection grows.
-        const base = String(weaponName || '').trim().toUpperCase().replace(/\s+/g, '-').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const taken = await Loadout.find({ imageKey: new RegExp(`^(DMZ-)?${base}-\\d+$`, 'i') }).select('imageKey').lean();
+        // Only the keys that could actually collide with the one about to be minted, extension or not (takenKeyPattern's comment has the AK117 overwrite this prevents).
+        const taken = await Loadout.find({ imageKey: takenKeyPattern(weaponName) }).select('imageKey').lean();
         imageKey = deriveImageKey(weaponName, mode, taken.map(t => t.imageKey));
     }
 

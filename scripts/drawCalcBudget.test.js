@@ -1335,7 +1335,15 @@ t('/draw prices: the filter shows only the picked draws, pages them to fit, keep
             const comps = dp.buildContainer(region, 0, true, view, null);
             fits(comps, `${region} page ${view}`);
             const all = comps.flatMap(flat);
-            assert.ok(all.some(c => c.type === 10 && c.content === '-# **Draws:** `Showing all draws`'), `${region} ${view}: the filter line says all draws show`);
+            const regionLine = `-# **Region:** *${region.split('_')[1]} CP region prices*`;
+            assert.ok(all.some(c => c.type === 10 && c.content === `-# **Filter:** *Showing all draws*\n${regionLine}`), `${region} ${view}: the filter line says all draws show, then the region (2026-10-25 14:21-14:42 EDT)`);
+            // His 2026-10-25 header and region switch: the title Section's accessory opens the calculator, and one dropdown replaces the button row with no hint line above it.
+            const head = comps.find(c => c.type === 17).components[0];
+            assert.ok(head.type === 9 && /Lucky Draw Prices/.test(head.components[0].content) && head.accessory.custom_id === 'price_calc' && !head.accessory.label, `${region} ${view}: title Section with an icon-only calculator button`);
+            const regionSelect = all.find(c => c.type === 3 && /^price_regionsel_/.test(c.custom_id));
+            assert.ok(regionSelect && regionSelect.custom_id === `price_regionsel_${view}` && regionSelect.placeholder === 'Switch CP region...', `${region} ${view}: the region dropdown carries the view`);
+            assert.deepStrictEqual(regionSelect.options.filter(o => o.default).map(o => [o.value, o.description]), [[region, 'Set your default region in /settings']], `${region} ${view}: the open region is picked and points at /settings`);
+            assert.ok(!all.some(c => c.type === 10 && /Switch \*\*CP regions/.test(c.content)), `${region} ${view}: no region hint line`);
             assert.ok(all.some(c => c.type === 2 && c.custom_id === `price_filteropen_${region}_${view}`), `${region} ${view}: Filter carries the view`);
             assert.ok(!all.some(c => c.label === 'Show All Draws'), `${region} ${view}: no Show All Draws in the all view`);
             assert.ok(all.some(c => c.custom_id === 'price_subpage_indicator'), `${region} ${view}: the pager in the all view`);
@@ -1354,7 +1362,7 @@ t('/draw prices: the filter shows only the picked draws, pages them to fit, keep
                 const { SHORT_NAME } = require('../commands/drawCalculator');
                 const line = all.find(c => c.type === 10 && /^-# \*\*(Regular|Armory|Advanced):\*\*/.test(c.content));
                 const expected = dp.FILTER_GROUPS.map(g => [g.line, g.keys.filter(k => ordered.includes(k))]).filter(([, ks]) => ks.length)
-                    .map(([label, ks]) => `-# **${label}:** ${ks.map(k => `\`${SHORT_NAME[k] || dp.jumpMeta(k).name}\``).join(', ')}`).join('\n');
+                    .map(([label, ks]) => `-# **${label}:** ${ks.map(k => `*${SHORT_NAME[k] || dp.jumpMeta(k).name}*`).join(', ')}`).join('\n') + `\n-# **Region:** *${region.split('_')[1]} CP region prices*`;
                 assert.strictEqual(line.content, expected, `${region} ${token}: one small line per kind of draw picked, comma-separated`);
                 assert.ok(!all.some(c => c.type === 9 && c.components.some(x => x === line)), `${region} ${token}: once filtered the line is plain text, not a section`);
                 const filterRow = all.find(c => c.type === 1 && c.components.some(x => x.label === 'Filter Again'));
@@ -1368,8 +1376,8 @@ t('/draw prices: the filter shows only the picked draws, pages them to fit, keep
                 assert.ok(all.some(c => c.type === 2 && c.label === 'Show All Draws'), `${region} ${token}: Show All Draws in a filtered view`);
                 const indicator = all.find(c => c.custom_id === 'price_subpage_indicator');
                 pages = indicator ? Number(indicator.label.split('/')[1]) : 1;
-                const regionIds = all.filter(c => c.type === 2 && /^price_region_/.test(c.custom_id || '')).map(c => c.custom_id.split('_').pop());
-                assert.ok(regionIds.every(v => v === token), `${region} ${token}: a region switch keeps the filter`);
+                const regionIds = all.filter(c => /^price_region(sel)?_/.test(c.custom_id || '')).map(c => c.custom_id.split('_').pop());
+                assert.ok(regionIds.length && regionIds.every(v => v === token), `${region} ${token}: a region switch keeps the filter`);
                 const ids = all.map(c => c.custom_id).filter(Boolean);
                 assert.strictEqual(new Set(ids).size, ids.length, `${region} ${token}: no two controls share an id`);
                 const text = all.filter(c => c.type === 10).map(c => c.content).join('\n');
@@ -1378,12 +1386,13 @@ t('/draw prices: the filter shows only the picked draws, pages them to fit, keep
             assert.deepStrictEqual([...new Set(shown)].filter(k => ordered.includes(k)).sort(), [...ordered].sort(), `${region} ${ordered.length} picked: every picked draw shows across the pages`);
         }
     }
-    const typeOpt = dp.data.toJSON().options.find(o => o.name === 'prices').options.find(o => o.name === 'type');
-    assert.deepStrictEqual(typeOpt.choices.map(c => c.value).sort(), [...keys].sort(), '/draw prices type: lists the same draws as the filter');
+    const typeOpt = dp.data.toJSON().options.find(o => o.name === 'prices').options.find(o => o.name === 'filter');
+    assert.deepStrictEqual(typeOpt.choices.map(c => c.value).sort(), [...keys].sort(), '/draw prices filter: lists the same draws as the filter pop-up');
     const one = dp.buildContainer('region_10', 0, true, 'fmythicWeapon', null).flatMap(flat).filter(c => c.type === 10).map(c => c.content).join('\n');
     assert.ok(/Mythic Weapon Draw/i.test(one) && !/Legendary Weapon Draw \(Reactive\)/i.test(one), 'one picked draw shows only that draw');
     assert.strictEqual(dp.filterOf('m0'), null, 'an empty filter is the all view');
-    const title = dp.buildContainer('region_20', 0, true, 0, null)[0].components[0].content.split('\n')[1];
+    // The title is a Section since 2026-10-25 (the calculator button is its accessory), so its text is one level down.
+    const title = dp.buildContainer('region_20', 0, true, 0, null)[0].components[0].components[0].content.split('\n')[1];
     assert.ok(title.startsWith(`${require('../utils/emojiMap').region20Cp} `), `the region's icon leads the subtitle: ${title}`);
 });
 

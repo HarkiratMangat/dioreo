@@ -3,7 +3,7 @@
 // ⚠️ EVERY ASSERTION HERE IS ABLE TO FAIL. The old format's own test would have been vacuous -- it asserted a parse succeeded, which the redesign also does. The discriminating checks are: the OLD format must now be REJECTED (not merely re-parsed differently), a typo'd key must ERROR rather than become an attachment, and a formatter->parser round trip must reproduce the FIELD VALUES, not just a non-empty result.
 const assert = require('assert');
 const { parseBulkLoadoutList, formatLoadoutsAsBulkText } = require('../utils/adminParser');
-const { deriveImageKey, isHttpImageSource } = require('../utils/loadoutImageCache');
+const { deriveImageKey, isHttpImageSource, takenKeyPattern } = require('../utils/loadoutImageCache');
 const retry = require('../handlers/manage/retry');
 
 let passed = 0;
@@ -148,6 +148,15 @@ check('isHttpImageSource tells a pasted URL from a bare Public ID', () => {
     assert.strictEqual(isHttpImageSource('BAL-27-1'), false);
     assert.strictEqual(isHttpImageSource(''), false);
     assert.strictEqual(isHttpImageSource(undefined), false);
+});
+
+check('takenKeyPattern finds a weapon\'s keys with or without an extension, and no other weapon\'s', () => {
+    const re = takenKeyPattern('AK117');
+    for (const k of ['AK117-1.png', 'AK117-2', 'DMZ-AK117-1', 'ak117-3.PNG']) assert.ok(re.test(k), k);
+    for (const k of ['AK117-1-1.png', 'XAK117-1', 'AK117-X', 'AK117-1.png.bak']) assert.ok(!re.test(k), k);
+    // The overwrite it prevents: Build 1 stored as AK117-1.png, so the next key is AK117-2, never AK117-1.
+    assert.strictEqual(deriveImageKey('AK117', 'MP', ['AK117-1.png'].filter(k => re.test(k))), 'AK117-2');
+    assert.ok(takenKeyPattern('FFAR 1').test('FFAR-1-3.png'));
 });
 
 check('deriveImageKey skips keys already taken instead of overwriting them', () => {

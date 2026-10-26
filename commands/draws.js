@@ -127,12 +127,16 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
         drawComponents.push(...buildDrawSections(chunk));
     }
 
-    // SUB-PAGE NAVIGATION: only shown when a category has more draws than fit on one page (buildPaginationRow returns null otherwise). Encodes the category + target chunk index directly in the custom_id (stateless), same pattern used by the DMZ loadout pagination elsewhere in this bot. Shared row builder (utils/paginationRow.js) keeps this visually identical to /calendar's own pagination.
+    // SUB-PAGE NAVIGATION: only shown when a category has more draws than fit on one page (buildPaginationRow returns null otherwise). Encodes the category + target chunk index directly in the custom_id (stateless), same pattern used by the DMZ loadout pagination elsewhere in this bot. Shared row builder (utils/paginationRow.js) keeps this visually identical to /calendar's own pagination. ONE PAGER FOR THE WHOLE COMMAND (2026-10-25 14:37-14:39 EDT, Harkirat's review): New's pages, then Returning's, looping, so page 1 is New Draws and 2 and 3 are Returning Draws' two pages. The middle names the section and counts every page ("New · 1/3", "Returning · 2/3", his "keep 1/3"), the way /calendar's "Events · 2/3" does. Each arrow's id still names its section and that section's page (`subpage_<new|returning>_<n>`), so handlers/pagination.js is unchanged. The New/Returning Draws button below stays.
     const categoryKey = isNewPage ? 'new' : 'returning';
+    const allPages = [['new', seasonalDoc.newDraws], ['returning', seasonalDoc.returningDraws]]
+        .flatMap(([key, list]) => paginateDraws(list || []).map((_, sub) => ({ key, sub })));
+    const here = Math.max(0, allPages.findIndex(p => p.key === categoryKey && p.sub === safeSubPage));
     const paginationRow = buildPaginationRow({
-        totalChunks, currentPage: safeSubPage,
-        makeCustomId: (p) => `subpage_${categoryKey}_${p}`,
-        indicatorCustomId: 'subpage_indicator'
+        totalChunks: allPages.length, currentPage: here,
+        makeCustomId: (p) => `subpage_${allPages[p].key}_${allPages[p].sub}`,
+        indicatorCustomId: 'subpage_indicator',
+        indicatorLabel: `${categoryKey === 'new' ? 'New' : 'Returning'} · ${here + 1}/${allPages.length}`
     });
     if (paginationRow) {
         drawComponents.push({ type: 14, spacing: 1, divider: false }); // Spacer only, no line

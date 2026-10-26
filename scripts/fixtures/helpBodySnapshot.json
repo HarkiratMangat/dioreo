@@ -66,7 +66,7 @@
         },
         {
           "type": 10,
-          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/today` · `/remind` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:Settings:1523762203537309696> **PREFERENCES**\n**`/settings`**\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+          "content": "### <a:GunsmithSearch:1564113024225255454> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/today` · `/remind` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:Settings:1523762203537309696> **PREFERENCES**\n**`/settings`**\n\n-# 💠 **Learn more about a command:** **`/help <cmd>`**\n-# 💠 e.g. **/help** cmd:`draws`\n\n-# Report bugs & suggestions to <@1139845545754632283>."
         },
         {
           "type": 14,
@@ -102,8 +102,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -132,7 +132,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp, profile color tools & sharing Dioreo",
+                  "description": "Profile colors, timestamps & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -172,7 +172,7 @@
       "components": [
         {
           "type": 10,
-          "content": "## <a:Loadouts:1535779248982335618> **Gunsmith Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+          "content": "## <a:GunsmithSearch:1564113024225255454> **Gunsmith Commands**\n-# **Usage: `/cmd <required> [optional]`**"
         },
         {
           "type": 14,
@@ -181,7 +181,27 @@
         },
         {
           "type": 10,
-          "content": "### `/gunsmith mp`\nFind an MP weapon's loadout, or browse a whole class, Meta or every MP build\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/gunsmith dmz`\nFind a DMZ weapon's loadout, or browse Meta or every DMZ build\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmith mp** weapon:`AK117`\n-# 🔸 **/gunsmith mp** weapon:`Switchblade X9` build:`2` visibility:`Hidden`\n-# 🔸 **/gunsmith mp** weapon:`All SMG builds`\n-# 🔸 **/gunsmith mp** weapon:`All META builds`\n-# 🔸 **/gunsmith dmz** weapon:`Fennec`"
+          "content": "### `/gunsmith mp`\nFind an MP weapon's loadout, or browse a whole class or the Meta\n-# **Options**\n-# 🔹 `<weapon>` Pick a weapon, or an \"All … builds\" row at the top to browse\n### `/gunsmith dmz`\nFind a DMZ weapon's loadout, or browse Meta or every DMZ build\n-# **Options**\n-# 🔹 `<weapon>` Pick a weapon, or an \"All … builds\" row at the top to browse\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmith mp** weapon:`AK117`\n-# 🔸 **/gunsmith mp** weapon:`Switchblade X9` visibility:`Hidden`\n-# 🔸 **/gunsmith mp** weapon:`All SMG builds`\n-# 🔸 **/gunsmith mp** weapon:`All META builds`\n-# 🔸 **/gunsmith dmz** weapon:`Fennec`"
+        },
+        {
+          "type": 14,
+          "spacing": 1,
+          "divider": true
+        },
+        {
+          "type": 9,
+          "components": [
+            {
+              "type": 10,
+              "content": "### Submit or dispute a build\nNo build for a weapon yet? Its **No build yet** card has **Submit a Build**.\nIf a submitted build uses your screenshot, ask for its removal or the credit. You'll need proof the original is yours and was posted before the build went live. Or DM <@1139845545754632283> with your proof."
+            }
+          ],
+          "accessory": {
+            "type": 2,
+            "style": 2,
+            "label": "Dispute a Build",
+            "custom_id": "gsb~dispute"
+          }
         },
         {
           "type": 14,
@@ -217,8 +237,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": true
                 },
@@ -247,7 +267,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp, profile color tools & sharing Dioreo",
+                  "description": "Profile colors, timestamps & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -278,7 +298,7 @@
       "components": [
         {
           "type": 10,
-          "content": "## <a:NewDraws:1523837409211453613> **Draws Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+          "content": "## <a:NewDraws:1523837409211453613> **Draw Commands**\n-# **Usage: `/cmd <required> [optional]`**"
         },
         {
           "type": 14,
@@ -287,14 +307,14 @@
         },
         {
           "type": 10,
-          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# **Options**\n-# 🔹 `[type]` Open one draw type on its own\n-# 🔹 `[region]` Jump directly to the 10, 20, or 30 CP region\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat."
+          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# **Options**\n-# 🔹 `[filter]` Quickly open a draw type\n-# 🔹 `[region]` View costs for a specific CP region"
         },
         {
           "type": 9,
           "components": [
             {
               "type": 10,
-              "content": "### `/draw calculator`\nWork out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy\n-# **Options**\n-# 🔹 `[page]` Open on Start a Calculation, View Saved, or Help\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat."
+              "content": "### `/draw calculator`\nWork out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy\n-# **Options**\n-# 🔹 `[page]` Open on Start a Calculation, View Saved, or Help"
             }
           ],
           "accessory": {
@@ -311,7 +331,7 @@
         },
         {
           "type": 10,
-          "content": "-# **Examples**\n-# 🔸 **/draws** page:`Returning Draws`\n-# 🔸 **/draw prices** region:`30 CP Region`\n-# 🔸 **/draw prices** type:`Mythic Weapon Draw`\n-# 🔸 **/draw calculator** page:`View Saved`"
+          "content": "-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/draws** page:`Returning Draws`\n-# 🔸 **/draw prices** region:`30 CP Region`\n-# 🔸 **/draw prices** filter:`Mythic Weapon Draw`\n-# 🔸 **/draw calculator** page:`View Saved`"
         },
         {
           "type": 14,
@@ -347,8 +367,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -377,7 +397,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp, profile color tools & sharing Dioreo",
+                  "description": "Profile colors, timestamps & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -417,7 +437,7 @@
         },
         {
           "type": 10,
-          "content": "### `/calendar`\nToday's screen, then this season's event timeline — Draws, Events, and Game Modes\n-# **Options**\n-# 🔹 `[page]` Jump directly to Today/Draws/Events/Playlists & Modes\n-# 🔹 `[filter]` Full timeline, or only past, live or upcoming entries (not saved)\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/today`\nNew releases, going live, and leaving soon\n-# **Options**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/remind`\nSet and manage your reminders\n-# **Options**\n-# 🔹 `[set]` What to be reminded about (start typing to search)\n-# 🔹 `[toggle]` Turn this reminder on or off\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/patch notes`\nLatest weapon balance changes, plus the full patch-note history\n-# **Options**\n-# 🔹 `[season]` Search for a specific previous season (start typing to see suggestions)\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/season end`\nSee when this season's Battle Pass, Ranked, and DMZ seasons end\n-# **Options**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/calendar** page:`Events` filter:`Upcoming`\n-# 🔸 **/patch notes** season:`Season 6 — Take Your Heart`"
+          "content": "### `/calendar`\nToday's screen, then this season's timeline: Draws, Events, and Playlists & Modes\n-# **Options**\n-# 🔹 `[page]` Open on Today, Draws, Events, or Playlists & Modes\n-# 🔹 `[filter]` Full timeline, or only past, ended, live or upcoming entries (not saved)\n### `/today`\nWhat's new today, what's going live, and what's leaving soon\n### `/remind`\nSet and manage your reminders\n-# **Options**\n-# 🔹 `[releases]` A reminder for when something goes live; pick it again to turn it off\n-# 🔹 `[leaving]` A reminder for when something is leaving; pick it again to turn it off\n### `/patch notes`\nLatest weapon balance changes, plus the full patch-note history\n-# **Options**\n-# 🔹 `[season]` Search for a specific previous season (start typing to see suggestions)\n### `/season end`\nSee when this season's Battle Pass, Ranked, and DMZ seasons end\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/calendar** page:`Events` filter:`Upcoming`\n-# 🔸 **/remind** releases:`New draws` (run it again to turn it off)\n-# 🔸 **/remind** leaving:`Leaving soon (everything)`\n-# 🔸 **/patch notes** season:`Season 6 — Take Your Heart`"
         },
         {
           "type": 14,
@@ -453,8 +473,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -483,7 +503,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp, profile color tools & sharing Dioreo",
+                  "description": "Profile colors, timestamps & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -523,7 +543,7 @@
         },
         {
           "type": 10,
-          "content": "### `/colors`\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# **Options**\n-# 🔹 `[page]` Jump directly to Avatar, Banner, Name, Nameplate, or Deco\n-# 🔹 `[source]` Read from your main profile, or your profile for this server\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/timestamp`\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# **Options**\n-# 🔹 `<datetime>` e.g. \"tomorrow\", \"in 2 hours\", \"dec 25 at 9am\", \"8pm to 10pm\", \"19:30\"\n-# 🔹 `[timezone]` Defaults to your saved `/settings` timezone\n-# 🔹 `[style]` Short List, All Formats, or one format; blank uses your saved view\n-# 🔹 `[view]` Embed or plain Text, one-off only\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/invite`\nGet a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord\n-# **Options**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/colors** page:`Nameplate` source:`From Server Profile`\n-# 🔸 **/timestamp** datetime:`this saturday 7pm` timezone:`Pacific Time`\n-# 🔸 **/timestamp** datetime:`august 20` style:`Short Date (d)`\n-# 🔸 **/timestamp** datetime:`in 45 minutes` view:`Text`"
+          "content": "### `/colors`\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# **Options**\n-# 🔹 `[page]` Open on Avatar, Banner, Username, Nameplate, or Deco\n-# 🔹 `[source]` Your main profile, or your profile for this server\n### `/timestamp`\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# **Options**\n-# 🔹 `<datetime>` e.g. \"tomorrow\", \"in 2 hours\", \"dec 25 at 9am\", \"8pm to 10pm\", \"19:30\"\n-# 🔹 `[timezone]` Defaults to your saved `/settings` timezone\n-# 🔹 `[style]` Short List, All Formats, or one format; blank uses your saved style\n-# 🔹 `[view]` Embed or plain Text, one-off only\n### `/invite`\nGet a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n### Right-click (Apps)\n**View Colors** on a member or one of their messages: their profile colors\n**Convert Times** on a message: every date and time in it, as a timestamp in your own time zone\n\n-# **Examples**\n-# 🔸 **/colors** page:`Nameplate` source:`From Server Profile`\n-# 🔸 **/timestamp** datetime:`this saturday 7pm` timezone:`Pacific Time`\n-# 🔸 **/timestamp** datetime:`august 20` style:`Short Date (d)`\n-# 🔸 **/timestamp** datetime:`in 45 minutes` view:`Text`"
         },
         {
           "type": 14,
@@ -559,8 +579,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -589,7 +609,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp, profile color tools & sharing Dioreo",
+                  "description": "Profile colors, timestamps & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -629,7 +649,7 @@
         },
         {
           "type": 10,
-          "content": "### `/settings`\nYour own preferences, in two pages — **Visibility** (who sees your responses by default) and **Preferences** (timezone, timestamp style, accent style, and more)\n\n-# **Options**\n-# 🔹 `[open]` Open straight on Visibility, Preferences, or your Colors\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/settings**\n-# 🔸 **/settings** open:`Preferences`"
+          "content": "### `/settings`\nYour own preferences: **Visibility** (who sees your responses by default), **Preferences** (timezone, timestamp style, accent style, and more), and your **Colors**\n\n-# **Options**\n-# 🔹 `[open]` Open straight on Visibility, Preferences, or your Colors\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/settings**\n-# 🔸 **/settings** open:`Preferences`"
         },
         {
           "type": 14,
@@ -665,8 +685,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -695,7 +715,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp, profile color tools & sharing Dioreo",
+                  "description": "Profile colors, timestamps & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -786,7 +806,7 @@
         },
         {
           "type": 10,
-          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/today` · `/remind` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:Settings:1523762203537309696> **PREFERENCES**\n**`/settings`**\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+          "content": "### <a:GunsmithSearch:1564113024225255454> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/today` · `/remind` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:Settings:1523762203537309696> **PREFERENCES**\n**`/settings`**\n\n-# 💠 **Learn more about a command:** **`/help <cmd>`**\n-# 💠 e.g. **/help** cmd:`draws`\n\n-# Report bugs & suggestions to <@1139845545754632283>."
         },
         {
           "type": 14,
@@ -822,8 +842,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -852,7 +872,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp, profile color tools & sharing Dioreo",
+                  "description": "Profile colors, timestamps & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -954,7 +974,7 @@
         },
         {
           "type": 10,
-          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/today` · `/remind` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:ServerSettings:1536468904996774008> **PREFERENCES**\n**`/settings` · `/admin` *(server)***\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+          "content": "### <a:GunsmithSearch:1564113024225255454> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/today` · `/remind` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:ServerSettings:1536468904996774008> **PREFERENCES**\n**`/settings` · `/admin` *(server)***\n\n-# 💠 **Learn more about a command:** **`/help <cmd>`**\n-# 💠 e.g. **/help** cmd:`draws`\n\n-# Report bugs & suggestions to <@1139845545754632283>."
         },
         {
           "type": 14,
@@ -990,8 +1010,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -1020,7 +1040,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp, profile color tools & sharing Dioreo",
+                  "description": "Profile colors, timestamps & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -1060,7 +1080,7 @@
       "components": [
         {
           "type": 10,
-          "content": "## <a:Loadouts:1535779248982335618> **Gunsmith Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+          "content": "## <a:GunsmithSearch:1564113024225255454> **Gunsmith Commands**\n-# **Usage: `/cmd <required> [optional]`**"
         },
         {
           "type": 14,
@@ -1069,7 +1089,27 @@
         },
         {
           "type": 10,
-          "content": "### `/gunsmith mp`\nFind an MP weapon's loadout, or browse a whole class, Meta or every MP build\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/gunsmith dmz`\nFind a DMZ weapon's loadout, or browse Meta or every DMZ build\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmith mp** weapon:`AK117`\n-# 🔸 **/gunsmith mp** weapon:`Switchblade X9` build:`2` visibility:`Hidden`\n-# 🔸 **/gunsmith mp** weapon:`All SMG builds`\n-# 🔸 **/gunsmith mp** weapon:`All META builds`\n-# 🔸 **/gunsmith dmz** weapon:`Fennec`"
+          "content": "### `/gunsmith mp`\nFind an MP weapon's loadout, or browse a whole class or the Meta\n-# **Options**\n-# 🔹 `<weapon>` Pick a weapon, or an \"All … builds\" row at the top to browse\n### `/gunsmith dmz`\nFind a DMZ weapon's loadout, or browse Meta or every DMZ build\n-# **Options**\n-# 🔹 `<weapon>` Pick a weapon, or an \"All … builds\" row at the top to browse\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmith mp** weapon:`AK117`\n-# 🔸 **/gunsmith mp** weapon:`Switchblade X9` visibility:`Hidden`\n-# 🔸 **/gunsmith mp** weapon:`All SMG builds`\n-# 🔸 **/gunsmith mp** weapon:`All META builds`\n-# 🔸 **/gunsmith dmz** weapon:`Fennec`"
+        },
+        {
+          "type": 14,
+          "spacing": 1,
+          "divider": true
+        },
+        {
+          "type": 9,
+          "components": [
+            {
+              "type": 10,
+              "content": "### Submit or dispute a build\nNo build for a weapon yet? Its **No build yet** card has **Submit a Build**.\nIf a submitted build uses your screenshot, ask for its removal or the credit. You'll need proof the original is yours and was posted before the build went live. Or DM <@1139845545754632283> with your proof."
+            }
+          ],
+          "accessory": {
+            "type": 2,
+            "style": 2,
+            "label": "Dispute a Build",
+            "custom_id": "gsb~dispute"
+          }
         },
         {
           "type": 14,
@@ -1105,8 +1145,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": true
                 },
@@ -1135,7 +1175,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp, profile color tools & sharing Dioreo",
+                  "description": "Profile colors, timestamps & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -1166,7 +1206,7 @@
       "components": [
         {
           "type": 10,
-          "content": "## <a:NewDraws:1523837409211453613> **Draws Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+          "content": "## <a:NewDraws:1523837409211453613> **Draw Commands**\n-# **Usage: `/cmd <required> [optional]`**"
         },
         {
           "type": 14,
@@ -1175,14 +1215,14 @@
         },
         {
           "type": 10,
-          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# **Options**\n-# 🔹 `[type]` Open one draw type on its own\n-# 🔹 `[region]` Jump directly to the 10, 20, or 30 CP region\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat."
+          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# **Options**\n-# 🔹 `[filter]` Quickly open a draw type\n-# 🔹 `[region]` View costs for a specific CP region"
         },
         {
           "type": 9,
           "components": [
             {
               "type": 10,
-              "content": "### `/draw calculator`\nWork out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy\n-# **Options**\n-# 🔹 `[page]` Open on Start a Calculation, View Saved, or Help\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat."
+              "content": "### `/draw calculator`\nWork out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy\n-# **Options**\n-# 🔹 `[page]` Open on Start a Calculation, View Saved, or Help"
             }
           ],
           "accessory": {
@@ -1199,7 +1239,7 @@
         },
         {
           "type": 10,
-          "content": "-# **Examples**\n-# 🔸 **/draws** page:`Returning Draws`\n-# 🔸 **/draw prices** region:`30 CP Region`\n-# 🔸 **/draw prices** type:`Mythic Weapon Draw`\n-# 🔸 **/draw calculator** page:`View Saved`"
+          "content": "-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/draws** page:`Returning Draws`\n-# 🔸 **/draw prices** region:`30 CP Region`\n-# 🔸 **/draw prices** filter:`Mythic Weapon Draw`\n-# 🔸 **/draw calculator** page:`View Saved`"
         },
         {
           "type": 14,
@@ -1235,8 +1275,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -1265,7 +1305,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp, profile color tools & sharing Dioreo",
+                  "description": "Profile colors, timestamps & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -1305,7 +1345,7 @@
         },
         {
           "type": 10,
-          "content": "### `/calendar`\nToday's screen, then this season's event timeline — Draws, Events, and Game Modes\n-# **Options**\n-# 🔹 `[page]` Jump directly to Today/Draws/Events/Playlists & Modes\n-# 🔹 `[filter]` Full timeline, or only past, live or upcoming entries (not saved)\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/today`\nNew releases, going live, and leaving soon\n-# **Options**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/remind`\nSet and manage your reminders\n-# **Options**\n-# 🔹 `[set]` What to be reminded about (start typing to search)\n-# 🔹 `[toggle]` Turn this reminder on or off\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/patch notes`\nLatest weapon balance changes, plus the full patch-note history\n-# **Options**\n-# 🔹 `[season]` Search for a specific previous season (start typing to see suggestions)\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/season end`\nSee when this season's Battle Pass, Ranked, and DMZ seasons end\n-# **Options**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/calendar** page:`Events` filter:`Upcoming`\n-# 🔸 **/patch notes** season:`Season 6 — Take Your Heart`"
+          "content": "### `/calendar`\nToday's screen, then this season's timeline: Draws, Events, and Playlists & Modes\n-# **Options**\n-# 🔹 `[page]` Open on Today, Draws, Events, or Playlists & Modes\n-# 🔹 `[filter]` Full timeline, or only past, ended, live or upcoming entries (not saved)\n### `/today`\nWhat's new today, what's going live, and what's leaving soon\n### `/remind`\nSet and manage your reminders\n-# **Options**\n-# 🔹 `[releases]` A reminder for when something goes live; pick it again to turn it off\n-# 🔹 `[leaving]` A reminder for when something is leaving; pick it again to turn it off\n### `/patch notes`\nLatest weapon balance changes, plus the full patch-note history\n-# **Options**\n-# 🔹 `[season]` Search for a specific previous season (start typing to see suggestions)\n### `/season end`\nSee when this season's Battle Pass, Ranked, and DMZ seasons end\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/calendar** page:`Events` filter:`Upcoming`\n-# 🔸 **/remind** releases:`New draws` (run it again to turn it off)\n-# 🔸 **/remind** leaving:`Leaving soon (everything)`\n-# 🔸 **/patch notes** season:`Season 6 — Take Your Heart`"
         },
         {
           "type": 14,
@@ -1341,8 +1381,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -1371,7 +1411,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp, profile color tools & sharing Dioreo",
+                  "description": "Profile colors, timestamps & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -1411,7 +1451,7 @@
         },
         {
           "type": 10,
-          "content": "### `/colors`\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# **Options**\n-# 🔹 `[page]` Jump directly to Avatar, Banner, Name, Nameplate, or Deco\n-# 🔹 `[source]` Read from your main profile, or your profile for this server\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/timestamp`\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# **Options**\n-# 🔹 `<datetime>` e.g. \"tomorrow\", \"in 2 hours\", \"dec 25 at 9am\", \"8pm to 10pm\", \"19:30\"\n-# 🔹 `[timezone]` Defaults to your saved `/settings` timezone\n-# 🔹 `[style]` Short List, All Formats, or one format; blank uses your saved view\n-# 🔹 `[view]` Embed or plain Text, one-off only\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/invite`\nGet a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord\n-# **Options**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/colors** page:`Nameplate` source:`From Server Profile`\n-# 🔸 **/timestamp** datetime:`this saturday 7pm` timezone:`Pacific Time`\n-# 🔸 **/timestamp** datetime:`august 20` style:`Short Date (d)`\n-# 🔸 **/timestamp** datetime:`in 45 minutes` view:`Text`"
+          "content": "### `/colors`\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# **Options**\n-# 🔹 `[page]` Open on Avatar, Banner, Username, Nameplate, or Deco\n-# 🔹 `[source]` Your main profile, or your profile for this server\n### `/timestamp`\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# **Options**\n-# 🔹 `<datetime>` e.g. \"tomorrow\", \"in 2 hours\", \"dec 25 at 9am\", \"8pm to 10pm\", \"19:30\"\n-# 🔹 `[timezone]` Defaults to your saved `/settings` timezone\n-# 🔹 `[style]` Short List, All Formats, or one format; blank uses your saved style\n-# 🔹 `[view]` Embed or plain Text, one-off only\n### `/invite`\nGet a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n### Right-click (Apps)\n**View Colors** on a member or one of their messages: their profile colors\n**Convert Times** on a message: every date and time in it, as a timestamp in your own time zone\n\n-# **Examples**\n-# 🔸 **/colors** page:`Nameplate` source:`From Server Profile`\n-# 🔸 **/timestamp** datetime:`this saturday 7pm` timezone:`Pacific Time`\n-# 🔸 **/timestamp** datetime:`august 20` style:`Short Date (d)`\n-# 🔸 **/timestamp** datetime:`in 45 minutes` view:`Text`"
         },
         {
           "type": 14,
@@ -1447,8 +1487,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -1477,7 +1517,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp, profile color tools & sharing Dioreo",
+                  "description": "Profile colors, timestamps & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -1517,7 +1557,7 @@
         },
         {
           "type": 10,
-          "content": "### `/settings`\nYour own preferences, in two pages — **Visibility** (who sees your responses by default) and **Preferences** (timezone, timestamp style, accent style, and more)"
+          "content": "### `/settings`\nYour own preferences: **Visibility** (who sees your responses by default), **Preferences** (timezone, timestamp style, accent style, and more), and your **Colors**"
         },
         {
           "type": 14,
@@ -1526,7 +1566,7 @@
         },
         {
           "type": 10,
-          "content": "### `/admin`\nWhere Dioreo answers **publicly** and where it stays **private**, for the whole server. Needs **Manage Server**.\n-# Opens a four-page panel — **Overview · Channels · Roles · Commands**\n\n-# **Rule order** · the most specific one wins\n-# 🔹 Command **→** Role **→** Channel **→** the Overview default\n-# 🔹 Threads follow their parent channel · if two roles disagree, **public wins**\n\n-# **Setting it up**\n-# 🔸 Pick a default on **Overview**, then hand-pick the few channels or roles that should differ\n-# 🔸 Rules only make Dioreo **quieter** — Public *permits* a public answer, it never overrides someone's own `/settings`\n\n-# **Worth knowing**\n-# 🔸 Each menu takes **25 picks** — Discord's cap, and a sign you want a different default instead\n-# 🔸 It hides the **answer**, not the command — to remove a command entirely, use **Server Settings → Integrations**"
+          "content": "### `/admin`\nWhere Dioreo answers **publicly** and where it stays **private**, for the whole server. Needs **Manage Server**.\n-# Opens a four-page panel — **Overview · Channels · Roles · Commands**\n\n-# **Rule order** · the most specific one wins\n-# 🔹 Command **→** Role **→** Channel **→** the Overview default\n-# 🔹 Threads follow their parent channel · if two roles disagree, **public wins**\n\n-# **Setting it up**\n-# 🔸 Pick a default on **Overview**, then hand-pick the few channels or roles that should differ\n-# 🔸 Rules only make Dioreo **quieter** — Public *permits* a public answer, it never overrides someone's own `/settings`\n\n-# **Worth knowing**\n-# 🔸 Each menu holds up to **25 picks** (Discord's limit). Needing more usually means a different default would suit better\n-# 🔸 It hides the **answer**, not the command — to remove a command entirely, use **Server Settings → Integrations**"
         },
         {
           "type": 14,
@@ -1571,8 +1611,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -1601,7 +1641,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp, profile color tools & sharing Dioreo",
+                  "description": "Profile colors, timestamps & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -1692,7 +1732,7 @@
         },
         {
           "type": 10,
-          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/today` · `/remind` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:ServerSettings:1536468904996774008> **PREFERENCES**\n**`/settings` · `/admin` *(server)***\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+          "content": "### <a:GunsmithSearch:1564113024225255454> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/today` · `/remind` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:ServerSettings:1536468904996774008> **PREFERENCES**\n**`/settings` · `/admin` *(server)***\n\n-# 💠 **Learn more about a command:** **`/help <cmd>`**\n-# 💠 e.g. **/help** cmd:`draws`\n\n-# Report bugs & suggestions to <@1139845545754632283>."
         },
         {
           "type": 14,
@@ -1728,8 +1768,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -1758,7 +1798,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp, profile color tools & sharing Dioreo",
+                  "description": "Profile colors, timestamps & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -1860,7 +1900,7 @@
         },
         {
           "type": 10,
-          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/today` · `/remind` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:ServerSettings:1536468904996774008> **PREFERENCES**\n**`/settings` · `/admin` *(server)***\n### <a:BotAccess:1540915865506160660> **BOT ADMIN**\n**`/bot analytics` · `/bot access` · `/bot hotpatch` · `/bot servers` · `/autobuild` · `/manage`**\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+          "content": "### <a:GunsmithSearch:1564113024225255454> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/today` · `/remind` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:ServerSettings:1536468904996774008> **PREFERENCES**\n**`/settings` · `/admin` *(server)***\n### <a:BotAccess:1540915865506160660> **BOT ADMIN**\n**`/bot analytics` · `/bot access` · `/bot hotpatch` · `/bot servers` · `/emojis` · `/autobuild` · `/manage`**\n\n-# 💠 **Learn more about a command:** **`/help <cmd>`**\n-# 💠 e.g. **/help** cmd:`draws`\n\n-# Report bugs & suggestions to <@1139845545754632283>."
         },
         {
           "type": 14,
@@ -1896,8 +1936,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -1926,7 +1966,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp, profile color tools & sharing Dioreo",
+                  "description": "Profile colors, timestamps & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -1977,7 +2017,7 @@
       "components": [
         {
           "type": 10,
-          "content": "## <a:Loadouts:1535779248982335618> **Gunsmith Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+          "content": "## <a:GunsmithSearch:1564113024225255454> **Gunsmith Commands**\n-# **Usage: `/cmd <required> [optional]`**"
         },
         {
           "type": 14,
@@ -1986,7 +2026,27 @@
         },
         {
           "type": 10,
-          "content": "### `/gunsmith mp`\nFind an MP weapon's loadout, or browse a whole class, Meta or every MP build\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/gunsmith dmz`\nFind a DMZ weapon's loadout, or browse Meta or every DMZ build\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmith mp** weapon:`AK117`\n-# 🔸 **/gunsmith mp** weapon:`Switchblade X9` build:`2` visibility:`Hidden`\n-# 🔸 **/gunsmith mp** weapon:`All SMG builds`\n-# 🔸 **/gunsmith mp** weapon:`All META builds`\n-# 🔸 **/gunsmith dmz** weapon:`Fennec`"
+          "content": "### `/gunsmith mp`\nFind an MP weapon's loadout, or browse a whole class or the Meta\n-# **Options**\n-# 🔹 `<weapon>` Pick a weapon, or an \"All … builds\" row at the top to browse\n### `/gunsmith dmz`\nFind a DMZ weapon's loadout, or browse Meta or every DMZ build\n-# **Options**\n-# 🔹 `<weapon>` Pick a weapon, or an \"All … builds\" row at the top to browse\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmith mp** weapon:`AK117`\n-# 🔸 **/gunsmith mp** weapon:`Switchblade X9` visibility:`Hidden`\n-# 🔸 **/gunsmith mp** weapon:`All SMG builds`\n-# 🔸 **/gunsmith mp** weapon:`All META builds`\n-# 🔸 **/gunsmith dmz** weapon:`Fennec`"
+        },
+        {
+          "type": 14,
+          "spacing": 1,
+          "divider": true
+        },
+        {
+          "type": 9,
+          "components": [
+            {
+              "type": 10,
+              "content": "### Submit or dispute a build\nNo build for a weapon yet? Its **No build yet** card has **Submit a Build**.\nIf a submitted build uses your screenshot, ask for its removal or the credit. You'll need proof the original is yours and was posted before the build went live. Or DM <@1139845545754632283> with your proof."
+            }
+          ],
+          "accessory": {
+            "type": 2,
+            "style": 2,
+            "label": "Dispute a Build",
+            "custom_id": "gsb~dispute"
+          }
         },
         {
           "type": 14,
@@ -2022,8 +2082,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": true
                 },
@@ -2052,7 +2112,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp, profile color tools & sharing Dioreo",
+                  "description": "Profile colors, timestamps & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -2094,7 +2154,7 @@
       "components": [
         {
           "type": 10,
-          "content": "## <a:NewDraws:1523837409211453613> **Draws Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+          "content": "## <a:NewDraws:1523837409211453613> **Draw Commands**\n-# **Usage: `/cmd <required> [optional]`**"
         },
         {
           "type": 14,
@@ -2103,14 +2163,14 @@
         },
         {
           "type": 10,
-          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# **Options**\n-# 🔹 `[type]` Open one draw type on its own\n-# 🔹 `[region]` Jump directly to the 10, 20, or 30 CP region\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat."
+          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# **Options**\n-# 🔹 `[filter]` Quickly open a draw type\n-# 🔹 `[region]` View costs for a specific CP region"
         },
         {
           "type": 9,
           "components": [
             {
               "type": 10,
-              "content": "### `/draw calculator`\nWork out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy\n-# **Options**\n-# 🔹 `[page]` Open on Start a Calculation, View Saved, or Help\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat."
+              "content": "### `/draw calculator`\nWork out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy\n-# **Options**\n-# 🔹 `[page]` Open on Start a Calculation, View Saved, or Help"
             }
           ],
           "accessory": {
@@ -2127,7 +2187,7 @@
         },
         {
           "type": 10,
-          "content": "-# **Examples**\n-# 🔸 **/draws** page:`Returning Draws`\n-# 🔸 **/draw prices** region:`30 CP Region`\n-# 🔸 **/draw prices** type:`Mythic Weapon Draw`\n-# 🔸 **/draw calculator** page:`View Saved`"
+          "content": "-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/draws** page:`Returning Draws`\n-# 🔸 **/draw prices** region:`30 CP Region`\n-# 🔸 **/draw prices** filter:`Mythic Weapon Draw`\n-# 🔸 **/draw calculator** page:`View Saved`"
         },
         {
           "type": 14,
@@ -2163,8 +2223,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -2193,7 +2253,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp, profile color tools & sharing Dioreo",
+                  "description": "Profile colors, timestamps & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -2244,7 +2304,7 @@
         },
         {
           "type": 10,
-          "content": "### `/calendar`\nToday's screen, then this season's event timeline — Draws, Events, and Game Modes\n-# **Options**\n-# 🔹 `[page]` Jump directly to Today/Draws/Events/Playlists & Modes\n-# 🔹 `[filter]` Full timeline, or only past, live or upcoming entries (not saved)\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/today`\nNew releases, going live, and leaving soon\n-# **Options**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/remind`\nSet and manage your reminders\n-# **Options**\n-# 🔹 `[set]` What to be reminded about (start typing to search)\n-# 🔹 `[toggle]` Turn this reminder on or off\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/patch notes`\nLatest weapon balance changes, plus the full patch-note history\n-# **Options**\n-# 🔹 `[season]` Search for a specific previous season (start typing to see suggestions)\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/season end`\nSee when this season's Battle Pass, Ranked, and DMZ seasons end\n-# **Options**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/calendar** page:`Events` filter:`Upcoming`\n-# 🔸 **/patch notes** season:`Season 6 — Take Your Heart`"
+          "content": "### `/calendar`\nToday's screen, then this season's timeline: Draws, Events, and Playlists & Modes\n-# **Options**\n-# 🔹 `[page]` Open on Today, Draws, Events, or Playlists & Modes\n-# 🔹 `[filter]` Full timeline, or only past, ended, live or upcoming entries (not saved)\n### `/today`\nWhat's new today, what's going live, and what's leaving soon\n### `/remind`\nSet and manage your reminders\n-# **Options**\n-# 🔹 `[releases]` A reminder for when something goes live; pick it again to turn it off\n-# 🔹 `[leaving]` A reminder for when something is leaving; pick it again to turn it off\n### `/patch notes`\nLatest weapon balance changes, plus the full patch-note history\n-# **Options**\n-# 🔹 `[season]` Search for a specific previous season (start typing to see suggestions)\n### `/season end`\nSee when this season's Battle Pass, Ranked, and DMZ seasons end\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/calendar** page:`Events` filter:`Upcoming`\n-# 🔸 **/remind** releases:`New draws` (run it again to turn it off)\n-# 🔸 **/remind** leaving:`Leaving soon (everything)`\n-# 🔸 **/patch notes** season:`Season 6 — Take Your Heart`"
         },
         {
           "type": 14,
@@ -2280,8 +2340,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -2310,7 +2370,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp, profile color tools & sharing Dioreo",
+                  "description": "Profile colors, timestamps & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -2361,7 +2421,7 @@
         },
         {
           "type": 10,
-          "content": "### `/colors`\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# **Options**\n-# 🔹 `[page]` Jump directly to Avatar, Banner, Name, Nameplate, or Deco\n-# 🔹 `[source]` Read from your main profile, or your profile for this server\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/timestamp`\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# **Options**\n-# 🔹 `<datetime>` e.g. \"tomorrow\", \"in 2 hours\", \"dec 25 at 9am\", \"8pm to 10pm\", \"19:30\"\n-# 🔹 `[timezone]` Defaults to your saved `/settings` timezone\n-# 🔹 `[style]` Short List, All Formats, or one format; blank uses your saved view\n-# 🔹 `[view]` Embed or plain Text, one-off only\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/invite`\nGet a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord\n-# **Options**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/colors** page:`Nameplate` source:`From Server Profile`\n-# 🔸 **/timestamp** datetime:`this saturday 7pm` timezone:`Pacific Time`\n-# 🔸 **/timestamp** datetime:`august 20` style:`Short Date (d)`\n-# 🔸 **/timestamp** datetime:`in 45 minutes` view:`Text`"
+          "content": "### `/colors`\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# **Options**\n-# 🔹 `[page]` Open on Avatar, Banner, Username, Nameplate, or Deco\n-# 🔹 `[source]` Your main profile, or your profile for this server\n### `/timestamp`\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# **Options**\n-# 🔹 `<datetime>` e.g. \"tomorrow\", \"in 2 hours\", \"dec 25 at 9am\", \"8pm to 10pm\", \"19:30\"\n-# 🔹 `[timezone]` Defaults to your saved `/settings` timezone\n-# 🔹 `[style]` Short List, All Formats, or one format; blank uses your saved style\n-# 🔹 `[view]` Embed or plain Text, one-off only\n### `/invite`\nGet a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n### Right-click (Apps)\n**View Colors** on a member or one of their messages: their profile colors\n**Convert Times** on a message: every date and time in it, as a timestamp in your own time zone\n\n-# **Examples**\n-# 🔸 **/colors** page:`Nameplate` source:`From Server Profile`\n-# 🔸 **/timestamp** datetime:`this saturday 7pm` timezone:`Pacific Time`\n-# 🔸 **/timestamp** datetime:`august 20` style:`Short Date (d)`\n-# 🔸 **/timestamp** datetime:`in 45 minutes` view:`Text`"
         },
         {
           "type": 14,
@@ -2397,8 +2457,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -2427,7 +2487,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp, profile color tools & sharing Dioreo",
+                  "description": "Profile colors, timestamps & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -2478,7 +2538,7 @@
         },
         {
           "type": 10,
-          "content": "### `/settings`\nYour own preferences, in two pages — **Visibility** (who sees your responses by default) and **Preferences** (timezone, timestamp style, accent style, and more)"
+          "content": "### `/settings`\nYour own preferences: **Visibility** (who sees your responses by default), **Preferences** (timezone, timestamp style, accent style, and more), and your **Colors**"
         },
         {
           "type": 14,
@@ -2487,7 +2547,7 @@
         },
         {
           "type": 10,
-          "content": "### `/admin`\nWhere Dioreo answers **publicly** and where it stays **private**, for the whole server. Needs **Manage Server**.\n-# Opens a four-page panel — **Overview · Channels · Roles · Commands**\n\n-# **Rule order** · the most specific one wins\n-# 🔹 Command **→** Role **→** Channel **→** the Overview default\n-# 🔹 Threads follow their parent channel · if two roles disagree, **public wins**\n\n-# **Setting it up**\n-# 🔸 Pick a default on **Overview**, then hand-pick the few channels or roles that should differ\n-# 🔸 Rules only make Dioreo **quieter** — Public *permits* a public answer, it never overrides someone's own `/settings`\n\n-# **Worth knowing**\n-# 🔸 Each menu takes **25 picks** — Discord's cap, and a sign you want a different default instead\n-# 🔸 It hides the **answer**, not the command — to remove a command entirely, use **Server Settings → Integrations**"
+          "content": "### `/admin`\nWhere Dioreo answers **publicly** and where it stays **private**, for the whole server. Needs **Manage Server**.\n-# Opens a four-page panel — **Overview · Channels · Roles · Commands**\n\n-# **Rule order** · the most specific one wins\n-# 🔹 Command **→** Role **→** Channel **→** the Overview default\n-# 🔹 Threads follow their parent channel · if two roles disagree, **public wins**\n\n-# **Setting it up**\n-# 🔸 Pick a default on **Overview**, then hand-pick the few channels or roles that should differ\n-# 🔸 Rules only make Dioreo **quieter** — Public *permits* a public answer, it never overrides someone's own `/settings`\n\n-# **Worth knowing**\n-# 🔸 Each menu holds up to **25 picks** (Discord's limit). Needing more usually means a different default would suit better\n-# 🔸 It hides the **answer**, not the command — to remove a command entirely, use **Server Settings → Integrations**"
         },
         {
           "type": 14,
@@ -2532,8 +2592,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -2562,7 +2622,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp, profile color tools & sharing Dioreo",
+                  "description": "Profile colors, timestamps & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -2613,7 +2673,7 @@
         },
         {
           "type": 10,
-          "content": "### `/bot analytics`\nThe bot's own usage, timing and health data, read from Discord instead of the VM\n-# 🔹 `[page]` Jump directly to a page: `Health` · `Alerts` · `Changes` · `Usage` · `Timing`\n### `/bot access`\nThe admin allowlist -- owner-only\n-# 🔹 No options of its own\n### `/bot servers`\nView, reset or delete one server's /admin rules, for an admin who lost access -- owner-only\n-# 🔹 `[server]` A server ID; leave it blank to pick the server you're in or type one\n### `/bot hotpatch`\nReload changed files into the running bot without a restart -- owner-only\n-# 🔹 `[pull]` git pull first (default: yes)\n-# 🔹 `[dry_run]` Show the plan and change nothing\n-# 🔹 `[file]` Limit to one changed file (default: everything the pull brought in)\n### `/autobuild`\nRead an MP or DMZ loadout out of a Gunsmith screenshot and stage it for review — nothing is saved until you press Save\n-# 🔹 `[screenshot]` The Gunsmith screenshot to read — or use `url` instead, never both\n-# 🔹 `[url]` A link to the screenshot, when the image is already hosted somewhere\n-# 🔹 `[screenshot2]` to `[screenshot10]` More screenshots, read as one batch with a review page per build\n-# 🔹 `[category]` `AR` · `SMG` · `LMG` · `MARKSMAN` · `SNIPER` · `SHOTGUN` · `SECONDARIES` — looked up from the weapon, or asked for, if left blank\n-# 🔹 `[mode]` `MP` · `DMZ` — read from the screenshot if left blank, and asked for when the screenshot can't tell\n-# 🔹 `[badges]` `meta,best,top5,toxic` — blank inherits from an existing build of the same weapon in the same mode\n-# 🔹 `[retry_token]` Only for re-submitting an image after a Cloudinary upload failure\n### `/manage`\nThe data-entry panel — seasonal info, draws, calendar, patch notes, loadouts, banners, announcements, and the next-season draft\n-# 🔹 `[content]` Open a section directly: `Draws` · `Calendar` · `Patch Notes` · `MP Loadouts` · `DMZ Loadouts` · `Season: Titles & Deadlines` · `Season: Next Season Draft` · `Announcement` · `Bulk Format Guide`\n-# 🔹 `[action]` Jump straight to one of that section's own actions (pick `content` first)"
+          "content": "### `/bot analytics`\nThe bot's usage, timing and health, without opening the server it runs on\n-# 🔹 `[page]` Jump directly to a page: `Health` · `Alerts` · `Changes` · `Usage` · `Timing`\n### `/bot access`\nWho has admin access, and to what — owner-only\n-# 🔹 No options of its own\n### `/bot servers`\nView, reset or delete one server's /admin rules, for an admin who lost access — owner-only\n-# 🔹 `[server]` A server ID; leave it blank to pick the server you're in or type one\n### `/bot hotpatch`\nReload changed files into the running bot without a restart — owner-only\n-# 🔹 `[pull]` git pull first (default: yes)\n-# 🔹 `[dry_run]` Show the plan and change nothing\n-# 🔹 `[file]` Limit to one changed file (default: everything the pull brought in)\n### `/emojis`\nEvery app emoji, which bots lack it and whether its original is saved: sync, upload or find one — owner-only\n-# 🔹 No options of its own\n### `/autobuild`\nRead an MP or DMZ loadout out of a Gunsmith screenshot and stage it for review — nothing is saved until you press Save\n-# 🔹 Run it on its own for a form that reads up to 10 screenshots and links at once, each with its own mode, category and badges\n-# 🔹 `[screenshot]` The Gunsmith screenshot to read — or use `url` instead, never both\n-# 🔹 `[url]` A link to the screenshot, when the image is already hosted somewhere\n-# 🔹 `[category]` `AR` · `SMG` · `LMG` · `Marksman` · `Sniper` · `Shotgun` · `Secondary` — looked up from the weapon, or asked for, if left blank\n-# 🔹 `[mode]` `MP` · `DMZ` — read from the screenshot if left blank, and asked for when the screenshot can't tell\n-# 🔹 `[badges]` e.g. `meta,top5`: any of meta, toxic, ass, best, top3, top5, capable and the rank modes — this build only; blank means none\n-# 🔹 `[retry_token]` Only for re-submitting an image after a Cloudinary upload failure\n### `/manage`\nThe data-entry panel — seasonal info, draws, calendar, patch notes, loadouts, banners, announcements, and the next-season draft\n-# 🔹 `[content]` Open a section directly: `Draws` · `Calendar` · `Patch Notes` · `MP Loadouts` · `DMZ Loadouts` · `Season: Titles & Deadlines` · `Season: Next Season Draft` · `Announcement` · `Bulk Format Guide`\n-# 🔹 `[action]` Jump straight to one of that section's own actions (pick `content` first)\n### Right-click (Apps)\n**Add to Calendar** · **Add to Draws** · **Add to Patch Notes** on a message: stage its text into that /manage page\n**Autobuild Gunsmith** on a message with a Gunsmith screenshot: the same review as /autobuild"
         },
         {
           "type": 14,
@@ -2622,7 +2682,7 @@
         },
         {
           "type": 10,
-          "content": "-# **Options** · every command above except /bot hotpatch and /bot servers\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/bot analytics** page:`Usage` visibility:`Public` — share usage data in a channel\n-# 🔸 **/autobuild** screenshot:`[upload]` category:`SMG` badges:`meta,top5`\n-# 🔸 **/autobuild** url:`https://…` — when the screenshot is already hosted\n-# 🔸 **/manage** content:`Patch Notes` — straight to the section, no clicking through\n-# 🔸 **/manage** content:`Season: Next Season Draft` — stage next season without touching what is live\n\n-# 💠 These are gated on **Dioreo's own admin whitelist**, not on a server permission — Manage Server does not grant them, and they are not registered for guild install at all."
+          "content": "-# **Options** · every command above except /bot hotpatch, /bot servers and /emojis\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/bot analytics** page:`Usage` visibility:`Public` — share usage data in a channel\n-# 🔸 **/autobuild** screenshot:`[upload]` category:`SMG` badges:`meta,top5`\n-# 🔸 **/autobuild** url:`https://…` — when the screenshot is already hosted\n-# 🔸 **/manage** content:`Patch Notes` — straight to the section, no clicking through\n-# 🔸 **/manage** content:`Season: Next Season Draft` — stage next season without touching what is live\n\n-# 💠 These are gated on **Dioreo's own admin allowlist** (four are owner-only), not on a server permission — Manage Server does not grant them, and they are not registered for guild install at all."
         },
         {
           "type": 14,
@@ -2658,8 +2718,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -2688,7 +2748,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp, profile color tools & sharing Dioreo",
+                  "description": "Profile colors, timestamps & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -2737,7 +2797,7 @@
             {
               "type": 3,
               "custom_id": "help_guide_pick",
-              "placeholder": "Open a /manage guide topic...",
+              "placeholder": "Open a /manage guide topic…",
               "options": [
                 {
                   "label": "Draws",
@@ -2873,7 +2933,7 @@
         },
         {
           "type": 10,
-          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/today` · `/remind` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:Settings:1523762203537309696> **PREFERENCES**\n**`/settings`**\n### <a:BotAccess:1540915865506160660> **BOT ADMIN**\n**`/bot analytics`**\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+          "content": "### <a:GunsmithSearch:1564113024225255454> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/today` · `/remind` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:Settings:1523762203537309696> **PREFERENCES**\n**`/settings`**\n### <a:BotAccess:1540915865506160660> **BOT ADMIN**\n**`/bot analytics`**\n\n-# 💠 **Learn more about a command:** **`/help <cmd>`**\n-# 💠 e.g. **/help** cmd:`draws`\n\n-# Report bugs & suggestions to <@1139845545754632283>."
         },
         {
           "type": 14,
@@ -2909,8 +2969,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -2939,7 +2999,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp, profile color tools & sharing Dioreo",
+                  "description": "Profile colors, timestamps & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -2990,7 +3050,7 @@
       "components": [
         {
           "type": 10,
-          "content": "## <a:Loadouts:1535779248982335618> **Gunsmith Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+          "content": "## <a:GunsmithSearch:1564113024225255454> **Gunsmith Commands**\n-# **Usage: `/cmd <required> [optional]`**"
         },
         {
           "type": 14,
@@ -2999,7 +3059,27 @@
         },
         {
           "type": 10,
-          "content": "### `/gunsmith mp`\nFind an MP weapon's loadout, or browse a whole class, Meta or every MP build\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/gunsmith dmz`\nFind a DMZ weapon's loadout, or browse Meta or every DMZ build\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmith mp** weapon:`AK117`\n-# 🔸 **/gunsmith mp** weapon:`Switchblade X9` build:`2` visibility:`Hidden`\n-# 🔸 **/gunsmith mp** weapon:`All SMG builds`\n-# 🔸 **/gunsmith mp** weapon:`All META builds`\n-# 🔸 **/gunsmith dmz** weapon:`Fennec`"
+          "content": "### `/gunsmith mp`\nFind an MP weapon's loadout, or browse a whole class or the Meta\n-# **Options**\n-# 🔹 `<weapon>` Pick a weapon, or an \"All … builds\" row at the top to browse\n### `/gunsmith dmz`\nFind a DMZ weapon's loadout, or browse Meta or every DMZ build\n-# **Options**\n-# 🔹 `<weapon>` Pick a weapon, or an \"All … builds\" row at the top to browse\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmith mp** weapon:`AK117`\n-# 🔸 **/gunsmith mp** weapon:`Switchblade X9` visibility:`Hidden`\n-# 🔸 **/gunsmith mp** weapon:`All SMG builds`\n-# 🔸 **/gunsmith mp** weapon:`All META builds`\n-# 🔸 **/gunsmith dmz** weapon:`Fennec`"
+        },
+        {
+          "type": 14,
+          "spacing": 1,
+          "divider": true
+        },
+        {
+          "type": 9,
+          "components": [
+            {
+              "type": 10,
+              "content": "### Submit or dispute a build\nNo build for a weapon yet? Its **No build yet** card has **Submit a Build**.\nIf a submitted build uses your screenshot, ask for its removal or the credit. You'll need proof the original is yours and was posted before the build went live. Or DM <@1139845545754632283> with your proof."
+            }
+          ],
+          "accessory": {
+            "type": 2,
+            "style": 2,
+            "label": "Dispute a Build",
+            "custom_id": "gsb~dispute"
+          }
         },
         {
           "type": 14,
@@ -3035,8 +3115,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": true
                 },
@@ -3065,7 +3145,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp, profile color tools & sharing Dioreo",
+                  "description": "Profile colors, timestamps & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -3107,7 +3187,7 @@
       "components": [
         {
           "type": 10,
-          "content": "## <a:NewDraws:1523837409211453613> **Draws Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+          "content": "## <a:NewDraws:1523837409211453613> **Draw Commands**\n-# **Usage: `/cmd <required> [optional]`**"
         },
         {
           "type": 14,
@@ -3116,14 +3196,14 @@
         },
         {
           "type": 10,
-          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# **Options**\n-# 🔹 `[type]` Open one draw type on its own\n-# 🔹 `[region]` Jump directly to the 10, 20, or 30 CP region\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat."
+          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# **Options**\n-# 🔹 `[filter]` Quickly open a draw type\n-# 🔹 `[region]` View costs for a specific CP region"
         },
         {
           "type": 9,
           "components": [
             {
               "type": 10,
-              "content": "### `/draw calculator`\nWork out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy\n-# **Options**\n-# 🔹 `[page]` Open on Start a Calculation, View Saved, or Help\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat."
+              "content": "### `/draw calculator`\nWork out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy\n-# **Options**\n-# 🔹 `[page]` Open on Start a Calculation, View Saved, or Help"
             }
           ],
           "accessory": {
@@ -3140,7 +3220,7 @@
         },
         {
           "type": 10,
-          "content": "-# **Examples**\n-# 🔸 **/draws** page:`Returning Draws`\n-# 🔸 **/draw prices** region:`30 CP Region`\n-# 🔸 **/draw prices** type:`Mythic Weapon Draw`\n-# 🔸 **/draw calculator** page:`View Saved`"
+          "content": "-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/draws** page:`Returning Draws`\n-# 🔸 **/draw prices** region:`30 CP Region`\n-# 🔸 **/draw prices** filter:`Mythic Weapon Draw`\n-# 🔸 **/draw calculator** page:`View Saved`"
         },
         {
           "type": 14,
@@ -3176,8 +3256,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -3206,7 +3286,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp, profile color tools & sharing Dioreo",
+                  "description": "Profile colors, timestamps & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -3257,7 +3337,7 @@
         },
         {
           "type": 10,
-          "content": "### `/calendar`\nToday's screen, then this season's event timeline — Draws, Events, and Game Modes\n-# **Options**\n-# 🔹 `[page]` Jump directly to Today/Draws/Events/Playlists & Modes\n-# 🔹 `[filter]` Full timeline, or only past, live or upcoming entries (not saved)\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/today`\nNew releases, going live, and leaving soon\n-# **Options**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/remind`\nSet and manage your reminders\n-# **Options**\n-# 🔹 `[set]` What to be reminded about (start typing to search)\n-# 🔹 `[toggle]` Turn this reminder on or off\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/patch notes`\nLatest weapon balance changes, plus the full patch-note history\n-# **Options**\n-# 🔹 `[season]` Search for a specific previous season (start typing to see suggestions)\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/season end`\nSee when this season's Battle Pass, Ranked, and DMZ seasons end\n-# **Options**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/calendar** page:`Events` filter:`Upcoming`\n-# 🔸 **/patch notes** season:`Season 6 — Take Your Heart`"
+          "content": "### `/calendar`\nToday's screen, then this season's timeline: Draws, Events, and Playlists & Modes\n-# **Options**\n-# 🔹 `[page]` Open on Today, Draws, Events, or Playlists & Modes\n-# 🔹 `[filter]` Full timeline, or only past, ended, live or upcoming entries (not saved)\n### `/today`\nWhat's new today, what's going live, and what's leaving soon\n### `/remind`\nSet and manage your reminders\n-# **Options**\n-# 🔹 `[releases]` A reminder for when something goes live; pick it again to turn it off\n-# 🔹 `[leaving]` A reminder for when something is leaving; pick it again to turn it off\n### `/patch notes`\nLatest weapon balance changes, plus the full patch-note history\n-# **Options**\n-# 🔹 `[season]` Search for a specific previous season (start typing to see suggestions)\n### `/season end`\nSee when this season's Battle Pass, Ranked, and DMZ seasons end\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/calendar** page:`Events` filter:`Upcoming`\n-# 🔸 **/remind** releases:`New draws` (run it again to turn it off)\n-# 🔸 **/remind** leaving:`Leaving soon (everything)`\n-# 🔸 **/patch notes** season:`Season 6 — Take Your Heart`"
         },
         {
           "type": 14,
@@ -3293,8 +3373,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -3323,7 +3403,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp, profile color tools & sharing Dioreo",
+                  "description": "Profile colors, timestamps & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -3374,7 +3454,7 @@
         },
         {
           "type": 10,
-          "content": "### `/colors`\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# **Options**\n-# 🔹 `[page]` Jump directly to Avatar, Banner, Name, Nameplate, or Deco\n-# 🔹 `[source]` Read from your main profile, or your profile for this server\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/timestamp`\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# **Options**\n-# 🔹 `<datetime>` e.g. \"tomorrow\", \"in 2 hours\", \"dec 25 at 9am\", \"8pm to 10pm\", \"19:30\"\n-# 🔹 `[timezone]` Defaults to your saved `/settings` timezone\n-# 🔹 `[style]` Short List, All Formats, or one format; blank uses your saved view\n-# 🔹 `[view]` Embed or plain Text, one-off only\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/invite`\nGet a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord\n-# **Options**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/colors** page:`Nameplate` source:`From Server Profile`\n-# 🔸 **/timestamp** datetime:`this saturday 7pm` timezone:`Pacific Time`\n-# 🔸 **/timestamp** datetime:`august 20` style:`Short Date (d)`\n-# 🔸 **/timestamp** datetime:`in 45 minutes` view:`Text`"
+          "content": "### `/colors`\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# **Options**\n-# 🔹 `[page]` Open on Avatar, Banner, Username, Nameplate, or Deco\n-# 🔹 `[source]` Your main profile, or your profile for this server\n### `/timestamp`\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# **Options**\n-# 🔹 `<datetime>` e.g. \"tomorrow\", \"in 2 hours\", \"dec 25 at 9am\", \"8pm to 10pm\", \"19:30\"\n-# 🔹 `[timezone]` Defaults to your saved `/settings` timezone\n-# 🔹 `[style]` Short List, All Formats, or one format; blank uses your saved style\n-# 🔹 `[view]` Embed or plain Text, one-off only\n### `/invite`\nGet a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n### Right-click (Apps)\n**View Colors** on a member or one of their messages: their profile colors\n**Convert Times** on a message: every date and time in it, as a timestamp in your own time zone\n\n-# **Examples**\n-# 🔸 **/colors** page:`Nameplate` source:`From Server Profile`\n-# 🔸 **/timestamp** datetime:`this saturday 7pm` timezone:`Pacific Time`\n-# 🔸 **/timestamp** datetime:`august 20` style:`Short Date (d)`\n-# 🔸 **/timestamp** datetime:`in 45 minutes` view:`Text`"
         },
         {
           "type": 14,
@@ -3410,8 +3490,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -3440,7 +3520,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp, profile color tools & sharing Dioreo",
+                  "description": "Profile colors, timestamps & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -3491,7 +3571,7 @@
         },
         {
           "type": 10,
-          "content": "### `/settings`\nYour own preferences, in two pages — **Visibility** (who sees your responses by default) and **Preferences** (timezone, timestamp style, accent style, and more)\n\n-# **Options**\n-# 🔹 `[open]` Open straight on Visibility, Preferences, or your Colors\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/settings**\n-# 🔸 **/settings** open:`Preferences`"
+          "content": "### `/settings`\nYour own preferences: **Visibility** (who sees your responses by default), **Preferences** (timezone, timestamp style, accent style, and more), and your **Colors**\n\n-# **Options**\n-# 🔹 `[open]` Open straight on Visibility, Preferences, or your Colors\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/settings**\n-# 🔸 **/settings** open:`Preferences`"
         },
         {
           "type": 14,
@@ -3527,8 +3607,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -3557,7 +3637,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp, profile color tools & sharing Dioreo",
+                  "description": "Profile colors, timestamps & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -3608,7 +3688,7 @@
         },
         {
           "type": 10,
-          "content": "### `/bot analytics`\nThe bot's own usage, timing and health data, read from Discord instead of the VM\n-# 🔹 `[page]` Jump directly to a page: `Health` · `Alerts` · `Changes` · `Usage` · `Timing`"
+          "content": "### `/bot analytics`\nThe bot's usage, timing and health, without opening the server it runs on\n-# 🔹 `[page]` Jump directly to a page: `Health` · `Alerts` · `Changes` · `Usage` · `Timing`"
         },
         {
           "type": 14,
@@ -3617,7 +3697,7 @@
         },
         {
           "type": 10,
-          "content": "-# **Options** · every command above except /bot hotpatch and /bot servers\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/bot analytics** page:`Usage` visibility:`Public` — share usage data in a channel\n\n-# 💠 These are gated on **Dioreo's own admin whitelist**, not on a server permission — Manage Server does not grant them, and they are not registered for guild install at all."
+          "content": "-# **Options** · every command above except /bot hotpatch, /bot servers and /emojis\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/bot analytics** page:`Usage` visibility:`Public` — share usage data in a channel\n\n-# 💠 These are gated on **Dioreo's own admin allowlist** (four are owner-only), not on a server permission — Manage Server does not grant them, and they are not registered for guild install at all."
         },
         {
           "type": 14,
@@ -3653,8 +3733,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -3683,7 +3763,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp, profile color tools & sharing Dioreo",
+                  "description": "Profile colors, timestamps & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",

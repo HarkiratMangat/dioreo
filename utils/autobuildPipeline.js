@@ -136,7 +136,10 @@ function buildReviewCard(token, data, opts = {}) {
     // Warnings first, above the build (Harkirat, 2026-10-20 13:19 EDT: "warning section should be above the wep name, mode, etc.").
     const warnings = [
         data.categoryConflict ? `${BOT_EMOJI.warn} **Category mismatch:** this weapon is already saved as \`${data.categoryConflict}\`\n> **Saving as:** \`${data.category}\`, so it would sit under two categories\n> **Fix:** change the category with **Adjust**` : null,
-        data.labelWarning, data.duplicateWarning, data.catalogueWarning, data.equipCapWarning, ...(opts.notes || []),
+        data.labelWarning, data.duplicateWarning, data.catalogueWarning, data.equipCapWarning, data.confidenceWarning,
+        // The start form's preset words nothing recognised, and its notes (2026-10-25 12:49 EDT: "shows on that build's review page, never dropped silently").
+        data.presetWarning ? `${BOT_EMOJI.warn} ${data.presetWarning}` : null, ...(data.formNotes || []).map(n => `${BOT_EMOJI.warn} ${n}`),
+        ...(opts.notes || []),
     ].filter(Boolean);
 
     // His text layout, verbatim where he gave it (2026-10-20 13:19 EDT); the DMZ code line, a set label and the mode hints other than "detected" follow its pattern.
@@ -170,6 +173,8 @@ function buildReviewCard(token, data, opts = {}) {
     const components = [
         { type: 10, content: opts.title || '## Review Extracted Gunsmith' },
         ...(opts.header ? [{ type: 10, content: opts.header }] : []),
+        // Which screenshot or link this build came from, when the start form read it: the order Discord hands uploads back in is not verified, so the page names its file.
+        ...((data.sourceLabel || data.reusedFrom) ? [{ type: 10, content: `-# ${[data.sourceLabel, data.reusedFrom ? `Reused the read from <t:${Math.floor(new Date(data.reusedFrom).getTime() / 1000)}:R>, no new cost` : null].filter(Boolean).join(' · ')}` }] : []),
         { type: 14, spacing: 1, divider: true },
     ];
     if (warnings.length) {
@@ -224,11 +229,23 @@ async function resolveCategoryAndBadges(weaponName, explicitCategory, badgesOpti
     return { category, badgesRaw };
 }
 
+// The model's own low ratings, as a warning for the review card: a field it rated under 60 is worth a second look. Its note about the screenshot rides along. Null when nothing is low and nothing was noted.
+const UNSURE_BELOW = 60;
+function confidenceWarningFor(extracted) {
+    const names = { weaponName: 'weapon', gunsmithCode: 'code', attachments: 'attachments', mode: 'MP/DMZ' };
+    const low = Object.entries(extracted.confidence || {}).filter(([, v]) => v < UNSURE_BELOW).map(([k, v]) => `${names[k] || k} (${v}%)`);
+    const note = String(extracted.observations || '').trim();
+    const repeats = (extracted.repeatedAttachments || []).length ? `Read twice: ${extracted.repeatedAttachments.map(a => `\`${a}\``).join(', ')}` : '';
+    if (!low.length && !repeats) return null;
+    return [`${BOT_EMOJI.warn} **The model was unsure:** ${low.length ? low.join(', ') : 'see below'}`, repeats ? `> ${repeats}` : null, note ? `> ${note}` : null, '> **Check:** compare with the screenshot before saving'].filter(Boolean).join('\n');
+}
+
 // The reading half of runExtraction, shared with utils/autobuildBulk.js (2026-10-20 10:33 EDT, bulk /autobuild): one screenshot in, one review's `data` out, nothing sent and nothing stashed. It THROWS when the vision call fails, so each caller words the failure its own way. `allBuilds` lets a caller reading several screenshots fetch the build list once instead of once per image.
 async function extractToData(sourceImageUrl, { explicitCategory = null, badgesOption = null, explicitMode = null, adminId, allBuilds = null } = {}) {
     // The catalogue's weapon names ride in the prompt; its attachment names join the stored ones the corrector below snaps a misread onto.
     const catIndex = await getCatalogueIndex();
-    const extracted = await extractLoadoutFromImage(sourceImageUrl, { taskName: 'autobuild_live', knownWeapons: catIndex ? [...catIndex.weapons.values()].map(w => w.name) : [] });
+    // Every read is recorded, and the exact same file again reuses its earlier read (models/VisionRead.js, 2026-10-25 13:52 EDT).
+    const extracted = await extractLoadoutFromImage(sourceImageUrl, { taskName: 'autobuild_live', knownWeapons: catIndex ? [...catIndex.weapons.values()].map(w => w.name) : [], record: true, reuse: true });
     // One fetch, reused for BOTH the attachment-name corrector's known-vocabulary set AND the duplicate/category-conflict warnings (refreshReviewWarnings) -- richer field select than the old attachments-only projection so those checks have shareCode/category/weaponName to work with. Both modes since 2026-10-19 17:52 EDT: DMZ uses the same attachment names (and adds some MP builds don't have), so the vocabulary is the union, and refreshReviewWarnings splits by mode where it matters.
     const builds = allBuilds || await Loadout.find({}).select('weaponKey weaponName category buildName shareCode attachments mode').lean();
     const knownAttachments = await knownAttachmentNames(builds);
@@ -257,11 +274,33 @@ async function extractToData(sourceImageUrl, { explicitCategory = null, badgesOp
         modeSource: explicitMode ? 'explicit' : (mode ? 'detected' : null),
         modeSignals: extracted.modeSignals,
         sourceImageUrl,
-        adminId
+        adminId,
+        cacheId: null,
+        // The read this review came from, so Adjust, Save and Discard are recorded against it.
+        readId: extracted.readId || null,
+        reusedFrom: extracted.reusedFrom || null,
+        confidenceWarning: confidenceWarningFor(extracted),
     };
     refreshReviewWarnings(data, builds);
     data.catalogueWarning = await catalogueWarningFor(data);
+    // The screenshot waits in the Cloudinary cache, not on Discord's link that expires in about a day (utils/autobuildCache.js, 2026-10-25 13:55 EDT). The review shows and saves the cached copy; if caching failed it keeps Discord's link.
+    const cached = await require('./autobuildCache').cacheScreenshot(sourceImageUrl, extracted.fileHash);
+    if (cached) { data.sourceImageUrl = cached.url; data.cacheId = cached.cacheId; data.originalImageUrl = sourceImageUrl; }
     return data;
+}
+
+// True when another open review still shows this cached screenshot (the same file read twice shares one copy), so it must not be deleted yet.
+function cacheStillUsed(cacheId, exceptToken = null) {
+    if (!cacheId) return false;
+    for (const [token, d] of pendingAutobuilds) if (token !== exceptToken && d?.cacheId === cacheId) return true;
+    for (const d of pendingImageRetries.values()) if (d?.cacheId === cacheId) return true;
+    return false;
+}
+
+// A review's cached screenshot is no longer needed: deleted, unless another open review shows it.
+function releaseCache(data, exceptToken = null) {
+    if (!data?.cacheId) return;
+    require('./autobuildCache').dropCachedScreenshot(data.cacheId, cacheStillUsed(data.cacheId, exceptToken)).catch(() => {});
 }
 
 // Runs extraction + post-processing + stashes a pending token, then sends the review card as this interaction's own deferred reply. Caller must have already called interaction.deferReply() (ephemeral per the command's `visibility` option, default hidden). `explicitMode` is /autobuild's `mode:` option; the right-click and its picker pass nothing, so the screenshot decides.
@@ -322,7 +361,9 @@ async function writeLoadoutDoc(data, imageKeyOverride) {
         attachmentSlots,
         imageKey: imageKeyOverride || data.imageKey,
         shareCode: data.gunsmithCode || '',
-        ...badges
+        ...badges,
+        // A build from Submit a Build keeps its submitter, shown only if they chose credit (utils/buildSubmissions.js, Harkirat 2026-10-25 17:06 EDT).
+        ...(data.submission ? { submittedBy: { discordId: data.submission.discordId, credited: Boolean(data.submission.credited) } } : {})
     });
     await doc.save();
 
@@ -366,8 +407,24 @@ function nextBuildNumber(weaponName, siblingDocs) {
     return Math.max(0, ...keyNums, ...nameNums) + 1;
 }
 
-// The saving half of confirmAndWrite, shared with utils/autobuildBulk.js (2026-10-20 10:33 EDT): validates, uploads the image and writes the build, and REPORTS what happened instead of answering an interaction, so a batch page can show the result in place. Statuses: saved (doc) · retry (retryToken, error) · expired · nocategory · nomode · busy.
+// The saving half of confirmAndWrite, shared with utils/autobuildBulk.js (2026-10-20 10:33 EDT): validates, uploads the image and writes the build, and REPORTS what happened instead of answering an interaction, so a batch page can show the result in place. Statuses: saved (doc) · retry (retryToken, error) · expired · nocategory · nomode · busy. Saves of one weapon in one mode run one at a time (2026-10-25 14:05 EDT, Harkirat's two-admin dispute): the next build number is read and taken inside this queue, so two saves at the same moment can never both take Build 3.
+const weaponQueues = new Map();
+function withWeaponQueue(key, fn) {
+    const prev = weaponQueues.get(key) || Promise.resolve();
+    const run = prev.catch(() => {}).then(fn);
+    const tail = run.catch(() => {});
+    weaponQueues.set(key, tail);
+    tail.then(() => { if (weaponQueues.get(key) === tail) weaponQueues.delete(key); });
+    return run;
+}
+
 async function confirmCore(token) {
+    const queued = pendingAutobuilds.get(token);
+    if (!queued) return { status: 'expired' };
+    return withWeaponQueue(`${(queued.weaponName || '').toLowerCase().replace(/\s+/g, '')}|${queued.mode || 'MP'}`, () => confirmCoreNow(token));
+}
+
+async function confirmCoreNow(token) {
     const data = pendingAutobuilds.get(token);
     if (!data) return { status: 'expired' };
     if (!data.category) return { status: 'nocategory' };
@@ -397,20 +454,26 @@ async function confirmCore(token) {
             imageKey = deriveImageKey(data.weaponName, 'DMZ', taken.map(t => t.imageKey));
         }
 
-        // Image only -- structured metadata is set from the saved Loadout doc by writeLoadoutDoc -> syncLoadoutMetadata (which also has the per-slot data), so a metadata problem can never fail this upload.
-        const uploadResult = await uploadLoadoutImage(data.sourceImageUrl, imageKey);
+        // Image only -- structured metadata is set from the saved Loadout doc by writeLoadoutDoc -> syncLoadoutMetadata (which also has the per-slot data), so a metadata problem can never fail this upload. A submitted build may come with no screenshot (Harkirat, 2026-10-25 16:59 EDT: "preferred but not required"): it saves with the placeholder image, as a bulk paste with no image does.
+        const uploadResult = data.sourceImageUrl ? await uploadLoadoutImage(data.sourceImageUrl, imageKey) : { success: true, noImage: true };
+        if (uploadResult.noImage) imageKey = require('./adminParser').PLACEHOLDER_IMAGE;
 
         if (uploadResult.success) {
+            require('./visionReads').noteOutcome(data.readId, 'saved');
             // Delete AFTER the write succeeds, not before -- if doc.save() throws (a real possibility: Mongoose validation, a dropped connection), the token must still be sitting in pendingAutobuilds so the confirmed data isn't silently lost with nothing written anywhere. (Found in review: this used to delete first, which meant a save() failure here lost the data permanently -- no Loadout doc, no recoverable token.)
             const doc = await writeLoadoutDoc({ ...data, weaponKey, buildName, imageKey });
             pendingAutobuilds.delete(token);
+            // A submitted build: thank the submitter and mark the owner's DM card (never throws).
+            if (data.submission) require('./buildSubmissions').onSaved(data.submission, doc);
+            // The image now lives under the build's own key, so the cached copy goes ("if it's confirmed, then it goes from the cache folder into the actual correct storage folder").
+            releaseCache(data);
             return { status: 'saved', doc };
         }
 
         // First failure: do NOT write yet. Stash the confirmed data (with weaponKey/buildName/imageKey already computed) under a new retry token, ask for the image again.
         const retryToken = crypto.randomBytes(8).toString('hex');
         pendingImageRetries.set(retryToken, { ...data, weaponKey, buildName, imageKey });
-        setTimeout(() => pendingImageRetries.delete(retryToken), 10 * 60 * 1000).unref();
+        // No timer any more (2026-10-25 14:03 EDT): a batch is kept until every build is saved or discarded (models/AutobuildBatch.js stores the retry data too), so a Re-upload must keep working past ten minutes. The entry leaves memory when its batch is unloaded (utils/autobuildBulk.js's unload) and comes back when the batch is loaded; a success or a placeholder save deletes it, as before.
         pendingAutobuilds.delete(token);
         return { status: 'retry', retryToken, error: uploadResult.error };
     } finally {
@@ -426,21 +489,34 @@ function confirmMessage(client, result) {
         case 'nocategory': return glyphs(BOT_EMOJI.cross + ' Category is still unresolved -- click **Adjust** and set one before saving.');
         case 'nomode': return glyphs(BOT_EMOJI.cross + " MP or DMZ is still unresolved -- click **Adjust** and put `| MP` or `| DMZ` after the category before saving.");
         case 'busy': return '⏳ Already saving this build -- give it a moment.';
+        case 'rival': return glyphs(`${BOT_EMOJI.warn} ${result.message || 'Another admin has this build waiting.'} Pick **Save mine** or **Leave it to them** on its page.`);
         case 'labeltaken': return `${BOT_EMOJI.cross} That build label is already used by another build of this weapon -- pick another with **Adjust**.`;
-        case 'retry': return glyphs(`${BOT_EMOJI.warn} Image upload to Cloudinary failed (${result.error}). Nothing was saved yet -- re-run this to try the image again:\n\`/autobuild retry_token:${result.retryToken} screenshot:<new attachment>\` (or use \`url:\` instead)\n\nIf it fails again, the loadout will be created anyway without an image, and you can fix it later via \`/manage\`.`);
+        case 'retry': return glyphs(`${BOT_EMOJI.warn} Image upload to Cloudinary failed (${result.error}). Nothing was saved yet. Press **Re-upload** to send the image again (retry token \`${result.retryToken}\`).\n\nIf it fails again, the loadout will be created anyway without an image, and you can fix it later via \`/manage\`.`);
         default: return glyphs(BOT_EMOJI.cross + ' Something went wrong saving this build.');
     }
+}
+
+// The Re-upload button a failed image upload carries: it opens the start form with the retry token filled in (Harkirat's pick, 2026-10-25 12:03 EDT), so the token is never copied by hand.
+function reuploadRow(retryToken) {
+    return { type: 1, components: [{ type: 2, style: 1, label: 'Re-upload', custom_id: `autobuild_reupload|${retryToken}`, emoji: require('./emojiMap').parseEmoji(BOT_EMOJI.edit) }] };
+}
+
+// What a single review sends for a confirmCore result other than `saved`: its words, with the Re-upload button when the image upload failed.
+function confirmReply(client, result) {
+    return { content: confirmMessage(client, result), ...(result.status === 'retry' ? { components: [reuploadRow(result.retryToken)] } : {}), ephemeral: true };
 }
 
 // Confirm click -- `interaction` is the BUTTON interaction. Caller (handlers/autobuild.js) must call interaction.deferUpdate() before calling this, since the review card is being replaced.
 async function confirmAndWrite(interaction, token) {
     const result = await confirmCore(token);
     if (result.status === 'saved') return await replaceWithV2Card(interaction, buildPostCreationCard(result.doc, null));
-    return interaction.followUp({ content: confirmMessage(interaction.client, result), ephemeral: true });
+    return interaction.followUp(confirmReply(interaction.client, result));
 }
 
 // Second attempt, via /autobuild's retry_token option (commands/autobuild.js calls this directly -- see the design spec's "Image retry mechanism" decision for why this can't be a button/modal).
 async function retryImageUpload(interaction, token, newImageUrl) {
+    // A batch that went idle took its retry data out of memory with it; loading the admin's open batch puts it back.
+    if (!pendingImageRetries.has(token)) await require('./autobuildBulk').openBatchFor(interaction.user.id).catch(() => null);
     const data = pendingImageRetries.get(token);
     if (!data) {
         return interaction.followUp({ content: `${BOT_EMOJI.cross} That retry token has expired or was already used. Run ${mentionCommand(interaction.client, '/autobuild')} again from scratch.`, ephemeral: true });
@@ -458,6 +534,7 @@ async function retryImageUpload(interaction, token, newImageUrl) {
         if (uploadResult.success) {
             const doc = await writeLoadoutDoc(data);
             pendingImageRetries.delete(token);
+            releaseCache(data);
             const card = buildPostCreationCard(doc, null);
             return await replaceWithV2Card(interaction, card);
         }
@@ -466,6 +543,7 @@ async function retryImageUpload(interaction, token, newImageUrl) {
         const placeholderKey = `PENDING-UPLOAD-${token}`;
         const doc = await writeLoadoutDoc(data, placeholderKey);
         pendingImageRetries.delete(token);
+        releaseCache(data);
         const card = buildPostCreationCard(doc, `No image could be uploaded (tried twice). Fix it via ${mentionCommand(interaction.client, '/manage')} -> Edit Loadout -> set a real Cloudinary Image Key.`);
         return await replaceWithV2Card(interaction, card);
     } finally {
@@ -475,7 +553,10 @@ async function retryImageUpload(interaction, token, newImageUrl) {
 }
 
 async function cancelReview(interaction, token) {
+    const discarded = pendingAutobuilds.get(token);
+    require('./visionReads').noteOutcome(discarded?.readId, 'discarded');
     pendingAutobuilds.delete(token);
+    releaseCache(discarded);
     return interaction.followUp({ content: glyphs(BOT_EMOJI.cross + ' Discarded -- nothing was saved or uploaded.'), ephemeral: true });
 }
 
@@ -563,6 +644,8 @@ async function applyEditFields(interaction, data) {
     };
     refreshReviewWarnings(updated, allBuilds);
     updated.catalogueWarning = await catalogueWarningFor(updated);
+    // What Adjust changed, recorded against the read: the real measure of what the model got wrong.
+    require('./visionReads').noteAdjustment(data.readId, data, updated);
     return updated;
 }
 
@@ -582,9 +665,9 @@ async function applyEditSubmission(interaction, token) {
 }
 
 module.exports = {
-    pendingAutobuilds, buildReviewCard, resolveCategoryAndBadges, runExtraction, confirmAndWrite, retryImageUpload, cancelReview, buildEditModal, applyEditSubmission,
+    pendingAutobuilds, pendingImageRetries, buildReviewCard, resolveCategoryAndBadges, runExtraction, confirmAndWrite, retryImageUpload, cancelReview, buildEditModal, applyEditSubmission,
     // The shared halves bulk /autobuild (utils/autobuildBulk.js) drives.
-    extractToData, confirmCore, confirmMessage, applyEditFields,
+    extractToData, confirmCore, withWeaponQueue, confirmMessage, confirmReply, reuploadRow, applyEditFields, releaseCache,
     // Exported for scripts/autobuildDmz.test.js; nothing else calls them.
     resolveMode, parseCategoryAndMode, refreshReviewWarnings, nextBuildNumber, badgeChoices, findDmzDuplicates, badgeTokensOf, badgeFieldsFor, writeLoadoutDoc, cleanAttachmentPairs
 };

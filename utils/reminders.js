@@ -123,7 +123,7 @@ function extraBlocks(p) {
     return out;
 }
 
-// The "Manage reminders" row every reminder DM ends with; the button opens the panel privately.
+// The "Manage reminders" row every reminder DM ends with; the button opens the panel privately. It sits OUTSIDE the card, under it (Harkirat, 2026-10-25 20:18 EDT: "move the button outside the embed"), with the Remind bell the /remind panel's title uses (his 20:28 EDT correction: AddReminder was a misreading of "the other emoji").
 const manageRow = () => ({ type: 1, components: [{ type: 2, style: 2, label: 'Manage reminders', custom_id: 'remind_open', emoji: emojis.parseEmoji(emojis.remind) }] });
 
 // The DM, as Components V2 JSON, or null. His order (round 3): Last chance · Leaving soon · Released · Season · Patch notes. With the digest on, the /today brief takes the place of Released and the leaving lists, with followed items marked by the bell (his round-2 Q4: the digest absorbs the rest), and the season and patch-note parts follow it.
@@ -140,8 +140,8 @@ function buildReminderDM(p, seasonalDoc, { nowMs = Date.now(), accentColor = 409
         const extra = extraBlocks(p);
         const wrap = brief => [{ type: 17, accent_color: accentColor, components: [
             block(`## ${emojis.remind} Your daily brief\n${dateLine}`), sep, ...brief.map(c => markFollowed(c, marked)),
-            ...(extra.length ? [sep, ...extra] : []), { type: 14, divider: false, spacing: 1 }, manageRow(),
-        ] }];
+            ...(extra.length ? [sep, ...extra] : []),
+        ] }, manageRow()];
         return fitMessage(seasonalDoc, { nowMs }, wrap);
     } else {
         const parts = [];
@@ -152,7 +152,7 @@ function buildReminderDM(p, seasonalDoc, { nowMs = Date.now(), accentColor = 409
         parts.push(...extraBlocks(p));
         body = [block(`## ${emojis.remind} Your reminders\n${dateLine}`), sep, ...parts];
     }
-    return [{ type: 17, accent_color: accentColor, components: [...body, { type: 14, divider: false, spacing: 1 }, manageRow()] }];
+    return [{ type: 17, accent_color: accentColor, components: body }, manageRow()];
 }
 
 // What Send a test DMs (Harkirat, 2026-10-24 19:39 EDT: "When someone has reminders enabled and they tap send a test, can you make it actually their reminders?"). With reminders on, it is the real DM from TODAY's daily update (the last run), built exactly as the run builds it, under a one-line note that it is a test; when nothing they follow happened then, it says so and lists what they follow. With nothing on, the plain test card. ⚠️ It shows the LAST run, not the next one: Discord draws every <t:…:R> against the reader's clock, so a DM built for a run still to come read "Released in 14 minutes" and gave the next daily update a day too late (his screenshot, 19:47 EDT: "Timings for the daily update doesn't make sense?"). The one-time tip sent as a second DM beside someone's first real reminder when they have no timezone (Harkirat, 2026-10-24 23:44 EDT ask: "for the first time… when a real reminder sends… send another follow-up DM… heads up… your time zone… with the set button in it"). Sending never needs one (every reminder goes at 00:01 UTC and its times are Discord timestamps in the reader's own device time); the zone only fixes the dates written into /remind's dropdowns. With `setTo` it is the confirmation that replaces it once a zone is picked.
@@ -160,7 +160,8 @@ function buildTimezoneNote(ownerId, { accentColor = 4093660, setTo = null, clien
     // His wording and layout (2026-10-25 00:08 EDT), with /remind and /settings as real clickable commands (utils/commandMentions.js).
     const { mentionCommand } = require('./commandMentions');
     const remind = mentionCommand(client, 'remind'), settings = mentionCommand(client, 'settings');
-    if (setTo) return [{ type: 17, accent_color: accentColor, components: [block(`### ${emojis.reminderEnabled} Timezone set\n**${setTo}** · ${remind}'s lists now show your local time.\n-# Tip: Adjust your timezone anytime in ${settings}`)] }];
+    // The confirmation carries the bot's checkmark, not ReminderEnabled (Harkirat, 2026-10-25 20:39 EDT: "use the checkmark icon for that instead").
+    if (setTo) return [{ type: 17, accent_color: accentColor, components: [block(`### ${emojis.checkmark} Timezone set\n**${setTo}** · ${remind}'s lists now show your local time.\n-# Tip: Adjust your timezone anytime in ${settings}`)] }];
     return [{ type: 17, accent_color: accentColor, components: [
         block(`## ${emojis.remindAlert} Heads up: set your timezone!\nDioreo doesn't know your timezone yet, so the dates in ${remind}'s lists show in UTC.\nSet it once and they'll appear in your local time.`),
         { type: 1, components: [{ type: 2, style: 1, label: 'Set timezone', custom_id: `remind_tzdm:${ownerId}`, emoji: parseEmoji(emojis.timezone) }] },
@@ -180,8 +181,7 @@ function buildTestDM(sub, seasonalDoc, { nowMs = Date.now(), accentColor = 40936
     return [note('A test.'), { type: 17, accent_color: accentColor, components: [
         block(`### ${emojis.remind} Nothing at today's daily update\n-# Nothing you follow happened at the daily update ${rel(runMs)}, so no reminder came. Your reminders arrive here when something does.`),
         block(['-# **You follow**', ...following.slice(0, 15).map(f => `- ${f}`), ...(following.length > 15 ? [`-# +${following.length - 15} more`] : [])].join('\n')),
-        { type: 14, divider: false, spacing: 1 }, manageRow(),
-    ] }];
+    ] }, manageRow()];
 }
 
 // Adds the bell after each followed title in a text component of the /today brief, once per title.
@@ -319,14 +319,18 @@ function mergeFollows(follows, kind, listedTitles, picked) {
     return [...kept, ...picked.map(v => ({ kind, title: titleFor(v) }))];
 }
 
-// /remind's `set:` values: "cat:<key>", "rel:<title>" or "lv:<title>". Free text (typed without picking a suggestion) is read as a release follow when it names something not out yet, else a leaving follow when it names something live.
-function resolveSetValue(value, seasonalDoc, nowMs = Date.now()) {
+// /remind's `set:` values: "cat:<key>", "rel:<title>" or "lv:<title>". Free text (typed without picking a suggestion) is read as a release follow when it names something not out yet, else a leaving follow when it names something live. /remind's two options (Harkirat, 2026-10-25 22:41 intake at 21:56 EDT: "rework /remind's slash command options to 'releases' and 'leaving'"): which one a category belongs to. Leaving holds the leaving-soon rows and the three season-part endings (they fire before something ends); releases holds everything that fires when something starts or is posted.
+const sideOf = (c) => (c.group === 'leaving' || c.group === 'leavingAll' || /Ending$/.test(c.key)) ? 'leaving' : 'releases';
+
+// `side` ('releases' | 'leaving') scopes free text to that option's list; without it, both are tried, releases first.
+function resolveSetValue(value, seasonalDoc, nowMs = Date.now(), side = null) {
     if (typeof value !== 'string' || !value) return null;
     if (value.startsWith('cat:') && CATEGORY_KEYS.has(value.slice(4))) return { type: 'category', key: value.slice(4), label: CATEGORIES.find(c => c.key === value.slice(4)).label };
     const { releases, leaving } = followable(seasonalDoc, nowMs);
     const find = (list, t) => list.find(e => e.title === t) || list.find(e => sameTitle(e.title, t)) || list.find(e => e.title.toLowerCase().includes(t.toLowerCase()));
     if (value.startsWith('rel:')) { const e = find(releases, value.slice(4)); return e ? { type: 'follow', kind: 'release', title: e.title } : null; }
     if (value.startsWith('lv:')) { const e = find(leaving, value.slice(3)); return e ? { type: 'follow', kind: 'leaving', title: e.title } : null; }
+    if (side === 'leaving') { const l = find(leaving, value); return l ? { type: 'follow', kind: 'leaving', title: l.title } : null; }
     const r = find(releases, value);
     if (r) return { type: 'follow', kind: 'release', title: r.title };
     const l = find(leaving, value);
@@ -334,14 +338,14 @@ function resolveSetValue(value, seasonalDoc, nowMs = Date.now()) {
 }
 
 // /remind's autocomplete: the categories pinned first (his round-2 answer: "fuzzy search with the main options sticky"), then this season's entries, each twice, matched against what was typed.
-function autocompleteChoices(focused, seasonalDoc, nowMs = Date.now()) {
+function autocompleteChoices(focused, seasonalDoc, nowMs = Date.now(), side = null) {
     const q = String(focused || '').toLowerCase().trim();
     const hit = s => !q || s.toLowerCase().includes(q);
-    const cats = CATEGORIES.filter(c => hit(c.label)).map(c => ({ name: `${c.label} · ${c.hint}`.slice(0, 100), value: `cat:${c.key}` }));
+    const cats = CATEGORIES.filter(c => (!side || sideOf(c) === side) && hit(c.label)).map(c => ({ name: `${c.label} · ${c.hint}`.slice(0, 100), value: `cat:${c.key}` }));
     const { releases, leaving } = followable(seasonalDoc, nowMs);
     const entries = [
-        ...releases.filter(e => hit(e.title)).map(e => ({ name: `${e.title} · when it releases`.slice(0, 100), value: `rel:${e.title}`.slice(0, 100) })),
-        ...leaving.filter(e => hit(e.title)).map(e => ({ name: `${e.title} · when it is leaving`.slice(0, 100), value: `lv:${e.title}`.slice(0, 100) })),
+        ...(side === 'leaving' ? [] : releases).filter(e => hit(e.title)).map(e => ({ name: `${e.title} · when it releases`.slice(0, 100), value: `rel:${e.title}`.slice(0, 100) })),
+        ...(side === 'releases' ? [] : leaving).filter(e => hit(e.title)).map(e => ({ name: `${e.title} · when it is leaving`.slice(0, 100), value: `lv:${e.title}`.slice(0, 100) })),
     ];
     return (q ? [...entries, ...cats] : [...cats, ...entries]).slice(0, 25);
 }
@@ -470,7 +474,7 @@ function withBell(textComponent) {
 module.exports = {
     CATEGORIES, CATEGORY_KEYS, PANEL_GROUPS, MAX_OPTIONS,
     computeDue, personalise, buildReminderDM, buildTestDM, markFollowed,
-    buildTimezoneNote, leavingKeys, clearTurnedOff, followable, buildPanel, mergeFollows, coveringCategory, resolveSetValue, autocompleteChoices,
+    buildTimezoneNote, leavingKeys, clearTurnedOff, followable, buildPanel, mergeFollows, coveringCategory, resolveSetValue, autocompleteChoices, sideOf,
     failureUpdate, isRefusal, msUntilNextRun, runDailyReminders,
     pendingNotice, loadPendingNotices, maybeShowReminderNote, withBell,
 };

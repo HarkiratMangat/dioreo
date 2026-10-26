@@ -17,7 +17,6 @@ const emojis = require('../utils/emojiMap');
 const { getAccentColorForCommand } = require('../utils/accentColor');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { mentionCommand } = require('../utils/commandMentions');
-const { fuzzyMatch } = require('../utils/search');
 
 // Extra keywords that should also resolve a `/help cmd:` query -- typed words that don't literally match a command/category name but obviously mean it (added 2026-08-15 13:09 EDT, Harkirat's request to expand every cmd: alias, /admin's "server"/"owner" specifically named). Checked only AFTER every real command/category name fails to match, so a real name always wins over a loose keyword -- see resolveCommandToCategory and suggestHelpCommandNames below, the two places this is consulted. Not meant to be exhaustive linguistic coverage, just the words someone would plausibly type looking for that command.
 const COMMAND_ALIASES = {
@@ -84,29 +83,28 @@ function renderCommandBlock(command, client) {
     const optionLines = command.options.map(o =>
         `-# 🔹 \`${o.required ? '<' : '['}${o.name}${o.required ? '>' : ']'}\` ${resolveText(o.desc, client)}`
     ).join('\n');
-    return `### ${mentionCommand(client, command.name)}\n${resolveText(command.description, client)}\n-# **Options**\n`
-        + (optionLines ? `${optionLines}\n` : '')
-        + `${VISIBILITY_BULLET}\n`;
+    // [visibility] is no longer repeated under every command (2026-10-25 22:44 EDT, critique #19): each page states it once, in SHARED_VISIBILITY, the way Preferences and Bot Admin already did. A command with no options of its own has no Options heading.
+    return `### ${mentionCommand(client, command.name)}\n${resolveText(command.description, client)}\n`
+        + (optionLines ? `-# **Options**\n${optionLines}\n` : '');
 }
+const SHARED_VISIBILITY = `\n-# **Every command above also takes**\n${VISIBILITY_BULLET}\n`;
 
 const CATEGORY_DEFS = [
     {
-        key: 'gunsmith', label: 'Gunsmith', emojiKey: 'loadouts', dropdownDescription: 'Search MP and DMZ weapon loadouts',
+        key: 'gunsmith', label: 'Gunsmith', emojiKey: 'gunsmithSearch', dropdownDescription: 'Search MP and DMZ weapon loadouts',
         // staticCommands is [/gunsmith] only (/dmz is hidden for now) -- the directory/dropdown/autocomplete mention `/gunsmith` as one entry (Discord resolves that base mention regardless of which subcommand someone picks), but the detail page below documents its two REAL subcommands separately. detailCommands is the finer-grained list that divergence needs -- unlike draws/seasonal/utilities, where staticCommands already matches 1:1 and no second list is needed. Neither list carries a `requires`, so there is no permission-filtering concern for this category either way. ⚠️ CORRECTED 2026-10-17 23:51 EDT: the landing directory used to mention bare `/gunsmith`, and Discord renders a mention of a command that has subcommands as plain text, never a link (Harkirat: "the /gunsmith command link seems to be broken in the /help command landing"). The landing now lists detailCommands when a category has them, so it reads `/gunsmith mp` · `/gunsmith dmz` · `/dmz`, each a real link (it read `/gunsmith search` · `/gunsmith list` · `/dmz` until 2026-10-19 19:43 EDT). staticCommands keeps `/gunsmith` for `cmd:` lookup and its aliases. /dmz left out while it is hidden (2026-10-21 21:05 EDT, commands/dmz.js's devOnly note); add cmd('/dmz') back here and its detail entry below when it returns.
         staticCommands: [cmd('/gunsmith')],
         detailCommands: [
             cmd('/gunsmith mp', {
-                description: "Find an MP weapon's loadout, or browse a whole class, Meta or every MP build",
+                description: "Find an MP weapon's loadout, or browse a whole class or the Meta",
                 options: [
-                    { name: 'weapon', required: true, desc: 'Select a weapon, or an "All ... builds" row at the top to browse' },
-                    { name: 'build', required: false, desc: 'Specify build number' }
+                    { name: 'weapon', required: true, desc: 'Pick a weapon, or an "All … builds" row at the top to browse' }
                 ]
             }),
             cmd('/gunsmith dmz', {
                 description: "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                 options: [
-                    { name: 'weapon', required: true, desc: 'Select a weapon, or an "All ... builds" row at the top to browse' },
-                    { name: 'build', required: false, desc: 'Specify build number' }
+                    { name: 'weapon', required: true, desc: 'Pick a weapon, or an "All … builds" row at the top to browse' }
                 ]
             })
         ]
@@ -121,8 +119,8 @@ const CATEGORY_DEFS = [
             cmd('/draw prices', {
                 description: 'CP cost breakdown for every draw type, split by CP region',
                 options: [
-                    { name: 'type', required: false, desc: 'Open one draw type on its own' },
-                    { name: 'region', required: false, desc: 'Jump directly to the 10, 20, or 30 CP region' }
+                    { name: 'filter', required: false, desc: 'Quickly open a draw type' },
+                    { name: 'region', required: false, desc: 'View costs for a specific CP region' }
                 ]
             }),
             cmd('/draw calculator', {
@@ -135,19 +133,19 @@ const CATEGORY_DEFS = [
         key: 'seasonal', label: 'Seasonal Info', emojiKey: 'calendar', dropdownDescription: "This season's calendar, patch notes & end dates",
         staticCommands: [
             cmd('/calendar', {
-                description: "Today's screen, then this season's event timeline — Draws, Events, and Game Modes",
+                description: "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
                 // [view] (renamed [filter] 2026-10-21) description corrected (v3-pre-release review, finding #63) -- commands/calendar.js silenced the /settings-saved default 2026-08-15; it is a one-off per-invocation choice only, never saved.
                 options: [
-                    { name: 'page', required: false, desc: 'Jump directly to Today/Draws/Events/Playlists & Modes' },
-                    { name: 'filter', required: false, desc: 'Full timeline, or only past, live or upcoming entries (not saved)' }
+                    { name: 'page', required: false, desc: 'Open on Today, Draws, Events, or Playlists & Modes' },
+                    { name: 'filter', required: false, desc: 'Full timeline, or only past, ended, live or upcoming entries (not saved)' }
                 ]
             }),
-            cmd('/today', { description: "New releases, going live, and leaving soon" }),
+            cmd('/today', { description: "What's new today, what's going live, and what's leaving soon" }),
             cmd('/remind', {
                 description: 'Set and manage your reminders',
                 options: [
-                    { name: 'set', required: false, desc: 'What to be reminded about (start typing to search)' },
-                    { name: 'toggle', required: false, desc: 'Turn this reminder on or off' }
+                    { name: 'releases', required: false, desc: 'A reminder for when something goes live; pick it again to turn it off' },
+                    { name: 'leaving', required: false, desc: 'A reminder for when something is leaving; pick it again to turn it off' }
                 ]
             }),
             cmd('/patch notes', {
@@ -158,13 +156,13 @@ const CATEGORY_DEFS = [
         ]
     },
     {
-        key: 'utilities', label: 'Utilities', emojiKey: 'eyedropper', dropdownDescription: 'Timestamp, profile color tools & sharing Dioreo',
+        key: 'utilities', label: 'Utilities', emojiKey: 'eyedropper', dropdownDescription: 'Profile colors, timestamps & sharing Dioreo',
         staticCommands: [
             cmd('/colors', {
                 description: 'View the colors extracted from your Discord profile and pick which one accents your panels',
                 options: [
-                    { name: 'page', required: false, desc: 'Jump directly to Avatar, Banner, Name, Nameplate, or Deco' },
-                    { name: 'source', required: false, desc: 'Read from your main profile, or your profile for this server' }
+                    { name: 'page', required: false, desc: 'Open on Avatar, Banner, Username, Nameplate, or Deco' },
+                    { name: 'source', required: false, desc: 'Your main profile, or your profile for this server' }
                 ]
             }),
             cmd('/timestamp', {
@@ -172,7 +170,7 @@ const CATEGORY_DEFS = [
                 options: [
                     { name: 'datetime', required: true, desc: 'e.g. "tomorrow", "in 2 hours", "dec 25 at 9am", "8pm to 10pm", "19:30"' },
                     { name: 'timezone', required: false, desc: (client) => `Defaults to your saved ${mentionCommand(client, '/settings')} timezone` },
-                    { name: 'style', required: false, desc: 'Short List, All Formats, or one format; blank uses your saved view' },
+                    { name: 'style', required: false, desc: 'Short List, All Formats, or one format; blank uses your saved style' },
                     { name: 'view', required: false, desc: 'Embed or plain Text, one-off only' }
                 ]
             }),
@@ -194,14 +192,14 @@ const CATEGORY_DEFS = [
         key: 'botadmin', label: 'Bot Admin', emojiKey: 'botAccess',
         dropdownDescription: "Dioreo's data management & ops commands",
         // Alphabetical, and it must MATCH buildBotAdminBody's order below -- the first draft listed these one way in the directory and another in the body, which reads as the page having lost track of itself. Harkirat asked for alphabetical here on 2026-08-10 19:34 EDT. ⚠️ Per-command `requires` (added 2026-08-13, per-command admin permissions) -- an admin granted only /bot analytics must not see /manage or /autobuild listed here even though the whole category is visible to them. Category-level `requires: 'botAdmin'` still gates the SECTION (shows if the user has ANY admin access at all, per utils/adminAccess.js's isAdmin()); each command's own key gates that ONE line, same pattern `/admin` already uses inside Preferences. `/bot access` is gated on `botAccess` (isOwner(), not a permission token -- see utils/adminAccess.js's header on why it can never have one).
-        staticCommands: [cmd('/bot analytics', { requires: 'bot' }), cmd('/bot access', { requires: 'botAccess' }), cmd('/bot hotpatch', { requires: 'botAccess' }), cmd('/bot servers', { requires: 'botAccess' }), cmd('/autobuild', { requires: 'autobuild' }), cmd('/manage', { requires: 'manage' })],
+        staticCommands: [cmd('/bot analytics', { requires: 'bot' }), cmd('/bot access', { requires: 'botAccess' }), cmd('/bot hotpatch', { requires: 'botAccess' }), cmd('/bot servers', { requires: 'botAccess' }), cmd('/emojis', { requires: 'botAccess' }), cmd('/autobuild', { requires: 'autobuild' }), cmd('/manage', { requires: 'manage' })],
         requires: 'botAdmin',
     },
 ];
 
 const DETAIL_HEADERS = {
     gunsmith: 'Gunsmith Commands',
-    draws: 'Draws Commands',
+    draws: 'Draw Commands',
     seasonal: 'Seasonal Info Commands',
     utilities: 'Utility Commands',
     botadmin: 'Bot Admin Commands',
@@ -210,12 +208,35 @@ const DETAIL_HEADERS = {
 
 const USAGE_LEGEND = '-# **Usage: `/cmd <required> [optional]`**';
 
+// The right-click apps /help's search can find (2026-10-25 23:05 EDT, his "right" and "app" searches found nothing). Each opens the page that documents it, and an admin one shows only to whoever can use the command it feeds.
+const HELP_APPS = [
+    { name: 'View Colors', category: 'utilities' },
+    { name: 'Convert Times', category: 'utilities' },
+    { name: 'Add to Calendar', category: 'botadmin', requires: 'manage' },
+    { name: 'Add to Draws', category: 'botadmin', requires: 'manage' },
+    { name: 'Add to Patch Notes', category: 'botadmin', requires: 'manage' },
+    { name: 'Autobuild Gunsmith', category: 'botadmin', requires: 'autobuild' },
+];
+
+// Everything `cmd:` can find, in directory order: each visible command (a category's detail commands where it has them, so /gunsmith mp and /gunsmith dmz rather than bare /gunsmith, his ask 2026-10-25 23:05 EDT), then that category's right-click apps.
+function searchEntries(perms = {}) {
+    const out = [];
+    for (const cat of visibleCategories(perms)) {
+        for (const c of cat.detailCommands || visibleCommands(cat, perms)) out.push({ name: c.name, category: cat.key, aliases: COMMAND_ALIASES[c.name] || COMMAND_ALIASES[c.name.split(' ')[0]] || [] });
+        for (const a of HELP_APPS) if (a.category === cat.key && permitted(a, perms)) out.push({ name: a.name, category: cat.key, app: true, aliases: [] });
+    }
+    return out;
+}
+
 async function resolveCommandToCategory(cmdName, perms = {}) {
-    // Scoped to what this caller may see, so `/help cmd:/manage` from a non-admin resolves to nothing and lands on the directory rather than opening a page they were never offered.
+    // Scoped to what this caller may see, so `/help cmd:/manage` from a non-admin resolves to nothing and lands on the directory rather than opening a page they were never offered. A bare `/gunsmith` (staticCommands) still opens Gunsmith.
     for (const cat of visibleCategories(perms)) {
         if (visibleCommands(cat, perms).some(c => c.name === cmdName)) return cat.key;
     }
-    // Alias fallback -- only reached once no real command/category name matched, so "server" only ever means /admin when nothing is literally named "server". Scoped by the same `perms` as above, so an alias can never surface a page its own command wouldn't have.
+    const entries = searchEntries(perms);
+    const exact = entries.find(e => e.name.toLowerCase() === String(cmdName).toLowerCase());
+    if (exact) return exact.category;
+    // Alias fallback -- an alias word names its command before any looser match, so "server" means /admin.
     const normalized = cmdName.toLowerCase().replace(/^\//, '').trim();
     for (const cat of visibleCategories(perms)) {
         for (const c of visibleCommands(cat, perms)) {
@@ -223,34 +244,66 @@ async function resolveCommandToCategory(cmdName, perms = {}) {
         }
         if ((CATEGORY_ALIASES[cat.key] || []).includes(normalized)) return cat.key;
     }
-    return null;
+    // Everyday words, typos and look-alikes (utils/helpSearch.js): the best match's page.
+    const [best] = require('../utils/helpSearch').rank(cmdName, entries);
+    return best ? best.category : null;
 }
 
-// Every real command name a query could resolve to, INCLUDING a match via alias -- used by /help's `cmd:` autocomplete so typing "server" suggests real entry "/admin" rather than nothing. The suggested VALUE is always a real command name (never a bare alias word), so selecting it and pressing enter always hits the direct-match branch above with no alias lookup needed at that point.
+// What `cmd:` suggests for a query, best first, as names (the value Discord sends back). Empty: everything, in directory order.
 async function suggestHelpCommandNames(query, perms = {}) {
-    const allNames = await getAllHelpCommandNames(perms);
-    const direct = allNames.filter(name => fuzzyMatch(query, name));
+    return require('../utils/helpSearch').rank(query, searchEntries(perms)).map(e => e.name).slice(0, 25);
+}
 
-    const aliasMatched = new Set();
-    for (const cat of visibleCategories(perms)) {
-        for (const c of visibleCommands(cat, perms)) {
-            const aliases = COMMAND_ALIASES[c.name] || [];
-            if (aliases.some(a => fuzzyMatch(query, a))) aliasMatched.add(c.name);
-        }
-    }
+// The same, as Discord autocomplete choices: each name with a short plain line, so a confused reader sees what it does.
+async function helpChoices(query, perms = {}) {
+    const S = require('../utils/helpSearch');
+    return S.rank(query, searchEntries(perms)).slice(0, 25).map(e => ({ name: S.choiceLabel(e), value: e.name }));
+}
 
-    return [...new Set([...direct, ...aliasMatched])].slice(0, 25);
+// The command a typed `cmd:` means: an exact name, else an alias word ("server" -> /admin), else the best search match. Used to open its category AND to put that command first on the page. A right-click app is not a command block, so it focuses nothing.
+async function matchHelpCommand(cmdName, perms = {}) {
+    const entries = searchEntries(perms);
+    const exact = entries.find(e => e.name.toLowerCase() === String(cmdName).toLowerCase());
+    if (exact) return exact.app ? null : exact.name;
+    const normalized = String(cmdName).toLowerCase().replace(/^\//, '').trim();
+    const byAlias = entries.find(e => !e.app && (COMMAND_ALIASES[e.name] || []).includes(normalized));
+    if (byAlias) return byAlias.name;
+    const best = require('../utils/helpSearch').rank(cmdName, entries)[0];
+    return best && !best.app ? best.name : null;
+}
+
+// The permission set every /help surface reads -- the page, the dropdown and the `cmd:` autocomplete -- built in ONE place. handlers/router.js built its own copy for the autocomplete without `botAccess`, so /emojis and the owner-only /bot commands were never suggested to the owner (found in the 2026-10-25 click-test).
+async function helpPerms(interaction) {
+    const { isServerAdmin } = require('../utils/guildPolicy');
+    const { isAdmin, hasCommandAccess, isOwner } = require('../utils/adminAccess');
+    return {
+        serverAdmin: isServerAdmin(interaction),
+        botAdmin: await isAdmin(interaction.user.id),
+        manage: await hasCommandAccess(interaction.user.id, 'manage'),
+        bot: await hasCommandAccess(interaction.user.id, 'bot'),
+        botAccess: isOwner(interaction.user.id),
+        autobuild: await hasCommandAccess(interaction.user.id, 'autobuild')
+    };
 }
 
 // Every real command name this bot has, for /help's `cmd:` autocomplete -- the static entries only (/gunsmith is one entry; the per-category Gunsmith commands it once added are gone). `isAdmin` keeps admin-only commands out of a non-admin's suggestions. Autocomplete is the third of the three places the Server Admin category has to be filtered -- suggesting `/admin` to someone and then handing them the directory when they pick it is worse than never offering it.
 async function getAllHelpCommandNames(perms = {}) {
-    return visibleCategories(perms).flatMap(c => visibleCommands(c, perms)).map(c => c.name);
+    return searchEntries(perms).map(e => e.name);
 }
 
-// Each of these four now composes its per-command "-# **Options**" blocks from CATEGORY_DEFS' own data via renderCommandBlock() (v3-pre-release review finding #49) instead of hand-built escaped-markdown concatenation -- only the hand-written "-# **Examples**" trailer (bespoke per page, not worth data-ifying) stays as a literal string. `commands` is the category's own detailCommands (gunsmith) or staticCommands (draws/seasonal/utilities) -- see buildContainer's dispatch below.
+// Each of these four now composes its per-command "-# **Options**" blocks from CATEGORY_DEFS' own data via renderCommandBlock() (v3-pre-release review finding #49) instead of hand-built escaped-markdown concatenation -- only the hand-written "-# **Examples**" trailer (bespoke per page, not worth data-ifying) stays as a literal string. `commands` is the category's own detailCommands (gunsmith) or staticCommands (draws/seasonal/utilities) -- see buildContainer's dispatch below. PARTS since 2026-10-25 17:10 EDT: the Dispute a Build section carries its button as an accessory (Harkirat's /gunsmith review: the dispute form lives in /help only, beside "or DM <@owner>", his clickable @mention). handlers/loadouts.js answers `gsb~dispute`.
 function buildGunsmithBody(commands, client) {
-    return commands.map(c => renderCommandBlock(c, client)).join('')
-        + `\n-# **Examples**\n-# 🔸 **/gunsmith mp** weapon:\`AK117\`\n-# 🔸 **/gunsmith mp** weapon:\`Switchblade X9\` build:\`2\` visibility:\`Hidden\`\n-# 🔸 **/gunsmith mp** weapon:\`All SMG builds\`\n-# 🔸 **/gunsmith mp** weapon:\`All META builds\`\n-# 🔸 **/gunsmith dmz** weapon:\`Fennec\``;
+    const { ALLOWED_ADMIN_ID } = require('../utils/owner');
+    return [
+        { content: buildGunsmithText(commands, client) },
+        { divider: true },
+        { content: `### Submit or dispute a build\nNo build for a weapon yet? Its **No build yet** card has **Submit a Build**.\nIf a submitted build uses your screenshot, ask for its removal or the credit. You'll need proof the original is yours and was posted before the build went live. Or DM <@${ALLOWED_ADMIN_ID}> with your proof.`,
+            accessory: { type: 2, style: 2, label: 'Dispute a Build', custom_id: 'gsb~dispute' } },
+    ];
+}
+function buildGunsmithText(commands, client) {
+    return commands.map(c => renderCommandBlock(c, client)).join('') + SHARED_VISIBILITY
+        + `\n-# **Examples**\n-# 🔸 **/gunsmith mp** weapon:\`AK117\`\n-# 🔸 **/gunsmith mp** weapon:\`Switchblade X9\` visibility:\`Hidden\`\n-# 🔸 **/gunsmith mp** weapon:\`All SMG builds\`\n-# 🔸 **/gunsmith mp** weapon:\`All META builds\`\n-# 🔸 **/gunsmith dmz** weapon:\`Fennec\``;
 }
 
 // Returns PARTS, not one string (2026-10-17 23:51 EDT): the /draw calculator block is a Section whose button opens the calculator's full Help (Harkirat: "add a button in the /help draws page, as a section+accessory for the /draw calc section, to view the full help panel"). The button reuses the calculator's own `help` verb, so it opens the same private panel the calculator's Help button does; with no author on the state, anyone may press it.
@@ -262,23 +315,24 @@ function buildDrawsBody(commands, client) {
         const dc = require('./drawCalculator');
         parts.push({ content: renderCommandBlock(calc, client).trimEnd(), accessory: { type: 2, style: 2, label: 'Calculator Guide', emoji: emojis.parseEmoji(emojis.calculator), custom_id: dc.encodeState('help', dc.defaultState()) } });
     }
-    parts.push({ content: `-# **Examples**\n-# 🔸 **/draws** page:\`Returning Draws\`\n-# 🔸 **/draw prices** region:\`30 CP Region\`\n-# 🔸 **/draw prices** type:\`Mythic Weapon Draw\`\n-# 🔸 **/draw calculator** page:\`View Saved\`` });
+    parts.push({ content: `${SHARED_VISIBILITY.trim()}\n\n-# **Examples**\n-# 🔸 **/draws** page:\`Returning Draws\`\n-# 🔸 **/draw prices** region:\`30 CP Region\`\n-# 🔸 **/draw prices** filter:\`Mythic Weapon Draw\`\n-# 🔸 **/draw calculator** page:\`View Saved\`` });
     return parts;
 }
 
 function buildSeasonalBody(commands, client) {
-    return commands.map(c => renderCommandBlock(c, client)).join('')
-        + `\n-# **Examples**\n-# 🔸 **/calendar** page:\`Events\` filter:\`Upcoming\`\n-# 🔸 **/patch notes** season:\`Season 6 — Take Your Heart\``;
+    return commands.map(c => renderCommandBlock(c, client)).join('') + SHARED_VISIBILITY
+        + `\n-# **Examples**\n-# 🔸 **/calendar** page:\`Events\` filter:\`Upcoming\`\n-# 🔸 **/remind** releases:\`New draws\` (run it again to turn it off)\n-# 🔸 **/remind** leaving:\`Leaving soon (everything)\`\n-# 🔸 **/patch notes** season:\`Season 6 — Take Your Heart\``;
 }
 
 function buildUtilitiesBody(commands, client) {
-    return commands.map(c => renderCommandBlock(c, client)).join('')
+    return commands.map(c => renderCommandBlock(c, client)).join('') + SHARED_VISIBILITY
+        + `\n### Right-click (Apps)\n**View Colors** on a member or one of their messages: their profile colors\n**Convert Times** on a message: every date and time in it, as a timestamp in your own time zone\n`
         + `\n-# **Examples**\n-# 🔸 **/colors** page:\`Nameplate\` source:\`From Server Profile\`\n-# 🔸 **/timestamp** datetime:\`this saturday 7pm\` timezone:\`Pacific Time\`\n-# 🔸 **/timestamp** datetime:\`august 20\` style:\`Short Date (d)\`\n-# 🔸 **/timestamp** datetime:\`in 45 minutes\` view:\`Text\``;
 }
 
 // Server admins get a second command appended rather than a page of their own. The `/admin` detail is the one place carrying the full precedence order and the two Discord limits, because the panel itself deliberately stays short -- see commands/admin.js's note on the wall-of-text draft that got rejected 2026-08-10 18:23 EDT. Harkirat's framing on the caps: they are not a real constraint in practice ("why is a server adding 25 role overrides"), so they read as guidance about the intended workflow -- set a default, hand-pick the exceptions -- not as a warning. TWO commands on one page, so they get a real divider between them and the shared `[visibility]` option is stated ONCE at the end rather than under each -- repeating it per command was Harkirat's call on 2026-08-10 19:28 EDT ("visibility is shared in all the commands so having it individually under each of them makes no sense"), and the same pass cut the /admin section roughly in half for being overwhelming to read. Gunsmith already used the shared-options shape for the same reason. `commands` is the category's own visibleCommands(category, perms) result (v3-pre-release review finding #49) -- whether /admin is present is derived from THAT list rather than re-checking perms.serverAdmin directly, so this page's admin filtering can never drift from the directory/ dropdown/autocomplete, which already filter through the exact same CATEGORY_DEFS `requires`.
 function buildPreferencesBody(commands, client) {
-    const settings = `### ${mentionCommand(client, '/settings')}\nYour own preferences, in two pages — **Visibility** (who sees your responses by default) and **Preferences** (timezone, timestamp style, accent style, and more)`;
+    const settings = `### ${mentionCommand(client, '/settings')}\nYour own preferences: **Visibility** (who sees your responses by default), **Preferences** (timezone, timestamp style, accent style, and more), and your **Colors**`;
     // `[open]` (2026-10-19 17:49 EDT, named `[customize]` until 2026-10-19 19:33 EDT) is /settings' jump-to option -- see commands/settings.js. Written once here because both branches below print the /settings options.
     const openBullet = '-# 🔹 `[open]` Open straight on Visibility, Preferences, or your Colors';
     const hasAdmin = commands.some(c => c.name === '/admin');
@@ -296,9 +350,9 @@ function buildPreferencesBody(commands, client) {
         + `-# 🔹 Threads follow their parent channel · if two roles disagree, **public wins**\n\n`
         + `-# **Setting it up**\n`
         + `-# 🔸 Pick a default on **Overview**, then hand-pick the few channels or roles that should differ\n`
-        + `-# 🔸 Rules only make Dioreo **quieter** — Public *permits* a public answer, it never overrides someone's own \`/settings\`\n\n`
+        + `-# 🔸 Rules only make Dioreo **quieter** — Public *permits* a public answer, it never overrides someone's own ${mentionCommand(client, '/settings')}\n\n`
         + `-# **Worth knowing**\n`
-        + `-# 🔸 Each menu takes **25 picks** — Discord's cap, and a sign you want a different default instead\n`
+        + `-# 🔸 Each menu holds up to **25 picks** (Discord's limit). Needing more usually means a different default would suit better\n`
         + `-# 🔸 It hides the **answer**, not the command — to remove a command entirely, use **Server Settings → Integrations**`
         + SECTION_BREAK
         + `-# **Options** · \`[open]\` is /settings only; both take \`[visibility]\`\n${openBullet}\n${VISIBILITY_BULLET}\n\n`
@@ -315,31 +369,35 @@ function buildBotAdminBody(commands, client) {
     const has = (name) => commands.some(c => c.name === name);
     const sections = [];
     if (has('/bot analytics')) {
-        sections.push(`### ${mentionCommand(client, '/bot analytics')}\nThe bot's own usage, timing and health data, read from Discord instead of the VM\n`
+        sections.push(`### ${mentionCommand(client, '/bot analytics')}\nThe bot's usage, timing and health, without opening the server it runs on\n`
             + `-# 🔹 \`[page]\` Jump directly to a page: \`Health\` · \`Alerts\` · \`Changes\` · \`Usage\` · \`Timing\``);
     }
     if (has('/bot access')) {
-        sections.push(`### ${mentionCommand(client, '/bot access')}\nThe admin allowlist -- owner-only\n`
+        sections.push(`### ${mentionCommand(client, '/bot access')}\nWho has admin access, and to what — owner-only\n`
             + `-# 🔹 No options of its own`);
     }
     if (has('/bot servers')) {
-        sections.push(`### ${mentionCommand(client, '/bot servers')}\nView, reset or delete one server's /admin rules, for an admin who lost access -- owner-only\n`
+        sections.push(`### ${mentionCommand(client, '/bot servers')}\nView, reset or delete one server's /admin rules, for an admin who lost access — owner-only\n`
             + `-# 🔹 \`[server]\` A server ID; leave it blank to pick the server you're in or type one`);
     }
     if (has('/bot hotpatch')) {
-        sections.push(`### ${mentionCommand(client, '/bot hotpatch')}\nReload changed files into the running bot without a restart -- owner-only\n`
+        sections.push(`### ${mentionCommand(client, '/bot hotpatch')}\nReload changed files into the running bot without a restart — owner-only\n`
             + `-# 🔹 \`[pull]\` git pull first (default: yes)\n`
             + `-# 🔹 \`[dry_run]\` Show the plan and change nothing\n`
             + `-# 🔹 \`[file]\` Limit to one changed file (default: everything the pull brought in)`);
     }
+    if (has('/emojis')) {
+        sections.push(`### ${mentionCommand(client, '/emojis')}\nEvery app emoji, which bots lack it and whether its original is saved: sync, upload or find one — owner-only\n`
+            + `-# 🔹 No options of its own`);
+    }
     if (has('/autobuild')) {
         sections.push(`### ${mentionCommand(client, '/autobuild')}\nRead an MP or DMZ loadout out of a Gunsmith screenshot and stage it for review — nothing is saved until you press Save\n`
+            + `-# 🔹 Run it on its own for a form that reads up to 10 screenshots and links at once, each with its own mode, category and badges\n`
             + `-# 🔹 \`[screenshot]\` The Gunsmith screenshot to read — or use \`url\` instead, never both\n`
             + `-# 🔹 \`[url]\` A link to the screenshot, when the image is already hosted somewhere\n`
-            + `-# 🔹 \`[screenshot2]\` to \`[screenshot10]\` More screenshots, read as one batch with a review page per build\n`
-            + `-# 🔹 \`[category]\` \`AR\` · \`SMG\` · \`LMG\` · \`MARKSMAN\` · \`SNIPER\` · \`SHOTGUN\` · \`SECONDARIES\` — looked up from the weapon, or asked for, if left blank\n`
+            + `-# 🔹 \`[category]\` \`AR\` · \`SMG\` · \`LMG\` · \`Marksman\` · \`Sniper\` · \`Shotgun\` · \`Secondary\` — looked up from the weapon, or asked for, if left blank\n`
             + `-# 🔹 \`[mode]\` \`MP\` · \`DMZ\` — read from the screenshot if left blank, and asked for when the screenshot can't tell\n`
-            + `-# 🔹 \`[badges]\` \`meta,best,top5,toxic\` — blank inherits from an existing build of the same weapon in the same mode\n`
+            + `-# 🔹 \`[badges]\` e.g. \`meta,top5\`: any of meta, toxic, ass, best, top3, top5, capable and the rank modes — this build only; blank means none\n`
             + `-# 🔹 \`[retry_token]\` Only for re-submitting an image after a Cloudinary upload failure`);
     }
     if (has('/manage')) {
@@ -347,6 +405,12 @@ function buildBotAdminBody(commands, client) {
             + `-# 🔹 \`[content]\` Open a section directly: \`Draws\` · \`Calendar\` · \`Patch Notes\` · \`MP Loadouts\` · \`DMZ Loadouts\` · \`Season: Titles & Deadlines\` · \`Season: Next Season Draft\` · \`Announcement\` · \`Bulk Format Guide\`\n`
             + `-# 🔹 \`[action]\` Jump straight to one of that section's own actions (pick \`content\` first)`);
     }
+
+    // The admin right-clicks (critique #44), each shown to whoever can use the command it feeds.
+    const apps = [];
+    if (has('/manage')) apps.push('**Add to Calendar** · **Add to Draws** · **Add to Patch Notes** on a message: stage its text into that /manage page');
+    if (has('/autobuild')) apps.push('**Autobuild Gunsmith** on a message with a Gunsmith screenshot: the same review as /autobuild');
+    if (apps.length) sections.push(`### Right-click (Apps)\n${apps.join('\n')}`);
 
     const examples = [];
     if (has('/bot analytics')) examples.push(`-# 🔸 **/bot analytics** page:\`Usage\` visibility:\`Public\` — share usage data in a channel`);
@@ -361,9 +425,9 @@ function buildBotAdminBody(commands, client) {
 
     return sections.join('\n')
         + SECTION_BREAK
-        + `-# **Options** · every command above except /bot hotpatch and /bot servers\n${VISIBILITY_BULLET}\n\n`
+        + `-# **Options** · every command above except /bot hotpatch, /bot servers and /emojis\n${VISIBILITY_BULLET}\n\n`
         + `-# **Examples**\n${examples.join('\n')}\n\n`
-        + `-# 💠 These are gated on **Dioreo's own admin whitelist**, not on a server permission — Manage Server does not grant them, and they are not registered for guild install at all.`;
+        + `-# 💠 These are gated on **Dioreo's own admin allowlist** (four are owner-only), not on a server permission — Manage Server does not grant them, and they are not registered for guild install at all.`;
 }
 
 const BODY_BUILDERS = {
@@ -391,7 +455,7 @@ function buildCategorySelectRow(selectedKey, perms = {}) {
     return { type: 1, components: [{ type: 3, custom_id: 'help_category', placeholder: 'Choose a category to explore…', options }] };
 }
 
-async function buildContainer(selectedKey, accentColor, perms = {}, client) {
+async function buildContainer(selectedKey, accentColor, perms = {}, client, focusName = null) {
     const components = [];
 
     // Someone who reaches a restricted category (a stale dropdown on an older panel, or `/help cmd:manage`) is silently returned to the directory rather than refused -- there is nothing to protect here, and an error message about a page they cannot see is worse than simply not having the page.
@@ -438,25 +502,29 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client) {
                 })
                 .join('')
                 + `\n`
-                + `-# 💠 **Learn more about a command:** **\`/help <command>\`**\n-# 💠 e.g: **/help** cmd:\`draws\`\n-# 💠 Or use the Dropdown below!\n\n`
+                + `-# 💠 **Learn more about a command:** **\`/help <cmd>\`**\n-# 💠 e.g. **/help** cmd:\`draws\`\n\n`
                 + `-# Report bugs & suggestions to <@${HARKIRAT_ID}>.`
         });
         components.push({ type: 14, spacing: 2, divider: true });
-        // Deliberately NOT re-mentioning `/help cmd:` here -- the directory above already covers it ("Learn more about a command: /help <command>... Or use the Dropdown below!"); repeating it right below would just be the same instruction twice in one panel.
+        // Deliberately NOT re-mentioning `/help cmd:` here -- the directory above already covers it ("Learn more about a command: /help <cmd>"); this line is the dropdown's own label, and the directory no longer says "Or use the Dropdown below!" as well (critique #28).
         components.push({ type: 10, content: `-# Select a category from the dropdown below` });
         components.push(buildCategorySelectRow(null, perms));
         components.push({ type: 14, spacing: 1, divider: true });
         components.push({ type: 10, content: `-# ${emojis.diorHeart} Made with love by <@${HARKIRAT_ID}>` });
     } else {
         // `requested` is the already-permission-checked category from the guard above. detailCommands (gunsmith only) or visibleCommands(requested, perms) -- see each builder's own comment for why membership drives filtering instead of raw `perms`.
-        const detailSource = requested.detailCommands || visibleCommands(requested, perms);
+        let detailSource = requested.detailCommands || visibleCommands(requested, perms);
+        // `/help cmd:<x>` opens x's whole page (critique #4): x moves to the top where a page lists one block per command, and the header says what was asked for.
+        const focusAt = focusName ? detailSource.findIndex(c => c.name === focusName) : -1;
+        if (focusAt > 0) detailSource = [detailSource[focusAt], ...detailSource.filter((_, i) => i !== focusAt)];
         const body = BODY_BUILDERS[selectedKey](detailSource, client);
+        const asked = focusAt >= 0 ? `\n-# You asked about ${mentionCommand(client, focusName)}` : '';
 
-        components.push({ type: 10, content: `## ${emojis[categoryEmojiKey(CATEGORY_DEFS.find(c => c.key === selectedKey), perms)]} **${DETAIL_HEADERS[selectedKey]}**\n${USAGE_LEGEND}` });
+        components.push({ type: 10, content: `## ${emojis[categoryEmojiKey(CATEGORY_DEFS.find(c => c.key === selectedKey), perms)]} **${DETAIL_HEADERS[selectedKey]}**\n${USAGE_LEGEND}${asked}` });
         components.push({ type: 14, spacing: 2, divider: true });
         // A builder returns either one string (split on SECTION_BREAK into Text Displays with dividers) or a list of parts, where a part with an `accessory` becomes a Section. Parts sit together with no divider, as one page.
         if (Array.isArray(body)) {
-            body.forEach(p => components.push(p.accessory ? { type: 9, components: [{ type: 10, content: p.content }], accessory: p.accessory } : { type: 10, content: p.content }));
+            body.forEach(p => components.push(p.divider ? { type: 14, spacing: 1, divider: true } : p.accessory ? { type: 9, components: [{ type: 10, content: p.content }], accessory: p.accessory } : { type: 10, content: p.content }));
         } else {
             body.split(SECTION_BREAK).forEach((chunk, i) => {
                 if (i > 0) components.push({ type: 14, spacing: 1, divider: true });
@@ -478,7 +546,7 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client) {
                 components: [{
                     type: 3,
                     custom_id: 'help_guide_pick',
-                    placeholder: 'Open a /manage guide topic...',
+                    placeholder: 'Open a /manage guide topic…',
                     options: topicDefs().map(t => ({ label: t.label, value: t.key, description: t.description, emoji: t.emoji || undefined }))
                 }]
             });
@@ -502,26 +570,24 @@ module.exports = {
     getAllHelpCommandNames,
     resolveCommandToCategory,
     suggestHelpCommandNames,
+    matchHelpCommand,
+    helpPerms,
+    helpChoices,
+    searchEntries,
 
     // `categoryOverride` (passed by handlers/help.js's `help_category` select-menu handler via a synthetic interaction) skips re-resolving the `cmd` option -- same shape as calendar.js's `pageOverride`. 'landing' is a real dropdown VALUE (the "Commands List" reset option) but behaves identically to null/no-selection, so it's normalized here rather than threading a 6th special case through buildContainer.
     async execute(interaction, categoryOverride = null) {
         // The two permission levels, resolved once and threaded everywhere. Both are free: server admin comes off the interaction's own computed permissions (no REST call, no privileged intent, false outside a guild), and bot admin is an id comparison.
-        const { isServerAdmin } = require('../utils/guildPolicy');
-        const { isAdmin, hasCommandAccess, isOwner } = require('../utils/adminAccess');
-        // Per-command keys (2026-08-13) alongside the coarse `botAdmin` (any access, gates the whole category) -- an admin granted only /bot analytics must not see /manage or /autobuild listed under it, even though the section itself is visible to them. `botAccess` is isOwner(), never a permission token -- /bot access can't be granted.
-        const perms = {
-            serverAdmin: isServerAdmin(interaction),
-            botAdmin: await isAdmin(interaction.user.id),
-            manage: await hasCommandAccess(interaction.user.id, 'manage'),
-            bot: await hasCommandAccess(interaction.user.id, 'bot'),
-            botAccess: isOwner(interaction.user.id),
-            autobuild: await hasCommandAccess(interaction.user.id, 'autobuild')
-        };
+        const perms = await helpPerms(interaction);
 
         let selectedKey = categoryOverride;
+        let focusName = null;
         if (selectedKey === null && interaction.isChatInputCommand()) {
             const cmdOption = interaction.options.getString('cmd');
-            if (cmdOption) selectedKey = await resolveCommandToCategory(cmdOption, perms);
+            if (cmdOption) {
+                selectedKey = await resolveCommandToCategory(cmdOption, perms);
+                focusName = selectedKey ? await matchHelpCommand(cmdOption, perms) : null;
+            }
         }
         if (selectedKey === 'landing') selectedKey = null;
 
@@ -534,7 +600,7 @@ module.exports = {
         const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);
 
         // No "Show Everyone" button -- the visibility option above already covers that case up front, and repeating it here would be redundant (Harkirat's direct request).
-        const components = [await buildContainer(selectedKey, accentColor, perms, interaction.client)];
+        const components = [await buildContainer(selectedKey, accentColor, perms, interaction.client, focusName)];
         return await sendV2Payload(interaction, components);
     }
 };

@@ -53,8 +53,8 @@ function browseRows(mode, categories = []) {
         ];
     }
     return [
+        // "All MP builds" dropped (Harkirat, 2026-10-25 16:10 EDT: "keep all meta builds, drop the 'all mp builds'"); its scope token still opens for a suggestion list a client kept open.
         { label: 'All META builds', value: 'MP.*.meta' },
-        { label: 'All MP builds', value: 'MP.*.std' },
         ...categories.map(c => ({ label: `All ${displayCategoryLabel(c)} builds`, value: `MP.${c}.std` })),
     ];
 }

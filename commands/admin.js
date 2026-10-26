@@ -725,6 +725,11 @@ function discordGate(guild, channelId, roleId = null) {
 
 const GATE_TEXT = { noCommands: "Discord blocks **Use Application Commands** here, so Dioreo's commands don't show", private: 'Discord blocks **Use External Apps** here, so every app answers privately' };
 
+// The denied panel's small print, shared by the command and a click (Harkirat's wording and layout, 2026-10-25 11:00 EDT: the -# lines in their own text box so Discord leaves a gap; his lock and Access Denied emojis to come). /help and /settings are clickable commands.
+function deniedHints(client) {
+    return `-# **Lost access?** Discord Support can restore ownership; once Discord says you're an admin again, this panel will open. Dioreo's dev can also reset this server's rules on request · ${mentionCommand(client, '/help')}\n-# **Looking for your own settings?** Check out ${mentionCommand(client, '/settings')}`;
+}
+
 // Single entry point for every `admin_*` component. handlers/router.js routes here rather than growing another dozen branches in its own handler, and the admin gate lives here so there is exactly one place that decides who may change a server's rules.
 async function handleComponent(interaction) {
     if (!interaction.guildId) {
@@ -733,7 +738,8 @@ async function handleComponent(interaction) {
     if (!isServerAdmin(interaction)) {
         require('../utils/eventStore').markOutcome('rejected_admin');
         return interaction.reply({
-            content: `🔒 **Server admins only.** These controls change how Dioreo behaves for everyone here, so they need **Manage Server**.\n-# If your server's admins lost access, Discord Support can restore ownership; once Discord says you're an admin again, this panel opens. Dioreo's owner can also reset this server's rules on request.`,
+            // The same words as the command's denied panel, as one private message (a click on someone else's panel).
+            content: `🔒 ${emojis.cross} **Access Denied** — It doesn't seem like you're an admin in this server!\n> These controls change how Dioreo behaves for everyone in this server, so they need the **Manage Server** permission.\n${deniedHints(interaction.client)}`,
             ephemeral: true,
         });
     }
@@ -956,8 +962,10 @@ module.exports = {
                 type: 17,
                 accent_color: ACCENT,
                 components: [
+                    // (Harkirat's wording and layout, 2026-10-25 11:00 EDT: the -# lines in their own text box so Discord leaves a gap; his lock and Access Denied emojis to come)
                     { type: 10, content: '## 🔒 Server admins only' },
-                    { type: 10, content: `These controls change how Dioreo behaves for everyone in this server, so they need the **Manage Server** permission.\n\n-# Looking for your own settings? ${mentionCommand(interaction.client, '/settings')} is yours and works anywhere.\n-# Lost access? Discord Support can restore ownership; once Discord says you're an admin again, this panel opens. Dioreo's owner can also reset this server's rules on request.` },
+                    { type: 10, content: `${emojis.cross} **Access Denied** — It doesn't seem like you're an admin in this server!\n> These controls change how Dioreo behaves for everyone in this server, so they need the **Manage Server** permission.` },
+                    { type: 10, content: deniedHints(interaction.client) },
                 ],
             }]);
         }

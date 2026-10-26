@@ -29,7 +29,22 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.110.0 — 2026-10-25 01:48 EDT (#221) — `/remind`: reminders by DM, a bell on the seasonal commands, and a `/gunsmith` card refresh
+## Pre-Release v3.111.0 — 2026-10-26 00:34 EDT (#222) — Harkirat's command review rounds, `/emojis`, Submit a Build and the `/autobuild` form
+**From the bot-polish lead** (Harkirat, 2026-10-25 09:50 EDT to 2026-10-26 00:29 EDT, one command at a time on the dev bot, each layout checked in #testing-spam; his word for the merge flow at 00:29 EDT).
+
+- **`/gunsmith`:** the arrows walk weapons and a number row (his Number1–6 icons) walks a weapon's builds. Under the card sit **Search · Attachments · Code**. The class dropdown has class icons; the weapon dropdowns show each weapon's rank and Toxic. A META browse reads **Jump to another META weapon...** and its cards keep their badge line. With nothing typed, the weapon list shows a few of each class's best builds, and **▸ Type a name to search** opens the search pop-up. The DMZ list is ordered by class, then name. A weapon with no build gets a card with a grey **Browse** and a blue **Submit a Build**. An exact weapon name beats a partial match.
+- **Submit a Build and Dispute a Build:** pop-ups from the card. The owner gets each one as a DM, and the player is DMed a thank-you when their build is approved and the outcome of their dispute. Each person can have one in progress at a time.
+- **`/autobuild`:** a bare `/autobuild` opens a form for screenshots, links, per-item presets and a retry token. Each screenshot stays in a Cloudinary cache from read to save. Every vision read is recorded, the same file reuses its read, and an unsure read carries a warning. Each admin's batch is saved and resumes from a bare `/autobuild`. Uploads are read in the order they were picked, printed slot labels count as an MP signal, a read that never returns times out, and a link to a web page is refused.
+- **`/emojis`** (Dioreo Admin, owner only): every app emoji, with which bots lack it, in four views (All · Missing · No original · Not in code), plus **Upload original**, **Find...** and the full mention code. Cloudinary's `emoji-originals/` is the single source: each bot fills itself from it (prod hourly, the dev bot at start-up), never from a Discord copy.
+- **`/help`:** the click-test fixes. `cmd:` understands everyday words (weapon, create, profile, right, app), lists `/gunsmith mp`, `/gunsmith dmz` and the right-click apps, and shows names only. Gunsmith's icon is GunsmithSearch, and the Calculator Help explains Recommended Bundle in plain words. `visibility` is the last option on every command.
+- **`/remind`:** `releases:` and `leaving:` each turn a reminder on or off. **Manage reminders** sits outside the DM card.
+- **His reviews of `/colors`, `/draws`, `/draw prices` and `/patch notes`:** profile buttons and the footer image link on `/colors`, one pager across New and Returning on `/draws`, and each season's dates in the `/patch notes` dropdown. The access-denied panel uses his wording.
+- **`/manage`:** a URL image on a new build no longer overwrites Build 1's picture.
+- **Emoji (on his word):** his GunsmithCode (redrawn), GunsmithSearch, CopyAttachments, Search and Number1–6 on prod Dioreo and the dev apps. Regions and Notification are retired.
+- **Privacy:** PRIVACY.md 1.20 (pending) covers the build submission, dispute and `/autobuild` batch records; the published page is rebuilt.
+- **Tests:** `commandOptions`, `helpSearch`, `emojiSync`, `buildSubmissions` and `autobuildBulk` are new; the loadout, reminder, help-snapshot and calculator tests follow the changes.
+
+## Pre-Release v3.110.0 — 2026-10-25 01:48 EDT (#221 · `46d6dc55`) — `/remind`: reminders by DM, a bell on the seasonal commands, and a `/gunsmith` card refresh
 **From the badge, /today and notifications lead** (Harkirat, 2026-10-23 21:44 EDT to 2026-10-25 01:43 EDT, every layout settled on mock-ups in #testing-spam and read on his phone; his word for the merge flow at 01:43 EDT).
 
 - **`/remind`** ("Set and manage your reminders"): pick what you want to hear about and Dioreo sends **one DM a day at 00:01 UTC**, a minute after the game's daily update, with only that. `set:` autocompletes the groups and this season's entries; bare `/remind` opens the panel, public by default and locked to its owner.

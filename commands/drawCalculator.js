@@ -1540,7 +1540,9 @@ function buildHelpPanel(accentColor, { region = 'region_10', drawKey = 'mythicWe
         divider,
         { type: 10, content: [
             '### 🧾 Reading Your Result',
-            row('Recommended Bundle', `fewest purchases within ${Math.round(PURCHASE_RULES.tolerancePct * 100)}% of the cheapest, or a small bundle's price more per purchase saved`),
+            // His wording (2026-10-26 00:03 EDT, /help note 34), split so no line runs past the one-line limit: the rule in brackets becomes its -# hint.
+            row('Recommended Bundle', 'the fewest purchases for about the cheapest price'),
+            `-# At most ${Math.round(PURCHASE_RULES.tolerancePct * 100)}% more, or about one small bundle per purchase it saves.`,
             row('Left Over', 'CP the bundles give beyond what you need; it stays in your account'),
             row('Stock Up', 'a bigger buy at a better rate; see Why Stock Up below'),
             row('2X Bundles', 'tick the bundles you can still buy at double CP; the recommendation uses them'),

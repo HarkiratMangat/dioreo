@@ -366,15 +366,16 @@ const countComponents = list => list.reduce((n, c) => n + 1 + countComponents(c.
 const textLength = list => list.reduce((n, c) => n + (c.type === 10 ? c.content.length : 0) + textLength(c.components || []), 0);
 // Discord's caps on one message: 40 components, and about 4,000 characters of text across it (COMPONENT_DISPLAYABLE_TEXT_SIZE_EXCEEDED, probed 2026-10-16 01:17 EDT for the calculator). The text budget keeps some room under that.
 const MESSAGE_COMPONENT_CAP = 40;
-// THE FILTER IS A LINE AND A BUTTON, NOT A DROPDOWN (2026-10-21 13:02 EDT, Harkirat: "show me G properly then, as a section+accesory"). The multi-select drew every picked draw as a chip in its closed box, which stacked seven deep on desktop ("this kind of looks ridiculous when a lot of draws are selected"); a box with nothing marked showed no ticks ("the dropdown itself doesnt show what's picked"). Discord draws a ticked option only by listing it in the closed box too, so the ticks moved into a pop-up: the panel says what is filtered in one line, and Filter opens the full list already ticked. OwO's weapon panel does the same. His format (2026-10-21 13:38 EDT): small text, one line per kind of draw that has picks, "-# **Regular:** `Draw name`, `Draw name`" then Armory and Advanced; with no filter, "-# **Draws:** `Showing all draws`".
-function filterSummary(keys) {
+// THE FILTER IS A LINE AND A BUTTON, NOT A DROPDOWN (2026-10-21 13:02 EDT, Harkirat: "show me G properly then, as a section+accesory"). The multi-select drew every picked draw as a chip in its closed box, which stacked seven deep on desktop ("this kind of looks ridiculous when a lot of draws are selected"); a box with nothing marked showed no ticks ("the dropdown itself doesnt show what's picked"). Discord draws a ticked option only by listing it in the closed box too, so the ticks moved into a pop-up: the panel says what is filtered in one line, and Filter opens the full list already ticked. OwO's weapon panel does the same. His format (2026-10-21 13:38 EDT): small text, one line per kind of draw that has picks, "-# **Regular:** `Draw name`, `Draw name`" then Armory and Advanced; with no filter, "-# **Draws:** `Showing all draws`". 2026-10-25 14:21-14:42 EDT (Harkirat's /draw prices review): "Filter:" for "Draws:", every value in italics rather than code spans ("okay italic."), and the open region as the block's last line, "-# **Region:** *10 CP region prices*", now that the region hint line above the dropdown is gone.
+function filterSummary(keys, regionKey = null) {
     const { SHORT_NAME } = require('./drawCalculator');
-    if (!keys.length) return '-# **Draws:** `Showing all draws`';
+    const regionLine = regionKey ? `\n-# **Region:** *${regionKey.split('_')[1]} CP region prices*` : '';
+    if (!keys.length) return `-# **Filter:** *Showing all draws*${regionLine}`;
     return FILTER_GROUPS
         .map(group => ({ label: group.line, picked: group.keys.filter(k => keys.includes(k)) }))
         .filter(g => g.picked.length)
-        .map(g => `-# **${g.label}:** ${g.picked.map(k => `\`${SHORT_NAME[k] || jumpMeta(k).name}\``).join(', ')}`)
-        .join('\n');
+        .map(g => `-# **${g.label}:** ${g.picked.map(k => `*${SHORT_NAME[k] || jumpMeta(k).name}*`).join(', ')}`)
+        .join('\n') + regionLine;
 }
 // The pop-up Filter opens: one dropdown per kind of draw (2026-10-21 13:14 EDT, Harkirat: "separate the filter modal to \"normal draws\", \"series armory\", and \"advanced draws\""), the picked ones ticked; leaving all three empty shows every draw again.
 const FILTER_GROUPS = [
@@ -481,8 +482,12 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
             type: 17, // Section Container
             accent_color: accentColor,
             components: [
-                // Two-line title (region label on top, command header below) — shared pattern. See utils/titleBlock.js. headingLevel 2 (`## `) and boldCaption (extra **bold** wrap on the region caption) -- both scoped to this command only per Harkirat's request (2026-07-12); see utils/titleBlock.js's buildTitleBlock. The region's own emoji sits in front of the caption, outside the bold-italic lettering (2026-10-21 11:50 EDT, Harkirat: "put the respective region emoji infront of the subtitle"), the same icon its region button carries.
-                withCaptionEmoji(buildTitleBlock(region.label, emojis.drawPrices, 'Breakdown of Draw Prices', 2, true), emojis[REGION_EMOJI_KEY[regionKey] || REGION_EMOJI_KEY.region_10]),
+                // Two-line title (region label on top, command header below) — shared pattern. See utils/titleBlock.js. headingLevel 2 (`## `) and boldCaption (extra **bold** wrap on the region caption) -- both scoped to this command only per Harkirat's request (2026-07-12); see utils/titleBlock.js's buildTitleBlock. The region's own emoji sits in front of the caption, outside the bold-italic lettering (2026-10-21 11:50 EDT, Harkirat: "put the respective region emoji infront of the subtitle"), the same icon its region button carries. "Lucky Draw Prices" (was "Breakdown of Draw Prices", which wrapped beside the button) and the title + subtitle as one Section whose accessory opens /draw calculator as its own message (2026-10-25 14:13-14:27 EDT, Harkirat's review: an icon-only button with the draw calculator icon, following /settings' Draw Calculator visibility; the footer's Draw Calculator button stays). `price_calc`, handlers/drawprices.js.
+                {
+                    type: 9,
+                    components: [withCaptionEmoji(buildTitleBlock(region.label, emojis.drawPrices, 'Lucky Draw Prices', 2, true), emojis[REGION_EMOJI_KEY[regionKey] || REGION_EMOJI_KEY.region_10])],
+                    accessory: { type: 2, style: 2, custom_id: 'price_calc', emoji: emojis.parseEmoji(emojis.calculator) }
+                },
                 { type: 14, spacing: 2, divider: true },
                 ...entries,
                 // NO divider between the last entry and the pagination row (Harkirat's explicit, repeated correction) -- pagination sits directly under the entries with no separator. A small space above the pager, no line (2026-10-18 15:12 EDT, Harkirat: "add a divider:false small spacing ... anywhere else that pagination buttons appear"). This replaces the old "nothing between the last entry and the pager" rule: a space, still no line.
@@ -490,29 +495,31 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
                 { type: 14, spacing: 2, divider: true },
                 // The filter sits above the region hint line, where the quick jump sat: one line naming what is filtered, and Filter, which opens the pop-up (filterSummary, buildFilterModal). Once a filter is set the line stands alone and a row holds Show All Draws (his Return icon, to the all-view page the first picked draw sits on) and Filter Again (2026-10-21 13:14 EDT, Harkirat: "once a filter is set, let's swap that section to just text + an action row").
                 ...(pickedKeys.length ? [
-                    { type: 10, content: filterSummary(pickedKeys) },
+                    { type: 10, content: filterSummary(pickedKeys, regionKey) },
                     { type: 1, components: [
                         { type: 2, style: 2, label: 'Show All Draws', emoji: emojis.parseEmoji(emojis.returnArrow), custom_id: `price_subpage_${regionKey}_${pageOfJump(pickedKeys[0])}` },
                         { type: 2, style: 2, label: 'Filter Again', emoji: emojis.parseEmoji(emojis.filter), custom_id: `price_filteropen_${regionKey}_${token}` }
                     ] }
                 ] : [{
                     type: 9,
-                    components: [{ type: 10, content: filterSummary(pickedKeys) }],
+                    components: [{ type: 10, content: filterSummary(pickedKeys, regionKey) }],
                     accessory: { type: 2, style: 2, label: 'Filter', custom_id: `price_filteropen_${regionKey}_${token}`, emoji: emojis.parseEmoji(emojis.filter) }
                 }]),
-                // One-line footer (was two `-#` lines) per example_reformat.json. Updated 2026-08-07 for the 3rd region.
-                { type: 10, content: `-# Switch **CP regions**. (Tip: check out ${mentionCommand(client, '/settings')})` }, // His wording, 2026-10-21 17:13 EDT
+                // THE REGION SWITCH IS A DROPDOWN (2026-10-25 14:13-14:18 EDT, Harkirat's review), with no hint line above it: placeholder "Switch CP region...", each region with its own icon, and the open one's description pointing at /settings. It replaced the 3-way button row (2026-08-07); `price_region_{10|20|30}_{view}` still answers panels posted before. The id carries the current view (a page number or the filter), so a switch keeps what is open.
                 {
                     type: 1,
-                    // 3-way region switcher (replaced the old single "switch to the other region" toggle button 2026-08-07, now that a 3rd region exists). Always renders all 3 region buttons, in REGION_ORDER, each `custom_id` encoding the region it JUMPS TO plus the current view (a page number or the filter), so a switch keeps what is open. The CURRENT region is green and disabled (2026-10-14 13:13 EDT, Harkirat: "when the cp region button is selected, make it green-disabled"). Each button carries its own region icon (`REGION_EMOJI_KEY`, 2026-08-07 15:46 EDT).
-                    components: REGION_ORDER.map(key => ({
-                        type: 2,
-                        style: key === regionKey ? 3 : 2,
-                        disabled: key === regionKey,
-                        custom_id: `price_region_${key.split('_')[1]}_${token}`,
-                        label: `${key.split('_')[1]} CP`,
-                        emoji: emojis.parseEmoji(emojis[REGION_EMOJI_KEY[key]])
-                    }))
+                    components: [{
+                        type: 3,
+                        custom_id: `price_regionsel_${token}`,
+                        placeholder: 'Switch CP region...',
+                        options: REGION_ORDER.map(key => ({
+                            label: `${key.split('_')[1]} CP Region`,
+                            value: key,
+                            default: key === regionKey,
+                            ...(key === regionKey ? { description: 'Set your default region in /settings' } : {}),
+                            emoji: emojis.parseEmoji(emojis[REGION_EMOJI_KEY[key]])
+                        }))
+                    }]
                 }
             ]
         };
@@ -545,9 +552,9 @@ module.exports = {
         .addSubcommand(sub => sub
             .setName('prices')
             .setDescription('View the CP cost breakdown for Lucky Draws')
-            // Optional direct-jump flag The quick jump from the command line, as `type`, listed before `region` (2026-10-17 23:54 EDT, Harkirat: "please arrange 'jump_to' above the 'region' option. let's also reword it to either 'filter' or 'type'"; `type` because the choices ARE draw types). First added (2026-10-17 22:48 EDT, Harkirat: "you also need to implement that jump within the slash command itself as an option"). Same targets as the dropdown, derived from JUMP_KEYS so the two never differ.
-            .addStringOption(option => option.setName('type').setDescription('Open one draw type on its own').addChoices(...JUMP_KEYS.map(key => ({ name: jumpMeta(key).name, value: key }))))
-            .addStringOption(option => option.setName('region').setDescription('Jump directly to a specific CP region').addChoices({ name: '10 CP Region', value: 'region_10' }, { name: '20 CP Region', value: 'region_20' }, { name: '30 CP Region', value: 'region_30' }))
+            // Optional direct-jump flag The quick jump from the command line, as `type`, listed before `region` (2026-10-17 23:54 EDT, Harkirat: "please arrange 'jump_to' above the 'region' option. let's also reword it to either 'filter' or 'type'"; `type` because the choices ARE draw types). First added (2026-10-17 22:48 EDT, Harkirat: "you also need to implement that jump within the slash command itself as an option"). Same targets as the dropdown, derived from JUMP_KEYS so the two never differ. Renamed `type` -> `filter` with his wording (2026-10-25 14:32-14:34 EDT, Harkirat's review), and the region option's description too.
+            .addStringOption(option => option.setName('filter').setDescription('Quickly open a draw type').addChoices(...JUMP_KEYS.map(key => ({ name: jumpMeta(key).name, value: key }))))
+            .addStringOption(option => option.setName('region').setDescription('View costs for a specific CP region').addChoices({ name: '10 CP Region', value: 'region_10' }, { name: '20 CP Region', value: 'region_20' }, { name: '30 CP Region', value: 'region_30' }))
             .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' })))
         .addSubcommand(sub => sub
             .setName('calculator')
@@ -587,7 +594,7 @@ module.exports = {
             argPrivate = visibilityChoice === null ? null : visibilityChoice === 'hidden';
             const userChoice = interaction.options.getString('region');
             if (userChoice) targetRegion = userChoice;
-            const jumpChoice = interaction.options.getString('type');
+            const jumpChoice = interaction.options.getString('filter');
             if (jumpChoice) subpageOverride = `f${jumpChoice}`;
         }
 
