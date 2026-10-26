@@ -39,9 +39,12 @@ async function openPage(interaction, page, arg) {
         isChatInputCommand: () => true,
         options: { getString: (name) => (name === 'visibility' ? 'hidden' : null), getBoolean: () => null, getInteger: () => null, getSubcommand: () => null },
     });
-    if (page === 'draws') return await require('../../commands/draws').execute(synth, arg === 'returning' ? 'returning' : 'new', 0);
-    if (page === 'calendar') return await require('../../commands/calendar').execute(synth);
-    if (page === 'patch') return await require('../../commands/patchnotes').execute(synth, arg || null);
+    // Looked up on client.commands, as handlers/pagination.js does, never required: a require here would put the whole /manage handler tree in those commands' hotpatch closure (scripts/hotpatch.test.js).
+    const command = interaction.client.commands.get({ draws: 'draws', calendar: 'calendar', patch: 'patch' }[page]);
+    if (!command) return false;
+    if (page === 'draws') return await command.execute(synth, arg === 'returning' ? 'returning' : 'new', 0);
+    if (page === 'calendar') return await command.execute(synth);
+    return await command.execute(synth, arg || null);
     return false;
 }
 
