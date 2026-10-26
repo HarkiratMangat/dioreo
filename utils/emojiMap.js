@@ -147,6 +147,13 @@ const emojis = {
     gunsmithSearch: '<a:GunsmithSearch:1564104325662253097>',
     copyAttachments: '<a:CopyAttachments:1564104328208449577>',
     search: '<a:Search:1564104330565521418>',
+    // /gunsmith's build-number buttons, his static Number1-Number6 (2026-10-25 22:47 EDT); Dioreo (Dev)'s ids until they are on prod, like the three above.
+    number1: '<:Number1:1564108003987296417>',
+    number2: '<:Number2:1564108006029791292>',
+    number3: '<:Number3:1564108008404029567>',
+    number4: '<:Number4:1564108010387935282>',
+    number5: '<:Number5:1564108012812107826>',
+    number6: '<:Number6:1564108015093817484>',
     // His reminder set and the mascot's tada (uploaded 2026-10-24 18:16 EDT to Dioreo, Dioreo (Dev) and Dioreo Admin (Dev)): Remind titles the /remind panel and the reminder DMs, RemindAlert marks a heads-up or a warning, AddReminder is the icon-only bell button, ReminderEnabled marks what you follow and turning reminders on, DisableReminder marks turning them off. DioreoTada is uploaded and not used yet.
     dioreoTada: '<a:DioreoTada:1563677558589882510>',
     remind: '<a:Remind:1563677560431452180>',

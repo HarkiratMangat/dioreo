@@ -21,7 +21,7 @@ assert.ok(bs.includes('"AR · 1/3"'), 'the pager names the class and the WEAPON\
 {
     const box = browsed.components[0].components;
     const row = box.find(c => c.type === 1 && c.components.some(b => (b.custom_id || '').startsWith('gsb~at~')));
-    assert.deepStrictEqual(row.components.map(b => [b.label, b.style, Boolean(b.disabled), b.custom_id]), [['1', 2, false, 'gsb~at~MP.AR.std~0'], ['Build 2', 3, true, 'gsb~at~MP.AR.std~1']], 'the build row: numbers, the open one green and named');
+    assert.deepStrictEqual(row.components.map(b => [b.label || b.emoji?.name, b.style, Boolean(b.disabled), b.custom_id]), [['Number1', 2, false, 'gsb~at~MP.AR.std~0'], ['Build 2', 3, true, 'gsb~at~MP.AR.std~1']], 'the build row: his Number icons, the open one green and named in text (2026-10-25 22:46 EDT)');
     const ri = box.indexOf(row);
     assert.ok(box[ri + 1].type === 14 && box[ri + 1].divider && box[ri + 1].spacing === 2 && /prev/.test(box[ri + 2].components[0].custom_id), 'the build row, a large divider, then the arrows');
     assert.ok(/^-# Updated/.test(box[ri - 1].content), 'the footer drops the class (the pager names it) and the build count (the row shows it)');

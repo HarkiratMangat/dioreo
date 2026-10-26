@@ -384,7 +384,9 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false,
     if (builds.length > 1) {
         const firstFlat = browse ? (Number(browse.flatIndex) || 0) - index : 0;
         const buttons = builds.map((b, i) => ({
-            type: 2, style: i === index ? 3 : 2, label: i === index ? `Build ${i + 1}` : `${i + 1}`, disabled: i === index,
+            type: 2, style: i === index ? 3 : 2, disabled: i === index,
+            // The open build reads `Build N` in text; the others are his Number1-Number6 icons with no label (2026-10-25 22:47 EDT), and a plain number past six.
+            ...(i === index ? { label: `Build ${i + 1}` } : emojis[`number${i + 1}`] ? { emoji: emojis.parseEmoji(emojis[`number${i + 1}`]) } : { label: `${i + 1}` }),
             custom_id: browse ? `gsb~at~${browse.scopeToken}~${firstFlat + i}` : `${idPrefix}at_${activeBuild.weaponKey}_${i}`,
         }));
         for (let i = 0; i < buttons.length; i += 5) containerComponents.push({ type: 1, components: buttons.slice(i, i + 5) });
