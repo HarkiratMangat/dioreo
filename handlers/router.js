@@ -40,6 +40,7 @@ const HANDLER_BINDINGS = [
     ['pagination', 'handlePaginationInteraction'],
     ['navigation', 'handleNavigationInteraction'],
     ['remind', 'handleRemindInteraction'],
+    ['emojis', 'handleEmojisInteraction'],
 ];
 const late = (mod, fn) => (...args) => {
     const impl = require(`./${mod}`)[fn];
@@ -52,6 +53,7 @@ const handleManageInteraction = late('manage', 'handleManageInteraction');
 const handleTimestampInteraction = late('timestamp', 'handleTimestampInteraction');
 const handleHelpInteraction = late('help', 'handleHelpInteraction');
 const handleInviteInteraction = late('invite', 'handleInviteInteraction');
+const handleEmojisInteraction = late('emojis', 'handleEmojisInteraction');
 const handleEmbedTestInteraction = late('embedTest', 'handleEmbedTestInteraction');
 const handleAddToPatchNotesInteraction = late('addToPatchNotes', 'handleAddToPatchNotesInteraction');
 const handleViewColorsInteraction = late('viewColors', 'handleViewColorsInteraction');
@@ -215,6 +217,8 @@ async function handleInteractionInner(interaction) {
         if (await handleHelpInteraction(interaction)) return;
         markHandler('invite');
         if (await handleInviteInteraction(interaction)) return;
+        markHandler('emojis');
+        if (await handleEmojisInteraction(interaction)) return;
         markHandler('remind');
         if (await handleRemindInteraction(interaction)) return;
         markHandler('embedTest');
