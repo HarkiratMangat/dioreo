@@ -19,10 +19,10 @@ const BUILD_NAME_MAX = 32;
 
 // --- THE PICTURE --- Where a saved build's picture goes, and what happens to the one it has (Harkirat, 2026-10-25 21:48 EDT: keys `WEAPON-CODE`, the code required; his pick A, 2026-10-26 01:07 EDT: a picture that no longer shows the build is never carried over). Runs BEFORE the commit, so a failed upload REFUSES the save: until 2026-10-26 01:19 EDT it stored the raw link instead, and a Discord attachment link expires, which left a card that broke a day later.
 //
-// MP: the key is minted from the weapon and the code (utils/loadoutImageCache.js codeImageKey), never typed. When the code or the weapon name changes and no new picture is given, the picture is copied to the new key if the attachments are unchanged (a typo fix), and the save is refused if they changed (the old picture shows a different build). The old key always stays, because Revert restores it. DMZ has no code: it keeps its key, or takes the next free `DMZ-WEAPON-N`.
+// MP: the key is minted from the weapon and the code (utils/loadoutImageCache.js codeImageKey), never typed. When the code or the weapon name changes and no new picture is given, the picture is copied to the new key if the attachments are unchanged (a typo fix). If they changed too, the old picture shows a different build, so the save stops and asks (Harkirat, 2026-10-26 10:53 EDT: "give the warning and option either keep the picture, upload a new picture, or remove it and save the build without an image"): `choice` is his answer on the replay, 'keep' (copied to the new key anyway) or 'none' (the placeholder). The old key always stays, because Revert restores it. DMZ has no code: it keeps its key, or takes the next free `DMZ-WEAPON-N`.
 //
 // A screenshot is hashed first (models/Loadout.js sourceHash): one already used as another build's picture is refused, and one /autobuild has read is checked against the typed code, so the BAL-27 kind of mix-up stops before it saves.
-async function resolvePicture({ existing, mode, weaponName, code, attachments, url, shot, targetId }) {
+async function resolvePicture({ existing, mode, weaponName, code, attachments, url, shot, targetId, choice = null }) {
     const cache = require('../../utils/loadoutImageCache');
     const { PLACEHOLDER_IMAGE } = require('../../utils/adminParser');
     const Loadout = require('../../models/Loadout');
@@ -70,13 +70,16 @@ async function resolvePicture({ existing, mode, weaponName, code, attachments, u
 
     // No new picture: a new build without one, or a build that has none, keeps the placeholder.
     if (!hasOldPicture) return { imageKey: oldKey || PLACEHOLDER_IMAGE };
+    if (choice === 'none') return { imageKey: PLACEHOLDER_IMAGE, note: `Saved without a picture; \`${oldKey}\` is kept for Revert.` };
     if (mode === 'DMZ' || !key || key === oldKey) return { imageKey: oldKey };
     const old = existing.attachments || [];
     const same = old.length === attachments.length && old.every((a, i) => a === attachments[i]);
-    if (!same) return { error: "The attachments changed, so this build's picture now shows a different build. Add the new screenshot or an image URL." };
+    if (!same && choice !== 'keep') return { ask: true };
     const moved = await cache.copyLoadoutImage(oldKey, key);
     if (!moved.success) return { error: `Couldn't move the picture to \`${key}\` (${moved.error}), so nothing was saved.` };
-    return { imageKey: key, uploaded: true, note: `Picture moved to \`${key}\`; \`${oldKey}\` is kept for Revert.` };
+    return { imageKey: key, uploaded: true, note: same
+        ? `Picture moved to \`${key}\`; \`${oldKey}\` is kept for Revert.`
+        : `Kept the old picture, now at \`${key}\`. It still shows the old attachments; \`${oldKey}\` is kept for Revert.` };
 }
 
 // The screenshot's bytes, for its hash. Null when it cannot be fetched.
@@ -123,10 +126,15 @@ const learnOps = (unknown, { category, mode }) => unknown.count
     ? [{ type: 'catalogue.learn', payload: { items: learnItems(unknown, { category }), mode } }]
     : [];
 
-async function warnUnknownNames(interaction, pending, unknown) {
+function holdPending(interaction, pending) {
     const token = require('crypto').randomBytes(6).toString('hex');
     pendingCatalogue.set(token, { ...pending, userId: interaction.user.id });
     setTimeout(() => pendingCatalogue.delete(token), PENDING_MS).unref();
+    return token;
+}
+
+async function warnUnknownNames(interaction, pending, unknown) {
+    const token = holdPending(interaction, pending);
     return interaction.followUp({
         content: `${BOT_EMOJI.warn} **Not in the catalogue yet:** ${describeUnknown(unknown)}\n-# A typo, or a new item? **Save anyway** saves it as typed and adds these names, so they won't warn again. **Back to edit** reopens the box with what you typed.`,
         components: [{ type: 1, components: [
@@ -137,7 +145,21 @@ async function warnUnknownNames(interaction, pending, unknown) {
     });
 }
 
-// custom_ids: mng_catok|{token} · mng_catedit|{token}. Only the admin who submitted may press them; the router's /manage admin lock has already run.
+// The picture warning (his three options, see resolvePicture): an MP edit whose attachments AND code changed, with no new picture. Nothing is saved until he picks one; what was typed waits in the same store as the catalogue warning's.
+async function warnOldPicture(interaction, pending, imageKey) {
+    const token = holdPending(interaction, pending);
+    return interaction.followUp({
+        content: `${BOT_EMOJI.warn} **The attachments changed, so this build's picture shows the old build**\n> **Picture:** \`${imageKey}\`\n> **Keep it**, **upload a new one**, or **save without a picture**. Nothing is saved until you pick.`,
+        components: [{ type: 1, components: [
+            { type: 2, style: 2, label: 'Keep the picture', custom_id: `mng_picok|${token}` },
+            { type: 2, style: 1, label: 'Upload a new picture', custom_id: `mng_picnew|${token}` },
+            { type: 2, style: 2, label: 'Save without a picture', custom_id: `mng_picnone|${token}` }
+        ] }],
+        ephemeral: true
+    });
+}
+
+// custom_ids: mng_catok|{token} · mng_catedit|{token} (the catalogue warning) · mng_picok|{token} · mng_picnew|{token} · mng_picnone|{token} (the picture warning). Only the admin who submitted may press them; the router's /manage admin lock has already run.
 async function handleCatalogueWarning(interaction) {
     const [kind, token] = interaction.customId.split('|');
     const pending = pendingCatalogue.get(token);
@@ -146,7 +168,8 @@ async function handleCatalogueWarning(interaction) {
     const manage = require('../../commands/manage');
     const { customId } = pending;
 
-    if (kind === 'mng_catedit') {
+    // Back to edit, and Upload a new picture: the same box, refilled, with the screenshot field ready.
+    if (kind === 'mng_catedit' || kind === 'mng_picnew') {
         let modal;
         if (customId.startsWith('add_loadout_')) modal = manage.buildAddLoadoutModal(customId.replace('add_loadout_', ''));
         else if (customId.startsWith('modal_loadouts_bulk_add_')) modal = manage.buildLoadoutsBulkAddModal(customId.replace('modal_loadouts_bulk_add_', ''));
@@ -161,8 +184,9 @@ async function handleCatalogueWarning(interaction) {
     }
 
     pendingCatalogue.delete(token);
-    await interaction.update({ content: '⏳ Saving it as typed, and adding the new names…', components: [] });
-    const preset = { customId, values: pending.values };
+    const pictureChoice = kind === 'mng_picok' ? 'keep' : kind === 'mng_picnone' ? 'none' : pending.pictureChoice;
+    await interaction.update({ content: kind === 'mng_catok' ? '⏳ Saving it as typed, and adding the new names…' : '⏳ Saving…', components: [] });
+    const preset = { customId, values: pending.values, pictureChoice };
     if (customId.startsWith('add_loadout_')) return await addLoadout(interaction, preset);
     if (customId.startsWith('modal_loadouts_bulk_add_')) return await bulkAddLoadouts(interaction, preset);
     return await editLoadout(interaction, preset);
@@ -237,8 +261,9 @@ async function saveLoadout(interaction, preset, isEdit) {
     const url = field('image_url').trim();
     if (url && shot) return await fail('Use the image URL or the screenshot, not both.');
     if (url && !isHttpImageSource(url)) return await fail('The image box takes a link starting with https://. Picture keys come from the gunsmith code now, so a key is never typed.');
-    const picture = await resolvePicture({ existing, mode, weaponName, code, attachments, url, shot, targetId });
+    const picture = await resolvePicture({ existing, mode, weaponName, code, attachments, url, shot, targetId, choice: preset?.pictureChoice || null });
     if (picture.error) return await fail(picture.error);
+    if (picture.ask) return await warnOldPicture(interaction, { customId, values: readValues(field, LOADOUT_FIELDS) }, existing.imageKey);
 
     const buildName = `Build ${numbering.number}`;
     const payload = {

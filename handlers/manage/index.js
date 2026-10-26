@@ -59,8 +59,8 @@ async function routeManage(interaction) {
     if (interaction.isButton()) {
         const customId = interaction.customId;
 
-        // CATALOGUE WARNING -- Save anyway / Back to edit under a loadout save that met names the catalogue does not know (handlers/manage/loadouts.js).
-        if (customId.startsWith('mng_catok|') || customId.startsWith('mng_catedit|')) return await loadouts.handleCatalogueWarning(interaction);
+        // CATALOGUE AND PICTURE WARNINGS -- Save anyway / Back to edit under a loadout save that met names the catalogue does not know, and Keep / Upload new / Save without under an edit whose picture shows the old build (handlers/manage/loadouts.js).
+        if (['mng_catok|', 'mng_catedit|', 'mng_picok|', 'mng_picnew|', 'mng_picnone|'].some(p => customId.startsWith(p))) return await loadouts.handleCatalogueWarning(interaction);
 
         // MANAGE PANEL -- action buttons, resolved through the registry (utils/manageActions.js). resolveAction() is also where per-page permissions are enforced PER CLICK -- see that module's header comment. router.js's prefix guard still runs first and independently -- that one answers "may this user touch /manage at all", this one answers "may they touch THIS page". Keep both.
         if (customId.startsWith('mng_act_')) {
