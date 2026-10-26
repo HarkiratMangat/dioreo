@@ -26,8 +26,6 @@ const emojis = {
     cp: '<:CP_CODM:1523190109753839637>',
     // Distinct from `cp` above -- the draw-prices redesign (drawPrices_ui.json) uses this second CP icon specifically for the quote-block total line; `cp` is left alone since nothing else was asked to switch over to the new icon.
     cp2: '<:CP_CODM2:1523190111460786318>',
-    // Animated icon for the draw-prices region-toggle button (drawPrices_ui.json) -- lives in the button's `emoji` field, not its `label` (see Components V2 point 4 in CLAUDE.md). Superseded as the 3-way region switcher's per-button icon 2026-08-07 15:45 EDT by the three region-specific emoji below (Harkirat provided them via diors-notes.md); kept defined since nothing else references it.
-    regions: '<a:Regions:1525705441072382052>',
     // Per-region icons for the 3-way region-switch button row (drawprices.js's buildContainer), added 2026-08-07 15:45 EDT from Harkirat's diors-notes.md request -- one distinct icon per CP tier instead of the single generic `regions` icon shared across all three buttons. Re-uploaded 2026-10-15 22:27 EDT (second set, prod ids he supplied). Replaced 2026-10-15 18:02 EDT with Harkirat's new 10CP / 20CP / 30CP set (prod ids he supplied; the dev bot re-points by name). Shared by /draw prices' region switcher and the calculator's region select and Help chips, so both change together.
     region10Cp: '<a:10CP:1560477395373400135>',
     region20Cp: '<a:20CP:1560477394081423501>',

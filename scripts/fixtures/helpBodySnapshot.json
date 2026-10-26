@@ -66,7 +66,7 @@
         },
         {
           "type": 10,
-          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/today` · `/remind` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:Settings:1523762203537309696> **PREFERENCES**\n**`/settings`**\n\n-# 💠 **Learn more about a command:** **`/help <cmd>`**\n-# 💠 e.g. **/help** cmd:`draws`\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+          "content": "### <a:GunsmithSearch:1564113024225255454> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/today` · `/remind` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:Settings:1523762203537309696> **PREFERENCES**\n**`/settings`**\n\n-# 💠 **Learn more about a command:** **`/help <cmd>`**\n-# 💠 e.g. **/help** cmd:`draws`\n\n-# Report bugs & suggestions to <@1139845545754632283>."
         },
         {
           "type": 14,
@@ -102,8 +102,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -172,7 +172,7 @@
       "components": [
         {
           "type": 10,
-          "content": "## <a:Loadouts:1535779248982335618> **Gunsmith Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+          "content": "## <a:GunsmithSearch:1564113024225255454> **Gunsmith Commands**\n-# **Usage: `/cmd <required> [optional]`**"
         },
         {
           "type": 14,
@@ -237,8 +237,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": true
                 },
@@ -367,8 +367,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -473,8 +473,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -579,8 +579,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -685,8 +685,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -806,7 +806,7 @@
         },
         {
           "type": 10,
-          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/today` · `/remind` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:Settings:1523762203537309696> **PREFERENCES**\n**`/settings`**\n\n-# 💠 **Learn more about a command:** **`/help <cmd>`**\n-# 💠 e.g. **/help** cmd:`draws`\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+          "content": "### <a:GunsmithSearch:1564113024225255454> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/today` · `/remind` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:Settings:1523762203537309696> **PREFERENCES**\n**`/settings`**\n\n-# 💠 **Learn more about a command:** **`/help <cmd>`**\n-# 💠 e.g. **/help** cmd:`draws`\n\n-# Report bugs & suggestions to <@1139845545754632283>."
         },
         {
           "type": 14,
@@ -842,8 +842,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -974,7 +974,7 @@
         },
         {
           "type": 10,
-          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/today` · `/remind` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:ServerSettings:1536468904996774008> **PREFERENCES**\n**`/settings` · `/admin` *(server)***\n\n-# 💠 **Learn more about a command:** **`/help <cmd>`**\n-# 💠 e.g. **/help** cmd:`draws`\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+          "content": "### <a:GunsmithSearch:1564113024225255454> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/today` · `/remind` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:ServerSettings:1536468904996774008> **PREFERENCES**\n**`/settings` · `/admin` *(server)***\n\n-# 💠 **Learn more about a command:** **`/help <cmd>`**\n-# 💠 e.g. **/help** cmd:`draws`\n\n-# Report bugs & suggestions to <@1139845545754632283>."
         },
         {
           "type": 14,
@@ -1010,8 +1010,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -1080,7 +1080,7 @@
       "components": [
         {
           "type": 10,
-          "content": "## <a:Loadouts:1535779248982335618> **Gunsmith Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+          "content": "## <a:GunsmithSearch:1564113024225255454> **Gunsmith Commands**\n-# **Usage: `/cmd <required> [optional]`**"
         },
         {
           "type": 14,
@@ -1145,8 +1145,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": true
                 },
@@ -1275,8 +1275,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -1381,8 +1381,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -1487,8 +1487,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -1611,8 +1611,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -1732,7 +1732,7 @@
         },
         {
           "type": 10,
-          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/today` · `/remind` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:ServerSettings:1536468904996774008> **PREFERENCES**\n**`/settings` · `/admin` *(server)***\n\n-# 💠 **Learn more about a command:** **`/help <cmd>`**\n-# 💠 e.g. **/help** cmd:`draws`\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+          "content": "### <a:GunsmithSearch:1564113024225255454> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/today` · `/remind` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:ServerSettings:1536468904996774008> **PREFERENCES**\n**`/settings` · `/admin` *(server)***\n\n-# 💠 **Learn more about a command:** **`/help <cmd>`**\n-# 💠 e.g. **/help** cmd:`draws`\n\n-# Report bugs & suggestions to <@1139845545754632283>."
         },
         {
           "type": 14,
@@ -1768,8 +1768,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -1900,7 +1900,7 @@
         },
         {
           "type": 10,
-          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/today` · `/remind` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:ServerSettings:1536468904996774008> **PREFERENCES**\n**`/settings` · `/admin` *(server)***\n### <a:BotAccess:1540915865506160660> **BOT ADMIN**\n**`/bot analytics` · `/bot access` · `/bot hotpatch` · `/bot servers` · `/emojis` · `/autobuild` · `/manage`**\n\n-# 💠 **Learn more about a command:** **`/help <cmd>`**\n-# 💠 e.g. **/help** cmd:`draws`\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+          "content": "### <a:GunsmithSearch:1564113024225255454> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/today` · `/remind` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:ServerSettings:1536468904996774008> **PREFERENCES**\n**`/settings` · `/admin` *(server)***\n### <a:BotAccess:1540915865506160660> **BOT ADMIN**\n**`/bot analytics` · `/bot access` · `/bot hotpatch` · `/bot servers` · `/emojis` · `/autobuild` · `/manage`**\n\n-# 💠 **Learn more about a command:** **`/help <cmd>`**\n-# 💠 e.g. **/help** cmd:`draws`\n\n-# Report bugs & suggestions to <@1139845545754632283>."
         },
         {
           "type": 14,
@@ -1936,8 +1936,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -2017,7 +2017,7 @@
       "components": [
         {
           "type": 10,
-          "content": "## <a:Loadouts:1535779248982335618> **Gunsmith Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+          "content": "## <a:GunsmithSearch:1564113024225255454> **Gunsmith Commands**\n-# **Usage: `/cmd <required> [optional]`**"
         },
         {
           "type": 14,
@@ -2082,8 +2082,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": true
                 },
@@ -2223,8 +2223,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -2340,8 +2340,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -2457,8 +2457,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -2592,8 +2592,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -2718,8 +2718,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -2933,7 +2933,7 @@
         },
         {
           "type": 10,
-          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/today` · `/remind` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:Settings:1523762203537309696> **PREFERENCES**\n**`/settings`**\n### <a:BotAccess:1540915865506160660> **BOT ADMIN**\n**`/bot analytics`**\n\n-# 💠 **Learn more about a command:** **`/help <cmd>`**\n-# 💠 e.g. **/help** cmd:`draws`\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+          "content": "### <a:GunsmithSearch:1564113024225255454> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/today` · `/remind` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:Settings:1523762203537309696> **PREFERENCES**\n**`/settings`**\n### <a:BotAccess:1540915865506160660> **BOT ADMIN**\n**`/bot analytics`**\n\n-# 💠 **Learn more about a command:** **`/help <cmd>`**\n-# 💠 e.g. **/help** cmd:`draws`\n\n-# Report bugs & suggestions to <@1139845545754632283>."
         },
         {
           "type": 14,
@@ -2969,8 +2969,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -3050,7 +3050,7 @@
       "components": [
         {
           "type": 10,
-          "content": "## <a:Loadouts:1535779248982335618> **Gunsmith Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+          "content": "## <a:GunsmithSearch:1564113024225255454> **Gunsmith Commands**\n-# **Usage: `/cmd <required> [optional]`**"
         },
         {
           "type": 14,
@@ -3115,8 +3115,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": true
                 },
@@ -3256,8 +3256,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -3373,8 +3373,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -3490,8 +3490,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -3607,8 +3607,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },
@@ -3733,8 +3733,8 @@
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
-                    "name": "Loadouts",
-                    "id": "1535779248982335618"
+                    "name": "GunsmithSearch",
+                    "id": "1564113024225255454"
                   },
                   "default": false
                 },

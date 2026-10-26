@@ -277,7 +277,7 @@ function buildLoadoutCardBody(activeBuild, { index = 0, total = 1, hideBadges = 
 
     // `##`, not `#` (Harkirat, 2026-10-20 22:23 EDT): every other panel's title is `##`, and on a phone `#` wraps the longer command titles onto two lines.
     let titleContent = `## ${activeBuild.weaponName}`;
-    // hideBadges is set for a meta scope browse -- "Meta" is implied by the view itself there, per Harkirat's call to hide the WHOLE badge line rather than just the redundant Meta badge. Category browses keep badges ("Best AR" is still informative in an AR list).
+    // hideBadges drops the whole badge line. A META browse used to set it ("Meta" is implied by the view); since 2026-10-26 00:05 EDT it does not, Harkirat: "when viewing the meta loadouts, why are they missing the badges subtitle section? please include that." Nothing sets it now; it stays for a future view that needs it.
     const badgesLine = hideBadges ? null : buildBadgesLine(activeBuild);
     if (badgesLine) titleContent += `\n${badgesLine}`;
     const rankModeLine = hideBadges ? null : buildRankModeLine(activeBuild);

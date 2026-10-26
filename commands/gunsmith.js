@@ -82,7 +82,6 @@ async function renderScopeBrowse(interaction, scope, flatIndex, { isUpdate = fal
         idPrefix: scope.mode === 'DMZ' ? 'dmz' : 'mp',
         isEphemeral,
         categoryBuilds: builds,
-        hideBadges: scope.metaOnly,
         browse: { scopeToken, flatIndex, flatTotal: builds.length, scopeLabel },
     });
     await sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
