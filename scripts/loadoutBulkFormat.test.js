@@ -202,26 +202,28 @@ check('every retry spec can actually rebuild its modal', () => {
 check('buildRetryModal refills the failed values, and an expired token returns null', () => {
     assert.strictEqual(retry.buildRetryModal('nosuchtoken'), null);
     retry.pendingModalRetries.set('tok', {
+        // The five-field pop-up (2026-10-26 01:22 EDT): each input sits in a Label's `component`.
         modalCustomId: 'add_loadout_MP',
-        values: { weapon: 'BAL-27', build: 'Aggressive Flex | 1I2C6B8A9D', attachments: 'Gauge-9 Mono', image: 'BAL-27-1', meta: 'AR | meta' },
+        values: { weapon: 'BAL-27, Aggressive Flex', build: 'AR, 2, 1I2C6B8A9D', attachments: 'Gauge-9 Mono\nBadges: meta', image_url: 'https://x.test/a.png' },
     });
     const json = retry.buildRetryModal('tok');
-    const byId = Object.fromEntries(json.components.flatMap(r => r.components).map(c => [c.custom_id, c.value]));
-    assert.strictEqual(byId.weapon, 'BAL-27');
-    assert.strictEqual(byId.build, 'Aggressive Flex | 1I2C6B8A9D');
-    assert.strictEqual(byId.image, 'BAL-27-1');
+    const byId = Object.fromEntries(json.components.map(r => r.component).map(c => [c.custom_id, c.value]));
+    assert.strictEqual(byId.weapon, 'BAL-27, Aggressive Flex');
+    assert.strictEqual(byId.build, 'AR, 2, 1I2C6B8A9D');
+    assert.strictEqual(byId.image_url, 'https://x.test/a.png');
     retry.pendingModalRetries.delete('tok');
 });
 
 // The snippet is only useful if it survives a paste back into the real bulk parser -- asserting its SHAPE would pass against a format the parser rejects.
 check('the loadout retry snippet re-imports cleanly through the real bulk parser', () => {
     const snippet = retry.loadoutSnippet({
-        weapon: 'BAL-27', build: 'Aggressive Flex | 1I2C6B8A9D', meta: 'AR | meta, best',
-        image: 'BAL-27-1', attachments: 'Gauge-9 Mono\nCrown-H3 Barrel',
+        weapon: 'BAL-27, Aggressive Flex', build: 'AR, 2, 1I2C6B8A9D',
+        image_url: '', attachments: 'Gauge-9 Mono\nCrown-H3 Barrel\nBadges: meta, best',
     });
     const { parsed, errors } = parseBulkLoadoutList(snippet);
     assert.deepStrictEqual(errors, []);
-    assert.strictEqual(parsed[0].buildName, 'Aggressive Flex');
+    assert.strictEqual(parsed[0].buildName, 'Build 2');
+    assert.strictEqual(parsed[0].label, 'Aggressive Flex');
     assert.strictEqual(parsed[0].shareCode, '1I2C6B8A9D');
     assert.strictEqual(parsed[0].isMeta, true);
 });

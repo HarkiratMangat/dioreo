@@ -165,7 +165,8 @@ async function resolveManagePanelAction(interaction, group, action, match) {
     if (action === 'edit') {
         if (group === 'draws') return interaction.showModal(manageCommand.buildEditDrawModal(match.doc, match.id, match.type));
         if (group === 'calendar') return interaction.showModal(manageCommand.buildEditCalendarModal(match.doc, match.id));
-        if (group === 'loadouts_mp' || group === 'loadouts_dmz') return interaction.showModal(manageCommand.buildEditLoadoutModal(match.doc, match.id));
+        // The weapon's builds are read first, so a legacy build (its label stored as its name) still shows a build #. One quick query, well inside showModal's 3 seconds.
+        if (group === 'loadouts_mp' || group === 'loadouts_dmz') return interaction.showModal(await require('./loadouts').editLoadoutModal(match.doc));
     }
 
     if (action === 'delete') {

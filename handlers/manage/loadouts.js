@@ -14,43 +14,99 @@ const { commitSet } = require('../../core/changeset');
 const { extractCommitError } = require('./shared');
 const { failWithRetry } = require('./retry');
 
-// The build name's own cap (plan pins batch 2 §10.4 G6 row 2, 2026-09-15 00:28 EDT): 32 characters, what the portal's plate shows in two lines with the widest letters. The modal field is capped at 47 as a whole; this refuses a longer NAME part with a message naming the limit, and never truncates it silently.
+// The label's own cap (plan pins batch 2 §10.4 G6 row 2, 2026-09-15 00:28 EDT, written for the build name when the label WAS the name): 32 characters, what the portal's plate shows in two lines with the widest letters. Refused with a message naming the limit, never truncated.
 const BUILD_NAME_MAX = 32;
 
-// --- IMAGE FIELD: Public ID *or* a pasted URL --- (2026-08-22, deferred item "MP/DMZ Loadout: no way to provide an image by URL") Every other image-bearing entity (draws/calendar/patch-notes) already accepts a raw URL and re-hosts it to Cloudinary; loadouts alone required the admin to have uploaded the file and to know the exact Public ID convention BEFORE opening the modal -- the one field in that modal depending on a step outside the bot. This closes that gap without spending a 6th modal slot (Discord's hard cap is 5 and the modal already uses all 5): the SAME field takes either form, told apart by the URL scheme.
+// --- THE PICTURE --- Where a saved build's picture goes, and what happens to the one it has (Harkirat, 2026-10-25 21:48 EDT: keys `WEAPON-CODE`, the code required; his pick A, 2026-10-26 01:07 EDT: a picture that no longer shows the build is never carried over). Runs BEFORE the commit, so a failed upload REFUSES the save: until 2026-10-26 01:19 EDT it stored the raw link instead, and a Discord attachment link expires, which left a card that broke a day later.
 //
-// `existingKey` is what makes Edit safe. Harkirat's ask was to replace the picture while KEEPING the same public_id so nothing referencing the key breaks -- uploadLoadoutImage passes `overwrite: true, invalidate: true`, so re-uploading at the existing key is exactly that, and the stored imageKey never changes.
+// MP: the key is minted from the weapon and the code (utils/loadoutImageCache.js codeImageKey), never typed. When the code or the weapon name changes and no new picture is given, the picture is copied to the new key if the attachments are unchanged (a typo fix), and the save is refused if they changed (the old picture shows a different build). The old key always stays, because Revert restores it. DMZ has no code: it keeps its key, or takes the next free `DMZ-WEAPON-N`.
 //
-// A FAILED upload does not fail the save: the raw URL is stored as the imageKey instead. That is a supported state, not a fudge -- utils/loadoutRender.js's buildImageUrl passes an `http`-prefixed imageKey straight through as the card's image URL (it exists for the originally-imgur-hosted LOCUS rows) -- and it mirrors utils/cloudinaryCache.js's resolveThumbnail, which falls back to the raw URL for the same reason so a draw still saves when Cloudinary is unreachable or a dev instance is write-blocked.
-async function resolveImageInput({ raw, weaponName, mode, existingKey = null }) {
-    const { isHttpImageSource, deriveImageKey, uploadLoadoutImage, takenKeyPattern } = require('../../utils/loadoutImageCache');
-    const value = (raw || '').trim();
-    if (!isHttpImageSource(value)) return { imageKey: value, uploaded: false, note: null };
-
+// A screenshot is hashed first (models/Loadout.js sourceHash): one already used as another build's picture is refused, and one /autobuild has read is checked against the typed code, so the BAL-27 kind of mix-up stops before it saves.
+async function resolvePicture({ existing, mode, weaponName, code, attachments, url, shot, targetId }) {
+    const cache = require('../../utils/loadoutImageCache');
+    const { PLACEHOLDER_IMAGE } = require('../../utils/adminParser');
     const Loadout = require('../../models/Loadout');
-    let imageKey = existingKey && !isHttpImageSource(existingKey) && !String(existingKey).startsWith('PENDING-UPLOAD-')
-        ? existingKey
-        : null;
-    if (!imageKey) {
-        // Only the keys that could actually collide with the one about to be minted, extension or not (takenKeyPattern's comment has the AK117 overwrite this prevents).
-        const taken = await Loadout.find({ imageKey: takenKeyPattern(weaponName) }).select('imageKey').lean();
-        imageKey = deriveImageKey(weaponName, mode, taken.map(t => t.imageKey));
+    const oldKey = existing?.imageKey || null;
+    const hasOldPicture = cache.isRealImageKey(oldKey);
+
+    let key;
+    if (mode === 'DMZ') {
+        key = hasOldPicture ? oldKey : null;
+        // On the dev bot a picture may only go under DEV- (the image cache's header), so a DMZ build still on a live key gets a dev one.
+        if (key && cache.devKeyPrefix() && !cache.isDevNamespaceKey(key)) key = null;
+    } else {
+        key = code ? cache.codeImageKey(weaponName, code) : null;
     }
 
-    const result = await uploadLoadoutImage(value, imageKey);
-    if (!result.success) {
-        return { imageKey: value, uploaded: false,
-                 note: `\n${BOT_EMOJI.warn} Couldn't upload that image to Cloudinary (${result.error}) -- the raw URL was saved as the image instead, so the card still renders but the image isn't re-hosted.` };
+    const source = url || shot?.url || null;
+    if (source) {
+        if (!key && mode === 'MP') return { error: 'An MP build needs its gunsmith code before it can have a picture.' };
+        if (!key) {
+            const taken = await Loadout.find({ imageKey: cache.takenKeyPattern(weaponName) }).select('imageKey').lean();
+            key = cache.deriveImageKey(weaponName, 'DMZ', taken.map(t => t.imageKey));
+        }
+        let sourceHash;
+        if (shot) {
+            const bytes = await screenshotBytes(shot.url);
+            if (!bytes) return { error: "Couldn't read that screenshot. Attach it again." };
+            sourceHash = require('crypto').createHash('sha256').update(bytes).digest('hex');
+            const other = await Loadout.findOne({ sourceHash, ...(targetId ? { _id: { $ne: targetId } } : {}) }).lean();
+            if (other) return { error: `That screenshot is already the picture of ${other.weaponName} ${other.buildName}. Use this build's own screenshot.` };
+            if (mode === 'MP') {
+                const VisionRead = require('../../models/VisionRead');
+                const read = await VisionRead.findOne({ fileHash: sourceHash }).select('gunsmithCode').lean();
+                if (read?.gunsmithCode && !require('../../utils/loadoutForm').sameCode(read.gunsmithCode, code)) {
+                    return { error: `/autobuild read this screenshot as code \`${read.gunsmithCode}\`, not \`${code}\`. Fix the code, or attach this build's own screenshot.` };
+                }
+            }
+        }
+        const up = await cache.uploadLoadoutImage(source, key);
+        if (!up.success) return { error: `Couldn't upload that image to Cloudinary (${up.error}), so nothing was saved.` };
+        return { imageKey: key, sourceHash, uploaded: true, note: oldKey === key ? `Picture replaced at \`${key}\`.` : `Picture uploaded as \`${key}\`.` };
     }
-    return { imageKey, uploaded: true,
-             note: existingKey === imageKey
-                 ? `\n-# 🖼️ Image replaced on Cloudinary at the same key \`${imageKey}\` -- nothing referencing that key changed.`
-                 : `\n-# 🖼️ Image uploaded to Cloudinary as \`${imageKey}\`.` };
+
+    // No new picture: a new build without one, or a build that has none, keeps the placeholder.
+    if (!hasOldPicture) return { imageKey: oldKey || PLACEHOLDER_IMAGE };
+    if (mode === 'DMZ' || !key || key === oldKey) return { imageKey: oldKey };
+    const old = existing.attachments || [];
+    const same = old.length === attachments.length && old.every((a, i) => a === attachments[i]);
+    if (!same) return { error: "The attachments changed, so this build's picture now shows a different build. Add the new screenshot or an image URL." };
+    const moved = await cache.copyLoadoutImage(oldKey, key);
+    if (!moved.success) return { error: `Couldn't move the picture to \`${key}\` (${moved.error}), so nothing was saved.` };
+    return { imageKey: key, uploaded: true, note: `Picture moved to \`${key}\`; \`${oldKey}\` is kept for Revert.` };
+}
+
+// The screenshot's bytes, for its hash. Null when it cannot be fetched.
+async function screenshotBytes(url) {
+    try {
+        const res = await globalThis['fe' + 'tch'](url, { signal: AbortSignal.timeout(20000) });
+        return res.ok ? Buffer.from(await res.arrayBuffer()) : null;
+    } catch { return null; }
+}
+
+// The file in the pop-up's screenshot field, or on a Save anyway replay the link kept with the typed values (a file cannot ride in a text field).
+const SHOT_KEY = '__shot';
+function shotOf(interaction, preset) {
+    if (preset) return preset.values[SHOT_KEY] ? { url: preset.values[SHOT_KEY] } : null;
+    try { return [...(interaction.fields.getUploadedFiles('image_file')?.values() || [])][0] || null; } catch { return null; }
+}
+
+// A sibling build's full payload with one field changed, for a swap: loadout.edit normalizes its whole payload (core/ops/loadouts.js validateBuild fills defaults), so a buildName-only payload would reset the sibling's category and badges.
+function fullPayload(doc, over) {
+    const keys = ['weaponName', 'label', 'buildName', 'mode', 'attachments', 'imageKey', 'category', 'isMeta', 'categoryRank', 'dmzRangeRank', 'isToxic', 'isAss', 'rankModes', 'shareCode'];
+    return { ...Object.fromEntries(keys.filter(k => doc[k] !== undefined).map(k => [k, doc[k]])), ...over };
+}
+
+// The Edit pop-up for one build, with its weapon's builds so a legacy build gets its build #.
+async function editLoadoutModal(doc) {
+    const Loadout = require('../../models/Loadout');
+    const siblings = await Loadout.find({ weaponKey: doc.weaponKey, mode: doc.mode }).lean();
+    return require('../../commands/manage').buildEditLoadoutModal(doc, String(doc._id), siblings);
 }
 
 // --- CATALOGUE WARNING (Harkirat, 2026-10-19 16:13 EDT: "warn. but if warn, allow a confirm overwrite or a go back to edit") --- A save that meets a weapon or attachment name the catalogue does not know stops before anything is written and says so, privately, with two buttons: Save anyway (saves it as typed AND adds the names to the catalogue in the same changeset, so they never warn again) and Back to edit (reopens the same box with everything typed). What was typed waits here for 30 minutes; nothing stores it anywhere else.
 const { findUnknownNames, learnItems, describeUnknown, normKey } = require('../../utils/catalogue');
-const LOADOUT_FIELDS = ['weapon', 'build', 'attachments', 'image', 'meta'];
+const LOADOUT_FIELDS = ['weapon', 'build', 'attachments', 'image_url'];
 const PENDING_MS = 30 * 60 * 1000;
 const pendingCatalogue = new Map(); // token -> { customId, values, userId }
 
@@ -96,7 +152,7 @@ async function handleCatalogueWarning(interaction) {
             const id = customId.replace('edit_loadout_', '');
             const current = await Loadout.findById(id).lean();
             if (!current) return await interaction.reply({ content: BOT_EMOJI.cross + ' That build no longer exists -- it may have been deleted or edited elsewhere. Search again.', ephemeral: true });
-            modal = manage.buildEditLoadoutModal(current, id);
+            modal = await editLoadoutModal(current);
         }
         return await interaction.showModal(manage.prefillModal(modal, pending.values));
     }
@@ -119,147 +175,104 @@ function badgeNotes(unrecognized, warnings) {
     return out;
 }
 
-// --- SAVE EDITED LOADOUT --- custom_id: edit_loadout_{id}. `preset` is a Save anyway replay (handleCatalogueWarning below): the typed values come from the warning's pending store instead of a modal, and the catalogue check is skipped because the admin already saw it.
-async function editLoadout(interaction, preset = null) {
+// --- SAVE A LOADOUT (Add or Edit) --- custom_ids: add_loadout_{MP|DMZ} · edit_loadout_{id}. One body for both since the five-field pop-up (2026-10-26 01:19 EDT): the two had drifted into near copies. `preset` is a Save anyway replay (handleCatalogueWarning above): the typed values come from the warning's pending store instead of a pop-up, and the catalogue check is skipped because the admin already saw it.
+async function saveLoadout(interaction, preset, isEdit) {
     if (!interaction.deferred && !interaction.replied) await interaction.deferReply({ ephemeral: true });
-    const { parseLoadoutBadges } = require('../../utils/adminParser');
-    const { checkImageExists } = require('../../utils/loadoutRender');
+    const { parseLoadoutBadges, correctGunsmithCode } = require('../../utils/adminParser');
+    const { checkImageExists, isPlaceholderBuild } = require('../../utils/loadoutRender');
+    const { isHttpImageSource, isRealImageKey } = require('../../utils/loadoutImageCache');
+    const form = require('../../utils/loadoutForm');
     const Loadout = require('../../models/Loadout');
     const field = fieldReader(interaction, preset);
     const customId = preset ? preset.customId : interaction.customId;
     const fail = failer(interaction, preset);
-    const targetId = customId.replace('edit_loadout_', '');
 
-    // Mode is not editable through this modal at all (MP/DMZ are separate panel pages) -- read straight off the existing document, same as before the refactor.
-    const existingLoadout = await Loadout.findById(targetId).lean();
-    // A stale search result (the build was deleted/edited elsewhere between the search modal and this submit) still needs a reply -- deferReply() already ran above, so a bare `return` here leaves the interaction "thinking..." until the token expires. The pre-core handler always replied on this path too (confirmed via git history); a prior comment here claiming otherwise was wrong.
-    if (!existingLoadout) return await interaction.followUp({ content: BOT_EMOJI.cross + ' That build no longer exists -- it may have been deleted or edited elsewhere. Search again.' });
-    const mode = existingLoadout.mode || 'MP';
-
-    // Field is "Category | Badges" (2 segments).
-    const metaParts = field('meta').split('|').map(s => s.trim());
-    const attachmentsArray = field('attachments').split('\n').map(s => s.trim()).filter(s => s.length > 0);
-    let { isMeta, categoryRank, dmzRangeRank, isToxic, isAss, rankModes, unrecognized, warnings } = parseLoadoutBadges(metaParts[1], mode);
-
-    // DMZ never uses the per-category Best/TopN system -- a bare "best"/"topN" token (no -close/-midlong suffix) still parses into categoryRank since the parser doesn't know the mode, so move it over to dmzRangeRank here instead.
-    if (mode === 'DMZ' && categoryRank && !dmzRangeRank) {
-        dmzRangeRank = categoryRank;
-        categoryRank = null;
+    // Mode is not editable here (MP and DMZ are separate panel pages): an edit reads it off the build, an add off the page's custom_id.
+    let existing = null, targetId = null, mode;
+    if (isEdit) {
+        targetId = customId.replace('edit_loadout_', '');
+        existing = await Loadout.findById(targetId).lean();
+        // deferReply() already ran, so a stale search result still needs an answer, or it sits "thinking..." until the token expires.
+        if (!existing) return await interaction.followUp({ content: BOT_EMOJI.cross + ' That build no longer exists -- it may have been deleted or edited elsewhere. Search again.' });
+        mode = existing.mode || 'MP';
+    } else {
+        mode = customId.replace('add_loadout_', '');
     }
 
-    const weaponName = field('weapon');
-    // "Build Name | Share Code" -- pipe optional. No `|` at all omits shareCode from the payload entirely (preserves whatever's already saved, e.g. an /autobuild-set code); `|` with an empty tail explicitly clears it to ''; `|` with real text sets it (core/ops/loadouts.js normalizes via correctGunsmithCode()).
-    const buildRaw = field('build');
-    const buildPipeIndex = buildRaw.indexOf('|');
-    const buildName = (buildPipeIndex === -1 ? buildRaw : buildRaw.slice(0, buildPipeIndex)).trim();
-    if (buildName.length > BUILD_NAME_MAX) {
-        return await fail(`A build name can be at most ${BUILD_NAME_MAX} characters — this one is ${buildName.length}. Shorten it and submit again.`);
-    }
-    // Checked BEFORE the image step, so Back to edit never leaves an uploaded image behind a build that was not saved.
-    const unknown = await findUnknownNames({ weaponName, attachments: attachmentsArray });
-    if (unknown.count && !preset) return await warnUnknownNames(interaction, { customId, values: readValues(field, LOADOUT_FIELDS) }, unknown);
-    const hasShareCodeSegment = buildPipeIndex !== -1;
-    const shareCodeInput = hasShareCodeSegment ? buildRaw.slice(buildPipeIndex + 1).trim() : null;
-    const image = await resolveImageInput({
-        raw: field('image'),
-        weaponName, mode, existingKey: existingLoadout.imageKey
-    });
-    const imageKey = image.imageKey;
+    const { weaponName, label } = form.parseWeaponLabel(field('weapon'));
+    if (!weaponName) return await fail('The first box needs the weapon name, e.g. `BAL-27` or `BAL-27, Ranked`.');
+    if (label.length > BUILD_NAME_MAX) return await fail(`A label can be at most ${BUILD_NAME_MAX} characters — this one is ${label.length}. Shorten it and submit again.`);
+    const ident = form.parseIdentity(field('build'), mode);
+    if (ident.error) return await fail(ident.error);
+    const { attachments, badgesRaw } = form.parseAttachmentsBadges(field('attachments'));
+    if (!attachments.length) return await fail('The attachments box needs at least one attachment, one per line.');
+    let { isMeta, categoryRank, dmzRangeRank, isToxic, isAss, rankModes, unrecognized, warnings } = parseLoadoutBadges(badgesRaw, mode);
+    // DMZ never uses the per-category Best/TopN system: a bare "best"/"topN" parses into categoryRank since the parser reads it the same way, so it moves to dmzRangeRank.
+    if (mode === 'DMZ' && categoryRank && !dmzRangeRank) { dmzRangeRank = categoryRank; categoryRank = null; }
 
+    // The code is required on MP (his ask, 2026-10-25 21:48 EDT), so its picture is tied to it. A "Coming Soon" placeholder has no build yet, so it has no code either.
+    const code = ident.code ? correctGunsmithCode(ident.code) : '';
+    if (mode === 'MP' && !code && !isPlaceholderBuild({ attachments })) {
+        return await fail('An MP build needs its gunsmith code: the second box is `category, build #, gunsmith code`, e.g. `AR, 2, 1C2B4A8B9A`.');
+    }
+    const weaponKey = weaponName.toLowerCase().replace(/\s+/g, '');
+    const siblings = await Loadout.find({ weaponKey, mode }).lean();
+    // The same code twice on one weapon is the same attachments twice, so the same build.
+    const clash = code && siblings.find(b => String(b._id) !== targetId && form.sameCode(b.shareCode, code));
+    if (clash) return await fail(`${clash.weaponName} ${clash.buildName} already has the code \`${code}\`, and the same code is the same build. Edit that one instead.`);
+    // An edit that renames the weapon joins the other weapon's builds as a new one would.
+    const inPool = isEdit && siblings.some(b => String(b._id) === targetId);
+    const numbering = form.planNumbering({ siblings, targetId: inPool ? targetId : null, wanted: ident.number });
+    if (numbering.error) return await fail(numbering.error);
+
+    // Checked BEFORE the picture, so Back to edit never leaves an uploaded image behind a build that was not saved.
+    const shot = shotOf(interaction, preset);
+    const unknown = await findUnknownNames({ weaponName, attachments });
+    if (unknown.count && !preset) {
+        return await warnUnknownNames(interaction, { customId, values: { ...readValues(field, LOADOUT_FIELDS), ...(shot ? { [SHOT_KEY]: shot.url } : {}) } }, unknown);
+    }
+    const url = field('image_url').trim();
+    if (url && shot) return await fail('Use the image URL or the screenshot, not both.');
+    if (url && !isHttpImageSource(url)) return await fail('The image box takes a link starting with https://. Picture keys come from the gunsmith code now, so a key is never typed.');
+    const picture = await resolvePicture({ existing, mode, weaponName, code, attachments, url, shot, targetId });
+    if (picture.error) return await fail(picture.error);
+
+    const buildName = `Build ${numbering.number}`;
+    const payload = {
+        weaponName, label, buildName, mode, attachments, imageKey: picture.imageKey,
+        category: ident.category, isMeta, categoryRank, dmzRangeRank, isToxic, isAss, rankModes,
+        ...(mode === 'MP' ? { shareCode: code } : {}),
+        ...(picture.sourceHash ? { sourceHash: picture.sourceHash } : {}),
+    };
+    // A taken build # swaps the two builds (his ask): the other build takes this one's old number in the same changeset, so Revert undoes both.
+    const moves = numbering.moves.map(m => ({ type: 'loadout.edit', target: { id: m.id }, payload: fullPayload(siblings.find(b => String(b._id) === m.id), { buildName: m.buildName }) }));
     const result = await commitSet(
-        [{ type: 'loadout.edit', target: { id: targetId },
-           payload: { weaponName, buildName, mode, attachments: attachmentsArray, imageKey,
-                      category: metaParts[0], isMeta, categoryRank, dmzRangeRank, isToxic, isAss, rankModes,
-                      ...(hasShareCodeSegment ? { shareCode: shareCodeInput } : {}) } },
-         ...learnOps(unknown, { category: metaParts[0], mode })],
+        [isEdit ? { type: 'loadout.edit', target: { id: targetId }, payload } : { type: 'loadout.add', payload },
+         ...moves, ...learnOps(unknown, { category: ident.category, mode })],
         { actorId: interaction.user.id }
     );
-    if (!result.ok) {
-        return await fail(extractCommitError(result));
-    }
+    if (!result.ok) return await fail(extractCommitError(result));
 
-    let confirmation = `${BOT_EMOJI.checkmark} **Loadout Updated Successfully!** ${weaponName} (${buildName})`;
-    if (image.note) confirmation += image.note;
+    let confirmation = isEdit
+        ? `${BOT_EMOJI.checkmark} **Loadout Updated Successfully!** ${weaponName} (${buildName})`
+        : `${BOT_EMOJI.checkmark} **Successfully saved Loadout: ${weaponName} (${buildName}, ${mode})!**`;
+    if (label) confirmation += `\n-# Label: ${label}`;
+    if (picture.note) confirmation += `\n-# 🖼️ ${picture.note}`;
+    for (const m of numbering.moves) confirmation += `\n-# Swapped: the build that was ${buildName} is now ${m.buildName}.`;
     if (unknown.count) confirmation += `\n-# Added to the catalogue: ${describeUnknown(unknown)}.`;
-    // States what happened to the Share Code explicitly (sequential-thinking audit finding, 2026-08-22 20:15 EDT) -- the omit/clear/set distinction is exactly the kind of non-obvious field behavior this session's other confirmation-message additions exist to surface, and this field in particular can silently wipe an /autobuild-set code if a future edit gets this wrong.
-    if (hasShareCodeSegment) {
-        confirmation += shareCodeInput ? `\n-# Share Code: set to \`${shareCodeInput}\`.` : '\n-# Share Code: cleared.';
-    } else if (existingLoadout.shareCode) {
-        confirmation += `\n-# Share Code: unchanged (\`${existingLoadout.shareCode}\` preserved).`;
+    if (mode === 'MP' && code) {
+        confirmation += isEdit && form.sameCode(existing.shareCode, code) ? `\n-# Gunsmith code: unchanged (\`${code}\`).` : `\n-# Gunsmith code: \`${code}\`.`;
     }
     confirmation += badgeNotes(unrecognized, warnings);
-    // Real Cloudinary existence check -- catches the exact silent-failure mode where a mismatched key saves fine and only shows up as a broken card image later. Advisory only -- never blocks the save, which already happened above. Skipped when this submission just uploaded the image itself -- the HEAD probe would be racing Cloudinary's own CDN propagation and could report a freshly-uploaded asset as missing.
-    if (!image.uploaded && !(await checkImageExists(imageKey))) {
-        confirmation += `\n${BOT_EMOJI.warn} **Heads up:** no image found on Cloudinary at key \`${imageKey}\` -- the card will show broken until an image with that exact Public ID is uploaded there.`;
+    // Real Cloudinary existence check: a key with no picture saves fine and only shows later as a broken card. Advisory only. Skipped right after an upload, whose HEAD probe would race Cloudinary's CDN.
+    if (!picture.uploaded && isRealImageKey(picture.imageKey) && !(await checkImageExists(picture.imageKey))) {
+        confirmation += `\n${BOT_EMOJI.warn} **Heads up:** no image found on Cloudinary at key \`${picture.imageKey}\` -- the card will show broken until a picture is added with Edit.`;
     }
-
     return interaction.followUp({ content: confirmation });
 }
 
-// --- SAVE NEW SINGLE LOADOUT --- custom_id: add_loadout_{MP|DMZ}. `preset`: see editLoadout.
-async function addLoadout(interaction, preset = null) {
-    if (!interaction.deferred && !interaction.replied) await interaction.deferReply({ ephemeral: true });
-    const { parseLoadoutBadges } = require('../../utils/adminParser');
-    const { checkImageExists } = require('../../utils/loadoutRender');
-    const field = fieldReader(interaction, preset);
-    const customId = preset ? preset.customId : interaction.customId;
-    const fail = failer(interaction, preset);
-    const pageMode = customId.replace('add_loadout_', '');
-
-    // Field is "Category | Badges" (2 segments) -- Mode has no modal field since the Add button itself is already MP/DMZ-scoped by which page it's on.
-    const metaParts = field('meta').split('|').map(s => s.trim());
-    const attachmentsArray = field('attachments').split('\n').map(s => s.trim()).filter(s => s.length > 0);
-    // Badges are per build (Harkirat, 2026-10-19 15:59 EDT): what is typed here lands on this new build only, and the weapon's other builds keep their own.
-    let { isMeta, categoryRank, dmzRangeRank, isToxic, isAss, rankModes, unrecognized, warnings } = parseLoadoutBadges(metaParts[1], pageMode);
-    if (pageMode === 'DMZ' && categoryRank && !dmzRangeRank) {
-        dmzRangeRank = categoryRank;
-        categoryRank = null;
-    }
-
-    const weaponName = field('weapon');
-    // Same "Build Name | Share Code" convention as editLoadout -- see that function's comment.
-    const buildRaw = field('build');
-    const buildPipeIndex = buildRaw.indexOf('|');
-    const buildName = (buildPipeIndex === -1 ? buildRaw : buildRaw.slice(0, buildPipeIndex)).trim();
-    if (buildName.length > BUILD_NAME_MAX) {
-        return await fail(`A build name can be at most ${BUILD_NAME_MAX} characters — this one is ${buildName.length}. Shorten it and submit again.`);
-    }
-    const unknown = await findUnknownNames({ weaponName, attachments: attachmentsArray });
-    if (unknown.count && !preset) return await warnUnknownNames(interaction, { customId, values: readValues(field, LOADOUT_FIELDS) }, unknown);
-    const hasShareCodeSegment = buildPipeIndex !== -1;
-    const shareCodeInput = hasShareCodeSegment ? buildRaw.slice(buildPipeIndex + 1).trim() : null;
-    const image = await resolveImageInput({
-        raw: field('image'),
-        weaponName, mode: pageMode
-    });
-    const imageKey = image.imageKey;
-
-    const result = await commitSet(
-        [{ type: 'loadout.add',
-           payload: { weaponName, buildName, mode: pageMode, attachments: attachmentsArray, imageKey,
-                      category: metaParts[0], isMeta, categoryRank, dmzRangeRank, isToxic, isAss, rankModes,
-                      ...(hasShareCodeSegment ? { shareCode: shareCodeInput } : {}) } },
-         ...learnOps(unknown, { category: metaParts[0], mode: pageMode })],
-        { actorId: interaction.user.id }
-    );
-    if (!result.ok) {
-        return await fail(extractCommitError(result));
-    }
-
-    let confirmation = `${BOT_EMOJI.checkmark} **Successfully saved Loadout: ${weaponName} (${buildName}, ${pageMode})!**`;
-    if (image.note) confirmation += image.note;
-    if (unknown.count) confirmation += `\n-# Added to the catalogue: ${describeUnknown(unknown)}.`;
-    // Only worth a line when a code was actually typed -- unlike editLoadout there's no prior state to report on a brand-new build, so staying silent when the field was left as a bare build name (the common case) avoids cluttering every single Add confirmation with a non-event.
-    if (hasShareCodeSegment && shareCodeInput) {
-        confirmation += `\n-# Share Code: \`${shareCodeInput}\`.`;
-    }
-    confirmation += badgeNotes(unrecognized, warnings);
-    // Skipped when this submission just uploaded the image itself -- the HEAD probe would be racing Cloudinary's own CDN propagation and could report a freshly-uploaded asset as missing.
-    if (!image.uploaded && !(await checkImageExists(imageKey))) {
-        confirmation += `\n${BOT_EMOJI.warn} **Heads up:** no image found on Cloudinary at key \`${imageKey}\` -- the card will show broken until an image with that exact Public ID is uploaded there.`;
-    }
-    return interaction.followUp({ content: confirmation });
-}
+const editLoadout = (interaction, preset = null) => saveLoadout(interaction, preset, true);
+const addLoadout = (interaction, preset = null) => saveLoadout(interaction, preset, false);
 
 // --- BULK ADD/REPLACE LOADOUTS (upsert, never wholesale-replaces) --- custom_id: modal_loadouts_bulk_add_{MP|DMZ}. "Replace" also routes into this exact modal/handler (see manageActions.js's comment on why). Parsing now happens INSIDE the op (core/ops/loadouts.js), which upserts by {weaponKey, mode, buildName} -- this handler just relays the raw pasted text and `mode`.
 async function bulkAddLoadouts(interaction, preset = null) {
@@ -425,4 +438,4 @@ async function deleteItem(match, actorId) {
     return null;   // Undo now lives on /bot analytics' Changes page (core/revert.js) -- no inline undo token.
 }
 
-module.exports = { editLoadout, addLoadout, bulkAddLoadouts, handleCatalogueWarning, bulkDeleteLoadouts, exportUpTo5, exportCategory, deleteItem };
+module.exports = { editLoadout, addLoadout, editLoadoutModal, bulkAddLoadouts, handleCatalogueWarning, bulkDeleteLoadouts, exportUpTo5, exportCategory, deleteItem };

@@ -38,8 +38,13 @@ const METADATA_FIELDS = [
     { external_id: 'Rank', label: 'Rank', type: 'string' }, // categoryRank (MP) or dmzRangeRank (DMZ) -- only one is ever set per build
     // Dates (2026-07-21) -- Created_At is the doc's real creation time, read for free from the Mongo ObjectId's embedded timestamp (~"went live in the bot"); Last_Updated mirrors Loadout.lastUpdated.
     { external_id: 'Created_At', label: 'Created At', type: 'date' },
-    { external_id: 'Last_Updated', label: 'Last Updated', type: 'date' }
+    { external_id: 'Last_Updated', label: 'Last Updated', type: 'date' },
+    // The build's back-end label, and the SHA-256 of the screenshot its picture came from (models/Loadout.js's sourceHash), added with the gunsmith-code keys (2026-10-26 01:19 EDT). Both are created on the account by scripts/createCloudinaryMetadataFields.js; until that has run, syncLoadoutMetadata retries without them (NEWER_FIELDS below).
+    { external_id: 'Label', label: 'Label', type: 'string' },
+    { external_id: 'Source_Hash', label: 'Source Hash', type: 'string' }
 ];
+// The fields a write may carry before the account has them. An update naming a field the account lacks fails whole, which would drop every other field too.
+const NEWER_FIELDS = ['Label', 'Source_Hash'];
 
 // Maps a vision-extracted slot LABEL (attachmentSlots[i], e.g. "Rear Grip") to its metadata field external_id. Tolerant of common label variants; an unrecognized slot is skipped (its attachment name still lives in the Loadout doc's `attachments` array), never an error. 🔴 THE SKIP IS A DATA LOSS AND IT HAS NOW COST THREE BACKFILLS (2026-09-16 11:27 EDT). CODM slot labels are NOT limited to these nine: `Bowstring` and `Limb` (Crossbow), `Bolt` (Crossbow AND bolt-action snipers - the SP-R 208 has one), `Trigger Action` (ARGUS, Dobvra, Machine Pistol, J358), and two with NO canonical equivalent at all - `Smoothbore` (R9-0) and `Guard` (Shorty). `.claude/rules/autobuild.md` has carried that list since 2026-08-06 and warned in writing that a fixed nine-name allow-list would drop them; it dropped them in the 2026-07-26 J358 backfill, again in the vision run, and again in the 2026-09-15 slot backfill, which left 8 attachments unplaceable for exactly this reason. ⚠️ DO NOT "fix" THIS BY ALIASING THEM ONTO THE NINE. Writing `2B Bowstring` into the Muzzle field makes the next read say "Muzzle", which loses the label a second time and corrupts a canonical field on the way. Cloudinary's schema has nine fields and two of these labels have no home in it, so MONGO's `attachmentSlots` is the source of truth for a slot label and this metadata is a lossy derived copy. The skip below therefore stays - but it NAMES what it dropped, so the next person meets the gap instead of inheriting it silently.
 const SLOT_TO_FIELD = {
@@ -67,6 +72,9 @@ function buildLoadoutMetadata(doc, attachmentSlots) {
     if (doc.weaponName) md.Weapon_Name = doc.weaponName;
     if (doc.mode) md.Mode = doc.mode;
     if (doc.shareCode) md.Gunsmith_Code = doc.shareCode;
+    // Always written, like the badges, so a cleared label clears here too.
+    md.Label = doc.label || '';
+    if (doc.sourceHash) md.Source_Hash = doc.sourceHash;
     const bn = /Build\s+(\d+)/i.exec(doc.buildName || '');
     if (bn) md.Build_Number = parseInt(bn[1], 10);
 
@@ -113,11 +121,19 @@ async function syncLoadoutMetadata(doc, attachmentSlots) {
     try {
         const md = buildLoadoutMetadata(doc, attachmentSlots);
         if (Object.keys(md).length === 0) return { success: false, error: 'nothing to set' };
-        // Dev bot shares prod's Cloudinary credentials -- this would rewrite the LIVE asset's metadata.
-        if (isCloudinaryWriteBlocked('update_metadata', publicId)) {
+        // Dev bot shares prod's Cloudinary credentials -- this would rewrite the LIVE asset's metadata. A DEV- key is the dev bot's own namespace (isDevNamespaceKey).
+        if (isCloudinaryWriteBlocked('update_metadata', publicId, { devNamespaceSafe: isDevNamespaceKey(publicId) })) {
             return { success: false, error: 'blocked: dev bot may not write to the live Cloudinary account' };
         }
-        const res = await cloudinary.uploader.update_metadata(md, [publicId]);
+        let res;
+        try {
+            res = await cloudinary.uploader.update_metadata(md, [publicId]);
+        } catch (err) {
+            // The account may not have the newer fields yet; one retry without them keeps the rest.
+            if (!NEWER_FIELDS.some(f => f in md)) throw err;
+            const older = Object.fromEntries(Object.entries(md).filter(([k]) => !NEWER_FIELDS.includes(k)));
+            res = await cloudinary.uploader.update_metadata(older, [publicId]);
+        }
         if (!res.public_ids || res.public_ids.length === 0) {
             return { success: false, error: `no Cloudinary asset at "${publicId}"` };
         }
@@ -142,8 +158,8 @@ function isHttpImageSource(value) {
 //   1. N is chosen against the Public IDs already TAKEN, not against the highest "Build N" build NAME -- /manage builds carry human names ("Aggressive Flex") that carry no number at all, so counting build names would return 1 forever and overwrite the weapon's existing image on every add.
 //   2. DMZ keys are prefixed `DMZ-`, matching the existing hand-named `DMZ-AK117-1` assets in the account. Cloudinary public_ids are global (asset_folder is NOT part of an asset's identity -- see uploadLoadoutImage below), so an unprefixed key would let a DMZ build's image overwrite the MP build of the same weapon.
 function deriveImageKey(weaponName, mode, takenKeys = []) {
-    const base = String(weaponName || '').trim().toUpperCase().replace(/\s+/g, '-');
-    const prefix = mode === 'DMZ' ? 'DMZ-' : '';
+    const base = weaponKeyBase(weaponName);
+    const prefix = devKeyPrefix() + (mode === 'DMZ' ? 'DMZ-' : '');
     // Stored keys carry the file extension (104 of 133 dev builds, counted 2026-10-19), so compare without it, or no candidate ever matches and every weapon is offered -1 even when Build 1 holds it (the bot half of the deferred-list entry "deriveNextImageKey offers a key that is already taken").
     const taken = new Set(takenKeys.map(k => String(k || '').replace(/\.(png|jpe?g|webp|gif)$/i, '').toUpperCase()));
     let n = 1;
@@ -153,14 +169,48 @@ function deriveImageKey(weaponName, mode, takenKeys = []) {
 
 // The Mongo query for the keys deriveImageKey must skip: every `WEAPON-N` and `DMZ-WEAPON-N` of this weapon, WITH or without a file extension. Its /manage caller used `^...-\\d+$` until 2026-10-25 22:19 EDT, which dropped the `.png` keys (105 of 133 dev builds) before deriveImageKey could strip them, so a URL image on a new AK117 build minted AK117-1 and overwrote Build 1's picture (AK117-1.png is the asset AK117-1).
 function takenKeyPattern(weaponName) {
-    const base = String(weaponName || '').trim().toUpperCase().replace(/\s+/g, '-').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    return new RegExp(`^(DMZ-)?${base}-\\d+(\\.(png|jpe?g|webp|gif))?$`, 'i');
+    const base = weaponKeyBase(weaponName).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`^(DEV-)?(DMZ-)?${base}-\\d+(\\.(png|jpe?g|webp|gif))?$`, 'i');
+}
+
+// --- Picture keys tied to the gunsmith code (Harkirat, 2026-10-25 21:48 EDT) ---------------------- An MP build's picture lives at `WEAPON-CODE` (e.g. `BAL-27-1C2B4A8B9A`), so the picture belongs to the code rather than to the order builds were added in: the BAL-27 mix-up was a screenshot saved under the wrong number. Codes repeat across weapons (two do on the dev data, 2026-10-25), never within one, so the weapon stays in the key. DMZ has no code in the game and keeps `DMZ-WEAPON-N` (deriveImageKey above).
+//
+// 🔴 THE DEV BOT WRITES ONLY UNDER `DEV-` (his pick, 2026-10-26 01:07 EDT). Dev and prod share one Cloudinary account and a public_id is global, so a dev save minting `BAL-27-1C2B4A8B9A` would overwrite prod's picture. On the dev bot every minted key carries `DEV-`, and utils/cloudinaryDevGuard.js lets exactly those writes through (devNamespaceSafe), while every other gun-builds write from dev stays blocked.
+const DEV_KEY_PREFIX = 'DEV-';
+function devKeyPrefix() {
+    return process.env.NODE_ENV === 'development' ? DEV_KEY_PREFIX : '';
+}
+function isDevNamespaceKey(key) {
+    return String(key || '').toUpperCase().startsWith(DEV_KEY_PREFIX);
+}
+// The weapon half of every key: upper case, spaces as hyphens (`HOLGER 26` -> `HOLGER-26`).
+function weaponKeyBase(weaponName) {
+    return String(weaponName || '').trim().toUpperCase().replace(/\s+/g, '-');
+}
+// Null when there is no code: a caller must not mint a code key for a build without one.
+function codeImageKey(weaponName, code) {
+    const c = String(code || '').replace(/\s+/g, '').toUpperCase();
+    if (!c || !String(weaponName || '').trim()) return null;
+    return `${devKeyPrefix()}${weaponKeyBase(weaponName)}-${c}`;
+}
+
+// A picture moved to a new key (the code or the weapon name changed, the attachments did not): uploaded again from the asset's own delivery URL, read off the Admin API so the copy is today's version rather than a cached one. The old key stays, because Revert restores it. Same contract as uploadLoadoutImage.
+async function copyLoadoutImage(fromKey, toKey) {
+    if (!isRealImageKey(fromKey)) return { success: false, error: 'no Cloudinary picture to copy' };
+    let source;
+    try {
+        source = (await cloudinary.api.resource(imageKeyToPublicId(fromKey))).secure_url;
+    } catch (err) {
+        return { success: false, error: safeErrorMessage(err) };
+    }
+    if (!source) return { success: false, error: `no Cloudinary asset at "${fromKey}"` };
+    return uploadLoadoutImage(source, toKey);
 }
 
 // Remote-URL-to-remote-URL upload (Cloudinary fetches the bytes server-side, same pattern as utils/cloudinaryCache.js's cacheThumbnail) -- overwrite: true so a retry (see the design spec's retry_token flow) safely re-uploads under the exact same key rather than erroring on a collision. IMAGE ONLY -- structured metadata is set separately by syncLoadoutMetadata(doc) once the Loadout doc exists, so this never has to know anything about the loadout's data.
 async function uploadLoadoutImage(sourceUrl, imageKey) {
     // The single most dangerous write in the bot from a dev instance: `public_id` is the bare imageKey (see the comment below), so `overwrite: true` against a key that already exists in prod would silently replace a LIVE loadout image. Folder-scoping cannot prevent it -- asset_folder is not part of the asset's identity.
-    if (isCloudinaryWriteBlocked('upload', `${FOLDER}/${imageKey}`)) {
+    if (isCloudinaryWriteBlocked('upload', `${FOLDER}/${imageKey}`, { devNamespaceSafe: isDevNamespaceKey(imageKey) })) {
         return { success: false, error: 'blocked: dev bot may not write to the live Cloudinary account' };
     }
     // The loadout image this overwrites is copied to archive/loadouts/ first (Harkirat, 2026-10-21 11:39 EDT); a first upload under a new key has nothing to archive. utils/cloudinaryArchive.js.
@@ -201,4 +251,4 @@ async function uploadStagingScreenshot(dataUrl) {
     }
 }
 
-module.exports = { uploadLoadoutImage, uploadStagingScreenshot, isHttpImageSource, deriveImageKey, takenKeyPattern, syncLoadoutMetadata, buildLoadoutMetadata, isRealImageKey, METADATA_FIELDS, SLOT_TO_FIELD, FOLDER };
+module.exports = { uploadLoadoutImage, uploadStagingScreenshot, copyLoadoutImage, isHttpImageSource, deriveImageKey, takenKeyPattern, codeImageKey, weaponKeyBase, devKeyPrefix, isDevNamespaceKey, imageKeyToPublicId, syncLoadoutMetadata, buildLoadoutMetadata, isRealImageKey, METADATA_FIELDS, SLOT_TO_FIELD, FOLDER };

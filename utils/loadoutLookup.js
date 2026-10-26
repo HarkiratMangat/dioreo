@@ -35,7 +35,8 @@ async function resolveWeapon(mode, rawQuery) {
         else if (fuzzyMatches.length > 1) return { ambiguous: fuzzyMatches.slice(0, 10).map(w => w.weaponName) };
     }
 
-    const real = builds.filter(b => !isPlaceholderBuild(b));
+    // In build-number order (utils/loadoutForm.js compareBuilds, 2026-10-26 01:19 EDT), so "Build N of M" is the build # the Edit pop-up shows and a swap there swaps the cards. It was Mongo's natural order, about _id order, before.
+    const real = builds.filter(b => !isPlaceholderBuild(b)).sort(require('./loadoutForm').compareBuilds);
     if (real.length) return { builds: real };
     // Only a "Coming Soon" placeholder: the weapon is known, its build is not (Harkirat, 2026-10-24 09:45 EDT: "design the panel in case a weapon is missing").
     if (builds.length) return { missing: { weaponName: builds[0].weaponName, category: builds[0].category } };

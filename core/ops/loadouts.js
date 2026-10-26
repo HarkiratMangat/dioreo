@@ -62,7 +62,17 @@ function validateBuild(payload) {
 
 // A bulk paste is parsed before its page's mode is known, so the mode-dependent half of the badge rules runs here, once the op carries the mode: on DMZ a bare tier moves to dmzRangeRank (the same swap handlers/manage/loadouts.js applies to a single add or edit; before this a bulk DMZ "best" was stored on categoryRank, which a DMZ card never reads), and rank modes, MP only, are dropped with a note.
 function applyModeToParsed(parsed, mode, errors) {
-    if (mode !== 'DMZ') return;
+    if (mode !== 'DMZ') {
+        // An MP build's gunsmith code is required (Harkirat, 2026-10-25 21:48 EDT), so its picture can be tied to it. A "Coming Soon" placeholder has no build yet and is exempt. Only a fresh paste reaches here: an inverse carries `parsed` and skips validate, so a Revert of an old build without a code still restores it.
+        const { isPlaceholderBuild } = require('../../utils/loadoutRender');
+        for (let i = parsed.length - 1; i >= 0; i--) {
+            const p = parsed[i];
+            if (p.shareCode || isPlaceholderBuild(p)) continue;
+            errors.push(`${p.weaponName} (${p.buildName}) -- MP builds need a Code: line, so it was skipped.`);
+            parsed.splice(i, 1);
+        }
+        return;
+    }
     for (const p of parsed) {
         if (p.categoryRank && !p.dmzRangeRank) p.dmzRangeRank = p.categoryRank;
         p.categoryRank = null;
@@ -90,11 +100,20 @@ async function upsertBulkBlocks(parsed, mode, session) {
     // 🔴 Every doc UPDATED in place (not created) needs its PRE-update state captured here, or a bulk invert can only delete the newly-created docs and silently leaves every in-place overwrite un-reverted -- the same class of bug draws/calendar's bulk ops already solved by replaying the whole prior array.
     const updatedPriors = [];
     const touchedBuilds = [];
-    for (const rawEntry of parsed) {
-        const { weaponKey, buildName } = rawEntry;
+    for (let rawEntry of parsed) {
+        const { weaponKey } = rawEntry;
+        let { buildName } = rawEntry;
+        let existing = await Loadout.findOne({ weaponKey, mode, buildName }).session(session);
+        // A block with no Build: line is a NEW build, numbered after the weapon's others (2026-10-26 01:19 EDT: buildName is always `Build N`, the number that orders /gunsmith). It used to be saved as "Standard Build", which numbered nothing.
+        if (!existing && buildName === 'Standard Build') {
+            const { buildNumberOf } = require('../../utils/loadoutForm');
+            const nums = (await Loadout.find({ weaponKey, mode }).select('buildName').session(session).lean()).map(b => buildNumberOf(b.buildName) || 0);
+            buildName = `Build ${Math.max(0, ...nums) + 1}`;
+            rawEntry = { ...rawEntry, buildName };
+            existing = null;
+        }
         touchedKeys.add(weaponKey);
         touchedBuilds.push({ weaponKey, buildName });
-        const existing = await Loadout.findOne({ weaponKey, mode, buildName }).session(session);
         const entry = bulkEntryWrite(rawEntry, mode, existing);
         const imageKey = entry.imageKey ?? existing?.imageKey;
         // Slots for a pasted build: an unchanged, already-slotted build keeps its own; anything else gets the catalogue's. Before this, an update that changed the attachments left the OLD slots in place, aligned to the wrong names.
@@ -132,6 +151,8 @@ registerEntity('loadouts', {
         apply: async (op, { session }) => {
             // imageSourceUrl is portal-only staging (spec §10.1 row 14, uploadStagingScreenshot) or a pasted link -- never a real Loadout field, so it is stripped before it ever reaches Mongo (Mongoose would silently drop it anyway per the schema, but leaving it in `doc` would also leak it into every preview/diff downstream of this payload).
             const { imageSourceUrl, ...doc } = op.payload;
+            // A picture the portal uploads at commit goes under the build's code key, whatever key its form sent (MP pictures are keyed WEAPON-CODE since 2026-10-26 01:19 EDT, utils/loadoutImageCache.js codeImageKey): a portal key minted by number is the overwrite this change exists to end.
+            if (imageSourceUrl && doc.mode === 'MP' && doc.shareCode) doc.imageKey = require('../../utils/loadoutImageCache').codeImageKey(doc.weaponName, doc.shareCode) || doc.imageKey;
             // A typed build has no slot labels of its own; the catalogue supplies them (deferred-list "Copy the attachment slots ... into Loadout.attachmentSlots": until 2026-10-19 16:19 EDT only /autobuild ever wrote slots). An /autobuild payload that carries its own keeps them.
             if (!doc.attachmentSlots?.length) {
                 const slots = await slotsFor(doc.attachments);
@@ -168,6 +189,9 @@ registerEntity('loadouts', {
             if (!cur) return { ok: false, reason: 'missing' };
             // imageSourceUrl is portal-only staging, same as loadout.add above -- stripped before it can reach `set` (and therefore `prior`/the invert payload).
             const { imageSourceUrl, ...payload } = op.payload;
+            // Same as loadout.add above: a picture uploaded at commit goes under the code key.
+            const finalCode = payload.shareCode ?? cur.shareCode;
+            if (imageSourceUrl && (payload.mode || cur.mode) === 'MP' && finalCode) payload.imageKey = require('../../utils/loadoutImageCache').codeImageKey(payload.weaponName || cur.weaponName, finalCode) || payload.imageKey;
             // Slot labels only ever come from /autobuild's vision extraction, and a plain-text edit can't supply new ones -- keep the existing mapping ONLY when the attachment list is byte-for-byte unchanged (same length + same names in the same order); any real change invalidates slot identity, so it's cleared rather than carried forward misaligned.
             const existingAttachments = cur.attachments || [];
             const newAttachments = payload.attachments || [];

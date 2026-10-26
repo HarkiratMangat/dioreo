@@ -20,7 +20,8 @@ async function resolveScopeBuilds({ mode, category, metaOnly }) {
     return builds.sort((a, b) =>
         a.category.localeCompare(b.category) ||
         a.weaponName.localeCompare(b.weaponName) ||
-        String(a.buildName).localeCompare(String(b.buildName)) ||
+        // A weapon's builds by build number, then by _id (utils/loadoutForm.js compareBuilds, 2026-10-26 01:19 EDT). Text order put Build 10 before Build 2.
+        require('./loadoutForm').compareBuilds(a, b) ||
         // FINAL TIE-BREAK, and it is load-bearing: `buildName` defaults to 'Standard Build' for every row that does not set one, so all three keys can tie. Without this the order falls back to whatever Mongo returned, which is not stable across two queries -- and since every click re-derives this list, an unstable tie silently moves the flat index onto a different build. That is the exact drift this design claims to bound.
         String(a._id).localeCompare(String(b._id)));
 }

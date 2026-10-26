@@ -54,17 +54,19 @@ function calendarSnippet(values) {
     return `${start} - ${end} | ${title}`;
 }
 
-// The labelled block from utils/adminParser.js's parseBulkLoadoutList. The single-item modal splits its data across pipe-delimited fields ("Build Name | Share Code", "Category | Badges") because Discord caps a modal at 5 inputs; this unpacks those back into the bulk format's own one-field-per-line shape.
+// The labelled block from utils/adminParser.js's parseBulkLoadoutList. The single-item pop-up packs several values per box ("weapon, label", "category, build #, code", attachments with a Badges: line) because Discord caps a modal at 5 inputs; this unpacks them, through the same reader the save uses (utils/loadoutForm.js), into the bulk format's one-field-per-line shape. The image is left out: the bulk format's Image: takes a key, and keys are minted now.
 function loadoutSnippet(values) {
-    const weapon = v(values, 'weapon');
-    const [buildName, shareCode] = v(values, 'build').split('|').map(s => (s || '').trim());
-    const [category, badges] = v(values, 'meta').split('|').map(s => (s || '').trim());
-    const lines = [`${weapon} | ${category || 'AR'}`];
-    if (buildName) lines.push(`Build: ${buildName}`);
-    if (v(values, 'image')) lines.push(`Image: ${v(values, 'image')}`);
-    if (shareCode) lines.push(`Code: ${shareCode}`);
-    if (badges) lines.push(`Badges: ${badges}`);
-    lines.push(...v(values, 'attachments').split('\n').map(a => a.trim()).filter(Boolean).map(a => `- ${a}`));
+    const form = require('../../utils/loadoutForm');
+    const { weaponName, label } = form.parseWeaponLabel(v(values, 'weapon'));
+    // Read as MP so a third part is kept; a DMZ box simply has none.
+    const ident = form.parseIdentity(v(values, 'build'), 'MP');
+    const { attachments, badgesRaw } = form.parseAttachmentsBadges(v(values, 'attachments'));
+    const lines = [`${weaponName} | ${ident.category || 'AR'}`];
+    if (ident.number) lines.push(`Build: Build ${ident.number}`);
+    if (label) lines.push(`Label: ${label}`);
+    if (ident.code) lines.push(`Code: ${ident.code}`);
+    if (badgesRaw) lines.push(`Badges: ${badgesRaw}`);
+    lines.push(...attachments.map(a => `- ${a}`));
     return lines.join('\n');
 }
 
@@ -161,7 +163,9 @@ function buildRetryModal(token) {
     const spec = specFor(pending.modalCustomId);
     if (!spec) return null;
 
-    const json = spec.rebuild(pending.modalCustomId).toJSON();
+    // A builder (ModalBuilder) serializes with toJSON(); the loadout pop-up is raw API JSON already (commands/manage.js loadoutModal), so it is copied instead.
+    const built = spec.rebuild(pending.modalCustomId);
+    const json = typeof built.toJSON === 'function' ? built.toJSON() : structuredClone(built);
     // A field sits in an action row (`components`) or, since the draw forms moved to Labels (2026-10-18 11:06 EDT), in a Label (`component`). A select is refilled by marking its stored option as the default.
     for (const row of json.components || []) {
         for (const comp of (row.component ? [row.component] : row.components || [])) {
