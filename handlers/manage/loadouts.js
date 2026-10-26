@@ -145,18 +145,25 @@ async function warnUnknownNames(interaction, pending, unknown) {
     });
 }
 
-// The picture warning (his three options, see resolvePicture): an MP edit whose attachments AND code changed, with no new picture. Nothing is saved until he picks one; what was typed waits in the same store as the catalogue warning's.
+// The picture warning (his three options, see resolvePicture): an MP edit whose attachments AND code changed, with no new picture. Nothing is saved until he picks one; what was typed waits in the same store as the catalogue warning's. A panel rather than a text line, with the current picture beside it, and the buttons in his order: Keep · Save without · Upload a new one on the right (Harkirat, 2026-10-26 11:46 EDT). `noneEmoji` is the Save without a picture icon, still his pick.
+function pictureWarningPanel(imageKey, token, { noneEmoji = BOT_EMOJI.deleteBin } = {}) {
+    const { buildImageUrl } = require('../../utils/loadoutRender');
+    const icon = (e) => BOT_EMOJI.parseEmoji(e);
+    return [{ type: 17, accent_color: 0xF0B232, components: [
+        { type: 9,
+          components: [{ type: 10, content: `### ${BOT_EMOJI.warn} Attachments changed, so the picture might not match\n-# **Picture:** \`${imageKey}\`\n-# Nothing is saved until you pick.` }],
+          accessory: { type: 11, media: { url: buildImageUrl(imageKey) } } },
+        { type: 1, components: [
+            { type: 2, style: 2, label: 'Keep the picture', custom_id: `mng_picok|${token}`, emoji: icon(BOT_EMOJI.keep) },
+            { type: 2, style: 2, label: 'Save without a picture', custom_id: `mng_picnone|${token}`, emoji: icon(noneEmoji) },
+            { type: 2, style: 1, label: 'Upload a new picture', custom_id: `mng_picnew|${token}`, emoji: icon(BOT_EMOJI.plus) }
+        ] }
+    ] }];
+}
+
 async function warnOldPicture(interaction, pending, imageKey) {
     const token = holdPending(interaction, pending);
-    return interaction.followUp({
-        content: `${BOT_EMOJI.warn} **The attachments changed, so this build's picture shows the old build**\n> **Picture:** \`${imageKey}\`\n> **Keep it**, **upload a new one**, or **save without a picture**. Nothing is saved until you pick.`,
-        components: [{ type: 1, components: [
-            { type: 2, style: 2, label: 'Keep the picture', custom_id: `mng_picok|${token}` },
-            { type: 2, style: 1, label: 'Upload a new picture', custom_id: `mng_picnew|${token}` },
-            { type: 2, style: 2, label: 'Save without a picture', custom_id: `mng_picnone|${token}` }
-        ] }],
-        ephemeral: true
-    });
+    return interaction.followUp({ flags: 32768 | 64, components: pictureWarningPanel(imageKey, token) });
 }
 
 // custom_ids: mng_catok|{token} · mng_catedit|{token} (the catalogue warning) · mng_picok|{token} · mng_picnew|{token} · mng_picnone|{token} (the picture warning). Only the admin who submitted may press them; the router's /manage admin lock has already run.
@@ -185,7 +192,9 @@ async function handleCatalogueWarning(interaction) {
 
     pendingCatalogue.delete(token);
     const pictureChoice = kind === 'mng_picok' ? 'keep' : kind === 'mng_picnone' ? 'none' : pending.pictureChoice;
-    await interaction.update({ content: kind === 'mng_catok' ? '⏳ Saving it as typed, and adding the new names…' : '⏳ Saving…', components: [] });
+    // The picture warning is a Components V2 panel, which takes no `content`, so its "saving" state is a panel too.
+    if (kind === 'mng_catok') await interaction.update({ content: '⏳ Saving it as typed, and adding the new names…', components: [] });
+    else await interaction.update({ flags: 32768, components: [{ type: 17, components: [{ type: 10, content: '⏳ Saving…' }] }] });
     const preset = { customId, values: pending.values, pictureChoice };
     if (customId.startsWith('add_loadout_')) return await addLoadout(interaction, preset);
     if (customId.startsWith('modal_loadouts_bulk_add_')) return await bulkAddLoadouts(interaction, preset);
@@ -467,4 +476,4 @@ async function deleteItem(match, actorId) {
     return null;   // Undo now lives on /bot analytics' Changes page (core/revert.js) -- no inline undo token.
 }
 
-module.exports = { editLoadout, addLoadout, editLoadoutModal, bulkAddLoadouts, handleCatalogueWarning, bulkDeleteLoadouts, exportUpTo5, exportCategory, deleteItem };
+module.exports = { editLoadout, addLoadout, editLoadoutModal, pictureWarningPanel, bulkAddLoadouts, handleCatalogueWarning, bulkDeleteLoadouts, exportUpTo5, exportCategory, deleteItem };
