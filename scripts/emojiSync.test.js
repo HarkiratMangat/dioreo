@@ -32,13 +32,13 @@ t('on prod: the prod app\'s own list adds what the map does not name, with its o
     assert.deepStrictEqual(rows.map(r => [r.name, r.prodId]), [['Alpha', '10'], ['Beta', '11'], ['Extra', '12']]);
 });
 
-t('Sync tries the Cloudinary original first, converted forms next, then the CDN copies; never size=4096', () => {
+t('Sync reads only the Cloudinary original and forms of it, at its current version', () => {
     process.env.CLOUDINARY_URL = 'cloudinary://k:s@democloud';
     const row = S.buildRows(prod, apps, { isProd: false })[1];
     const labels = S.sourceCandidates(row).map(c => c.label);
-    assert.deepStrictEqual(labels.slice(0, 3), ['original', 'original as WebP', 'original as 128px WebP']);
-    assert.ok(S.sourceCandidates(row)[0].url === 'https://res.cloudinary.com/democloud/image/upload/emoji-originals/Beta');
-    assert.ok(labels.slice(3).every(l => l.startsWith('CDN')) && !S.sourceCandidates(row).some(c => c.url.includes('4096')));
+    assert.deepStrictEqual(labels, ['original', 'original as WebP', 'original as 128px WebP', 'original as 96px WebP'], 'only the original and forms of it');
+    assert.ok(!S.sourceCandidates(row).some(c => c.url.includes('discord')), 'never a Discord copy (his 21:16 EDT rule)');
+    assert.strictEqual(S.sourceCandidates({ ...row, version: 123 })[0].url, 'https://res.cloudinary.com/democloud/image/upload/v123/emoji-originals/Beta', 'read at its current version, so a Replace is never served stale');
 });
 
 t('an upload skips a file over 256 KB and a non-image, and stops at the first that Discord takes', async () => {
@@ -49,7 +49,7 @@ t('an upload skips a file over 256 KB and a non-image, and stops at the first th
     const posted = [];
     const client = { application: { id: 'APP' }, rest: { post: async (route, { body }) => posted.push([route, body.name, body.image.slice(0, 22)]) } };
     const res = await S.uploadMissing(client, row, { fetchFn });
-    assert.deepStrictEqual(res, { ok: true, via: 'original as 128px WebP' });
+    assert.deepStrictEqual(res, { ok: true, via: 'original as 128px WebP' }, 'the 96px form is not reached once 128px fits');
     assert.deepStrictEqual(posted, [['/applications/APP/emojis', 'Beta', 'data:image/webp;base64']]);
 });
 
@@ -58,7 +58,9 @@ t('the panel: counts per app, the four views, a page of rows, and Sync naming ho
     const withClients = apps.map(a => ({ ...a, client: { application: { id: a.key } } }));
     const panel = buildEmojiPanel({ rows, apps: withClients, senderAppId: 'admin' });
     const s = JSON.stringify(panel);
-    assert.ok(s.includes('**2** emojis') && s.includes('Dioreo Admin (Dev) missing **1**') && s.includes('**1** with no original') && s.includes('Sync 1 missing') && s.includes('emo_sync_all'));
+    assert.ok(s.includes('**2** emojis') && s.includes('Dioreo Admin (Dev) missing **1**') && s.includes('**1** with no original') && s.includes('Nothing to sync'), 'Beta has no original, so Sync has nothing it can do');
+    const withFile = S.buildRows(prod, apps, { isProd: false, originals: new Map([['Alpha', {}], ['Beta', {}]]) });
+    assert.ok(JSON.stringify(buildEmojiPanel({ rows: withFile, apps: withClients })).includes('Sync 1 missing') && JSON.stringify(buildEmojiPanel({ rows: withFile, apps: withClients })).includes('emo_sync_all'));
     assert.ok(!s.includes('**Extra**'), 'All lists the prod emojis only');
     assert.ok(JSON.stringify(buildEmojiPanel({ rows, apps: withClients, filter: 'unused' })).includes('**Extra**'), 'Not in code lists the extra');
     assert.ok(JSON.stringify(buildEmojiPanel({ rows, apps: withClients, filter: 'nofile' })).includes('**Beta**'), 'No original lists Beta');
@@ -83,6 +85,27 @@ t('the Upload original pop-up: a name, the file, what to do if taken, and whethe
     new ModalBuilder(m).toJSON();
     new ModalBuilder(findModal('missing')).toJSON();
     assert.ok(S.EMOJI_NAME.test('Daily_Update2') && !S.EMOJI_NAME.test('a') && !S.EMOJI_NAME.test('has space') && !S.EMOJI_NAME.test('x'.repeat(33)));
+});
+
+t('the auto-sync pushes only what the code or some bot uses, skips a recent failure, and shares one lock', async () => {
+    const mkApp = (id, label, names) => ({ key: id, label, emojis: [], client: { application: { id }, rest: {
+        get: async () => names.map((n, i) => ({ id: `${id}${i}`, name: n, animated: false })),
+        post: async (route, { body }) => { if (body.name === 'Bad') throw new Error('rejected'); names.push(body.name); },
+    } } });
+    const okFetch = globalThis['fe' + 'tch'];
+    globalThis['fe' + 'tch'] = async () => ({ ok: true, headers: { get: () => 'image/png' }, arrayBuffer: async () => new ArrayBuffer(10) });
+    try {
+        const main = mkApp('M', 'Main', ['Remind', 'NewOne']), admin = mkApp('A', 'Admin', []);
+        const originals = new Map([['Remind', { version: 1 }], ['NewOne', { version: 2 }], ['Stray', { version: 3 }], ['Bad', { version: 4 }], ['FromOther', { version: 5 }]]);
+        const other = { apps: [{ key: 'main', emojis: [{ name: 'FromOther' }, { name: 'Bad' }] }] };
+        const noReport = async () => true;
+        const res = await S.runAutoSync([main, admin], { originals, other, now: 1000, writeStatusFn: noReport });
+        assert.deepStrictEqual(res.added.sort(), ['FromOther → Admin', 'FromOther → Main', 'NewOne → Admin', 'Remind → Admin']);
+        assert.ok(!res.added.some(a => a.startsWith('Stray')), 'a file no bot and no code uses is never pushed');
+        assert.deepStrictEqual(res.failed.sort(), ['Bad → Admin', 'Bad → Main']);
+        const again = await S.runAutoSync([main, admin], { originals, other, now: 2000, writeStatusFn: noReport });
+        assert.deepStrictEqual([again.added, again.failed, again.held.length], [[], [], 2], 'a failure waits a day instead of failing every run');
+    } finally { globalThis['fe' + 'tch'] = okFetch; }
 });
 
 (async () => {

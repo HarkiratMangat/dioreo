@@ -11,22 +11,27 @@ const { sendV2Payload } = require('../utils/sendV2Payload');
 const { buildPaginationRow } = require('../utils/paginationRow');
 const S = require('../utils/emojiSync');
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 12; // four marks a row since the status reports (21:16 EDT); 15 rows would pass Discord's 4,000 characters
 const ACCENT = 5793266; // Discord Blurple, the admin surfaces' colour
 
 // The apps this process runs, in display order: the public one first (on prod it IS the prod app), then Dioreo Admin when it is logged in.
+const SHORT = { prod: { main: 'Dioreo', admin: 'Admin' }, dev: { main: 'Dev', admin: 'Dev Admin' } };
 function appsOfThisProcess() {
     const { clients } = require('../bot/clients');
+    const env = process.env.NODE_ENV === 'development' ? 'dev' : 'prod';
     return [
-        clients.public && { key: 'main', label: clients.public.user?.username || 'Dioreo', client: clients.public },
-        clients.admin && { key: 'admin', label: clients.admin.user?.username || 'Dioreo Admin', client: clients.admin },
+        clients.public && { key: 'main', env, short: SHORT[env].main, label: clients.public.user?.username || 'Dioreo', client: clients.public },
+        clients.admin && { key: 'admin', env, short: SHORT[env].admin, label: clients.admin.user?.username || 'Dioreo Admin', client: clients.admin },
     ].filter(Boolean);
 }
 
+// This process's two apps, live, then the other bot's two from its last status report (utils/emojiSync.js), marked `remote` with the report's time: Sync and Upload never write to those, the other bot fills them itself.
 async function loadState() {
     const apps = appsOfThisProcess();
     const lists = await Promise.all(apps.map(a => S.listAppEmojis(a.client)));
     apps.forEach((a, i) => { a.emojis = lists[i]; });
+    const other = await S.readOtherStatus();
+    for (const a of other?.apps || []) apps.push({ key: a.key, env: other.env, short: SHORT[other.env]?.[a.key] || a.label, label: a.label, emojis: a.emojis || [], remote: true, at: other.at });
     let originals = null;
     try { originals = await S.listOriginals(); } catch (e) { console.error('/emojis: could not list the Cloudinary originals:', S.safeCloudinaryError(e)); }
     return { apps, rows: S.buildRows(S.prodEmojisFromSource(), apps, { originals }), originalsKnown: Boolean(originals) };
@@ -50,7 +55,8 @@ function pageOf(rows, filter, name) {
 function buildEmojiPanel({ rows, apps, page = 0, filter = 'all', note = null, senderAppId = null, originalsKnown = true }) {
     const f = filterOf(filter);
     const prodRows = rows.filter(r => r.prodEmoji);
-    const missingCount = prodRows.reduce((n, r) => n + r.has.filter(h => !h).length, 0);
+    // What Sync can actually do: this process's apps only, and only where an original exists (it never copies from Discord).
+    const missingCount = prodRows.filter(r => r.hasOriginal !== false).reduce((n, r) => n + r.has.filter((h, i) => !h && !apps[i].remote).length, 0);
     const shown = rows.filter(f.test);
     const pages = Math.max(1, Math.ceil(shown.length / PAGE_SIZE));
     const p = Math.min(Math.max(Number(page) || 0, 0), pages - 1);
@@ -61,10 +67,10 @@ function buildEmojiPanel({ rows, apps, page = 0, filter = 'all', note = null, se
     };
     // The full mention, as code pastes it (Harkirat, 2026-10-25 21:09 EDT: "by the ID, i meant like `<:Check:1564082261954138202>`"): the prod id, or the app's own for an emoji only an app has.
     const codeOf = r => `<${r.animated ? 'a' : ''}:${r.name}:${r.prodId || r.copies.find(Boolean)?.id || '?'}>`;
-    const stats = [`**${prodRows.length}** emojis`, ...apps.map((a, i) => `${a.label} missing **${prodRows.filter(r => !r.has[i]).length}**`)];
+    const stats = [`**${prodRows.length}** emojis`, ...apps.map((a, i) => `${a.label} missing **${prodRows.filter(r => !r.has[i]).length}**${a.remote ? ` (as of <t:${Math.floor(new Date(a.at).getTime() / 1000)}:R>)` : ''}`)];
     if (originalsKnown) stats.push(`**${prodRows.filter(r => r.hasOriginal === false).length}** with no original`);
     const lines = shown.slice(p * PAGE_SIZE, (p + 1) * PAGE_SIZE).map(r =>
-        `${icon(r)} **${r.name}** · \`${codeOf(r)}\` · ${apps.map((a, i) => `${r.has[i] ? emojis.check : emojis.cross} ${a.key === 'admin' ? 'Admin' : 'Main'}`).join('  ')}${r.hasOriginal === false && r.prodEmoji ? ' · *no original*' : ''}`);
+        `${icon(r)} **${r.name}** · \`${codeOf(r)}\` · ${apps.map((a, i) => `${r.has[i] ? emojis.check : emojis.cross} ${a.short || a.label}`).join('  ')}${r.hasOriginal === false && r.prodEmoji ? ' · *no original*' : ''}`);
     const empty = { all: 'No emojis.', missing: `${emojis.checkmark} No bot is missing an emoji.`, nofile: `${emojis.checkmark} Every emoji has its original in Cloudinary.`, unused: `${emojis.checkmark} Every emoji on the bots is one the code uses.` }[f.key];
     const components = [
         { type: 10, content: `## Emojis\n-# ${stats.join(' · ')}` },
@@ -118,4 +124,4 @@ async function execute(interaction) {
     await sendV2Payload(interaction, buildEmojiPanel({ ...state, senderAppId: interaction.applicationId }));
 }
 
-module.exports = { data, execute, buildEmojiPanel, loadState, uploadModal, findModal, pageOf, FILTERS, PAGE_SIZE };
+module.exports = { data, execute, buildEmojiPanel, loadState, appsOfThisProcess, uploadModal, findModal, pageOf, FILTERS, PAGE_SIZE };

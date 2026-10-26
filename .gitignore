@@ -76,6 +76,8 @@ public/_v-*.html
 # hotpatch test fixture + IPC markers
 utils/__hotpatchFixture.js
 .hotpatch-request
+# The dev bot's last emoji sync (bot/lifecycle.js): it restarts on every save, so it checks at most once an hour.
+.emoji-sync-last
 .hotpatch-result
 
 # portal/public/ is BUILD OUTPUT (scripts/buildPortal.js) -- unlike the legal site's public/, which

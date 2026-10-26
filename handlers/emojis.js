@@ -77,16 +77,19 @@ async function route(interaction) {
             const added = [], kept = [], failed = [];
             const row = state.rows.find(r => r.name === name) || { name, animated: /gif|webp|avif/.test(file.mime), knownIds: [], has: state.apps.map(() => false) };
             for (const [i, app] of state.apps.entries()) {
+                if (app.remote) continue; // the other bot adds it from Cloudinary itself
                 if (row.has[i]) { kept.push(app.label); continue; }
-                const res = await S.uploadMissing(app.client, { ...row, knownIds: [] });
+                const res = await S.uploadMissing(app.client, { ...row, version: (await S.listOriginals()).get(name)?.version, knownIds: [] });
                 if (res.ok) added.push(app.label); else { failed.push(app.label); console.error(`/emojis: adding ${name} to ${app.label} failed: ${res.error}`); }
             }
-            for (const app of state.apps) { try { await emojis.refreshEmojiIds(app.client, { secondary: app.key === 'admin' }); } catch (e) { console.error('Emoji map refresh after an /emojis upload failed:', e?.message || e); } }
+            for (const app of state.apps.filter(x => !x.remote)) { try { await emojis.refreshEmojiIds(app.client, { secondary: app.key === 'admin' }); } catch (e) { console.error('Emoji map refresh after an /emojis upload failed:', e?.message || e); } }
             if (added.length) parts.push(`added to ${added.join(' and ')}`);
             if (kept.length) parts.push(`${kept.join(' and ')} kept ${kept.length > 1 ? 'their' : 'its'} copy${replace && taken ? ' (delete it there to take the new file)' : ''}`);
             if (failed.length) parts.push(`${emojis.cross} could not add to ${failed.join(' and ')} (details in the log)`);
         }
         state = await P.loadState();
+        await S.writeStatus(state.apps.filter(x => !x.remote));
+        if (toBots) parts.push('the other bot adds it within 10 minutes');
         return again(parts.join(' · '));
     }
 
@@ -101,22 +104,20 @@ async function route(interaction) {
     let state = await P.loadState();
     if (isSync) {
         filter = a || 'all';
-        const done = [], failed = [];
-        for (const row of state.rows) {
-            if (!row.prodEmoji) continue; // an emoji the code never names is not copied around
-            for (const [i, app] of state.apps.entries()) {
-                if (row.has[i]) continue;
-                const res = await S.uploadMissing(app.client, row);
-                if (res.ok) done.push(`${row.name} → ${app.label}`);
-                else { failed.push(`${row.name} → ${app.label}`); console.error(`/emojis sync: ${row.name} to ${app.label} failed: ${res.error}`); }
-            }
-        }
+        // The same run the timer makes (utils/emojiSync.js runAutoSync), sharing its lock: originals only, this process's two apps only.
+        const own = state.apps.filter(x => !x.remote);
+        const res = await S.runAutoSync(own);
         // Each app's emoji map re-points by name, so the panels using a just-uploaded emoji draw it at once rather than after the next restart.
-        for (const app of state.apps) {
+        for (const app of own) {
             try { await emojis.refreshEmojiIds(app.client, { secondary: app.key === 'admin' }); } catch (e) { console.error('Emoji map refresh after /emojis sync failed:', e?.message || e); }
         }
         state = await P.loadState();
-        note = `${done.length ? `${emojis.checkmark} Synced ${done.length}` : 'Synced 0'}${failed.length ? ` · ${emojis.cross} ${failed.length} failed: ${failed.slice(0, 5).join(', ')}${failed.length > 5 ? '…' : ''} (details in the log)` : ''}`;
+        const noFile = state.rows.filter(r => r.prodEmoji && r.hasOriginal === false && r.has.some((h, i) => !h && !state.apps[i].remote)).length;
+        note = res.skipped ? 'A sync is already running; try again in a moment.'
+            : [res.added.length ? `${emojis.checkmark} Synced ${res.added.length}` : 'Nothing to sync',
+                res.failed.length ? `${emojis.cross} ${res.failed.length} failed: ${res.failed.slice(0, 5).join(', ')}${res.failed.length > 5 ? '…' : ''} (details in the log)` : null,
+                res.held?.length ? `${res.held.length} failed earlier today, retried tomorrow` : null,
+                noFile ? `${noFile} need their original first (No original)` : null].filter(Boolean).join(' · ');
     }
     return draw(state, { page, filter, note });
 }

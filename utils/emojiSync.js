@@ -1,8 +1,8 @@
 // /emojis (Harkirat, 2026-10-25 20:41 EDT: "make me a dioreo admin command /emojis which lists all the prod emojis, the emoji name, the emoji id, and if any of the bots are missing it, as well as a quick 1 tap to sync emojis (takes the emoji file and uploads it to the app that it's missing from. and ig this means you should upload our emoji folder to cloudinary)"). Every app emoji the bot knows, its prod id, and whether each app this process logs in as has it; Sync uploads each missing one.
 //
-// WHICH APPS: a process only holds its own tokens, so the dev bot checks Dioreo (Dev) and Dioreo Admin (Dev), and the VM checks Dioreo and Dioreo Admin. The prod ids come from utils/emojiMap.js's literals, read off the FILE: at boot the dev bot re-points the map's values to its own ids in place, so the live object no longer holds them. On prod the prod app's own list adds anything the map does not name.
+// WHICH APPS: a process only holds its own tokens, so the dev bot writes to Dioreo (Dev) and Dioreo Admin (Dev), and the VM to Dioreo and Dioreo Admin; no token leaves its machine. Each bot leaves a status report of its two apps in Cloudinary (`emoji-status/<dev|prod>.json`), so /emojis shows all four. The prod ids come from utils/emojiMap.js's literals, read off the FILE: at boot the dev bot re-points the map's values to its own ids in place, so the live object no longer holds them.
 //
-// WHERE THE FILE COMES FROM, best first: his original in Cloudinary's `emoji-originals/` folder (Logos-&-Emojis/emoji-originals, uploaded by scripts/uploadEmojiOriginals.js so the VM can reach it), as is when it fits Discord's 256 KB, then converted to WebP, then 128px WebP; after that the CDN rendition of a copy that exists (the prod id, or the other app's), the order scripts/syncMissingDevEmojis.js settled on (its header has why: an original beats any re-encode, and the CDN must never be asked for `size=4096`, which upscales). Only reads touch Cloudinary here; the uploads go to Discord.
+// ONE UPLOAD, FOUR BOTS (Harkirat, 2026-10-25 21:14-21:16 EDT: "I don't want to upload each emoji like 4 separate times" / "I don't want it to like download the emoji from Discord, because we saw earlier that that messed with the quality"). Cloudinary's `emoji-originals/` is the source of truth: every file there belongs on every bot, and `runAutoSync` (at start-up and every 10 minutes, bot/lifecycle.js) uploads whatever its own two apps lack. The ONLY source is that original (Logos-&-Emojis/emoji-originals, put there by scripts/uploadEmojiOriginals.js or /emojis' Upload original): as is when it fits Discord's 256 KB, else Cloudinary's WebP of it, else 128px WebP of it. Never a Discord CDN copy: re-encoding those is what lost quality before (scripts/syncMissingDevEmojis.js's header), and an emoji with no original is listed under No original instead of being copied.
 const fs = require('fs');
 const path = require('path');
 
@@ -53,18 +53,15 @@ function sourceCandidates(row) {
     const cn = cloudName();
     if (cn) {
         const base = `https://res.cloudinary.com/${cn}/image/upload`;
-        const id = `${ORIGINALS_FOLDER}/${encodeURIComponent(row.name)}`;
+        // At its CURRENT version: an unversioned URL keeps serving the old file from the CDN after a Replace (measured 2026-10-25 21:22 EDT, even with a query string), so a bot would copy the old art.
+        const id = `${row.version ? `v${row.version}/` : ''}${ORIGINALS_FOLDER}/${encodeURIComponent(row.name)}`;
         list.push({ label: 'original', url: `${base}/${id}` });
         list.push({ label: 'original as WebP', url: `${base}/f_webp,fl_awebp,q_auto/${id}` });
         list.push({ label: 'original as 128px WebP', url: `${base}/w_128,h_128,c_limit,f_webp,fl_awebp,q_auto/${id}` });
+        // DB_Database (a 1.8 MB GIF) fits none of the three above (measured 21:19 EDT); still made from the original, never a Discord copy.
+        list.push({ label: 'original as 96px WebP', url: `${base}/w_96,h_96,c_limit,f_webp,fl_awebp,q_60/${id}` });
     }
-    for (const id of row.knownIds) {
-        const anim = row.animated ? 'animated=true&' : '';
-        list.push({ label: 'CDN WebP', url: `https://cdn.discordapp.com/emojis/${id}.webp?${anim}quality=lossless` });
-        list.push({ label: 'CDN WebP lossy', url: `https://cdn.discordapp.com/emojis/${id}.webp${row.animated ? '?animated=true' : ''}` });
-        list.push({ label: `CDN ${row.animated ? 'GIF' : 'PNG'} 128px`, url: `https://cdn.discordapp.com/emojis/${id}.${row.animated ? 'gif' : 'png'}?size=128` });
-    }
-    return list;
+    return list; // never a Discord CDN copy (see the header)
 }
 
 const fetchImpl = (...args) => globalThis['fe' + 'tch'](...args);
@@ -105,7 +102,7 @@ async function listOriginals({ force = false } = {}) {
     let cursor;
     do {
         const res = await cloudinary.api.resources({ type: 'upload', prefix: `${ORIGINALS_FOLDER}/`, max_results: 500, next_cursor: cursor });
-        for (const r of res.resources || []) names.set(r.public_id.slice(ORIGINALS_FOLDER.length + 1), { format: r.format, bytes: r.bytes });
+        for (const r of res.resources || []) names.set(r.public_id.slice(ORIGINALS_FOLDER.length + 1), { format: r.format, bytes: r.bytes, version: r.version });
         cursor = res.next_cursor;
     } while (cursor);
     originalsCache = { at: Date.now(), names };
@@ -126,4 +123,71 @@ async function uploadOriginal(buffer, name, { mime = 'image/png', overwrite = fa
     }
 }
 
-module.exports = { prodEmojisFromSource, listAppEmojis, buildRows, sourceCandidates, uploadMissing, listOriginals, uploadOriginal, safeCloudinaryError, MAX_UPLOAD_BYTES, MAX_ORIGINAL_BYTES, EMOJI_NAME, ORIGINALS_FOLDER };
+// ---- Status reports: each bot's two apps, for the other bot's /emojis ----
+const STATUS_FOLDER = 'emoji-status';
+const envKey = () => (IS_PROD() ? 'prod' : 'dev');
+let lastStatusKey = null;
+async function writeStatus(apps, { force = false } = {}) {
+    // Only when the lists changed: every write is an upload and a CDN purge, and an idle check would otherwise make one each time.
+    const key = JSON.stringify(apps.map(a => [a.key, (a.emojis || []).map(e => `${e.name}:${e.id}`).sort()]));
+    if (!force && key === lastStatusKey) return true;
+    const { isCloudinaryWriteBlocked } = require('./cloudinaryDevGuard');
+    // devNamespaceSafe: `emoji-status/` holds only these two reports.
+    if (isCloudinaryWriteBlocked('upload', `${STATUS_FOLDER}/${envKey()}.json`, { devNamespaceSafe: true })) return false;
+    const body = { env: envKey(), at: new Date().toISOString(), apps: apps.map(a => ({ key: a.key, label: a.label, emojis: a.emojis })) };
+    try {
+        const cloudinary = require('./cloudinaryClient');
+        await cloudinary.uploader.upload(`data:application/json;base64,${Buffer.from(JSON.stringify(body)).toString('base64')}`, { public_id: `${STATUS_FOLDER}/${envKey()}.json`, resource_type: 'raw', overwrite: true, invalidate: true });
+        lastStatusKey = key;
+        return true;
+    } catch (e) { console.error('Emoji status report failed:', safeCloudinaryError(e)); return false; }
+}
+// The OTHER bot's report, or null. Read at its current version (one Admin API call, cached a minute), so a report written a moment ago is never served stale from the CDN.
+let otherCache = null;
+async function readOtherStatus({ fetchFn = fetchImpl } = {}) {
+    if (otherCache && Date.now() - otherCache.at < 60 * 1000) return otherCache.value;
+    const other = envKey() === 'prod' ? 'dev' : 'prod';
+    let value = null;
+    try {
+        const cloudinary = require('./cloudinaryClient');
+        const meta = await cloudinary.api.resource(`${STATUS_FOLDER}/${other}.json`, { resource_type: 'raw' });
+        const res = await fetchFn(meta.secure_url);
+        if (res.ok) value = await res.json();
+    } catch (e) { if (e?.error?.http_code !== 404) console.error('Reading the other bot\'s emoji status failed:', safeCloudinaryError(e)); }
+    otherCache = { at: Date.now(), value };
+    return value;
+}
+
+// ---- The auto-sync: every original onto every app of this process that lacks it ---- Which originals go out: one the code names, or one some bot already has (this process's apps, or the other bot's in its last report). A file nobody uses is never pushed, so a stray (EditCalc, saved before the emoji was renamed Edit) or a retired one cannot spread by itself; a new emoji uploaded through /emojis lands on that bot's pair at once, and so reaches the other bot through its report. A failed upload is not retried for a day (DB_Database once failed on every attempt). Used by the timer in bot/lifecycle.js and by /emojis' Sync button, which share the lock so the two never upload the same emoji twice.
+let syncing = false;
+const failedUntil = new Map(); // `${appId}:${name}` -> ms
+async function runAutoSync(apps, { originals = null, other, now = Date.now(), writeStatusFn = writeStatus } = {}) {
+    if (syncing || !apps.length) return { skipped: true, added: [], failed: [] };
+    syncing = true;
+    try {
+        originals = originals || await listOriginals({ force: true });
+        if (other === undefined) other = await readOtherStatus();
+        const lists = [];
+        for (const app of apps) lists.push(await listAppEmojis(app.client));
+        const wanted = new Set(prodEmojisFromSource().keys());
+        for (const l of lists) for (const e of l) wanted.add(e.name);
+        for (const a of other?.apps || []) for (const e of a.emojis || []) wanted.add(e.name);
+        const added = [], failed = [], held = [];
+        for (const [i, app] of apps.entries()) {
+            const appId = app.client.application?.id ?? app.client.user?.id;
+            const have = new Set(lists[i].map(e => e.name));
+            for (const [name, meta] of originals) {
+                if (have.has(name) || !EMOJI_NAME.test(name) || !wanted.has(name)) continue;
+                if ((failedUntil.get(`${appId}:${name}`) || 0) > now) { held.push(`${name} → ${app.label}`); continue; }
+                const res = await uploadMissing(app.client, { name, version: meta.version, knownIds: [] });
+                if (res.ok) added.push(`${name} → ${app.label}`);
+                else { failed.push(`${name} → ${app.label}`); failedUntil.set(`${appId}:${name}`, now + 24 * 60 * 60 * 1000); console.error(`Emoji sync: ${name} to ${app.label} failed: ${res.error}`); }
+            }
+        }
+        for (const app of apps) app.emojis = await listAppEmojis(app.client);
+        await writeStatusFn(apps);
+        return { added, failed, held };
+    } finally { syncing = false; }
+}
+
+module.exports = { prodEmojisFromSource, listAppEmojis, buildRows, sourceCandidates, uploadMissing, listOriginals, uploadOriginal, safeCloudinaryError, writeStatus, readOtherStatus, runAutoSync, MAX_UPLOAD_BYTES, MAX_ORIGINAL_BYTES, EMOJI_NAME, ORIGINALS_FOLDER };
