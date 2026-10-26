@@ -12,6 +12,20 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.0.0 — October 26, 2026
+**Dioreo v3 is here.** The biggest update yet:
+- **Add Dioreo to a server.** `/invite` adds it to a server or to just your own apps, and a server's admins choose where its replies stay private with `/admin`.
+- **`/gunsmith mp` and `/gunsmith dmz`** replace the old weapon commands: search any weapon, even half-typed, or browse the META. Builds show their badges and the rank modes they suit, and you can copy a build's attachments or its Gunsmith Code.
+- **Submit a Build.** A weapon with no build yet has a button to send yours in.
+- **`/draw calculator`** plans your CP: save calculations, price Mythic upgrades, the Series Armory and the Advanced draws, and see a suggested purchase. `/draw prices` covers the 10, 20 and 30 CP regions.
+- **`/today`** is a daily brief: what released since the daily update, what goes live next, and what's leaving soon. `/calendar` opens on it.
+- **`/remind`** sends you one DM a day, right after the daily update, with only what you picked. The bell on each seasonal command opens it.
+- **`/calendar`, `/draws` and `/season end`:** filter the calendar by status, open the calculator from `/draws`, and watch the season-end progress bars. `/patch notes` keeps every season.
+- **Right-click tools:** View Colors on a person or a message, and Convert Times on a message.
+- **`/timestamp`** reads your saved time zone and understands ranges like "8pm to 10pm".
+- **`/settings`** shows when you started using Dioreo, and Your Stats counts your own use (only you see it, and you can reset it).
+- **Updated Terms of Service and Privacy Policy**, at dioreo.app/terms and dioreo.app/privacy.
+
 ## v2.63.1 — August 9, 2026
 - **Nothing changed in the bot.** Internal housekeeping on the project's own development tooling: a self-imposed limit on an internal notes file was found never to have been measured and was corrected, and two small automated reminders were added to catch mistakes that were previously only caught by hand.
 

@@ -282,6 +282,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-25 01:48 EDT — /remind: reminders by DM, built on his phone one mock-up at a time (v3.110.0)
 - 2026-10-26 00:35 EDT — Harkirat's command review rounds, /emojis and the /autobuild form (v3.111.0)
 - 2026-10-26 13:17 EDT — Loadout pictures keyed by gunsmith code, a five-field edit pop-up, and a panel for every /manage save (v3.114.0)
+- 2026-10-26 14:17 EDT — Dioreo v3 launches, and the legal documents are made true for it (v3.0.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4733,6 +4734,15 @@ Harkirat spent two days refining command layouts on the dev bot, mostly from his
 - **Put the rule where every caller passes.** Numbering and the code rule began in the /manage handler, and pins2's portal would have skipped them. Moving them into core made one place answer for both.
 - **A require is a dependency the hotpatch planner sees.** The Open button first required the three commands, which put the whole /manage handler tree in their hotpatch closure; `scripts/hotpatch.test.js` caught it. Looking the command up on `client.commands`, as pagination already does, keeps the graph honest.
 - **Ask before taking the screen.** A click-test approval covered that one test, not the next; a later takeover needs its own yes.
+
+## 2026-10-26 14:17 EDT — Dioreo v3 launches, and the legal documents are made true for it (v3.0.0)
+
+v3 ends the pre-release line: 115 entries, brought to `main` in one rebase so every commit stays bisectable, with an archive tag keeping the old hashes reachable.
+
+The launch work itself was mostly making the legal documents true. A re-check written on 2026-10-20 had found the Terms still describing a bot that could never join a server, a Privacy Policy whose headline sentence ("we cannot read your messages") stopped being literally true the day right-click Apps shipped, and an AI disclosure that still said only the owner could use `/autobuild`. All of it was fixed before the merge rather than after, because the site publishes on the merge and the policy has to be in effect before the bot that needs it runs.
+
+### Lesson
+A re-check is a snapshot, and it went stale in six days: by launch the guild install asked for eight message permissions the report never knew about, the bot sent DMs for reminders and build submissions, and two sections dated the interaction records from the dev bot's August start rather than from the day prod began keeping them. Applying a review means re-checking each of its claims against today's code, not pasting its wording.
 
 # Part B — Lessons Ledger (thematic)
 
