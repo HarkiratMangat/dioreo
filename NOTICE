@@ -77,18 +77,45 @@ Development dependencies:
                                  Not used at runtime; required only by
                                  scripts/migrateBuildsToMongo.js.
 
+  acorn 8.18.0                   MIT
+                                 Copyright (c) Marijn Haverbeke and others
+                                 https://github.com/acornjs/acorn
+
+  eslint 10.9.1                  MIT
+                                 Copyright (c) OpenJS Foundation and other contributors
+                                 https://eslint.org
+
+  linkedom 0.18.13               ISC
+                                 Copyright (c) Andrea Giammarchi
+                                 https://github.com/WebReflection/linkedom
+
+  markdown-it 15.0.0             MIT
+                                 Copyright (c) Vitaly Puzrin, Alex Kocharin
+                                 https://github.com/markdown-it/markdown-it
+
+  preact-render-to-string 6.7.0  MIT
+                                 Copyright (c) Jason Miller
+                                 https://github.com/preactjs/preact-render-to-string
+
+  puppeteer-core 25.8.0          Apache License 2.0
+                                 Copyright (c) Google Inc.
+                                 https://pptr.dev
+                                 *** See Section 2 — Apache-2.0 obligations ***
+                                 Drives a browser for the portal's tests only.
+
   preact 10.x                    MIT
                                  Copyright (c) 2015-present Jason Miller
                                  https://preactjs.com
                                  Vendored into portal/public/vendor/ by scripts/buildPortal.js;
                                  not used at runtime by the Discord bot itself.
 
-  htm 3.x                        MIT (Apache-2.0 for a small number of contributed
-                                 files — see the package's own LICENSE)
+  htm 3.1.1                      Apache License 2.0 (its package metadata; the
+                                 repository's own LICENSE file reads MIT)
                                  Copyright (c) 2018 Jason Miller
                                  https://github.com/developit/htm
                                  Vendored alongside Preact for the web admin portal's
                                  no-build-step frontend.
+                                 *** See Section 2 — Apache-2.0 obligations ***
 
 Vendored web assets, served from public/assets/:
 
@@ -154,8 +181,8 @@ regardless of what LICENSE otherwise permits.
 2. APACHE LICENSE 2.0 OBLIGATIONS
 ================================================================================
 
-discord.js, xlsx and google-auth-library are licensed under the Apache License,
-Version 2.0. If you redistribute this project or any work containing those
+discord.js, google-auth-library, puppeteer-core, htm and xlsx are licensed under
+the Apache License, Version 2.0. If you redistribute this project or any work containing those
 components, Apache-2.0 §4 requires you to:
 
   (a) give recipients a copy of the Apache License 2.0;
@@ -180,18 +207,25 @@ fork places a copy in your hands.
 3. TRANSITIVE DEPENDENCIES
 ================================================================================
 
-The installed dependency tree resolves to 127 top-level packages under
-node_modules/, distributed across these licenses:
+The installed dependency tree resolves to 270 packages under node_modules/
+(144 of them installed for the running Bot, the rest for development only),
+distributed across these licenses:
 
-     90   MIT
-     19   Apache-2.0
-      9   ISC
-      2   BSD-2-Clause
-      2   BSD-3-Clause
-      2   (unspecified in package metadata)
-      1   MIT AND Zlib
-      1   BlueOak-1.0.0
-      1   0BSD
+     174   MIT
+     35    Apache-2.0
+     20    ISC
+     20    BSD-2-Clause
+     11    (unspecified in package metadata)
+     5     BSD-3-Clause
+     2     BlueOak-1.0.0
+     1     Python-2.0
+     1     MIT AND Zlib
+     1     0BSD
+
+  Of the eleven unlabelled packages, two are installed for the running Bot:
+  chroma-js (BSD-3-Clause, per its own LICENSE file) and exif-parser (MIT, per
+  its own LICENSE file). The other nine are xlsx and its own dependencies,
+  used only by one development script.
 
   *** No copyleft or reciprocal license (GPL, AGPL, LGPL, MPL, EUPL, CDDL, or
       SSPL) is present anywhere in the tree. ***
@@ -201,7 +235,7 @@ Licensor to publish source under terms incompatible with the source-available
 model in LICENSE. This tree carries no such obligation. Re-verify after adding
 any dependency.
 
-  Counts measured 2026-07-28 21:36 EDT against the committed package-lock.json.
+  Counts measured 2026-10-26 14:12 EDT against the committed package-lock.json.
   They will drift as dependencies change; regenerate rather than trusting the
   numbers above. Authoritative per-package license text lives in each package's
   own directory under node_modules/.
@@ -226,11 +260,19 @@ parties. Their terms govern their services, not this LICENSE.
                          (aiplatform.googleapis.com — the ENTERPRISE path, not
                          the consumer Gemini API at generativelanguage.
                          googleapis.com. Google does not train on data submitted
-                         to Vertex AI. Admin-only; no end-user data is sent.)
+                         to Vertex AI. Reads Gunsmith screenshots for the owner
+                         and granted admins only; see PRIVACY.md §5.1.)
+  Cloudflare             Cloudflare, Inc.        https://www.cloudflare.com/terms
+                         (serves the public website and carries the admin
+                         portal's traffic)
   Node.js                OpenJS Foundation       https://nodejs.org
   FFmpeg                 FFmpeg team             https://ffmpeg.org
                          (system binary; LGPL/GPL depending on build — invoked
                          as a separate process, never linked or redistributed)
+  img2webp               The WebM project        https://developers.google.com/speed/webp
+                         (system binary from libwebp, BSD-3-Clause; renders
+                         animated nameplates and decorations, invoked as a
+                         separate process, never linked or redistributed)
 
 
 ================================================================================
@@ -357,6 +399,7 @@ Licensor.
   GitHub(R)              GitHub, Inc. / Microsoft Corporation
   MongoDB(R), Atlas(R)   MongoDB, Inc.
   Cloudinary(R)          Cloudinary Ltd.
+  Cloudflare(R)          Cloudflare, Inc.
   Google Cloud(TM), Gemini(TM), Vertex AI(TM)
                          Google LLC
   Microsoft(R), Azure(R) Microsoft Corporation
@@ -453,12 +496,14 @@ This disclosure is made deliberately, for three reasons.
      lacks copyright protection, and no waiver of any right is intended or
      should be inferred.
 
-6.3  NO USER DATA IS SENT TO AI SYSTEMS. AI assistance was used in
-     *development*. It is not used to process end-user data at runtime. The
-     only AI call in the running application is Google Vertex AI (Gemini)
-     image-to-text extraction in the /autobuild command, which is restricted to
-     the administrator's own Discord account and never receives end-user data,
-     messages, or images. See PRIVACY.md §5.1.
+6.3  AI AT RUNTIME READS ONLY GUNSMITH SCREENSHOTS. AI assistance was used in
+     *development*. At runtime the only AI call is Google Vertex AI (Gemini)
+     reading a Gunsmith screenshot to fill in a loadout, behind /autobuild and
+     its Autobuild Loadout right-click. Only the owner and admins the owner has
+     granted /autobuild can use it. The screenshot can come from a message
+     someone else posted; nothing else (no preferences, commands, ordinary
+     messages or profile images) is ever sent to an AI service. See
+     PRIVACY.md §5.1.
 
 6.4  THE LOGO. The Dioreo logo (the mascot-and-wordmark mark displayed in the
      site header and app icon, `public/assets/dioreo-logo.webp`) was produced
