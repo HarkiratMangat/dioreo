@@ -9,11 +9,11 @@ Recorded 2026-10-26 11:24 EDT by Session 4's lead. Harkirat forwarded this ask f
 
 ## Checked 2026-10-26 11:24 EDT
 
-- `/Applications/Claude Code/Dioreo-Bot` is a second checkout of this repo on `feat/loadout-gunsmith-keys` at `938d4eb5` (25 files changed against `origin/v3-pre-release`). `origin/v3-pre-release` at `200ad9ba` has neither `codeImageKey` (`utils/loadoutImageCache.js`) nor `compareBuilds` (`utils/loadoutForm.js`), so the port waits on that merge.
-- The bot branch has `codeImageKey` (2 hits), `compareBuilds` (3), `label` on `models/Loadout.js` (`label: { type: String, default: '' }`, "back end only"), and `scripts/migrateLoadoutKeys.js`, which the dev database needs before the Verify line can pass.
+- `/Applications/Claude Code/Dioreo-Bot` is a second checkout of this repo on `feat/loadout-gunsmith-keys` at `938d4eb5` (25 files changed against `origin/v3-pre-release`). `origin/v3-pre-release` at `200ad9ba` has neither `codeImageKey` (`utils/loadoutImageCache.js`) nor `compareBuilds` (`/Applications/Claude Code/Dioreo-Bot/utils/loadoutForm.js`), so the port waits on that merge.
+- The bot branch has `codeImageKey` (2 hits), `compareBuilds` (3), `label` on `models/Loadout.js` (`label: { type: String, default: '' }`, "back end only"), and `/Applications/Claude Code/Dioreo-Bot/scripts/migrateLoadoutKeys.js`, which the dev database needs before the Verify line can pass.
 - `core/ops/loadouts.js` `validateBuild` spreads the whole payload, so a portal-sent `label` is written. But `loadout.add` writes `buildName` exactly as sent (default `Standard Build`): only the bulk path numbers a new build `Build N` (lines 107–112) and requires the MP code (lines 66–71). Discord's single add numbers the build in its handler (`handlers/manage/loadouts.js:268`, `Build ${numbering.number}`). So nothing in core gives the portal's single add a number or a required code.
 - The portal today: `portal/ui/armory.logic.js` `buildNumberOf` orders by `_id` (line 131), `displayBuildLabel` reads `buildName` (line 154), `deriveNextImageKey` mints `WEAPON-N` (line 353); `buildArmoryAddOp` sends `buildName: fields.buildName || 'Standard Build'` (line 45). `portal/ui/armory.js` uses them at lines 104, 145, 574, 793 (the Use convention chip), 929, 1248, 1269.
-- Builder-2 (Session 4's board): the single-add drawer's name row is already called **Label** (optional, `maxLength` 32, the live n / 32 of §10.4 G6 row 2) but binds `buildName`; Stage names only a missing weapon or attachment (`b4/form.js` 55–57, 479); the image key reads "Set from the weapon" (311). Bulk create already parses `Label:` and says the code is "Optional · fills the slots it names"; its format sample's image is `BAL-27-6` (`b4/bulk.js` 97, 100).
+- Builder-2 (Session 4's board): the single-add drawer's name row is already called **Label** (optional, `maxLength` 32, the live n / 32 of §10.4 G6 row 2) but binds `buildName`; Stage names only a missing weapon or attachment (`local/pins2/s4/builder-2/b4/form.js` 55–57, 479); the image key reads "Set from the weapon" (311). Bulk create already parses `Label:` and says the code is "Optional · fills the slots it names"; its format sample's image is `BAL-27-6` (`local/pins2/s4/builder-2/b4/bulk.js` 97, 100).
 
 Not checked: the bot branch's tests, and the migration's effect on the dev database.
 
@@ -34,7 +34,7 @@ Not checked: the bot branch's tests, and the migration's effect on the dev datab
 ## His answers (2026-10-26 11:31 EDT)
 
 - The four drawer drawings: "sure" (2026-10-26 11:31 EDT), so they are Session 4's, drawn on Builder-2 after round 4's fixes and asked on Answer Shots.
-- He asked whether the drawer could also change a build's number, to change the order. Discord's Add and Edit pop-up already has a build # field (`utils/loadoutForm.js` `planNumbering`, `handlers/manage/loadouts.js:252–289`): blank takes the next number, and a number another build holds swaps the two in one changeset, so Revert undoes both. The swap runs in the Discord handler, not in core, so the portal would get it only by mirroring it or once core does the numbering (gap 1 below). Whether the drawer gets that field is open.
+- He asked whether the drawer could also change a build's number, to change the order. Discord's Add and Edit pop-up already has a build # field (`/Applications/Claude Code/Dioreo-Bot/utils/loadoutForm.js` `planNumbering`, `handlers/manage/loadouts.js:252–289`): blank takes the next number, and a number another build holds swaps the two in one changeset, so Revert undoes both. The swap runs in the Discord handler, not in core, so the portal would get it only by mirroring it or once core does the numbering (gap 1 below). Whether the drawer gets that field is open.
 
 ## What the ask leaves out (for the bot project)
 
@@ -69,7 +69,7 @@ Written 2026-10-26 01:26 EDT by the loadout-keys lead (Dioreo-Bot, branch `feat/
 ## What changes on the bot side
 
 - MP picture keys are `WEAPON-CODE` (e.g. `BAL-27-1C2B4A8B9A`), minted by `utils/loadoutImageCache.js` `codeImageKey(weaponName, code)`. DMZ keeps `DMZ-WEAPON-N`.
-- A build's name is always `Build N`, and its label is a new `label` field (models/Loadout.js). The number decides its place in /gunsmith (`utils/loadoutForm.js` `compareBuilds`), no longer _id order.
+- A build's name is always `Build N`, and its label is a new `label` field (models/Loadout.js). The number decides its place in /gunsmith (`/Applications/Claude Code/Dioreo-Bot/utils/loadoutForm.js` `compareBuilds`), no longer _id order.
 - The gunsmith code is required on MP builds in /manage, /autobuild and the bulk paste.
 - core/ops/loadouts.js: when the portal sends `imageSourceUrl` on an MP build with a code, the picture is uploaded at the code key, whatever key the form sent.
 
