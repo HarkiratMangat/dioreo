@@ -26,17 +26,22 @@ async function listAppEmojis(client) {
     return (res?.items ?? res ?? []).map(e => ({ id: e.id, name: e.name, animated: Boolean(e.animated) }));
 }
 
-// One row per emoji name: its prod id, whether it is animated, and which apps have it. `apps` is [{ key, emojis: [...] }] in display order; on prod the first app IS prod, so its ids are the prod ids.
-function buildRows(prodMap, apps, { isProd = IS_PROD() } = {}) {
+// One row per emoji name: its prod id, whether it is animated, which apps have it, and whether its original is in Cloudinary (`originals`, a Map, or null when the listing failed). `apps` is [{ key, emojis: [...] }] in display order; on prod the first app IS prod, so its ids are the prod ids. `prodEmoji` marks what /emojis lists and syncs: an emoji the code names, or on prod one the prod app has. An emoji only on an app and not in the code (`inCode` false) is listed under "Not in code" for clean-up and never synced.
+function buildRows(prodMap, apps, { isProd = IS_PROD(), originals = null } = {}) {
     const names = new Set(prodMap.keys());
-    if (isProd && apps[0]) for (const e of apps[0].emojis) names.add(e.name);
+    for (const a of apps) for (const e of a.emojis) names.add(e.name);
     const byApp = apps.map(a => new Map(a.emojis.map(e => [e.name, e])));
     return [...names].sort((a, b) => a.localeCompare(b, 'en', { sensitivity: 'base' })).map(name => {
         const live = isProd ? byApp[0]?.get(name) : null;
         const prod = live || prodMap.get(name) || null;
         const copies = byApp.map(m => m.get(name) || null);
         const animated = Boolean(prod?.animated || copies.find(Boolean)?.animated);
-        return { name, prodId: prod ? prod.id : null, animated, has: copies.map(Boolean), copies, knownIds: [...new Set([prod?.id, ...copies.map(c => c?.id)].filter(Boolean))] };
+        const inCode = prodMap.has(name);
+        return {
+            name, prodId: prod ? prod.id : null, animated, has: copies.map(Boolean), copies, inCode,
+            prodEmoji: inCode || Boolean(live), hasOriginal: originals ? originals.has(name) : null,
+            knownIds: [...new Set([prod?.id, ...copies.map(c => c?.id)].filter(Boolean))],
+        };
     });
 }
 
@@ -86,4 +91,39 @@ async function uploadMissing(client, row, { fetchFn = fetchImpl } = {}) {
     return { ok: false, error: tried.slice(-3).join('; ') || 'no source' };
 }
 
-module.exports = { prodEmojisFromSource, listAppEmojis, buildRows, sourceCandidates, uploadMissing, MAX_UPLOAD_BYTES, ORIGINALS_FOLDER };
+// ---- The originals in Cloudinary (Harkirat, 2026-10-25 20:44 EDT: "if an emoji is on the prod app but missing from cloudinary, can i also upload the emoji in the command as a modal attach file form, where it then takes the emojis and uploads it to the cloudinary folder, including setting any custom name i want for it (and checking if that name already exists or not)") ----
+const safeCloudinaryError = (e) => e?.error?.message || e?.message || 'unknown error'; // never the raw object: it carries the account's key and secret (CLAUDE.md)
+const EMOJI_NAME = /^[A-Za-z0-9_]{2,32}$/; // Discord's rule for an emoji name
+const MAX_ORIGINAL_BYTES = 10 * 1024 * 1024; // Cloudinary's image upload limit on this plan
+
+// The names in `emoji-originals/`, cached five minutes: each listing is an Admin API call from the account's 500 an hour, which the live bot shares.
+let originalsCache = null;
+async function listOriginals({ force = false } = {}) {
+    if (!force && originalsCache && Date.now() - originalsCache.at < 5 * 60 * 1000) return originalsCache.names;
+    const cloudinary = require('./cloudinaryClient');
+    const names = new Map();
+    let cursor;
+    do {
+        const res = await cloudinary.api.resources({ type: 'upload', prefix: `${ORIGINALS_FOLDER}/`, max_results: 500, next_cursor: cursor });
+        for (const r of res.resources || []) names.set(r.public_id.slice(ORIGINALS_FOLDER.length + 1), { format: r.format, bytes: r.bytes });
+        cursor = res.next_cursor;
+    } while (cursor);
+    originalsCache = { at: Date.now(), names };
+    return names;
+}
+
+// Puts one original in the folder under `name`. The dev guard is passed `devNamespaceSafe` on purpose: the folder holds only these files, a new name cannot touch any other asset, and replacing one is his explicit pick in the pop-up.
+async function uploadOriginal(buffer, name, { mime = 'image/png', overwrite = false } = {}) {
+    const { isCloudinaryWriteBlocked } = require('./cloudinaryDevGuard');
+    if (isCloudinaryWriteBlocked('upload', `${ORIGINALS_FOLDER}/${name}`, { devNamespaceSafe: true })) return { ok: false, error: 'Cloudinary writes are blocked here' };
+    try {
+        const cloudinary = require('./cloudinaryClient');
+        await cloudinary.uploader.upload(`data:${mime};base64,${buffer.toString('base64')}`, { public_id: `${ORIGINALS_FOLDER}/${name}`, resource_type: 'image', overwrite, invalidate: overwrite });
+        originalsCache = null;
+        return { ok: true };
+    } catch (e) {
+        return { ok: false, error: safeCloudinaryError(e) };
+    }
+}
+
+module.exports = { prodEmojisFromSource, listAppEmojis, buildRows, sourceCandidates, uploadMissing, listOriginals, uploadOriginal, safeCloudinaryError, MAX_UPLOAD_BYTES, MAX_ORIGINAL_BYTES, EMOJI_NAME, ORIGINALS_FOLDER };

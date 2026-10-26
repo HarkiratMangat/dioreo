@@ -1,7 +1,8 @@
 // /emojis (Harkirat, 2026-10-25 20:41 EDT): reading the prod emojis off utils/emojiMap.js's source, the rows and who is missing what, where Sync looks for a file and in what order, the upload's size rule, and the panel. No Discord, no network.
 const assert = require('assert');
 const S = require('../utils/emojiSync');
-const { buildEmojiPanel, PAGE_SIZE } = require('../commands/emojis');
+const { ModalBuilder } = require('discord.js');
+const { buildEmojiPanel, uploadModal, findModal, pageOf, PAGE_SIZE } = require('../commands/emojis');
 
 let passed = 0, failed = 0;
 const pending = [];
@@ -18,9 +19,11 @@ const prod = new Map([['Alpha', { id: '1', animated: false }], ['Beta', { id: '2
 const apps = [{ key: 'main', label: 'Dioreo (Dev)', emojis: [{ id: '10', name: 'Alpha', animated: false }, { id: '11', name: 'Beta', animated: true }, { id: '12', name: 'Extra', animated: false }] },
     { key: 'admin', label: 'Dioreo Admin (Dev)', emojis: [{ id: '20', name: 'Alpha', animated: false }] }];
 
-t('on dev: the map names the rows with their prod ids, and each app says whether it has the emoji', () => {
-    const rows = S.buildRows(prod, apps, { isProd: false });
-    assert.deepStrictEqual(rows.map(r => [r.name, r.prodId, r.has]), [['Alpha', '1', [true, true]], ['Beta', '2', [true, false]]], 'an emoji only on the dev app is not a prod emoji');
+t('on dev: the map names the prod emojis with their prod ids, and each app says whether it has the emoji', () => {
+    const rows = S.buildRows(prod, apps, { isProd: false, originals: new Map([['Alpha', {}]]) });
+    assert.deepStrictEqual(rows.filter(r => r.prodEmoji).map(r => [r.name, r.prodId, r.has, r.hasOriginal]), [['Alpha', '1', [true, true], true], ['Beta', '2', [true, false], false]]);
+    const extra = rows.find(r => r.name === 'Extra');
+    assert.ok(extra && !extra.inCode && !extra.prodEmoji, 'an emoji only on the dev app is not a prod emoji, only a "Not in code" one');
     assert.deepStrictEqual(rows[1].knownIds, ['2', '11'], 'Sync can fall back on the prod copy or the other app\'s');
 });
 
@@ -50,19 +53,36 @@ t('an upload skips a file over 256 KB and a non-image, and stops at the first th
     assert.deepStrictEqual(posted, [['/applications/APP/emojis', 'Beta', 'data:image/webp;base64']]);
 });
 
-t('the panel: counts per app, the Missing only filter, a page of rows, and Sync naming how many', () => {
-    const rows = S.buildRows(prod, apps, { isProd: false });
+t('the panel: counts per app, the four views, a page of rows, and Sync naming how many', () => {
+    const rows = S.buildRows(prod, apps, { isProd: false, originals: new Map([['Alpha', {}]]) });
     const withClients = apps.map(a => ({ ...a, client: { application: { id: a.key } } }));
     const panel = buildEmojiPanel({ rows, apps: withClients, senderAppId: 'admin' });
     const s = JSON.stringify(panel);
-    assert.ok(s.includes('Dioreo Admin (Dev) missing **1**') && s.includes('Sync 1 missing') && s.includes('emo_sync_all'));
+    assert.ok(s.includes('**2** emojis') && s.includes('Dioreo Admin (Dev) missing **1**') && s.includes('**1** with no original') && s.includes('Sync 1 missing') && s.includes('emo_sync_all'));
+    assert.ok(!s.includes('**Extra**'), 'All lists the prod emojis only');
+    assert.ok(JSON.stringify(buildEmojiPanel({ rows, apps: withClients, filter: 'unused' })).includes('**Extra**'), 'Not in code lists the extra');
+    assert.ok(JSON.stringify(buildEmojiPanel({ rows, apps: withClients, filter: 'nofile' })).includes('**Beta**'), 'No original lists Beta');
+    assert.ok(s.includes('emo_upload') && s.includes('emo_find_all'), 'Upload original and Find sit beside Sync');
     assert.ok(s.includes('<:Alpha:20>') && s.includes('`:Beta:`'), 'each row draws the sending app\'s copy, or the name when it has none');
+    assert.ok(s.includes('`<:Alpha:1>`') && s.includes('`<a:Beta:2>`'), 'each row shows the full prod mention as code');
     const missing = JSON.stringify(buildEmojiPanel({ rows, apps: withClients, filter: 'missing', senderAppId: 'admin' }));
-    assert.ok(missing.includes('**Beta**') && !missing.includes('**Alpha**'), 'Missing only lists only what some app lacks');
-    const many = Array.from({ length: PAGE_SIZE * 2 + 1 }, (_, i) => ({ name: `E${i}`, prodId: String(i), animated: false, has: [true, true], copies: [null, null], knownIds: [] }));
+    assert.ok(missing.includes('**Beta**') && !missing.includes('**Alpha**'), 'Missing lists only what some app lacks');
+    assert.strictEqual(pageOf(rows, 'all', 'beta'), 0, 'Find ignores capitals');
+    assert.strictEqual(pageOf(rows, 'all', 'Extra'), -1, 'and only looks in the view asked');
+    const many = Array.from({ length: PAGE_SIZE * 2 + 1 }, (_, i) => ({ name: `E${i}`, prodId: String(i), animated: false, has: [true, true], copies: [null, null], knownIds: [], inCode: true, prodEmoji: true, hasOriginal: true }));
     const big = buildEmojiPanel({ rows: many, apps: withClients, page: 2 });
     const count = (c) => 1 + (c.components || []).reduce((n, x) => n + count(x), 0);
     assert.ok(count(big[0]) <= 40 && JSON.stringify(big).includes('emo_page_') && JSON.stringify(big).includes('Nothing to sync'));
+});
+
+t('the Upload original pop-up: a name, the file, what to do if taken, and whether to add it to the bots; discord.js accepts both pop-ups', () => {
+    const m = uploadModal();
+    assert.deepStrictEqual(m.components.map(c => c.label), ['Emoji name', 'Image', 'If that name is taken', 'Also add it to the bots']);
+    assert.strictEqual(m.components[1].component.type, 19);
+    assert.ok(m.components.every(c => !c.description || c.description.length <= 100));
+    new ModalBuilder(m).toJSON();
+    new ModalBuilder(findModal('missing')).toJSON();
+    assert.ok(S.EMOJI_NAME.test('Daily_Update2') && !S.EMOJI_NAME.test('a') && !S.EMOJI_NAME.test('has space') && !S.EMOJI_NAME.test('x'.repeat(33)));
 });
 
 (async () => {
