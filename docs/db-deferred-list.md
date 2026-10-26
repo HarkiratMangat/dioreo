@@ -86,6 +86,12 @@ Full spec: `reference_priority_tier_system` memory. Canonical copy of this legen
 
 ## 🐞 Active Bugs
 
+### A URL image on a new build overwrites Build 1's picture `[P1 · XS]`
+
+Found 2026-10-25 22:16 EDT (bot-polish think-pass). `handlers/manage/loadouts.js` `resolveImageInput` collects taken keys with `/^(DMZ-)?BASE-\d+$/`, which skips every key stored with `.png` (105 of 133 dev builds). So an image URL pasted on a NEW build of such a weapon mints `BASE-1`, and the upload (`overwrite: true`) replaces Build 1's picture: proved for AK117, whose Build 1 asset is `AK117-1`. Live on prod. The fix is to pass every key of the weapon and let `deriveImageKey` strip the extension; the gunsmith-code key rework (Queued) removes the derivation entirely.
+
+**Verify condition:** a new AK117 build with a pasted URL is saved as `AK117-2` (or its code key), and Build 1's picture is unchanged.
+
 ### `[P3 · S]` The runner self-test's "two readers share" timing check fails inside a full `npm test` — filed 2026-10-18 15:22 EDT
 
 `scripts/testRunner.test.mjs:134` asserts that two read-locked entries finish faster together than a writer and a reader. Under a full `TEST_CACHE=0 npm test` on this Mac (8 slots, 139 entries) it failed twice on 2026-10-18 (12:24 EDT: readers 3,714 ms vs 2,980 ms; 15:18 EDT: 2,876 ms vs 3,413 ms, which is the right order and still failed its margin), and passed both times when run alone. The other 138 entries passed each time, so it reads as wall-clock contention, not a runner defect. **Do:** give the check headroom that load cannot erase (compare against a measured baseline in the same process, or move it to its own serial lane in `scripts/testManifest.mjs`). **Verify:** three consecutive full `TEST_CACHE=0 npm test` runs pass it.
@@ -188,6 +194,8 @@ Filed 2026-09-24 14:30 EDT (Board 4, his v19 intake items 7–10 and his 13:54 E
 ### `deriveNextImageKey` offers a key that is already taken — portal half only, pins2 `[P1 · XS]`
 
 > 🔧 **BOT HALF FIXED 2026-10-19 16:45 EDT, merged in #207 (Pre-Release v3.98.0)**: `utils/loadoutImageCache.js` `deriveImageKey` had the same fault (104 of 133 dev keys carry `.png`); it now compares without the extension, with a test. The portal's `deriveNextImageKey` is pins2's.
+>
+> ⚠️ **2026-10-25 22:16 EDT: only the helper was fixed.** Its /manage caller still drops the `.png` keys before the helper sees them; filed under Active Bugs as "A URL image on a new build overwrites Build 1's picture".
 
 Filed 2026-09-24 14:30 EDT (his v19 item 13). `portal/ui/armory.logic.js` compares candidate keys against stored `imageKey`s, which carry `.png`, so no candidate ever matches and every weapon is offered `-1` (AK117 was offered AK117-1, which Build 1 holds). The kit's copy strips the extension and also skips unused uploads and the other builds in the same drawer (`reserved`). Check the bot's `utils/loadoutImageCache.js` `deriveImageKey` for the same fault.
 
@@ -1042,6 +1050,12 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 ---
 
 ## 🗂️ Queued — worth its own dedicated session
+
+### Loadout pictures keyed by gunsmith code, and the condensed Edit pop-up `[P1 · M]`
+
+Approved direction 2026-10-25 22:16 EDT (Harkirat, bot-polish thread); built in a NEW thread after bot-polish merges, his call. Plan: `local/project/features/bot-polish/loadout-key-plan.md` (on this Mac). In short: MP picture keys become `WEAPON-CODE` (codes repeat across weapons, never within one); the code is required for MP builds, while DMZ has no code and keeps `DMZ-WEAPON-N`; a back-end `label` field, shown in the pop-up after the weapon name; the Edit and Add pop-ups become five fields with a screenshot upload; a taken build number swaps the two builds; a failed screenshot upload refuses the save. Migration copies each picture to its new key and keeps the old ones (Revert restores old keys); the dry run checks Cloudinary's `Gunsmith_Code` metadata against each build and lists mismatches. Prod read, the Cloudinary copy and the prod switch each wait for his word. pins2's portal mints `WEAPON-1` keys and needs a note.
+
+**Verify condition:** every MP build's `imageKey` equals `WEAPON-CODE`, every card renders on the dev bot, and Edit shows the label after the weapon name.
 
 - **/gunsmith: the weapon's own icon after its name in the title** `[P3 · S · ⛓️blocked-by the per-weapon emojis]` — filed 2026-10-24 09:58 EDT. Harkirat (2026-10-24 09:45 EDT): *"let's leave it out entirely for now. because im having the peer session create custom emojis for each weapon so the icon matches the actual weapon. then we'll use the after title tilted look later on once those finish (which will likely be post v3 launch)."* The class icons (`WC_<class>`, `_Flat1/2`, `_Tilt1/2`) are uploaded to both apps and sit unused in `utils/emojiMap.js`; the class-icon helper was removed from `utils/loadoutRender.js`. **When the per-weapon emojis arrive:** upload them, key them by `weaponKey`, and append the tilted pair after `## <weaponName>` in `buildLoadoutCardBody`. **Verify:** a card in #testing-spam on the dev bot shows the icon after the name, and a weapon with no icon shows the plain title.
 
