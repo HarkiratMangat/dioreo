@@ -150,14 +150,17 @@ const RANK_ORDER = { best: 1, top3: 3, top5: 5, capable: 6 };
 function featuredScore(w) {
     return (w.isMeta ? 0 : 100) + (RANK_ORDER[w.categoryRank] ?? 50) + (w.isToxic ? 0 : 1);
 }
+const EXTRA_ORDER = ['AR', 'SMG', 'SNIPER', 'SHOTGUN', 'MARKSMAN', 'SECONDARIES', 'LMG'];
 function featuredWeapons(weapons, slots) {
     const byClass = new Map();
     for (const w of weapons) (byClass.get(w.category) || byClass.set(w.category, []).get(w.category)).push(w);
     const classes = [...byClass.keys()].sort();
     for (const c of classes) byClass.get(c).sort((a, b) => featuredScore(a) - featuredScore(b) || a.weaponName.localeCompare(b.weaponName));
     const picked = new Set();
+    // Two from every class first; any slots left go to the classes in EXTRA_ORDER, in that order (Harkirat, 2026-10-25 23:28 EDT: "reduce LMGs to just 2 and increase SMGs to 3", so with 16 slots AR and SMG get three).
+    const order = (round) => round < 2 ? classes : [...EXTRA_ORDER.filter(c => byClass.has(c)), ...classes.filter(c => !EXTRA_ORDER.includes(c))];
     for (let round = 0; picked.size < slots && classes.some(c => byClass.get(c)[round]); round++) {
-        for (const c of classes) { const w = byClass.get(c)[round]; if (w && picked.size < slots) picked.add(w); }
+        for (const c of order(round)) { const w = byClass.get(c)[round]; if (w && picked.size < slots) picked.add(w); }
     }
     return classes.flatMap(c => byClass.get(c).filter(w => picked.has(w)));
 }

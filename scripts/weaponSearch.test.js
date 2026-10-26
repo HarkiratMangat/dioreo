@@ -74,6 +74,10 @@ check('nothing typed: a few of every class, each class\'s Meta and best-ranked f
     const four = featuredWeapons(pool, 4).map(x => x.weaponName);
     assert.deepStrictEqual(four, ['A2', 'A3', 'L2', 'S1'], 'one per class first, then the best second; grouped by class');
     assert.strictEqual(featuredWeapons(pool, 99).length, pool.length);
+    // A third pick goes to AR, then SMG, never LMG first (his 2026-10-25 23:27 EDT call).
+    const seven = ['AR', 'LMG', 'MARKSMAN', 'SECONDARIES', 'SHOTGUN', 'SMG', 'SNIPER'].flatMap(c => [1, 2, 3].map(n => w(`${c}${n}`, c)));
+    const counts = featuredWeapons(seven, 16).reduce((m, x) => ({ ...m, [x.category]: (m[x.category] || 0) + 1 }), {});
+    assert.deepStrictEqual(counts, { AR: 3, LMG: 2, MARKSMAN: 2, SECONDARIES: 2, SHOTGUN: 2, SMG: 3, SNIPER: 2 });
 });
 
 if (failures) { console.error(`\n${failures} check(s) failed.`); process.exit(1); }
