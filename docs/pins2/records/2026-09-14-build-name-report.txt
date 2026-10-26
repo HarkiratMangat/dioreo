@@ -1,0 +1,178 @@
+
+── buildName consumers outside tests ──────────────────────────────────────────
+
+SCHEMA             models/Loadout.js
+                   declares buildName, default "Standard Build" -- the field every other row depends on existing
+IDENTITY           core/ops/loadouts.js
+                   add/edit/bulk-upsert match existing docs on {weaponKey, mode, buildName}; delete-by-"weapon | build" matches buildName exactly
+IDENTITY           portal/api/bulk.js
+                   the bulk-paste preview decides update-vs-new by matching {weaponKey, mode, buildName} against the live collection
+IDENTITY + DISPLAY utils/loadoutRender.js
+                   computeWeaponKeyAndBuild() derives the NEXT "Build N" from every sibling buildName, and also derives the Cloudinary imageKey from it (identity); buildLoadoutCard() also prints buildName on the Discord embed (display)
+IDENTITY           utils/loadoutImageCache.js
+                   buildLoadoutMetadata() parses Build_Number out of buildName via /Build\s+(\d+)/i for Cloudinary structured metadata
+IDENTITY           utils/loadoutScopes.js
+                   resolveScopeBuilds() tie-breaks its sort on buildName before falling back to _id -- an unstable tie here silently moves a flat browse index onto a different build
+IDENTITY + DISPLAY utils/autobuildPipeline.js
+                   reads every sibling buildName to compute the next one (computeWeaponKeyAndBuild), stores the computed value through a retry token, and also prints it in the confirmation/duplicate-warning text shown to the admin
+IDENTITY           utils/adminParser.js
+                   LOADOUT_BLOCK_KEYS maps a bulk-paste "Build:" line onto buildName (write path); formatLoadoutsAsBulkText() round-trips it back out in the same export format the parser re-reads
+IDENTITY           handlers/manage/loadouts.js
+                   the single add/edit modal's "Build Name | Share Code" field is the ORIGIN of a written buildName -- splits the pipe-delimited value and sends buildName straight into the op payload
+IDENTITY           handlers/manage/retry.js
+                   the retry-after-image-failure modal parses the same pipe convention and rebuilds the edit modal's pre-filled buildName
+IDENTITY           commands/manage.js
+                   declares the "Build Name | Share Code" modal field (add + edit) and the bulk-delete "Weapon | [Build Name]" field that core/ops/loadouts.js matches against
+DISPLAY            handlers/manage/shared.js
+                   fuzzy-matches a typed search query against buildName as a convenience, and builds a "{weapon} - {buildName}" disambiguation label -- does not gate a write
+DISPLAY            handlers/loadouts.js
+                   the "Copy" button falls back to buildName as the pasted text only when a build has no real shareCode -- a fallback string a player reads, not a DB match key
+DISPLAY            commands/bot.js
+                   a field-name-to-label map on the Changes/audit page ("buildName" -> "Build") -- pure UI copy
+IDENTITY + DISPLAY portal/ui/armory.js
+                   the row/build-chip UI shows buildName as text (display), AND the edit drawer round-trips the selected build's buildName through buildArmoryEditOp's payload spread (identity, since an unedited field still travels back out as the match value)
+IDENTITY + DISPLAY portal/ui/armory.logic.js
+                   buildArmoryAddOp/buildArmoryEditOp write buildName into the op payload (identity); the new displayBuildLabel()/buildNumberOf() (this pin) are display-only and change nothing stored
+DISPLAY            portal/ui/manifest.js
+                   one comment documenting that Armory declares buildName as an editable Manifest cell -- the edit itself routes through the op layer's edit-by-id, not a buildName match
+DISPLAY            portal/ui/harness/stub.js
+                   harness-only fixture rendering, never served in production (see the file's own header)
+
+✅ freshness check: the ledger above still matches every non-test source file that mentions buildName.
+
+── per-build report (133 builds, dev database) ──────────────────────────────
+
+id | weapon | mode | buildName | displayBuildLabel | build n of m | shareCode
+6a4c692095a4f5a6c3375488 | LOCUS | MP | "Build 1" | "" | 1 of 2 | 2A4B5A8C9C
+6a4c692095a4f5a6c3375489 | LOCUS | MP | "Build 2" | "" | 2 of 2 | 1B2A4B8C9C
+6a4c692095a4f5a6c337548a | AK117 | MP | "Build 1" | "" | 1 of 1 | 1C2B4A8B9A
+6a4c692095a4f5a6c337548b | LK24 | MP | "Build 1" | "" | 1 of 2 | 1A2A4A8B9A
+6a4c692095a4f5a6c337548c | LK24 | MP | "Build 2" | "" | 2 of 2 | 1A2B4D8B9A
+6a4c692095a4f5a6c337548d | ICR-1 | MP | "Build 1" | "" | 1 of 1 | 2C4A5A8D9A
+6a4c692095a4f5a6c337548e | MAN-O-WAR | MP | "Build 1" | "" | 1 of 2 | 1B4C5C8C9A
+6a4c692095a4f5a6c337548f | MAN-O-WAR | MP | "Build 2" | "" | 2 of 2 | 1B2A5C8C9A
+6a4c692095a4f5a6c3375490 | KN-44 | MP | "Build 1" | "" | 1 of 1 | 1C2B4A8B9A
+6a4c692095a4f5a6c3375491 | HVK-30 | MP | "Build 1" | "" | 1 of 2 | 1C2A4C8C9A
+6a4c692095a4f5a6c3375492 | HVK-30 | MP | "Build 2" | "" | 2 of 2 | 1C2B4B8C9A
+6a4c692095a4f5a6c3375493 | DR-H | MP | "Build 1" | "" | 1 of 2 | 1A2B4A8C9A
+6a4c692095a4f5a6c3375494 | DR-H | MP | "Build 2" | "" | 2 of 2 | 1A2B4D8C9A
+6a4c692095a4f5a6c3375495 | AS VAL | MP | "Build 1" | "" | 1 of 2 | 2C4B6C8A9A
+6a4c692095a4f5a6c3375496 | AS VAL | MP | "Build 2" | "" | 2 of 2 | 2B4B5A8C9A
+6a4c692095a4f5a6c3375497 | KILO 141 | MP | "Build 1" | "" | 1 of 2 | 1C4A6C8B9A
+6a4c692095a4f5a6c3375498 | KILO 141 | MP | "Build 2" | "" | 2 of 2 | 1C2B4A8B9A
+6a4c692095a4f5a6c3375499 | ODEN | MP | "Build 1" | "" | 1 of 2 | 1D4B5A7C9A
+6a4c692095a4f5a6c337549a | ODEN | MP | "Build 2" | "" | 2 of 2 | 1D4C6C7C9A
+6a4c692095a4f5a6c337549b | FFAR 1 | MP | "Build 1" | "" | 1 of 3 | 2E4B7E8E9A
+6a4c692095a4f5a6c337549c | FFAR 1 | MP | "Build 2" | "" | 2 of 3 | 1B2E7C8E9E
+6a4c692095a4f5a6c337549d | FFAR 1 | MP | "Build 3" | "" | 3 of 3 | 1B2F4F8E9E
+6a4c692095a4f5a6c337549e | GRAU 5.56 | MP | "Build 1" | "" | 1 of 1 | 1A2D4A8A9A
+6a4c692095a4f5a6c337549f | TYPE 19 | MP | "Build 1" | "" | 1 of 3 | 1D2A4A8B9C
+6a4c692095a4f5a6c33754a0 | TYPE 19 | MP | "Build 2" | "" | 2 of 3 | 1A2A4A7B8B
+6a4c692095a4f5a6c33754a1 | TYPE 19 | MP | "Build 3" | "" | 3 of 3 | 1A4A7B8B9C
+6a4c692095a4f5a6c33754a2 | BP50 | MP | "Build 1" | "" | 1 of 2 | 1D2C4B8B9H
+6a4c692095a4f5a6c33754a3 | BP50 | MP | "Build 2" | "" | 2 of 2 | 1D2C4A8C9H
+6a4c692095a4f5a6c33754a4 | XM4 | MP | "Build 1" | "" | 1 of 3 | 1A2G4E8F9E
+6a4c692095a4f5a6c33754a5 | XM4 | MP | "Build 2" | "" | 2 of 3 | 1A2G7B8D9E
+6a4c692095a4f5a6c33754a6 | XM4 | MP | "Build 3" | "" | 3 of 3 | 1A2G4E8E9E
+6a4c692095a4f5a6c33754a7 | RAM-7 | MP | "Build 1" | "" | 1 of 1 | 1A2B4B8A9A
+6a4c692095a4f5a6c33754a8 | XPR-50 | MP | "Build 1" | "" | 1 of 2 | 1C2A4A5A8C
+6a4c692095a4f5a6c33754a9 | XPR-50 | MP | "Build 2" | "" | 2 of 2 | 1C2C3F4C8C
+6a4c692095a4f5a6c33754aa | M21 EBR | MP | "Build 1" | "" | 1 of 3 | 1D2C4D7D8B
+6a4c692095a4f5a6c33754ab | M21 EBR | MP | "Build 2" | "" | 2 of 3 | 1D2C4D6A7E
+6a4c692095a4f5a6c33754ac | M21 EBR | MP | "Build 3" | "" | 3 of 3 | 1C3E4D7D8B
+6a4c692095a4f5a6c33754ad | DL Q33 | MP | "Build 1" | "" | 1 of 1 | 1B2A4A5A8A
+6a4c692095a4f5a6c33754ae | NA-45 | MP | "Build 1" | "" | 1 of 1 | 1C4C5A7G8C
+6a4c692095a4f5a6c33754af | RYTEC AMR | MP | "Build 1" | "" | 1 of 2 | 1B2A4A8B9C
+6a4c692095a4f5a6c33754b0 | RYTEC AMR | MP | "Build 2" | "" | 2 of 2 | 2A4B5A6A9C
+6a4c692095a4f5a6c33754b1 | KOSHKA | MP | "Build 1" | "" | 1 of 2 | 1B2A4A8C9C
+6a4c692095a4f5a6c33754b2 | KOSHKA | MP | "Build 2" | "" | 2 of 2 | 2A4A5G8A9C
+6a4c692095a4f5a6c33754b3 | HDR | MP | "Build 1" | "" | 1 of 1 | 1B4A5A6A8A
+6a4c692095a4f5a6c33754b4 | LW3-TUNDRA | MP | "Build 1" | "" | 1 of 3 | 2F4D5A8A9E
+6a4c692095a4f5a6c33754b5 | LW3-TUNDRA | MP | "Build 2" | "" | 2 of 3 | 2B4D7B8A9E
+6a4c692095a4f5a6c33754b6 | LW3-TUNDRA | MP | "Build 3" | "" | 3 of 3 | 1A2F5A8A9E
+6a4c692095a4f5a6c33754b7 | 3-LINE RIFLE | MP | "Build 1" | "" | 1 of 2 | 1D2F4B5A8C
+6a4c692095a4f5a6c33754b8 | 3-LINE RIFLE | MP | "Build 2" | "" | 2 of 2 | 1D2A4B5A8C
+6a4c692095a4f5a6c33754b9 | UL736 | MP | "Build 1" | "" | 1 of 2 | 1A2B4C5D9A
+6a4c692095a4f5a6c33754ba | UL736 | MP | "Build 2" | "" | 2 of 2 | 2B4C6C8A9A
+6a4c692095a4f5a6c33754bb | RPD | MP | "Build 1" | "" | 1 of 1 | 1C2D4D5A9A
+6a4c692095a4f5a6c33754bc | CHOPPER | MP | "Build 1" | "" | 1 of 1 | 1C2B5E6C7G
+6a4c692095a4f5a6c33754bd | HOLGER 26 | MP | "Build 1" | "" | 1 of 3 | 1A4A5D7E9A
+6a4c692095a4f5a6c33754be | HOLGER 26 | MP | "Build 2" | "" | 2 of 3 | 1A4A5D6C9A
+6a4c692095a4f5a6c33754bf | HOLGER 26 | MP | "Build 3" | "" | 3 of 3 | 1C2A4A5D9A
+6a4c692095a4f5a6c33754c0 | HADES | MP | "Build 1" | "" | 1 of 1 | 1F2B5E7A9A
+6a4c692095a4f5a6c33754c1 | PKM | MP | "Build 1" | "" | 1 of 2 | 1C2C5A7E9A
+6a4c692095a4f5a6c33754c2 | MG42 | MP | "Build 1" | "" | 1 of 1 | 1F2A5E7E9J
+6a4c692095a4f5a6c33754c3 | RAAL MG | MP | "Build 1" | "" | 1 of 1 | 1C2B4B5A8A
+6a4c692095a4f5a6c33754c4 | PDW-57 | MP | "Build 1" | "" | 1 of 1 | 1C2A4A5E9A
+6a4c692095a4f5a6c33754c5 | HG 40 | MP | "Build 1" | "" | 1 of 1 | 2C4A6C8C9A
+6a4c692095a4f5a6c33754c6 | GKS | MP | "Build 1" | "" | 1 of 1 | 1C2A6C8A9A
+6a4c692095a4f5a6c33754c7 | QQ9 | MP | "Build 1" | "" | 1 of 1 | 1C2C4A8C9A
+6a4c692095a4f5a6c33754c8 | FENNEC | MP | "Build 1" | "" | 1 of 1 | 1C2C4D7C8A
+6a4c692095a4f5a6c33754c9 | PP19 BIZON | MP | "Build 1" | "" | 1 of 3 | 1C2A4C8B9A
+6a4c692095a4f5a6c33754ca | PP19 BIZON | MP | "Build 2" | "" | 2 of 3 | 1C2B4C6C8B
+6a4c692095a4f5a6c33754cb | PP19 BIZON | MP | "Build 3" | "" | 3 of 3 | 1C2B4A8B9A
+6a4c692095a4f5a6c33754cc | CBR4 | MP | "Build 1" | "" | 1 of 2 | 1C2B4B5E9A
+6a4c692095a4f5a6c33754cd | CBR4 | MP | "Build 2" | "" | 2 of 2 | 1A2B4A5E9A
+6a4c692095a4f5a6c33754ce | MAC-10 | MP | "Build 1" | "" | 1 of 2 | 1B2A4B7B8A
+6a4c692095a4f5a6c33754cf | MAC-10 | MP | "Build 2" | "" | 2 of 2 | 1B2A4D7B8D
+6a4c692095a4f5a6c33754d0 | SWITCHBLADE X9 | MP | "Build 1" | "" | 1 of 3 | 1C2C4A8A9A
+6a4c692095a4f5a6c33754d1 | SWITCHBLADE X9 | MP | "Build 2" | "" | 2 of 3 | 1A2C5F8A9A
+6a4c692095a4f5a6c33754d2 | SWITCHBLADE X9 | MP | "Build 3" | "" | 3 of 3 | 1A2C4B8A9A
+6a4c692095a4f5a6c33754d3 | CX-9 | MP | "Build 1" | "" | 1 of 3 | 2D4A5B8B9A
+6a4c692095a4f5a6c33754d4 | CX-9 | MP | "Build 2" | "" | 2 of 3 | 2E4A5B8C9A
+6a4c692095a4f5a6c33754d5 | CX-9 | MP | "Build 3" | "" | 3 of 3 | 2D4A5B8C9A
+6a4c692095a4f5a6c33754d6 | TEC-9 | MP | "Build 1" | "" | 1 of 1 | 1G2F7B8A9F
+6a4c692095a4f5a6c33754d7 | USS 9 | MP | "Build 1" | "" | 1 of 3 | 1C2D4A8C9A
+6a4c692095a4f5a6c33754d8 | USS 9 | MP | "Build 2" | "" | 2 of 3 | 1A2B4A8C9A
+6a4c692095a4f5a6c33754d9 | USS 9 | MP | "Build 3" | "" | 3 of 3 | 1C2D4B8C9A
+6a4c692095a4f5a6c33754da | VMP | MP | "Build 1" | "" | 1 of 2 | 2D5H7B8D9B
+6a4c692095a4f5a6c33754db | VMP | MP | "Build 2" | "" | 2 of 2 | 2D4D5H7B9B
+6a4c692095a4f5a6c33754dc | BY15 | MP | "Build 1" | "" | 1 of 1 | 1C2A4A6C8B
+6a4c692095a4f5a6c33754dd | HS0405 | MP | "Build 1" | "" | 1 of 2 | 1F2A4A6B8C
+6a4c692095a4f5a6c33754de | HS0405 | MP | "Build 2" | "" | 2 of 2 | 1F2A4A6B9C
+6a4c692095a4f5a6c33754df | STRIKER | MP | "Build 1" | "" | 1 of 2 | 1F2C6A8B9A
+6a4c692095a4f5a6c33754e0 | STRIKER | MP | "Build 2" | "" | 2 of 2 | 1A2B5A6A8A
+6a4c692095a4f5a6c33754e1 | KRM-262 | MP | "Build 1" | "" | 1 of 2 | 1C2A4A6C9A
+6a4c692095a4f5a6c33754e2 | KRM-262 | MP | "Build 2" | "" | 2 of 2 | 1C2A4A5E6B
+6a4c692095a4f5a6c33754e3 | JAK-12 | MP | "Build 1" | "" | 1 of 1 | 1C2B6B9A
+6a4c692095a4f5a6c33754e4 | ARGUS | MP | "Build 1" | "" | 1 of 1 | 1D2A4E7C8C
+6a4c692095a4f5a6c33754e5 | KILO BOLT-ACTION | MP | "Build 1" | "" | 1 of 3 | 1A4B5H8C9C
+6a4c692095a4f5a6c33754e6 | KILO BOLT-ACTION | MP | "Build 2" | "" | 2 of 3 | 2A4A5B8B9A
+6a4c692095a4f5a6c33754e7 | KILO BOLT-ACTION | MP | "Build 3" | "" | 3 of 3 | 4B5H6A8B9A
+6a4c692095a4f5a6c33754e8 | SKS | MP | "Build 1" | "" | 1 of 4 | 1A2B4C7E9A
+6a4c692095a4f5a6c33754e9 | SKS | MP | "Build 2" | "" | 2 of 4 | 1A2A4C5E7C
+6a4c692095a4f5a6c33754ea | SKS | MP | "Build 3" | "" | 3 of 4 | 1A2B5E7E9A
+6a4c692095a4f5a6c33754eb | SP-R 208 | MP | "Build 1" | "" | 1 of 2 | 2D4B5A8B9A
+6a4c692095a4f5a6c33754ec | SP-R 208 | MP | "Build 2" | "" | 2 of 2 | 2A4B6A8B9A
+6a4c692095a4f5a6c33754ed | TYPE 63 | MP | "Build 1" | "" | 1 of 2 | 1A2D5D7B9F
+6a4c692095a4f5a6c33754ee | TYPE 63 | MP | "Build 2" | "" | 2 of 2 | 1B2B5A7E9F
+6a4c692095a4f5a6c33754ef | SO-14 | MP | "Build 1" | "" | 1 of 3 | 1C2D4A5D9B
+6a4c692095a4f5a6c33754f0 | SO-14 | MP | "Build 2" | "" | 2 of 3 | 1C2D4A8B9B
+6a4c692095a4f5a6c33754f1 | SO-14 | MP | "Build 3" | "" | 3 of 3 | 1C2D4A5D8B
+6a4ecc7e2b715e5e00e0a124 | PHARO | MP | "Coming Soon" | "Coming Soon" | 1 of 1 | (none)
+6a4f1d9bc8a976469f4666aa | BAL-27 | MP | "Build 2" | "" | 1 of 5 | 1I2C4A8A9D
+6a4f1d9bc8a976469f4666ab | BAL-27 | MP | "Build 3" | "" | 2 of 5 | 1C2C4A6A8A
+6a4f1d9bc8a976469f4666ad | BAL-27 | MP | "Build 4" | "" | 3 of 5 | 1M2C4A8A9D
+6a4f1d9bc8a976469f4666ae | BAL-27 | MP | "Build 5" | "" | 4 of 5 | 1C2B4A8A9C
+6a4f20a89f3ac5961a2fb9e1 | SO-14 | DMZ | "Build 1" | "" | 1 of 1 | (none)
+6a4f20a89f3ac5961a2fb9e2 | TYPE 19 | DMZ | "Build 1" | "" | 1 of 2 | (none)
+6a4f20a89f3ac5961a2fb9e3 | TYPE 19 | DMZ | "Build 2" | "" | 2 of 2 | (none)
+6a4f20a89f3ac5961a2fb9e4 | AS VAL | DMZ | "Build 1" | "" | 1 of 1 | (none)
+6a4f20a89f3ac5961a2fb9e5 | AK117 | DMZ | "Build 1" | "" | 1 of 1 | (none)
+6a4f2466167b41ea66549c58 | BAL-27 | MP | "Build 1" | "" | 5 of 5 | 1I2C6B8A9D
+6a4f2586d6a2af1f89c1ec79 | FENNEC | DMZ | "Build 1" | "" | 1 of 1 | (none)
+6a4f2586d6a2af1f89c1ec7a | J358 | DMZ | "Build 1" | "" | 1 of 1 | (none)
+6a4f2586d6a2af1f89c1ec7b | OUTLAW | DMZ | "Build 1" | "" | 1 of 1 | (none)
+6a4f265a862632867f98d47b | PKM | MP | "Build 2" | "" | 2 of 2 | 1A4A5E7E9A
+6a4f265a862632867f98d47c | SKS | MP | "Build 4" | "" | 4 of 4 | 1A2C4C5A9A
+6a4f2db36628dd1734313267 | MACHINE PISTOL | MP | "Build 1" | "" | 1 of 1 | 1E2B7D8A9I
+6a4f2db36628dd1734313268 | L-CAR 9 | MP | "Build 1" | "" | 1 of 2 | 1B4A6B7C8C
+6a4f2db36628dd1734313269 | L-CAR 9 | MP | "Build 2" | "" | 2 of 2 | 1B4A6B7A8A
+6a4f2db36628dd173431326a | CROSSBOW | MP | "Build 1" | "" | 1 of 2 | 1B2C4A5A6B
+6a4f2db36628dd173431326b | CROSSBOW | MP | "Build 2" | "" | 2 of 2 | 1B2C4A6B7C
+6a4f2db36628dd173431326c | .50 GS | MP | "Build 1" | "" | 1 of 2 | 1C6C7A8A9A
+6a4f2db36628dd173431326d | .50 GS | MP | "Build 2" | "" | 2 of 2 | 1C2A7A8A9A
+6a4f2db36628dd173431326e | DOBVRA | MP | "Build 1" | "" | 1 of 1 | 1D2C5F7B8B
+6a4f2db36628dd173431326f | SHORTY | MP | "Build 1" | "" | 1 of 1 | 1C4C6C7C8A
+6a4f2db36628dd1734313270 | R9-0 | MP | "Build 1" | "" | 1 of 1 | 1G2B6C8A9A
+6a5a82255d89468242d4f72d | FSS Hurricane | MP | "1C2B5B6D7O" | "" | 1 of 1 | (none)

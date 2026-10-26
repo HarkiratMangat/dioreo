@@ -1068,10 +1068,12 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 
 
 
+
 .bar{position:fixed;inset:0 0 auto;height:54px;z-index:60;display:flex;align-items:center;
   gap:1.5rem;padding:0 clamp(1rem,3vw,2rem);background:color-mix(in srgb,var(--desk) 88%,transparent);
   backdrop-filter:blur(14px) saturate(1.3);border-bottom:1px solid var(--rule)}
 .bar nav{margin-left:auto;display:flex;align-items:center;gap:.6rem}
+
 #prog{position:fixed;top:53px;left:0;height:2px;width:0;z-index:61;background:var(--accent)}/* ── segmented page switcher ──────────────────────────────────────────
    Was three bordered boxes, which read as inert. Now one segmented control
    with an indicator that slides. Because these are separate documents and not
@@ -1398,26 +1400,41 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
   text-transform:uppercase;color:var(--ink3);text-decoration:none;
   padding:.42rem .55rem;border-radius:7px;white-space:nowrap}@media (hover:hover) and (pointer:fine){
 .segchip:hover{color:var(--ink);background:color-mix(in srgb,var(--ink) 7%,transparent)}}
-.segchip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── six tabs: tighten below 1060, and that is the whole staging ── */
+.segchip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── seven tabs: tighten below 1140 ──
+   MEASURED 2026-08-17 20:38 EDT against the real built page, in an iframe stepped
+   across the desktop range so both sides of the boundary are read from the same
+   engine that ships it. Findings: the tab font steps 10.56px -> 9.92px exactly
+   between 1140 and 1139, so the boundary applies where it says it does; and
+   bar.scrollWidth - bar.clientWidth is 0 at every width from 1600 down to 981,
+   the desktop floor. ⚠️ THE MEASURE WAS PROVEN ABLE TO FIRE before being believed
+   -- forcing the switcher visible at 500px reports 108px of overflow. A gate that
+   never fails is not a gate, and "no overflow anywhere" is exactly the result a
+   broken probe also returns.
+   The six- and nine-tab tiers these replaced are GONE rather than kept: with the
+   Commands group in the bar, no page produces those counts any more, and a
+   staging nothing selects is a number that rots unread. */
 
 
-@media (max-width:1059px){
-  .navwrap[data-fit="6"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
-  .navwrap[data-fit="6"] .seg{--gap:.6rem}
-}/* ── nine tabs: tighten below 1465, chips below 1300 ── */
+@media (max-width:1139px){
+  .navwrap[data-fit="7"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
+  .navwrap[data-fit="7"] .seg{--gap:.6rem}
+}/* ── ten tabs (inside /changelog/, where the record group rejoins) ──
+   MEASURED the same way and at the same time. The font steps at 1545 -> 1544 and
+   the three group chips replace the tabs at 1380 -> 1379, both exactly where
+   declared; zero overflow from 1600 down to 981. */
 
 
-@media (max-width:1464px){
-  .navwrap[data-fit="9"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
-  .navwrap[data-fit="9"] .seg{--gap:.6rem}
+@media (max-width:1544px){
+  .navwrap[data-fit="10"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
+  .navwrap[data-fit="10"] .seg{--gap:.6rem}
 }
-@media (min-width:981px) and (max-width:1299px){/* A group you are not in shows its chip instead of its tabs. The indicator goes
+@media (min-width:981px) and (max-width:1379px){/* A group you are not in shows its chip instead of its tabs. The indicator goes
      with them — .seg-ink measures real tab boxes, and there are none to measure. */
   
-  .navwrap[data-fit="9"] .seg[data-at="-1"] .tab{display:none}
-  .navwrap[data-fit="9"] .seg[data-at="-1"] .seg-ink{display:none}
-  .navwrap[data-fit="9"] .seg[data-at="-1"] .segchip{display:inline-block}
-  .navwrap[data-fit="9"] .seg[data-at="-1"]{padding:0}
+  .navwrap[data-fit="10"] .seg[data-at="-1"] .tab{display:none}
+  .navwrap[data-fit="10"] .seg[data-at="-1"] .seg-ink{display:none}
+  .navwrap[data-fit="10"] .seg[data-at="-1"] .segchip{display:inline-block}
+  .navwrap[data-fit="10"] .seg[data-at="-1"]{padding:0}
 }/* Desktop shows no mobile menu. */
 
 
@@ -1711,18 +1728,10 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 
 
 
-.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0}/* ⚠️ THE LEGAL WRAPPER HAS NO BOTTOM PADDING AND THE WARM ONE HAS A FLOOR OF ITS
-   OWN, WHICH IS WHY THE TWO FOOTERS BREATHE DIFFERENTLY ON A PHONE. COMPONENT_CSS
-   drops .foot's own bottom padding below 760px on the reasoning that "the wrapper
-   already provides the breathing room" — true of warmShell's .wrap, false here,
-   where .page ends at 0. This restores the missing floor, and the two numbers
-   have to move together — see .wrap below — or the templates drift apart again.
-   ⚠️ TRIMMED 2026-08-05 11:31 EDT: the original 4rem here (matched to .wrap's
-   original 4rem) was reported as too much dead space below the sign-off on
-   every legal, Contributing, and Contributors page. Cut to 2.6rem, still paired
-   with .wrap's own trim to the same value. */
 
+.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0}
 @media (max-width:760px){ .page{padding-bottom:2.6rem} }
+
 .cols{display:grid;grid-template-columns:200px minmax(0,1fr);
   gap:clamp(1.5rem,4vw,3.5rem);align-items:start}
 @media (max-width:980px){.cols{grid-template-columns:1fr;gap:0}}/* ── rail: the section index, tracking position ──────────────────── *//* align-self:start stops the rail STRETCHING to its grid row's full height, which is
@@ -1762,6 +1771,7 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
    and can disagree with the media query that actually governs the layout. */
 
 .rail>.lab .cur{display:none}
+
 .slot{display:grid;grid-template-columns:2.1rem 1fr;align-items:baseline;gap:.15rem;
   padding:.34rem 0 .34rem .8rem;text-decoration:none;border-left:2px solid var(--rule);
   transition:border-color .18s,color .18s}
@@ -1783,6 +1793,7 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
    with no room to say what it does. It moved into the section menu instead —
    see mobileNav() and ".mp-list .dlr" below — as the SAME row this is, not a
    second markup shape to keep in sync. */
+
 
 .dlr{display:flex;align-items:center;gap:.55rem;margin-top:.9rem;
   padding:.6rem .7rem;border-radius:9px;text-decoration:none;
@@ -2294,7 +2305,11 @@ html{scroll-behavior:smooth}
     <span class="go" aria-hidden="true">&#8250;</span>
   </a>
   <nav>
-    <div class="navwrap" data-fit="6"><div class="seg" data-at="2" data-label="Documents">
+    <div class="navwrap" data-fit="7"><div class="seg" data-at="-1" data-label="Using it">
+      <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
+      <a class="segchip" href="./commands.html">Using it</a>
+      <a class="tab" href="./commands.html" data-accent="#58D05A">Commands</a>
+    </div><span class="seg-gap" aria-hidden="true"></span><div class="seg" data-at="2" data-label="Documents">
       <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
       <a class="segchip" href="./terms.html">Documents</a>
       <a class="tab" href="./terms.html" data-accent="#F2994A">Terms</a><a class="tab" href="./privacy.html" data-accent="#17A2A2">Privacy</a><a class="tab on" href="./license.html" data-accent="#9B6BE3" aria-current="page">License</a><a class="tab" href="./notice.html" data-accent="#FF5264">Notice</a>
@@ -2368,7 +2383,7 @@ html{scroll-behavior:smooth}
   <div class="mbar">
     <span class="mgw" id="mgw" aria-hidden="true"><span class="mgo"></span><i class="mtint"></i></span>
     <nav class="mstrip" id="mstrip" aria-label="Pages">
-      <a class="mtab" href="./terms.html" style="--row:#F2994A">Terms</a><a class="mtab" href="./privacy.html" style="--row:#17A2A2">Privacy</a><a class="mtab on" href="./license.html" aria-current="page" style="--row:#9B6BE3">License</a><a class="mtab" href="./notice.html" style="--row:#FF5264">Notice</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab" href="./contributing.html" style="--row:#8B9BFF">Contributing</a><a class="mtab" href="./contributors.html" style="--row:#F8FF4A">Contributors</a>
+      <a class="mtab" href="./commands.html" style="--row:#58D05A">Commands</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab" href="./terms.html" style="--row:#F2994A">Terms</a><a class="mtab" href="./privacy.html" style="--row:#17A2A2">Privacy</a><a class="mtab on" href="./license.html" aria-current="page" style="--row:#9B6BE3">License</a><a class="mtab" href="./notice.html" style="--row:#FF5264">Notice</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab" href="./contributing.html" style="--row:#8B9BFF">Contributing</a><a class="mtab" href="./contributors.html" style="--row:#F8FF4A">Contributors</a>
     </nav>
   </div>
   <details class="msecd">
@@ -2716,7 +2731,7 @@ html{scroll-behavior:smooth}
   <footer class="foot nodisc">
     <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a><span class="sig-cr">&copy; Dioreo&trade;. All rights reserved.</span></p>
     
-    <nav class="endnav"><a href="./terms.html">Terms</a><span>&middot;</span><a href="./privacy.html">Privacy</a><span>&middot;</span><a href="./notice.html">Notice</a><span>&middot;</span><a href="./contributing.html">Contributing</a><span>&middot;</span><a href="./contributors.html">Contributors</a></nav>
+    <nav class="endnav"><a href="./commands.html">Commands</a><span>&middot;</span><a href="./terms.html">Terms</a><span>&middot;</span><a href="./privacy.html">Privacy</a><span>&middot;</span><a href="./notice.html">Notice</a><span>&middot;</span><a href="./contributing.html">Contributing</a><span>&middot;</span><a href="./contributors.html">Contributors</a></nav>
   </footer>
 </div>
 

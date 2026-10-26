@@ -1,10 +1,7 @@
 #!/bin/bash
 # Proves mcp-layer-check.sh's branches actually fire, against a real fixture DB.
 #
-# WHY: the first attempt at this test was VACUOUS — it grepped for "misfiled", which matches the
-# healthy status line ("0 misfiled elsewhere") just as well as the warning. It would have passed
-# forever without the warning branch ever executing. A test must give OPPOSITE answers on the
-# healthy and broken states (feedback_verify_before_claiming).
+# WHY: the first attempt at this test was VACUOUS — it grepped for "misfiled", which matches the healthy status line ("0 misfiled elsewhere") just as well as the warning. It would have passed forever without the warning branch ever executing. A test must give OPPOSITE answers on the healthy and broken states (feedback_verify_before_claiming).
 #
 #   bash .claude/hooks/mcp-layer-check.test.sh
 
@@ -30,7 +27,7 @@ mkfixture() { # $1 = number of misfiled memories to plant
   done
 }
 
-run() { MCPCHECK_LINKSEE_DB="$TMP/m.db" MCPCHECK_FRAG_WARN="${1:-25}" bash "$CHECK" | jq -r '.hookSpecificOutput.additionalContext'; }
+run() { MCPCHECK_PROBE=0 MCPCHECK_LINKSEE_DB="$TMP/m.db" MCPCHECK_FRAG_WARN="${1:-25}" bash "$CHECK" | jq -r '.hookSpecificOutput.additionalContext'; }
 
 assert() { # name | needle | yes|no
   local name="$1" needle="$2" want="$3" out="$4"
@@ -46,7 +43,7 @@ echo "mcp-layer-check.sh — branch proofs"
 mkfixture 0; out="$(run 25)"
 assert "clean store: no warning"            "$WARN_MARKER"           no  "$out"
 assert "clean store: counts reported"       "misfiled elsewhere"     yes "$out"
-assert "clean store: routing rules present" "RECALL BY query"        yes "$out"
+assert "routing is not restated at session start (WP4 collapse)" "RECALL BY query" no "$out"
 
 # 2. 30 misfiled memories over a threshold of 25 -> warning MUST fire.
 mkfixture 30; out="$(run 25)"
@@ -64,24 +61,85 @@ out="$(run 0)"
 assert "sibling project 'dior' excluded"    "0 misfiled elsewhere"   yes "$out"
 
 # 5. Missing DB must degrade loudly, not crash or emit invalid JSON.
-out="$(MCPCHECK_LINKSEE_DB=/nonexistent/x.db bash "$CHECK" | jq -r '.hookSpecificOutput.additionalContext')"
+out="$(MCPCHECK_PROBE=0 MCPCHECK_LINKSEE_DB=/nonexistent/x.db bash "$CHECK" | jq -r '.hookSpecificOutput.additionalContext')"
 assert "missing db reported"                "db not found"           yes "$out"
-MCPCHECK_LINKSEE_DB=/nonexistent/x.db bash "$CHECK" | jq -e . >/dev/null 2>&1 \
+MCPCHECK_PROBE=0 MCPCHECK_LINKSEE_DB=/nonexistent/x.db bash "$CHECK" | jq -e . >/dev/null 2>&1 \
   && { echo "  PASS  missing db still emits valid JSON"; pass=$((pass+1)); } \
   || { echo "  FAIL  missing db emitted invalid JSON"; fail=$((fail+1)); }
 
-# 6. The observation window must AUTO-EXPIRE, and must stay open through its final day.
-#    An earlier version compared `today < end`, flipping to CLOSED at 00:00 on the last day — which
-#    would have reverted behaviour for the window's final 17 hours and biased the very data being
-#    collected. Off-by-one in an experiment's own instrument is a data-integrity bug.
+# 6. The retired observation window must STAY retired. The block that lived here auto-expired on 2026-08-09 and then spent five days injecting "explicit-request-only is in force again" into every session -- asserting a decision that had been made the OTHER way, with data, the same day. These two assertions exist so restoring it is a test failure rather than a quiet regression.
 mkfixture 0
-wrun() { MCPCHECK_LINKSEE_DB="$TMP/m.db" MCPCHECK_TODAY="$1" MCPCHECK_WINDOW_END=2026-08-09 bash "$CHECK" | jq -r '.hookSpecificOutput.additionalContext'; }
-assert "window OPEN mid-window"        "WINDOW OPEN"   yes "$(wrun 2026-08-05)"
-assert "window OPEN on its LAST day"   "WINDOW OPEN"   yes "$(wrun 2026-08-09)"
-assert "window CLOSED the day after"   "WINDOW CLOSED" yes "$(wrun 2026-08-10)"
-assert "closed state chases close-out" "close it out"  no  "$(wrun 2026-08-05)"
-assert "closed state names the script" "mcp-observation-metrics.mjs" yes "$(wrun 2026-08-10)"
+out="$(run 0)"
+assert "sequential-thinking stated UNRESTRICTED" "UNRESTRICTED"                yes "$out"
+assert "the retired ask-first rule is NOT back"  "explicit-request-only"       no  "$out"
+assert "no auto-expiring window remains"         "OBSERVATION WINDOW"          no  "$out"
+
+# 7. MCP SERVER PRESENCE -- the 2026-08-14 failure: a server fixed in the Claude DESKTOP config only, invisible to Claude Code, indistinguishable from a tool nobody bothered to call.
+CCOK="$TMP/cc-ok.json"; CCBAD="$TMP/cc-bad.json"; DESK="$TMP/desktop.json"
+cat > "$CCOK"  <<'JSON'
+{"mcpServers":{"linksee":{},"perseus-vault":{},"sequential-thinking":{},"codebase-memory-mcp":{},"jina-reader":{}}}
+JSON
+cat > "$CCBAD" <<'JSON'
+{"mcpServers":{"linksee":{},"codebase-memory-mcp":{}}}
+JSON
+cat > "$DESK"  <<'JSON'
+{"mcpServers":{"linksee":{},"perseus-vault":{},"sequential-thinking":{},"codebase-memory-mcp":{},"jina-reader":{},"desktop-only-thing":{}}}
+JSON
+# MCPCHECK_PROBE=0 on every call that is not about the probe (here, in run() above, and the two missing-db calls). Without it each call made a real, timeout-bounded round trip to whatever linksee server this machine runs: 3.2 s per call, 23.2 s for the suite at 0.10 CPU (measured 2026-09-14), and a result that depended on the machine. The probe keeps its own stubbed cases below.
+prun() { MCPCHECK_PROBE=0 MCPCHECK_LINKSEE_DB="$TMP/m.db" MCPCHECK_CC_CONFIG="$1" MCPCHECK_DESKTOP_CONFIG="$2" \
+         bash "$CHECK" | jq -r '.hookSpecificOutput.additionalContext'; }
+
+# Healthy: every expected server present, desktop matches -> BOTH warnings absent. This is the discriminating half; without it the needles below could match a banner that always prints.
+out="$(prun "$CCOK" "$CCOK")"
+assert "healthy config: no missing-server warning" "NOT REGISTERED WITH CLAUDE CODE" no "$out"
+assert "healthy config: no divergence warning"     "Configured for Claude DESKTOP"   no "$out"
+
+# Broken: two expected servers absent from Claude Code's own config.
+out="$(prun "$CCBAD" "$CCBAD")"
+assert "missing servers detected"        "NOT REGISTERED WITH CLAUDE CODE" yes "$out"
+assert "names the missing server"        "sequential-thinking"             yes "$out"
+assert "gives the fix command"           "claude mcp add --scope user"     yes "$out"
+assert "warns the configs are separate"  "separate lists"                  yes "$out"
+assert "explains pending-approval trap"  "Pending approval"                yes "$out"
+
+# Divergence: present in the desktop config, never mirrored to Claude Code.
+out="$(prun "$CCOK" "$DESK")"
+assert "desktop-only server detected"    "Configured for Claude DESKTOP"   yes "$out"
+assert "names the desktop-only server"   "desktop-only-thing"              yes "$out"
+
+# Absent/unreadable configs must degrade silently, not crash -- a fresh clone or CI has neither file.
+out="$(prun /nonexistent/cc.json /nonexistent/desktop.json)"
+assert "no config: no false alarm"       "NOT REGISTERED WITH CLAUDE CODE" no "$out"
+prun /nonexistent/cc.json /nonexistent/desktop.json >/dev/null 2>&1 \
+  && { echo "  PASS  no config still emits valid JSON"; pass=$((pass+1)); } \
+  || { echo "  FAIL  no config crashed"; fail=$((fail+1)); }
 
 echo
+
+# ── the SERVER probe ───────────────────────────────────────────────────────── 🔴 THESE EXIST BECAUSE THE BANNER REPORTED THE DATABASE AND WAS READ AS REPORTING THE SERVER. On 2026-09-02 `claude mcp list` said linksee had failed to connect while this hook printed healthy counts, because the counts come from the sqlite file -- which is readable whether or not the server is up. The load-bearing case is the third one: a REACHABLE and an UNREACHABLE server must produce visibly different output, or the probe is decoration.
+ctx_of() { python3 -c 'import sys,json; print(json.load(sys.stdin)["hookSpecificOutput"]["additionalContext"])'; }
+ok_json='{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2024-11-05"}}'
+
+# ⚠️ THESE FOUR RUNS MUST PIN THE FIXTURE DB, and the reason is a real CI failure (2026-09-02 22:15 UTC). They originally ran `bash "$CHECK"` bare, so `LINKSEE_DB` fell back to its default `$HOME/.linksee-memory/memory.db` — present on this Mac, absent on the runner. The counts line is emitted only when that file is readable, so "the counts line is labelled as db-derived" asserted a string that simply does not exist in a fresh environment: green here, red on CI, for a reason having nothing to do with the behaviour under test. An assertion whose SUBJECT exists in only one environment is not testing what it says it is.
+up=$(MCPCHECK_LINKSEE_DB="$TMP/m.db" MCPCHECK_PROBE_CMD="printf '%s' '$ok_json'" bash "$CHECK" | ctx_of)
+case "$up" in *"linksee MCP: reachable"*) echo "  PASS  a server that answers initialize reports reachable"; pass=$((pass+1));;
+  *) echo "  FAIL  a server that answers initialize reports reachable"; fail=$((fail+1));; esac
+
+down=$(MCPCHECK_LINKSEE_DB="$TMP/m.db" MCPCHECK_PROBE_CMD="false" bash "$CHECK" | ctx_of)
+case "$down" in *"UNREACHABLE THIS SESSION"*) echo "  PASS  a server that does not answer reports UNREACHABLE"; pass=$((pass+1));;
+  *) echo "  FAIL  a server that does not answer reports UNREACHABLE"; fail=$((fail+1));; esac
+
+if [ "$up" != "$down" ]; then echo "  PASS  reachable and unreachable produce different output"; pass=$((pass+1));
+else echo "  FAIL  reachable and unreachable produce IDENTICAL output -- the probe is decoration"; fail=$((fail+1)); fi
+
+# The db counts must no longer be phrased as a claim about the server.
+case "$down" in *"linksee db:"*) echo "  PASS  the counts line is labelled as db-derived"; pass=$((pass+1));;
+  *) echo "  FAIL  the counts line is labelled as db-derived"; fail=$((fail+1));; esac
+
+# And the probe must be skippable, or every hook test pays 3s and CI pays it on every run.
+skip=$(MCPCHECK_LINKSEE_DB="$TMP/m.db" MCPCHECK_PROBE=0 bash "$CHECK" | ctx_of)
+case "$skip" in *"probe skipped"*) echo "  PASS  MCPCHECK_PROBE=0 skips the round-trip"; pass=$((pass+1));;
+  *) echo "  FAIL  MCPCHECK_PROBE=0 skips the round-trip"; fail=$((fail+1));; esac
+
 echo "  $pass passed, $fail failed"
 [ "$fail" -eq 0 ] || exit 1

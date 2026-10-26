@@ -6,53 +6,80 @@ const { sendAlert } = require('./alertWebhook');
 const HEARTBEAT_MS = 10 * 1000;
 const STALE_MS = 30 * 1000; // 3 missed heartbeats before a held lock is considered abandoned
 
-// The lock is keyed by a hash of BOT_TOKEN, NOT a single fixed id -- two DIFFERENT bot tokens
-// (e.g. the production bot vs. a separate test/dev bot application in the Discord dev portal) are
-// two genuinely independent Discord applications and must be allowed to run at the same time, even
-// against the same Mongo cluster. Only the SAME token connecting twice is the failure mode this
-// guards against. Hashed (not stored raw) since this doc could end up visible in a DB browser and
-// there's no reason to put a live secret in it. Not a security boundary -- just avoids gratuitously
-// duplicating the token.
+// The lock is keyed by a hash of BOT_TOKEN, NOT a single fixed id -- two DIFFERENT bot tokens (e.g. the production bot vs. a separate test/dev bot application in the Discord dev portal) are two genuinely independent Discord applications and must be allowed to run at the same time, even against the same Mongo cluster. Only the SAME token connecting twice is the failure mode this guards against. Hashed (not stored raw) since this doc could end up visible in a DB browser and there's no reason to put a live secret in it. Not a security boundary -- just avoids gratuitously duplicating the token.
 function lockIdForToken(token) {
     return crypto.createHash('sha256').update(token).digest('hex').slice(0, 24);
 }
 
-// Cross-machine startup guard. A local dev `node index.js` and the deployed VM instance share the
-// same Mongo Atlas cluster but run on different machines, so a local PID/lockfile can't catch them
-// colliding -- only something every instance actually shares can. This is exactly the failure mode
-// that took the bot down in the 2026-07-14 incident (stray local processes raced the deployed
-// instance's own interaction replies, see [[feedback_multiple_bot_instances]] /
-// .claude/rules/accent-and-colors.md). Call this once at boot, before client.login(); it resolves
-// true if this process may proceed, false if another instance of the SAME bot token already holds
-// a fresh heartbeat.
-async function acquireInstanceLock() {
-    const lockId = lockIdForToken(process.env.BOT_TOKEN);
+// Cross-machine startup guard. A local dev `node index.js` and the deployed VM instance share the same Mongo Atlas cluster but run on different machines, so a local PID/lockfile can't catch them colliding -- only something every instance actually shares can. This is exactly the failure mode that took the bot down in the 2026-07-14 incident (stray local processes raced the deployed instance's own interaction replies, see [[feedback_multiple_bot_instances]] / .claude/rules/accent-and-colors.md). Call this once at boot, before client.login(); it resolves true if this process may proceed, false if another instance of the SAME bot token already holds a fresh heartbeat. A `node --watch` restart kills the old process and starts the new one before the old one's async releaseLock() (a Mongo delete) has landed, so the new process can read a lock doc that's only ~1s stale and wrongly refuse to start (the watcher never retries, so this can hang the dev session until the next file save). A dead pid on THIS host is provably not running, whatever its heartbeat says -- process.kill(pid, 0) sends no signal, it only probes existence, throwing ESRCH if the process is gone. Cross-host locks (this Mac vs. the prod VM) can't be probed this way and must stay untouched: a different hostname is reported alive unconditionally. Exported so the pid-probe branch is unit-testable without a live process to kill (see scripts/instanceLock.test.js).
+function isHolderAlive(existing) {
+    if (existing.hostname !== os.hostname()) return true;
+    try {
+        process.kill(existing.pid, 0);
+        return true;
+    } catch (err) {
+        // ESRCH = genuinely no such process = dead. Anything else (notably EPERM, when the pid exists but this process lacks permission to signal it -- e.g. the VM's systemd user vs. a manual run from another account) must NOT be read as dead: it is unknown, and assuming alive is the safe default, since the alternative is silently stealing a live lock (v3-pre-release review, finding #32).
+        return err.code !== 'ESRCH';
+    }
+}
+
+// Locks this process holds, one per token (the public app, and Dioreo Admin when it is on, 2026-10-19 13:44 EDT). One signal handler releases them all, installed once -- a handler per lock would each call process.exit() and the second release could be cut off.
+const heldLockIds = [];
+let releaseInstalled = false;
+
+async function acquireInstanceLock(token = process.env.BOT_TOKEN) {
+    const lockId = lockIdForToken(token);
     const existing = await BotInstance.findById(lockId);
-    if (existing && Date.now() - existing.lastHeartbeat.getTime() < STALE_MS) {
+    const heartbeatFresh = existing && Date.now() - existing.lastHeartbeat.getTime() < STALE_MS;
+    if (heartbeatFresh && isHolderAlive(existing)) {
         const ageSec = Math.round((Date.now() - existing.lastHeartbeat.getTime()) / 1000);
         console.error(`❌ Refusing to start: another instance of this bot token is already running on host "${existing.hostname}" (pid ${existing.pid}), last heartbeat ${ageSec}s ago.`);
         sendAlert('Startup refused: instance already running', `Existing lock held by ${existing.hostname} (pid ${existing.pid}), last heartbeat ${ageSec}s ago.`, 'error');
         return false;
     }
 
-    await BotInstance.findByIdAndUpdate(
-        lockId,
-        { hostname: os.hostname(), pid: process.pid, startedAt: new Date(), lastHeartbeat: new Date() },
-        { upsert: true }
-    );
+    // Atomic claim (v3-pre-release review, finding #32) -- the read above and the write below used to be two independent round trips with no conditional filter, so two processes starting within the same window could both read "no fresh/alive holder" and both proceed to write, unconditionally, both returning true -- the exact 2026-07-14 dual-instance incident this module exists to prevent. The filter re-asserts the SAME document state this process just read (either "no doc existed" or "the doc's lastHeartbeat still matches what was read a moment ago") -- optimistic concurrency (CAS). If a concurrent process's OWN claim already landed in between, this write's filter no longer matches and `claimed` comes back null: a real race is DETECTED rather than silently overwritten, instead of the previous unconditional upsert winning blindly.
+    const claimFilter = existing ? { _id: lockId, lastHeartbeat: existing.lastHeartbeat } : { _id: lockId };
+    let claimed;
+    try {
+        claimed = await BotInstance.findOneAndUpdate(
+            claimFilter,
+            { hostname: os.hostname(), pid: process.pid, startedAt: new Date(), lastHeartbeat: new Date() },
+            { upsert: !existing, new: true }
+        );
+    } catch (err) {
+        // upsert:true + a concurrent FIRST-EVER insert of the SAME _id from two processes at once is a real race too -- Mongo surfaces the loser's attempt as a duplicate-key error (E11000) rather than a plain null.
+        if (err?.code === 11000) claimed = null;
+        else throw err;
+    }
+    if (!claimed) {
+        console.error('❌ Refusing to start: lost a race to claim the instance lock for this bot token -- another process claimed it a moment ago.');
+        sendAlert('Startup refused: lost instance-lock race', 'Another process claimed the lock between this one\'s read and write.', 'error');
+        return false;
+    }
 
-    // unref() so this timer alone never keeps the process alive -- it should only run for as long
-    // as the bot is already running for other reasons (the Discord gateway connection, etc).
+    // unref() so this timer alone never keeps the process alive -- it should only run for as long as the bot is already running for other reasons (the Discord gateway connection, etc).
     const heartbeatTimer = setInterval(() => {
         BotInstance.findByIdAndUpdate(lockId, { lastHeartbeat: new Date() }).catch(err => console.error('Instance heartbeat failed:', err));
     }, HEARTBEAT_MS);
     heartbeatTimer.unref();
 
-    // Best-effort release on a clean shutdown so a deliberate restart doesn't have to wait out
-    // STALE_MS before the new process can claim the lock. Only releases if we still own it (pid
-    // match) -- if another instance somehow already claimed it since, don't clobber that instead.
+    // Best-effort release on a clean shutdown so a deliberate restart doesn't have to wait out STALE_MS before the new process can claim the lock. Only releases if we still own it (pid match) -- if another instance somehow already claimed it since, don't clobber that instead.
+    //
+    // Races (bounded) the SAME analytics flush bot/lifecycle.js's installShutdownFlush does (v3-pre-release review, finding #12) -- process.exit() used to fire the instant the lock-delete above settled (~ms), which is registered EARLIER than installShutdownFlush (only installed once ClientReady fires), so on every `systemctl restart` this handler won a race installShutdownFlush's own 2-second bail couldn't protect against and discarded up to FLUSH_INTERVAL_MS of buffered analytics events. Can't simply stop exiting here and defer entirely to that other handler either -- a SIGTERM during a hung gateway handshake (this file's own header notes that can silently take 10+ minutes) would then have NO exit path until ClientReady, which may never come.
+    //
+    // ⚠️ flushEvents()/flushSearchSessions() being individually idempotent is NOT enough on its own (v3-pre-release review, finding #56). Both this handler and installShutdownFlush register on the SAME signal, and Node runs every listener for one signal synchronously, back-to-back -- so whichever one runs SECOND finds the buffers already spliced empty by the first and resolves via pure microtasks, ahead of the first handler's real (macrotask-bound) Mongo write. Calling eventStore.js's flushAllForShutdown() instead of flushSearchSessions()/flushEvents() directly fixes that: it memoizes the real flush into one shared promise, so whichever handler runs second awaits the SAME in-flight write rather than a hollow already-resolved one.
+    heldLockIds.push(lockId);
+    if (releaseInstalled) return true;
+    releaseInstalled = true;
     const releaseLock = () => {
-        BotInstance.deleteOne({ _id: lockId, pid: process.pid }).finally(() => process.exit());
+        const lockCleanup = Promise.all(heldLockIds.map(id => BotInstance.deleteOne({ _id: id, pid: process.pid }).catch(() => {})));
+        const { flushAllForShutdown } = require('./eventStore');
+        const bail = new Promise((resolve) => {
+            const t = setTimeout(resolve, 2000);
+            if (typeof t.unref === 'function') t.unref();
+        });
+        Promise.allSettled([lockCleanup, Promise.race([flushAllForShutdown(), bail])]).finally(() => process.exit());
     };
     process.on('SIGINT', releaseLock);
     process.on('SIGTERM', releaseLock);
@@ -60,4 +87,4 @@ async function acquireInstanceLock() {
     return true;
 }
 
-module.exports = { acquireInstanceLock };
+module.exports = { acquireInstanceLock, isHolderAlive };

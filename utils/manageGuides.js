@@ -2,32 +2,20 @@
 // ==========================================
 // /manage BULK FORMAT GUIDES -- rich Components V2 reference views
 // ==========================================
-// Replaces the old plain-text ephemeral reply (2026-07-31 17:20 EDT build) with a real structured
-// Container -- a paste skeleton, a field-by-field breakdown of what actually gets auto-formatted
-// (title-casing, tier shorthand, emoji substitution, etc.), a concrete before/after example, and
-// tips -- plus a select-menu dropdown so switching topics never means closing the guide and
-// re-clicking a different page's button. Rewritten from scratch 2026-07-31 17:20 EDT (same-day follow-up)
-// after Harkirat's live-testing feedback: the plain-text version didn't explain what was auto vs.
-// literal, the draws example was nonsense filler text, and there was no guide at all for Patch
-// Notes or Next Season Draft -- both real gaps, not stylistic nitpicks (Patch Notes' gap directly
-// caused a real submission mistake -- see that topic's content below).
+// Replaces the old plain-text ephemeral reply (2026-07-31 17:20 EDT build) with a real structured Container -- a paste skeleton, a field-by-field breakdown of what actually gets auto-formatted (title-casing, tier shorthand, emoji substitution, etc.), a concrete before/after example, and tips -- plus a select-menu dropdown so switching topics never means closing the guide and re-clicking a different page's button. Rewritten from scratch 2026-07-31 17:20 EDT (same-day follow-up) after Harkirat's live-testing feedback: the plain-text version didn't explain what was auto vs. literal, the draws example was nonsense filler text, and there was no guide at all for Patch Notes or Next Season Draft -- both real gaps, not stylistic nitpicks (Patch Notes' gap directly caused a real submission mistake -- see that topic's content below).
 //
-// Content is data (GUIDE_TOPICS), not hardcoded per-render strings -- emoji lookups happen INSIDE
-// buildGuideContainer() at call time, never captured at module load, per the emoji-freshness rule
-// (.claude/rules/rendering-and-ui.md) -- this file is required once at boot like everything else,
-// and refreshEmojiIds() only rewrites emojiMap's values well after that.
+// Content is data (GUIDE_TOPICS), not hardcoded per-render strings -- emoji lookups happen INSIDE buildGuideContainer() at call time, never captured at module load, per the emoji-freshness rule (.claude/rules/rendering-and-ui.md) -- this file is required once at boot like everything else, and refreshEmojiIds() only rewrites emojiMap's values well after that.
 const emojis = require('./emojiMap');
 
-// Maps a /manage page's `group` id to the guide topic it opens on -- loadouts_mp/loadouts_dmz share
-// one topic since the bulk format itself doesn't differ by mode (the mode comes from which button
-// you clicked, not a paste field worth a separate guide).
+// Maps a /manage page's `group` id to the guide topic it opens on -- loadouts_mp/loadouts_dmz share one topic since the bulk format itself doesn't differ by mode (the mode comes from which button you clicked, not a paste field worth a separate guide).
 const GROUP_TO_TOPIC = {
     draws: 'draws',
     calendar: 'calendar',
     loadouts_mp: 'loadouts',
     loadouts_dmz: 'loadouts',
     patchnotes: 'patchnotes',
-    seasondraft: 'seasondraft'
+    seasondraft: 'seasondraft',
+    announcement: 'announcements'
 };
 
 function resolveGuideTopic(group) {
@@ -36,15 +24,15 @@ function resolveGuideTopic(group) {
 
 // Ordered for the select menu -- also the canonical topic list.
 function topicDefs() {
-    // `emoji` is the PARSED {id,name,animated} shape a select option's own `emoji` field needs
-    // (emojiMap.js's parseEmoji()); `rawEmoji` is the raw mention STRING for use inside message
-    // text content, where a parsed object isn't insertable. Different shapes, different call sites.
+    // `emoji` is the PARSED {id,name,animated} shape a select option's own `emoji` field needs (emojiMap.js's parseEmoji()); `rawEmoji` is the raw mention STRING for use inside message text content, where a parsed object isn't insertable. Different shapes, different call sites.
     return [
         { key: 'draws', label: 'Draws', description: 'New/Returning bulk paste format', rawEmoji: emojis.newDraws, emoji: emojis.parseEmoji(emojis.newDraws) },
         { key: 'calendar', label: 'Calendar', description: 'Bullet-separated event paste format', rawEmoji: emojis.calendar, emoji: emojis.parseEmoji(emojis.calendar) },
         { key: 'loadouts', label: 'Loadouts', description: 'MP/DMZ block paste format', rawEmoji: emojis.newDraws, emoji: emojis.parseEmoji(emojis.newDraws) },
         { key: 'patchnotes', label: 'Patch Notes', description: 'Release date, URLs, Additional Info', rawEmoji: emojis.patchNotes, emoji: emojis.parseEmoji(emojis.patchNotes) },
-        { key: 'seasondraft', label: 'Next Season Draft', description: 'Same formats, staged instead of live', rawEmoji: emojis.calendar, emoji: emojis.parseEmoji(emojis.calendar) }
+        { key: 'seasondraft', label: 'Next Season Draft', description: 'Same formats, staged instead of live', rawEmoji: emojis.calendar, emoji: emojis.parseEmoji(emojis.calendar) },
+        // 'admins' topic REMOVED (v3-pre-release review, finding #62) -- it documented a /manage page that no longer exists (retired to the owner-only /bot access 2026-08-16, see utils/adminAccess.js's own 'manageadmins is RETIRED' comment). This guide is reachable by anyone with ANY manage access, so it was walking a scoped admin through a screen they can't actually reach and that isn't owner-gated here.
+        { key: 'announcements', label: 'Announcement', description: 'Posting/editing bot-wide announcements', rawEmoji: emojis.announcements, emoji: emojis.parseEmoji(emojis.announcements) }
     ];
 }
 
@@ -64,6 +52,10 @@ function drawsSections() {
             `\`m\` ${emojis.mythic} Mythic · \`l\` ${emojis.legendary} Legendary · \`lg\` ${emojis.legacy} Legacy · \`e\` ${emojis.epic} Epic\n` +
             '-# Spell the tier out instead if you\'d rather (`mythic`, `legendary`, etc.) -- both work.\n' +
             '-# Start an item with `-# ` instead of a tier to add a free-text note (e.g. a collab callout) instead of a tiered item.'),
+        // Draw Type tag (2026-10-18 11:06 EDT): the codes are read from utils/drawTypes.js, so a new draw type shows here without editing this guide.
+        section('🎟️ Draw Type (optional)',
+            'Add `type: <code>` anywhere after the title to say how **/draw prices** and the calculator price the draw. An armory\'s item count comes from its own item list.\n' +
+            `-# ${require('./drawTypes').drawTypeOptions().map(o => `\`${o.code}\` ${o.name}`).join(' · ')}`),
         section('✨ What Gets Auto-Formatted',
             '• **Title** and every **item name** → auto Title Case (acronyms like `FSS`/`AK`/`MP`/`BR` are preserved, hyphens/slashes capitalize each side independently).\n' +
             '• A `-# note` line is the one exception -- kept **exactly as typed**, never title-cased (it\'s free text, not an item name).\n' +
@@ -86,8 +78,12 @@ function calendarSections() {
             '`[d|p|e]•M/D - M/D | Event Title` or `[d|p|e]•M/D - All Season | Event Title`\n' +
             '-# Bullet-separated (a `•` character), NOT one-per-line -- this is what survives a copy-paste out of Notes.'),
         section('🏷️ Section Prefix',
-            `\`d\` ${emojis.newDraws} Draws · \`p\` ${emojis.modes} Playlists & Modes · \`e\` ${emojis.events} Events\n` +
-            '-# The prefix sits directly touching the bullet (`d•`, not `d •`).'),
+            `\`d\` ${emojis.newDraws} Draws · \`p\`/\`g\`/\`m\` ${emojis.modes} Playlists & Modes · \`e\` ${emojis.events} Events\n` +
+            '-# The prefix sits directly touching the bullet (`d•`, not `d •`). `g`/`m` are aliases for `p` (playlist = game mode = mode).'),
+        section('↩️ No-Bullet Lines',
+            'Each entry can ALSO stand on its own line with no `•` at all — prefix (optional) then a space instead of a bullet: `p 8/6 - 8/19 | Krai BR`. Mixing both styles in one paste is fine; a line with no `•` anywhere is read as one complete entry.'),
+        section('🎁 Double CP',
+            'Add `2x`, `(2x)`, `CP`, `2xCP`, or similar to a title to flag it as a Double CP event — `Krai BR 2x` strips the marker off the saved title; `Krai BR 2x CP Sale` keeps it (it reads as the event\'s real name) and still sets the flag.'),
         section('✨ What Gets Auto-Formatted',
             '• **Title** is kept **exactly as typed** -- NOT title-cased, since event names routinely carry acronyms (`MP`/`BR`/`DMZ`) that auto-casing would mangle.\n' +
             '• **Section prefix is optional.** Leave it off and the title is auto-classified by keyword -- words like "draw"/"mode"/"playlist"/"map", or a standalone `MP`/`BR`, route it automatically. Ambiguous titles (e.g. a bare map name) should keep the explicit prefix.\n' +
@@ -106,18 +102,20 @@ function calendarSections() {
 function loadoutsSections() {
     return [
         section('📋 Paste Skeleton',
-            '`Weapon | Category | MP or DMZ | Build Name | Cloudinary Image Key | Gunsmith Code | Badges`\n`Attachment 1`\n`Attachment 2`\n`...`\n' +
-            '-# One build per BLOCK (blank line between blocks). First line is the header, every line after it is one attachment.'),
+            '`Weapon | Category`\n`Build: Build Name`\n`Image: Cloudinary Key`\n`Code: Gunsmith Code`\n`Badges: meta, best`\n`- Attachment 1`\n`- Attachment 2`\n' +
+            '-# One build per BLOCK (blank line between blocks). **First line is the weapon\'s identity, every optional field is its own labelled line, everything else is an attachment.** The labelled lines can be in any order and any of them can be left out.'),
         section('🏷️ Badges (comma-separated, optional)',
             '`meta` · `toxic` · `best` · `top5` (or any `topN`) · `bestclose` · `top3midlong` (rank + range combos for DMZ)'),
         section('✨ What Gets Auto-Formatted',
-            '• **Mode** is force-set to whichever page/button you clicked (MP or DMZ) regardless of what\'s typed in that field -- a stray mismatched value can\'t misfile a loadout onto the wrong page.\n' +
-            '• **Image Key** and **Gunsmith Code** are optional -- leave blank if not set yet.\n' +
-            '• Attachment names are kept **exactly as typed** -- no auto-casing, since these must match the real in-game names precisely.'),
+            '• **Mode** is not a field at all -- the page/button you clicked (MP or DMZ) decides it. It used to be a required 3rd pipe segment that the save then overwrote anyway, which meant a `DMZ` block pasted on the MP page saved as MP with no warning; removing it removed the lie, not the behaviour.\n' +
+            '• **Build**, **Image**, **Code** and **Badges** are all optional -- omit the whole line if it doesn\'t apply. Build defaults to `Standard Build`.\n' +
+            '• **Image** takes a Cloudinary key here; the single Add/Edit modals additionally accept a pasted image URL and upload it for you.\n' +
+            '• Attachment names are kept **exactly as typed** -- no auto-casing, since these must match the real in-game names precisely. A `-` bullet is optional, and is how you force a line containing a colon to be read as an attachment.'),
         section('🖼️ Example',
-            '```\nBAL-27 | AR | MP | Aggro Build | BAL-27-1 | ABCD1234 | meta, top3\nMonolithic Suppressor\nFTAC Champion\n```'),
+            '```\nBAL-27 | AR\nBuild: Aggro Build\nImage: BAL-27-1\nCode: 1I2C6B8A9D\nBadges: meta, top3\n- Monolithic Suppressor\n- FTAC Champion\n```'),
         section('💡 Tips',
             '• Use one of the **Export** options above to grab this exact format pre-filled with your real current data.\n' +
+            '• The OLD one-line pipe format (`Weapon | Category | Mode | Build | ...`) is no longer accepted and will report an error naming this format -- re-export anything you saved in it.\n' +
             '• See the "How Images Work" info block on this page for the full Cloudinary Image Key workflow.')
     ];
 }
@@ -157,23 +155,52 @@ function seasondraftSections() {
     ];
 }
 
+function adminsSections() {
+    return [
+        section('📋 This Isn\'t A Bulk Paste Either — It\'s An Access List',
+            'Manage Admins is a runtime-editable allowlist that SUPPLEMENTS the owner -- trusted people can be granted admin access without a code deploy per grant/revoke. Owner-only to change; any admin can see this page.'),
+        section('➕ Grant Admin',
+            'Type a Discord user ID, then pick what they can access: specific `/manage` pages, or whole admin commands (`/manage`/`/bot`/`/autobuild`), or "all".\n' +
+            '-# A granted admin can use the admin commands they were given -- they can never edit this allowlist itself, even if granted "all".'),
+        section('✏️ Edit Permissions / Revoke',
+            'Live directly on each admin\'s own card (no search-by-ID modal needed) -- **Edit Permissions** re-opens the same scoped picker Grant used; **Revoke** removes that person entirely, immediately, no second confirm.'),
+        section('💡 Tip',
+            'This list is separate from the one hardcoded owner ID -- revoking or narrowing an admin here never affects the owner\'s own access.')
+    ];
+}
+
+function announcementsSections() {
+    return [
+        section('📋 This Isn\'t A Bulk Paste Either — It\'s A Notice Feed',
+            'Announcement posts a message every user sees (once) on their next command, until it expires. Each one is its own independent entry -- posting a new one never touches the others.'),
+        section('📝 Post New Announcement',
+            'Write the message, then optionally set an expiry -- defaults to **60 days**, or type your own number of days, or `never`.'),
+        section('✏️ Edit / Delete',
+            'Live directly on each announcement\'s own card, same as Manage Admins\' per-row buttons above -- **Edit** re-opens that announcement\'s text/expiry for changes, **Delete** removes it immediately, no second confirm.'),
+        section('💡 Tip',
+            'Only ACTIVE (non-expired) announcements are listed here -- an expired one has already stopped showing to users and drops off this list on its own.')
+    ];
+}
+
 const TOPIC_SECTIONS = {
     draws: drawsSections,
     calendar: calendarSections,
     loadouts: loadoutsSections,
     patchnotes: patchnotesSections,
-    seasondraft: seasondraftSections
+    seasondraft: seasondraftSections,
+    admins: adminsSections,
+    announcements: announcementsSections
 };
 
-// Per-topic accent -- reuses each subsystem's own live PRESET_ACCENT rather than one flat guide
-// color, so the guide visually matches whichever page opened it (same philosophy as manage.js's
-// own PAGE_ACCENT map -- see .claude/rules/manage-panel.md).
+// Per-topic accent -- reuses each subsystem's own live PRESET_ACCENT rather than one flat guide color, so the guide visually matches whichever page opened it (same philosophy as manage.js's own PAGE_ACCENT map -- see .claude/rules/manage-panel.md).
 const TOPIC_ACCENT = {
     draws: 7032445,       // Plum Fortune -- draws.js's PRESET_ACCENT
     calendar: 3821672,    // Slate Harbor -- calendar.js's PRESET_ACCENT
     loadouts: 16725040,   // MP red, sampled from the Rank_7Legendary emoji (manage.js's PAGE_ACCENT.loadouts_mp)
     patchnotes: 15909424, // Patch Gold -- patchnotes.js's PRESET_ACCENT
-    seasondraft: 3821672  // Slate Harbor -- same family as Calendar (draft mirrors draws+calendar)
+    seasondraft: 3821672, // Slate Harbor -- same family as Calendar (draft mirrors draws+calendar)
+    admins: 2831409,       // #2b2d31 -- manage.js's PANEL_ACCENT fallback (manageadmins has no PAGE_ACCENT entry of its own)
+    announcements: 2831409 // #2b2d31 -- same PANEL_ACCENT fallback (announcement has no PAGE_ACCENT entry of its own)
 };
 
 function buildGuideContainer(topicKey) {

@@ -1068,10 +1068,12 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 
 
 
+
 .bar{position:fixed;inset:0 0 auto;height:54px;z-index:60;display:flex;align-items:center;
   gap:1.5rem;padding:0 clamp(1rem,3vw,2rem);background:color-mix(in srgb,var(--desk) 88%,transparent);
   backdrop-filter:blur(14px) saturate(1.3);border-bottom:1px solid var(--rule)}
 .bar nav{margin-left:auto;display:flex;align-items:center;gap:.6rem}
+
 #prog{position:fixed;top:53px;left:0;height:2px;width:0;z-index:61;background:var(--accent)}/* ── segmented page switcher ──────────────────────────────────────────
    Was three bordered boxes, which read as inert. Now one segmented control
    with an indicator that slides. Because these are separate documents and not
@@ -1398,26 +1400,41 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
   text-transform:uppercase;color:var(--ink3);text-decoration:none;
   padding:.42rem .55rem;border-radius:7px;white-space:nowrap}@media (hover:hover) and (pointer:fine){
 .segchip:hover{color:var(--ink);background:color-mix(in srgb,var(--ink) 7%,transparent)}}
-.segchip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── six tabs: tighten below 1060, and that is the whole staging ── */
+.segchip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── seven tabs: tighten below 1140 ──
+   MEASURED 2026-08-17 20:38 EDT against the real built page, in an iframe stepped
+   across the desktop range so both sides of the boundary are read from the same
+   engine that ships it. Findings: the tab font steps 10.56px -> 9.92px exactly
+   between 1140 and 1139, so the boundary applies where it says it does; and
+   bar.scrollWidth - bar.clientWidth is 0 at every width from 1600 down to 981,
+   the desktop floor. ⚠️ THE MEASURE WAS PROVEN ABLE TO FIRE before being believed
+   -- forcing the switcher visible at 500px reports 108px of overflow. A gate that
+   never fails is not a gate, and "no overflow anywhere" is exactly the result a
+   broken probe also returns.
+   The six- and nine-tab tiers these replaced are GONE rather than kept: with the
+   Commands group in the bar, no page produces those counts any more, and a
+   staging nothing selects is a number that rots unread. */
 
 
-@media (max-width:1059px){
-  .navwrap[data-fit="6"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
-  .navwrap[data-fit="6"] .seg{--gap:.6rem}
-}/* ── nine tabs: tighten below 1465, chips below 1300 ── */
+@media (max-width:1139px){
+  .navwrap[data-fit="7"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
+  .navwrap[data-fit="7"] .seg{--gap:.6rem}
+}/* ── ten tabs (inside /changelog/, where the record group rejoins) ──
+   MEASURED the same way and at the same time. The font steps at 1545 -> 1544 and
+   the three group chips replace the tabs at 1380 -> 1379, both exactly where
+   declared; zero overflow from 1600 down to 981. */
 
 
-@media (max-width:1464px){
-  .navwrap[data-fit="9"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
-  .navwrap[data-fit="9"] .seg{--gap:.6rem}
+@media (max-width:1544px){
+  .navwrap[data-fit="10"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
+  .navwrap[data-fit="10"] .seg{--gap:.6rem}
 }
-@media (min-width:981px) and (max-width:1299px){/* A group you are not in shows its chip instead of its tabs. The indicator goes
+@media (min-width:981px) and (max-width:1379px){/* A group you are not in shows its chip instead of its tabs. The indicator goes
      with them — .seg-ink measures real tab boxes, and there are none to measure. */
   
-  .navwrap[data-fit="9"] .seg[data-at="-1"] .tab{display:none}
-  .navwrap[data-fit="9"] .seg[data-at="-1"] .seg-ink{display:none}
-  .navwrap[data-fit="9"] .seg[data-at="-1"] .segchip{display:inline-block}
-  .navwrap[data-fit="9"] .seg[data-at="-1"]{padding:0}
+  .navwrap[data-fit="10"] .seg[data-at="-1"] .tab{display:none}
+  .navwrap[data-fit="10"] .seg[data-at="-1"] .seg-ink{display:none}
+  .navwrap[data-fit="10"] .seg[data-at="-1"] .segchip{display:inline-block}
+  .navwrap[data-fit="10"] .seg[data-at="-1"]{padding:0}
 }/* Desktop shows no mobile menu. */
 
 
@@ -1711,18 +1728,10 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 
 
 
-.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0}/* ⚠️ THE LEGAL WRAPPER HAS NO BOTTOM PADDING AND THE WARM ONE HAS A FLOOR OF ITS
-   OWN, WHICH IS WHY THE TWO FOOTERS BREATHE DIFFERENTLY ON A PHONE. COMPONENT_CSS
-   drops .foot's own bottom padding below 760px on the reasoning that "the wrapper
-   already provides the breathing room" — true of warmShell's .wrap, false here,
-   where .page ends at 0. This restores the missing floor, and the two numbers
-   have to move together — see .wrap below — or the templates drift apart again.
-   ⚠️ TRIMMED 2026-08-05 11:31 EDT: the original 4rem here (matched to .wrap's
-   original 4rem) was reported as too much dead space below the sign-off on
-   every legal, Contributing, and Contributors page. Cut to 2.6rem, still paired
-   with .wrap's own trim to the same value. */
 
+.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0}
 @media (max-width:760px){ .page{padding-bottom:2.6rem} }
+
 .cols{display:grid;grid-template-columns:200px minmax(0,1fr);
   gap:clamp(1.5rem,4vw,3.5rem);align-items:start}
 @media (max-width:980px){.cols{grid-template-columns:1fr;gap:0}}/* ── rail: the section index, tracking position ──────────────────── *//* align-self:start stops the rail STRETCHING to its grid row's full height, which is
@@ -1762,6 +1771,7 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
    and can disagree with the media query that actually governs the layout. */
 
 .rail>.lab .cur{display:none}
+
 .slot{display:grid;grid-template-columns:2.1rem 1fr;align-items:baseline;gap:.15rem;
   padding:.34rem 0 .34rem .8rem;text-decoration:none;border-left:2px solid var(--rule);
   transition:border-color .18s,color .18s}
@@ -1783,6 +1793,7 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
    with no room to say what it does. It moved into the section menu instead —
    see mobileNav() and ".mp-list .dlr" below — as the SAME row this is, not a
    second markup shape to keep in sync. */
+
 
 .dlr{display:flex;align-items:center;gap:.55rem;margin-top:.9rem;
   padding:.6rem .7rem;border-radius:9px;text-decoration:none;
@@ -2294,7 +2305,11 @@ html{scroll-behavior:smooth}
     <span class="go" aria-hidden="true">&#8250;</span>
   </a>
   <nav>
-    <div class="navwrap" data-fit="6"><div class="seg" data-at="3" data-label="Documents">
+    <div class="navwrap" data-fit="7"><div class="seg" data-at="-1" data-label="Using it">
+      <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
+      <a class="segchip" href="./commands.html">Using it</a>
+      <a class="tab" href="./commands.html" data-accent="#58D05A">Commands</a>
+    </div><span class="seg-gap" aria-hidden="true"></span><div class="seg" data-at="3" data-label="Documents">
       <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
       <a class="segchip" href="./terms.html">Documents</a>
       <a class="tab" href="./terms.html" data-accent="#F2994A">Terms</a><a class="tab" href="./privacy.html" data-accent="#17A2A2">Privacy</a><a class="tab" href="./license.html" data-accent="#9B6BE3">License</a><a class="tab on" href="./notice.html" data-accent="#FF5264" aria-current="page">Notice</a>
@@ -2368,12 +2383,12 @@ html{scroll-behavior:smooth}
   <div class="mbar">
     <span class="mgw" id="mgw" aria-hidden="true"><span class="mgo"></span><i class="mtint"></i></span>
     <nav class="mstrip" id="mstrip" aria-label="Pages">
-      <a class="mtab" href="./terms.html" style="--row:#F2994A">Terms</a><a class="mtab" href="./privacy.html" style="--row:#17A2A2">Privacy</a><a class="mtab" href="./license.html" style="--row:#9B6BE3">License</a><a class="mtab on" href="./notice.html" aria-current="page" style="--row:#FF5264">Notice</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab" href="./contributing.html" style="--row:#8B9BFF">Contributing</a><a class="mtab" href="./contributors.html" style="--row:#F8FF4A">Contributors</a>
+      <a class="mtab" href="./commands.html" style="--row:#58D05A">Commands</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab" href="./terms.html" style="--row:#F2994A">Terms</a><a class="mtab" href="./privacy.html" style="--row:#17A2A2">Privacy</a><a class="mtab" href="./license.html" style="--row:#9B6BE3">License</a><a class="mtab on" href="./notice.html" aria-current="page" style="--row:#FF5264">Notice</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab" href="./contributing.html" style="--row:#8B9BFF">Contributing</a><a class="mtab" href="./contributors.html" style="--row:#F8FF4A">Contributors</a>
     </nav>
   </div>
   <details class="msecd">
     <summary><span class="msd-l">On this page</span><span class="mt-at" id="railcur"></span></summary>
-    <div class="mp-list msec"><a href="#s-1" class="slot"><i>1</i><span>DIRECT DEPENDENCIES</span></a><a href="#s-2" class="slot"><i>2</i><span>APACHE LICENSE 2.0 OBLIGATIONS</span></a><a href="#s-3" class="slot"><i>3</i><span>TRANSITIVE DEPENDENCIES</span></a><a href="#s-4" class="slot"><i>4</i><span>PLATFORM AND SERVICE PROVIDERS</span></a><a href="#s-4a" class="slot"><i>4A</i><span>THIRD-PARTY CREATIVE ASSETS</span></a><a href="#s-5" class="slot"><i>5</i><span>TRADEMARK ACKNOWLEDGEMENTS</span></a><a href="#s-6" class="slot"><i>6</i><span>AI ASSISTANCE DISCLOSURE</span></a><a href="#s-7" class="slot"><i>7</i><span>CONTRIBUTIONS</span></a><a href="#s-8" class="slot"><i>8</i><span>CONTACT</span></a><div class="mp-dl"><a class="dlr" href="NOTICE" download="NOTICE.txt" data-tip="Download the plain-text original"><svg class="dlr-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M4.5 18.5h15"/></svg><span class="dlr-t">Download <b>NOTICE</b></span><span class="dlr-s">19 KB</span></a></div></div>
+    <div class="mp-list msec"><a href="#s-1" class="slot"><i>1</i><span>DIRECT DEPENDENCIES</span></a><a href="#s-2" class="slot"><i>2</i><span>APACHE LICENSE 2.0 OBLIGATIONS</span></a><a href="#s-3" class="slot"><i>3</i><span>TRANSITIVE DEPENDENCIES</span></a><a href="#s-4" class="slot"><i>4</i><span>PLATFORM AND SERVICE PROVIDERS</span></a><a href="#s-4a" class="slot"><i>4A</i><span>THIRD-PARTY CREATIVE ASSETS</span></a><a href="#s-5" class="slot"><i>5</i><span>TRADEMARK ACKNOWLEDGEMENTS</span></a><a href="#s-6" class="slot"><i>6</i><span>AI ASSISTANCE DISCLOSURE</span></a><a href="#s-7" class="slot"><i>7</i><span>CONTRIBUTIONS</span></a><a href="#s-8" class="slot"><i>8</i><span>CONTACT</span></a><div class="mp-dl"><a class="dlr" href="NOTICE" download="NOTICE.txt" data-tip="Download the plain-text original"><svg class="dlr-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M4.5 18.5h15"/></svg><span class="dlr-t">Download <b>NOTICE</b></span><span class="dlr-s">26 KB</span></a></div></div>
   </details>
 </aside>
 
@@ -2406,7 +2421,7 @@ html{scroll-behavior:smooth}
     <aside class="rail" id="rail">
       <span class="lab">Sections</span>
       <div class="slots" id="slots"><a href="#s-1" class="slot"><i>1</i><span>DIRECT DEPENDENCIES</span></a><a href="#s-2" class="slot"><i>2</i><span>APACHE LICENSE 2.0 OBLIGATIONS</span></a><a href="#s-3" class="slot"><i>3</i><span>TRANSITIVE DEPENDENCIES</span></a><a href="#s-4" class="slot"><i>4</i><span>PLATFORM AND SERVICE PROVIDERS</span></a><a href="#s-4a" class="slot"><i>4A</i><span>THIRD-PARTY CREATIVE ASSETS</span></a><a href="#s-5" class="slot"><i>5</i><span>TRADEMARK ACKNOWLEDGEMENTS</span></a><a href="#s-6" class="slot"><i>6</i><span>AI ASSISTANCE DISCLOSURE</span></a><a href="#s-7" class="slot"><i>7</i><span>CONTRIBUTIONS</span></a><a href="#s-8" class="slot"><i>8</i><span>CONTACT</span></a></div>
-      <a class="dlr" href="NOTICE" download="NOTICE.txt" data-tip="Download the plain-text original"><svg class="dlr-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M4.5 18.5h15"/></svg><span class="dlr-t">Download <b>NOTICE</b></span><span class="dlr-s">19 KB</span></a>
+      <a class="dlr" href="NOTICE" download="NOTICE.txt" data-tip="Download the plain-text original"><svg class="dlr-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M4.5 18.5h15"/></svg><span class="dlr-t">Download <b>NOTICE</b></span><span class="dlr-s">26 KB</span></a>
     </aside>
 
     <main class="doc" id="main" tabindex="-1">
@@ -2418,7 +2433,7 @@ html{scroll-behavior:smooth}
       </header>
       <div class="authoritative"><p>This page is a formatted reading copy. The <a href="NOTICE">plain-text NOTICE</a> is the authoritative instrument, and governs if the two ever differ.</p><a class="dl" href="NOTICE" download="NOTICE.txt" data-tip="Download the plain text"><svg class="dl-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M4.5 18.5h15"/></svg>Download NOTICE</a></div><p>Copyright (c) 2026 Harkirat Mangat (&quot;dior&quot;, &quot;diorswrld&quot;). All rights reserved.</p>
 <p>This project was published under the name &quot;Dior&#39;s Builds&quot; until 4 August 2026. The change of name did not change the author, the copyright holder, the licensed work, or the third-party attributions recorded below. LICENSE §18 states the position in full; both names are Brand Assets under LICENSE §1.5.</p>
-<p>This file records (1) the third-party software Dioreo depends on and the licenses that govern it, (2) third-party trademarks referenced by the project, and (3) a disclosure of AI assistance in authoring the project.</p>
+<p>This file records (1) the third-party software Dioreo depends on and the licenses that govern it, (2) the third-party creative work and content the project uses, with credit to its creators, (3) third-party trademarks referenced by the project, and (4) a disclosure of AI assistance in authoring the project.</p>
 <p>This file is required reading alongside LICENSE. Nothing in LICENSE restricts, enlarges, or otherwise varies your rights in any third-party component listed below — those components are licensed to you by their own licensors, on their own terms.</p>
 <section class="dsec">
 <h2 id="s-1" class="numbered"><span class="idx" aria-hidden="true">1</span><span class="ht">DIRECT DEPENDENCIES</span><a class="anchor" href="#s-1" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
@@ -2429,20 +2444,27 @@ html{scroll-behavior:smooth}
 <div class="dep"><div class="dep-h"><span class="dep-n">dayjs</span> <span class="dep-v">1.11.21</span> <span class="dep-lic">MIT</span></div><p class="dep-c">Copyright (c) iamkun</p><p class="dep-u"><a href="https://day.js.org" target="_blank" rel="noopener noreferrer">https://day.js.org</a></p></div>
 <div class="dep"><div class="dep-h"><span class="dep-n">discord.js</span> <span class="dep-v">14.27.0</span> <span class="dep-lic">Apache License 2.0</span></div><p class="dep-c">Copyright (c) discord.js contributors</p><p class="dep-u"><a href="https://discord.js.org" target="_blank" rel="noopener noreferrer">https://discord.js.org</a></p><p class="dep-note"><strong class="hi"> See <a class="xref" href="#s-2" data-tip="Jump to section">Section&nbsp;2</a> — Apache-2.0 obligations </strong></p></div>
 <div class="dep"><div class="dep-h"><span class="dep-n">dotenv</span> <span class="dep-v">17.4.2</span> <span class="dep-lic">BSD-2-Clause</span></div><p class="dep-c">Copyright (c) Scott Motte and contributors</p><p class="dep-u"><a href="https://github.com/motdotla/dotenv" target="_blank" rel="noopener noreferrer">https://github.com/motdotla/dotenv</a></p></div>
+<div class="dep"><div class="dep-h"><span class="dep-n">google-auth-library</span> <span class="dep-v">11.0.2</span> <span class="dep-lic">Apache License 2.0</span></div><p class="dep-c">Copyright (c) Google LLC</p><p class="dep-u"><a href="https://github.com/googleapis/google-auth-library-nodejs" target="_blank" rel="noopener noreferrer">https://github.com/googleapis/google-auth-library-nodejs</a></p><p class="dep-note"><strong class="hi"> See <a class="xref" href="#s-2" data-tip="Jump to section">Section&nbsp;2</a> — Apache-2.0 obligations </strong> Application Default Credentials for the Health page&#39;s Cloud Logging/Monitoring reads.</p></div>
 <div class="dep"><div class="dep-h"><span class="dep-n">jimp</span> <span class="dep-v">1.6.1</span> <span class="dep-lic">MIT</span></div><p class="dep-c">Copyright (c) Andrew Lisowski</p><p class="dep-u"><a href="https://github.com/jimp-dev/jimp" target="_blank" rel="noopener noreferrer">https://github.com/jimp-dev/jimp</a></p></div>
 <div class="dep"><div class="dep-h"><span class="dep-n">mongoose</span> <span class="dep-v">9.9.1</span> <span class="dep-lic">MIT</span></div><p class="dep-c">Copyright (c) LearnBoost &lt;dev@learnboost.com&gt;</p><p class="dep-u"><a href="https://mongoosejs.com" target="_blank" rel="noopener noreferrer">https://mongoosejs.com</a></p></div>
 <p>Development dependencies:</p>
 <div class="dep"><div class="dep-h"><span class="dep-n">xlsx (SheetJS)</span> <span class="dep-v">0.18.5</span> <span class="dep-lic">Apache License 2.0</span></div><p class="dep-c">Copyright (c) SheetJS LLC</p><p class="dep-u"><a href="https://sheetjs.com" target="_blank" rel="noopener noreferrer">https://sheetjs.com</a></p><p class="dep-note"><strong class="hi"> See <a class="xref" href="#s-2" data-tip="Jump to section">Section&nbsp;2</a> — Apache-2.0 obligations </strong> Not used at runtime; required only by scripts/migrateBuildsToMongo.js.</p></div>
+<div class="dep"><div class="dep-h"><span class="dep-n">preact</span> <span class="dep-v">10.x</span> <span class="dep-lic">MIT</span></div><p class="dep-c">Copyright (c) 2015-present Jason Miller</p><p class="dep-u"><a href="https://preactjs.com" target="_blank" rel="noopener noreferrer">https://preactjs.com</a></p><p class="dep-note">Vendored into portal/public/vendor/ by scripts/buildPortal.js; not used at runtime by the Discord bot itself.</p></div>
+<div class="dep"><div class="dep-h"><span class="dep-n">htm</span> <span class="dep-v">3.x</span> <span class="dep-lic">MIT (Apache-2.0 for a small number of contributed</span></div><p class="dep-note">files — see the package&#39;s own LICENSE) Copyright (c) 2018 Jason Miller <a href="https://github.com/developit/htm" target="_blank" rel="noopener noreferrer">https://github.com/developit/htm</a> Vendored alongside Preact for the web admin portal&#39;s no-build-step frontend.</p></div>
 <p>Vendored web assets, served from public/assets/:</p>
 <p>These are not npm dependencies and do not appear in package.json. They are committed to this repository and served from our own origin by the published website. That is deliberate: the Privacy Policy is published on the same origin and states what is collected, and loading a font or a script from a third-party CDN would disclose every visitor&#39;s IP address to that third party without the policy saying so.</p>
 <div class="dep"><div class="dep-h"><span class="dep-n">Martian Mono</span> <span class="dep-lic">SIL Open Font License 1.1</span></div><p class="dep-c">Copyright (c) The Martian Mono Project Authors</p><p class="dep-u"><a href="https://github.com/evilmartians/mono" target="_blank" rel="noopener noreferrer">https://github.com/evilmartians/mono</a></p><p class="dep-note">Used for version stamps and display type on the changelog and devlog pages.</p></div>
 <div class="dep"><div class="dep-h"><span class="dep-n">Instrument Sans</span> <span class="dep-lic">SIL Open Font License 1.1</span></div><p class="dep-c">Copyright (c) The Instrument Sans Project Authors</p><p class="dep-u"><a href="https://github.com/Instrument/instrument-sans" target="_blank" rel="noopener noreferrer">https://github.com/Instrument/instrument-sans</a></p><p class="dep-note">Used for reading copy on the same pages.</p></div>
 <div class="dep"><div class="dep-h"><span class="dep-n">Motion One</span> <span class="dep-v">11</span> <span class="dep-lic">MIT</span></div><p class="dep-c">Copyright (c) Matt Perry</p><p class="dep-u"><a href="https://motion.dev" target="_blank" rel="noopener noreferrer">https://motion.dev</a></p><p class="dep-note">Scroll-reveal animation on the changelog and devlog pages; the pages render and are fully readable without it.</p></div>
 <p>The SIL OFL requires that the fonts be distributed with this notice and that they not be sold on their own; neither is affected by how they are used here. Both fonts are served as subset .woff2 files, unmodified.</p>
+<p>VENDORED REFERENCE DATA (checked into this repository, not npm dependencies)</p>
+<div class="dep"><div class="dep-h"><span class="dep-n">Wikipedia List of colors</span> <span class="dep-lic">CC BY-SA 4.0</span></div><p class="dep-c">Copyright (c) Wikipedia contributors</p><p class="dep-u"><a href="https://en.wikipedia.org/wiki/Lists_of_colors" target="_blank" rel="noopener noreferrer">https://en.wikipedia.org/wiki/Lists_of_colors</a></p><p class="dep-note">utils/data/wikipediaColorNames.json — 812 colour names and their hex values, used to name the swatches in /colors. Extracted and reformatted (title-cased, de-duplicated, sorted); the names and values are unchanged.</p></div>
+<div class="dep"><div class="dep-h"><span class="dep-n">XKCD colour survey</span> <span class="dep-lic">Public domain (CC0)</span></div><p class="dep-note">Randall Munroe / xkcd.com <a href="https://xkcd.com/color/rgb/" target="_blank" rel="noopener noreferrer">https://xkcd.com/color/rgb/</a> utils/data/xkcdColorNames.json — 908 names from the 2010 public colour survey, released into the public domain by its author. Crude joke entries and 13 spelling slips were removed or corrected; see utils/colorNames.js.</p></div>
+<p>CC BY-SA 4.0 requires attribution and that adaptations of the DATA be shared under the same terms. That obligation attaches to the colour-name file itself, not to this project&#39;s source code, which is governed by LICENSE. Anyone redistributing that file, or a derivative of it, carries the same duty regardless of what LICENSE otherwise permits.</p>
 </section>
 <section class="dsec">
 <h2 id="s-2" class="numbered"><span class="idx" aria-hidden="true">2</span><span class="ht">APACHE LICENSE 2.0 OBLIGATIONS</span><a class="anchor" href="#s-2" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
-<p>discord.js and xlsx are licensed under the Apache License, Version 2.0. If you redistribute this project or any work containing those components, Apache-2.0 <a class="xref" href="#s-4" data-tip="Jump to section">§4</a> requires you to:</p>
+<p>discord.js, xlsx and google-auth-library are licensed under the Apache License, Version 2.0. If you redistribute this project or any work containing those components, Apache-2.0 <a class="xref" href="#s-4" data-tip="Jump to section">§4</a> requires you to:</p>
 <ul class="lettered"><li>(a) give recipients a copy of the Apache License 2.0;</li><li>(b) retain all copyright, patent, trademark, and attribution notices;</li><li>(c) state prominently that you changed any Apache-licensed file, if you did; and</li><li>(d) include the contents of any NOTICE file distributed with those works.</li></ul>
 <p>The full Apache License 2.0 text is available at:</p>
 <pre class="block"><a href="http://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener noreferrer">http://www.apache.org/licenses/LICENSE-2.0</a></pre>
@@ -2498,9 +2520,23 @@ any other platform where the user is not charged for access to the emoji.&quot;<
 <p>The Bot satisfies this: it is distributed free of charge, has no paid tier, no subscription, and no in-app purchase, so no user is ever charged for access to these emoji. The Licensor additionally credits the creator (not strictly required by the Basic License, but given regardless), claims no ownership, and does not redistribute them as standalone assets. See emoji.gg&#39;s terms (<a href="https://emoji.gg/terms" target="_blank" rel="noopener noreferrer">https://emoji.gg/terms</a>) and license reference (<a href="https://emoji.gg/licenses" target="_blank" rel="noopener noreferrer">https://emoji.gg/licenses</a>).</p>
 <p class="sub">&gt;&gt; STANDING CONSTRAINT — READ BEFORE MONETISING. The Basic License is &gt;&gt; conditional on users not being charged for access. If the Bot ever &gt;&gt; introduces a paid tier, subscription, or any paywall, the license no longer &gt;&gt; covers this use and these emoji MUST be replaced or separately licensed &gt;&gt; first. This is a real limit on the project&#39;s commercial options, not a &gt;&gt; formality. It is cross-referenced in TERMS.md §4.2 (the Bot is free).</p>
 <p>Creators whose work appears here and who want different attribution, or removal, should email <a href="mailto:harkirat117@gmail.com">harkirat117@gmail.com</a>. Requests are actioned promptly.</p>
-<h3 id="s-4a.2" class="clause"><span class="idx" aria-hidden="true">4A.2</span><span class="ht">OTHER VISUAL MATERIAL</span><a class="anchor" href="#s-4a.2" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-4a.2" class="clause"><span class="idx" aria-hidden="true">4A.2</span><span class="ht">ICONS</span><a class="anchor" href="#s-4a.2" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
+
+<p>Some icons used in the Bot&#39;s interface and on the website were designed by third-party artists and obtained through Flaticon (<a href="https://www.flaticon.com" target="_blank" rel="noopener noreferrer">https://www.flaticon.com</a>), in Flaticon&#39;s own required attribution format. With thanks:</p>
+<p>Icons designed by [Andy Horvath](<a href="https://www.flaticon.com/authors/andy-horvath" target="_blank" rel="noopener noreferrer">https://www.flaticon.com/authors/andy-horvath</a>) from [Flaticon](<a href="https://www.flaticon.com" target="_blank" rel="noopener noreferrer">https://www.flaticon.com</a>) Icons designed by [Anggara](<a href="https://www.flaticon.com/authors/anggara" target="_blank" rel="noopener noreferrer">https://www.flaticon.com/authors/anggara</a>) from [Flaticon](<a href="https://www.flaticon.com" target="_blank" rel="noopener noreferrer">https://www.flaticon.com</a>) Icons designed by [Arkinasi](<a href="https://www.flaticon.com/authors/arkinasi" target="_blank" rel="noopener noreferrer">https://www.flaticon.com/authors/arkinasi</a>) from [Flaticon](<a href="https://www.flaticon.com" target="_blank" rel="noopener noreferrer">https://www.flaticon.com</a>) Icons designed by [bukeicon](<a href="https://www.flaticon.com/authors/bukeicon" target="_blank" rel="noopener noreferrer">https://www.flaticon.com/authors/bukeicon</a>) from [Flaticon](<a href="https://www.flaticon.com" target="_blank" rel="noopener noreferrer">https://www.flaticon.com</a>) Icons designed by [customicondesign_1](<a href="https://www.flaticon.com/authors/customicondesign-1" target="_blank" rel="noopener noreferrer">https://www.flaticon.com/authors/customicondesign-1</a>) from [Flaticon](<a href="https://www.flaticon.com" target="_blank" rel="noopener noreferrer">https://www.flaticon.com</a>) Icons designed by [Dreamcreateicons](<a href="https://www.flaticon.com/authors/dreamcreateicons" target="_blank" rel="noopener noreferrer">https://www.flaticon.com/authors/dreamcreateicons</a>) from [Flaticon](<a href="https://www.flaticon.com" target="_blank" rel="noopener noreferrer">https://www.flaticon.com</a>) Icons designed by [Flat Icons](<a href="https://www.flaticon.com/authors/flat-icons" target="_blank" rel="noopener noreferrer">https://www.flaticon.com/authors/flat-icons</a>) from [Flaticon](<a href="https://www.flaticon.com" target="_blank" rel="noopener noreferrer">https://www.flaticon.com</a>) Icons designed by [Kemalmoe](<a href="https://www.flaticon.com/authors/kemalmoe" target="_blank" rel="noopener noreferrer">https://www.flaticon.com/authors/kemalmoe</a>) from [Flaticon](<a href="https://www.flaticon.com" target="_blank" rel="noopener noreferrer">https://www.flaticon.com</a>) Icons designed by Magnific from [Flaticon](<a href="https://www.flaticon.com" target="_blank" rel="noopener noreferrer">https://www.flaticon.com</a>) Icons designed by [mj](<a href="https://www.flaticon.com/authors/mj" target="_blank" rel="noopener noreferrer">https://www.flaticon.com/authors/mj</a>) from [Flaticon](<a href="https://www.flaticon.com" target="_blank" rel="noopener noreferrer">https://www.flaticon.com</a>) Icons designed by [PixelVerse](<a href="https://www.flaticon.com/authors/pixelverse" target="_blank" rel="noopener noreferrer">https://www.flaticon.com/authors/pixelverse</a>) from [Flaticon](<a href="https://www.flaticon.com" target="_blank" rel="noopener noreferrer">https://www.flaticon.com</a>)</p>
+<p class="sub">&gt;&gt; &quot;Magnific&quot; carries no author link above, by design, not oversight. &gt;&gt; Flaticon&#39;s own parent company recently renamed itself Freepik -&gt; &gt;&gt; Magnific, and that rename broke the author&#39;s profile URL on Flaticon&#39;s &gt;&gt; end (confirmed: it 404s, and no search or site directory surfaces a &gt;&gt; replacement). Credit is still given by name, exactly as required.</p>
+<p>LICENSE TIER — CONFIRMED. These icons carry Flaticon&#39;s **&quot;Free for commercial use with attribution&quot; license**. The Bot satisfies this: it is distributed free of charge, has no paid tier, no subscription, and no in-app purchase, so no user is ever charged for access to these icons, and attribution is given here as required. (Flaticon&#39;s Premium subscription is a separate tier that removes the attribution requirement — &quot;No attribution required&quot; is listed as a premium benefit on Flaticon&#39;s own download panel — and is not the tier these icons are used under.) See Flaticon&#39;s terms of use (<a href="https://www.flaticon.com/legal" target="_blank" rel="noopener noreferrer">https://www.flaticon.com/legal</a>).</p>
+<p class="sub">&gt;&gt; STANDING CONSTRAINT — READ BEFORE MONETISING. Same shape as 4A.1&#39;s: &gt;&gt; if the Bot ever introduces a paid tier, subscription, or any paywall, &gt;&gt; re-confirm these icons&#39; free-tier terms still apply, or replace/license &gt;&gt; them separately first. Cross-referenced in TERMS.md §4.2.</p>
+<p>Creators whose work appears here and who want different attribution, or removal, should email <a href="mailto:harkirat117@gmail.com">harkirat117@gmail.com</a>. Requests are actioned promptly.</p>
+<h3 id="s-4a.3" class="clause"><span class="idx" aria-hidden="true">4A.3</span><span class="ht">OTHER VISUAL MATERIAL</span><a class="anchor" href="#s-4a.3" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 
 <p>Game imagery, weapon renders, and screenshots displayed by the Bot are covered by <a class="xref" href="#s-5" data-tip="Jump to section">Section&nbsp;5</a> below and remain the property of their respective owners.</p>
+<h3 id="s-4a.4" class="clause"><span class="idx" aria-hidden="true">4A.4</span><span class="ht">COMMUNITY CONTENT</span><a class="anchor" href="#s-4a.4" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
+
+<p>Some of the Call of Duty: Mobile content and information the Bot presents is sourced from material published by the Leakers on Duty community. With thanks:</p>
+<pre class="block">Leakers on Duty             <a href="https://discord.gg/nicecat" target="_blank" rel="noopener noreferrer">https://discord.gg/nicecat</a></pre>
+<p>LICENSE — AS MARKED. Their material carries a Creative Commons Attribution (CC BY) mark, which does not state a license version. The Bot credits them here and alongside the content where it is shown. Their material is adapted, not reproduced as published: it is reformatted for the Bot&#39;s interface. No endorsement of Dioreo by Leakers on Duty is stated or implied.</p>
+<p>Creators whose work appears here and who want different attribution, or removal, should email <a href="mailto:harkirat117@gmail.com">harkirat117@gmail.com</a>. Requests are actioned promptly.</p>
 </section>
 <section class="dsec">
 <h2 id="s-5" class="numbered"><span class="idx" aria-hidden="true">5</span><span class="ht">TRADEMARK ACKNOWLEDGEMENTS</span><a class="anchor" href="#s-5" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
@@ -2570,7 +2606,7 @@ Claude(TM), Anthropic(R)
   <footer class="foot nodisc">
     <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a><span class="sig-cr">&copy; Dioreo&trade;. All rights reserved.</span></p>
     
-    <nav class="endnav"><a href="./terms.html">Terms</a><span>&middot;</span><a href="./privacy.html">Privacy</a><span>&middot;</span><a href="./license.html">License</a><span>&middot;</span><a href="./contributing.html">Contributing</a><span>&middot;</span><a href="./contributors.html">Contributors</a></nav>
+    <nav class="endnav"><a href="./commands.html">Commands</a><span>&middot;</span><a href="./terms.html">Terms</a><span>&middot;</span><a href="./privacy.html">Privacy</a><span>&middot;</span><a href="./license.html">License</a><span>&middot;</span><a href="./contributing.html">Contributing</a><span>&middot;</span><a href="./contributors.html">Contributors</a></nav>
   </footer>
 </div>
 

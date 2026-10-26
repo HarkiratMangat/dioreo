@@ -1,0 +1,904 @@
+{
+  "source": "local/codm-attachments/source-screenshot@2x.png",
+  "weapons": [
+    {
+      "name": "M4",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "AK17",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "AK-47",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "Type 25",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "ASM10",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "BK57",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "LK24",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "M16",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "ICR-1",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "Man-O-War",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "HBRa3",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "KN-44",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "HVK-30",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "DR-H",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "Peacekeeper MK2",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "FR .556",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "AS VAL",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "CR-56 AMAX",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "M13",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "Swordfish",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "Kilo 141",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "Odin",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "Krig 6",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "EM2",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "Maddox",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "FFAR 1",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "Grau 5.56",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "Groza",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "Type 19",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "BP50",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "LAG 53",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "XM4",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "Vargo-S",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "RAM-7",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "Lachmann-556",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "BAL-27",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "Cronen Squall",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "ISO Hemlock",
+      "category": "Assault Rifles"
+    },
+    {
+      "name": "DL Q33",
+      "category": "Sniper Rifles"
+    },
+    {
+      "name": "M21 EBR",
+      "category": "Sniper Rifles"
+    },
+    {
+      "name": "Arctic .50",
+      "category": "Sniper Rifles"
+    },
+    {
+      "name": "XPR-50",
+      "category": "Sniper Rifles"
+    },
+    {
+      "name": "Locus",
+      "category": "Sniper Rifles"
+    },
+    {
+      "name": "Outlaw",
+      "category": "Sniper Rifles"
+    },
+    {
+      "name": "NA-45",
+      "category": "Sniper Rifles"
+    },
+    {
+      "name": "Rytec AMR",
+      "category": "Sniper Rifles"
+    },
+    {
+      "name": "SVD",
+      "category": "Sniper Rifles"
+    },
+    {
+      "name": "Koshka",
+      "category": "Sniper Rifles"
+    },
+    {
+      "name": "ZRG 20mm",
+      "category": "Sniper Rifles"
+    },
+    {
+      "name": "HDR",
+      "category": "Sniper Rifles"
+    },
+    {
+      "name": "LW3-Tundra",
+      "category": "Sniper Rifles"
+    },
+    {
+      "name": "3-Line Rifle",
+      "category": "Sniper Rifles"
+    },
+    {
+      "name": "RPD",
+      "category": "Light Machine Guns"
+    },
+    {
+      "name": "M4LMG",
+      "category": "Light Machine Guns"
+    },
+    {
+      "name": "UL736",
+      "category": "Light Machine Guns"
+    },
+    {
+      "name": "S36",
+      "category": "Light Machine Guns"
+    },
+    {
+      "name": "Chopper",
+      "category": "Light Machine Guns"
+    },
+    {
+      "name": "Holger 26",
+      "category": "Light Machine Guns"
+    },
+    {
+      "name": "Hades",
+      "category": "Light Machine Guns"
+    },
+    {
+      "name": "PKM",
+      "category": "Light Machine Guns"
+    },
+    {
+      "name": "Dingo",
+      "category": "Light Machine Guns"
+    },
+    {
+      "name": "Bruen MK9",
+      "category": "Light Machine Guns"
+    },
+    {
+      "name": "MG42",
+      "category": "Light Machine Guns"
+    },
+    {
+      "name": "RAAL MG",
+      "category": "Light Machine Guns"
+    },
+    {
+      "name": "MG 82",
+      "category": "Light Machine Guns"
+    },
+    {
+      "name": "DP27",
+      "category": "Light Machine Guns"
+    },
+    {
+      "name": "RUS-79U",
+      "category": "Submachine Guns"
+    },
+    {
+      "name": "PDW-57",
+      "category": "Submachine Guns"
+    },
+    {
+      "name": "HG 40",
+      "category": "Submachine Guns"
+    },
+    {
+      "name": "Chicom",
+      "category": "Submachine Guns"
+    },
+    {
+      "name": "MSMC",
+      "category": "Submachine Guns"
+    },
+    {
+      "name": "Razorback",
+      "category": "Submachine Guns"
+    },
+    {
+      "name": "Pharo",
+      "category": "Submachine Guns"
+    },
+    {
+      "name": "GKS",
+      "category": "Submachine Guns"
+    },
+    {
+      "name": "Cordite",
+      "category": "Submachine Guns"
+    },
+    {
+      "name": "QQ9",
+      "category": "Submachine Guns"
+    },
+    {
+      "name": "Fennec",
+      "category": "Submachine Guns"
+    },
+    {
+      "name": "AGR 556",
+      "category": "Submachine Guns"
+    },
+    {
+      "name": "CXR",
+      "category": "Submachine Guns"
+    },
+    {
+      "name": "PPSh-41",
+      "category": "Submachine Guns"
+    },
+    {
+      "name": "MAC-10",
+      "category": "Submachine Guns"
+    },
+    {
+      "name": "KSP 45",
+      "category": "Submachine Guns"
+    },
+    {
+      "name": "SwitchBlade X9",
+      "category": "Submachine Guns"
+    },
+    {
+      "name": "LAPA",
+      "category": "Submachine Guns"
+    },
+    {
+      "name": "OTs 9",
+      "category": "Submachine Guns"
+    },
+    {
+      "name": "ISO",
+      "category": "Submachine Guns"
+    },
+    {
+      "name": "USS 9",
+      "category": "Submachine Guns"
+    },
+    {
+      "name": "VMP",
+      "category": "Submachine Guns"
+    },
+    {
+      "name": "Sten",
+      "category": "Submachine Guns"
+    },
+    {
+      "name": "LC10",
+      "category": "Submachine Guns"
+    },
+    {
+      "name": "FSS Hurricane",
+      "category": "Submachine Guns"
+    },
+    {
+      "name": "Static-HV",
+      "category": "Submachine Guns"
+    },
+    {
+      "name": "MicroMG 9mm",
+      "category": "Submachine Guns",
+      "mode": "DMZ"
+    },
+    {
+      "name": "BY15",
+      "category": "Shotguns"
+    },
+    {
+      "name": "Striker",
+      "category": "Shotguns"
+    },
+    {
+      "name": "HS2126",
+      "category": "Shotguns"
+    },
+    {
+      "name": "HS0405",
+      "category": "Shotguns"
+    },
+    {
+      "name": "KRM-262",
+      "category": "Shotguns"
+    },
+    {
+      "name": "Echo",
+      "category": "Shotguns"
+    },
+    {
+      "name": "RY-0",
+      "category": "Shotguns"
+    },
+    {
+      "name": "JAK-12",
+      "category": "Shotguns"
+    },
+    {
+      "name": "Argus",
+      "category": "Shotguns"
+    },
+    {
+      "name": "VLK Rogue",
+      "category": "Shotguns"
+    },
+    {
+      "name": "Einhorn Revolving",
+      "category": "Shotguns"
+    },
+    {
+      "name": "MX Guardian",
+      "category": "Shotguns"
+    },
+    {
+      "name": "Kilo Bolt-Action",
+      "category": "Marksman Rifles"
+    },
+    {
+      "name": "SKS",
+      "category": "Marksman Rifles"
+    },
+    {
+      "name": "SP-R 208",
+      "category": "Marksman Rifles"
+    },
+    {
+      "name": "MK2",
+      "category": "Marksman Rifles"
+    },
+    {
+      "name": "Type 63",
+      "category": "Marksman Rifles"
+    },
+    {
+      "name": "M1 Garand",
+      "category": "Marksman Rifles"
+    },
+    {
+      "name": "SO-14",
+      "category": "Marksman Rifles"
+    },
+    {
+      "name": "MW11",
+      "category": "Pistols"
+    },
+    {
+      "name": "J358",
+      "category": "Pistols"
+    },
+    {
+      "name": ".50 GS",
+      "category": "Pistols"
+    },
+    {
+      "name": "Renetti",
+      "category": "Pistols"
+    },
+    {
+      "name": "Shorty",
+      "category": "Pistols"
+    },
+    {
+      "name": "Crossbow",
+      "category": "Pistols"
+    },
+    {
+      "name": "L-CAR 9",
+      "category": "Pistols"
+    },
+    {
+      "name": "Dobvra",
+      "category": "Pistols"
+    },
+    {
+      "name": "Nail Gun",
+      "category": "Pistols"
+    },
+    {
+      "name": "Machine Pistol",
+      "category": "Pistols"
+    }
+  ],
+  "attachments": {
+    "Muzzle": {
+      "general": [
+        "Lightweight Suppressor",
+        "Tactical Suppressor",
+        "Monolithic Suppressor",
+        "Colossus Suppressor",
+        "Agency Suppressor",
+        "Marauder Suppressor",
+        "Oil Can Suppressor",
+        "Compensator",
+        "RTC Compensator",
+        "Infantry Compensator",
+        "RTC Muzzle Brake",
+        "Muzzle Brake",
+        "MIP Light Muzzle Brake",
+        "Flash Guard",
+        "MIP Flashguard",
+        "MIP Light Flash Guard",
+        "YKM Light Flash Guard",
+        "Breacher Device",
+        "SOCOM Eliminator",
+        "Choke"
+      ],
+      "byWeapon": {}
+    },
+    "Barrel": {
+      "general": [
+        "YKM Integral Suppressor Light",
+        "YKM Integral Suppressor",
+        "MIP Light Barrel (Short)",
+        "MIP Light",
+        "MIP Extended Light Barrel",
+        "MIP Steady",
+        "OWC Range",
+        "OWC Marksman",
+        "RTC Extended Light Barrel",
+        "Rapid Fire Barrel",
+        "Built-In Silence Barrel",
+        "Long-Range Barrel",
+        "Sawed-Off Barrel",
+        "Extended Barrel",
+        "Light Barrel (Long)",
+        "Light Barrel (Short)",
+        "Taskforce Barrel",
+        "Reinforced Heavy",
+        "Cavalry Lancer",
+        "Grip Barrel"
+      ],
+      "byWeapon": {
+        "ASM10": [
+          "Branson"
+        ],
+        "HVK-30": [
+          "YKM Integral Suppressor Heavy"
+        ],
+        "Peacekeeper MK2": [
+          "Well-Forged Barrel"
+        ],
+        "AS VAL": [
+          "MIP Quick Response Barrel",
+          "MIP 105mm Melee Barrel",
+          "MIP 200mm Mid-Range Barrel"
+        ],
+        "CR-56 AMAX": [
+          "Gunner Stock",
+          "Intruder Stock",
+          "MIP Custom Long"
+        ],
+        "M13": [
+          "RTC Silencer Barrel",
+          "RTC Mini Barrel",
+          "RTC Heavy Long Barrel"
+        ],
+        "DL Q33": [
+          ".408 Standard",
+          "Free Floating"
+        ],
+        "M21 EBR": [
+          "MIP Precise"
+        ],
+        "Arctic .50": [
+          "Assassin Short",
+          "0.5 Light Long",
+          "Anti-Material Heavy",
+          "OWC Monolithic Suppressor"
+        ],
+        "XPR-50": [
+          "RTC Lightweight",
+          "RTC CQB",
+          "RTC Long"
+        ],
+        "Locus": [
+          "YKM Lightweight Short",
+          "YKM Lightweight Long",
+          "YKM Standard"
+        ],
+        "Outlaw": [
+          "MIP Tac Long",
+          "MIP Memorial Cowboy"
+        ],
+        "NA-45": [
+          "MIP Custom Light",
+          "RTC Modified",
+          "OWC Tac Long"
+        ],
+        "SVD": [
+          "RTC 660mm Heavy",
+          "RTC 510mm Light"
+        ],
+        "RPD": [
+          "OWC Heavy Barrel",
+          "OWC Compact Barrel",
+          "OWC Extended Barrel",
+          "Cooling Compressor Barrel"
+        ],
+        "M4LMG": [
+          "MIP Ultralight Barrel",
+          "MIP Short Barrel"
+        ],
+        "UL736": [
+          "RTC 12.4\" Light Barrel",
+          "RTC 18.2\" Short",
+          "RTC 25.4\" Extended Barrel",
+          "LW Silencer Barrel"
+        ],
+        "S36": [
+          "Compagnie Generale Sevier - Light Barrel",
+          "Compagnie Generale Sevier - Short Barrel"
+        ],
+        "Chopper": [
+          "Chopper Infantry",
+          "Chopper Special Forces",
+          "Chopper Heavy"
+        ],
+        "QQ9": [
+          "RTC Recon Tac Long",
+          "MIP Customized Light Barrel",
+          "MIP Tactical Barrel",
+          "Monolithic Integral Suppressor"
+        ],
+        "Striker": [
+          "OWC Customized Heavy Barrel",
+          "RTC Retractable Barrel"
+        ],
+        "HS2126": [
+          "YKM Light Barrel (Long)",
+          "YKM Light Barrel (Short)",
+          "YKM Heavy Barrel"
+        ],
+        "MK2": [
+          "20.0 Forged Barrel",
+          "18.0 Sport Barrel"
+        ],
+        "MW11": [
+          ".45 Tac Long",
+          ".45 Compact"
+        ],
+        "J358": [
+          "J358 Custom Light",
+          "J358 Long",
+          "J358 Short"
+        ]
+      }
+    },
+    "Bowstring": {
+      "general": [
+        "16 Bowstring",
+        "28 Bowstring"
+      ],
+      "byWeapon": {}
+    },
+    "Limb": {
+      "general": [
+        "Customized Limb",
+        "Enhanced Limb",
+        "Heavy Limb"
+      ],
+      "byWeapon": {}
+    },
+    "Optic": {
+      "general": [
+        "Classic Red Dot Sight",
+        "Red Dot Sight 1",
+        "Red Dot Sight 2",
+        "Red Dot Sight 3",
+        "Red Dot Sight 4",
+        "Red Dot Sight 5",
+        "Red Dot Sight 6",
+        "Classic Holographic Sight",
+        "Holographic Sight 1",
+        "Holographic Sight 2",
+        "Holographic Sight 3",
+        "Tactical Scope",
+        "3X Tactical Scope 1",
+        "3X Tactical Scope 2",
+        "3X Tactical Scope 3",
+        "4X Tactical Scope",
+        "OWC 4.4X Tactical Scope",
+        "RTC 4.4X Tactical Scope",
+        "6X Tactical Scope 2",
+        "6X Tactical Scope 3"
+      ],
+      "byWeapon": {},
+      "notes": {
+        "Thermal Scope": "BR only"
+      }
+    },
+    "Stock": {
+      "general": [
+        "YKM Light Stock",
+        "YKM Combat Stock",
+        "MIP Strike Stock",
+        "MIP Stalker Stock",
+        "RTC Steady Stock",
+        "OWC Skeleton Stock",
+        "OWC Ranger Stock",
+        "Tactical Stock",
+        "Marathon Stock",
+        "Raider Stock",
+        "No Stock"
+      ],
+      "byWeapon": {
+        "HBRa3": [
+          "Thunderbolt Sling"
+        ],
+        "CR-56 AMAX": [
+          "Psilos Light Stock",
+          "MIP Gatekeeper",
+          "Custom Strike",
+          "MIP Tracker Stock"
+        ],
+        "M13": [
+          "M13 Skeleton Stock",
+          "RTC Combat Stock",
+          "RTC Assault Tactical"
+        ],
+        "XPR-50": [
+          "YKM Ghost Stock"
+        ],
+        "MK2": [
+          "MIP Sport Stock",
+          "Custom Accuracy Stock",
+          "Cartridge Sleeve",
+          "Ultralight Hollow"
+        ],
+        "Renetti": [
+          "Folding Stock",
+          "Control",
+          "Combo"
+        ],
+        "Crossbow": [
+          "Watcher Stock",
+          "Ranger Stock",
+          "Archer Stock"
+        ]
+      }
+    },
+    "Laser": {
+      "general": [
+        "RTC Laser 1mW",
+        "1mW Steady Aim Laser",
+        "MIP Laser 5mW",
+        "5mW Combat Laser",
+        "OWC Laser - Tactical",
+        "Aim Assist Laser",
+        "YKM Laser - Ranger",
+        "RTC Laser - Merc",
+        "Tactical Flashlight"
+      ],
+      "byWeapon": {}
+    },
+    "Underbarrel": {
+      "general": [
+        "Foregrip",
+        "Strike Foregrip",
+        "Merc Foregrip",
+        "Operator Foregrip",
+        "Ranger Foregrip",
+        "Tactical Foregrip A",
+        "Tactical Foregrip B",
+        "Elite Foregrip",
+        "OWC Foregrip",
+        "Infiltrator Foregrip",
+        "Patrol Foregrip",
+        "Field Agent Foregrip",
+        "SFOD Fast Foregrip",
+        "Red Cell Foregrip",
+        "Striker Foregrip",
+        "B0 Foregrip",
+        "Piranha Foregrip",
+        "Quickdraw",
+        "Bipod",
+        "Heavy Handle",
+        "Crossbar",
+        "Stippled Fore Grip Tape",
+        "Granulated Fore Grip Tape",
+        "Rubberized Fore Grip Tape",
+        "Tactical Guard",
+        "Steady Guard",
+        "Underbarrel Stun Gun",
+        "Underbarrel Launcher",
+        "GRD-11",
+        "Bayonet"
+      ],
+      "byWeapon": {}
+    },
+    "Trigger Action": {
+      "general": [
+        "Match Grade Trigger",
+        "Heavy Duty Trigger",
+        "Lightweight Trigger",
+        "Heavyweight Double-Action",
+        "Lightweight Single-Action",
+        "Lightweight Double-Action"
+      ],
+      "byWeapon": {}
+    },
+    "Smoothbore": {
+      "general": [
+        "MFT Heavy Smoothbore",
+        "MFT Ultra Light Smoothbore",
+        "MFT Urban Combat"
+      ],
+      "byWeapon": {}
+    },
+    "Guard": {
+      "general": [
+        "OWC Stable",
+        "OWC Commander",
+        "OWC Slim"
+      ],
+      "byWeapon": {}
+    },
+    "Bolt": {
+      "general": [
+        "Light Bolt",
+        "Heavy Bolt",
+        "Sticky Grenade Bolt",
+        "Thermite Bolt",
+        "Gas Grenade Bolt"
+      ],
+      "byWeapon": {}
+    },
+    "Ammunition": {
+      "general": [
+        "Extended Mag",
+        "Large Extended Mag",
+        "Drum Magazines",
+        "Fast Reload",
+        "SAS Mag Clamp",
+        "Fast Extended Mag",
+        "Fast Extended Mag B",
+        "Light Reload",
+        "Light Mag",
+        "Stopping Power Reload",
+        "MIP Stopping Power Reload",
+        "OWC Stopping Power Reload",
+        "Large Caliber Ammo",
+        "Halberd Mag",
+        ".300 RTC 30 Round Reload",
+        ".300 RTC Double Stack 40 Round",
+        ".300 5 Round Reload",
+        ".338 5 Round Reload",
+        ".15 Round FMJ",
+        "OTM Mag",
+        "10mm 30 Round Reload",
+        "5.45 Caliber Ammo",
+        "5.56mm Mag",
+        "7.62 40 Round Reload",
+        "M67 Ammo",
+        ".30-.30 Ammo",
+        "Thermite Reload",
+        "FF Birdshot",
+        "Slug Reload",
+        "Fragment Ammo",
+        "High Explosive Ammo",
+        "Electromagnetic Ammo",
+        "25x59mm Explosive Mag",
+        "25x59mm Thermite Mag",
+        "FRAG-12 Explosive Mag",
+        "Anti-Vehicle Mag",
+        ".45 Hollow Point 12-R Mags",
+        "9mm Hollow Point 12-R Mags",
+        "MacroMag IFS",
+        "Thunder Rounds"
+      ],
+      "byWeapon": {}
+    },
+    "Rear Grip": {
+      "general": [
+        "Stippled Grip Tape",
+        "Granulated Grip Tape",
+        "Rubberized Grip Tape",
+        "Speed Tape",
+        "Field Tape",
+        "SASR Jungle Grip",
+        "Serpent Wrap",
+        "Handmade Grip Tape",
+        "Shoulder Stock - Tactical",
+        "Shoulder Stock - Wood",
+        "VLK Prizak",
+        "VLK Spetsnaz",
+        "VLK Elite",
+        "Hammer Grip"
+      ],
+      "byWeapon": {}
+    }
+  },
+  "uncertain": []
+}

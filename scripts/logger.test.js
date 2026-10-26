@@ -1,14 +1,6 @@
-// scripts/logger.test.js
-// Regression test for utils/logger.js's structured sink, specifically the Cloud Error Reporting
-// contract added 2026-08-06 15:52 EDT. Run: `node scripts/logger.test.js` (also via `npm test`).
+// scripts/logger.test.js Regression test for utils/logger.js's structured sink, specifically the Cloud Error Reporting contract added 2026-08-06 15:52 EDT. Run: `node scripts/logger.test.js` (also via `npm test`).
 //
-// ⚠️ WHY THIS EXISTS. Error Reporting is a SILENT integration: there is no SDK, no client, no call
-// that can fail. It reads Cloud Logging and treats an entry as a groupable error event only when the
-// entry is severity ERROR **and** carries `serviceContext`. Delete that one object and nothing breaks,
-// nothing logs, no test fails, the dashboard simply goes quiet forever — and a quiet error dashboard
-// is indistinguishable from a healthy one. That is the exact failure shape this project has already
-// paid for twice (six hook self-tests nothing invoked; a `-p err` counter structurally stuck at 0).
-// So the contract gets asserted here rather than trusted.
+// ⚠️ WHY THIS EXISTS. Error Reporting is a SILENT integration: there is no SDK, no client, no call that can fail. It reads Cloud Logging and treats an entry as a groupable error event only when the entry is severity ERROR **and** carries `serviceContext`. Delete that one object and nothing breaks, nothing logs, no test fails, the dashboard simply goes quiet forever — and a quiet error dashboard is indistinguishable from a healthy one. That is the exact failure shape this project has already paid for twice (six hook self-tests nothing invoked; a `-p err` counter structurally stuck at 0). So the contract gets asserted here rather than trusted.
 const assert = require('assert');
 const fs = require('fs');
 const os = require('os');
@@ -20,9 +12,7 @@ function t(name, fn) {
     catch (e) { failures.push([name, e.message]); console.log(`  FAIL  ${name}\n        ${e.message}`); }
 }
 
-// The sink only writes under journald (see FILE_SINK_ENABLED), so the harness sets JOURNAL_STREAM and
-// points DIORS_LOG_FILE at a temp file, then reads back what was actually written. Asserting on the
-// emitted BYTES rather than on the module's internals is the point — Error Reporting sees the bytes.
+// The sink only writes under journald (see FILE_SINK_ENABLED), so the harness sets JOURNAL_STREAM and points DIORS_LOG_FILE at a temp file, then reads back what was actually written. Asserting on the emitted BYTES rather than on the module's internals is the point — Error Reporting sees the bytes.
 function emit(lines) {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dioreo-log-'));
     const file = path.join(dir, 'app.log');
@@ -55,8 +45,7 @@ t('serviceContext.version matches package.json', () => {
 });
 
 t('an ERROR from an Error object keeps its STACK in message', () => {
-    // Error Reporting groups by parsing the stack out of `message`. A message with no stack still
-    // reports, but as an ungrouped one-off — so losing the stack silently degrades the whole feature.
+    // Error Reporting groups by parsing the stack out of `message`. A message with no stack still reports, but as an ungrouped one-off — so losing the stack silently degrades the whole feature.
     const [e] = emit(`console.error(new Error("boom"));`);
     assert.match(e.message, /Error: boom/);
     assert.ok(e.message.split('\n').length > 1, 'expected multiple stack frames in message');
@@ -64,8 +53,7 @@ t('an ERROR from an Error object keeps its STACK in message', () => {
 });
 
 t('WARNING and INFO do NOT carry serviceContext', () => {
-    // Error Reporting acts on severity >= ERROR only, so attaching it lower down would add bytes to
-    // every line of the sink and change nothing.
+    // Error Reporting acts on severity >= ERROR only, so attaching it lower down would add bytes to every line of the sink and change nothing.
     const out = emit(`console.warn("w"); console.log("i");`);
     const warn = out.find(e => e.severity === 'WARNING');
     const info = out.find(e => e.severity === 'INFO');
@@ -84,8 +72,7 @@ t('every entry still carries version + commit', () => {
 });
 
 t('the sink stays OFF when not under journald', () => {
-    // Creating a growing file on a dev machine that nothing tails is litter — and it would also mean
-    // local runs quietly shipping entries into the same shape prod uses.
+    // Creating a growing file on a dev machine that nothing tails is litter — and it would also mean local runs quietly shipping entries into the same shape prod uses.
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dioreo-log-'));
     const file = path.join(dir, 'app.log');
     const env = { ...process.env, DIORS_LOG_FILE: file };
@@ -96,6 +83,108 @@ t('the sink stays OFF when not under journald', () => {
     `], { env, encoding: 'utf8' });
     assert.ok(!fs.existsSync(file), 'no sink file should be created outside journald');
     fs.rmSync(dir, { recursive: true, force: true });
+});
+
+// --- Attribution (stage 1 of the observability layer, 2026-08-16 12:22 EDT) --- See utils/requestContext.js and handlers/router.js's buildInteractionContext/markHandler. These spawn a fresh child process the same way the tests above do, so they exercise the REAL patchConsole() + writeStructured() path end to end, not a mock of it.
+function emitWithSetup(setup, lines) {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dioreo-log-'));
+    const file = path.join(dir, 'app.log');
+    const res = require('child_process').spawnSync(process.execPath, ['-e', `
+        const { patchConsole } = require(${JSON.stringify(path.join(__dirname, '..', 'utils', 'logger.js'))});
+        const { runWithContext } = require(${JSON.stringify(path.join(__dirname, '..', 'utils', 'requestContext.js'))});
+        patchConsole();
+        ${setup}
+        ${lines}
+    `], { env: { ...process.env, JOURNAL_STREAM: '1', DIORS_LOG_FILE: file }, encoding: 'utf8' });
+    if (res.status !== 0) throw new Error(`child exited ${res.status}: ${res.stderr}`);
+    const out = fs.readFileSync(file, 'utf8').trim().split('\n').filter(Boolean).map(JSON.parse);
+    fs.rmSync(dir, { recursive: true, force: true });
+    return out;
+}
+
+t('a log line with no active interaction context gets the `lifecycle` fallback tag', () => {
+    const [e] = emit(`console.log("heartbeat");`);
+    assert.strictEqual(e.context, 'lifecycle');
+    assert.ok(!e.interactionId && !e.userHash, 'no interaction context fields should be present');
+});
+
+t('a log line inside runWithContext() carries interactionId/command/handler/userHash, not `lifecycle`', () => {
+    const [e] = emitWithSetup('', `
+        runWithContext({ interactionId: 'abc123', command: 'draws', handler: 'drawprices', userHash: 'deadbeef' }, () => {
+            console.log("inside an interaction");
+        });
+    `);
+    assert.strictEqual(e.interactionId, 'abc123');
+    assert.strictEqual(e.command, 'draws');
+    assert.strictEqual(e.handler, 'drawprices');
+    assert.strictEqual(e.userHash, 'deadbeef');
+    assert.strictEqual(e.context, undefined, 'an interaction-context entry must not also carry the lifecycle fallback tag');
+});
+
+t('the context survives an await inside runWithContext(), matching the real router shape', () => {
+    const [e] = emitWithSetup('', `
+        runWithContext({ interactionId: 'xyz', command: 'settings', handler: null, userHash: 'h' }, async () => {
+            await new Promise(r => setImmediate(r));
+            console.log("after an await");
+        });
+    `);
+    assert.strictEqual(e.interactionId, 'xyz');
+    assert.strictEqual(e.command, 'settings');
+});
+
+t('component resolves to the real repo caller, not utils/logger.js itself', () => {
+    // handlers/router.js is a real, in-repo call site. Requiring it as a module and invoking a function that logs proves captureComponent() walks past logger.js's own frames to the actual caller.
+    const [e] = emitWithSetup('', `
+        const { markHandlerProbe } = require(${JSON.stringify(path.join(__dirname, '..', 'scripts', 'fixtures', 'loggerComponentProbe.js'))});
+        markHandlerProbe();
+    `);
+    assert.strictEqual(e.component, 'loggerComponentProbe');
+});
+
+t('end-to-end: a real thrown error through handlers/router.js\'s ACTUAL handleInteraction lands with full attribution', () => {
+    // Not a mock of the attribution logic -- the real production handleInteraction, the real dispatch chain, a real thrown error caught by the real catch block. This is what "Probe it on the dev bot" / "a deliberate error to confirm attribution actually lands" (the stage's own testing requirement) reduces to when a live Discord gateway isn't available: exercise the exact code path with a crafted interaction, not a reimplementation of it.
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dioreo-log-'));
+    const file = path.join(dir, 'app.log');
+    const script = `
+        const { patchConsole } = require(${JSON.stringify(path.join(__dirname, '..', 'utils', 'logger.js'))});
+        patchConsole();
+        const { handleInteraction } = require(${JSON.stringify(path.join(__dirname, '..', 'handlers', 'router.js'))});
+        const fakeCommands = new Map();
+        fakeCommands.set('faketest', { execute: async () => { throw new Error('deliberate stage-1 verification error'); } });
+        const interaction = {
+            id: 'test-interaction-id-999', commandName: 'faketest', customId: undefined,
+            user: { id: '1139845545754632283' }, guildId: null, guild: null,
+            isAutocomplete: () => false, isChatInputCommand: () => true,
+            isButton: () => false, isStringSelectMenu: () => false, isModalSubmit: () => false,
+            deferred: false, replied: false, reply: async () => {}, editReply: async () => {},
+            client: { commands: fakeCommands },
+        };
+        handleInteraction(interaction).catch((e) => { console.error('CRASH NET FAILED', e); process.exitCode = 2; });
+    `;
+    const res = require('child_process').spawnSync(process.execPath, ['-e', script],
+        { env: { ...process.env, JOURNAL_STREAM: '1', DIORS_LOG_FILE: file }, encoding: 'utf8' });
+    if (res.status !== 0) throw new Error(`child exited ${res.status}: ${res.stderr}`);
+    const out = fs.readFileSync(file, 'utf8').trim().split('\n').filter(Boolean).map(JSON.parse);
+    fs.rmSync(dir, { recursive: true, force: true });
+
+    const errorLine = out.find(e => e.message && e.message.includes('deliberate stage-1 verification error'));
+    assert.ok(errorLine, 'expected the thrown error to be logged');
+    assert.strictEqual(errorLine.interactionId, 'test-interaction-id-999');
+    assert.strictEqual(errorLine.command, 'faketest');
+    assert.strictEqual(errorLine.handler, 'faketest');
+    assert.strictEqual(errorLine.component, 'router');
+    assert.ok(errorLine.userHash && errorLine.userHash !== '1139845545754632283' && /^[0-9a-f]{64}$/.test(errorLine.userHash),
+        'userHash must be a real hex HMAC, never the raw Discord id');
+    assert.strictEqual(errorLine.context, undefined, 'an interaction-context entry must not also carry the lifecycle tag');
+});
+
+t('noteHotpatch updates the commit carried on structured log lines', () => {
+    const [e] = emit(`
+        const logger = require(${JSON.stringify(path.join(__dirname, '..', 'utils', 'logger.js'))});
+        logger.noteHotpatch('deadbee');
+        console.log('after hotpatch');
+    `);
+    assert.strictEqual(e.commit, 'deadbee', 'a hotpatched process must report the NEW commit');
 });
 
 console.log(`\n  ${pass} passed, ${failures.length} failed`);

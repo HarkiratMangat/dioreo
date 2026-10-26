@@ -1,19 +1,12 @@
 #!/usr/bin/env bash
-# Dioreo — historical CPU-utilization PEAKS over rolling windows, from GCP Cloud Monitoring.
-# Run from the Mac (needs gcloud). Added 2026-07-17 (Render→GCP migration observability).
+# Dioreo — historical CPU-utilization PEAKS over rolling windows, from GCP Cloud Monitoring. Run from the Mac (needs gcloud). Added 2026-07-17 (Render→GCP migration observability).
 #
 #   scripts/vmpeaks.sh   → peak CPU over 12h / 24h / 72h / 7d / 30d
 #
 # NOTES:
 #  - CPU history is retained by GCP automatically (hypervisor-level) — NO Ops Agent needed.
-#  - RAM peaks DO need the guest-level Ops Agent (guest memory is invisible to GCP without it). The
-#    Ops Agent was installed on the VM 2026-07-17, so the RAM section below is now live. Its metrics
-#    only START from install time, so the longer windows (7d/30d) will read "(no data ... yet)" until
-#    enough history accrues — that's expected, not a failure. RAM uses agent.googleapis.com/memory/
-#    percent_used (state="used"), already a 0-100 percentage (no ×100, unlike CPU's 0-1 fraction).
-#  - e2-micro is shared-core/burstable, so cpu/utilization is normalized to its 0.25-vCPU BASELINE:
-#    values >100% mean the VM BURST above baseline (normal, designed behavior). A brief spike is fine;
-#    a SUSTAINED high peak across the longer windows is the thing to watch.
+#  - RAM peaks DO need the guest-level Ops Agent (guest memory is invisible to GCP without it). The Ops Agent was installed on the VM 2026-07-17, so the RAM section below is now live. Its metrics only START from install time, so the longer windows (7d/30d) will read "(no data ... yet)" until enough history accrues — that's expected, not a failure. RAM uses agent.googleapis.com/memory/ percent_used (state="used"), already a 0-100 percentage (no ×100, unlike CPU's 0-1 fraction).
+#  - e2-micro is shared-core/burstable, so cpu/utilization is normalized to its 0.25-vCPU BASELINE: values >100% mean the VM BURST above baseline (normal, designed behavior). A brief spike is fine; a SUSTAINED high peak across the longer windows is the thing to watch.
 set -uo pipefail
 PROJECT="gen-lang-client-0549308254"; ZONE="us-east1-b"; VM="diors-builds-bot"
 command -v gcloud >/dev/null 2>&1 || export PATH="/opt/homebrew/bin:$PATH"

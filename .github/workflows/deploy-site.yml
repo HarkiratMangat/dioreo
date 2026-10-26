@@ -35,6 +35,18 @@ on:
       - '!public/changelog/**'
       - 'scripts/buildLegalPages.js'
       - 'scripts/lib/chronicle.js'
+      - 'scripts/lib/commandsPage.js'
+      - 'scripts/lib/commandCatalog.js'
+      - 'scripts/lib/commandProse.js'
+      # ⚠️ THE SITE NOW DERIVES CONTENT FROM THE BOT. The /commands page reads
+      # commands/*.js's own .toJSON() at build time, so renaming a choice or adding
+      # an option changes what the LIVE PAGE should say while touching no file this
+      # list previously watched -- a silent staleness channel with nothing reporting
+      # it. Consequence, stated rather than slipped in: a PR that changes a command
+      # and does not rebuild public/ now turns this workflow red, because it refuses
+      # to publish a stale build. That is the correct forcing function for a derived
+      # page; the alternative is a published page that quietly disagrees with the bot.
+      - 'commands/**'
       - 'docs/legal/**'
       - 'LICENSE'
       - 'NOTICE'

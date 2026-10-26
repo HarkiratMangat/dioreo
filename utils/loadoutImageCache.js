@@ -1,23 +1,9 @@
-// utils/loadoutImageCache.js
-// Uploads a screenshot (already confirmed by the admin during /autobuild's review step) into
-// Cloudinary under a specific, pre-computed Public ID key -- distinct from utils/cloudinaryCache.js
-// (which derives its OWN key from a title slug for draw thumbnails) because here the caller has
-// already decided the exact key (WEAPON-NAME-N, computed by utils/loadoutRender.js's
-// computeWeaponKeyAndBuild) and just needs it uploaded verbatim. Also distinct from
-// utils/patchNotesCache.js's season-scoped retention model -- loadout images have no expiry at all
-// (same as every other admin-added loadout image), so there's no pruning logic here, just upload.
+// utils/loadoutImageCache.js Uploads a screenshot (already confirmed by the admin during /autobuild's review step) into Cloudinary under a specific, pre-computed Public ID key -- distinct from utils/cloudinaryCache.js (which derives its OWN key from a title slug for draw thumbnails) because here the caller has already decided the exact key (WEAPON-NAME-N, computed by utils/loadoutRender.js's computeWeaponKeyAndBuild) and just needs it uploaded verbatim. Also distinct from utils/patchNotesCache.js's season-scoped retention model -- loadout images have no expiry at all (same as every other admin-added loadout image), so there's no pruning logic here, just upload.
 //
-// This module ALSO owns the loadout STRUCTURED METADATA (2026-07-21) -- see METADATA_FIELDS below.
-// Image upload and metadata are DELIBERATELY SEPARATE calls: uploadLoadoutImage() only puts the image
-// up; syncLoadoutMetadata(doc) sets/updates the structured metadata from a Loadout doc. That split is
-// what lets metadata stay in sync EVERYWHERE a loadout changes -- /autobuild write, /manage add/edit,
-// bulk upsert, badge propagation, and the one-time backfill -- all funnel through the same
-// doc->metadata function, and a metadata failure can never fail an image upload or a DB write.
+// This module ALSO owns the loadout STRUCTURED METADATA (2026-07-21) -- see METADATA_FIELDS below. Image upload and metadata are DELIBERATELY SEPARATE calls: uploadLoadoutImage() only puts the image up; syncLoadoutMetadata(doc) sets/updates the structured metadata from a Loadout doc. That split is what lets metadata stay in sync EVERYWHERE a loadout changes -- /autobuild write, /manage add/edit, bulk upsert, badge propagation, and the one-time backfill -- all funnel through the same doc->metadata function, and a metadata failure can never fail an image upload or a DB write.
 //
-// SECURITY: same rule as utils/cloudinaryCache.js and utils/patchNotesCache.js -- never log a raw
-// Cloudinary error object. The Admin/Upload API's rejected-promise can carry the account's live API
-// key+secret in `request_options.auth`; only ever read `.message`/`.error.message` off a caught error.
-const cloudinary = require('cloudinary').v2;
+// SECURITY: same rule as utils/cloudinaryCache.js and utils/patchNotesCache.js -- never log a raw Cloudinary error object. The Admin/Upload API's rejected-promise can carry the account's live API key+secret in `request_options.auth`; only ever read `.message`/`.error.message` off a caught error.
+const cloudinary = require('./cloudinaryClient'); // timed proxy over the SDK -- see utils/cloudinaryClient.js
 
 const { isCloudinaryWriteBlocked } = require('./cloudinaryDevGuard');
 
@@ -27,18 +13,9 @@ function safeErrorMessage(err) {
     return err?.message || err?.error?.message || 'Unknown Cloudinary error';
 }
 
-// --- Loadout Structured Metadata schema -------------------------------------------------------------
-// Real account-level STRUCTURED METADATA FIELDS (queryable + validated in the dashboard/Admin API),
-// switched from loose `context` on 2026-07-21 at Harkirat's request. Create/refresh via
-// scripts/createCloudinaryMetadataFields.js (idempotent). external_ids are Title_Case with `_` for
-// multi-word (a space isn't a legal external_id char). Every field is a `string` except Build_Number
-// (integer) and the two date fields -- deliberately: a string can never fail validation, so a metadata
-// write can never cascade into a failed image upload (see syncLoadoutMetadata's decoupling).
+// --- Loadout Structured Metadata schema ------------------------------------------------------------- Real account-level STRUCTURED METADATA FIELDS (queryable + validated in the dashboard/Admin API), switched from loose `context` on 2026-07-21 at Harkirat's request. Create/refresh via scripts/createCloudinaryMetadataFields.js (idempotent). external_ids are Title_Case with `_` for multi-word (a space isn't a legal external_id char). Every field is a `string` except Build_Number (integer) and the two date fields -- deliberately: a string can never fail validation, so a metadata write can never cascade into a failed image upload (see syncLoadoutMetadata's decoupling).
 //
-// Cloudinary-only, NOT mirrored into the Loadout Mongo doc. The per-slot fields can only be filled by
-// /autobuild (the slot->attachment mapping comes from the vision extraction and is never stored in
-// Mongo); every OTHER field is derivable from the Loadout doc itself, so /manage edits and the backfill
-// populate them too.
+// Cloudinary-only, NOT mirrored into the Loadout Mongo doc. The per-slot fields can only be filled by /autobuild (the slot->attachment mapping comes from the vision extraction and is never stored in Mongo); every OTHER field is derivable from the Loadout doc itself, so /manage edits and the backfill populate them too.
 const METADATA_FIELDS = [
     { external_id: 'Weapon_Name', label: 'Weapon Name', type: 'string' },
     { external_id: 'Mode', label: 'Mode', type: 'string' }, // 'MP'/'DMZ'. Plain string (not enum) so a write can never fail validation and block an upload.
@@ -54,20 +31,16 @@ const METADATA_FIELDS = [
     { external_id: 'Underbarrel', label: 'Underbarrel', type: 'string' },
     { external_id: 'Ammunition', label: 'Ammunition', type: 'string' },
     { external_id: 'Rear_Grip', label: 'Rear Grip', type: 'string' },
-    // Badges (2026-07-21) -- always written (true/false, or a cleared Rank) so an edit that REMOVES a
-    // badge actually clears it in Cloudinary rather than leaving a stale value.
+    // Badges (2026-07-21) -- always written (true/false, or a cleared Rank) so an edit that REMOVES a badge actually clears it in Cloudinary rather than leaving a stale value.
     { external_id: 'Is_Meta', label: 'Is Meta', type: 'string' },
     { external_id: 'Is_Toxic', label: 'Is Toxic', type: 'string' },
     { external_id: 'Rank', label: 'Rank', type: 'string' }, // categoryRank (MP) or dmzRangeRank (DMZ) -- only one is ever set per build
-    // Dates (2026-07-21) -- Created_At is the doc's real creation time, read for free from the Mongo
-    // ObjectId's embedded timestamp (~"went live in the bot"); Last_Updated mirrors Loadout.lastUpdated.
+    // Dates (2026-07-21) -- Created_At is the doc's real creation time, read for free from the Mongo ObjectId's embedded timestamp (~"went live in the bot"); Last_Updated mirrors Loadout.lastUpdated.
     { external_id: 'Created_At', label: 'Created At', type: 'date' },
     { external_id: 'Last_Updated', label: 'Last Updated', type: 'date' }
 ];
 
-// Maps a vision-extracted slot LABEL (attachmentSlots[i], e.g. "Rear Grip") to its metadata field
-// external_id. Tolerant of common label variants; an unrecognized slot is skipped (its attachment name
-// still lives in the Loadout doc's `attachments` array), never an error.
+// Maps a vision-extracted slot LABEL (attachmentSlots[i], e.g. "Rear Grip") to its metadata field external_id. Tolerant of common label variants; an unrecognized slot is skipped (its attachment name still lives in the Loadout doc's `attachments` array), never an error. 🔴 THE SKIP IS A DATA LOSS AND IT HAS NOW COST THREE BACKFILLS (2026-09-16 11:27 EDT). CODM slot labels are NOT limited to these nine: `Bowstring` and `Limb` (Crossbow), `Bolt` (Crossbow AND bolt-action snipers - the SP-R 208 has one), `Trigger Action` (ARGUS, Dobvra, Machine Pistol, J358), and two with NO canonical equivalent at all - `Smoothbore` (R9-0) and `Guard` (Shorty). `.claude/rules/autobuild.md` has carried that list since 2026-08-06 and warned in writing that a fixed nine-name allow-list would drop them; it dropped them in the 2026-07-26 J358 backfill, again in the vision run, and again in the 2026-09-15 slot backfill, which left 8 attachments unplaceable for exactly this reason. ⚠️ DO NOT "fix" THIS BY ALIASING THEM ONTO THE NINE. Writing `2B Bowstring` into the Muzzle field makes the next read say "Muzzle", which loses the label a second time and corrupts a canonical field on the way. Cloudinary's schema has nine fields and two of these labels have no home in it, so MONGO's `attachmentSlots` is the source of truth for a slot label and this metadata is a lossy derived copy. The skip below therefore stays - but it NAMES what it dropped, so the next person meets the gap instead of inheriting it silently.
 const SLOT_TO_FIELD = {
     muzzle: 'Muzzle',
     barrel: 'Barrel',
@@ -87,13 +60,7 @@ function toMetadataDate(d) {
     return Number.isNaN(dt.getTime()) ? undefined : dt.toISOString().slice(0, 10);
 }
 
-// Builds the full structured-metadata object from a Loadout doc (mongoose doc OR lean object). The
-// single source of truth every write path funnels through, so /autobuild, /manage edits, and the
-// backfill all produce identical metadata. `attachmentSlots` is the ONLY thing not derivable from the
-// doc -- passed in only by /autobuild (from the vision extraction); omitted everywhere else, which
-// leaves any existing per-slot metadata untouched (update_metadata MERGES, it doesn't replace).
-// Badge/date fields are ALWAYS set (Is_Meta/Is_Toxic as 'true'/'false', Rank to its value or '') so a
-// re-sync after an edit correctly reflects a REMOVED badge instead of leaving a stale one.
+// Builds the full structured-metadata object from a Loadout doc (mongoose doc OR lean object). The single source of truth every write path funnels through, so /autobuild, /manage edits, and the backfill all produce identical metadata. `attachmentSlots` is the ONLY thing not derivable from the doc -- passed in only by /autobuild (from the vision extraction); omitted everywhere else, which leaves any existing per-slot metadata untouched (update_metadata MERGES, it doesn't replace). Badge/date fields are ALWAYS set (Is_Meta/Is_Toxic as 'true'/'false', Rank to its value or '') so a re-sync after an edit correctly reflects a REMOVED badge instead of leaving a stale one.
 function buildLoadoutMetadata(doc, attachmentSlots) {
     const md = {};
     if (doc.weaponName) md.Weapon_Name = doc.weaponName;
@@ -106,8 +73,7 @@ function buildLoadoutMetadata(doc, attachmentSlots) {
     md.Is_Toxic = doc.isToxic ? 'true' : 'false';
     md.Rank = (doc.mode === 'DMZ' ? doc.dmzRangeRank : doc.categoryRank) || '';
 
-    // Created_At from the ObjectId's embedded timestamp (works for both a mongoose doc and a lean doc);
-    // fall back to a real createdAt field if one ever exists.
+    // Created_At from the ObjectId's embedded timestamp (works for both a mongoose doc and a lean doc); fall back to a real createdAt field if one ever exists.
     let createdAt = null;
     if (doc._id && typeof doc._id.getTimestamp === 'function') createdAt = doc._id.getTimestamp();
     else if (doc.createdAt) createdAt = doc.createdAt;
@@ -118,7 +84,10 @@ function buildLoadoutMetadata(doc, attachmentSlots) {
 
     if (Array.isArray(attachmentSlots) && Array.isArray(doc.attachments)) {
         for (let i = 0; i < doc.attachments.length; i++) {
-            const field = SLOT_TO_FIELD[(attachmentSlots[i] || '').toLowerCase().trim()];
+            const label = (attachmentSlots[i] || '').toLowerCase().trim();
+            const field = SLOT_TO_FIELD[label];
+            // Named, not silent: the label survives in Mongo, so this is a gap in the metadata copy rather than lost data - but it must be visible.
+            if (label && !field) console.warn(`[loadout-metadata] no Cloudinary field for slot label "${attachmentSlots[i]}" - kept in Mongo, omitted from metadata`);
             const name = (doc.attachments[i] || '').trim();
             if (field && name) md[field] = name;
         }
@@ -126,26 +95,17 @@ function buildLoadoutMetadata(doc, attachmentSlots) {
     return md;
 }
 
-// True only for a bare Cloudinary key we actually own (not an external URL, not a failed-upload
-// placeholder) -- the only case where setting metadata makes sense.
+// True only for a bare Cloudinary key we actually own (not an external URL, not a failed-upload placeholder) -- the only case where setting metadata makes sense.
 function isRealImageKey(imageKey) {
     return !!imageKey && !imageKey.startsWith('http') && !imageKey.startsWith('PENDING-UPLOAD-');
 }
 
-// A Cloudinary public_id has NO file extension, but some stored imageKeys carry one (e.g. the real
-// `AK117-1.png`). buildImageUrl tolerates the extension (Cloudinary resolves it in a delivery URL),
-// but the Admin/Upload metadata API does NOT -- `update_metadata(md, ["AK117-1.png"])` silently
-// matches nothing (returns public_ids: []). So strip a trailing image extension before addressing the
-// asset for metadata. Harmless for the majority of keys, which have no extension at all.
+// A Cloudinary public_id has NO file extension, but some stored imageKeys carry one (e.g. the real `AK117-1.png`). buildImageUrl tolerates the extension (Cloudinary resolves it in a delivery URL), but the Admin/Upload metadata API does NOT -- `update_metadata(md, ["AK117-1.png"])` silently matches nothing (returns public_ids: []). So strip a trailing image extension before addressing the asset for metadata. Harmless for the majority of keys, which have no extension at all.
 function imageKeyToPublicId(imageKey) {
     return imageKey.replace(/\.(png|jpe?g|webp|gif|avif)$/i, '');
 }
 
-// Best-effort: writes the structured metadata for one loadout onto its Cloudinary asset. NEVER throws
-// -- a metadata failure (missing asset, transient Admin-API hiccup) logs and is swallowed so it can't
-// fail a DB write or an image upload. `attachmentSlots` only from /autobuild (see buildLoadoutMetadata).
-// Returns success:false (not an exception) when the asset doesn't exist -- update_metadata reports that
-// as an empty public_ids array rather than an error, so the empty-match case is checked explicitly.
+// Best-effort: writes the structured metadata for one loadout onto its Cloudinary asset. NEVER throws -- a metadata failure (missing asset, transient Admin-API hiccup) logs and is swallowed so it can't fail a DB write or an image upload. `attachmentSlots` only from /autobuild (see buildLoadoutMetadata). Returns success:false (not an exception) when the asset doesn't exist -- update_metadata reports that as an empty public_ids array rather than an error, so the empty-match case is checked explicitly.
 async function syncLoadoutMetadata(doc, attachmentSlots) {
     if (!doc || !isRealImageKey(doc.imageKey)) return { success: false, error: 'no real Cloudinary key' };
     const publicId = imageKeyToPublicId(doc.imageKey);
@@ -167,16 +127,31 @@ async function syncLoadoutMetadata(doc, attachmentSlots) {
     }
 }
 
-// Remote-URL-to-remote-URL upload (Cloudinary fetches the bytes server-side, same pattern as
-// utils/cloudinaryCache.js's cacheThumbnail) -- overwrite: true so a retry (see the design spec's
-// retry_token flow) safely re-uploads under the exact same key rather than erroring on a collision.
-// IMAGE ONLY -- structured metadata is set separately by syncLoadoutMetadata(doc) once the Loadout doc
-// exists, so this never has to know anything about the loadout's data.
+// True for a pasted http(s) image URL rather than a bare Cloudinary Public ID. Used by /manage's loadout Add/Edit modals, whose single "Cloudinary Image Key" field now accepts EITHER (2026-08-22 -- the deferred "no way to provide an image by URL" item). A real Public ID never contains a scheme, so the two are unambiguous with no extra modal field, which matters: Discord caps a modal at 5 inputs and the loadout modal already uses all 5.
+function isHttpImageSource(value) {
+    try {
+        const { protocol } = new URL(String(value || '').trim());
+        return protocol === 'http:' || protocol === 'https:';
+    } catch {
+        return false;
+    }
+}
+
+// Picks the next free `WEAPON-NAME-N` Public ID for a weapon, matching the convention already live in the account (`BAL-27-1`, `FSS-HURRICANE-1`) and the one computeWeaponKeyAndBuild() mints for /autobuild. Two differences from that helper, both deliberate:
+//   1. N is chosen against the Public IDs already TAKEN, not against the highest "Build N" build NAME -- /manage builds carry human names ("Aggressive Flex") that carry no number at all, so counting build names would return 1 forever and overwrite the weapon's existing image on every add.
+//   2. DMZ keys are prefixed `DMZ-`, matching the existing hand-named `DMZ-AK117-1` assets in the account. Cloudinary public_ids are global (asset_folder is NOT part of an asset's identity -- see uploadLoadoutImage below), so an unprefixed key would let a DMZ build's image overwrite the MP build of the same weapon.
+function deriveImageKey(weaponName, mode, takenKeys = []) {
+    const base = String(weaponName || '').trim().toUpperCase().replace(/\s+/g, '-');
+    const prefix = mode === 'DMZ' ? 'DMZ-' : '';
+    const taken = new Set(takenKeys.map(k => String(k || '').toUpperCase()));
+    let n = 1;
+    while (taken.has(`${prefix}${base}-${n}`)) n++;
+    return `${prefix}${base}-${n}`;
+}
+
+// Remote-URL-to-remote-URL upload (Cloudinary fetches the bytes server-side, same pattern as utils/cloudinaryCache.js's cacheThumbnail) -- overwrite: true so a retry (see the design spec's retry_token flow) safely re-uploads under the exact same key rather than erroring on a collision. IMAGE ONLY -- structured metadata is set separately by syncLoadoutMetadata(doc) once the Loadout doc exists, so this never has to know anything about the loadout's data.
 async function uploadLoadoutImage(sourceUrl, imageKey) {
-    // The single most dangerous write in the bot from a dev instance: `public_id` is the bare imageKey
-    // (see the comment below), so `overwrite: true` against a key that already exists in prod would
-    // silently replace a LIVE loadout image. Folder-scoping cannot prevent it -- asset_folder is not
-    // part of the asset's identity.
+    // The single most dangerous write in the bot from a dev instance: `public_id` is the bare imageKey (see the comment below), so `overwrite: true` against a key that already exists in prod would silently replace a LIVE loadout image. Folder-scoping cannot prevent it -- asset_folder is not part of the asset's identity.
     if (isCloudinaryWriteBlocked('upload', `${FOLDER}/${imageKey}`)) {
         return { success: false, error: 'blocked: dev bot may not write to the live Cloudinary account' };
     }
@@ -197,4 +172,23 @@ async function uploadLoadoutImage(sourceUrl, imageKey) {
     }
 }
 
-module.exports = { uploadLoadoutImage, syncLoadoutMetadata, buildLoadoutMetadata, isRealImageKey, METADATA_FIELDS, SLOT_TO_FIELD, FOLDER };
+
+// Ephemeral pre-commit staging upload for the web portal's New Build drawer (pins batch 2, spec §10.1 row 14). A dropped screenshot has no derived key yet -- the weapon name, and therefore the eventual WEAPON-N key, can still change before the draft is staged or committed -- so it goes up under its own random temporary Public ID first, never overwrite:true, so an abandoned draft never collides with another one. The FINAL copy to the real key happens later, inside loadout.add/loadout.edit's own apply() at commit time, via uploadLoadoutImage(stagingUrl, realKey) -- that function already accepts any https source, staging URLs included, so no second upload path is needed there.
+async function uploadStagingScreenshot(dataUrl) {
+    const stagingId = `staging/${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    if (isCloudinaryWriteBlocked('upload', `${FOLDER}/${stagingId}`)) {
+        return { success: false, url: null, error: 'blocked: dev bot may not write to the live Cloudinary account' };
+    }
+    try {
+        const result = await cloudinary.uploader.upload(dataUrl, {
+            public_id: stagingId, asset_folder: FOLDER, overwrite: false, resource_type: 'image',
+        });
+        return { success: true, url: result.secure_url, error: null };
+    } catch (err) {
+        const message = safeErrorMessage(err);
+        console.error(`Loadout staging upload failed: ${message}`);
+        return { success: false, url: null, error: message };
+    }
+}
+
+module.exports = { uploadLoadoutImage, uploadStagingScreenshot, isHttpImageSource, deriveImageKey, syncLoadoutMetadata, buildLoadoutMetadata, isRealImageKey, METADATA_FIELDS, SLOT_TO_FIELD, FOLDER };

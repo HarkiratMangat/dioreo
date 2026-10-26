@@ -1,0 +1,684 @@
+<!doctype html><meta charset="utf-8"><title>states sweep</title>
+<style>
+body{font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;background:#0B0D0E;color:#E8ECEF;padding:18px;margin:0}
+h1{font:600 15px system-ui;margin:0 0 4px}p.n{color:#85939F;margin:0 0 14px;max-width:88ch}
+pre{white-space:pre-wrap;margin:0}
+.ok{color:#3DDC97}.bad{color:#FF6B6B}.warn{color:#F2C230}.dim{color:#85939F}
+/* 🔴 THE FRAME MUST ACTUALLY BE RENDERED. Parked at `left:-4000px` it had real dimensions and
+   answered every measurement with well-formed numbers — and Chrome does not run
+   requestAnimationFrame for a frame that is nowhere on screen, so the audit's settled pass never
+   ran and this sweep read the FIRST, unsettled measurement every time. That is the whole source
+   of its geometry disagreements with `.audit-all.html`, which renders its frames in flow.
+   In the viewport, underneath the report, which paints over it opaquely. `rafAlive()` below
+   asserts the frame really is being rendered rather than trusting this rule. */
+iframe{position:fixed;left:0;top:0;width:1280px;height:900px;border:0;z-index:0}
+h1,p.n,pre{position:relative;z-index:1}
+body::before{content:"";position:fixed;inset:0;background:#0B0D0E;z-index:0}
+</style>
+<h1>States sweep — the surfaces nobody had opened</h1>
+<p class="n">Three passes per page, at 1280&times;900. <b>1 · interactions</b> — <code>?audit=1</code> drives every
+declared path that opens a panel and asserts it produced a real title and a non-empty body; this had
+never been run once. <b>2 · views</b> — every <code>[role=tab]</code> is clicked and the full audit
+re-run against it, because a view that is <code>[hidden]</code> at load is audited by nothing.
+<b>3 · empty</b> — the same page under <code>?empty=1</code>, which blanks every record array. That
+is where a stale <code>colspan</code>, an empty state that teaches nothing, and a stat dividing by
+zero live.</p>
+<pre id="out">running…</pre>
+<script>
+const PAGES = ['index','season','armory','broadcast','access','review','analytics','door'];
+const out = document.getElementById('out');
+const lines = [];
+const paint = () => { out.innerHTML = lines.join('\n'); };
+
+function load(url){
+  return new Promise(res => {
+    const f = document.createElement('iframe');
+    /* 🔴 CACHE-BUST EVERY LOAD. `.serve.py` sends `no-store`, but Chrome's MEMORY cache still
+     * reuses an identical URL inside one document — and this harness loads the same page many
+     * times per run. Measured 2026-08-24: this sweep reported `.tk at 239` (an origin gap fixed
+     * two commits earlier) while `.audit-all.html`, which appends `&v=Date.now()`, reported the
+     * same pages clean on the same code. One harness was measuring the old stylesheet.
+     * That is the exact failure `.serve.py`'s own header comment was written about, reappearing
+     * one level up: a stale asset producing a confident wrong result. */
+    f.src = url + (url.includes('?') ? '&' : '?') + 'v=' + Date.now();
+    document.body.appendChild(f);
+    f.onload = () => res(f);
+  });
+}
+
+/* 🔴 PROVE THE FRAME IS BEING RENDERED BEFORE BELIEVING A PIXEL IT REPORTS. rAF is the honest
+ * test because it is the exact facility the audit's settled pass depends on: if this comes back
+ * false, every geometric line below is a measurement of a page that stopped painting, and the
+ * sweep says so instead of printing numbers. */
+const rafAlive = f => new Promise(res => {
+  let ok = false;
+  try { f.contentWindow.requestAnimationFrame(() => { ok = true; }); } catch (e) {}
+  setTimeout(() => res(ok), 320);
+});
+
+/* 🔴 AWAIT THE SETTLED PASS — NEVER A TIMER. This used to wait a flat 1400ms and read whatever
+ * `__selfCheck` happened to hold, while `.audit-all.html` waited ~7s; the two harnesses then
+ * disagreed about the same bytes and the disagreement was read as a product bug for a day.
+ * `Shell.audit()` marks its first pass `pending:true` and clears it when the re-measure lands,
+ * so that flag is the real signal. A timeout is reported, never silently accepted. */
+async function settle(f, ms = 5000) {
+  const t0 = Date.now();
+  for (;;) {
+    let c = null;
+    try { c = f.contentWindow.__selfCheck; } catch (e) { return { gone: e.message }; }
+    if (c && c.pending === false) return c;
+    if (Date.now() - t0 > ms) return c ? Object.assign({}, c, { timedOut: true }) : { timedOut: true };
+    await new Promise(r => setTimeout(r, 60));
+  }
+}
+
+/* Re-run the audit inside a frame and wait for ITS settled pass. `Shell._audit` is the raw inner
+ * pass; calling it directly — which every view pass here used to do — skips the settling entirely
+ * and is precisely how this sweep reported an origin gap the page did not have. */
+async function reaudit(f) {
+  /* Measure AT REST. A drawer left over from an earlier pass suppresses the page scrollbar, and
+   * every percentage-positioned element moves with it — so close anything open and give the
+   * layout a frame to come back before asking it where things are. */
+  try {
+    f.contentWindow.Shell.closeDrawer();
+    await new Promise(r => setTimeout(r, 120));
+  } catch (e) { return { gone: e.message }; }
+  try { f.contentWindow.Shell.audit({}); } catch (e) { return { gone: e.message }; }
+  return settle(f);
+}
+const readCheck = f => { try { return f.contentWindow.__selfCheck || null; } catch (e) { return { error:e.message }; } };
+const say = (tag, name, probs) => {
+  if (!probs) { lines.push(`<span class="warn">?    </span> ${name.padEnd(26)} ${tag} — no __selfCheck (the page never called S.audit)`); return 1; }
+  if (probs.error || probs.gone) { lines.push(`<span class="bad">ERR  </span> ${name.padEnd(26)} ${tag} — ${probs.error || probs.gone}`); return 1; }
+  /* A pass that never settled is NOT a pass. Printing its problem count would report the first,
+   * unsettled measurement as though it were the answer — the exact failure this sweep shipped. */
+  if (probs.timedOut) { lines.push(`<span class="bad">ERR  </span> ${name.padEnd(26)} ${tag} — the audit never settled (pending stayed true); its numbers are unusable`); return 1; }
+  /* 🔴 A NOTE IS NOT A FAILURE. Rules that decline to judge — a geometry check skipped because
+   * the page is not at rest, an interaction skipped for want of data — report as `note:` so the
+   * gap is visible; counting them turned eight clean pages red twice, and a report where most
+   * red lines are not defects is a report nobody reads to the end. Split, both shown. */
+  const all = probs.problems || [];
+  const notes = all.filter(p => /^note:/.test(p));
+  const fails = all.filter(p => !/^note:/.test(p));
+  if (!fails.length) {
+    lines.push(`<span class="ok">PASS </span> ${name.padEnd(26)} ${tag}${notes.length ? ` <span class="dim">(${notes.length} note${notes.length===1?'':'s'})</span>` : ''}`);
+    notes.slice(0, 3).forEach(p => lines.push(`        <span class="dim">${p}</span>`));
+    return 0;
+  }
+  lines.push(`<span class="bad">FAIL </span> ${name.padEnd(26)} ${tag} — ${fails.length}`);
+  fails.slice(0, 8).forEach(p => lines.push(`        <span class="dim">${p}</span>`));
+  notes.slice(0, 3).forEach(p => lines.push(`        <span class="dim">${p}</span>`));
+  return fails.length;
+};
+
+(async () => {
+  let bad = 0, ran = 0;
+
+  /* 🔴 FALSIFIER FIRST. Every geometric result in this file is a lie if the frames are not being
+   * painted, and an off-screen frame reports well-formed numbers either way. Assert rAF runs
+   * inside a real frame BEFORE any pass, and abort loudly rather than printing 45 confident
+   * lines about a page Chrome stopped rendering. */
+  {
+    const probe = await load('index.html');
+    const alive = await rafAlive(probe);
+    lines.push(alive
+      ? `<span class="ok">PASS </span> ${'render liveness'.padEnd(26)} rAF fires inside the frame — geometry is measurable`
+      : `<span class="bad">ERR  </span> ${'render liveness'.padEnd(26)} rAF NEVER FIRED — every geometric line below would be stale; fix the harness, not the product`);
+    ran++; if (!alive) bad += 99;
+    probe.remove(); paint();
+    if (!alive) { lines.push(`<span class="bad">ABORTED</span>`); paint(); return; }
+  }
+
+  /* PASS 1 + 2 — interactions, then every view tab. */
+  for (const p of PAGES) {
+    const f = await load(p + '.html?audit=1');
+    /* 🔴 AWAIT THE SETTLED PASS HERE TOO. This read `__selfCheck` the moment the frame fired
+     * `load`, which is before the Track has run its own measuring passes — so it reported an
+     * origin gap on a page that measures one origin at rest, on every run, for a day. The two
+     * remaining timer-reads were this one and the TIME pass below; both are now gated on the
+     * same flag as everything else. */
+    bad += say('interactions', p, await settle(f)); ran++;
+    let tabs = [];
+    try { tabs = [...f.contentDocument.querySelectorAll('[role=tab][data-view]')]; } catch (e) {}
+    for (let i = 0; i < tabs.length; i++) {
+      const v = tabs[i].dataset.view;
+      try {
+        tabs[i].click();
+        await new Promise(r => setTimeout(r, 700));
+        /* Re-run the audit against the view that is now on screen. A view that is [hidden]
+         * at load contributes nothing to the load-time pass, which is how Board shipped with
+         * four columns resting at opacity 0. */
+        bad += say('view:' + v, p, await reaudit(f)); ran++;
+      } catch (e) { lines.push(`<span class="bad">ERR  </span> ${p.padEnd(26)} view:${v} — ${e.message}`); bad++; ran++; }
+    }
+    f.remove(); paint();
+  }
+
+  /* PASS 3 — empty.
+   * 🔴 THE STAGING STORE IS SESSION STATE, NOT A RECORD, so ?empty=1 does not blank it — but an
+   * "empty portal" plainly means nothing staged either, and leaving it made Review report
+   * "1 change" over an empty changeset. Cleared here rather than in the flag, because the flag's
+   * job is the FIXTURES and sessionStorage belongs to the harness. */
+  try { sessionStorage.removeItem('dioreo-portal-staged'); } catch (e) {}
+  for (const p of PAGES) {
+    const f = await load(p + '.html?empty=1');
+    let extra = [];
+    try {
+      const d = f.contentDocument;
+      /* A colspan that no longer spans the table is invisible until the table is empty, and
+       * three were stale the moment the remove column was added. */
+      d.querySelectorAll('table').forEach(t => {
+        const cols = t.querySelectorAll('thead th').length;
+        t.querySelectorAll('tbody td[colspan]').forEach(td => {
+          const c = +td.getAttribute('colspan');
+          if (cols && c !== cols) extra.push(`empty-row colspan ${c} but the table has ${cols} columns`);
+        });
+      });
+      /* A count over an empty list that is not zero is a lie, and it is the specific failure
+       * this pass exists to make visible.
+       * 🔴 IT MUST ONLY LOOK AT RECORD COUNTS. The first version read every `.mh-stats .v` and
+       * reported Season's "79 days left" and the tray's "1 staged" as failures — both true
+       * statements about things ?empty=1 deliberately does not blank (a season still has an
+       * end date; sessionStorage still holds staged work). Seven of the ten findings in the
+       * first run were this. A probe that cries wolf trains its reader to skim the real ones,
+       * so it is narrowed to stats whose own LABEL names a record noun. */
+      const RECORD_NOUN = /\b(items?|builds?|admins?|announcements?|events?|draws?|entries|terms?|alerts?|commands?|changes?|tokens?|granted|weapons?|sessions?)\b/i;
+      d.querySelectorAll('.mh-stats .stat').forEach(stat => {
+        const v = stat.querySelector('.v'), k = stat.querySelector('.k');
+        if (!v || !k || !RECORD_NOUN.test(k.textContent || '')) return;
+        const m = (v.textContent || '').trim().match(/^(\d[\d,]*)$/);
+        if (m && +m[1].replace(/,/g, '') > 0)
+          extra.push(`stat "${(k.textContent || '').trim()}" reports ${m[1]} with no records loaded`);
+      });
+      d.querySelectorAll('.rt, #count').forEach(el => {
+        const t = (el.textContent || '').trim();
+        const m = t.match(/^(\d[\d,]*)\b/);
+        if (m && +m[1].replace(/,/g, '') > 0) extra.push(`reports "${t.slice(0, 34)}" with no records loaded`);
+      });
+      if (!d.body.innerText.trim()) extra.push('renders nothing at all');
+    } catch (e) { extra.push('probe threw: ' + e.message); }
+    const chk = readCheck(f);
+    const merged = chk ? { problems:[...(chk.problems || []), ...extra] } : (extra.length ? { problems:extra } : chk);
+    bad += say('empty', p, merged); ran++;
+    f.remove(); paint();
+  }
+
+  /* PASS 4 — KEYBOARD. Nobody had ever tabbed through a realm. The audit checks that a
+   * focus-visible style EXISTS; it has never checked that a control can be REACHED, and the
+   * whole delete/export layer added controls (row remove, matrix cells, the docked bar, the
+   * one-way gate) that would be invisible to a keyboard if any of them had been a div.
+   * Three properties, each a real failure mode rather than a checklist item:
+   *   a. anything with a click handler or role=button must be focusable
+   *   b. nothing focusable may be display:none / visibility:hidden / zero-sized — a focus trap
+   *      you cannot see is worse than one you can
+   *   c. a positive tabindex reorders the whole document and is almost always a mistake */
+  for (const p of PAGES) {
+    const f = await load(p + '.html');
+    const found = [];
+    try {
+      const d = f.contentDocument, w = f.contentWindow;
+      const FOCUSABLE = 'a[href],button,input,select,textarea,[tabindex]';
+      d.querySelectorAll(FOCUSABLE).forEach(el => {
+        const ti = el.getAttribute('tabindex');
+        if (ti && +ti > 0) found.push(`positive tabindex=${ti} on .${el.className || el.tagName}`);
+        if (el.disabled) return;
+        /* 🔴 EFFECTIVE VISIBILITY, NOT THE ELEMENT'S OWN `display`. The first version read
+         * getComputedStyle(el).display and reported NINETEEN false failures on Season: every
+         * control inside the collapsed identity panel, whose ANCESTOR is display:none. A child
+         * of a display:none parent computes its OWN display normally (inline-block here) and
+         * measures 0x0 — so the naive test saw "visible but sizeless" for elements the browser
+         * had already removed from the tab order entirely.
+         * checkVisibility() answers the question actually being asked, and it is NOT a
+         * silencer: verified live, a genuinely visible 0x0 button still returns true, so the
+         * real defect this pass exists to find is still caught. That distinction is asserted
+         * in the self-test below rather than trusted. */
+        if (el.checkVisibility && !el.checkVisibility({ checkVisibilityCSS:true, checkOpacity:true })) return;
+        if (!el.checkVisibility && (w.getComputedStyle(el).display === 'none' || el.closest('[hidden]'))) return;
+        const r = el.getBoundingClientRect();
+        if (r.width < 1 || r.height < 1)
+          found.push(`focusable, CSS-visible, but 0x0: .${el.className || el.tagName} "${(el.textContent || el.value || '').trim().slice(0, 16)}"`);
+      });
+      /* A div carrying role=button or an onclick must still be tabbable. */
+      d.querySelectorAll('[role=button],[role=checkbox],[role=tab]').forEach(el => {
+        if (el.matches(FOCUSABLE)) return;
+        if (el.closest('[hidden]')) return;
+        found.push(`role=${el.getAttribute('role')} not focusable: .${el.className || el.tagName}`);
+      });
+      /* 🔴 AND AN ELEMENT THAT HANDLES A CLICK BUT DECLARES NOTHING. Season's repair findings were
+       * bare <li>s carrying an onclick and tabIndex -1: mouse-only, and INVISIBLE to the probe
+       * above, which selects by role and a bare li has none. The rule is not "has a role" — it is
+       * **the element that handles a click is the element that must take focus**, and a check
+       * that only inspects elements which already declared themselves cannot see the ones that
+       * did not. Found by opening the view, not by any pass. */
+      d.querySelectorAll('*').forEach(el => {
+        if (!el.onclick) return;
+        if (el.matches(FOCUSABLE) || el.getAttribute('role')) return;
+        if (el.closest('[hidden]')) return;
+        /* 🔴 A ROW-LEVEL CLICK OVER A REAL CONTROL IS AN ENHANCEMENT, NOT A DEFECT. The first
+         * version reported 151 findings, and 125 of them were table rows whose click merely
+         * duplicates a button already inside them — reachable, announced, and fine. Reporting
+         * those would have buried the 3 that mattered (sortable <th>s, where sorting really was
+         * mouse-only on four realms) under noise, and a probe that cries wolf gets switched off.
+         * The rule is REACHABILITY: if nothing inside can take focus, the click is the only way
+         * in and the element is a control pretending not to be one. */
+        if (el.querySelector('a[href],button,input,select,textarea,[tabindex]:not([tabindex="-1"])')) return;
+        found.push(`handles a click but cannot be focused: <${el.tagName.toLowerCase()}>.${el.className || '(no class)'}`);
+      });
+    } catch (e) { found.push('probe threw: ' + e.message); }
+    bad += say('keyboard', p, found.length ? { problems:found } : { problems:[] }); ran++;
+    f.remove(); paint();
+  }
+
+  /* PASS 4b — EXPANDED. 🔴 THE SWEEP HAD ONLY EVER RENDERED THE DEFAULT STATE, AND THE DEFAULT
+   * COLLAPSES THE DENSEST LANE. Season closes any lane with more than three rows, so the playlist
+   * lane — 14 items, 7 rows, the most crowded surface in the portal — was invisible to all forty
+   * passes. Four bars in it were rendering as blank coloured rectangles the whole time, and
+   * Harkirat found them by opening the page and clicking the caret.
+   * Exactly the same shape as "a [hidden] view is audited by nothing", which this sweep already
+   * fixes for view TABS. Second occurrence of one class, and the second one was found by a human.
+   * Any collapsed disclosure is a surface, and a surface nothing opens is a surface nothing checks. */
+  for (const p of ['season', 'armory']) {
+    const f = await load(p + '.html?audit=1');
+    try {
+      const d = f.contentDocument;
+      d.querySelectorAll('.lane.lnc .lnh, .trow.tclosed .trow-h').forEach(h => h.click());
+      await new Promise(r => setTimeout(r, 900));
+    } catch (e) {}
+    bad += say('expanded', p, await reaudit(f)); ran++;
+    f.remove(); paint();
+  }
+
+  /* PASS 4c — WHO IS LOOKING. 🔴 TIER-3 IS OWNER-ONLY (Harkirat, 2026-08-25), so the state that
+   * matters most on the one-way strip — a control PRESENT and DISABLED with its reason stated —
+   * is one the mockup's viewer could never reach, because that viewer is always the owner.
+   * A state nothing can render is a state nothing designs, which is the same gap that left
+   * `?audit=1` never run and every `[hidden]` view unaudited for weeks.
+   * `?as=admin` holds the Destructive capability; `?as=plain` does not. Both are swept, and the
+   * assertions are RELATIONAL: the page's own permission verdict has to agree with what it drew,
+   * which is the only way to catch a strip that says "owner only" while leaving the button live. */
+  for (const as of ['admin', 'plain']) {
+    for (const p of ['season', 'armory', 'broadcast']) {
+      const f = await load(p + '.html?as=' + as);
+      const found = [];
+      try {
+        const w = f.contentWindow, d = f.contentDocument;
+        const may = w.Shell.canDestroy();
+        if (as === 'admin' && !may) found.push('?as=admin should hold the Destructive capability and does not');
+        if (as === 'plain' && may) found.push('?as=plain must NOT hold it, and does');
+        const rows = [...d.querySelectorAll('.ow-i')];
+        const locked = rows.filter(r => r.classList.contains('ow-locked')).length;
+        if (rows.length) {
+          if (!may && locked !== rows.length)
+            found.push(`${rows.length - locked} of ${rows.length} one-way rows are live for someone who may not run them`);
+          if (may && locked)
+            found.push(`${locked} one-way row(s) locked for someone who holds the capability`);
+          const dead = rows.filter(r => !r.querySelector('button')).length;
+          if (dead) found.push(`${dead} one-way row(s) HIDE their control instead of disabling it with a reason`);
+        }
+        /* The identity chip is a second authority over the same fact and must not disagree. */
+        const badge = (d.querySelector('.rolebadge') || {}).textContent;
+        if (badge && badge.trim() === 'OWNER' && !w.Shell.actor().isOwner)
+          found.push('the identity chip reads OWNER while the permission model says otherwise');
+      } catch (e) { found.push('probe threw: ' + e.message); }
+      const chk = await settle(f);
+      bad += say('as:' + as, p, { problems:[...((chk && chk.problems) || []), ...found] }); ran++;
+      f.remove(); paint();
+    }
+  }
+
+  /* PASS 4d — ASYNC (§15.7). 🔴 THESE NINE STATES RENDERED AND NOTHING GUARDED THEM. They were
+   * built and spot-checked once, which is exactly the condition every other gap in this package
+   * started from — `?audit=1` rendered too, and went unrun for weeks.
+   * The assertions are about the RULES, not about pixels, because the rules are what a future
+   * edit breaks: a skeleton must be shaped like the content and must announce itself once; a
+   * refresh must NOT blank the data; a failure must carry all three of what/means/action; a
+   * commit failure must NAME the op; a banner must state that staged work is safe. */
+  {
+    const NET = [
+      ['loading',    'season',    (d) => {
+        const rows = d.querySelectorAll('.skel-r');
+        const out = [];
+        if (!rows.length) return ['?net=loading rendered no skeleton'];
+        /* Shaped like the CONTENT, not a slab: the realm declares widths and they must reach the
+         * bars. A skeleton whose rows are all one width is a spinner with square corners. */
+        const widths = [...rows[0].querySelectorAll('i')].map(i => i.style.width);
+        if (widths.length < 2) out.push('the skeleton row has ' + widths.length + ' bar(s) — it is a slab, not a shape');
+        if (new Set(widths).size < 2) out.push('every bar in the skeleton row is the same width');
+        /* Announced ONCE. The bars are aria-hidden, so without a text node the live region says
+         * nothing at all — which is how an accessible-looking skeleton announces silence. */
+        const live = d.querySelector('.skel[role=status], .skel [role=status]');
+        if (!live) out.push('the skeleton has no live region');
+        else if (!(live.textContent || '').trim()) out.push('the skeleton live region announces nothing');
+        if (d.querySelectorAll('[role=status]').length > 1) out.push('the skeleton announces itself more than once');
+        return out;
+      }],
+      ['refresh',    'armory',    (d) => {
+        const out = [];
+        if (!d.querySelector('.is-refreshing')) out.push('?net=refresh left no refreshing mark');
+        /* RULE 2 — the data must still be there. Blanking correct content to announce a re-fetch
+         * is a regression dressed as feedback, and it is the easiest of these to regress into. */
+        const host = d.querySelector('[data-async-host]');
+        if (host && host.querySelectorAll('*').length < 20) out.push('a refresh blanked the data it was re-reading');
+        if (host && host.querySelector('.skel')) out.push('a refresh rendered a SKELETON — rule 2 says it must not');
+        return out;
+      }],
+      ['slow',       'broadcast', (d) => (d.querySelector('.is-slow') ? [] : ['?net=slow left no slow state'])],
+      ['fail',       'access',    (d) => {
+        const b = d.querySelector('.failbox'); if (!b) return ['?net=fail rendered no failure'];
+        const out = [];
+        /* All THREE parts, because an error missing one is the one that gets forwarded to
+         * somebody else to interpret. */
+        if (!(d.querySelector('.fail-h b') || {}).textContent) out.push('the failure does not say WHAT failed');
+        if (!(b.querySelector('p') || {}).textContent) out.push('the failure does not say what it MEANS');
+        if (!(b.querySelector('.fail-a button') || {}).textContent) out.push('the failure offers no ACTION');
+        if (b.getAttribute('role') !== 'alert') out.push('the failure is not announced (no role=alert)');
+        return out;
+      }],
+      ['commit',     'review',    (d) => {
+        const t = (d.querySelector('.prog-t') || {}).textContent || '';
+        return /\d+ of \d+/.test(t) ? [] : ['commit progress does not report N of M — got "' + t.trim() + '"'];
+      }],
+      ['commitfail', 'review',    (d) => {
+        const out = []; const p = d.querySelector('.prog.bad');
+        if (!p) return ['?net=commitfail did not render a failed commit'];
+        const t = (d.querySelector('.prog-t') || {}).textContent || '';
+        /* NAME THE OP. A percentage cannot say which of forty broke, and that is the only
+         * question worth answering at that moment. */
+        if (!/\./.test(t)) out.push('a failed commit does not name the op that failed — got "' + t.trim() + '"');
+        return out;
+      }],
+      ['offline',    'season',    (d) => netbar(d, 'offline')],
+      ['expired',    'season',    (d) => netbar(d, 'expired')],
+      ['rollback',   'season',    (d) => (d.querySelector('[data-tip^="Rolled back"]') ? []
+                                          : ['?net=rollback left no visible rollback'])]
+    ];
+    /* Both banners must name an action AND say staged work is safe — the reader's actual fear.
+     * An "offline" notice that ignores it is a notification, not a design. */
+    function netbar(d, kind) {
+      const b = d.querySelector('.netbar.' + kind);
+      if (!b) return ['?net=' + kind + ' rendered no banner'];
+      const out = [];
+      if (!b.querySelector('button')) out.push('the ' + kind + ' banner offers no action');
+      if (!/staged|still here|not lost|is held/i.test(b.textContent)) 
+        out.push('the ' + kind + ' banner does not say whether staged work survived');
+      return out;
+    }
+    for (const [kind, page, probe] of NET) {
+      const f = await load(page + '.html?net=' + kind);
+      let found = [];
+      try { found = probe(f.contentDocument) || []; } catch (e) { found = ['probe threw: ' + e.message]; }
+      bad += say('net:' + kind, page, { problems: found }); ran++;
+      f.remove(); paint();
+    }
+  }
+
+  /* PASS 4e — CROSS-PAGE AGREEMENT. 🔴 THE ONLY CHECK HERE THAT LOADS TWO PAGES AT ONCE, and it
+   * exists because the same defect has now happened TWICE in opposite directions: Home once held
+   * its own copy of Armory's defect predicate and reported 33 where Armory said 28, and on
+   * 2026-08-25 Armory split age out of its alarm while Home kept reading the combined number and
+   * said 117 where Armory said 11. Reading a shared derivation is not sufficient — the derivation
+   * has to carry the same DISTINCTION both surfaces make.
+   * Every per-page rule in this package is blind to this by construction: each page was
+   * internally consistent both times. Counting the AUTHORITIES over one quantity is the only
+   * shape of check that can see it. */
+  {
+    const grab = async (page, fn) => {
+      const f = await load(page + '.html');
+      let v; try { v = fn(f.contentDocument, f.contentWindow); } catch (e) { v = 'threw: ' + e.message; }
+      f.remove(); return v;
+    };
+    const found = [];
+    const homeFault = await grab('index', (d, w) => w.FIX.ARMORY_COUNTS.needRepair);
+    const homeText  = await grab('index', (d) => (d.body.innerText.match(/(\d+) builds? need repair/) || [])[1]);
+    /* Armory reports the MODE in view, Home reports the whole collection — a legitimate scope
+     * difference — so the assertion is that Home's headline equals Home's own derivation, and
+     * that Armory's derivation uses the same predicate rather than a private copy. */
+    if (homeText !== undefined && String(homeFault) !== String(homeText))
+      found.push(`Home's headline says ${homeText} builds need repair while its own derivation says ${homeFault}`);
+    const armoryFaultAll = await grab('armory', (d, w) => w.FIX.builds.filter(w.FIX.armoryFault).length);
+    if (String(armoryFaultAll) !== String(homeFault))
+      found.push(`Armory and Home disagree about the same collection: ${armoryFaultAll} vs ${homeFault}`);
+    /* And the split must be REAL — if `stale` folded back into `needRepair` the numbers would
+     * still agree with each other and both be the wrong question's answer. */
+    const stale = await grab('index', (d, w) => w.FIX.ARMORY_COUNTS.stale);
+    if (!(stale > 0 && homeFault > 0 && stale > homeFault))
+      found.push(`the fault/stale split looks collapsed: ${homeFault} faults vs ${stale} stale`);
+    bad += say('cross-page', 'home↔armory', { problems: found }); ran++;
+    paint();
+  }
+
+  /* PASS 4f — REDUCED MOTION, OBSERVED. 🔴 Audit rule 14 proves COVERAGE — every animating
+   * selector has an override — and coverage cannot see an override that is present and WRONG:
+   * a keyframe still moving something the override does not touch, or a rule aimed at a selector
+   * that no longer matches. This pass observes the EFFECT instead.
+   * Nothing available here can emulate `prefers-reduced-motion` (chrome-devtools MCP's emulate
+   * exposes viewport, colour scheme, network and CPU, not that media feature), so the honest
+   * substitute is to LIFT every rule out of every reduced-motion block and apply it
+   * unconditionally, then assert `getAnimations()` reports zero RUNNING animations.
+   * ⚠️ WHAT THIS DOES NOT PROVE: that the media query itself gates correctly. It proves the rules
+   * stop the motion when they apply — which is the half that was actually false (ten animations
+   * had no rule at all), and it is stated as a half rather than counted as a whole. */
+  for (const p of PAGES) {
+    const f = await load(p + '.html');
+    const found = [];
+    try {
+      const d = f.contentDocument;
+      const lifted = [];
+      for (const sh of d.styleSheets) {
+        let rules; try { rules = sh.cssRules; } catch (e) { continue; }
+        for (const r of rules)
+          if (r.type === CSSRule.MEDIA_RULE && /prefers-reduced-motion/.test(r.conditionText || r.media.mediaText))
+            for (const inner of r.cssRules) lifted.push(inner.cssText);
+      }
+      /* A pass that lifted nothing would report "no motion" and mean "I found no rules" — the
+       * vacuous shape this file exists to refuse. */
+      if (!lifted.length) found.push('no prefers-reduced-motion rules found at all — this check would pass vacuously');
+      const st = d.createElement('style'); st.textContent = lifted.join('\n'); d.head.appendChild(st);
+      await new Promise(r => setTimeout(r, 600));
+      const running = d.getAnimations().filter(a => a.playState === 'running');
+      if (running.length) {
+        const names = [...new Set(running.map(a => (a.animationName || '?') + ' on .' +
+          String((a.effect && a.effect.target && a.effect.target.className) || '?').split(' ')[0]))];
+        found.push(`${running.length} animation(s) still run with every reduced-motion rule applied: ` + names.slice(0, 4).join(', '));
+      }
+    } catch (e) { found.push('probe threw: ' + e.message); }
+    bad += say('reduced-motion', p, { problems: found }); ran++;
+    f.remove(); paint();
+  }
+
+  /* PASS 4g — MODALITY. 🔴 THE DRAWER CLAIMED TO BE MODAL AND TAB WALKED OUT OF IT. Measured
+   * 2026-08-25 with a typed confirmation open: 218 focusable elements outside the drawer were
+   * still reachable, so somebody could tab past a purge dialog and press something on the page
+   * behind it. The scrim stops a mouse and says nothing to a keyboard — the visual half of
+   * modality was built and the behavioural half was not.
+   * ⚠️ THE FIRST PROBE FOR THIS MEASURED THE WRONG THING PRECISELY: it counted elements matching
+   * a focusable selector, and `inert` elements still match selectors and still report visible —
+   * they are merely unfocusable. It reported 218 both before and after the fix. The only honest
+   * test is to CALL focus() and see where focus lands, with a BASELINE that can fail. */
+  for (const p of ['season', 'armory', 'access']) {
+    const f = await load(p + '.html');
+    const found = [];
+    try {
+      const d = f.contentDocument, w = f.contentWindow;
+      const outside = () => [...d.querySelectorAll('main button, .rail a, .rail button')].find(b => b.checkVisibility?.());
+      const b0 = outside();
+      if (!b0) { found.push('no control outside the drawer to test against — this check would pass vacuously'); }
+      else {
+        b0.focus();
+        if (d.activeElement !== b0) found.push('baseline failed: a control outside the drawer is not focusable even with no drawer open, so this check proves nothing');
+        w.Shell.drawer({ title:'Modality probe', body:'<p class="dw-p">probe</p>',
+                         actions:'<button class="btn" id="dw-cancel">Close</button>' });
+        await new Promise(r => setTimeout(r, 200));
+        const b1 = outside(); b1.focus();
+        if (d.activeElement === b1) found.push('focus escapes the drawer while it is open — the page behind a confirmation is reachable by keyboard');
+        if (!d.querySelector('.drawer.open')?.contains(d.activeElement) && d.activeElement !== d.body)
+          found.push('focus did not start inside the drawer');
+        w.Shell.closeDrawer();
+        await new Promise(r => setTimeout(r, 200));
+        const b2 = outside(); b2.focus();
+        /* An `inert` left behind is a worse failure than the one it fixes — the whole page
+         * becomes unusable and nothing throws. */
+        if (d.activeElement !== b2) found.push('the page is still inert after the drawer closed — modality was not undone');
+      }
+    } catch (e) { found.push('probe threw: ' + e.message); }
+    bad += say('modality', p, { problems: found }); ran++;
+    f.remove(); paint();
+  }
+
+  /* PASS 5 — TIME. F.today is pinned so screenshots reproduce, and the unexamined cost of that
+   * is that LIVE NOW / UPCOMING / ENDED, the NOW marker, every "days left" figure and every
+   * spark's elapsed fill had only ever rendered on ONE AFTERNOON. Season is the only realm
+   * whose output depends on the date, so it is the only one swept — three moments, chosen
+   * because each puts a different set of lifecycle branches on screen. */
+  for (const day of ['2026-08-04', '2026-09-10', '2026-09-21']) {
+    const f = await load('season.html?today=' + day);
+    const found = [];
+    try {
+      const d = f.contentDocument;
+      /* The NOW marker must stay inside the Track. Off either edge means the view did not
+       * follow the date, which is the failure a frozen fixture can never show. */
+      const now = d.querySelector('.now'), tk = d.querySelector('.tk-inner');
+      if (!now) found.push('no NOW marker');
+      else if (tk) {
+        const l = parseFloat(now.style.left);
+        if (!isFinite(l)) found.push('NOW marker has no computed position');
+        else if (l < -5 || l > 105) found.push(`NOW marker at ${Math.round(l)}% — outside the Track`);
+      }
+      /* 🔴 EVERY ROW'S LABEL IS CHECKED AGAINST THAT ROW'S OWN DATES. The previous version
+       * asserted that nothing may read ENDED on 2026-08-04 and nothing UPCOMING on 2026-09-21 —
+       * two dates picked by hand, and the first was simply wrong: the row it flagged was a patch
+       * note published 2026-07-06, which a month later is history. It cost a filed bug and an
+       * investigation to discover that the CHECK was the false thing.
+       * A hard-coded date encodes a belief about the fixture; comparing a label to the dates
+       * printed on the same row encodes the rule itself, and holds at every date forever.
+       * It also used to read EVERY `.rowmeta`, and a row has two — the lifecycle and the
+       * duration — so it was scanning "1 DAY" and "14 DAYS" for the word ENDED. A check must
+       * select the thing it protects. */
+      const iso = t => new Date(t + 'T00:00:00Z').getTime();
+      [...d.querySelectorAll('tr[data-life]')].forEach(tr => {
+        const life = tr.dataset.life, start = tr.dataset.start, end = tr.dataset.end;
+        const open = tr.dataset.open === '1', lane = tr.dataset.lane;
+        const name = ((tr.querySelector('.edit') || {}).value) || tr.dataset.id;
+        if (!start || !end || life === 'draft' || life === 'staged') return;
+        /* `>` not `>=`: commands/calendar.js ends an event when `endDate <= now`, so a row whose
+         * window closes TODAY reads ENDED from midnight. That is the bot's rule and the port
+         * mirrors it deliberately; asserting otherwise would flag faithfulness as a defect. */
+        if (life === 'ended' && iso(end) > iso(day))
+          found.push(`"${name}" reads ENDED but its own end date is ${end}, still ahead of ${day}`);
+        if (life === 'upcoming' && iso(start) <= iso(day))
+          found.push(`"${name}" reads UPCOMING but it started ${start}, on or before ${day}`);
+        if (life === 'live' && iso(start) > iso(day))
+          found.push(`"${name}" reads LIVE NOW but it does not start until ${start}`);
+        /* Two documented divergences, exempted BY NAME rather than discovered as noise: a patch
+         * note is a publication with no duration (the newest is current, the rest history), and
+         * a `dateOnly` draw never ends at all. Both are ported deliberately from the bot. */
+        if (life === 'live' && !open && lane !== 'patchNotes' && iso(end) < iso(day))
+          found.push(`"${name}" reads LIVE NOW but it ended ${end}`);
+      });
+      const stats = (d.querySelector('.mh-stats') || {}).innerText || '';
+      if (/NaN|undefined|Infinity/.test(stats)) found.push(`masthead stats read "${stats.replace(/\n/g, ' ').slice(0, 40)}"`);
+    } catch (e) { found.push('probe threw: ' + e.message); }
+    const chk = await settle(f);
+    bad += say('time:' + day, 'season', { problems:[...((chk && chk.problems) || []), ...found] }); ran++;
+    f.remove(); paint();
+  }
+
+  /* SELF-TEST. The sweep must be able to report a defect, or a clean run is worth nothing.
+   * ?self=1 plants a table whose empty row spans the wrong number of columns. */
+  if (/[?&]self=1\b/.test(location.search)) {
+    const probe = document.createElement('table');
+    probe.innerHTML = '<thead><tr><th>a</th><th>b</th><th>c</th></tr></thead><tbody><tr><td colspan="9">x</td></tr></tbody>';
+    const cols = probe.querySelectorAll('thead th').length;
+    const caught = [...probe.querySelectorAll('tbody td[colspan]')].some(td => +td.getAttribute('colspan') !== cols);
+    lines.push(caught ? '<span class="ok">SELF-TEST</span> a wrong colspan IS caught'
+                      : '<span class="bad">SELF-TEST FAILED — this sweep cannot report a defect; do not trust a clean run</span>');
+    if (!caught) bad++;
+    /* The keyboard pass needs its own falsifier — it is the newest and the one most likely to
+     * be silently vacuous, since "no findings" is its expected output on a healthy page. */
+    const kprobe = document.createElement('div');
+    kprobe.setAttribute('role', 'button'); kprobe.textContent = 'not focusable';
+    const kcaught = !kprobe.matches('a[href],button,input,select,textarea,[tabindex]');
+    lines.push(kcaught ? '<span class="ok">SELF-TEST</span> an unfocusable role=button IS caught'
+                       : '<span class="bad">SELF-TEST FAILED — the keyboard pass cannot report a defect</span>');
+    if (!kcaught) bad++;
+    /* 🔴 AND THE VISIBILITY TEST MUST STILL BE ABLE TO FAIL. Switching from `display === 'none'`
+     * to checkVisibility() silenced 19 false positives, and a fix that silences is one keystroke
+     * from a fix that blinds. Two assertions, opposite directions: a REAL 0x0 button must still
+     * report CSS-visible (so the pass still catches it), and a control inside a display:none
+     * ancestor must report NOT visible (so it stays quiet). */
+    const zero = document.createElement('button');
+    zero.style.cssText = 'width:0;height:0;padding:0;border:0;overflow:hidden';
+    document.body.appendChild(zero);
+    const zeroStillSeen = zero.checkVisibility({ checkVisibilityCSS:true, checkOpacity:true })
+                        && zero.getBoundingClientRect().width < 1;
+    zero.remove();
+    const box = document.createElement('div');
+    box.style.display = 'none';
+    const inner = document.createElement('button'); box.appendChild(inner);
+    document.body.appendChild(box);
+    const hiddenSkipped = !inner.checkVisibility({ checkVisibilityCSS:true, checkOpacity:true });
+    box.remove();
+    const vOk = zeroStillSeen && hiddenSkipped;
+    lines.push(vOk ? '<span class="ok">SELF-TEST</span> a real 0x0 control is still caught, a display:none descendant is not'
+                   : '<span class="bad">SELF-TEST FAILED — the visibility test is blind (' +
+                     (zeroStillSeen ? '' : 'misses a real 0x0 control') + (hiddenSkipped ? '' : ' / still flags hidden descendants') + ')</span>');
+    if (!vOk) bad++;
+
+    /* 🔴 AND THE SETTLE GATE MUST BE ABLE TO REPORT A TIMEOUT. `settle()` exists because reading
+     * `__selfCheck` on a timer reported an unsettled measurement as an answer for a day. A
+     * settle that silently returns the stale object on timeout would reinstate exactly that, so
+     * assert it MARKS the timeout — against a frame whose audit is deliberately never settled. */
+    const fake = { contentWindow: { __selfCheck: { problems: ['planted'], pending: true } } };
+    const t = await settle(fake, 200);
+    const sOk = !!(t && t.timedOut);
+    lines.push(sOk ? '<span class="ok">SELF-TEST</span> an audit that never settles IS reported as a timeout, not read'
+                   : '<span class="bad">SELF-TEST FAILED — settle() hands back an unsettled measurement as though it were the answer</span>');
+    if (!sOk) bad++;
+
+    /* 🔴 AND THE ASYNC PASS MUST BE ABLE TO FAIL. Nine new checks went green on their first run,
+     * which is the condition under which a vacuous check is indistinguishable from a correct
+     * one — and three probes shipped structurally incapable of failing in this package on
+     * 2026-08-24 alone. Each rule is violated on purpose here and must be reported. */
+    const frag = (html) => { const d = document.implementation.createHTMLDocument(''); d.body.innerHTML = html; return d; };
+    const asyncFalsifiers = [
+      ['a slab skeleton IS caught',
+       frag('<div data-async-host><div class="skel" role="status">x<div class="skel-r"><i style="width:40%"></i><i style="width:40%"></i></div></div></div>'),
+       d => { const w = [...d.querySelectorAll('.skel-r i')].map(i => i.style.width); return new Set(w).size < 2; }],
+      ['a silent live region IS caught',
+       frag('<div class="skel" role="status"><div class="skel-r"><i style="width:10%"></i><i style="width:50%"></i></div></div>'),
+       d => !((d.querySelector('[role=status]').textContent || '').trim())],
+      ['a refresh that BLANKED its data IS caught',
+       frag('<div data-async-host class="is-refreshing"></div>'),
+       d => d.querySelector('[data-async-host]').querySelectorAll('*').length < 20],
+      ['a failure missing its ACTION IS caught',
+       frag('<div class="failbox" role="alert"><div class="fail-h"><b>Broke</b></div><p>why</p><div class="fail-a"></div></div>'),
+       d => !((d.querySelector('.fail-a button') || {}).textContent)],
+      ['a commit failure that does not NAME the op IS caught',
+       frag('<div class="prog bad"><div class="prog-t"><b>Stopped at 24 of 40</b></div></div>'),
+       d => !/\./.test(d.querySelector('.prog-t').textContent)],
+      ['a banner silent about staged work IS caught',
+       frag('<div class="netbar offline"><b>Offline.</b><button>Retry</button></div>'),
+       d => !/staged|still here|not lost|is held/i.test(d.querySelector('.netbar').textContent)]
+    ];
+    asyncFalsifiers.forEach(([name, doc, test]) => {
+      let caught = false; try { caught = !!test(doc); } catch (e) {}
+      lines.push(caught ? '<span class="ok">SELF-TEST</span> ' + name
+                        : '<span class="bad">SELF-TEST FAILED — ' + name.replace(' IS caught', ' is NOT caught') + '</span>');
+      if (!caught) bad++;
+    });
+
+    /* And the liveness probe must be able to say NO. A frame that never runs rAF is the state
+     * this whole harness change exists for; a probe that cannot report it is decoration. */
+    const dead = { contentWindow: { requestAnimationFrame(){ /* never calls back */ } } };
+    const rOk = (await rafAlive(dead)) === false;
+    lines.push(rOk ? '<span class="ok">SELF-TEST</span> a frame that never paints IS detected'
+                   : '<span class="bad">SELF-TEST FAILED — rafAlive() cannot report a dead frame</span>');
+    if (!rOk) bad++;
+  }
+
+  lines.push('');
+  lines.push(bad ? `<span class="bad">=== ${bad} finding(s) across ${ran} passes ===</span>`
+                 : `<span class="ok">=== ALL CLEAN — ${ran} passes ===</span>`);
+  paint();
+})();
+</script>

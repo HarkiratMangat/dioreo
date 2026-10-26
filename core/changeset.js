@@ -1,0 +1,144 @@
+// core/changeset.js
+//
+// A changeset is N ops that commit together or not at all.
+//
+// ⚠️ ALL-OR-NOTHING IS NOT A NICETY. The bot re-reads SeasonalData on every single interaction (commands/draws.js, calendar.js, patchnotes.js all call findOne(...).lean() per interaction), so a half-applied set is served to real users within seconds. That is why this uses a real Mongo transaction and not a best-effort loop.
+const ChangeLog = require('../models/ChangeLog');
+const mongoose = require('mongoose');
+const { resolveOp, actionForOpType, pageForOpType } = require('./ops');
+const { recordChangeIn } = require('../utils/changeStore');
+
+// The registry key is `page:id`, so a change's page is knowable from its op. Falls back to the op's own namespace rather than a literal, so a not-yet-registered op still records truthfully. 🔴 An op registered under MULTIPLE pages (loadouts_mp/loadouts_dmz share one op type) cannot just take index [0] -- that permanently mislabels every DMZ mutation's ChangeLog row as loadouts_mp, which breaks getRecentChanges({filterPage}) AND core/revert.js's per-page access check (utils/adminAccess.js's hasManagePageAccess) for the whole loadouts_dmz page. Resolve using the op's own mode when more than one candidate page exists.
+function pageForOp(op) {
+    const actions = actionForOpType(op.type);
+    // An action-less op declares its own page (see core/ops/index.js's OP_TO_PAGE). The namespace split stays as a last resort so a not-yet-registered op still records SOMETHING truthful mid-transaction rather than throwing -- but scripts/coreOps.test.js now fails the suite if any registered op reaches it, because what it produces is a page key no scope list contains.
+    if (!actions?.length) return pageForOpType(op.type) || op.type.split('.')[0];
+    if (actions.length > 1) {
+        const mode = (op.target?.mode || op.payload?.mode || '').toLowerCase();
+        const match = mode && actions.find(a => a.split(':')[0].endsWith(mode));
+        if (match) return match.split(':')[0];
+    }
+    return actions[0].split(':')[0];
+}
+
+function validateSet(ops) {
+    const failures = [];
+    const normalized = [];
+    let tier = 1;
+    ops.forEach((op, index) => {
+        let impl;
+        try { impl = resolveOp(op.type); }
+        catch (e) { failures.push({ index, errors: [e.message] }); return; }
+        tier = Math.max(tier, impl.tier);
+        const r = impl.validate(op);
+        if (!r.ok) failures.push({ index, errors: r.errors });
+        // 🔴 MERGED onto the original op, never substituted -- most entities' validate() (draw.add/edit, calendar.add/edit, loadout.add/edit, announcement.post/edit, all built on a shared validateOne/validateEvent/validateBuild/validatePost helper) deliberately returns ONLY `{ payload: {...} }` in `normalized`, relying on the caller to carry `type`/`target` forward from the original op. The old `r.normalized || op` was a straight OR, so any such partial result silently DISCARDED type/target -- previewSet and commitSet then both call resolveOp(op.type) on the result and throw "unknown op type \"undefined\"". Confirmed live against the real server: staging a draw.add validated fine (this bug is invisible to validateSet's own ok/failures result) and committing it 409'd with exactly that error. A handful of ops (season.*, loadout.edit/delete, most of patchnotes.js) already return the FULL op in `normalized`, so `{...op, ...r.normalized}` is a no-op for them -- spreading a full op over itself changes nothing, which is what keeps this change backward compatible.
+        else normalized.push(r.normalized ? { ...op, ...r.normalized } : op);
+    });
+    return { ok: failures.length === 0, failures, normalized, tier };
+}
+
+// 🔴 MUST BE ASYNC AND AWAITED -- loadouts' and announcements' edit/delete preview() implementations are themselves async (they self-fetch via Loadout.findById/Announcement.findById rather than reading the `live` param). A prior, synchronous version of this function called impl.preview(...) without awaiting it: for those entities it silently spread a Promise's own (zero) enumerable properties into the result -- every preview came back as bare {index}, no before/after -- and worse, a preview() that THROWS before its first await (e.g. a malformed op with no `target`) produced a rejected promise nobody ever awaited or .catch()ed. An unhandled rejection crashes the whole Node process by default, bypassing portal/api/changesets.js's own try/catch around this call (that catch can only see a promise IT awaits) and portal/server.js's per-request crash net (which had already returned by the time the rejection fired asynchronously). Found live: staging a malformed loadout.edit/calendar.edit op took down the entire portal server, not just that request.
+async function previewSet(ops, live) {
+    // 🔴 NORMALIZED, not raw -- a bulk op's preview() reads fields (e.g. payload.parsed) that only exist after validate() normalizes the payload. Previewing a raw un-normalized op threw; falls back to the raw op only when validation itself fails, matching what apply() would do anyway.
+    return Promise.all(ops.map(async (op, index) => {
+        const impl = resolveOp(op.type);
+        const v = impl.validate(op);
+        // 🔴 THE SAME `||` BUG validateSet ABOVE ALREADY FIXED, ONE FUNCTION LOWER AND STILL LIVE. Most entities' validate() returns ONLY `{ payload: {...} }` in `normalized` — the long comment on validateSet says so and merges with `{...op, ...r.normalized}` for exactly that reason. This re-ran validate() itself and passed the BARE result to preview(), so `op.target` was undefined and draw.edit's preview threw on `op.target.category` before it read anything. Found 2026-08-26 by the first automated route test: /api/review still answered 200 because it catches preview failures, so every staged draw.edit had been showing an EMPTY DIFF on the review screen — the one screen whose whole job is showing what is about to change. A fix that lands in one function and not its neighbour is how a defect survives being fixed.
+        return { index, ...(await impl.preview(v.normalized ? { ...op, ...v.normalized } : op, live)) };
+    }));
+}
+
+// ── Authorization (the permission restructure, 2026-10-19 19:40 EDT) ───────── checkOps lives HERE rather than in utils/adminAccess.js because it needs pageForOp, and this file's require closure reaches discord.js. adminAccess must stay requireable without it (scripts/ownerModule.test.js), so the gate that needs both sits with the op machinery and asks adminAccess only for the tiers.
+
+// The /manage page(s) an op writes to. pageForOp answers from the op itself, which is right for every op whose page is fixed by its type -- and wrong for a loadout op that names an EXISTING build only by id. MP and DMZ share one op set, so `loadout.delete { target: { id } }` carries no mode and pageForOp falls back to MP: a DMZ-only admin would be refused their own delete, and an MP-only admin let through on a DMZ build. So for the three ops that act on existing builds, the mode is read from the builds themselves, never from the op (a portal client could send any mode it likes). An edit that would MOVE a build to the other mode needs the tier on both pages. A build that no longer exists falls back to pageForOp; apply() then fails it as 'missing'.
+const LOADOUT_OPS_BY_ID = new Set(['loadout.edit', 'loadout.delete', 'loadout.bulkDelete']);
+const pageForLoadoutMode = (mode) => (mode === 'MP' ? 'loadouts_mp' : mode === 'DMZ' ? 'loadouts_dmz' : null);
+async function pagesForOp(op) {
+    if (!LOADOUT_OPS_BY_ID.has(op?.type)) return [pageForOp(op)];
+    const ids = [op.target?.id, ...(op.payload?.ids || [])].filter(Boolean).map(String);
+    const Loadout = require('../models/Loadout');
+    const docs = ids.length ? await Loadout.find({ _id: { $in: ids } }).select('mode').lean() : [];
+    const pages = new Set(docs.map(d => pageForLoadoutMode(d.mode)).filter(Boolean));
+    if (op.type === 'loadout.edit' && pageForLoadoutMode(op.payload?.mode)) pages.add(pageForLoadoutMode(op.payload.mode));
+    return pages.size ? [...pages] : [pageForOp(op)];
+}
+
+// THE GATE FOR A SET OF OPS -- the replacement for portal/api/changesets.js's assertOpsAccess, which only knew pages. Same return shape that function had ({ ok, reason }), plus `denied` naming each op that failed, the scope and the tier it needed. commitSet runs it on EVERY commit, so the portal is gated even before it calls this itself. An op type with no tier in core/permissions.js is DENIED for everyone but the owner: a new op that nobody classified must fail closed, not open.
+async function checkOps(userId, ops) {
+    const { isOwner, effectiveTiers, denialMessage } = require('../utils/adminAccess');
+    const P = require('./permissions');
+    if (isOwner(userId)) return { ok: true, denied: [] };
+    const tiers = await effectiveTiers(userId);
+    const denied = [];
+    for (const [index, op] of (ops || []).flat().entries()) {
+        const tier = P.tierForOp(op?.type);
+        for (const page of await pagesForOp(op)) {
+            const scope = P.manageScope(page);
+            if (!tier || !tiers.get(scope)?.has(tier)) denied.push({ index, type: op?.type, scope, tier });
+        }
+    }
+    if (!denied.length) return { ok: true, denied };
+    const first = denied[0];
+    const reason = first.tier ? denialMessage(first.scope, first.tier) : `🔒 **"${first.type}" has no permission rule yet, so only the bot owner can run it.**`;
+    return { ok: false, reason, denied };
+}
+
+// ⚠️ `source` DEFAULTS TO 'discord' BECAUSE EVERY EXISTING CALLER IS ONE -- handlers/manage/* and core/revert.js reached from /bot. The portal passes 'portal' explicitly (portal/api/changesets.js). A new non-Discord caller that forgets will be mislabelled, which is why the portal's own path is asserted in scripts/portalApi.test.js rather than left to prose. 🔴 EVERY COMMIT IS AUTHORIZED HERE, for Discord and the portal alike (permission restructure, 2026-10-19 19:24 EDT). Each op needs its tier (core/permissions.js's OP_TIERS) on the page it writes to, checked by checkOps above. This is the one place every mutation passes through, so a Discord handler that forgot its own check, or a portal route that only knew pages, still cannot write past a missing tier. `revertOf` is core/revert.js's: a revert is gated by the Undo rule on the reverted row's page (checkRevert) instead of by the inverse ops' own tiers -- the inverse of a delete is an add, and a destructive-only admin must still be able to undo their delete. A denial returns { ok: false, denied, error } with nothing applied; `error` is written for the person, so every handler's existing `result.error` message shows it as-is.
+async function commitSet(ops, { actorId, source = 'discord', revertOf = null }) {
+    const { checkRevert } = require('../utils/adminAccess');
+    const gate = revertOf ? await checkRevert(actorId, revertOf) : await checkOps(actorId, ops.flat());
+    if (!gate.ok) return { ok: false, denied: gate.denied || [], error: gate.reason };
+
+    // 🔴 FLATTEN BEFORE VALIDATING, not just before applying. A single-element `ops` array whose one element is ITSELF an array (any op's invert() may return an array -- draw.bulkDelete/purge and loadout.bulkAdd/bulkReplace all do) used to reach validateSet un-flattened: resolveOp(op.type) on an array has op.type === undefined, throws "unknown op type", and commitSet returned {ok:false} before the apply loop's own .flat() call ever ran -- so reverting any of those ops always failed. Found by the plan-1-range code review, confirmed by tracing revertChange's `commitSet([row.inverse], ...)` call against those invert() shapes.
+    const v = validateSet(ops.flat());
+    if (!v.ok) return { ok: false, failures: v.failures };
+
+    const session = await mongoose.startSession();
+    // 🔴 DECLARED HERE, RESET INSIDE THE RETRIED CALLBACK BELOW -- session.withTransaction() automatically re-invokes its callback from scratch on a TransientTransactionError (real, plausible contention here since SeasonalData is one shared global document), and without the reset a retry's pushes would land on top of the first, aborted attempt's stray entries instead of replacing them.
+    let changeIds = [];
+    // 🔴 SURFACED FOR CALLERS, not just for the audit log. A bulk op's apply() can carry warnings a handler needs to show the user (skipped items, reused thumbnails) — recordChangeIn already stores res.change.detail, but a Discord confirmation message needs res.applied directly, and nothing was returning it. Found during plan 1 Task 6 integration.
+    let results = [];
+    let failedAt = null;
+    // 🔴 SIDE EFFECTS OUTSIDE MONGO RUN AFTER THE COMMIT, NEVER INSIDE IT (pins batch 2 pre-push pass, 2026-09-15 09:43 EDT). A Cloudinary upload made inside withTransaction is not rolled back when a later op fails, so loadout.edit replaced a live image while its edit was discarded. apply() may return `afterCommit`; the list is reset on every retried attempt, like changeIds.
+    let afterCommit = [];
+    try {
+        await session.withTransaction(async () => {
+            changeIds = [];
+            results = [];
+            afterCommit = [];
+            // invert() may return an ARRAY, so an inverse changeset is flattened before applying (the ops.flat() above already covers the outer `ops` array itself; this covers a normalized entry still nested one level).
+            for (const [index, op] of v.normalized.flat().entries()) {
+                const impl = resolveOp(op.type);
+                const res = await impl.apply(op, { session, actorId });
+                if (!res.ok) { failedAt = { index, reason: res.reason }; throw new Error(`op ${index} failed: ${res.reason}`); }
+                // apply() is the ONLY writer and it ALWAYS audits — the caller cannot opt out. 🔴 `page` is DERIVED FROM THE OP TYPE, never hardcoded. An earlier draft wrote `page: 'draws'` here, which would have stamped every calendar, loadout, patchnote, season and announcement row as `draws` the moment plan 2 lands — breaking getRecentChanges({filterPage}) in /bot analytics AND core/revert.js's ON_CORE.has(row.page) branch, which is the whole mechanism this design added.
+                const row = await recordChangeIn(session, {
+                    ...res.change, actorId, source, page: pageForOp(op),
+                    inverse: impl.invert({ ...res.change, applied: res.applied })
+                });
+                changeIds.push(row.changeId);
+                results.push({ index, change: res.change, applied: res.applied });
+                if (typeof res.afterCommit === 'function') afterCommit.push({ at: results.length - 1, changeId: row.changeId, run: res.afterCommit });
+            }
+        });
+    } catch (e) {
+        return { ok: false, failedAt, error: e.message };
+    } finally {
+        await session.endSession();
+    }
+    // The commit has already happened, so nothing here may turn it into a reported failure: a step's message is appended to its audit row (History shows it) and to its result.
+    for (const job of afterCommit) {
+        let detail = null;
+        try { detail = await job.run(); } catch (e) { detail = `A post-commit step failed: ${e && e.message}`; }
+        if (!detail) continue;
+        results[job.at].postCommitDetail = detail;
+        try {
+            const row = await ChangeLog.findOne({ changeId: job.changeId }).lean();
+            await ChangeLog.updateOne({ changeId: job.changeId }, { $set: { detail: [row && row.detail, detail].filter(Boolean).join(' ') } });
+        } catch (e) { console.error(`Could not record a post-commit message on ${job.changeId}: ${e && e.message}`); }
+    }
+    return { ok: true, changeIds, results };
+}
+
+module.exports = { validateSet, previewSet, commitSet, pageForOp, pagesForOp, checkOps };

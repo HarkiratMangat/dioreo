@@ -1,0 +1,364 @@
+// core/ops/season.js
+//
+// Season lifecycle mutations, the highest blast radius in the system.
+//
+// ⚠️ AUDITED AGAINST THE REAL HANDLER (handlers/manage/season.js) AND THE REAL REGISTRY (utils/manageActions.js's SEASONDRAFT_ACTIONS), not transcribed from the plan document. The plan's own Interfaces line names FOUR op types (setTitlesDeadlines/promoteDraft/discardDraft/startNew) -- it is missing THREE real, registered mutating actions entirely: `seasondraft:settitles`, `seasondraft:bulkdraws`, `seasondraft:bulkcalendar` (handlers/manage/season.js's setDraftTitlesDeadlines/bulkDraftDraws/bulkDraftCalendar), which stage the next-season draft BEFORE Promote/Discard ever run. Because these three ARE real ACTIONS_BY_PAGE.seasondraft entries, Task 7's own conservation test ("every mutating action on every page resolves to an op") would have failed the moment it actually ran against a plan built only from the Interfaces line -- the gap was only visible by reading the real handler and the real registry side by side, not either alone.
+//
+// ⚠️ A rotation (promoteDraft/startNew) is inverted by a FULL PRE-ROTATION SNAPSHOT via the internal `season.restoreSnapshot` op, never a diff -- a diff of a multi-field, multi-array rotation is not a restore. restoreSnapshot is symmetric (its own apply() snapshots what it's about to overwrite and its invert() returns another restoreSnapshot carrying that snapshot), so it stays revertible indefinitely without needing a second op type for "undo of an undo".
+const { registerEntity } = require('./index');
+const { splitTitleDate, parseAdminDate, parseBulkDrawList, parseBulkEvents } = require('../../utils/adminParser');
+const { resolveThumbnailsForDraws } = require('../../utils/bulkMerge');
+const { syncPatchEntryMetadata } = require('../../utils/patchNotesCache');
+const { cleanPatchTitle } = require('../../commands/patchnotes');
+const SeasonalData = require('../../models/SeasonalData');
+const { splitSeasonEmoji } = require('../../utils/seasonEmoji');
+
+const DOC = { docType: 'global' };
+
+// Shared by setTitlesDeadlines (live) and setDraftTitlesDeadlines (staged) -- each of the 3 deadline fields carries both a title and an end date on one line ("Battle Pass, August 28"). A blank line leaves that title+date pair untouched; typing the literal word "TBD" sets the TBD flag and nulls the date (the L194 bug this guards against: a TBD typo silently becoming a real date).
+function applyLine(current, line, label, skipped) {
+    const { title, dateStr } = splitTitleDate(line || '');
+    const result = { title: current.title, end: current.end, endTBD: current.endTBD };
+    if (title) result.title = title;
+    if (dateStr) {
+        if (dateStr.trim().toLowerCase() === 'tbd') {
+            result.end = null; result.endTBD = true;
+        } else {
+            const parsed = parseAdminDate(dateStr);
+            if (parsed) { result.end = parsed; result.endTBD = false; }
+            else skipped.push(label);
+        }
+    }
+    return result;
+}
+
+// 🔴 THE PORTAL'S IDENTITY EDITOR WROTE NOTHING, SILENTLY, ON EVERY FIELD. applyLine reads the Discord modal's one-line-per-deadline format ("Battle Pass 7 | Sep 10"), and the portal composes discrete fields — currentSeasonTitle, bpTitle, bpEnd, bpEndTBD — because a web form with three inputs is not a modal with one textarea. It sent those keys straight through as the payload, so `op.payload.bpLine` was undefined for every line, applyLine returned `current` unchanged for all three, and `(op.payload.mainTitle || '')` fell back to the existing title. The op validated, the changeset staged, Review showed it, committing it applied EXACTLY NOTHING, and every surface reported success. Nothing could catch it: validate() passes anything, preview() reads mainTitle and so agreed with the no-op, and no test exercised the caller's payload against the op's reader.
+//
+// ⚠️ ADDITIVE, AND THE LINE PATH IS UNTOUCHED. Discord still sends lines and still behaves identically; a field payload simply takes precedence when one is present. Making the portal build "title | date" strings instead would have put a parser between a form and a field that already has the value, and would break on any title containing the separator.
+function applyFields(current, payload, prefix, line, label, skipped) {
+    const tKey = `${prefix}Title`, eKey = `${prefix}End`, bKey = `${prefix}EndTBD`;
+    const hasFields = payload && (payload[tKey] !== undefined || payload[eKey] !== undefined || payload[bKey] !== undefined);
+    if (!hasFields) return applyLine(current, line, label, skipped);
+
+    const out = { title: current.title, end: current.end, endTBD: current.endTBD };
+    if (payload[tKey] !== undefined) out.title = String(payload[tKey]).trim() || current.title;
+    // TBD is resolved BEFORE the date, because they contradict each other and the toggle is the more explicit statement: a form that submits both is saying "no date yet", not "this date, and also no date".
+    if (payload[bKey] !== undefined) { out.endTBD = Boolean(payload[bKey]); if (out.endTBD) out.end = null; }
+    if (payload[eKey] !== undefined && !out.endTBD) {
+        const raw = payload[eKey];
+        if (!raw) { out.end = null; }
+        else {
+            const parsed = parseAdminDate(String(raw));
+            // An unparseable date is REPORTED, never silently kept as the old one -- that is the failure mode this whole comment is about.
+            if (parsed) { out.end = parsed; out.endTBD = false; } else skipped.push(label);
+        }
+    }
+    return out;
+}
+
+// THE SEASON'S EMOJI (2026-10-19 09:30 EDT, Harkirat: "can I just input the <emoji:id> infront of the season title?"). A custom emoji typed in front of the title is split off into its own field, so the title stays plain text everywhere it is read. Discord's modal pre-fills emoji + title, so a title submitted through it (`mainTitle`) with no emoji in front means the emoji was deleted, and it clears. The portal sends `currentSeasonTitle` and has no emoji box, so its edit keeps the stored one unless it types one or sends `currentSeasonEmoji` itself.
+function readSeasonTitle(payload, currentEmoji) {
+    const { emoji, title } = splitSeasonEmoji(payload.mainTitle || payload.currentSeasonTitle || '');
+    let next = emoji || (payload.mainTitle ? '' : currentEmoji || '');
+    if (payload.currentSeasonEmoji !== undefined) next = String(payload.currentSeasonEmoji || '').trim();
+    return { title, emoji: next };
+}
+
+function mapParsedEvents(parsed) {
+    return parsed.map(e => ({ title: e.title, date: e.startDate, endDate: e.isOngoing ? null : e.endDate, isOngoing: e.isOngoing, category: e.category }));
+}
+
+registerEntity('season', {
+    'season.setTitlesDeadlines': {
+        action: 'season:titlesdeadlines', tier: 1,
+        validate: (op) => ({ ok: true, errors: [], normalized: op }),
+        // ⚠️ THE PREVIEW HAS TO READ THE SAME KEYS APPLY DOES. It read only mainTitle, so it agreed with the broken no-op and the Review screen showed "Season title: unchanged" — the one surface whose entire job is saying what a commit will do, confirming that it would do nothing.
+        preview: (op, live) => ({ before: { title: live.currentSeasonTitle }, after: { title: readSeasonTitle(op.payload, live.currentSeasonEmoji).title || live.currentSeasonTitle } }),
+        apply: async (op, { session }) => {
+            const before = await SeasonalData.findOne(DOC).lean().session(session);
+            const prior = {
+                currentSeasonTitle: before.currentSeasonTitle, currentSeasonEmoji: before.currentSeasonEmoji || '', bpTitle: before.bpTitle, rankTitle: before.rankTitle, dmzTitle: before.dmzTitle,
+                bpEnd: before.bpEnd, rankEnd: before.rankEnd, dmzEnd: before.dmzEnd,
+                bpEndTBD: before.bpEndTBD, rankEndTBD: before.rankEndTBD, dmzEndTBD: before.dmzEndTBD
+            };
+            // `currentSeasonTitle` beside `mainTitle` for the same reason as the lines: the portal's field is named after the schema, Discord's modal field is named after the sentence it reads as.
+            const typed = readSeasonTitle(op.payload, before.currentSeasonEmoji);
+            const currentSeasonTitle = typed.title || before.currentSeasonTitle;
+            const currentSeasonEmoji = typed.emoji;
+            const skipped = [];
+            const bp = applyFields({ title: before.bpTitle, end: before.bpEnd, endTBD: before.bpEndTBD }, op.payload, 'bp', op.payload.bpLine, 'Battle Pass', skipped);
+            const rank = applyFields({ title: before.rankTitle, end: before.rankEnd, endTBD: before.rankEndTBD }, op.payload, 'rank', op.payload.rankLine, 'Ranked', skipped);
+            const dmz = applyFields({ title: before.dmzTitle, end: before.dmzEnd, endTBD: before.dmzEndTBD }, op.payload, 'dmz', op.payload.dmzLine, 'DMZ', skipped);
+            const $set = {
+                currentSeasonTitle, currentSeasonEmoji, bpTitle: bp.title, rankTitle: rank.title, dmzTitle: dmz.title,
+                bpEnd: bp.end, rankEnd: rank.end, dmzEnd: dmz.end, bpEndTBD: bp.endTBD, rankEndTBD: rank.endTBD, dmzEndTBD: dmz.endTBD
+            };
+            await SeasonalData.updateOne(DOC, { $set }, { session });
+            let patchPrior = null;
+            const titleChanged = currentSeasonTitle !== before.currentSeasonTitle;
+            // The emoji rides the same sync as the title, and an emoji-only edit syncs too: the current entry is what /patch notes shows, so it shows this season's emoji.
+            if (before.patchNotes.length > 0 && (titleChanged || currentSeasonEmoji !== (before.currentSeasonEmoji || ''))) {
+                const last = before.patchNotes[before.patchNotes.length - 1];
+                patchPrior = { elementId: String(last._id), title: last.title, emoji: last.emoji || '' };
+                await SeasonalData.updateOne({ ...DOC, 'patchNotes._id': last._id }, { $set: { 'patchNotes.$.title': currentSeasonTitle, 'patchNotes.$.emoji': currentSeasonEmoji } }, { session });
+                // The pre-core handler always re-synced the latest patch entry's cached-image Cloudinary metadata after a title rename -- missed on a first pass of this op (DB field updates fine; only the Cloudinary-side metadata would have gone stale). Best-effort, matching the original's own no-throw contract.
+                if (titleChanged) await syncPatchEntryMetadata({ ...last, title: currentSeasonTitle }, cleanPatchTitle(currentSeasonTitle));
+            }
+            return {
+                ok: true,
+                change: { action: 'edit', model: 'SeasonalData', target: currentSeasonTitle, summary: 'Updated season titles & deadlines',
+                          detail: skipped.length ? `Date not understood, left unchanged: ${skipped.join(', ')}` : undefined },
+                applied: { prior, patchPrior }
+            };
+        },
+        invert: (c) => ({ type: 'season.restoreSnapshot', payload: { ...c.applied.prior, ...(c.applied.patchPrior ? { __patchTitleRestore: c.applied.patchPrior } : {}) } })
+    },
+
+    'season.startNew': {
+        action: 'season:wipe', tier: 3,
+        // An emoji typed in front of the new season's title is split off the same way as an edit's; a new season with none typed starts with none, never the old season's.
+        validate: (op) => splitSeasonEmoji(op.payload?.newTitle).title ? { ok: true, errors: [], normalized: op } : { ok: false, errors: ['A new season needs a title.'] },
+        preview: (op, live) => ({
+            before: { title: live.currentSeasonTitle, draws: live.newDraws.length + live.returningDraws.length, events: live.calendar.length },
+            after: { title: splitSeasonEmoji(op.payload.newTitle).title, draws: 0, events: 0 }
+        }),
+        apply: async (op, { session }) => {
+            const before = await SeasonalData.findOne(DOC).lean().session(session);
+            const prior = { currentSeasonTitle: before.currentSeasonTitle, currentSeasonEmoji: before.currentSeasonEmoji || '', newDraws: before.newDraws, returningDraws: before.returningDraws, calendar: before.calendar };
+            const { title: newTitle, emoji } = splitSeasonEmoji(op.payload.newTitle);
+            await SeasonalData.updateOne(DOC, { $set: { currentSeasonTitle: newTitle, currentSeasonEmoji: emoji, newDraws: [], returningDraws: [], calendar: [] } }, { session });
+            return {
+                ok: true,
+                change: { action: 'wipe', model: 'SeasonalData', target: newTitle, summary: `Started new season "${newTitle}" (wiped Draws + Calendar)` },
+                applied: { prior }
+            };
+        },
+        invert: (c) => ({ type: 'season.restoreSnapshot', payload: c.applied.prior })
+    },
+
+    'season.promoteDraft': {
+        action: 'seasondraft:promote', tier: 3,
+        // real handler's draftGuard('promote') (utils/manageActions.js) already replies and refuses BEFORE this op is even reached if no draft is active -- apply() still re-checks, since a draft could be discarded between the confirm prompt and the click.
+        validate: (op) => ({ ok: true, errors: [], normalized: op }),
+        preview: (op, live) => {
+            const d = live.draft || {};
+            return {
+                before: { title: live.currentSeasonTitle },
+                after: { title: d.currentSeasonTitle || live.currentSeasonTitle, newDraws: d.newDraws?.length || 0, returningDraws: d.returningDraws?.length || 0, calendar: d.calendar?.length || 0 }
+            };
+        },
+        apply: async (op, { session }) => {
+            const before = await SeasonalData.findOne(DOC).lean().session(session);
+            const draft = before.draft || {};
+            if (!draft.active) return { ok: false, reason: 'missing' };
+            const prior = {
+                currentSeasonTitle: before.currentSeasonTitle, currentSeasonEmoji: before.currentSeasonEmoji || '', bpTitle: before.bpTitle, rankTitle: before.rankTitle, dmzTitle: before.dmzTitle,
+                bpEnd: before.bpEnd, rankEnd: before.rankEnd, dmzEnd: before.dmzEnd,
+                bpEndTBD: before.bpEndTBD, rankEndTBD: before.rankEndTBD, dmzEndTBD: before.dmzEndTBD,
+                newDraws: before.newDraws, returningDraws: before.returningDraws, calendar: before.calendar,
+                drawsBannerUrl: before.drawsBannerUrl, eventsBannerUrl: before.eventsBannerUrl, playlistsBannerUrl: before.playlistsBannerUrl
+            };
+            const $set = {};
+            // The draft's emoji goes live WITH its title, blank included: a new season never keeps the old one's emoji.
+            if (draft.currentSeasonTitle) { $set.currentSeasonTitle = draft.currentSeasonTitle; $set.currentSeasonEmoji = draft.currentSeasonEmoji || ''; }
+            if (draft.bpTitle) $set.bpTitle = draft.bpTitle;
+            if (draft.rankTitle) $set.rankTitle = draft.rankTitle;
+            if (draft.dmzTitle) $set.dmzTitle = draft.dmzTitle;
+            // The TBD flag is checked BEFORE the date -- a plain truthy check on bpEnd would silently skip promoting a TBD deadline, since TBD leaves draft.bpEnd explicitly null.
+            if (draft.bpEndTBD) { $set.bpEnd = null; $set.bpEndTBD = true; } else if (draft.bpEnd) { $set.bpEnd = draft.bpEnd; $set.bpEndTBD = false; }
+            if (draft.rankEndTBD) { $set.rankEnd = null; $set.rankEndTBD = true; } else if (draft.rankEnd) { $set.rankEnd = draft.rankEnd; $set.rankEndTBD = false; }
+            if (draft.dmzEndTBD) { $set.dmzEnd = null; $set.dmzEndTBD = true; } else if (draft.dmzEnd) { $set.dmzEnd = draft.dmzEnd; $set.dmzEndTBD = false; }
+            $set.newDraws = draft.newDraws || [];
+            $set.returningDraws = draft.returningDraws || [];
+            $set.calendar = draft.calendar || [];
+            if (draft.drawsBannerUrl) $set.drawsBannerUrl = draft.drawsBannerUrl;
+            if (draft.eventsBannerUrl) $set.eventsBannerUrl = draft.eventsBannerUrl;
+            if (draft.playlistsBannerUrl) $set.playlistsBannerUrl = draft.playlistsBannerUrl;
+            $set.draft = { active: false, newDraws: [], returningDraws: [], calendar: [] };
+            await SeasonalData.updateOne(DOC, { $set }, { session });
+            // Post-promote counts -- the handler's confirmation reports what's now LIVE, and `prior` above only carries the pre-promote snapshot needed for the inverse.
+            const counts = { newDraws: $set.newDraws.length, returningDraws: $set.returningDraws.length, calendar: $set.calendar.length };
+            const newTitle = $set.currentSeasonTitle || before.currentSeasonTitle;
+            let patchPrior = null;
+            if (draft.currentSeasonTitle && before.patchNotes.length > 0) {
+                const last = before.patchNotes[before.patchNotes.length - 1];
+                patchPrior = { elementId: String(last._id), title: last.title, emoji: last.emoji || '' };
+                await SeasonalData.updateOne({ ...DOC, 'patchNotes._id': last._id }, { $set: { 'patchNotes.$.title': newTitle, 'patchNotes.$.emoji': $set.currentSeasonEmoji } }, { session });
+            }
+            return {
+                ok: true,
+                change: { action: 'promote', model: 'SeasonalData', target: newTitle, summary: `Promoted draft to live: "${newTitle}"` },
+                applied: { prior, patchPrior, counts }
+            };
+        },
+        invert: (c) => ({ type: 'season.restoreSnapshot', payload: { ...c.applied.prior, ...(c.applied.patchPrior ? { __patchTitleRestore: c.applied.patchPrior } : {}) } })
+    },
+
+    // Not a registry action -- exists solely as promoteDraft's/startNew's inverse. Symmetric: its own apply() snapshots exactly the top-level fields it is about to overwrite (plus, optionally, one patch-notes title) and its invert() hands back another restoreSnapshot carrying that snapshot -- so reverting a revert stays correctly revertible without a second op type.
+    'season.restoreSnapshot': {
+        page: 'season', tier: 3,
+        validate: (op) => (op.payload && typeof op.payload === 'object') ? { ok: true, errors: [], normalized: op } : { ok: false, errors: ['Nothing to restore.'] },
+        preview: (op, live) => ({ before: {}, after: op.payload }),
+        apply: async (op, { session }) => {
+            const { __patchTitleRestore, ...fields } = op.payload;
+            const before = await SeasonalData.findOne(DOC).lean().session(session);
+            const prior = {};
+            for (const key of Object.keys(fields)) prior[key] = before[key];
+            if (Object.keys(fields).length) await SeasonalData.updateOne(DOC, { $set: fields }, { session });
+            let patchPrior = null;
+            if (__patchTitleRestore) {
+                const last = before.patchNotes.find(p => String(p._id) === __patchTitleRestore.elementId);
+                if (last) {
+                    // `emoji` only when the record carries one: a restore recorded before the season emoji existed (2026-10-19 09:30 EDT) restores the title alone, as it always did.
+                    const hasEmoji = __patchTitleRestore.emoji !== undefined;
+                    patchPrior = { elementId: __patchTitleRestore.elementId, title: last.title, ...(hasEmoji ? { emoji: last.emoji || '' } : {}) };
+                    await SeasonalData.updateOne({ ...DOC, 'patchNotes._id': __patchTitleRestore.elementId }, { $set: { 'patchNotes.$.title': __patchTitleRestore.title, ...(hasEmoji ? { 'patchNotes.$.emoji': __patchTitleRestore.emoji } : {}) } }, { session });
+                }
+            }
+            return {
+                ok: true,
+                change: { action: 'edit', model: 'SeasonalData', target: 'season snapshot', summary: 'Restored a prior season snapshot' },
+                applied: { prior, patchPrior }
+            };
+        },
+        invert: (c) => ({ type: 'season.restoreSnapshot', payload: { ...c.applied.prior, ...(c.applied.patchPrior ? { __patchTitleRestore: c.applied.patchPrior } : {}) } })
+    },
+
+    'season.discardDraft': {
+        action: 'seasondraft:discard', tier: 2,
+        validate: () => ({ ok: true, errors: [], normalized: {} }),
+        preview: (op, live) => ({ before: { active: !!live.draft?.active }, after: { active: false } }),
+        apply: async (op, { session }) => {
+            const before = await SeasonalData.findOne(DOC).select('draft').lean().session(session);
+            const draft = before.draft || { active: false, newDraws: [], returningDraws: [], calendar: [] };
+            await SeasonalData.updateOne(DOC, { $set: { draft: { active: false, newDraws: [], returningDraws: [], calendar: [] } } }, { session });
+            return {
+                ok: true,
+                change: { action: 'discard', model: 'SeasonalData', target: 'draft', summary: 'Discarded the staged season draft' },
+                applied: { draft }
+            };
+        },
+        invert: (c) => ({ type: 'season.restoreDraft', payload: { draft: c.applied.draft } })
+    },
+
+    // Not a registry action -- exists solely as discardDraft's inverse. Self-symmetric, same pattern as season.restoreSnapshot.
+    'season.restoreDraft': {
+        page: 'seasondraft', tier: 2,
+        validate: (op) => op.payload?.draft ? { ok: true, errors: [], normalized: op } : { ok: false, errors: ['Nothing to restore.'] },
+        preview: (op, live) => ({ before: { active: !!live.draft?.active }, after: { active: !!op.payload.draft.active } }),
+        apply: async (op, { session }) => {
+            const before = await SeasonalData.findOne(DOC).select('draft').lean().session(session);
+            const priorDraft = before.draft || { active: false, newDraws: [], returningDraws: [], calendar: [] };
+            await SeasonalData.updateOne(DOC, { $set: { draft: op.payload.draft } }, { session });
+            return {
+                ok: true,
+                change: { action: 'edit', model: 'SeasonalData', target: 'draft', summary: 'Restored the staged season draft' },
+                applied: { draft: priorDraft }
+            };
+        },
+        invert: (c) => ({ type: 'season.restoreDraft', payload: { draft: c.applied.draft } })
+    },
+
+    // ⚠️ MISSING FROM THE PLAN ENTIRELY -- see the header note. Stages titles/deadlines into seasonalDoc.draft.* rather than the live top-level fields; never touches patch notes.
+    'season.setDraftTitlesDeadlines': {
+        action: 'seasondraft:settitles', tier: 1,
+        validate: (op) => ({ ok: true, errors: [], normalized: op }),
+        preview: (op, live) => ({ before: { active: !!live.draft?.active }, after: { active: true } }),
+        apply: async (op, { session }) => {
+            const before = await SeasonalData.findOne(DOC).select('draft').lean().session(session);
+            const draft = before.draft || {};
+            const prior = { ...draft };
+            const typed = readSeasonTitle(op.payload, draft.currentSeasonEmoji);
+            const mainTitle = typed.title;
+            const skipped = [];
+            const bp = applyFields({ title: draft.bpTitle || 'Battle Pass', end: draft.bpEnd, endTBD: draft.bpEndTBD }, op.payload, 'bp', op.payload.bpLine, 'Battle Pass', skipped);
+            const rank = applyFields({ title: draft.rankTitle || 'Ranked Series', end: draft.rankEnd, endTBD: draft.rankEndTBD }, op.payload, 'rank', op.payload.rankLine, 'Ranked', skipped);
+            const dmz = applyFields({ title: draft.dmzTitle || 'DMZ Season', end: draft.dmzEnd, endTBD: draft.dmzEndTBD }, op.payload, 'dmz', op.payload.dmzLine, 'DMZ', skipped);
+            const $set = {
+                'draft.active': true,
+                ...(mainTitle ? { 'draft.currentSeasonTitle': mainTitle, 'draft.currentSeasonEmoji': typed.emoji } : {}),
+                'draft.bpTitle': bp.title, 'draft.rankTitle': rank.title, 'draft.dmzTitle': dmz.title,
+                'draft.bpEnd': bp.end, 'draft.rankEnd': rank.end, 'draft.dmzEnd': dmz.end,
+                'draft.bpEndTBD': bp.endTBD, 'draft.rankEndTBD': rank.endTBD, 'draft.dmzEndTBD': dmz.endTBD
+            };
+            await SeasonalData.updateOne(DOC, { $set }, { session });
+            return {
+                ok: true,
+                change: { action: 'edit', model: 'SeasonalData', target: 'draft titles/deadlines', summary: 'Staged draft titles & deadlines',
+                          detail: skipped.length ? `Date not understood, left unchanged: ${skipped.join(', ')}` : undefined },
+                applied: { prior }
+            };
+        },
+        invert: (c) => ({ type: 'season.restoreDraft', payload: { draft: c.applied.prior } })
+    },
+
+    // ⚠️ MISSING FROM THE PLAN ENTIRELY -- see the header note. Both fields independently optional (blank = leave that half of the draft untouched), same convention as draws' own bulk-both modal.
+    'season.bulkDraftDraws': {
+        action: 'seasondraft:bulkdraws', tier: 2,
+        validate: (op) => {
+            if (!op.payload?.newText && !op.payload?.returningText && !op.payload?.parsed) {
+                return { ok: false, errors: ['Both fields were left blank -- nothing was changed.'] };
+            }
+            return { ok: true, errors: [], normalized: op };
+        },
+        preview: (op, live) => ({ before: { new: live.draft?.newDraws?.length || 0, returning: live.draft?.returningDraws?.length || 0 }, after: {} }),
+        apply: async (op, { session }) => {
+            const before = await SeasonalData.findOne(DOC).select('draft').lean().session(session);
+            const draft = before.draft || {};
+            const prior = { newDraws: draft.newDraws || [], returningDraws: draft.returningDraws || [] };
+            const $set = { 'draft.active': true };
+            const summary = [];
+            if (op.payload.parsed) {
+                // an inverse -- restore both fields verbatim, no re-parsing/re-resolving thumbnails.
+                if (op.payload.parsed.newDraws) $set['draft.newDraws'] = op.payload.parsed.newDraws;
+                if (op.payload.parsed.returningDraws) $set['draft.returningDraws'] = op.payload.parsed.returningDraws;
+            } else {
+                if (op.payload.newText) {
+                    const { validDraws } = await resolveThumbnailsForDraws(parseBulkDrawList(op.payload.newText));
+                    validDraws.sort((a, b) => new Date(a.date) - new Date(b.date));
+                    $set['draft.newDraws'] = validDraws;
+                    summary.push(`New Draws: staged ${validDraws.length}`);
+                }
+                if (op.payload.returningText) {
+                    const { validDraws } = await resolveThumbnailsForDraws(parseBulkDrawList(op.payload.returningText));
+                    validDraws.sort((a, b) => new Date(a.date) - new Date(b.date));
+                    $set['draft.returningDraws'] = validDraws;
+                    summary.push(`Returning Draws: staged ${validDraws.length}`);
+                }
+            }
+            await SeasonalData.updateOne(DOC, { $set }, { session });
+            return {
+                ok: true,
+                change: { action: 'edit', model: 'SeasonalData', target: 'draft draws', summary: 'Staged draft draws', detail: summary.join(' | ') || undefined },
+                applied: { prior, summary }
+            };
+        },
+        invert: (c) => ({ type: 'season.bulkDraftDraws', payload: { parsed: c.applied.prior } })
+    },
+
+    // ⚠️ MISSING FROM THE PLAN ENTIRELY -- see the header note. Always replaces the whole draft calendar wholesale (unlike the live calendar's merge-based Replace) -- there is no separate add/replace distinction for the draft, matching the real single bulkDraftCalendar handler.
+    'season.bulkDraftCalendar': {
+        action: 'seasondraft:bulkcalendar', tier: 2,
+        validate: (op) => {
+            if (op.payload?.parsed) return { ok: true, errors: [], normalized: op };
+            const parsed = parseBulkEvents(op.payload.text || '');
+            return { ok: true, errors: [], normalized: { ...op, payload: { ...op.payload, parsed: mapParsedEvents(parsed) } } };
+        },
+        preview: (op, live) => ({ before: { count: live.draft?.calendar?.length || 0 }, after: { count: op.payload.parsed.length } }),
+        apply: async (op, { session }) => {
+            const before = await SeasonalData.findOne(DOC).select('draft').lean().session(session);
+            const prior = before.draft?.calendar || [];
+            const sorted = [...op.payload.parsed].sort((a, b) => new Date(a.date) - new Date(b.date));
+            await SeasonalData.updateOne(DOC, { $set: { 'draft.calendar': sorted, 'draft.active': true } }, { session });
+            return {
+                ok: true,
+                change: { action: 'edit', model: 'SeasonalData', target: 'draft calendar', summary: `Staged ${sorted.length} draft calendar event(s)` },
+                applied: { prior, count: sorted.length }
+            };
+        },
+        invert: (c) => ({ type: 'season.bulkDraftCalendar', payload: { parsed: c.applied.prior } })
+    }
+});
+
+// ⚠️ EXPORTED FOR ONE REASON: apply() needs a Mongo session, so every existing test here reaches only validate() and invert() — which is precisely why a payload the op could not read survived. This is the seam where the portal's field names meet the op's reader, and it is the only part of that path testable without a database. readSeasonTitle for the same reason (2026-10-19 09:30 EDT): it decides whether a submit keeps, sets or clears the season emoji, and apply() is out of reach without a database.
+module.exports = { applyFields, readSeasonTitle };

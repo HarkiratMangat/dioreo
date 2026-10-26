@@ -1,18 +1,8 @@
-// scripts/backfillLoadoutSlots.js
-// One-time (re-runnable) BATCH: runs the Gemini vision model over every existing loadout IMAGE to
-// recover the per-slot attachment mapping (Muzzle/Barrel/Optic/...) that the Mongo-only backfill
-// (scripts/backfillLoadoutMetadata.js) could NOT reconstruct -- the slot->attachment mapping only
-// exists at vision-extraction time and was never stored in Mongo. Added 2026-07-21 at Harkirat's
-// explicit request (he authorized the GCP/Vertex vision spend to close this gap for pre-existing
-// builds, so everything ends up with the full metadata set, not just newly /autobuild-ed builds).
+// scripts/backfillLoadoutSlots.js One-time (re-runnable) BATCH: runs the Gemini vision model over every existing loadout IMAGE to recover the per-slot attachment mapping (Muzzle/Barrel/Optic/...) that the Mongo-only backfill (scripts/backfillLoadoutMetadata.js) could NOT reconstruct -- the slot->attachment mapping only exists at vision-extraction time and was never stored in Mongo. Added 2026-07-21 at Harkirat's explicit request (he authorized the GCP/Vertex vision spend to close this gap for pre-existing builds, so everything ends up with the full metadata set, not just newly /autobuild-ed builds).
 //
-// KEY DESIGN: the vision output's SLOTS are used, but each slot is mapped back onto the STORED Mongo
-// attachment name (which is authoritative and what the bot actually displays) via name-matching --
-// so a vision misread of an attachment NAME can't corrupt the metadata; only the slot label is taken
-// from vision. syncLoadoutMetadata then writes the full metadata (all fields + the recovered slots).
+// KEY DESIGN: the vision output's SLOTS are used, but each slot is mapped back onto the STORED Mongo attachment name (which is authoritative and what the bot actually displays) via name-matching -- so a vision misread of an attachment NAME can't corrupt the metadata; only the slot label is taken from vision. syncLoadoutMetadata then writes the full metadata (all fields + the recovered slots).
 //
-// Cost/robustness: sequential-ish with small concurrency, up to 3 retries per image (transient/429),
-// best-effort per doc (a failed image is reported, never fatal). Re-running is safe (idempotent).
+// Cost/robustness: sequential-ish with small concurrency, up to 3 retries per image (transient/429), best-effort per doc (a failed image is reported, never fatal). Re-running is safe (idempotent).
 require('dotenv').config({ quiet: true });
 const mongoose = require('mongoose');
 const Loadout = require('../models/Loadout');
@@ -23,9 +13,7 @@ const { syncLoadoutMetadata, isRealImageKey } = require('../utils/loadoutImageCa
 const CONCURRENCY = 3;
 const norm = (s) => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
-// Optional filter: set SLOT_RERUN_ONLY to a comma-separated list of "weaponName::buildName::mode"
-// to re-process ONLY those docs (used to cheaply re-run just the partials after improving the
-// matching). Unset = process everything.
+// Optional filter: set SLOT_RERUN_ONLY to a comma-separated list of "weaponName::buildName::mode" to re-process ONLY those docs (used to cheaply re-run just the partials after improving the matching). Unset = process everything.
 const RERUN_ONLY = process.env.SLOT_RERUN_ONLY
     ? new Set(process.env.SLOT_RERUN_ONLY.split(',').map(s => s.trim()))
     : null;
@@ -46,10 +34,7 @@ function levenshtein(a, b) {
     return prev[n];
 }
 
-// Map each STORED attachment to a slot label, taking the slot from the vision result whose NAME best
-// matches. Three passes, tightest first: exact-normalized, then substring, then a small edit-distance
-// (catches stored-data typos like "Supressor"/"Suppressor", "Strippled"/"Stippled"). Returns an array
-// parallel to `stored` -- exactly the `attachmentSlots` shape syncLoadoutMetadata expects.
+// Map each STORED attachment to a slot label, taking the slot from the vision result whose NAME best matches. Three passes, tightest first: exact-normalized, then substring, then a small edit-distance (catches stored-data typos like "Supressor"/"Suppressor", "Strippled"/"Stippled"). Returns an array parallel to `stored` -- exactly the `attachmentSlots` shape syncLoadoutMetadata expects.
 function alignSlots(stored, visionNames, visionSlots) {
     const aligned = new Array(stored.length).fill('');
     const used = new Set();
@@ -66,8 +51,7 @@ function alignSlots(stored, visionNames, visionSlots) {
     };
     match((sn, vn) => vn === sn);
     match((sn, vn) => vn && (vn.includes(sn) || sn.includes(vn)));
-    // Edit-distance pass: only for genuine near-typos -- distance <= 2 AND within 20% of the longer
-    // string, so two genuinely-different attachment names can't be forced into a false match.
+    // Edit-distance pass: only for genuine near-typos -- distance <= 2 AND within 20% of the longer string, so two genuinely-different attachment names can't be forced into a false match.
     match((sn, vn) => {
         if (!vn) return false;
         const d = levenshtein(sn, vn);
@@ -90,9 +74,7 @@ async function processOne(doc) {
     }
     const aligned = alignSlots(doc.attachments || [], vision.attachments, vision.attachmentSlots);
     const mapped = aligned.filter(Boolean).length;
-    // Persist the recovered mapping on the Mongo doc itself (added 2026-07-24 18:07 EDT), not just Cloudinary --
-    // this is what makes a FUTURE /manage edit of one of these pre-existing builds able to re-sync
-    // per-slot metadata too, the same as a build created directly via /autobuild.
+    // Persist the recovered mapping on the Mongo doc itself (added 2026-07-24 18:07 EDT), not just Cloudinary -- this is what makes a FUTURE /manage edit of one of these pre-existing builds able to re-sync per-slot metadata too, the same as a build created directly via /autobuild.
     await Loadout.findByIdAndUpdate(doc._id, { attachmentSlots: aligned });
     const res = await syncLoadoutMetadata(doc, aligned);
     return { doc, status: res.success ? 'ok' : 'sync-fail', mapped, total: (doc.attachments || []).length, reason: res.error };

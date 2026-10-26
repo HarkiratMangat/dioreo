@@ -2,12 +2,8 @@
 # Proofs for devlog-toc-check.sh.
 #
 # Two things matter here and neither had been tested:
-#   1. THE TRIGGER. It only fires when docs/DEVLOG.md is in the branch diff. If that comparison is
-#      wrong the gate is dead, and a dead gate looks exactly like a clean PR.
-#   2. THE FAILSAFES. It delegates the TOC rule to scripts/docs-audit.mjs so there is one
-#      implementation — but its header notes that delegation "replaced a working standalone check
-#      with a single point of failure", and that a missing or throwing audit must be REPORTED
-#      rather than skipped. That is asserted here rather than trusted.
+#   1. THE TRIGGER. It only fires when docs/DEVLOG.md is in the branch diff. If that comparison is wrong the gate is dead, and a dead gate looks exactly like a clean PR.
+#   2. THE FAILSAFES. It delegates the TOC rule to scripts/docs-audit.mjs so there is one implementation — but its header notes that delegation "replaced a working standalone check with a single point of failure", and that a missing or throwing audit must be REPORTED rather than skipped. That is asserted here rather than trusted.
 #
 # A stub audit is used so the real DEVLOG's current state cannot make this pass or fail by accident.
 
@@ -42,8 +38,7 @@ CRASH=$(mkrepo crash 'process.stderr.write("SyntaxError: bad\n"); process.exit(1
 GONE=$(mkrepo gone   ''                                                                                       docs/DEVLOG.md)
 
 echo "devlog-toc-check.sh — proofs"
-# THE TRIGGER — the half that silently dies. The `other` fixture has drift waiting in the stub, so
-# a pass here proves the trigger gated it, not that there was nothing to find.
+# THE TRIGGER — the half that silently dies. The `other` fixture has drift waiting in the stub, so a pass here proves the trigger gated it, not that there was nothing to find.
 a "DEVLOG untouched -> silent"       "DEVLOG TOC"     no  "$OTHER"
 a "DEVLOG touched + clean -> silent" "DEVLOG TOC"     no  "$OK"
 a "DEVLOG touched + drift -> asks"   "OUT OF SYNC"    yes "$DRIFT"

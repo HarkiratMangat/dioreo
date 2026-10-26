@@ -1,0 +1,95 @@
+// portal/ui/icons.js — ESM. Lucide (MIT) as an inlined SVG sprite, plus the morphing fold.
+//
+// 🔴 STANDING RULE, Harkirat 2026-08-25: "NEVER USE TEXT GLYPHS FOR ICONS. ICONS ARE ICONS. text is text." A typed character hands its size, weight, baseline and hinting to whatever font resolves it — no stroke control, no alignment control, and at 9px it rasterises to a smudge. It is also the reflex answer, which is why it turns up on every accordion ever built.
+//
+// WHY A COMPONENT AND NOT A STRING HELPER. The mockup's Icons.icon() returns an HTML STRING, which under Preact means dangerouslySetInnerHTML at all sixteen call sites — each one an escape hatch out of the very rendering model the migration exists to adopt, and each one a place a future value could be interpolated unescaped. <Icon name="check" /> is one component, no innerHTML, and the name is checkable. The sprite itself is still real embedded artwork referenced by <use>: a CDN script would add a network dependency to a portal that must work behind Cloudflare Tunnel, and re-inlining every path per instance would repeat ~200 bytes of geometry per icon per render.
+//
+// Every icon inherits currentColor and is 1em square (see .ic in shell.css), so it sits in text without a fight. Decorative by default — an icon beside a word is not read twice; pass `label` only when the icon is the ONLY thing carrying the meaning.
+import { h } from '../vendor/preact.mjs';
+import { html } from '../vendor/htm-preact.mjs';
+
+// Lucide path data, verbatim. Keep Lucide's own names so a swap or an addition is a lookup rather than a guess.
+const PATHS = {
+    'check':        '<path d="M20 6 9 17l-5-5"/>',
+    'x':            '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+    'plus':         '<path d="M5 12h14"/><path d="M12 5v14"/>',
+    'minus':        '<path d="M5 12h14"/>',
+    'chevron-down':  '<path d="m6 9 6 6 6-6"/>',
+    'chevron-right': '<path d="m9 18 6-6-6-6"/>',
+    'chevron-up':    '<path d="m18 15-6-6-6 6"/>',
+    'layout-grid': '<rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>',
+    'eye': '<path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0"/><circle cx="12" cy="12" r="3"/>',
+    'log-out': '<path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>',
+    'download': '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>',
+    'copy': '<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
+    'lock': '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+    'chevrons-up-down': '<path d="m7 15 5 5 5-5"/><path d="M7 9l5-5 5 5"/>',
+    'star':         '<path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/>',
+    'triangle-alert':'<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+    'arrow-up-right':'<path d="M7 7h10v10"/><path d="M7 17 17 7"/>',
+    'skull':        '<path d="m12.5 17-.5-1-.5 1h1z"/><path d="M15 22a1 1 0 0 0 1-1v-1a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20v1a1 1 0 0 0 1 1z"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="12" r="1"/>',
+    'user':         '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+    'image':        '<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>',
+    'image-off':    '<path d="M2 2 22 22"/><path d="M10.41 10.41a2 2 0 1 1-2.83-2.83"/><path d="M13.5 13.5 6 21"/><path d="M18 12l-1.5-1.5a2 2 0 0 0-2.83 0L12 12.67"/><path d="M21 15V5a2 2 0 0 0-2-2H9"/><path d="M3 7v12a2 2 0 0 0 2 2h12"/>',
+    'search-x':     '<path d="m13.5 8.5-5 5"/><path d="m8.5 8.5 5 5"/><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+    'trash-2':      '<path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+    'square-pen':   '<path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/>',
+    'shield':       '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>',
+    'share-2':      '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/>',
+    'radio':        '<path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/>',
+    'calendar':     '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/>',
+    'circle-check': '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
+    'infinity':     '<path d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.33-6 4Z"/>',
+    'history':      '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/>',
+    'clock':        '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+    'calendar-days':'<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/>',
+    // The New Build drawer's Add build / Bulk create toggle (pins batch 2, row 2, G9) -- a single card vs a stack of them, so the two modes read as "one" and "many" rather than needing a label to tell them apart.
+    'card':         '<rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/>',
+    'layers':       '<path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 7.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m6.08 10.5-3.5 1.6a1 1 0 0 0 0 1.81l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83l-3.5-1.59"/><path d="m6.08 15.5-3.5 1.6a1 1 0 0 0 0 1.81l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83l-3.5-1.59"/>'};
+
+export const ICON_NAMES = Object.keys(PATHS);
+
+// 🔴 THE SPRITE IS INJECTED AT MODULE EVALUATION, not on DOMContentLoaded. `<use href="#i-…">` resolves against the document, and an element already in the DOM when its symbol arrives is not guaranteed to re-resolve — so waiting can leave icons permanently blank on a page whose markup rendered during parsing. documentElement always exists by the time a module body runs.
+export function installSprite() {
+    if (typeof document === 'undefined' || document.getElementById('__icons')) return;
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.id = '__icons';
+    svg.setAttribute('aria-hidden', 'true');
+    svg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden';
+    svg.innerHTML = Object.keys(PATHS).map((k) =>
+        `<symbol id="i-${k}" viewBox="0 0 24 24" fill="none" stroke="currentColor" `
+        + `stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${PATHS[k]}</symbol>`).join('');
+    const root = document.body || document.documentElement;
+    root.insertBefore(svg, root.firstChild);
+}
+installSprite();
+
+export function Icon({ name, cls, label }) {
+    // A missing name renders NOTHING rather than an empty box, and says so once in the console. The mockup's string version returned '' on a miss, which is how every icon on every page rendered as an empty string for a whole session without one visible symptom — see the migration spec's trap table. A component at least keeps the failure to the one icon that is wrong.
+    if (!PATHS[name]) { console.warn(`[dioreo] no icon named "${name}"`); return null; }
+    const a11y = label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': 'true' };
+    return html`<svg class=${'ic' + (cls ? ' ' + cls : '')} ...${a11y}><use href=${'#i-' + name} /></svg>`;
+}
+
+// ═══════════════════ THE FOLD — a morph, not a swap ═════════════════════════ Harkirat: "use icons with animation so things dont feel boring. icons that genuinely animate into different states, such as collapsed/open in a truly unique and seamless transition".
+//
+// 🔴 A ROTATION IS NOT A MORPH. Spinning a chevron 90 or 180 degrees is what every disclosure control on the internet does, and it is the same laziness as the typed glyph one level up — the shape never changes, it just points somewhere else.
+//
+// This animates the PATH ITSELF. The chevron's two strokes travel through a FLAT LINE on the way between down and up, so the mark reads as folding through the horizon — which is exactly what the panel underneath is doing. The metaphor and the motion are the same event.
+//
+//   closed  M6 9  L12 15 L18 9     the chevron points down
+//   (mid)   M6 12 L12 12 L18 12    a flat rule — the fold at its hinge
+//   open    M6 15 L12 9  L18 15    the chevron points up
+//
+// Three points throughout, so the interpolation is well-defined. The transition itself lives in CSS (.ic-fold path { d: path(...) }), which interpolates `d` geometrically rather than faking it with a transform. ⚠️ The CSS `d` property BEATS this inline attribute, so both must agree — the attribute is what a non-supporting engine and any server render fall back to.
+const FOLD_CLOSED = 'M6 9 L12 15 L18 9';
+const FOLD_OPEN = 'M6 15 L12 9 L18 15';
+
+export function Fold({ open, cls }) {
+    return html`
+        <svg class=${'ic ic-fold' + (open ? ' open' : '') + (cls ? ' ' + cls : '')}
+             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d=${open ? FOLD_OPEN : FOLD_CLOSED} />
+        </svg>`;
+}

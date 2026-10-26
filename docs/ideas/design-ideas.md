@@ -17,7 +17,11 @@ status: live
 
 ## An interactive documentation system
 
-**Status:** explored 2026-08-05 23:30 EDT · **Condition to revisit:** whenever documentation is actually wanted — or sooner, if the *search* half alone starts being missed.
+**Status:** explored 2026-08-05 23:30 EDT · **Doc A SHIPPED** 2026-08-18 as dioreo.app's `/commands` page (Pre-Release v3.51.0) · **Condition to revisit the rest:** whenever the admin operations manual is actually wanted — or sooner, if the *search* half alone starts being missed.
+
+> ✅ **The generated half of §4.1 is built and its central claim held.** `scripts/lib/commandCatalog.js` `require()`s every `commands/*.js`, calls `.toJSON()`, and renders the page from the result, so the reference cannot drift from what Discord shows. Two departures from the design below, both deliberate: the overlay is a **JS module keyed by command path** (`scripts/lib/commandProse.js`) rather than one `docs/help/<command>.md` per command — Harkirat's locked decision from the 2026-08-16 design session — and the audience partition comes from `commands/help.js`'s own `CATEGORY_DEFS` gating rather than from `setIntegrationTypes`, so the website and the in-Discord directory cannot disagree about how the bot is organised. The both-ways coverage gate §4.1 asks for exists as `assertProseCoverage()`, and it covers options as well as commands. **Doc B — the admin operations manual — is untouched and stays parked**, as does the *search* half (static search over the ~337,000 words of prose), which nothing here touched.
+>
+> ⚠️ **The entry's OTHER "idea worth not losing" only half shipped, and it would otherwise read as done:** *"the same generated spec can feed an in-Discord surface as well as the website, so one source serves both."* What actually happened is the reverse direction — the website reads `commands/help.js`'s `CATEGORY_DEFS` for its grouping and gating, so the two surfaces cannot disagree about how the bot is organised. But `/help` still builds its own bodies from that same table by hand; **the generated spec does not feed it**, and a command's *prose* exists twice (`commandProse.js` for the site, `CATEGORY_DEFS`' own `description`/`options` for Discord). One source feeding both surfaces is still unbuilt.
 
 **What it is.** A player-facing help system for the bot's commands, plus an admin operations manual for `/manage`, `/autobuild` and the backend. From a mini brainstorming side-session; **nothing is decided or planned**, and Harkirat is explicitly still open to other shapes entirely.
 
@@ -46,3 +50,18 @@ status: live
 **A working implementation exists** in `local/site-redesign/mockup-v2.html` (Contributors → *Index → + Cross-reference*), tap- and hover-driven, with the relation data in `data-rel` / `data-id` attributes. Start from that rather than from scratch.
 
 **When it is built**, it must clear the same gates as everything else on the site: no decorative text in the DOM (the `→` marker is CSS `content` on an `aria-hidden` span, or `verify()` breaks — see `.claude/rules/legal-site.md`), plain `:hover` rules only, and every colour measured at 4.5:1 in both themes.
+
+---
+
+## Splitting the two `/colors` caption pairs that can read as one claim
+
+**Status:** measured 2026-08-12 11:47 EDT during the swatch-label rework · **Condition to revisit:** if either pair actually reads as a repeat when seen in Discord — Harkirat, told about it the same day: *"a possibility if needed but currently not an issue."*
+
+Two caption pairs in `assignDynamicLabels` (`utils/colorPaletteView.js`) co-occur often enough on one page to be worth naming, measured across the 120-image / 889-swatch corpus:
+
+- **`Lightest` + `Highlight` — 17 pages.** Different claims: `Lightest` is the palette's lightest swatch (a superlative about the whole set), `Highlight` is any swatch meaningfully lighter than the dominant. A reader who does not know that distinction may see the same statement twice.
+- **`Quiet Neutral` + `Undertone` — 14 pages.** Both describe something low-chroma and unassertive; they differ in that `Quiet Neutral` is the greyest swatch overall while `Undertone` is a faint colour sitting *darker* than the dominant.
+
+**This is deliberately not filed as work.** Each caption is individually true, and the swap that created the pairing already removed a worse one (`Brightest Light` beside `Highlight`, which repeated the word itself). Nothing is wrong; the note exists so that if the repetition is ever *felt* in the client, the shape of the fix is already written down rather than re-derived.
+
+**The fix if it is ever wanted** is a variant, not a rename — the same mechanism the rest of that function uses. `Highlight` could take a second wording when a `Lightest` swatch is already on the page, and `Undertone` likewise against `Quiet Neutral`. ⚠️ That needs a new signal: variants there are chosen from the swatch's OWN chroma and lightness, never from what another rule claimed, so the picker would have to see `usedLabels` — a real change in what a variant is allowed to know, and the reason this is not a five-minute edit. **Any new wording is Harkirat's call, not a self-decided one** — that is how this whole vocabulary was built (see `docs/reference/colors-panel.md`'s label section — it moved out of `.claude/rules/accent-and-colors.md` 2026-09-02 15:54 EDT).

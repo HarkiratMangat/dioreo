@@ -1,28 +1,16 @@
-// scripts/createCloudinaryMetadataFields.js
-// One-time / re-runnable: creates the Cloudinary STRUCTURED METADATA FIELDS that /autobuild's image
-// uploads populate (weapon name, mode, build number, Gunsmith code, and one field per Gunsmith slot).
-// Added 2026-07-21 at Harkirat's request -- see utils/loadoutImageCache.js's METADATA_FIELDS (the
-// single source of truth this script reads) and CLAUDE.md's Cloudinary/loadout-automation notes.
+// scripts/createCloudinaryMetadataFields.js One-time / re-runnable: creates the Cloudinary STRUCTURED METADATA FIELDS that /autobuild's image uploads populate (weapon name, mode, build number, Gunsmith code, and one field per Gunsmith slot). Added 2026-07-21 at Harkirat's request -- see utils/loadoutImageCache.js's METADATA_FIELDS (the single source of truth this script reads) and CLAUDE.md's Cloudinary/loadout-automation notes.
 //
-// IDEMPOTENT: lists the account's existing metadata fields first and only creates the ones that are
-// missing, so re-running it after adding a new field to METADATA_FIELDS is safe (it just fills the
-// gap). The account already had a stray `Barrel` string field before this ran -- that one is reused
-// as-is and reported as "exists".
+// IDEMPOTENT: lists the account's existing metadata fields first and only creates the ones that are missing, so re-running it after adding a new field to METADATA_FIELDS is safe (it just fills the gap). The account already had a stray `Barrel` string field before this ran -- that one is reused as-is and reported as "exists".
 //
 // Reads credentials from CLOUDINARY_URL in .env (same as the bot). Run: `node scripts/createCloudinaryMetadataFields.js`.
 //
-// NOT a backfill: this only defines the field SCHEMA. Existing gun-builds assets keep their (currently
-// empty) metadata until re-uploaded through /autobuild. Backfilling weapon name / mode / build number /
-// Gunsmith code onto existing assets from Mongo is possible (those live on the Loadout doc) but is
-// deliberately deferred; the per-slot fields can't be backfilled at all (the slot->attachment mapping
-// only comes from the vision extraction, never stored in Mongo).
+// NOT a backfill: this only defines the field SCHEMA. Existing gun-builds assets keep their (currently empty) metadata until re-uploaded through /autobuild. Backfilling weapon name / mode / build number / Gunsmith code onto existing assets from Mongo is possible (those live on the Loadout doc) but is deliberately deferred; the per-slot fields can't be backfilled at all (the slot->attachment mapping only comes from the vision extraction, never stored in Mongo).
 require('dotenv').config({ quiet: true });
 const cloudinary = require('cloudinary').v2;
 const { METADATA_FIELDS } = require('../utils/loadoutImageCache');
 const { PATCH_METADATA_FIELDS } = require('../utils/patchNotesCache');
 
-// Loadout fields + patch-notes fields (both live on the same account -- a given asset only sets the
-// ones that apply to it). One idempotent pass creates whatever's missing across both sets.
+// Loadout fields + patch-notes fields (both live on the same account -- a given asset only sets the ones that apply to it). One idempotent pass creates whatever's missing across both sets.
 const ALL_FIELDS = [...METADATA_FIELDS, ...PATCH_METADATA_FIELDS];
 
 async function main() {

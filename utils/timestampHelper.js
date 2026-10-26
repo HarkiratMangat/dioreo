@@ -28,11 +28,7 @@ function generateTimestamps(textString, userTimezone = 'America/Toronto') {
     // 3. Build a clean dayjs instance enforcing the exact date parts extracted
     let localTarget = dayjs(parsedResult).tz(userTimezone, true);
 
-    // FIXED: a bare date with no time-of-day (e.g. "july 17") used to silently become NOON, not
-    // midnight -- chrono-node's default "implied" hour when none is stated is 12:00, not 00:00.
-    // isCertain('hour') tells us whether the input text actually specified a time vs. chrono just
-    // inferring one, so we can zero it back out to true midnight in the target timezone whenever
-    // the user only gave a date.
+    // FIXED: a bare date with no time-of-day (e.g. "july 17") used to silently become NOON, not midnight -- chrono-node's default "implied" hour when none is stated is 12:00, not 00:00. isCertain('hour') tells us whether the input text actually specified a time vs. chrono just inferring one, so we can zero it back out to true midnight in the target timezone whenever the user only gave a date.
     if (!parsedComponents.isCertain('hour')) {
         localTarget = localTarget.hour(0).minute(0).second(0).millisecond(0);
     }

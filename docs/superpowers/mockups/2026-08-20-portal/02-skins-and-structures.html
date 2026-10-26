@@ -1,0 +1,164 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dioreo Portal — Skins &amp; Structures</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#080B0D;color:#C9D3DA;font-family:"IBM Plex Sans Condensed",system-ui,sans-serif;padding:26px 26px 80px}
+h2.page{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#5A6B77;margin:34px 0 4px;font-weight:700}
+h2.page:first-child{margin-top:0}
+p.page{font-size:13.5px;color:#7C8B96;margin:0 0 16px;max-width:76ch;line-height:1.5}
+.row{display:grid;gap:16px}
+.row.three{grid-template-columns:repeat(3,1fr)}
+@media(max-width:1180px){.row.three{grid-template-columns:1fr}}
+.cap{display:flex;align-items:baseline;gap:9px;margin:0 0 7px}
+.cap .k{font-family:"IBM Plex Mono",monospace;font-size:10px;color:#4E5D68;letter-spacing:.1em}
+.cap .n{font-size:14px;font-weight:600;color:#DCE5EB;letter-spacing:.01em}
+.cap .d{font-size:11.5px;color:#6C7C87}
+.note{font-size:11.5px;color:#6C7C87;line-height:1.5;margin:8px 2px 0;max-width:46ch}
+.note b{color:#9DACB6;font-weight:600}
+
+/* ═══ SKIN TOKENS — only these change between A/B/C ═══ */
+.sk{border-radius:var(--rad);overflow:hidden;border:1px solid var(--rule);background:var(--paper);
+    font-family:var(--ui);color:var(--ink)}
+.sk-A{--desk:#0E1216;--paper:#151B21;--raised:#1C242C;--rule:#26313A;--rule2:#33424E;
+      --ink:#E4EAEF;--ink2:#93A3B0;--ink3:#63737F;--rad:3px;--dens:1;
+      --ui:"IBM Plex Sans Condensed",sans-serif;--data:"IBM Plex Mono",monospace}
+.sk-B{--desk:#E9E6DF;--paper:#F4F2ED;--raised:#DFDBD2;--rule:#C9C4B8;--rule2:#B3ADA0;
+      --ink:#15181A;--ink2:#4E555A;--ink3:#7A8189;--rad:0px;--dens:1.1;
+      --ui:"Space Grotesk",sans-serif;--data:"JetBrains Mono",monospace}
+.sk-C{--desk:#1A1D21;--paper:#22262B;--raised:#2B3036;--rule:#363C43;--rule2:#464D56;
+      --ink:#EDF0F2;--ink2:#A6AEB6;--ink3:#78818A;--rad:8px;--dens:1.22;
+      --ui:"Public Sans",sans-serif;--data:"IBM Plex Mono",monospace}
+
+.sk .hd{display:flex;align-items:center;gap:10px;padding:calc(9px*var(--dens)) 12px;
+        background:var(--raised);border-bottom:1px solid var(--rule)}
+.sk .hd .t{font-size:calc(10px*var(--dens));text-transform:uppercase;letter-spacing:.15em;font-weight:700;color:var(--ink2)}
+.sk .hd .s{margin-left:auto;font-family:var(--data);font-size:calc(10px*var(--dens));color:var(--ink3)}
+.sk .bd{padding:calc(10px*var(--dens)) 12px calc(12px*var(--dens))}
+.sk .ttl{font-size:calc(17px*var(--dens));font-weight:600;letter-spacing:-.01em;margin:0 0 2px}
+.sk .sub{font-family:var(--data);font-size:calc(10.5px*var(--dens));color:var(--ink3);margin:0 0 calc(11px*var(--dens))}
+.sk .rl{position:relative;height:16px;border-bottom:1px solid var(--rule);margin-left:64px}
+.sk .rl span{position:absolute;top:0;font-family:var(--data);font-size:9px;color:var(--ink3);
+             border-left:1px solid var(--rule);padding-left:4px;line-height:16px}
+.sk .ln{display:flex;align-items:center;height:calc(26px*var(--dens));border-bottom:1px solid var(--rule);opacity:.999}
+.sk .ln:last-child{border-bottom:0}
+.sk .ln .nm{width:64px;flex:none;text-align:right;padding-right:9px;font-size:9px;font-weight:600;
+            letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
+.sk .tk{position:relative;flex:1;height:100%}
+
+/* ═══ SHAPE = STATE (colour = topic) ═══ */
+.bar{position:absolute;top:50%;transform:translateY(-50%);height:calc(17px*var(--dens));
+     border-radius:calc(var(--rad)/1.5);display:flex;align-items:center;padding:0 7px;
+     font-size:calc(10.5px*var(--dens));font-weight:600;white-space:nowrap;overflow:hidden}
+.bar.live{background:var(--c);color:#000;border:1px solid var(--c)}
+.bar.stag{background:transparent;color:var(--c);border:1.5px dashed var(--c)}
+.bar.conf{background:transparent;color:var(--c);border:1.5px dashed var(--c);
+  background-image:repeating-linear-gradient(45deg,transparent 0 4px,var(--c) 4px 5px);}
+.bar.conf::after{content:"!";margin-left:auto;padding-left:7px;font-family:var(--data);font-weight:700}
+.mk{position:absolute;top:0;bottom:0;width:1px;background:var(--ink3);opacity:.5}
+.mk.end{background:var(--c-patch);opacity:.85}
+
+/* structure demos share skin A */
+.st{border:1px solid #26313A;border-radius:3px;background:#151B21;overflow:hidden;
+    font-family:"IBM Plex Sans Condensed",sans-serif;color:#E4EAEF}
+.st .sh{padding:8px 12px;background:#1C242C;border-bottom:1px solid #26313A;font-size:10px;
+        letter-spacing:.15em;text-transform:uppercase;font-weight:700;color:#93A3B0}
+.st .sb{padding:11px 12px}
+/* manifest */
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#63737F;font-weight:600;
+   padding:0 8px 6px;border-bottom:1px solid #26313A}
+td{padding:6px 8px;border-bottom:1px solid #1A2229;color:#93A3B0}
+td.n{color:#E4EAEF;font-weight:500}
+td.d{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:#63737F;white-space:nowrap}
+.pill{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.chipS{font-family:"IBM Plex Mono",monospace;font-size:8.5px;letter-spacing:.08em;padding:1px 5px;border-radius:2px;
+       border:1.5px dashed currentColor}
+.chipL{font-family:"IBM Plex Mono",monospace;font-size:8.5px;letter-spacing:.08em;padding:1px 5px;border-radius:2px;
+       background:currentColor;border:1px solid currentColor}
+.chipL i{color:#000;font-style:normal}
+/* board */
+.cols{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.col{background:#11171C;border:1px solid #222C34;border-radius:3px;padding:7px;min-height:150px}
+.col h4{margin:0 0 7px;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#63737F;font-weight:700;
+        display:flex;justify-content:space-between}
+.card{background:#1C242C;border:1px solid #2C3843;border-radius:3px;padding:6px 7px;margin-bottom:6px;font-size:11px}
+.card.stagC{background:transparent;border:1.5px dashed;}
+.card .cn{color:#E4EAEF;font-weight:500;display:block;margin-bottom:2px}
+.card .cd{font-family:"IBM Plex Mono",monospace;font-size:9.5px;color:#63737F}
+</style></head><body>
+
+<h2 class="page">Part 1 — three skins, identical structure</h2>
+<p class="page">Only the tokens change: palette, type, radius, density. The markup and the shape rules are byte-identical in all three, so anything you notice is the skin. Every one uses <b>colour for topic, shape for state</b> — solid is live, hollow dashed is staged, hatched is a conflict.</p>
+<div class="row three" id="skins"></div>
+
+<h2 class="page">Part 2 — three organizing structures, one skin</h2>
+<p class="page">Same content, three mental models. <b>Track</b> organizes by <i>when</i>. <b>Manifest</b> organizes by <i>what</i>. <b>Board</b> organizes by <i>what state</i>. All rendered in skin A so you're comparing structure only.</p>
+<div class="row three" id="structs"></div>
+
+<script>
+const C={draw:'#FF3430',ret:'#337BA6',ev:'#1F8A5E',play:'#8A6BD1',patch:'#F2C230'};
+const SPINE=`
+ <div class="hd"><span class="t">Season track</span><span class="s">S7 · 14d left</span></div>
+ <div class="bd">
+   <div class="ttl">Season 7 — Reckoning</div>
+   <div class="sub">2026-08-01 → 2026-09-04</div>
+   <div class="rl"><span style="left:0%">Aug 1</span><span style="left:33%">Aug 12</span><span style="left:66%">Aug 23</span></div>
+   <div style="position:relative">
+     <div class="ln"><span class="nm">Draws</span><div class="tk">
+       <div class="bar live" style="--c:${C.draw};left:2%;width:30%">Iron Wolf</div>
+       <div class="bar conf" style="--c:${C.draw};left:66%;width:36%">Nightfall</div></div></div>
+     <div class="ln"><span class="nm">Returning</span><div class="tk">
+       <div class="bar live" style="--c:${C.ret};left:12%;width:24%">Shadow Blade</div>
+       <div class="bar stag" style="--c:${C.ret};left:48%;width:26%">Havoc rerun</div></div></div>
+     <div class="ln"><span class="nm">Events</span><div class="tk">
+       <div class="bar live" style="--c:${C.ev};left:0%;width:20%">Launch</div>
+       <div class="bar live" style="--c:${C.ev};left:30%;width:12%">2XCP</div></div></div>
+     <div class="ln"><span class="nm">Playlists</span><div class="tk">
+       <div class="bar stag" style="--c:${C.play};left:56%;width:30%">Hardpoint 24/7</div></div></div>
+     <div style="position:absolute;left:64px;right:0;top:0;bottom:0;pointer-events:none">
+       <div class="mk" style="left:57%"></div><div class="mk end" style="--c-patch:${C.patch};left:94%"></div>
+     </div>
+   </div>
+ </div>`;
+const SKINS=[
+ ['A','Blued Steel','dark · dense · condensed · hairlines','IBM Plex Sans Condensed + Plex Mono. Cold blue-black, 3px radius, maximum rows per screen. Reads as an <b>engineering instrument</b>. Most distinct from the rest of the site.'],
+ ['B','Drafting Table','light · airy · geometric · squared','Space Grotesk + JetBrains Mono on warm paper. Zero radius, hard rules. Reads as <b>plans laid flat on a bench</b>. The only light surface anywhere in Dioreo — that is either the point or the problem.'],
+ ['C','Graphite','mid-dark · soft · roomy · rounded','Public Sans + Plex Mono, 8px radius, 22% more air. Reads as a <b>calm modern app</b> rather than an instrument. Easiest on the eyes for long sessions; least characterful.']];
+document.getElementById('skins').innerHTML=SKINS.map(([k,n,d,note])=>`
+ <div><div class="cap"><span class="k">${k}</span><span class="n">${n}</span></div>
+ <div class="cap" style="margin-top:-4px"><span class="d">${d}</span></div>
+ <div class="sk sk-${k}">${SPINE}</div><p class="note">${note}</p></div>`).join('');
+
+const rows=[['Iron Wolf','Draw',C.draw,'Aug 1 → Aug 10','live'],['Shadow Blade','Returning',C.ret,'Aug 4 → Aug 13','live'],
+ ['Launch week','Event',C.ev,'Aug 1 → Aug 8','live'],['2XCP window','Event',C.ev,'Aug 11 → Aug 15','live'],
+ ['Havoc rerun','Returning',C.ret,'Aug 18 → Aug 27','staged'],['Hardpoint 24/7','Playlist',C.play,'Aug 20 → Sep 1','staged'],
+ ['Nightfall','Draw',C.draw,'Aug 25 → Sep 10','conflict']];
+const MANIFEST=`<div class="sh">Manifest — everything in the season, by date</div><div class="sb">
+ <table><thead><tr><th style="width:32%">Item</th><th>Type</th><th>Window</th><th>State</th></tr></thead><tbody>
+ ${rows.map(([n,t,c,w,s])=>`<tr><td class="n"><span class="pill" style="background:${c}"></span>${n}</td>
+   <td>${t}</td><td class="d">${w}</td>
+   <td>${s==='live'?`<span class="chipL" style="color:${c}"><i>LIVE</i></span>`
+     :s==='staged'?`<span class="chipS" style="color:${c}">STAGED</span>`
+     :`<span class="chipS" style="color:${c};background-image:repeating-linear-gradient(45deg,transparent 0 3px,${c} 3px 4px)">CONFLICT</span>`}</td></tr>`).join('')}
+ </tbody></table></div>`;
+const COLS=[['Live now',[['Iron Wolf',C.draw,'ends in 4d'],['Shadow Blade',C.ret,'ends in 7d'],['2XCP',C.ev,'ends in 2d']],0],
+ ['Upcoming',[['Clan wars',C.ev,'starts Aug 24']],0],
+ ['Staged',[['Havoc rerun',C.ret,'Aug 18 → 27'],['Hardpoint 24/7',C.play,'Aug 20 → Sep 1'],['Nightfall',C.draw,'past BP end']],1],
+ ['Ended',[['Season 6 wrap',C.patch,'archived']],0]];
+const BOARD=`<div class="sh">Board — everything in the season, by state</div><div class="sb"><div class="cols">
+ ${COLS.map(([h,cards,stag])=>`<div class="col"><h4>${h}<span style="color:#63737F">${cards.length}</span></h4>
+  ${cards.map(([n,c,d])=>`<div class="card ${stag?'stagC':''}" style="${stag?`border-color:${c}`:`border-left:2px solid ${c}`}">
+    <span class="cn">${n}</span><span class="cd">${d}</span></div>`).join('')}</div>`).join('')}
+ </div></div>`;
+const TRACK=`<div class="sh">Track — everything in the season, by date, on one axis</div>
+ <div class="sb sk sk-A" style="border:0;padding:0;background:transparent">${SPINE.replace(/<div class="hd">[\s\S]*?<\/div>\s*(?=<div class="bd">)/,'')}</div>`;
+document.getElementById('structs').innerHTML=[
+ ['1','Track','organizes by WHEN','Overlaps, gaps and anything running past the battle-pass end are <b>visible without looking for them</b> — Nightfall is hatched because it crosses BP end. Weakest at editing: you cannot type into a band, so it always needs a paired list under it. Worst on a phone.'],
+ ['2','Manifest','organizes by WHAT','Densest and most editable — sort, filter, search and multi-select are all just what a table does, so the feature you originally filed falls out for free. Relationships are <b>inferred from dates rather than seen</b>: nothing tells you Nightfall outlives the season. Trivially responsive.'],
+ ['3','Board','organizes by WHAT STATE','The staged/live model becomes the layout itself, and committing is a column move. Excellent for "what am I about to change". <b>Loses time entirely</b> — no window, no overlap, no gap, no season end. Would need the track anyway.']
+].map(([k,n,d,note],i)=>`<div><div class="cap"><span class="k">${k}</span><span class="n">${n}</span></div>
+ <div class="cap" style="margin-top:-4px"><span class="d">${d}</span></div>
+ <div class="st">${[TRACK,MANIFEST,BOARD][i]}</div><p class="note">${note}</p></div>`).join('');
+</script></body></html>

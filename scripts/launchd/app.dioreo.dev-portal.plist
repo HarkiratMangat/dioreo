@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- The DEV portal, on Harkirat's Mac. The VM's prod equivalent is the systemd unit `dioreo-portal`
+     (docs/reference/deployment-and-ops.md); this is that unit's counterpart here, and it is deliberately
+     SEPARATE from the tunnel agent for the same reason prod separates them: a portal crash must not take
+     down the tunnel, and the tunnel dying must take down only reachability. -->
+<plist version="1.0"><dict>
+  <key>Label</key><string>app.dioreo.dev-portal</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/opt/homebrew/bin/node</string>
+    <string>--env-file=.env.dev</string>
+    <string>portal/server.js</string>
+  </array>
+  <key>WorkingDirectory</key><string>/Applications/Claude Code/Diors-Builds</string>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><dict><key>SuccessfulExit</key><false/></dict>
+  <key>ThrottleInterval</key><integer>10</integer>
+  <key>StandardOutPath</key><string>$HOME/Library/Logs/dioreo/dev-portal.log</string>
+  <key>StandardErrorPath</key><string>$HOME/Library/Logs/dioreo/dev-portal.err.log</string>
+  <key>EnvironmentVariables</key><dict>
+    <key>PATH</key><string>/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+</dict></plist>

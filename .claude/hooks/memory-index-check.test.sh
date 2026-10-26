@@ -1,9 +1,7 @@
 #!/bin/bash
 # Proves every failure mode of memory-index-check.sh can actually fire.
 #
-# WHY: `npm run docs:audit:test` exists for exactly this reason - a guard that has only ever been seen
-# to pass is not known to work. Twice on this project something was called "not checkable" when it was
-# simply never checked. Run this after touching memory-index-check.sh.
+# WHY: `npm run docs:audit:test` exists for exactly this reason - a guard that has only ever been seen to pass is not known to work. Twice on this project something was called "not checkable" when it was simply never checked. Run this after touching memory-index-check.sh.
 #
 #   bash .claude/hooks/memory-index-check.test.sh
 
@@ -76,10 +74,7 @@ assert "over-budget detected"                   "over budget"                   
 fixture; BUDGET_OVERRIDE=16000
 assert "under-budget not flagged"               "over budget"                        no
 
-# 7b. Approaching-budget advisory - added 2026-08-07 10:54 EDT. The fixture's MEMORY.md is exactly
-# 64 bytes (verified: `printf -- '...' | wc -c`, not guessed). A budget of 70 puts the 90% threshold
-# at 63 (70*90/100, integer division) - 64 > 63 fires the advisory while 64 <= 70 stays under budget,
-# proving the advisory fires BEFORE the hard over-budget state, not only at/after it.
+# 7b. Approaching-budget advisory - added 2026-08-07 10:54 EDT. The fixture's MEMORY.md is exactly 64 bytes (verified: `printf -- '...' | wc -c`, not guessed). A budget of 70 puts the 90% threshold at 63 (70*90/100, integer division) - 64 > 63 fires the advisory while 64 <= 70 stays under budget, proving the advisory fires BEFORE the hard over-budget state, not only at/after it.
 fixture; BUDGET_OVERRIDE=70
 assert "approaching-budget advisory fires under budget" "APPROACHING BUDGET"          yes
 assert "approaching-budget is not the over-budget error" "  BUDGET: MEMORY.md is"     no
@@ -91,5 +86,36 @@ fixture; rm "$TMP/mem/MEMORY.md"
 assert "missing MEMORY.md is FATAL"             "WRONG PATH"                         yes
 
 echo
+# ── the LINE-LIMIT advisory ───────────────────────────────────────────────────────────────────── The byte-tail and line-tail re-emit mitigations this section used to test were RETIRED 2026-09-08 EDT (WP3 of the context-carriers plan): MEMORY.md is now delivered via CLAUDE.md's @-import, proven full and cap-free, so the platform loader's own separate truncation no longer determines what a session actually receives. Only the housekeeping BUDGET/line-count advisory below (the 90%-of-cap early warning, unrelated to the retired re-emit) is still real behavior.
+lines_fixture() {
+  rm -rf "$TMP/mem" "$TMP/state"; mkdir -p "$TMP/mem/archive"
+  echo "# alpha" > "$TMP/mem/alpha.md"
+  echo "RETIRED 2026-08-02 13:05 EDT - shipped and absorbed." > "$TMP/mem/archive/gone.md"
+  : > "$TMP/mem/MEMORY.md"
+  i=0
+  while [ "$i" -lt 250 ]; do
+    printf -- '- [Alpha](alpha.md) - %03d\n' "$i" >> "$TMP/mem/MEMORY.md"
+    i=$((i+1))
+  done
+}
+lines_run() { MEMCHECK_DIR="$TMP/mem" MEMCHECK_STATE="$TMP/state" MEMCHECK_BUDGET=99999 \
+              MEMCHECK_PLATFORM_CAP=9999999 MEMCHECK_PLATFORM_LINES="${1:-200}" bash "$CHECK"; }
+
+# The advisory must fire BEFORE the breach: 190 lines against a 200-line cap is 95%, over the 90% line, and still under the cap.
+lines_fixture
+head -190 "$TMP/mem/MEMORY.md" > "$TMP/mem/MEMORY.tmp" && mv "$TMP/mem/MEMORY.tmp" "$TMP/mem/MEMORY.md"
+adv="$(lines_run 200)"
+case "$adv" in
+  *"APPROACHING THE LINE LIMIT"*) echo "  PASS  line advisory fires at 190/200, before the breach"; pass=$((pass+1));;
+  *) echo "  FAIL  line advisory fires at 190/200 -- no advisory emitted"; fail=$((fail+1));;
+esac
+# And a comfortably-under-cap file must stay quiet.
+lines_fixture
+head -50 "$TMP/mem/MEMORY.md" > "$TMP/mem/MEMORY.tmp" && mv "$TMP/mem/MEMORY.tmp" "$TMP/mem/MEMORY.md"
+case "$(lines_run 200)" in
+  *"APPROACHING THE LINE LIMIT"*) echo "  FAIL  advisory must not fire comfortably under the line cap"; fail=$((fail+1));;
+  *) echo "  PASS  comfortably under the line cap: no advisory"; pass=$((pass+1));;
+esac
+
 echo "  $pass passed, $fail failed"
 [ "$fail" -eq 0 ] || exit 1

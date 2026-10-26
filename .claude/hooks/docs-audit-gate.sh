@@ -1,23 +1,13 @@
 #!/usr/bin/env bash
 # PreToolUse(Bash) gate on `gh pr create` — run the FULL documentation audit before the PR exists.
 #
-# WHY (2026-07-29 00:50 EDT): the audit was already a CI gate, which is the durable half — it holds for
-# PRs opened by anyone, forever. But CI is also the SLOW half: you find out after pushing, after the PR
-# is open, after a reviewer may already be looking. This runs the same single implementation locally, at
-# the last moment where fixing it is still free.
+# WHY (2026-07-29 00:50 EDT): the audit was already a CI gate, which is the durable half — it holds for PRs opened by anyone, forever. But CI is also the SLOW half: you find out after pushing, after the PR is open, after a reviewer may already be looking. This runs the same single implementation locally, at the last moment where fixing it is still free.
 #
-# It also closes a real hole in the trigger map. Only three things fired at `gh pr create` before this
-# (the stale-reference sweep, the DEVLOG TOC check, and the records-close check) and NONE of them ran
-# the tree-level invariants. A branch could reach CI with a broken doc map and nothing local would have
-# said a word.
+# It also closes a real hole in the trigger map. Only three things fired at `gh pr create` before this (the stale-reference sweep, the DEVLOG TOC check, and the records-close check) and NONE of them ran the tree-level invariants. A branch could reach CI with a broken doc map and nothing local would have said a word.
 #
-# ⚠️ HONEST LIMIT, stated so nobody mistakes this for total coverage: this fires only on the literal
-# `gh pr create` command inside a Claude Code session on this machine. A PR opened through the GitHub
-# web UI, from another machine, or by another tool bypasses it entirely — which is exactly why the same
-# audit also runs in CI. The local gate is a convenience; CI is the guarantee.
+# ⚠️ HONEST LIMIT, stated so nobody mistakes this for total coverage: this fires only on the literal `gh pr create` command inside a Claude Code session on this machine. A PR opened through the GitHub web UI, from another machine, or by another tool bypasses it entirely — which is exactly why the same audit also runs in CI. The local gate is a convenience; CI is the guarantee.
 #
-# `--diff "$BASE"` adds archive-conservation, which is a fact about the CHANGE (did items removed from
-# an active list actually land in an archive) and cannot be evaluated from the tree alone.
+# `--diff "$BASE"` adds archive-conservation, which is a fact about the CHANGE (did items removed from an active list actually land in an archive) and cannot be evaluated from the tree alone.
 
 set -uo pipefail
 REPO="${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}"
@@ -25,23 +15,13 @@ cd "$REPO" 2>/dev/null || exit 0
 git rev-parse --git-dir >/dev/null 2>&1 || exit 0
 BASE="${1:-main}"
 
-# ⚠️ FAILSAFE (2026-07-29 02:00 EDT): "the audit is missing" and "the audit found nothing" must never
-# look the same. A silent skip here would turn a deleted or crashing script into a permanent green.
+# ⚠️ FAILSAFE (2026-07-29 02:00 EDT): "the audit is missing" and "the audit found nothing" must never look the same. A silent skip here would turn a deleted or crashing script into a permanent green.
 if [ ! -f scripts/docs-audit.mjs ]; then
   jq -n '{hookSpecificOutput:{hookEventName:"PreToolUse",additionalContext:"DOCS AUDIT CANNOT RUN: scripts/docs-audit.mjs is missing, so NONE of the documentation invariants were checked for this PR. CI will still run its own copy -- but if it is gone there too, this PR is completely ungated."}}'
   exit 0
 fi
 
-# ⚠️ STDERR MUST NOT BE FOLDED INTO THE JSON — fixed 2026-08-06 10:30 EDT, and this gate had been
-# FALSELY REPORTING A CRASH ON EVERY PR since 2026-08-06 00:20 EDT.
-# `--json` mode treats stdout as a contract, so the audit correctly writes its human-readable notices
-# (the chronicle-drift suppression line) to STDERR. This capture used `2>&1`, which put that notice
-# back in front of the JSON, `jq -e .` failed, and the gate announced "DOCS AUDIT CRASHED: nothing was
-# verified" — about an audit that had run perfectly. The stdout discipline was added to protect this
-# consumer, and the consumer was the thing undoing it.
-# A false crash is worse than a missed check: it teaches everyone that the gate is broken, so the one
-# real crash gets read as more noise. Caught on the FIRST live run of the sibling pre-PR sweep.
-# stderr is still captured — to a separate file — because "the audit crashed" must stay diagnosable.
+# ⚠️ STDERR MUST NOT BE FOLDED INTO THE JSON — fixed 2026-08-06 10:30 EDT, and this gate had been FALSELY REPORTING A CRASH ON EVERY PR since 2026-08-06 00:20 EDT. `--json` mode treats stdout as a contract, so the audit correctly writes its human-readable notices (the chronicle-drift suppression line) to STDERR. This capture used `2>&1`, which put that notice back in front of the JSON, `jq -e .` failed, and the gate announced "DOCS AUDIT CRASHED: nothing was verified" — about an audit that had run perfectly. The stdout discipline was added to protect this consumer, and the consumer was the thing undoing it. A false crash is worse than a missed check: it teaches everyone that the gate is broken, so the one real crash gets read as more noise. Caught on the FIRST live run of the sibling pre-PR sweep. stderr is still captured — to a separate file — because "the audit crashed" must stay diagnosable.
 errf=$(mktemp); trap 'rm -f "$errf"' EXIT
 out=$(node scripts/docs-audit.mjs --diff "$BASE" --json 2>"$errf")
 if ! printf '%s' "$out" | jq -e . >/dev/null 2>&1; then
@@ -49,8 +29,7 @@ if ! printf '%s' "$out" | jq -e . >/dev/null 2>&1; then
   exit 0
 fi
 
-# Only ERRORs gate. WARNs are advisory by contract and must never block a hotfix — surfacing them here
-# as a blocker would be the fastest way to teach everyone to bypass the gate.
+# Only ERRORs gate. WARNs are advisory by contract and must never block a hotfix — surfacing them here as a blocker would be the fastest way to teach everyone to bypass the gate.
 errors=$(printf '%s' "$out" | jq -r '.errors // 0' 2>/dev/null)
 [ "${errors:-0}" -gt 0 ] 2>/dev/null || exit 0
 

@@ -1,10 +1,8 @@
 #!/bin/bash
-# Proofs for spec-handoff-coauthor-nudge.sh. The nudge is only worth having if it fires at authoring
-# time and stays silent everywhere else — a nudge that becomes noise gets ignored, then deleted.
+# Proofs for spec-handoff-coauthor-nudge.sh. The nudge is only worth having if it fires at authoring time and stays silent everywhere else — a nudge that becomes noise gets ignored, then deleted.
 HOOK="$(dirname "$0")/spec-handoff-coauthor-nudge.sh"; pass=0; fail=0
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
-# A silent hook prints NOTHING, and `jq` on empty input also prints nothing — decide from emptiness,
-# never from a jq default. (Trap already pinned in rg-flag-guard.test.sh; repeated, not assumed.)
+# A silent hook prints NOTHING, and `jq` on empty input also prints nothing — decide from emptiness, never from a jq default. (Trap already pinned in rg-flag-guard.test.sh; repeated, not assumed.)
 r(){ local raw; raw="$(printf '{"tool_input":{"file_path":%s}}' "$(printf '%s' "$1" | jq -Rs .)" | bash "$HOOK")"
      [ -z "$raw" ] && { echo SILENT; return; }
      printf '%s' "$raw" | jq -r '.hookSpecificOutput.additionalContext // "SILENT"'; }
@@ -29,8 +27,7 @@ a "changelog"                 silent "$R/docs/CHANGELOG.md"
 a "non-md in specs dir"       silent "$R/docs/superpowers/specs/diagram.svg"
 a "empty path"                silent ""
 
-# EXISTING FILES ARE NOT AUTHORING MOMENTS — a rewrite of a spec must stay silent, or every edit to
-# an existing spec nags. This is the case most likely to turn the nudge into noise.
+# EXISTING FILES ARE NOT AUTHORING MOMENTS — a rewrite of a spec must stay silent, or every edit to an existing spec nags. This is the case most likely to turn the nudge into noise.
 mkdir -p "$TMP/docs/superpowers/specs"; : > "$TMP/docs/superpowers/specs/2026-08-10-existing-design.md"
 a "existing spec is a rewrite" silent "$TMP/docs/superpowers/specs/2026-08-10-existing-design.md"
 # …but a NEW file in that same real directory must still fire, or the check above is over-broad.

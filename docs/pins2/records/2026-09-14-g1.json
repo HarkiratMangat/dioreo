@@ -1,0 +1,1132 @@
+[
+ {
+  "realm": "Access",
+  "f": "access.js",
+  "l": 871,
+  "t": "By admin: “1 admin × 12 permissions” · By permission: “N single points · M held by nobody but you”",
+  "k": "R",
+  "tr": "By admin: remove “1 admin × 12 permissions”, the header already shows it. By permission: turn “held only by you” into a filter chip. The panel bar waits for §6",
+  "ledger": "2026-09-06 derived counts",
+  "pin": true
+ },
+ {
+  "realm": "Broadcast",
+  "f": "broadcast.js",
+  "l": 99,
+  "t": "Delivered as an ephemeral follow-up after any top-level slash command, every unseen announcement as its own embed in ONE message. Each carries its own",
+  "k": "R",
+  "tr": "Remove — the composer’s preview shows what players get",
+  "ledger": "",
+  "pin": true
+ },
+ {
+  "realm": "Access",
+  "f": "access.js",
+  "l": 229,
+  "t": "Only ever visible here.",
+  "k": "R",
+  "tr": "Remove",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Access",
+  "f": "access.js",
+  "l": 305,
+  "t": "A session is a browser, not a Discord account. Revoking someone in Discord leaves their tab working until it expires N hours after sign-in —",
+  "k": "R",
+  "tr": "Remove — the sessions line already says it",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Analytics",
+  "f": "analytics.js",
+  "l": 117,
+  "t": "Timings are aggregated per dependency name, never per call — that is what keeps the array on each event bounded. Read a row as: what this subsystem co",
+  "k": "R",
+  "tr": "Remove",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Analytics",
+  "f": "analytics.js",
+  "l": 202,
+  "t": "Three tiers, and they never collapse into one number: info is a record, caution is a look-when-convenient, error pings a human. Seven days.",
+  "k": "R",
+  "tr": "Remove — each bar already names its tier and ping",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Analytics",
+  "f": "analytics.js",
+  "l": 251,
+  "t": "A restart is normal after a deploy and is worth a look when it was not one.",
+  "k": "R",
+  "tr": "Remove",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Analytics",
+  "f": "analytics.js",
+  "l": 265,
+  "t": "Uptime and restarts come from what the bot writes each time it starts; errors and the memory figure from its alert log; command counts from what playe",
+  "k": "R",
+  "tr": "Remove",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Analytics",
+  "f": "analytics.js",
+  "l": 275,
+  "t": "The portal runs as its own process with no gateway connection, so gateway status and live memory are not readable from here. For a live reading, run t",
+  "k": "R",
+  "tr": "Remove",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Analytics",
+  "f": "analytics.js",
+  "l": 348,
+  "t": "Seven entry points exist and a command is only one of them. The shape of this list is the shape of the bot: how much of what it does begins with someb",
+  "k": "R",
+  "tr": "Remove",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Analytics",
+  "f": "analytics.js",
+  "l": 444,
+  "t": "How long the work itself takes, after the answer. Once an interaction has been answered the bot has fifteen minutes to finish, so nothing here is late",
+  "k": "R",
+  "tr": "Remove",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Analytics",
+  "f": "analytics.js",
+  "l": 529,
+  "t": "Whether each interaction came from a server that added the app or from a person who did. The v3 line made every public command guild-installable while",
+  "k": "R",
+  "tr": "Remove",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Analytics",
+  "f": "analytics.js",
+  "l": 609,
+  "t": "What this view is for. Every other number in Analytics describes what the bot did. A search that returned nothing is the only one that describes what ",
+  "k": "R",
+  "tr": "Remove, and retire the ledger row that kept it",
+  "ledger": "2026-09-01 22:05 bvnote",
+  "pin": false
+ },
+ {
+  "realm": "Analytics",
+  "f": "analytics.js",
+  "l": 685,
+  "t": "Health “496 commands · 5 memory samples · 303 boots in 7 days” · Usage “N this week · M the week before” · Timing “your own admin commands are counted here, unlike Usage” · Reach “N public interactions” · Search “autocomplete sessions only”",
+  "k": "R",
+  "tr": "Health: remove, the tiles show it · Usage: keep as a change figure · Timing: becomes the G2 filter · Reach: remove · Search: remove",
+  "ledger": "2026-09-01 22:42 span.sp gap",
+  "pin": false
+ },
+ {
+  "realm": "Armory",
+  "f": "armory.js",
+  "l": 222,
+  "t": "A badge describes the weapon, not one build of it — the bot propagates it across every build sharing a weaponKey value and mode, so a weapon with five",
+  "k": "R",
+  "tr": "Remove — badges sit on the weapon now, and the drawer says “all 6 builds”",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Armory",
+  "f": "manifest.js",
+  "l": 218,
+  "t": "N",
+  "k": "R",
+  "tr": "Remove Armory’s “Click a row to open it” — hovering a row shows it",
+  "ledger": "2026-08-31 p.hint",
+  "pin": false
+ },
+ {
+  "realm": "Home",
+  "f": "home.js",
+  "l": 244,
+  "t": "What a player opening the bot this second would be shown.",
+  "k": "R",
+  "tr": "Remove",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Home",
+  "f": "home.js",
+  "l": 262,
+  "t": "Announcements the bot is attaching to its replies.",
+  "k": "R",
+  "tr": "Remove",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Season",
+  "f": "composer.js",
+  "l": 275,
+  "t": "Pick what you are adding. The form follows the record — a release asks for one date, a window asks for two.",
+  "k": "R",
+  "tr": "Remove",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Season",
+  "f": "season.js",
+  "l": 752,
+  "t": "Promote is in the one-way strip below.",
+  "k": "R",
+  "tr": "Remove",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Season",
+  "f": "season.js",
+  "l": 777,
+  "t": "This is the card as Discord renders it — the same builder the bot calls, so the preview cannot drift from what ships.",
+  "k": "R",
+  "tr": "Remove",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Broadcast",
+  "f": "broadcast.js",
+  "l": 139,
+  "t": "Position is delivery order — oldest first, and nothing else. There is no way to reorder announcements.${cap && live.length > cap ? html` ${live.length",
+  "k": "F",
+  "tr": "Becomes the queue heading “Delivery order”; a waiting card keeps its over-the-limit warning",
+  "ledger": "",
+  "pin": true
+ },
+ {
+  "realm": "Broadcast",
+  "f": "broadcast.js",
+  "l": 439,
+  "t": "Delivery queue “2 in one message, oldest first · cap 10” · Airtime “4 announcements on the axis”",
+  "k": "F",
+  "tr": "Delivery queue: a “2 of 10” meter beside the heading. Airtime: remove the count",
+  "ledger": "",
+  "pin": true
+ },
+ {
+  "realm": "Access",
+  "f": "access.js",
+  "l": 174,
+  "t": "This is the whole list. Anything not above is revoked on their next action.",
+  "k": "F",
+  "tr": "Put it on the Save button: “Save and remove the others”",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Access",
+  "f": "access.js",
+  "l": 225,
+  "t": "Shown on the grid. Clipped past 22 characters.",
+  "k": "F",
+  "tr": "A live counter in the field: “0 / 22”",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Access",
+  "f": "access.js",
+  "l": 230,
+  "t": "Commits immediately — nothing is staged, and it is live in the bot on their next click.",
+  "k": "F",
+  "tr": "Put it on the button: “Grant now”",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Access",
+  "f": "access.js",
+  "l": 285,
+  "t": "Revoking an admin in Discord does not end their browser session. This does.",
+  "k": "F",
+  "tr": "Say it in End session’s confirmation",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Analytics",
+  "f": "analytics.js",
+  "l": 312,
+  "t": "Only public commands count here — your own Nmanage and Nbot activity is deliberately excluded, so a quiet week of admin work shows as nothin",
+  "k": "F",
+  "tr": "Becomes the Admin traffic filter (G2)",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Analytics",
+  "f": "analytics.js",
+  "l": 418,
+  "t": "Every interaction has to be answered within 3 seconds or Discord throws it away and the person sees a failure the bot never gets to explain. This scal",
+  "k": "F",
+  "tr": "A label on the chart’s 3-second line",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Analytics",
+  "f": "analytics.js",
+  "l": 459,
+  "t": "marks the 3-second answering deadline. Every command here answers first and works afterwards, so a bar reaching past it is the work taking longer than",
+  "k": "F",
+  "tr": "A label on the chart’s 3-second line",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Analytics",
+  "f": "analytics.js",
+  "l": 496,
+  "t": "Reach counts public interactions only. Your own admin work is excluded here for the same reason it is on Usage.",
+  "k": "F",
+  "tr": "Becomes the Admin traffic filter (G2)",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Broadcast",
+  "f": "broadcast.js",
+  "l": 230,
+  "t": "A bar begins at startsAt when one is set, otherwise at createdAt. A bar with no right edge has no end date at all and runs until somebody deletes it. ",
+  "k": "F",
+  "tr": "Shown on the timeline: a bar that fades out has no end date",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Review",
+  "f": "review.js",
+  "l": 87,
+  "t": "This change was staged before the portal started recording what a record looked like at staging time, so whether it has moved since is unknown rather ",
+  "k": "F",
+  "tr": "An “unknown” badge on the change",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Review",
+  "f": "review.js",
+  "l": 119,
+  "t": "Tier N — an exact inverse was captured when this was staged, so it can be reversed after it commits, from the event list in History.",
+  "k": "F",
+  "tr": "Move it onto the tier badge",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Season",
+  "f": "season.js",
+  "l": 785,
+  "t": "The dates are edited in the record's own editor, where they are read by the same parser the bot uses — this drawer shows what is already saved.",
+  "k": "F",
+  "tr": "An “Edit dates” link",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Analytics",
+  "f": "analytics.js",
+  "l": 138,
+  "t": "N across N calls this week, so the database is not the cost. ` :",
+  "k": "N",
+  "tr": "A stat tile: “Atlas · 3.6 s over 8 calls”",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Analytics",
+  "f": "analytics.js",
+  "l": 241,
+  "t": "N emoji did not resolve at boot — those render as raw ids in Discord until the next sync.",
+  "k": "N",
+  "tr": "A warning chip with a button: “12 emoji missing · Sync”",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Analytics",
+  "f": "analytics.js",
+  "l": 362,
+  "t": "N outcomes are possibleN of them have never once happened — ${neverSeen.map((k) ",
+  "k": "N",
+  "tr": "A chip: “3 outcomes not seen yet”",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Analytics",
+  "f": "analytics.js",
+  "l": 423,
+  "t": "N of N answers land in the first band${emptyBuckets.length ? html`, and ${emptyB",
+  "k": "N",
+  "tr": "The figure becomes the chart’s own label",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Analytics",
+  "f": "analytics.js",
+  "l": 522,
+  "t": "N% of all use is in N — a` : html`Nothing has been recorded in this window, so there is no split ",
+  "k": "N",
+  "tr": "The share becomes the chart’s headline number",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Broadcast",
+  "f": "broadcast.js",
+  "l": 251,
+  "t": "Heads up: “…” has no expiry and has been showing for N days. A blank expiry field means the 60-day default; never means this.",
+  "k": "N",
+  "tr": "A warning with a button: “Set an end date”; the sentence goes",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Review",
+  "f": "review.js",
+  "l": 67,
+  "t": "N",
+  "k": "N",
+  "tr": "A warning beside the blocked change, naming what blocks it",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Review",
+  "f": "review.js",
+  "l": 76,
+  "t": "Somebody edited N in Discord while it sat here, so the value you are about to overwrite is not the value you saw. The inverse captured for th",
+  "k": "N",
+  "tr": "A warning beside the change, with “Keep mine” and “Take theirs”",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Review",
+  "f": "review.js",
+  "l": 104,
+  "t": "You are holding a file that re-imports through the bot's own bulk parser, and the round trip is checked byte for byte against adminParser.js on every ",
+  "k": "N",
+  "tr": "A warning on the Export button",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Review",
+  "f": "review.js",
+  "l": 109,
+  "t": "This change cannot be undone by an inverse. The bot already serializes its own state into a format its bulk parsers re-ingest, so the export is nearly",
+  "k": "N",
+  "tr": "A warning on the one-way change",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Season",
+  "f": "season.js",
+  "l": 834,
+  "t": "N",
+  "k": "N",
+  "tr": "An error on the field that stops the save",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Tray",
+  "f": "tray.js",
+  "l": 46,
+  "t": "N tier-3 changeN N an export before N will commit.",
+  "k": "N",
+  "tr": "A “blocked” badge on Commit, with Export as the way out",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Analytics",
+  "f": "analytics.js",
+  "l": 516,
+  "t": "N interactionN",
+  "k": "K",
+  "tr": "The count sits at the end of its bar",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Armory",
+  "f": "armory.js",
+  "l": 1315,
+  "t": "Tier board “64 of 125 ranked” · Repairs “N of M checks failing” · Compare “type a weapon name”",
+  "k": "K",
+  "tr": "Tier board and Repairs show their counts on their tabs; Compare loses “type a weapon name”",
+  "ledger": "2026-08-31 rack span.sp",
+  "pin": false
+ },
+ {
+  "realm": "Home",
+  "f": "home.js",
+  "l": 255,
+  "t": "N more running · open the Track",
+  "k": "K",
+  "tr": "A “+4 more” chip that opens the Track",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Home",
+  "f": "home.js",
+  "l": 274,
+  "t": "Open Broadcast",
+  "k": "K",
+  "tr": "The panel title becomes the link",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Review",
+  "f": "review.js",
+  "l": 228,
+  "t": "N changeN · N transactions, comm",
+  "k": "K",
+  "tr": "Two figures in the header: “4 changes · saved together”",
+  "ledger": "2026-09-02 23:37 atomicity",
+  "pin": false
+ },
+ {
+  "realm": "Season",
+  "f": "season.js",
+  "l": 81,
+  "t": "N",
+  "k": "K",
+  "tr": "Becomes the row’s second line",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Season",
+  "f": "season.js",
+  "l": 82,
+  "t": "N",
+  "k": "K",
+  "tr": "Becomes the row’s second line",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Season",
+  "f": "season.js",
+  "l": 83,
+  "t": "no detail",
+  "k": "K",
+  "tr": "A dash in the empty row",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Season",
+  "f": "season.js",
+  "l": 603,
+  "t": "N unsaved editN` : 'no unsaved edits'}",
+  "k": "K",
+  "tr": "The count moves onto the Done button: “Done · 3”",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Season",
+  "f": "season.js",
+  "l": 749,
+  "t": "N · N itemN · not visible to players",
+  "k": "K",
+  "tr": "Draft details as chips: title · 12 items · hidden from players",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Season",
+  "f": "season.js",
+  "l": 822,
+  "t": "N of N used. N would be kept.` : ''} Every URL is re-hosted on Cloudi",
+  "k": "K",
+  "tr": "A counter in the field: “3 / 10”",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Season",
+  "f": "season.js",
+  "l": 1300,
+  "t": "The visible window, “Aug 1 → Sep 30”",
+  "k": "K",
+  "tr": "The date range sits at the two ends of the timeline",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Armory",
+  "f": "armory.js",
+  "l": 374,
+  "t": "Fill in what you know. A weapon name and a category are all it takes to stage a build — the gunsmith code, the image and the badges can follow later, ",
+  "k": "A",
+  "tr": "§10.1 row 9",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Armory",
+  "f": "armory.js",
+  "l": 405,
+  "t": "In Gunsmith order, top to bottom. 123 of 133 real builds carry exactly five, and ${dmz ? 'a DMZ build is counted against nine' : 'a different count is",
+  "k": "A",
+  "tr": "§10.1 rows 3 and 9",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Armory",
+  "f": "armory.js",
+  "l": 424,
+  "t": "DMZ builds have no share code. That screen does not generate one, so the field is absent rather than shown and ignored.",
+  "k": "A",
+  "tr": "§10.1 row 17",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Armory",
+  "f": "armory.js",
+  "l": 449,
+  "t": "🔴 Badges describe the WEAPON, not this one build. On an EDIT the bot propagates them across every build sharing this weaponKey and mode. It deliberat",
+  "k": "A",
+  "tr": "§10.1 row 18",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Armory",
+  "f": "armory.js",
+  "l": 481,
+  "t": "Not the Discord render — that needs a saved build to ask the bot about. This is the record as it stands, in the order the card puts it.",
+  "k": "A",
+  "tr": "§10.1 row 13",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Armory",
+  "f": "armory.js",
+  "l": 643,
+  "t": "N attachments. Legal, and sometimes right, but unusual — most builds carry 5.`} Slot la",
+  "k": "A",
+  "tr": "§10.1 row 3",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Armory",
+  "f": "armory.js",
+  "l": 653,
+  "t": "A badge describes the weapon. Changing one here propagates to every build sharing this weapon and mode — N in ${dra",
+  "k": "A",
+  "tr": "§10.1 row 18",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Armory",
+  "f": "armory.js",
+  "l": 685,
+  "t": "The convention is WEAPON-N — all caps, spaces to hyphens, N being this build's position among its siblings. Delivery bakes in the f_auto,q_auto transf",
+  "k": "A",
+  "tr": "§10.1 row 14",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Armory",
+  "f": "armory.js",
+  "l": 884,
+  "t": "N has one build in this armory, so there is nothing to line it up against. Its card is below. onOpenRack(o.weapon)}>Show it in the tier boar",
+  "k": "A",
+  "tr": "§10.2 row 9",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Armory",
+  "f": "armory.js",
+  "l": 888,
+  "t": "Showing the first N of N selected builds — past that the table stops fitting the screen it is read on.",
+  "k": "A",
+  "tr": "§10.2 row 5",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Armory",
+  "f": "armory.js",
+  "l": 891,
+  "t": "N buildN excluded above, not deleted.",
+  "k": "A",
+  "tr": "§10.2 row 5",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Armory",
+  "f": "armory.js",
+  "l": 1041,
+  "t": "One block per build, blocks separated by a blank line. A build already carrying this weapon and build name is updated in place, so Add and Replace are",
+  "k": "A",
+  "tr": "§10.1 row 2 — the paste leaves Bulk & export",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Armory",
+  "f": "armory.js",
+  "l": 1082,
+  "t": "Every export emits the same block format the paste box accepts, so a round trip is lossless — npm run portal:roundtrip checks that against the real pa",
+  "k": "A",
+  "tr": "Spec §6 — the export block goes",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Armory",
+  "f": "armory.js",
+  "l": 1103,
+  "t": "Not offered here, deliberately: there is no purge on either loadouts page. The bot does not offer one either, and adding one to the portal would put a",
+  "k": "A",
+  "tr": "Spec §6 — the panel goes",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Broadcast",
+  "f": "broadcast.js",
+  "l": 309,
+  "t": "A blank start shows it the moment you commit. A blank end takes the server's 60-day default, not never.",
+  "k": "A",
+  "tr": "§10.3 row 5",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Broadcast",
+  "f": "broadcast.js",
+  "l": 311,
+  "t": "Every live announcement is attached to the bot's next reply to a player, in the order it was written — so this is not a broadcast to a channel, it is ",
+  "k": "A",
+  "tr": "§10.3 row 7",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Access",
+  "f": "access.js",
+  "l": 146,
+  "t": "Written immediately. No review screen, no undo — granting it back is a new grant.",
+  "k": "X",
+  "tr": "Confirm body",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Access",
+  "f": "access.js",
+  "l": 147,
+  "t": "Every one of N permissionN held by N is removed. They keep any portal session already open until you end it, but e",
+  "k": "X",
+  "tr": "Confirm body",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Access",
+  "f": "access.js",
+  "l": 165,
+  "t": "Written immediately. No review screen, no undo.",
+  "k": "X",
+  "tr": "Confirm body",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Access",
+  "f": "access.js",
+  "l": 220,
+  "t": "Looking that id up…",
+  "k": "X",
+  "tr": "Status",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Access",
+  "f": "access.js",
+  "l": 221,
+  "t": "N",
+  "k": "X",
+  "tr": "Error",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Access",
+  "f": "access.js",
+  "l": 304,
+  "t": "Your own session should always be in this list, so an empty list means it failed to load rather than that nobody is here. Reload the page.",
+  "k": "X",
+  "tr": "Error state",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Access",
+  "f": "access.js",
+  "l": 697,
+  "t": "This signs the browser out. It does not revoke anything — whoever it belongs to keeps every permission they hold and can sign in again immediately. To",
+  "k": "X",
+  "tr": "Confirm body",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Access",
+  "f": "access.js",
+  "l": 741,
+  "t": "Access does not stage. This is written the moment you confirm, and every request they make re-checks server-side — so a revoke takes effect on their v",
+  "k": "X",
+  "tr": "Confirm body",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Access",
+  "f": "access.js",
+  "l": 762,
+  "t": "Every one of N permissionN held by N is removed. They keep any portal session already open until you e",
+  "k": "X",
+  "tr": "Confirm body",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Access",
+  "f": "access.js",
+  "l": 765,
+  "t": "This is not staged and there is no undo — granting it back is a new grant.",
+  "k": "X",
+  "tr": "Confirm body",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Analytics",
+  "f": "analytics.js",
+  "l": 151,
+  "t": "A dependency only appears here once something has called it. On a bot that has just started, that is the correct reading — not a gap.",
+  "k": "X",
+  "tr": "Empty state",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Analytics",
+  "f": "analytics.js",
+  "l": 217,
+  "t": "No alerts recorded in the last seven days.",
+  "k": "X",
+  "tr": "Empty state",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Analytics",
+  "f": "analytics.js",
+  "l": 405,
+  "t": "Every interaction records how long it took to answer and how long it took to finish. This fills in on its own as the bot gets used.",
+  "k": "X",
+  "tr": "Empty state",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Analytics",
+  "f": "analytics.js",
+  "l": 462,
+  "t": "No command has recorded a finish time in this window.",
+  "k": "X",
+  "tr": "Empty state",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Analytics",
+  "f": "analytics.js",
+  "l": 606,
+  "t": "This fills only from autocomplete sessions. An empty table means nobody has typed into an autocomplete field in the last 30 days — not that nobody sea",
+  "k": "X",
+  "tr": "Empty state",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Armory",
+  "f": "armory.js",
+  "l": 1231,
+  "t": "Nothing goes yet. This stages the deletion; the builds stay live and visible in Discord until the changeset is committed on the Review screen, and dis",
+  "k": "X",
+  "tr": "Confirm body",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Broadcast",
+  "f": "broadcast.js",
+  "l": 389,
+  "t": "N of these N showing to players right now. ` : null}Nothing changes yet — this stages the deletion, and",
+  "k": "X",
+  "tr": "Confirm body",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "History",
+  "f": "history.js",
+  "l": 133,
+  "t": "N",
+  "k": "X",
+  "tr": "Detail drawer body",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "History",
+  "f": "history.js",
+  "l": 185,
+  "t": "This applies each change's recorded inverse immediately — it does not stage, and the Review screen never sees it. The reversal is itself recorded here",
+  "k": "X",
+  "tr": "Confirm body",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "History",
+  "f": "history.js",
+  "l": 188,
+  "t": "N of the selected rows ${chosen.length - revertable.length === 1 ? 'is an alert or a restart' : 'are alerts or rest",
+  "k": "X",
+  "tr": "Confirm body",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Home",
+  "f": "home.js",
+  "l": 257,
+  "t": "Nothing is scheduled for today. The season runs, but no draw, event or playlist opens or closes. Open Season.",
+  "k": "X",
+  "tr": "Empty state",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Home",
+  "f": "home.js",
+  "l": 273,
+  "t": "No announcement is showing. Replies go out with nothing attached.",
+  "k": "X",
+  "tr": "Empty state",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Review",
+  "f": "review.js",
+  "l": 215,
+  "t": "Everything in the portal matches what the bot is serving right now. Changes arrive here when you stage them from any realm — this screen is the only p",
+  "k": "X",
+  "tr": "Empty state",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Review",
+  "f": "review.js",
+  "l": 275,
+  "t": "None of this ever reached Discord, so nothing changes for players. Every row on the page goes back to the value it had before you touched it.",
+  "k": "X",
+  "tr": "Confirm body",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Review",
+  "f": "review.js",
+  "l": 285,
+  "t": "N changes are written in one transaction — they all land or none of them do.` : html`These ${ops.leng",
+  "k": "X",
+  "tr": "Confirm body",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Review",
+  "f": "review.js",
+  "l": 289,
+  "t": "Every change is recorded with its inverse, so tier-1 and tier-2 changes stay undoable afterwards${ops.some((o) => o.tier === 3) ? ', and the tier-3 ch",
+  "k": "X",
+  "tr": "Confirm body",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Season",
+  "f": "season.js",
+  "l": 231,
+  "t": "Nothing is scheduled on this day.",
+  "k": "X",
+  "tr": "Empty state",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Season",
+  "f": "season.js",
+  "l": 740,
+  "t": "No next season staged. A draft lets you build the whole next season — titles, deadlines, draws and calendar — without any of it going live.",
+  "k": "X",
+  "tr": "Empty state",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Season",
+  "f": "season.js",
+  "l": 975,
+  "t": "Pasting into the next season replaces that list rather than adding to it — the box is the list. Nothing live changes, and nothing is visible to player",
+  "k": "X",
+  "tr": "Confirm body",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Season",
+  "f": "season.js",
+  "l": 1032,
+  "t": "This throws away the draft's title, deadlines and its N staged itemN. Nothing live changes — a draft has never been visible to ",
+  "k": "X",
+  "tr": "Confirm body",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Season",
+  "f": "season.js",
+  "l": 1100,
+  "t": "Nothing leaves the season yet — this stages the deletion, and the items keep showing in Discord until the changeset is committed on the Review screen.",
+  "k": "X",
+  "tr": "Confirm body",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Season",
+  "f": "season.js",
+  "l": 1196,
+  "t": "Nothing live is undone — this change never reached Discord. Only what has not committed yet is abandoned.",
+  "k": "X",
+  "tr": "Confirm body",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Season",
+  "f": "season.js",
+  "l": 1207,
+  "t": "Nothing live is undone — none of these reached Discord. Everything staged on this realm is abandoned, including anything staged from the Board or the ",
+  "k": "X",
+  "tr": "Confirm body",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Shell",
+  "f": "shell.js",
+  "l": 473,
+  "t": "None of this ever reached Discord, so nothing changes for players. Every row you touched goes back to the value it had before.",
+  "k": "X",
+  "tr": "Confirm body",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Shell",
+  "f": "shell.js",
+  "l": 496,
+  "t": "You have N staged changeN. They stay staged against your account and will be here when you sign back in — signing out ends this",
+  "k": "X",
+  "tr": "Confirm body",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Shell",
+  "f": "shell.js",
+  "l": 498,
+  "t": "Nothing is staged. Signing out just ends this browser session.",
+  "k": "X",
+  "tr": "Confirm body",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Shell",
+  "f": "shell.js",
+  "l": 669,
+  "t": "N",
+  "k": "X",
+  "tr": "Error",
+  "ledger": "",
+  "pin": false
+ },
+ {
+  "realm": "Shell",
+  "f": "shell.js",
+  "l": 693,
+  "t": "The portal is for Dioreo's admins. It uses your Discord account — there is no separate password to create, and none to lose.",
+  "k": "X",
+  "tr": "Sign-in page",
+  "ledger": "",
+  "pin": false
+ }
+]

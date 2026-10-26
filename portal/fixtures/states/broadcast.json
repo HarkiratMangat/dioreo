@@ -1,0 +1,108 @@
+{
+  "surface": "Broadcast",
+  "note": "Registered 2026-09-07 — no states file existed for this realm before now, so none of its drawers had ever been opened in a test. Three interactive surfaces (composer, export strip, per-row delete confirm) plus the two async states every realm shares.",
+  "states": [
+    {
+      "name": "composer · Post an announcement drawer opens",
+      "realm": "broadcast",
+      "steps": [
+        { "clickText": { "sel": ".mh-new, .pill.lead", "text": "Post announcement" } }
+      ],
+      "known": [],
+      "expect": ".drawer.open #post-text"
+    },
+    {
+      "name": "export strip · opens from the masthead",
+      "realm": "broadcast",
+      "steps": [
+        { "clickText": { "sel": ".mh-take button", "text": "Export" } }
+      ],
+      "known": [],
+      "expect": ".mh-take button[aria-expanded=\"true\"]"
+    },
+    {
+      "name": "delete confirm · a row's Remove opens the tier-2 confirm",
+      "realm": "broadcast",
+      "steps": [
+        { "click": "button.rmv" }
+      ],
+      "known": [],
+      "expect": ".dw-f button.go, .dw-f button.dang"
+    },
+    {
+      "name": "slow · the skeleton in the shape of the content",
+      "realm": "broadcast",
+      "flags": { "slow": "4000" },
+      "known": [],
+      "expect": ".skel",
+      "preSettleMs": 4200,
+      "settleMs": 300,
+      "note": "`slow` delays every request including the session, so landing past the session mint and checking quickly catches this realm's own fetch still in flight — same technique as Season's registered slow state."
+    },
+    {
+      "name": "failed · the server refuses",
+      "realm": "broadcast",
+      "flags": { "fail": "500" },
+      "known": [],
+      "expect": ".failbox"
+    },
+    {
+      "name": "manifest · a search that matches nothing",
+      "realm": "broadcast",
+      "flags": {},
+      "steps": [
+        {
+          "type": {
+            "sel": ".srch input",
+            "text": "zzzznomatch"
+          }
+        }
+      ],
+      "known": [],
+      "expect": "p.empty",
+      "note": "Registered by Session 4 (2026-10-02 09:34 EDT) so the element census reaches it: worker BH's inventory found this surface outside the registry, and the elements on it in no census family. The expect was read off a probe of what the steps produce (local/pins2/s4/work/lead/probe-states.cjs)."
+    },
+    {
+      "name": "manifest · sorted by Posted",
+      "realm": "broadcast",
+      "flags": {},
+      "steps": [
+        {
+          "clickText": {
+            "sel": "button.sortbtn",
+            "text": "Posted"
+          }
+        }
+      ],
+      "known": [],
+      "expect": "th.sorted-asc",
+      "note": "Registered by Session 4 (2026-10-02 09:34 EDT) so the element census reaches it: worker BH's inventory found this surface outside the registry, and the elements on it in no census family. The expect was read off a probe of what the steps produce (local/pins2/s4/work/lead/probe-states.cjs)."
+    },
+    {
+      "name": "edit drawer · Dates and repeats",
+      "realm": "broadcast",
+      "flags": {},
+      "steps": [
+        {
+          "click": ".pb-dbtn, .wg-date, button[aria-label*=\"Dates\"]"
+        }
+      ],
+      "known": [],
+      "expect": ".drawer.open .step-btn",
+      "note": "Registered by Session 4 (2026-10-02 09:34 EDT) so the element census reaches it: worker BH's inventory found this surface outside the registry, and the elements on it in no census family. The expect was read off a probe of what the steps produce (local/pins2/s4/work/lead/probe-states.cjs)."
+    },
+    {
+      "name": "inline editor · a row's first cell",
+      "realm": "broadcast",
+      "flags": {},
+      "steps": [
+        {
+          "click": "main tbody tr td"
+        }
+      ],
+      "known": [],
+      "expect": "input.edit",
+      "note": "Registered by Session 4 (2026-10-02 09:34 EDT) so the element census reaches it: worker BH's inventory found this surface outside the registry, and the elements on it in no census family. The expect was read off a probe of what the steps produce (local/pins2/s4/work/lead/probe-states.cjs)."
+    }
+  ]
+}

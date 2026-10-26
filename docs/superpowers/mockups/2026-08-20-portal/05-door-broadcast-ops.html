@@ -1,0 +1,330 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dioreo Portal — Door, Broadcast, Operations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--desk:#0F1418;--paper:#171E24;--raised:#1F272E;--sunk:#0B0F12;--hi:#232C34;
+ --rule:#2A343D;--rule2:#3A4752;--ink:#E8EDF1;--ink2:#9DAAB4;--ink3:#6E7C87;--ink4:#4E5A64;
+ --patch:#F2C230;--warn:#FF7A45;--ok:#3DDC97;--del:#FF6B6B;--dsc:#5865F2;--ev:#1F8A5E;--play:#8A6BD1;
+ --ui:"Space Grotesk",system-ui,sans-serif;--data:"JetBrains Mono",monospace;--rad:6px}
+*{box-sizing:border-box}
+body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--ui);font-size:15px;line-height:1.5;
+ padding:0 0 90px;-webkit-font-smoothing:antialiased}
+button{font-family:var(--ui);cursor:pointer}
+:focus-visible{outline:2px solid var(--patch);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.top{position:sticky;top:0;z-index:40;background:rgba(15,20,24,.94);backdrop-filter:blur(9px);
+ border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:16px;padding:11px 24px}
+.mk{font-family:var(--data);font-size:11.5px;letter-spacing:.16em;font-weight:600}.mk b{color:var(--patch)}
+.top a{color:var(--ink3);font-size:12.5px;text-decoration:none;font-weight:600}.top a:hover{color:var(--ink)}
+section{padding:32px 24px 0;max-width:1560px}
+.lede{display:flex;align-items:baseline;gap:12px;margin:0 0 5px}
+.lede h2{margin:0;font-size:20px;font-weight:600;letter-spacing:-.015em}
+.lede .job{font-family:var(--data);font-size:11px;letter-spacing:.11em;color:var(--patch);text-transform:uppercase}
+.dek{margin:0 0 15px;font-size:13.5px;color:var(--ink3);max-width:84ch}.dek b{color:var(--ink2);font-weight:600}
+.note{font-size:12.5px;color:var(--ink3);line-height:1.55;margin:11px 2px 0;max-width:86ch}
+.note b{color:var(--ink2);font-weight:600}
+.panel{border:1px solid var(--rule);border-radius:var(--rad);background:var(--paper);overflow:hidden}
+.ph{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--raised);border-bottom:1px solid var(--rule)}
+.ph .t{font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;font-weight:700;color:var(--ink2)}
+.ph .sp{margin-left:auto;font-family:var(--data);font-size:10.5px;color:var(--ink4)}
+.seg{display:flex;gap:2px;background:var(--sunk);border:1px solid var(--rule);border-radius:5px;padding:2px}
+.seg button{background:none;border:0;color:var(--ink3);font-size:11.5px;font-weight:600;padding:4px 11px;border-radius:3px}
+.seg button[aria-pressed=true]{background:var(--hi);color:var(--ink)}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:1200px){.three{grid-template-columns:1fr}}
+.cap{display:flex;align-items:baseline;gap:9px;margin:0 0 7px}
+.cap .k{font-family:var(--data);font-size:10px;color:var(--ink4);letter-spacing:.1em}
+.cap .n{font-size:13.5px;font-weight:600;color:var(--ink)}
+
+/* ══ DOOR ══ */
+.door{background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad);
+ padding:30px 26px;text-align:center;min-height:322px;display:flex;flex-direction:column;
+ justify-content:center;position:relative;overflow:hidden}
+.door::before{content:"";position:absolute;inset:0;
+ background:radial-gradient(650px 200px at 50% -10%,rgba(242,194,48,.06),transparent 70%)}
+.door>*{position:relative}
+.plate{font-family:var(--data);font-size:12px;letter-spacing:.24em;font-weight:600;color:var(--ink2);margin-bottom:4px}
+.plate b{color:var(--patch)}
+.tagline{font-size:12px;color:var(--ink4);margin-bottom:22px;font-family:var(--data);letter-spacing:.06em}
+.dbtn{display:inline-flex;align-items:center;justify-content:center;gap:9px;background:var(--dsc);color:#fff;
+ border:0;border-radius:6px;font-size:13.5px;font-weight:700;padding:11px 20px;margin:0 auto;letter-spacing:.01em}
+.dbtn svg{width:19px;height:19px;fill:currentColor}
+.dbtn:hover{filter:brightness(1.08)}
+.scopes{margin-top:20px;padding-top:16px;border-top:1px solid var(--rule);font-size:11.5px;color:var(--ink4);
+ line-height:1.7;text-align:left}
+.scopes b{color:var(--ink2);font-weight:600}
+.scopes .yes{color:var(--ok)}.scopes .no{color:var(--ink4)}
+.who2{display:flex;align-items:center;gap:11px;justify-content:center;margin-bottom:16px}
+.who2 .av{width:42px;height:42px;border-radius:50%;background:linear-gradient(140deg,#3A4C5A,#1C242C);
+ border:1px solid var(--rule2)}
+.who2 .wn{text-align:left}.who2 .wn b{display:block;font-size:14px}
+.who2 .wn span{font-family:var(--data);font-size:10.5px;color:var(--ink4)}
+.msg{font-size:13.5px;color:var(--ink2);line-height:1.6;margin:0 auto 18px;max-width:38ch}
+.msg b{color:var(--ink)}
+.lbtn{background:none;border:1px solid var(--rule2);color:var(--ink3);border-radius:5px;font-size:12.5px;
+ font-weight:600;padding:7px 15px}
+.lbtn:hover{color:var(--ink)}
+.lbtn.pri{background:var(--patch);color:#07090A;border-color:var(--patch)}
+.stale{display:inline-flex;align-items:center;gap:7px;font-family:var(--data);font-size:10.5px;color:var(--warn);
+ border:1px solid var(--warn);border-radius:20px;padding:3px 11px;margin:0 auto 16px}
+
+/* ══ BROADCAST ══ */
+.nowshow{padding:14px;display:grid;gap:11px;grid-template-columns:1fr 1fr}
+.ann{background:#2B2D31;border-radius:8px;border-left:4px solid var(--c);padding:12px 14px;font-size:12.5px;color:#DBDEE1}
+.ann h5{margin:0 0 5px;font-size:13.5px;color:#F2F3F5;font-weight:700}
+.ann p{margin:0;line-height:1.55}
+.ann .meta{margin-top:9px;padding-top:8px;border-top:1px solid #3A3C41;display:flex;gap:12px;
+ font-family:var(--data);font-size:10px;color:#949BA4}
+.annwrap{position:relative}
+.annwrap .slot{position:absolute;top:-9px;left:11px;background:var(--paper);padding:0 7px;font-family:var(--data);
+ font-size:9px;letter-spacing:.13em;color:var(--ink4);text-transform:uppercase}
+.air{padding:16px 14px 14px}
+.airl{position:relative;height:34px;display:flex;align-items:center;border-bottom:1px solid #1C242A}
+.airl:last-child{border:0}
+.airl .nm{width:132px;flex:none;text-align:right;padding-right:13px;font-size:11.5px;color:var(--ink2);
+ overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.airt{position:relative;flex:1;height:100%}
+.abar{position:absolute;top:50%;transform:translateY(-50%);height:19px;border-radius:4px;font-size:10.5px;
+ font-weight:600;display:flex;align-items:center;padding:0 8px;color:#07090A;background:var(--c)}
+.abar.sched{background:transparent;border:1.5px dashed var(--c);color:var(--c)}
+.abar.noexp{background:linear-gradient(90deg,var(--c) 76%,transparent)}
+.aruler{position:relative;height:22px;margin-left:132px;border-bottom:1px solid var(--rule);margin-bottom:3px}
+.aruler span{position:absolute;top:0;line-height:22px;padding-left:6px;border-left:1px solid var(--rule);
+ font-family:var(--data);font-size:9.5px;color:var(--ink4)}
+.anow{position:absolute;top:0;bottom:0;width:1px;background:var(--patch);opacity:.8}
+table.m{width:100%;border-collapse:collapse;font-size:13.5px}
+table.m th{text-align:left;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);
+ font-weight:700;padding:9px 11px;border-bottom:1px solid var(--rule);background:var(--sunk);white-space:nowrap}
+table.m td{padding:8px 11px;border-bottom:1px solid #1C242A;color:var(--ink2)}
+table.m tr:hover td{background:#1A222A}
+td.n{color:var(--ink);font-weight:500}
+td.d{font-family:var(--data);font-size:11.5px;color:var(--ink3);white-space:nowrap}
+.st{font-family:var(--data);font-size:9px;letter-spacing:.08em;padding:2px 7px;border-radius:3px;font-weight:600}
+.st.live{background:var(--ok);color:#07090A}
+.st.sched{border:1.5px dashed var(--play);color:var(--play)}
+.st.exp{border:1px solid var(--rule2);color:var(--ink4)}
+.swatch{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:8px;vertical-align:-1px}
+
+/* ══ OPERATIONS ══ */
+.mtx{padding:14px;overflow-x:auto}
+table.x{border-collapse:separate;border-spacing:3px;font-size:12px;min-width:100%}
+table.x th{font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);font-weight:700;
+ padding:3px 2px;text-align:center;white-space:nowrap;vertical-align:bottom}
+table.x th.l{text-align:left;width:180px;font-size:9.5px;letter-spacing:.12em}
+table.x th.grp{color:var(--patch);border-bottom:1px solid var(--rule);padding-bottom:5px}
+table.x td.l{white-space:nowrap}
+table.x td.l b{color:var(--ink);font-weight:600;font-size:12.5px}
+table.x td.l span{font-family:var(--data);font-size:9.5px;color:var(--ink4);display:block}
+.tick{width:26px;height:26px;border-radius:4px;background:var(--sunk);border:1px solid var(--rule);
+ display:grid;place-items:center;margin:0 auto;cursor:pointer;color:transparent;font-size:13px;font-weight:700}
+.tick:hover{border-color:var(--ink3)}
+.tick.on{background:var(--ok);border-color:var(--ok);color:#07090A}
+.tick.inh{background:rgba(61,220,151,.13);border-color:rgba(61,220,151,.4);color:var(--ok);opacity:.85}
+.tick.na{background:repeating-linear-gradient(45deg,transparent 0 3px,#1A2229 3px 6px);cursor:not-allowed}
+.owner td{opacity:.75}
+.owner .tick{cursor:not-allowed}
+.riv{border-top:2px solid var(--rule2)}
+.rrow{display:flex;align-items:center;gap:12px;padding:9px 14px;border-bottom:1px solid #1C242A;font-size:13px}
+.rrow:hover{background:#1A222A}
+.rrow .id{font-family:var(--data);font-size:10.5px;color:var(--ink4);width:74px;flex:none}
+.rrow .src{width:60px;flex:none}
+.srcpill{font-family:var(--data);font-size:8.5px;letter-spacing:.07em;padding:1px 6px;border-radius:3px;
+ border:1px solid var(--rule2);color:var(--ink3)}
+.srcpill.web{color:var(--patch);border-color:var(--patch)}
+.rrow .txt{flex:1;color:var(--ink2)}.rrow .txt b{color:var(--ink);font-weight:600}
+.rrow .who3{font-family:var(--data);font-size:10.5px;color:var(--ink4);width:82px;flex:none}
+.rrow .when{font-family:var(--data);font-size:10.5px;color:var(--ink4);width:104px;flex:none;text-align:right}
+.rrow .act{width:118px;flex:none;text-align:right}
+.rvt{background:none;border:1px solid var(--rule2);color:var(--ink3);font-size:11px;font-weight:600;
+ padding:3px 10px;border-radius:4px}
+.rvt:hover{color:var(--patch);border-color:var(--patch)}
+.rvt:disabled{opacity:.35;cursor:not-allowed}
+.rrow.undone .txt{text-decoration:line-through;color:var(--ink4)}
+.hcards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:14px}
+.hc{background:var(--sunk);border:1px solid var(--rule);border-radius:5px;padding:11px 12px}
+.hc .k{font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3);font-weight:700}
+.hc .v{font-family:var(--data);font-size:22px;font-weight:600;margin:3px 0 1px;letter-spacing:-.01em}
+.hc .s{font-family:var(--data);font-size:10px;color:var(--ink4)}
+.hc.good .v{color:var(--ok)}.hc.warn .v{color:var(--warn)}
+.spark{display:flex;align-items:flex-end;gap:2px;height:26px;margin-top:7px}
+.spark i{flex:1;background:var(--rule2);border-radius:1px}
+.spark i.hi{background:var(--patch)}
+.dupbar{display:flex;align-items:center;gap:10px;padding:9px 14px;background:rgba(242,194,48,.07);
+ border-top:1px solid rgba(242,194,48,.3);font-size:12.5px;color:var(--ink2)}
+.dupbar b{color:var(--patch)}
+</style></head><body>
+
+<div class="top"><span class="mk">DIOREO<b>/</b>PORTAL</span>
+ <a href="#door">Door</a><a href="#broadcast">Broadcast</a><a href="#ops">Operations</a>
+ <span style="margin-left:auto;font-family:var(--data);font-size:11px;color:var(--ink4)">screen 5</span></div>
+
+<section id="door">
+  <div class="lede"><h2>The door</h2><span class="job">the only page a stranger can reach</span></div>
+  <p class="dek">Every other surface is behind it, so it is the one page that must <b>leak nothing</b> &mdash; no hint
+    of what data exists, no admin names, and crucially no message that confirms whether a particular account
+    <i>would</i> have had access. All three states below say the same amount to a stranger. The scope list is not
+    reassurance copy; it is <b>literally what the OAuth request asks for</b>, and it asks for
+    <span style="font-family:var(--data)">identify</span> and nothing else.</p>
+  <div class="three">
+    <div><div class="cap"><span class="k">1</span><span class="n">Signed out</span></div>
+      <div class="door">
+        <div class="plate">DIOREO<b>/</b>PORTAL</div>
+        <div class="tagline">bot management</div>
+        <button class="dbtn"><svg viewBox="0 0 24 24"><path d="M20.3 4.5A19.8 19.8 0 0 0 15.4 3l-.2.5c1.6.4 3 1 4.4 1.8a16.5 16.5 0 0 0-14 0A17 17 0 0 1 10 3.5L9.8 3A19.8 19.8 0 0 0 4.9 4.5C1.8 9.1.9 13.6 1.3 18a19.9 19.9 0 0 0 6 3l1.2-1.9c-.7-.2-1.3-.5-1.9-.9l.5-.4a14.2 14.2 0 0 0 12.1 0l.5.4c-.6.4-1.2.7-1.9.9L19 21a19.9 19.9 0 0 0 6-3c.5-5.1-.9-9.6-4.7-13.5zM9 15.4c-1.2 0-2.1-1.1-2.1-2.4S7.8 10.6 9 10.6s2.2 1.1 2.2 2.4S10.2 15.4 9 15.4zm6 0c-1.2 0-2.1-1.1-2.1-2.4s.9-2.4 2.1-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/></svg>Continue with Discord</button>
+        <div class="scopes"><b>What this asks Discord for</b><br>
+          <span class="yes">&check;</span> your user ID and username &mdash; <span class="no">that is the whole request</span><br>
+          <span class="no">&times;</span> no email, no servers, no messages, no friends<br>
+          <span class="no">&times;</span> nothing is posted or changed on your account<br>
+          <b style="display:block;margin-top:9px">What gets stored</b>
+          one signed cookie, 12 hours. No Discord token is kept after sign-in.</div>
+      </div></div>
+    <div><div class="cap"><span class="k">2</span><span class="n">Signed in, no access</span></div>
+      <div class="door">
+        <div class="who2"><span class="av"></span><span class="wn"><b>someone</b><span>signed in via Discord</span></span></div>
+        <p class="msg">This account doesn't have portal access.<br>If you think it should, <b>ask the bot owner</b>.</p>
+        <button class="lbtn" style="margin:0 auto">Sign out</button>
+        <div class="scopes"><b>Deliberately vague</b><br>
+          It never says whether the account <i>could</i> be granted access, whether it was revoked, or that an
+          allowlist exists. A stranger and a revoked admin see the same words.</div>
+      </div></div>
+    <div><div class="cap"><span class="k">3</span><span class="n">Session expired</span></div>
+      <div class="door">
+        <span class="stale">SESSION EXPIRED &middot; 12H</span>
+        <div class="who2"><span class="av"></span><span class="wn"><b>dior</b><span>owner</span></span></div>
+        <p class="msg">You were editing <b>Season 7</b>.<br>3 staged changes were kept.</p>
+        <button class="lbtn pri" style="margin:0 auto">Sign back in</button>
+        <div class="scopes"><b>Staged work survives the session.</b><br>
+          A changeset lives in the database, not in the browser, so an expiry can never cost you composed work
+          &mdash; and it also means you can start a set on one machine and commit it on another.</div>
+      </div></div>
+  </div>
+  <p class="note"><b>Nothing here can be built without you first:</b> the OAuth client secret and the redirect URI
+    have to be created by you in the Discord Developer Portal &mdash; I will not handle a credential. The spec will
+    name the exact env var and redirect URL to register, and nothing else about the door depends on it.</p>
+</section>
+
+<section id="broadcast">
+  <div class="lede"><h2>Broadcast</h2><span class="job">the only content pushed AT users</span></div>
+  <p class="dek">Announcements are the one thing a user doesn't ask for, so the questions are different:
+    <b>what is showing right now, in what order, and until when.</b> The visual layer answers those two ways &mdash;
+    <b>Now showing</b> renders the live set exactly as Discord does, in the order users receive it;
+    <b>Airtime</b> puts every announcement on a time axis so overlaps and never-expiring posts are visible.</p>
+  <div class="panel">
+    <div class="ph"><span class="t">Broadcast</span>
+      <div class="seg"><button aria-pressed="true">Now showing</button><button>Airtime</button></div>
+      <span class="sp">2 live &middot; 1 scheduled &middot; 1 never expires</span></div>
+    <div class="nowshow" id="ns"></div>
+    <div class="air" id="air" style="border-top:1px solid var(--rule)"></div>
+    <div style="border-top:2px solid var(--rule2)" id="btable"></div>
+    <div class="dupbar"><b>Heads up:</b><span>&nbsp;“Season 7 is live” has no expiry and has been showing for 19 days.
+      Announcements without an end date stay up forever.</span></div>
+  </div>
+  <p class="note"><b>One honest gap:</b> <span style="font-family:var(--data)">models/Announcement.js</span> has
+    <span style="font-family:var(--data)">expiresAt</span> but <b>no start field</b> &mdash; so "scheduled" above does
+    not exist yet. Adding it is a one-line schema change, and by this repo's own rule it must land in the
+    <i>same change</i> as the code that sets it, or Mongoose drops it silently. Flagged rather than drawn as if it
+    already worked.</p>
+</section>
+
+<section id="ops">
+  <div class="lede"><h2>Operations</h2><span class="job">only what Discord can't already do</span></div>
+  <p class="dek">The temptation here is to rebuild <span style="font-family:var(--data)">/bot analytics</span> in a
+    browser. That would be waste &mdash; Health, Alerts, Usage and Timing already work, and a second copy is a second
+    thing to keep true. So Operations does <b>two things Discord genuinely cannot</b>, and only summarises the rest.</p>
+  <div class="panel">
+    <div class="ph"><span class="t">Operations</span>
+      <div class="seg"><button aria-pressed="true">Access</button><button>Health</button></div>
+      <span class="sp">4 admins &middot; owner + 3 granted</span></div>
+    <div class="mtx" id="mtx"></div>
+    <div class="hcards" id="hc" style="border-top:1px solid var(--rule)"></div>
+    <div class="riv" id="riv"></div>
+  </div>
+  <p class="note"><b>Why these two and not the rest.</b> The permission matrix replaces a Discord modal field where you
+    type <span style="font-family:var(--data)">manage.draws,manage.calendar,bot</span> as a comma-separated string and
+    <span style="font-family:var(--data)">parsePermissionsInput</span> rejects the whole thing if one token is wrong.
+    A grid of the eleven real scopes can't be typo'd, and it shows what
+    <span style="font-family:var(--data)">manage</span> implies rather than making you remember.
+    And the audit river offers <b>revert</b>, which does not exist anywhere today &mdash;
+    <span style="font-family:var(--data)">/bot analytics</span>' Changes page can only list, and
+    <span style="font-family:var(--data)">markUndone</span> merely flags a row when an in-memory undo is consumed,
+    which dies on restart. A persisted inverse makes any change reversible later, from either surface. The source
+    column is the point: <b>one history, both surfaces.</b></p>
+</section>
+
+<script>
+const ANN=[['#F2C230','Season 7 is live','Reckoning drops today — new draws, a reworked ranked reset, and the battle pass runs to Sep 4.','19d ago · no expiry','slot 1 — top'],
+ ['#1F8A5E','Double CP this weekend','2× CP on every purchase from Aug 11 to Aug 15. Use /draw calculator to price a pull first.','9d ago · ends in 2d','slot 2']];
+document.getElementById('ns').innerHTML=ANN.map(([c,h,p,m,s])=>
+ `<div class="annwrap"><span class="slot">${s}</span><div class="ann" style="--c:${c}">
+  <h5>${h}</h5><p>${p}</p><div class="meta"><span>${m}</span><span>seen 412×</span></div></div></div>`).join('');
+
+const AIR=[['Season 7 is live','#F2C230',0,86,'noexp'],['Double CP this weekend','#1F8A5E',34,20,''],
+ ['Clan wars sign-ups','#8A6BD1',62,22,'sched'],['S6 wrap-up','#4E5A64',0,14,'']];
+document.getElementById('air').innerHTML=`
+ <div class="aruler"><span style="left:0%">Aug 1</span><span style="left:33%">Aug 12</span><span style="left:66%">Aug 23</span></div>
+ <div style="position:relative">${AIR.map(([n,c,l,w,k])=>
+  `<div class="airl"><span class="nm">${n}</span><div class="airt">
+   <div class="abar ${k}" style="--c:${c};left:${l}%;width:${w}%">${k==='sched'?'scheduled':k==='noexp'?'no expiry →':''}</div>
+  </div></div>`).join('')}
+ <div style="position:absolute;left:132px;right:0;top:0;bottom:0;pointer-events:none">
+  <div class="anow" style="left:57%"></div></div></div>`;
+
+const BR=[['#F2C230','Season 7 is live','dior','Aug 1','never','live','412'],
+ ['#1F8A5E','Double CP this weekend','dior','Aug 11','Aug 15','live','188'],
+ ['#8A6BD1','Clan wars sign-ups','moderator_k','Aug 24','Aug 31','sched','—'],
+ ['#4E5A64','S6 wrap-up','dior','Jul 20','Aug 1','exp','1.2k']];
+document.getElementById('btable').innerHTML=`<table class="m"><thead><tr>
+ <th style="width:30%">Announcement</th><th>Posted by</th><th>Starts</th><th>Ends</th><th>State</th><th>Seen</th></tr></thead><tbody>
+ ${BR.map(([c,n,by,s,e,st,seen])=>`<tr><td class="n"><span class="swatch" style="background:${c}"></span>${n}</td>
+  <td class="d">${by}</td><td class="d">${s}</td><td class="d" style="${e==='never'?'color:var(--warn)':''}">${e}</td>
+  <td><span class="st ${st}">${st==='live'?'LIVE':st==='sched'?'SCHEDULED':'EXPIRED'}</span></td>
+  <td class="d">${seen}</td></tr>`).join('')}</tbody></table>`;
+
+const SCOPES=[['bot','cmd'],['autobuild','cmd'],['draws','mng'],['calendar','mng'],['loadouts_mp','mng'],
+ ['loadouts_dmz','mng'],['patchnotes','mng'],['seasondraft','mng'],['season','mng'],['announcement','mng']];
+const ADMINS=[['dior','owner · hardcoded','owner'],
+ ['moderator_k','granted 2026-08-13','manage,bot'],
+ ['calendar_helper','granted 2026-08-16','manage.calendar,manage.announcement'],
+ ['gunsmith_ray','granted 2026-08-18','manage.loadouts_mp,manage.loadouts_dmz']];
+const has=(p,s,g)=>p==='owner'?'inh':p.includes('manage')&&g==='mng'&&!p.includes('manage.')?'inh':p.split(',').includes(g==='mng'?'manage.'+s:s)?'on':'';
+document.getElementById('mtx').innerHTML=`<table class="x"><thead>
+ <tr><th class="l"></th><th class="grp" colspan="2">Commands</th><th class="grp" colspan="8">/manage pages</th></tr>
+ <tr><th class="l">Admin</th>${SCOPES.map(([s])=>`<th>${s.replace('loadouts_','')}</th>`).join('')}
+ <th style="width:66px">&nbsp;</th></tr></thead><tbody>
+ ${ADMINS.map(([n,d,p])=>`<tr class="${p==='owner'?'owner':''}">
+  <td class="l"><b>${n}</b><span>${d}</span></td>
+  ${SCOPES.map(([s,g])=>`<td><div class="tick ${has(p,s,g)}">✓</div></td>`).join('')}
+  <td style="text-align:right">${p==='owner'?'<span class="srcpill">LOCKED</span>':'<button class="rvt">Revoke</button>'}</td></tr>`).join('')}
+ </tbody></table>
+ <p style="margin:10px 2px 0;font-size:11.5px;color:var(--ink4);line-height:1.6">
+ <span style="color:var(--ok)">■</span> granted directly &nbsp;
+ <span style="color:var(--ok);opacity:.5">■</span> inherited — bare <span style="font-family:var(--data)">manage</span> covers every page; the owner has everything and cannot be edited.
+ <span style="font-family:var(--data)">/bot access</span> stays owner-only and is not a grantable scope, so it has no column.</p>`;
+
+document.getElementById('hc').innerHTML=[
+ ['Uptime','good','14d 6h','since last deploy',[3,4,4,5,4,5,5,5]],
+ ['Errors 24h','good','0','3 alerts · 14 noise',[1,0,2,0,0,1,0,0]],
+ ['RAM peak 7d','','38%','of 1 GB',[5,4,6,5,7,5,6,5]],
+ ['Commands 24h','','1,284','412 distinct users',[3,5,4,7,6,8,5,7]]
+].map(([k,c,v,s,sp])=>`<div class="hc ${c}"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div>
+ <div class="spark">${sp.map((h,i)=>`<i class="${i===sp.length-1?'hi':''}" style="height:${h*12}%"></i>`).join('')}</div></div>`).join('')
+ +`<p style="grid-column:1/-1;margin:2px;font-size:11.5px;color:var(--ink4);line-height:1.6">
+ Read-only mirror of what <span style="font-family:var(--data)">/bot analytics</span> already computes — the only thing
+ added is <b style="color:var(--ink3)">history as a shape</b>, which a Discord embed cannot draw. Nothing here is a second implementation.</p>`;
+
+const RIV=[['Aug20-07','web','Nightfall','replaced 4 draws','dior','2m ago',0],
+ ['Aug20-06','disc','Shadow Blade rerun','end date +3 days','moderator_k','6m ago',0],
+ ['Aug20-05','web','FENNEC — Close Quarters','badges changed','gunsmith_ray','41m ago',0],
+ ['Aug20-04','disc','Calendar','bulk add · 12 events','dior','2h ago',0],
+ ['Aug20-03','web','Frostbite — Epic','deleted','dior','5h ago',1]];
+document.getElementById('riv').innerHTML=`<div class="ph"><span class="t">Audit river</span>
+ <span class="sp">one history · both surfaces · 1,140 rows</span></div>
+ ${RIV.map(([id,src,tgt,what,who,when,un])=>`<div class="rrow ${un?'undone':''}">
+  <span class="id">${id}</span>
+  <span class="src"><span class="srcpill ${src==='web'?'web':''}">${src==='web'?'PORTAL':'DISCORD'}</span></span>
+  <span class="txt"><b>${tgt}</b> — ${what}</span>
+  <span class="who3">${who}</span><span class="when">${when}</span>
+  <span class="act">${un?'<button class="rvt" disabled>reverted</button>':'<button class="rvt">Revert…</button>'}</span>
+ </div>`).join('')}`;
+</script></body></html>

@@ -1,0 +1,82 @@
+#!/bin/bash
+# Proofs for ctx-index-refresh.sh.
+#
+# ⚠️ REWRITTEN 2026-08-30 12:50 EDT. The first version asserted the presence of `--project '$ROOT'` as a STRING and passed while the hook was a total no-op — testCache.mjs threw on docs/'s nested subdirectories and `2>/dev/null` ate the error. A test that greps a script for a flag proves the flag was typed, never that the script WORKS. These cases run the thing.
+HOOK="$(cd "$(dirname "$0")" && pwd)/ctx-index-refresh.sh"; pass=0; fail=0
+ok(){ if [ "$2" = "$3" ]; then echo "  PASS  $1"; pass=$((pass+1)); else echo "  FAIL  $1 (want $3 got $2)"; fail=$((fail+1)); fi; }
+yes(){ if [ -n "$2" ]; then echo "  PASS  $1"; pass=$((pass+1)); else echo "  FAIL  $1"; fail=$((fail+1)); fi; }
+run(){ printf '{"tool_name":"%s","tool_input":{}}' "$1" | bash "$HOOK" 2>/dev/null; }
+echo "ctx-index-refresh.sh — proofs"
+
+# 🔴 HERMETIC SINCE 2026-10-01 19:07 EDT. This test used to copy the user's REAL stamp aside, delete it and let the hook re-index docs/, the rules, memory and the vendor docs into the REAL context-mode store: about 9 s while docs/ was small, 47 s once pins batch 2 added about 180k lines of it, which made it the longest entry in `npm test`, and a crash between the move and the restore left the user's stamp missing. Now the hook runs in a scratch repo (a git repo holding one doc, one rule and a CLAUDE.md, with its own copy of scripts/indexHealth.mjs) under a scratch HOME, so the stamp, the store and every corpus are the scratch ones. The context-mode CLI is still the REAL one, linked in from the real plugin cache when it exists, so the proof is unchanged: a cold run indexes and a warm run does nothing.
+REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+SB="$(mktemp -d)"; trap 'rm -rf "$SB"' EXIT
+SBH="$SB/home"; FIX="$SB/repo"
+mkdir -p "$FIX/docs" "$FIX/.claude/rules" "$FIX/scripts" "$SBH/.claude/plugins/cache/context-mode/context-mode/9.9.9"
+printf '# Stamp fixture\n\nA sentence for the cold index.\n' > "$FIX/docs/fixture.md"
+printf '# Rule fixture\n\nA rule for the cold index.\n' > "$FIX/.claude/rules/fixture.md"
+printf '# CLAUDE fixture\n' > "$FIX/CLAUDE.md"
+cp "$REPO_ROOT/scripts/indexHealth.mjs" "$FIX/scripts/indexHealth.mjs"
+git -C "$FIX" init -q
+runfx(){ printf '{"tool_name":"%s","tool_input":{}}' "$1" | (cd "$FIX" && HOME="$SBH" bash "$HOOK" 2>/dev/null); }
+
+# ── gating: only ctx_search, and never noisy on the happy path.
+out="$(run Bash)";  ok "silent on Bash"  "${out:-EMPTY}" "EMPTY"
+out="$(run Read)";  ok "silent on Read"  "${out:-EMPTY}" "EMPTY"
+run Bash >/dev/null 2>&1; ok "exit 0 on a non-matching tool" "$?" "0"
+printf '{}' | bash "$HOOK" >/dev/null 2>&1; ok "exit 0 on empty payload" "$?" "0"
+runfx mcp__plugin_context-mode_context-mode__ctx_search >/dev/null 2>&1; ok "exit 0 on ctx_search" "$?" "0"
+
+# ── 🔴 IT MUST ACTUALLY INDEX. The v1 defect was a hook that exited 0 having done nothing. Prove the work happened by removing the stamp and checking the hook recreates it. Derive the stamp path the SAME way the hook does — keyed by repo root, so two clones cannot fight over one file. A test that hardcodes the path silently stops testing the moment the hook changes it (which is exactly what happened when the key was introduced).
+CDIR=$(git -C "$FIX" rev-parse --git-common-dir); case "$CDIR" in /*) ;; *) CDIR="$FIX/$CDIR";; esac
+RT=$(cd "$(dirname "$CDIR")" && pwd)
+STAMP="$SBH/.claude/context-mode/.dioreo-prose-stamp-$(printf '%s' "$RT" | shasum | cut -c1-12)"
+# 🔴 THE INDEXING PROOFS NEED THE CONTEXT-MODE CLI, WHICH ONLY EXISTS ON A DEV MACHINE. It is resolved from ~/.claude/plugins/cache/, and the hook itself exits 0 when it is absent (line 26, `[ -n "$CLI" ] && [ -f "$CLI" ] || exit 0`) — correct behaviour, since writing a stamp without indexing would claim a fresh index that does not exist. The test asserted the stamp UNCONDITIONALLY, so it passed here and failed in CI with "cold run wrote no stamp — the hook is a NO-OP", accusing the hook of the very bug it does not have. Found on the first push of feat/portal-redesign-session-b, 2026-08-31. ⚠️ THE SPLIT IS NOT A SKIP. Where the CLI exists the original proof runs unchanged and still catches the v1 no-op. Where it does not, the assertion becomes the one that IS checkable there — that the hook degrades silently instead of stamping — so neither branch is vacuous. A bare skip would have made this green everywhere and meaningless in CI, which is the failure mode this repo keeps paying for.
+CLI_PRESENT=$(ls -d "$HOME"/.claude/plugins/cache/context-mode/context-mode/*/cli.bundle.mjs 2>/dev/null | head -1)
+[ -n "$CLI_PRESENT" ] && ln -s "$CLI_PRESENT" "$SBH/.claude/plugins/cache/context-mode/context-mode/9.9.9/cli.bundle.mjs"
+runfx mcp__plugin_context-mode_context-mode__ctx_search >/dev/null 2>&1
+if [ -n "$CLI_PRESENT" ]; then
+  if [ -s "$STAMP" ]; then echo "  PASS  a cold run REALLY indexes (stamp written)"; pass=$((pass+1))
+  else echo "  FAIL  cold run wrote no stamp — the hook is a NO-OP, which is the v1 bug"; fail=$((fail+1)); fi
+  before="$(cat "$STAMP" 2>/dev/null)"
+  runfx mcp__plugin_context-mode_context-mode__ctx_search >/dev/null 2>&1
+  ok "a warm run is a no-op (stamp unchanged)" "$(cat "$STAMP" 2>/dev/null)" "$before"
+else
+  if [ ! -e "$STAMP" ]; then echo "  PASS  no context-mode CLI: the hook stamps nothing rather than claiming a fresh index"; pass=$((pass+1))
+  else echo "  FAIL  no context-mode CLI, yet a stamp was written — that claims an index that does not exist"; fail=$((fail+1)); fi
+  grep -q '\[ -n "\$CLI" \] && \[ -f "\$CLI" \] || exit 0' "$HOOK" && { echo "  PASS  the hook guards on the CLI being present"; pass=$((pass+1)); } || { echo "  FAIL  the hook has no CLI guard"; fail=$((fail+1)); }
+fi
+
+# ── 🔴 THE ROOT MUST BE THE MAIN WORKTREE, NOT CLAUDE_PROJECT_DIR. In a worktree those differ, and the content DB is keyed on the project root — getting this wrong silently splits retrieval across DBs.
+grep -q 'git rev-parse --git-common-dir' "$HOOK" && { echo "  PASS  root derived from git, not CLAUDE_PROJECT_DIR"; pass=$((pass+1)); } || { echo "  FAIL  root not derived from git"; fail=$((fail+1)); }
+# Scope to EXECUTABLE lines: this hook's own header documents both defects by name, and a check that greps the whole file would flag the documentation of the fix as the bug. (A check firing on its own artifact is a named failure mode here — see completeness-sweep's "NEW ENFORCEMENT" pass.)
+code(){ grep -v '^[[:space:]]*#' "$HOOK"; }
+code | grep -q 'CLAUDE_PROJECT_DIR' && { echo "  FAIL  still reads CLAUDE_PROJECT_DIR (worktree-unsafe)"; fail=$((fail+1)); } || { echo "  PASS  does not read CLAUDE_PROJECT_DIR in code"; pass=$((pass+1)); }
+n_index=$(grep -cE "index [^ ]+ +--source" "$HOOK"); n_proj=$(grep -c -- '--project "\$ROOT"' "$HOOK")
+ok "every index call pins --project" "$n_proj" "$n_index"
+# 🔴 BY NAME, NEVER BY COUNT. This asserted `n_index == 3` and broke the moment the hook grew to seven corpora on 2026-09-01 — a count assertion fails on correct growth and, worse, PASSES if one corpus is swapped for another. Naming each is stable under growth and catches a silent drop, which is the defect that actually matters here: an unindexed corpus answers a search with nothing and looks like "no hits".
+for src in dioreo-docs dioreo-rules dioreo-claudemd dioreo-memory dioreo-meta-deferred dioreo-compliance-plan dioreo-tooling; do
+  grep -q -- "--source project:$src" "$HOOK" \
+    && { echo "  PASS  indexes corpus $src"; pass=$((pass+1)); } \
+    || { echo "  FAIL  corpus $src is not indexed — a search over it returns nothing and looks like no hits"; fail=$((fail+1)); }
+done
+
+# 🔴 THE THREE OUTSIDE $ROOT MUST BE DERIVED, NOT HARDCODED. A literal slug re-creates the 2026-07-28 migration, where the memory store sat at a path nothing read and only a note bridged it.
+code | grep -q "projects/\$(printf" \
+  && { echo "  PASS  the memory slug is DERIVED from \$ROOT, not hardcoded"; pass=$((pass+1)); } \
+  || { echo "  FAIL  the memory path looks hardcoded — it must be derived from \$ROOT"; fail=$((fail+1)); }
+code | grep -q 'EXT_STAMP' \
+  && { echo "  PASS  external sources carry their OWN stamp (a memory write must not re-index docs/)"; pass=$((pass+1)); } \
+  || { echo "  FAIL  one stamp for both — every auto-memory write would re-index all of docs/"; fail=$((fail+1)); }
+
+# ── 🔴 A STAMP IS NOT THE STORE (2026-09-13 13:18 EDT). context-mode's startup sweep deleted the store twice under a stamp that still matched, and this hook trusted the stamp. These name the guards so none can be dropped silently; their logic is proved in scripts/indexHealth.test.mjs and ~/.claude/hooks/context-mode-wal-guard.test.mjs.
+grep -q -- "--source vendor:impeccable-docs --no-gitignore" "$HOOK" && { echo "  PASS  indexes corpus vendor:impeccable-docs, past local/'s gitignore"; pass=$((pass+1)); } || { echo "  FAIL  vendor docs are not a corpus, or are indexed through the gitignore and come back empty"; fail=$((fail+1)); }
+code | grep -q '"$HEALTH" labels --root "$ROOT" $REPO_LABELS' && code | grep -q '"$HEALTH" labels --root "$ROOT" $EXT_LABELS' && { echo "  PASS  a stamp is checked against the corpora the store still holds"; pass=$((pass+1)); } || { echo "  FAIL  a matching stamp is trusted over a store that lost its rows"; fail=$((fail+1)); }
+code | grep -q '"$HEALTH" orphans' && { echo "  PASS  a server reading a deleted store is reported"; pass=$((pass+1)); } || { echo "  FAIL  a server reading a deleted store would go unreported"; fail=$((fail+1)); }
+awk '/MISSING=\$\(node/ && !m {m=NR} /> "\$STAMP"/ && !s {s=NR} END {exit !(m && s && m < s)}' "$HOOK" && { echo "  PASS  the stamp is written only after the post-index corpus check"; pass=$((pass+1)); } || { echo "  FAIL  the stamp can be written before checking the corpora landed"; fail=$((fail+1)); }
+
+# ── 🔴 A FAILURE MUST BE VISIBLE. v1 swallowed its own fatal error for its entire life.
+grep -q 'CTX INDEX REFRESH FAILED' "$HOOK" && { echo "  PASS  reports an indexing failure instead of hiding it"; pass=$((pass+1)); } || { echo "  FAIL  an index failure would be silent"; fail=$((fail+1)); }
+code | grep -q 'testCache' && { echo "  FAIL  still uses testCache, which throws on docs/'s nested dirs"; fail=$((fail+1)); } || { echo "  PASS  does not use testCache in code (it rejects nested inputs)"; pass=$((pass+1)); }
+yes "cache is a content hash over the real tree" "$(grep -E 'shasum' "$HOOK")"
+echo; echo "  $pass passed, $fail failed"; [ "$fail" -eq 0 ] || exit 1

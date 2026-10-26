@@ -1,0 +1,23 @@
+// ==========================================
+// UTILITY: NATIVE SLASH-COMMAND MENTIONS
+// ==========================================
+// Renders a real clickable </name:id> Discord command mention -- see docs/superpowers/specs/2026-08-10-slash-command-mentions-design.md for the full design. A subcommand mention (</name sub:id>) still uses the TOP-LEVEL command's id -- there is no separate id per subcommand -- so the lookup below is always keyed by the first word of `path`.
+//
+// IDs are captured fresh every boot onto `client.commandIds` (bot/registry.js's registerApplicationCommands(), from the same REST response that registers the commands) and read here at RENDER time, never baked into a module-level constant -- the dev bot and prod bot are separate Discord applications with different ids for identically-named commands, the same reason utils/emojiMap.js resolves emoji ids at render time instead of require() time.
+//
+// Fail-soft: an unknown or not-yet-populated id falls back to the exact backtick text this replaced, so a cold boot or a registration failure degrades to plain text, never a broken panel.
+
+// Every registered command id across BOTH applications (2026-10-19 13:44 EDT, Dioreo Admin). A command lives on exactly one app, so names never collide; the public app's /help can then link /bot, which Dioreo Admin owns. Filled by bot/registry.js after each app's registration.
+const allCommandIds = new Map();
+function recordCommandIds(ids) {
+    for (const [name, id] of ids) allCommandIds.set(name, id);
+}
+
+function mentionCommand(client, path) {
+    const clean = path.replace(/^\//, '');
+    const base = clean.split(' ')[0];
+    const id = client?.commandIds?.get(base) ?? allCommandIds.get(base);
+    return id ? `</${clean}:${id}>` : `\`/${clean}\``;
+}
+
+module.exports = { mentionCommand, recordCommandIds };

@@ -5,34 +5,25 @@
 #   "I put that follow up there around 4-5 sessions ago. Each session claimed to have read the notes
 #    file but not a single one mentioned my follow-up."
 #
-# He was right, and the cause was structural, not inattention. His follow-up sat at line 107 and was
-# invisible to everything, THREE ways at once:
-#   1. The SessionStart open-items scan runs strictly between `## Questions` and `## 📍`. The
-#      follow-up is BELOW `## 📍` — outside the scan window by design.
+# He was right, and the cause was structural, not inattention. His follow-up sat at line 107 and was invisible to everything, THREE ways at once:
+#   1. The SessionStart open-items scan runs strictly between `## Questions` and `## 📍`. The follow-up is BELOW `## 📍` — outside the scan window by design.
 #   2. That scan only counts `- [ ]`-shaped list items. This was inline prose inside an italic note.
 #   3. NO hook in this directory matched `※` or `∴` at all. Not a weak matcher — a missing one.
 # Three independent misses stacked, so "I read the notes file" was true every time and still useless.
 #
-# ⚠️ ANSWERED IS NOT RESOLVED — the specific trap that produced the five-session miss. That follow-up
-# HAD a `∴` reply. The reply ended "Say the word and I'll rework the hook..." — an open question back
-# to Harkirat that nobody ever put in front of him. A gate that only reports UNANSWERED marks would
-# have stayed silent on the exact case it exists for, which is why the open-offer patterns below
-# matter as much as the missing-reply check.
+# ⚠️ ANSWERED IS NOT RESOLVED — the specific trap that produced the five-session miss. That follow-up HAD a `∴` reply. The reply ended "Say the word and I'll rework the hook..." — an open question back to Harkirat that nobody ever put in front of him. A gate that only reports UNANSWERED marks would have stayed silent on the exact case it exists for, which is why the open-offer patterns below matter as much as the missing-reply check.
 #
 # Scans the WHOLE FILE deliberately — no section bounds. Bounded scanning is what hid this.
 #
 # Cost: one pass over a ~130-line file. Negligible; it runs at SessionStart, once.
 #
-# Failure mode, stated: "does this reply still need Harkirat?" is read from wording, so a reply
-# phrased as an offer without any listed cue reads as resolved. Widen the cue list when one is
-# missed — do not narrow it, since a false surface costs one line and a false silence costs sessions.
+# Failure mode, stated: "does this reply still need Harkirat?" is read from wording, so a reply phrased as an offer without any listed cue reads as resolved. Widen the cue list when one is missed — do not narrow it, since a false surface costs one line and a false silence costs sessions.
 
 set -uo pipefail
 f="${1:?usage: notes-followups.sh <path-to-notes.md>}"
 [ -f "$f" ] || exit 0
 
-# An exchange is closed when it is struck through (~~...~~) or checked ([x]) — the file's own
-# conventions for "this is done" — mirrored here rather than invented.
+# An exchange is closed when it is struck through (~~...~~) or checked ([x]) — the file's own conventions for "this is done" — mirrored here rather than invented.
 awk -v today="$(date +%s)" '
   /※/ {
     line = $0

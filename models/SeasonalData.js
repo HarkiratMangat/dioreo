@@ -3,11 +3,10 @@ const mongoose = require('mongoose');
 const SeasonalDataSchema = new mongoose.Schema({
     docType: { type: String, default: 'global', unique: true },
 
-    // NOTE (added during review): these four titles are set by the "Initialize New Season" and
-    // "Edit Season Titles" admin modals (index.js ADMIN ROUTE A / J), and read as fallback display
-    // text in seasonend.js and draws.js — but were missing from the schema, so .save() was
-    // silently discarding them every time (Mongoose only persists declared paths).
+    // NOTE (added during review): these four titles are set by the "Initialize New Season" and "Edit Season Titles" admin modals (handlers/manage.js's modal_wipe_season and modal_season_titles_deadlines handlers), and read as fallback display text in seasonend.js and draws.js — but were missing from the schema, so .save() was silently discarding them every time (Mongoose only persists declared paths).
     currentSeasonTitle: { type: String, default: '' },
+    // The season's own emoji (2026-10-19 09:30 EDT), typed in front of the title in /manage and split off by core/ops/season.js so the title stays plain. Blank falls back to emojiMap's season{N} (utils/seasonEmoji.js).
+    currentSeasonEmoji: { type: String, default: '' },
     bpTitle: { type: String, default: 'Battle Pass' },
     rankTitle: { type: String, default: 'Ranked Series' },
     dmzTitle: { type: String, default: 'DMZ Season' },
@@ -16,13 +15,7 @@ const SeasonalDataSchema = new mongoose.Schema({
     bpEnd: { type: Date },
     rankEnd: { type: Date },
     dmzEnd: { type: Date },
-    // TBD state (added 2026-07-31 14:00 EDT) -- typing the literal word "TBD" into a deadline field
-    // now sets this flag + nulls the Date, instead of silently corrupting the date (the L194 bug --
-    // see adminParser.js's parseAdminDate). Distinct from "not set yet" (both fields default
-    // false/undefined): TBD means "known to be undecided," so seasonend.js shows "TBD" rather than
-    // "Date has not been set yet," and anything checking whether the season/an "All Season" calendar
-    // event has ended (calendar.js's isEventEnded) treats a TBD end as indefinitely running rather
-    // than comparing against a null date.
+    // TBD state (added 2026-07-31 14:00 EDT) -- typing the literal word "TBD" into a deadline field now sets this flag + nulls the Date, instead of silently corrupting the date (the L194 bug -- see adminParser.js's parseAdminDate). Distinct from "not set yet" (both fields default false/undefined): TBD means "known to be undecided," so seasonend.js shows "TBD" rather than "Date has not been set yet," and anything checking whether the season/an "All Season" calendar event has ended (calendar.js's isEventEnded) treats a TBD end as indefinitely running rather than comparing against a null date.
     bpEndTBD: { type: Boolean, default: false },
     rankEndTBD: { type: Boolean, default: false },
     dmzEndTBD: { type: Boolean, default: false },
@@ -30,22 +23,13 @@ const SeasonalDataSchema = new mongoose.Schema({
     // /patchnotes
     patchNotes: [{
         title: { type: String }, // Now holds just the season # & name (e.g. "Season 6: Take Your Heart"),
-        // not the full "Balance Changes for..." string — see patchnotes.js. Kept auto-synced to
-        // currentSeasonTitle for the current entry (see index.js's modal_season_titles_deadlines) --
-        // titleOverride below is what actually decides what's DISPLAYED.
+        // not the full "Balance Changes for..." string — see patchnotes.js. Kept auto-synced to currentSeasonTitle for the current entry (see handlers/manage.js's modal_season_titles_deadlines) -- titleOverride below is what actually decides what's DISPLAYED. The season emoji carried onto the current entry beside its title, by the same sync that keeps `title` matching currentSeasonTitle (2026-10-19 09:30 EDT).
+        emoji: { type: String, default: '' },
         titleOverride: { type: String, default: '' }, // Manual per-entry title override (2026-07-24,
-        // /manage "Add New Season"/"Past Seasons" edit) -- lets Harkirat set a placeholder season
-        // title on a patch entry when the real season title isn't finalized yet (e.g. patch notes
-        // released before the new season's name is announced). Blank = no override, falls back to
-        // `title` above. Every display site must read `titleOverride || title`, never `title` alone
-        // -- see patchnotes.js's exported `displayTitle()`.
+        // /manage "Add New Season"/"Past Seasons" edit) -- lets Harkirat set a placeholder season title on a patch entry when the real season title isn't finalized yet (e.g. patch notes released before the new season's name is announced). Blank = no override, falls back to `title` above. Every display site must read `titleOverride || title`, never `title` alone -- see patchnotes.js's exported `displayTitle()`.
         description: { type: String, default: '' }, // Optional extra info; left blank shows nothing
         releaseDate: { type: Date },
-        // Cloudinary URLs (2026-07-13) -- re-hosted from whatever external URL the admin typed, via
-        // utils/patchNotesCache.js, keyed by this subdocument's own `_id` (see that file for why:
-        // season-based retention, not the draws' 45-day age window -- an image stays cached as long
-        // as this entry is still one of the 5 most recent in patchNotes[], pruned once it rolls off
-        // /patch notes' own history dropdown regardless of age).
+        // Cloudinary URLs (2026-07-13) -- re-hosted from whatever external URL the admin typed, via utils/patchNotesCache.js, keyed by this subdocument's own `_id` (see that file for why: season-based retention, not the draws' 45-day age window -- an image stays cached as long as this entry is still one of the 5 most recent in patchNotes[], pruned once it rolls off /patch notes' own history dropdown regardless of age).
         images: [{ type: String }]
     }],
 
@@ -54,6 +38,7 @@ const SeasonalDataSchema = new mongoose.Schema({
         title: { type: String },
         date: { type: Date },
         thumbnailUrl: { type: String },
+        priceType: { type: String, default: '' }, // The /draw prices type this draw is priced as (2026-10-18 11:06 EDT, utils/drawTypes.js): a quick-jump key, '' when not set
         items: [{
             tier: { type: String }, // Maps to L, M, LL, E shorthands
             name: { type: String }
@@ -63,6 +48,7 @@ const SeasonalDataSchema = new mongoose.Schema({
         title: { type: String },
         date: { type: Date },
         thumbnailUrl: { type: String },
+        priceType: { type: String, default: '' }, // The /draw prices type this draw is priced as (2026-10-18 11:06 EDT, utils/drawTypes.js): a quick-jump key, '' when not set
         items: [{
             tier: { type: String },
             name: { type: String }
@@ -75,35 +61,22 @@ const SeasonalDataSchema = new mongoose.Schema({
         date: { type: Date }, // start date
         endDate: { type: Date }, // optional — null/absent when isOngoing is true
         isOngoing: { type: Boolean, default: false }, // true for "All Season" bulk entries
-        // 3-section calendar redesign (2026-07-31 12:10 EDT) -- draw/event/playlist, set via the bulk parser's
-        // d•/p•/e• prefix (adminParser.js's parseBulkEvents) or the single add/edit modal. Defaults
-        // to 'event' so every pre-existing un-prefixed entry keeps rendering in the same section it
-        // always has. calendar.js also synthesizes 'draw' entries at RENDER time from newDraws/
-        // returningDraws for anything with no explicit calendar row -- those are never saved here.
-        category: { type: String, enum: ['draw', 'event', 'playlist'], default: 'event' }
+        // 3-section calendar redesign (2026-07-31 12:10 EDT) -- draw/event/playlist, set via the bulk parser's d•/p•/e• prefix (adminParser.js's parseBulkEvents) or the single add/edit modal. Defaults to 'event' so every pre-existing un-prefixed entry keeps rendering in the same section it always has. calendar.js also synthesizes 'draw' entries at RENDER time from newDraws/ returningDraws for anything with no explicit calendar row -- those are never saved here.
+        category: { type: String, enum: ['draw', 'event', 'playlist'], default: 'event' },
+        // Marks a live 2X CP event so /draw calculator can offer double-CP pricing without the user having to know an event is on. An explicit flag rather than matching the title text: a title pattern fails SILENTLY the first season the wording changes, and a silent miss here means quoting someone the wrong purchase. Set from /manage's Calendar Add/Edit modal.
+        isDoubleCP: { type: Boolean, default: false }
     }],
 
-    // Per-page /calendar banners (added 2026-07-31 17:20 EDT, the notes file follow-up) -- ONE banner per page
-    // (Draws/Events/Playlists), independently settable via /manage's Calendar "Banners" action.
-    // Re-hosted through utils/calendarBannerCache.js (same Cloudinary caching philosophy as draw
-    // thumbnails/patch images). Blank/'' = show nothing for that page, not a placeholder.
+    // Per-page /calendar banners (added 2026-07-31 17:20 EDT, the notes file follow-up) -- ONE banner per page (Draws/Events/Playlists), independently settable via /manage's Calendar "Banners" action. Re-hosted through utils/calendarBannerCache.js (same Cloudinary caching philosophy as draw thumbnails/patch images). Blank/'' = show nothing for that page, not a placeholder.
     drawsBannerUrl: { type: String, default: '' },
     eventsBannerUrl: { type: String, default: '' },
     playlistsBannerUrl: { type: String, default: '' },
 
-    // Next-season staging area (added 2026-07-30 22:24 EDT) -- lets the admin prep an entire upcoming season
-    // (title/deadlines/draws/calendar) WITHOUT it going live, then flip it live in one shot via
-    // /manage's "Promote to Live" action. Exists because this whole document is a single global
-    // doc (`docType: 'global'`) -- editing newDraws/calendar/bpEnd directly during the overlap
-    // window between "current season not over yet" and "new season announced" immediately
-    // overwrote what was still publicly live, and an "All Season" calendar event's displayed end
-    // always reads the LIVE bpEnd (see calendar.js), so a draft entry prepared before bpEnd was
-    // updated would show the OLD season's end date until promoted. Mirrors the shape of the live
-    // fields it stages, minus patchNotes (patch notes already has its own overlap-safe system --
-    // "Add New Season" pushes a new entry without touching the current one).
+    // Next-season staging area (added 2026-07-30 22:24 EDT) -- lets the admin prep an entire upcoming season (title/deadlines/draws/calendar) WITHOUT it going live, then flip it live in one shot via /manage's "Promote to Live" action. Exists because this whole document is a single global doc (`docType: 'global'`) -- editing newDraws/calendar/bpEnd directly during the overlap window between "current season not over yet" and "new season announced" immediately overwrote what was still publicly live, and an "All Season" calendar event's displayed end always reads the LIVE bpEnd (see calendar.js), so a draft entry prepared before bpEnd was updated would show the OLD season's end date until promoted. Mirrors the shape of the live fields it stages, minus patchNotes (patch notes already has its own overlap-safe system -- "Add New Season" pushes a new entry without touching the current one).
     draft: {
         active: { type: Boolean, default: false }, // true once any draft field has been set
         currentSeasonTitle: { type: String, default: '' },
+        currentSeasonEmoji: { type: String, default: '' }, // promoted with the title (2026-10-19 09:30 EDT)
         bpTitle: { type: String, default: 'Battle Pass' },
         rankTitle: { type: String, default: 'Ranked Series' },
         dmzTitle: { type: String, default: 'DMZ Season' },
@@ -117,12 +90,14 @@ const SeasonalDataSchema = new mongoose.Schema({
             title: { type: String },
             date: { type: Date },
             thumbnailUrl: { type: String },
+            priceType: { type: String, default: '' }, // The /draw prices type this draw is priced as (2026-10-18 11:06 EDT, utils/drawTypes.js): a quick-jump key, '' when not set
             items: [{ tier: { type: String }, name: { type: String } }]
         }],
         returningDraws: [{
             title: { type: String },
             date: { type: Date },
             thumbnailUrl: { type: String },
+            priceType: { type: String, default: '' }, // The /draw prices type this draw is priced as (2026-10-18 11:06 EDT, utils/drawTypes.js): a quick-jump key, '' when not set
             items: [{ tier: { type: String }, name: { type: String } }]
         }],
         calendar: [{
@@ -130,7 +105,9 @@ const SeasonalDataSchema = new mongoose.Schema({
             date: { type: Date },
             endDate: { type: Date },
             isOngoing: { type: Boolean, default: false },
-            category: { type: String, enum: ['draw', 'event', 'playlist'], default: 'event' }
+            category: { type: String, enum: ['draw', 'event', 'playlist'], default: 'event' },
+            // Was missing (v3-pre-release review, finding #2): draft.calendar is a hand-copied duplicate of the LIVE calendar sub-schema above, and never received this field when it was added -- Mongoose silently dropped it, so Promote to Live flattened every staged 2X CP event and /draw calculator quoted normal pricing during a live double-CP window. Keep this in sync with the live calendar sub-schema by hand until the two are extracted into one shared sub-schema (filed as follow-up cleanup).
+            isDoubleCP: { type: Boolean, default: false }
         }],
         drawsBannerUrl: { type: String, default: '' },
         eventsBannerUrl: { type: String, default: '' },

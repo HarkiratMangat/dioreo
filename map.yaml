@@ -1,0 +1,212 @@
+# Dioreo — product map.
+#
+# Schema read off linksee-memory 0.11.5's own parser (dist/lib/map-import.js), not guessed:
+#   required: project · stages (non-empty) · nodes (list)
+#   node layer:  surface | implementation        — a surface node MUST carry a stage
+#   node status: active | experiment | commitment | planned | paused | suspect | future_thesis
+#   edge type:   realizes | supports | must-stay-consistent-with | should-align-with | mentions | reflux
+#   edge strength: hard | soft | watch
+#   `anchor:` links a node to a linksee drift_anchor id, so a map node and a declared
+#   decision become the same object. Unknown node keys are kept in `extra`, so this file
+#   can carry more than the schema without losing it.
+#
+# WHY THIS EXISTS: `where_am_i` returned "No Map imported" for the life of this project,
+# which meant the whole drift half of linksee was dark — blast radius, reconcile, and the
+# question "what else does changing this implicate" all returned nothing.
+
+project: dioreo
+job: >-
+  Give a CODM player the answer they came for inside Discord in one screenful, and give the
+  admin a depth surface where changing that answer is safe, reversible and visible.
+product_status: v3 pre-release, not yet publicly launched
+audience:
+  players: CODM players who ask the bot about draws, prices, loadouts, patch notes and season timing
+  admin: Harkirat, sole admin today; the permission model already supports a second
+template: product-map/v1
+
+stages:
+  - id: discover
+    label: Find out Dioreo exists
+  - id: understand
+    label: Work out what it does
+  - id: try
+    label: Run a first command
+  - id: adopt
+    label: Use it as the default answer
+  - id: retain
+    label: Keep it correct as seasons change
+
+nodes:
+  # ── surface: what a player or an admin actually meets ──────────────────────
+  - id: site-home
+    layer: surface
+    stage: discover
+    statement: dioreo.app is the front door and states what the bot is without a login.
+    status: active
+    role: The only surface a stranger can reach.
+    note: Built by scripts/buildLegalPages.js; published by .github/workflows/deploy-site.yml on merge.
+
+    reality:
+      path: scripts/buildLegalPages.js
+      checks:
+        - path: public/index.html
+        - path: docs/legal/TERMS.md
+  - id: commands-page
+    layer: surface
+    stage: understand
+    statement: /commands lists every command with its real options, so the reader learns the surface before installing.
+    status: active
+    note: >-
+      The landing page's typing animation (CMD_JS SPECS in buildLegalPages.js) is FILED AS DRIFTED —
+      it omits /help and /draw calculator, both shipped. See docs/db-deferred-list.md.
+
+    reality:
+      path: scripts/buildLegalPages.js
+      checks:
+        - path: public/commands.html
+  - id: discord-commands
+    layer: surface
+    stage: try
+    statement: A slash command answers one question in one screenful, with no setup.
+    status: active
+    role: The product. Everything else exists to keep this correct.
+
+    reality:
+      path: bot/registry.js
+      checks:
+        - path: commands
+        - path: handlers/router.js
+  - id: admin-portal
+    layer: surface
+    stage: retain
+    statement: portal.dioreo.app is the depth surface where content is changed, staged, reviewed and reversed.
+    status: active
+    anchor: 7
+    note: >-
+      Step 3 of the completion plan is in progress. The unit of work is the filed item, never the
+      realm — see anchor 7 and docs/superpowers/plans/2026-09-06-portal-step3-step4-completion.md.
+
+    reality:
+      path: portal/ui
+      checks:
+        - path: portal/ui/home.js
+        - path: portal/ui/season.js
+        - path: portal/ui/app.css
+        - path: portal/public/harness.html
+  - id: legal-pages
+    layer: surface
+    stage: adopt
+    statement: Terms and Privacy are publicly linked, as the Discord Developer Portal requires.
+    status: commitment
+    note: >-
+      PRIVACY.md must describe the real stored fields. docs-audit's privacy-inventory and
+      privacy-model-coverage checks enforce it, so a new per-user field without a policy edit fails CI.
+
+  # ── implementation: what makes the surfaces true ───────────────────────────
+    reality:
+      path: docs/legal/PRIVACY.md
+      checks:
+        - path: docs/legal/TERMS.md
+  - id: bot-runtime
+    layer: implementation
+    statement: index.js is an entrypoint; handlers/router.js dispatches every interaction inside one crash net.
+    status: active
+    note: The bot holds ZERO standing guild permissions; it answers through interaction webhooks.
+
+    reality:
+      path: handlers/router.js
+      checks:
+        - path: index.js
+        - path: bot/lifecycle.js
+  - id: core-ops
+    layer: implementation
+    statement: Every mutation is a value in core/ with validate, preview, apply and invert.
+    status: active
+    role: The reason a portal change is reversible at all.
+
+    reality:
+      path: core
+      checks:
+        - path: utils/manageActions.js
+  - id: portal-api
+    layer: implementation
+    statement: portal/api drives core/ and owns no business logic of its own.
+    status: active
+
+    reality:
+      path: portal/api
+      checks:
+        - path: portal/server.js
+  - id: design-package
+    layer: implementation
+    statement: The 2026-08-23 interactive mockup is the design authority; the portal is deliberately ahead of it on cited rows.
+    status: active
+    note: >-
+      Divergences are ROWS in docs/reference/portal-decision-ledger.md with falsifiers.
+      A portal:diff region with a ledger row is not a defect.
+
+    reality:
+      path: docs/superpowers/mockups/2026-08-23-portal-interactive
+      checks:
+        - path: docs/reference/portal-decision-ledger.md
+        - path: DESIGN.md
+  - id: records
+    layer: implementation
+    statement: CHANGELOG, DEVLOG and db-deferred-list are the project's memory; docs-audit enforces their conservation.
+    status: commitment
+    note: An item leaves an active list ONLY by appearing in its archive.
+
+    reality:
+      path: docs/db-deferred-list.md
+      checks:
+        - path: docs/CHANGELOG.md
+        - path: docs/DEVLOG.md
+        - path: scripts/docs-audit.mjs
+edges:
+  - from: bot-runtime
+    to: discord-commands
+    type: realizes
+    strength: hard
+  - from: core-ops
+    to: discord-commands
+    type: realizes
+    strength: hard
+  - from: core-ops
+    to: admin-portal
+    type: realizes
+    strength: hard
+    note: One algebra, two front doors — /manage and the portal drive the same ops.
+  - from: portal-api
+    to: admin-portal
+    type: realizes
+    strength: hard
+  - from: design-package
+    to: admin-portal
+    type: should-align-with
+    strength: watch
+    note: The portal leads on cited rows; the ledger records each one.
+  - from: commands-page
+    to: discord-commands
+    type: must-stay-consistent-with
+    strength: hard
+    note: >-
+      This edge is currently VIOLATED and it is filed: the landing animation omits /help and
+      /draw calculator. Exactly the drift a map is for.
+  - from: site-home
+    to: commands-page
+    type: supports
+    strength: soft
+  - from: legal-pages
+    to: discord-commands
+    type: must-stay-consistent-with
+    strength: hard
+    note: A new stored field makes the Privacy Policy a false statement about live data.
+  - from: records
+    to: admin-portal
+    type: must-stay-consistent-with
+    strength: soft
+  - from: admin-portal
+    to: discord-commands
+    type: supports
+    strength: soft
+    note: The portal exists so the commands keep answering correctly as a season turns.

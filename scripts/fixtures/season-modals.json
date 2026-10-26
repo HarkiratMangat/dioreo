@@ -1,0 +1,241 @@
+{
+  "wipeSeason": {
+    "custom_id": "modal_wipe_season",
+    "title": "Start New Season",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "season_title",
+            "label": "New Season Title",
+            "style": 1,
+            "placeholder": "e.g. Season 7: Ghost in the Shell",
+            "required": true
+          }
+        ]
+      }
+    ]
+  },
+  "titlesDeadlines": {
+    "custom_id": "modal_season_titles_deadlines",
+    "title": "Edit Season Titles & Deadlines",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "main_title",
+            "label": "Main Season Title",
+            "style": 1,
+            "value": "Season 8"
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "bp_line",
+            "label": "Battle Pass: Title, End Date",
+            "style": 1,
+            "value": "Battle Pass, September 4, 2026"
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "rank_line",
+            "label": "Ranked Series: Title, End Date",
+            "style": 1,
+            "value": "Ranked Series, September 4, 2026"
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "dmz_line",
+            "label": "DMZ Season: Title, End Date",
+            "style": 1,
+            "value": "DMZ Season"
+          }
+        ]
+      }
+    ]
+  },
+  "titlesDeadlinesBlank": {
+    "custom_id": "modal_season_titles_deadlines",
+    "title": "Edit Season Titles & Deadlines",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "main_title",
+            "label": "Main Season Title",
+            "style": 1,
+            "value": ""
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "bp_line",
+            "label": "Battle Pass: Title, End Date",
+            "style": 1,
+            "value": "Battle Pass"
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "rank_line",
+            "label": "Ranked Series: Title, End Date",
+            "style": 1,
+            "value": "Ranked Series"
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "dmz_line",
+            "label": "DMZ Season: Title, End Date",
+            "style": 1,
+            "value": "DMZ Season"
+          }
+        ]
+      }
+    ]
+  },
+  "draftTitlesDates": {
+    "custom_id": "modal_draft_titles_dates",
+    "title": "Draft: Season Titles & Deadlines",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "main_title",
+            "label": "Main Season Title",
+            "style": 1,
+            "value": "Season 9",
+            "required": false
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "bp_line",
+            "label": "Battle Pass: Title, End Date",
+            "style": 1,
+            "value": "Battle Pass",
+            "required": false
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "rank_line",
+            "label": "Ranked Series: Title, End Date",
+            "style": 1,
+            "value": "Ranked Series",
+            "required": false
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "dmz_line",
+            "label": "DMZ Season: Title, End Date",
+            "style": 1,
+            "value": "DMZ Season",
+            "required": false
+          }
+        ]
+      }
+    ]
+  },
+  "draftBulkDraws": {
+    "custom_id": "modal_draft_bulk_draws",
+    "title": "Draft: New + Returning Draws",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "new_text",
+            "label": "New Draws (leave blank to skip)",
+            "style": 2,
+            "placeholder": "Title, m Item 1, july 10, url.jpg",
+            "value": "",
+            "required": false
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "returning_text",
+            "label": "Returning Draws (leave blank to skip)",
+            "style": 2,
+            "placeholder": "Title, l Item, aug 5, url.jpg",
+            "value": "",
+            "required": false
+          }
+        ]
+      }
+    ]
+  },
+  "draftBulkCalendar": {
+    "custom_id": "modal_draft_bulk_calendar",
+    "title": "Draft: Calendar",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "bulk_text",
+            "label": "Events (replaces the whole staged list)",
+            "style": 2,
+            "placeholder": "7/15 - 8/1 | Event Title\n7/20 - All Season | Other Event",
+            "value": "",
+            "required": true
+          }
+        ]
+      }
+    ]
+  }
+}

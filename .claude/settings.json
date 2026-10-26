@@ -1,20 +1,36 @@
 {
   "permissions": {
     "allow": [
-      "Bash(node -c *)"
+      "Bash(node -c *)",
+      "mcp__sequential-thinking__sequentialthinking",
+      "mcp__ccd_session__mark_chapter",
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__take_screenshot",
+      "mcp__Claude_Browser__get_page_text",
+      "mcp__Claude_Browser__read_console_messages",
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__select_page",
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__wait_for",
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__list_console_messages",
+      "mcp__Claude_Browser__read_network_requests",
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__list_pages",
+      "mcp__claude-in-chrome__tabs_context_mcp",
+      "mcp__Claude_Browser__read_page",
+      "mcp__Claude_Browser__find",
+      "mcp__Claude_Browser__tabs_context",
+      "mcp__plugin_context-mode_context-mode__ctx_search",
+      "mcp__plugin_context-mode_context-mode__ctx_stats",
+      "mcp__plugin_context-mode_context-mode__ctx_doctor",
+      "mcp__claude-in-chrome__read_console_messages",
+      "mcp__perseus-vault__perseus_vault_recall",
+      "mcp__linksee__recall",
+      "mcp__linksee__read_smart",
+      "mcp__codebase-memory-mcp__search_graph",
+      "mcp__codebase-memory-mcp__get_code_snippet",
+      "mcp__codebase-memory-mcp__list_projects",
+      "mcp__codebase-memory-mcp__trace_path"
     ]
   },
   "hooks": {
     "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "F=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/docs/SESSION-START.md\"; if [ -f \"$F\" ]; then cat \"$F\"; else echo \"⚠️ SESSION-START.md NOT FOUND at $F — session-start guidance did NOT load. Tell Harkirat, and fix the SessionStart hook path in .claude/settings.local.json.\"; fi | jq -Rs '{hookSpecificOutput: {hookEventName: \"SessionStart\", additionalContext: .}}'",
-            "timeout": 5
-          }
-        ]
-      },
       {
         "hooks": [
           {
@@ -37,7 +53,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/memory-index-check.sh\"; if [ -r \"$S\" ]; then bash \"$S\"; else printf 'MEMORY INDEX CHECK DID NOT RUN -- %s is missing or unreadable. The memory index is UNGUARDED this session: neither the 25000B budget nor the conservation rule (which is the only thing standing between a deleted memory and silent permanent data loss, since the store has no version control) was checked. Do not treat a clean index as verified.' \"$S\" | jq -Rs '{hookSpecificOutput:{hookEventName:\"SessionStart\",additionalContext:.}}'; fi",
+            "command": "S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/memory-index-check.sh\"; if [ -r \"$S\" ]; then bash \"$S\"; else printf 'MEMORY INDEX CHECK DID NOT RUN -- %s is missing or unreadable. The memory index is UNGUARDED this session: neither its own byte budget (the number lives in that script and NOWHERE else, deliberately -- this message used to restate 25000B and was stale by two raises) nor the conservation rule (which is the only thing standing between a deleted memory and silent permanent data loss, since the store has no version control) was checked. Do not treat a clean index as verified.' \"$S\" | jq -Rs '{hookSpecificOutput:{hookEventName:\"SessionStart\",additionalContext:.}}'; fi",
             "timeout": 5
           }
         ]
@@ -68,6 +84,25 @@
             "timeout": 5
           }
         ]
+      },
+      {
+        "matcher": "compact|fork",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "touch \"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/.model-gate-reset\" 2>/dev/null || true"
+          }
+        ]
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/instructions-loaded-audit.sh\" --session",
+            "timeout": 5
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [
@@ -75,7 +110,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"UserPromptSubmit\",\"additionalContext\":\"[self-check] (1) FIRST ACTION: if you have NOT yet this session output the ready-to-paste /rename string + a one-line model+effort recommendation, do it now before any task content -- this is a hard gate (feedback_suggest_model_switch memory), not optional. (2) CHAPTERS: if this turn shifted into a new distinct TOPIC since the last mark, call mark_chapter now -- mark finely, one per topic, no cap. (3) JUDGMENT RULES: fix a gap you notice THIS turn rather than deferring/flagging it (working-agreement rule 9), and never assert done/synced/caught-up/matches without running the actual check first (verify before claiming).\"}}'",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/self-check.sh\"",
             "timeout": 5
           }
         ]
@@ -102,7 +137,7 @@
         ]
       },
       {
-        "matcher": "Bash",
+        "matcher": "Bash|mcp__plugin_context-mode_context-mode__ctx_batch_execute",
         "hooks": [
           {
             "type": "command",
@@ -124,8 +159,33 @@
           },
           {
             "type": "command",
-            "command": "cmd=$(jq -r '.tool_input.command // empty'); if echo \"$cmd\" | grep -qE '(^|[;&|] *)((rtk|sudo|command|nohup|time) +)*gh pr create'; then base=$(echo \"$cmd\" | grep -oE '[-][-]base +[A-Za-z0-9._/-]+' | awk '{print $2}'); bash '/Applications/Claude Code/Diors-Builds/.claude/hooks/completeness-sweep.sh' \"${base:-main}\" \"\" pr; fi",
+            "command": "cmd=$(jq -r '.tool_input.command // empty'); if echo \"$cmd\" | grep -qE '(^|[;&|] *)((rtk|sudo|command|nohup|time) +)*gh pr create'; then base=$(echo \"$cmd\" | grep -oE '[-][-]base +[A-Za-z0-9._/-]+' | awk '{print $2}'); bash '/Applications/Claude Code/Diors-Builds/.claude/hooks/commit-completeness-sweep.sh' \"${base:-main}\" \"\" pr; fi",
             "timeout": 60
+          },
+          {
+            "type": "command",
+            "command": "S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/overwrite-guard.sh\"; [ -x \"$S\" ] || exit 0; bash \"$S\"",
+            "timeout": 15
+          },
+          {
+            "type": "command",
+            "command": "S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/ctx-search-nudge.sh\"; [ -x \"$S\" ] || exit 0; bash \"$S\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "input=$(cat); cmd=$(printf %s \"$input\" | jq -r '.tool_input.command // empty'); if echo \"$cmd\" | grep -qE '(^|[;&|] *)((rtk|sudo|command|nohup|time) +)*(git +commit|git +merge|git +tag +-a|gh +pr +merge)'; then tp=$(printf %s \"$input\" | jq -r '.transcript_path // empty'); S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/commit-completeness-sweep.sh\"; if [ -r \"$S\" ]; then bash \"$S\" main \"$tp\" commit; else jq -n '{hookSpecificOutput:{hookEventName:\"PreToolUse\",additionalContext:\"COMMIT COMPLETENESS SWEEP MISSING: .claude/hooks/commit-completeness-sweep.sh is not readable, so passes 2 and 3 (conservation + angles-not-taken) did NOT run. Do not read the silence as a clean sweep.\"}}'; fi; fi",
+            "timeout": 25
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|mcp__plugin_context-mode_context-mode__ctx_batch_execute",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/codebase-memory-nudge.sh\"; [ -x \"$S\" ] || exit 0; bash \"$S\"",
+            "timeout": 10
           }
         ]
       },
@@ -161,7 +221,36 @@
         "hooks": [
           {
             "type": "command",
+            "command": "S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/push-approval-gate.sh\"; [ -r \"$S\" ] && bash \"$S\" || exit 0"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
             "command": "S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/rg-flag-guard.sh\"; [ -r \"$S\" ] && bash \"$S\" || exit 0",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/gate-truncation-guard.sh\"; [ -r \"$S\" ] && bash \"$S\" || exit 0",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/untracked-doc-guard.sh\"; [ -r \"$S\" ] && bash \"$S\" || exit 0",
             "timeout": 5
           }
         ]
@@ -187,7 +276,7 @@
         ]
       },
       {
-        "matcher": "Edit|Write",
+        "matcher": "Edit|Write|Bash",
         "hooks": [
           {
             "type": "command",
@@ -215,6 +304,65 @@
             "timeout": 10
           }
         ]
+      },
+      {
+        "matcher": "mcp__plugin_context-mode_context-mode__ctx_search",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/ctx-index-refresh.sh\"; [ -x \"$S\" ] || exit 0; bash \"$S\"",
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/batch-edit-guard.sh\""
+          }
+        ],
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit"
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/merge-delete-branch-autofix.sh\"",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|mcp__plugin_context-mode_context-mode__ctx_batch_execute",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/shell-read-nudge.sh\"; [ -x \"$S\" ] || exit 0; bash \"$S\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/read-routing-nudge.sh\"; [ -x \"$S\" ] || exit 0; bash \"$S\"",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|mcp__plugin_context-mode_context-mode__ctx_batch_execute",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/wide-check-guard.sh\"; [ -x \"$S\" ] || exit 0; bash \"$S\"",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -238,7 +386,7 @@
         ]
       },
       {
-        "matcher": "Edit|Write",
+        "matcher": "Edit|Write|Bash",
         "hooks": [
           {
             "type": "command",
@@ -248,6 +396,10 @@
           {
             "type": "command",
             "command": "\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/notes-hardwrap-check.sh\""
+          },
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/deferred-list-model-tag-check.sh\""
           }
         ]
       },
@@ -268,6 +420,28 @@
             "type": "command",
             "command": "S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/typos-check.sh\"; [ -r \"$S\" ] && bash \"$S\" || exit 0",
             "timeout": 8
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$HOME/.claude/skills/impeccable/scripts/hook.mjs\"",
+            "timeout": 5,
+            "statusMessage": "Checking UI changes"
+          }
+        ]
+      }
+    ],
+    "InstructionsLoaded": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/instructions-loaded-audit.sh\""
           }
         ]
       }
@@ -295,7 +469,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "input=$(cat); active=$(printf '%s' \"$input\" | jq -r '.stop_hook_active // false'); if [ \"$active\" = \"true\" ]; then exit 0; fi; tp=$(printf '%s' \"$input\" | jq -r '.transcript_path // empty'); [ -f \"$tp\" ] || exit 0; ln=$(grep -n '\"role\":\"user\",\"content\":\"' \"$tp\" | tail -1 | cut -d: -f1); ln=${ln:-1}; vcalls=$(tail -n +\"$ln\" \"$tp\" | grep -cE '\"name\":\"(Bash|Grep|Glob)\"'); last=$(tail -n +\"$ln\" \"$tp\" | grep '\"type\":\"assistant\"' | tail -8 | jq -r '.message.content[]? | select(.type==\"text\") | .text' 2>/dev/null); if printf '%s' \"$last\" | grep -qiE \"$(bash \"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/claim-detect.sh\" --regex)\"; then if [ \"${vcalls:-0}\" -eq 0 ]; then jq -n '{decision:\"block\",reason:\"COMPLETION-CLAIM WITHOUT EVIDENCE: your last message asserts something is done/verified/clean/in-sync/matches, but this turn shows ZERO Bash/Grep/Glob tool calls -- no actual check backs the claim. Harkirat has flagged this exact recurring pattern (having to send you to double-check and catch your own gaps every session). Before restating this claim: run the real verification (git status/diff, grep for residue, node -c, tests, etc.), look at its actual output, and only then assert completion.\"}'; fi; fi",
+            "command": "node \"$HOME/.claude/skills/impeccable/scripts/hook.mjs\"",
+            "timeout": 30,
+            "statusMessage": "Design deep pass"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "input=$(cat); active=$(printf '%s' \"$input\" | jq -r '.stop_hook_active // false'); if [ \"$active\" = \"true\" ]; then exit 0; fi; tp=$(printf '%s' \"$input\" | jq -r '.transcript_path // empty'); [ -f \"$tp\" ] || exit 0; ln=$(grep -n '\"role\":\"user\",\"content\":\"' \"$tp\" | tail -1 | cut -d: -f1); ln=${ln:-1}; vcalls=$(tail -n +\"$ln\" \"$tp\" | grep -cE '\"name\":\"(Bash|Grep|Glob)\"'); last=$(tail -n +\"$ln\" \"$tp\" | grep '\"type\":\"assistant\"' | tail -8 | jq -r '.message.content[]? | select(.type==\"text\") | .text' 2>/dev/null); if printf '%s' \"$last\" | grep -qiE \"$(bash \"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/claim-detect.sh\" --regex)\"; then if [ \"${vcalls:-0}\" -eq 0 ]; then jq -n '{decision:\"block\",reason:\"COMPLETION-CLAIM WITHOUT EVIDENCE: your last message asserts something is done/verified/clean/in-sync/matches, but this turn shows ZERO Bash/Grep/Glob tool calls -- no actual check backs the claim. Harkirat has flagged this exact recurring pattern (having to send you to double-check and catch your own gaps every session). Before restating this claim: run THE NARROWEST CHECK THAT COULD PROVE THIS CLAIM AND NOTHING WIDER, read its actual output, and only then assert completion. If you claimed a file changed, diff that file. If you claimed a string is gone, grep for that string. If you claimed a function parses, node --check that one file. DO NOT RUN THE WHOLE SUITE FOR A MID-WORK CLAIM: npm test is a PUSH gate, and Harkirat has said so directly -- why are you running npm test when your still mid work? are we pushing? no. A suite run here costs minutes and proves far more than the sentence you wrote, which is the tell that it is the wrong instrument. Refined 2026-09-09 17:40 EDT: the trigger was always correct and this wording was what sent turns to the suite.\"}'; fi; fi",
             "timeout": 10
           }
         ]
@@ -306,15 +490,6 @@
             "type": "command",
             "command": "S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/outstanding-not-filed.sh\"; if [ -r \"$S\" ]; then bash \"$S\"; else jq -n '{decision:\"block\",reason:\"OUTSTANDING-NOT-FILED GATE MISSING — .claude/hooks/outstanding-not-filed.sh is unreadable, so nothing is checking whether items you named as outstanding actually got filed. Restore it or say explicitly that you are proceeding without it.\"}'; fi",
             "timeout": 10
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "input=$(cat); active=$(printf '%s' \"$input\" | jq -r '.stop_hook_active // false'); if [ \"$active\" = \"true\" ]; then exit 0; fi; tp=$(printf '%s' \"$input\" | jq -r '.transcript_path // empty'); S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/completeness-sweep.sh\"; if [ -r \"$S\" ]; then bash \"$S\" main \"$tp\" stop; else jq -n '{decision:\"block\",reason:\"COMPLETENESS SWEEP MISSING: .claude/hooks/completeness-sweep.sh is not readable, so passes 2 and 3 (conservation + angles-not-taken) did NOT run. Do not read this as a clean sweep.\"}'; fi",
-            "timeout": 30
           }
         ]
       }

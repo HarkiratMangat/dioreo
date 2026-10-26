@@ -1,0 +1,17 @@
+[Unit]
+Description=Dioreo web admin portal
+After=network.target mongodb.service
+# Separate unit from diors-bot ON PURPOSE (plan Task 7 Step 3): a portal crash must never restart
+# the bot, and cloudflared dying must take down only the portal's reachability, not the bot's.
+
+[Service]
+Type=simple
+WorkingDirectory=/home/%u/diors-builds
+EnvironmentFile=/home/%u/diors-builds/.env
+Environment=DIORS_LOG_FILE=/home/%u/diors-builds/logs/portal.log
+ExecStart=/usr/bin/node portal/server.js
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

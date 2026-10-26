@@ -1250,8 +1250,12 @@ h1 em{font-style:normal;color:var(--accent-t)}
   border-radius:.34em 0 0 .34em}
 .cmd-line .cmd-v{padding:.08em .3em .08em .5em;
   background:color-mix(in srgb,var(--accent) 26%,transparent);
-  border-radius:0 .34em .34em 0}/* Set by CMD_JS's paint() while the value has no characters yet — see the note
-   there for why this is a class rather than :has(+ .cmd-v:empty). */
+  border-radius:0 .34em .34em 0}/* Set by the HOST's paint() while the value has no characters yet — see CMD_JS's
+   own note for why this is a class rather than :has(+ .cmd-v:empty). ⚠️ Only the
+   landing page's typewriter has a state where a value is still empty; the /commands
+   page's copy line is rendered whole at BUILD time and only ever repainted with a
+   complete value, so "solo" and the ":empty" rules below are inert there rather than
+   wrong. */
 
 .cmd-line .cmd-o.solo{border-radius:.34em;margin-right:0}
 .cmd-line .cmd-o:empty,.cmd-line .cmd-v:empty{padding:0;background:none}
@@ -1259,10 +1263,14 @@ h1 em{font-style:normal;color:var(--accent-t)}
 .cmd-line::after{content:"";display:inline-block;width:.5em;height:1em;
   margin-left:.15em;background:var(--accent-t);vertical-align:-.15em;
   animation:cmd-blink 1.1s steps(1) infinite}/* Solid while keys are landing, blinking on the hold and the gap — a cursor
-   that blinks through its own typing reads as a glitch. CMD_JS owns this class;
-   it writes nothing else about the cursor. Under prefers-reduced-motion the
-   global animation:none override pins the block solid and CMD_JS stops touching
-   the class at all, which is the correct still frame.
+   that blinks through its own typing reads as a glitch. ⚠️ "cmd-busy" belongs to
+   whichever host is TYPING: CMD_JS sets it on the landing page and writes nothing
+   else about the cursor. The /commands page never types — its copy line is rendered
+   at build time and repainted only when you pick an option value — so it never sets
+   this class, and it draws no caret at all: the page-wide Composer that used to carry
+   one was deleted 2026-08-18 for reading as a text input it was not. Under
+   prefers-reduced-motion the global animation:none override pins the block solid
+   and CMD_JS stops touching the class at all, which is the correct still frame.
    ⚠️ Do not spell that global rule out here with its braces — hoverGuardAudit
    re-parses the built CSS and flags a brace inside a comment, which is how a
    comma-carrying comment once destroyed eight rules. It failed this build for
@@ -1270,6 +1278,7 @@ h1 em{font-style:normal;color:var(--accent-t)}
 
 .cmd-line.cmd-busy::after{animation:none}
 @keyframes cmd-blink{50%{opacity:0}}
+
 .list{border-top:1px solid var(--rule)}/* ⚠️ Durations here are long enough to be SEEN and eased to decelerate. At .22s
    linear the row snapped rather than moved — the whole page read as abrupt for
    this reason, not because anything was missing. The rule wipes in from the top
@@ -3170,7 +3179,7 @@ h1 em{font-style:normal;color:var(--accent-t)}
 
   /* Read from the live Loadout collection grouped by category on 2026-08-05,
      not written from memory of CODM's roster. Case and punctuation are verbatim
-     because index.js's autocomplete responds with "name: w.weaponName" — these
+     because handlers/router.js's autocomplete responds with "name: w.weaponName" — these
      are the exact strings Discord offers, mixed case ("FSS Hurricane") and all.
      Re-read them if the loadout data gains a category or a weapon; a name that
      drifts out of the DB becomes a line the page invites you to type and the
@@ -3211,24 +3220,51 @@ h1 em{font-style:normal;color:var(--accent-t)}
      ⚠️ THE CHOICE LABELS ARE THE "name:" HALF OF addChoices, NEVER THE "value:".
      Discord renders the name — /draws is offered as "New Draws", not "new" — so
      using the value here would put a string on the page no reader ever sees. */
+  /* /gunsmiths search's pool is every MP weapon combined -- unlike the old
+     per-category commands, one search command covers all of them, so its
+     option pool is the union rather than one category's slice. */
+  var MP_ALL=[].concat(WEAPONS.ar,WEAPONS.smg,WEAPONS.lmg,WEAPONS.marksman,WEAPONS.sniper,WEAPONS.shotgun,WEAPONS.secondaries);
+
+  /* /gunsmiths list's scope: option has no free-typed value -- it's a static
+     11-choice picker (bot/registry.js's applyGunsmithsScopeChoices()), so its
+     pairs are declared directly rather than built from a p:/o: pool, same
+     shape as /draws' page pairs below. Labels are the real choice NAMES. */
+  var GUNSMITHS_LIST_PAIRS=[['scope','AR'],['scope','LMG'],['scope','MARKSMAN'],['scope','SECONDARIES'],
+    ['scope','SHOTGUN'],['scope','SMG'],['scope','SNIPER'],['scope','All MP builds'],
+    ['scope','Meta — MP'],['scope','Meta — DMZ'],['scope','DMZ']];
+
   var SPECS=[
-    {c:'/ar',          o:'weapon',   p:WEAPONS.ar,          w:1},
-    {c:'/smg',         o:'weapon',   p:WEAPONS.smg,         w:1},
-    {c:'/lmg',         o:'weapon',   p:WEAPONS.lmg,         w:1},
-    {c:'/marksman',    o:'weapon',   p:WEAPONS.marksman,    w:1},
-    {c:'/sniper',      o:'weapon',   p:WEAPONS.sniper,      w:1},
-    {c:'/shotgun',     o:'weapon',   p:WEAPONS.shotgun,     w:1},
-    {c:'/secondaries', o:'weapon',   p:WEAPONS.secondaries, w:1},
+    {c:'/gunsmiths search', o:'weapon', p:MP_ALL, w:1},
+    {c:'/gunsmiths list',   pairs:GUNSMITHS_LIST_PAIRS},
     {c:'/dmz',         o:'weapon',   p:WEAPONS.dmz,         w:1},
     {c:'/timestamp',   o:'datetime', p:WHEN},
     {c:'/draws',       pairs:[['page','New Draws'],['page','Returning Draws']]},
     {c:'/draw prices', pairs:[['region','10 CP Region'],['region','30 CP Region']]},
+    /* ⚠️ ITS PAIRS ARE PICKED FOR THE CAP, NOT FOR VARIETY. render() gives a
+       spec room = MAXLEN - command.length - 1, so this 16-character command has
+       15 characters for an option name plus its value. The draw option (4) leaves
+       11, which every real DRAW_META name overruns, and region (6) plus its
+       '10 CP Region' value (12) is 18 and would be filtered out SILENTLY -- the
+       exact failure the cap comment above describes. pulls and balance are the
+       two that fit, and they are also the two a player actually types.
+       ⚠️ AND NO BACKTICKS IN HERE: CMD_JS is a template literal, so one inside a
+       comment closes it. An odd count is a parse error and an EVEN count renders
+       wrong while every gate stays green. Added 2026-09-09 16:50 EDT.
+       The pulls values were 25 and 60 until 2026-10-13 12:47 EDT: the option allows 0 to
+       10, so the page typed two values Discord would refuse. */
+    {c:'/draw calculator', pairs:[['pulls','3'],['pulls','7'],['balance','1200']]},
     {c:'/calendar',    pairs:[['page','Draws'],['page','Events'],['page','Playlists & Modes'],
                               ['view','All Events'],['view','Active/Upcoming Only']]},
     {c:'/patch notes'},
     {c:'/season end'},
     {c:'/colors'},
-    {c:'/settings'}
+    {c:'/settings'},
+    /* The cmd option is a real autocomplete on /help and these are real command
+       names, so the line stays honest rather than decorative. */
+    {c:'/help', pairs:[['cmd','/gunsmiths'],['cmd','/calendar'],['cmd','/dmz']]},
+    /* Bare, like /colors and /settings: its only option is visibility, which no
+       spec here decorates with -- it says nothing about what the command does. */
+    {c:'/invite'}
   ];
 
   /* The line erases back to the slash and never past it, so the resting look

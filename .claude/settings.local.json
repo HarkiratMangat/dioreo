@@ -33,7 +33,10 @@
       "Bash(ls -la ~/.claude/hooks/ | head -40; echo ---; ls ~/.claude/projects/ | head)",
       "Bash(rtk git *)",
       "Bash(node -p \"require\\('./package.json'\\).version\")",
-      "Bash(gh api *)"
+      "Bash(gh api *)",
+      "Bash(git checkout *)",
+      "Bash(rtk read *)",
+      "Bash(rm .claude/.headroom_wrap_settings.lock)"
     ]
   }
 }

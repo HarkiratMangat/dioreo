@@ -1,12 +1,9 @@
-// scripts/gatewayRecovery.test.js
-// Regression test for utils/gatewayRecovery.js — the announced-problem→announced-recovery pairing
-// added 2026-08-06 15:01 EDT. Run: `node scripts/gatewayRecovery.test.js` (also via `npm test`).
+// scripts/gatewayRecovery.test.js Regression test for utils/gatewayRecovery.js — the announced-problem→announced-recovery pairing added 2026-08-06 15:01 EDT. Run: `node scripts/gatewayRecovery.test.js` (also via `npm test`).
 //
 // The property under test is SYMMETRY, and both halves of it are load-bearing:
 //   · a problem that WAS announced must produce a loud recovery  (the gap Harkirat reported)
 //   · a problem that was NEVER announced must stay silent        (the 2026-07-20 anti-noise decision)
-// A change that satisfies only the first one looks like a fix and refills the alert channel with the
-// routine 1-3h reconnect churn that was deliberately suppressed.
+// A change that satisfies only the first one looks like a fix and refills the alert channel with the routine 1-3h reconnect churn that was deliberately suppressed.
 const assert = require('assert');
 const { createGatewayRecovery, formatDowntime } = require('../utils/gatewayRecovery');
 
@@ -26,8 +23,7 @@ function harness(startMs = 1_000_000) {
 console.log('gatewayRecovery.js — proofs');
 
 t('a recovery with no announced problem stays SILENT', () => {
-    // The routine case: reconnect→resume churn every 1-3h. Posting here is the regression that would
-    // undo the 2026-07-20 decision, so this is the assertion protecting it.
+    // The routine case: reconnect→resume churn every 1-3h. Posting here is the regression that would undo the 2026-07-20 decision, so this is the assertion protecting it.
     const { gr, sent } = harness();
     assert.strictEqual(gr.noteRecovered('resumed'), false, 'should report that it announced nothing');
     assert.strictEqual(sent.length, 0, 'no alert may be sent when nothing was announced');
@@ -48,9 +44,7 @@ t('a recovery AFTER an announced problem is LOUD', () => {
 });
 
 t('the state RESETS, so the next routine blip is silent again', () => {
-    // Without the reset, one real outage would make every subsequent routine reconnect loud forever —
-    // a slow leak into exactly the noise this is meant to avoid, and one that would only show up days
-    // later in a channel nobody wants to read any more.
+    // Without the reset, one real outage would make every subsequent routine reconnect loud forever — a slow leak into exactly the noise this is meant to avoid, and one that would only show up days later in a channel nobody wants to read any more.
     const { gr, sent, tick } = harness();
     gr.noteTrouble(); tick(3); gr.noteRecovered('first');
     assert.strictEqual(sent.length, 1);
@@ -59,9 +53,7 @@ t('the state RESETS, so the next routine blip is silent again', () => {
 });
 
 t('a FLAPPING connection reports the whole episode, not the last twitch', () => {
-    // disconnect → error → disconnect fires noteTrouble() repeatedly. Keeping the LATEST timestamp
-    // would report "down 2s" for an outage that actually lasted a minute — technically a number, and
-    // a misleading answer to the only question the alert exists to answer.
+    // disconnect → error → disconnect fires noteTrouble() repeatedly. Keeping the LATEST timestamp would report "down 2s" for an outage that actually lasted a minute — technically a number, and a misleading answer to the only question the alert exists to answer.
     const { gr, sent, tick } = harness();
     gr.noteTrouble();          // outage starts
     tick(30); gr.noteTrouble(); // still flapping
@@ -90,8 +82,7 @@ t('a sub-second recovery reports 1s, never 0s', () => {
 
 // --- formatDowntime -------------------------------------------------------------------------------
 t('formatDowntime keeps SECONDS visible for short outages', () => {
-    // The bug this function exists to avoid: alertStore's formatUptime() floors to minutes, so the
-    // typical few-second gateway blip rendered as "restored after 0m". Caught before shipping.
+    // The bug this function exists to avoid: alertStore's formatUptime() floors to minutes, so the typical few-second gateway blip rendered as "restored after 0m". Caught before shipping.
     assert.strictEqual(formatDowntime(1), '1s');
     assert.strictEqual(formatDowntime(4), '4s');
     assert.strictEqual(formatDowntime(59), '59s');

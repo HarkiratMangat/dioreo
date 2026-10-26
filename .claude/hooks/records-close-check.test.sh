@@ -1,15 +1,9 @@
 #!/bin/bash
-# Proofs for records-close-check.sh — the gate for the two chore-checklist items CI cannot see:
-# (7) the notes file still has open intake, and (6) rules changed with nothing written to memory.
+# Proofs for records-close-check.sh — the gate for the two chore-checklist items CI cannot see: (7) the notes file still has open intake, and (6) rules changed with nothing written to memory.
 #
-# Both were once written off as "NOT checkable", and the hook's own message says so. A claim like
-# that is exactly what has to be pinned, because if the check quietly stops working it reverts to
-# being un-checkable in practice while still reading as covered.
+# Both were once written off as "NOT checkable", and the hook's own message says so. A claim like that is exactly what has to be pinned, because if the check quietly stops working it reverts to being un-checkable in practice while still reading as covered.
 #
-# HOME is redirected at the fixture, because the memory store path is derived from $HOME. Without
-# that the suite would read the real memory directory and its verdict would change depending on
-# whether this session happened to write a memory — a test whose result moves with the environment
-# proves nothing.
+# HOME is redirected at the fixture, because the memory store path is derived from $HOME. Without that the suite would read the real memory directory and its verdict would change depending on whether this session happened to write a memory — a test whose result moves with the environment proves nothing.
 
 HOOK="$(cd "$(dirname "$0")" && pwd)/records-close-check.sh"
 pass=0; fail=0
@@ -28,9 +22,9 @@ mkrepo() {
     printf '## Questions\n## 📍 pointer\n' > "$d/docs/ideas/diors-notes.md"
   fi
   echo seed > "$d/docs/other.md"; echo seed > "$d/.claude/hooks/thing.sh"
-  git -C "$d" add -A; git -C "$d" -c user.email=t@t -c user.name=t commit --quiet -m init
+  # No `sleep 1` (removed 2026-09-14 18:22 EDT): the branch point is committed 100 s in the past instead, so a memory file written now is strictly newer than it. The hook compares a file mtime against the branch point's commit time in whole seconds, which is all the sleep ever bought — at one second per fixture, eight times.
+  git -C "$d" add -A; GIT_COMMITTER_DATE="@$(( $(date +%s) - 100 )) +0000" git -C "$d" -c user.email=t@t -c user.name=t commit --quiet -m init
   git -C "$d" checkout --quiet -b feat
-  sleep 1
   echo changed >> "$d/$3"
   git -C "$d" add -A; git -C "$d" -c user.email=t@t -c user.name=t commit --quiet -m change
   # Memory files are created AFTER the branch commit so their mtime is later than the branch point.
@@ -59,15 +53,12 @@ OPEN_TOUCHED=$(mkrepo n2 yes "docs/ideas/diors-notes.md" fresh)
 a "open notes + touched -> silent"   "(7) NOTES FILE" no  "$OPEN_TOUCHED"
 NO_OPEN=$(mkrepo n3 no docs/other.md fresh)
 a "no open notes -> silent"          "(7) NOTES FILE" no  "$NO_OPEN"
-# The file's own convention (added 2026-08-03 19:37 EDT) is that a still-open filed-but-unbuilt item is
-# `- [ ]`, never a bare `-`. The SessionStart open-item counter had this exact regex gap — `- [ ]`
-# read as closed because `[^<[]` excludes any line starting with `[` right after `- ` — and this
-# script carried the identical unfixed regex. Pin it here so it can't silently regress again.
+# The file's own convention (added 2026-08-03 19:37 EDT) is that a still-open filed-but-unbuilt item is `- [ ]`, never a bare `-`. The SessionStart open-item counter had this exact regex gap — `- [ ]` read as closed because `[^<[]` excludes any line starting with `[` right after `- ` — and this script carried the identical unfixed regex. Pin it here so it can't silently regress again.
 mkdir -p "$TMP/n4/docs/ideas"; git -C "$TMP/n4" init --quiet -b main 2>/dev/null
 printf '## Questions\n- [ ] a checkbox open item\n## 📍 pointer\n' > "$TMP/n4/docs/ideas/diors-notes.md"
 mkdir -p "$TMP/n4/.claude/hooks"; echo seed > "$TMP/n4/docs/other.md"; echo seed > "$TMP/n4/.claude/hooks/thing.sh"
-git -C "$TMP/n4" add -A; git -C "$TMP/n4" -c user.email=t@t -c user.name=t commit --quiet -m init
-git -C "$TMP/n4" checkout --quiet -b feat; sleep 1
+git -C "$TMP/n4" add -A; GIT_COMMITTER_DATE="@$(( $(date +%s) - 100 )) +0000" git -C "$TMP/n4" -c user.email=t@t -c user.name=t commit --quiet -m init
+git -C "$TMP/n4" checkout --quiet -b feat
 echo changed >> "$TMP/n4/docs/other.md"
 git -C "$TMP/n4" add -A; git -C "$TMP/n4" -c user.email=t@t -c user.name=t commit --quiet -m change
 mkdir -p "$TMP/n4-home/$MEMREL"; echo m > "$TMP/n4-home/$MEMREL/a_memory.md"
@@ -83,8 +74,7 @@ RULE_MEM=$(mkrepo m2 no .claude/hooks/thing.sh fresh)
 a "rule change + fresh memory -> ok" "(6) MEMORY"     no  "$RULE_MEM"
 NORULE=$(mkrepo m3 no docs/other.md none)
 a "no rule change -> no memory demand" "(6) MEMORY"   no  "$NORULE"
-# The -maxdepth 1 claim in the hook: editing a RETIRED memory must not satisfy the check. Retired
-# memories are frozen records, so touching one proves no standing rule was written down.
+# The -maxdepth 1 claim in the hook: editing a RETIRED memory must not satisfy the check. Retired memories are frozen records, so touching one proves no standing rule was written down.
 ARCHIVE_ONLY=$(mkrepo m4 no .claude/hooks/thing.sh archive-only)
 a "archive-only memory does NOT satisfy" "(6) MEMORY" yes "$ARCHIVE_ONLY"
 

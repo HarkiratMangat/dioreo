@@ -1,12 +1,7 @@
 #!/bin/bash
-# Proves outstanding-not-filed.sh fires on the REAL offending message and stays silent on the
-# legitimate ones. Two assertions per case — the broken input BLOCKS and the valid input does NOT.
-# The second half is the one that catches a matcher firing on everything.
+# Proves outstanding-not-filed.sh fires on the REAL offending message and stays silent on the legitimate ones. Two assertions per case — the broken input BLOCKS and the valid input does NOT. The second half is the one that catches a matcher firing on everything.
 #
-# ⚠️ Synthetic transcripts MUST be written with no space after the JSON colon. The hook greps for the
-# literal '"type":"assistant"'; Python's json.dumps default inserts '"type": "assistant"', which
-# silently yields an empty $last and a false "didn't fire" that looks exactly like a pass. That
-# gotcha is recorded in reference_enforcement_hooks and it has bitten before.
+# ⚠️ Synthetic transcripts MUST be written with no space after the JSON colon. The hook greps for the literal '"type":"assistant"'; Python's json.dumps default inserts '"type": "assistant"', which silently yields an empty $last and a false "didn't fire" that looks exactly like a pass. That gotcha is recorded in reference_enforcement_hooks and it has bitten before.
 #
 #   bash .claude/hooks/outstanding-not-filed.test.sh
 
@@ -33,10 +28,7 @@ run() { printf '{"transcript_path":"%s","stop_hook_active":false}' "$TMP/t.jsonl
 
 assert() { # name | expect block|pass
   local name="$1" want="$2" out; out="$(run)"
-  # PARSE the JSON, never grep it. The first version grepped '"decision":"block"' while `jq -n`
-  # pretty-prints '"decision": "block"' WITH a space -- so every block case silently read as a pass.
-  # That is the exact JSON-spacing trap this file warns about at the top, committed in its own
-  # assertion. A test that cannot detect the failure it exists to detect is worse than no test.
+  # PARSE the JSON, never grep it. The first version grepped '"decision":"block"' while `jq -n` pretty-prints '"decision": "block"' WITH a space -- so every block case silently read as a pass. That is the exact JSON-spacing trap this file warns about at the top, committed in its own assertion. A test that cannot detect the failure it exists to detect is worse than no test.
   local got; got="$(printf '%s' "$out" | jq -r '.decision // "pass"' 2>/dev/null || echo pass)"
   [ "$got" = "block" ] || got=pass
   if [ "$got" = "$want" ]; then echo "  PASS  $name"; pass=$((pass+1));
@@ -133,8 +125,7 @@ out=$(printf '{"transcript_path":"%s","stop_hook_active":true}' "$TMP/t.jsonl" |
 if [ "$(printf '%s' "$out" | jq -r '.decision // "pass"' 2>/dev/null || echo pass)" = "block" ]; then
   echo "  FAIL  loop guard"; fail=$((fail+1)); else echo "  PASS  stop_hook_active loop guard"; pass=$((pass+1)); fi
 
-# 8. Sanity: the harness actually populates the message. A test that silently reads an empty $last
-#    would "pass" case 6 for the wrong reason, which is the trap this file warns about at the top.
+# 8. Sanity: the harness actually populates the message. A test that silently reads an empty $last would "pass" case 6 for the wrong reason, which is the trap this file warns about at the top.
 mk "Still outstanding: something."
 grep -q '"type":"assistant"' "$TMP/t.jsonl" && { echo "  PASS  harness emits the literal the hook greps for"; pass=$((pass+1)); } \
   || { echo "  FAIL  harness JSON shape does not match the hook's grep"; fail=$((fail+1)); }

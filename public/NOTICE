@@ -11,8 +11,10 @@ work, or the third-party attributions recorded below. LICENSE §18 states the
 position in full; both names are Brand Assets under LICENSE §1.5.
 
 This file records (1) the third-party software Dioreo depends on and the
-licenses that govern it, (2) third-party trademarks referenced by the project,
-and (3) a disclosure of AI assistance in authoring the project.
+licenses that govern it, (2) the third-party creative work and content the
+project uses, with credit to its creators, (3) third-party trademarks
+referenced by the project, and (4) a disclosure of AI assistance in authoring
+the project.
 
 This file is required reading alongside LICENSE. Nothing in LICENSE restricts,
 enlarges, or otherwise varies your rights in any third-party component listed
@@ -51,6 +53,13 @@ Runtime dependencies, as declared in package.json:
                                  Copyright (c) Scott Motte and contributors
                                  https://github.com/motdotla/dotenv
 
+  google-auth-library 11.0.2      Apache License 2.0
+                                 Copyright (c) Google LLC
+                                 https://github.com/googleapis/google-auth-library-nodejs
+                                 *** See Section 2 — Apache-2.0 obligations ***
+                                 Application Default Credentials for the Health
+                                 page's Cloud Logging/Monitoring reads.
+
   jimp 1.6.1                     MIT
                                  Copyright (c) Andrew Lisowski
                                  https://github.com/jimp-dev/jimp
@@ -67,6 +76,19 @@ Development dependencies:
                                  *** See Section 2 — Apache-2.0 obligations ***
                                  Not used at runtime; required only by
                                  scripts/migrateBuildsToMongo.js.
+
+  preact 10.x                    MIT
+                                 Copyright (c) 2015-present Jason Miller
+                                 https://preactjs.com
+                                 Vendored into portal/public/vendor/ by scripts/buildPortal.js;
+                                 not used at runtime by the Discord bot itself.
+
+  htm 3.x                        MIT (Apache-2.0 for a small number of contributed
+                                 files — see the package's own LICENSE)
+                                 Copyright (c) 2018 Jason Miller
+                                 https://github.com/developit/htm
+                                 Vendored alongside Preact for the web admin portal's
+                                 no-build-step frontend.
 
 Vendored web assets, served from public/assets/:
 
@@ -101,13 +123,40 @@ they not be sold on their own; neither is affected by how they are used here.
 Both fonts are served as subset .woff2 files, unmodified.
 
 
+VENDORED REFERENCE DATA (checked into this repository, not npm dependencies)
+
+  Wikipedia List of colors       CC BY-SA 4.0
+                                 Copyright (c) Wikipedia contributors
+                                 https://en.wikipedia.org/wiki/Lists_of_colors
+                                 utils/data/wikipediaColorNames.json — 812
+                                 colour names and their hex values, used to
+                                 name the swatches in /colors. Extracted and
+                                 reformatted (title-cased, de-duplicated,
+                                 sorted); the names and values are unchanged.
+
+  XKCD colour survey             Public domain (CC0)
+                                 Randall Munroe / xkcd.com
+                                 https://xkcd.com/color/rgb/
+                                 utils/data/xkcdColorNames.json — 908 names
+                                 from the 2010 public colour survey, released
+                                 into the public domain by its author. Crude
+                                 joke entries and 13 spelling slips were
+                                 removed or corrected; see utils/colorNames.js.
+
+CC BY-SA 4.0 requires attribution and that adaptations of the DATA be shared
+under the same terms. That obligation attaches to the colour-name file itself,
+not to this project's source code, which is governed by LICENSE. Anyone
+redistributing that file, or a derivative of it, carries the same duty
+regardless of what LICENSE otherwise permits.
+
+
 ================================================================================
 2. APACHE LICENSE 2.0 OBLIGATIONS
 ================================================================================
 
-discord.js and xlsx are licensed under the Apache License, Version 2.0. If you
-redistribute this project or any work containing those components, Apache-2.0
-§4 requires you to:
+discord.js, xlsx and google-auth-library are licensed under the Apache License,
+Version 2.0. If you redistribute this project or any work containing those
+components, Apache-2.0 §4 requires you to:
 
   (a) give recipients a copy of the Apache License 2.0;
   (b) retain all copyright, patent, trademark, and attribution notices;
@@ -217,10 +266,68 @@ redistribute them as standalone assets. See emoji.gg's terms
 Creators whose work appears here and who want different attribution, or removal,
 should email harkirat117@gmail.com. Requests are actioned promptly.
 
-4A.2  OTHER VISUAL MATERIAL
+4A.2  ICONS
+
+Some icons used in the Bot's interface and on the website were designed by
+third-party artists and obtained through Flaticon (https://www.flaticon.com),
+in Flaticon's own required attribution format. With thanks:
+
+Icons designed by [Andy Horvath](https://www.flaticon.com/authors/andy-horvath) from [Flaticon](https://www.flaticon.com)
+Icons designed by [Anggara](https://www.flaticon.com/authors/anggara) from [Flaticon](https://www.flaticon.com)
+Icons designed by [Arkinasi](https://www.flaticon.com/authors/arkinasi) from [Flaticon](https://www.flaticon.com)
+Icons designed by [bukeicon](https://www.flaticon.com/authors/bukeicon) from [Flaticon](https://www.flaticon.com)
+Icons designed by [customicondesign_1](https://www.flaticon.com/authors/customicondesign-1) from [Flaticon](https://www.flaticon.com)
+Icons designed by [Dreamcreateicons](https://www.flaticon.com/authors/dreamcreateicons) from [Flaticon](https://www.flaticon.com)
+Icons designed by [Flat Icons](https://www.flaticon.com/authors/flat-icons) from [Flaticon](https://www.flaticon.com)
+Icons designed by [Kemalmoe](https://www.flaticon.com/authors/kemalmoe) from [Flaticon](https://www.flaticon.com)
+Icons designed by Magnific from [Flaticon](https://www.flaticon.com)
+Icons designed by [mj](https://www.flaticon.com/authors/mj) from [Flaticon](https://www.flaticon.com)
+Icons designed by [PixelVerse](https://www.flaticon.com/authors/pixelverse) from [Flaticon](https://www.flaticon.com)
+
+  >> "Magnific" carries no author link above, by design, not oversight.
+  >> Flaticon's own parent company recently renamed itself Freepik ->
+  >> Magnific, and that rename broke the author's profile URL on Flaticon's
+  >> end (confirmed: it 404s, and no search or site directory surfaces a
+  >> replacement). Credit is still given by name, exactly as required.
+
+LICENSE TIER — CONFIRMED. These icons carry Flaticon's **"Free for
+commercial use with attribution" license**. The Bot satisfies this: it is
+distributed free of charge, has no paid tier, no subscription, and no
+in-app purchase, so no user is ever charged for access to these icons, and
+attribution is given here as required. (Flaticon's Premium subscription is
+a separate tier that removes the attribution requirement — "No attribution
+required" is listed as a premium benefit on Flaticon's own download panel —
+and is not the tier these icons are used under.) See Flaticon's terms of
+use (https://www.flaticon.com/legal).
+
+  >> STANDING CONSTRAINT — READ BEFORE MONETISING. Same shape as 4A.1's:
+  >> if the Bot ever introduces a paid tier, subscription, or any paywall,
+  >> re-confirm these icons' free-tier terms still apply, or replace/license
+  >> them separately first. Cross-referenced in TERMS.md §4.2.
+
+Creators whose work appears here and who want different attribution, or
+removal, should email harkirat117@gmail.com. Requests are actioned promptly.
+
+4A.3  OTHER VISUAL MATERIAL
 
 Game imagery, weapon renders, and screenshots displayed by the Bot are covered by
 Section 5 below and remain the property of their respective owners.
+
+4A.4  COMMUNITY CONTENT
+
+Some of the Call of Duty: Mobile content and information the Bot presents is
+sourced from material published by the Leakers on Duty community. With thanks:
+
+    Leakers on Duty             https://discord.gg/nicecat
+
+LICENSE — AS MARKED. Their material carries a Creative Commons Attribution
+(CC BY) mark, which does not state a license version. The Bot credits them here
+and alongside the content where it is shown. Their material is adapted, not
+reproduced as published: it is reformatted for the Bot's interface. No
+endorsement of Dioreo by Leakers on Duty is stated or implied.
+
+Creators whose work appears here and who want different attribution, or
+removal, should email harkirat117@gmail.com. Requests are actioned promptly.
 
 
 ================================================================================

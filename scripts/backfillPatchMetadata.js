@@ -1,11 +1,6 @@
-// scripts/backfillPatchMetadata.js
-// One-time / re-runnable: writes Structured Metadata (season, image order, release date, patch id)
-// onto every already-cached patch-notes image, sourced from the SeasonalData patchNotes[] entries.
-// Added 2026-07-21 alongside the loadout backfill -- the patch metadata fields (see
-// utils/patchNotesCache.js's PATCH_METADATA_FIELDS) started empty on existing assets.
+// scripts/backfillPatchMetadata.js One-time / re-runnable: writes Structured Metadata (season, image order, release date, patch id) onto every already-cached patch-notes image, sourced from the SeasonalData patchNotes[] entries. Added 2026-07-21 alongside the loadout backfill -- the patch metadata fields (see utils/patchNotesCache.js's PATCH_METADATA_FIELDS) started empty on existing assets.
 //
-// Only touches images that are already cached in Cloudinary under patch_notes/{patchId}/{index}
-// (setPatchImageMetadata no-ops on a public_id that doesn't exist). Safe to re-run.
+// Only touches images that are already cached in Cloudinary under patch_notes/{patchId}/{index} (setPatchImageMetadata no-ops on a public_id that doesn't exist). Safe to re-run.
 require('dotenv').config({ quiet: true });
 const mongoose = require('mongoose');
 const SeasonalData = require('../models/SeasonalData');

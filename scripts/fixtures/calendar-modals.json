@@ -1,0 +1,278 @@
+{
+  "add": {
+    "custom_id": "modal_calendar_add",
+    "title": "Add Calendar Event",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "title",
+            "label": "Event Title",
+            "style": 1,
+            "required": true
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "start_date",
+            "label": "Start Date",
+            "style": 1,
+            "placeholder": "e.g. July 2",
+            "required": true
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "end_date",
+            "label": "End Date (blank = All Season)",
+            "style": 1,
+            "placeholder": "e.g. August 5",
+            "required": false
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "category",
+            "label": "Section (draw / event / playlist)",
+            "style": 1,
+            "placeholder": "blank = auto-detect from title",
+            "required": false
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "double_cp",
+            "label": "Double CP Event? (Y/N)",
+            "style": 1,
+            "placeholder": "blank = No",
+            "required": false
+          }
+        ]
+      }
+    ]
+  },
+  "bulkAdd": {
+    "custom_id": "modal_calendar_bulk_add",
+    "title": "Add Multiple Calendar Events",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "bulk_text",
+            "label": "Bulleted List (UTC-0 dates)",
+            "style": 2,
+            "placeholder": "7/2 - 8/5 | Throwable Frenzy MP Mode\n7/6 - 7/19 | Nuketown Playlist\np• 8/6-8/19 | Krai BR (prefix)",
+            "required": true
+          }
+        ]
+      }
+    ]
+  },
+  "bulkReplace": {
+    "custom_id": "modal_calendar_bulk_replace",
+    "title": "Replace Calendar Events",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "bulk_text",
+            "label": "Bulleted List (UTC-0 dates)",
+            "style": 2,
+            "placeholder": "7/2 - 8/5 | Throwable Frenzy MP Mode\n7/6 - 7/19 | Nuketown Playlist\np• 8/6-8/19 | Krai BR (prefix)",
+            "required": true
+          }
+        ]
+      }
+    ]
+  },
+  "bulkRemove": {
+    "custom_id": "modal_calendar_bulk_remove",
+    "title": "Delete Multiple Calendar Events",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "titles",
+            "label": "Event Titles (one per line)",
+            "style": 2,
+            "required": true
+          }
+        ]
+      }
+    ]
+  },
+  "banners": {
+    "custom_id": "modal_calendar_banners",
+    "title": "Calendar: Page Banners",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "draws_banner",
+            "label": "Draws Page Banner URL (blank = none)",
+            "style": 1,
+            "value": "https://example.com/draws.png",
+            "required": false
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "events_banner",
+            "label": "Events Page Banner URL (blank = none)",
+            "style": 1,
+            "value": "https://example.com/events.png",
+            "required": false
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "playlists_banner",
+            "label": "Playlists Page Banner URL (blank = none)",
+            "style": 1,
+            "value": "",
+            "required": false
+          }
+        ]
+      }
+    ]
+  },
+  "edit": {
+    "custom_id": "edit_calendar_507f1f77bcf86cd799439011",
+    "title": "Edit Calendar Event",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "title",
+            "label": "Event Title",
+            "style": 1,
+            "value": "Nuketown Playlist"
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "start_date",
+            "label": "Start Date",
+            "style": 1,
+            "value": "August 1, 2026"
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "end_date",
+            "label": "End Date (blank = All Season)",
+            "style": 1,
+            "value": "August 15, 2026",
+            "required": false
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "category",
+            "label": "Section (draw / event / playlist)",
+            "style": 1,
+            "value": "playlist",
+            "required": false
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "double_cp",
+            "label": "Double CP Event? (Y/N)",
+            "style": 1,
+            "value": "Yes",
+            "required": false
+          }
+        ]
+      }
+    ]
+  },
+  "searchEdit": {
+    "custom_id": "mng_search_calendar_edit",
+    "title": "Search: Edit Calendar Event",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "query",
+            "label": "Calendar Event name to search for",
+            "style": 1,
+            "required": true
+          }
+        ]
+      }
+    ]
+  },
+  "searchDelete": {
+    "custom_id": "mng_search_calendar_delete",
+    "title": "Search: Delete Calendar Event",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "query",
+            "label": "Calendar Event name to search for",
+            "style": 1,
+            "required": true
+          }
+        ]
+      }
+    ]
+  }
+}

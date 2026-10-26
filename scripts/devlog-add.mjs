@@ -1,18 +1,13 @@
 #!/usr/bin/env node
 // devlog-add.mjs — append a DEVLOG Part A entry in the ONE correct way.
 //
-// WHY THIS EXISTS (2026-08-10 00:00 EDT, Harkirat: "ive noticed that happening a lot")
-// Writing a DEVLOG entry by hand fails the same two ways on almost every release, and both are
-// caught only by `docs:audit` AFTER the bytes have landed — so each one costs an extra
-// edit-and-recheck cycle:
-//   1. The entry is appended at END OF FILE, which puts it AFTER the "# Part B" marker. Part B is
-//      thematic; a dated entry belongs in Part A, chronologically. (Hit again on v2.63.1.)
+// WHY THIS EXISTS (2026-08-10 00:00 EDT, Harkirat: "ive noticed that happening a lot") Writing a DEVLOG entry by hand fails the same two ways on almost every release, and both are caught only by `docs:audit` AFTER the bytes have landed — so each one costs an extra edit-and-recheck cycle:
+//   1. The entry is appended at END OF FILE, which puts it AFTER the "# Part B" marker. Part B is thematic; a dated entry belongs in Part A, chronologically. (Hit again on v2.63.1.)
 //   2. The Part A table of contents is not updated, so `devlog-toc` fails.
-// Neither failure requires judgement — the insertion points are structural. A gate that fires after
-// the fact is documentation; this is the mechanism. `devlog-toc` and `record-structure` stay as the
-// backstop, and now they should never actually trip.
+// Neither failure requires judgement — the insertion points are structural. A gate that fires after the fact is documentation; this is the mechanism. `devlog-toc` and `record-structure` stay as the backstop, and now they should never actually trip.
 //
 // Usage:
+//   node scripts/devlog-add.mjs --desc  "<description> (vX.Y.Z)" --body-file <path>   # PREFERRED — stamps itself
 //   node scripts/devlog-add.mjs --title "<TITLE>" --body-file <path>
 //   node scripts/devlog-add.mjs --title "<TITLE>" --body-file -      # body on stdin
 //   ...--devlog <path>   # override target (tests only)
@@ -26,8 +21,7 @@ import { execFileSync } from "node:child_process";
 const PART_B = "# Part B";
 // The TOC's final line is a literal backfill placeholder; every dated entry sorts above it.
 const TOC_TAIL = "- *Earlier milestones*";
-// Enforced so the entry is greppable by release and by date — the two things docs-audit checks for.
-// A bare date is rejected on purpose: working-agreement rule 10 wants HH:MM TZ on dated content.
+// Enforced so the entry is greppable by release and by date — the two things docs-audit checks for. A bare date is rejected on purpose: working-agreement rule 10 wants HH:MM TZ on dated content.
 const TITLE_RE = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2} [A-Z]{2,5} — .+ \(v\d+\.\d+\.\d+(?:-\S+)?\)$/;
 
 const argv = process.argv.slice(2);
@@ -38,11 +32,22 @@ const arg = (name) => {
 
 const die = (msg) => { console.error(`devlog-add: ${msg}`); process.exit(1); };
 
-const title = arg("--title");
+// 🔴 THE THIRD FAILURE THIS SCRIPT EXISTS TO REMOVE, AND IT WAS THE ONE LEFT TO THE AUTHOR. The header above says the two known failures "require no judgement — the insertion points are structural" and that a gate firing after the fact is documentation while this is the mechanism. A TIMESTAMP IS EXACTLY AS STRUCTURAL, and it was the one thing still hand-typed into --title — where TITLE_RE could only REFUSE it, one turn after the fact, which is the documentation half of that same sentence. Harkirat, 2026-09-01 22:19 EDT: *"IMAGINE there was a script in the repo which already did it for you for the devlog"* — said after this script rejected a hand-typed title in the very session that had just written a rule about computing stamps rather than typing them. It did not, in fact, already do it. Now it does. `--title` stays for an explicit stamp: the tests need to write entries dated in the past, and a backfill has a real date that is not now.
+const descArg = arg("--desc");
+const nowStamp = () => {
+  // en-CA gives YYYY-MM-DD; the short timeZoneName gives EDT/EST without a table to maintain. America/New_York because every stamp in these records is Harkirat's local time.
+  const d = new Date();
+  const p = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit",
+    day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false, timeZoneName: "short" })
+    .formatToParts(d).reduce((o, x) => (o[x.type] = x.value, o), {});
+  return `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute} ${p.timeZoneName}`;
+};
+const title = arg("--title") ?? (descArg ? `${nowStamp()} — ${descArg}` : null);
 const bodyFile = arg("--body-file");
 const devlogPath = arg("--devlog") ?? "docs/DEVLOG.md";
 
-if (!title) die('missing --title "<TITLE>"');
+if (arg("--title") && descArg) die("pass --desc OR --title, never both — two stamps cannot both be the one that is true");
+if (!title) die('missing --desc "<description> (vX.Y.Z)"  (or --title "<FULL TITLE>" to set the stamp yourself)');
 if (!bodyFile) die("missing --body-file <path> (use - for stdin)");
 if (!TITLE_RE.test(title)) {
   die(`title must read "YYYY-MM-DD HH:MM TZ — description (vX.Y.Z)" and carry a TIME, not a bare date.\n  got: ${title}`);
@@ -51,23 +56,12 @@ if (!TITLE_RE.test(title)) {
 const body = (bodyFile === "-" ? readFileSync(0, "utf8") : readFileSync(bodyFile, "utf8")).trim();
 if (!body) die("body is empty");
 
-// ── GATE PARITY ────────────────────────────────────────────────────────────
-// ⚠️ THIS SCRIPT WRITES WITH writeFileSync FROM A SUBPROCESS, SO IT DOES NOT GO THROUGH THE
-// Edit/Write TOOLS — and therefore does not trigger their PreToolUse hooks. Left alone, a script
-// that removes ONE manual failure while silently disabling THREE gates is a net loss, and the
-// bypass would be invisible: the content simply lands unchecked. Harkirat asked directly
-// (2026-08-10 00:03 EDT) whether this bypasses any gate. It did. So it now runs them itself,
-// against the same payload shape they receive from the harness, reusing the hook scripts rather
-// than reimplementing their logic (a second copy of a rule is a second thing to drift).
-// Not covered here because they are covered elsewhere and would be duplicated effort:
+// ── GATE PARITY ──────────────────────────────────────────────────────────── ⚠️ THIS SCRIPT WRITES WITH writeFileSync FROM A SUBPROCESS, SO IT DOES NOT GO THROUGH THE Edit/Write TOOLS — and therefore does not trigger their PreToolUse hooks. Left alone, a script that removes ONE manual failure while silently disabling THREE gates is a net loss, and the bypass would be invisible: the content simply lands unchecked. Harkirat asked directly (2026-08-10 00:03 EDT) whether this bypasses any gate. It did. So it now runs them itself, against the same payload shape they receive from the harness, reusing the hook scripts rather than reimplementing their logic (a second copy of a rule is a second thing to drift). Not covered here because they are covered elsewhere and would be duplicated effort:
 //   · docs:reflow (soft-wrap)      -> npm test
 //   · devlog-toc / record-structure -> npm run docs:audit (and this script is what keeps them green)
 //   · clock-inject                  -> injects context for a human author; nothing to enforce here
 const GATES = [
-  // timestamp-check has TWO modes with DIFFERENT severities and both matter — running only one
-  // silently halves the check. `pre` DENIES an impossible (future) timestamp; `post` is advisory
-  // and catches a bare date missing its HH:MM TZ. Verified by reading the hook, after a test
-  // asserting `pre` caught bare dates failed: it does not, and never claimed to.
+  // timestamp-check has TWO modes with DIFFERENT severities and both matter — running only one silently halves the check. `pre` DENIES an impossible (future) timestamp; `post` is advisory and catches a bare date missing its HH:MM TZ. Verified by reading the hook, after a test asserting `pre` caught bare dates failed: it does not, and never claimed to.
   { name: "timestamp-check (future stamps)", script: ".claude/hooks/timestamp-check.sh", args: ["pre"], blocking: true },
   { name: "timestamp-check (bare dates)", script: ".claude/hooks/timestamp-check.sh", args: ["post"], blocking: false },
   { name: "typos-check", script: ".claude/hooks/typos-check.sh", args: [], blocking: true },
@@ -110,8 +104,7 @@ if (blocked) {
 
 const src = readFileSync(devlogPath, "utf8");
 
-// Idempotence: re-running must not double-insert. Cheap, and the failure it prevents is ugly
-// (record-structure flags a repeated heading, but only after the bytes land).
+// Idempotence: re-running must not double-insert. Cheap, and the failure it prevents is ugly (record-structure flags a repeated heading, but only after the bytes land).
 if (src.includes(`## ${title}`)) die(`an entry titled "${title}" is already in ${devlogPath}`);
 
 const partB = src.indexOf(`\n${PART_B}`);
@@ -124,8 +117,7 @@ if (tocAt > partB) die("the TOC tail line appears AFTER the Part B marker; the f
 // 1. TOC line, immediately above the backfill placeholder so dated entries stay together.
 let out = src.slice(0, tocAt) + `- ${title}\n` + src.slice(tocAt);
 
-// 2. Entry at the END of Part A, immediately before the Part B marker. Recompute the offset:
-//    the TOC insert above shifted everything after it.
+// 2. Entry at the END of Part A, immediately before the Part B marker. Recompute the offset: the TOC insert above shifted everything after it.
 const partB2 = out.indexOf(`\n${PART_B}`);
 const head = out.slice(0, partB2).replace(/\s+$/, "");
 const tail = out.slice(partB2);
