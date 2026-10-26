@@ -263,6 +263,8 @@ function weaponSummary(builds, { metaList = false } = {}) {
     else if (builds.some(b => b.isMeta)) parts.push('Meta');
     const rank = bestRankLabel(builds, { short: metaList });
     if (rank) parts.push(rank);
+    // Toxic too (Harkirat, 2026-10-25 23:33 EDT: MAN-O-WAR sat in the Meta list with no reason shown; "it's meta because of its toxic ability").
+    if (builds.some(b => b.isToxic)) parts.push('Toxic');
     parts.push(countLabel(builds.length));
     return parts.join(' · ').slice(0, 100);
 }
@@ -348,7 +350,7 @@ function metaJumpRow(metaBuilds, selectId, activeKey) {
     const groups = weaponGroups(metaBuilds).sort((a, b) => a[0].category.localeCompare(b[0].category) || a[0].weaponName.localeCompare(b[0].weaponName));
     if (groups.length < 2) return null;
     const options = windowAround(groups.map(list => ({ label: list[0].weaponName, value: list[0].weaponKey, description: weaponSummary(list, { metaList: true }) })), activeKey, 25);
-    return { type: 1, components: [{ type: 3, custom_id: selectId, placeholder: 'Jump to a specific weapon...', options }] };
+    return { type: 1, components: [{ type: 3, custom_id: selectId, placeholder: 'Jump to another Meta weapon...', options }] }; // names the Meta list (his 2026-10-25 23:32 EDT ask)
 }
 function dmzBrowseRow(dmzBuilds, selectId, activeKey) {
     const groups = weaponGroups(dmzBuilds).sort((a, b) => a[0].weaponName.localeCompare(b[0].weaponName));
