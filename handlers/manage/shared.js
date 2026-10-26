@@ -178,6 +178,10 @@ async function resolveManagePanelAction(interaction, group, action, match) {
         pendingManageDeletes.set(token, { group, match });
         setTimeout(() => pendingManageDeletes.delete(token), 10 * 60 * 1000).unref();
 
+        // A loadout shows the build itself, picture and all, so the right one is deleted (Harkirat, 2026-10-26 11:54 EDT: "so things aren't being second guessed").
+        if (group === 'loadouts_mp' || group === 'loadouts_dmz') {
+            return interaction.reply({ flags: 32768 | 64, components: require('../../utils/loadoutPanels').deletePanel({ doc: match.doc, token }) });
+        }
         // The prompt used to promise "an Undo button right after" -- that inline button was retired when Undo moved to /bot's Changes page (plan 2 Task 7), and since the permission restructure (2026-10-19 19:38 EDT) a /manage-only admin cannot open that page at all, so the promise was false for exactly the person reading it.
         return interaction.reply({
             content: `${BOT_EMOJI.warn} **Are you sure you want to delete ${match.label}?** Every change is recorded, and it can be reverted from \`/bot\`'s Changes page.`,

@@ -135,14 +135,7 @@ function holdPending(interaction, pending) {
 
 async function warnUnknownNames(interaction, pending, unknown) {
     const token = holdPending(interaction, pending);
-    return interaction.followUp({
-        content: `${BOT_EMOJI.warn} **Not in the catalogue yet:** ${describeUnknown(unknown)}\n-# A typo, or a new item? **Save anyway** saves it as typed and adds these names, so they won't warn again. **Back to edit** reopens the box with what you typed.`,
-        components: [{ type: 1, components: [
-            { type: 2, style: 3, label: 'Save anyway', custom_id: `mng_catok|${token}` },
-            { type: 2, style: 2, label: 'Back to edit', custom_id: `mng_catedit|${token}` }
-        ] }],
-        ephemeral: true
-    });
+    return interaction.followUp({ flags: 32768 | 64, components: require('../../utils/loadoutPanels').cataloguePanel({ described: describeUnknown(unknown), token }) });
 }
 
 // The picture warning (his three options, see resolvePicture): an MP edit whose attachments AND code changed, with no new picture. Nothing is saved until he picks one; what was typed waits in the same store as the catalogue warning's. A panel rather than a text line, with the current picture beside it, and the buttons in his order: Keep · Save without · Upload a new one on the right (Harkirat, 2026-10-26 11:46 EDT). `noneEmoji` is the Save without a picture icon, still his pick.
@@ -192,9 +185,9 @@ async function handleCatalogueWarning(interaction) {
 
     pendingCatalogue.delete(token);
     const pictureChoice = kind === 'mng_picok' ? 'keep' : kind === 'mng_picnone' ? 'none' : pending.pictureChoice;
-    // The picture warning is a Components V2 panel, which takes no `content`, so its "saving" state is a panel too.
-    if (kind === 'mng_catok') await interaction.update({ content: '⏳ Saving it as typed, and adding the new names…', components: [] });
-    else await interaction.update({ flags: 32768, components: [{ type: 17, components: [{ type: 10, content: '⏳ Saving…' }] }] });
+    // Both warnings are Components V2 panels, which take no `content`, so the "saving" state is a panel too.
+    const { notePanel } = require('../../utils/loadoutPanels');
+    await interaction.update({ flags: 32768, components: notePanel(kind === 'mng_catok' ? '⏳ Saving it as typed, and adding the new names…' : '⏳ Saving…') });
     const preset = { customId, values: pending.values, pictureChoice };
     if (customId.startsWith('add_loadout_')) return await addLoadout(interaction, preset);
     if (customId.startsWith('modal_loadouts_bulk_add_')) return await bulkAddLoadouts(interaction, preset);
@@ -290,22 +283,55 @@ async function saveLoadout(interaction, preset, isEdit) {
     );
     if (!result.ok) return await fail(extractCommitError(result));
 
-    let confirmation = isEdit
-        ? `${BOT_EMOJI.checkmark} **Loadout Updated Successfully!** ${weaponName} (${buildName})`
-        : `${BOT_EMOJI.checkmark} **Successfully saved Loadout: ${weaponName} (${buildName}, ${mode})!**`;
-    if (label) confirmation += `\n-# Label: ${label}`;
-    if (picture.note) confirmation += `\n-# 🖼️ ${picture.note}`;
-    for (const m of numbering.moves) confirmation += `\n-# Swapped: the build that was ${buildName} is now ${m.buildName}.`;
-    if (unknown.count) confirmation += `\n-# Added to the catalogue: ${describeUnknown(unknown)}.`;
-    if (mode === 'MP' && code) {
-        confirmation += isEdit && form.sameCode(existing.shareCode, code) ? `\n-# Gunsmith code: unchanged (\`${code}\`).` : `\n-# Gunsmith code: \`${code}\`.`;
-    }
-    confirmation += badgeNotes(unrecognized, warnings);
+    // The answer is the build as it now stands, with what changed and the next steps as buttons (Harkirat, 2026-10-26 11:54 EDT: "better visual information ... so things aren't being second guessed, and there's like buttons as well").
+    const savedId = isEdit ? targetId : result.results[0].applied.id;
+    const saved = await Loadout.findById(savedId).lean();
+    const notes = [];
+    if (picture.note) notes.push(`🖼️ ${picture.note}`);
+    for (const m of numbering.moves) notes.push(`Swapped: the build that was ${buildName} is now ${m.buildName}.`);
+    if (unknown.count) notes.push(`Added to the catalogue: ${describeUnknown(unknown)}.`);
+    const alerts = [...badgeNotes(unrecognized, warnings).split('\n').filter(Boolean).map(l => l.replace(`${BOT_EMOJI.warn} `, ''))];
     // Real Cloudinary existence check: a key with no picture saves fine and only shows later as a broken card. Advisory only. Skipped right after an upload, whose HEAD probe would race Cloudinary's CDN.
     if (!picture.uploaded && isRealImageKey(picture.imageKey) && !(await checkImageExists(picture.imageKey))) {
-        confirmation += `\n${BOT_EMOJI.warn} **Heads up:** no image found on Cloudinary at key \`${picture.imageKey}\` -- the card will show broken until a picture is added with Edit.`;
+        alerts.push(`**No picture on Cloudinary** at \`${picture.imageKey}\`: the card shows broken until one is added with Edit again.`);
     }
-    return interaction.followUp({ content: confirmation });
+    const { savedPanel } = require('../../utils/loadoutPanels');
+    return interaction.followUp({ flags: 32768 | 64, components: savedPanel({ doc: saved, before: existing, changeIds: result.changeIds, notes, warnings: alerts }) });
+}
+
+// --- A SAVED LOADOUT'S BUTTONS --- custom_ids: mng_ldopen_{id} · mng_ldedit_{id} · mng_ldrevert|{changeId,...}. Stateless, so they keep working after a restart. The router's /manage lock has already run; Revert is gated per change by the same check /bot analytics' Revert uses (utils/adminAccess.js checkRevert), which core/revert.js runs again.
+async function handleSavedAction(interaction) {
+    const id = interaction.customId;
+    const Loadout = require('../../models/Loadout');
+    if (id.startsWith('mng_ldopen_')) return await require('../../utils/openLoadoutCard').openLoadout(interaction, id.replace('mng_ldopen_', ''), { ephemeral: true });
+    if (id.startsWith('mng_ldedit_')) {
+        const doc = await Loadout.findById(id.replace('mng_ldedit_', '')).lean();
+        if (!doc) return await interaction.reply({ content: `${BOT_EMOJI.cross} That build no longer exists.`, ephemeral: true });
+        return await interaction.showModal(await editLoadoutModal(doc));
+    }
+    const changeIds = id.replace('mng_ldrevert|', '').split(',').filter(Boolean);
+    const { getChange } = require('../../utils/changeStore');
+    const { checkRevert } = require('../../utils/adminAccess');
+    const { notePanel, FAIL_ACCENT } = require('../../utils/loadoutPanels');
+    for (const changeId of changeIds) {
+        const row = await getChange(changeId);
+        if (!row) return await interaction.reply({ content: `${BOT_EMOJI.cross} Change ${changeId} no longer exists, so nothing was reverted.`, ephemeral: true });
+        const gate = await checkRevert(interaction.user.id, row);
+        if (!gate.ok) return await interaction.reply({ content: gate.reason, ephemeral: true });
+    }
+    await interaction.deferUpdate();
+    // Newest first, so a swap and the edit that caused it unwind in order.
+    const { revertChange } = require('../../core/revert');
+    const done = [];
+    for (const changeId of [...changeIds].reverse()) {
+        const res = await revertChange(changeId, { actorId: interaction.user.id });
+        if (!res.ok) {
+            return await interaction.followUp({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} **Revert stopped at ${changeId}:** ${res.reason}${done.length ? `\n-# Already reverted: ${done.join(', ')}` : ''}`, FAIL_ACCENT) });
+        }
+        done.push(changeId);
+    }
+    const { sendV2Payload } = require('../../utils/sendV2Payload');
+    return await sendV2Payload(interaction, notePanel(`↩️ **Reverted.** ${done.join(', ')} undone; the build is back as it was.\n-# The picture keys the save made stay on Cloudinary.`));
 }
 
 // Declarations, not arrow consts: handleCatalogueWarning above names them, and a const read before its line is a temporal dead zone (scripts/tdzRatchet.mjs).
@@ -350,15 +376,9 @@ async function bulkAddLoadouts(interaction, preset = null) {
     }
     const { applied } = result.results[0];
 
-    let confirmation = `${BOT_EMOJI.checkmark} **Bulk Loadout Import Complete!**\n${applied.created} new build(s) added, ${applied.updated} existing build(s) updated.`;
-    if (learn.length) confirmation += `\n-# Added to the catalogue: ${learn.map(i => `\`${i.name}\``).join(', ')}.`;
-    if (applied.parseErrors.length > 0) {
-        confirmation += `\n${BOT_EMOJI.warn} ${applied.parseErrors.length} block(s) skipped:\n${applied.parseErrors.map(e => `- ${e}`).join('\n')}`;
-    }
-    if (applied.missingImages.length > 0) {
-        confirmation += `\n${BOT_EMOJI.warn} No Cloudinary image found for ${applied.missingImages.length} build(s) -- these will show broken until uploaded there with the exact Public ID typed:\n${applied.missingImages.map(m => `- ${m.label}: \`${m.imageKey}\``).join('\n')}`;
-    }
-    return interaction.followUp({ content: confirmation });
+    // Counts first, then what was skipped and what is missing a picture (2026-10-26 11:54 EDT, the panel the single saves use).
+    const { bulkPanel } = require('../../utils/loadoutPanels');
+    return interaction.followUp({ flags: 32768 | 64, components: bulkPanel({ mode: pageMode, created: applied.created, updated: applied.updated, learned: learn.map(i => i.name), skipped: applied.parseErrors, missingImages: applied.missingImages }) });
 }
 
 // --- BULK DELETE LOADOUTS --- custom_id: modal_loadouts_bulk_remove_{MP|DMZ} Lines are "Weapon" (removes every build of that weapon) or "Weapon | Build Name" (removes just that one build). Dry-run only -- the confirmed delete targets the exact ids collected here rather than re-matching titles at commit time, same reasoning as draws.js/calendar.js's bulk-delete routes.
@@ -476,4 +496,4 @@ async function deleteItem(match, actorId) {
     return null;   // Undo now lives on /bot analytics' Changes page (core/revert.js) -- no inline undo token.
 }
 
-module.exports = { editLoadout, addLoadout, editLoadoutModal, pictureWarningPanel, bulkAddLoadouts, handleCatalogueWarning, bulkDeleteLoadouts, exportUpTo5, exportCategory, deleteItem };
+module.exports = { editLoadout, addLoadout, editLoadoutModal, pictureWarningPanel, handleSavedAction, bulkAddLoadouts, handleCatalogueWarning, bulkDeleteLoadouts, exportUpTo5, exportCategory, deleteItem };
