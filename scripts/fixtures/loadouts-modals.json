@@ -502,7 +502,8 @@
             "custom_id": "query",
             "label": "MP Loadout name to search for",
             "style": 1,
-            "required": true
+            "required": true,
+            "placeholder": "BAL-27 · or BAL-27 2 / BAL-27 Ranked for one build"
           }
         ]
       }
@@ -520,7 +521,8 @@
             "custom_id": "query",
             "label": "DMZ Loadout name to search for",
             "style": 1,
-            "required": true
+            "required": true,
+            "placeholder": "BAL-27 · or BAL-27 2 / BAL-27 Ranked for one build"
           }
         ]
       }

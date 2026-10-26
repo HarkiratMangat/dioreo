@@ -151,7 +151,11 @@ async function resolveManagePanelMatches(group, rawQuery) {
         const Loadout = require('../../models/Loadout');
         const modeLoadouts = await Loadout.find({ mode }).lean();
         // By weapon, then build number (2026-10-26 11:39 EDT: the click-test showed BAL-27's five builds listed 2, 3, 4, 5, 1), and the label after the number, as the Edit pop-up shows it.
-        const { compareBuilds } = require('../../utils/loadoutForm');
+        const { compareBuilds, pickBuild } = require('../../utils/loadoutForm');
+        const asLabel = (l) => `${l.weaponName} - ${l.buildName}${l.label ? ` · ${l.label}` : ''}`;
+        // `BAL-27 2` or `BAL-27 Ranked` is one build: straight to it, no picker (utils/loadoutForm.js pickBuild).
+        const one = pickBuild(query, modeLoadouts);
+        if (one) return [{ id: one._id.toString(), doc: one, label: asLabel(one) }];
         return modeLoadouts.filter(l => fuzzyMatch(query, l.weaponName) || fuzzyMatch(query, l.buildName) || (l.label && fuzzyMatch(query, l.label)))
             .sort((a, b) => a.weaponName.localeCompare(b.weaponName) || compareBuilds(a, b)).slice(0, 25)
             .map(l => ({ id: l._id.toString(), doc: l, label: `${l.weaponName} - ${l.buildName}${l.label ? ` · ${l.label}` : ''}` }));

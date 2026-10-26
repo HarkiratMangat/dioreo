@@ -182,6 +182,24 @@ check('the migration plan copies matching pictures, lists a mismatch, and leaves
     assert.strictEqual(byId.c, undefined, 'the placeholder is left as it is');
 });
 
+check('the Edit search jumps to one build by number or label, and leaves anything ambiguous to the picker', () => {
+    const builds = [
+        { _id: 'a', weaponName: 'BAL-27', buildName: 'Build 1', label: '' },
+        { _id: 'b', weaponName: 'BAL-27', buildName: 'Build 2', label: 'Ranked' },
+        { _id: 'c', weaponName: 'AK-47', buildName: 'Build 2', label: 'Ranked' },
+        { _id: 'd', weaponName: 'HOLGER 26', buildName: 'Build 1', label: '' },
+    ];
+    const id = (q) => form.pickBuild(q, builds)?._id ?? null;
+    assert.strictEqual(id('BAL-27 2'), 'b');
+    assert.strictEqual(id('bal27, 1'), 'a');
+    assert.strictEqual(id('BAL-27 Build 2'), 'b');
+    assert.strictEqual(id('BAL-27 | ranked'), 'b');
+    assert.strictEqual(id('Holger 26 1'), 'd', 'a weapon name with a space');
+    assert.strictEqual(id('BAL-27'), null, 'no build named: the picker');
+    assert.strictEqual(id('BAL-27 9'), null, 'no such build');
+    assert.strictEqual(id('Ranked'), null);
+});
+
 check('the no-build list leads with its count and groups by class', () => {
     const { formatMissingWeapons } = require('../utils/loadoutLookup');
     const text = formatMissingWeapons([{ name: 'AK-47', category: 'AR' }, { name: 'ASM10', category: 'AR' }, { name: 'PHARO', category: 'SMG' }]);

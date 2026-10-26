@@ -98,7 +98,29 @@ function editValues(build, siblings, badgeTokens = []) {
     };
 }
 
+// /manage's Edit search, straight to one build (Harkirat, 2026-10-26 12:24 EDT: "you can build the search"): `BAL-27 2`, `BAL-27, 2`, `BAL-27 Build 2` or `BAL-27 Ranked` is that build, with no picker. The query splits at a space, comma or pipe into a weapon and a tail; the tail is a build number, or a label (a legacy name counts). Returns the build only when exactly one matches, so anything ambiguous still gets the picker.
+function pickBuild(query, builds) {
+    const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const q = String(query || '').trim();
+    const found = new Map();
+    const cuts = [...q.matchAll(/[\s,|]+/g)].map(m => [m.index, m.index + m[0].length]);
+    for (const [end, start] of cuts) {
+        const weapon = norm(q.slice(0, end));
+        let tail = q.slice(start).trim().replace(/^build\s+/i, '');
+        if (!weapon || !tail) continue;
+        const number = /^\d+$/.test(tail) ? Number(tail) : null;
+        for (const b of builds) {
+            if (norm(b.weaponName) !== weapon) continue;
+            const hit = number !== null
+                ? buildNumberOf(b.buildName) === number
+                : [b.label, b.buildName].some(n => n && norm(n) === norm(tail));
+            if (hit) found.set(String(b._id), b);
+        }
+    }
+    return found.size === 1 ? [...found.values()][0] : null;
+}
+
 // Two gunsmith codes are the same code when they match ignoring case and spaces.
 const sameCode = (a, b) => Boolean(a) && Boolean(b) && String(a).replace(/\s+/g, '').toUpperCase() === String(b).replace(/\s+/g, '').toUpperCase();
 
-module.exports = { parseWeaponLabel, parseIdentity, parseAttachmentsBadges, buildNumberOf, compareBuilds, numberFor, planNumbering, editValues, sameCode };
+module.exports = { parseWeaponLabel, parseIdentity, parseAttachmentsBadges, buildNumberOf, compareBuilds, numberFor, planNumbering, editValues, sameCode, pickBuild };

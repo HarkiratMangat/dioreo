@@ -424,7 +424,11 @@ function buildSearchModal(group, action) {
     const entityLabel = ENTITY_LABELS[group] || 'Item';
     const modal = new ModalBuilder().setCustomId(`mng_search_${group}_${action}`).setTitle(`${action === 'edit' ? 'Search: Edit' : 'Search: Delete'} ${entityLabel}`);
     modal.addComponents(
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('query').setLabel(`${entityLabel} name to search for`).setStyle(TextInputStyle.Short).setRequired(true))
+        // A loadout search can name one build (`BAL-27 2`, `BAL-27 Ranked`) and skip the picker (utils/loadoutForm.js pickBuild, 2026-10-26 12:24 EDT), so the box says so.
+        new ActionRowBuilder().addComponents((() => {
+            const input = new TextInputBuilder().setCustomId('query').setLabel(`${entityLabel} name to search for`).setStyle(TextInputStyle.Short).setRequired(true);
+            return group.startsWith('loadouts_') ? input.setPlaceholder('BAL-27 · or BAL-27 2 / BAL-27 Ranked for one build') : input;
+        })())
     );
     return modal;
 }
