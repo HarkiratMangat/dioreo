@@ -97,12 +97,6 @@ function shotOf(interaction, preset) {
     try { return [...(interaction.fields.getUploadedFiles('image_file')?.values() || [])][0] || null; } catch { return null; }
 }
 
-// A sibling build's full payload with one field changed, for a swap: loadout.edit normalizes its whole payload (core/ops/loadouts.js validateBuild fills defaults), so a buildName-only payload would reset the sibling's category and badges.
-function fullPayload(doc, over) {
-    const keys = ['weaponName', 'label', 'buildName', 'mode', 'attachments', 'imageKey', 'category', 'isMeta', 'categoryRank', 'dmzRangeRank', 'isToxic', 'isAss', 'rankModes', 'shareCode'];
-    return { ...Object.fromEntries(keys.filter(k => doc[k] !== undefined).map(k => [k, doc[k]])), ...over };
-}
-
 // The Edit pop-up for one build, with its weapon's builds so a legacy build gets its build #.
 async function editLoadoutModal(doc) {
     const Loadout = require('../../models/Loadout');
@@ -267,18 +261,16 @@ async function saveLoadout(interaction, preset, isEdit) {
     if (picture.error) return await fail(picture.error);
     if (picture.ask) return await warnOldPicture(interaction, { customId, values: readValues(field, LOADOUT_FIELDS) }, existing.imageKey);
 
-    const buildName = `Build ${numbering.number}`;
+    // The number goes to core as `buildNumber`, and core names the build and swaps the one holding it (core/ops/loadouts.js numberBuild, 2026-10-26 12:17 EDT), the same rule the portal gets. The check above only answers early with a clear message.
     const payload = {
-        weaponName, label, buildName, mode, attachments, imageKey: picture.imageKey,
+        weaponName, label, buildNumber: numbering.number, mode, attachments, imageKey: picture.imageKey,
         category: ident.category, isMeta, categoryRank, dmzRangeRank, isToxic, isAss, rankModes,
         ...(mode === 'MP' ? { shareCode: code } : {}),
         ...(picture.sourceHash ? { sourceHash: picture.sourceHash } : {}),
     };
-    // A taken build # swaps the two builds (his ask): the other build takes this one's old number in the same changeset, so Revert undoes both.
-    const moves = numbering.moves.map(m => ({ type: 'loadout.edit', target: { id: m.id }, payload: fullPayload(siblings.find(b => String(b._id) === m.id), { buildName: m.buildName }) }));
     const result = await commitSet(
         [isEdit ? { type: 'loadout.edit', target: { id: targetId }, payload } : { type: 'loadout.add', payload },
-         ...moves, ...learnOps(unknown, { category: ident.category, mode })],
+         ...learnOps(unknown, { category: ident.category, mode })],
         { actorId: interaction.user.id }
     );
     if (!result.ok) return await fail(extractCommitError(result));
@@ -288,7 +280,11 @@ async function saveLoadout(interaction, preset, isEdit) {
     const saved = await Loadout.findById(savedId).lean();
     const notes = [];
     if (picture.note) notes.push(`🖼️ ${picture.note}`);
-    for (const m of numbering.moves) notes.push(`Swapped: the build that was ${buildName} is now ${m.buildName}.`);
+    // A swap core made: the other build, by where it went.
+    for (const m of result.results[0].applied.moved || []) {
+        const other = await Loadout.findById(m.id).select('buildName').lean();
+        notes.push(`Swapped: the build that was ${saved.buildName} is now ${other?.buildName || 'moved'}.`);
+    }
     if (unknown.count) notes.push(`Added to the catalogue: ${describeUnknown(unknown)}.`);
     const alerts = [...badgeNotes(unrecognized, warnings).split('\n').filter(Boolean).map(l => l.replace(`${BOT_EMOJI.warn} `, ''))];
     // Real Cloudinary existence check: a key with no picture saves fine and only shows later as a broken card. Advisory only. Skipped right after an upload, whose HEAD probe would race Cloudinary's CDN.

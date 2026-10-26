@@ -17,6 +17,14 @@ check('loadout.add requires a mode, and rejects anything that is not MP or DMZ',
 });
 
 // ⚠️ CORRECTED: the real add/edit handlers derive weaponKey via a PLAIN `weaponName.toLowerCase().replace(/\s+/g,'')` -- never utils/loadoutRender.js's computeWeaponKeyAndBuild(), which is /autobuild's auto-naming helper and would invent its own buildName/imageKey, silently discarding what the admin actually typed.
+check('validate leaves buildName out when none is sent, so an edit never renames a build to "Standard Build" (2026-10-26 12:18 EDT)', () => {
+    const r = ops.resolveOp('loadout.edit').validate({ type: 'loadout.edit', target: { id: 'x' }, payload: { weaponName: 'FENNEC', mode: 'MP', label: 'Ranked', buildNumber: 2 } });
+    assert.strictEqual(r.ok, true, JSON.stringify(r.errors));
+    assert.ok(!('buildName' in r.normalized.payload));
+    assert.strictEqual(r.normalized.payload.buildNumber, 2);
+    assert.strictEqual(ops.resolveOp('loadout.add').validate({ type: 'loadout.add', payload: { weaponName: 'X', mode: 'MP', buildNumber: 0 } }).ok, false);
+});
+
 check('loadout.add derives weaponKey via the plain normalize, never computeWeaponKeyAndBuild', () => {
     const r = ops.resolveOp('loadout.add').validate({
         type: 'loadout.add', payload: { weaponName: 'FENNEC', buildName: 'My Aggressive Build', mode: 'MP', category: 'SMG', attachments: [] }
