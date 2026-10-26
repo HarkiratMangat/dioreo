@@ -141,19 +141,19 @@ const emojis = {
     edit: '<a:Edit:1560408533160296519>',
     // /draw prices' Show All Draws once a filter is set (2026-10-21 13:14 EDT, Harkirat gave this prod id; swapped for his new Return 13:41 EDT). The dev app's emoji of the same name is matched at boot.
     returnArrow: '<:Return:1562521110572961882>',
-    // His icon set, uploaded to the prod and dev apps on his word (2026-10-24 00:57 EDT); prod ids here, the dev bot re-points them by name at boot. Originals in the main checkout's Logos-&-Emojis/emoji-originals/ under these names. The Gunsmith Code button and /today's footer use theirs, and the single weapon-class icons sit on Copy Attachments by the build's class (2026-10-24 01:06 EDT, utils/loadoutRender.js). The split halves and the attachment icons are unused (his word: attachments "uploaded and unused for now"). GunsmithCode was REPLACED with his new art 2026-10-25 22:32 EDT (same name; the old one archived in Cloudinary and offline). The prod id below is the OLD prod emoji's until he swaps it on prod; the dev bot re-points by name.
-    gunsmithCode: '<a:GunsmithCode:1563415632442163210>',
-    // His three new icons (2026-10-25 22:32 EDT): GunsmithSearch on /gunsmith's Search... button, CopyAttachments on Copy Attachments, Search as the general search icon (/emojis' Find...). On the dev apps only so far, so these ids are Dioreo (Dev)'s; replace them with the prod ids once they are on prod (the prod bot's own sync adds them from the Cloudinary originals once this ships). AVIF uploads come back animated, hence `a:`.
-    gunsmithSearch: '<a:GunsmithSearch:1564104325662253097>',
-    copyAttachments: '<a:CopyAttachments:1564104328208449577>',
-    search: '<a:Search:1564104330565521418>',
-    // /gunsmith's build-number buttons, his static Number1-Number6 (2026-10-25 22:47 EDT); Dioreo (Dev)'s ids until they are on prod, like the three above.
-    number1: '<:Number1:1564108003987296417>',
-    number2: '<:Number2:1564108006029791292>',
-    number3: '<:Number3:1564108008404029567>',
-    number4: '<:Number4:1564108010387935282>',
-    number5: '<:Number5:1564108012812107826>',
-    number6: '<:Number6:1564108015093817484>',
+    // His icon set, uploaded to the prod and dev apps on his word (2026-10-24 00:57 EDT); prod ids here, the dev bot re-points them by name at boot. Originals in the main checkout's Logos-&-Emojis/emoji-originals/ under these names. The Gunsmith Code button and /today's footer use theirs, and the single weapon-class icons sit on Copy Attachments by the build's class (2026-10-24 01:06 EDT, utils/loadoutRender.js). The split halves and the attachment icons are unused (his word: attachments "uploaded and unused for now"). GunsmithCode was REPLACED with his new art 2026-10-25 22:32 EDT (same name; the old one archived in Cloudinary and offline). Prod ids since 2026-10-25 23:07 EDT (uploaded to prod Dioreo over the VM on his 23:05 EDT word; prod Dioreo Admin holds no token on the VM, so that app still lacks them).
+    gunsmithCode: '<a:GunsmithCode:1564113023025676308>',
+    // His three new icons (2026-10-25 22:32 EDT): GunsmithSearch on /gunsmith's Search... button, CopyAttachments on Copy Attachments, Search as the general search icon (/emojis' Find...). Prod ids, like the rest of this map. AVIF uploads come back animated, hence `a:`.
+    gunsmithSearch: '<a:GunsmithSearch:1564113024225255454>',
+    copyAttachments: '<a:CopyAttachments:1564113025747918880>',
+    search: '<a:Search:1564113027245281424>',
+    // /gunsmith's build-number buttons, his static Number1-Number6 (2026-10-25 22:47 EDT); Prod ids.
+    number1: '<:Number1:1564113028293726300>',
+    number2: '<:Number2:1564113029606547466>',
+    number3: '<:Number3:1564113030600589444>',
+    number4: '<:Number4:1564113031162630178>',
+    number5: '<:Number5:1564113032752275486>',
+    number6: '<:Number6:1564113033918287944>',
     // His reminder set and the mascot's tada (uploaded 2026-10-24 18:16 EDT to Dioreo, Dioreo (Dev) and Dioreo Admin (Dev)): Remind titles the /remind panel and the reminder DMs, RemindAlert marks a heads-up or a warning, AddReminder is the icon-only bell button, ReminderEnabled marks what you follow and turning reminders on, DisableReminder marks turning them off. DioreoTada is uploaded and not used yet.
     dioreoTada: '<a:DioreoTada:1563677558589882510>',
     remind: '<a:Remind:1563677560431452180>',
