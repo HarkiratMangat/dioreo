@@ -11,6 +11,7 @@ const BOT_EMOJI = require('../../utils/emojiMap'); // the bot's own status glyph
 const { commitSet } = require('../../core/changeset');
 const { loadOrCreateSeasonalDoc, registerBulkDelete, removeByTitle, extractCommitError } = require('./shared');
 const { failWithRetry } = require('./retry');
+const { calendarPanel, resultPanel, notePanel, FAIL_ACCENT } = require('../../utils/managePanels');
 
 // --- ADD SINGLE CALENDAR EVENT --- custom_id: modal_calendar_add A blank End Date means the event runs until the Battle Pass ends (isOngoing), same semantics as the bulk parser's "All Season" handling.
 async function addCalendarEvent(interaction) {
@@ -41,7 +42,7 @@ async function addCalendarEvent(interaction) {
 
     if (fromReminder && await reminder.refreshReminderMessage(interaction)) return;
     // Real Discord timestamps instead of plain toDateString() text -- renders in the viewer's own local time/format instead of a fixed string.
-    return interaction.followUp({ content: `${BOT_EMOJI.checkmark} **Event Added:** "${title}" (<t:${Math.floor(startDate.getTime() / 1000)}:D> -- ${isOngoing ? 'All Season' : `<t:${Math.floor(endDate.getTime() / 1000)}:D>`}).` });
+    return interaction.followUp({ flags: 32768 | 64, components: calendarPanel({ event: { _id: result.results[0].applied.elementId, title, date: startDate, endDate, isOngoing, category, isDoubleCP }, changeIds: result.changeIds }) });
 }
 
 // --- SAVE EDITED CALENDAR EVENT --- custom_id: edit_calendar_{id}
@@ -80,7 +81,8 @@ async function editCalendarEvent(interaction) {
         }
 
         if (fromReminder && await reminder.refreshReminderMessage(interaction)) return;
-        return interaction.followUp({ content: `${BOT_EMOJI.checkmark} **Event Updated:** "${title}" (<t:${Math.floor(parsedStart.getTime() / 1000)}:D> -- ${isOngoing ? 'All Season' : `<t:${Math.floor(parsedEnd.getTime() / 1000)}:D>`}).` });
+        const before = typeof targetEvent.toObject === 'function' ? targetEvent.toObject() : targetEvent;
+        return interaction.followUp({ flags: 32768 | 64, components: calendarPanel({ event: { _id: targetId, title, date: parsedStart, endDate: parsedEnd, isOngoing, category, isDoubleCP }, before, changeIds: result.changeIds }) });
     }
 }
 
@@ -96,7 +98,7 @@ async function bulkAddOrReplaceCalendar(interaction) {
     const result = await commitSet([{ type: opType, payload: { text: bulkText } }], { actorId: interaction.user.id });
     if (!result.ok) {
         const why = extractCommitError(result);
-        return await interaction.editReply({ content: `${BOT_EMOJI.cross} ${why}` });
+        return await interaction.followUp({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} ${why}`, FAIL_ACCENT) });
     }
 
     const { applied } = result.results[0];
@@ -137,9 +139,12 @@ async function bulkAddOrReplaceCalendar(interaction) {
             flagChangeLine = `\n${line.length > 400 ? `${line.slice(0, 397)}...` : line}`;
         }
     }
-    return interaction.editReply({
-        content: `${BOT_EMOJI.checkmark} **Bulk Calendar ${mode === 'add' ? 'Add' : 'Replace'} Complete!**\n${summary} Sorted chronologically.\n${breakdownLines.join('\n')}${doubleCpLine}${flagChangeLine}`
-    });
+    return interaction.followUp({ flags: 32768 | 64, components: resultPanel({
+        page: 'calendar', heading: `Bulk calendar ${mode} done`, summary: `${summary} Sorted by date.`,
+        sections: [{ head: 'By type', lines: breakdownLines }, ...(doubleCpLine ? [{ head: 'Double CP', lines: [doubleCpLine.trim()] }] : [])],
+        warnings: flagChangeLine ? [flagChangeLine.trim().replace(`${BOT_EMOJI.warn} `, '')] : [],
+        changeIds: result.changeIds,
+    }) });
 }
 
 // --- BULK REMOVE CALENDAR EVENTS --- custom_id: modal_calendar_bulk_remove Dry-run only, same 2-step confirm every other bulk-delete route uses. The dry-run collects exact element ids (not just titles) so the confirmed delete targets precisely what was previewed even if the live data shifts between preview and confirm -- same reasoning as draws.js's bulkDeleteDraws.
@@ -149,7 +154,7 @@ async function bulkDeleteCalendar(interaction) {
     const { removed, ids, notFound } = removeByTitle(seasonalDoc.calendar, titlesRaw);
 
     if (removed.length === 0) {
-        return interaction.reply({ content: `${BOT_EMOJI.cross} Nothing matched -- nothing to delete.${notFound.length ? `\n${BOT_EMOJI.warn} Not found: ${notFound.join(', ')}` : ''}`, ephemeral: true });
+        return interaction.reply({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} Nothing matched -- nothing to delete.${notFound.length ? `\n${BOT_EMOJI.warn} Not found: ${notFound.join(', ')}` : ''}`, FAIL_ACCENT) });
     }
 
     const summary = [`Removed: ${removed.join(', ')}`];
@@ -161,7 +166,7 @@ async function bulkDeleteCalendar(interaction) {
         apply: async () => {
             const result = await commitSet([{ type: 'calendar.bulkDelete', payload: { ids } }], { actorId: interaction.user.id });
             if (!result.ok) throw new Error(extractCommitError(result));
-            return null;   // Undo now lives on /bot analytics' Changes page (core/revert.js) -- no inline undo token.
+            return result.changeIds;   // for the Revert button under the result (handlers/manage/index.js)
         }
     });
 }
@@ -188,11 +193,9 @@ async function setBanners(interaction) {
             ? `${labelFor[c.key]}: cleared`
             : `${labelFor[c.key]}: banner set${c.cached ? '' : ' (not re-hosted -- Cloudinary hiccup, using the raw URL)'}`
     );
-    return interaction.followUp({
-        content: changes.length
-            ? `${BOT_EMOJI.checkmark} **Calendar Banners Updated!**\n${changes.map(c => `-# ${c}`).join('\n')}`
-            : 'ℹ️ No changes made.'
-    });
+    return interaction.followUp({ flags: 32768 | 64, components: changes.length
+        ? resultPanel({ page: 'calendar', heading: 'Calendar banners updated', sections: [{ head: 'Banners', lines: changes.map(c => `- ${c}`) }], changeIds: result.changeIds })
+        : notePanel('ℹ️ No changes made.') });
 }
 
 // --- PURGE (calendar) --- called from index.js's mng_purgeconfirm_ dispatch. Calendar has only one scope ('all') -- there's no per-sub-category purge the way Draws has new/returning.
@@ -209,7 +212,7 @@ async function purge(actorId) {
 async function deleteItem(match, actorId) {
     const result = await commitSet([{ type: 'calendar.delete', target: { elementId: match.id } }], { actorId });
     if (!result.ok) throw new Error(extractCommitError(result));
-    return null;   // Undo now lives on /bot analytics' Changes page (core/revert.js) -- no inline undo token.
+    return result.changeIds;   // for the Revert button under "Deleted" (handlers/manage/index.js)
 }
 
 module.exports = { addCalendarEvent, editCalendarEvent, bulkAddOrReplaceCalendar, bulkDeleteCalendar, setBanners, purge, deleteItem };

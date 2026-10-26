@@ -305,29 +305,9 @@ async function handleSavedAction(interaction) {
         if (!doc) return await interaction.reply({ content: `${BOT_EMOJI.cross} That build no longer exists.`, ephemeral: true });
         return await interaction.showModal(await editLoadoutModal(doc));
     }
+    // Revert is shared with the draw, event and season panels (handlers/manage/results.js).
     const changeIds = id.replace('mng_ldrevert|', '').split(',').filter(Boolean);
-    const { getChange } = require('../../utils/changeStore');
-    const { checkRevert } = require('../../utils/adminAccess');
-    const { notePanel, FAIL_ACCENT } = require('../../utils/loadoutPanels');
-    for (const changeId of changeIds) {
-        const row = await getChange(changeId);
-        if (!row) return await interaction.reply({ content: `${BOT_EMOJI.cross} Change ${changeId} no longer exists, so nothing was reverted.`, ephemeral: true });
-        const gate = await checkRevert(interaction.user.id, row);
-        if (!gate.ok) return await interaction.reply({ content: gate.reason, ephemeral: true });
-    }
-    await interaction.deferUpdate();
-    // Newest first, so a swap and the edit that caused it unwind in order.
-    const { revertChange } = require('../../core/revert');
-    const done = [];
-    for (const changeId of [...changeIds].reverse()) {
-        const res = await revertChange(changeId, { actorId: interaction.user.id });
-        if (!res.ok) {
-            return await interaction.followUp({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} **Revert stopped at ${changeId}:** ${res.reason}${done.length ? `\n-# Already reverted: ${done.join(', ')}` : ''}`, FAIL_ACCENT) });
-        }
-        done.push(changeId);
-    }
-    const { sendV2Payload } = require('../../utils/sendV2Payload');
-    return await sendV2Payload(interaction, notePanel(`↩️ **Reverted.** ${done.join(', ')} undone; the build is back as it was.\n-# The picture keys the save made stay on Cloudinary.`));
+    return await require('./results').revertChanges(interaction, changeIds, 'the build is back as it was.\n-# The picture keys the save made stay on Cloudinary');
 }
 
 // Declarations, not arrow consts: handleCatalogueWarning above names them, and a const read before its line is a temporal dead zone (scripts/tdzRatchet.mjs).
@@ -427,7 +407,7 @@ async function bulkDeleteLoadouts(interaction) {
                 { actorId: interaction.user.id }
             );
             if (!result.ok) throw new Error(extractCommitError(result));
-            return null;   // Undo now lives on /bot analytics' Changes page (core/revert.js) -- no inline undo token.
+            return result.changeIds;   // for the Revert button under the result (handlers/manage/index.js)
         }
     });
 }
@@ -489,7 +469,7 @@ async function deleteItem(match, actorId) {
     // `mode` rides on the target so core/changeset.js's pageForOp stamps the ChangeLog row with the RIGHT page: MP and DMZ share this op, and without it every DMZ delete was recorded as MP, which then gated its Revert on the wrong page.
     const result = await commitSet([{ type: 'loadout.delete', target: { id: match.id, ...(match.doc?.mode ? { mode: match.doc.mode } : {}) } }], { actorId });
     if (!result.ok) throw new Error(extractCommitError(result));
-    return null;   // Undo now lives on /bot analytics' Changes page (core/revert.js) -- no inline undo token.
+    return result.changeIds;   // for the Revert button under "Deleted" (handlers/manage/index.js)
 }
 
 module.exports = { editLoadout, addLoadout, editLoadoutModal, pictureWarningPanel, handleSavedAction, bulkAddLoadouts, handleCatalogueWarning, bulkDeleteLoadouts, exportUpTo5, exportCategory, deleteItem };

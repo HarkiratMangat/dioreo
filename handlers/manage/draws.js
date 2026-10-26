@@ -14,7 +14,7 @@ const {
     thumbnailNote, loadOrCreateSeasonalDoc, registerBulkDelete, extractCommitError
 } = require('./shared');
 const { failWithRetry } = require('./retry');
-const { drawTypeName } = require('../../utils/drawTypes');
+const { drawPanel, resultPanel, notePanel, FAIL_ACCENT } = require('../../utils/managePanels');
 
 // --- SAVE NEW SINGLE DRAW --- custom_id: add_draw_{new|returning}
 async function addDraw(interaction) {
@@ -41,7 +41,6 @@ async function addDraw(interaction) {
 
     // URL is optional -- blank reuses a Cloudinary cache hit for this exact title if one exists. No URL AND no cache hit used to hard-reject the whole submission -- relaxed 2026-08-22 19:40 EDT (click-test fix): a draw's info is sometimes known before any image exists to link/cache. thumbnailUrl has no `required` on the schema (models/SeasonalData.js) -- this was purely an app-level choice. commands/draws.js's render renders a plain no-image row instead of a broken thumbnail when thumbnailUrl is null.
     const thumbResult = await resolveThumbnail(title, rawUrl);
-    const cloudinaryWarning = thumbResult.url ? thumbnailNote(thumbResult) : BOT_EMOJI.warn + ' No image URL provided and none cached for this title -- draw saved without an image.';
 
     const parsedItems = rawItems.split('\n').filter(l => l.trim().length > 0).map(parseItemLine);
     const newDrawObj = { title, items: parsedItems, date: parsedSingleDate, thumbnailUrl: thumbResult.url, ...(priceType ? { priceType } : {}) };
@@ -54,10 +53,9 @@ async function addDraw(interaction) {
         return await failWithRetry(interaction, extractCommitError(result));
     }
 
-    const addedType = drawTypeName(newDrawObj.priceType);
-    let confirmation = `${BOT_EMOJI.checkmark} **Draw Added:** "${newDrawObj.title}" (${drawType === 'new' ? 'New' : 'Returning'}, ${addedType ? `${addedType}, ` : ''}${newDrawObj.items.length} item(s), releases <t:${Math.floor(new Date(newDrawObj.date).getTime() / 1000)}:D>).`;
-    if (cloudinaryWarning) confirmation += `\n${cloudinaryWarning}`;
-    return interaction.followUp({ content: confirmation });
+    // The saved draw as a panel, beside its picture (2026-10-26 12:52 EDT, the loadout treatment for every /manage page); a missing picture shows on the panel itself, so only a reused or failed upload is a note.
+    const notes = thumbResult.url ? [thumbnailNote(thumbResult)].filter(Boolean) : [];
+    return interaction.followUp({ flags: 32768 | 64, components: drawPanel({ draw: { ...newDrawObj, _id: result.results[0].applied.elementId }, category: drawType, changeIds: result.changeIds, notes }) });
 }
 
 // --- SAVE EDITED DRAW --- custom_id: edit_draw_{id}_{new|returning}
@@ -99,11 +97,11 @@ async function editDraw(interaction) {
             return await failWithRetry(interaction, extractCommitError(result));
         }
 
-        const shownType = drawTypeName(typeChanged ? pickedType : storedType);
-        let confirmation = `${BOT_EMOJI.checkmark} **Draw Updated:** "${newTitle}" (${drawType === 'new' ? 'New' : 'Returning'}, ${shownType ? `${shownType}, ` : ''}${parsedItems.length} item(s), releases <t:${Math.floor(parsedDrawDate.getTime() / 1000)}:D>).`;
-        const editThumbNote = thumbResult.url ? thumbnailNote(thumbResult) : BOT_EMOJI.warn + ' No image URL provided and none cached for this title -- draw saved without an image.';
-        if (editThumbNote) confirmation += `\n${editThumbNote}`;
-        return interaction.followUp({ content: confirmation });
+        const stored = arrayTarget[drawIndex];
+        const before = typeof stored.toObject === 'function' ? stored.toObject() : stored;
+        const draw = { _id: targetId, title: newTitle, date: parsedDrawDate, thumbnailUrl: thumbResult.url, items: parsedItems, priceType: typeChanged ? pickedType : storedType };
+        const notes = thumbResult.url ? [thumbnailNote(thumbResult)].filter(Boolean) : [];
+        return interaction.followUp({ flags: 32768 | 64, components: drawPanel({ draw, category: drawType, before, changeIds: result.changeIds, notes }) });
     }
 }
 
@@ -117,7 +115,7 @@ async function bulkAddOrReplaceDraws(interaction) {
     const returningText = interaction.fields.getTextInputValue('returning_text')?.trim();
 
     if (!newText && !returningText) {
-        return interaction.followUp({ content: BOT_EMOJI.cross + ' Both fields were left blank -- nothing was changed.' });
+        return interaction.followUp({ flags: 32768 | 64, components: notePanel(BOT_EMOJI.cross + ' Both fields were left blank -- nothing was changed.', FAIL_ACCENT) });
     }
 
     const ops = [];
@@ -127,29 +125,22 @@ async function bulkAddOrReplaceDraws(interaction) {
     const result = await commitSet(ops, { actorId: interaction.user.id });
     if (!result.ok) {
         const why = result.failures?.map(f => f.errors.join(' ')).join(' ') || result.error;
-        return await interaction.followUp({ content: `${BOT_EMOJI.cross} ${why}` });
+        return await interaction.followUp({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} ${why}`, FAIL_ACCENT) });
     }
 
-    const updated = [];
-    const allSkipped = [];
-    const allWarnings = [];
+    const sections = [];
+    const warnings = [];
     for (const r of result.results) {
         const label = r.applied.category === 'new' ? 'New Draws' : 'Returning Draws';
         if (mode === 'add') {
-            const titleList = r.applied.added.map(d => `"${d.title}"`).join(', ');
-            updated.push(`**${label}:** added ${r.applied.ids.length} (now ${r.applied.total} total)`
-                + (titleList ? `\n-# ${titleList}` : ''));
-            allSkipped.push(...r.applied.skipped);
-            allWarnings.push(...r.applied.warnings);
+            sections.push({ head: `${label} · ${r.applied.ids.length} added, ${r.applied.total} in total`, lines: r.applied.added.length ? r.applied.added.map(d => `- ${d.title}`) : ['-# none'] });
+            if (r.applied.skipped.length) warnings.push(`Skipped (no URL given and nothing cached yet): ${r.applied.skipped.join(', ')}`);
+            if (r.applied.warnings.length) warnings.push(`Cloudinary caching failed, kept the original URL instead: ${r.applied.warnings.join('; ')}`);
         } else {
-            updated.push(`**${label}:** updated ${r.applied.updatedCount}, added ${r.applied.insertedCount} (now ${r.applied.total} total)`);
+            sections.push({ head: label, lines: [`${r.applied.updatedCount} updated · ${r.applied.insertedCount} added · ${r.applied.total} in total`] });
         }
     }
-
-    let confirmation = `${BOT_EMOJI.checkmark} **Bulk ${mode === 'add' ? 'Add' : 'Replace'} Complete!**\n${updated.join('\n')}`;
-    if (allSkipped.length) confirmation += `\n${BOT_EMOJI.warn} Skipped (no URL given and nothing cached yet): ${allSkipped.join(', ')}`;
-    if (allWarnings.length) confirmation += `\n${BOT_EMOJI.warn} Cloudinary caching failed, kept the original URL instead: ${allWarnings.join('; ')}`;
-    return interaction.followUp({ content: confirmation });
+    return interaction.followUp({ flags: 32768 | 64, components: resultPanel({ page: 'draws', heading: `Bulk ${mode === 'add' ? 'add' : 'replace'} done`, sections, warnings, changeIds: result.changeIds }) });
 }
 
 // --- BULK DELETE DRAWS --- custom_id: modal_draws_bulk_remove_{new|returning|either} Dry-run only: computes what WOULD be removed and shows a Confirm/Cancel prompt; the actual save happens from index.js's mng_bulkdelconfirm_ dispatch, via the `apply()` closure stashed here.
@@ -190,7 +181,7 @@ async function bulkDeleteDraws(interaction) {
     }
 
     if (!anyRemoved) {
-        return interaction.reply({ content: `${BOT_EMOJI.cross} Nothing matched -- nothing to delete.\n${summary.join('\n')}`, ephemeral: true });
+        return interaction.reply({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} Nothing matched -- nothing to delete.\n${summary.join('\n')}`, FAIL_ACCENT) });
     }
 
     return registerBulkDelete(interaction, {
@@ -202,7 +193,7 @@ async function bulkDeleteDraws(interaction) {
                 { actorId: interaction.user.id }
             );
             if (!result.ok) throw new Error(result.failures?.map(f => f.errors.join(' ')).join(' ') || result.error);
-            return null;   // Undo now lives on /bot analytics' Changes page (core/revert.js) -- no inline undo token.
+            return result.changeIds;   // for the Revert button under the result (handlers/manage/index.js)
         }
     });
 }
@@ -228,7 +219,7 @@ async function deleteDraw(match, actorId) {
         { actorId }
     );
     if (!result.ok) throw new Error(extractCommitError(result));
-    return null;   // Undo now lives on /bot analytics' Changes page (core/revert.js) -- no inline undo token.
+    return result.changeIds;   // for the Revert button under "Deleted" (handlers/manage/index.js)
 }
 
 module.exports = { addDraw, editDraw, bulkAddOrReplaceDraws, bulkDeleteDraws, purgeDraws, deleteDraw };

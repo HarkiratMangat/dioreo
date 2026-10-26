@@ -10,6 +10,7 @@
 const BOT_EMOJI = require('../../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { commitSet } = require('../../core/changeset');
 const { loadOrCreateSeasonalDoc, prompt, extractCommitError } = require('./shared');
+const { patchPanel, notePanel, FAIL_ACCENT } = require('../../utils/managePanels');
 // The "current entry" is simply the last item in patchNotes[] -- null when the array is empty.
 async function currentPatchElementId() {
     const seasonalDoc = await loadOrCreateSeasonalDoc();
@@ -36,9 +37,9 @@ async function setDateInfo(interaction) {
     const result = await commitSet([op], { actorId: interaction.user.id });
     if (!result.ok) {
         const why = extractCommitError(result);
-        return await interaction.followUp({ content: `${BOT_EMOJI.cross} ${why}` });
+        return await interaction.followUp({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} ${why}`, FAIL_ACCENT) });
     }
-    return interaction.followUp({ content: `${BOT_EMOJI.checkmark} **Patch Notes Date/Info Updated!** ${result.results[0].change.target}` });
+    return interaction.followUp({ flags: 32768 | 64, components: patchPanel({ heading: 'Patch notes date & info updated', title: result.results[0].change.target, entryId: result.results[0].applied.elementId, changeIds: result.changeIds }) });
 }
 
 // --- URLS 1 / URLS 2 --- custom_id: modal_patch_urls_{1|2} Each of the 5 URLs is its own field -- a blank field means "no image in this slot". URLs 1 owns images[0..4], URLs 2 owns images[5..9] -- each submit only replaces its own half, preserving whatever the other slot has saved.
@@ -56,10 +57,10 @@ async function setUrls(interaction) {
     const result = await commitSet([op], { actorId: interaction.user.id });
     if (!result.ok) {
         const why = extractCommitError(result);
-        return await interaction.followUp({ content: `${BOT_EMOJI.cross} ${why}` });
+        return await interaction.followUp({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} ${why}`, FAIL_ACCENT) });
     }
     const { title, imageCount } = result.results[0].applied;
-    return interaction.followUp({ content: `${BOT_EMOJI.checkmark} **Patch Notes URLs ${slot} Updated!** ${title} now has ${imageCount} image(s) total.` });
+    return interaction.followUp({ flags: 32768 | 64, components: patchPanel({ heading: `Patch notes images ${slot === 1 ? '1–5' : '6–10'} updated`, title, lines: [`${imageCount} image(s) in total`], entryId: result.results[0].applied.elementId, changeIds: result.changeIds }) });
 }
 
 // --- ADD NEW SEASON --- custom_id: modal_patch_addseason Always PUSHES a brand-new patchNotes[] entry, becoming the new "current" entry (the old current entry automatically becomes a past season). URLs come in as two multi-line fields instead of 5 individually-addressable Short fields, matching the original mockup shape.
@@ -83,10 +84,10 @@ async function addSeason(interaction) {
     );
     if (!result.ok) {
         const why = extractCommitError(result);
-        return await interaction.followUp({ content: `${BOT_EMOJI.cross} ${why}` });
+        return await interaction.followUp({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} ${why}`, FAIL_ACCENT) });
     }
     const { title, imageCount } = result.results[0].applied;
-    return interaction.followUp({ content: `${BOT_EMOJI.checkmark} **New Season Added!** "${title}" is now the Current Season (${imageCount} image(s)). The previous entry has moved to Past Seasons.` });
+    return interaction.followUp({ flags: 32768 | 64, components: patchPanel({ heading: 'New season added', title, lines: [`Now the Current Season · ${imageCount} image(s)`, 'The previous season moved to Past Seasons'], entryId: result.results[0].applied.elementId, changeIds: result.changeIds }) });
 }
 
 // --- PAST SEASONS: EDIT --- custom_id: modal_patch_editseason_{id} Updates ONE SPECIFIC existing entry in place (picked via handlePatchSeasonPick below), never touches which entry is "current".
@@ -111,13 +112,13 @@ async function editSeason(interaction) {
     if (!result.ok) {
         // Matches the pre-core handler's own wording for a stale/removed target.
         if (result.failedAt?.reason === 'missing') {
-            return await interaction.followUp({ content: BOT_EMOJI.cross + ' That season no longer exists -- it may have been changed or removed since this modal opened.' });
+            return await interaction.followUp({ flags: 32768 | 64, components: notePanel(BOT_EMOJI.cross + ' That season no longer exists -- it may have been changed or removed since this modal opened.', FAIL_ACCENT) });
         }
         const why = extractCommitError(result);
-        return await interaction.followUp({ content: `${BOT_EMOJI.cross} ${why}` });
+        return await interaction.followUp({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} ${why}`, FAIL_ACCENT) });
     }
     const { title, imageCount } = result.results[0].applied;
-    return interaction.followUp({ content: `${BOT_EMOJI.checkmark} **Past Season Updated!** "${title}" now has ${imageCount} image(s).` });
+    return interaction.followUp({ flags: 32768 | 64, components: patchPanel({ heading: 'Past season updated', title, lines: [`${imageCount} image(s)`], entryId: result.results[0].applied.elementId, changeIds: result.changeIds }) });
 }
 
 // --- PURGE (patch notes) --- called from index.js's mng_purgeconfirm_ dispatch. Only scope 'all' -- the one place patch notes HISTORY can actually be cleared (distinct from "Wipe Season", which deliberately keeps patch notes forever).

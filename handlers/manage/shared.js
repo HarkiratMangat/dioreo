@@ -49,16 +49,7 @@ function registerBulkDelete(interaction, { description, summary, apply }) {
     const token = randomUUID().slice(0, 8);
     pendingBulkDeletes.set(token, { description, summary, apply });
     setTimeout(() => pendingBulkDeletes.delete(token), 10 * 60 * 1000).unref();
-    return interaction.reply({
-        content: `${BOT_EMOJI.warn} **Confirm Bulk Delete?**\n${summary.join('\n')}`,
-        components: [{
-            type: 1, components: [
-                { type: 2, style: 4, label: 'Yes, Delete', custom_id: `mng_bulkdelconfirm_${token}` },
-                { type: 2, style: 2, label: 'Cancel', custom_id: `mng_bulkdelcancel_${token}` }
-            ]
-        }],
-        ephemeral: true
-    });
+    return interaction.reply({ flags: 32768 | 64, components: require('../../utils/managePanels').bulkDeletePanel({ description, summary, token }) });
 }
 
 // ==========================================
@@ -186,17 +177,8 @@ async function resolveManagePanelAction(interaction, group, action, match) {
         if (group === 'loadouts_mp' || group === 'loadouts_dmz') {
             return interaction.reply({ flags: 32768 | 64, components: require('../../utils/loadoutPanels').deletePanel({ doc: match.doc, token }) });
         }
-        // The prompt used to promise "an Undo button right after" -- that inline button was retired when Undo moved to /bot's Changes page (plan 2 Task 7), and since the permission restructure (2026-10-19 19:38 EDT) a /manage-only admin cannot open that page at all, so the promise was false for exactly the person reading it.
-        return interaction.reply({
-            content: `${BOT_EMOJI.warn} **Are you sure you want to delete ${match.label}?** Every change is recorded, and it can be reverted from \`/bot\`'s Changes page.`,
-            components: [{
-                type: 1, components: [
-                    { type: 2, style: 4, label: 'Yes, Delete', custom_id: `mng_delconfirm_${token}` },
-                    { type: 2, style: 2, label: 'Cancel', custom_id: `mng_delcancel_${token}` }
-                ]
-            }],
-            ephemeral: true
-        });
+        // A draw or event shows itself too: its dates, and a draw its picture and items (utils/managePanels.js, 2026-10-26 13:01 EDT). The old text prompt promised "an Undo button right after", which was retired with the inline Undo (plan 2 Task 7); the result now carries its own Revert.
+        return interaction.reply({ flags: 32768 | 64, components: require('../../utils/managePanels').deleteItemPanel({ group, match, token }) });
     }
 }
 

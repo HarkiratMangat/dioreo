@@ -16,6 +16,8 @@ const BOT_EMOJI = require('../../utils/emojiMap'); // the bot's own status glyph
 const draws = require('./draws');
 const calendar = require('./calendar');
 const loadouts = require('./loadouts');
+const results = require('./results');
+const { deletedPanel, notePanel } = require('../../utils/managePanels');
 const patchnotes = require('./patchnotes');
 const season = require('./season');
 const announcements = require('./announcements');
@@ -63,6 +65,8 @@ async function routeManage(interaction) {
         if (['mng_catok|', 'mng_catedit|', 'mng_picok|', 'mng_picnew|', 'mng_picnone|'].some(p => customId.startsWith(p))) return await loadouts.handleCatalogueWarning(interaction);
         // A saved loadout's own buttons: Open in /gunsmith, Edit again, Revert (handlers/manage/loadouts.js handleSavedAction).
         if (['mng_ldopen_', 'mng_ldedit_', 'mng_ldrevert|'].some(p => customId.startsWith(p))) return await loadouts.handleSavedAction(interaction);
+        // The same two buttons under a saved draw, event or season: Edit again, Revert (handlers/manage/results.js).
+        if (['mng_rsedit|', 'mng_rsrevert|'].some(p => customId.startsWith(p))) return await results.handleResultAction(interaction);
 
         // MANAGE PANEL -- action buttons, resolved through the registry (utils/manageActions.js). resolveAction() is also where per-page permissions are enforced PER CLICK -- see that module's header comment. router.js's prefix guard still runs first and independently -- that one answers "may this user touch /manage at all", this one answers "may they touch THIS page". Keep both.
         if (customId.startsWith('mng_act_')) {
@@ -159,9 +163,10 @@ async function routeManage(interaction) {
             const handler = DELETE_HANDLERS[group];
             // Loud on a missing handler, not a false "Deleted" (v3-pre-release review, finding #27) -- the moment a page gains a delete action without a map entry, the admin was told the record was deleted while it was untouched.
             if (!handler) throw new Error(`No DELETE_HANDLERS entry registered for group "${group}"`);
-            await handler(match, interaction.user.id);
+            // Each page's delete returns the change ids it wrote, so "Deleted" carries a Revert.
+            const changeIds = await handler(match, interaction.user.id);
             try {
-                await prompt(interaction, { text: `🗑️ **Deleted:** ${match.label}` });
+                await prompt(interaction, { components: deletedPanel({ text: `🗑️ **Deleted:** ${match.label}`, changeIds: Array.isArray(changeIds) ? changeIds : [] }) });
             } catch (notifyError) {
                 console.error('Failed to confirm manage-panel delete (interaction likely expired):', notifyError);
             }
@@ -171,7 +176,7 @@ async function routeManage(interaction) {
             const token = customId.replace('mng_delcancel_', '');
             pendingManageDeletes.delete(token);
             try {
-                await prompt(interaction, { text: '❎ Cancelled -- nothing was deleted.' });
+                await prompt(interaction, { components: notePanel('❎ Cancelled -- nothing was deleted.') });
             } catch (notifyError) {
                 console.error('Failed to confirm manage-panel delete cancellation (interaction likely expired):', notifyError);
             }
@@ -192,10 +197,8 @@ async function routeManage(interaction) {
                 return;
             }
             try {
-                await pending.apply();
-                await prompt(interaction, {
-                    text: `🗑️ **${pending.description} Complete!**\n${pending.summary.join('\n')}`
-                });
+                const changeIds = await pending.apply();
+                await prompt(interaction, { components: deletedPanel({ text: `🗑️ **${pending.description} done**\n${pending.summary.map(s => `- ${s}`).join('\n')}`, changeIds: Array.isArray(changeIds) ? changeIds : [] }) });
             } catch (applyError) {
                 console.error(`Failed to apply bulk delete (${pending.description}):`, applyError);
                 // A permission denial from commitSet (the grant narrowed since the paste was submitted) is a clear answer, not "something went wrong": nothing was deleted, and the message says which tier is missing.
@@ -212,7 +215,7 @@ async function routeManage(interaction) {
             const token = customId.replace('mng_bulkdelcancel_', '');
             pendingBulkDeletes.delete(token);
             try {
-                await prompt(interaction, { text: '❎ Cancelled -- nothing was deleted.' });
+                await prompt(interaction, { components: notePanel('❎ Cancelled -- nothing was deleted.') });
             } catch (notifyError) {
                 console.error('Failed to confirm bulk-delete cancellation (interaction likely expired):', notifyError);
             }
