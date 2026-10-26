@@ -51,3 +51,6 @@ Harkirat approved it 2026-10-20 18:16 EDT: a **Your Stats** button in the header
 - **What counts:** an own slash or right-click command (after it runs, with Dioreo User Since, in `noteOwnCommandSafely`, which calls `noteOwnCommand`), a build card drawn for the clicker, Calculate on `/draw calculator` (the calculation's CP), a Show Everyone share. Re-renders don't count again.
 - **Reset** is `set_stats_reset` (asks) → `set_stats_resetok` (unsets `stats`; `firstCommandAt` stays). Both type-tested buttons in `handlers/settings.js`.
 - User # counts records with an earlier `firstCommandAt`; the percentile appears only once 5 users have counts. Covered by `scripts/userStats.test.js`.
+
+## Page 2 is near Discord's 40 components (2026-10-26 16:06 EDT, #227)
+Page 2 (Preferences) measured 35 components with a banner before the Announcements row, and 39 with it and its divider. Count anything new on page 2 first: Discord refuses the whole message past 40, counted recursively, and `commands/today.js` `countComponents` counts a payload.

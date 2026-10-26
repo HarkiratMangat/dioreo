@@ -20,6 +20,7 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 - **`/draw calculator`** plans your CP: save calculations, price Mythic upgrades, the Series Armory and the Advanced draws, and see a suggested purchase. `/draw prices` covers the 10, 20 and 30 CP regions.
 - **`/today`** is a daily brief: what released since the daily update, what goes live next, and what's leaving soon. `/calendar` opens on it.
 - **`/remind`** sends you one DM a day, right after the daily update, with only what you picked. The bell on each seasonal command opens it.
+- **Announcements** carry a *Why am I seeing this?* button, and you can turn them off there, in `/settings` or in `/remind`.
 - **`/calendar`, `/draws` and `/season end`:** filter the calendar by status, open the calculator from `/draws`, and watch the season-end progress bars. `/patch notes` keeps every season.
 - **Right-click tools:** View Colors on a person or a message, and Convert Times on a message.
 - **`/timestamp`** reads your saved time zone and understands ranges like "8pm to 10pm".
