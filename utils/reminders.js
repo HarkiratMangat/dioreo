@@ -123,8 +123,8 @@ function extraBlocks(p) {
     return out;
 }
 
-// The "Manage reminders" row every reminder DM ends with; the button opens the panel privately.
-const manageRow = () => ({ type: 1, components: [{ type: 2, style: 2, label: 'Manage reminders', custom_id: 'remind_open', emoji: emojis.parseEmoji(emojis.remind) }] });
+// The "Manage reminders" row every reminder DM ends with; the button opens the panel privately. It sits OUTSIDE the card, under it, with the AddReminder bell the commands' bell buttons use (Harkirat, 2026-10-25 20:18 EDT: "use the other emoji for the manage reminders button. Also move the button outside the embed").
+const manageRow = () => ({ type: 1, components: [{ type: 2, style: 2, label: 'Manage reminders', custom_id: 'remind_open', emoji: emojis.parseEmoji(emojis.addReminder) }] });
 
 // The DM, as Components V2 JSON, or null. His order (round 3): Last chance · Leaving soon · Released · Season · Patch notes. With the digest on, the /today brief takes the place of Released and the leaving lists, with followed items marked by the bell (his round-2 Q4: the digest absorbs the rest), and the season and patch-note parts follow it.
 function buildReminderDM(p, seasonalDoc, { nowMs = Date.now(), accentColor = 4093660 } = {}) {
@@ -140,8 +140,8 @@ function buildReminderDM(p, seasonalDoc, { nowMs = Date.now(), accentColor = 409
         const extra = extraBlocks(p);
         const wrap = brief => [{ type: 17, accent_color: accentColor, components: [
             block(`## ${emojis.remind} Your daily brief\n${dateLine}`), sep, ...brief.map(c => markFollowed(c, marked)),
-            ...(extra.length ? [sep, ...extra] : []), { type: 14, divider: false, spacing: 1 }, manageRow(),
-        ] }];
+            ...(extra.length ? [sep, ...extra] : []),
+        ] }, manageRow()];
         return fitMessage(seasonalDoc, { nowMs }, wrap);
     } else {
         const parts = [];
@@ -152,7 +152,7 @@ function buildReminderDM(p, seasonalDoc, { nowMs = Date.now(), accentColor = 409
         parts.push(...extraBlocks(p));
         body = [block(`## ${emojis.remind} Your reminders\n${dateLine}`), sep, ...parts];
     }
-    return [{ type: 17, accent_color: accentColor, components: [...body, { type: 14, divider: false, spacing: 1 }, manageRow()] }];
+    return [{ type: 17, accent_color: accentColor, components: body }, manageRow()];
 }
 
 // What Send a test DMs (Harkirat, 2026-10-24 19:39 EDT: "When someone has reminders enabled and they tap send a test, can you make it actually their reminders?"). With reminders on, it is the real DM from TODAY's daily update (the last run), built exactly as the run builds it, under a one-line note that it is a test; when nothing they follow happened then, it says so and lists what they follow. With nothing on, the plain test card. ⚠️ It shows the LAST run, not the next one: Discord draws every <t:…:R> against the reader's clock, so a DM built for a run still to come read "Released in 14 minutes" and gave the next daily update a day too late (his screenshot, 19:47 EDT: "Timings for the daily update doesn't make sense?"). The one-time tip sent as a second DM beside someone's first real reminder when they have no timezone (Harkirat, 2026-10-24 23:44 EDT ask: "for the first time… when a real reminder sends… send another follow-up DM… heads up… your time zone… with the set button in it"). Sending never needs one (every reminder goes at 00:01 UTC and its times are Discord timestamps in the reader's own device time); the zone only fixes the dates written into /remind's dropdowns. With `setTo` it is the confirmation that replaces it once a zone is picked.
@@ -180,8 +180,7 @@ function buildTestDM(sub, seasonalDoc, { nowMs = Date.now(), accentColor = 40936
     return [note('A test.'), { type: 17, accent_color: accentColor, components: [
         block(`### ${emojis.remind} Nothing at today's daily update\n-# Nothing you follow happened at the daily update ${rel(runMs)}, so no reminder came. Your reminders arrive here when something does.`),
         block(['-# **You follow**', ...following.slice(0, 15).map(f => `- ${f}`), ...(following.length > 15 ? [`-# +${following.length - 15} more`] : [])].join('\n')),
-        { type: 14, divider: false, spacing: 1 }, manageRow(),
-    ] }];
+    ] }, manageRow()];
 }
 
 // Adds the bell after each followed title in a text component of the /today brief, once per title.
