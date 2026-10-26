@@ -335,9 +335,14 @@ async function handleInteractionInner(interaction) {
                 return await interaction.respond([]);
             }
 
-            const matchingWeapons = await Loadout.find(queryFilter).select('weaponName weaponKey category').lean();
+            const matchingWeapons = await Loadout.find(queryFilter).select('weaponName weaponKey category isMeta categoryRank isToxic').lean();
             const uniqueMap = new Map();
-            matchingWeapons.forEach(w => uniqueMap.set(w.weaponKey, w));
+            // One entry per weapon, carrying the best badges among its builds (badges are per build since 2026-10-19), for the featured list below.
+            const rankOf = r => ({ best: 1, top3: 3, top5: 5, capable: 6 })[r] ?? 50;
+            matchingWeapons.forEach(w => {
+                const prev = uniqueMap.get(w.weaponKey);
+                uniqueMap.set(w.weaponKey, prev ? { ...prev, isMeta: prev.isMeta || w.isMeta, isToxic: prev.isToxic || w.isToxic, categoryRank: rankOf(w.categoryRank) < rankOf(prev.categoryRank) ? w.categoryRank : prev.categoryRank } : w);
+            });
             const distinctChoices = Array.from(uniqueMap.values());
 
             // BUG FIX (2026-07-12, found live): this list had no sort at all -- Mongo returns docs in natural/insertion order, so whichever weapon happened to be migrated/added FIRST (LOCUS, from the original builds.xlsx migration) always showed up first regardless of category or alphabetical order. Originally sorted by a hand-confirmed CATEGORY_SORT_ORDER list (AR/SMG/LMG only, pending Harkirat confirming the rest); per his 2026-07-12 follow-up request, dropped that in favor of just sorting category alphabetically too, then weapon name alphabetically within each category. Only affects display order -- doesn't change which weapons match the typed query.
@@ -364,7 +369,9 @@ async function handleInteractionInner(interaction) {
                 const matched = findWeaponMatches(focusedValue, distinctChoices);
                 const room = 25 - rows.length;
                 const more = matched.length > room;
-                const weaponRows = matched
+                // Nothing typed: a few of each class's best instead of the alphabet's first class (featuredWeapons, his 2026-10-25 23:25 EDT ask).
+                const shown = focusedValue ? matched : require('../utils/search').featuredWeapons(matched, more ? room - 1 : room);
+                const weaponRows = shown
                     .slice(0, more ? room - 1 : room)
                     .map(w => ({ name: mode === 'MP' ? `[${displayCategoryLabel(w.category)}] ${w.weaponName}` : w.weaponName, value: w.weaponKey }));
                 if (more) weaponRows.push({ name: `▸ Type a name to search all ${matched.length} ${focusedValue ? 'matches' : 'weapons'}`, value: `~search~${mode}` });

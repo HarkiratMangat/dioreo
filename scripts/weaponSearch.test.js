@@ -67,6 +67,15 @@ check('look-alike typos find the weapon: hso for HS0405, l for 1, s for 5 (his 2
     assert.deepStrictEqual(findWeaponMatches('hs04', guns).map(w => w.weaponKey), ['hs0405']);
 });
 
+check('nothing typed: a few of every class, each class\'s Meta and best-ranked first (his 2026-10-25 23:25 EDT ask)', () => {
+    const { featuredWeapons } = require('../utils/search');
+    const w = (weaponName, category, extra = {}) => ({ weaponName, weaponKey: weaponName.toLowerCase(), category, ...extra });
+    const pool = [w('A1', 'AR'), w('A2', 'AR', { isMeta: true }), w('A3', 'AR', { categoryRank: 'best' }), w('L1', 'LMG'), w('L2', 'LMG', { categoryRank: 'top3' }), w('S1', 'SNIPER', { isMeta: true }), w('S2', 'SNIPER')];
+    const four = featuredWeapons(pool, 4).map(x => x.weaponName);
+    assert.deepStrictEqual(four, ['A2', 'A3', 'L2', 'S1'], 'one per class first, then the best second; grouped by class');
+    assert.strictEqual(featuredWeapons(pool, 99).length, pool.length);
+});
+
 if (failures) { console.error(`\n${failures} check(s) failed.`); process.exit(1); }
 console.log('\nweaponSearch: all checks passed.');
 process.exit(0);

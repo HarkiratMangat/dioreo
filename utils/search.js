@@ -145,4 +145,21 @@ function findWeaponMatches(query, candidates) {
     return results;
 }
 
-module.exports = { fuzzyMatch, normalizeForSearch, foldLookalikes, findWeaponMatches, resolveCategorySynonyms, categoryByExactAlias, isGenericWeaponQuery, typoDistance, isSameDrawTitle };
+// What /gunsmith shows before anything is typed (Harkirat, 2026-10-25 23:26 EDT: "instead of the example list only being AR weapons, can you list a few weapons from each category ... the more popular ones ... if they have the meta badge or the top badge"). A few from every class, each class's best first by its builds' badges (Meta, then Best › Top 3 › Top 5 › Capable, then Toxic), taken round-robin so every class gets one before any gets a second; shown grouped by class. `weapons`: one entry per weapon with `category`, `weaponName` and the badge fields of its best build.
+const RANK_ORDER = { best: 1, top3: 3, top5: 5, capable: 6 };
+function featuredScore(w) {
+    return (w.isMeta ? 0 : 100) + (RANK_ORDER[w.categoryRank] ?? 50) + (w.isToxic ? 0 : 1);
+}
+function featuredWeapons(weapons, slots) {
+    const byClass = new Map();
+    for (const w of weapons) (byClass.get(w.category) || byClass.set(w.category, []).get(w.category)).push(w);
+    const classes = [...byClass.keys()].sort();
+    for (const c of classes) byClass.get(c).sort((a, b) => featuredScore(a) - featuredScore(b) || a.weaponName.localeCompare(b.weaponName));
+    const picked = new Set();
+    for (let round = 0; picked.size < slots && classes.some(c => byClass.get(c)[round]); round++) {
+        for (const c of classes) { const w = byClass.get(c)[round]; if (w && picked.size < slots) picked.add(w); }
+    }
+    return classes.flatMap(c => byClass.get(c).filter(w => picked.has(w)));
+}
+
+module.exports = { featuredWeapons, fuzzyMatch, normalizeForSearch, foldLookalikes, findWeaponMatches, resolveCategorySynonyms, categoryByExactAlias, isGenericWeaponQuery, typoDistance, isSameDrawTitle };
