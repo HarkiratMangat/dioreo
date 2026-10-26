@@ -392,11 +392,11 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false,
     if (weaponPager) containerComponents.push({ type: 14, spacing: 2, divider: true }, weaponPager);
 
     const containerPayload = { type: 17, accent_color: color, components: containerComponents };
-    // Search... and Copy Code sit OUTSIDE the panel, right under it and above the dropdowns (his 18:44 EDT ask). Search... opens the card's one-box search (handlers/loadouts.js `gsb~search~<mode>` -> `gsb~find~<mode>`); no icon yet, Harkirat is drawing one (16:30 EDT). The switch rows follow, outside too (his earlier call: a dropdown is a sibling row, not nested).
+    // Search... and Copy Code sit OUTSIDE the panel, right under it and above the dropdowns (his 18:44 EDT ask). Search... opens the card's one-box search (handlers/loadouts.js `gsb~search~<mode>` -> `gsb~find~<mode>`) and carries his GunsmithSearch icon (2026-10-25 22:32 EDT); Copy Attachments carries CopyAttachments. The switch rows follow, outside too (his earlier call: a dropdown is a sibling row, not nested).
     const outerComponents = [containerPayload, { type: 1, components: [
-        { type: 2, style: 2, label: 'Search...', custom_id: `gsb~search~${mode}` },
+        { type: 2, style: 2, label: 'Search...', custom_id: `gsb~search~${mode}`, emoji: emojis.parseEmoji(emojis.gunsmithSearch) },
         mode === 'DMZ'
-            ? { type: 2, style: 2, label: 'Copy Attachments', custom_id: copyAttCustomId }
+            ? { type: 2, style: 2, label: 'Copy Attachments', custom_id: copyAttCustomId, emoji: emojis.parseEmoji(emojis.copyAttachments) }
             : { type: 2, style: 1, label: 'Copy Code', custom_id: copyCustomId, emoji: emojis.parseEmoji(emojis.gunsmithCode) },
     ] }];
     const scope = browse ? require('./loadoutScopes').parseScopeToken(browse.scopeToken) : null;

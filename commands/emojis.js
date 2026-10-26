@@ -86,7 +86,7 @@ function buildEmojiPanel({ rows, apps, page = 0, filter = 'all', note = null, se
             ? { type: 2, style: 3, label: `Sync ${missingCount} missing`, custom_id: `emo_sync_${f.key}` }
             : { type: 2, style: 2, label: 'Nothing to sync', custom_id: 'emo_sync_none', disabled: true },
         { type: 2, style: 1, label: 'Upload original', custom_id: 'emo_upload' },
-        { type: 2, style: 2, label: 'Find...', custom_id: `emo_find_${f.key}` },
+        { type: 2, style: 2, label: 'Find...', custom_id: `emo_find_${f.key}`, emoji: emojis.parseEmoji(emojis.search) },
     ] });
     return [{ type: 17, accent_color: ACCENT, components }];
 }

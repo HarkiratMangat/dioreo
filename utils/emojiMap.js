@@ -141,8 +141,12 @@ const emojis = {
     edit: '<a:Edit:1560408533160296519>',
     // /draw prices' Show All Draws once a filter is set (2026-10-21 13:14 EDT, Harkirat gave this prod id; swapped for his new Return 13:41 EDT). The dev app's emoji of the same name is matched at boot.
     returnArrow: '<:Return:1562521110572961882>',
-    // His icon set, uploaded to the prod and dev apps on his word (2026-10-24 00:57 EDT); prod ids here, the dev bot re-points them by name at boot. Originals in the main checkout's Logos-&-Emojis/emoji-originals/ under these names. The Gunsmith Code button and /today's footer use theirs, and the single weapon-class icons sit on Copy Attachments by the build's class (2026-10-24 01:06 EDT, utils/loadoutRender.js). The split halves and the attachment icons are unused (his word: attachments "uploaded and unused for now").
+    // His icon set, uploaded to the prod and dev apps on his word (2026-10-24 00:57 EDT); prod ids here, the dev bot re-points them by name at boot. Originals in the main checkout's Logos-&-Emojis/emoji-originals/ under these names. The Gunsmith Code button and /today's footer use theirs, and the single weapon-class icons sit on Copy Attachments by the build's class (2026-10-24 01:06 EDT, utils/loadoutRender.js). The split halves and the attachment icons are unused (his word: attachments "uploaded and unused for now"). GunsmithCode was REPLACED with his new art 2026-10-25 22:32 EDT (same name; the old one archived in Cloudinary and offline). The prod id below is the OLD prod emoji's until he swaps it on prod; the dev bot re-points by name.
     gunsmithCode: '<a:GunsmithCode:1563415632442163210>',
+    // His three new icons (2026-10-25 22:32 EDT): GunsmithSearch on /gunsmith's Search... button, CopyAttachments on Copy Attachments, Search as the general search icon (/emojis' Find...). On the dev apps only so far, so these ids are Dioreo (Dev)'s; replace them with the prod ids once they are on prod (the prod bot's own sync adds them from the Cloudinary originals once this ships). AVIF uploads come back animated, hence `a:`.
+    gunsmithSearch: '<a:GunsmithSearch:1564104325662253097>',
+    copyAttachments: '<a:CopyAttachments:1564104328208449577>',
+    search: '<a:Search:1564104330565521418>',
     // His reminder set and the mascot's tada (uploaded 2026-10-24 18:16 EDT to Dioreo, Dioreo (Dev) and Dioreo Admin (Dev)): Remind titles the /remind panel and the reminder DMs, RemindAlert marks a heads-up or a warning, AddReminder is the icon-only bell button, ReminderEnabled marks what you follow and turning reminders on, DisableReminder marks turning them off. DioreoTada is uploaded and not used yet.
     dioreoTada: '<a:DioreoTada:1563677558589882510>',
     remind: '<a:Remind:1563677560431452180>',
