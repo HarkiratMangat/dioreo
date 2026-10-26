@@ -192,7 +192,7 @@ function buildPagesTable(client) {
     // "Manage Admins" RETIRED 2026-08-16 (observability layer stage 3) -- extracted out of /manage entirely into /bot access (commands/bot.js, handlers/bot.js). It was owner-only visibility here (getManagePages() only ever offered it to the owner); that invariant is unchanged, just enforced directly by /bot access's own isOwner() check instead of by this table. "Announcement" (added 2026-08-13, redesigned same day into a real multi-announcement list -- see models/Announcement.js's header for why). Each active announcement gets its own Edit/Delete pair (buildAnnouncementListBlocks below); posting a new one never touches the others. Every user sees each one they haven't individually seen yet, together in one ephemeral message, on their next command -- see utils/announcement.js.
     announcement: {
         label: 'Announcement',
-        icon: emojis.announcements,
+        icon: emojis.dbAnnouncement, // the page's own main emoji (his, 2026-10-26 12:46 EDT); each announcement's heading keeps `announcements`
         headerLabel: 'Announcement',
         groups: [
             { style: 'raw', dynamicKey: 'announcementBlocks' },

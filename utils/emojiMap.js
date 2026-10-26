@@ -41,8 +41,12 @@ const emojis = {
     mngExport: '<a:DB_Export:1525262952540934264>',
     mngPurge: '<a:DB_Purge:1525327754013442129>',
     mngInfo: '<a:DB_Info:1525337539085340722>',
-    // /manage's Announcement page + each announcement's own heading (2026-08-22, Harkirat-provided). Replaces the generic `mngInfo` this page borrowed when it was built -- the empty-state notice keeps mngInfo, since that one really is an info notice rather than an announcement.
-    announcements: '<a:Announcements:1540916435914723490>',
+    // Each announcement's own heading (2026-08-22, Harkirat-provided). REPLACED with his cleaner art 2026-10-26 12:46 EDT ("the more cleaner version of the current announcement emoji. So please like replace that"): same name, new id; the original is in emoji-originals/ as Announcements, which it never had before.
+    announcements: '<a:Announcements:1564319069396672543>',
+    // /manage's Announcement page title, the page's own main emoji like every other /manage page has (his, 2026-10-26 12:46 EDT: "Utilize this for the slash manage command for like the announcement pages, like main emoji").
+    dbAnnouncement: '<a:DB_Announcement:1564319068302082174>',
+    // A general information mark (his, 2026-10-26 12:46 EDT: "for any like informative thing ... it's on your judgment"). Used on the side notes of /manage's loadout panels (utils/loadoutPanels.js).
+    info: '<a:Info:1564319073540513913>',
     // /bot access's panel heading AND /help's "Bot Admin" category icon (2026-08-22, Harkirat-provided) -- one icon for the admin surface in both places, replacing a literal 🔑 in one and the borrowed `database` icon in the other.
     botAccess: '<a:BotAccess:1540915865506160660>',
     mngUrls: '<a:DB_URLs:1525337321568997449>',
@@ -85,9 +89,9 @@ const emojis = {
     best: '<a:Best:1524235235070312488>',
     top: '<a:Top:1524183479997169714>',
     toxic: '<a:Toxic:1524535298380402859>',
-    // PLACEHOLDERS for the Ass and Capable badges (Harkirat, 2026-10-19 16:13 EDT: "use placeholders for now. i'll give you emojis for them later on."). Plain unicode, so refreshEmojiIds() skips them and they render on every app. utils/loadoutRender.js prefers an app emoji named `Ass` / `Capable` the moment one is uploaded, so swapping in his emojis is an upload, or a mention here.
-    ass: '🫏',
-    capable: '✔️',
+    // The Ass and Capable badges: his art, uploaded 2026-10-26 12:46 EDT (they were unicode placeholders since 2026-10-19 16:13 EDT: "use placeholders for now. i'll give you emojis for them later on."). utils/loadoutRender.js's optionalEmoji still reads the app's own by name first.
+    ass: '<a:Ass:1564319070705156160>',
+    capable: '<a:Capable:1564319072337002627>',
     blank: '<:blank:1524243739206352906>',
     // "View Colors" button in /settings (utils/colorPaletteView.js, handlers/colors.js's colors_view/ colors_page_ handlers) -- blurple-recolored, background-removed eyedropper icon, per Harkirat's own design pass (2026-07-13). Uploaded by Harkirat directly, not via this bot.
     eyedropper: '<a:Eyedropper:1526293991166054541>',

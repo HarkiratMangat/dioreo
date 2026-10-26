@@ -279,7 +279,7 @@ async function saveLoadout(interaction, preset, isEdit) {
     const savedId = isEdit ? targetId : result.results[0].applied.id;
     const saved = await Loadout.findById(savedId).lean();
     const notes = [];
-    if (picture.note) notes.push(`🖼️ ${picture.note}`);
+    if (picture.note) notes.push(picture.note);
     // A swap core made: the other build, by where it went.
     for (const m of result.results[0].applied.moved || []) {
         const other = await Loadout.findById(m.id).select('buildName').lean();

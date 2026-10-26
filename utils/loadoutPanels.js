@@ -73,7 +73,8 @@ function savedPanel({ doc, before = null, changeIds = [], notes = [], warnings =
     ];
     if (before) components.push({ type: 10, content: changes.length ? `**What changed**\n${changes.map(c => `- ${c}`).join('\n')}` : '-# Nothing changed.' });
     components.push({ type: 10, content: `**Attachments**\n${attachmentList(doc)}` });
-    if (notes.length) components.push({ type: 10, content: notes.map(n => `-# ${n}`).join('\n') });
+    // Side notes carry his Info mark (2026-10-26 12:46 EDT).
+    if (notes.length) components.push({ type: 10, content: notes.map(n => `-# ${emojis.info} ${n}`).join('\n') });
     if (warnings.length) components.push({ type: 10, content: warnings.map(w => `${emojis.warn} ${w}`).join('\n') });
     components.push({ type: 14, divider: false, spacing: 1 }, actionRow(doc, changeIds));
     return [{ type: 17, accent_color: ACCENT[doc.mode] || ACCENT.MP, components }];
