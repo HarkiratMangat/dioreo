@@ -16,13 +16,8 @@ function ownsCustomId(customId) {
     return typeof customId === 'string' && OWNED_PREFIXES.some(prefix => customId.startsWith(prefix));
 }
 
-// The one-box search behind the dropdown's "Search all weapons…" option (Harkirat, 2026-10-24 09:45 EDT: "can we make the flow of searching for another weapon or build much more fluid?"). A select menu cannot autocomplete, so the box takes a typed name and resolves it the way /gunsmith does (utils/loadoutLookup.js resolveWeapon).
-function searchModal(mode) {
-    return {
-        title: `Search ${mode} weapons`, custom_id: `gsb~find~${mode}`,
-        components: [{ type: 1, components: [{ type: 4, custom_id: 'q', label: 'Weapon name', style: 1, required: true, max_length: 60, placeholder: mode === 'DMZ' ? 'Fennec, AS VAL…' : 'AK117, Locus, BP50…' }] }],
-    };
-}
+// The one-box search pop-up lives in utils/loadoutLookup.js (searchModal) since /gunsmith's own suggestion opens it too (2026-10-25 23:12 EDT).
+const { searchModal } = require('../utils/loadoutLookup');
 
 // THE NO-BUILD PAGER (Harkirat, 2026-10-25 16:21-16:40 EDT, option 2): "N more with no build yet..." opens the class's first weapon with no build, and the arrows (`gsb~nb~<CLASS>~<n>`) step through the rest, each on the No build yet card. The list is the CODM catalogue's class less every weapon with a real build (utils/loadoutLookup.js missingWeapons).
 async function openNoBuild(interaction, category, index) {
@@ -111,8 +106,15 @@ async function route(interaction) {
 
         // The dropdown's search box, submitted. Deferred first (the lookup can run three queries), then the message the dropdown sat under becomes the found weapon's card, or the missing-weapon card; a name that finds no single weapon is answered privately and the card stays as it was.
         if (interaction.isModalSubmit() && interaction.customId.startsWith('gsb~find~')) {
-            const mode = interaction.customId.endsWith('DMZ') ? 'DMZ' : 'MP';
+            // `gsb~find~<mode>`, or `gsb~find~<mode>~v<hidden|public>` when the slash command opened it (searchModal).
+            const [, , modeToken, visToken] = interaction.customId.split('~');
+            const mode = modeToken === 'DMZ' ? 'DMZ' : 'MP';
             const query = (interaction.fields.getTextInputValue('q') || '').trim();
+            // Opened from /gunsmith's "▸ Type a name to search…" suggestion, there is no card to update: answer the way the slash command would, with its visibility choice carried through the pop-up.
+            if (!interaction.message) {
+                const { lookupAndRenderWeapon } = require('../utils/loadoutLookup');
+                return await lookupAndRenderWeapon(interaction, { mode, rawQuery: query, requestedBuild: null, visibilityChoice: visToken ? visToken.slice(1) : null });
+            }
             await interaction.deferUpdate();
             const { resolveWeapon, renderResolved, notFoundText } = require('../utils/loadoutLookup');
             const found = await resolveWeapon(mode, query);

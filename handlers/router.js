@@ -291,10 +291,9 @@ async function handleInteractionInner(interaction) {
 
             // === ROUTE B2: /help's cmd: option -- suggests every real command from commands/help.js's staticCommands (/gunsmith is one entry, not one per subcommand) ===
             if (commandName === 'help') {
-                const { suggestHelpCommandNames, helpPerms } = require('../commands/help');
-                // Restricted entries are suggested only to someone who could use them, through the SAME permission set the page itself uses (commands/help.js helpPerms; this branch built its own without `botAccess` until 2026-10-25, hiding /emojis and the owner-only /bot commands from the owner). It also matches alias keywords, look-alikes and typos -- see commands/help.js.
-                const filtered = await suggestHelpCommandNames(focusedValue, await helpPerms(interaction));
-                return await interaction.respond(filtered.map(name => ({ name, value: name })));
+                const { helpChoices, helpPerms } = require('../commands/help');
+                // Restricted entries are suggested only to someone who could use them, through the SAME permission set the page itself uses (commands/help.js helpPerms; this branch built its own without `botAccess` until 2026-10-25, hiding /emojis and the owner-only /bot commands from the owner). It also matches alias keywords, look-alikes and typos -- see commands/help.js. Each choice shows the name with a short plain line (utils/helpSearch.js choiceLabel); its value stays the bare name.
+                return await interaction.respond(await helpChoices(focusedValue, await helpPerms(interaction)));
             }
 
             // === ROUTE B3 (stage 3, 2026-08-14 18:05 EDT): /manage's action: option -- scoped by the sibling content option (renamed from `data_for` 2026-08-15 13:27 EDT), since Discord cannot scope one option's static choices by another option's live value (the whole reason this is autocomplete, not a `choices()` list -- see the registry's comment in utils/manageActions.js). NOTE (removed 2026-07-09, re-added here for a different reason): /manage's old autocomplete route was for search-by-name (draws/loadouts/ calendar/patchnotes edit/delete), replaced by the one-field search modal and never coming back. This route only ever suggests ACTION IDS off the registry, never touches a collection. ===
@@ -361,14 +360,14 @@ async function handleInteractionInner(interaction) {
                 const rows = browseRows(mode, cats)
                     .filter(r => !focusedValue || generic || fuzzyMatch(focusedValue, r.label) || synonyms.some(c => r.value === `MP.${c}.std`) || (!synonyms.length && /^(META|MP|DMZ)$/.test(r.label.split(' ')[1]) && typoDistance(focusedValue, r.label.split(' ')[1]) !== Infinity))
                     .map(r => ({ name: `▸ ${r.label}`, value: `~scope~${r.value}` }));
-                // When the matches outnumber the 25 Discord shows, the last row says so (Harkirat, 2026-10-24 09:45 EDT: "since only 25 items appear, can we better state to a user that can they search the weapon name?"). Picking that row opens the mode's whole browse, so it is never a dead end.
+                // When the matches outnumber the 25 Discord shows, the last row says so (Harkirat, 2026-10-24 09:45 EDT: "since only 25 items appear, can we better state to a user that can they search the weapon name?"). Picking that row opens the weapon search pop-up (`~search~<mode>`, 2026-10-25 23:12 EDT, his ask; it opened the mode's whole browse on its first weapon until then).
                 const matched = findWeaponMatches(focusedValue, distinctChoices);
                 const room = 25 - rows.length;
                 const more = matched.length > room;
                 const weaponRows = matched
                     .slice(0, more ? room - 1 : room)
                     .map(w => ({ name: mode === 'MP' ? `[${displayCategoryLabel(w.category)}] ${w.weaponName}` : w.weaponName, value: w.weaponKey }));
-                if (more) weaponRows.push({ name: `▸ Type a name to search all ${matched.length} ${focusedValue ? 'matches' : 'weapons'}`, value: `~scope~${mode}.*.std` });
+                if (more) weaponRows.push({ name: `▸ Type a name to search all ${matched.length} ${focusedValue ? 'matches' : 'weapons'}`, value: `~search~${mode}` });
                 return await interaction.respond([...rows, ...weaponRows]);
             }
 

@@ -25,14 +25,14 @@ assert.ok(bs.includes('"AR · 1/3"'), 'the pager names the class and the WEAPON\
     const ri = box.indexOf(row);
     assert.ok(box[ri + 1].type === 14 && box[ri + 1].divider && box[ri + 1].spacing === 2 && /prev/.test(box[ri + 2].components[0].custom_id), 'the build row, a large divider, then the arrows');
     assert.ok(/^-# Updated/.test(box[ri - 1].content), 'the footer drops the class (the pager names it) and the build count (the row shows it)');
-    assert.deepStrictEqual(browsed.components[1].components.map(b => b.label), ['Search...', 'Copy Code'], 'Search... and Copy Code sit outside the card, right under it');
+    assert.deepStrictEqual(browsed.components[1].components.map(b => b.label), ['Search', 'Attachments', 'Code'], 'Search, Attachments and Code sit outside the card, right under it');
     const one = JSON.stringify(buildLoadoutCard([scopeList[3]], 0, { color: 1, idPrefix: 'mp', categoryBuilds: scopeList, browse: { scopeToken: 'MP.AR.std', flatIndex: 3, flatTotal: 4 } }));
     assert.ok(!one.includes('gsb~at~') && one.includes('"AR · 3/3"'), 'a weapon with one build has no build row');
 }
 // Scope-aware copy ids (v3-pre-release review, finding #1) -- a browse card's `index` is relative to the FILTERED/RE-SORTED scope subset, not to the unscoped Loadout.find handlers/loadouts.js's legacy mp/dmz branch queries. Reusing the weapon-scoped `mpcopy_ak117_0` id on a browse card was the bug itself: the handler resolved that index against a different, unfiltered list, so Copy Code could hand back a DIFFERENT build's share code than the card on screen.
 assert.ok(bs.includes('gsb~copy~MP.AR.std~1'), 'browse card missing scope-paged copy id');
-// Copy Attachments left the MP card (Harkirat, 2026-10-25 16:25 EDT); DMZ keeps it (below).
-assert.ok(!bs.includes('gsb~copyatt~'), 'an MP card has no Copy Attachments');
+// Copy Attachments left the MP card (Harkirat, 2026-10-25 16:25 EDT) and came back as Attachments (23:17 EDT).
+assert.ok(bs.includes('gsb~copyatt~'), 'Attachments is back on the MP card (Harkirat, 2026-10-25 23:17 EDT)');
 assert.ok(!bs.includes('mpcopy_ak117_0'), 'browse card must NOT emit the weapon-scoped copy id -- handlers/loadouts.js resolves it against the wrong list');
 
 // 3. hideBadges suppresses the badge line without touching anything else.
@@ -57,7 +57,7 @@ const metaCard = JSON.stringify(R.buildLoadoutCard(two, 0, { color: 1, idPrefix:
 assert.ok(metaCard.includes('"AR · Top 3 · 1 build"'), 'the META list names the class, drops Meta and never says Toxic');
 assert.ok(card.indexOf('Muzzle') < card.indexOf('Grip') && card.indexOf('Grip') < card.indexOf('Ammo'), 'the card lists attachments in slot order');
 const opts = JSON.parse(card).components.find(c => c.type === 1 && c.components[0].custom_id === 'mpbrowse').components[0].options;
-assert.strictEqual(opts[0].value, '~search~', 'Search is the first option');
+assert.ok(!opts.some(o => o.value === '~search~'), 'no search option: the Search button does that (2026-10-25 23:19 EDT)');
 assert.ok(!opts.some(o => o.value === 'pharo'), 'a Coming Soon placeholder is never listed');
 assert.ok(opts.some(o => o.value === 'bp50' && o.description === 'Meta · Best AR · 1 build'), 'an option carries its badges and build count');
 assert.ok(!opts.some(o => o.default), 'nothing is pre-selected');
@@ -80,19 +80,19 @@ assert.ok(missing.includes('No build yet') && missing.includes('gsb~open~MP.AR.s
     const img = box.findIndex(c => c.type === 12);
     assert.ok(box[img - 1].type === 14 && !box[img - 1].divider, 'a small space, no line, above the image');
     assert.ok(box[img + 1].type === 10 && /^-# AR/.test(box[img + 1].content), 'the footer sits right under the image');
-    assert.deepStrictEqual(parsed.components[1].components.map(b => b.label), ['Search...', 'Copy Code'], 'Search... then Copy Code, outside the card');
+    assert.deepStrictEqual(parsed.components[1].components.map(b => b.label), ['Search', 'Attachments', 'Code'], 'Search, Attachments, Code, outside the card');
     assert.strictEqual(box[box.length - 1].type, 10, 'with no build row and no pager the card ends at the footer, no trailing divider');
-    assert.ok(!JSON.stringify(parsed).includes('"Copy Attachments"'), 'no Copy Attachments on MP');
+    assert.ok(!JSON.stringify(parsed).includes('"Copy Attachments"') && !JSON.stringify(parsed).includes('"Search..."'), 'the old labels are gone');
     const selects = parsed.components.filter(c => c.type === 1 && c.components[0].type === 3).map(c => c.components[0]);
     assert.strictEqual(selects[0].placeholder, 'Switch class...');
     assert.strictEqual(selects[0].options.find(o => o.default).value, 'AR', 'the open class is picked');
     assert.strictEqual(selects[0].options.find(o => o.value === 'AR').description, 'View all AR gunsmiths');
     assert.strictEqual(selects[1].placeholder, 'Browse other Assault Rifles...');
-    assert.deepStrictEqual([selects[1].options[0].label, selects[1].options[0].description], ['Or search all weapons...', 'Pick this to open a custom search for any weapon']);
+    assert.ok(!selects[1].options.some(o => o.value === '~search~'), 'no search option in the dropdown: the Search button does that (2026-10-25 23:19 EDT)');
     assert.deepStrictEqual(selects[1].options[selects[1].options.length - 1], { label: '1 more with no build yet...', value: '~nobuild~AR', description: 'Show the Assault Rifles Dioreo has no build for' });
     const dmz = { ...fixture[0], mode: 'DMZ', weaponKey: 'fennec', weaponName: 'FENNEC', category: 'SMG' };
     const dmzCard = R.buildLoadoutCard([dmz], 0, { color: 1, idPrefix: 'dmz', categoryBuilds: [dmz, { ...dmz, weaponKey: 'asval', weaponName: 'AS VAL', category: 'AR', isMeta: true }] });
-    assert.deepStrictEqual(dmzCard.components[1].components.map(b => b.label), ['Search...', 'Copy Attachments'], 'DMZ: Search... then Copy Attachments');
+    assert.deepStrictEqual(dmzCard.components[1].components.map(b => b.label), ['Search', 'Attachments'], 'DMZ: Search then Attachments (no code)');
     const dmzSel = dmzCard.components.filter(c => c.type === 1 && c.components[0].type === 3).map(c => c.components[0]);
     assert.strictEqual(dmzSel.length, 1, 'DMZ has one dropdown, no class switch');
     assert.deepStrictEqual(dmzSel[0].options.map(o => [o.label, o.description]), [['AS VAL', 'AR · Meta'], ['FENNEC', 'SMG']]);

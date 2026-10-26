@@ -338,10 +338,10 @@ function mpSwitchRows(category, classBuilds, weaponSelectId, activeKey, missing 
     const classRow = { type: 1, components: [{ type: 3, custom_id: 'gsb~class~MP', placeholder: 'Switch class...',
         options: Object.keys(CLASS_PLURAL).sort().map(c => ({ label: classPlural(c), value: c, description: `View all ${displayCategoryLabel(c)} gunsmiths`, default: c === category })) }] };
     const groups = weaponGroups((classBuilds || []).filter(b => b.category === category)).sort((a, b) => a[0].weaponName.localeCompare(b[0].weaponName));
-    const search = { label: 'Or search all weapons...', value: '~search~', description: 'Pick this to open a custom search for any weapon' };
+    // No "Or search all weapons..." option any more (Harkirat, 2026-10-25 23:20 EDT: "you also dont need this search option in the dropdown, since we have a dedicated 'search' button for it now"); handlers/loadouts.js still answers `~search~` from cards posted before.
     const more = missing.length ? [{ label: `${missing.length} more with no build yet...`, value: `~nobuild~${category}`, description: `Show the ${classPlural(category)} Dioreo has no build for` }] : [];
-    const weapons = windowAround(groups.map(list => ({ label: list[0].weaponName, value: list[0].weaponKey, description: weaponSummary(list) })), activeKey, 24 - more.length);
-    const weaponRow = { type: 1, components: [{ type: 3, custom_id: weaponSelectId, placeholder: `Browse other ${classPlural(category)}...`, options: [search, ...weapons, ...more] }] };
+    const weapons = windowAround(groups.map(list => ({ label: list[0].weaponName, value: list[0].weaponKey, description: weaponSummary(list) })), activeKey, 25 - more.length);
+    const weaponRow = { type: 1, components: [{ type: 3, custom_id: weaponSelectId, placeholder: `Browse other ${classPlural(category)}...`, options: [...weapons, ...more] }] };
     return [classRow, weaponRow];
 }
 function metaJumpRow(metaBuilds, selectId, activeKey) {
@@ -396,10 +396,10 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false,
     const containerPayload = { type: 17, accent_color: color, components: containerComponents };
     // Search... and Copy Code sit OUTSIDE the panel, right under it and above the dropdowns (his 18:44 EDT ask). Search... opens the card's one-box search (handlers/loadouts.js `gsb~search~<mode>` -> `gsb~find~<mode>`) and carries his GunsmithSearch icon (2026-10-25 22:32 EDT); Copy Attachments carries CopyAttachments. The switch rows follow, outside too (his earlier call: a dropdown is a sibling row, not nested).
     const outerComponents = [containerPayload, { type: 1, components: [
-        { type: 2, style: 2, label: 'Search...', custom_id: `gsb~search~${mode}`, emoji: emojis.parseEmoji(emojis.gunsmithSearch) },
-        mode === 'DMZ'
-            ? { type: 2, style: 2, label: 'Copy Attachments', custom_id: copyAttCustomId, emoji: emojis.parseEmoji(emojis.copyAttachments) }
-            : { type: 2, style: 1, label: 'Copy Code', custom_id: copyCustomId, emoji: emojis.parseEmoji(emojis.gunsmithCode) },
+        // Search · Attachments · Code, in that order, one word each (Harkirat, 2026-10-25 23:18 EDT: "search... -> Search", "copy attachments -> Attachments", "copy code -> Code", and Attachments back on the MP card). DMZ has no Gunsmith code, so it stops at Attachments.
+        { type: 2, style: 2, label: 'Search', custom_id: `gsb~search~${mode}`, emoji: emojis.parseEmoji(emojis.gunsmithSearch) },
+        { type: 2, style: 2, label: 'Attachments', custom_id: copyAttCustomId, emoji: emojis.parseEmoji(emojis.copyAttachments) },
+        ...(mode === 'DMZ' ? [] : [{ type: 2, style: 1, label: 'Code', custom_id: copyCustomId, emoji: emojis.parseEmoji(emojis.gunsmithCode) }]),
     ] }];
     const scope = browse ? require('./loadoutScopes').parseScopeToken(browse.scopeToken) : null;
     const weaponSelectId = browse ? `gsb~jump~${browse.scopeToken}` : `${idPrefix}browse`;

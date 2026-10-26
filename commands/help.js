@@ -17,7 +17,6 @@ const emojis = require('../utils/emojiMap');
 const { getAccentColorForCommand } = require('../utils/accentColor');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { mentionCommand } = require('../utils/commandMentions');
-const { fuzzyMatch, foldLookalikes, typoDistance } = require('../utils/search');
 
 // Extra keywords that should also resolve a `/help cmd:` query -- typed words that don't literally match a command/category name but obviously mean it (added 2026-08-15 13:09 EDT, Harkirat's request to expand every cmd: alias, /admin's "server"/"owner" specifically named). Checked only AFTER every real command/category name fails to match, so a real name always wins over a loose keyword -- see resolveCommandToCategory and suggestHelpCommandNames below, the two places this is consulted. Not meant to be exhaustive linguistic coverage, just the words someone would plausibly type looking for that command.
 const COMMAND_ALIASES = {
@@ -209,12 +208,35 @@ const DETAIL_HEADERS = {
 
 const USAGE_LEGEND = '-# **Usage: `/cmd <required> [optional]`**';
 
+// The right-click apps /help's search can find (2026-10-25 23:05 EDT, his "right" and "app" searches found nothing). Each opens the page that documents it, and an admin one shows only to whoever can use the command it feeds.
+const HELP_APPS = [
+    { name: 'View Colors', category: 'utilities' },
+    { name: 'Convert Times', category: 'utilities' },
+    { name: 'Add to Calendar', category: 'botadmin', requires: 'manage' },
+    { name: 'Add to Draws', category: 'botadmin', requires: 'manage' },
+    { name: 'Add to Patch Notes', category: 'botadmin', requires: 'manage' },
+    { name: 'Autobuild Gunsmith', category: 'botadmin', requires: 'autobuild' },
+];
+
+// Everything `cmd:` can find, in directory order: each visible command (a category's detail commands where it has them, so /gunsmith mp and /gunsmith dmz rather than bare /gunsmith, his ask 2026-10-25 23:05 EDT), then that category's right-click apps.
+function searchEntries(perms = {}) {
+    const out = [];
+    for (const cat of visibleCategories(perms)) {
+        for (const c of cat.detailCommands || visibleCommands(cat, perms)) out.push({ name: c.name, category: cat.key, aliases: COMMAND_ALIASES[c.name] || COMMAND_ALIASES[c.name.split(' ')[0]] || [] });
+        for (const a of HELP_APPS) if (a.category === cat.key && permitted(a, perms)) out.push({ name: a.name, category: cat.key, app: true, aliases: [] });
+    }
+    return out;
+}
+
 async function resolveCommandToCategory(cmdName, perms = {}) {
-    // Scoped to what this caller may see, so `/help cmd:/manage` from a non-admin resolves to nothing and lands on the directory rather than opening a page they were never offered.
+    // Scoped to what this caller may see, so `/help cmd:/manage` from a non-admin resolves to nothing and lands on the directory rather than opening a page they were never offered. A bare `/gunsmith` (staticCommands) still opens Gunsmith.
     for (const cat of visibleCategories(perms)) {
         if (visibleCommands(cat, perms).some(c => c.name === cmdName)) return cat.key;
     }
-    // Alias fallback -- only reached once no real command/category name matched, so "server" only ever means /admin when nothing is literally named "server". Scoped by the same `perms` as above, so an alias can never surface a page its own command wouldn't have.
+    const entries = searchEntries(perms);
+    const exact = entries.find(e => e.name.toLowerCase() === String(cmdName).toLowerCase());
+    if (exact) return exact.category;
+    // Alias fallback -- an alias word names its command before any looser match, so "server" means /admin.
     const normalized = cmdName.toLowerCase().replace(/^\//, '').trim();
     for (const cat of visibleCategories(perms)) {
         for (const c of visibleCommands(cat, perms)) {
@@ -222,52 +244,32 @@ async function resolveCommandToCategory(cmdName, perms = {}) {
         }
         if ((CATEGORY_ALIASES[cat.key] || []).includes(normalized)) return cat.key;
     }
-    // A typo or look-alike ("tmestamp"): the nearest real command's category.
-    const near = await matchHelpCommand(cmdName, perms);
-    if (near) for (const cat of visibleCategories(perms)) if (visibleCommands(cat, perms).some(c => c.name === near)) return cat.key;
-    return null;
+    // Everyday words, typos and look-alikes (utils/helpSearch.js): the best match's page.
+    const [best] = require('../utils/helpSearch').rank(cmdName, entries);
+    return best ? best.category : null;
 }
 
-// Every real command name a query could resolve to, INCLUDING a match via alias -- used by /help's `cmd:` autocomplete so typing "server" suggests real entry "/admin" rather than nothing. The suggested VALUE is always a real command name (never a bare alias word), so selecting it and pressing enter always hits the direct-match branch above with no alias lookup needed at that point.
+// What `cmd:` suggests for a query, best first, as names (the value Discord sends back). Empty: everything, in directory order.
 async function suggestHelpCommandNames(query, perms = {}) {
-    const allNames = await getAllHelpCommandNames(perms);
-    const direct = allNames.filter(name => fuzzyMatch(query, name));
-
-    const aliasMatched = new Set();
-    for (const cat of visibleCategories(perms)) {
-        for (const c of visibleCommands(cat, perms)) {
-            const aliases = COMMAND_ALIASES[c.name] || [];
-            if (aliases.some(a => fuzzyMatch(query, a))) aliasMatched.add(c.name);
-        }
-    }
-
-    const found = [...new Set([...direct, ...aliasMatched])];
-    if (found.length) return found.slice(0, 25);
-    // Nothing matched as typed (2026-10-25 22:44 EDT, critique #3: "tmestamp" found nothing): look-alikes folded first, then the nearest name or alias by typo distance, the same two rules /gunsmith's weapon search uses.
-    const q = String(query || '').replace(/^\//, '');
-    const folded = foldLookalikes(q);
-    const byFold = folded ? allNames.filter(n => foldLookalikes(n).includes(folded)) : [];
-    if (byFold.length) return byFold.slice(0, 25);
-    const words = [];
-    for (const cat of visibleCategories(perms)) {
-        for (const c of visibleCommands(cat, perms)) for (const w of [c.name.replace(/^\//, ''), ...(COMMAND_ALIASES[c.name] || [])]) words.push([w, c.name]);
-    }
-    const scored = words.map(([w, name]) => [typoDistance(q, w), name]).filter(([d]) => Number.isFinite(d));
-    if (!scored.length) return [];
-    const best = Math.min(...scored.map(([d]) => d));
-    return [...new Set(scored.filter(([d]) => d === best).map(([, name]) => name))].slice(0, 25);
+    return require('../utils/helpSearch').rank(query, searchEntries(perms)).map(e => e.name).slice(0, 25);
 }
 
-// The command a typed `cmd:` means: an exact name, else the first suggestion (an alias, a look-alike or a typo). Used to open its category AND to put that command first on the page.
+// The same, as Discord autocomplete choices: each name with a short plain line, so a confused reader sees what it does.
+async function helpChoices(query, perms = {}) {
+    const S = require('../utils/helpSearch');
+    return S.rank(query, searchEntries(perms)).slice(0, 25).map(e => ({ name: S.choiceLabel(e), value: e.name }));
+}
+
+// The command a typed `cmd:` means: an exact name, else an alias word ("server" -> /admin), else the best search match. Used to open its category AND to put that command first on the page. A right-click app is not a command block, so it focuses nothing.
 async function matchHelpCommand(cmdName, perms = {}) {
-    const all = await getAllHelpCommandNames(perms);
-    if (all.includes(cmdName)) return cmdName;
-    // An alias word names its command the way resolveCommandToCategory reads it ("server" -> /admin), before any looser suggestion.
+    const entries = searchEntries(perms);
+    const exact = entries.find(e => e.name.toLowerCase() === String(cmdName).toLowerCase());
+    if (exact) return exact.app ? null : exact.name;
     const normalized = String(cmdName).toLowerCase().replace(/^\//, '').trim();
-    const byAlias = all.find(name => (COMMAND_ALIASES[name] || []).includes(normalized));
-    if (byAlias) return byAlias;
-    const [first] = await suggestHelpCommandNames(cmdName, perms);
-    return first || null;
+    const byAlias = entries.find(e => !e.app && (COMMAND_ALIASES[e.name] || []).includes(normalized));
+    if (byAlias) return byAlias.name;
+    const best = require('../utils/helpSearch').rank(cmdName, entries)[0];
+    return best && !best.app ? best.name : null;
 }
 
 // The permission set every /help surface reads -- the page, the dropdown and the `cmd:` autocomplete -- built in ONE place. handlers/router.js built its own copy for the autocomplete without `botAccess`, so /emojis and the owner-only /bot commands were never suggested to the owner (found in the 2026-10-25 click-test).
@@ -286,7 +288,7 @@ async function helpPerms(interaction) {
 
 // Every real command name this bot has, for /help's `cmd:` autocomplete -- the static entries only (/gunsmith is one entry; the per-category Gunsmith commands it once added are gone). `isAdmin` keeps admin-only commands out of a non-admin's suggestions. Autocomplete is the third of the three places the Server Admin category has to be filtered -- suggesting `/admin` to someone and then handing them the directory when they pick it is worse than never offering it.
 async function getAllHelpCommandNames(perms = {}) {
-    return visibleCategories(perms).flatMap(c => visibleCommands(c, perms)).map(c => c.name);
+    return searchEntries(perms).map(e => e.name);
 }
 
 // Each of these four now composes its per-command "-# **Options**" blocks from CATEGORY_DEFS' own data via renderCommandBlock() (v3-pre-release review finding #49) instead of hand-built escaped-markdown concatenation -- only the hand-written "-# **Examples**" trailer (bespoke per page, not worth data-ifying) stays as a literal string. `commands` is the category's own detailCommands (gunsmith) or staticCommands (draws/seasonal/utilities) -- see buildContainer's dispatch below. PARTS since 2026-10-25 17:10 EDT: the Dispute a Build section carries its button as an accessory (Harkirat's /gunsmith review: the dispute form lives in /help only, beside "or DM <@owner>", his clickable @mention). handlers/loadouts.js answers `gsb~dispute`.
@@ -570,6 +572,8 @@ module.exports = {
     suggestHelpCommandNames,
     matchHelpCommand,
     helpPerms,
+    helpChoices,
+    searchEntries,
 
     // `categoryOverride` (passed by handlers/help.js's `help_category` select-menu handler via a synthetic interaction) skips re-resolving the `cmd` option -- same shape as calendar.js's `pageOverride`. 'landing' is a real dropdown VALUE (the "Commands List" reset option) but behaves identically to null/no-selection, so it's normalized here rather than threading a 6th special case through buildContainer.
     async execute(interaction, categoryOverride = null) {

@@ -96,6 +96,11 @@ async function execute(interaction) {
         const scope = parseScopeToken(raw.slice(7));
         if (scope.mode === 'MP' || scope.mode === 'DMZ') return renderScopeBrowse(interaction, scope, 0);
     }
+    // "▸ Type a name to search all N weapons" opens the search pop-up right away (Harkirat, 2026-10-25 23:12 EDT: "can you have it open the search mp weapons modal pop-up instantly? instead of just defaulting to opening the ak117 build?"). A slash command may answer with a pop-up, as long as nothing was deferred first.
+    if (raw.startsWith('~search~')) {
+        const { searchModal } = require('../utils/loadoutLookup');
+        return interaction.showModal(searchModal(mode, interaction.options.getString('visibility')));
+    }
     // The old `~cat~<CATEGORY>` rows (removed 2026-10-19 18:57 EDT) still resolve, for a suggestion list a client kept open.
     if (raw.startsWith('~cat~')) return renderScopeBrowse(interaction, { mode: 'MP', category: raw.slice(5), metaOnly: false }, 0);
     const { lookupAndRenderWeapon } = require('../utils/loadoutLookup');

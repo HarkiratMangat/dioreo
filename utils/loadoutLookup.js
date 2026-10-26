@@ -112,4 +112,12 @@ async function lookupAndRenderWeapon(interaction, { mode, rawQuery, requestedBui
     await renderResolved(interaction, mode, found, { isEphemeral, buildIndex: requestedBuild ? requestedBuild - 1 : 0 });
 }
 
-module.exports = { lookupAndRenderWeapon, resolveWeapon, renderResolved, notFoundText, missingWeapons };
+// The one-box search pop-up (Harkirat, 2026-10-24 09:45 EDT: "can we make the flow of searching for another weapon or build much more fluid?"), opened by a card's Search..., its dropdown's search option, and since 2026-10-25 23:12 EDT by /gunsmith's own "▸ Type a name to search all N weapons" suggestion (his ask: open the search pop-up instead of the browse's first weapon). A select menu cannot autocomplete, so the box takes a typed name and resolves it the way /gunsmith does (resolveWeapon). `visibility` is the slash command's choice, carried in the id because the pop-up's answer has no options of its own.
+function searchModal(mode, visibility = null) {
+    return {
+        title: `Search ${mode} weapons`, custom_id: `gsb~find~${mode}${visibility ? `~v${visibility}` : ''}`,
+        components: [{ type: 1, components: [{ type: 4, custom_id: 'q', label: 'Weapon name', style: 1, required: true, max_length: 60, placeholder: mode === 'DMZ' ? 'Fennec, AS VAL…' : 'AK117, Locus, BP50…' }] }],
+    };
+}
+
+module.exports = { lookupAndRenderWeapon, resolveWeapon, renderResolved, notFoundText, missingWeapons, searchModal };
