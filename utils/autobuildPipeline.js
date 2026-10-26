@@ -462,6 +462,11 @@ async function confirmCoreNow(token) {
         let imageKey = computed.imageKey;
         if (data.mode === 'MP') {
             imageKey = codeImageKey(data.weaponName, data.gunsmithCode);
+            // Letters and digits only (utils/loadoutImageCache.js isKeyableCode), and a key no other build points at.
+            if (!imageKey) return { status: 'nocode' };
+            const { keyHolderQuery } = require('./loadoutImageCache');
+            const holder = await Loadout.findOne(keyHolderQuery(imageKey)).select('weaponName buildName').lean();
+            if (holder) return { status: 'codetaken', message: `${holder.weaponName} ${holder.buildName} already uses the picture \`${imageKey}\`.` };
         } else {
             const taken = await Loadout.find({ imageKey: takenKeyPattern(data.weaponName) }).select('imageKey').lean();
             imageKey = deriveImageKey(data.weaponName, 'DMZ', taken.map(t => t.imageKey));

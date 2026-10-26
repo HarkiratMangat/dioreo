@@ -86,6 +86,13 @@ check('an MP picture key is WEAPON-CODE, never a number', () => {
         assert.strictEqual(cache.codeImageKey('BAL-27', '1c2b 4a8b9a'), 'BAL-27-1C2B4A8B9A');
         assert.strictEqual(cache.codeImageKey('Holger 26', '1A2B'), 'HOLGER-26-1A2B');
         assert.strictEqual(cache.codeImageKey('BAL-27', ''), null, 'no code, no key');
+        // Separators would let two builds mint one key: AK + 117-X and AK-117 + X (the commit security review, 2026-10-26 01:27 EDT).
+        assert.strictEqual(cache.codeImageKey('AK', '117-X1'), null);
+        assert.strictEqual(cache.codeImageKey('AK', '1A/2B3C'), null);
+        assert.ok(form.parseIdentity('AR, 1, 117-X1', 'MP').error);
+        const q = cache.keyHolderQuery('BAL-27-1A2B', 'me');
+        assert.ok(q.imageKey.test('BAL-27-1A2B.png') && q.imageKey.test('bal-27-1a2b') && !q.imageKey.test('BAL-27-1A2BX'));
+        assert.deepStrictEqual(q._id, { $ne: 'me' });
     });
 });
 

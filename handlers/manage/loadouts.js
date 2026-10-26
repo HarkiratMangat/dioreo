@@ -36,6 +36,9 @@ async function resolvePicture({ existing, mode, weaponName, code, attachments, u
         if (key && cache.devKeyPrefix() && !cache.isDevNamespaceKey(key)) key = null;
     } else {
         key = code ? cache.codeImageKey(weaponName, code) : null;
+        // A key is one picture: if another build already points at it, saving here would put two builds on one picture.
+        const holder = key && await Loadout.findOne(cache.keyHolderQuery(key, targetId)).select('weaponName buildName').lean();
+        if (holder) return { error: `${holder.weaponName} ${holder.buildName} already uses the picture \`${key}\`. Check the weapon name and the code.` };
     }
 
     const source = url || shot?.url || null;

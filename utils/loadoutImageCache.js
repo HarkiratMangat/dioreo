@@ -187,11 +187,21 @@ function isDevNamespaceKey(key) {
 function weaponKeyBase(weaponName) {
     return String(weaponName || '').trim().toUpperCase().replace(/\s+/g, '-');
 }
-// Null when there is no code: a caller must not mint a code key for a build without one.
+// A gunsmith code as a key may hold: letters and digits only. A `-` or `/` would let two different builds mint one key (weapon `AK` with code `117-X` and weapon `AK-117` with code `X` are both `AK-117-X`), and a `/` would also make a Cloudinary folder (flagged by the commit security review, 2026-10-26 01:27 EDT). Real codes are 8 to 10 alternating digits and letters (dev data, 2026-10-25); 4 to 16 leaves room without letting anything else in.
+const KEYABLE_CODE = /^[A-Z0-9]{4,16}$/;
+function isKeyableCode(code) {
+    return KEYABLE_CODE.test(String(code || '').replace(/\s+/g, '').toUpperCase());
+}
+// Null when there is no usable code: a caller must not mint a code key for a build without one.
 function codeImageKey(weaponName, code) {
     const c = String(code || '').replace(/\s+/g, '').toUpperCase();
-    if (!c || !String(weaponName || '').trim()) return null;
+    if (!KEYABLE_CODE.test(c) || !String(weaponName || '').trim()) return null;
     return `${devKeyPrefix()}${weaponKeyBase(weaponName)}-${c}`;
+}
+// The Mongo query for another build already pointing at `key`, with or without a file extension: a key is one picture, and two builds must never share it.
+function keyHolderQuery(key, exceptId = null) {
+    const k = String(key || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return { imageKey: new RegExp(`^${k}(\\.(png|jpe?g|webp|gif|avif))?$`, 'i'), ...(exceptId ? { _id: { $ne: exceptId } } : {}) };
 }
 
 // A picture moved to a new key (the code or the weapon name changed, the attachments did not): uploaded again from the asset's own delivery URL, read off the Admin API so the copy is today's version rather than a cached one. The old key stays, because Revert restores it. Same contract as uploadLoadoutImage.
@@ -251,4 +261,4 @@ async function uploadStagingScreenshot(dataUrl) {
     }
 }
 
-module.exports = { uploadLoadoutImage, uploadStagingScreenshot, copyLoadoutImage, isHttpImageSource, deriveImageKey, takenKeyPattern, codeImageKey, weaponKeyBase, devKeyPrefix, isDevNamespaceKey, imageKeyToPublicId, syncLoadoutMetadata, buildLoadoutMetadata, isRealImageKey, METADATA_FIELDS, SLOT_TO_FIELD, FOLDER };
+module.exports = { uploadLoadoutImage, uploadStagingScreenshot, copyLoadoutImage, isHttpImageSource, deriveImageKey, takenKeyPattern, codeImageKey, isKeyableCode, keyHolderQuery, weaponKeyBase, devKeyPrefix, isDevNamespaceKey, imageKeyToPublicId, syncLoadoutMetadata, buildLoadoutMetadata, isRealImageKey, METADATA_FIELDS, SLOT_TO_FIELD, FOLDER };

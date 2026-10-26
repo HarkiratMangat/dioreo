@@ -27,7 +27,10 @@ function parseIdentity(raw, mode) {
         if (!/^\d+$/.test(numberRaw) || Number(numberRaw) < 1) return { error: `\`${numberRaw}\` isn't a build number. Use 1, 2, 3...` };
         number = Number(numberRaw);
     }
-    return { category: category.toUpperCase(), number, code: mode === 'DMZ' ? '' : codeRaw.replace(/\s+/g, '').toUpperCase() };
+    const code = mode === 'DMZ' ? '' : codeRaw.replace(/\s+/g, '').toUpperCase();
+    // Letters and digits only: the code becomes the picture's key (utils/loadoutImageCache.js isKeyableCode says why).
+    if (code && !/^[A-Z0-9]{4,16}$/.test(code)) return { error: `\`${codeRaw}\` doesn't look like a gunsmith code: it is letters and digits only, e.g. \`1C2B4A8B9A\`.` };
+    return { category: category.toUpperCase(), number, code };
 }
 
 // The attachments box: one attachment per line, and a `Badges:` line for the badges (the pop-up has no sixth slot, Discord's cap). A leading bullet is dropped, as the bulk format allows.
