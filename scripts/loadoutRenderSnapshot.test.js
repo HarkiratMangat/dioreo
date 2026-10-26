@@ -97,7 +97,7 @@ assert.ok(missing.includes('No build yet') && missing.includes('gsb~open~MP.AR.s
     assert.strictEqual(dmzSel.length, 1, 'DMZ has one dropdown, no class switch');
     assert.deepStrictEqual(dmzSel[0].options.map(o => [o.label, o.description]), [['AS VAL', 'AR · Meta'], ['FENNEC', 'SMG']]);
     const metaSel = JSON.parse(metaCard).components.filter(c => c.type === 1 && c.components[0].type === 3);
-    assert.ok(metaSel.length === 1 && metaSel[0].components[0].placeholder === 'Jump to another Meta weapon...', 'META: one jump dropdown, naming the Meta list');
+    assert.ok(metaSel.length === 1 && metaSel[0].components[0].placeholder === 'Jump to another META weapon...', 'META: one jump dropdown, naming the Meta list');
     const nb = JSON.stringify(R.buildMissingWeaponCard({ weaponName: 'AK-47', category: 'AR', categoryBuilds: ar, missing: [{ name: 'AK-47' }, { name: 'ASM10' }], nb: { index: 0, total: 2 } }));
     assert.ok(nb.includes('No build yet · 1/2') && nb.includes('gsb~nb~AR~1') && nb.includes('"Submit a Build"') && nb.includes('gsb~submit~MP~ak47'), 'the no-build card pages and offers Submit a Build');
     const credited = JSON.stringify(R.buildLoadoutCard([{ ...slotted, submittedBy: { discordId: '42', credited: true } }], 0, { color: 1, idPrefix: 'mp' }));

@@ -337,8 +337,10 @@ function windowAround(options, activeKey, room) {
     return options.slice(start, start + room);
 }
 function mpSwitchRows(category, classBuilds, weaponSelectId, activeKey, missing = []) {
+    // Each class carries his weapon-class icon (2026-10-25 23:36 EDT, his ask), read at render time so the dev bot's re-pointed ids apply.
+    const CLASS_ICON = { AR: 'wcAR', LMG: 'wcLMG', MARKSMAN: 'wcMarksman', SECONDARIES: 'wcPistol', SHOTGUN: 'wcShotgun', SMG: 'wcSMG', SNIPER: 'wcSniper' };
     const classRow = { type: 1, components: [{ type: 3, custom_id: 'gsb~class~MP', placeholder: 'Switch class...',
-        options: Object.keys(CLASS_PLURAL).sort().map(c => ({ label: classPlural(c), value: c, description: `View all ${displayCategoryLabel(c)} gunsmiths`, default: c === category })) }] };
+        options: Object.keys(CLASS_PLURAL).sort().map(c => ({ label: classPlural(c), value: c, description: `View all ${displayCategoryLabel(c)} gunsmiths`, default: c === category, ...(emojis[CLASS_ICON[c]] ? { emoji: emojis.parseEmoji(emojis[CLASS_ICON[c]]) } : {}) })) }] };
     const groups = weaponGroups((classBuilds || []).filter(b => b.category === category)).sort((a, b) => a[0].weaponName.localeCompare(b[0].weaponName));
     // No "Or search all weapons..." option any more (Harkirat, 2026-10-25 23:20 EDT: "you also dont need this search option in the dropdown, since we have a dedicated 'search' button for it now"); handlers/loadouts.js still answers `~search~` from cards posted before.
     const more = missing.length ? [{ label: `${missing.length} more with no build yet...`, value: `~nobuild~${category}`, description: `Show the ${classPlural(category)} Dioreo has no build for` }] : [];
@@ -350,7 +352,7 @@ function metaJumpRow(metaBuilds, selectId, activeKey) {
     const groups = weaponGroups(metaBuilds).sort((a, b) => a[0].category.localeCompare(b[0].category) || a[0].weaponName.localeCompare(b[0].weaponName));
     if (groups.length < 2) return null;
     const options = windowAround(groups.map(list => ({ label: list[0].weaponName, value: list[0].weaponKey, description: weaponSummary(list, { metaList: true }) })), activeKey, 25);
-    return { type: 1, components: [{ type: 3, custom_id: selectId, placeholder: 'Jump to another Meta weapon...', options }] }; // names the Meta list (his 2026-10-25 23:32 EDT ask)
+    return { type: 1, components: [{ type: 3, custom_id: selectId, placeholder: 'Jump to another META weapon...', options }] }; // names the META list (his 2026-10-25 23:32 EDT ask; META in capitals, 23:35 EDT)
 }
 function dmzBrowseRow(dmzBuilds, selectId, activeKey) {
     const groups = weaponGroups(dmzBuilds).sort((a, b) => a[0].weaponName.localeCompare(b[0].weaponName));

@@ -154,6 +154,14 @@ const emojis = {
     number4: '<:Number4:1564113031162630178>',
     number5: '<:Number5:1564113032752275486>',
     number6: '<:Number6:1564113033918287944>',
+    // His weapon-class icons (uploaded 2026-10-24 with his icon set; prod ids read off prod Dioreo 2026-10-25 23:36 EDT): the class dropdown under a /gunsmith card. Secondary uses WC_Pistol.
+    wcAR: '<a:WC_AR:1563415646144823437>',
+    wcLMG: '<a:WC_LMG:1563415647940116530>',
+    wcMarksman: '<a:WC_Marksman:1563415649051742239>',
+    wcPistol: '<a:WC_Pistol:1563415650331000903>',
+    wcShotgun: '<a:WC_Shotgun:1563415651605938268>',
+    wcSMG: '<a:WC_SMG:1563415652717568020>',
+    wcSniper: '<a:WC_Sniper:1563415653644505168>',
     // His reminder set and the mascot's tada (uploaded 2026-10-24 18:16 EDT to Dioreo, Dioreo (Dev) and Dioreo Admin (Dev)): Remind titles the /remind panel and the reminder DMs, RemindAlert marks a heads-up or a warning, AddReminder is the icon-only bell button, ReminderEnabled marks what you follow and turning reminders on, DisableReminder marks turning them off. DioreoTada is uploaded and not used yet.
     dioreoTada: '<a:DioreoTada:1563677558589882510>',
     remind: '<a:Remind:1563677560431452180>',
