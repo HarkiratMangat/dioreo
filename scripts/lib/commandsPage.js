@@ -21,20 +21,22 @@
  *
  * ⚠️ NO BACKTICKS ANYWHERE INSIDE THE CSS AND JS CONSTANTS BELOW, and no braces inside a CSS comment. They are template literals: a backtick — including one inside a comment — ends the string and fails the build with a SyntaxError pointing at prose, and a brace in a comment is destroyed by the hover-guard transform. Quote with " instead.
  *
- * ⚠️ THIS PAGE OPTS OUT OF TWO PIECES OF SHARED CHROME, deliberately, and neither is an oversight. It passes NO section slots to mobileNav(), so the "On this page" accordion does not render — the rail already is that navigation, and stacking a second one cost 107px above the fold on a phone. And it calls pageFoot() with disc=false, so the trademark disclaimer does not repeat here; it earns its place under a legal instrument and is noise under a command reference. Two other templates already do the same.
+ * ⚠️ THIS PAGE OPTS OUT OF ONE PIECE OF SHARED CHROME, deliberately. It passes NO section slots to mobileNav(), so the "On this page" accordion does not render — the rail already is that navigation, and stacking a second one cost 107px above the fold on a phone. 🔴 IT USED TO OPT OUT OF THE TRADEMARK NOTICE TOO, AND NO LONGER DOES (Harkirat, 2026-10-20 15:06 EDT: "commands page also doesn't hold the disclaimer so it actually needs the footer styling from the landing page"). Every other page carries the notice, the legal and warm pages inside their own text, so this was the one page without it. It now closes with trayFoot(), the landing page's footer: the link block in a ruled tray, then the notice and the sign-off side by side.
  *
  * Everything the page says about a command is read from the bot's own registered builders at build time (scripts/lib/commandCatalog.js) plus a prose layer (scripts/lib/commandProse.js), so the page cannot drift from what the bot actually does.
  */
 
 const fs = require('fs');
 const path = require('path');
-const { assertProseCoverage, assertAskCoverage, assertSearchCoverage, searchHaystack, ASKS, COMMANDS } = require('./commandProse');
+const { browseRows } = require('../../utils/loadoutScopes');
+const { CATEGORY_SEARCH_SYNONYMS, GENERIC_WEAPON_WORDS } = require('../../utils/search');
+const { assertProseCoverage, assertAskCoverage, assertSearchCoverage, findTools, buildFindIndex, ASKS, COMMANDS } = require('./commandProse');
 
 const CHROME_KEYS = [
     'esc', 'TOKENS', 'COMPONENT_CSS', 'THEME_BOOT', 'THEME_JS', 'NAV_JS', 'MORPH_JS', 'GOO_SVG',
-    'wordmark', 'navSwitcher', 'repoBtn', 'installBtn', 'themeBtn',
+    'wordmark', 'navSwitcher', 'commandsBtn', 'installBtn', 'themeBtn', 'barMenu',
     'mobileNav', 'pageFoot', 'BAR_CSS', 'PAGE_CSS', 'SLOT_CSS', 'TOTOP_HTML', 'TOTOP_TRACK_JS', 'cmdRoleCss',
-    'SWITCHER_CSS',
+    'SWITCHER_CSS', 'TRAY_CSS', 'trayFoot',
 ];
 
 function requireChrome(C) {
@@ -58,14 +60,21 @@ const LINE = 'color-mix(in srgb,var(--ink) 12%,transparent)';
  */
 const ACCENT_SOURCE = {
     '/help': 'help', '/invite': 'invite', '/calendar': 'calendar',
+    // The calculator has no constant of its own: commands/drawCalculator.js imports /draw prices' PRESET_ACCENT and answers in it, so that module is the source.
+    '/draw calculator': 'drawprices',
     '/remind': 'calendar', // the reminders panel wears Calendar's accent, like /today
     '/today': 'calendar', // /today wears Calendar's accent (his call, 2026-10-23 10:00 EDT) and reads the same constant
     '/draw prices': 'drawprices', '/season end': 'seasonend',
     '/patch notes': 'patchnotes', '/draws': 'draws', '/timestamp': 'timestamp',
 };
 
-/** The six that derive an accent per render, so the page can SAY so rather than invent one. */
-const DERIVED = new Set(['/settings', '/colors', '/dmz', '/gunsmith mp', '/gunsmith dmz', '/draw calculator']);
+/**
+ * The commands whose REPLY colour is chosen per render, so no single PRESET_ACCENT describes them. Three of them still have an identity on this page (see modeAccents): /gunsmith mp and /dmz/gunsmith dmz wear their mode's colour, the one the bot's own /manage pages already use. Only /settings and /colors, which answer in the reader's own profile colour, fall back to DERIVED_NEUTRAL. /draw calculator left this set 2026-10-20: it answers in /draw prices' fixed accent.
+ */
+const DERIVED = new Set(['/settings', '/colors', '/dmz', '/gunsmith mp', '/gunsmith dmz']);
+
+/** The page colour for the mode-scoped commands, read from the same per-mode accents loadScopeAccents takes from commands/manage.js (Harkirat, 2026-10-20 17:40 EDT: "give Gunsmith DMZ and DMZ its respective color... same thing for the MP"). */
+const modeAccents = scopes => ({ '/gunsmith mp': scopes['ALL MP BUILDS'], '/gunsmith dmz': scopes.DMZ, '/dmz': scopes.DMZ });
 
 const REPO = path.resolve(__dirname, '..', '..');
 const intToHex = n => '#' + Number(n).toString(16).toUpperCase().padStart(6, '0');
@@ -182,6 +191,7 @@ function solveOn(hex) {
  * ⚠️ BOTH text-safe values are emitted and the STYLESHEET picks between them into --ci. An inline style beats every stylesheet rule, so a single inline --ct could never be corrected for light theme — which is precisely the 1.69:1 failure this page shipped once already.
  */
 function colourVars(cmdPath, accents, fallback) {
+    if (TONED[cmdPath]) return TONED[cmdPath];
     const raw = accents[cmdPath] || fallback;
     if (!raw) return '--cc:var(--ink3);--con:var(--desk);--ct:var(--ink2);--ctl:var(--ink2)';
     return '--cc:' + raw + ';--con:' + solveOn(raw) +
@@ -192,6 +202,29 @@ function colourVars(cmdPath, accents, fallback) {
  * The neutral a derived command wears until it is told otherwise. It is a REAL colour, not var(--ink3): the previous page gave derived commands an ink token as their accent, so a selected chip tinted with it came out grey and read as unselected sitting beside a command whose chips tinted properly. "Blatant inconsistency in design", and correctly so.
  */
 const DERIVED_NEUTRAL = '#8A8494';
+
+/**
+ * The two commands with no fixed reply colour get a TONE instead of the neutral (Harkirat, 2026-10-20 18:36 EDT): /settings a steel off-white, and /colors "colorful... transition through colors with a subtle animation that genuinely gradient blends between colors". Each stop is set for the dark ground; its light-theme text twin is solveText's, so it is held to the same 4.5:1 as every other command. The /colors cycle is a registered <color> property animated on whatever element carries it, so the chip, the picker and the card all blend rather than step.
+ */
+const STEEL = '#C3CCD6';
+const RAINBOW = ['#FF7A8A', '#FFB86B', '#F2DC5D', '#7FE07A', '#6BD3F2', '#9C8CFF', '#E58CF2'];
+const TONED = {
+    '/settings': '--cc:var(--steel);--con:var(--steel-on);--ct:var(--steel);--ctl:var(--steel)',
+    '/colors': '--cc:var(--rainbow);--con:#000000;--ct:var(--rainbow);--ctl:var(--rainbow-l)',
+};
+const toneCss = () => {
+    const light = solveText(STEEL, GROUND_LIGHT);
+    const stops = RAINBOW.concat(RAINBOW[0]);
+    const keys = stops.map((h, i) => `${(i / (stops.length - 1) * 100).toFixed(2)}%{--rainbow:${h};--rainbow-l:${solveText(h, GROUND_LIGHT)}}`).join('');
+    return `:root{--steel:${STEEL};--steel-on:${solveOn(STEEL)}}
+:root[data-theme=light]{--steel:${light};--steel-on:${solveOn(light)}}
+@media (prefers-color-scheme:light){:root:not([data-theme=dark]){--steel:${light};--steel-on:${solveOn(light)}}}
+@property --rainbow{syntax:"<color>";inherits:true;initial-value:${RAINBOW[0]}}
+@property --rainbow-l{syntax:"<color>";inherits:true;initial-value:${solveText(RAINBOW[0], GROUND_LIGHT)}}
+@keyframes rx-rainbow{${keys}}
+[style*="--rainbow"]{animation:rx-rainbow 14s linear infinite}
+@media (prefers-reduced-motion:reduce){[style*="--rainbow"]{animation:none}}`;
+};
 
 /** Nudges a hex darker by `amount` of lightness, keeping the hue. Used for the two "meta" scopes, which are the sharp end of a mode rather than a colour of their own. */
 function darken(hex, amount) {
@@ -263,6 +296,7 @@ function loadWeaponIndex() {
 }
 
 const RECEIVER_CSS = `
+${toneCss()}
 /* Page-scoped. Every selector is prefixed rx- so nothing can collide with the shared chrome,
    which this page draws from the same builders as every other page. */
 
@@ -277,9 +311,13 @@ const RECEIVER_CSS = `
 .rx-sub em{font-style:italic;color:var(--ink)}
 
 /* ── THE RAIL ────────────────────────────────────────────────────────────────── */
-.rx-rail{position:sticky;top:54px;z-index:30;margin:1.25rem 0 0;padding:.7rem 0 .6rem;
+.rx-rail{position:sticky;top:var(--bar-h,58px);z-index:30;margin:1.25rem 0 0;padding:.7rem 0 .6rem;
   background:color-mix(in srgb,var(--desk) 92%,transparent);backdrop-filter:blur(10px)}
 .rx-scroll{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center}
+/* The phone's way into the list; see THE PICKER under NARROW. Never drawn on a desktop, where the wrapped rail already shows everything. */
+.rx-pick{display:none}
+/* The picker's shell and its drop are layout-neutral on a desktop, so the wrapped rail is exactly what it was. */
+.rx-box,.rx-drop{display:contents}
 /* The group labels were pure --ink3 and read as abandoned beside the coloured chips. They
    now carry a tint of the PAGE accent, which is what they belong to — they label the index,
    not any one command. */
@@ -288,21 +326,33 @@ const RECEIVER_CSS = `
   padding:0 .5rem 0 .7rem;white-space:nowrap;line-height:1.9;
   border-left:1px solid color-mix(in srgb,var(--accent) 22%,transparent);margin-left:.25rem}
 .rx-scroll > .rx-gl:first-of-type{border-left:0}
-.rx-chip{display:inline-flex;align-items:center;gap:.45rem;flex:none;
-  padding:.42rem .72rem;border-radius:999px;border:1px solid ${LINE};background:${BED};
+/* ⚠️ THE CHIPS ARE THE SITE'S HAIRLINE CAPSULE (Harkirat, 2026-10-20 10:45 EDT: "the same style that the landing Commands button uses"). The construction is .cmdb's in the shared CSS: no fill, a hairline border, the label --ink2 at rest and --ink on hover, the border warming and a cursor light following the pointer. What differs is on purpose: the chip's own colour (--cc, the command's) does the warming and the light instead of the page accent, so the colour coding survives; the label stays lowercase mono because it is a command name; and .on is NO LONGER a fill: it is the same outline with the border in the full colour and the light held on (changed 2026-10-20 11:57 EDT). The light is a ::before at z-index -1 inside an isolated stacking context, so it paints above the border-box background and below the label and dot, with no wrapper span needed; the pointer position is the --px/--py that THEME_JS writes on every [data-spot] element. */
+.rx-chip{position:relative;isolation:isolate;overflow:hidden;
+  display:inline-flex;align-items:center;gap:.45rem;flex:none;
+  --hv:var(--cc);height:34px;padding:0 .72rem 0 12px;border-radius:999px;border:1px solid var(--rule2);background:transparent;
   font-family:var(--mono);font-size:.8rem;color:var(--ink2);text-decoration:none;
-  white-space:nowrap;transition:background .18s ease,border-color .18s ease,color .18s ease}
-.rx-chip:hover{color:var(--ink);border-color:color-mix(in srgb,var(--cc) 60%,transparent);
-  background:color-mix(in srgb,var(--cc) 10%,transparent)}
-.rx-chip.on{background:var(--cc);border-color:var(--cc);color:var(--con);font-weight:600}
-.rx-chip.on .rx-dot{display:none}
+  white-space:nowrap;
+  transition:border-color .22s,color .22s,box-shadow .32s,transform .22s cubic-bezier(.2,.8,.2,1)}
+.rx-chip::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;
+  opacity:0;transition:opacity .3s;pointer-events:none;
+  background:radial-gradient(64% 150% at var(--px,50%) var(--py,50%),
+    color-mix(in srgb,var(--cc) 30%,transparent),transparent 72%)}
+.rx-chip:hover,.rx-chip:focus-visible{color:var(--ink);
+  border-color:color-mix(in srgb,var(--cc) 60%,var(--ink3))}
+.rx-chip:hover::before,.rx-chip:focus-visible::before{opacity:1}
+/* The chip you are on keeps the outline and takes its colour: a solid border in the command's own hue, the label at full ink, and the cursor light held on so it still reads as lit from across the screen (Harkirat, 2026-10-20 11:57 EDT: "when selected, dont do the filled style. keep the outline style, just with the color activated on it"). Its dot stays, because with no fill there is nothing for the dot to vanish into. */
+.rx-chip.on{border-color:var(--cc);color:var(--ink);font-weight:600}
+.rx-chip.on::before{opacity:1}
+/* An EVEN fill on the chosen chip, not the cursor light held still (Harkirat, 2026-10-20 18:36 EDT, on the selected All commands chip: "make it like the entire fill instead of those like dark like bubbles on the left and right side"). A radial light sized for hover left both ends dark on a long label; the wash covers the whole capsule and a soft inner glow keeps the edge lit. */
+.rx-chip.on::before{background:color-mix(in srgb,var(--cc) 20%,transparent)}
+.rx-chip.on{box-shadow:inset 0 0 12px -2px color-mix(in srgb,var(--cc) 55%,transparent)}
 .rx-chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.rx-dot{width:8px;height:8px;border-radius:50%;background:var(--cc);flex:none}
+.rx-dot{width:8px;height:8px;border-radius:50%;background:var(--cc);flex:none;
+  box-shadow:0 0 0 2.5px color-mix(in srgb,var(--cc) 20%,transparent),0 0 9px 1px color-mix(in srgb,var(--cc) 55%,transparent)}
 /* The home chip belongs to the PAGE, so it wears the page accent rather than white. */
-.rx-home-chip{font-weight:600;color:var(--accent-t);
+.rx-home-chip{--cc:var(--accent);font-weight:600;color:var(--accent-t);
   border-color:color-mix(in srgb,var(--accent) 45%,transparent)}
-.rx-home-chip .rx-dot{background:var(--accent)}
-.rx-home-chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-on)}
+.rx-home-chip .rx-dot{--cc:var(--accent);background:var(--accent)}
 
 /* ── THE STAGE ─────────────────────────────────────────────────────────────── */
 .rx-stage{margin:1.1rem 0 0}
@@ -312,7 +362,7 @@ const RECEIVER_CSS = `
 .rx-p:target ~ .rx-home{display:none}
 .rx-p:focus{outline:none}
 /* 🔴 SCROLL-MARGIN, AND IT MUST NOT GO MISSING AGAIN. A fragment jump parks the target at
-   viewport top, which on this page is underneath a 54px fixed bar AND a sticky rail — so
+   viewport top, which on this page is underneath the fixed bar (--bar-h, 58px) AND a sticky rail — so
    nearly every command opened with its own heading cut off. The rewrite dropped this
    declaration entirely and the defect fired on all fourteen. */
 .rx-p,.rx-home{scroll-margin-top:9.5rem}
@@ -353,7 +403,7 @@ const RECEIVER_CSS = `
   background:color-mix(in srgb,var(--ink) 11%,transparent);color:var(--ink)}
 
 /* ── THE LINE ────────────────────────────────────────────────────────────────── */
-.rx-bar{position:sticky;top:calc(54px + 3.4rem);z-index:20;margin:1.3rem 0 0;
+.rx-bar{position:sticky;top:calc(var(--bar-h,58px) + 3.4rem);z-index:20;margin:1.3rem 0 0;
   display:flex;align-items:center;gap:.6rem;padding:.62rem .68rem;border-radius:12px;
   background:color-mix(in srgb,var(--desk) 62%,transparent);backdrop-filter:blur(12px) saturate(1.4);
   border:1px solid color-mix(in srgb,var(--ink) 16%,transparent);
@@ -361,6 +411,21 @@ const RECEIVER_CSS = `
 .rx-line{flex:1;min-width:0;overflow-x:auto;display:flex;align-items:center;gap:.34rem;
   font-family:var(--mono);font-size:.86rem;scrollbar-width:none;padding:.1rem 0}
 .rx-line::-webkit-scrollbar{display:none}
+/* ── TRY IT ─────────────────────────────────────────────────────────────────────
+   The line used to read as a printed label with a Copy button beside it (Harkirat,
+   2026-10-20 16:27 EDT: "feels a bit too static... imply that like, oh, try out the
+   command"). Four things now say it is something you work: a "Try it" tag, a caret at the
+   end of the line the way Discord's own box has one, the line typing itself in when the
+   panel opens, and any option Discord will demand pulsing twice to say "tap me".
+   ⚠️ The intro plays ONCE per page load: paint() drops data-intro on the first real change,
+   because it rebuilds every token and a rebuilt token would replay its entrance. */
+.rx-try{flex:none;display:inline-flex;align-items:center;gap:.4rem;padding:0 .7rem 0 .1rem;
+  margin-right:.05rem;border-right:1px solid color-mix(in srgb,var(--ink) 16%,transparent);
+  font-family:var(--mono);font-size:.64rem;letter-spacing:.15em;text-transform:uppercase;
+  font-weight:600;color:var(--ci);white-space:nowrap}
+.rx-try svg{width:15px;height:15px;flex:none}
+.rx-line::after{content:"";flex:none;width:2px;height:1.15em;margin-left:.05rem;border-radius:1px;
+  background:var(--ink)}
 .rx-cmd{flex:none;padding:.2rem .44rem;border-radius:5px;background:var(--cc);color:var(--con);
   font-weight:600;transition:background .45s ease,color .45s ease}
 /* Every token in the line is a BUTTON that opens its own option, the way clicking an option
@@ -378,10 +443,15 @@ const RECEIVER_CSS = `
 .rx-tok[data-state=filled]{background:color-mix(in srgb,var(--cc) 30%,transparent)}
 .rx-tok[data-state=empty]{opacity:.5;background:none;border:1px dashed ${LINE}}
 .rx-tok[data-state=empty] .rx-o::after{content:""}
+/* "+ page" reads as something you can add, where a bare faded "page" read as a label. */
+.rx-tok[data-state=empty] .rx-o::before{content:"+";margin-right:.22rem}
 .rx-tok[data-state=need]{background:none;
   border:1px dashed color-mix(in srgb,var(--cc) 75%,transparent)}
 .rx-tok[data-state=need] .rx-o{color:var(--ink2)}
 .rx-tok[data-state=need] .rx-o::after{content:""}
+/* A value the bot would not accept (no weapon matches, a number out of range) is still shown, so the reader sees what they typed, but it is marked, because Copy hands out exactly this line. */
+.rx-tok[data-state=bad]{background:none;border:1px dashed #E5484D}
+.rx-tok[data-state=bad] .rx-v{color:#E5484D;text-decoration:underline wavy #E5484D 1px;text-underline-offset:3px}
 
 /* Every button on this page is one object: a pill with a coloured outline, the idiom the
    shared GitHub button already uses in the bar. ⚠️ It carries the command's HUE — an
@@ -458,6 +528,11 @@ const RECEIVER_CSS = `
 .rx-ac-hit b{font-weight:400;color:var(--ink3);font-size:.68rem}
 .rx-ac-none{font-family:var(--mono);font-size:.74rem;color:var(--ink3)}
 .rx-ac-hit:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* The exact match reads as CHOSEN. It used to be the same grey button as any other hit, so the field and a chip below it both said JAK-12 and nothing said which was the answer. */
+.rx-ac-hit[aria-pressed=true]{color:var(--con);background:var(--cc);border-color:var(--cc)}
+.rx-ac-hit[aria-pressed=true] b{color:inherit;opacity:.75}
+.rx-ac-hit[aria-pressed=true]::before{content:"\\2713";font-weight:700}
+.rx-ac-row{font-weight:600}
 
 .rx-vals{display:flex;flex-wrap:wrap;gap:.34rem}
 .rx-pill{font-family:var(--mono);font-size:.78rem;text-align:left;padding:.42rem .62rem;
@@ -509,26 +584,68 @@ const RECEIVER_CSS = `
 .rx-cd:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .rx-cd-n{display:flex;align-items:center;gap:.45rem;font-family:var(--mono);font-size:.92rem;
   font-weight:600;color:var(--ci)}
-.rx-cd-n i{width:8px;height:8px;border-radius:50%;background:var(--cc);flex:none}
+.rx-cd-n i{width:8px;height:8px;border-radius:50%;background:var(--cc);flex:none;
+  box-shadow:0 0 0 2.5px color-mix(in srgb,var(--cc) 20%,transparent),0 0 9px 1px color-mix(in srgb,var(--cc) 55%,transparent)}
 .rx-cd-w{margin:.35rem 0 0;font-family:var(--serif);font-size:.94rem;line-height:1.4;color:var(--ink2)}
 .rx-cd-o{margin:.45rem 0 0;display:flex;flex-wrap:wrap;gap:.25rem}
 .rx-cd-o span{font-family:var(--mono);font-size:.64rem;padding:.13rem .38rem;border-radius:4px;
   background:color-mix(in srgb,var(--ink) 10%,transparent);color:var(--ink3)}
 .rx-cd-o span.req{background:color-mix(in srgb,var(--cc) 26%,transparent);color:var(--ink)}
 
-.rx-asks-h{margin:1.7rem 0 .2rem;font-family:var(--mono);font-size:.68rem;letter-spacing:.15em;
-  text-transform:uppercase;color:color-mix(in srgb,var(--accent-t) 74%,var(--ink3))}
-.rx-asks-s{margin:0 0 .7rem;font-family:var(--serif);font-size:.96rem;color:var(--ink2)}
-.rx-asks{display:grid;grid-template-columns:repeat(auto-fill,minmax(19rem,1fr));gap:.1rem 2rem}
-.rx-ask{display:flex;align-items:center;gap:.6rem;padding:.6rem .4rem .6rem .1rem;
-  min-height:44px;text-decoration:none;border-bottom:1px solid ${LINE};
-  transition:padding-left .16s ease}
-.rx-ask:hover{padding-left:.45rem}
-.rx-ask span{flex:1;font-family:var(--serif);font-size:.96rem;color:var(--ink)}
-.rx-ask em{font-family:var(--mono);font-style:normal;font-size:.72rem;color:var(--ink3);flex:none}
-.rx-ask i{width:6px;height:6px;border-radius:50%;background:var(--cc);flex:none}
-.rx-ask:hover em{color:var(--ci)}
-.rx-ask:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:5px}
+/* ── THE ASK FIELD ─────────────────────────────────────────────────────────────
+   Above the rail, because it is the way in for anyone who does not know a command's name
+   (Harkirat, 2026-10-20 16:27 EDT, replacing the "Or start from what you want to do" list
+   at the foot of the landing card). ⚠️ IT IS DELIBERATELY NOT A COMMAND LINE: no mono, no
+   slash, a serif placeholder. It takes a sentence, and a field that looks like a terminal
+   invites a command name instead. ⚠️ The answers are prerendered, one row per command, so
+   each carries its own colour from the build; the script only orders and shows them. */
+.rx-find{margin:1.3rem 0 0;max-width:52rem}
+/* It reads as the thing to use, not as a quiet input (Harkirat, 2026-10-20 18:36 EDT: "make the border... a bit thicker, just so it's more prominent"): a 1.5px border tinted with the page accent, a faint accent ring around it, and the search glass in the accent. */
+.rx-field{display:flex;align-items:center;gap:.65rem;height:54px;padding:0 .8rem 0 1rem;
+  border-radius:14px;border:1.5px solid color-mix(in srgb,var(--accent) 55%,var(--rule2));background:${BED};
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 9%,transparent);
+  transition:border-color .2s ease,box-shadow .2s ease}
+.rx-field:focus-within{border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 20%,transparent)}
+.rx-field svg{flex:none;width:18px;height:18px;color:var(--accent-t)}
+.rx-field:focus-within svg{color:var(--accent-t)}
+.rx-q{flex:1;min-width:0;height:100%;border:0;background:none;outline:none;padding:0;
+  font-family:var(--serif);font-size:1.08rem;color:var(--ink);-webkit-appearance:none;appearance:none}
+.rx-q::placeholder{color:var(--ink3);opacity:1}
+/* The browser's own clear button is a fixed blue on WebKit; this redraws it as an --ink3 cross. */
+.rx-q::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none;width:15px;height:15px;cursor:pointer;
+  background:var(--ink3);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 3l10 10M13 3L3 13' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 3l10 10M13 3L3 13' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat}
+.rx-q::-webkit-search-cancel-button:hover{background:var(--ink)}
+.rx-field kbd{flex:none;font-family:var(--mono);font-size:.7rem;color:var(--ink3);
+  padding:.12rem .42rem;border-radius:5px;border:1px solid var(--rule2)}
+.rx-field:focus-within kbd{display:none}
+@property --fl{syntax:"<length>";inherits:false;initial-value:0px}
+@property --fr{syntax:"<length>";inherits:false;initial-value:0px}
+.rx-tries{margin:.6rem 0 0;display:flex;flex-wrap:wrap;align-items:center;gap:.35rem}
+.rx-tries > span{font-family:var(--mono);font-size:.63rem;letter-spacing:.15em;text-transform:uppercase;
+  color:color-mix(in srgb,var(--accent-t) 74%,var(--ink3));margin-right:.2rem}
+.rx-tq{flex:none;font-family:var(--serif);font-size:.92rem;color:var(--ink2);cursor:pointer;
+  padding:.3rem .75rem;border-radius:999px;border:1px solid var(--rule2);background:none;
+  transition:color .2s ease,border-color .2s ease}
+.rx-tq:hover{color:var(--ink);border-color:color-mix(in srgb,var(--accent) 60%,transparent)}
+.rx-tq:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.rx-found{margin:.55rem 0 0;border-radius:14px;border:1px solid ${LINE};background:${BED};overflow:hidden}
+.rx-found[hidden],.rx-hit[hidden]{display:none}
+.rx-hit{display:flex;align-items:center;gap:.75rem;padding:.72rem 1rem;min-height:44px;
+  text-decoration:none;border-top:1px solid ${LINE};transition:background .16s ease}
+.rx-hit.rx-first{border-top:0}
+.rx-hit:hover,.rx-hit:focus-visible{background:color-mix(in srgb,var(--cc) 9%,transparent)}
+.rx-hit:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.rx-hit i{width:8px;height:8px;border-radius:50%;background:var(--cc);flex:none}
+.rx-hit-t{flex:1;min-width:0;display:flex;align-items:baseline;gap:.2rem .8rem;flex-wrap:wrap}
+.rx-hit b{font-family:var(--mono);font-size:.9rem;font-weight:600;color:var(--ci);white-space:nowrap}
+.rx-hit-t span{font-family:var(--serif);font-size:.94rem;line-height:1.4;color:var(--ink2)}
+.rx-hit em{flex:none;font-family:var(--mono);font-style:normal;font-size:.62rem;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--ink3);display:none}
+.rx-hit.rx-first em{display:inline}
+.rx-nohit{margin:0;padding:.85rem 1rem;font-family:var(--serif);font-size:.94rem;color:var(--ink2)}
+.rx-nohit[hidden]{display:none}
 
 /* The install explainer lives inside /invite now, where a reader who wants it already is.
    It used to sit on the landing card, which is a page about commands. */
@@ -537,16 +654,26 @@ const RECEIVER_CSS = `
 .rx-inst b{display:block;font-family:var(--mono);font-size:.78rem;font-weight:600;color:var(--ci)}
 .rx-inst p{margin:.4rem 0 0;font-family:var(--serif);font-size:.95rem;line-height:1.45;color:var(--ink2)}
 
-.rx-none{margin:.7rem 0 0;font-family:var(--mono);font-size:.76rem;color:var(--ink3)}
 .rx-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* ── MOTION ────────────────────────────────────────────────────────────────────
-   🔴 .rx-card ANIMATES OPACITY ONLY — NEVER A TRANSFORM. It contains .rx-bar, which is
-   position:fixed on a phone, and a transform of ANY value (including the identity matrix a
+   🔴 .rx-card ANIMATES OPACITY ONLY — NEVER A TRANSFORM. It contains .rx-bar, which was
+   position:fixed on a phone until 2026-10-21 (it is in the card's flow now; keep the rule
+   in case anything fixed moves back in), and a transform of ANY value (including the identity matrix a
    final "transform: none" keyframe computes to) makes its element a containing block for
    every fixed descendant. With translateY on the card the pinned line was measured at
    top:1268px in an 812px window. */
 @media (prefers-reduced-motion:no-preference){
+  .rx-line::after{animation:rx-blink 1.05s steps(1) infinite}
+  /* The caret arrives with the last token. The tokens hold their space while they wait to land, so a caret shown from the start blinked out at the far end of an empty line. ⚠️ rx-fade is LISTED LAST so its held first frame wins over the blink's opacity. */
+  .rx-p:target .rx-line[data-intro]::after{
+    animation:rx-blink 1.05s steps(1) infinite,rx-fade .01s linear calc(.46s + var(--n,8) * 26ms + var(--k,0) * 80ms) backwards}
+  .rx-p:target .rx-line[data-intro] .rx-cmd{animation:rx-type calc(var(--n,8) * 26ms) steps(var(--n,8)) .18s backwards}
+  .rx-p:target .rx-line[data-intro] .rx-tok{
+    animation:rx-land .24s cubic-bezier(.2,.8,.3,1) calc(.22s + var(--n,8) * 26ms + var(--i,0) * 80ms) backwards}
+  .rx-p:target .rx-line[data-intro] .rx-tok[data-state=need]{
+    animation:rx-land .24s cubic-bezier(.2,.8,.3,1) calc(.22s + var(--n,8) * 26ms + var(--i,0) * 80ms) backwards,
+      rx-beckon 1.1s ease-in-out calc(.7s + var(--n,8) * 26ms + var(--i,0) * 80ms) 2}
   .rx-p:target .rx-card{animation:rx-fade .26s ease backwards}
   .rx-p:target .rx-card::before{animation:rx-wipe .42s cubic-bezier(.2,.7,.3,1) backwards}
   .rx-p:target .rx-eyebrow,.rx-p:target .rx-name,.rx-p:target .rx-why{
@@ -569,21 +696,96 @@ const RECEIVER_CSS = `
 @keyframes rx-open{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 @keyframes rx-slash{0%,72%,100%{transform:none}78%{transform:translateY(-2px) rotate(-9deg)}86%{transform:translateY(1px) rotate(3deg)}}
 @keyframes rx-hue{0%{filter:hue-rotate(0)}100%{filter:hue-rotate(360deg)}}
+@keyframes rx-blink{0%{opacity:1}50%{opacity:0}}
+/* The name types itself in left to right; clip-path, not width, so the pill's own padding and background are revealed with it. */
+@keyframes rx-type{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+/* A wash, never a ring: an outside glow is exactly what was taken off the landing Commands button. */
+@keyframes rx-beckon{0%,100%{background:none}50%{background:color-mix(in srgb,var(--cc) 30%,transparent)}}
 
 /* ── NARROW ──────────────────────────────────────────────────────────────────── */
 @media (max-width:900px){
   .rx-top{padding-top:1rem}
   .rx-sub{font-size:.98rem}
-  .rx-rail{margin-top:1rem;padding:.55rem 0;top:calc(54px + env(safe-area-inset-top,0px))}
-  .rx-scroll{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;
-    scroll-snap-type:x proximity;padding-bottom:.15rem}
-  .rx-scroll::-webkit-scrollbar{display:none}
-  .rx-chip{scroll-snap-align:start;min-height:44px}
-  .rx-gl{font-size:.58rem;padding:0 .4rem 0 .55rem}
+  .rx-rail{margin-top:1rem;padding:.55rem 0;top:calc(var(--bar-h,58px) + env(safe-area-inset-top,0px))}
+  /* ── THE PICKER ────────────────────────────────────────────────────────────
+     The chips used to be one sideways-scrolling row on a phone, and Harkirat found it
+     hard to use (2026-10-20 17:13 EDT: "that navigation needs a drastic improvement to
+     fit better on mobile... maybe a drop down"). So on a phone the rail is ONE button
+     naming the command you are on, in its colour, and it opens the whole list as a
+     dropdown, every group on its own line and every chip visible, nothing to scroll
+     sideways. ⚠️ It is a dropdown only once the script has run (.rx-js): with no script
+     the list stays out in the open, wrapped, so the page still works. */
+  .rx-scroll{gap:.4rem}
+  .rx-gl{flex:0 0 100%;border-left:0;margin:.35rem 0 0;padding:0 .1rem;font-size:.58rem}
+  .rx-scroll > .rx-gl:first-of-type{margin-top:.2rem}
+  .rx-chip{min-height:40px}
+  /* 🔴 THE PILL IS THE MENU (Harkirat, 2026-10-20 17:40 EDT: "instead of it being like that pop-up box, the actual all commands pill actually transitions into the entire menu", and it must open and close smoothly). .rx-box carries the pill's border and tint; opening grows it downward into the list (grid rows 0fr to 1fr) while the tint gives way to paper and a shadow, so it is visibly the same object.
+     ⚠️ AND THE PAGE KEEPS SCROLLING PAST IT ("if I reach the bottom of that pop-up and I still continue swiping, it'll actually scroll down on the page"). The list is 697px at 390px wide, so it used to scroll inside itself with overscroll-behavior:contain, which is what trapped the swipe. Now nothing inside scrolls: the rail keeps its CLOSED height in the flow (so the page below never jumps), the box overflows it, and while open the script holds the rail position:relative where it was stuck, so the box rides with the page and a swipe past its end is just the page scrolling. */
+  .rx-rail.rx-js{height:calc(48px + 1.1rem)}
+  .rx-rail.rx-js.held{position:relative}
+  .rx-rail.rx-js .rx-box{--cc:var(--accent);--ci:var(--accent-t);display:block;position:relative;border-radius:24px;
+    border:1px solid color-mix(in srgb,var(--cc) 70%,transparent);
+    background:color-mix(in srgb,var(--cc) 10%,var(--paper));
+    transition:background-color .34s ease,border-color .34s ease,box-shadow .34s ease}
+  .rx-rail.rx-js.open .rx-box{background:var(--paper);border-color:color-mix(in srgb,var(--cc) 50%,var(--rule2));
+    box-shadow:0 24px 48px -22px rgba(0,0,0,.65)}
+  .rx-rail.rx-js .rx-pick{display:flex}
+  /* 📌 THE PILL STAYS PINNED WHILE YOU SCROLL ITS LIST (Harkirat, 2026-10-20 18:38 EDT: "when you scroll down in the menu... the top part doesn't stick"). The box scrolls with the page, so the button inside it is sticky to where the rail sticks and the chips pass under it; its ::before paints the strip between it and the bar so nothing shows through that gap. It is sticky inside the BOX, so it lets go at the box's end and the page simply carries on. */
+  .rx-rail.rx-js.open .rx-pick{position:sticky;z-index:3;top:calc(var(--bar-h,58px) + env(safe-area-inset-top,0px));
+    transition:box-shadow .2s ease,background-color .2s ease}
+  /* ⚠️ ONLY ONCE IT IS ACTUALLY PINNED (.pinned, set by the script when the list has scrolled under it). Wearing the paper and shadow from the moment it opened drew the header as a separate dark box inside the menu ("bugged when it opens", Harkirat, 2026-10-20 18:46 EDT). */
+  /* Pinned, it becomes the PILL again: the closed state's own border and tint on an ::after one pixel wider than the button, so it also covers the box's side borders, with a shadow under it. A borderless dark strip with the list cut off at its sides read as broken (Harkirat, 2026-10-20 19:28 EDT: "I don't like how it looks as its sticky state"). The ::before, below, cuts the menu off at the pill. */
+  .rx-rail.rx-js.open.pinned .rx-pick::after{content:"";position:absolute;inset:-1px;z-index:-1;border-radius:24px;pointer-events:none;
+    border:1px solid color-mix(in srgb,var(--cc) 70%,transparent);background:color-mix(in srgb,var(--cc) 10%,var(--paper));
+    box-shadow:0 12px 22px -14px rgba(0,0,0,.75)}
+  /* ✂️ AND THE MENU IS CUT AT THE PILL (Harkirat, 2026-10-20 19:48 EDT: the box's side borders ran on above the pill up to the bar, and chips showed under it; "fade into the bar or get cut off"). The ::before sits under the pill skin and does both, in CSS alone: above the pill's middle it paints the page's own --desk across the box AND its borders (2px wider than the button), up under the bar, so the box seems to start at the pill's sides; from the middle down it paints the box's paper inside the borders and fades it out over 26px, so the chips fade in below the pill. The borders run on beside it, which is the menu hanging from the pill.
+     ⚠️ Dead ends: a --desk strip that did not reach over the borders; a mask on the whole box, which made its paper see-through; and a mask on the list whose edge the script rewrote on every scroll event, which lagged behind iOS momentum scrolling and read as glitchy ("more buggy/glitchy now", 2026-10-20 20:00 EDT). Nothing here moves with scrolling except the one .pinned class. */
+  .rx-rail.rx-js.open.pinned .rx-pick::before{content:"";position:absolute;z-index:-1;pointer-events:none;
+    left:-2px;right:-2px;top:-64px;bottom:-26px;
+    background:linear-gradient(var(--paper) 23px,transparent) 2px 87px/calc(100% - 4px) 49px no-repeat,
+      linear-gradient(var(--desk),var(--desk)) 0 0/100% 87px no-repeat}
+  .rx-rail.rx-js .rx-drop{display:grid;grid-template-rows:0fr;transition:grid-template-rows .36s cubic-bezier(.4,0,.2,1)}
+  .rx-rail.rx-js.open .rx-drop{grid-template-rows:1fr;transition:grid-template-rows .42s cubic-bezier(.2,.8,.2,1)}
+  .rx-rail.rx-js .rx-scroll{min-height:0;overflow:hidden;visibility:hidden;opacity:0;transform:translateY(-6px);
+    padding:0 .8rem;transition:opacity .16s ease,transform .3s ease,padding .36s cubic-bezier(.4,0,.2,1),visibility 0s .36s}
+  .rx-rail.rx-js.open .rx-scroll{visibility:visible;opacity:1;transform:none;padding:.1rem .8rem .9rem;
+    transition:opacity .28s ease .08s,transform .42s cubic-bezier(.2,.8,.2,1),padding .42s cubic-bezier(.2,.8,.2,1),visibility 0s}
+  /* Concentric: the 8px dot centred in the 46px button that sits inside the 1px border, (46 - 8) / 2 = 19. */
+  .rx-pick{align-items:center;gap:.6rem;width:100%;height:46px;
+    padding:0 1rem 0 19px;border-radius:24px;cursor:pointer;-webkit-appearance:none;appearance:none;
+    border:0;background:none;color:var(--ink);text-align:left}
+  .rx-pick:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .rx-pick:active{background:color-mix(in srgb,var(--cc) 12%,transparent)}
+  .rx-pick-n{flex:1;min-width:0;font-family:var(--mono);font-size:.86rem;font-weight:600;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rx-pick-g{flex:none;font-family:var(--mono);font-size:.58rem;letter-spacing:.15em;
+    text-transform:uppercase;color:var(--ink3)}
+  .rx-pick svg{flex:none;width:12px;height:12px;color:var(--ink2);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+  .rx-rail.open .rx-pick svg{transform:rotate(180deg)}
+  /* In the menu every chip shows its colour (Harkirat, same message: "when they're not selected, can we at least show their outline color, but when they're selected, then it actually does the proper inner glow"). At rest a ring in its own hue; the chosen one the full hue plus the held light and an inset glow, since no finger moves the light on a phone. */
+  .rx-chip{border-color:color-mix(in srgb,var(--cc) 55%,var(--rule2));color:var(--ink)}
+  .rx-chip.on{border-color:var(--cc)}
+  @media (prefers-reduced-motion:reduce){
+    .rx-rail.rx-js .rx-box,.rx-rail.rx-js .rx-drop,.rx-rail.rx-js .rx-scroll,
+    .rx-rail.rx-js.open .rx-drop,.rx-rail.rx-js.open .rx-scroll{transition:none}
+  }
   .rx-card{padding:1.2rem 1.1rem 1.3rem 1.4rem;border-radius:14px}
   .rx-why{font-size:1rem}
   .rx-slots,.rx-inst{grid-template-columns:minmax(0,1fr)}
-  .rx-asks{grid-template-columns:minmax(0,1fr);gap:0}
+  .rx-find{margin-top:1rem}
+  .rx-field{height:50px}
+  .rx-field kbd{display:none}
+  .rx-q{font-size:1rem}
+  /* 🎚️ THE BOARD'S FADED EDGES, turned sideways (Harkirat, 2026-10-20 18:36 EDT: "the same faded side scroll system that the spec board and the portal stuff uses"). It is .b3-fady's mask: an edge fades only while there is more to scroll on that side, over the same eased stops (0, .3, .78, 1 at 0, 45%, 80% of the fade), and --fl/--fr are registered lengths so the fade eases in and out with the scroll instead of switching. The script sets them. */
+  .rx-tries{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:.1rem;
+    -webkit-mask-image:linear-gradient(90deg,rgb(0 0 0/0) 0,rgb(0 0 0/.3) calc(var(--fl)*.45),rgb(0 0 0/.78) calc(var(--fl)*.8),#000 var(--fl),#000 calc(100% - var(--fr)),rgb(0 0 0/.78) calc(100% - var(--fr)*.8),rgb(0 0 0/.3) calc(100% - var(--fr)*.45),rgb(0 0 0/0) 100%);
+    mask-image:linear-gradient(90deg,rgb(0 0 0/0) 0,rgb(0 0 0/.3) calc(var(--fl)*.45),rgb(0 0 0/.78) calc(var(--fl)*.8),#000 var(--fl),#000 calc(100% - var(--fr)),rgb(0 0 0/.78) calc(100% - var(--fr)*.8),rgb(0 0 0/.3) calc(100% - var(--fr)*.45),rgb(0 0 0/0) 100%);
+    transition:--fl .18s cubic-bezier(.2,.8,.2,1),--fr .18s cubic-bezier(.2,.8,.2,1)}
+  .rx-tries::-webkit-scrollbar{display:none}
+  .rx-hit-t{flex-direction:column;align-items:flex-start;gap:.1rem}
+  /* No room for the "Best fit" tag beside a wrapped purpose, so the first row says it with a wash instead. */
+  .rx-hit.rx-first em{display:none}
+  .rx-hit.rx-first{background:color-mix(in srgb,var(--cc) 7%,transparent)}
   /* 🔴 THE COMMAND CARDS COLLAPSE TO NAMES ON A PHONE, AND THAT IS DELIBERATE. The full
      card — name, purpose, option chips — is 115px, and fourteen of them made the landing
      state 3292px, 4.1 screenfuls, on the device most of these readers are using. Harkirat,
@@ -597,20 +799,40 @@ const RECEIVER_CSS = `
   .rx-cd-w,.rx-cd-o{display:none}
   .rx-cd-n{font-size:.82rem}
   .rx-lead{margin-bottom:.8rem;font-size:.96rem}
-  .rx-p,.rx-home{scroll-margin-top:7.5rem}
-  .rx-bar{position:fixed;left:.6rem;right:.6rem;bottom:calc(.6rem + env(safe-area-inset-bottom,0px));
-    top:auto;margin:0;border-radius:13px;
-    box-shadow:0 6px 26px color-mix(in srgb,#000 42%,transparent)}
-  .rx-p:not(:target) .rx-bar{display:none}
-  .rx-floor{padding-bottom:5.6rem}
+  /* The bar, the closed picker rail (48px + its .55rem padding top and bottom) and a 16px gap. A flat 7.5rem was 4px SHORT of the rail's bottom, so every opened card had its top edge tucked under it (Harkirat, 2026-10-20 18:38 EDT). */
+  .rx-p,.rx-home{scroll-margin-top:calc(var(--bar-h,58px) + env(safe-area-inset-top,0px) + 48px + 1.1rem + 16px)}
+  /* 🧩 THE LINE LIVES IN THE CARD (Harkirat, 2026-10-21 18:39 EDT: "the command try bar doesn't look good formatted on phone... integrate it into the commands card itself"). It used to float position:fixed over the bottom of the screen, where one row had to hold the tag, the whole line and two buttons, so the line scrolled sideways and showed "weapon: Fe". Now it is a block in the card's own flow: a header row (Try it, then Clear and Copy on the right, the way a code block carries its copy button) over a field that WRAPS, so every option is visible at once and nothing scrolls sideways. */
+  .rx-bar{position:relative;top:auto;margin:1.05rem 0 0;display:grid;grid-template-columns:minmax(0,1fr) auto auto;
+    grid-template-areas:"tag clear copy" "line line line";align-items:center;gap:.55rem .4rem;padding:.55rem .55rem .6rem;
+    border-radius:14px;background:color-mix(in srgb,var(--cc) 6%,${BED});border:1px solid color-mix(in srgb,var(--cc) 34%,${LINE});
+    box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+  .rx-bar .rx-try{grid-area:tag;border-right:0;padding:0 0 0 .25rem}
+  .rx-bar .rx-try span{display:inline}
+  .rx-bar .rx-clear{grid-area:clear}
+  .rx-bar .rx-copy{grid-area:copy}
+  .rx-bar .rx-btn{min-height:38px;padding-top:.4rem;padding-bottom:.4rem}
+  .rx-line{grid-area:line;flex-wrap:wrap;overflow:visible;gap:.32rem;padding:.55rem .6rem;border-radius:10px;
+    background:var(--desk);border:1px solid ${LINE}}
+  /* The text sizes follow the screen's width, between a floor and the desktop size, instead of one fixed rem (Harkirat, 2026-10-21 18:39 EDT: "the text in the cards also doesn't scale relative to the screen, it looks so big"). 16px serif at 390px wide read as large print. */
+  .rx-eyebrow{font-size:clamp(.6rem,2.6vw,.7rem)}
+  .rx-name{font-size:clamp(.9rem,3.9vw,1.05rem)}
+  .rx-why{font-size:clamp(.84rem,3.6vw,1.1rem);line-height:1.42}
+  .rx-facts li{font-size:clamp(.78rem,3.3vw,.98rem);line-height:1.42}
+  .rx-desc,.rx-bare,.rx-inst p{font-size:clamp(.76rem,3.2vw,.94rem)}
+  .rx-lab{font-size:clamp(.74rem,3.1vw,.8rem)}
+  /* 16px exactly: iOS zooms the whole page in when a field under 16px takes focus, and does not zoom back out. */
+  .rx-in{font-size:16px}
 }
 @media (pointer:coarse){
   .rx-chip,.rx-pill,.rx-btn,.rx-ac-hit{min-height:44px}
-  .rx-ask,.rx-sum{min-height:48px}
+  .rx-hit,.rx-sum{min-height:48px}
+  .rx-tq{min-height:40px}
 }
 @media (max-width:520px){
-  .rx-name{font-size:1.05rem}
   .rx-line{font-size:.8rem}
+  /* Clear shrinks to a cross, so the header row keeps Try it's words; its aria-label still says Clear. */
+  .rx-clear{font-size:0;letter-spacing:0;padding-left:.8rem;padding-right:.8rem}
+  .rx-clear::before{content:"\\2715";font-size:.8rem}
 }
 `;
 
@@ -619,7 +841,7 @@ const RECEIVER_JS = [
     '  var bench=document.getElementById("rx-bench"); if(!bench) return;',
     '  var panels=[].slice.call(document.querySelectorAll(".rx-p"));',
     '  var chips=[].slice.call(document.querySelectorAll(".rx-chip[data-for]"));',
-    '  var WEAPONS=window.__RX_WEAPONS||{};',
+    '  var WEAPONS=window.__RX_WEAPONS||{}, hover=matchMedia("(hover:hover)");',
     '',
     '  function el(tag,cls,txt){ var n=document.createElement(tag); if(cls) n.className=cls;',
     '    if(txt!=null) n.textContent=txt; return n; }',
@@ -635,20 +857,21 @@ const RECEIVER_JS = [
     '     set of values the reader has picked. That is the fix for a shipped defect: a free-text',
     '     required option can never be in the picked set, so touching anything optional deleted',
     '     it and the page handed out a command Discord rejects. */',
-    '  function paint(p,landed){',
+    '  function paint(p,landed,intro){',
     '    var line=p.querySelector(".rx-line"); if(!line) return;',
+    '    if(!intro) line.removeAttribute("data-intro");',
     '    var btn=p.querySelector(".rx-copy"), clear=p.querySelector(".rx-clear");',
     '    line.textContent="";',
     '    line.appendChild(el("span","rx-cmd",p.getAttribute("data-cmd")));',
-    '    var plain=p.getAttribute("data-cmd"), set=0;',
+    '    var plain=p.getAttribute("data-cmd"), set=0, idx=0;',
     '    [].slice.call(p.querySelectorAll("[data-opt]")).forEach(function(o){',
     '      var name=o.getAttribute("data-opt"), val=value(o), req=o.getAttribute("data-req")==="1";',
     '      var tok=document.createElement("button");',
     '      tok.type="button";',
     '      tok.className="rx-tok"+(landed===name?" rx-land":"");',
-    '      tok.setAttribute("data-state", val?"filled":(req?"need":"empty"));',
-    '      tok.setAttribute("data-goto",name);',
-    '      tok.setAttribute("aria-label",(val?("Change "+name):("Set "+name)));',
+    '      tok.setAttribute("data-state", val?(o.hasAttribute("data-bad")?"bad":"filled"):(req?"need":"empty"));',
+    '      tok.setAttribute("data-goto",name); tok.style.setProperty("--i",idx++);',
+    '      tok.setAttribute("aria-label",(val?("Change "+name+" "+val):("Set "+name)));',
     '      tok.appendChild(el("span","rx-o",name));',
     '      if(val){ tok.appendChild(el("span","rx-v",val)); plain+=" "+name+":"+val; set++; }',
     '      line.appendChild(tok);',
@@ -674,15 +897,11 @@ const RECEIVER_JS = [
     '     ⚠️ ALL ELEVEN scopes are in the table, not just the seven categories — four of them',
     '       used to fall through to removeProperty, which made the card lose its colour',
     '       entirely and read as though the panel had vanished. */',
+    '  /* 🔴 THE RAIL CHIP KEEPS ITS COMMAND\'S COLOUR and only the card follows the live tint (changed 2026-10-20 17:55 EDT). The chip used to follow too, because it was grey and stayed grey while the card changed; now /gunsmith mp and /gunsmith dmz wear their mode colours, and following the tint painted the MP chip Crimson Pop from the example weapon (Harkirat asked for "its MP colour"). And with no tint the card goes BACK to its own colour rather than losing it: removeProperty dropped the inline identity too, so both DMZ chips came out in the page green. */',
+    '  var TK=["--cc","--con","--ct","--ctl"];',
     '  function tintFrom(p,hex){',
-    '    var chip=document.querySelector(\'.rx-chip[data-for="\'+p.id+\'"]\');',
-    '    if(hex){ p.style.setProperty("--cc",hex[0]); p.style.setProperty("--con",hex[1]);',
-    '      p.style.setProperty("--ct",hex[2]); p.style.setProperty("--ctl",hex[3]);',
-    '      /* the rail chip follows the live tint too; it used to stay grey while the card changed */',
-    '      if(chip){ chip.style.setProperty("--cc",hex[0]); chip.style.setProperty("--con",hex[1]);',
-    '        chip.style.setProperty("--ct",hex[2]); chip.style.setProperty("--ctl",hex[3]); } }',
-    '    else { ["--cc","--con","--ct","--ctl"].forEach(function(k){ p.style.removeProperty(k);',
-    '      if(chip) chip.style.removeProperty(k); }); }',
+    '    if(!p._base){ p._base={}; TK.forEach(function(k){ p._base[k]=p.style.getPropertyValue(k); }); }',
+    '    TK.forEach(function(k,i){ var v=hex?hex[i]:p._base[k]; if(v) p.style.setProperty(k,v); else p.style.removeProperty(k); });',
     '  }',
     '  function retintChoice(p,slot){',
     '    var map=p.getAttribute("data-tint"); if(!map) return;',
@@ -700,27 +919,49 @@ const RECEIVER_JS = [
     '    var box=slot.querySelector(".rx-ac"); if(!box) return;',
     '    var q=input.value.trim().toLowerCase();',
     '    box.textContent="";',
-    '    var hits=list.filter(function(w){',
-    '      return !q || w.name.toLowerCase().indexOf(q)>-1 || (w.key||"").indexOf(q.replace(/\\s+/g,""))>-1;',
+    '    /* Class words, read the way the bot reads them (utils/search.js): "gun" or "all" means every class, an alias matches whole, and 3+ letters count when every alias they begin names the same classes ("assault" is AR). The bot also forgives a typo; the page does not. */',
+    '    var nq=q.replace(/[\\s\\-_.]/g,""), syn=WEAPONS.SYN||{}, cats=[];',
+    '    if((WEAPONS.ANY||[]).indexOf(nq)>-1) cats=["*"];',
+    '    else if(syn[nq]) cats=syn[nq];',
+    '    else if(nq.length>2){ var sets={}; Object.keys(syn).forEach(function(k){ if(k.indexOf(nq)===0) sets[syn[k].join("|")]=1; });',
+    '      var ks=Object.keys(sets); if(ks.length===1) cats=ks[0].split("|"); }',
+    '    function inCats(c){ return cats[0]==="*" || (!!c && cats.indexOf(c)>-1); }',
+    '    /* The browse rows come first, as in the bot. With nothing typed only META and the whole mode show: all nine stacked a phone screen high (critique 2026-10-21). */',
+    '    var rows=((WEAPONS.ROWS||{})[mode]||[]).filter(function(r){ return q ? (r.label.toLowerCase().indexOf(q)>-1 || inCats(r.cat)) : !r.cat; });',
+    '    var hits=q?list.filter(function(w){',
+    '      return w.name.toLowerCase().indexOf(q)>-1 || (w.key||"").indexOf(nq)>-1 || inCats(w.category);',
+    '    }):[];',
+    '    var exact=hits.some(function(w){ return w.name.toLowerCase()===q; });',
+    '    function pickHit(name){',
+    '      input.value=name;',
+    '      /* On a touch screen the pick closes the keyboard; refocusing brought it straight back over the card. */',
+    '      if(hover.matches) input.focus(); else input.blur();',
+    '      autocomplete(p,slot); summarise(slot); paint(p,slot.getAttribute("data-opt"));',
+    '    }',
+    '    slot.toggleAttribute("data-bad", !!q && !rows.length && !hits.length);',
+    '    rows.forEach(function(r){',
+    '      var b=document.createElement("button"); b.type="button"; b.className="rx-ac-hit rx-ac-row";',
+    '      b.setAttribute("data-val",r.label); b.setAttribute("aria-pressed",r.label.toLowerCase()===q?"true":"false");',
+    '      b.appendChild(document.createTextNode((r.label.toLowerCase()===q?"":"\\u25B8 ")+r.label)); /* pressed, the tick replaces the arrow */',
+    '      b.addEventListener("click",function(){ pickHit(r.label); });',
+    '      box.appendChild(b);',
     '    });',
-    '    var exact=hits.length===1&&hits[0].name.toLowerCase()===q;',
-    '    if(!q){ box.appendChild(el("span","rx-ac-none",list.length+" weapons — start typing")); return; }',
-    '    if(!hits.length){ box.appendChild(el("span","rx-ac-none","No weapon matches \\u201C"+input.value.trim()+"\\u201D"));',
+    '    if(!q){ box.appendChild(el("span","rx-ac-none",(mode==="MP"?"or a class (AR, SMG\\u2026), or ":"or ")+list.length+" weapons, start typing")); tintFrom(p,null); return; }',
+    '    if(!rows.length&&!hits.length){ box.appendChild(el("span","rx-ac-none","No weapon matches \\u201C"+input.value.trim()+"\\u201D"));',
     '      tintFrom(p,null); return; }',
     '    if(exact){',
+    '      var hit=hits.filter(function(w){ return w.name.toLowerCase()===q; })[0];',
     '      var tints=JSON.parse(p.getAttribute("data-cats")||"{}");',
-    '      tintFrom(p,tints[(hits[0].category||"").toUpperCase()]||null);',
-    '    }',
+    '      tintFrom(p,tints[(hit.category||"").toUpperCase()]||null);',
+    '      hits=[hit]; /* chosen: the one chip, pressed, instead of a list that repeats the field */',
+    '    } else tintFrom(p,null);',
     '    hits.slice(0,10).forEach(function(w){',
     '      var b=document.createElement("button"); b.type="button"; b.className="rx-ac-hit";',
-    '      b.setAttribute("data-val",w.name);',
+    '      b.setAttribute("data-val",w.name); b.setAttribute("aria-pressed",exact?"true":"false");',
     '      var dot=el("i"); if(w.tint) dot.style.background=w.tint; b.appendChild(dot);',
     '      b.appendChild(document.createTextNode(w.name));',
     '      if(w.builds>1) b.appendChild(el("b",null,w.builds+" builds"));',
-    '      b.addEventListener("click",function(){',
-    '        input.value=w.name; input.focus();',
-    '        autocomplete(p,slot); summarise(slot); paint(p,slot.getAttribute("data-opt"));',
-    '      });',
+    '      b.addEventListener("click",function(){ pickHit(w.name); });',
     '      box.appendChild(b);',
     '    });',
     '    if(hits.length>10) box.appendChild(el("span","rx-ac-none","+"+(hits.length-10)+" more"));',
@@ -741,13 +982,22 @@ const RECEIVER_JS = [
     '    });',
     '    [].slice.call(p.querySelectorAll(".rx-in")).forEach(function(i){',
     '      var slot=i.closest("[data-opt]");',
-    '      i.addEventListener("input",function(){ autocomplete(p,slot); summarise(slot); paint(p,null); });',
+    '      i.addEventListener("input",function(){',
+    '        var num=i.getAttribute("data-num");',
+    '        if(num){',
+    '          /* Digits only, as Discord own number field takes; then the range, so 0 for build reads as wrong rather than copying a line the bot rejects. */',
+    '          var clean=i.value.replace(num==="int"?/[^0-9]/g:/[^0-9.]/g,""); if(clean!==i.value) i.value=clean;',
+    '          var n=Number(clean), lo=i.getAttribute("data-min"), hi=i.getAttribute("data-max");',
+    '          slot.toggleAttribute("data-bad", clean!=="" && ((lo!=null&&n<Number(lo))||(hi!=null&&n>Number(hi))));',
+    '        }',
+    '        autocomplete(p,slot); summarise(slot); paint(p,null);',
+    '      });',
     '      autocomplete(p,slot);',
     '    });',
     '    [].slice.call(p.querySelectorAll(".rx-eg")).forEach(function(e){',
     '      e.addEventListener("click",function(){',
     '        var slot=e.closest("[data-opt]"), input=slot.querySelector(".rx-in"); if(!input) return;',
-    '        input.value=e.getAttribute("data-val"); input.focus();',
+    '        input.value=e.getAttribute("data-val"); if(hover.matches) input.focus(); else input.blur();',
     '        autocomplete(p,slot); summarise(slot); paint(p,slot.getAttribute("data-opt"));',
     '      });',
     '    });',
@@ -795,7 +1045,7 @@ const RECEIVER_JS = [
     '      paint(p,null);',
     '    });',
     '    [].slice.call(p.querySelectorAll("[data-opt]")).forEach(summarise);',
-    '    paint(p,null);',
+    '    paint(p,null,true);',
     '  });',
     '',
     '  function mark(){',
@@ -803,11 +1053,66 @@ const RECEIVER_JS = [
     '    chips.forEach(function(c){',
     '      var on=c.getAttribute("data-for")===id;',
     '      c.classList.toggle("on",on);',
-    '      if(on){ c.setAttribute("aria-current","true"); if(c.scrollIntoView) c.scrollIntoView({block:"nearest",inline:"center"}); }',
+    '      /* Not on a phone: there the list is clipped shut, and scrolling a chip into view would scroll the clipped list itself. */',
+    '      if(on){ c.setAttribute("aria-current","true"); if(c.scrollIntoView&&!(pick&&pick.offsetParent)) c.scrollIntoView({block:"nearest",inline:"center"}); }',
     '      else c.removeAttribute("aria-current");',
     '    });',
     '    var home=document.getElementById("rx-homechip");',
     '    if(home) home.classList.toggle("on",!document.querySelector(".rx-p:target"));',
+    '    paintPick();',
+    '  }',
+    '  /* THE PICKER (phone). The button names the command you are on, in its colour, and',
+    '     the dropdown closes itself on every navigation and on any tap outside it. */',
+    '  var rail=document.getElementById("rx-rail"), pick=document.getElementById("rx-pick"), box=rail&&rail.querySelector(".rx-box");',
+    '  /* Opening HOLDS the rail where it is: measured stuck, then made position:relative at the offset that keeps it on that exact pixel, so the open box scrolls with the page instead of staying pinned. Closing lets the box shrink first and only then returns the rail to sticky, then runs after(). */',
+    '  var still=matchMedia("(prefers-reduced-motion:reduce)"), SHUT=360;',
+    '  function setPick(on,after){',
+    '    if(!rail||!pick||on===rail.classList.contains("open")){ if(after) after(); return; }',
+    '    clearTimeout(rail._t);',
+    '    if(on){',
+    '      var v=rail.getBoundingClientRect().top;',
+    '      rail.style.top="0px"; rail.classList.add("held");',
+    '      rail.style.top=(v-rail.getBoundingClientRect().top)+"px";',
+    '      rail.classList.add("open");',
+    '    } else {',
+    '      /* If the list was scrolled while the pill stayed pinned, the box top is above the pill: move the rail down by that much first, so the fold closes up INTO the pill instead of dragging it away. */',
+    '      var bx=rail.querySelector(".rx-box"), gap=pick.getBoundingClientRect().top-(bx?bx.getBoundingClientRect().top:0)-1;',
+    '      if(bx&&gap>1) rail.style.top=((parseFloat(rail.style.top)||0)+gap)+"px";',
+    '      rail.classList.remove("open"); rail.classList.remove("pinned");',
+    '      rail._t=setTimeout(function(){ rail.classList.remove("held"); rail.style.top=""; if(after) after(); },still.matches?0:SHUT);',
+    '    }',
+    '    pick.setAttribute("aria-expanded",on?"true":"false");',
+    '  }',
+    '  function paintPick(){',
+    '    if(!pick) return;',
+    '    var on=document.querySelector(".rx-chip.on[data-for]");',
+    '    pick.querySelector(".rx-pick-n").textContent=on?on.textContent:"All commands";',
+    '    pick.querySelector(".rx-pick-g").textContent=on?(on.getAttribute("data-group")||""):(chips.length+" commands");',
+    '    /* The colour goes on the box, so the pill AND the open menu around the list both wear it. */',
+    '    var sk=box||pick;',
+    '    ["--cc","--con","--ct","--ctl"].forEach(function(k){ var v=on&&on.style.getPropertyValue(k); if(v) sk.style.setProperty(k,v); else sk.style.removeProperty(k); });',
+    '    if(on) sk.style.setProperty("--ci","var(--ct)"); else sk.style.removeProperty("--ci");',
+    '    setPick(false);',
+    '  }',
+    '  /* .pinned: the list has scrolled under the pill, so it needs its own paper; see the CSS. */',
+    '  function pinned(){ if(!rail||!rail.classList.contains("open")){ if(rail) rail.classList.remove("pinned"); return; }',
+    '    var bx=rail.querySelector(".rx-box"), off=pick.getBoundingClientRect().top-bx.getBoundingClientRect().top;',
+    '    rail.classList.toggle("pinned", off>2); }',
+    '  addEventListener("scroll",pinned,{passive:true});',
+    '  if(rail&&pick){',
+    '    rail.classList.add("rx-js");',
+    '    pick.addEventListener("click",function(){ setPick(!rail.classList.contains("open")); });',
+    '    document.addEventListener("click",function(e){ if(rail.classList.contains("open")&&!rail.contains(e.target)) setPick(false); });',
+    '    /* A chip picked from the open menu waits for the menu to fold before it navigates: the fragment jump measures the page, and measured mid-fold it would land a list-height off. */',
+    '    rail.addEventListener("click",function(e){',
+    '      var a=e.target.closest(".rx-chip"); if(!a||!rail.classList.contains("open")) return;',
+    '      e.preventDefault();',
+    '      var h=a.getAttribute("href")||"#";',
+    '      setPick(false,function(){',
+    '        if(h===(location.hash||"#")){ var t=h.length>1&&document.getElementById(h.slice(1)); if(t&&t.scrollIntoView) t.scrollIntoView(); }',
+    '        else location.hash=h.slice(1);',
+    '      });',
+    '    });',
     '  }',
     '  addEventListener("hashchange",mark); mark();',
     '',
@@ -817,23 +1122,86 @@ const RECEIVER_JS = [
     '     hashchange, and does not reload, so anything typed into the panel survives. */',
     '  addEventListener("keydown",function(e){',
     '    if(e.key!=="Escape") return;',
+    '    /* An open phone menu or picker takes Escape first; this one waits for the next press. */',
+    '    if(rail&&rail.classList.contains("open")){ setPick(false); pick.focus(); return; }',
+    '    if(document.querySelector(".hmb-p.open")) return;',
     '    if(!document.querySelector(".rx-p:target")) return;',
     '    if(document.activeElement && document.activeElement.tagName==="INPUT") return;',
     '    location.hash="";',
     '    mark();',
     '  });',
     '',
+    '  /* THE ASK FIELD. rank() is commandProse.js findTools(), serialised into the page, so',
+    '     what the build gate proves about a query is what the reader gets. */',
+    '  /* The Try row fades only on a side with more to scroll; see .rx-tries. */',
+    '  var tries=document.querySelector(".rx-tries");',
+    '  function fade(){ if(!tries) return; var l=tries.scrollLeft, r=tries.scrollWidth-tries.clientWidth-l;',
+    '    tries.style.setProperty("--fl",(l>1?28:0)+"px"); tries.style.setProperty("--fr",(r>1?28:0)+"px"); }',
+    '  if(tries){ tries.addEventListener("scroll",fade,{passive:true}); addEventListener("resize",fade); fade(); }',
     '  var q=document.getElementById("rx-q"), count=document.getElementById("rx-count");',
-    '  function filter(){',
-    '    var v=q.value.trim().toLowerCase(), hits=0;',
-    '    chips.forEach(function(c){',
-    '      var on=!v||(c.getAttribute("data-find")||"").toLowerCase().indexOf(v)>-1;',
-    '      c.hidden=!on; if(on) hits++;',
+    '  var found=document.getElementById("rx-found"), none=document.getElementById("rx-nohit");',
+    '  var IX=window.__RX_FIND, RANK=window.__RX_RANK;',
+    '  var hits=found?[].slice.call(found.querySelectorAll(".rx-hit")):[];',
+    '  function search(){',
+    '    var v=q.value.trim();',
+    '    if(!v){ found.hidden=true; count.textContent=""; return; }',
+    '    var got=RANK(v,IX);',
+    '    hits.forEach(function(h){ h.hidden=true; h.classList.remove("rx-first"); });',
+    '    got.forEach(function(o,n){',
+    '      var h=document.getElementById("rx-hit-"+IX.cmds[o.i].id); if(!h) return;',
+    '      h.hidden=false; if(!n) h.classList.add("rx-first"); found.appendChild(h);',
     '    });',
-    '    [].slice.call(document.querySelectorAll(".rx-gl")).forEach(function(s){ s.hidden=!!v; });',
-    '    count.textContent=!v?"":(hits?hits+" of "+chips.length+" match":"Nothing matches "+q.value.trim());',
+    '    found.insertBefore(none,found.firstChild); none.hidden=got.length>0;',
+    '    found.hidden=false;',
+    '    count.textContent=got.length?(got.length===1?"1 command fits":got.length+" commands fit"):"No command fits that yet";',
     '  }',
-    '  if(q){ q.addEventListener("input",filter); filter(); }',
+    '  if(q && found && IX && RANK){',
+    '    q.addEventListener("input",search);',
+    '    q.addEventListener("focus",function(){ if(q.value.trim()) search(); });',
+    '    q.addEventListener("keydown",function(e){',
+    '      if(e.key==="Enter"){ var top=found.querySelector(".rx-hit.rx-first:not([hidden])");',
+    '        if(top){ e.preventDefault(); location.hash=top.getAttribute("href").slice(1); } }',
+    '      else if(e.key==="ArrowDown"){ var first=found.querySelector(".rx-hit:not([hidden])");',
+    '        if(first){ e.preventDefault(); first.focus(); } }',
+    '      else if(e.key==="Escape" && q.value){ q.value=""; search(); }',
+    '    });',
+    '    found.addEventListener("keydown",function(e){',
+    '      if(e.key!=="ArrowDown"&&e.key!=="ArrowUp") return;',
+    '      var vis=hits.filter(function(h){ return !h.hidden; }).sort(function(a,b){',
+    '        return a.compareDocumentPosition(b)&4?-1:1; });',
+    '      var at=vis.indexOf(document.activeElement); if(at<0) return;',
+    '      e.preventDefault();',
+    '      if(e.key==="ArrowUp"&&at===0){ q.focus(); return; }',
+    '      var next=vis[at+(e.key==="ArrowDown"?1:-1)]; if(next) next.focus();',
+    '    });',
+    '    /* An answer opens its panel and folds the list away; the words stay, so focusing the',
+    '       field again brings the same answers back. */',
+    '    addEventListener("hashchange",function(){ if(document.querySelector(".rx-p:target")) found.hidden=true; });',
+    '    [].slice.call(document.querySelectorAll(".rx-tq")).forEach(function(b){',
+    '      b.addEventListener("click",function(){ q.value=b.getAttribute("data-q"); q.focus(); search(); });',
+    '    });',
+    '    /* "/" puts you in the field from anywhere on the page, the shortcut Discord and most',
+    '       docs sites already taught. Never while typing somewhere else. */',
+    '    addEventListener("keydown",function(e){',
+    '      if(e.key!=="/"||e.metaKey||e.ctrlKey||e.altKey) return;',
+    '      var a=document.activeElement, tag=a&&a.tagName;',
+    '      if(tag==="INPUT"||tag==="TEXTAREA"||(a&&a.isContentEditable)) return;',
+    '      e.preventDefault(); q.focus();',
+    '    });',
+    '    /* On a wide screen the placeholder carries an example and walks through the asks, so',
+    '       the field shows it takes a sentence. ⚠️ A phone keeps the short one: at 390px the',
+    '       example was cut off mid-word, and the Try row under the field already shows three. */',
+    '    var asks=IX.asks||[], turn=0;',
+    '    function eg(){ q.setAttribute("placeholder","Describe what you need, like “"+asks[turn].toLowerCase()+"”"); }',
+    '    if(asks.length && matchMedia("(min-width:901px)").matches){',
+    '      eg();',
+    '      if(matchMedia("(prefers-reduced-motion:no-preference)").matches) setInterval(function(){',
+    '        if(q.value || document.activeElement===q) return;',
+    '        turn=(turn+1)%asks.length; eg();',
+    '      },3200);',
+    '    }',
+    '    if(q.value.trim()) search();',
+    '  }',
     '',
     '  var live=document.getElementById("rx-live");',
     '  if(live && window.Intl){',
@@ -880,14 +1248,45 @@ const VISIBLE_CHOICES = 12;
 const ownOptions = command => command.options
     .slice().sort((a, b) => Number(b.required) - Number(a.required));
 
+/**
+ * What a free-entry option takes, by Discord's ApplicationCommandOptionType.
+ *
+ * ⚠️ AN UNLISTED TYPE THROWS RATHER THAN FALLING BACK TO "text". That fallback is the bug this table replaces: `build` is an integer option, and every one of them was badged "text" because anything that was neither a choice list nor an autocomplete took the last branch. A future user, channel or attachment option would have been mislabelled the same silent way, so the build stops and names it. The keys are Discord's own numbers: 3 string, 4 integer, 5 boolean, 10 number.
+ */
+const OPTION_KIND = { 3: 'text', 4: 'whole number', 5: 'yes / no', 10: 'number' };
+
+function optionKind(option) {
+    const kind = OPTION_KIND[option.type];
+    if (!kind) {
+        throw new Error('commandsPage.js: the option "' + option.name + '" has Discord type ' + option.type +
+            ', which has no badge label. Add it to OPTION_KIND rather than letting it read as text.');
+    }
+    return kind;
+}
+
 /** What an option IS, in three words or fewer: whether it must be filled, and what it takes. */
 function badges(option, required) {
     const out = ['<span class="rx-badge' + (required ? ' rx-b-req' : '') + '">' +
         (required ? 'required' : 'optional') + '</span>'];
     if (option.choices.length) out.push('<span class="rx-badge">' + option.choices.length + ' choices</span>');
     else if (option.autocomplete) out.push('<span class="rx-badge">search</span>');
-    else out.push('<span class="rx-badge">text</span>');
+    else out.push('<span class="rx-badge">' + optionKind(option) + '</span>');
     return '<span class="rx-meta">' + out.join('') + '</span>';
+}
+
+/**
+ * What an OPEN optional slot says when it has no choices to show. The summary above it already prints Discord's description, so repeating it here printed the same sentence twice, one under the other, on every `build`, `cmd` and `season` option; this says what the description does not.
+ */
+function bareHint(option) {
+    if (option.autocomplete) return 'Discord suggests matches as you type.';
+    if (option.type === 4 || option.type === 10) {
+        const noun = option.type === 4 ? 'A whole number' : 'A number';
+        if (option.min != null && option.max != null) return noun + ' from ' + option.min + ' to ' + option.max + '.';
+        if (option.min != null) return noun + ', ' + option.min + ' or higher.';
+        if (option.max != null) return noun + ', ' + option.max + ' or lower.';
+        return noun + '.';
+    }
+    return option.description || '';
 }
 
 /** Which weapon list an option searches, or '' when it is not a weapon option. */
@@ -951,9 +1350,18 @@ function renderRequired(option, command, C, tints, weapons) {
 /** An optional slot: a native <details>, so a long list costs one row until it is wanted. */
 function renderOptional(option, command, C, tints) {
     const { esc } = C;
+    // 🔴 A slot with no choices gets a FIELD. It used to print only a hint ("A whole number, 1 or higher."), so tapping "+ build" in the line opened a slot with nothing to do: build on both /gunsmith leaves, /help cmd and /patch notes season were dead ends (critique 2026-10-21). The hint is now the placeholder.
+    const numeric = option.type === 4 || option.type === 10;
+    const id = 'rx-' + esc(command.id) + '-' + esc(option.name);
     const body = option.choices.length
         ? choiceBlock(option, tints, null)
-        : '<p class="rx-bare">' + esc(option.description || '') + '</p>';
+        : '<label class="rx-sr" for="' + id + '">' + esc(option.name) + '</label>' +
+          '<input class="rx-in" id="' + id + '" type="text" placeholder="' +
+          esc(option.autocomplete ? 'Type it; Discord suggests matches' : bareHint(option)) + '"' +
+          (numeric ? ' inputmode="numeric" data-num="' + (option.type === 4 ? 'int' : 'dec') + '"' +
+            (option.min != null ? ' data-min="' + option.min + '"' : '') +
+            (option.max != null ? ' data-max="' + option.max + '"' : '') : '') +
+          ' autocomplete="off" spellcheck="false">';
     return '<details class="rx-slot" data-opt="' + esc(option.name) + '" data-req="0">' +
         '<summary class="rx-sum">' +
         '<span class="rx-sumhead"><span class="rx-lab">' + esc(option.name) + '</span>' +
@@ -973,21 +1381,23 @@ function runLine(command, C) {
     const sample = (COMMANDS[command.path] || {}).sample || {};
     const options = ownOptions(command);
     const parts = ['<span class="rx-cmd">' + slashName(command.path, C) + '</span>'];
-    let plain = command.path, set = 0;
+    let plain = command.path, set = 0, idx = 0;
     for (const option of options) {
         const value = option.required
             ? (sample[option.name] || (option.choices.length ? splitChoice(option.choices[0]).label : ''))
             : '';
         const state = value ? 'filled' : (option.required ? 'need' : 'empty');
-        parts.push('<button type="button" class="rx-tok" data-state="' + state + '" ' +
-            'data-goto="' + esc(option.name) + '" aria-label="' + (value ? 'Change ' : 'Set ') + esc(option.name) + '">' +
+        parts.push('<button type="button" class="rx-tok" style="--i:' + (idx++) + '" data-state="' + state + '" ' +
+            'data-goto="' + esc(option.name) + '" aria-label="' + (value ? 'Change ' : 'Set ') + esc(option.name) + (value ? ' ' + esc(value) : '') + '">' +
             '<span class="rx-o">' + esc(option.name) + '</span>' +
             (value ? '<span class="rx-v">' + esc(value) + '</span>' : '') + '</button>');
         if (value) { plain += ' ' + option.name + ':' + value; set++; }
     }
     return '<div class="rx-bar">' +
-        '<code class="rx-line">' + parts.join('') + '</code>' +
-        '<button type="button" class="rx-btn rx-clear"' + (set ? '' : ' hidden') + '>Clear</button>' +
+        '<span class="rx-try"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="none" ' +
+        'stroke="currentColor" stroke-width="1.4"/><path d="M6.4 5.2v5.6L10.9 8z" fill="currentColor"/></svg><span>Try it</span></span>' +
+        '<code class="rx-line" data-intro style="--n:' + command.path.length + ';--k:' + options.length + '">' + parts.join('') + '</code>' +
+        '<button type="button" class="rx-btn rx-clear" aria-label="Clear"' + (set ? '' : ' hidden') + '>Clear</button>' +
         '<button type="button" class="rx-btn rx-copy" data-plain="' + esc(plain) + '" ' +
         'aria-label="Copy ' + esc(plain) + '">Copy</button></div>';
 }
@@ -1079,6 +1489,12 @@ function homeCard(command, C, accents) {
         '</a>';
 }
 
+/** The ask field's index, built from the same weapon lists the weapon options search; exported so the catalog test gates the index the page ships. */
+function findIndexFor(catalog, weapons = loadWeaponIndex()) {
+    const modeOf = command => (command.options.find(o => weaponMode(command, o)) ? weaponMode(command, { name: 'weapon' }) : '');
+    return buildFindIndex(catalog, weapons, modeOf);
+}
+
 /**
  * Renders the whole page. `catalog` is scripts/lib/commandCatalog.js's output; `page` is the entry from buildLegalPages.js's page table.
  */
@@ -1086,17 +1502,18 @@ function commandsShell({ page, catalog, C }) {
     requireChrome(C);
     assertProseCoverage(catalog);
     assertAskCoverage(catalog);
-    assertSearchCoverage(catalog);
     if (page.accent.toUpperCase() !== SIGNAL.dark.toUpperCase()) {
         throw new Error('commandsPage.js: TOOL_PAGES declares accent ' + page.accent + ' but SIGNAL.dark is ' +
             SIGNAL.dark + '. These feed the SAME colour by two routes, so a mismatch renders a pill and an ' +
             'Install button in two different shades. Change BRAND.signal, not this constant.');
     }
     const { esc } = C;
-    const accents = loadAccents();
     const cats = loadCategoryAccents();
     const scopes = loadScopeAccents(cats);
+    const accents = { ...loadAccents(), ...modeAccents(scopes) };
     const weapons = loadWeaponIndex();
+    const findIndex = findIndexFor(catalog, weapons);
+    assertSearchCoverage(catalog, findIndex);
 
     if (!page.lede.includes(page.ledeEm)) {
         throw new Error('commandsPage.js: TOOL_PAGES ledeEm ' + JSON.stringify(page.ledeEm) +
@@ -1107,6 +1524,7 @@ function commandsShell({ page, catalog, C }) {
     const rail = [];
     const panels = [];
     const cards = [];
+    const hits = [];
     const byPath = new Map();
 
     for (const group of catalog.groups) {
@@ -1117,21 +1535,21 @@ function commandsShell({ page, catalog, C }) {
             const derived = DERIVED.has(command.path);
             const vars = colourVars(command.path, accents, derived ? DERIVED_NEUTRAL : null);
             rail.push('<a class="rx-chip" href="#' + esc(command.id) + '" data-for="' + esc(command.id) + '" ' +
-                'data-find="' + esc(searchHaystack(command, group.label)) + '" style="' + vars + '">' +
+                'data-group="' + esc(group.label) + '" data-spot style="' + vars + '">' +
                 '<i class="rx-dot" aria-hidden="true"></i>' + esc(command.path) + '</a>');
             panels.push(renderPanel(command, group, C, accents, cats, scopes));
             cards.push(homeCard(command, C, accents));
+            hits.push('<a class="rx-hit" id="rx-hit-' + esc(command.id) + '" href="#' + esc(command.id) + '" hidden style="' + vars + '">' +
+                '<i aria-hidden="true"></i><span class="rx-hit-t"><b>' + esc(command.path) + '</b><span>' +
+                esc((COMMANDS[command.path] || {}).purpose || command.description) + '</span></span><em>Best fit</em></a>');
         }
     }
 
-    const asks = ASKS.map(a => {
-        const command = byPath.get(a.to);
-        if (!command) throw new Error('commandsPage.js: the ask "' + a.q + '" points at ' + a.to + ', which the bot no longer registers.');
-        const derived = DERIVED.has(a.to);
-        return '<a class="rx-ask" href="#' + esc(command.id) + '" style="' +
-            colourVars(a.to, accents, derived ? DERIVED_NEUTRAL : null) + '">' +
-            '<i aria-hidden="true"></i><span>' + esc(a.q) + '</span><em>' + esc(a.to) + '</em></a>';
-    }).join('');
+    // The three "Try" examples are asks, so every one is a sentence the gate has already proved lands on its own command first.
+    const tries = [0, 3, 7].map(i => ASKS[i]).filter(Boolean).map(a =>
+        '<button type="button" class="rx-tq" data-q="' + esc(a.q) + '">' + esc(a.q) + '</button>').join('');
+    const findPayload = JSON.stringify({ cmds: findIndex.cmds, weapons: findIndex.weapons, asks: ASKS.map(a => a.q) })
+        .replace(/</g, '\\u003C');
 
     /* ⚠️ THIS SITE IS DARK-FIRST, and getting the polarity backwards is silent. The bare
        :root block IS the dark theme; light arrives as an override, BOTH as an explicit
@@ -1144,11 +1562,11 @@ function commandsShell({ page, catalog, C }) {
         ';--accent-on:' + solveOn(page.accent) + '}' +
         ':root[data-theme=light]{' + lightVars + '}' +
         '@media (prefers-color-scheme:light){:root:not([data-theme=dark]){' + lightVars + '}}' +
-        '.rx-p,.rx-chip,.rx-ask,.rx-cd{--ci:var(--ct)}' +
+        '.rx-p,.rx-chip,.rx-hit,.rx-cd{--ci:var(--ct)}' +
         ':root[data-theme=light] .rx-p,:root[data-theme=light] .rx-chip,' +
-        ':root[data-theme=light] .rx-ask,:root[data-theme=light] .rx-cd{--ci:var(--ctl)}' +
+        ':root[data-theme=light] .rx-hit,:root[data-theme=light] .rx-cd{--ci:var(--ctl)}' +
         '@media (prefers-color-scheme:light){:root:not([data-theme=dark]) .rx-p,' +
-        ':root:not([data-theme=dark]) .rx-chip,:root:not([data-theme=dark]) .rx-ask,' +
+        ':root:not([data-theme=dark]) .rx-chip,:root:not([data-theme=dark]) .rx-hit,' +
         ':root:not([data-theme=dark]) .rx-cd{--ci:var(--ctl)}}';
 
     // Only the fields the page's autocomplete uses, so the inlined payload stays a few KB.
@@ -1156,6 +1574,12 @@ function commandsShell({ page, catalog, C }) {
         MP: weapons.MP.map(w => ({ name: w.name, key: w.key, builds: w.builds, category: w.category,
             tint: cats[(w.category || '').toUpperCase()] || DERIVED_NEUTRAL })),
         DMZ: weapons.DMZ.map(w => ({ name: w.name, key: w.key, builds: w.builds })),
+        // The browse rows the bot's own suggestions open with (handlers/router.js). The weapon slot's description promises "All META / All MP builds", and before these were here the page answered that with "No weapon matches" (critique 2026-10-21). Each row carries its class (the middle of its scope value, `MP.AR.std`), so a class word like "assault" can surface "All AR builds".
+        ROWS: Object.fromEntries(['MP', 'DMZ'].map(mode => [mode, browseRows(mode, [...new Set(weapons[mode].map(w => w.category).filter(Boolean))].sort())
+            .map(r => { const cat = r.value.split('.')[1]; return { label: r.label, cat: cat === '*' ? null : cat }; })])),
+        // The bot's own class-word table, shipped rather than copied, so the page cannot drift from what the bot answers.
+        SYN: Object.fromEntries(Object.entries(CATEGORY_SEARCH_SYNONYMS).map(([k, v]) => [k, [].concat(v)])),
+        ANY: [...GENERIC_WEAPON_WORDS],
     }).replace(/</g, '\\u003C');
 
     return `<!doctype html><html lang="en"><head><meta charset="utf-8">
@@ -1163,7 +1587,7 @@ function commandsShell({ page, catalog, C }) {
 <title>${esc(page.title)} — Dioreo</title>
 <meta name="description" content="${esc(page.desc)}">
 ${C.THEME_BOOT}
-<style>${C.TOKENS}${C.COMPONENT_CSS}${C.BAR_CSS}${C.PAGE_CSS}${C.SLOT_CSS}${C.SWITCHER_CSS}${accent}${RECEIVER_CSS}</style>
+<style>${C.TOKENS}${C.COMPONENT_CSS}${C.BAR_CSS}${C.PAGE_CSS}${C.SLOT_CSS}${C.SWITCHER_CSS}${C.TRAY_CSS}${accent}${RECEIVER_CSS}</style>
 </head><body>
 <a class="skip" href="#main">Skip to content</a>
 ${C.GOO_SVG}
@@ -1172,7 +1596,7 @@ ${C.GOO_SVG}
      footer is the LAST CHILD of .page. Do not flatten any of these back out. -->
 <div class="bar">
   ${C.wordmark('./', page)}
-  <nav>${C.navSwitcher(page)}${C.repoBtn}${C.installBtn()}${C.themeBtn()}</nav>
+  <nav>${C.navSwitcher(page)}${C.commandsBtn(page)}${C.installBtn()}${C.barMenu(page)}</nav>
 </div>
 <!-- ⚠️ NO SECTION SLOTS ON PURPOSE: mobileNav() renders its "On this page" accordion only
      when given some, and this page's rail already IS that navigation. -->
@@ -1184,42 +1608,55 @@ ${C.mobileNav(page, '')}
     <p class="rx-sub">${ledeHtml}</p>
   </header>
 
-  <div class="rx-rail">
-    <nav class="rx-scroll" aria-label="All commands">
-      <a class="rx-chip rx-home-chip" id="rx-homechip" href="#"><i class="rx-dot" aria-hidden="true"></i>All commands</a>
-      ${rail.join('')}
-    </nav>
+  <div class="rx-find" role="search">
+    <label class="rx-sr" for="rx-q">Describe what you need</label>
+    <div class="rx-field">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <input class="rx-q" id="rx-q" type="search" placeholder="What do you need help with?" autocomplete="off" spellcheck="false" enterkeyhint="go" aria-controls="rx-found" aria-describedby="rx-count">
+      <kbd aria-hidden="true">/</kbd>
+    </div>
+    <!-- WCAG 4.1.3. Polite, and EMPTY at rest, so it speaks only when the answers change. -->
+    <p class="rx-sr" id="rx-count" role="status"></p>
+    <div class="rx-found" id="rx-found" hidden>
+      <p class="rx-nohit" id="rx-nohit" hidden>Nothing fits that yet. Try a word like build, CP, time or season, or pick from the list below.</p>
+      ${hits.join('')}
+    </div>
+    <div class="rx-tries"><span>Try</span>${tries}</div>
   </div>
 
+  <div class="rx-rail" id="rx-rail"><div class="rx-box">
+    <button type="button" class="rx-pick" id="rx-pick" aria-expanded="false" aria-controls="rx-scroll">
+      <i class="rx-dot" aria-hidden="true"></i><span class="rx-pick-n">All commands</span><span class="rx-pick-g">${catalog.groups.reduce((n, g) => n + g.commands.length, 0)} commands</span>
+      <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="rx-drop"><nav class="rx-scroll" id="rx-scroll" aria-label="Command list">
+      <a class="rx-chip rx-home-chip" id="rx-homechip" href="#" data-spot><i class="rx-dot" aria-hidden="true"></i>All commands</a>
+      ${rail.join('')}
+    </nav></div>
+  </div></div>
+
   <div class="rx-bench" id="rx-bench">
-    <label class="rx-sr" for="rx-q">Search commands</label>
-    <input class="rx-sr" id="rx-q" type="search" placeholder="Search" autocomplete="off" spellcheck="false">
-    <!-- WCAG 4.1.3. Filtering hides rail chips, and without a status region a screen-reader
-         user gets no signal that the strip changed. Polite, and EMPTY at rest. -->
-    <p class="rx-none" id="rx-count" role="status"></p>
 
     <div class="rx-stage">
       ${panels.join('')}
       <section class="rx-home" tabindex="-1">
         <div class="rx-card" style="--cc:var(--accent);--con:var(--accent-on)">
-          <h2>Every command</h2>
-          <p class="rx-lead">Pick one to see what it takes, fill it in, and copy the line into Discord.</p>
+          <h2>All commands</h2>
+          <p class="rx-lead">Pick one, fill in what it takes, and copy the line into Discord.</p>
           <div class="rx-cards">${cards.join('')}</div>
-          <p class="rx-asks-h">Or start from what you want</p>
-          <p class="rx-asks-s">Each of these is one command.</p>
-          <div class="rx-asks">${asks}</div>
         </div>
       </section>
     </div>
   </div>
 </main>
-  ${C.pageFoot(page, null, false)}
+  ${C.trayFoot(page)}
 </div>
 <!-- ⚠️ A REAL JS ASSIGNMENT, NOT type="application/json". The build parses every inline
      script as JavaScript, and a bare object literal reads as a labelled block, so a JSON
      script tag fails the gate with "Unexpected token ':'" — correctly, since the gate cannot
      know the type attribute changes the language. -->
 <script>window.__RX_WEAPONS=${weaponPayload};</script>
+<script>window.__RX_FIND=${findPayload};window.__RX_RANK=(${findTools.toString()})().rank;</script>
 <!-- Outside .page: a fixed element is trapped by any ancestor with a transform or a filter. -->
 ${C.TOTOP_HTML}
 <script>${C.THEME_JS}</script>
@@ -1231,8 +1668,8 @@ ${C.TOTOP_HTML}
 }
 
 module.exports = {
-    commandsShell, CHROME_KEYS, SIGNAL, RECEIVER_CSS, RECEIVER_JS,
-    VISIBLE_CHOICES, ownOptions, solveText, solveOn, darken,
+    commandsShell, findIndexFor, CHROME_KEYS, SIGNAL, RECEIVER_CSS, RECEIVER_JS,
+    VISIBLE_CHOICES, ownOptions, solveText, solveOn, darken, optionKind, badges, bareHint,
     loadAccents, loadCategoryAccents, loadScopeAccents, loadWeaponIndex,
-    DERIVED, DERIVED_NEUTRAL, GROUND_DARK, GROUND_LIGHT,
+    DERIVED, DERIVED_NEUTRAL, GROUND_DARK, GROUND_LIGHT, STEEL, RAINBOW, TONED,
 };

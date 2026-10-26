@@ -165,4 +165,5 @@ function featuredWeapons(weapons, slots) {
     return classes.flatMap(c => byClass.get(c).filter(w => picked.has(w)));
 }
 
-module.exports = { featuredWeapons, fuzzyMatch, normalizeForSearch, foldLookalikes, findWeaponMatches, resolveCategorySynonyms, categoryByExactAlias, isGenericWeaponQuery, typoDistance, isSameDrawTitle };
+// CATEGORY_SEARCH_SYNONYMS and GENERIC_WEAPON_WORDS are exported for the site's /commands page (scripts/lib/commandsPage.js), whose weapon search ships this same table so it answers a class word the way the bot does.
+module.exports = { featuredWeapons, fuzzyMatch, normalizeForSearch, foldLookalikes, findWeaponMatches, resolveCategorySynonyms, categoryByExactAlias, isGenericWeaponQuery, typoDistance, isSameDrawTitle, CATEGORY_SEARCH_SYNONYMS, GENERIC_WEAPON_WORDS };

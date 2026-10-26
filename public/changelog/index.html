@@ -97,10 +97,10 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
    ⚠️ --ink3 AGAINST THE GROUND IS THE BINDING CONSTRAINT — not --ink, which has
    three times the headroom and will happily pass while --ink3 fails. Darkening the
    ground eats that margin fastest; a plum tried during this work measured 4.29
-   against the 4.5 floor and would have failed the build. Measure before darkening. */
-
+   against the 4.5 floor and would have failed the build. Measure before darkening.
    Specificity is deliberately above body's own shorthand so it survives it; the
    warm pages restate the whole background later and keep their accent wash. */
+
 :root[data-theme=light] body{background-image:
   radial-gradient(140% 90% at 50% -10%,#F3F0F8,transparent 66%)}
 @media (prefers-color-scheme:light){
@@ -108,7 +108,14 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
     radial-gradient(140% 90% at 50% -10%,#F3F0F8,transparent 66%)}
 }
 ::selection{background:color-mix(in srgb,var(--accent) 32%,transparent)}
-:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:1px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:1px}/* TOUCH HYGIENE (Harkirat, 2026-10-20 17:40 EDT: buttons "kind of seem to be triggering that even on mobile... like if you kind of like hold over a button... it doesn't feel like a natural like touch surface mobile button tap"). The :hover rules were already guarded, so what read as hover on a phone was the browser's own: the grey tap-highlight box flashed over every control, a long press selected the label or raised the link callout, and a press waited out the double-tap-zoom delay. All three go, and the press feedback a control does want is its own :active, which snaps in fast and eases out instead of running the full hover transition both ways. */
+
+html{-webkit-tap-highlight-color:transparent}
+a,button,summary,label,input,[role=switch]{touch-action:manipulation}
+@media (hover:none){
+  button,summary,[role=switch],[data-spot],.hmb-a,.tab,.rx-hit,.rx-tq{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+  button:active,summary:active,[data-spot]:active,.hmb-a:active{transition-duration:.07s}
+}
 .lab{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;
   color:var(--ink3);font-weight:500}
 
@@ -120,13 +127,13 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
 @font-face{font-family:'Instrument Sans';font-style:normal;font-weight:400;font-display:swap;
   src:url(../assets/instrument-sans-400.woff2) format('woff2')}
 @font-face{font-family:'Instrument Sans';font-style:normal;font-weight:600;font-display:swap;
-  src:url(../assets/instrument-sans-600.woff2) format('woff2')}
-
-/* ⚠️ --ink3 was #6B7A6D dark / #63705F light, and BOTH failed WCAG AA for small
+  src:url(../assets/instrument-sans-600.woff2) format('woff2')}/* ⚠️ --ink3 was #6B7A6D dark / #63705F light, and BOTH failed WCAG AA for small
    text (4.22:1 and 3.82:1 measured against their own backgrounds). It carries the
    dates, the version stamps and the operator line — all small monospace, i.e. the
    text that needs contrast MOST. Nudged to the nearest value that clears 4.5:1
    keeping hue and saturation. Do not darken them back for looks. */
+
+
 :root{
   --desk:#0C100E; --card:#121A15; --ink:#E9E7DE; --ink2:#A3B0A4; --ink3:#778779;
   --rule:#1E2A22;
@@ -146,11 +153,11 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
 }
 body{font-family:var(--sans);background:var(--desk);color:var(--ink)}
 h1,h2,h3,h4{font-family:var(--sans)}
-code,pre{font-family:var(--mono)}
-
-/* The boot overlay. display:none by default and shown by script, so a reader with
+code,pre{font-family:var(--mono)}/* The boot overlay. display:none by default and shown by script, so a reader with
    JavaScript off gets the page immediately instead of a black rectangle — the
    sequence is decoration and must never be load-bearing. */
+
+
 .boot{display:none;position:fixed;inset:0;z-index:200;background:var(--desk);
   align-items:center;justify-content:center}
 .boot.go{display:flex}
@@ -160,12 +167,8 @@ code,pre{font-family:var(--mono)}
 .boot-cur{display:inline-block;width:.55em;height:1em;vertical-align:-.12em;
   background:var(--sig);animation:bl 1s steps(2) infinite}
 @keyframes bl{50%{opacity:0}}
-@media (prefers-reduced-motion:reduce){.boot{display:none!important}}
-
-/* Every page in this world gets the signal colour as its accent, so the shared
-   chrome (indicator, buttons, focus rings) picks it up with no extra wiring. */
-
-/* ⚠️ TWO signal values per voice, and the light one is NOT optional.
+@media (prefers-reduced-motion:reduce){.boot{display:none!important}}/* Every page in this world gets the signal colour as its accent, so the shared
+   chrome (indicator, buttons, focus rings) picks it up with no extra wiring. *//* ⚠️ TWO signal values per voice, and the light one is NOT optional.
    The three signals are tuned for a near-black terminal and are close to
    invisible on the daylight variant — measured against #DCDDD4 they scored
    1.50, 1.16 and 1.47 to 1, against a 4.5 minimum. That is not "a bit low", it
@@ -173,13 +176,15 @@ code,pre{font-family:var(--mono)}
    the dates and the operator line. The light values keep each hue and its
    saturation and only drop lightness until they clear 4.5:1. contrastAudit()
    re-measures both themes from the built CSS on every run. */
+
+
+
+
 :root{--accent:#FF9E3D;--glow:#FF9E3D;--sig:#FF9E3D}
 :root[data-theme="light"]{--accent:#994C00;--glow:#994C00;--sig:#994C00}
 @media (prefers-color-scheme:light){
   :root:not([data-theme="dark"]){--accent:#994C00;--glow:#994C00;--sig:#994C00}
-}
-
-/* ── skip link ────────────────────────────────────────────────────────
+}/* ── skip link ────────────────────────────────────────────────────────
    WCAG 2.4.1 Bypass Blocks is Level A, and this site failed it on every page:
    the bar carries nine nav tabs plus the source, install and theme controls, so
    a keyboard or switch user tabbed through about thirteen widgets before
@@ -188,18 +193,20 @@ code,pre{font-family:var(--mono)}
    Hidden by CLIPPING rather than by display:none or visibility:hidden, both of
    which remove an element from the focus order entirely and would make this a
    link nobody can ever reach. It is the first focusable thing in the body. */
+
+
 .skip{position:absolute;left:.5rem;top:.5rem;z-index:200;
   padding:.55rem .9rem;border-radius:6px;
   background:var(--accent);color:#0F0C16;font-family:var(--mono);font-size:.62rem;
   letter-spacing:.14em;text-transform:uppercase;text-decoration:none;font-weight:700;
   clip-path:inset(50%);white-space:nowrap}
-.skip:focus{clip-path:none;outline:2px solid var(--ink);outline-offset:2px}
-
-/* ── shared reset for the label buttons ───────────────────────────────
+.skip:focus{clip-path:none;outline:2px solid var(--ink);outline-offset:2px}/* ── shared reset for the label buttons ───────────────────────────────
    .lab is a <button> in the section rail. Without this reset it inherits the
    platform's default button chrome, which rendered as a grey box floating above
    the rail on DESKTOP — the mobile rules were scoped to a media query, so the
    desktop path got the element change with none of the styling. */
+
+
 button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   padding:0;margin:0;font:inherit;text-align:left;cursor:default;color:var(--ink3)}/* ── wordmark ─────────────────────────────────────────────────────────
    Three bars = attachment slots on a Gunsmith spec sheet, the same motif as the
@@ -258,42 +265,15 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    you, rounded = an invitation. An action is an invitation, so the earlier
    squared repo/install buttons contradicted the rule the rest of the site is
    built on. Every interactive control in the bar is now a pill; only document
-   chrome stays squared. *//* Every control in the bar is 32px tall so the icons, the switcher and the
-   switch sit on one optical line. The old 30px height with a 30px icon plate
-   inside a 1px border left the plate 2px wider than the content box, so the
-   GitHub mark was pushed off-centre and clipped by overflow:hidden — that is the
-   whole "logo is not properly aligned" bug, and it is why the plate is now sized
-   from the CONTENT box rather than matched to the outer height. */
+   chrome stays squared. *//* Every control in the bar is a 34px stadium (Install, Commands and the theme
+   switch), so the switcher and the controls sit on one optical line. They were
+   32px, with Install at 37px, until 2026-10-20 10:00 EDT (Harkirat: 34px for all three).
+   The GitHub capsule that used to share this rule is gone from the bar; the repo
+   link is a plain footer link now, on every page. */
 
 
 
-.ghb,.ins{border-radius:999px;height:32px;position:relative;isolation:isolate}/* repo — a capsule that opens. The mark holds still on its plate and the label
-   is uncovered as the capsule grows past it. */
-
-
-.ghb{display:inline-flex;align-items:center;justify-content:flex-start;
-  overflow:hidden;text-decoration:none;color:var(--ink2);
-  border:1px solid var(--rule2);background:transparent;
-  width:32px;padding:0;transition:width .42s cubic-bezier(.16,.84,.28,1),
-  color .22s,border-color .22s}
-.ghb-ic{position:relative;z-index:1;display:grid;place-items:center;
-  width:30px;height:30px;flex:0 0 30px}
-.ghb-ic svg{width:15px;height:15px;display:block}
-.ghb-t{position:relative;z-index:1;overflow:hidden;padding-right:.9rem}
-.ghb-t b{display:block;font-family:var(--mono);font-size:.65rem;font-weight:600;
-  letter-spacing:.13em;text-transform:uppercase;white-space:nowrap;
-  transform:translateX(-8px);opacity:0;
-  transition:transform .42s cubic-bezier(.16,.84,.28,1),opacity .3s}.ghb:focus-visible{width:108px;color:var(--ink);
-  border-color:color-mix(in srgb,var(--accent) 60%,var(--ink3))}@media (hover:hover) and (pointer:fine){
-.ghb:hover{width:108px;color:var(--ink);
-  border-color:color-mix(in srgb,var(--accent) 60%,var(--ink3))}}.ghb:focus-visible .ghb-t b{transform:translateX(0);opacity:1}@media (hover:hover) and (pointer:fine){
-.ghb:hover .ghb-t b{transform:translateX(0);opacity:1}}/* the cursor-tracked light */
-
-.ghb::after{content:"";position:absolute;inset:0;z-index:0;border-radius:inherit;
-  opacity:0;transition:opacity .3s;background:radial-gradient(64% 150% at
-    var(--px,50%) var(--py,50%),color-mix(in srgb,var(--accent) 30%,transparent),
-    transparent 72%)}.ghb:focus-visible::after{opacity:1}@media (hover:hover) and (pointer:fine){
-.ghb:hover::after{opacity:1}}/* install — the one filled control on the site, and the only place a second
+.ins{border-radius:999px;height:34px;position:relative;isolation:isolate}/* install — the one filled control on the site, and the only place a second
    ambient effect is justified. Three things happen and each has a reason: the
    fill is lit from the cursor, a single edge-light passes once on hover (not a
    loop — an idle sheen competes with the theme switch), and the mark sits in a
@@ -315,19 +295,21 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
      actually looks like. */
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.13),
     0 2px 10px -5px color-mix(in srgb,var(--accent) 80%,transparent);
-  transition:box-shadow .32s,transform .22s cubic-bezier(.2,.8,.2,1)}/* Taller, heavier and wider than the repo capsule beside it. These two were the
-   same 32px pill, which gave the primary action on the site exactly as much
-   presence as a link to the source. *//* ⚠️ THE LEFT PADDING IS THE ICON'S CONCENTRIC GAP, and that is why it is not the
-   same number as the right. The pill is 37px tall, so its cap radius is 18.5px;
+  transition:box-shadow .32s,transform .22s cubic-bezier(.2,.8,.2,1)}/* Heavier and wider-tracked than the plain controls around it: this is the
+   primary action on the site. 34px tall since 2026-10-20 10:00 EDT (Harkirat), the same
+   height as Commands and the theme switch; it was 37px. *//* ⚠️ THE LEFT PADDING IS THE ICON'S CONCENTRIC GAP, and that is why it is not the
+   same number as the right. The pill is 34px tall, so its cap radius is 17px;
    the Discord disc is 22px, radius 11px. A disc reads as sitting concentrically
-   inside a cap only when the gap equals the difference — 7.5px, which is .47rem.
-   At the old symmetric .95rem the disc was 15.2px from the left edge and 7.5px
-   from the top and bottom, so the crescent of space around it was twice as thick
-   on one axis as the other: the "different amounts of curve". The right side
-   keeps more room because it ends in a text run's terminal, not a circle. */
+   inside a cap only when the gap from the OUTER edge equals the difference — 6px.
+   ⚠️ That 6px includes the 1px border, so the padding is 5px. It was .375rem (6px)
+   and measured 7px from the edge, and on a phone, where the pill is 38px and the rule
+   below set .82rem, the disc sat 14px in against an ideal 8px: the lopsided gap
+   Harkirat saw (2026-10-20 17:13 EDT). Rule of thumb for any pill with a leading
+   circle: padding-left = (pill height − circle size) / 2 − border.
+   The right side keeps more room because it ends in a text run, not a circle. */
 
 
-.ins{height:37px;font-weight:700;letter-spacing:.14em;padding-inline:.47rem .85rem}
+.ins{height:34px;font-weight:700;letter-spacing:.14em;padding-inline:5px .85rem}
 .ins .ins-t{font-size:.7rem;font-weight:800}
 .ins-ic{position:relative;z-index:2;display:grid;place-items:center;
   width:22px;height:22px;flex:0 0 22px;border-radius:50%;
@@ -381,13 +363,71 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   .ins:hover::after{animation:none}}.ins:focus-visible,.ins:active{transform:none}@media (hover:hover) and (pointer:fine){
   .ins:hover{transform:none}}.ins:focus-visible .ins-ic{transform:none}@media (hover:hover) and (pointer:fine){
   .ins:hover .ins-ic{transform:none}}
-}/* On a 390px phone the bar measured 404px of content — wordmark 144 + a 24px gap
+}/* ── the way into /commands: .cmdb ──────────────────────────────────────────
+   The Source capsule's look with its word held open: a hairline pill, the label in the capsule's mono small caps, the border warming and the cursor light following on hover. ⚠️ ITS HEIGHT IS INSTALL'S, declared twice on purpose (34px here, 38px in the 620px block with .ins) and not inherited from the shared 32px rule, because the whole point of the second pass was that the pair read as one height. Change .ins and change this with it.
+   The label is --ink2 at rest and --ink on hover, the pairing the capsule and the footer nav links already use on this ground. No mark inside, by instruction. Trailing letter-spacing is taken off the right padding so the word sits centred rather than a tracking-width left of centre.
+   ⚠️ THE LABEL IS INSTALL'S LABEL, METRIC FOR METRIC, AND BUILT THE SAME WAY: the pill carries .66rem and the .14em tracking (which inherits as the absolute 1.48px, not as .14em of the label), the word inside is .7rem / 800. Setting .7rem on the pill instead gives 1.57px tracking and a 700 weight, a hair off Install on the desktop. The first build kept the capsule's .65rem/.13em, and the second guessed Install's phone size from a rule that never applies (see the phone block), so the pair read as two different type sizes (Harkirat, 2026-10-19 23:40 EDT: "their sizing and alignment is off"). *//* ⚠️ COMMANDS HAS ITS OWN HUE, AND IT IS THE SAME ON EVERY PAGE (Harkirat, 2026-10-20 11:53 EDT: "why is the commands pill accent matched to the current active page? it should be showing its own accent color, the green"). The rule is on the CLASS, so both looks (.cmdb here, .cmdr below) take it and no page can recolour it: --cmd-hue is BRAND.signal, the value the Commands page itself paints, and the mobile strip already gave this tab that colour through --row. The first build read --accent, so on Notice the pill was crimson and on Terms amber. */
+
+
+.cmdb,.cmdr{--cmd-hue:#58D05A}
+.cmdb{--hv:var(--cmd-hue)}
+.cmdb{display:inline-flex;align-items:center;justify-content:center;
+  position:relative;isolation:isolate;overflow:hidden;
+  height:34px;padding-inline:1.05rem calc(1.05rem - .14em);border-radius:999px;
+  text-decoration:none;white-space:nowrap;color:var(--ink2);
+  border:1px solid var(--rule2);background:transparent;
+  font-family:var(--mono);font-size:.66rem;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;
+  transition:color .22s,border-color .22s,box-shadow .32s,transform .22s cubic-bezier(.2,.8,.2,1)}
+.cmdb-t{position:relative;z-index:1;font-size:.7rem;font-weight:800}
+.cmdb::after{content:"";position:absolute;inset:0;z-index:0;border-radius:inherit;
+  opacity:0;transition:opacity .3s;background:radial-gradient(64% 150% at
+    var(--px,50%) var(--py,50%),color-mix(in srgb,var(--cmd-hue) 30%,transparent),
+    transparent 72%)}.cmdb:focus-visible{color:var(--ink);
+  border-color:color-mix(in srgb,var(--cmd-hue) 60%,var(--ink3))}@media (hover:hover) and (pointer:fine){
+.cmdb:hover{color:var(--ink);
+  border-color:color-mix(in srgb,var(--cmd-hue) 60%,var(--ink3))}}.cmdb:focus-visible::after{opacity:1}@media (hover:hover) and (pointer:fine){
+.cmdb:hover::after{opacity:1}}/* The page you are on: the warm border stays on, so the control reads as current without a fill. A fill would need its own ink for the cursor swarm (an accent-filled control makes a same-coloured blob vanish, which is why Install is dark inside), and an outline needs none. */
+
+.cmdb.on{color:var(--ink);border-color:color-mix(in srgb,var(--cmd-hue) 60%,var(--ink3))}/* ── THE HAIRLINE CAPSULE'S HOVER IS INSTALL'S (Harkirat, 2026-10-20 11:57 EDT: "it should be matching how the install button looks when hovered"). One rule for the whole look, so the landing's Commands button (.cmdb) and the /commands chips (.rx-chip) can not drift apart: the same 1px lift and the same edge-light that sweeps across once per hover (the chip alone also takes Install's coloured shadow, see below). Only the hue differs, and each class names it in --hv: Commands green for .cmdb, the command's own colour for a chip. The sweep is drawn in that hue rather than Install's white because a hairline pill has no fill for white to read against, and it sits UNDER the label (z-index 0 here, negative on a chip) so a word is never crossed out. Install's disc tilt and arrow have no counterpart: there is no mark in a hairline capsule. */
+
+.cmdb::before,.rx-chip::after{content:"";position:absolute;top:-60%;bottom:-60%;width:36px;
+  left:-60px;transform:skewX(-18deg);pointer-events:none;
+  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--hv) 55%,transparent),transparent)}
+.cmdb::before{z-index:0}
+.rx-chip::after{z-index:-1}.cmdb:focus-visible::before,.rx-chip:focus-visible::after{
+  animation:swipe .62s cubic-bezier(.3,.7,.3,1)}@media (hover:hover) and (pointer:fine){
+.cmdb:hover::before,.rx-chip:hover::after{
+  animation:swipe .62s cubic-bezier(.3,.7,.3,1)}}.cmdb:focus-visible,.rx-chip:focus-visible{transform:translateY(-1px)}@media (hover:hover) and (pointer:fine){
+.cmdb:hover,.rx-chip:hover{transform:translateY(-1px)}}/* ⚠️ THE COLOURED SHADOW IS THE CHIP'S ONLY, NOT THE LANDING BUTTON'S (Harkirat, 2026-10-20 14:24 EDT, on the landing Commands button: "why does it look like this with the outside glow under it?"). Under Install the shadow reads as the fill's own depth; under a hairline pill there is no fill, so the same shadow reads as a green halo around a dark button. The chip keeps it because he asked for Install's hover on the chips by name. */.rx-chip:focus-visible{box-shadow:0 8px 22px -7px color-mix(in srgb,var(--hv) 82%,transparent)}@media (hover:hover) and (pointer:fine){
+
+.rx-chip:hover{box-shadow:0 8px 22px -7px color-mix(in srgb,var(--hv) 82%,transparent)}}
+.cmdb:active,.rx-chip:active{transform:translateY(0) scale(.98)}
+@media (prefers-reduced-motion:reduce){.cmdb:focus-visible::before,.rx-chip:focus-visible::after{animation:none}@media (hover:hover) and (pointer:fine){
+  .cmdb:hover::before,.rx-chip:hover::after{animation:none}}.cmdb:focus-visible,.cmdb:active,.rx-chip:focus-visible,.rx-chip:active{transform:none}@media (hover:hover) and (pointer:fine){
+  .cmdb:hover,.rx-chip:hover{transform:none}}
+}/* ── Commands in the bar: .cmdr, a one-tab rail ─────────────────────────────
+   Harkirat, 2026-10-20 10:45 EDT: "keep 'commands' in the matching filled rail buttons style as the rest of the nav bar links". It is built the way the switcher's rails are, so it can not drift from them: the same hairline border, the same dark wash and inset shadow for the groove, 3px of padding, and inside it one tab with the SAME metrics as .tab (.66rem, 700, .1em, .42rem by 1.02rem). The switcher's indicator is script-driven and this control sits outside it, so its pill is plain CSS: with no pill the label is --ink2 (the state of a rail you are not in), the pill fades up on hover and focus, and it stays on when /commands is the page you are on, exactly as a rail's indicator does. The pill is the SOLID accent with the label inverted to #120E1C, the pair the .tab.lit rule measured for contrast. A solid accent fill also makes the liquid cursor read it as a chip and ink itself dark, which is the behaviour Harkirat asked for over Install. When the switcher tightens, the sibling selectors in SWITCHER_CSS tighten this tab with it. */
+
+.cmdr{position:relative;display:inline-flex;align-items:center;isolation:isolate;
+  border-radius:999px;border:1px solid var(--rule2);padding:3px;text-decoration:none;
+  background:color-mix(in srgb,#000 24%,transparent);
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.32)}
+.cmdr-t{display:block;white-space:nowrap;font-family:var(--mono);font-size:.66rem;
+  font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  padding:.42rem 1.02rem;border-radius:999px;color:var(--ink2);
+  transition:color .2s ease,background-color .22s ease}.cmdr:focus-visible .cmdr-t,.cmdr.on .cmdr-t{
+  background:var(--cmd-hue);color:#120E1C}@media (hover:hover) and (pointer:fine){
+.cmdr:hover .cmdr-t{
+  background:var(--cmd-hue);color:#120E1C}}/* The ink the liquid cursor wears over this control. The pill is a SOLID fill in every state the pointer can be in (hover is the pointer), so the swarm goes dark like it does over Install. It is declared here, in CSS, because the cursor cannot read it from the pill: that fill is a transition and reads as half-painted for the first 220ms. */
+
+.cmdr{--cur-ink:#120E1C;color:var(--ink2)}
+.cmdr:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* On a 390px phone the bar measured 404px of content — wordmark 144 + a 24px gap
    + three controls — so the theme switch sat past the right edge with the padding
-   eaten. The install button collapses to its mark and the gap tightens, which
-   brings it to ~315px. The GitHub button deliberately survives instead: it is the
-   ONLY repo link on the entire site, so dropping it on mobile would remove that
-   route altogether, whereas the install label is recoverable from the icon plus
-   the accessible name. */
+   eaten. The gap tightens below. Since 2026-10-20 10:00 EDT the controls are Commands, Install
+   and the switch, and Commands leaves the BAR under 621px (it is the first tab of
+   the strip below; the landing header keeps it at every width). The repo link is a
+   footer link on every page, so no width loses the route to it. */
 
 @media (max-width:620px){/* ⚠️ .bar.bar, not .bar — and the doubled class is load-bearing.
      The base .bar rule lives in the SHELLS, which are concatenated after
@@ -416,40 +456,20 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
      19px (itself plus its gap) on a surface where it can never be revealed.
      That 19px is exactly what "Dior's Buil..." was short of. */
   
-  .mark .go{display:none}/* ⚠️ ONE rule, BOTH axes, for the icon-only control. The desktop rule gives
-     .ins height:37px while this one set only width:32px, so on a phone the
-     Discord button rendered as a 32x37 egg — a specificity trap, not a drawing
-     mistake: the height came from a rule nobody was looking at.
-     .ins keeps its LABEL here. A bare circular Discord glyph reads as a sign-in
-     or an avatar, which is the opposite of what it does — it is an outbound
-     install link, and the word is what says so. The repo button stays a circle
-     because it is secondary and its mark is self-explanatory. */
+  .mark .go{display:none}/* .ins keeps its LABEL on a phone. A bare circular Discord glyph reads as a
+     sign-in or an avatar, which is the opposite of what it does: it is an outbound
+     install link, and the word is what says so. It is 38px tall here and 34px on
+     a desktop, because on a phone it is a thumb target. */
   
-  .ghb{width:38px;height:38px;flex:0 0 38px;padding:0;justify-content:center}/* ⚠️ THE MARK WAS SITTING 3.2px OUTSIDE ITS OWN BUTTON HERE, and the cause is
-     that opacity:0 hides INK and KEEPS THE BOX. Measured: the collapsed control
-     is 38px with a 36px content box, but its flex line still carries the 30px
-     icon plate PLUS the label's 14.4px of padding-right = 44.4px. With
-     justify-content:center the 8.4px of overflow splits evenly, so the GitHub
-     glyph is pushed 3.2px past the left edge with 11.2px of slack on the right,
-     and the button's own overflow:hidden clips it. The <b> being opacity:0 is
-     exactly what made this invisible to a style read — the label looked absent
-     and was still occupying the line.
-     Taking the label OUT of the line is the fix rather than trimming its
-     padding, because at this width it can never be revealed: .ghb only shows it
-     by growing to 108px on hover, and there is no hover here. It also costs no
-     accessibility — the label is not the accessible name. With .ghb-t removed
-     from the tree the name falls back to the link's own title ("View the source
-     on GitHub"), which is more informative than the word "Source" it replaces. */
+  .bar .cmdb,.bar .cmdr{display:none}/* (38 − 22) / 2 − 1 = 7px on the left: see the concentric-gap note on .ins above. */
   
-  .ghb .ghb-t{display:none}/* And the capsule must not open to 108px around a label that is not there.
-     This matters on a narrow DESKTOP window, which is the one place a fine
-     pointer and this breakpoint coexist. */.ghb:focus-visible{width:38px}@media (hover:hover) and (pointer:fine){
-  
-  .ghb:hover{width:38px}}
-  .ins{height:38px;width:auto;flex:0 0 auto;padding:0 .82rem;gap:.4rem;
+  .ins{height:38px;width:auto;flex:0 0 auto;padding:0 .82rem 0 7px;gap:.4rem;
     justify-content:center}
   .ins-t{display:inline-flex;font-size:.6rem;letter-spacing:.11em}
-  .ins-ar{display:none}
+  .ins-ar{display:none}/* Commands follows Install on a phone too: its height (38px), its horizontal padding and its label tracking (.11em on the label, as .ins-t above). ⚠️ IT COPIES WHAT INSTALL RENDERS, NOT WHAT THE RULE ABOVE SAYS: .ins-t's font-size:.6rem is beaten by the base rule for .ins .ins-t, which sets .7rem (higher specificity), so Install's label is still .7rem on a phone and only its .11em tracking lands. The first fix followed the rule and set Commands to .6rem, which left it visibly smaller than Install (measured 9.6px against 11.2px). Making Install .6rem would shrink a live button and is its own change. The right padding gives up .077rem, the .11em tracking on a .7rem label, so the word sits centred. */
+  
+  .cmdb{height:38px;padding-inline:.82rem calc(.82rem - .077rem)}
+  .cmdb-t{letter-spacing:.11em}
 }/* ── THE SIGNATURE: the theme switch as a small sky ───────────────────
    This is the one place the design spends its boldness, so it is the one place
    with real depth. It is a sky you carry the sun and moon across:
@@ -461,18 +481,23 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    NOT the page accent — a violet moon read as an unidentifiable blob. Only the
    track border and focus ring follow the accent.
    Hovering PEEKS: the knob leans toward the far side and the destination's
-   furniture fades up, so the control shows you what pressing it will do. *//* Geometry, stated once because it was wrong before: the track is 60x32 with a
-   1px border, so the CONTENT box is 58x30. The knob is 26px inset 2px, which
-   leaves exactly 2px on every side and gives a travel of 58-2-26-2 = 28px. The
-   previous knob was inset 3px inside a 28px content box, so it had 3px above and
-   1px below — that is the "moon/sun aren't properly aligned" bug. Any change to
-   the track size has to re-derive the travel or the knob stops at the wrong end. */
+   furniture fades up, so the control shows you what pressing it will do. *//* Geometry, stated once because it was wrong before: the track is 62x34 with a
+   1px border, so the CONTENT box is 60x32. The knob is 28px inset 2px, which
+   leaves exactly 2px on every side and gives a travel of 60-2-28-2 = 28px. (It
+   was 60x32 with a 26px knob, which also travelled 28px; Harkirat asked for 34px
+   on 2026-10-20 10:00 EDT and the track gained 2px of width so the travel and the peek
+   offsets below stayed as they were.) The previous knob was inset 3px inside a
+   28px content box, so it had 3px above and 1px below — that is the "moon/sun
+   aren't properly aligned" bug. Any change to the track size has to re-derive
+   the travel or the knob stops at the wrong end. */
 
 
 
 .thm{-webkit-appearance:none;appearance:none;background:none;border:0;padding:0;
-  cursor:pointer;color:inherit;line-height:0;flex:0 0 auto;border-radius:999px}
-.thm-tr{display:block;position:relative;width:60px;height:32px;border-radius:999px;
+  cursor:pointer;color:inherit;line-height:0;flex:0 0 auto;border-radius:999px}/* The bar's spacing, as Harkirat set it (2026-10-20 10:45 EDT): 10px between every control and between the switcher's rails, and 14px from Install to the theme switch, so the switch reads as the bar's own corner rather than a fourth button. The 10px is the nav's gap and .seg-gap; the extra 4px is this margin. Desktop only: the phone bar keeps its own .5rem gap. */
+
+@media (min-width:621px){ .bar nav .thm{margin-left:4px} }
+.thm-tr{display:block;position:relative;width:62px;height:34px;border-radius:999px;
   border:1px solid var(--rule2);overflow:hidden;
   background:linear-gradient(168deg,#171430,#2B2446 62%,#3A2F52);
   transition:background .5s cubic-bezier(.4,0,.3,1),border-color .3s,box-shadow .3s}.thm:focus-visible .thm-tr{border-color:var(--accent);
@@ -512,7 +537,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 
 
 
-.thm-kn{position:absolute;top:2px;left:2px;width:26px;height:26px;border-radius:50%;
+.thm-kn{position:absolute;top:2px;left:2px;width:28px;height:28px;border-radius:50%;
   display:grid;place-items:center;
   background:radial-gradient(100% 100% at 50% 50%,rgba(255,255,255,.15),rgba(255,255,255,.04));
   border:1px solid rgba(255,255,255,.22);
@@ -520,7 +545,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   transform:translateX(0);
   transition:transform .52s cubic-bezier(.5,-0.24,.28,1.32),
     background .5s,border-color .5s,box-shadow .5s}
-.thm-kn svg{width:17px;height:17px;overflow:visible}/* ⚠️ THE BODY IS LIT, NOT FLAT, and it is filled by a GRADIENT REFERENCE. An SVG
+.thm-kn svg{width:18px;height:18px;overflow:visible}/* ⚠️ THE BODY IS LIT, NOT FLAT, and it is filled by a GRADIENT REFERENCE. An SVG
    shape whose fill rule goes missing paints BLACK with no warning — that is
    worth knowing before anyone "tidies" this: losing this one line produces a
    black crescent and, in light mode, a black sun ringed by orange rays.
@@ -774,15 +799,25 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   letter-spacing:.05em;color:var(--ink3);max-width:52ch}/* The link row: mono, wide-tracked, dot-separated, with the accent drawn under
    the one you are pointing at. */
 
-.endnav{grid-column:2;grid-row:1/span 2;align-self:start;
-  display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;
-  gap:.15rem .75rem;font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;
-  text-transform:uppercase}
+.endnav{grid-column:1;grid-row:2;align-self:start;
+  display:flex;flex-direction:column;align-items:flex-start;gap:.35rem;
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;
+  text-transform:uppercase}/* Two rows (documents, then Commands · GitHub · Install), each wrapping on its own so a narrow footer folds the long row without dragging the short one with it. */
+
+.en-row{display:flex;flex-wrap:wrap;justify-content:flex-start;align-items:center;
+  gap:.15rem .75rem}
 .endnav a{color:var(--ink2);text-decoration:none;padding:.3rem .1rem;
   border-bottom:1px solid transparent;
   transition:color .22s,border-color .22s}@media (hover:hover) and (pointer:fine){
-.endnav a:hover{color:var(--ink);border-bottom-color:var(--accent)}}
-.endnav span{color:var(--ink3);opacity:.45}/* ⚠️ The sign-off is FIRST in the footer's DOM and LAST on screen, and the split
+.endnav a:hover{color:var(--ink);border-bottom-color:var(--accent)}}/* The page you are on keeps its link, in full ink, so the row reads the same on every page. */
+
+.endnav a[aria-current]{color:var(--ink)}
+.endnav span{color:var(--ink3);opacity:.45}/* ⚠️ A DOT THAT ENDS A WRAPPED ROW IS A DEFECT, AND NO SELECTOR CAN TELL A ROW'S LAST ITEM FROM ITS LAST *ON THE LINE*. Seen on the phone and at 800px on 2026-10-20 10:20 EDT: "TERMS · PRIVACY · LICENSE ·" with the dot dangling at the end of the line it broke on. Below 1000px a row can fold (the Commands page's, whose footer sits beside a wide column, still folded at 960px), so the dots go and the gap widens to carry the separation alone; above it every row fits on one line (measured 1001 to 1440px, every page) and the dots stay. */
+
+@media (max-width:1000px){
+  .endnav span{display:none}
+  .en-row{column-gap:1.15rem}
+}/* ⚠️ The sign-off is FIRST in the footer's DOM and LAST on screen, and the split
    is deliberate. On the warm pages this line is lifted straight out of the
    source, where it runs on from the last paragraph ("Thanks for being here —
    genuinely. / ♡ Made with love by dior"). If the five nav labels sit between
@@ -793,10 +828,11 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    which put the two mono lines on opposite corners with nothing tying them
    together; both belong to the site rather than to the navigation. On the four
    legal pages the notice is gone entirely, so grid row 1 collapses to nothing and
-   this is simply the bottom-left line. */
+   this is simply the bottom-left line. *//* SWAPPED 2026-10-20 15:06 EDT (Harkirat: "swap the made with love section and the footer links sections: so the links are on the left side, the made with love and rights reserved on right side"). The links now sit in column one under the notice, and the sign-off takes the right column the links used to hold, right-aligned. */
 
 
-.sig{grid-column:1;grid-row:2;text-align:left;justify-self:start;margin:.85rem 0 0;
+
+.sig{grid-column:2;grid-row:1/span 2;text-align:right;justify-self:end;margin:0;
   font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink3)}/* Plain text, not a repeat of the logo — Harkirat's call: the footer gets a
    copyright line, not a second mark. Inherits .sig's own colour/size and just
    dims further, so it reads as one quiet line rather than a competing element.
@@ -810,7 +846,10 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    inherit that pill's border/background by accident. Never reuse .cpy for
    anything that is not that button. */
 
-.sig-cr{display:block;margin-top:.4rem;opacity:.6}/* ⚠️ WITH NO NOTICE ABOVE IT, THE SIGN-OFF MOVES UP A ROW. On the four legal pages
+.sig-cr{display:block;margin-top:.4rem;opacity:.6}/* Right-aligned, the copyright line's full stop leaves its ink about 2px short of the sign-off's r above it; see the landing's .sig.lsig note. *//* Scoped to .nodisc: the record pages' footer runs edge to edge of the viewport, where the 2px push made the page scroll sideways. */
+
+
+@media (min-width:761px){ .foot.nodisc .sig .sig-cr{margin-inline-end:-.18em} }/* ⚠️ WITH NO NOTICE ABOVE IT, THE SIGN-OFF MOVES UP A ROW. On the four legal pages
    the notice is part of the document, so the footer's row 1 is empty — leaving the
    sign-off in row 2 dropped it a whole line below the link row it should sit level
    with, which is what looked unaligned. Row 1 puts the two on one baseline, and the
@@ -849,8 +888,9 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   .foot{display:flex;flex-direction:column;align-items:flex-start;gap:1.3rem;
     padding-bottom:.7rem}
   .disc{order:1;max-width:none}
-  .endnav{order:2;justify-content:flex-start}
-  .sig{order:3;margin:0}
+  .endnav{order:2;align-items:flex-start}
+  .en-row{justify-content:flex-start}
+  .sig{order:3;margin:0;text-align:left}
 }
 .sig b{color:var(--ink2);font-weight:600}/* The name itself carries the page's own accent, not the neutral ink-family
    colour every other bold word in the sig line gets — Harkirat's call
@@ -1130,14 +1170,16 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
   .tipx{transition:opacity .12s ease;transform:translate(-50%,0)}
   .tipx.on,.tipx.under,.tipx.under.on{transform:translate(-50%,0)}
 }
-@media print{.tipx{display:none!important}}
+@media print{.tipx{display:none!important}}/* ⚠️ THE BAR'S HEIGHT IS ONE NUMBER, --bar-h, AND EVERY OFFSET UNDER IT READS IT. It was a literal 54px written into the bar, the page padding, both mobile-nav sticky tops, the sticky section headings, the rail and the anchor margins, so a bar one nudge taller (Harkirat, 2026-10-20 10:00 EDT: 58px) would have left a page's first heading sitting 4px behind it in every place the number was forgotten. Pages that carry no bar (the landing) never use it. */
 
 
 
-.bar{position:fixed;inset:0 0 auto;height:54px;z-index:60;display:flex;align-items:center;
+
+:root{--bar-h:58px}
+.bar{position:fixed;inset:0 0 auto;height:var(--bar-h);z-index:60;display:flex;align-items:center;
   gap:1.5rem;padding:0 clamp(1rem,3vw,2rem);background:color-mix(in srgb,var(--desk) 88%,transparent);
   backdrop-filter:blur(14px) saturate(1.3);border-bottom:1px solid var(--rule)}
-.bar nav{margin-left:auto;display:flex;align-items:center;gap:.6rem}
+.bar nav{margin-left:auto;display:flex;align-items:center;gap:10px}
 
 #prog{position:fixed;top:53px;left:0;height:2px;width:0;z-index:61;background:var(--sig)}/* ── segmented page switcher ──────────────────────────────────────────
    Was three bordered boxes, which read as inert. Now one segmented control
@@ -1417,35 +1459,44 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 
 .seg[data-at="-1"] .seg-ink{opacity:0;transition:opacity .3s}
 .seg[data-at="-1"].hot .seg-ink{opacity:1}
-.seg-gap{width:.45rem;flex:0 0 auto}/* THE BAR COMES IN TWO SIZES NOW, and each has its own MEASURED staging. Six tabs
-   on every page; nine on the three inside /changelog/, which keep their own group
-   so a reader already in that section is not stranded there. data-fit on .navwrap
-   selects the regime — see navSwitcher(), which refuses to build an unmeasured one.
+.seg-gap{width:10px;flex:0 0 auto}/* THE BAR COMES IN TWO SIZES, and each has its own MEASURED staging. Six tabs on
+   every page; nine on the three inside /changelog/, which keep their own group so a
+   reader already in that section is not stranded there. The Commands group is not in
+   the switcher (it is a button beside Install, see commandsBtn), so these counts are
+   one lower than the ones this replaced (seven and ten). data-fit on .navwrap selects
+   the regime — see navSwitcher(), which refuses to build an unmeasured one.
 
-   Measured 2026-08-01 21:40 EDT, in a browser, on the widest page of each set. The method is
-   the only one that works: neutralise the media queries, read the nav's real width
-   at each tab size, and add the bar's own chrome (32+32 padding + a 24 gap + the
-   108px wordmark). Reading the CSS cannot find these numbers and neither can
-   arithmetic on the old ones — the tabs went to 600 weight and 1.02rem of padding
-   in this same pass, which moved every one of them.
+   Re-measured 2026-10-20 11:07 EDT (first measured 10:14 EDT), in a browser, on the built pages. The method: load
+   the page at a 1700px viewport so the media queries sit on the FULL tier, constrain
+   the bar's own width and step it down one pixel at a time until bar.scrollWidth
+   exceeds bar.clientWidth; for the tightened and chips tiers the same rules are forced
+   as plain CSS first. Reading the CSS cannot find these numbers, and neither can
+   arithmetic on the old ones: the bar gained a Commands control (a filled rail, wider
+   than the 32px GitHub capsule it replaced, and tightening with the tabs) and lost a
+   tab, the gaps between controls and rails became 10px with 14px before the theme
+   switch, and the controls and the padding moved too.
 
        tabs   full-size needs   tightened needs   chips-only needs
-        6          1049              936                 -
-        9          1452             1277                919
+        6          1007               853                 -
+        9          1431              1203                833
 
-   ⚠️ A TIER BOUNDARY IS ONLY CORRECT IF BOTH SIDES OF IT FIT. That is what caught
-   the previous staging's first attempt (1240/1100), which was wrong at both ends
-   and shipped a nav running off the edge at two common laptop widths. Every
-   boundary below is checked one pixel above as well as one below:
-     · six tabs, 1060: full needs 1049 above it, tightened needs 936 below. Six
-       tightened tabs still fit at 981, so this set needs NO chip tier at all —
-       tightening carries it the whole way to the mobile handoff.
-     · nine tabs, 1465: full needs 1452 above, tightened 1277 below.
-     · nine tabs, 1300: tightened needs 1277 above, chips-only 919 below.
+   The nine-tab numbers are measured WITH the chronicle webfonts, which is the wider
+   case: with the webfonts blocked (the fallback metrics the page first lays out in,
+   because they load with font-display:swap) the same tiers need 1339 / 1116 / 777. The
+   six-tab numbers are identical either way, since the legal pages' tabs set in a
+   system stack. The boundaries below are set against the wider figures.
 
-   The margins are deliberate rather than tight: the chronicle pages' webfonts load
-   with font-display:swap, so the bar is first laid out with FALLBACK metrics, and a
-   boundary with no spare room overflows during the swap on every cold load.
+   ⚠️ A TIER BOUNDARY IS ONLY CORRECT IF BOTH SIDES OF IT FIT. That is what caught an
+   earlier staging (1240/1100), which was wrong at both ends and shipped a nav running
+   off the edge at two common laptop widths. Every boundary below is checked one pixel
+   above as well as one below, in the real viewport and not only in the constrained bar:
+     · six tabs, 1030: full needs 1007 above it (23px spare), tightened needs 853 below
+       it. Six tightened tabs still fit at 981, so this set needs NO chip tier at all.
+     · nine tabs, 1520: full needs 1431 above it (89px spare), tightened needs 1203
+       below it.
+     · nine tabs, 1310: tightened needs 1203 above it (107px spare), chips-only needs
+       833 below it, well inside the 981 desktop floor.
+   The spare room is deliberate rather than tight, for the font-swap reason above.
 
    ⚠️ Why a chip rather than hiding the group. The two-group version hid the whole
    seg, which cost one group in a narrow band and was recoverable from the footer.
@@ -1465,48 +1516,55 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
   text-transform:uppercase;color:var(--ink3);text-decoration:none;
   padding:.42rem .55rem;border-radius:7px;white-space:nowrap}@media (hover:hover) and (pointer:fine){
 .segchip:hover{color:var(--ink);background:color-mix(in srgb,var(--ink) 7%,transparent)}}
-.segchip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── seven tabs: tighten below 1140 ──
-   MEASURED 2026-08-17 20:38 EDT against the real built page, in an iframe stepped
-   across the desktop range so both sides of the boundary are read from the same
-   engine that ships it. Findings: the tab font steps 10.56px -> 9.92px exactly
-   between 1140 and 1139, so the boundary applies where it says it does; and
-   bar.scrollWidth - bar.clientWidth is 0 at every width from 1600 down to 981,
-   the desktop floor. ⚠️ THE MEASURE WAS PROVEN ABLE TO FIRE before being believed
-   -- forcing the switcher visible at 500px reports 108px of overflow. A gate that
-   never fails is not a gate, and "no overflow anywhere" is exactly the result a
-   broken probe also returns.
-   The six- and nine-tab tiers these replaced are GONE rather than kept: with the
-   Commands group in the bar, no page produces those counts any more, and a
-   staging nothing selects is a number that rots unread. */
+.segchip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── six tabs: tighten below 1030 ──
+   MEASURED 2026-10-20 11:07 EDT, see the table above. Verified in the real viewport
+   afterwards, stepped across the desktop range on the built pages: the tab font
+   changes between 1030 and 1029 and nowhere else, and bar.scrollWidth minus
+   bar.clientWidth is 0 at every width from 1700 down to 981. ⚠️ THE MEASURE WAS
+   PROVEN ABLE TO FIRE before being believed — the same probe reports overflow the
+   moment the bar is narrower than a tier needs, and forcing the switcher visible at
+   500px reports a large one. "No overflow anywhere" is exactly the result a broken
+   probe also returns. */
 
 
-@media (max-width:1139px){
-  .navwrap[data-fit="7"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
-  .navwrap[data-fit="7"] .seg{--gap:.6rem}
-}/* ── ten tabs (inside /changelog/, where the record group rejoins) ──
-   MEASURED the same way and at the same time. The font steps at 1545 -> 1544 and
-   the three group chips replace the tabs at 1380 -> 1379, both exactly where
-   declared; zero overflow from 1600 down to 981. */
+@media (max-width:1029px){
+  .navwrap[data-fit="6"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
+  .navwrap[data-fit="6"] .seg{--gap:.6rem}
+  .navwrap[data-fit="6"] ~ .cmdr .cmdr-t{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
+}/* ── nine tabs (inside /changelog/, where the record group rejoins) ──
+   Tighten below 1520, and swap the groups you are not in for chips below 1310. */
 
 
-@media (max-width:1544px){
-  .navwrap[data-fit="10"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
-  .navwrap[data-fit="10"] .seg{--gap:.6rem}
+@media (max-width:1519px){
+  .navwrap[data-fit="9"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
+  .navwrap[data-fit="9"] .seg{--gap:.6rem}
+  .navwrap[data-fit="9"] ~ .cmdr .cmdr-t{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
 }
-@media (min-width:981px) and (max-width:1379px){/* A group you are not in shows its chip instead of its tabs. The indicator goes
+@media (min-width:981px) and (max-width:1309px){/* A group you are not in shows its chip instead of its tabs. The indicator goes
      with them — .seg-ink measures real tab boxes, and there are none to measure. */
   
-  .navwrap[data-fit="10"] .seg[data-at="-1"] .tab{display:none}
-  .navwrap[data-fit="10"] .seg[data-at="-1"] .seg-ink{display:none}
-  .navwrap[data-fit="10"] .seg[data-at="-1"] .segchip{display:inline-block}
-  .navwrap[data-fit="10"] .seg[data-at="-1"]{padding:0}
+  .navwrap[data-fit="9"] .seg[data-at="-1"] .tab{display:none}
+  .navwrap[data-fit="9"] .seg[data-at="-1"] .seg-ink{display:none}
+  .navwrap[data-fit="9"] .seg[data-at="-1"] .segchip{display:inline-block}
+  .navwrap[data-fit="9"] .seg[data-at="-1"]{padding:0}
 }/* Desktop shows no mobile menu. */
 
 
-.mnav{display:none}/* ── mobile navigation: a swipeable strip ─────────────────────────────
-   Every page in one scrollable row, nothing to open. The three previous
-   attempts (two-tab rail, bottom sheet, disclosure) all put the answer to
-   "where am I and what else is there" behind a tap; this states it.
+.mnav{display:none}/* ── the phone menu (barMenu) ─────────────────────────────────────────
+   On a desktop the panel and its theme row dissolve into the bar (display:contents)
+   so the theme switch sits where it always has; the button, the page list, the label
+   and the scrim are not drawn. */
+
+
+.hmb{display:none}
+.hmb-p,.hmb-th{display:contents}
+.hmb-list,.hmb-thl,.hmb-s{display:none}/* ── mobile navigation ─────────────────────────────────────────────────
+   ⚠️ THE SWIPEABLE PAGE STRIP THAT LIVED HERE IS RETIRED (2026-10-20 17:13 EDT).
+   Harkirat: sideways scrolling was "kind of very like odd to maneuver", and its band
+   chewed into the reading space. It stated "where am I" without a tap, which is why
+   it replaced a two-tab rail, a bottom sheet and a disclosure; the menu answers that
+   with the current page marked inside it, and the page title is the first thing on
+   the page anyway. Its metaball indicator went with it.
 
    No hover rules live in here AT ALL. On touch a :hover latches until you tap
    something else, which is what made every earlier version feel stuck. Touch
@@ -1523,205 +1581,73 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
     overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .mk-ctx i{flex:0 0 auto;width:5px;height:5px;border-radius:50%;
     background:var(--accent)}
-  .mnav{display:block;position:sticky;top:54px;z-index:40}/* ⚠️ THE BAR AND THE SCROLLER ARE TWO ELEMENTS, AND THEY HAVE TO STAY APART.
-     The indicator below is a metaball layer: it paints an opaque black bed and
-     erases the bed with mix-blend-mode. A blend needs two things a scroller
-     cannot give it — an OPAQUE backdrop to blend against, and no scroll
-     container between it and that backdrop. Put the layer inside the strip and
-     the blend is dropped and you get a black rectangle instead; that was
-     measured in the prototype before it was measured here.
-     The background is OPAQUE on purpose. It used to be color-mix(paper 96%)
-     with a backdrop-filter, and the blend formula weights the source by
-     (1 - backdrop alpha), so a 4%-transparent backdrop is a 4% black wash
-     across the whole bar. Deterministic beats pretty here.
-     overflow:hidden clips the swarm to the bar, which is also deliberate — see
-     the y-squash note on the particles. */
+  .mnav{display:block;position:sticky;top:var(--bar-h,58px);z-index:40}/* The menu button takes the theme switch's place and the theme switch's height
+     on a phone bar (38px, like Install there), as a hairline capsule. */
 
   
-  .mbar{position:relative;isolation:isolate;overflow:hidden;display:flex;
-    background:var(--paper);
-    border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}/* ⚠️ NO -webkit-overflow-scrolling HERE, AND IT MUST NOT COME BACK. It has been
-     a no-op for momentum since iOS 13 made smooth scrolling the default; the only
-     effect it still has is forcing this scroller onto its own composited layer,
-     which is the other half of the blend failure described above. Removing an
-     obsolete prefix is the fix, not a cleanup that happens to sit nearby. */
+  .hmb{display:inline-grid;place-items:center;flex:0 0 auto;width:48px;height:38px;padding:0;
+    -webkit-appearance:none;appearance:none;cursor:pointer;color:var(--ink);
+    border-radius:999px;border:1px solid var(--rule2);background:none;
+    transition:border-color .2s,background .2s}
+  .hmb:active{background:color-mix(in srgb,var(--ink) 10%,transparent)}
+  .hmb:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .hmb[aria-expanded=true]{border-color:var(--accent)}/* Between 621 and 980 the bar's controls are 34px (Install shrinks to 38px only below 621), so the button matches them. */
   
-  .mstrip{position:relative;z-index:1;display:flex;align-items:stretch;gap:.3rem;
-    flex:1 1 auto;min-width:0;
-    overflow-x:auto;overscroll-behavior-x:contain;
-    scroll-snap-type:x proximity;
-    padding:.5rem .75rem;
-    scrollbar-width:none}
-  .mstrip::-webkit-scrollbar{display:none}
-
-  .mtab{position:relative;z-index:1;flex:0 0 auto;scroll-snap-align:center;
-    display:flex;align-items:center;min-height:44px;padding:0 .8rem;
-    border-radius:999px;text-decoration:none;
-    font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;
-    text-transform:uppercase;color:var(--ink2);
-    transition:color .28s ease}/* Same inversion the desktop pill uses, and measured the same way: a solid
-     accent is far too light to carry accent-coloured text, and near-black on
-     the six accents bottoms out at 5.07 which clears AA. */
-  
-  .mtab.on{color:#120E1C;font-weight:700}/* The crisp resting pill. The goo layer draws a pill of its own — that is what
-     the particles fuse into — but thresholding a blurred stadium erodes its caps
-     a little, and this is the shape you are left looking at for the rest of the
-     page. Same box, same colour, painted unfiltered on top, so the fluid reads
-     as assembling into it rather than as a second object. *//* inset 4px, not 0: the tap target stays the full 44px the guideline asks
-     for, but the pill you actually see is 36px. Filling the target edge to edge
-     made the indicator read as a block rather than a marker. */
-  
-  
-  .mtab::after{content:"";position:absolute;inset:4px 0;z-index:-1;border-radius:999px;
-    background:var(--row);scale:0;opacity:0}
-  .mtab.on::after{animation:mgPill 2s var(--spring) .2s both}
-  .mtab:active{background:color-mix(in srgb,var(--ink) 10%,transparent)}
-  .ms-sep{flex:0 0 1px;align-self:center;height:20px;background:var(--rule2);
-    margin:0 .3rem}/* ── the indicator: a metaball layer ──────────────────────────────────
-     Two elements and two SHORT filter chains, and they cannot be merged. .mgo
-     blurs a field of white discs and crushes it to a hard two-tone image;
-     .mgw recolours the finished result. Written as one seven-function chain on
-     one element, iOS applied the blur and the contrast and silently DROPPED the
-     four colour functions after them — the fluid came out white while the tab's
-     own pill, which is never filtered, stayed accent-coloured. That is what the
-     split buys.
-     There is no SVG filter here, also deliberately. An SVG filter's region is a
-     percentage of the element's box; the swarm spawns at radius 90 around a box
-     about 90x44, and everything outside the region paints UNFILTERED — which is
-     exactly what made the particles read as hard circles instead of liquid.
-     Chrome expands the region to cover overflow, Safari honours what you wrote.
-     A CSS chain has no region at all. */
+  @media (min-width:621px){ .hmb{height:34px;width:44px} }
+  .hmb-i{position:relative;display:block;width:18px;height:12px}
+  .hmb-i i{position:absolute;left:0;right:0;height:2px;border-radius:2px;background:currentColor;
+    transition:transform .26s cubic-bezier(.2,.8,.2,1),opacity .18s}
+  .hmb-i i:nth-child(1){top:0}
+  .hmb-i i:nth-child(2){top:5px}
+  .hmb-i i:nth-child(3){top:10px}
+  .hmb[aria-expanded=true] .hmb-i i:nth-child(1){transform:translateY(5px) rotate(45deg)}
+  .hmb[aria-expanded=true] .hmb-i i:nth-child(2){opacity:0}
+  .hmb[aria-expanded=true] .hmb-i i:nth-child(3){transform:translateY(-5px) rotate(-45deg)}/* The panel drops from under the bar and scrolls on its own if a short phone
+     cannot hold it. It is a box only here; see the desktop rules above. *//* It opens and closes on a curtain rather than appearing (Harkirat, 2026-10-20 17:40 EDT: "more of a smoother animation instead of it just being like instant open, instant close"): the panel is always laid out and a clip-path wipes it down from under the bar while the rows settle in a beat behind it, and the scrim fades. visibility rides the same timing so a closed menu is out of the tab order and the accessibility tree, which display:none used to do. The bottom inset goes NEGATIVE when open so the drop shadow is not clipped. */
 
   
-  .mgw{position:absolute;left:0;top:0;width:0;height:0;z-index:0;
-    pointer-events:none;mix-blend-mode:lighten}/* ⚠️ THE LIQUID LAYER IS RETIRED ONCE ITS BIRTH IS OVER, AND THAT IS THE FIX
-     FOR THE SCROLL ARTIFACT — not a compositing hint, which was tried first and
-     did nothing. This layer exists to play ONE animation on arrival: particles
-     converge and fuse into a pill. What you look at for the rest of the page is
-     .mtab.on::after, a crisp unfiltered pill painted by the tab itself, and the
-     alpha crush ERODES the goo pill's caps, so the filtered shape sits strictly
-     inside the crisp one and removing it changes nothing you can see.
-     Leaving it alive meant a filtered, blended, per-frame-transformed layer lived
-     inside a position:sticky header for the life of the page. A blend needs its
-     backdrop rasterised in the same layer, and iOS re-layers exactly this kind of
-     element during a scroll gesture — at which point the bed has nothing to be
-     erased against and paints raw: a black rectangle in dark mode, and in light
-     mode the inverted white bed plus the accent plate, which is why it came out
-     yellow behind Contributors. A layer that is not on screen cannot be
-     mis-composited, so the artifact has no surface to appear on.
-     ⚠️ display:none, NOT opacity:0 AND NOT visibility:hidden. Both of those leave
-     the element in the layer tree, and iOS keeps compositing a mix-blend-mode
-     element that is merely invisible. This is a hardening, NOT the fix for the
-     light-mode artefact — that one was the filter chain and is fixed at source by
-     the --goo-bed/--goo-ink swap below. Keeping the two straight matters: while
-     the light chain was still wrong, the visibility version read as clean in dark
-     and broken in light, which is easy to misread as "hiding it works in one theme
-     and not the other" when the layer being hidden was never the problem.
-     No transition either: fading a blended layer means 240ms of it compositing at
-     partial opacity, which is the state being eliminated. The snap is invisible
-     regardless — .mtab.on::after is the same pill in the same place, unfiltered,
-     and the alpha crush erodes the goo pill strictly inside it. */
   
-  .mgw.spent{display:none}
-  .mgo{position:absolute;inset:0;filter:blur(7px) contrast(20) blur(0)}/* The bed. contrast() thresholds colour, not alpha, so the discs need
-     something opaque behind them or there is nothing to threshold. Black,
-     and large: the plate below has to sit entirely within the bed's OPAQUE
-     core, and blur(7px) softens the bed's own edge over about 21px. */
+  .hmb-p{display:block;position:fixed;left:0;right:0;top:var(--bar-h,58px);z-index:70;
+    max-height:calc(100dvh - var(--bar-h,58px));overflow-y:auto;overscroll-behavior:contain;
+    padding:.35rem .9rem 1.05rem;background:var(--paper);
+    border-bottom:1px solid var(--rule);box-shadow:0 22px 40px -22px rgba(0,0,0,.55);
+    visibility:hidden;clip-path:inset(0 0 100% 0);
+    transition:clip-path .3s cubic-bezier(.4,0,.2,1),visibility 0s .3s}
+  .hmb-p.open{visibility:visible;clip-path:inset(0 0 -48px 0);
+    transition:clip-path .42s cubic-bezier(.2,.8,.2,1),visibility 0s}
+  .hmb-list,.hmb-th{opacity:0;transform:translateY(-8px);transition:opacity .16s ease,transform .3s ease}
+  .hmb-p.open .hmb-list,.hmb-p.open .hmb-th{opacity:1;transform:none;
+    transition:opacity .3s ease .1s,transform .44s cubic-bezier(.2,.8,.2,1) .05s}/* ⚠️ A HEIGHT, NOT bottom:0. The bar's backdrop-filter makes IT the containing block
+     for these fixed elements, so bottom:0 meant the bar's own bottom edge and the scrim
+     came out 0px tall: taps outside the menu went straight through it. */
   
-  .mgo::before{content:"";position:absolute;inset:-110px;z-index:-2;background:var(--goo-bed)}
-  .mgo::after{content:"";position:absolute;inset:4px 0;z-index:-1;background:var(--goo-ink);
-    border-radius:100vw;scale:0;opacity:0}
-  .mgo.on::after{animation:mgPill 2s var(--spring) .2s both}
-  @keyframes mgPill{to{scale:1;opacity:1}}/* ⚠️ THE COLOUR IS A BLEND, NOT A FILTER — and that is the second attempt.
-     The first recoloured the crushed white image with a fitted
-     sepia/saturate/hue-rotate/brightness chain. Composed on paper it lands every
-     accent exactly; rendered, it does not, and the error is large enough to see
-     (a difference-blend test against the true accent glowed on four of the six).
-     Filter chains clamp somewhere the arithmetic does not model, so the whole
-     approach was fitting a curve to a function nobody has the real form of.
-     A blend needs no model. multiply(white, accent) IS accent and
-     multiply(black, accent) IS black, exactly, for every accent that will ever
-     exist — so a plain accent plate multiplied over the crushed image colours
-     the blobs and leaves the bed alone. .mgw carries mix-blend-mode, which makes
-     it a stacking context, which makes it an isolation group: the plate blends
-     with the goo INSIDE it and the finished group blends with the bar outside.
-     The one trap, and the reason an earlier attempt at this was abandoned: the
-     plate must stay inside the bed's opaque core. Blending against a
-     partly-transparent backdrop leaves the plate's own colour showing, which
-     reads as an accent-coloured square around the whole effect. -80 inside
-     -110 is well clear of the blurred edge. */
-
-  
-  .mtint{position:absolute;inset:-80px;z-index:1;background:var(--row);
-    mix-blend-mode:multiply;pointer-events:none}/* ⚠️ LIGHT MODE IS THE SAME TRICK READ UPSIDE DOWN, AND IT INVERTS THE SOURCE,
-     NEVER THE RESULT.
-     lighten erases the black bed only because the backdrop is darker than the
-     blobs. On near-white paper it would erase the BLOBS instead and the bar would
-     stay empty, so light needs the mirror image: a WHITE bed, which is the identity
-     for multiply, blobs in black, and the plate on screen — screen(white, accent)
-     is white and screen(black, accent) is accent, exactly as multiply's identities
-     run the other way.
-     ⛔ THE OBVIOUS WAY TO GET THERE IS invert(1) ON THE FILTER, AND IT MUST NOT
-     COME BACK. That is what shipped first, and on iOS it painted the ACCENT PLATE
-     inverted — a lime rectangle across the bar on the violet License page
-     (invert(#9B6BE3) is #64941C), yellow on citron Contributors. The plate is a
-     SIBLING of the filtered element, so a filter reaching it at all means the light
-     chain composites wrongly, not merely blends wrongly; the same file already
-     records iOS silently dropping colour functions after blur+contrast on this very
-     element. Three attempts to fix it downstream — removing the scroller's
-     compositing hint, promoting the bar, retiring the layer — each moved WHEN the
-     artefact appeared without removing it, and suppressing the effect outright
-     removed the animation Harkirat actually wanted.
-     Swapping the SOURCE colours needs no fourth filter function: the discs, the
-     bed and the pill plate come from --goo-ink and --goo-bed, which the theme
-     already flips. Both themes now run the identical three-function chain, so there
-     is no light-only filter left to render differently. */
-
-  
-  :root[data-theme=light] .mgw{mix-blend-mode:multiply}
-  :root[data-theme=light] .mtint{mix-blend-mode:screen}
-  @media (prefers-color-scheme:light){
-    :root:not([data-theme=dark]) .mgw{mix-blend-mode:multiply}
-    :root:not([data-theme=dark]) .mtint{mix-blend-mode:screen}
-  }/* Particle geometry is the reference implementation's, unchanged: fifteen
-     20px discs spawning on a radius of 90 and converging INWARD to 10, each
-     running 1200±300ms and started 350ms in so they are already mid-flight on
-     the first frame. Two nested elements because the travel and the swelling
-     need different timing functions and one element carries only one.
-     The single deviation is the y squash. .mbar has to clip (an unclipped bed
-     paints black wherever there is no opaque backdrop under it), and a circular
-     radius-90 swarm in a 60px bar would spend most of its flight outside the
-     clip. Squashing y keeps the whole swarm on screen; x is untouched, and x is
-     the axis the pill actually grows along. */
-
-  
-  .mpt{position:absolute;top:calc(50% - 8px);left:calc(50% - 8px);
-    display:block;width:20px;height:20px;border-radius:100%;opacity:0;
-    transform-origin:center;animation:mptFly var(--t) ease 1 -350ms}
-  .mpd{display:block;width:20px;height:20px;border-radius:100%;
-    background:var(--goo-ink);opacity:1;transform-origin:center;
-    animation:mptPop var(--t) ease 1 -350ms}
-  @keyframes mptFly{
-    0%{transform:rotate(0deg) translate(var(--sx),var(--sy));opacity:1;
-      animation-timing-function:cubic-bezier(.55,0,1,.45)}
-    70%{transform:rotate(calc(var(--rot) * .5)) translate(calc(var(--ex) * 1.2),calc(var(--ey) * 1.2));
-      opacity:1;animation-timing-function:ease}
-    85%{transform:rotate(calc(var(--rot) * .66)) translate(var(--ex),var(--ey));opacity:1}
-    100%{transform:rotate(calc(var(--rot) * 1.2)) translate(calc(var(--ex) * .5),calc(var(--ey) * .5));
-      opacity:1}
-  }
-  @keyframes mptPop{
-    0%{scale:0;opacity:0;animation-timing-function:cubic-bezier(.55,0,1,.45)}
-    25%{scale:calc(var(--sc) * .25)}
-    38%{opacity:1}
-    65%{scale:var(--sc);opacity:1;animation-timing-function:ease}
-    85%{scale:var(--sc);opacity:1}
-    100%{scale:0;opacity:0}
-  }
+  .hmb-s{display:block;position:fixed;left:0;right:0;top:var(--bar-h,58px);height:100dvh;z-index:69;
+    background:rgba(8,6,14,.42);opacity:0;visibility:hidden;transition:opacity .3s ease,visibility 0s .3s}
+  .hmb-s.open{opacity:1;visibility:visible;transition:opacity .3s ease,visibility 0s}
   @media (prefers-reduced-motion:reduce){
-    .mgo.on::after,.mtab.on::after{animation:none;scale:1;opacity:1}
-    .mpt{display:none}
-  }/* The section index is no longer in a menu with the pages — it is not the
+    .hmb-p,.hmb-p.open,.hmb-s,.hmb-s.open,.hmb-list,.hmb-th,.hmb-p.open .hmb-list,.hmb-p.open .hmb-th{transition:none}
+  }
+  .hmb-list{display:block}
+  .hmb-h{margin:.8rem 0 .35rem .15rem;font-family:var(--mono);font-size:.58rem;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)}/* Gaps wide enough that each row reads as its own button, not a cell in one grid (Harkirat, 2026-10-20 18:36 EDT). */
+  
+  .hmb-g{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+  .hmb-g:has(> :only-child){grid-template-columns:1fr}/* Each page's colour is its OUTLINE now, not a dot (Harkirat, 2026-10-20 17:40 EDT: "remove the dots... maybe like displaying just the outline color"): a muted ring in its own hue at rest, and the page you are on takes the full colour and a wash. No hover rules: on touch a hover latches, which is what made earlier phone menus feel stuck. *//* The label is set a clear step above the .58rem group label and heavier, so the two stop blending ("they kind of feel small and tiny... they blend in with their like eyebrow label"). */
+  
+  
+  .hmb-a{display:flex;align-items:center;gap:.6rem;min-height:50px;padding:0 .95rem;
+    border-radius:13px;border:2px solid color-mix(in srgb,var(--row) 48%,var(--rule));text-decoration:none;
+    font-family:var(--mono);font-size:.78rem;font-weight:650;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--ink)}
+  .hmb-a[aria-current]{color:var(--ink);font-weight:800;border-color:var(--row);
+    background:color-mix(in srgb,var(--row) 13%,transparent)}
+  .hmb-a:active{background:color-mix(in srgb,var(--ink) 10%,transparent)}
+  .hmb-a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* The theme row sits FIRST and tight, so the page buttons land lower in the panel, nearer the thumb (Harkirat, same message). */
+  
+  .hmb-th{display:flex;align-items:center;justify-content:space-between;gap:1rem;
+    margin:.15rem 0 0;padding:.35rem .15rem .55rem;border-bottom:1px solid var(--rule)}
+  .hmb-thl{display:block;font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--ink2)}/* The section index is no longer in a menu with the pages — it is not the
      same question. It sits with the document it indexes, closed by default. */
 
   
@@ -1855,7 +1781,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
 
 
 .rail{position:sticky;top:74px;max-height:calc(100vh - 96px);overflow:auto;
-  padding:calc(54px + clamp(2rem,6vh,3.4rem)) .4rem 2rem 0}
+  padding:calc(var(--bar-h,58px) + clamp(2rem,6vh,3.4rem)) .4rem 2rem 0}
 .rail .lab{display:block;font-family:var(--mono);font-size:.52rem;letter-spacing:.2em;
   text-transform:uppercase;color:var(--ink3);margin:0 0 .8rem}
 .slot{position:relative;display:flex;gap:.5rem;align-items:baseline;padding:.26rem 0 .26rem 1.1rem;
@@ -1895,7 +1821,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
 }
 
 
-.pn-wrap{max-width:1100px;margin:0 auto;padding:calc(54px + clamp(2rem,7vh,4rem)) clamp(1rem,4vw,2rem) 5rem}
+.pn-wrap{max-width:1100px;margin:0 auto;padding:calc(var(--bar-h,58px) + clamp(2rem,7vh,4rem)) clamp(1rem,4vw,2rem) 5rem}
 .pn-mast{margin:0 0 2.6rem}
 .pn-op{display:flex;align-items:center;gap:.5rem;font-family:var(--mono);font-size:.58rem;
   letter-spacing:.22em;color:var(--sig);margin:0 0 .9rem}
@@ -2016,11 +1942,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
     <span class="go" aria-hidden="true">&#8250;</span>
   </a>
   <nav>
-    <div class="navwrap" data-fit="10"><div class="seg" data-at="-1" data-label="Using it">
-      <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
-      <a class="segchip" href="../commands.html">Using it</a>
-      <a class="tab" href="../commands.html" data-accent="#58D05A">Commands</a>
-    </div><span class="seg-gap" aria-hidden="true"></span><div class="seg" data-at="-1" data-label="Documents">
+    <div class="navwrap" data-fit="9"><div class="seg" data-at="-1" data-label="Documents">
       <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
       <a class="segchip" href="../terms.html">Documents</a>
       <a class="tab" href="../terms.html" data-accent="#F2994A">Terms</a><a class="tab" href="../privacy.html" data-accent="#17A2A2">Privacy</a><a class="tab" href="../license.html" data-accent="#9B6BE3">License</a><a class="tab" href="../notice.html" data-accent="#FF5264">Notice</a>
@@ -2033,11 +1955,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
       <a class="segchip" href="./">Releases</a>
       <a class="tab on" href="./" data-accent="#FF9E3D" aria-current="page">What&#39;s New</a><a class="tab" href="./detailed.html" data-accent="#7CE38B">Changelog</a><a class="tab" href="./devlog.html" data-accent="#8FB8FF">Devlog</a>
     </div></div>
-    <a class="ghb" href="https://github.com/HarkiratMangat/dioreo" target="_blank" rel="noopener noreferrer"
-  data-spot data-tip="Source on GitHub">
-  <span class="ghb-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-2.98-.88-2.98-2.9 0-.83.3-1.51.79-2.04-.08-.2-.35-1 .08-2.08 0 0 .66-.21 2.16.79a7.3 7.3 0 0 1 1.97-.27c.67 0 1.34.09 1.97.27 1.5-1.01 2.16-.79 2.16-.79.43 1.08.16 1.88.08 2.08.49.53.79 1.21.79 2.04 0 2.03-1.21 2.7-2.99 2.9.31.27.58.79.58 1.6 0 1.15-.01 2.09-.01 2.38 0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></span>
-  <span class="ghb-t"><b>Source</b></span>
-</a>
+    <a class="cmdr" href="../commands.html" data-tip="Every command, with examples"><span class="cmdr-t">Commands</span></a>
     <a class="ins" href="https://discord.com/oauth2/authorize?client_id=1491474871778021550"
   target="_blank" rel="noopener noreferrer" data-spot
   data-tip="Add to Discord"
@@ -2047,7 +1965,9 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
   <span class="ins-t">Install</span>
   <span class="ins-ar" aria-hidden="true"><svg viewBox="0 0 10 10"><path d="M2.5 7.5 7.5 2.5M4.1 2.5h3.4v3.4"/></svg></span>
 </a>
-    <button id="th" class="thm " role="switch"
+    <button type="button" class="hmb" id="hmb" aria-expanded="false" aria-controls="hmb-p" aria-label="Menu"><span class="hmb-i" aria-hidden="true"><i></i><i></i><i></i></span></button>
+    <div class="hmb-p" id="hmb-p">
+      <div class="hmb-th"><span class="hmb-thl">Light or dark</span><button id="th" class="thm " role="switch"
   aria-checked="false" aria-label="Switch between light and dark">
   <span class="thm-tr" aria-hidden="true">
     <span class="thm-sky">
@@ -2090,17 +2010,14 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
       </svg>
     </span>
   </span>
-</button>
+</button></div>
+      <div class="hmb-list" role="navigation" aria-label="Pages"><p class="hmb-h">Legal</p><div class="hmb-g"><a class="hmb-a" href="../terms.html" style="--row:#F2994A">Terms</a><a class="hmb-a" href="../privacy.html" style="--row:#17A2A2">Privacy</a><a class="hmb-a" href="../license.html" style="--row:#9B6BE3">License</a><a class="hmb-a" href="../notice.html" style="--row:#FF5264">Notice</a></div><p class="hmb-h">Community</p><div class="hmb-g"><a class="hmb-a" href="../contributing.html" style="--row:#8B9BFF">Contributing</a><a class="hmb-a" href="../contributors.html" style="--row:#F8FF4A">Contributors</a></div><p class="hmb-h">Help</p><div class="hmb-g"><a class="hmb-a" href="../commands.html" style="--row:#58D05A">Commands</a></div><p class="hmb-h">Releases</p><div class="hmb-g"><a class="hmb-a" href="./" aria-current="page" style="--row:#FF9E3D">What&#39;s New</a><a class="hmb-a" href="./detailed.html" style="--row:#7CE38B">Changelog</a><a class="hmb-a" href="./devlog.html" style="--row:#8FB8FF">Devlog</a></div></div>
+    </div>
+    <div class="hmb-s" id="hmb-s" aria-hidden="true"></div>
   </nav>
 </div>
 <div id="prog"></div>
 <aside class="mnav" id="mnav">
-  <div class="mbar">
-    <span class="mgw" id="mgw" aria-hidden="true"><span class="mgo"></span><i class="mtint"></i></span>
-    <nav class="mstrip" id="mstrip" aria-label="Pages">
-      <a class="mtab" href="../commands.html" style="--row:#58D05A">Commands</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab" href="../terms.html" style="--row:#F2994A">Terms</a><a class="mtab" href="../privacy.html" style="--row:#17A2A2">Privacy</a><a class="mtab" href="../license.html" style="--row:#9B6BE3">License</a><a class="mtab" href="../notice.html" style="--row:#FF5264">Notice</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab" href="../contributing.html" style="--row:#8B9BFF">Contributing</a><a class="mtab" href="../contributors.html" style="--row:#F8FF4A">Contributors</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab on" href="./" aria-current="page" style="--row:#FF9E3D">What&#39;s New</a><a class="mtab" href="./detailed.html" style="--row:#7CE38B">Changelog</a><a class="mtab" href="./devlog.html" style="--row:#8FB8FF">Devlog</a>
-    </nav>
-  </div>
   <details class="msecd">
     <summary><span class="msd-l">On this page</span><span class="mt-at" id="railcur"></span></summary>
     <div class="mp-list msec"><a href="#v2-63-1" class="slot"><i>v2.63.1</i><span>August 9, 2026</span></a><a href="#v2-63-0" class="slot"><i>v2.63.0</i><span>August 8, 2026</span></a><a href="#v2-62-1" class="slot"><i>v2.62.1</i><span>August 8, 2026</span></a><a href="#v2-62-0" class="slot"><i>v2.62.0</i><span>August 8, 2026</span></a><a href="#v2-61-2" class="slot"><i>v2.61.2</i><span>August 7, 2026</span></a><a href="#v2-61-1" class="slot"><i>v2.61.1</i><span>August 7, 2026</span></a><a href="#v2-61-0" class="slot"><i>v2.61.0</i><span>August 7, 2026</span></a><a href="#v2-60-0" class="slot"><i>v2.60.0</i><span>August 7, 2026</span></a><a href="#v2-59-0" class="slot"><i>v2.59.0</i><span>August 7, 2026</span></a><a href="#v2-58-2" class="slot"><i>v2.58.2</i><span>August 7, 2026</span></a><a href="#v2-58-1" class="slot"><i>v2.58.1</i><span>August 7, 2026</span></a><a href="#v2-58-0" class="slot"><i>v2.58.0</i><span>August 7, 2026</span></a><a href="#v2-57-3" class="slot"><i>v2.57.3</i><span>August 6, 2026</span></a><a href="#v2-57-2" class="slot"><i>v2.57.2</i><span>August 6, 2026</span></a><a href="#v2-57-1" class="slot"><i>v2.57.1</i><span>August 6, 2026</span></a><a href="#v2-57-0" class="slot"><i>v2.57.0</i><span>August 6, 2026</span></a><a href="#v2-56-2" class="slot"><i>v2.56.2</i><span>August 6, 2026</span></a><a href="#v2-56-1" class="slot"><i>v2.56.1</i><span>August 6, 2026</span></a><a href="#v2-56-0" class="slot"><i>v2.56.0</i><span>August 6, 2026</span></a><a href="#v2-55-5" class="slot"><i>v2.55.5</i><span>August 6, 2026</span></a><a href="#v2-55-4" class="slot"><i>v2.55.4</i><span>August 5, 2026</span></a><a href="#v2-55-3" class="slot"><i>v2.55.3</i><span>August 5, 2026</span></a><a href="#v2-55-2" class="slot"><i>v2.55.2</i><span>August 5, 2026</span></a><a href="#v2-55-1" class="slot"><i>v2.55.1</i><span>August 5, 2026</span></a><a href="#v2-55-0" class="slot"><i>v2.55.0</i><span>August 5, 2026</span></a><a href="#v2-54-0" class="slot"><i>v2.54.0</i><span>August 5, 2026</span></a><a href="#v2-53-0" class="slot"><i>v2.53.0</i><span>August 5, 2026</span></a><a href="#v2-52-0" class="slot"><i>v2.52.0</i><span>August 4, 2026</span></a><a href="#v2-51-3" class="slot"><i>v2.51.3</i><span>August 4, 2026</span></a><a href="#v2-51-2" class="slot"><i>v2.51.2</i><span>August 3, 2026</span></a><a href="#v2-51-1" class="slot"><i>v2.51.1</i><span>August 3, 2026</span></a><a href="#v2-51-0" class="slot"><i>v2.51.0</i><span>August 3, 2026</span></a><a href="#v2-50-4" class="slot"><i>v2.50.4</i><span>August 2, 2026</span></a><a href="#v2-50-3" class="slot"><i>v2.50.3</i><span>August 2, 2026</span></a><a href="#v2-50-2" class="slot"><i>v2.50.2</i><span>August 2, 2026</span></a><a href="#v2-50-1" class="slot"><i>v2.50.1</i><span>August 2, 2026</span></a><a href="#v2-50-0" class="slot"><i>v2.50.0</i><span>August 2, 2026</span></a><a href="#v2-49-2" class="slot"><i>v2.49.2</i><span>August 2, 2026</span></a><a href="#v2-49-1" class="slot"><i>v2.49.1</i><span>August 2, 2026</span></a><a href="#v2-49-0" class="slot"><i>v2.49.0</i><span>August 2, 2026</span></a><a href="#v2-48-0" class="slot"><i>v2.48.0</i><span>August 2, 2026</span></a><a href="#v2-47-1" class="slot"><i>v2.47.1</i><span>August 2, 2026</span></a><a href="#v2-47-0" class="slot"><i>v2.47.0</i><span>August 2, 2026</span></a><a href="#v2-46-0" class="slot"><i>v2.46.0</i><span>July 31, 2026</span></a><a href="#v2-45-0" class="slot"><i>v2.45.0</i><span>July 30, 2026</span></a><a href="#v2-44-0" class="slot"><i>v2.44.0</i><span>July 30, 2026</span></a><a href="#v2-43-2" class="slot"><i>v2.43.2</i><span>July 29, 2026</span></a><a href="#v2-43-1" class="slot"><i>v2.43.1</i><span>July 29, 2026</span></a><a href="#v2-43-0" class="slot"><i>v2.43.0</i><span>July 29, 2026</span></a><a href="#v2-42-2" class="slot"><i>v2.42.2</i><span>July 29, 2026</span></a><a href="#v2-42-1" class="slot"><i>v2.42.1</i><span>July 29, 2026</span></a><a href="#v2-42-0" class="slot"><i>v2.42.0</i><span>July 28, 2026</span></a><a href="#v2-41-4" class="slot"><i>v2.41.4</i><span>July 28, 2026</span></a><a href="#v2-41-3" class="slot"><i>v2.41.3</i><span>July 28, 2026</span></a><a href="#v2-41-2" class="slot"><i>v2.41.2</i><span>July 28, 2026</span></a><a href="#v2-41-1" class="slot"><i>v2.41.1</i><span>July 28, 2026</span></a><a href="#v2-41-0" class="slot"><i>v2.41.0</i><span>July 28, 2026</span></a><a href="#v2-40-0" class="slot"><i>v2.40.0</i><span>July 28, 2026</span></a><a href="#v2-39-2" class="slot"><i>v2.39.2</i><span>July 28, 2026</span></a><a href="#v2-39-1" class="slot"><i>v2.39.1</i><span>July 28, 2026</span></a><a href="#v2-39-0" class="slot"><i>v2.39.0</i><span>July 28, 2026</span></a><a href="#v2-38-3" class="slot"><i>v2.38.3</i><span>July 28, 2026</span></a><a href="#v2-38-2" class="slot"><i>v2.38.2</i><span>July 28, 2026</span></a><a href="#v2-38-1" class="slot"><i>v2.38.1</i><span>July 28, 2026</span></a><a href="#v2-38-0" class="slot"><i>v2.38.0</i><span>July 28, 2026</span></a><a href="#v2-37-0" class="slot"><i>v2.37.0</i><span>July 27, 2026</span></a><a href="#v2-36-3" class="slot"><i>v2.36.3</i><span>July 27, 2026</span></a><a href="#v2-36-2" class="slot"><i>v2.36.2</i><span>July 27, 2026</span></a><a href="#v2-36-1" class="slot"><i>v2.36.1</i><span>July 27, 2026</span></a><a href="#v2-36-0" class="slot"><i>v2.36.0</i><span>July 27, 2026</span></a><a href="#v2-35-15" class="slot"><i>v2.35.15</i><span>July 27, 2026</span></a><a href="#v2-35-14" class="slot"><i>v2.35.14</i><span>July 27, 2026</span></a><a href="#v2-35-13" class="slot"><i>v2.35.13</i><span>July 27, 2026</span></a><a href="#v2-35-12" class="slot"><i>v2.35.12</i><span>July 27, 2026</span></a><a href="#v2-35-11" class="slot"><i>v2.35.11</i><span>July 27, 2026</span></a><a href="#v2-35-10" class="slot"><i>v2.35.10</i><span>July 27, 2026</span></a><a href="#v2-35-9" class="slot"><i>v2.35.9</i><span>July 27, 2026</span></a><a href="#v2-35-8" class="slot"><i>v2.35.8</i><span>July 27, 2026</span></a><a href="#v2-35-7" class="slot"><i>v2.35.7</i><span>July 27, 2026</span></a><a href="#v2-35-6" class="slot"><i>v2.35.6</i><span>July 27, 2026</span></a><a href="#v2-35-5" class="slot"><i>v2.35.5</i><span>July 27, 2026</span></a><a href="#v2-35-4" class="slot"><i>v2.35.4</i><span>July 27, 2026</span></a><a href="#v2-35-3" class="slot"><i>v2.35.3</i><span>July 26, 2026</span></a><a href="#v2-35-2" class="slot"><i>v2.35.2</i><span>July 26, 2026</span></a><a href="#v2-35-1" class="slot"><i>v2.35.1</i><span>July 26, 2026</span></a><a href="#v2-35-0" class="slot"><i>v2.35.0</i><span>July 26, 2026</span></a><a href="#v2-34-1" class="slot"><i>v2.34.1</i><span>July 26, 2026</span></a><a href="#v2-34-0" class="slot"><i>v2.34.0</i><span>July 26, 2026</span></a><a href="#v2-33-6" class="slot"><i>v2.33.6</i><span>July 26, 2026</span></a><a href="#v2-33-5" class="slot"><i>v2.33.5</i><span>July 26, 2026</span></a><a href="#v2-33-4" class="slot"><i>v2.33.4</i><span>July 26, 2026</span></a><a href="#v2-33-3" class="slot"><i>v2.33.3</i><span>July 26, 2026</span></a><a href="#v2-33-2" class="slot"><i>v2.33.2</i><span>July 25, 2026</span></a><a href="#v2-33-1" class="slot"><i>v2.33.1</i><span>July 25, 2026</span></a><a href="#v2-33-0" class="slot"><i>v2.33.0</i><span>July 24, 2026</span></a><a href="#v2-32-0" class="slot"><i>v2.32.0</i><span>July 24, 2026</span></a><a href="#v2-31-0" class="slot"><i>v2.31.0</i><span>July 22, 2026</span></a><a href="#v2-30-2" class="slot"><i>v2.30.2</i><span>July 21, 2026</span></a><a href="#v2-30-1" class="slot"><i>v2.30.1</i><span>July 21, 2026</span></a><a href="#v2-30-0" class="slot"><i>v2.30.0</i><span>July 21, 2026</span></a><a href="#v2-29-0" class="slot"><i>v2.29.0</i><span>July 21, 2026</span></a><a href="#v2-28-0" class="slot"><i>v2.28.0</i><span>July 21, 2026</span></a><a href="#v2-27-0" class="slot"><i>v2.27.0</i><span>July 21, 2026</span></a><a href="#v2-26-0" class="slot"><i>v2.26.0</i><span>July 20, 2026</span></a><a href="#v2-25-0" class="slot"><i>v2.25.0</i><span>July 20, 2026</span></a><a href="#v2-24-0" class="slot"><i>v2.24.0</i><span>July 20, 2026</span></a><a href="#v2-23-0" class="slot"><i>v2.23.0</i><span>July 18, 2026</span></a><a href="#v2-22-0" class="slot"><i>v2.22.0</i><span>July 18, 2026</span></a><a href="#v2-21-0" class="slot"><i>v2.21.0</i><span>July 18, 2026</span></a><a href="#v2-20-0" class="slot"><i>v2.20.0</i><span>July 17, 2026</span></a><a href="#v2-19-0" class="slot"><i>v2.19.0</i><span>July 17, 2026</span></a><a href="#v2-18-0" class="slot"><i>v2.18.0</i><span>July 14–16, 2026</span></a><a href="#v2-17-0" class="slot"><i>v2.17.0</i><span>July 13, 2026</span></a><a href="#v2-16-0" class="slot"><i>v2.16.0</i><span>July 13, 2026</span></a><a href="#v2-14-0" class="slot"><i>v2.14.0</i><span>July 13, 2026</span></a><a href="#v2-13-0" class="slot"><i>v2.13.0</i><span>July 13, 2026</span></a><a href="#v2-12-0" class="slot"><i>v2.12.0</i><span>July 12, 2026</span></a><a href="#v2-10-0" class="slot"><i>v2.10.0</i><span>July 12, 2026</span></a><a href="#v2-9-0" class="slot"><i>v2.9.0</i><span>July 9, 2026</span></a><a href="#v2-8-0" class="slot"><i>v2.8.0</i><span>July 9, 2026</span></a><a href="#v2-7-0" class="slot"><i>v2.7.0</i><span>July 9, 2026</span></a><a href="#v2-6-0" class="slot"><i>v2.6.0</i><span>July 8, 2026</span></a><a href="#v2-5-1" class="slot"><i>v2.5.1</i><span>July 8, 2026</span></a><a href="#v2-5-0" class="slot"><i>v2.5.0</i><span>July 8, 2026</span></a><a href="#v2-4-0" class="slot"><i>v2.4.0</i><span>July 8, 2026</span></a><a href="#v2-3-1" class="slot"><i>v2.3.1</i><span>July 7, 2026</span></a><a href="#v2-3-0" class="slot"><i>v2.3.0</i><span>July 7, 2026</span></a><a href="#v2-2-1" class="slot"><i>v2.2.1</i><span>July 7, 2026</span></a><a href="#v2-2-0" class="slot"><i>v2.2.0</i><span>July 7, 2026</span></a><a href="#v2-1-0" class="slot"><i>v2.1.0</i><span>July 7, 2026</span></a><a href="#v2-0-0" class="slot slot-m"><i>v2.0.0</i><span>July 6, 2026</span></a><a href="#v1-7-0" class="slot"><i>v1.7.0</i><span>July 4, 2026</span></a><a href="#v1-6-0" class="slot"><i>v1.6.0</i><span>May 17, 2026</span></a><a href="#v1-5-0" class="slot"><i>v1.5.0</i><span>April 8, 2026</span></a><a href="#v1-4-0" class="slot"><i>v1.4.0</i><span>April 8, 2026</span></a><a href="#v1-3-0" class="slot"><i>v1.3.0</i><span>April 8, 2026</span></a><a href="#v1-2-0" class="slot"><i>v1.2.0</i><span>April 8, 2026</span></a><a href="#v1-1-0" class="slot"><i>v1.1.0</i><span>April 8, 2026</span></a><a href="#v1-0-0" class="slot slot-m"><i>v1.0.0</i><span>April 8, 2026</span></a></div>
@@ -2846,7 +2763,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
   <footer class="foot">
     <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a><span class="sig-cr">&copy; Dioreo&trade;. All rights reserved.</span></p>
     <p class="disc">Dioreo is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
-    <nav class="endnav"><a href="../commands.html">Commands</a><span>&middot;</span><a href="../terms.html">Terms</a><span>&middot;</span><a href="../privacy.html">Privacy</a><span>&middot;</span><a href="../license.html">License</a><span>&middot;</span><a href="../notice.html">Notice</a><span>&middot;</span><a href="../contributing.html">Contributing</a><span>&middot;</span><a href="../contributors.html">Contributors</a><span>&middot;</span><a href="./detailed.html">Changelog</a><span>&middot;</span><a href="./devlog.html">Devlog</a></nav>
+    <nav class="endnav" aria-label="Footer"><div class="en-row"><a href="../terms.html">Terms</a><span>&middot;</span><a href="../privacy.html">Privacy</a><span>&middot;</span><a href="../license.html">License</a><span>&middot;</span><a href="../notice.html">Notice</a><span>&middot;</span><a href="../contributing.html">Contributing</a><span>&middot;</span><a href="../contributors.html">Contributors</a><span>&middot;</span><a href="./" aria-current="page">What&#39;s New</a><span>&middot;</span><a href="./detailed.html">Changelog</a><span>&middot;</span><a href="./devlog.html">Devlog</a></div><div class="en-row"><a href="../commands.html">Commands</a><span>&middot;</span><a href="https://github.com/HarkiratMangat/dioreo" target="_blank" rel="noopener noreferrer" data-tip="Source on GitHub">GitHub</a><span>&middot;</span><a href="https://discord.com/oauth2/authorize?client_id=1491474871778021550" target="_blank" rel="noopener noreferrer" data-tip="Add to Discord">Install</a></div></nav>
   </footer>
 </div>
 
@@ -2994,7 +2911,8 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
        bottom edge, so an entry only became current after it had scrolled up behind
        the bar and the bar named the previous one while you were reading this one.
        Height 0 means .mnav is display:none, which is the desktop case. */
-    var navEl=document.getElementById('mnav'), line=130;
+    var bh=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bar-h'))||58;
+    var navEl=document.getElementById('mnav'), line=bh+76;
     if(navEl){
       var nr=navEl.getBoundingClientRect();
       if(nr.height>0) line=nr.bottom+72;
@@ -3098,6 +3016,8 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
      without this script the controls simply light from their centre. */
   Array.prototype.forEach.call(document.querySelectorAll('[data-spot]'),function(el){
     el.addEventListener('pointermove',function(e){
+      /* A finger is not a light source: on touch this moved a held light around under the thumb, which is half of what made a press feel like a hover. */
+      if(e.pointerType==='touch')return;
       var r=el.getBoundingClientRect();
       el.style.setProperty('--px',((e.clientX-r.left)/r.width*100).toFixed(1)+'%');
       el.style.setProperty('--py',((e.clientY-r.top)/r.height*100).toFixed(1)+'%');
@@ -3822,160 +3742,27 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
     addEventListener('resize',function(){ padMeasure(); aim(idx,true); });
   });
 
-  /* ── the mobile strip ─────────────────────────────────────────────────
-     The indicator here is deliberately NOT the desktop morph. There is no
-     hover on a phone, so there is no "moving between two known points" to
-     animate — a tap is a single discrete event. So this clones the reference
-     implementation's choreography instead: particles appear on a WIDE radius
-     and converge INWARD while the pill scales up from nothing, which reads as
-     the shape being assembled rather than moved.
-
-     It plays on PAGE LOAD, not only on tap. Each tab is a real link to a real
-     document, so a tap tears the page down mid-animation and you would never
-     see it; arriving is the moment that has time for it. */
-  var strip=document.getElementById('mstrip'), gw=document.getElementById('mgw');
-  if(strip&&gw){
-    var goo=gw.firstElementChild;
-    var mtabs=[].slice.call(strip.querySelectorAll('.mtab'));
-    var cur=mtabs.indexOf(strip.querySelector('.mtab.on'));
-    if(cur<0) cur=0;
-    var mstill=matchMedia('(prefers-reduced-motion:reduce)').matches;
-    var bar=gw.parentNode;
-
-    function noise(n){ return n/2 - Math.random()*n; }
-    /* One angle per particle, walked outward-to-inward along it — that is what
-       makes the swarm read as converging on a point rather than swirling around
-       one. y is squashed for the clipping reason given in the CSS. */
-    function xy(dist,i,total){
-      var a=((360+noise(8))/total*i)*Math.PI/180;
-      return [dist*Math.cos(a), dist*Math.sin(a)*0.34];
-    }
-
-    /* The indicator lives OUTSIDE the scroller (the blend needs it to), so its
-       x has to be tracked by hand. That is the whole price of keeping
-       mix-blend-mode working, and it is cheaper than the alternative, which is
-       no effect at all.
-       ⚠️ Measured from RECTS, not from offsetLeft minus scrollLeft. The
-       arithmetic version was correct at the instant it ran and wrong 17px later:
-       scroll-snap re-settles the strip after reveal() sets scrollLeft, so the
-       cached scrollLeft was stale before the first paint. A rect difference is
-       whatever is true right now and cannot go stale. */
-    /* ⚠️ ONCE SPENT, STOP TRACKING. The whole reason this element has to be
-       hand-positioned is that it lives outside the scroller so its blend keeps a
-       backdrop — but a retired layer is invisible, so writing a transform to it on
-       every frame of every scroll buys nothing and is precisely the per-frame work
-       that exposed it to iOS's compositor. See the .mgw.spent note in the CSS. */
-    var spentT=null;
-    function follow(){
-      if(gw.classList.contains('spent')) return;
-      var t=mtabs[cur]; if(!t) return;
-      gw.style.transform='translateX('
-        +(t.getBoundingClientRect().left-bar.getBoundingClientRect().left)+'px)';
-    }
-
-    /* Long enough to outlast the whole birth: the pill runs 2s on a .2s delay and
-       the particles 1200±300ms started 350ms in, so everything has landed well
-       before this. Retiring it early would cut the animation off mid-flight. */
-    function retire(){
-      if(spentT) clearTimeout(spentT);
-      spentT=setTimeout(function(){ gw.classList.add('spent'); },2600);
-    }
-
-    /* ⚠️ ONLY AN ANIMATED PLACEMENT MAY BRING THE LAYER BACK, AND THIS IS THE
-       WHOLE BUG. Retiring it after the birth was correct and did nothing, because
-       place() un-retired it on every call and the RESIZE handler calls place() —
-       and iOS fires resize every time the URL bar shows or hides, which is on
-       every scroll. So the layer was resurrected continuously while scrolling and
-       hid itself again about 2.6s after the last gesture: reported exactly as
-       "it disappears once I stop touching the screen, then reappears as I begin
-       scrolling again".
-       A resize only needs the geometry to follow the tab; it is not an arrival and
-       has nothing to animate, so it must not resurrect a layer whose animation is
-       long over. */
-    function place(i,animate){
-      var t=mtabs[i]; if(!t) return;
-      if(animate){
-        if(spentT) clearTimeout(spentT);
-        gw.classList.remove('spent');
-      }
-      cur=i; follow();
-      gw.style.width=t.offsetWidth+'px';
-      gw.style.top=t.offsetTop+'px';
-      gw.style.height=t.offsetHeight+'px';
-      gw.style.setProperty('--row',t.style.getPropertyValue('--row'));
-      if(!animate||mstill){ goo.classList.add('on'); retire(); return; }
-      /* Clear, reflow, spray, THEN arm the pill on the next frame. Painting the
-         pill first and re-animating it a moment later is what made the old
-         version look glitchy: you saw the pill, saw it vanish, saw it grow. */
-      goo.classList.remove('on');
-      [].slice.call(goo.querySelectorAll('.mpt')).forEach(function(n){ n.remove(); });
-      /* The forced reflow is what restarts the animation, and it is enough on
-         its own. Arming the pill inside requestAnimationFrame instead looked
-         equivalent and was not: rAF does not run in a backgrounded tab, so a
-         page loaded in one came forward with no indicator at all. Nothing here
-         needs to wait for a frame. */
-      void goo.offsetWidth;
-      spray();
-      goo.classList.add('on');
-      retire();
-    }
-
-    function spray(){
-      var N=15;
-      for(var i=0;i<N;i++){
-        (function(i){
-          var t=Math.round(1200+noise(600));
-          var a=xy(90,N-i,N), b=xy(10+noise(7),N-i,N);
-          var rot=noise(10); rot = rot>0 ? (rot+5)*10 : (rot-5)*10;
-          var el=document.createElement('i'); el.className='mpt';
-          var dot=document.createElement('b'); dot.className='mpd';
-          /* White, always. The wrapper's filter is what puts the accent back —
-             a coloured particle would be crushed to a primary by contrast(20)
-             long before anyone saw the colour. */
-          el.style.cssText='--sx:'+a[0].toFixed(1)+'px;--sy:'+a[1].toFixed(1)+'px;'
-            +'--ex:'+b[0].toFixed(1)+'px;--ey:'+b[1].toFixed(1)+'px;'
-            +'--rot:'+rot.toFixed(0)+'deg;--sc:'+(1+noise(0.2)).toFixed(2)+';'
-            +'--t:'+t+'ms';
-          el.appendChild(dot); goo.appendChild(el);
-          setTimeout(function(){ el.remove(); },t);
-        })(i);
-      }
-    }
-
-    /* Keep where you are on screen without yanking the page around it. */
-    function reveal(){
-      var t=mtabs[cur]; if(!t) return;
-      strip.scrollLeft = Math.max(0, t.offsetLeft + t.offsetWidth/2 - strip.clientWidth/2);
-    }
-    function live(){ return getComputedStyle(strip).display!=='none'; }
-
-    /* Listener FIRST: reveal() scrolls the strip, and a listener attached after
-       that has already missed the event it exists for. The two timers catch the
-       snap settling afterwards — deliberately timers and not rAF, because rAF
-       does not run in a backgrounded tab and this has to be right when the tab
-       is first looked at, not when it is first painted. */
-    strip.addEventListener('scroll',follow,{passive:true});
-    if(live()){
-      reveal(); place(cur,true);
-      setTimeout(follow,0); setTimeout(follow,160);
-    }
-    /* ⚠️ WIDTH, NOT "resize". On iOS the URL bar collapsing and expanding fires
-       resize on almost every scroll, with the width unchanged — nothing about this
-       strip's layout depends on viewport HEIGHT, so those events are pure noise
-       that was re-running reveal() and place() continuously mid-gesture. Comparing
-       the width ignores them and leaves a real orientation change or window resize
-       handled exactly as before. */
-    var lastW=innerWidth;
-    addEventListener('resize',function(){
-      if(innerWidth===lastW) return;
-      lastW=innerWidth;
-      if(live()){ reveal(); place(cur,false); }
+  /* ── the phone menu ───────────────────────────────────────────────────
+     See barMenu(). The panel is a plain list of links, so a tap on a page is an
+     ordinary navigation; this only opens and closes it. It closes on the button, on
+     the scrim, on Escape, and when the viewport grows past the phone layout, where
+     the panel stops being a box and an "open" state would be invisible. */
+  var hb=document.getElementById('hmb'), hp=document.getElementById('hmb-p'), hs=document.getElementById('hmb-s');
+  if(hb&&hp){
+    var setMenu=function(on){
+      hp.classList.toggle('open',on); if(hs) hs.classList.toggle('open',on);
+      hb.setAttribute('aria-expanded',on?'true':'false');
+      hb.setAttribute('aria-label',on?'Close menu':'Menu');
+    };
+    hb.addEventListener('click',function(){ setMenu(!hp.classList.contains('open')); });
+    if(hs) hs.addEventListener('click',function(){ setMenu(false); });
+    addEventListener('keydown',function(e){
+      if(e.key==='Escape'&&hp.classList.contains('open')){ setMenu(false); hb.focus(); }
     });
-    /* A tap moves the indicator immediately even though the page is about to be
-       replaced: on a slow connection that is the only feedback the tap landed. */
-    mtabs.forEach(function(a,i){
-      a.addEventListener('click',function(){ cur=i; place(i,true); });
-    });
+    var wideMq=matchMedia('(min-width:981px)');
+    var onWide=function(){ if(wideMq.matches) setMenu(false); };
+    if(wideMq.addEventListener) wideMq.addEventListener('change',onWide);
+    else if(wideMq.addListener) wideMq.addListener(onWide);
   }
 
   /* ── the section disclosure ───────────────────────────────────────────
@@ -4038,11 +3825,15 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
      No backticks in this comment on purpose: it lives inside a template literal,
      where one ends the string and fails the build with a SyntaxError pointing at
      prose. */
+  function barH(){
+    return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bar-h'))||58;
+  }
   function anchorOffset(){
     var n=document.getElementById('mnav');
-    if(!n){ document.documentElement.style.setProperty('--anchor-off','76px'); return; }
+    var base=(barH()+22)+'px';
+    if(!n){ document.documentElement.style.setProperty('--anchor-off',base); return; }
     var h=n.getBoundingClientRect().height;
-    if(!h){ document.documentElement.style.setProperty('--anchor-off','76px'); return; }
+    if(!h){ document.documentElement.style.setProperty('--anchor-off',base); return; }
     var t=parseFloat(getComputedStyle(n).top)||0;
     document.documentElement.style.setProperty('--anchor-off',(t+h+22)+'px');
   }
@@ -4110,6 +3901,14 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
     var q=nums(c.indexOf('(')>=0?c.slice(c.indexOf('(')+1):'');
     if(q.length>3&&q[3]===0)return false;
     return !!parseCol(c);
+  }
+  /* two colours close enough to read as one surface — a few channel steps either
+     way, because a value written as hex and the same one read back as rgb() can
+     differ by rounding */
+  function sameCol(a,b){
+    var x=parseCol(a),y=parseCol(b);
+    if(!x||!y)return false;
+    return Math.abs(x[0]-y[0])<7&&Math.abs(x[1]-y[1])<7&&Math.abs(x[2]-y[2])<7;
   }
   function mix(a,b,t){
     var x=parseCol(a),y=parseCol(b);
@@ -4230,7 +4029,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
          Below roughly the v11 band they stop happening within a glance.
 
          ⚠️ AND THE REST STATE IS A PILL, NOT AN OVAL. Every other control on the
-         site is a stadium (border-radius:999px on .ghb and .ins), and a lone
+         site is a stadium (border-radius:999px on .ins and .cmdb), and a lone
          ellipse read as a different vocabulary. A stadium is not "50% everywhere":
          it is a corner radius of HALF THE HEIGHT in both axes, which as a
          percentage of a 14x6.5 box is 23.2% horizontally and 50% vertically — so
@@ -4297,8 +4096,9 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
     }
     function kick(){if(!raf)raf=requestAnimationFrame(loop);}
     function setHover(h){hovering=h;kick();}
-    sum.addEventListener('pointerenter',function(){setHover(true);});
-    sum.addEventListener('pointerleave',function(){setHover(false);});
+    /* A tap fires pointerenter and then pointerleave, so ungated this woke the goo for a beat on every touch. */
+    sum.addEventListener('pointerenter',function(e){if(e.pointerType!=='touch')setHover(true);});
+    sum.addEventListener('pointerleave',function(e){if(e.pointerType!=='touch')setHover(false);});
     sum.addEventListener('focus',function(){setHover(true);});
     sum.addEventListener('blur',function(){setHover(false);});
     det.addEventListener('toggle',kick);
@@ -4368,6 +4168,11 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
     var baseCol=(getComputedStyle(document.body)
                   .getPropertyValue('--accent')||'').trim()||'#F2994A';
     var tgtCol=baseCol,curCol=baseCol,wroteCol='';
+    /* the colour the swarm WOULD wear if it were not standing on its own colour.
+       The nav pill's contained mesh blends against this one, never against the
+       dark ink: a dark blend inside the pill would put the label on a smudge. */
+    var tgtHue=baseCol,curHue=baseCol,wroteHue='';
+    var DARK_INK='#141021';
 
     /* ⚠️ NOT EVERY SURFACE ANNOUNCES ITSELF THE SAME WAY, and assuming --accent
        was the whole story left two surfaces flat. Measured on the live page: the
@@ -4378,7 +4183,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
        So the chain runs most-local-first, and the --accent step compares against
        the PAGE value rather than merely reading it — equal means nothing in scope
        has overridden it, which is what separates a row from open prose. */
-    function accentOf(e){
+    function hueOf(e){
       var cs=getComputedStyle(e);
       var ia=cs.getPropertyValue('--ia').trim();
       if(ia)return ia;
@@ -4404,6 +4209,27 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
         if(c&&chip&&legible(c,seat))return c;
       }
       return ac||baseCol;
+    }
+    /* ⚠️ A SWARM ON ITS OWN COLOUR VANISHES, SO IT WEARS THE DARK INK INSTEAD, AND
+       THIS IS A RULE ABOUT THE CLASS, NOT ABOUT ONE PAGE (Harkirat, 2026-10-20
+       11:53 EDT: on Notice the crimson swarm over the crimson NOTICE tab was
+       invisible; "it should be the dark/blackish color when hovering over its own
+       color"). hueOf() says what the swarm would be; this says whether that is the
+       colour of the surface it is about to sit on. Two routes, because two kinds
+       of surface exist:
+         · a control that declares --cur-ink in CSS (the Commands rail, whose pill
+           is a transitioning fill the cursor cannot read honestly on arrival);
+         · a nav tab, whose pill is painted by script into a layer the pointer
+           never hits, so the only honest statement of the colour under the
+           pointer is the tab's own data-accent. Equal to the swarm's hue means it
+           is the page you are on; a different tab keeps the page accent, which is
+           the mixture the contained mesh exists to show.
+       A fill the generator paints with a plain background (Install, an active
+       chip) already reaches the dark ink through hueOf's chip branch. */
+    function inkOver(e,hue){
+      var tab=e.closest('.tab[data-accent]');
+      if(tab&&sameCol(tab.getAttribute('data-accent'),hue))return DARK_INK;
+      return hue;
     }
     /* ⚠️ A CONTROL'S OWN color IS NOT ALWAYS WORTH WEARING. The back-to-top
        computes to black — its ring paints from --accent, but the element's color
@@ -4518,15 +4344,22 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
         e.closest('a,button,summary,[role="button"],input,select,textarea,label')?'link'
         :(e.closest('p,li,h1,h2,h3,h4,td,blockquote,code,.lede,.disc,dd,dt')
           &&onGlyphs(cx,cy))?'text':'idle');
-      /* ⚠️ RESOLVE ONCE PER SURFACE, NOT ONCE PER SAMPLE. .ghb transitions its own
+      /* ⚠️ RESOLVE ONCE PER SURFACE, NOT ONCE PER SAMPLE. .cmdb transitions its own
          color over 220ms on hover, so sampling every 90ms walked the swarm up that
          ramp (a white flash) and then dropped it. Latching on the surface reads the
          colour once on arrival and holds it. */
       var h=e.closest('.inv,.entry,a,button,summary,[role="button"]')||document.body;
       if(h===lastHost)return;
       lastHost=h;
-      var v=accentOf(e);
-      if(v)tgtCol=v;
+      var v=hueOf(e);
+      if(v){
+        /* a control that declares its own ink also keeps the PAGE hue for the mesh,
+           so the colour it stirs into the pill never depends on that control's
+           inherited link colour */
+        var di=getComputedStyle(e).getPropertyValue('--cur-ink').trim();
+        tgtHue=di?baseCol:v;
+        tgtCol=di||inkOver(e,v);
+      }
     }
 
     function tick(now){
@@ -4551,6 +4384,8 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
          the write stops by itself once it has arrived. */
       curCol=mix(curCol,tgtCol,0.09);
       if(curCol!==wroteCol){ink.style.color=curCol;wroteCol=curCol;}
+      curHue=mix(curHue,tgtHue,0.09);
+      if(curHue!==wroteHue){ink.style.setProperty('--hue',curHue);wroteHue=curHue;}
 
       var ox=cen.x-HALF,oy=cen.y-HALF;
       ink.style.transform='translate('+ox.toFixed(1)+'px,'+oy.toFixed(1)+'px)';
@@ -5013,6 +4848,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
     var curInk=document.querySelector('.cur-ink');
     var page=parseCol(getComputedStyle(document.body).getPropertyValue('--accent'))
              ||[242,153,74];
+    var pageStr='rgb('+page[0]+','+page[1]+','+page[2]+')';
     segs.forEach(function(g){
       g.hot=parseCol(g.tabs[0].getAttribute('data-accent'))||page;
     });
@@ -5047,7 +4883,10 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
       var r=piece.getBoundingClientRect();
       if(r.width<1.5)return '';
       var pill=parseCol(piece.style.backgroundColor)||g.hot;
-      var cur=(curInk&&parseCol(curInk.style.color))||page;
+      /* the swarm's HUE, not its ink: over its own colour the swarm goes dark,
+         and blending dark through the pill would put the label on a smudge */
+      var cur=(curInk&&(parseCol(curInk.style.getPropertyValue('--hue'))
+                        ||parseCol(curInk.style.color)))||page;
       var h=r.height||25, out='', i;
       for(i=0;i<BLOBS;i++){
         var rate=0.85+i*0.21, ph=i*2.1;
@@ -5106,7 +4945,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
     },{passive:true,capture:true});
 
     function tick(now){
-      var t=now/1000*RATE, any=false, live=false, i, j;
+      var t=now/1000*RATE, any=false, own=false, live=false, i, j;
       for(i=0;i<segs.length;i++){
         var g=segs[i], ir=g.ink.getBoundingClientRect(), hot=null;
         for(j=0;j<g.tabs.length;j++){
@@ -5117,6 +4956,10 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
            tabs must not blink the field out and back */
         var over=!!hot||(px>=ir.left&&px<=ir.right&&py>=ir.top-8&&py<=ir.bottom+8);
         if(hot){var hc=parseCol(hot.getAttribute('data-accent'));if(hc)g.hot=hc;}
+        /* standing on the tab that already wears the page's own colour: there is
+           nothing to mix, and the swarm is the dark ink, which must stay opaque
+           to read at all */
+        if(hot&&sameCol(hot.getAttribute('data-accent'),pageStr))own=true;
         if(over){g.tx=px;any=true;}
         g.amt+=((over?1:0)-g.amt)*0.11;
         g.mx+=(g.tx-g.mx)*FOLLOW;
@@ -5125,7 +4968,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
         else if(!g.clean){ clear(g); g.clean=true; }
       }
       if(curInk){
-        var wa=any?String(SWARM):'';
+        var wa=(any&&!own)?String(SWARM):'';
         if(curInk.style.opacity!==wa)curInk.style.opacity=wa;
       }
       /* stop the loop once the field has faded out, so a reader who never goes
@@ -5224,12 +5067,33 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
        label reset the wait twice and the hint could take three delays to arrive
        — or never, on a control with several children. Re-asking for the node
        that is already queued is a no-op now. */
-    function want(node,delay){
+    /* ⚠️ THE POINTER GEOMETRY IS READ FROM THE EVENT THAT SAYS WHERE IT IS.
+       lastX and lastY come from pointermove, and when a pointer leaves a control the
+       browser fires pointerout BEFORE the pointermove for that same movement. So at
+       pointerout time they still hold the position INSIDE the control, the old
+       guard below read them, concluded nothing had been left, and returned without
+       hiding. The 700ms timer was still queued, the pointer by then had stopped, the
+       settle check passed, and the hint opened over a control the pointer was no
+       longer on, and stayed there. Reported 2026-10-20 10:00 EDT (Harkirat: a
+       momentary movement over a button, then away, still raised the hint and left
+       it up, on every page). Two changes, and both are needed:
+       (1) pointerout asks the event's own clientX and clientY, which are where the
+       pointer IS now, not where the last move event left it;
+       (2) the timer re-asks, when it fires, whether the pointer is still on the
+       control (pointer-queued hints only: a keyboard hint has no pointer to ask).
+       pointerover onto something with no hint of its own used to leave a queued
+       hint alone as well, so it clears the queue now. */
+    function inside(node,x,y){
+      var r=node.getBoundingClientRect();
+      return x>=r.left-1&&x<=r.right+1&&y>=r.top-1&&y<=r.bottom+1;
+    }
+    function want(node,delay,byPointer){
       if(!node||node===cur||node===pending)return;
       pending=node;
       clearTimeout(showT);
       showT=setTimeout(function fire(){
         if(fine&&performance.now()-lastMove<130){ showT=setTimeout(fire,130); return; }
+        if(byPointer&&!inside(node,lastX,lastY)){ pending=null; return; }
         pending=null;
         place(node);
       },delay);
@@ -5242,7 +5106,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
       document.addEventListener('pointerover',function(e){
         if(e.pointerType==='touch')return;
         var n=tipOf(e);
-        if(!n){ if(cur)hide(); return; }
+        if(!n){ if(cur||pending)hide(); return; }
         /* 700ms, not the 190 this started at and not the 420 that followed.
            Reported as naggy at both: a hint that arrives while you are still
            deciding whether you wanted it reads as an interruption, and the
@@ -5250,29 +5114,26 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
            check below, which is the half that stops sweep-through triggers —
            raising the delay alone would only have made the WANTED case feel
            broken too. */
-        want(n,700);
+        want(n,700,true);
       },true);
       /* ⚠️ pointerout FIRES ON EVERY INTERNAL BOUNDARY, and reading it as "the
          pointer left" is what made the hint strobe across a single button —
          reported 2026-08-03 16:40 EDT with a recording of it appearing and
-         vanishing three times inside the Source capsule. Moving from .ghb-ic to
-         .ghb-t is a pointerout on the icon whose target still resolves to the
-         same trigger, so the old check hid it and pointerover then queued it
-         again. relatedTarget is the element being entered: if it is still
-         inside the same trigger, nothing has been left. */
+         vanishing three times inside a capsule that had an icon and a label.
+         Moving from the icon to the label is a pointerout on the icon whose
+         target still resolves to the same trigger, so the old check hid it and
+         pointerover then queued it again. relatedTarget is the element being
+         entered: if it is still inside the same trigger, nothing has been left. */
       document.addEventListener('pointerout',function(e){
         var n=tipOf(e);
         if(!n)return;
         var to=e.relatedTarget;
         if(to&&n.contains(to))return;
-        /* ⚠️ relatedTarget IS NOT ENOUGH ON A CONTROL THAT RESIZES. .ghb grows
-           from 32px to its full width over 420ms on hover, so a pointer that
-           has not moved can fall outside the box for a frame and come back —
-           pointerout fires with relatedTarget outside, and the hint hid and
-           re-queued. Ask the geometry instead: if the pointer is still within
-           the trigger's current rect, nothing has been left. */
-        var r=n.getBoundingClientRect();
-        if(lastX>=r.left-1&&lastX<=r.right+1&&lastY>=r.top-1&&lastY<=r.bottom+1)return;
+        /* relatedTarget IS NOT ENOUGH ON A CONTROL THAT RESIZES (the old GitHub
+           capsule grew over 420ms and a pointer that had not moved could fall
+           outside the box for a frame), so the geometry is asked as well, with the
+           event's own coordinates; see the note above want(). */
+        if(inside(n,e.clientX,e.clientY))return;
         hide();
       },true);
     }
@@ -5290,7 +5151,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
        replaces a device guess with the platform's real answer. */
     document.addEventListener('focusin',function(e){
       var n=tipOf(e);
-      if(n&&n.matches&&n.matches(':focus-visible'))want(n,0); else hide();
+      if(n&&n.matches&&n.matches(':focus-visible'))want(n,0,false); else hide();
     },true);
     document.addEventListener('focusout',hide,true);
     /* ⚠️ .anchor's CLICK IS HANDLED HERE, NOT AS A SEPARATE LISTENER, because a
