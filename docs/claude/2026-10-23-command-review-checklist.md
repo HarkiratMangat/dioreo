@@ -5,6 +5,8 @@ status: live
 
 # Per-command review checklist (2026-10-23)
 
+✅ **DONE. Harkirat ran the review rounds on 2026-10-25, on the dev bot, one command at a time, and the changes shipped in #222 (Pre-Release v3.111.0).** His word, 2026-10-26 11:12 EDT: *"ran yesterday, mark this as done."* The verdict lines below were never filled in: the review ran live in the bot-polish thread, not on this sheet. The sheet is kept as the record of what was reviewed.
+
 Written for Harkirat's roadmap item "A per-command review checklist: click test, slash options and descriptions" in `docs/ROADMAP.md`. It is the sheet to work through, one command at a time: click every control, read each slash option and its description, then mark the command approved or changes-wanted. **No command has been reviewed yet.** Every option table below was generated from the registered command builders on `v3-pre-release` at v3.109.0-pre, so the wording is what Discord's picker shows, not a copy from a doc.
 
 ## How to use it

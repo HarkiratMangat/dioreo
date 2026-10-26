@@ -29,7 +29,14 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.114.0 — 2026-10-26 13:17 EDT (#225) — MP pictures keyed by gunsmith code, a five-field Edit Loadout pop-up, and a panel for every /manage save
+## Pre-Release v3.115.0 — 2026-10-26 13:22 EDT (#224) — the v3 launch checklist tidied, and the /patch notes carousel item closed
+**From Harkirat, 2026-10-26 11:12 EDT:** Early Supporter is "post v3 launch"; the per-command review "ran yesterday, mark this as done". **12:02 EDT**, on the carousel item: "close it".
+
+- **ROADMAP:** Early Supporter moves to Post-v3.0.0. The per-command review is marked done (it ran 2026-10-25 and shipped in #222). The v5 line about `/patch notes` chunking is struck. The deploy row now matches the launch runbook: the VM fast-forwards on `main` after the merge, and the portal's prod steps belong to pins2.
+- **Deferred list → resolved list:** the `/patch notes` carousel entry closes. One Media Gallery is one component however many images it holds, and Add to Patch Notes already keeps a season to 10 images (`commands/addToPatchNotes.js`), so the 40-component cap cannot be reached through the carousel.
+- **Command review checklist** (`docs/claude/2026-10-23-command-review-checklist.md`): a DONE note under the title.
+
+## Pre-Release v3.114.0 — 2026-10-26 13:17 EDT (#225 · `b2fee330`) — MP pictures keyed by gunsmith code, a five-field Edit Loadout pop-up, and a panel for every /manage save
 **From Harkirat, 2026-10-25 21:48 EDT:** the label showed as "Build 2" in the Edit pop-up; condense it to five fields; key images `WEAPON-GUNSMITHCODE`; require the gunsmith code on every MP build; the label is back end only. **2026-10-26 11:46 EDT:** "even the confirmation messages and stuff, can you make them like as an embed ... and there's like buttons as well". **12:52 EDT:** "build them right now here" (the other pages).
 
 - **MP pictures are keyed by gunsmith code** (`utils/loadoutImageCache.js` `codeImageKey`, `DEV-` prefixed on the dev bot so dev never overwrites a prod picture). A code is letters and digits only, and a key another build already holds is refused. `scripts/migrateLoadoutKeys.js` moves a database to code keys: dry run by default, `--write`, `--prod`, a backup, placeholders skipped, and a list of weapons whose card order changes. Dev is migrated (124 keys, every one serving); prod waits for his word.
