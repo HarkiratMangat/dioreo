@@ -510,7 +510,8 @@ function confirmMessage(client, result) {
         case 'busy': return '⏳ Already saving this build -- give it a moment.';
         case 'rival': return glyphs(`${BOT_EMOJI.warn} ${result.message || 'Another admin has this build waiting.'} Pick **Save mine** or **Leave it to them** on its page.`);
         case 'labeltaken': return `${BOT_EMOJI.cross} That build label is already used by another build of this weapon -- pick another with **Adjust**.`;
-        case 'nocode': return `${BOT_EMOJI.cross} An MP build needs its Gunsmith code before it saves: its picture is keyed by it. Add it with **Adjust** (\`Label | Code\`).`;
+        // Both places a code can be typed: Adjust on a review, the Approve pop-up on a submitted build.
+        case 'nocode': return `${BOT_EMOJI.cross} An MP build needs its Gunsmith code before it saves: its picture is keyed by it. Add it in the \`Label | Code\` box (**Adjust** on a review, **Approve** again on a submission).`;
         case 'codetaken': return `${BOT_EMOJI.cross} ${result.message || 'Another build of this weapon has that code.'} The same code is the same build, so check that one with /gunsmith.`;
         case 'retry': return glyphs(`${BOT_EMOJI.warn} Image upload to Cloudinary failed (${result.error}). Nothing was saved yet. Press **Re-upload** to send the image again (retry token \`${result.retryToken}\`).\n\nIf it fails again, the loadout will be created anyway without an image, and you can fix it later via \`/manage\`.`);
         default: return glyphs(BOT_EMOJI.cross + ' Something went wrong saving this build.');

@@ -50,6 +50,8 @@ async function listPictures() {
 
 function planFor(builds, pictures) {
     const rows = [];
+    // Weapons whose cards change order. /gunsmith listed a weapon's builds in _id order and now lists them by build number (utils/loadoutForm.js compareBuilds), so a weapon whose numbers disagree with its _id order is REORDERED for players the moment this ships (2026-10-26 12:32 EDT: BAL-27's Build 1 had the newest _id on the dev data, so it showed fifth). Listed so the dry run shows it before the switch.
+    rows.orderChanges = [];
     const groups = new Map();
     for (const b of builds) {
         const k = `${b.mode}|${b.weaponKey}`;
@@ -62,6 +64,11 @@ function planFor(builds, pictures) {
     for (const group of groups.values()) {
         // A "Coming Soon" placeholder is no build yet: it keeps its name and takes no number.
         const ordered = [...group].filter(b => !isPlaceholderBuild(b)).sort(form.compareBuilds);
+        const byId = [...ordered].sort((a, b) => String(a._id).localeCompare(String(b._id)));
+        if (byId.some((b, i) => b !== ordered[i])) {
+            const show = (list) => list.map(b => b.shareCode || b.label || b.buildName).join(', ');
+            rows.orderChanges.push(`${ordered[0].mode} ${ordered[0].weaponName}: was ${show(byId)} · now ${show(ordered)}`);
+        }
         ordered.forEach((b, i) => {
             const row = { id: String(b._id), weapon: b.weaponName, mode: b.mode, from: { buildName: b.buildName, label: b.label || '', imageKey: b.imageKey }, set: {}, notes: [] };
             // Names: `Build N` in shown order, a legacy label kept as the label.
@@ -110,7 +117,9 @@ async function main() {
     console.log(`${dbName}: ${builds.length} builds, ${pictures.size} pictures in ${cache.FOLDER}/. Key prefix: "${cache.devKeyPrefix() || '(none)'}". ${WRITE ? 'WRITING' : 'dry run'}.\n`);
     console.log(`Pictures to copy to a code key: ${copies.length} (${copies.filter(r => r.copy.exists).length} already there)`);
     console.log(`Builds renamed or relabelled:   ${rows.filter(r => r.set.buildName || r.set.label).length}`);
-    console.log(`Builds flagged for a person:    ${flagged.length}\n`);
+    console.log(`Builds flagged for a person:    ${flagged.length}`);
+    console.log(`Weapons whose card order changes: ${rows.orderChanges.length}\n`);
+    for (const line of rows.orderChanges) console.log(`  ORDER ${line}`);
     for (const r of rows) {
         const parts = [];
         if (r.set.buildName) parts.push(`${r.from.buildName} -> ${r.set.buildName}`);
