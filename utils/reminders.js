@@ -123,8 +123,8 @@ function extraBlocks(p) {
     return out;
 }
 
-// The "Manage reminders" row every reminder DM ends with; the button opens the panel privately. It sits OUTSIDE the card, under it, with the AddReminder bell the commands' bell buttons use (Harkirat, 2026-10-25 20:18 EDT: "use the other emoji for the manage reminders button. Also move the button outside the embed").
-const manageRow = () => ({ type: 1, components: [{ type: 2, style: 2, label: 'Manage reminders', custom_id: 'remind_open', emoji: emojis.parseEmoji(emojis.addReminder) }] });
+// The "Manage reminders" row every reminder DM ends with; the button opens the panel privately. It sits OUTSIDE the card, under it (Harkirat, 2026-10-25 20:18 EDT: "move the button outside the embed"), with the Remind bell the /remind panel's title uses (his 20:28 EDT correction: AddReminder was a misreading of "the other emoji").
+const manageRow = () => ({ type: 1, components: [{ type: 2, style: 2, label: 'Manage reminders', custom_id: 'remind_open', emoji: emojis.parseEmoji(emojis.remind) }] });
 
 // The DM, as Components V2 JSON, or null. His order (round 3): Last chance · Leaving soon · Released · Season · Patch notes. With the digest on, the /today brief takes the place of Released and the leaving lists, with followed items marked by the bell (his round-2 Q4: the digest absorbs the rest), and the season and patch-note parts follow it.
 function buildReminderDM(p, seasonalDoc, { nowMs = Date.now(), accentColor = 4093660 } = {}) {
