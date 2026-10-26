@@ -373,7 +373,8 @@ async function handleInteractionInner(interaction) {
                 const shown = focusedValue ? matched : require('../utils/search').featuredWeapons(matched, more ? room - 1 : room);
                 const weaponRows = shown
                     .slice(0, more ? room - 1 : room)
-                    .map(w => ({ name: mode === 'MP' ? `[${displayCategoryLabel(w.category)}] ${w.weaponName}` : w.weaponName, value: w.weaponKey }));
+                    // The class tag on DMZ too (2026-10-25 23:45 EDT), so both lists read the same.
+                    .map(w => ({ name: `[${displayCategoryLabel(w.category)}] ${w.weaponName}`, value: w.weaponKey }));
                 if (more) weaponRows.push({ name: `▸ Type a name to search all ${matched.length} ${focusedValue ? 'matches' : 'weapons'}`, value: `~search~${mode}` });
                 return await interaction.respond([...rows, ...weaponRows]);
             }

@@ -256,11 +256,11 @@ function bestRankLabel(builds, { short = false } = {}) {
     return (score === 0 ? `Best ${label}` : `Top ${score} ${label}`).trim();
 }
 
-// One dropdown option's second line: "Meta · Best AR · 3 builds". Only Meta and the Best / Top N rank, never Toxic, Ass or Capable (Harkirat, 2026-10-24 18:25 EDT). In the META list every weapon is Meta, so the line names the class instead (same message: "in the dropdown for the meta list, can you also mention the category of that weapon?"): "AR · Top 3 · 2 builds".
-function weaponSummary(builds, { metaList = false } = {}) {
+// One dropdown option's second line: "Meta · Best AR · Toxic · 3 builds". Meta, the Best / Top N rank, and Toxic (Toxic added 2026-10-25 23:45 EDT on his word, reversing his 2026-10-24 18:25 EDT "never Toxic": a Toxic-only Meta weapon showed no reason to be there); never Ass or Capable. In the META list every weapon is Meta, so the line names the class instead. `withClass` (the DMZ list, whose weapons are all classes at once) names the class AND keeps Meta.
+function weaponSummary(builds, { metaList = false, withClass = false } = {}) {
     const parts = [];
-    if (metaList) parts.push(displayCategoryLabel(builds[0].category));
-    else if (builds.some(b => b.isMeta)) parts.push('Meta');
+    if (metaList || withClass) parts.push(displayCategoryLabel(builds[0].category));
+    if (!metaList && builds.some(b => b.isMeta)) parts.push('Meta');
     const rank = bestRankLabel(builds, { short: metaList });
     if (rank) parts.push(rank);
     // Toxic too (Harkirat, 2026-10-25 23:33 EDT: MAN-O-WAR sat in the Meta list with no reason shown; "it's meta because of its toxic ability").
@@ -355,9 +355,10 @@ function metaJumpRow(metaBuilds, selectId, activeKey) {
     return { type: 1, components: [{ type: 3, custom_id: selectId, placeholder: 'Jump to another META weapon...', options }] }; // names the META list (his 2026-10-25 23:32 EDT ask; META in capitals, 23:35 EDT)
 }
 function dmzBrowseRow(dmzBuilds, selectId, activeKey) {
-    const groups = weaponGroups(dmzBuilds).sort((a, b) => a[0].weaponName.localeCompare(b[0].weaponName));
+    // Grouped by class, then by name, with the same line as the MP lists (class · Meta · rank · Toxic · N builds); it was alphabetical with only the class and Meta until 2026-10-25 23:45 EDT (his catch: "organize the dmz dropdown").
+    const groups = weaponGroups(dmzBuilds).sort((a, b) => displayCategoryLabel(a[0].category).localeCompare(displayCategoryLabel(b[0].category)) || a[0].weaponName.localeCompare(b[0].weaponName));
     if (groups.length < 2) return null;
-    const options = windowAround(groups.map(list => ({ label: list[0].weaponName, value: list[0].weaponKey, description: `${displayCategoryLabel(list[0].category)}${list.some(b => b.isMeta) ? ' · Meta' : ''}` })), activeKey, 25);
+    const options = windowAround(groups.map(list => ({ label: list[0].weaponName, value: list[0].weaponKey, description: weaponSummary(list, { withClass: true }) })), activeKey, 25);
     return { type: 1, components: [{ type: 3, custom_id: selectId, placeholder: 'Browse other DMZ gunsmiths...', options }] };
 }
 
