@@ -59,10 +59,11 @@ function eventChanges(before, after) {
     return out;
 }
 
-// Edit again and Revert. `changeIds` are every ChangeLog row the save wrote (ids like `#147`); a Revert id past Discord's 100 characters is left off rather than cut.
-function actionRow({ editId = null, changeIds = [] }) {
+// Open (the item where players see it, privately), Edit again and Revert. `changeIds` are every ChangeLog row the save wrote (ids like `#147`); a Revert id past Discord's 100 characters is left off rather than cut.
+function actionRow({ openId = null, openLabel = 'Open', editId = null, changeIds = [] }) {
     const revertId = `mng_rsrevert|${changeIds.join(',')}`;
     const buttons = [
+        ...(openId ? [{ type: 2, style: 2, label: openLabel, custom_id: openId, emoji: emojis.parseEmoji(emojis.search) }] : []),
         ...(editId ? [{ type: 2, style: 1, label: 'Edit again', custom_id: editId, emoji: emojis.parseEmoji(emojis.edit) }] : []),
         ...(changeIds.length && revertId.length <= 100 ? [{ type: 2, style: 4, label: 'Revert', custom_id: revertId }] : []),
     ];
@@ -86,7 +87,7 @@ function drawPanel({ draw, category, before = null, changeIds = [], notes = [], 
         ...whatChanged(before, drawChanges(before, draw)),
         { type: 10, content: `**Items (${(draw.items || []).filter(i => i.tier !== 'comment').length})**\n${itemLines(draw.items) || '*none*'}`.slice(0, 3800) },
         ...noteBlock(notes), ...warnBlock(warnings),
-        ...actionRow({ editId: `mng_rsedit|draws|${category}|${draw._id}`, changeIds }),
+        ...actionRow({ openId: `mng_rsopen|draws|${category}`, openLabel: 'Open in /draws', editId: `mng_rsedit|draws|${category}|${draw._id}`, changeIds }),
     ];
     return [{ type: 17, accent_color: warnings.length ? WARN_ACCENT : ACCENT.draws, components }];
 }
@@ -100,7 +101,7 @@ function calendarPanel({ event, before = null, changeIds = [], notes = [], warni
         ]),
         ...(before ? [divider(), ...whatChanged(before, eventChanges(before, event))] : []),
         ...noteBlock(notes), ...warnBlock(warnings),
-        ...actionRow({ editId: `mng_rsedit|calendar|${event._id}`, changeIds }),
+        ...actionRow({ openId: 'mng_rsopen|calendar', openLabel: 'Open in /calendar', editId: `mng_rsedit|calendar|${event._id}`, changeIds }),
     ];
     return [{ type: 17, accent_color: warnings.length ? WARN_ACCENT : ACCENT.calendar, components }];
 }
@@ -110,7 +111,7 @@ function patchPanel({ heading, title, lines = [], entryId = null, changeIds = []
     const components = [
         headerBlock(`### ${emojis.checkmark} ${heading}`, [title ? `**${title}**` : null, ...lines.map(l => `-# ${l}`)]),
         ...noteBlock(notes),
-        ...actionRow({ editId: entryId ? `mng_rsedit|patch|${entryId}` : null, changeIds }),
+        ...actionRow({ openId: entryId ? `mng_rsopen|patch|${entryId}` : null, openLabel: 'Open in /patch notes', editId: entryId ? `mng_rsedit|patch|${entryId}` : null, changeIds }),
     ];
     return [{ type: 17, accent_color: ACCENT.patchnotes, components }];
 }

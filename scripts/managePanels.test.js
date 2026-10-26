@@ -31,14 +31,15 @@ check('an added draw shows its picture, its items and Edit again on its own id',
     assert.ok(text(panel).includes('Added · Wraith Hunter') && text(panel).includes('New draw'));
     assert.ok(text(panel).includes('Items (2)'), 'a comment line is not counted as an item');
     const ids = buttons(panel).map(b => b.custom_id);
-    assert.deepStrictEqual(ids, ['mng_rsedit|draws|new|d1', 'mng_rsrevert|#201']);
+    assert.deepStrictEqual(ids, ['mng_rsopen|draws|new', 'mng_rsedit|draws|new|d1', 'mng_rsrevert|#201']);
 });
 
 check('a draw with no picture says so instead of a broken thumbnail', () => {
     const panel = p.drawPanel({ draw: { ...draw, thumbnailUrl: null }, category: 'returning' });
     assert.strictEqual(panel[0].components[0].type, 10);
     assert.ok(text(panel).includes('No picture') && text(panel).includes('Returning draw'));
-    assert.deepStrictEqual(buttons(panel).map(b => b.label), ['Edit again'], 'no Revert without change ids');
+    assert.deepStrictEqual(buttons(panel).map(b => b.label), ['Open in /draws', 'Edit again'], 'no Revert without change ids');
+    assert.strictEqual(buttons(panel)[0].custom_id, 'mng_rsopen|draws|returning', 'Open lands on the draw\'s own section');
 });
 
 check('an edited draw lists only what changed', () => {
@@ -60,7 +61,7 @@ check('a calendar event shows its dates, All Season and Double CP', () => {
     const panel = p.calendarPanel({ event, changeIds: ['#7'] });
     shapeOk(panel);
     assert.ok(text(panel).includes('All Season') && text(panel).includes('Double CP') && text(panel).includes(`<t:${Math.floor(event.date.getTime() / 1000)}:D>`));
-    assert.deepStrictEqual(buttons(panel).map(b => b.custom_id), ['mng_rsedit|calendar|e1', 'mng_rsrevert|#7']);
+    assert.deepStrictEqual(buttons(panel).map(b => b.custom_id), ['mng_rsopen|calendar', 'mng_rsedit|calendar|e1', 'mng_rsrevert|#7']);
 });
 
 check('an edited event names the end date and Double CP that changed', () => {
@@ -73,7 +74,7 @@ check('an edited event names the end date and Double CP that changed', () => {
 check('a patch-notes save opens its own season again', () => {
     const panel = p.patchPanel({ heading: 'New season added', title: 'Season 10', lines: ['Now the Current Season · 4 image(s)'], entryId: 'pn1', changeIds: ['#9'] });
     shapeOk(panel);
-    assert.deepStrictEqual(buttons(panel).map(b => b.custom_id), ['mng_rsedit|patch|pn1', 'mng_rsrevert|#9']);
+    assert.deepStrictEqual(buttons(panel).map(b => b.custom_id), ['mng_rsopen|patch|pn1', 'mng_rsedit|patch|pn1', 'mng_rsrevert|#9']);
 });
 
 check('a Revert id past 100 characters is left off, never cut', () => {
@@ -102,7 +103,7 @@ check('the delete confirmations show the item and keep the dispatcher ids', () =
 
 check('every Edit again id is one handlers/manage/index.js routes', () => {
     const src = require('fs').readFileSync(require('path').join(__dirname, '../handlers/manage/index.js'), 'utf8');
-    assert.ok(src.includes("'mng_rsedit|', 'mng_rsrevert|'"), 'the dispatcher routes both prefixes');
+    assert.ok(src.includes("'mng_rsopen|', 'mng_rsedit|', 'mng_rsrevert|'"), 'the dispatcher routes all three prefixes');
 });
 
 if (failures) { console.error(`\n${failures} check(s) failed`); process.exit(1); }

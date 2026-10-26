@@ -65,8 +65,8 @@ async function routeManage(interaction) {
         if (['mng_catok|', 'mng_catedit|', 'mng_picok|', 'mng_picnew|', 'mng_picnone|'].some(p => customId.startsWith(p))) return await loadouts.handleCatalogueWarning(interaction);
         // A saved loadout's own buttons: Open in /gunsmith, Edit again, Revert (handlers/manage/loadouts.js handleSavedAction).
         if (['mng_ldopen_', 'mng_ldedit_', 'mng_ldrevert|'].some(p => customId.startsWith(p))) return await loadouts.handleSavedAction(interaction);
-        // The same two buttons under a saved draw, event or season: Edit again, Revert (handlers/manage/results.js).
-        if (['mng_rsedit|', 'mng_rsrevert|'].some(p => customId.startsWith(p))) return await results.handleResultAction(interaction);
+        // The same buttons under a saved draw, event or season: Open, Edit again, Revert (handlers/manage/results.js).
+        if (['mng_rsopen|', 'mng_rsedit|', 'mng_rsrevert|'].some(p => customId.startsWith(p))) return await results.handleResultAction(interaction);
 
         // MANAGE PANEL -- action buttons, resolved through the registry (utils/manageActions.js). resolveAction() is also where per-page permissions are enforced PER CLICK -- see that module's header comment. router.js's prefix guard still runs first and independently -- that one answers "may this user touch /manage at all", this one answers "may they touch THIS page". Keep both.
         if (customId.startsWith('mng_act_')) {

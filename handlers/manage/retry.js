@@ -128,12 +128,12 @@ function codeBlock(text) {
  * Handles both response states on purpose: most submit handlers deferReply() first (so followUp), but the validation branches that reject before any DB work have not acked yet (so reply).
  */
 async function failWithRetry(interaction, message) {
-    const send = (payload) => (interaction.deferred || interaction.replied)
-        ? interaction.followUp(payload)
-        : interaction.reply({ ...payload, ephemeral: true });
+    // A red panel like every other /manage answer (2026-10-26 13:07 EDT, the panels for every page); flag 64 keeps it private whether this is a reply or a follow-up.
+    const { notePanel, FAIL_ACCENT } = require('../../utils/managePanels');
+    const send = (payload) => (interaction.deferred || interaction.replied) ? interaction.followUp(payload) : interaction.reply(payload);
 
     const spec = specFor(interaction.customId);
-    if (!spec) return await send({ content: `${BOT_EMOJI.cross} ${message}` });
+    if (!spec) return await send({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} ${message}`, FAIL_ACCENT) });
 
     const values = captureModalValues(interaction);
     const token = randomUUID().slice(0, 8);
@@ -142,14 +142,14 @@ async function failWithRetry(interaction, message) {
 
     let content = `${BOT_EMOJI.cross} ${message}`;
     let snippet = '';
-    try { snippet = (spec.snippet(values) || '').trim(); } catch { snippet = ''; }
+    try { snippet = (spec.snippet(values) || '').trim().slice(0, 3000); } catch { snippet = ''; }   // a panel holds 4,000 characters of text
     if (snippet) content += `\n**What you entered** — copy this if you want to keep it:\n${codeBlock(snippet)}`;
     content += `\n-# **Try Again** reopens this form with your values already filled in — no need to find the original \`/manage\` message. The button stops working after 10 minutes; the text above doesn't.`;
 
-    return await send({
-        content,
-        components: [{ type: 1, components: [{ type: 2, style: 1, label: 'Try Again', custom_id: `mng_retry_${token}` }] }]
-    });
+    return await send({ flags: 32768 | 64, components: [{ type: 17, accent_color: FAIL_ACCENT, components: [
+        { type: 10, content },
+        { type: 1, components: [{ type: 2, style: 1, label: 'Try Again', custom_id: `mng_retry_${token}` }] },
+    ] }] });
 }
 
 /**

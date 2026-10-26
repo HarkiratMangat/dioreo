@@ -1,7 +1,7 @@
 // ==========================================
 // /manage — THE BUTTONS UNDER A SAVED DRAW, EVENT OR SEASON
 // ==========================================
-// custom_ids: mng_rsedit|draws|{new|returning}|{id} · mng_rsedit|calendar|{id} · mng_rsedit|patch|{id} · mng_rsrevert|{changeId,...}, drawn by utils/managePanels.js (2026-10-26 13:01 EDT, Harkirat's "build them right now here"). Stateless, so they keep working after a restart. The router's /manage lock has already run on the `mng_` prefix; Edit again opens the same pop-up a search would and its submit goes through commitSet's own permission check, and Revert is gated per change by the check /bot analytics' Revert uses (utils/adminAccess.js checkRevert), which core/revert.js runs again.
+// custom_ids: mng_rsopen|draws|{new|returning} · mng_rsopen|calendar · mng_rsopen|patch|{id} · mng_rsedit|draws|{new|returning}|{id} · mng_rsedit|calendar|{id} · mng_rsedit|patch|{id} · mng_rsrevert|{changeId,...}, drawn by utils/managePanels.js (2026-10-26 13:01 EDT, Harkirat's "build them right now here"). Stateless, so they keep working after a restart. The router's /manage lock has already run on the `mng_` prefix; Edit again opens the same pop-up a search would and its submit goes through commitSet's own permission check, and Revert is gated per change by the check /bot analytics' Revert uses (utils/adminAccess.js checkRevert), which core/revert.js runs again.
 //
 // ⚠️ THE CRASH NET IS THE ROUTER'S -- see draws.js's matching header note and .claude/rules/interaction-router.md.
 
@@ -32,8 +32,22 @@ async function revertChanges(interaction, changeIds, doneNote = 'it is back as i
     return await sendV2Payload(interaction, notePanel(`↩️ **Reverted.** ${done.join(', ')} undone; ${doneNote}.`));
 }
 
+// Open: the page players see, privately, through the command's own execute() (a synthetic interaction, utils/interactionContext.js), so it can never drift from the real command. A draw opens on its New or Returning section, a season on itself, the calendar on its Today page.
+async function openPage(interaction, page, arg) {
+    const { buildSyntheticInteraction } = require('../../utils/interactionContext');
+    const synth = buildSyntheticInteraction(interaction, {
+        isChatInputCommand: () => true,
+        options: { getString: (name) => (name === 'visibility' ? 'hidden' : null), getBoolean: () => null, getInteger: () => null, getSubcommand: () => null },
+    });
+    if (page === 'draws') return await require('../../commands/draws').execute(synth, arg === 'returning' ? 'returning' : 'new', 0);
+    if (page === 'calendar') return await require('../../commands/calendar').execute(synth);
+    if (page === 'patch') return await require('../../commands/patchnotes').execute(synth, arg || null);
+    return false;
+}
+
 async function handleResultAction(interaction) {
     const id = interaction.customId;
+    if (id.startsWith('mng_rsopen|')) { const [, page, arg] = id.split('|'); return await openPage(interaction, page, arg); }
     if (id.startsWith('mng_rsrevert|')) return await revertChanges(interaction, id.replace('mng_rsrevert|', '').split(',').filter(Boolean));
 
     // Edit again: showModal must be the first response, so nothing here defers; one read of the seasonal document is well inside the 3 seconds.
