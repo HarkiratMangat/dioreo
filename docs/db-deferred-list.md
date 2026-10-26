@@ -88,6 +88,8 @@ Full spec: `reference_priority_tier_system` memory. Canonical copy of this legen
 
 ### A URL image on a new build overwrites Build 1's picture `[P1 · XS]`
 
+> 🔧 **FIXED ON `style/bot-polish` 2026-10-25 22:19 EDT** (not merged yet): `takenKeyPattern` in `utils/loadoutImageCache.js` matches keys with or without an extension; tested in `scripts/loadoutBulkFormat.test.js`.
+
 Found 2026-10-25 22:16 EDT (bot-polish think-pass). `handlers/manage/loadouts.js` `resolveImageInput` collects taken keys with `/^(DMZ-)?BASE-\d+$/`, which skips every key stored with `.png` (105 of 133 dev builds). So an image URL pasted on a NEW build of such a weapon mints `BASE-1`, and the upload (`overwrite: true`) replaces Build 1's picture: proved for AK117, whose Build 1 asset is `AK117-1`. Live on prod. The fix is to pass every key of the weapon and let `deriveImageKey` strip the extension; the gunsmith-code key rework (Queued) removes the derivation entirely.
 
 **Verify condition:** a new AK117 build with a pasted URL is saved as `AK117-2` (or its code key), and Build 1's picture is unchanged.
@@ -1053,7 +1055,7 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ### Loadout pictures keyed by gunsmith code, and the condensed Edit pop-up `[P1 · M]`
 
-Approved direction 2026-10-25 22:16 EDT (Harkirat, bot-polish thread); built in a NEW thread after bot-polish merges, his call. Plan: `local/project/features/bot-polish/loadout-key-plan.md` (on this Mac). In short: MP picture keys become `WEAPON-CODE` (codes repeat across weapons, never within one); the code is required for MP builds, while DMZ has no code and keeps `DMZ-WEAPON-N`; a back-end `label` field, shown in the pop-up after the weapon name; the Edit and Add pop-ups become five fields with a screenshot upload; a taken build number swaps the two builds; a failed screenshot upload refuses the save. Migration copies each picture to its new key and keeps the old ones (Revert restores old keys); the dry run checks Cloudinary's `Gunsmith_Code` metadata against each build and lists mismatches. Prod read, the Cloudinary copy and the prod switch each wait for his word. pins2's portal mints `WEAPON-1` keys and needs a note.
+Approved direction 2026-10-25 22:16 EDT (Harkirat, bot-polish thread); built in a NEW thread after bot-polish merges, his call. Plan: `local/project/features/bot-polish/loadout-key-plan.md` (on this Mac). In short: MP picture keys become `WEAPON-CODE` (codes repeat across weapons, never within one); the code is required for MP builds, while DMZ has no code and keeps `DMZ-WEAPON-N`; a back-end `label` field, shown in the pop-up after the weapon name; the Edit and Add pop-ups become five fields with a screenshot upload; a taken build number swaps the two builds; a failed screenshot upload refuses the save. Migration copies each picture to its new key and keeps the old ones (Revert restores old keys); the dry run checks Cloudinary's `Gunsmith_Code` metadata against each build and lists mismatches. Prod read, the Cloudinary copy and the prod switch each wait for his word. pins2's portal mints `WEAPON-1` keys and needs a note. Also link each saved build to its /autobuild screenshot fingerprint (`sourceHash` on the build, `Source_Hash` metadata, the build id on its `VisionRead`), so an Edit screenshot the bot already read is checked against the build's code before it saves.
 
 **Verify condition:** every MP build's `imageKey` equals `WEAPON-CODE`, every card renders on the dev bot, and Edit shows the label after the weapon name.
 
