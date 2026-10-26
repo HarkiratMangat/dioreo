@@ -440,9 +440,9 @@ function buildMissingWeaponCard({ weaponName, category, mode = 'MP', isEphemeral
     }
     containerComponents.push({ type: 14, spacing: 2, divider: true });
     const row = [];
-    // Browse carries his GunsmithSearch icon and Submit a Build his Share icon (2026-10-25 23:41 EDT, his ask).
-    if (real.length) row.push({ type: 2, style: 1, label: `Browse other ${label} builds`, custom_id: `gsb~open~${mode === 'DMZ' ? 'DMZ.*.std' : `MP.${category}.std`}`, emoji: emojis.parseEmoji(emojis.gunsmithSearch) });
-    row.push({ type: 2, style: 2, label: 'Submit a Build', custom_id: `gsb~submit~${mode}~${String(weaponName).toLowerCase().replace(/[^a-z0-9]/g, '')}`.slice(0, 100), emoji: emojis.parseEmoji(emojis.share) });
+    // Browse is grey with his GunsmithSearch icon, Submit a Build blue with his Share icon (colours 2026-10-25 23:41 EDT; icons 2026-10-25 23:41 EDT, his ask).
+    if (real.length) row.push({ type: 2, style: 2, label: `Browse other ${label} builds`, custom_id: `gsb~open~${mode === 'DMZ' ? 'DMZ.*.std' : `MP.${category}.std`}`, emoji: emojis.parseEmoji(emojis.gunsmithSearch) });
+    row.push({ type: 2, style: 1, label: 'Submit a Build', custom_id: `gsb~submit~${mode}~${String(weaponName).toLowerCase().replace(/[^a-z0-9]/g, '')}`.slice(0, 100), emoji: emojis.parseEmoji(emojis.share) });
     containerComponents.push({ type: 1, components: row });
     const components = [{ type: 17, accent_color: getMpCategoryAccent(category), components: containerComponents }];
     if (mode === 'DMZ') {
