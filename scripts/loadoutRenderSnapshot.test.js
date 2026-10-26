@@ -95,8 +95,8 @@ assert.ok(missing.includes('No build yet') && missing.includes('gsb~open~MP.AR.s
     assert.deepStrictEqual(dmzCard.components[1].components.map(b => b.label), ['Search', 'Attachments'], 'DMZ: Search then Attachments (no code)');
     const dmzSel = dmzCard.components.filter(c => c.type === 1 && c.components[0].type === 3).map(c => c.components[0]);
     assert.strictEqual(dmzSel.length, 1, 'DMZ has one dropdown, no class switch');
-    // Grouped by class, each with the MP lists' line (2026-10-25 23:45 EDT, his catch).
-    assert.deepStrictEqual(dmzSel[0].options.map(o => [o.label, o.description]), [['AS VAL', 'AR · Meta · 1 build'], ['FENNEC', 'SMG · 1 build']]);
+    // Ordered by class, then name (2026-10-25 23:46 EDT, his catch).
+    assert.deepStrictEqual(dmzSel[0].options.map(o => [o.label, o.description]), [['AS VAL', 'AR · Meta'], ['FENNEC', 'SMG']]);
     const metaSel = JSON.parse(metaCard).components.filter(c => c.type === 1 && c.components[0].type === 3);
     assert.ok(metaSel.length === 1 && metaSel[0].components[0].placeholder === 'Jump to another META weapon...', 'META: one jump dropdown, naming the Meta list');
     const nb = JSON.stringify(R.buildMissingWeaponCard({ weaponName: 'AK-47', category: 'AR', categoryBuilds: ar, missing: [{ name: 'AK-47' }, { name: 'ASM10' }], nb: { index: 0, total: 2 } }));
