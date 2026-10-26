@@ -138,8 +138,8 @@ async function warnUnknownNames(interaction, pending, unknown) {
     return interaction.followUp({ flags: 32768 | 64, components: require('../../utils/loadoutPanels').cataloguePanel({ described: describeUnknown(unknown), token }) });
 }
 
-// The picture warning (his three options, see resolvePicture): an MP edit whose attachments AND code changed, with no new picture. Nothing is saved until he picks one; what was typed waits in the same store as the catalogue warning's. A panel rather than a text line, with the current picture beside it, and the buttons in his order: Keep · Save without · Upload a new one on the right (Harkirat, 2026-10-26 11:46 EDT). `noneEmoji` is the Save without a picture icon, still his pick.
-function pictureWarningPanel(imageKey, token, { noneEmoji = BOT_EMOJI.deleteBin } = {}) {
+// The picture warning (his three options, see resolvePicture): an MP edit whose attachments AND code changed, with no new picture. Nothing is saved until he picks one; what was typed waits in the same store as the catalogue warning's. A panel rather than a text line, with the current picture beside it, and the buttons in his order: Keep · Save without · Upload a new one on the right (Harkirat, 2026-10-26 11:46 EDT). Save without a picture uses the Collapse (minus) icon, his pick over DeleteBin, Cross and DB_Delete (2026-10-26 12:00 EDT: "use the minus emoji").
+function pictureWarningPanel(imageKey, token, { noneEmoji = BOT_EMOJI.collapse } = {}) {
     const { buildImageUrl } = require('../../utils/loadoutRender');
     const icon = (e) => BOT_EMOJI.parseEmoji(e);
     return [{ type: 17, accent_color: 0xF0B232, components: [
