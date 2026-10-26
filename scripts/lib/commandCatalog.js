@@ -21,7 +21,10 @@ const TYPE_SUBCOMMAND_GROUP = 2;
 /**
  * Commands deliberately kept off the public page, each with the reason it is absent. ⚠️ A NAME HERE IS A DECISION ON THE RECORD, not a way to silence the completeness gate below — the gate exists precisely so that "this command is missing" can never be the *default* outcome of forgetting about it. Admin commands do NOT belong here: they are excluded structurally, by `requires`.
  */
-const DELIBERATELY_ABSENT = Object.create(null);
+const DELIBERATELY_ABSENT = Object.assign(Object.create(null), {
+    // Harkirat, 2026-10-21 21:10 EDT: "hide that command until its launched". /dmz waits for the DMZ info update, and the bot-presence branch makes `commands/dmz.js` devOnly, which `readBuilders` already skips. Once that lands this entry is redundant; delete it when /dmz returns.
+    '/dmz': 'hidden until the DMZ info update',
+});
 
 /**
  * Where a command goes when `CATEGORY_DEFS` has no opinion.
@@ -38,7 +41,8 @@ const EXTRA_PLACEMENT = {
  */
 const GROUPS = [
     { key: 'start', label: 'Start here', fromHelp: null },
-    { key: 'gunsmith', label: 'Gunsmith', fromHelp: 'gunsmith' },
+    // Harkirat, 2026-10-20 18:36 EDT: "change the gunsmith eyebrow to say loadouts". The page's label only; /help's own category keeps its name.
+    { key: 'gunsmith', label: 'Loadouts', fromHelp: 'gunsmith' },
     { key: 'draws', label: 'Draws', fromHelp: 'draws' },
     { key: 'seasonal', label: 'Seasonal', fromHelp: 'seasonal' },
     { key: 'utilities', label: 'Utilities', fromHelp: 'utilities' },
@@ -82,6 +86,11 @@ function leavesOf(json) {
 const normalizeOption = o => ({
     name: o.name,
     description: o.description,
+    // Discord's ApplicationCommandOptionType. The page labels an option by what it TAKES, and a whole-number option (`build`) used to fall through to "text" because this was the one fact the reduction dropped.
+    type: o.type,
+    // Bounds exist only on number options; undefined everywhere else, and left undefined so a reader of the page is never told a limit the client does not enforce.
+    min: o.min_value,
+    max: o.max_value,
     required: Boolean(o.required),
     autocomplete: Boolean(o.autocomplete),
     // Discord renders the choice's NAME and never its value, so the name is the only half a reader ever sees — putting the value on the page would print a string that appears nowhere in the client.
@@ -214,4 +223,4 @@ function buildCatalog({ commandsDir = COMMANDS_DIR, categoryDefs = null } = {}) 
     };
 }
 
-module.exports = { buildCatalog, GROUPS, idFor, leavesOf, placementFor, readHelpPlacement, DELIBERATELY_ABSENT, EXTRA_PLACEMENT };
+module.exports = { buildCatalog, normalizeOption, GROUPS, idFor, leavesOf, placementFor, readHelpPlacement, DELIBERATELY_ABSENT, EXTRA_PLACEMENT };
