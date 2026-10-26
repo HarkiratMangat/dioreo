@@ -1,7 +1,7 @@
 // ==========================================
 // REMINDERS — INTERACTION HANDLER
 // ==========================================
-// Every `remind_` id: the bell on a command's header and the DM's Manage reminders button (`remind_open`), the panel's category toggles, its two one-thing dropdowns, Search, Stop all, and Turn back on. Built 2026-10-23 from the agreed design (docs/superpowers/specs/2026-10-23-notifications-design.md); the logic lives in utils/reminders.js and the command in commands/remind.js.
+// Every `remind_` id: the bell on a command's header and the DM's Manage reminders button (`remind_open`), the panel's category toggles, its two one-thing dropdowns, Search, Stop all, Turn back on, and the Announcements switch in the bottom row (2026-10-26 15:20 EDT). Built 2026-10-23 from the agreed design (docs/superpowers/specs/2026-10-23-notifications-design.md); the logic lives in utils/reminders.js and the command in commands/remind.js.
 //
 // A PUBLIC PANEL IS LOCKED TO ITS OWNER (his round-4 Q1, 21:04 EDT): every panel id ends in the owner's user id, and anyone else pressing it gets a private "Open your own reminders" button instead of changing theirs. `remind_open` carries no owner: it always opens the presser's own panel, privately (his round-3 Q1 and Q5).
 //
@@ -29,6 +29,13 @@ async function userZone(userId) {
     const UserPreference = require('../models/UserPreference');
     const prefs = await UserPreference.findOne({ discordId: userId }, { timezone: 1, timezoneSetAt: 1 }).lean();
     return prefs?.timezoneSetAt && prefs.timezone ? prefs.timezone : null;
+}
+
+// What the panel shows besides the reminders: the reader's zone (as userZone) and whether they turned announcements off (the bottom row's Announcements button, 2026-10-26 15:20 EDT).
+async function panelPrefs(userId) {
+    const UserPreference = require('../models/UserPreference');
+    const prefs = await UserPreference.findOne({ discordId: userId }, { timezone: 1, timezoneSetAt: 1, announcementsOff: 1 }).lean();
+    return { timeZone: prefs?.timezoneSetAt && prefs.timezone ? prefs.timezone : null, announcementsOff: Boolean(prefs?.announcementsOff) };
 }
 
 // Saves a picked zone the way /settings does, with the time it was chosen.
@@ -71,15 +78,15 @@ async function saveSub(userId, update) {
 // The panel, privately, as a new message: the bell, the DM's button, and the confirm's "Open reminders".
 async function openOwnPanel(interaction) {
     await interaction.deferReply({ flags: 64 });
-    const [{ sub, doc }, timeZone] = await Promise.all([loadState(interaction.user.id), userZone(interaction.user.id)]);
-    return await sendV2Payload(interaction, R.buildPanel(sub, doc || {}, { ownerId: interaction.user.id, accentColor: accent(), timeZone }));
+    const [{ sub, doc }, prefs] = await Promise.all([loadState(interaction.user.id), panelPrefs(interaction.user.id)]);
+    return await sendV2Payload(interaction, R.buildPanel(sub, doc || {}, { ownerId: interaction.user.id, accentColor: accent(), ...prefs }));
 }
 
 // Re-renders the panel the click came from.
 async function rerender(interaction, sub, { confirmStop = false } = {}) {
     const SeasonalData = require('../models/SeasonalData');
-    const [doc, timeZone] = await Promise.all([SeasonalData.findOne({ docType: 'global' }).lean(), userZone(interaction.user.id)]);
-    return await sendV2Payload(interaction, R.buildPanel(sub, doc || {}, { ownerId: interaction.user.id, accentColor: accent(), confirmStop, timeZone }));
+    const [doc, prefs] = await Promise.all([SeasonalData.findOne({ docType: 'global' }).lean(), panelPrefs(interaction.user.id)]);
+    return await sendV2Payload(interaction, R.buildPanel(sub, doc || {}, { ownerId: interaction.user.id, accentColor: accent(), confirmStop, ...prefs }));
 }
 
 // A timezone search with several matches answers privately with this dropdown, from the panel and from the timezone tip DM alike (Harkirat, 2026-10-25 01:19 EDT: "why not just a new ephemeral message?" … "yes").
@@ -105,6 +112,16 @@ async function route(interaction) {
     const [, a, b] = id.split(':');
     const owner = b ?? a;
     if (owner !== interaction.user.id) return await notYours(interaction);
+
+    // Announcements on/off from the bottom row (2026-10-26 15:20 EDT, announcement-controls): the presser's own setting, then the panel again.
+    if (interaction.isButton() && interaction.customId.startsWith('remind_ann:')) {
+        await interaction.deferUpdate();
+        const UserPreference = require('../models/UserPreference');
+        const prefs = await UserPreference.findOne({ discordId: owner }, { announcementsOff: 1 }).lean();
+        await require('../utils/announcement').setAnnouncementsOff(owner, !prefs?.announcementsOff);
+        const { sub } = await loadState(owner);
+        return await rerender(interaction, sub);
+    }
 
     if (interaction.isButton() && interaction.customId.startsWith('remind_cat:')) {
         await interaction.deferUpdate();

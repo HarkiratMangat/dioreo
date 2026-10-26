@@ -3,6 +3,8 @@
 // One-time announcement delivery: the next time a user runs any top-level slash command, if there are any active (non-expired) announcements they haven't individually seen yet, ALL of them are delivered together as separate embeds inside ONE follow-up message -- never one message per announcement (Harkirat's explicit design: "one message but design it properly so it's easy to understand that they're different announcements"). That follow-up is ALWAYS ephemeral, regardless of whether the triggering command's own response was public -- announcements are a personal one-time notice, not something that should bloat a public channel.
 //
 // Wired into handlers/router.js's slash-command route engine -- called AFTER a command's own reply has already gone out, on both the modular-command and dynamic MP-loadout-fallback success paths. Deliberately NOT called from button/select/modal handlers (STEP 6.3+) -- only a fresh top-level command invocation counts, so re-clicking an existing panel or reactivating an idled one (see utils/passiveExpiry.js) can never re-trigger it; those routes never reach this function at all.
+//
+// Every delivery carries one "Why am I seeing this?" button under the batch (2026-10-26 15:20 EDT, announcement-controls; handlers/announcementControls.js answers it), and a user who turned announcements off (UserPreference.announcementsOff, from that answer, /settings or /remind) gets none at all.
 const Announcement = require('../models/Announcement');
 const UserPreference = require('../models/UserPreference');
 
@@ -117,11 +119,54 @@ function buildAnnouncementEmbed(doc) {
     return embed;
 }
 
+// The `ann_` ids handlers/announcementControls.js answers.
+const ANN_WHY_ID = 'ann_why';
+const ANN_OFF_ID = 'ann_off';
+const ANN_ON_ID = 'ann_on';
+
+// "Why am I seeing this?" under every delivered announcement (Harkirat, 2026-10-26 15:20 EDT: "a button under the embed that basically like answers like, why am I seeing these messages? ... so if someone gets the announcement, they're not like just caught off guard"). One row under the whole batch, and never inside buildAnnouncementEmbed: /bot analytics renders that embed too, and must not grow a button.
+function whyButtonRow() {
+    const emojis = require('./emojiMap');
+    return { type: 1, components: [{ type: 2, style: 2, label: 'Why am I seeing this?', custom_id: ANN_WHY_ID, emoji: emojis.parseEmoji(emojis.info) }] };
+}
+
+// The private answer to that button, with the switch beside it (mock-ups approved 2026-10-26 15:30 EDT with his colours: Turn off red with the DisableReminder bell, Turn back on blue). `state` is 'on' (the explanation), 'off' (just turned off) or 'back' (just turned back on).
+function buildWhyPanel(state, client = null) {
+    const emojis = require('./emojiMap');
+    const settings = require('./commandMentions').mentionCommand(client, 'settings');
+    const turnOff = { type: 2, style: 4, label: 'Turn off announcements', custom_id: ANN_OFF_ID, emoji: emojis.parseEmoji(emojis.disableReminder) };
+    if (state === 'off') {
+        return [{ type: 17, components: [
+            { type: 10, content: `${emojis.checkmark} Announcements are off. Dioreo won't show them after your commands. Turn them back on any time in ${settings}.` },
+            { type: 1, components: [{ type: 2, style: 1, label: 'Turn back on', custom_id: ANN_ON_ID, emoji: emojis.parseEmoji(emojis.announcements) }] },
+        ] }];
+    }
+    if (state === 'back') {
+        return [{ type: 17, components: [
+            { type: 10, content: `${emojis.checkmark} Announcements are back on. Dioreo will show them after your commands again.` },
+            { type: 1, components: [turnOff] },
+        ] }];
+    }
+    const why = [
+        `### ${emojis.info} Why am I seeing this?`,
+        'Dioreo shares news here now and then: new features, changes, or something worth knowing. It shows up once, right after you use one of its commands, and only you can see it.',
+        `-# Some are shown a couple more times, at least a day apart. Turn them off here, or any time in ${settings}.`,
+    ].join('\n');
+    return [{ type: 17, components: [{ type: 10, content: why }, { type: 1, components: [turnOff] }] }];
+}
+
+// The one write of the setting, from the answer above, /settings and /remind alike: `true` while off, removed when turned back on (models/UserPreference.js announcementsOff).
+async function setAnnouncementsOff(userId, off) {
+    await UserPreference.updateOne({ discordId: userId }, off ? { $set: { announcementsOff: true } } : { $unset: { announcementsOff: 1 } }, { upsert: off });
+}
+
 async function maybeSendAnnouncement(interaction) {
     const active = await getActiveAnnouncements();
     if (active.length === 0) return;
 
-    const prefs = await UserPreference.findOne({ discordId: interaction.user.id }).select('seenAnnouncementIds announcementDeliveries');
+    const prefs = await UserPreference.findOne({ discordId: interaction.user.id }).select('seenAnnouncementIds announcementDeliveries announcementsOff');
+    // Turned off: nothing is shown and nothing is marked seen, so one that is still running shows once they turn announcements back on.
+    if (prefs?.announcementsOff) return;
     const seen = new Set((prefs?.seenAnnouncementIds || []).map(id => id.toString()));
     const deliveryById = new Map((prefs?.announcementDeliveries || []).map(d => [d.announcementId.toString(), d]));
     const now = Date.now();
@@ -134,7 +179,7 @@ async function maybeSendAnnouncement(interaction) {
 
     // Plain discord.js followUp with normal embed objects -- NOT a Components V2 payload, so this doesn't need sendV2Payload's raw-REST bypass (a standard `embeds` array on followUp is fully supported). Only requires the interaction to already be acknowledged, which every caller of this function guarantees by calling it after the command's own reply completed.
     try {
-        await interaction.followUp({ embeds, ephemeral: true });
+        await interaction.followUp({ embeds, components: [whyButtonRow()], ephemeral: true });
     } catch (err) {
         // Interaction likely expired -- don't mark as seen/delivered, so it's retried on their next command instead of silently lost. The real Discord code, so a refusal (50035, invalid form body) reads differently from an expired interaction (10062).
         console.error(`Failed to deliver announcement follow-up (Discord ${err?.code ?? 'no code'}):`, err?.message || err);
@@ -166,4 +211,4 @@ async function maybeSendAnnouncement(interaction) {
 }
 
 // buildAnnouncementEmbed exported 2026-08-23 11:27 EDT so /bot analytics' change-detail panel renders an announcement with the SAME text shape a user is shown, instead of re-describing its fields.
-module.exports = { getActiveAnnouncements, maybeSendAnnouncement, computeExpiresAt, expiryToInputValue, generateAccentColor, buildAnnouncementEmbed, MAX_EMBEDS_PER_MESSAGE, EMBED_CHAR_BUDGET, fitEmbedBudget, isRepeatingAnnouncement, isAnnouncementDue, MIN_HOURS_BETWEEN_REPEATS };
+module.exports = { ANN_WHY_ID, ANN_OFF_ID, ANN_ON_ID, whyButtonRow, buildWhyPanel, setAnnouncementsOff, getActiveAnnouncements, maybeSendAnnouncement, computeExpiresAt, expiryToInputValue, generateAccentColor, buildAnnouncementEmbed, MAX_EMBEDS_PER_MESSAGE, EMBED_CHAR_BUDGET, fitEmbedBudget, isRepeatingAnnouncement, isAnnouncementDue, MIN_HOURS_BETWEEN_REPEATS };

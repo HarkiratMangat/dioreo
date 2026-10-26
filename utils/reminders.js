@@ -226,7 +226,7 @@ const parseEmoji = s => { try { return emojis.parseEmoji(s); } catch { return un
 //   Search (past 25) and Stop all at the foot.
 // The panel is where the state shows (the bell never does). Every custom id carries the owner, so a public panel is locked to them (his round-4 Q1). 31 components at most, under Discord's 40. A timezone search with several matches answers in a private message (handlers/remind.js zoneChoices), never inside the panel, since 2026-10-25 01:18 EDT.
 const DIVIDER = { type: 14, divider: true, spacing: 2 }; // the panel's one drawn-divider shape
-function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor = 4093660, confirmStop = false, timeZone = null } = {}) {
+function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor = 4093660, confirmStop = false, timeZone = null, announcementsOff = false } = {}) {
     const cats = new Set(sub?.categories || []);
     const follows = sub?.follows || [];
     const { releases, leaving } = followable(seasonalDoc, nowMs);
@@ -277,18 +277,21 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
     } else {
         // Blue "Set timezone" until a zone is chosen, then grey "Adjust timezone" (Harkirat, 2026-10-24 21:29 EDT).
         foot.push(timeZone ? { type: 2, style: 2, label: 'Adjust timezone', custom_id: `remind_tz:${ownerId}`, emoji: parseEmoji(emojis.timezone) } : { type: 2, style: 1, label: 'Set timezone', custom_id: `remind_tz:${ownerId}`, emoji: parseEmoji(emojis.timezone) });
+        // Announcements on/off (2026-10-26 15:20 EDT, announcement-controls; his colours 15:30 EDT: green while on, grey while off). Not a reminder: an announcement shows after a command, never by DM. The same setting as /settings and the button under an announcement.
+        foot.push({ type: 2, style: announcementsOff ? 2 : 3, label: `Announcements: ${announcementsOff ? 'Off' : 'On'}`, custom_id: `remind_ann:${ownerId}`, emoji: parseEmoji(emojis.announcements) });
     }
     if ((releases.length > MAX_OPTIONS || leaving.length > MAX_OPTIONS)) foot.push({ type: 2, style: 2, label: 'Search', custom_id: `remind_search:${ownerId}`, emoji: { name: '🔍' } });
     // "Yes, stop all!" (his wording, 2026-10-24 21:38 EDT: "leave out the and delete part"), and Keep them with his Keep icon. Keep comes first, on the left (2026-10-24 22:58 EDT, Harkirat: "shouldn't the keep them but[ton] be on the left side of the yes stop all?"), as in the calculator.
     if (confirmStop) foot.push({ type: 2, style: 2, label: 'Keep them', custom_id: `remind_stopno:${ownerId}`, emoji: parseEmoji(emojis.keep) }, { type: 2, style: 4, label: 'Yes, stop all!', custom_id: `remind_stopyes:${ownerId}`, emoji: parseEmoji(emojis.disableReminder) });
     else if (sub && (cats.size || follows.length)) foot.push({ type: 2, style: 4, label: 'Stop all', custom_id: `remind_stop:${ownerId}`, emoji: parseEmoji(emojis.disableReminder) });
 
-    return [{ type: 17, accent_color: accentColor, components: [
+    const OR_GAP = { type: 14, divider: false, spacing: 1 };
+    const panel = [{ type: 17, accent_color: accentColor, components: [
         header,
         DIVIDER,
         ...groups,
         // An alternative to the groups, not a second step (Harkirat, 2026-10-24 19:09–19:36 EDT: an "— OR —" line, capital OR).
-        { type: 14, divider: false, spacing: 1 }, // a small gap above the OR line, which sat tight under the Updates buttons (Harkirat, 2026-10-25 01:08 EDT); one component, within budget
+        OR_GAP, // a small gap above the OR line, which sat tight under the Updates buttons (Harkirat, 2026-10-25 01:08 EDT); one component, within budget
         block('-# **— OR —**\n\n**Pick only what you want**\n-# Select specific draws, events or playlists, instead of a whole group'),
         // The green and yellow dots of the Going live and Leaving soon rows (Harkirat, 2026-10-25 01:07 EDT).
         ...(relRow ? [block(`-# ${emojis.greenDotGlow} **When something releases...**`), relRow] : []),
@@ -298,6 +301,12 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
         // A drawn divider above the foot buttons in the normal panel, large spacing, the last spare component (Harkirat, 2026-10-25 01:10 EDT); Stop all's confirm and the timezone picker already draw one above their own blocks.
         ...(foot.length ? [...(!confirmStop ? [DIVIDER] : []), { type: 1, components: foot }] : []),
     ] }];
+    // Discord refuses a message over 40 components, counted recursively. With the Announcements button the panel is 40 on a day either list overflows into Search (measured 2026-10-26 15:32 EDT on Season 9 dev data: 39 without Search, 40 with it, 41 with both); past 40, the small gap above the OR line goes first, the one piece that carries no meaning.
+    if (require('../commands/today').countComponents(panel) > 40) {
+        const items = panel[0].components;
+        if (items.includes(OR_GAP)) items.splice(items.indexOf(OR_GAP), 1);
+    }
+    return panel;
 }
 
 // ---------- Changing a record ----------

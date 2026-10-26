@@ -269,5 +269,23 @@ t('Stop all asks on its own: a warning heading, "Yes, stop all!" and Keep them w
     assert.ok(!ps.includes('remind_tz:1') && !ps.includes('and delete'), 'no Set timezone, no "and delete"');
 });
 
+const findId = (list, id) => { for (const c of list || []) { if (c.custom_id === id) return c; if (c.accessory?.custom_id === id) return c.accessory; const hit = findId(c.components, id); if (hit) return hit; } return null; };
+t('the bottom row carries the Announcements switch, green while on and grey while off, and not while Stop all asks', () => {
+    const on = findId(R.buildPanel(sub({ categories: ['newDraws'] }), doc(), { ownerId: '1', nowMs: RUN }), 'remind_ann:1');
+    assert.ok(on && on.style === 3 && on.label === 'Announcements: On', 'green On');
+    const off = findId(R.buildPanel(sub({ categories: ['newDraws'] }), doc(), { ownerId: '1', nowMs: RUN, announcementsOff: true }), 'remind_ann:1');
+    assert.ok(off && off.style === 2 && off.label === 'Announcements: Off', 'grey Off');
+    assert.ok(!findId(R.buildPanel(sub({ categories: ['newDraws'] }), doc(), { ownerId: '1', nowMs: RUN, confirmStop: true }), 'remind_ann:1'), 'not while Stop all asks');
+});
+
+t('a day busy enough for Search still fits in 40, by dropping the gap above the OR line', () => {
+    const many = Array.from({ length: 30 }, (_, i) => ({ title: `Upcoming Draw ${i}`, date: d(DAY0 + (i + 2) * DAY), items: [] }));
+    const panel = R.buildPanel(sub({ categories: ['newDraws'] }), doc({ returningDraws: many }), { ownerId: '1', nowMs: RUN, timeZone: 'America/Toronto' });
+    const s = JSON.stringify(panel);
+    assert.ok(s.includes('remind_search:1') && s.includes('remind_ann:1'), 'Search and Announcements both shown');
+    const n = require('../commands/today').countComponents(panel);
+    assert.ok(n <= 40, `within 40, got ${n}`);
+});
+
 console.log(`\n${failed ? 'FAILED' : 'all passed'}: ${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

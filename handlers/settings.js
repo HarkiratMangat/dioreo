@@ -111,8 +111,11 @@ async function route(interaction) {
             if (action === 'settings_ephemeral') prefs.settingsVisibility = 'ephemeral';
             if (action === 'colors_public') prefs.colorsVisibility = 'public';
             if (action === 'colors_ephemeral') prefs.colorsVisibility = 'ephemeral';
-            // (The calfilter_active/calfilter_all branches that sat here were removed 2026-10-20, v3 sweep: nothing has rendered those buttons since the Active/All Events default was silenced 2026-08-15 -- see commands/settings.js. Every toggle left here lives on page 0.)
-            const targetPage = 0;
+            // Announcements (2026-10-26 15:20 EDT, announcement-controls): stored only while off, so turning them back on removes the field (utils/announcement.js setAnnouncementsOff, PRIVACY.md §2).
+            if (action === 'announcements_off') prefs.announcementsOff = true;
+            if (action === 'announcements_on') prefs.announcementsOff = undefined;
+            // (The calfilter_active/calfilter_all branches that sat here were removed 2026-10-20, v3 sweep: nothing has rendered those buttons since the Active/All Events default was silenced 2026-08-15 -- see commands/settings.js. Every toggle left here lives on page 0, except the two announcements ones on page 1, Preferences.)
+            const targetPage = action.startsWith('announcements_') ? 1 : 0;
             // NOTE (removed 2026-07-12): region_10/region_30 toggle actions used to live here as a binary button. Replaced by a 3-option dropdown ("Show Last Viewed Region" / "10 CP" / "30 CP") writing to the new `defaultRegionMode` field instead -- see the `set_region_mode` branch in the generic `set_` dropdown handler above. All 4 of these visibility toggles stay on /settings' page 0 (Visibility), so no page param is needed here.
 
             await prefs.save(); // Write preferences live to the Atlas cluster
