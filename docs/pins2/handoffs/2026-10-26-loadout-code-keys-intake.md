@@ -21,15 +21,20 @@ Not checked: the bot branch's tests, and the migration's effect on the dev datab
 
 | Part | Session | What it is |
 |---|---|---|
-| The drawer's code row on MP, required | 4 (his call) | no Optional chip; Stage and the Before staging card name a missing code; DMZ unchanged |
-| The drawer's Label row | 4 (his call) | the name row is the build's label (optional, 32, n / 32); the build's number shown as automatic |
-| The image key line on MP | 4 (his call) | reads `WEAPON-CODE` from the code; the Use convention chip follows; DMZ keeps `DMZ-WEAPON-N` |
-| Bulk create on MP | 4 (his call) | the code line required; the format sample's image in `WEAPON-CODE` |
+| The drawer's code row on MP, required | 4 | no Optional chip; Stage and the Before staging card name a missing code; DMZ unchanged |
+| The drawer's Label row | 4 | the name row is the build's label (optional, 32, n / 32); the build's number shown as automatic |
+| The image key line on MP | 4 | reads `WEAPON-CODE` from the code; the Use convention chip follows; DMZ keeps `DMZ-WEAPON-N` |
+| Bulk create on MP | 4 | the code line required; the format sample's image in `WEAPON-CODE` |
 | `deriveNextImageKey`, the Use convention chip | 5 | mirror `codeImageKey` on MP, or send no key and let core key the picture |
 | `displayBuildLabel` | 5 | read `label`, falling back to `buildName` for an unmigrated build |
 | `buildNumberOf` | 5 | order by the `Build N` number, as `compareBuilds`, so "Build 2 of 5" matches `/gunsmith` |
 | The drawer's payload and checks | 5 | require the code on MP; send `label`; send `buildName: Build N`; an edit changes `label`, never `buildName` |
 | The portal's bulk parse | 5 | `Label:` to `label`; the code required on MP |
+
+## His answers (2026-10-26 11:31 EDT)
+
+- The four drawer drawings: "sure" (2026-10-26 11:31 EDT), so they are Session 4's, drawn on Builder-2 after round 4's fixes and asked on Answer Shots.
+- He asked whether the drawer could also change a build's number, to change the order. Discord's Add and Edit pop-up already has a build # field (`utils/loadoutForm.js` `planNumbering`, `handlers/manage/loadouts.js:252–289`): blank takes the next number, and a number another build holds swaps the two in one changeset, so Revert undoes both. The swap runs in the Discord handler, not in core, so the portal would get it only by mirroring it or once core does the numbering (gap 1 below). Whether the drawer gets that field is open.
 
 ## What the ask leaves out (for the bot project)
 
