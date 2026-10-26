@@ -160,7 +160,8 @@ function buildTimezoneNote(ownerId, { accentColor = 4093660, setTo = null, clien
     // His wording and layout (2026-10-25 00:08 EDT), with /remind and /settings as real clickable commands (utils/commandMentions.js).
     const { mentionCommand } = require('./commandMentions');
     const remind = mentionCommand(client, 'remind'), settings = mentionCommand(client, 'settings');
-    if (setTo) return [{ type: 17, accent_color: accentColor, components: [block(`### ${emojis.reminderEnabled} Timezone set\n**${setTo}** · ${remind}'s lists now show your local time.\n-# Tip: Adjust your timezone anytime in ${settings}`)] }];
+    // The confirmation carries the bot's checkmark, not ReminderEnabled (Harkirat, 2026-10-25 20:39 EDT: "use the checkmark icon for that instead").
+    if (setTo) return [{ type: 17, accent_color: accentColor, components: [block(`### ${emojis.checkmark} Timezone set\n**${setTo}** · ${remind}'s lists now show your local time.\n-# Tip: Adjust your timezone anytime in ${settings}`)] }];
     return [{ type: 17, accent_color: accentColor, components: [
         block(`## ${emojis.remindAlert} Heads up: set your timezone!\nDioreo doesn't know your timezone yet, so the dates in ${remind}'s lists show in UTC.\nSet it once and they'll appear in your local time.`),
         { type: 1, components: [{ type: 2, style: 1, label: 'Set timezone', custom_id: `remind_tzdm:${ownerId}`, emoji: parseEmoji(emojis.timezone) }] },
