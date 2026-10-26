@@ -54,17 +54,19 @@ function calendarSnippet(values) {
     return `${start} - ${end} | ${title}`;
 }
 
-// The labelled block from utils/adminParser.js's parseBulkLoadoutList. The single-item modal splits its data across pipe-delimited fields ("Build Name | Share Code", "Category | Badges") because Discord caps a modal at 5 inputs; this unpacks those back into the bulk format's own one-field-per-line shape.
+// The labelled block from utils/adminParser.js's parseBulkLoadoutList. The single-item pop-up packs several values per box ("weapon, label", "category, build #, code", attachments with a Badges: line) because Discord caps a modal at 5 inputs; this unpacks them, through the same reader the save uses (utils/loadoutForm.js), into the bulk format's one-field-per-line shape. The image is left out: the bulk format's Image: takes a key, and keys are minted now.
 function loadoutSnippet(values) {
-    const weapon = v(values, 'weapon');
-    const [buildName, shareCode] = v(values, 'build').split('|').map(s => (s || '').trim());
-    const [category, badges] = v(values, 'meta').split('|').map(s => (s || '').trim());
-    const lines = [`${weapon} | ${category || 'AR'}`];
-    if (buildName) lines.push(`Build: ${buildName}`);
-    if (v(values, 'image')) lines.push(`Image: ${v(values, 'image')}`);
-    if (shareCode) lines.push(`Code: ${shareCode}`);
-    if (badges) lines.push(`Badges: ${badges}`);
-    lines.push(...v(values, 'attachments').split('\n').map(a => a.trim()).filter(Boolean).map(a => `- ${a}`));
+    const form = require('../../utils/loadoutForm');
+    const { weaponName, label } = form.parseWeaponLabel(v(values, 'weapon'));
+    // Read as MP so a third part is kept; a DMZ box simply has none.
+    const ident = form.parseIdentity(v(values, 'build'), 'MP');
+    const { attachments, badgesRaw } = form.parseAttachmentsBadges(v(values, 'attachments'));
+    const lines = [`${weaponName} | ${ident.category || 'AR'}`];
+    if (ident.number) lines.push(`Build: Build ${ident.number}`);
+    if (label) lines.push(`Label: ${label}`);
+    if (ident.code) lines.push(`Code: ${ident.code}`);
+    if (badgesRaw) lines.push(`Badges: ${badgesRaw}`);
+    lines.push(...attachments.map(a => `- ${a}`));
     return lines.join('\n');
 }
 
@@ -126,12 +128,12 @@ function codeBlock(text) {
  * Handles both response states on purpose: most submit handlers deferReply() first (so followUp), but the validation branches that reject before any DB work have not acked yet (so reply).
  */
 async function failWithRetry(interaction, message) {
-    const send = (payload) => (interaction.deferred || interaction.replied)
-        ? interaction.followUp(payload)
-        : interaction.reply({ ...payload, ephemeral: true });
+    // A red panel like every other /manage answer (2026-10-26 13:07 EDT, the panels for every page); flag 64 keeps it private whether this is a reply or a follow-up.
+    const { notePanel, FAIL_ACCENT } = require('../../utils/managePanels');
+    const send = (payload) => (interaction.deferred || interaction.replied) ? interaction.followUp(payload) : interaction.reply(payload);
 
     const spec = specFor(interaction.customId);
-    if (!spec) return await send({ content: `${BOT_EMOJI.cross} ${message}` });
+    if (!spec) return await send({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} ${message}`, FAIL_ACCENT) });
 
     const values = captureModalValues(interaction);
     const token = randomUUID().slice(0, 8);
@@ -140,14 +142,14 @@ async function failWithRetry(interaction, message) {
 
     let content = `${BOT_EMOJI.cross} ${message}`;
     let snippet = '';
-    try { snippet = (spec.snippet(values) || '').trim(); } catch { snippet = ''; }
+    try { snippet = (spec.snippet(values) || '').trim().slice(0, 3000); } catch { snippet = ''; }   // a panel holds 4,000 characters of text
     if (snippet) content += `\n**What you entered** — copy this if you want to keep it:\n${codeBlock(snippet)}`;
     content += `\n-# **Try Again** reopens this form with your values already filled in — no need to find the original \`/manage\` message. The button stops working after 10 minutes; the text above doesn't.`;
 
-    return await send({
-        content,
-        components: [{ type: 1, components: [{ type: 2, style: 1, label: 'Try Again', custom_id: `mng_retry_${token}` }] }]
-    });
+    return await send({ flags: 32768 | 64, components: [{ type: 17, accent_color: FAIL_ACCENT, components: [
+        { type: 10, content },
+        { type: 1, components: [{ type: 2, style: 1, label: 'Try Again', custom_id: `mng_retry_${token}` }] },
+    ] }] });
 }
 
 /**
@@ -161,7 +163,9 @@ function buildRetryModal(token) {
     const spec = specFor(pending.modalCustomId);
     if (!spec) return null;
 
-    const json = spec.rebuild(pending.modalCustomId).toJSON();
+    // A builder (ModalBuilder) serializes with toJSON(); the loadout pop-up is raw API JSON already (commands/manage.js loadoutModal), so it is copied instead.
+    const built = spec.rebuild(pending.modalCustomId);
+    const json = typeof built.toJSON === 'function' ? built.toJSON() : structuredClone(built);
     // A field sits in an action row (`components`) or, since the draw forms moved to Labels (2026-10-18 11:06 EDT), in a Label (`component`). A select is refilled by marking its stored option as the default.
     for (const row of json.components || []) {
         for (const comp of (row.component ? [row.component] : row.components || [])) {

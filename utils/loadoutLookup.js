@@ -35,7 +35,8 @@ async function resolveWeapon(mode, rawQuery) {
         else if (fuzzyMatches.length > 1) return { ambiguous: fuzzyMatches.slice(0, 10).map(w => w.weaponName) };
     }
 
-    const real = builds.filter(b => !isPlaceholderBuild(b));
+    // In build-number order (utils/loadoutForm.js compareBuilds, 2026-10-26 01:19 EDT), so "Build N of M" is the build # the Edit pop-up shows and a swap there swaps the cards. It was Mongo's natural order, about _id order, before.
+    const real = builds.filter(b => !isPlaceholderBuild(b)).sort(require('./loadoutForm').compareBuilds);
     if (real.length) return { builds: real };
     // Only a "Coming Soon" placeholder: the weapon is known, its build is not (Harkirat, 2026-10-24 09:45 EDT: "design the panel in case a weapon is missing").
     if (builds.length) return { missing: { weaponName: builds[0].weaponName, category: builds[0].category } };
@@ -61,6 +62,28 @@ async function missingWeapons(category) {
         .filter(w => !built.has(w.key || normKey(w.name)))
         .sort((a, b) => a.name.localeCompare(b.name))
         .map(w => ({ name: w.name.toUpperCase(), key: w.key || normKey(w.name), category }));
+}
+
+// Every MP weapon the CODM catalogue has with no real build, all classes: the list beside /manage's Export All (ROADMAP "Export of every loadout, and a list of weapons that have none", folded into the loadout-keys work 2026-10-26 11:16 EDT). MP only: the catalogue is the general weapon table, and DMZ has no list of its own to check against.
+async function missingWeaponsAll() {
+    const { normKey } = require('./catalogue');
+    const CatalogueItem = require('../models/CatalogueItem');
+    const built = new Set((await Loadout.find({ mode: 'MP' }).select('weaponName attachments').lean()).filter(b => !isPlaceholderBuild(b)).map(b => normKey(b.weaponName)));
+    return (await CatalogueItem.find({ kind: 'weapon', dmzOnly: { $ne: true } }).lean())
+        .filter(w => !built.has(w.key || normKey(w.name)))
+        .map(w => ({ name: w.name.toUpperCase(), category: w.category || '?' }))
+        .sort((a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name));
+}
+
+// The no-build list as a text file: the count first, so it can be checked at a glance, then the weapons by class.
+function formatMissingWeapons(missing) {
+    const lines = [`${missing.length} MP weapon${missing.length === 1 ? '' : 's'} in the CODM catalogue with no build in Dioreo`];
+    let cat = null;
+    for (const w of missing) {
+        if (w.category !== cat) { cat = w.category; lines.push('', `${cat} (${missing.filter(m => m.category === cat).length})`); }
+        lines.push(`- ${w.name}`);
+    }
+    return lines.join('\n');
 }
 
 // Draws what resolveWeapon found onto the interaction's message, which the caller has already deferred (a reply for the slash command, an update for the card's Search).
@@ -120,4 +143,4 @@ function searchModal(mode, visibility = null) {
     };
 }
 
-module.exports = { lookupAndRenderWeapon, resolveWeapon, renderResolved, notFoundText, missingWeapons, searchModal };
+module.exports = { lookupAndRenderWeapon, resolveWeapon, renderResolved, notFoundText, missingWeapons, missingWeaponsAll, formatMissingWeapons, searchModal };

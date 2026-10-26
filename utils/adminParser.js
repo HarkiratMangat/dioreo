@@ -483,6 +483,7 @@ const PLACEHOLDER_IMAGE = 'https://placehold.co/1024x576/1a1a1a/e5e5e5?text=Comi
  *   Build: Aggressive Flex
  *   Image: BAL-27-1
  *   Code: 1I2C6B8A9D
+ *   Label: Ranked
  *   Badges: meta, best
  *   - Gauge-9 Mono
  *   - Crown-H3 Barrel
@@ -495,7 +496,8 @@ const PLACEHOLDER_IMAGE = 'https://placehold.co/1024x576/1a1a1a/e5e5e5?text=Comi
  *
  * A block missing its Weapon/Category header, carrying an unrecognized `Key:`, or with no attachment lines at all doesn't silently vanish -- it's collected in `errors` (with a snippet of the offending block) so the admin is told exactly what didn't parse, same as parseLoadoutBadges()'s `unrecognized` reporting.
  */
-const LOADOUT_BLOCK_KEYS = { build: 'buildName', image: 'imageKey', code: 'shareCode', badges: 'badges' };
+// `Label:` since 2026-10-26 01:19 EDT: a build's back-end label (models/Loadout.js), which used to be its Build: name.
+const LOADOUT_BLOCK_KEYS = { build: 'buildName', image: 'imageKey', code: 'shareCode', badges: 'badges', label: 'label' };
 // A `Key: value` line. Deliberately NARROW (a letter, then at most 13 more letters/spaces, then the colon) so a real attachment name can't be swallowed as a mistyped field -- and the bullet test below runs first regardless, so `- Ammo: 40 Round` is always an attachment no matter what precedes the colon.
 const LOADOUT_KEYED_LINE = /^([A-Za-z][A-Za-z ]{0,13})\s*:\s*(.*)$/;
 const LOADOUT_BULLET = /^[-•*]\s+/;
@@ -536,7 +538,7 @@ function parseBulkLoadoutList(bulkText) {
             fields[LOADOUT_BLOCK_KEYS[key]] = keyed[2].trim();
         }
         if (badKey) {
-            errors.push(`"${snippet}" -- unrecognized field "${badKey}:". Valid fields are Build, Image, Code and Badges; an attachment whose name contains a colon needs a leading "- " bullet.`);
+            errors.push(`"${snippet}" -- unrecognized field "${badKey}:". Valid fields are Build, Label, Image, Code and Badges; an attachment whose name contains a colon needs a leading "- " bullet.`);
             continue;
         }
 
@@ -561,8 +563,9 @@ function parseBulkLoadoutList(bulkText) {
             attachments: cleanAttachments,
             imageKey: fields.imageKey || PLACEHOLDER_IMAGE,
             shareCode: fields.shareCode || '',
-            // Which of those two the block left out, so a paste over an EXISTING build keeps its stored value instead of writing the default (2026-10-20, Harkirat's call in the v3 sweep). A new build still gets the default. core/ops/loadouts.js's bulkEntryWrite reads this and never stores it.
-            defaulted: [!fields.imageKey && 'imageKey', !fields.shareCode && 'shareCode'].filter(Boolean),
+            label: fields.label || '',
+            // Which of these the block left out, so a paste over an EXISTING build keeps its stored value instead of writing the default (2026-10-20, Harkirat's call in the v3 sweep). A new build still gets the default. core/ops/loadouts.js's bulkEntryWrite reads this and never stores it.
+            defaulted: [!fields.imageKey && 'imageKey', !fields.shareCode && 'shareCode', !fields.label && 'label'].filter(Boolean),
             isMeta,
             categoryRank,
             dmzRangeRank,
@@ -636,6 +639,7 @@ function formatLoadoutsAsBulkText(loadouts) {
         // A raw-URL imageKey is a legitimate stored state (see loadoutRender.js's buildImageUrl) but re-importing one would only re-save the same external URL, so only a real Cloudinary key round-trips.
         if (l.imageKey && !String(l.imageKey).startsWith('http')) lines.push(`Image: ${l.imageKey}`);
         if (l.shareCode) lines.push(`Code: ${l.shareCode}`);
+        if (l.label) lines.push(`Label: ${l.label}`);
         if (badges) lines.push(`Badges: ${badges}`);
         lines.push(...(l.attachments || []).map(a => `- ${a}`));
         return lines.join('\n');

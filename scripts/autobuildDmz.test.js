@@ -184,7 +184,8 @@ const lastToken = () => [...pipeline.pendingAutobuilds.keys()].pop();
         const doc = saved[0];
         assert.strictEqual(doc.mode, 'DMZ');
         assert.strictEqual(doc.imageKey, 'DMZ-AK117-2', 'DMZ-AK117-1 is taken by a build with a human name');
-        assert.strictEqual(doc.buildName, 'Build 1', 'numbered among DMZ builds only');
+        // Build 2, not 1, since 2026-10-26 01:29 EDT: the DMZ build named "Aggressive" (a label stored as its name) holds place 1, and the next number counts it. The MP build still does not count.
+        assert.strictEqual(doc.buildName, 'Build 2', 'numbered among DMZ builds only, the labelled one included');
         assert.strictEqual(doc.shareCode, '');
         assert.deepStrictEqual(doc.attachments, DMZ_AK117);
         assert.deepStrictEqual([doc.dmzRangeRank, doc.categoryRank, doc.isMeta], ['best-midlong', null, true]);

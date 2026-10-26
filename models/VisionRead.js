@@ -33,6 +33,8 @@ const VisionReadSchema = new mongoose.Schema({
     lastReusedAt: Date,
     // What happened to the build it fed: saved, discarded, or null while it is still under review.
     outcome: { type: String, enum: [null, 'saved', 'discarded'], default: null },
+    // The build it was saved as, so a read and its build point at each other (2026-10-26 01:19 EDT; the build carries this read's fileHash as sourceHash).
+    loadoutId: { type: mongoose.Schema.Types.ObjectId, default: null },
     // Every Adjust on that build, field by field: the measure of what the model got wrong.
     adjustments: [{ _id: false, at: Date, field: String, from: mongoose.Schema.Types.Mixed, to: mongoose.Schema.Types.Mixed }],
 }, { timestamps: true });

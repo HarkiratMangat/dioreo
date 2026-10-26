@@ -192,7 +192,7 @@ function buildPagesTable(client) {
     // "Manage Admins" RETIRED 2026-08-16 (observability layer stage 3) -- extracted out of /manage entirely into /bot access (commands/bot.js, handlers/bot.js). It was owner-only visibility here (getManagePages() only ever offered it to the owner); that invariant is unchanged, just enforced directly by /bot access's own isOwner() check instead of by this table. "Announcement" (added 2026-08-13, redesigned same day into a real multi-announcement list -- see models/Announcement.js's header for why). Each active announcement gets its own Edit/Delete pair (buildAnnouncementListBlocks below); posting a new one never touches the others. Every user sees each one they haven't individually seen yet, together in one ephemeral message, on their next command -- see utils/announcement.js.
     announcement: {
         label: 'Announcement',
-        icon: emojis.announcements,
+        icon: emojis.dbAnnouncement, // the page's own main emoji (his, 2026-10-26 12:46 EDT); each announcement's heading keeps `announcements`
         headerLabel: 'Announcement',
         groups: [
             { style: 'raw', dynamicKey: 'announcementBlocks' },
@@ -263,7 +263,7 @@ function loadoutsPageDef(mode, headerLabel, icon, client) {
             {
                 // P1 roadmap item (2026-07-18): loadout image handling was a genuine mystery, even to Harkirat -- he had to rename a screenshot locally + re-upload before FSS Hurricane rendered, and noticed some Secondaries files never got renamed at all. Confirmed the REAL workflow live against the actual Cloudinary account before writing this (not guessed): every loadout image sits in one flat "gun-builds" folder (organizational only in Cloudinary's UI -- it's NOT part of the delivery URL, see buildImageUrl() in utils/loadoutRender.js, which has no folder segment at all), and Cloudinary assigns the Public ID from the uploaded file's own name unless it's renamed -- which is exactly why some assets are clean (`BAL-27-1`, `DMZ-AK117-1`) and others are raw camera filenames (`IMG_5630`, etc.) that were never renamed. `buttons: []` here is deliberate -- this is a pure info block, not an action -- buildManagePage's `group.buttons.map(...)` on an empty array just produces zero button rows.
                 blocks: [
-                    `### ${emojis.mngInfo} How Images Work\n-# **Fastest path: ${mentionCommand(client, '/autobuild')}** — hand it a Gunsmith screenshot (or an image URL) and it uploads the image to Cloudinary AND creates the loadout for you, no image key to type. Use the manual entry below when you already have the image hosted or want fine control.\n-# **Paste a URL (this panel):** the image field on Add and Edit takes an image **URL** as well as a Public ID — paste one (a Discord attachment link works) and the bot uploads it to Cloudinary for you under a \`WeaponKey-BuildNum\` key, no dashboard trip and nothing to type. On **Edit** it re-uploads over that build's EXISTING key, so replacing a picture never breaks anything pointing at it.\n-# **Or type a Public ID:** if the image is already on Cloudinary, type its Public ID exactly — by default your file's original name (e.g. \`IMG_5630\`) unless you renamed it. The bot builds the card straight from that key and warns you on save if nothing is actually there. Rename to \`WeaponKey-BuildNum\` (e.g. \`BAL-27-1\`, \`FSS-HURRICANE-1\`) to match the rest of the collection. (${mentionCommand(client, '/autobuild')} already names it this way automatically.)`
+                    `### ${emojis.mngInfo} How Images Work\n-# **Fastest path: ${mentionCommand(client, '/autobuild')}** — hand it a Gunsmith screenshot and it reads the build, uploads the picture and saves the loadout.\n-# **Add and Edit:** attach a screenshot or paste an image URL; the bot files it on Cloudinary under the build's gunsmith code (\`WEAPON-CODE\`, e.g. \`BAL-27-1C2B4A8B9A\`), so a picture always belongs to its code. DMZ builds have no code and use \`DMZ-WEAPON-N\`.\n-# **A new code, same attachments:** the picture moves to the new key. **New attachments, no new picture:** you're asked to keep the old picture, upload a new one, or save without one.`
                 ],
                 buttons: []
             },
@@ -424,7 +424,11 @@ function buildSearchModal(group, action) {
     const entityLabel = ENTITY_LABELS[group] || 'Item';
     const modal = new ModalBuilder().setCustomId(`mng_search_${group}_${action}`).setTitle(`${action === 'edit' ? 'Search: Edit' : 'Search: Delete'} ${entityLabel}`);
     modal.addComponents(
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('query').setLabel(`${entityLabel} name to search for`).setStyle(TextInputStyle.Short).setRequired(true))
+        // A loadout search can name one build (`BAL-27 2`, `BAL-27 Ranked`) and skip the picker (utils/loadoutForm.js pickBuild, 2026-10-26 12:24 EDT), so the box says so.
+        new ActionRowBuilder().addComponents((() => {
+            const input = new TextInputBuilder().setCustomId('query').setLabel(`${entityLabel} name to search for`).setStyle(TextInputStyle.Short).setRequired(true);
+            return group.startsWith('loadouts_') ? input.setPlaceholder('BAL-27 · or BAL-27 2 / BAL-27 Ranked for one build') : input;
+        })())
     );
     return modal;
 }
@@ -593,38 +597,43 @@ function buildLoadoutsExportCategoryModal(mode) {
     return modal;
 }
 
-function buildAddLoadoutModal(mode) {
-    const modal = new ModalBuilder().setCustomId(`add_loadout_${mode}`).setTitle(`Create New ${mode} Loadout`);
-    modal.addComponents(
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('weapon').setLabel('Weapon Name').setStyle(TextInputStyle.Short).setPlaceholder('e.g. BP50').setRequired(true)),
-        // 🔴 47 CHARACTERS (plan pins batch 2 §10.4 G6 row 2, 2026-09-15 00:28 EDT): 32 for the build name, 3 for ` | `, 12 for the code, matching the portal's #ab-share maxLength. The name part's own 32-character cap is enforced where it is parsed (handlers/manage/loadouts.js), because a Discord text input can only cap the whole field. `Build | Share Code` is pipe-delimited, same convention as the Category|Badges field two rows down -- there's no room for a 6th field (Discord's hard per-modal cap), and Edit never had a real Share Code field to show at all until this (2026-08-22 19:40 EDT click-test fix; see models/Loadout.js's own comment on why the two were conflated). Share Code is genuinely optional -- a bare build name with no `|` at all OMITS the key entirely (preserves an /autobuild-set code untouched), matching the existing must-omit-to-preserve contract in core/ops/loadouts.js.
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('build').setLabel('Build Name (optional) | Share Code (optional)').setStyle(TextInputStyle.Short).setPlaceholder('Aggressive Flex | ABCD-1234-EFGH').setMaxLength(47).setRequired(true)),
-        // Placeholder added (2026-07-18, /manage loadout UX overhaul) -- this field had none at all before; matches the real one-attachment-per-line convention already shown in the Bulk Add modal's own placeholder below, so both modals model the same expected shape.
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('attachments').setLabel('Attachments (One per line)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Gauge-9 Mono\nCrown-H3 Barrel\nOWC Skeleton Stock').setRequired(true)),
-        // Label + placeholder rewritten (2026-07-18) -- the old placeholder (`bp50_flex_v1`) wasn't even the convention actually used anywhere in the live collection (real Cloudinary keys are `WeaponKey-BuildNum`, all-caps-with-hyphens, e.g. `BAL-27-1`/`FSS-HURRICANE-1` -- confirmed by querying the live Cloudinary account, not guessed). 2026-08-22: this field now takes EITHER a Public ID or a pasted http(s) image URL, which is why it is no longer "the ONE field in this modal that depends on a step happening OUTSIDE the bot first" -- a URL is uploaded to Cloudinary under a derived `WEAPON-N` key on submit (handlers/manage/loadouts.js's resolveImageInput). The two forms are told apart by the URL scheme, so this costs no extra modal slot -- which matters, since Discord caps a modal at 5 and this one uses all 5.
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('image').setLabel('Cloudinary Image Key, or an Image URL').setStyle(TextInputStyle.Short).setPlaceholder('e.g. BP50-1 -- or paste an image URL to upload it').setRequired(true)),
-        // NOTE: Discord modals cap at 5 fields, and this one already used all 5 — so Category and the Meta/Best/Top-N/DMZ-range "badges" ride along as pipe-delimited segments here rather than getting their own fields. Mode itself no longer needs a slot (it's baked into which button/page you clicked), unlike the pre-2026-07-12 single-modal-for-both-modes version.
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('meta').setLabel('Category | Badges').setStyle(TextInputStyle.Short).setPlaceholder('AR | meta, best, hp, s&d  (or ass, capable, top3, toxic)').setRequired(true))
-    );
+// The Add and Edit Loadout pop-up, five fields (Harkirat, 2026-10-25 21:48 EDT): weapon name and label · category, build # and gunsmith code · attachments and badges · an image URL · a screenshot upload. Raw API JSON, not the builder classes, because a file upload (type 19) sits inside a Label (type 18), which the builders do not make (/emojis' upload pop-up is built the same way). Discord caps a modal at 5, which is why the badges ride in the attachments box as a `Badges:` line and the label rides behind the weapon name. Read back by handlers/manage/loadouts.js through utils/loadoutForm.js.
+//
+// 🔴 THE IMAGE IS NEVER A TYPED KEY ANY MORE. MP picture keys are minted from the weapon and the gunsmith code (`WEAPON-CODE`, utils/loadoutImageCache.js codeImageKey), so the old "Cloudinary Image Key, or an Image URL" box is gone: a key typed by hand is how a picture ended up under the wrong build. DMZ, which has no code, still mints `DMZ-WEAPON-N`.
+const loadoutLabel = (text, description, component) => ({ type: 18, label: text, ...(description ? { description } : {}), component });
+function loadoutModal({ customId, title, mode, values = {}, isEdit }) {
+    const input = (custom_id, style, required, max_length, placeholder) => ({
+        type: 4, custom_id, style, required, max_length, placeholder,
+        ...(values[custom_id] ? { value: String(values[custom_id]).slice(0, max_length) } : {}),
+    });
+    const dmz = mode === 'DMZ';
+    const modal = {
+        custom_id: customId, title,
+        components: [
+            loadoutLabel('Weapon name, label', 'The label is optional and only shown here, e.g. BAL-27, Ranked', input('weapon', 1, true, 80, 'BAL-27, Ranked')),
+            loadoutLabel(dmz ? 'Category, build #' : 'Category, build #, gunsmith code',
+                dmz ? 'A build # another build has swaps the two; blank is the next number' : 'The code is required; a build # another build has swaps the two',
+                input('build', 1, true, 60, dmz ? 'AR, 2' : 'AR, 2, 1C2B4A8B9A')),
+            loadoutLabel('Attachments and badges', 'One attachment per line, then a Badges: line', input('attachments', 2, true, 1000, 'Gauge-9 Mono\nCrown-H3 Barrel\nBadges: meta, top3')),
+            loadoutLabel(isEdit ? 'Replace image (URL)' : 'Image (URL)', 'Optional. Use this or the screenshot, not both', input('image_url', 1, false, 500, 'https://...')),
+            loadoutLabel(isEdit ? 'Replace image (screenshot)' : 'Image (screenshot)', 'Optional. A Gunsmith screenshot of this build', { type: 19, custom_id: 'image_file', min_values: 0, max_values: 1, required: false }),
+        ],
+    };
+    // toJSON() like a ModalBuilder's, so every caller that serializes a modal (the retry refill, the snapshot tests, discord.js itself) treats both alike. Non-enumerable, so the copy it returns carries no function.
+    Object.defineProperty(modal, 'toJSON', { value() { return structuredClone(this); } });
     return modal;
 }
 
-function buildEditLoadoutModal(targetLoadout, targetId) {
-    const modal = new ModalBuilder().setCustomId(`edit_loadout_${targetId}`).setTitle('Edit Loadout');
+function buildAddLoadoutModal(mode) {
+    return loadoutModal({ customId: `add_loadout_${mode}`, title: `Create New ${mode} Loadout`, mode, isEdit: false });
+}
 
-    // Reconstruct the badges token list from what's currently saved, so re-opening this modal to tweak something else doesn't silently clear existing badges. `dmzRangeRank` is stored hyphenated ("best-close") but the parser's token format has no hyphen ("bestclose") — strip it back out for reconstruction.
-    const existingBadges = require('../utils/adminParser').loadoutBadgeTokens(targetLoadout).join(',');
-
-    modal.addComponents(
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('weapon').setLabel('Weapon Name').setStyle(TextInputStyle.Short).setValue(targetLoadout.weaponName)),
-        // Pre-fills the real shareCode (if any) after the pipe -- see Add Loadout's comment on this same convention. Reopening Edit with no shareCode set pre-fills just the bare build name (no trailing ` | `), so re-submitting unchanged still omits the key and doesn't clobber an autobuild-set code with an empty string.
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('build').setLabel('Build Name (optional) | Share Code (optional)').setStyle(TextInputStyle.Short).setMaxLength(47).setValue(targetLoadout.buildName + (targetLoadout.shareCode ? ` | ${targetLoadout.shareCode}` : ''))),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('attachments').setLabel('Attachments (One per line)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Gauge-9 Mono\nCrown-H3 Barrel\nOWC Skeleton Stock').setValue(targetLoadout.attachments.join('\n'))),
-        // Same undefined-to-setValue() guard as buildEditDrawModal's thumbnailUrl fix above. Label + placeholder matched to Add Loadout's wording -- see that modal's comment for both the Public ID convention and the 2026-08-22 URL intake. Pasting a URL OVER the pre-filled key is how "replace this build's image" works -- the upload deliberately targets the key already sitting in this field, so the stored public_id never changes and nothing referencing it breaks. That was the explicit ask in the deferred item.
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('image').setLabel('Cloudinary Image Key, or an Image URL').setStyle(TextInputStyle.Short).setPlaceholder('e.g. BP50-1 -- or paste an image URL to upload it').setValue(targetLoadout.imageKey || '')),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('meta').setLabel('Category | Badges').setStyle(TextInputStyle.Short).setValue(`${targetLoadout.category} | ${existingBadges}`))
-    );
-    return modal;
+// `siblings` are the weapon's builds in this mode, the target included; they give a legacy build (one with its label as its name) its build #. Callers without them still get a working box, with the # blank.
+function buildEditLoadoutModal(targetLoadout, targetId, siblings = null) {
+    const { editValues } = require('../utils/loadoutForm');
+    const tokens = require('../utils/adminParser').loadoutBadgeTokens(targetLoadout);
+    const values = targetLoadout.weaponName ? editValues(targetLoadout, siblings || [targetLoadout], tokens) : {};
+    return loadoutModal({ customId: `edit_loadout_${targetId}`, title: 'Edit Loadout', mode: targetLoadout.mode || 'MP', values, isEdit: true });
 }
 
 // --- PATCH NOTES modal builders --- (all 3 operate on the single "current" entry — the last item in patchNotes[], the one whose title stays synced to currentSeasonTitle — rather than a search-and-pick flow. If none exists yet, Date/Info's submit creates the first one.)
@@ -800,6 +809,13 @@ async function buildDynamicData(page) {
 // Fills a modal's text inputs from typed values, by input id: how /manage's catalogue warning reopens the box someone just submitted (Back to edit) with everything they typed. A blank or missing value leaves the input as built.
 function prefillModal(modal, values) {
     for (const row of modal.components || []) {
+        // A raw Label (type 18) holds one input in `component`; the loadout pop-up is built that way (loadoutModal above). A file upload cannot be refilled, so the admin attaches it again.
+        if (row.type === 18) {
+            const input = row.component;
+            const v = values?.[input?.custom_id];
+            if (input?.type === 4 && typeof v === 'string' && v.length) input.value = v.slice(0, input.max_length || 4000);
+            continue;
+        }
         for (const input of row.components || []) {
             const id = input.data?.custom_id;
             const v = values?.[id];

@@ -85,11 +85,12 @@ check('catalogue.learn refuses an empty list and normalises keys', () => {
 
 check('Back to edit reopens the add box with everything typed', () => {
     const manage = require('../commands/manage');
-    const modal = manage.prefillModal(manage.buildAddLoadoutModal('MP'), { weapon: 'ODEN', attachments: 'A\nB', meta: 'AR | hp' }).toJSON();
-    const value = (id) => modal.components.flatMap(r => r.components).find(c => c.custom_id === id).value;
-    assert.strictEqual(value('weapon'), 'ODEN');
-    assert.strictEqual(value('attachments'), 'A\nB');
-    assert.strictEqual(value('meta'), 'AR | hp');
+    // The five-field pop-up (2026-10-26 01:20 EDT) puts each input in a Label's `component`.
+    const modal = manage.prefillModal(manage.buildAddLoadoutModal('MP'), { weapon: 'ODEN, Ranked', attachments: 'A\nB\nBadges: hp', build: 'AR, 1, 1A2B3C4D5E' }).toJSON();
+    const value = (id) => modal.components.map(r => r.component).find(c => c.custom_id === id).value;
+    assert.strictEqual(value('weapon'), 'ODEN, Ranked');
+    assert.strictEqual(value('attachments'), 'A\nB\nBadges: hp');
+    assert.strictEqual(value('build'), 'AR, 1, 1A2B3C4D5E');
 });
 
 if (failures) { console.error(`\n${failures} catalogue check(s) failed.`); process.exit(1); }

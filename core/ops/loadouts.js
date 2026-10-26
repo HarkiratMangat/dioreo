@@ -31,6 +31,8 @@ function validateBuild(payload) {
     if (!MODES.includes(payload?.mode)) errors.push(`Mode must be one of ${MODES.join(' or ')}.`);
     // Ass excludes Meta and every tier (his ruling, 2026-09-24). The parsers already drop the clash with a warning; this refuses a payload that reaches here with both, from any surface.
     if (payload?.isAss && (payload.isMeta || payload.categoryRank || payload.dmzRangeRank)) errors.push("A build can't be Ass and also Meta or ranked.");
+    // The build # a save asks for (pins2's field, 2026-10-26 12:16 EDT); apply() places the build there and swaps the one holding it.
+    if (payload?.buildNumber != null && !(Number.isInteger(Number(payload.buildNumber)) && Number(payload.buildNumber) >= 1)) errors.push('The build number must be 1 or more.');
     if (errors.length) return { ok: false, errors };
 
     const weaponName = payload.weaponName.trim();
@@ -41,7 +43,9 @@ function validateBuild(payload) {
             payload: {
                 ...payload,
                 weaponName, weaponKey,
-                buildName: (payload.buildName || 'Standard Build').trim(),
+                // Only when sent: a build's name is `Build N`, set by numberBuild() in apply() (2026-10-26 12:16 EDT). Defaulting it here made every edit that left it out rename the build to "Standard Build".
+                ...(payload.buildName !== undefined ? { buildName: String(payload.buildName).trim() } : {}),
+                ...(payload.buildNumber != null ? { buildNumber: Number(payload.buildNumber) } : {}),
                 category: (payload.category || 'AR').toUpperCase(),
                 // Only rewritten when the caller actually supplied one -- the key must be ABSENT otherwise, not present-with-value-''. /manage's single add/edit modal never collects shareCode at all (only /autobuild sets it), and loadout.edit's apply() spreads this whole object straight into a Mongo $set -- an always-present '' would silently wipe a real gunsmith code an admin never touched. Found during handler-refactor integration.
                 ...(payload.shareCode !== undefined
@@ -60,9 +64,50 @@ function validateBuild(payload) {
     };
 }
 
+// --- RULES FOR A FRESH SAVE, in core so the portal gets them too (pins2 Session 4's ask, relayed by Harkirat 2026-10-26 12:16 EDT) --- Skipped when `restoring` (core/changeset.js): a Revert puts a record back exactly as it was, including one older than these rules.
+//
+// The gunsmith code: required on MP (Harkirat, 2026-10-25 21:48 EDT), since the picture is keyed by it. A "Coming Soon" placeholder has no build yet and is exempt.
+function codeRule(build) {
+    const { isPlaceholderBuild } = require('../../utils/loadoutRender');
+    if (build.mode !== 'MP' || String(build.shareCode || '').trim() || isPlaceholderBuild(build)) return null;
+    return 'An MP build needs its gunsmith code.';
+}
+
+// Numbering: a build's name is `Build N`, its place in /gunsmith (utils/loadoutForm.js compareBuilds). `wanted` is the build # asked for, else the build keeps its number (an edit) or takes the next one (an add); a number another build holds SWAPS the two, written in this same transaction so the inverse puts both back. A legacy buildName that is not `Build N` (a label stored as the name, from an older client) becomes the label. Returns { buildName, label?, moved: [{ id, prior }] } or { error }.
+async function numberBuild({ weaponKey, mode, targetId = null, wanted = null, sentName, label, session }) {
+    const form = require('../../utils/loadoutForm');
+    const siblings = await Loadout.find({ weaponKey, mode }).session(session).lean();
+    const inPool = targetId && siblings.some(s => String(s._id) === String(targetId));
+    const sentNumber = form.buildNumberOf(sentName);
+    const plan = form.planNumbering({ siblings, targetId: inPool ? targetId : null, wanted: wanted ?? sentNumber ?? null });
+    if (plan.error) return { error: plan.error };
+    const legacyLabel = sentName && sentNumber === null && sentName !== 'Standard Build' && !label ? sentName : null;
+    const moved = [];
+    for (const m of plan.moves) {
+        const holder = siblings.find(s => String(s._id) === m.id);
+        const { _id, __v, ...prior } = holder;
+        await Loadout.updateOne({ _id: holder._id }, { $set: { buildName: m.buildName } }, { session });
+        moved.push({ id: m.id, prior });
+    }
+    return { buildName: `Build ${plan.number}`, ...(legacyLabel ? { label: legacyLabel } : {}), moved };
+}
+
+// Puts a swapped build back: its whole stored record, since loadout.edit's validate fills defaults for anything left out (a buildName-only payload would reset its category and badges).
+const movedBack = (moved = []) => moved.map(m => ({ type: 'loadout.edit', target: { id: m.id }, payload: m.prior }));
+
 // A bulk paste is parsed before its page's mode is known, so the mode-dependent half of the badge rules runs here, once the op carries the mode: on DMZ a bare tier moves to dmzRangeRank (the same swap handlers/manage/loadouts.js applies to a single add or edit; before this a bulk DMZ "best" was stored on categoryRank, which a DMZ card never reads), and rank modes, MP only, are dropped with a note.
 function applyModeToParsed(parsed, mode, errors) {
-    if (mode !== 'DMZ') return;
+    if (mode !== 'DMZ') {
+        // An MP build's gunsmith code is required (Harkirat, 2026-10-25 21:48 EDT), so its picture can be tied to it. A "Coming Soon" placeholder has no build yet and is exempt. Only a fresh paste reaches here: an inverse carries `parsed` and skips validate, so a Revert of an old build without a code still restores it.
+        const { isPlaceholderBuild } = require('../../utils/loadoutRender');
+        for (let i = parsed.length - 1; i >= 0; i--) {
+            const p = parsed[i];
+            if (p.shareCode || isPlaceholderBuild(p)) continue;
+            errors.push(`${p.weaponName} (${p.buildName}) -- MP builds need a Code: line, so it was skipped.`);
+            parsed.splice(i, 1);
+        }
+        return;
+    }
     for (const p of parsed) {
         if (p.categoryRank && !p.dmzRangeRank) p.dmzRangeRank = p.categoryRank;
         p.categoryRank = null;
@@ -90,11 +135,20 @@ async function upsertBulkBlocks(parsed, mode, session) {
     // 🔴 Every doc UPDATED in place (not created) needs its PRE-update state captured here, or a bulk invert can only delete the newly-created docs and silently leaves every in-place overwrite un-reverted -- the same class of bug draws/calendar's bulk ops already solved by replaying the whole prior array.
     const updatedPriors = [];
     const touchedBuilds = [];
-    for (const rawEntry of parsed) {
-        const { weaponKey, buildName } = rawEntry;
+    for (let rawEntry of parsed) {
+        const { weaponKey } = rawEntry;
+        let { buildName } = rawEntry;
+        let existing = await Loadout.findOne({ weaponKey, mode, buildName }).session(session);
+        // A block with no Build: line is a NEW build, numbered after the weapon's others (2026-10-26 01:19 EDT: buildName is always `Build N`, the number that orders /gunsmith). It used to be saved as "Standard Build", which numbered nothing.
+        if (!existing && buildName === 'Standard Build') {
+            const { buildNumberOf } = require('../../utils/loadoutForm');
+            const nums = (await Loadout.find({ weaponKey, mode }).select('buildName').session(session).lean()).map(b => buildNumberOf(b.buildName) || 0);
+            buildName = `Build ${Math.max(0, ...nums) + 1}`;
+            rawEntry = { ...rawEntry, buildName };
+            existing = null;
+        }
         touchedKeys.add(weaponKey);
         touchedBuilds.push({ weaponKey, buildName });
-        const existing = await Loadout.findOne({ weaponKey, mode, buildName }).session(session);
         const entry = bulkEntryWrite(rawEntry, mode, existing);
         const imageKey = entry.imageKey ?? existing?.imageKey;
         // Slots for a pasted build: an unchanged, already-slotted build keeps its own; anything else gets the catalogue's. Before this, an update that changed the attachments left the OLD slots in place, aligned to the wrong names.
@@ -129,9 +183,24 @@ registerEntity('loadouts', {
             const siblings = await Loadout.find({ weaponKey: op.payload.weaponKey, mode: op.payload.mode }).lean();
             return { before: { builds: siblings.length }, after: { builds: siblings.length + 1 } };
         },
-        apply: async (op, { session }) => {
+        apply: async (op, { session, restoring = false }) => {
             // imageSourceUrl is portal-only staging (spec §10.1 row 14, uploadStagingScreenshot) or a pasted link -- never a real Loadout field, so it is stripped before it ever reaches Mongo (Mongoose would silently drop it anyway per the schema, but leaving it in `doc` would also leak it into every preview/diff downstream of this payload).
-            const { imageSourceUrl, ...doc } = op.payload;
+            const { imageSourceUrl, buildNumber, ...doc } = op.payload;
+            let moved = [];
+            if (!restoring) {
+                const codeError = codeRule(doc);
+                if (codeError) return { ok: false, reason: codeError };
+                const n = await numberBuild({ weaponKey: doc.weaponKey, mode: doc.mode, wanted: buildNumber ?? null, sentName: doc.buildName, label: doc.label, session });
+                if (n.error) return { ok: false, reason: n.error };
+                doc.buildName = n.buildName;
+                if (n.label) doc.label = n.label;
+                moved = n.moved;
+                // No picture yet: the placeholder, as a bulk paste stores (imageKey is required on the schema). An MP picture is keyed by its code just below, never by a key the caller sends.
+                if (!doc.imageKey) doc.imageKey = require('../../utils/adminParser').PLACEHOLDER_IMAGE;
+            }
+            if (!doc.buildName) doc.buildName = 'Standard Build';
+            // A picture the portal uploads at commit goes under the build's code key, whatever key its form sent (MP pictures are keyed WEAPON-CODE since 2026-10-26 01:19 EDT, utils/loadoutImageCache.js codeImageKey): a portal key minted by number is the overwrite this change exists to end.
+            if (imageSourceUrl && doc.mode === 'MP' && doc.shareCode) doc.imageKey = require('../../utils/loadoutImageCache').codeImageKey(doc.weaponName, doc.shareCode) || doc.imageKey;
             // A typed build has no slot labels of its own; the catalogue supplies them (deferred-list "Copy the attachment slots ... into Loadout.attachmentSlots": until 2026-10-19 16:19 EDT only /autobuild ever wrote slots). An /autobuild payload that carries its own keeps them.
             if (!doc.attachmentSlots?.length) {
                 const slots = await slotsFor(doc.attachments);
@@ -148,12 +217,15 @@ registerEntity('loadouts', {
                     const up = await uploadLoadoutImage(imageSourceUrl, imageKey);
                     return up.success ? null : `Image upload failed: ${up.error}. Fix the key later via Edit.`;
                 } : undefined,
-                change: { action: 'add', model: 'Loadout', target: `${op.payload.weaponName} (${op.payload.buildName})`,
-                          summary: `Added loadout "${op.payload.weaponName} (${op.payload.buildName})"` },
-                applied: { id: res.id }
+                change: { action: 'add', model: 'Loadout', target: `${doc.weaponName} (${doc.buildName})`,
+                          summary: `Added loadout "${doc.weaponName} (${doc.buildName})"` },
+                applied: { id: res.id, buildName: doc.buildName, moved }
             };
         },
-        invert: (c) => ({ type: 'loadout.delete', target: { id: c.applied.id } })
+        // A swap the add made is put back too (newest first: delete the new build, then restore the one it moved).
+        invert: (c) => c.applied.moved?.length
+            ? [{ type: 'loadout.delete', target: { id: c.applied.id } }, ...movedBack(c.applied.moved)]
+            : { type: 'loadout.delete', target: { id: c.applied.id } }
     },
 
     'loadout.edit': {
@@ -163,11 +235,33 @@ registerEntity('loadouts', {
             const cur = await Loadout.findById(op.target.id).lean();
             return { before: cur, after: { ...cur, ...op.payload } };
         },
-        apply: async (op, { session }) => {
+        apply: async (op, { session, restoring = false }) => {
             const cur = await Loadout.findById(op.target.id).session(session).lean();
             if (!cur) return { ok: false, reason: 'missing' };
             // imageSourceUrl is portal-only staging, same as loadout.add above -- stripped before it can reach `set` (and therefore `prior`/the invert payload).
-            const { imageSourceUrl, ...payload } = op.payload;
+            const { imageSourceUrl, buildNumber, ...payload } = op.payload;
+            let moved = [];
+            if (!restoring) {
+                const codeError = codeRule({ ...cur, ...payload });
+                if (codeError) return { ok: false, reason: codeError };
+                // The number changes only when one is asked for, or the build moves to another weapon; a label edit leaves it (pins2's ask). A sent buildName that is `Build N` counts as asking for N.
+                const weaponKey = payload.weaponKey || cur.weaponKey;
+                const mode = payload.mode || cur.mode;
+                const sent = payload.buildName;
+                const asks = buildNumber != null || (sent !== undefined && sent !== cur.buildName) || weaponKey !== cur.weaponKey;
+                if (asks) {
+                    const n = await numberBuild({ weaponKey, mode, targetId: op.target.id, wanted: buildNumber ?? null, sentName: sent, label: payload.label ?? cur.label, session });
+                    if (n.error) return { ok: false, reason: n.error };
+                    payload.buildName = n.buildName;
+                    if (n.label) payload.label = n.label;
+                    moved = n.moved;
+                } else {
+                    delete payload.buildName;
+                }
+            }
+            // Same as loadout.add above: a picture uploaded at commit goes under the code key.
+            const finalCode = payload.shareCode ?? cur.shareCode;
+            if (imageSourceUrl && (payload.mode || cur.mode) === 'MP' && finalCode) payload.imageKey = require('../../utils/loadoutImageCache').codeImageKey(payload.weaponName || cur.weaponName, finalCode) || payload.imageKey;
             // Slot labels only ever come from /autobuild's vision extraction, and a plain-text edit can't supply new ones -- keep the existing mapping ONLY when the attachment list is byte-for-byte unchanged (same length + same names in the same order); any real change invalidates slot identity, so it's cleared rather than carried forward misaligned.
             const existingAttachments = cur.attachments || [];
             const newAttachments = payload.attachments || [];
@@ -193,10 +287,13 @@ registerEntity('loadouts', {
                 } : undefined,
                 change: { action: 'edit', model: 'Loadout', target: `${cur.weaponName} (${cur.buildName})`,
                           summary: `Edited loadout "${cur.weaponName} (${cur.buildName})"` },
-                applied: { id: op.target.id, prior, version: res.version }
+                applied: { id: op.target.id, prior, version: res.version, buildName: saved?.buildName, moved }
             };
         },
-        invert: (c) => ({ type: 'loadout.edit', target: { id: c.applied.id }, payload: c.applied.prior })
+        // A swap the edit made is put back too: this build first, then the one it moved.
+        invert: (c) => c.applied.moved?.length
+            ? [{ type: 'loadout.edit', target: { id: c.applied.id }, payload: c.applied.prior }, ...movedBack(c.applied.moved)]
+            : { type: 'loadout.edit', target: { id: c.applied.id }, payload: c.applied.prior }
     },
 
     'loadout.delete': {
