@@ -54,7 +54,7 @@
             {
               "type": 2,
               "style": 5,
-              "label": "Privacy Policy",
+              "label": "Policy",
               "url": "https://dioreo.app/privacy"
             }
           ]
@@ -309,6 +309,7 @@
                 {
                   "label": "/settings",
                   "value": "/settings",
+                  "description": "Your timezone, reply visibility, CP region, colors and stats",
                   "emoji": {
                     "animated": true,
                     "name": "Settings",
@@ -609,6 +610,7 @@
                 {
                   "label": "/settings",
                   "value": "/settings",
+                  "description": "Your timezone, reply visibility, CP region, colors and stats",
                   "emoji": {
                     "animated": true,
                     "name": "Settings",
@@ -904,6 +906,7 @@
                 {
                   "label": "/settings",
                   "value": "/settings",
+                  "description": "Your timezone, reply visibility, CP region, colors and stats",
                   "emoji": {
                     "animated": true,
                     "name": "Settings",
@@ -1175,6 +1178,7 @@
                 {
                   "label": "/settings",
                   "value": "/settings",
+                  "description": "Your timezone, reply visibility, CP region, colors and stats",
                   "emoji": {
                     "animated": true,
                     "name": "Settings",
@@ -1446,6 +1450,7 @@
                 {
                   "label": "/settings",
                   "value": "/settings",
+                  "description": "Your timezone, reply visibility, CP region, colors and stats",
                   "emoji": {
                     "animated": true,
                     "name": "Settings",
@@ -1717,6 +1722,7 @@
                 {
                   "label": "/settings",
                   "value": "/settings",
+                  "description": "Your timezone, reply visibility, CP region, colors and stats",
                   "emoji": {
                     "animated": true,
                     "name": "Settings",
@@ -1784,7 +1790,7 @@
             {
               "type": 2,
               "style": 5,
-              "label": "Privacy Policy",
+              "label": "Policy",
               "url": "https://dioreo.app/privacy"
             }
           ]
@@ -2039,6 +2045,7 @@
                 {
                   "label": "/settings",
                   "value": "/settings",
+                  "description": "Your timezone, reply visibility, CP region, colors and stats",
                   "emoji": {
                     "animated": true,
                     "name": "Settings",
@@ -2117,7 +2124,7 @@
             {
               "type": 2,
               "style": 5,
-              "label": "Privacy Policy",
+              "label": "Policy",
               "url": "https://dioreo.app/privacy"
             }
           ]
@@ -2372,6 +2379,7 @@
                 {
                   "label": "/settings",
                   "value": "/settings",
+                  "description": "Your timezone, reply visibility, CP region, colors and stats",
                   "emoji": {
                     "animated": true,
                     "name": "Settings",
@@ -2382,6 +2390,7 @@
                 {
                   "label": "/admin",
                   "value": "/admin",
+                  "description": "Choose where Dioreo's replies stay private in your server",
                   "emoji": {
                     "animated": true,
                     "name": "ServerSettings",
@@ -2682,6 +2691,7 @@
                 {
                   "label": "/settings",
                   "value": "/settings",
+                  "description": "Your timezone, reply visibility, CP region, colors and stats",
                   "emoji": {
                     "animated": true,
                     "name": "Settings",
@@ -2692,6 +2702,7 @@
                 {
                   "label": "/admin",
                   "value": "/admin",
+                  "description": "Choose where Dioreo's replies stay private in your server",
                   "emoji": {
                     "animated": true,
                     "name": "ServerSettings",
@@ -2987,6 +2998,7 @@
                 {
                   "label": "/settings",
                   "value": "/settings",
+                  "description": "Your timezone, reply visibility, CP region, colors and stats",
                   "emoji": {
                     "animated": true,
                     "name": "Settings",
@@ -2997,6 +3009,7 @@
                 {
                   "label": "/admin",
                   "value": "/admin",
+                  "description": "Choose where Dioreo's replies stay private in your server",
                   "emoji": {
                     "animated": true,
                     "name": "ServerSettings",
@@ -3268,6 +3281,7 @@
                 {
                   "label": "/settings",
                   "value": "/settings",
+                  "description": "Your timezone, reply visibility, CP region, colors and stats",
                   "emoji": {
                     "animated": true,
                     "name": "Settings",
@@ -3278,6 +3292,7 @@
                 {
                   "label": "/admin",
                   "value": "/admin",
+                  "description": "Choose where Dioreo's replies stay private in your server",
                   "emoji": {
                     "animated": true,
                     "name": "ServerSettings",
@@ -3549,6 +3564,7 @@
                 {
                   "label": "/settings",
                   "value": "/settings",
+                  "description": "Your timezone, reply visibility, CP region, colors and stats",
                   "emoji": {
                     "animated": true,
                     "name": "Settings",
@@ -3559,6 +3575,7 @@
                 {
                   "label": "/admin",
                   "value": "/admin",
+                  "description": "Choose where Dioreo's replies stay private in your server",
                   "emoji": {
                     "animated": true,
                     "name": "ServerSettings",
@@ -3848,6 +3865,7 @@
                 {
                   "label": "/settings",
                   "value": "/settings",
+                  "description": "Your timezone, reply visibility, CP region, colors and stats",
                   "emoji": {
                     "animated": true,
                     "name": "Settings",
@@ -3858,6 +3876,7 @@
                 {
                   "label": "/admin",
                   "value": "/admin",
+                  "description": "Choose where Dioreo's replies stay private in your server",
                   "emoji": {
                     "animated": true,
                     "name": "ServerSettings",
@@ -3925,7 +3944,7 @@
             {
               "type": 2,
               "style": 5,
-              "label": "Privacy Policy",
+              "label": "Policy",
               "url": "https://dioreo.app/privacy"
             }
           ]
@@ -4180,6 +4199,7 @@
                 {
                   "label": "/settings",
                   "value": "/settings",
+                  "description": "Your timezone, reply visibility, CP region, colors and stats",
                   "emoji": {
                     "animated": true,
                     "name": "Settings",
@@ -4190,6 +4210,7 @@
                 {
                   "label": "/admin",
                   "value": "/admin",
+                  "description": "Choose where Dioreo's replies stay private in your server",
                   "emoji": {
                     "animated": true,
                     "name": "ServerSettings",
@@ -4268,7 +4289,7 @@
             {
               "type": 2,
               "style": 5,
-              "label": "Privacy Policy",
+              "label": "Policy",
               "url": "https://dioreo.app/privacy"
             }
           ]
@@ -4534,6 +4555,7 @@
                 {
                   "label": "/settings",
                   "value": "/settings",
+                  "description": "Your timezone, reply visibility, CP region, colors and stats",
                   "emoji": {
                     "animated": true,
                     "name": "Settings",
@@ -4544,6 +4566,7 @@
                 {
                   "label": "/admin",
                   "value": "/admin",
+                  "description": "Choose where Dioreo's replies stay private in your server",
                   "emoji": {
                     "animated": true,
                     "name": "ServerSettings",
@@ -4554,6 +4577,7 @@
                 {
                   "label": "/bot analytics",
                   "value": "/bot analytics",
+                  "description": "Usage, timing, health, alerts and recent changes",
                   "emoji": {
                     "animated": true,
                     "name": "DB_Info",
@@ -4564,6 +4588,7 @@
                 {
                   "label": "/bot access",
                   "value": "/bot access",
+                  "description": "Grant or revoke admin access",
                   "emoji": {
                     "animated": true,
                     "name": "BotAccess",
@@ -4574,6 +4599,7 @@
                 {
                   "label": "/bot hotpatch",
                   "value": "/bot hotpatch",
+                  "description": "Reload changed files into the running bot",
                   "emoji": {
                     "animated": true,
                     "name": "Edit",
@@ -4584,6 +4610,7 @@
                 {
                   "label": "/bot servers",
                   "value": "/bot servers",
+                  "description": "The servers Dioreo is in, and their settings",
                   "emoji": {
                     "animated": true,
                     "name": "DB_Guide",
@@ -4594,6 +4621,7 @@
                 {
                   "label": "/emojis",
                   "value": "/emojis",
+                  "description": "Every emoji on each bot, with one-tap sync",
                   "emoji": {
                     "animated": true,
                     "name": "Swatches",
@@ -4604,6 +4632,7 @@
                 {
                   "label": "/autobuild",
                   "value": "/autobuild",
+                  "description": "Turn Gunsmith screenshots into builds",
                   "emoji": {
                     "animated": true,
                     "name": "GunsmithCode",
@@ -4614,6 +4643,7 @@
                 {
                   "label": "/manage",
                   "value": "/manage",
+                  "description": "Add and edit draws, calendar, patch notes, loadouts and more",
                   "emoji": {
                     "animated": true,
                     "name": "DB_Database",
@@ -4925,6 +4955,7 @@
                 {
                   "label": "/settings",
                   "value": "/settings",
+                  "description": "Your timezone, reply visibility, CP region, colors and stats",
                   "emoji": {
                     "animated": true,
                     "name": "Settings",
@@ -4935,6 +4966,7 @@
                 {
                   "label": "/admin",
                   "value": "/admin",
+                  "description": "Choose where Dioreo's replies stay private in your server",
                   "emoji": {
                     "animated": true,
                     "name": "ServerSettings",
@@ -4945,6 +4977,7 @@
                 {
                   "label": "/bot analytics",
                   "value": "/bot analytics",
+                  "description": "Usage, timing, health, alerts and recent changes",
                   "emoji": {
                     "animated": true,
                     "name": "DB_Info",
@@ -4955,6 +4988,7 @@
                 {
                   "label": "/bot access",
                   "value": "/bot access",
+                  "description": "Grant or revoke admin access",
                   "emoji": {
                     "animated": true,
                     "name": "BotAccess",
@@ -4965,6 +4999,7 @@
                 {
                   "label": "/bot hotpatch",
                   "value": "/bot hotpatch",
+                  "description": "Reload changed files into the running bot",
                   "emoji": {
                     "animated": true,
                     "name": "Edit",
@@ -4975,6 +5010,7 @@
                 {
                   "label": "/bot servers",
                   "value": "/bot servers",
+                  "description": "The servers Dioreo is in, and their settings",
                   "emoji": {
                     "animated": true,
                     "name": "DB_Guide",
@@ -4985,6 +5021,7 @@
                 {
                   "label": "/emojis",
                   "value": "/emojis",
+                  "description": "Every emoji on each bot, with one-tap sync",
                   "emoji": {
                     "animated": true,
                     "name": "Swatches",
@@ -4995,6 +5032,7 @@
                 {
                   "label": "/autobuild",
                   "value": "/autobuild",
+                  "description": "Turn Gunsmith screenshots into builds",
                   "emoji": {
                     "animated": true,
                     "name": "GunsmithCode",
@@ -5005,6 +5043,7 @@
                 {
                   "label": "/manage",
                   "value": "/manage",
+                  "description": "Add and edit draws, calendar, patch notes, loadouts and more",
                   "emoji": {
                     "animated": true,
                     "name": "DB_Database",
@@ -5311,6 +5350,7 @@
                 {
                   "label": "/settings",
                   "value": "/settings",
+                  "description": "Your timezone, reply visibility, CP region, colors and stats",
                   "emoji": {
                     "animated": true,
                     "name": "Settings",
@@ -5321,6 +5361,7 @@
                 {
                   "label": "/admin",
                   "value": "/admin",
+                  "description": "Choose where Dioreo's replies stay private in your server",
                   "emoji": {
                     "animated": true,
                     "name": "ServerSettings",
@@ -5331,6 +5372,7 @@
                 {
                   "label": "/bot analytics",
                   "value": "/bot analytics",
+                  "description": "Usage, timing, health, alerts and recent changes",
                   "emoji": {
                     "animated": true,
                     "name": "DB_Info",
@@ -5341,6 +5383,7 @@
                 {
                   "label": "/bot access",
                   "value": "/bot access",
+                  "description": "Grant or revoke admin access",
                   "emoji": {
                     "animated": true,
                     "name": "BotAccess",
@@ -5351,6 +5394,7 @@
                 {
                   "label": "/bot hotpatch",
                   "value": "/bot hotpatch",
+                  "description": "Reload changed files into the running bot",
                   "emoji": {
                     "animated": true,
                     "name": "Edit",
@@ -5361,6 +5405,7 @@
                 {
                   "label": "/bot servers",
                   "value": "/bot servers",
+                  "description": "The servers Dioreo is in, and their settings",
                   "emoji": {
                     "animated": true,
                     "name": "DB_Guide",
@@ -5371,6 +5416,7 @@
                 {
                   "label": "/emojis",
                   "value": "/emojis",
+                  "description": "Every emoji on each bot, with one-tap sync",
                   "emoji": {
                     "animated": true,
                     "name": "Swatches",
@@ -5381,6 +5427,7 @@
                 {
                   "label": "/autobuild",
                   "value": "/autobuild",
+                  "description": "Turn Gunsmith screenshots into builds",
                   "emoji": {
                     "animated": true,
                     "name": "GunsmithCode",
@@ -5391,6 +5438,7 @@
                 {
                   "label": "/manage",
                   "value": "/manage",
+                  "description": "Add and edit draws, calendar, patch notes, loadouts and more",
                   "emoji": {
                     "animated": true,
                     "name": "DB_Database",
@@ -5673,6 +5721,7 @@
                 {
                   "label": "/settings",
                   "value": "/settings",
+                  "description": "Your timezone, reply visibility, CP region, colors and stats",
                   "emoji": {
                     "animated": true,
                     "name": "Settings",
@@ -5683,6 +5732,7 @@
                 {
                   "label": "/admin",
                   "value": "/admin",
+                  "description": "Choose where Dioreo's replies stay private in your server",
                   "emoji": {
                     "animated": true,
                     "name": "ServerSettings",
@@ -5693,6 +5743,7 @@
                 {
                   "label": "/bot analytics",
                   "value": "/bot analytics",
+                  "description": "Usage, timing, health, alerts and recent changes",
                   "emoji": {
                     "animated": true,
                     "name": "DB_Info",
@@ -5703,6 +5754,7 @@
                 {
                   "label": "/bot access",
                   "value": "/bot access",
+                  "description": "Grant or revoke admin access",
                   "emoji": {
                     "animated": true,
                     "name": "BotAccess",
@@ -5713,6 +5765,7 @@
                 {
                   "label": "/bot hotpatch",
                   "value": "/bot hotpatch",
+                  "description": "Reload changed files into the running bot",
                   "emoji": {
                     "animated": true,
                     "name": "Edit",
@@ -5723,6 +5776,7 @@
                 {
                   "label": "/bot servers",
                   "value": "/bot servers",
+                  "description": "The servers Dioreo is in, and their settings",
                   "emoji": {
                     "animated": true,
                     "name": "DB_Guide",
@@ -5733,6 +5787,7 @@
                 {
                   "label": "/emojis",
                   "value": "/emojis",
+                  "description": "Every emoji on each bot, with one-tap sync",
                   "emoji": {
                     "animated": true,
                     "name": "Swatches",
@@ -5743,6 +5798,7 @@
                 {
                   "label": "/autobuild",
                   "value": "/autobuild",
+                  "description": "Turn Gunsmith screenshots into builds",
                   "emoji": {
                     "animated": true,
                     "name": "GunsmithCode",
@@ -5753,6 +5809,7 @@
                 {
                   "label": "/manage",
                   "value": "/manage",
+                  "description": "Add and edit draws, calendar, patch notes, loadouts and more",
                   "emoji": {
                     "animated": true,
                     "name": "DB_Database",
@@ -6035,6 +6092,7 @@
                 {
                   "label": "/settings",
                   "value": "/settings",
+                  "description": "Your timezone, reply visibility, CP region, colors and stats",
                   "emoji": {
                     "animated": true,
                     "name": "Settings",
@@ -6045,6 +6103,7 @@
                 {
                   "label": "/admin",
                   "value": "/admin",
+                  "description": "Choose where Dioreo's replies stay private in your server",
                   "emoji": {
                     "animated": true,
                     "name": "ServerSettings",
@@ -6055,6 +6114,7 @@
                 {
                   "label": "/bot analytics",
                   "value": "/bot analytics",
+                  "description": "Usage, timing, health, alerts and recent changes",
                   "emoji": {
                     "animated": true,
                     "name": "DB_Info",
@@ -6065,6 +6125,7 @@
                 {
                   "label": "/bot access",
                   "value": "/bot access",
+                  "description": "Grant or revoke admin access",
                   "emoji": {
                     "animated": true,
                     "name": "BotAccess",
@@ -6075,6 +6136,7 @@
                 {
                   "label": "/bot hotpatch",
                   "value": "/bot hotpatch",
+                  "description": "Reload changed files into the running bot",
                   "emoji": {
                     "animated": true,
                     "name": "Edit",
@@ -6085,6 +6147,7 @@
                 {
                   "label": "/bot servers",
                   "value": "/bot servers",
+                  "description": "The servers Dioreo is in, and their settings",
                   "emoji": {
                     "animated": true,
                     "name": "DB_Guide",
@@ -6095,6 +6158,7 @@
                 {
                   "label": "/emojis",
                   "value": "/emojis",
+                  "description": "Every emoji on each bot, with one-tap sync",
                   "emoji": {
                     "animated": true,
                     "name": "Swatches",
@@ -6105,6 +6169,7 @@
                 {
                   "label": "/autobuild",
                   "value": "/autobuild",
+                  "description": "Turn Gunsmith screenshots into builds",
                   "emoji": {
                     "animated": true,
                     "name": "GunsmithCode",
@@ -6115,6 +6180,7 @@
                 {
                   "label": "/manage",
                   "value": "/manage",
+                  "description": "Add and edit draws, calendar, patch notes, loadouts and more",
                   "emoji": {
                     "animated": true,
                     "name": "DB_Database",
@@ -6415,6 +6481,7 @@
                 {
                   "label": "/settings",
                   "value": "/settings",
+                  "description": "Your timezone, reply visibility, CP region, colors and stats",
                   "emoji": {
                     "animated": true,
                     "name": "Settings",
@@ -6425,6 +6492,7 @@
                 {
                   "label": "/admin",
                   "value": "/admin",
+                  "description": "Choose where Dioreo's replies stay private in your server",
                   "emoji": {
                     "animated": true,
                     "name": "ServerSettings",
@@ -6435,6 +6503,7 @@
                 {
                   "label": "/bot analytics",
                   "value": "/bot analytics",
+                  "description": "Usage, timing, health, alerts and recent changes",
                   "emoji": {
                     "animated": true,
                     "name": "DB_Info",
@@ -6445,6 +6514,7 @@
                 {
                   "label": "/bot access",
                   "value": "/bot access",
+                  "description": "Grant or revoke admin access",
                   "emoji": {
                     "animated": true,
                     "name": "BotAccess",
@@ -6455,6 +6525,7 @@
                 {
                   "label": "/bot hotpatch",
                   "value": "/bot hotpatch",
+                  "description": "Reload changed files into the running bot",
                   "emoji": {
                     "animated": true,
                     "name": "Edit",
@@ -6465,6 +6536,7 @@
                 {
                   "label": "/bot servers",
                   "value": "/bot servers",
+                  "description": "The servers Dioreo is in, and their settings",
                   "emoji": {
                     "animated": true,
                     "name": "DB_Guide",
@@ -6475,6 +6547,7 @@
                 {
                   "label": "/emojis",
                   "value": "/emojis",
+                  "description": "Every emoji on each bot, with one-tap sync",
                   "emoji": {
                     "animated": true,
                     "name": "Swatches",
@@ -6485,6 +6558,7 @@
                 {
                   "label": "/autobuild",
                   "value": "/autobuild",
+                  "description": "Turn Gunsmith screenshots into builds",
                   "emoji": {
                     "animated": true,
                     "name": "GunsmithCode",
@@ -6495,6 +6569,7 @@
                 {
                   "label": "/manage",
                   "value": "/manage",
+                  "description": "Add and edit draws, calendar, patch notes, loadouts and more",
                   "emoji": {
                     "animated": true,
                     "name": "DB_Database",
@@ -6786,6 +6861,7 @@
                 {
                   "label": "/settings",
                   "value": "/settings",
+                  "description": "Your timezone, reply visibility, CP region, colors and stats",
                   "emoji": {
                     "animated": true,
                     "name": "Settings",
@@ -6796,6 +6872,7 @@
                 {
                   "label": "/admin",
                   "value": "/admin",
+                  "description": "Choose where Dioreo's replies stay private in your server",
                   "emoji": {
                     "animated": true,
                     "name": "ServerSettings",
@@ -6806,6 +6883,7 @@
                 {
                   "label": "/bot analytics",
                   "value": "/bot analytics",
+                  "description": "Usage, timing, health, alerts and recent changes",
                   "emoji": {
                     "animated": true,
                     "name": "DB_Info",
@@ -6816,6 +6894,7 @@
                 {
                   "label": "/bot access",
                   "value": "/bot access",
+                  "description": "Grant or revoke admin access",
                   "emoji": {
                     "animated": true,
                     "name": "BotAccess",
@@ -6826,6 +6905,7 @@
                 {
                   "label": "/bot hotpatch",
                   "value": "/bot hotpatch",
+                  "description": "Reload changed files into the running bot",
                   "emoji": {
                     "animated": true,
                     "name": "Edit",
@@ -6836,6 +6916,7 @@
                 {
                   "label": "/bot servers",
                   "value": "/bot servers",
+                  "description": "The servers Dioreo is in, and their settings",
                   "emoji": {
                     "animated": true,
                     "name": "DB_Guide",
@@ -6846,6 +6927,7 @@
                 {
                   "label": "/emojis",
                   "value": "/emojis",
+                  "description": "Every emoji on each bot, with one-tap sync",
                   "emoji": {
                     "animated": true,
                     "name": "Swatches",
@@ -6856,6 +6938,7 @@
                 {
                   "label": "/autobuild",
                   "value": "/autobuild",
+                  "description": "Turn Gunsmith screenshots into builds",
                   "emoji": {
                     "animated": true,
                     "name": "GunsmithCode",
@@ -6866,6 +6949,7 @@
                 {
                   "label": "/manage",
                   "value": "/manage",
+                  "description": "Add and edit draws, calendar, patch notes, loadouts and more",
                   "emoji": {
                     "animated": true,
                     "name": "DB_Database",
@@ -7016,7 +7100,7 @@
             {
               "type": 2,
               "style": 5,
-              "label": "Privacy Policy",
+              "label": "Policy",
               "url": "https://dioreo.app/privacy"
             }
           ]
@@ -7282,6 +7366,7 @@
                 {
                   "label": "/settings",
                   "value": "/settings",
+                  "description": "Your timezone, reply visibility, CP region, colors and stats",
                   "emoji": {
                     "animated": true,
                     "name": "Settings",
@@ -7292,6 +7377,7 @@
                 {
                   "label": "/bot analytics",
                   "value": "/bot analytics",
+                  "description": "Usage, timing, health, alerts and recent changes",
                   "emoji": {
                     "animated": true,
                     "name": "DB_Info",
@@ -7603,6 +7689,7 @@
                 {
                   "label": "/settings",
                   "value": "/settings",
+                  "description": "Your timezone, reply visibility, CP region, colors and stats",
                   "emoji": {
                     "animated": true,
                     "name": "Settings",
@@ -7613,6 +7700,7 @@
                 {
                   "label": "/bot analytics",
                   "value": "/bot analytics",
+                  "description": "Usage, timing, health, alerts and recent changes",
                   "emoji": {
                     "animated": true,
                     "name": "DB_Info",
@@ -7919,6 +8007,7 @@
                 {
                   "label": "/settings",
                   "value": "/settings",
+                  "description": "Your timezone, reply visibility, CP region, colors and stats",
                   "emoji": {
                     "animated": true,
                     "name": "Settings",
@@ -7929,6 +8018,7 @@
                 {
                   "label": "/bot analytics",
                   "value": "/bot analytics",
+                  "description": "Usage, timing, health, alerts and recent changes",
                   "emoji": {
                     "animated": true,
                     "name": "DB_Info",
@@ -8211,6 +8301,7 @@
                 {
                   "label": "/settings",
                   "value": "/settings",
+                  "description": "Your timezone, reply visibility, CP region, colors and stats",
                   "emoji": {
                     "animated": true,
                     "name": "Settings",
@@ -8221,6 +8312,7 @@
                 {
                   "label": "/bot analytics",
                   "value": "/bot analytics",
+                  "description": "Usage, timing, health, alerts and recent changes",
                   "emoji": {
                     "animated": true,
                     "name": "DB_Info",
@@ -8503,6 +8595,7 @@
                 {
                   "label": "/settings",
                   "value": "/settings",
+                  "description": "Your timezone, reply visibility, CP region, colors and stats",
                   "emoji": {
                     "animated": true,
                     "name": "Settings",
@@ -8513,6 +8606,7 @@
                 {
                   "label": "/bot analytics",
                   "value": "/bot analytics",
+                  "description": "Usage, timing, health, alerts and recent changes",
                   "emoji": {
                     "animated": true,
                     "name": "DB_Info",
@@ -8795,6 +8889,7 @@
                 {
                   "label": "/settings",
                   "value": "/settings",
+                  "description": "Your timezone, reply visibility, CP region, colors and stats",
                   "emoji": {
                     "animated": true,
                     "name": "Settings",
@@ -8805,6 +8900,7 @@
                 {
                   "label": "/bot analytics",
                   "value": "/bot analytics",
+                  "description": "Usage, timing, health, alerts and recent changes",
                   "emoji": {
                     "animated": true,
                     "name": "DB_Info",
@@ -9096,6 +9192,7 @@
                 {
                   "label": "/settings",
                   "value": "/settings",
+                  "description": "Your timezone, reply visibility, CP region, colors and stats",
                   "emoji": {
                     "animated": true,
                     "name": "Settings",
@@ -9106,6 +9203,7 @@
                 {
                   "label": "/bot analytics",
                   "value": "/bot analytics",
+                  "description": "Usage, timing, health, alerts and recent changes",
                   "emoji": {
                     "animated": true,
                     "name": "DB_Info",

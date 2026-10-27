@@ -67,7 +67,7 @@ const SECTION_BREAK = '\n<<<SECTION_BREAK>>>\n';
 //   · `requires` on a COMMAND hides just that line, leaving its category visible (`/admin` inside
 //     Preferences), which is the shape Harkirat asked for on 2026-08-10 18:57 EDT.
 // Every surface -- dropdown, landing directory, `cmd:` autocomplete, and the detail pages -- reads these same fields, so a new restricted command is one entry and cannot be half-added. `description`/`options` (v3-pre-release review finding #49) carry a command's DETAIL-PAGE body as data instead of hand-concatenated markdown -- only the four categories whose commands render a per-command "-# **Options**" block inline (gunsmith/draws/seasonal/utilities) use them; the two admin categories keep bespoke prose (see buildPreferencesBody/buildBotAdminBody below) since their shape genuinely isn't "one command, one options list". An option's `desc` (or a command's `description`) may be a plain string or a `(client) => string` function, for the one case (/timestamp's `[timezone]`) that needs a live mentionCommand() call -- see resolveText() below.
-const cmd = (name, { requires = null, suffix = null, description = null, options = [] } = {}) => ({ name, requires, suffix, description, options });
+const cmd = (name, { requires = null, suffix = null, description = null, jumpDescription = null, options = [] } = {}) => ({ name, requires, suffix, description, jumpDescription, options });
 
 const permitted = (item, perms) => !item.requires || perms[item.requires] === true;
 const visibleCategories = perms => CATEGORY_DEFS.filter(c => permitted(c, perms));
@@ -185,14 +185,14 @@ const CATEGORY_DEFS = [
         emojiKey: 'settings', emojiKeyServerAdmin: 'serverSettings',
         dropdownDescription: 'Your saved preferences',
         dropdownDescriptionServerAdmin: "Your preferences and your server's rules",
-        staticCommands: [cmd('/settings'), cmd('/admin', { requires: 'serverAdmin', suffix: '(server)' })],
+        staticCommands: [cmd('/settings', { jumpDescription: 'Your timezone, reply visibility, CP region, colors and stats' }), cmd('/admin', { requires: 'serverAdmin', suffix: '(server)', jumpDescription: "Choose where Dioreo's replies stay private in your server" })],
     },
     // Whole-category gating, unlike `/admin` above: these are useless to anyone who is not on the bot's own admin whitelist, and unlike Manage Server there is no per-guild version of that permission. `botAccess` is the emoji (2026-08-22, Harkirat's call) -- the SAME icon /bot access's own panel heading uses, so the category and the surface it leads to read as one thing. It replaced `database`, which was borrowed from the `mng*` data-entry family and described only one of the five commands listed here.
     {
         key: 'botadmin', label: 'Bot Admin', emojiKey: 'botAccess',
         dropdownDescription: 'Data entry, analytics and admin tools',
         // Alphabetical, and it must MATCH buildBotAdminBody's order below -- the first draft listed these one way in the directory and another in the body, which reads as the page having lost track of itself. Harkirat asked for alphabetical here on 2026-08-10 19:34 EDT. ⚠️ Per-command `requires` (added 2026-08-13, per-command admin permissions) -- an admin granted only /bot analytics must not see /manage or /autobuild listed here even though the whole category is visible to them. Category-level `requires: 'botAdmin'` still gates the SECTION (shows if the user has ANY admin access at all, per utils/adminAccess.js's isAdmin()); each command's own key gates that ONE line, same pattern `/admin` already uses inside Preferences. `/bot access` is gated on `botAccess` (isOwner(), not a permission token -- see utils/adminAccess.js's header on why it can never have one).
-        staticCommands: [cmd('/bot analytics', { requires: 'bot' }), cmd('/bot access', { requires: 'botAccess' }), cmd('/bot hotpatch', { requires: 'botAccess' }), cmd('/bot servers', { requires: 'botAccess' }), cmd('/emojis', { requires: 'botAccess' }), cmd('/autobuild', { requires: 'autobuild' }), cmd('/manage', { requires: 'manage' })],
+        staticCommands: [cmd('/bot analytics', { requires: 'bot', jumpDescription: 'Usage, timing, health, alerts and recent changes' }), cmd('/bot access', { requires: 'botAccess', jumpDescription: 'Grant or revoke admin access' }), cmd('/bot hotpatch', { requires: 'botAccess', jumpDescription: 'Reload changed files into the running bot' }), cmd('/bot servers', { requires: 'botAccess', jumpDescription: 'The servers Dioreo is in, and their settings' }), cmd('/emojis', { requires: 'botAccess', jumpDescription: 'Every emoji on each bot, with one-tap sync' }), cmd('/autobuild', { requires: 'autobuild', jumpDescription: 'Turn Gunsmith screenshots into builds' }), cmd('/manage', { requires: 'manage', jumpDescription: 'Add and edit draws, calendar, patch notes, loadouts and more' })],
         requires: 'botAdmin',
     },
 ];
@@ -466,17 +466,27 @@ const COMMAND_EMOJI = {
 };
 
 // One command at a time (2026-10-27 10:44 EDT, Harkirat: "add another dropdown so a user can filter for 1 specific command instead of only per category"). Every slash command this viewer may see, in directory order, capped at Discord's 25 options; right-click apps stay out (they have no page of their own). Picking one opens a page with only that command (handlers/help.js, `help_command`).
-function buildCommandSelectRow(focusName, perms = {}) {
+// `seasonEmoji` is the current season's own emoji for /season end (2026-10-27 19:01 EDT, Harkirat: "make sure it's using this current season's emoji and not the generic battle pass one"); BP stands in when it is unknown. `jumpDescription` fills the rows whose command has no `description` here (/settings, /admin and the admin tools); it is read only by this list, so their own pages are unchanged (his ask, same message).
+function buildCommandSelectRow(focusName, perms = {}, seasonEmoji = null) {
     const options = [];
     for (const cat of visibleCategories(perms)) {
         for (const c of cat.detailCommands || visibleCommands(cat, perms)) {
             if (options.length >= 25) break;
-            const text = c.description || '';
+            const text = c.description || c.jumpDescription || '';
             const description = text.length > 100 ? `${text.slice(0, 99)}…` : (text || undefined);
-            options.push({ label: c.name, value: c.name, ...(description ? { description } : {}), emoji: emojis.parseEmoji(emojis[COMMAND_EMOJI[c.name]] || emojis[categoryEmojiKey(cat, perms)]), default: c.name === focusName });
+            options.push({ label: c.name, value: c.name, ...(description ? { description } : {}), emoji: emojis.parseEmoji((c.name === '/season end' && seasonEmoji) || emojis[COMMAND_EMOJI[c.name]] || emojis[categoryEmojiKey(cat, perms)]), default: c.name === focusName });
         }
     }
     return { type: 1, components: [{ type: 3, custom_id: 'help_command', placeholder: 'Jump to one command…', options }] };
+}
+
+// The current season's emoji, as /today and /calendar find it. Only when the database is connected: the snapshot test renders this panel with no Mongo, and a buffered query there would wait ten seconds and fail.
+async function currentSeasonEmoji() {
+    try {
+        if (require('mongoose').connection.readyState !== 1) return null;
+        const doc = await require('../models/SeasonalData').findOne({ docType: 'global' }).select('currentSeasonTitle currentSeasonEmoji').lean();
+        return doc ? require('../utils/seasonEmoji').seasonEmojiFor(doc.currentSeasonTitle, doc.currentSeasonEmoji) : null;
+    } catch { return null; }
 }
 
 async function buildContainer(selectedKey, accentColor, perms = {}, client, focusName = null, onlyFocus = false) {
@@ -511,7 +521,7 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client, focu
             components: [
                 { type: 2, style: 5, label: 'Credits', url: `${WEBSITE_URL}/notice` },
                 { type: 2, style: 5, label: 'Terms', url: `${WEBSITE_URL}/terms` },
-                { type: 2, style: 5, label: 'Privacy Policy', url: `${WEBSITE_URL}/privacy` }
+                { type: 2, style: 5, label: 'Policy', url: `${WEBSITE_URL}/privacy` }
             ]
         });
         components.push({ type: 14, spacing: 2, divider: true });
@@ -532,7 +542,7 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client, focu
         // Deliberately NOT re-mentioning `/help cmd:` here -- the directory above already covers it ("Learn more about a command: /help <cmd>"); this line is the dropdown's own label, and the directory no longer says "Or use the Dropdown below!" as well (critique #28).
         components.push({ type: 10, content: `-# Browse by category, or jump to one command` });
         components.push(buildCategorySelectRow(null, perms));
-        components.push(buildCommandSelectRow(null, perms));
+        components.push(buildCommandSelectRow(null, perms, await currentSeasonEmoji()));
         components.push({ type: 14, spacing: 1, divider: true });
         // The sign-off in the launch announcement's style (2026-10-27 01:23 EDT, Harkirat). "Report bugs & suggestions to @dior" went with it: the Bugs & Suggestions button under this panel does that now.
         components.push({ type: 10, content: `-# Made with ${emojis.diorHeart} by <@${HARKIRAT_ID}>` });
@@ -562,7 +572,7 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client, focu
         // Detail pages DON'T already mention /help cmd: in their main content (unlike the landing page above), so it's worth surfacing here -- reworded from the landing hint rather than reused verbatim, since the two pages need different things said.
         components.push({ type: 10, content: `-# Browse by category, or jump to one command` });
         components.push(buildCategorySelectRow(onlyFocus ? null : selectedKey, perms));
-        components.push(buildCommandSelectRow(onlyFocus ? focusName : null, perms));
+        components.push(buildCommandSelectRow(onlyFocus ? focusName : null, perms, await currentSeasonEmoji()));
 
         // Bulk Format Guide dropdown (item 10, added 2026-08-15 13:11 EDT) -- lets an admin jump straight to one of /manage's rich guide topics from THIS page, without having to open /manage first. Only offered when perms.manage is true (Announcement's own guide is manage-gated, same as every other /manage guide topic) -- gating this on perms.botAdmin instead would offer it to an admin granted only /bot analytics, who cannot open /manage at all. handlers/help.js's `help_guide_pick` branch opens the real guide container.
         if (selectedKey === 'botadmin' && perms.manage) {
