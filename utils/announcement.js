@@ -188,12 +188,14 @@ function buildWhyPanel(state, client = null) {
             { type: 1, components: [turnOff] },
         ] }];
     }
-    const why = [
-        `### ${emojis.info} Why am I seeing this?`,
-        'Dioreo shares news here now and then: new features, changes, or something worth knowing. It shows up once, right after you use one of its commands, and only you can see it.',
-        `-# Some are shown a couple more times, at least a day apart. Turn them off here, or any time in ${settings}.`,
-    ].join('\n');
-    return [{ type: 17, components: [{ type: 10, content: why }, { type: 1, components: [turnOff] }] }];
+    // His copy and layout, 2026-10-27 01:23 EDT: no accent, the repeat note in its own box for a little space, a drawn divider above the settings line.
+    return [{ type: 17, components: [
+        { type: 10, content: `## ${emojis.info} Why am I seeing this?\nDioreo occasionally shares news for new features, big changes, or something important.` },
+        { type: 10, content: '-# Some **important announcements** are shown multiple times, but only once per day.' },
+        { type: 14, spacing: 1, divider: true },
+        { type: 10, content: `-# Don't want Dioreo's announcements? Change your preferences anytime in ${settings}.` },
+        { type: 1, components: [turnOff] },
+    ] }];
 }
 
 // The one write of the setting, from the answer above, /settings and /remind alike: `true` while off, removed when turned back on (models/UserPreference.js announcementsOff).

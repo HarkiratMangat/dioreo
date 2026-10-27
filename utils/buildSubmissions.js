@@ -432,4 +432,6 @@ async function handleDisputeInfo(interaction) {
 module.exports = {
     submitModal, parseDetails, submissionCard, handleSubmitSave, handleSubmissionButton, approveModal, handleApproveSave, onSaved,
     disputeModal, parseBuildText, disputeCard, handleDisputeSave, handleDisputeButton, handleDisputeInfo, RATE_MS, oneAtATime, composeAs, recentFrom, rateLimitReply,
+    // utils/feedback.js (/help's Bugs & Suggestions) DMs the owner the same way.
+    dmOwner, fileFrom,
 };

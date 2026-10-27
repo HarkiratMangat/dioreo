@@ -502,15 +502,15 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client, focu
                 })
                 .join('')
                 + `\n`
-                + `-# 💠 **Learn more about a command:** **\`/help <cmd>\`**\n-# 💠 e.g. **/help** cmd:\`draws\`\n\n`
-                + `-# Report bugs & suggestions to <@${HARKIRAT_ID}>.`
+                + `-# 💠 **Learn more about a command:** **\`/help <cmd>\`**\n-# 💠 e.g. **/help** cmd:\`draws\``
         });
         components.push({ type: 14, spacing: 2, divider: true });
         // Deliberately NOT re-mentioning `/help cmd:` here -- the directory above already covers it ("Learn more about a command: /help <cmd>"); this line is the dropdown's own label, and the directory no longer says "Or use the Dropdown below!" as well (critique #28).
         components.push({ type: 10, content: `-# Select a category from the dropdown below` });
         components.push(buildCategorySelectRow(null, perms));
         components.push({ type: 14, spacing: 1, divider: true });
-        components.push({ type: 10, content: `-# ${emojis.diorHeart} Made with love by <@${HARKIRAT_ID}>` });
+        // The sign-off in the launch announcement's style (2026-10-27 01:23 EDT, Harkirat). "Report bugs & suggestions to @dior" went with it: the Bugs & Suggestions button under this panel does that now.
+        components.push({ type: 10, content: `-# Made with ${emojis.diorHeart} by <@${HARKIRAT_ID}>` });
     } else {
         // `requested` is the already-permission-checked category from the guard above. detailCommands (gunsmith only) or visibleCommands(requested, perms) -- see each builder's own comment for why membership drives filtering instead of raw `perms`.
         let detailSource = requested.detailCommands || visibleCommands(requested, perms);
@@ -556,7 +556,16 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client, focu
     return { type: 17, accent_color: accentColor, components };
 }
 
+function helpFooterRow() {
+    const { FEEDBACK_BUTTON_ID } = require('../utils/feedback');
+    return { type: 1, components: [
+        { type: 2, style: 2, label: 'Announcements', custom_id: 'help_announcements', emoji: emojis.parseEmoji(emojis.announcements) },
+        { type: 2, style: 2, label: 'Bugs & Suggestions', custom_id: FEEDBACK_BUTTON_ID },
+    ] };
+}
+
 module.exports = {
+    helpFooterRow,
     data: new SlashCommandBuilder()
         .setName('help')
         .setDescription("See what Dioreo can do and how to report bugs")
@@ -601,6 +610,8 @@ module.exports = {
 
         // No "Show Everyone" button -- the visibility option above already covers that case up front, and repeating it here would be redundant (Harkirat's direct request).
         const components = [await buildContainer(selectedKey, accentColor, perms, interaction.client, focusName)];
+        // Under every /help page, outside its card (2026-10-27 01:23 EDT, Harkirat; "regardless of whatever cmd/page of /help is being viewed", 01:21 EDT): Announcements shows what is running now, privately, and Bugs & Suggestions opens the pop-up utils/feedback.js sends to the owner. Answered by handlers/help.js. It costs 3 of the message's 40 components; scripts/feedback.test.js counts every page with it.
+        components.push(helpFooterRow());
         return await sendV2Payload(interaction, components);
     }
 };

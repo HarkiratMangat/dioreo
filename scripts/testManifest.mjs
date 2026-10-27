@@ -113,6 +113,7 @@ export const TESTS = [
     {"cmd": "node scripts/visionReads.test.js", "lane": "unit"},
     {"cmd": "node scripts/autobuildResume.test.js", "lane": "unit"},
     {"cmd": "node scripts/buildSubmissions.test.js", "lane": "unit"},
+    {"cmd": "node scripts/feedback.test.js", "lane": "unit"},
     {"cmd": "node scripts/emojiSync.test.js", "lane": "unit"},
     {"cmd": "node scripts/botGlyphs.test.js", "lane": "unit"},
     {"cmd": "node scripts/visionCost.test.js", "lane": "unit"},
