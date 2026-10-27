@@ -125,6 +125,8 @@ function announcementBody(doc) {
     const postedTs = Math.floor(new Date(doc.createdAt).getTime() / 1000);
     const text = String(doc.text || '');
     const body = text.length > ANNOUNCEMENT_TEXT_MAX ? `${text.slice(0, ANNOUNCEMENT_TEXT_MAX - 1)}…` : text;
+    // A `{posted}` token in the text takes the live time where the writer put it (2026-10-27 10:44 EDT: the v3 launch footer reads "Made with … by @dior · {posted}"), and then no separate Posted line is added.
+    if (body.includes('{posted}')) return body.split('{posted}').join(`<t:${postedTs}:R>`);
     return `${body}\n\n-# Posted <t:${postedTs}:R>`;
 }
 
@@ -222,7 +224,8 @@ async function maybeSendAnnouncement(interaction) {
 
     // A Components V2 follow-up (32768) that only the user sees (64), the way handlers/manage/* send theirs: one Container per announcement, the Why row under the batch. Only requires the interaction to already be acknowledged, which every caller of this function guarantees by calling it after the command's own reply completed.
     try {
-        await interaction.followUp({ flags: 32768 | 64, components: [...containers, ...(whyRowNeeded(toShow, seen) ? [whyButtonRow()] : [])] });
+        // No mention pings or highlights: an announcement may name someone (the launch footer names the developer) without lighting up their screen.
+        await interaction.followUp({ flags: 32768 | 64, components: [...containers, ...(whyRowNeeded(toShow, seen) ? [whyButtonRow()] : [])], allowedMentions: { parse: [] } });
     } catch (err) {
         // Interaction likely expired -- don't mark as seen/delivered, so it's retried on their next command instead of silently lost. The real Discord code, so a refusal (50035, invalid form body) reads differently from an expired interaction (10062).
         console.error(`Failed to deliver announcement follow-up (Discord ${err?.code ?? 'no code'}):`, err?.message || err);

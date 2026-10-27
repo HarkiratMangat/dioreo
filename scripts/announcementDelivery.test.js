@@ -108,6 +108,12 @@ check('the Why button only comes with a repeat showing, never a first one', () =
     assert.strictEqual(whyRowNeeded([a], new Set(['a1'])), true, 'second showing');
     assert.strictEqual(whyRowNeeded([a, b], new Set(['b2'])), true, 'a batch with one repeat');
 });
+check('a {posted} token takes the live time where it is written, and no Posted line is added', () => {
+    const c = buildAnnouncementContainer({ text: 'hi\n-# Made with x by y · {posted}', createdAt: new Date(0), color: 1 });
+    const text = c.components.map(x => x.content || '').join('\n');
+    assert.ok(text.endsWith('-# Made with x by y · <t:0:R>'));
+    assert.ok(!text.includes('Posted'));
+});
 check('a banner goes under the text as a Media Gallery', () => {
     const c = buildAnnouncementContainer({ text: 'x', createdAt: new Date(0), color: 1, bannerImageUrl: 'https://example.com/a.png' });
     assert.deepStrictEqual(c.components.at(-1), { type: 12, items: [{ media: { url: 'https://example.com/a.png' } }] });

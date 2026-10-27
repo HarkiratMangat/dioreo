@@ -10,7 +10,7 @@
 const { buildSyntheticInteraction } = require('../utils/interactionContext');
 const { hasCommandAccess } = require('../utils/adminAccess');
 
-const OWNED_PREFIXES = ["help_category", "help_guide_pick", "help_announcements", "help_feedback", "help_fbsave"];
+const OWNED_PREFIXES = ["help_category", "help_command", "help_guide_pick", "help_announcements", "help_feedback", "help_fbsave"];
 
 function ownsCustomId(customId) {
     return typeof customId === 'string' && OWNED_PREFIXES.some(prefix => customId.startsWith(prefix));
@@ -25,6 +25,14 @@ async function route(interaction) {
             return await helpCommand.execute(syntheticInteraction, interaction.values[0]);
         }
 
+        // ONE COMMAND: the second dropdown (2026-10-27 10:44 EDT) re-renders /help with only the picked command, through execute()'s `cmd:` override.
+        if (interaction.isStringSelectMenu() && interaction.customId === 'help_command') {
+            await interaction.deferUpdate();
+            const helpCommand = interaction.client.commands.get('help');
+            const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });
+            return await helpCommand.execute(syntheticInteraction, `cmd:${interaction.values[0]}`);
+        }
+
         // ANNOUNCEMENTS under every /help page (2026-10-27 01:23 EDT): every announcement running now, privately, built the way a delivery builds them. Nothing is marked seen, and someone who turned announcements off can still look.
         if (interaction.isButton() && interaction.customId === 'help_announcements') {
             const ann = require('../utils/announcement');
@@ -33,7 +41,7 @@ async function route(interaction) {
             const shown = ann.fitEmbedBudget(active.slice(0, ann.MAX_EMBEDS_PER_MESSAGE));
             const components = shown.length ? shown.map(a => ann.buildAnnouncementContainer(a)) : [{ type: 17, components: [{ type: 10, content: '-# No announcements right now.' }] }];
             const { sendV2Payload } = require('../utils/sendV2Payload');
-            return await sendV2Payload(interaction, components);
+            return await sendV2Payload(interaction, components, { allowedMentions: { parse: [] } });
         }
 
         // BUGS & SUGGESTIONS: the button opens utils/feedback.js's pop-up, and its save DMs the owner.
