@@ -19,7 +19,8 @@ async function sendV2Payload(interaction, components, { content = '', flags = 32
 
     const body = { content, components: outgoing, flags };
     if (embeds !== undefined) body.embeds = embeds;
-    if (allowedMentions !== undefined) body.allowed_mentions = allowedMentions;
+    // Mentions never ping by default (2026-10-27 10:51 EDT, Harkirat: "anything else that sends with mentions on?"). A <@id> still renders as a clickable name, but nobody is notified and the panel is not highlighted yellow for the person named. Before this only the callers that remembered (/settings, /admin, View Colors, /bot servers) were silent; /gunsmith's "Submitted by <@player>" pinged that player on every public view, and /colors, /help and /bot analytics highlighted for whoever they named. Pass allowedMentions to opt into a ping; no caller does.
+    body.allowed_mentions = allowedMentions === undefined ? { parse: [] } : allowedMentions;
 
     // `files` (added 2026-07-13, utils/colorPaletteView.js's generated swatch-color images) -- discord.js's REST manager switches to multipart/form-data automatically whenever a `files` array is present alongside `body`, same underlying mechanism as a normal message attachment. Each entry needs `{ data: Buffer, name: string }`; components reference them via `attachment://{name}` in their media URL, matching the file's own `name` here.
     //
