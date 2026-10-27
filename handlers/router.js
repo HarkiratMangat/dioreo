@@ -412,8 +412,7 @@ async function handleInteractionInner(interaction) {
                 require('../utils/userStats').noteOwnCommandSafely(interaction);
                 // A failed or paused reminder gets one private line on the person's next command (utils/reminders.js, his rule 2026-10-23 20:21 EDT). Never throws.
                 await require('../utils/reminders').maybeShowReminderNote(interaction);
-                // Fires AFTER the command's own reply has already gone out, once per fresh top-level command invocation -- see utils/announcement.js's header for why this is the only choke point (never buttons/selects/modals) and why the dynamic MP loadout fallback below needs its own identical call. Wrapped in its OWN try/catch, separate from the command's own -- a DB hiccup in here must never fall into the outer catch below and overwrite the command's already-successful reply with "There was an error executing this command!".
-                // Delayed and not awaited, so the command's own reply settles first and nothing here holds the interaction open; the follow-up token lasts 15 minutes.
+                // Fires AFTER the command's own reply has already gone out, once per fresh top-level command invocation -- see utils/announcement.js's header for why this is the only choke point (never buttons/selects/modals) and why the dynamic MP loadout fallback below needs its own identical call. Wrapped in its OWN try/catch, separate from the command's own -- a DB hiccup in here must never fall into the outer catch below and overwrite the command's already-successful reply with "There was an error executing this command!". Delayed and not awaited, so the command's own reply settles first and nothing here holds the interaction open; the follow-up token lasts 15 minutes.
                 const announceUser = interaction.user.id;
                 if (!pendingAnnouncement.has(announceUser)) {
                     pendingAnnouncement.add(announceUser);
