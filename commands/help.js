@@ -463,7 +463,7 @@ function buildCommandSelectRow(focusName, perms = {}) {
             if (options.length >= 25) break;
             const text = c.description || '';
             const description = text.length > 100 ? `${text.slice(0, 99)}…` : (text || undefined);
-            options.push({ label: c.name, value: c.name, description, emoji: emojis.parseEmoji(emojis[categoryEmojiKey(cat, perms)]), default: c.name === focusName });
+            options.push({ label: c.name, value: c.name, ...(description ? { description } : {}), emoji: emojis.parseEmoji(emojis[categoryEmojiKey(cat, perms)]), default: c.name === focusName });
         }
     }
     return { type: 1, components: [{ type: 3, custom_id: 'help_command', placeholder: 'Jump to one command…', options }] };
@@ -491,8 +491,7 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client, focu
             type: 1,
             components: [
                 { type: 2, style: 5, label: 'Website', url: WEBSITE_URL },
-                // "Invite Dioreo" (2026-10-18 20:15 EDT, Harkirat), the same word /invite uses.
-                // "Add to server or apps" since 2026-10-27 10:44 EDT (Harkirat).
+                // "Invite Dioreo" (2026-10-18 20:15 EDT, Harkirat), the same word /invite uses. "Add to server or apps" since 2026-10-27 10:44 EDT (Harkirat).
                 { type: 2, style: 5, label: 'Add to server or apps', url: buildInviteUrls(client).chooser }
             ]
         });
