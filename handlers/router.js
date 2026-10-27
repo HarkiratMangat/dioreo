@@ -79,6 +79,9 @@ const handleAnnouncementControlsInteraction = late('announcementControls', 'hand
 
 // Light anti-spam guard (2026-07-13) -- buttons/selects go through a deferUpdate()+edit cycle that can take a moment (DB round-trips, Cloudinary lookups, etc.), so rapid double/triple-clicking one while the previous click is still processing can stack up racing edits. One entry per distinct user (last-accepted timestamp, not per-click), so this never meaningfully grows -- no TTL needed.
 const interactionCooldowns = new Map(); // userId -> last accepted component-interaction timestamp
+// The announcement waits a few seconds after the command's own reply (2026-10-27 19:13 EDT, Harkirat: "make the announcement appear after like a 5 second delay ... now it feels like a jump scare"). One pending delivery per person: two commands inside the wait would otherwise both find it unseen and send it twice.
+const ANNOUNCEMENT_DELAY_MS = 5000;
+const pendingAnnouncement = new Set(); // userId with a delivery waiting
 const INTERACTION_COOLDOWN_MS = 600;
 
 // The "Refresh Colors" 10s cooldown (colorsRefreshCooldowns) used to sit here beside the generic guard above. It MOVED to handlers/colors.js on 2026-08-13 16:45 EDT with the rest of the colours slice -- it was only ever read by the colors_refresh_ branch, so it belongs to that module, not to the router. The generic guard above stays here: it covers every button/select bot-wide.
@@ -410,11 +413,16 @@ async function handleInteractionInner(interaction) {
                 // A failed or paused reminder gets one private line on the person's next command (utils/reminders.js, his rule 2026-10-23 20:21 EDT). Never throws.
                 await require('../utils/reminders').maybeShowReminderNote(interaction);
                 // Fires AFTER the command's own reply has already gone out, once per fresh top-level command invocation -- see utils/announcement.js's header for why this is the only choke point (never buttons/selects/modals) and why the dynamic MP loadout fallback below needs its own identical call. Wrapped in its OWN try/catch, separate from the command's own -- a DB hiccup in here must never fall into the outer catch below and overwrite the command's already-successful reply with "There was an error executing this command!".
-                try {
-                    const { maybeSendAnnouncement } = require('../utils/announcement');
-                    await maybeSendAnnouncement(interaction);
-                } catch (announcementError) {
-                    console.error('Failed to check/deliver announcement after a successful command:', announcementError);
+                // Delayed and not awaited, so the command's own reply settles first and nothing here holds the interaction open; the follow-up token lasts 15 minutes.
+                const announceUser = interaction.user.id;
+                if (!pendingAnnouncement.has(announceUser)) {
+                    pendingAnnouncement.add(announceUser);
+                    setTimeout(() => {
+                        const { maybeSendAnnouncement } = require('../utils/announcement');
+                        maybeSendAnnouncement(interaction)
+                            .catch(announcementError => console.error('Failed to check/deliver announcement after a successful command:', announcementError))
+                            .finally(() => pendingAnnouncement.delete(announceUser));
+                    }, ANNOUNCEMENT_DELAY_MS);
                 }
                 return;
             } catch (error) {
