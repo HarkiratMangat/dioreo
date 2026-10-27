@@ -4,7 +4,7 @@
 //
 // Wired into handlers/router.js's slash-command route engine -- called AFTER a command's own reply has already gone out, on both the modular-command and dynamic MP-loadout-fallback success paths. Deliberately NOT called from button/select/modal handlers (STEP 6.3+) -- only a fresh top-level command invocation counts, so re-clicking an existing panel or reactivating an idled one (see utils/passiveExpiry.js) can never re-trigger it; those routes never reach this function at all.
 //
-// Every delivery carries one "Why am I seeing this?" button under the batch (2026-10-26 15:20 EDT, announcement-controls; handlers/announcementControls.js answers it), and a user who turned announcements off (UserPreference.announcementsOff, from that answer, /settings or /remind) gets none at all.
+// A delivery that repeats an announcement carries one "Why am I seeing this?" button under the batch (every delivery did from 2026-10-26 15:20 EDT, announcement-controls, until whyRowNeeded below; handlers/announcementControls.js answers it), and a user who turned announcements off (UserPreference.announcementsOff, from that answer, /settings or /remind) gets none at all.
 const Announcement = require('../models/Announcement');
 const UserPreference = require('../models/UserPreference');
 
@@ -161,6 +161,11 @@ const ANN_OFF_ID = 'ann_off';
 const ANN_ON_ID = 'ann_on';
 
 // "Why am I seeing this?" under every delivered announcement (Harkirat, 2026-10-26 15:20 EDT: "a button under the embed that basically like answers like, why am I seeing these messages? ... so if someone gets the announcement, they're not like just caught off guard"). One row under the whole batch, and never inside buildAnnouncementEmbed: /bot analytics renders that embed too, and must not grow a button.
+// The Why row goes under a delivery only when it repeats something (Harkirat, 2026-10-27 01:10 EDT: "only appears on any 2nd or following repetition of an announcement"): a first showing, including a one-off announcement's only showing, has no button. `seen` is the user's seenAnnouncementIds as strings, read before this delivery marks anything.
+function whyRowNeeded(toShow, seen) {
+    return toShow.some(a => seen.has(String(a._id)));
+}
+
 function whyButtonRow() {
     const emojis = require('./emojiMap');
     return { type: 1, components: [{ type: 2, style: 2, label: 'Why am I seeing this?', custom_id: ANN_WHY_ID, emoji: emojis.parseEmoji(emojis.info) }] };
@@ -215,7 +220,7 @@ async function maybeSendAnnouncement(interaction) {
 
     // A Components V2 follow-up (32768) that only the user sees (64), the way handlers/manage/* send theirs: one Container per announcement, the Why row under the batch. Only requires the interaction to already be acknowledged, which every caller of this function guarantees by calling it after the command's own reply completed.
     try {
-        await interaction.followUp({ flags: 32768 | 64, components: [...containers, whyButtonRow()] });
+        await interaction.followUp({ flags: 32768 | 64, components: [...containers, ...(whyRowNeeded(toShow, seen) ? [whyButtonRow()] : [])] });
     } catch (err) {
         // Interaction likely expired -- don't mark as seen/delivered, so it's retried on their next command instead of silently lost. The real Discord code, so a refusal (50035, invalid form body) reads differently from an expired interaction (10062).
         console.error(`Failed to deliver announcement follow-up (Discord ${err?.code ?? 'no code'}):`, err?.message || err);
@@ -247,4 +252,4 @@ async function maybeSendAnnouncement(interaction) {
 }
 
 // buildAnnouncementEmbed exported 2026-08-23 11:27 EDT so /bot analytics' change-detail panel renders an announcement with the SAME text shape a user is shown, instead of re-describing its fields.
-module.exports = { ANN_WHY_ID, ANN_OFF_ID, ANN_ON_ID, whyButtonRow, buildWhyPanel, setAnnouncementsOff, getActiveAnnouncements, maybeSendAnnouncement, computeExpiresAt, expiryToInputValue, generateAccentColor, buildAnnouncementEmbed, buildAnnouncementContainer, announcementBody, measureComponents, MAX_EMBEDS_PER_MESSAGE, TEXT_CHAR_BUDGET, COMPONENT_BUDGET, ANNOUNCEMENT_TEXT_MAX, fitEmbedBudget, isRepeatingAnnouncement, isAnnouncementDue, MIN_HOURS_BETWEEN_REPEATS };
+module.exports = { ANN_WHY_ID, ANN_OFF_ID, ANN_ON_ID, whyButtonRow, whyRowNeeded, buildWhyPanel, setAnnouncementsOff, getActiveAnnouncements, maybeSendAnnouncement, computeExpiresAt, expiryToInputValue, generateAccentColor, buildAnnouncementEmbed, buildAnnouncementContainer, announcementBody, measureComponents, MAX_EMBEDS_PER_MESSAGE, TEXT_CHAR_BUDGET, COMPONENT_BUDGET, ANNOUNCEMENT_TEXT_MAX, fitEmbedBudget, isRepeatingAnnouncement, isAnnouncementDue, MIN_HOURS_BETWEEN_REPEATS };
