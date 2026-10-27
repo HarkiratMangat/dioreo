@@ -4739,7 +4739,7 @@ Harkirat spent two days refining command layouts on the dev bot, mostly from his
 
 ## 2026-10-26 14:17 EDT — Dioreo v3 launches, and the legal documents are made true for it (v3.0.0)
 
-v3 ends the pre-release line: 115 entries, brought to `main` in one rebase so every commit stays bisectable, with an archive tag keeping the old hashes reachable.
+v3 ends the pre-release line: 117 entries, brought to `main` by fast-forward so every commit stays bisectable and keeps its own hash, with an archive tag on the branch as well. A rebase was the plan, but GitHub could not rebase past the 2026-08-10 merge from `main`, and a fast-forward kept more: the changelog's hash citations all resolve on `main`.
 
 The launch work itself was mostly making the legal documents true. A re-check written on 2026-10-20 had found the Terms still describing a bot that could never join a server, a Privacy Policy whose headline sentence ("we cannot read your messages") stopped being literally true the day right-click Apps shipped, and an AI disclosure that still said only the owner could use `/autobuild`. All of it was fixed before the merge rather than after, because the site publishes on the merge and the policy has to be in effect before the bot that needs it runs.
 
