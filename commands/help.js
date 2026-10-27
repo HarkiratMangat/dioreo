@@ -578,7 +578,7 @@ function helpFooterRow() {
     const { FEEDBACK_BUTTON_ID } = require('../utils/feedback');
     return { type: 1, components: [
         { type: 2, style: 2, label: 'Announcements', custom_id: 'help_announcements', emoji: emojis.parseEmoji(emojis.announcements) },
-        { type: 2, style: 2, label: 'Bugs & Suggestions', custom_id: FEEDBACK_BUTTON_ID },
+        { type: 2, style: 2, label: 'Bugs & Suggestions', custom_id: FEEDBACK_BUTTON_ID, emoji: emojis.parseEmoji(emojis.feedback) },
     ] };
 }
 

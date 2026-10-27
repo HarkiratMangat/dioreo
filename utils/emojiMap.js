@@ -129,6 +129,8 @@ const emojis = {
     swatches: '<a:Swatches:1537301451506847947>',
     // /draw calculator's "Remove this Selection" mark and its Calculate button (2026-10-14 16:51 EDT, Harkirat uploaded both to both apps and supplied both ids). The PROD ids are written here, per this file's convention; refreshEmojiIds() re-points the dev bot to its own copies (Cross 1560019354446463087, Sparkles 1560022548387856534) by name at boot.
     cross: '<:Cross:1560019185747099758>',
+    // /help's Bugs & Suggestions button (Harkirat, 2026-10-27 12:01 EDT: "icon fine now. name it 'Feedback'"). Uploaded to Dioreo, Dioreo (Dev) and Dioreo Admin (Dev) the same minute; prod id here, the dev apps re-point by name. Original: Diors-Builds/Logos-&-Emojis/emoji-originals/Feedback.avif, scene local/project/features/launch/bugs-icon/feedback_bubbles.py.
+    feedback: '<a:Feedback:1564671216089047070>',
     // /emojis' present marks (Harkirat, 2026-10-25 21:06 EDT: "use this checkmark instead of the animated one"; uploaded to prod Dioreo by him, to the dev apps from its CDN copy the same evening).
     check: '<:Check:1564082261954138202>',
     // The Calculate button's icon (2026-10-16 14:31 EDT, Harkirat's Calculate emoji replaces Sparkles; the key was `sparkles`).
