@@ -83,7 +83,7 @@
             {
               "type": 3,
               "custom_id": "help_category",
-              "placeholder": "Browse by category…",
+              "placeholder": "Jump to a category…",
               "options": [
                 {
                   "label": "Commands List",
@@ -384,7 +384,7 @@
             {
               "type": 3,
               "custom_id": "help_category",
-              "placeholder": "Browse by category…",
+              "placeholder": "Jump to a category…",
               "options": [
                 {
                   "label": "Commands List",
@@ -680,7 +680,7 @@
             {
               "type": 3,
               "custom_id": "help_category",
-              "placeholder": "Browse by category…",
+              "placeholder": "Jump to a category…",
               "options": [
                 {
                   "label": "Commands List",
@@ -952,7 +952,7 @@
             {
               "type": 3,
               "custom_id": "help_category",
-              "placeholder": "Browse by category…",
+              "placeholder": "Jump to a category…",
               "options": [
                 {
                   "label": "Commands List",
@@ -1224,7 +1224,7 @@
             {
               "type": 3,
               "custom_id": "help_category",
-              "placeholder": "Browse by category…",
+              "placeholder": "Jump to a category…",
               "options": [
                 {
                   "label": "Commands List",
@@ -1496,7 +1496,7 @@
             {
               "type": 3,
               "custom_id": "help_category",
-              "placeholder": "Browse by category…",
+              "placeholder": "Jump to a category…",
               "options": [
                 {
                   "label": "Commands List",
@@ -1819,7 +1819,7 @@
             {
               "type": 3,
               "custom_id": "help_category",
-              "placeholder": "Browse by category…",
+              "placeholder": "Jump to a category…",
               "options": [
                 {
                   "label": "Commands List",
@@ -2153,7 +2153,7 @@
             {
               "type": 3,
               "custom_id": "help_category",
-              "placeholder": "Browse by category…",
+              "placeholder": "Jump to a category…",
               "options": [
                 {
                   "label": "Commands List",
@@ -2465,7 +2465,7 @@
             {
               "type": 3,
               "custom_id": "help_category",
-              "placeholder": "Browse by category…",
+              "placeholder": "Jump to a category…",
               "options": [
                 {
                   "label": "Commands List",
@@ -2772,7 +2772,7 @@
             {
               "type": 3,
               "custom_id": "help_category",
-              "placeholder": "Browse by category…",
+              "placeholder": "Jump to a category…",
               "options": [
                 {
                   "label": "Commands List",
@@ -3055,7 +3055,7 @@
             {
               "type": 3,
               "custom_id": "help_category",
-              "placeholder": "Browse by category…",
+              "placeholder": "Jump to a category…",
               "options": [
                 {
                   "label": "Commands List",
@@ -3338,7 +3338,7 @@
             {
               "type": 3,
               "custom_id": "help_category",
-              "placeholder": "Browse by category…",
+              "placeholder": "Jump to a category…",
               "options": [
                 {
                   "label": "Commands List",
@@ -3639,7 +3639,7 @@
             {
               "type": 3,
               "custom_id": "help_category",
-              "placeholder": "Browse by category…",
+              "placeholder": "Jump to a category…",
               "options": [
                 {
                   "label": "Commands List",
@@ -3973,7 +3973,7 @@
             {
               "type": 3,
               "custom_id": "help_category",
-              "placeholder": "Browse by category…",
+              "placeholder": "Jump to a category…",
               "options": [
                 {
                   "label": "Commands List",
@@ -4318,7 +4318,7 @@
             {
               "type": 3,
               "custom_id": "help_category",
-              "placeholder": "Browse by category…",
+              "placeholder": "Jump to a category…",
               "options": [
                 {
                   "label": "Commands List",
@@ -4718,7 +4718,7 @@
             {
               "type": 3,
               "custom_id": "help_category",
-              "placeholder": "Browse by category…",
+              "placeholder": "Jump to a category…",
               "options": [
                 {
                   "label": "Commands List",
@@ -5113,7 +5113,7 @@
             {
               "type": 3,
               "custom_id": "help_category",
-              "placeholder": "Browse by category…",
+              "placeholder": "Jump to a category…",
               "options": [
                 {
                   "label": "Commands List",
@@ -5484,7 +5484,7 @@
             {
               "type": 3,
               "custom_id": "help_category",
-              "placeholder": "Browse by category…",
+              "placeholder": "Jump to a category…",
               "options": [
                 {
                   "label": "Commands List",
@@ -5855,7 +5855,7 @@
             {
               "type": 3,
               "custom_id": "help_category",
-              "placeholder": "Browse by category…",
+              "placeholder": "Jump to a category…",
               "options": [
                 {
                   "label": "Commands List",
@@ -6244,7 +6244,7 @@
             {
               "type": 3,
               "custom_id": "help_category",
-              "placeholder": "Browse by category…",
+              "placeholder": "Jump to a category…",
               "options": [
                 {
                   "label": "Commands List",
@@ -6624,7 +6624,7 @@
             {
               "type": 3,
               "custom_id": "help_category",
-              "placeholder": "Browse by category…",
+              "placeholder": "Jump to a category…",
               "options": [
                 {
                   "label": "Commands List",
@@ -7129,7 +7129,7 @@
             {
               "type": 3,
               "custom_id": "help_category",
-              "placeholder": "Browse by category…",
+              "placeholder": "Jump to a category…",
               "options": [
                 {
                   "label": "Commands List",
@@ -7452,7 +7452,7 @@
             {
               "type": 3,
               "custom_id": "help_category",
-              "placeholder": "Browse by category…",
+              "placeholder": "Jump to a category…",
               "options": [
                 {
                   "label": "Commands List",
@@ -7770,7 +7770,7 @@
             {
               "type": 3,
               "custom_id": "help_category",
-              "placeholder": "Browse by category…",
+              "placeholder": "Jump to a category…",
               "options": [
                 {
                   "label": "Commands List",
@@ -8064,7 +8064,7 @@
             {
               "type": 3,
               "custom_id": "help_category",
-              "placeholder": "Browse by category…",
+              "placeholder": "Jump to a category…",
               "options": [
                 {
                   "label": "Commands List",
@@ -8358,7 +8358,7 @@
             {
               "type": 3,
               "custom_id": "help_category",
-              "placeholder": "Browse by category…",
+              "placeholder": "Jump to a category…",
               "options": [
                 {
                   "label": "Commands List",
@@ -8652,7 +8652,7 @@
             {
               "type": 3,
               "custom_id": "help_category",
-              "placeholder": "Browse by category…",
+              "placeholder": "Jump to a category…",
               "options": [
                 {
                   "label": "Commands List",
@@ -8955,7 +8955,7 @@
             {
               "type": 3,
               "custom_id": "help_category",
-              "placeholder": "Browse by category…",
+              "placeholder": "Jump to a category…",
               "options": [
                 {
                   "label": "Commands List",

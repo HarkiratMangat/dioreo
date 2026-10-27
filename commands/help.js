@@ -440,8 +440,9 @@ const BODY_BUILDERS = {
 };
 
 // `isAdmin` hides the Server Admin category from everyone who could not use `/admin` anyway. Harkirat's call, 2026-08-10 18:36 EDT. It is filtered in THREE places, not one -- the dropdown here, the landing directory, and the `cmd:` lookup in execute() -- because filtering only the visible menu leaves `/help cmd:server` working, which reads as the gate being broken rather than as a deliberate exception. Nothing here is secret; the point is that a member who cannot open the panel should not be shown a page about it.
+// `selectedKey` is 'landing', a category key, or null. Null leaves every option unselected so the placeholder shows: the one-command page belongs to no category, and marking Commands List there said you were on it (2026-10-27 19:16 EDT, Harkirat: "That should be switching to the unselected 'Jump to a category…'").
 function buildCategorySelectRow(selectedKey, perms = {}) {
-    const isLanding = !selectedKey;
+    const isLanding = selectedKey === 'landing';
     const options = [
         { label: 'Commands List', value: 'landing', description: 'Every command at a glance', emoji: emojis.parseEmoji(emojis.dioreoCombo), default: isLanding },
         ...visibleCategories(perms).map(c => ({
@@ -452,7 +453,7 @@ function buildCategorySelectRow(selectedKey, perms = {}) {
             default: c.key === selectedKey
         }))
     ];
-    return { type: 1, components: [{ type: 3, custom_id: 'help_category', placeholder: 'Browse by category…', options }] };
+    return { type: 1, components: [{ type: 3, custom_id: 'help_category', placeholder: 'Jump to a category…', options }] };
 }
 
 // Each command's own icon in the Jump to one command list (2026-10-27 18:51 EDT, Harkirat: "Give /gunsmith dmz the dmz emoji. Draw prices its own. Draw calc its own. And so on"). Before this every row wore its category's icon, so a category's commands looked identical. The icons match the ones those commands use themselves (and the v3 announcement), and a command missing here falls back to its category's.
@@ -546,7 +547,7 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client, focu
         components.push({ type: 14, spacing: 2, divider: true });
         // Deliberately NOT re-mentioning `/help cmd:` here -- the directory above already covers it ("Learn more about a command: /help <cmd>"); this line is the dropdown's own label, and the directory no longer says "Or use the Dropdown below!" as well (critique #28).
         components.push({ type: 10, content: `-# Browse by category, or jump to one command` });
-        components.push(buildCategorySelectRow(null, perms));
+        components.push(buildCategorySelectRow('landing', perms));
         components.push(buildCommandSelectRow(null, perms, await currentSeasonEmoji()));
         components.push({ type: 14, spacing: 1, divider: true });
         // The sign-off in the launch announcement's style (2026-10-27 01:23 EDT, Harkirat). "Report bugs & suggestions to @dior" went with it: the Bugs & Suggestions button under this panel does that now.
