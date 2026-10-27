@@ -455,6 +455,16 @@ function buildCategorySelectRow(selectedKey, perms = {}) {
     return { type: 1, components: [{ type: 3, custom_id: 'help_category', placeholder: 'Browse by category…', options }] };
 }
 
+// Each command's own icon in the Jump to one command list (2026-10-27 18:51 EDT, Harkirat: "Give /gunsmith dmz the dmz emoji. Draw prices its own. Draw calc its own. And so on"). Before this every row wore its category's icon, so a category's commands looked identical. The icons match the ones those commands use themselves (and the v3 announcement), and a command missing here falls back to its category's.
+const COMMAND_EMOJI = {
+    '/gunsmith mp': 'gunsmithSearch', '/gunsmith dmz': 'dmz',
+    '/draws': 'newDraws', '/draw prices': 'drawPrices', '/draw calculator': 'calculator',
+    '/calendar': 'calendar', '/today': 'dailyUpdate', '/remind': 'remind', '/patch notes': 'patchNotes', '/season end': 'bp',
+    '/colors': 'showColors', '/timestamp': 'timestamp', '/invite': 'shareHeart',
+    '/settings': 'settings', '/admin': 'serverSettings',
+    '/bot analytics': 'mngInfo', '/bot access': 'botAccess', '/bot hotpatch': 'edit', '/bot servers': 'guide', '/emojis': 'swatches', '/autobuild': 'gunsmithCode', '/manage': 'database'
+};
+
 // One command at a time (2026-10-27 10:44 EDT, Harkirat: "add another dropdown so a user can filter for 1 specific command instead of only per category"). Every slash command this viewer may see, in directory order, capped at Discord's 25 options; right-click apps stay out (they have no page of their own). Picking one opens a page with only that command (handlers/help.js, `help_command`).
 function buildCommandSelectRow(focusName, perms = {}) {
     const options = [];
@@ -463,7 +473,7 @@ function buildCommandSelectRow(focusName, perms = {}) {
             if (options.length >= 25) break;
             const text = c.description || '';
             const description = text.length > 100 ? `${text.slice(0, 99)}…` : (text || undefined);
-            options.push({ label: c.name, value: c.name, ...(description ? { description } : {}), emoji: emojis.parseEmoji(emojis[categoryEmojiKey(cat, perms)]), default: c.name === focusName });
+            options.push({ label: c.name, value: c.name, ...(description ? { description } : {}), emoji: emojis.parseEmoji(emojis[COMMAND_EMOJI[c.name]] || emojis[categoryEmojiKey(cat, perms)]), default: c.name === focusName });
         }
     }
     return { type: 1, components: [{ type: 3, custom_id: 'help_command', placeholder: 'Jump to one command…', options }] };

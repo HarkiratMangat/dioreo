@@ -179,9 +179,9 @@
                   "value": "/gunsmith dmz",
                   "description": "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                   "emoji": {
-                    "animated": true,
-                    "name": "GunsmithSearch",
-                    "id": "1564113024225255454"
+                    "animated": false,
+                    "name": "DMZ_CODM",
+                    "id": "1523190115319549963"
                   },
                   "default": false
                 },
@@ -202,8 +202,8 @@
                   "description": "CP cost breakdown for every draw type, split by CP region",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawPrices",
+                    "id": "1525864071776305163"
                   },
                   "default": false
                 },
@@ -213,8 +213,8 @@
                   "description": "Work out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawCalc",
+                    "id": "1560743128934256680"
                   },
                   "default": false
                 },
@@ -235,8 +235,8 @@
                   "description": "What's new today, what's going live, and what's leaving soon",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "DailyUpdate",
+                    "id": "1563415690738802690"
                   },
                   "default": false
                 },
@@ -246,8 +246,8 @@
                   "description": "Set and manage your reminders",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "Remind",
+                    "id": "1563677560431452180"
                   },
                   "default": false
                 },
@@ -257,8 +257,8 @@
                   "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -267,9 +267,9 @@
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
                   "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "animated": false,
+                    "name": "BP_CODM",
+                    "id": "1523190108386365470"
                   },
                   "default": false
                 },
@@ -279,8 +279,8 @@
                   "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -290,8 +290,8 @@
                   "description": "Convert almost any date or time — including natural language — into a Discord timestamp that displa…",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "Timestamps",
+                    "id": "1523762211103969420"
                   },
                   "default": false
                 },
@@ -301,8 +301,8 @@
                   "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -479,9 +479,9 @@
                   "value": "/gunsmith dmz",
                   "description": "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                   "emoji": {
-                    "animated": true,
-                    "name": "GunsmithSearch",
-                    "id": "1564113024225255454"
+                    "animated": false,
+                    "name": "DMZ_CODM",
+                    "id": "1523190115319549963"
                   },
                   "default": false
                 },
@@ -502,8 +502,8 @@
                   "description": "CP cost breakdown for every draw type, split by CP region",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawPrices",
+                    "id": "1525864071776305163"
                   },
                   "default": false
                 },
@@ -513,8 +513,8 @@
                   "description": "Work out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawCalc",
+                    "id": "1560743128934256680"
                   },
                   "default": false
                 },
@@ -535,8 +535,8 @@
                   "description": "What's new today, what's going live, and what's leaving soon",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "DailyUpdate",
+                    "id": "1563415690738802690"
                   },
                   "default": false
                 },
@@ -546,8 +546,8 @@
                   "description": "Set and manage your reminders",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "Remind",
+                    "id": "1563677560431452180"
                   },
                   "default": false
                 },
@@ -557,8 +557,8 @@
                   "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -567,9 +567,9 @@
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
                   "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "animated": false,
+                    "name": "BP_CODM",
+                    "id": "1523190108386365470"
                   },
                   "default": false
                 },
@@ -579,8 +579,8 @@
                   "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -590,8 +590,8 @@
                   "description": "Convert almost any date or time — including natural language — into a Discord timestamp that displa…",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "Timestamps",
+                    "id": "1523762211103969420"
                   },
                   "default": false
                 },
@@ -601,8 +601,8 @@
                   "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -774,9 +774,9 @@
                   "value": "/gunsmith dmz",
                   "description": "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                   "emoji": {
-                    "animated": true,
-                    "name": "GunsmithSearch",
-                    "id": "1564113024225255454"
+                    "animated": false,
+                    "name": "DMZ_CODM",
+                    "id": "1523190115319549963"
                   },
                   "default": false
                 },
@@ -797,8 +797,8 @@
                   "description": "CP cost breakdown for every draw type, split by CP region",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawPrices",
+                    "id": "1525864071776305163"
                   },
                   "default": false
                 },
@@ -808,8 +808,8 @@
                   "description": "Work out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawCalc",
+                    "id": "1560743128934256680"
                   },
                   "default": false
                 },
@@ -830,8 +830,8 @@
                   "description": "What's new today, what's going live, and what's leaving soon",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "DailyUpdate",
+                    "id": "1563415690738802690"
                   },
                   "default": false
                 },
@@ -841,8 +841,8 @@
                   "description": "Set and manage your reminders",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "Remind",
+                    "id": "1563677560431452180"
                   },
                   "default": false
                 },
@@ -852,8 +852,8 @@
                   "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -862,9 +862,9 @@
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
                   "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "animated": false,
+                    "name": "BP_CODM",
+                    "id": "1523190108386365470"
                   },
                   "default": false
                 },
@@ -874,8 +874,8 @@
                   "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -885,8 +885,8 @@
                   "description": "Convert almost any date or time — including natural language — into a Discord timestamp that displa…",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "Timestamps",
+                    "id": "1523762211103969420"
                   },
                   "default": false
                 },
@@ -896,8 +896,8 @@
                   "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -1045,9 +1045,9 @@
                   "value": "/gunsmith dmz",
                   "description": "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                   "emoji": {
-                    "animated": true,
-                    "name": "GunsmithSearch",
-                    "id": "1564113024225255454"
+                    "animated": false,
+                    "name": "DMZ_CODM",
+                    "id": "1523190115319549963"
                   },
                   "default": false
                 },
@@ -1068,8 +1068,8 @@
                   "description": "CP cost breakdown for every draw type, split by CP region",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawPrices",
+                    "id": "1525864071776305163"
                   },
                   "default": false
                 },
@@ -1079,8 +1079,8 @@
                   "description": "Work out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawCalc",
+                    "id": "1560743128934256680"
                   },
                   "default": false
                 },
@@ -1101,8 +1101,8 @@
                   "description": "What's new today, what's going live, and what's leaving soon",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "DailyUpdate",
+                    "id": "1563415690738802690"
                   },
                   "default": false
                 },
@@ -1112,8 +1112,8 @@
                   "description": "Set and manage your reminders",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "Remind",
+                    "id": "1563677560431452180"
                   },
                   "default": false
                 },
@@ -1123,8 +1123,8 @@
                   "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -1133,9 +1133,9 @@
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
                   "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "animated": false,
+                    "name": "BP_CODM",
+                    "id": "1523190108386365470"
                   },
                   "default": false
                 },
@@ -1145,8 +1145,8 @@
                   "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -1156,8 +1156,8 @@
                   "description": "Convert almost any date or time — including natural language — into a Discord timestamp that displa…",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "Timestamps",
+                    "id": "1523762211103969420"
                   },
                   "default": false
                 },
@@ -1167,8 +1167,8 @@
                   "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -1316,9 +1316,9 @@
                   "value": "/gunsmith dmz",
                   "description": "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                   "emoji": {
-                    "animated": true,
-                    "name": "GunsmithSearch",
-                    "id": "1564113024225255454"
+                    "animated": false,
+                    "name": "DMZ_CODM",
+                    "id": "1523190115319549963"
                   },
                   "default": false
                 },
@@ -1339,8 +1339,8 @@
                   "description": "CP cost breakdown for every draw type, split by CP region",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawPrices",
+                    "id": "1525864071776305163"
                   },
                   "default": false
                 },
@@ -1350,8 +1350,8 @@
                   "description": "Work out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawCalc",
+                    "id": "1560743128934256680"
                   },
                   "default": false
                 },
@@ -1372,8 +1372,8 @@
                   "description": "What's new today, what's going live, and what's leaving soon",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "DailyUpdate",
+                    "id": "1563415690738802690"
                   },
                   "default": false
                 },
@@ -1383,8 +1383,8 @@
                   "description": "Set and manage your reminders",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "Remind",
+                    "id": "1563677560431452180"
                   },
                   "default": false
                 },
@@ -1394,8 +1394,8 @@
                   "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -1404,9 +1404,9 @@
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
                   "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "animated": false,
+                    "name": "BP_CODM",
+                    "id": "1523190108386365470"
                   },
                   "default": false
                 },
@@ -1416,8 +1416,8 @@
                   "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -1427,8 +1427,8 @@
                   "description": "Convert almost any date or time — including natural language — into a Discord timestamp that displa…",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "Timestamps",
+                    "id": "1523762211103969420"
                   },
                   "default": false
                 },
@@ -1438,8 +1438,8 @@
                   "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -1587,9 +1587,9 @@
                   "value": "/gunsmith dmz",
                   "description": "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                   "emoji": {
-                    "animated": true,
-                    "name": "GunsmithSearch",
-                    "id": "1564113024225255454"
+                    "animated": false,
+                    "name": "DMZ_CODM",
+                    "id": "1523190115319549963"
                   },
                   "default": false
                 },
@@ -1610,8 +1610,8 @@
                   "description": "CP cost breakdown for every draw type, split by CP region",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawPrices",
+                    "id": "1525864071776305163"
                   },
                   "default": false
                 },
@@ -1621,8 +1621,8 @@
                   "description": "Work out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawCalc",
+                    "id": "1560743128934256680"
                   },
                   "default": false
                 },
@@ -1643,8 +1643,8 @@
                   "description": "What's new today, what's going live, and what's leaving soon",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "DailyUpdate",
+                    "id": "1563415690738802690"
                   },
                   "default": false
                 },
@@ -1654,8 +1654,8 @@
                   "description": "Set and manage your reminders",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "Remind",
+                    "id": "1563677560431452180"
                   },
                   "default": false
                 },
@@ -1665,8 +1665,8 @@
                   "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -1675,9 +1675,9 @@
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
                   "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "animated": false,
+                    "name": "BP_CODM",
+                    "id": "1523190108386365470"
                   },
                   "default": false
                 },
@@ -1687,8 +1687,8 @@
                   "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -1698,8 +1698,8 @@
                   "description": "Convert almost any date or time — including natural language — into a Discord timestamp that displa…",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "Timestamps",
+                    "id": "1523762211103969420"
                   },
                   "default": false
                 },
@@ -1709,8 +1709,8 @@
                   "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -1909,9 +1909,9 @@
                   "value": "/gunsmith dmz",
                   "description": "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                   "emoji": {
-                    "animated": true,
-                    "name": "GunsmithSearch",
-                    "id": "1564113024225255454"
+                    "animated": false,
+                    "name": "DMZ_CODM",
+                    "id": "1523190115319549963"
                   },
                   "default": false
                 },
@@ -1932,8 +1932,8 @@
                   "description": "CP cost breakdown for every draw type, split by CP region",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawPrices",
+                    "id": "1525864071776305163"
                   },
                   "default": false
                 },
@@ -1943,8 +1943,8 @@
                   "description": "Work out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawCalc",
+                    "id": "1560743128934256680"
                   },
                   "default": false
                 },
@@ -1965,8 +1965,8 @@
                   "description": "What's new today, what's going live, and what's leaving soon",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "DailyUpdate",
+                    "id": "1563415690738802690"
                   },
                   "default": false
                 },
@@ -1976,8 +1976,8 @@
                   "description": "Set and manage your reminders",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "Remind",
+                    "id": "1563677560431452180"
                   },
                   "default": false
                 },
@@ -1987,8 +1987,8 @@
                   "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -1997,9 +1997,9 @@
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
                   "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "animated": false,
+                    "name": "BP_CODM",
+                    "id": "1523190108386365470"
                   },
                   "default": false
                 },
@@ -2009,8 +2009,8 @@
                   "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -2020,8 +2020,8 @@
                   "description": "Convert almost any date or time — including natural language — into a Discord timestamp that displa…",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "Timestamps",
+                    "id": "1523762211103969420"
                   },
                   "default": false
                 },
@@ -2031,8 +2031,8 @@
                   "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -2242,9 +2242,9 @@
                   "value": "/gunsmith dmz",
                   "description": "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                   "emoji": {
-                    "animated": true,
-                    "name": "GunsmithSearch",
-                    "id": "1564113024225255454"
+                    "animated": false,
+                    "name": "DMZ_CODM",
+                    "id": "1523190115319549963"
                   },
                   "default": false
                 },
@@ -2265,8 +2265,8 @@
                   "description": "CP cost breakdown for every draw type, split by CP region",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawPrices",
+                    "id": "1525864071776305163"
                   },
                   "default": false
                 },
@@ -2276,8 +2276,8 @@
                   "description": "Work out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawCalc",
+                    "id": "1560743128934256680"
                   },
                   "default": false
                 },
@@ -2298,8 +2298,8 @@
                   "description": "What's new today, what's going live, and what's leaving soon",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "DailyUpdate",
+                    "id": "1563415690738802690"
                   },
                   "default": false
                 },
@@ -2309,8 +2309,8 @@
                   "description": "Set and manage your reminders",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "Remind",
+                    "id": "1563677560431452180"
                   },
                   "default": false
                 },
@@ -2320,8 +2320,8 @@
                   "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -2330,9 +2330,9 @@
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
                   "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "animated": false,
+                    "name": "BP_CODM",
+                    "id": "1523190108386365470"
                   },
                   "default": false
                 },
@@ -2342,8 +2342,8 @@
                   "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -2353,8 +2353,8 @@
                   "description": "Convert almost any date or time — including natural language — into a Discord timestamp that displa…",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "Timestamps",
+                    "id": "1523762211103969420"
                   },
                   "default": false
                 },
@@ -2364,8 +2364,8 @@
                   "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -2374,8 +2374,8 @@
                   "value": "/settings",
                   "emoji": {
                     "animated": true,
-                    "name": "ServerSettings",
-                    "id": "1536468904996774008"
+                    "name": "Settings",
+                    "id": "1523762203537309696"
                   },
                   "default": false
                 },
@@ -2552,9 +2552,9 @@
                   "value": "/gunsmith dmz",
                   "description": "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                   "emoji": {
-                    "animated": true,
-                    "name": "GunsmithSearch",
-                    "id": "1564113024225255454"
+                    "animated": false,
+                    "name": "DMZ_CODM",
+                    "id": "1523190115319549963"
                   },
                   "default": false
                 },
@@ -2575,8 +2575,8 @@
                   "description": "CP cost breakdown for every draw type, split by CP region",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawPrices",
+                    "id": "1525864071776305163"
                   },
                   "default": false
                 },
@@ -2586,8 +2586,8 @@
                   "description": "Work out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawCalc",
+                    "id": "1560743128934256680"
                   },
                   "default": false
                 },
@@ -2608,8 +2608,8 @@
                   "description": "What's new today, what's going live, and what's leaving soon",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "DailyUpdate",
+                    "id": "1563415690738802690"
                   },
                   "default": false
                 },
@@ -2619,8 +2619,8 @@
                   "description": "Set and manage your reminders",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "Remind",
+                    "id": "1563677560431452180"
                   },
                   "default": false
                 },
@@ -2630,8 +2630,8 @@
                   "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -2640,9 +2640,9 @@
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
                   "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "animated": false,
+                    "name": "BP_CODM",
+                    "id": "1523190108386365470"
                   },
                   "default": false
                 },
@@ -2652,8 +2652,8 @@
                   "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -2663,8 +2663,8 @@
                   "description": "Convert almost any date or time — including natural language — into a Discord timestamp that displa…",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "Timestamps",
+                    "id": "1523762211103969420"
                   },
                   "default": false
                 },
@@ -2674,8 +2674,8 @@
                   "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -2684,8 +2684,8 @@
                   "value": "/settings",
                   "emoji": {
                     "animated": true,
-                    "name": "ServerSettings",
-                    "id": "1536468904996774008"
+                    "name": "Settings",
+                    "id": "1523762203537309696"
                   },
                   "default": false
                 },
@@ -2857,9 +2857,9 @@
                   "value": "/gunsmith dmz",
                   "description": "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                   "emoji": {
-                    "animated": true,
-                    "name": "GunsmithSearch",
-                    "id": "1564113024225255454"
+                    "animated": false,
+                    "name": "DMZ_CODM",
+                    "id": "1523190115319549963"
                   },
                   "default": false
                 },
@@ -2880,8 +2880,8 @@
                   "description": "CP cost breakdown for every draw type, split by CP region",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawPrices",
+                    "id": "1525864071776305163"
                   },
                   "default": false
                 },
@@ -2891,8 +2891,8 @@
                   "description": "Work out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawCalc",
+                    "id": "1560743128934256680"
                   },
                   "default": false
                 },
@@ -2913,8 +2913,8 @@
                   "description": "What's new today, what's going live, and what's leaving soon",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "DailyUpdate",
+                    "id": "1563415690738802690"
                   },
                   "default": false
                 },
@@ -2924,8 +2924,8 @@
                   "description": "Set and manage your reminders",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "Remind",
+                    "id": "1563677560431452180"
                   },
                   "default": false
                 },
@@ -2935,8 +2935,8 @@
                   "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -2945,9 +2945,9 @@
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
                   "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "animated": false,
+                    "name": "BP_CODM",
+                    "id": "1523190108386365470"
                   },
                   "default": false
                 },
@@ -2957,8 +2957,8 @@
                   "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -2968,8 +2968,8 @@
                   "description": "Convert almost any date or time — including natural language — into a Discord timestamp that displa…",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "Timestamps",
+                    "id": "1523762211103969420"
                   },
                   "default": false
                 },
@@ -2979,8 +2979,8 @@
                   "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -2989,8 +2989,8 @@
                   "value": "/settings",
                   "emoji": {
                     "animated": true,
-                    "name": "ServerSettings",
-                    "id": "1536468904996774008"
+                    "name": "Settings",
+                    "id": "1523762203537309696"
                   },
                   "default": false
                 },
@@ -3138,9 +3138,9 @@
                   "value": "/gunsmith dmz",
                   "description": "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                   "emoji": {
-                    "animated": true,
-                    "name": "GunsmithSearch",
-                    "id": "1564113024225255454"
+                    "animated": false,
+                    "name": "DMZ_CODM",
+                    "id": "1523190115319549963"
                   },
                   "default": false
                 },
@@ -3161,8 +3161,8 @@
                   "description": "CP cost breakdown for every draw type, split by CP region",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawPrices",
+                    "id": "1525864071776305163"
                   },
                   "default": false
                 },
@@ -3172,8 +3172,8 @@
                   "description": "Work out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawCalc",
+                    "id": "1560743128934256680"
                   },
                   "default": false
                 },
@@ -3194,8 +3194,8 @@
                   "description": "What's new today, what's going live, and what's leaving soon",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "DailyUpdate",
+                    "id": "1563415690738802690"
                   },
                   "default": false
                 },
@@ -3205,8 +3205,8 @@
                   "description": "Set and manage your reminders",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "Remind",
+                    "id": "1563677560431452180"
                   },
                   "default": false
                 },
@@ -3216,8 +3216,8 @@
                   "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -3226,9 +3226,9 @@
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
                   "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "animated": false,
+                    "name": "BP_CODM",
+                    "id": "1523190108386365470"
                   },
                   "default": false
                 },
@@ -3238,8 +3238,8 @@
                   "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -3249,8 +3249,8 @@
                   "description": "Convert almost any date or time — including natural language — into a Discord timestamp that displa…",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "Timestamps",
+                    "id": "1523762211103969420"
                   },
                   "default": false
                 },
@@ -3260,8 +3260,8 @@
                   "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -3270,8 +3270,8 @@
                   "value": "/settings",
                   "emoji": {
                     "animated": true,
-                    "name": "ServerSettings",
-                    "id": "1536468904996774008"
+                    "name": "Settings",
+                    "id": "1523762203537309696"
                   },
                   "default": false
                 },
@@ -3419,9 +3419,9 @@
                   "value": "/gunsmith dmz",
                   "description": "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                   "emoji": {
-                    "animated": true,
-                    "name": "GunsmithSearch",
-                    "id": "1564113024225255454"
+                    "animated": false,
+                    "name": "DMZ_CODM",
+                    "id": "1523190115319549963"
                   },
                   "default": false
                 },
@@ -3442,8 +3442,8 @@
                   "description": "CP cost breakdown for every draw type, split by CP region",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawPrices",
+                    "id": "1525864071776305163"
                   },
                   "default": false
                 },
@@ -3453,8 +3453,8 @@
                   "description": "Work out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawCalc",
+                    "id": "1560743128934256680"
                   },
                   "default": false
                 },
@@ -3475,8 +3475,8 @@
                   "description": "What's new today, what's going live, and what's leaving soon",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "DailyUpdate",
+                    "id": "1563415690738802690"
                   },
                   "default": false
                 },
@@ -3486,8 +3486,8 @@
                   "description": "Set and manage your reminders",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "Remind",
+                    "id": "1563677560431452180"
                   },
                   "default": false
                 },
@@ -3497,8 +3497,8 @@
                   "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -3507,9 +3507,9 @@
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
                   "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "animated": false,
+                    "name": "BP_CODM",
+                    "id": "1523190108386365470"
                   },
                   "default": false
                 },
@@ -3519,8 +3519,8 @@
                   "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -3530,8 +3530,8 @@
                   "description": "Convert almost any date or time — including natural language — into a Discord timestamp that displa…",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "Timestamps",
+                    "id": "1523762211103969420"
                   },
                   "default": false
                 },
@@ -3541,8 +3541,8 @@
                   "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -3551,8 +3551,8 @@
                   "value": "/settings",
                   "emoji": {
                     "animated": true,
-                    "name": "ServerSettings",
-                    "id": "1536468904996774008"
+                    "name": "Settings",
+                    "id": "1523762203537309696"
                   },
                   "default": false
                 },
@@ -3718,9 +3718,9 @@
                   "value": "/gunsmith dmz",
                   "description": "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                   "emoji": {
-                    "animated": true,
-                    "name": "GunsmithSearch",
-                    "id": "1564113024225255454"
+                    "animated": false,
+                    "name": "DMZ_CODM",
+                    "id": "1523190115319549963"
                   },
                   "default": false
                 },
@@ -3741,8 +3741,8 @@
                   "description": "CP cost breakdown for every draw type, split by CP region",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawPrices",
+                    "id": "1525864071776305163"
                   },
                   "default": false
                 },
@@ -3752,8 +3752,8 @@
                   "description": "Work out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawCalc",
+                    "id": "1560743128934256680"
                   },
                   "default": false
                 },
@@ -3774,8 +3774,8 @@
                   "description": "What's new today, what's going live, and what's leaving soon",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "DailyUpdate",
+                    "id": "1563415690738802690"
                   },
                   "default": false
                 },
@@ -3785,8 +3785,8 @@
                   "description": "Set and manage your reminders",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "Remind",
+                    "id": "1563677560431452180"
                   },
                   "default": false
                 },
@@ -3796,8 +3796,8 @@
                   "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -3806,9 +3806,9 @@
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
                   "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "animated": false,
+                    "name": "BP_CODM",
+                    "id": "1523190108386365470"
                   },
                   "default": false
                 },
@@ -3818,8 +3818,8 @@
                   "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -3829,8 +3829,8 @@
                   "description": "Convert almost any date or time — including natural language — into a Discord timestamp that displa…",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "Timestamps",
+                    "id": "1523762211103969420"
                   },
                   "default": false
                 },
@@ -3840,8 +3840,8 @@
                   "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -3850,8 +3850,8 @@
                   "value": "/settings",
                   "emoji": {
                     "animated": true,
-                    "name": "ServerSettings",
-                    "id": "1536468904996774008"
+                    "name": "Settings",
+                    "id": "1523762203537309696"
                   },
                   "default": false
                 },
@@ -4050,9 +4050,9 @@
                   "value": "/gunsmith dmz",
                   "description": "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                   "emoji": {
-                    "animated": true,
-                    "name": "GunsmithSearch",
-                    "id": "1564113024225255454"
+                    "animated": false,
+                    "name": "DMZ_CODM",
+                    "id": "1523190115319549963"
                   },
                   "default": false
                 },
@@ -4073,8 +4073,8 @@
                   "description": "CP cost breakdown for every draw type, split by CP region",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawPrices",
+                    "id": "1525864071776305163"
                   },
                   "default": false
                 },
@@ -4084,8 +4084,8 @@
                   "description": "Work out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawCalc",
+                    "id": "1560743128934256680"
                   },
                   "default": false
                 },
@@ -4106,8 +4106,8 @@
                   "description": "What's new today, what's going live, and what's leaving soon",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "DailyUpdate",
+                    "id": "1563415690738802690"
                   },
                   "default": false
                 },
@@ -4117,8 +4117,8 @@
                   "description": "Set and manage your reminders",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "Remind",
+                    "id": "1563677560431452180"
                   },
                   "default": false
                 },
@@ -4128,8 +4128,8 @@
                   "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -4138,9 +4138,9 @@
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
                   "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "animated": false,
+                    "name": "BP_CODM",
+                    "id": "1523190108386365470"
                   },
                   "default": false
                 },
@@ -4150,8 +4150,8 @@
                   "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -4161,8 +4161,8 @@
                   "description": "Convert almost any date or time — including natural language — into a Discord timestamp that displa…",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "Timestamps",
+                    "id": "1523762211103969420"
                   },
                   "default": false
                 },
@@ -4172,8 +4172,8 @@
                   "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -4182,8 +4182,8 @@
                   "value": "/settings",
                   "emoji": {
                     "animated": true,
-                    "name": "ServerSettings",
-                    "id": "1536468904996774008"
+                    "name": "Settings",
+                    "id": "1523762203537309696"
                   },
                   "default": false
                 },
@@ -4404,9 +4404,9 @@
                   "value": "/gunsmith dmz",
                   "description": "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                   "emoji": {
-                    "animated": true,
-                    "name": "GunsmithSearch",
-                    "id": "1564113024225255454"
+                    "animated": false,
+                    "name": "DMZ_CODM",
+                    "id": "1523190115319549963"
                   },
                   "default": false
                 },
@@ -4427,8 +4427,8 @@
                   "description": "CP cost breakdown for every draw type, split by CP region",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawPrices",
+                    "id": "1525864071776305163"
                   },
                   "default": false
                 },
@@ -4438,8 +4438,8 @@
                   "description": "Work out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawCalc",
+                    "id": "1560743128934256680"
                   },
                   "default": false
                 },
@@ -4460,8 +4460,8 @@
                   "description": "What's new today, what's going live, and what's leaving soon",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "DailyUpdate",
+                    "id": "1563415690738802690"
                   },
                   "default": false
                 },
@@ -4471,8 +4471,8 @@
                   "description": "Set and manage your reminders",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "Remind",
+                    "id": "1563677560431452180"
                   },
                   "default": false
                 },
@@ -4482,8 +4482,8 @@
                   "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -4492,9 +4492,9 @@
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
                   "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "animated": false,
+                    "name": "BP_CODM",
+                    "id": "1523190108386365470"
                   },
                   "default": false
                 },
@@ -4504,8 +4504,8 @@
                   "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -4515,8 +4515,8 @@
                   "description": "Convert almost any date or time — including natural language — into a Discord timestamp that displa…",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "Timestamps",
+                    "id": "1523762211103969420"
                   },
                   "default": false
                 },
@@ -4526,8 +4526,8 @@
                   "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -4536,8 +4536,8 @@
                   "value": "/settings",
                   "emoji": {
                     "animated": true,
-                    "name": "ServerSettings",
-                    "id": "1536468904996774008"
+                    "name": "Settings",
+                    "id": "1523762203537309696"
                   },
                   "default": false
                 },
@@ -4556,8 +4556,8 @@
                   "value": "/bot analytics",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "DB_Info",
+                    "id": "1525337539085340722"
                   },
                   "default": false
                 },
@@ -4576,8 +4576,8 @@
                   "value": "/bot hotpatch",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "Edit",
+                    "id": "1560408533160296519"
                   },
                   "default": false
                 },
@@ -4586,8 +4586,8 @@
                   "value": "/bot servers",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "DB_Guide",
+                    "id": "1532894836301238477"
                   },
                   "default": false
                 },
@@ -4596,8 +4596,8 @@
                   "value": "/emojis",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "Swatches",
+                    "id": "1537301451506847947"
                   },
                   "default": false
                 },
@@ -4606,8 +4606,8 @@
                   "value": "/autobuild",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "GunsmithCode",
+                    "id": "1564113023025676308"
                   },
                   "default": false
                 },
@@ -4616,8 +4616,8 @@
                   "value": "/manage",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "DB_Database",
+                    "id": "1524967327437815899"
                   },
                   "default": false
                 }
@@ -4795,9 +4795,9 @@
                   "value": "/gunsmith dmz",
                   "description": "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                   "emoji": {
-                    "animated": true,
-                    "name": "GunsmithSearch",
-                    "id": "1564113024225255454"
+                    "animated": false,
+                    "name": "DMZ_CODM",
+                    "id": "1523190115319549963"
                   },
                   "default": false
                 },
@@ -4818,8 +4818,8 @@
                   "description": "CP cost breakdown for every draw type, split by CP region",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawPrices",
+                    "id": "1525864071776305163"
                   },
                   "default": false
                 },
@@ -4829,8 +4829,8 @@
                   "description": "Work out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawCalc",
+                    "id": "1560743128934256680"
                   },
                   "default": false
                 },
@@ -4851,8 +4851,8 @@
                   "description": "What's new today, what's going live, and what's leaving soon",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "DailyUpdate",
+                    "id": "1563415690738802690"
                   },
                   "default": false
                 },
@@ -4862,8 +4862,8 @@
                   "description": "Set and manage your reminders",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "Remind",
+                    "id": "1563677560431452180"
                   },
                   "default": false
                 },
@@ -4873,8 +4873,8 @@
                   "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -4883,9 +4883,9 @@
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
                   "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "animated": false,
+                    "name": "BP_CODM",
+                    "id": "1523190108386365470"
                   },
                   "default": false
                 },
@@ -4895,8 +4895,8 @@
                   "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -4906,8 +4906,8 @@
                   "description": "Convert almost any date or time — including natural language — into a Discord timestamp that displa…",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "Timestamps",
+                    "id": "1523762211103969420"
                   },
                   "default": false
                 },
@@ -4917,8 +4917,8 @@
                   "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -4927,8 +4927,8 @@
                   "value": "/settings",
                   "emoji": {
                     "animated": true,
-                    "name": "ServerSettings",
-                    "id": "1536468904996774008"
+                    "name": "Settings",
+                    "id": "1523762203537309696"
                   },
                   "default": false
                 },
@@ -4947,8 +4947,8 @@
                   "value": "/bot analytics",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "DB_Info",
+                    "id": "1525337539085340722"
                   },
                   "default": false
                 },
@@ -4967,8 +4967,8 @@
                   "value": "/bot hotpatch",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "Edit",
+                    "id": "1560408533160296519"
                   },
                   "default": false
                 },
@@ -4977,8 +4977,8 @@
                   "value": "/bot servers",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "DB_Guide",
+                    "id": "1532894836301238477"
                   },
                   "default": false
                 },
@@ -4987,8 +4987,8 @@
                   "value": "/emojis",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "Swatches",
+                    "id": "1537301451506847947"
                   },
                   "default": false
                 },
@@ -4997,8 +4997,8 @@
                   "value": "/autobuild",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "GunsmithCode",
+                    "id": "1564113023025676308"
                   },
                   "default": false
                 },
@@ -5007,8 +5007,8 @@
                   "value": "/manage",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "DB_Database",
+                    "id": "1524967327437815899"
                   },
                   "default": false
                 }
@@ -5181,9 +5181,9 @@
                   "value": "/gunsmith dmz",
                   "description": "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                   "emoji": {
-                    "animated": true,
-                    "name": "GunsmithSearch",
-                    "id": "1564113024225255454"
+                    "animated": false,
+                    "name": "DMZ_CODM",
+                    "id": "1523190115319549963"
                   },
                   "default": false
                 },
@@ -5204,8 +5204,8 @@
                   "description": "CP cost breakdown for every draw type, split by CP region",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawPrices",
+                    "id": "1525864071776305163"
                   },
                   "default": false
                 },
@@ -5215,8 +5215,8 @@
                   "description": "Work out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawCalc",
+                    "id": "1560743128934256680"
                   },
                   "default": false
                 },
@@ -5237,8 +5237,8 @@
                   "description": "What's new today, what's going live, and what's leaving soon",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "DailyUpdate",
+                    "id": "1563415690738802690"
                   },
                   "default": false
                 },
@@ -5248,8 +5248,8 @@
                   "description": "Set and manage your reminders",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "Remind",
+                    "id": "1563677560431452180"
                   },
                   "default": false
                 },
@@ -5259,8 +5259,8 @@
                   "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -5269,9 +5269,9 @@
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
                   "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "animated": false,
+                    "name": "BP_CODM",
+                    "id": "1523190108386365470"
                   },
                   "default": false
                 },
@@ -5281,8 +5281,8 @@
                   "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -5292,8 +5292,8 @@
                   "description": "Convert almost any date or time — including natural language — into a Discord timestamp that displa…",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "Timestamps",
+                    "id": "1523762211103969420"
                   },
                   "default": false
                 },
@@ -5303,8 +5303,8 @@
                   "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -5313,8 +5313,8 @@
                   "value": "/settings",
                   "emoji": {
                     "animated": true,
-                    "name": "ServerSettings",
-                    "id": "1536468904996774008"
+                    "name": "Settings",
+                    "id": "1523762203537309696"
                   },
                   "default": false
                 },
@@ -5333,8 +5333,8 @@
                   "value": "/bot analytics",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "DB_Info",
+                    "id": "1525337539085340722"
                   },
                   "default": false
                 },
@@ -5353,8 +5353,8 @@
                   "value": "/bot hotpatch",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "Edit",
+                    "id": "1560408533160296519"
                   },
                   "default": false
                 },
@@ -5363,8 +5363,8 @@
                   "value": "/bot servers",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "DB_Guide",
+                    "id": "1532894836301238477"
                   },
                   "default": false
                 },
@@ -5373,8 +5373,8 @@
                   "value": "/emojis",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "Swatches",
+                    "id": "1537301451506847947"
                   },
                   "default": false
                 },
@@ -5383,8 +5383,8 @@
                   "value": "/autobuild",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "GunsmithCode",
+                    "id": "1564113023025676308"
                   },
                   "default": false
                 },
@@ -5393,8 +5393,8 @@
                   "value": "/manage",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "DB_Database",
+                    "id": "1524967327437815899"
                   },
                   "default": false
                 }
@@ -5543,9 +5543,9 @@
                   "value": "/gunsmith dmz",
                   "description": "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                   "emoji": {
-                    "animated": true,
-                    "name": "GunsmithSearch",
-                    "id": "1564113024225255454"
+                    "animated": false,
+                    "name": "DMZ_CODM",
+                    "id": "1523190115319549963"
                   },
                   "default": false
                 },
@@ -5566,8 +5566,8 @@
                   "description": "CP cost breakdown for every draw type, split by CP region",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawPrices",
+                    "id": "1525864071776305163"
                   },
                   "default": false
                 },
@@ -5577,8 +5577,8 @@
                   "description": "Work out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawCalc",
+                    "id": "1560743128934256680"
                   },
                   "default": false
                 },
@@ -5599,8 +5599,8 @@
                   "description": "What's new today, what's going live, and what's leaving soon",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "DailyUpdate",
+                    "id": "1563415690738802690"
                   },
                   "default": false
                 },
@@ -5610,8 +5610,8 @@
                   "description": "Set and manage your reminders",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "Remind",
+                    "id": "1563677560431452180"
                   },
                   "default": false
                 },
@@ -5621,8 +5621,8 @@
                   "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -5631,9 +5631,9 @@
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
                   "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "animated": false,
+                    "name": "BP_CODM",
+                    "id": "1523190108386365470"
                   },
                   "default": false
                 },
@@ -5643,8 +5643,8 @@
                   "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -5654,8 +5654,8 @@
                   "description": "Convert almost any date or time — including natural language — into a Discord timestamp that displa…",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "Timestamps",
+                    "id": "1523762211103969420"
                   },
                   "default": false
                 },
@@ -5665,8 +5665,8 @@
                   "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -5675,8 +5675,8 @@
                   "value": "/settings",
                   "emoji": {
                     "animated": true,
-                    "name": "ServerSettings",
-                    "id": "1536468904996774008"
+                    "name": "Settings",
+                    "id": "1523762203537309696"
                   },
                   "default": false
                 },
@@ -5695,8 +5695,8 @@
                   "value": "/bot analytics",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "DB_Info",
+                    "id": "1525337539085340722"
                   },
                   "default": false
                 },
@@ -5715,8 +5715,8 @@
                   "value": "/bot hotpatch",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "Edit",
+                    "id": "1560408533160296519"
                   },
                   "default": false
                 },
@@ -5725,8 +5725,8 @@
                   "value": "/bot servers",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "DB_Guide",
+                    "id": "1532894836301238477"
                   },
                   "default": false
                 },
@@ -5735,8 +5735,8 @@
                   "value": "/emojis",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "Swatches",
+                    "id": "1537301451506847947"
                   },
                   "default": false
                 },
@@ -5745,8 +5745,8 @@
                   "value": "/autobuild",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "GunsmithCode",
+                    "id": "1564113023025676308"
                   },
                   "default": false
                 },
@@ -5755,8 +5755,8 @@
                   "value": "/manage",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "DB_Database",
+                    "id": "1524967327437815899"
                   },
                   "default": false
                 }
@@ -5905,9 +5905,9 @@
                   "value": "/gunsmith dmz",
                   "description": "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                   "emoji": {
-                    "animated": true,
-                    "name": "GunsmithSearch",
-                    "id": "1564113024225255454"
+                    "animated": false,
+                    "name": "DMZ_CODM",
+                    "id": "1523190115319549963"
                   },
                   "default": false
                 },
@@ -5928,8 +5928,8 @@
                   "description": "CP cost breakdown for every draw type, split by CP region",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawPrices",
+                    "id": "1525864071776305163"
                   },
                   "default": false
                 },
@@ -5939,8 +5939,8 @@
                   "description": "Work out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawCalc",
+                    "id": "1560743128934256680"
                   },
                   "default": false
                 },
@@ -5961,8 +5961,8 @@
                   "description": "What's new today, what's going live, and what's leaving soon",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "DailyUpdate",
+                    "id": "1563415690738802690"
                   },
                   "default": false
                 },
@@ -5972,8 +5972,8 @@
                   "description": "Set and manage your reminders",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "Remind",
+                    "id": "1563677560431452180"
                   },
                   "default": false
                 },
@@ -5983,8 +5983,8 @@
                   "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -5993,9 +5993,9 @@
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
                   "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "animated": false,
+                    "name": "BP_CODM",
+                    "id": "1523190108386365470"
                   },
                   "default": false
                 },
@@ -6005,8 +6005,8 @@
                   "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -6016,8 +6016,8 @@
                   "description": "Convert almost any date or time — including natural language — into a Discord timestamp that displa…",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "Timestamps",
+                    "id": "1523762211103969420"
                   },
                   "default": false
                 },
@@ -6027,8 +6027,8 @@
                   "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -6037,8 +6037,8 @@
                   "value": "/settings",
                   "emoji": {
                     "animated": true,
-                    "name": "ServerSettings",
-                    "id": "1536468904996774008"
+                    "name": "Settings",
+                    "id": "1523762203537309696"
                   },
                   "default": false
                 },
@@ -6057,8 +6057,8 @@
                   "value": "/bot analytics",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "DB_Info",
+                    "id": "1525337539085340722"
                   },
                   "default": false
                 },
@@ -6077,8 +6077,8 @@
                   "value": "/bot hotpatch",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "Edit",
+                    "id": "1560408533160296519"
                   },
                   "default": false
                 },
@@ -6087,8 +6087,8 @@
                   "value": "/bot servers",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "DB_Guide",
+                    "id": "1532894836301238477"
                   },
                   "default": false
                 },
@@ -6097,8 +6097,8 @@
                   "value": "/emojis",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "Swatches",
+                    "id": "1537301451506847947"
                   },
                   "default": false
                 },
@@ -6107,8 +6107,8 @@
                   "value": "/autobuild",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "GunsmithCode",
+                    "id": "1564113023025676308"
                   },
                   "default": false
                 },
@@ -6117,8 +6117,8 @@
                   "value": "/manage",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "DB_Database",
+                    "id": "1524967327437815899"
                   },
                   "default": false
                 }
@@ -6285,9 +6285,9 @@
                   "value": "/gunsmith dmz",
                   "description": "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                   "emoji": {
-                    "animated": true,
-                    "name": "GunsmithSearch",
-                    "id": "1564113024225255454"
+                    "animated": false,
+                    "name": "DMZ_CODM",
+                    "id": "1523190115319549963"
                   },
                   "default": false
                 },
@@ -6308,8 +6308,8 @@
                   "description": "CP cost breakdown for every draw type, split by CP region",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawPrices",
+                    "id": "1525864071776305163"
                   },
                   "default": false
                 },
@@ -6319,8 +6319,8 @@
                   "description": "Work out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawCalc",
+                    "id": "1560743128934256680"
                   },
                   "default": false
                 },
@@ -6341,8 +6341,8 @@
                   "description": "What's new today, what's going live, and what's leaving soon",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "DailyUpdate",
+                    "id": "1563415690738802690"
                   },
                   "default": false
                 },
@@ -6352,8 +6352,8 @@
                   "description": "Set and manage your reminders",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "Remind",
+                    "id": "1563677560431452180"
                   },
                   "default": false
                 },
@@ -6363,8 +6363,8 @@
                   "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -6373,9 +6373,9 @@
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
                   "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "animated": false,
+                    "name": "BP_CODM",
+                    "id": "1523190108386365470"
                   },
                   "default": false
                 },
@@ -6385,8 +6385,8 @@
                   "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -6396,8 +6396,8 @@
                   "description": "Convert almost any date or time — including natural language — into a Discord timestamp that displa…",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "Timestamps",
+                    "id": "1523762211103969420"
                   },
                   "default": false
                 },
@@ -6407,8 +6407,8 @@
                   "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -6417,8 +6417,8 @@
                   "value": "/settings",
                   "emoji": {
                     "animated": true,
-                    "name": "ServerSettings",
-                    "id": "1536468904996774008"
+                    "name": "Settings",
+                    "id": "1523762203537309696"
                   },
                   "default": false
                 },
@@ -6437,8 +6437,8 @@
                   "value": "/bot analytics",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "DB_Info",
+                    "id": "1525337539085340722"
                   },
                   "default": false
                 },
@@ -6457,8 +6457,8 @@
                   "value": "/bot hotpatch",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "Edit",
+                    "id": "1560408533160296519"
                   },
                   "default": false
                 },
@@ -6467,8 +6467,8 @@
                   "value": "/bot servers",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "DB_Guide",
+                    "id": "1532894836301238477"
                   },
                   "default": false
                 },
@@ -6477,8 +6477,8 @@
                   "value": "/emojis",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "Swatches",
+                    "id": "1537301451506847947"
                   },
                   "default": false
                 },
@@ -6487,8 +6487,8 @@
                   "value": "/autobuild",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "GunsmithCode",
+                    "id": "1564113023025676308"
                   },
                   "default": false
                 },
@@ -6497,8 +6497,8 @@
                   "value": "/manage",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "DB_Database",
+                    "id": "1524967327437815899"
                   },
                   "default": false
                 }
@@ -6656,9 +6656,9 @@
                   "value": "/gunsmith dmz",
                   "description": "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                   "emoji": {
-                    "animated": true,
-                    "name": "GunsmithSearch",
-                    "id": "1564113024225255454"
+                    "animated": false,
+                    "name": "DMZ_CODM",
+                    "id": "1523190115319549963"
                   },
                   "default": false
                 },
@@ -6679,8 +6679,8 @@
                   "description": "CP cost breakdown for every draw type, split by CP region",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawPrices",
+                    "id": "1525864071776305163"
                   },
                   "default": false
                 },
@@ -6690,8 +6690,8 @@
                   "description": "Work out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawCalc",
+                    "id": "1560743128934256680"
                   },
                   "default": false
                 },
@@ -6712,8 +6712,8 @@
                   "description": "What's new today, what's going live, and what's leaving soon",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "DailyUpdate",
+                    "id": "1563415690738802690"
                   },
                   "default": false
                 },
@@ -6723,8 +6723,8 @@
                   "description": "Set and manage your reminders",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "Remind",
+                    "id": "1563677560431452180"
                   },
                   "default": false
                 },
@@ -6734,8 +6734,8 @@
                   "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -6744,9 +6744,9 @@
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
                   "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "animated": false,
+                    "name": "BP_CODM",
+                    "id": "1523190108386365470"
                   },
                   "default": false
                 },
@@ -6756,8 +6756,8 @@
                   "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -6767,8 +6767,8 @@
                   "description": "Convert almost any date or time — including natural language — into a Discord timestamp that displa…",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "Timestamps",
+                    "id": "1523762211103969420"
                   },
                   "default": false
                 },
@@ -6778,8 +6778,8 @@
                   "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -6788,8 +6788,8 @@
                   "value": "/settings",
                   "emoji": {
                     "animated": true,
-                    "name": "ServerSettings",
-                    "id": "1536468904996774008"
+                    "name": "Settings",
+                    "id": "1523762203537309696"
                   },
                   "default": false
                 },
@@ -6808,8 +6808,8 @@
                   "value": "/bot analytics",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "DB_Info",
+                    "id": "1525337539085340722"
                   },
                   "default": false
                 },
@@ -6828,8 +6828,8 @@
                   "value": "/bot hotpatch",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "Edit",
+                    "id": "1560408533160296519"
                   },
                   "default": false
                 },
@@ -6838,8 +6838,8 @@
                   "value": "/bot servers",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "DB_Guide",
+                    "id": "1532894836301238477"
                   },
                   "default": false
                 },
@@ -6848,8 +6848,8 @@
                   "value": "/emojis",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "Swatches",
+                    "id": "1537301451506847947"
                   },
                   "default": false
                 },
@@ -6858,8 +6858,8 @@
                   "value": "/autobuild",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "GunsmithCode",
+                    "id": "1564113023025676308"
                   },
                   "default": false
                 },
@@ -6868,8 +6868,8 @@
                   "value": "/manage",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "DB_Database",
+                    "id": "1524967327437815899"
                   },
                   "default": false
                 }
@@ -7152,9 +7152,9 @@
                   "value": "/gunsmith dmz",
                   "description": "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                   "emoji": {
-                    "animated": true,
-                    "name": "GunsmithSearch",
-                    "id": "1564113024225255454"
+                    "animated": false,
+                    "name": "DMZ_CODM",
+                    "id": "1523190115319549963"
                   },
                   "default": false
                 },
@@ -7175,8 +7175,8 @@
                   "description": "CP cost breakdown for every draw type, split by CP region",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawPrices",
+                    "id": "1525864071776305163"
                   },
                   "default": false
                 },
@@ -7186,8 +7186,8 @@
                   "description": "Work out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawCalc",
+                    "id": "1560743128934256680"
                   },
                   "default": false
                 },
@@ -7208,8 +7208,8 @@
                   "description": "What's new today, what's going live, and what's leaving soon",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "DailyUpdate",
+                    "id": "1563415690738802690"
                   },
                   "default": false
                 },
@@ -7219,8 +7219,8 @@
                   "description": "Set and manage your reminders",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "Remind",
+                    "id": "1563677560431452180"
                   },
                   "default": false
                 },
@@ -7230,8 +7230,8 @@
                   "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -7240,9 +7240,9 @@
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
                   "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "animated": false,
+                    "name": "BP_CODM",
+                    "id": "1523190108386365470"
                   },
                   "default": false
                 },
@@ -7252,8 +7252,8 @@
                   "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -7263,8 +7263,8 @@
                   "description": "Convert almost any date or time — including natural language — into a Discord timestamp that displa…",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "Timestamps",
+                    "id": "1523762211103969420"
                   },
                   "default": false
                 },
@@ -7274,8 +7274,8 @@
                   "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -7294,8 +7294,8 @@
                   "value": "/bot analytics",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "DB_Info",
+                    "id": "1525337539085340722"
                   },
                   "default": false
                 }
@@ -7473,9 +7473,9 @@
                   "value": "/gunsmith dmz",
                   "description": "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                   "emoji": {
-                    "animated": true,
-                    "name": "GunsmithSearch",
-                    "id": "1564113024225255454"
+                    "animated": false,
+                    "name": "DMZ_CODM",
+                    "id": "1523190115319549963"
                   },
                   "default": false
                 },
@@ -7496,8 +7496,8 @@
                   "description": "CP cost breakdown for every draw type, split by CP region",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawPrices",
+                    "id": "1525864071776305163"
                   },
                   "default": false
                 },
@@ -7507,8 +7507,8 @@
                   "description": "Work out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawCalc",
+                    "id": "1560743128934256680"
                   },
                   "default": false
                 },
@@ -7529,8 +7529,8 @@
                   "description": "What's new today, what's going live, and what's leaving soon",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "DailyUpdate",
+                    "id": "1563415690738802690"
                   },
                   "default": false
                 },
@@ -7540,8 +7540,8 @@
                   "description": "Set and manage your reminders",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "Remind",
+                    "id": "1563677560431452180"
                   },
                   "default": false
                 },
@@ -7551,8 +7551,8 @@
                   "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -7561,9 +7561,9 @@
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
                   "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "animated": false,
+                    "name": "BP_CODM",
+                    "id": "1523190108386365470"
                   },
                   "default": false
                 },
@@ -7573,8 +7573,8 @@
                   "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -7584,8 +7584,8 @@
                   "description": "Convert almost any date or time — including natural language — into a Discord timestamp that displa…",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "Timestamps",
+                    "id": "1523762211103969420"
                   },
                   "default": false
                 },
@@ -7595,8 +7595,8 @@
                   "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -7615,8 +7615,8 @@
                   "value": "/bot analytics",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "DB_Info",
+                    "id": "1525337539085340722"
                   },
                   "default": false
                 }
@@ -7789,9 +7789,9 @@
                   "value": "/gunsmith dmz",
                   "description": "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                   "emoji": {
-                    "animated": true,
-                    "name": "GunsmithSearch",
-                    "id": "1564113024225255454"
+                    "animated": false,
+                    "name": "DMZ_CODM",
+                    "id": "1523190115319549963"
                   },
                   "default": false
                 },
@@ -7812,8 +7812,8 @@
                   "description": "CP cost breakdown for every draw type, split by CP region",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawPrices",
+                    "id": "1525864071776305163"
                   },
                   "default": false
                 },
@@ -7823,8 +7823,8 @@
                   "description": "Work out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawCalc",
+                    "id": "1560743128934256680"
                   },
                   "default": false
                 },
@@ -7845,8 +7845,8 @@
                   "description": "What's new today, what's going live, and what's leaving soon",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "DailyUpdate",
+                    "id": "1563415690738802690"
                   },
                   "default": false
                 },
@@ -7856,8 +7856,8 @@
                   "description": "Set and manage your reminders",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "Remind",
+                    "id": "1563677560431452180"
                   },
                   "default": false
                 },
@@ -7867,8 +7867,8 @@
                   "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -7877,9 +7877,9 @@
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
                   "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "animated": false,
+                    "name": "BP_CODM",
+                    "id": "1523190108386365470"
                   },
                   "default": false
                 },
@@ -7889,8 +7889,8 @@
                   "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -7900,8 +7900,8 @@
                   "description": "Convert almost any date or time — including natural language — into a Discord timestamp that displa…",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "Timestamps",
+                    "id": "1523762211103969420"
                   },
                   "default": false
                 },
@@ -7911,8 +7911,8 @@
                   "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -7931,8 +7931,8 @@
                   "value": "/bot analytics",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "DB_Info",
+                    "id": "1525337539085340722"
                   },
                   "default": false
                 }
@@ -8081,9 +8081,9 @@
                   "value": "/gunsmith dmz",
                   "description": "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                   "emoji": {
-                    "animated": true,
-                    "name": "GunsmithSearch",
-                    "id": "1564113024225255454"
+                    "animated": false,
+                    "name": "DMZ_CODM",
+                    "id": "1523190115319549963"
                   },
                   "default": false
                 },
@@ -8104,8 +8104,8 @@
                   "description": "CP cost breakdown for every draw type, split by CP region",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawPrices",
+                    "id": "1525864071776305163"
                   },
                   "default": false
                 },
@@ -8115,8 +8115,8 @@
                   "description": "Work out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawCalc",
+                    "id": "1560743128934256680"
                   },
                   "default": false
                 },
@@ -8137,8 +8137,8 @@
                   "description": "What's new today, what's going live, and what's leaving soon",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "DailyUpdate",
+                    "id": "1563415690738802690"
                   },
                   "default": false
                 },
@@ -8148,8 +8148,8 @@
                   "description": "Set and manage your reminders",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "Remind",
+                    "id": "1563677560431452180"
                   },
                   "default": false
                 },
@@ -8159,8 +8159,8 @@
                   "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -8169,9 +8169,9 @@
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
                   "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "animated": false,
+                    "name": "BP_CODM",
+                    "id": "1523190108386365470"
                   },
                   "default": false
                 },
@@ -8181,8 +8181,8 @@
                   "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -8192,8 +8192,8 @@
                   "description": "Convert almost any date or time — including natural language — into a Discord timestamp that displa…",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "Timestamps",
+                    "id": "1523762211103969420"
                   },
                   "default": false
                 },
@@ -8203,8 +8203,8 @@
                   "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -8223,8 +8223,8 @@
                   "value": "/bot analytics",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "DB_Info",
+                    "id": "1525337539085340722"
                   },
                   "default": false
                 }
@@ -8373,9 +8373,9 @@
                   "value": "/gunsmith dmz",
                   "description": "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                   "emoji": {
-                    "animated": true,
-                    "name": "GunsmithSearch",
-                    "id": "1564113024225255454"
+                    "animated": false,
+                    "name": "DMZ_CODM",
+                    "id": "1523190115319549963"
                   },
                   "default": false
                 },
@@ -8396,8 +8396,8 @@
                   "description": "CP cost breakdown for every draw type, split by CP region",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawPrices",
+                    "id": "1525864071776305163"
                   },
                   "default": false
                 },
@@ -8407,8 +8407,8 @@
                   "description": "Work out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawCalc",
+                    "id": "1560743128934256680"
                   },
                   "default": false
                 },
@@ -8429,8 +8429,8 @@
                   "description": "What's new today, what's going live, and what's leaving soon",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "DailyUpdate",
+                    "id": "1563415690738802690"
                   },
                   "default": false
                 },
@@ -8440,8 +8440,8 @@
                   "description": "Set and manage your reminders",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "Remind",
+                    "id": "1563677560431452180"
                   },
                   "default": false
                 },
@@ -8451,8 +8451,8 @@
                   "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -8461,9 +8461,9 @@
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
                   "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "animated": false,
+                    "name": "BP_CODM",
+                    "id": "1523190108386365470"
                   },
                   "default": false
                 },
@@ -8473,8 +8473,8 @@
                   "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -8484,8 +8484,8 @@
                   "description": "Convert almost any date or time — including natural language — into a Discord timestamp that displa…",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "Timestamps",
+                    "id": "1523762211103969420"
                   },
                   "default": false
                 },
@@ -8495,8 +8495,8 @@
                   "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -8515,8 +8515,8 @@
                   "value": "/bot analytics",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "DB_Info",
+                    "id": "1525337539085340722"
                   },
                   "default": false
                 }
@@ -8665,9 +8665,9 @@
                   "value": "/gunsmith dmz",
                   "description": "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                   "emoji": {
-                    "animated": true,
-                    "name": "GunsmithSearch",
-                    "id": "1564113024225255454"
+                    "animated": false,
+                    "name": "DMZ_CODM",
+                    "id": "1523190115319549963"
                   },
                   "default": false
                 },
@@ -8688,8 +8688,8 @@
                   "description": "CP cost breakdown for every draw type, split by CP region",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawPrices",
+                    "id": "1525864071776305163"
                   },
                   "default": false
                 },
@@ -8699,8 +8699,8 @@
                   "description": "Work out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawCalc",
+                    "id": "1560743128934256680"
                   },
                   "default": false
                 },
@@ -8721,8 +8721,8 @@
                   "description": "What's new today, what's going live, and what's leaving soon",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "DailyUpdate",
+                    "id": "1563415690738802690"
                   },
                   "default": false
                 },
@@ -8732,8 +8732,8 @@
                   "description": "Set and manage your reminders",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "Remind",
+                    "id": "1563677560431452180"
                   },
                   "default": false
                 },
@@ -8743,8 +8743,8 @@
                   "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -8753,9 +8753,9 @@
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
                   "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "animated": false,
+                    "name": "BP_CODM",
+                    "id": "1523190108386365470"
                   },
                   "default": false
                 },
@@ -8765,8 +8765,8 @@
                   "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -8776,8 +8776,8 @@
                   "description": "Convert almost any date or time — including natural language — into a Discord timestamp that displa…",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "Timestamps",
+                    "id": "1523762211103969420"
                   },
                   "default": false
                 },
@@ -8787,8 +8787,8 @@
                   "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -8807,8 +8807,8 @@
                   "value": "/bot analytics",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "DB_Info",
+                    "id": "1525337539085340722"
                   },
                   "default": false
                 }
@@ -8966,9 +8966,9 @@
                   "value": "/gunsmith dmz",
                   "description": "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                   "emoji": {
-                    "animated": true,
-                    "name": "GunsmithSearch",
-                    "id": "1564113024225255454"
+                    "animated": false,
+                    "name": "DMZ_CODM",
+                    "id": "1523190115319549963"
                   },
                   "default": false
                 },
@@ -8989,8 +8989,8 @@
                   "description": "CP cost breakdown for every draw type, split by CP region",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawPrices",
+                    "id": "1525864071776305163"
                   },
                   "default": false
                 },
@@ -9000,8 +9000,8 @@
                   "description": "Work out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy",
                   "emoji": {
                     "animated": true,
-                    "name": "NewDraws",
-                    "id": "1523837409211453613"
+                    "name": "DrawCalc",
+                    "id": "1560743128934256680"
                   },
                   "default": false
                 },
@@ -9022,8 +9022,8 @@
                   "description": "What's new today, what's going live, and what's leaving soon",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "DailyUpdate",
+                    "id": "1563415690738802690"
                   },
                   "default": false
                 },
@@ -9033,8 +9033,8 @@
                   "description": "Set and manage your reminders",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "Remind",
+                    "id": "1563677560431452180"
                   },
                   "default": false
                 },
@@ -9044,8 +9044,8 @@
                   "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -9054,9 +9054,9 @@
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
                   "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
+                    "animated": false,
+                    "name": "BP_CODM",
+                    "id": "1523190108386365470"
                   },
                   "default": false
                 },
@@ -9066,8 +9066,8 @@
                   "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -9077,8 +9077,8 @@
                   "description": "Convert almost any date or time — including natural language — into a Discord timestamp that displa…",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "Timestamps",
+                    "id": "1523762211103969420"
                   },
                   "default": false
                 },
@@ -9088,8 +9088,8 @@
                   "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
                   "emoji": {
                     "animated": true,
-                    "name": "Eyedropper",
-                    "id": "1526293991166054541"
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -9108,8 +9108,8 @@
                   "value": "/bot analytics",
                   "emoji": {
                     "animated": true,
-                    "name": "BotAccess",
-                    "id": "1540915865506160660"
+                    "name": "DB_Info",
+                    "id": "1525337539085340722"
                   },
                   "default": false
                 }
