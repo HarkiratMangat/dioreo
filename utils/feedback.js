@@ -49,7 +49,7 @@ function waitUntil(userId, now = Date.now()) {
 async function openFeedback(interaction) {
     const wait = waitUntil(interaction.user.id);
     if (wait) {
-        try { await interaction.reply({ content: `${emojis.cross} You can send one every 10 minutes. Try again <t:${wait}:R>.`, ephemeral: true }); } catch (e) { console.error('Failed to answer a rate-limited feedback click:', e); }
+        try { await interaction.reply({ content: `${emojis.cross} You can send one every 10 minutes. Try again <t:${wait}:R>.`, flags: 64 }); } catch (e) { console.error('Failed to answer a rate-limited feedback click:', e); }
         return;
     }
     await interaction.showModal(feedbackModal());
@@ -60,10 +60,10 @@ async function handleFeedbackSave(interaction) {
     return oneAtATime(interaction, async () => {
         const wait = waitUntil(interaction.user.id);
         if (wait) {
-            try { await interaction.reply({ content: `${emojis.cross} You can send one every 10 minutes. Try again <t:${wait}:R>.`, ephemeral: true }); } catch (e) { console.error('Failed to answer a rate-limited feedback send:', e); }
+            try { await interaction.reply({ content: `${emojis.cross} You can send one every 10 minutes. Try again <t:${wait}:R>.`, flags: 64 }); } catch (e) { console.error('Failed to answer a rate-limited feedback send:', e); }
             return;
         }
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply({ flags: 64 });
         let kind = 'feedback', message = '';
         try { kind = interaction.fields.getStringSelectValues('kind')[0] || kind; } catch { /* keeps the default */ }
         try { message = (interaction.fields.getTextInputValue('message') || '').trim(); } catch { message = ''; }
