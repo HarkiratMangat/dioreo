@@ -284,6 +284,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-26 13:17 EDT — Loadout pictures keyed by gunsmith code, a five-field edit pop-up, and a panel for every /manage save (v3.114.0)
 - 2026-10-26 14:17 EDT — Dioreo v3 launches, and the legal documents are made true for it (v3.0.0)
 - 2026-10-26 16:06 EDT — Announcements get a Why button and an off switch (v3.116.0)
+- 2026-10-27 17:45 EDT — Announcements move to Components V2, and /help gets a line to the developer (v3.117.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4752,6 +4753,16 @@ He asked for a button under each announcement answering "why am I seeing these m
 He picked the colours and, rather than click-testing himself, asked for it to be tested through code. That test drove the real router with fake button interactions against the dev database: delivery with the button, Turn off, nothing delivered or marked seen while off, Turn back on, and both other switches. Then the exact payloads went to Discord by REST, which accepted all six. One thing the router test caught first: handlerRouting.test.js reads literal custom ids, so a handler comparing against exported constants looks like a namespace with no branch behind it.
 
 The stored choice is a field that exists only while announcements are off, which is what lets the Privacy Policy say so plainly.
+
+## 2026-10-27 17:45 EDT — Announcements move to Components V2, and /help gets a line to the developer (v3.117.0)
+
+Announcements were the last panels still sent as classic embeds, so each one became a V2 Container in its own colour. The catch was size: a batch has to fit V2's 4,000 characters and 40 components together, so an announcement's text stops at 3,900 and the first one always goes. He then narrowed the Why row to a repeat showing, since a first showing explains itself.
+
+He wanted a way for players to reach him without a server or a support channel. Bugs & Suggestions under every /help page opens a pop-up, and Dioreo Admin DMs the note to him. Nothing is stored; the DM is the only copy, which is what lets the Privacy Policy say so in one sentence. A ten-minute limit per person stops one user flooding his DMs.
+
+Building it turned up an older leak: every V2 panel sent with Discord's default mentions, so /gunsmith's "Submitted by" line pinged the submitter on every public view, and /help highlighted for @dior. sendV2Payload now sends with mentions off unless a caller asks, which fixed every panel at once rather than one at a time.
+
+The last check ran in his own Chrome, in the background: the button's Feedback emoji, a real note arriving as a DM, no Why row on a first showing and the row on the second, and the off switch both ways. Its only finding was a deprecation warning from the ephemeral option, now the flag.
 
 # Part B — Lessons Ledger (thematic)
 

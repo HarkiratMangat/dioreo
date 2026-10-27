@@ -635,7 +635,7 @@ t('a server admin sees /admin inside Preferences, with the swapped emoji and des
 
         const select = container.components.find(c => c.type === 1 && c.components?.[0]?.type === 3);
         const preferences = select.components[0].options.find(o => o.label === 'Preferences');
-        assert.strictEqual(preferences.description, 'Manage your personal & server admin settings');
+        assert.strictEqual(preferences.description, "Your preferences and your server's rules");
         assert.strictEqual(preferences.emoji.name, 'ServerSettings', 'Preferences must swap to the ServerSettings emoji');
 
         assert.ok((await help.getAllHelpCommandNames(SERVER_ADMIN)).includes('/admin'));
@@ -648,7 +648,7 @@ t('a plain member sees the ordinary Preferences emoji and description', async ()
         const container = await help.buildContainer(null, 0, NOBODY);
         const select = container.components.find(c => c.type === 1 && c.components?.[0]?.type === 3);
         const preferences = select.components[0].options.find(o => o.label === 'Preferences');
-        assert.strictEqual(preferences.description, 'Manage your saved bot settings');
+        assert.strictEqual(preferences.description, 'Your saved preferences');
         assert.strictEqual(preferences.emoji.name, 'Settings');
     });
 });

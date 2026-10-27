@@ -335,8 +335,8 @@ module.exports = {
         if (paginationRow) containerComponents.push({ type: 14, spacing: 1, divider: false }, paginationRow);
         containerComponents.push({ type: 14, spacing: 2, divider: true });
 
-        // FOOTER (2026-07-12) -- silent mention (doesn't ping Harkirat when someone else opens /settings) using the same `allowed_mentions: { users: [] }` suppression already applied to the header's own self-mention below; renders as a normal clickable mention either way. A Text Display can paste a raw emoji mention string directly (unlike a button's `label`, which needs the parsed { id, name, animated } shape -- see parseEmoji()'s own comment).
-        containerComponents.push({ type: 10, content: `-# ${emojis.diorHeart} Made with love by <@${DIOR_ID}>` });
+        // FOOTER (2026-07-12) -- silent mention (doesn't ping Harkirat when someone else opens /settings) using the same `allowed_mentions: { users: [] }` suppression already applied to the header's own self-mention below; renders as a normal clickable mention either way. A Text Display can paste a raw emoji mention string directly (unlike a button's `label`, which needs the parsed { id, name, animated } shape -- see parseEmoji()'s own comment). In the launch announcement's style since 2026-10-27 01:23 EDT (Harkirat: "change the other ... Made with love by @dior to follow the new line style").
+        containerComponents.push({ type: 10, content: `-# Made with ${emojis.diorHeart} by <@${DIOR_ID}>` });
 
         // 6. MASTER PAYLOAD MATRIX
         const payload = withShareButton([

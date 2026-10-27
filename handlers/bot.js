@@ -306,7 +306,7 @@ async function route(interaction) {
         invalidateAdminCache();
         recordChange({ actorId: interaction.user.id, page: 'access', action: 'grant', model: 'AdminUser', target: discordId, summary: `Granted admin access to <@${discordId}> — ${formatGrants(grants)}` });
         // editReply, not followUp (v3-pre-release review, finding #7) -- followUp posts a NEW message (leaving the deferReply({ephemeral:true}) placeholder hanging forever) and, with no ephemeral flag of its own, lands publicly -- disclosing who holds bot admin and at what scope to the whole channel.
-        return interaction.editReply({ content: `${BOT_EMOJI.checkmark} Granted admin access to <@${discordId}> — ${formatGrants(grants)}.${note ? ` (${note})` : ''}` });
+        return interaction.editReply({ content: `${BOT_EMOJI.checkmark} Granted admin access to <@${discordId}> — ${formatGrants(grants)}.${note ? ` (${note})` : ''}`, allowedMentions: { parse: [] } });
     }
 
     if (interaction.isModalSubmit() && customId.startsWith('bot_adminmodal_editperms_')) {
@@ -330,7 +330,7 @@ async function route(interaction) {
         }
         invalidateAdminCache();
         recordChange({ actorId: interaction.user.id, page: 'access', action: 'edit', model: 'AdminUser', target: discordId, summary: `Updated <@${discordId}>'s permissions — ${formatGrants(grants)}` });
-        return interaction.editReply({ content: `${BOT_EMOJI.checkmark} Updated <@${discordId}>'s permissions — ${formatGrants(grants)}.` });
+        return interaction.editReply({ content: `${BOT_EMOJI.checkmark} Updated <@${discordId}>'s permissions — ${formatGrants(grants)}.`, allowedMentions: { parse: [] } });
     }
 }
 

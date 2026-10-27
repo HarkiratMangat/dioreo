@@ -2,7 +2,7 @@
 //
 // Pure-logic test of utils/announcement.js's due-for-delivery decision (isAnnouncementDue), driven by a FIXED simulated clock rather than a live database or a real Discord interaction -- announcementOps.test.js already covers the DB-touching op layer (validate/apply/invert); this file is only about "given this state, is this announcement due right now", which is the function most likely to get the 24h boundary math wrong.
 const assert = require('assert');
-const { isAnnouncementDue, isRepeatingAnnouncement, MIN_HOURS_BETWEEN_REPEATS, whyButtonRow, buildWhyPanel, buildAnnouncementEmbed } = require('../utils/announcement');
+const { isAnnouncementDue, isRepeatingAnnouncement, MIN_HOURS_BETWEEN_REPEATS, whyButtonRow, whyRowNeeded, buildWhyPanel, buildAnnouncementEmbed, buildAnnouncementContainer } = require('../utils/announcement');
 
 let failures = 0;
 function check(name, fn) {
@@ -88,6 +88,35 @@ check('the answer: Turn off is red with the DisableReminder bell; once off, Turn
 check('the embed itself carries no button (/bot analytics renders it too)', () => {
     const e = buildAnnouncementEmbed({ text: 'x', createdAt: new Date(0), color: 1 });
     assert.ok(!('components' in e));
+});
+check('an announcement is a V2 Container in its own colour, with no button inside', () => {
+    const c = buildAnnouncementContainer({ text: '## Hi\nline', createdAt: new Date(0), color: 7 });
+    assert.strictEqual(c.type, 17);
+    assert.strictEqual(c.accent_color, 7);
+    assert.ok(!JSON.stringify(c).includes('"type":1,'), 'no action row');
+    assert.ok(c.components.at(-1).content.endsWith('-# Posted <t:0:R>'));
+});
+check('a "---" line is a drawn divider; blank lines stay in the text', () => {
+    const c = buildAnnouncementContainer({ text: 'a\n\nb\n---\nc', createdAt: new Date(0), color: 1 });
+    assert.deepStrictEqual(c.components.map(x => x.type), [10, 14, 10]);
+    assert.strictEqual(c.components[0].content, 'a\n\nb');
+    assert.strictEqual(c.components[1].divider, true);
+});
+check('the Why button only comes with a repeat showing, never a first one', () => {
+    const a = { _id: 'a1' }, b = { _id: 'b2' };
+    assert.strictEqual(whyRowNeeded([a], new Set()), false, 'first showing of a one-off or a repeating one');
+    assert.strictEqual(whyRowNeeded([a], new Set(['a1'])), true, 'second showing');
+    assert.strictEqual(whyRowNeeded([a, b], new Set(['b2'])), true, 'a batch with one repeat');
+});
+check('a {posted} token takes the live time where it is written, and no Posted line is added', () => {
+    const c = buildAnnouncementContainer({ text: 'hi\n-# Made with x by y · {posted}', createdAt: new Date(0), color: 1 });
+    const text = c.components.map(x => x.content || '').join('\n');
+    assert.ok(text.endsWith('-# Made with x by y · <t:0:R>'));
+    assert.ok(!text.includes('Posted'));
+});
+check('a banner goes under the text as a Media Gallery', () => {
+    const c = buildAnnouncementContainer({ text: 'x', createdAt: new Date(0), color: 1, bannerImageUrl: 'https://example.com/a.png' });
+    assert.deepStrictEqual(c.components.at(-1), { type: 12, items: [{ media: { url: 'https://example.com/a.png' } }] });
 });
 
 process.exit(failures ? 1 : 0);
