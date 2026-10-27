@@ -25,8 +25,7 @@ async function route(interaction) {
             return await helpCommand.execute(syntheticInteraction, interaction.values[0]);
         }
 
-        // B2b. BOT ADMIN'S "jump to a /manage guide" DROPDOWN (item 10, added 2026-08-15 13:11 EDT). Re-checks perms.manage server-side rather than trusting the dropdown having been hidden -- same defense-in-depth every other admin-gated action in this bot uses (the dropdown is only ever RENDERED for someone who already has it, this is the click-time re-check). Opens as its own new ephemeral reply, same pattern /manage's own Guide button uses (utils/manageActions.js's openFormatGuide) -- never edits the /help page underneath it.
-        // ANNOUNCEMENTS under the landing page (2026-10-27 01:23 EDT): every announcement running now, privately, built the way a delivery builds them. Nothing is marked seen, and someone who turned announcements off can still look.
+        // ANNOUNCEMENTS under every /help page (2026-10-27 01:23 EDT): every announcement running now, privately, built the way a delivery builds them. Nothing is marked seen, and someone who turned announcements off can still look.
         if (interaction.isButton() && interaction.customId === 'help_announcements') {
             const ann = require('../utils/announcement');
             await interaction.deferReply({ ephemeral: true });
@@ -45,6 +44,7 @@ async function route(interaction) {
             return await require('../utils/feedback').handleFeedbackSave(interaction);
         }
 
+        // B2b. BOT ADMIN'S "jump to a /manage guide" DROPDOWN (item 10, added 2026-08-15 13:11 EDT). Re-checks perms.manage server-side rather than trusting the dropdown having been hidden -- same defense-in-depth every other admin-gated action in this bot uses (the dropdown is only ever RENDERED for someone who already has it, this is the click-time re-check). Opens as its own new ephemeral reply, same pattern /manage's own Guide button uses (utils/manageActions.js's openFormatGuide) -- never edits the /help page underneath it.
         if (interaction.isStringSelectMenu() && interaction.customId === 'help_guide_pick') {
             if (!(await hasCommandAccess(interaction.user.id, 'manage'))) {
                 return await interaction.reply({ content: "🔒 You don't have access to `/manage`.", ephemeral: true });
