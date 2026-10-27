@@ -11,6 +11,7 @@
             "custom_id": "text",
             "label": "Announcement Text",
             "style": 2,
+            "max_length": 3900,
             "value": "",
             "required": true
           }
@@ -58,6 +59,7 @@
             "custom_id": "text",
             "label": "Announcement Text",
             "style": 2,
+            "max_length": 3900,
             "value": "Hello world",
             "required": true
           }

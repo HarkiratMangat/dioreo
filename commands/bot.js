@@ -370,8 +370,8 @@ const RECORD_VIEWS = {
     announcement: {
         noun: 'announcement', dateOnly: [],
         fetch: async (t) => { const A = require('../models/Announcement'); const id = t.id || t.elementId; return id ? A.findById(id).lean() : null; },
-        // The same text a user is actually shown. buildAnnouncementEmbed returns an EMBED, which cannot go inside a Components V2 container -- its `description` is the canonical body, so that is what is reused rather than re-deriving the wording here.
-        render: (a) => [{ type: 10, content: truncate(require('../utils/announcement').buildAnnouncementEmbed(a).description, 900) }],
+        // The same text a user is actually shown (announcementBody, which the delivered Container is built from), rather than re-deriving the wording here.
+        render: (a) => [{ type: 10, content: truncate(require('../utils/announcement').announcementBody(a), 900) }],
     },
     patchnotes: {
         noun: 'patch note', dateOnly: [],

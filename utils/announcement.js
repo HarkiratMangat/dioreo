@@ -1,6 +1,6 @@
 // utils/announcement.js
 //
-// One-time announcement delivery: the next time a user runs any top-level slash command, if there are any active (non-expired) announcements they haven't individually seen yet, ALL of them are delivered together as separate embeds inside ONE follow-up message -- never one message per announcement (Harkirat's explicit design: "one message but design it properly so it's easy to understand that they're different announcements"). That follow-up is ALWAYS ephemeral, regardless of whether the triggering command's own response was public -- announcements are a personal one-time notice, not something that should bloat a public channel.
+// One-time announcement delivery: the next time a user runs any top-level slash command, if there are any active (non-expired) announcements they haven't individually seen yet, ALL of them are delivered together as separate Components V2 Containers (classic embeds until 2026-10-26 23:44 EDT, Harkirat: "use components v2, even for simple embeds") inside ONE follow-up message -- never one message per announcement (Harkirat's explicit design: "one message but design it properly so it's easy to understand that they're different announcements"). That follow-up is ALWAYS ephemeral, regardless of whether the triggering command's own response was public -- announcements are a personal one-time notice, not something that should bloat a public channel.
 //
 // Wired into handlers/router.js's slash-command route engine -- called AFTER a command's own reply has already gone out, on both the modular-command and dynamic MP-loadout-fallback success paths. Deliberately NOT called from button/select/modal handlers (STEP 6.3+) -- only a fresh top-level command invocation counts, so re-clicking an existing panel or reactivating an idled one (see utils/passiveExpiry.js) can never re-trigger it; those routes never reach this function at all.
 //
@@ -8,20 +8,33 @@
 const Announcement = require('../models/Announcement');
 const UserPreference = require('../models/UserPreference');
 
-// Discord's hard cap on embeds in a single message. If a user somehow has more than this many unseen at once (hasn't run a command in a long time, or several were posted back-to-back), the OLDEST unseen ones are shown first and the rest wait for their next command rather than any of them being silently dropped -- `active`/`unseen` below are both sorted oldest-first.
+// At most this many announcements in one delivery. It was Discord's 10-embed cap; since the switch to Components V2 (2026-10-26 23:44 EDT) it is this bot's own limit, kept at 10 and kept under its old name because the portal's Broadcast route reads it. If a user somehow has more than this many unseen at once (hasn't run a command in a long time, or several were posted back-to-back), the OLDEST unseen ones are shown first and the rest wait for their next command rather than any of them being silently dropped -- `active`/`unseen` below are both sorted oldest-first.
 const MAX_EMBEDS_PER_MESSAGE = 10;
-// Discord refuses a message whose embeds hold more than 6,000 characters in total. Before this cap, one long announcement in a batch made Discord refuse the whole follow-up, nothing was marked seen, and the same oversized batch was retried and refused on every command, so no announcement reached anyone (deferred-list Active Bug, found 2026-09-13).
-const EMBED_CHAR_BUDGET = 6000;
+// A Components V2 message holds at most 4,000 characters of text and 40 components, counted together across every Container in it. Past either, Discord refuses the whole follow-up, nothing is marked seen, and the same batch is retried and refused on every command, so no announcement reaches anyone (the embed version of this bug was found 2026-09-13, when the cap was 6,000 across embeds).
+const TEXT_CHAR_BUDGET = 4000;
+const COMPONENT_BUDGET = 40;
+// One announcement's own text, so the first always fits with its Posted line beside it. core/ops/announcements.js refuses longer text, /manage's box stops at it, and buildAnnouncementContainer cuts anything older that is still longer.
+const ANNOUNCEMENT_TEXT_MAX = 3900;
 
-// The longest run of due announcements, in order, whose embeds fit the budget. The first one always goes (its own text is capped at 4,000 by core/ops/announcements.js); the rest wait for the user's next command, which is how a batch over ten already works.
+// The text and components a list of V2 components holds, counted the way Discord counts them.
+function measureComponents(list) {
+    let text = 0, count = 0;
+    const walk = c => { count++; if (typeof c.content === 'string') text += c.content.length; (c.components || []).forEach(walk); if (c.accessory) walk(c.accessory); };
+    list.forEach(walk);
+    return { text, count };
+}
+
+// The longest run of due announcements, in order, whose Containers fit the message beside the Why row. The first one always goes (its text is capped at ANNOUNCEMENT_TEXT_MAX); the rest wait for the user's next command, which is how a batch over ten already works.
 function fitEmbedBudget(docs) {
+    const reserved = measureComponents([whyButtonRow()]);
     const out = [];
-    let used = 0;
+    let text = 0, count = reserved.count;
     for (const doc of docs) {
-        const size = (buildAnnouncementEmbed(doc).description || '').length;
-        if (out.length && used + size > EMBED_CHAR_BUDGET) break;
+        const size = measureComponents([buildAnnouncementContainer(doc)]);
+        if (out.length && (text + size.text > TEXT_CHAR_BUDGET || count + size.count > COMPONENT_BUDGET)) break;
         out.push(doc);
-        used += size;
+        text += size.text;
+        count += size.count;
     }
     return out;
 }
@@ -107,6 +120,29 @@ function hslToHex(h, s, l) {
     return (toByte(r) << 16) | (toByte(g) << 8) | toByte(b);
 }
 
+// The text a user is shown, with the live Posted line under it. Shared by the Container below and /bot analytics' change panel, so the two never word it differently.
+function announcementBody(doc) {
+    const postedTs = Math.floor(new Date(doc.createdAt).getTime() / 1000);
+    const text = String(doc.text || '');
+    const body = text.length > ANNOUNCEMENT_TEXT_MAX ? `${text.slice(0, ANNOUNCEMENT_TEXT_MAX - 1)}…` : text;
+    return `${body}\n\n-# Posted <t:${postedTs}:R>`;
+}
+
+// One announcement as a Components V2 Container (2026-10-26 23:44 EDT, replacing the embed below as what is delivered). Its accent is the announcement's own colour. A line that is exactly `---` becomes a Separator with its divider line drawn; everything else stays text, blank lines included, so an announcement typed for the embed renders the same. The banner, when there is one, sits under the text as a Media Gallery, where the embed put its image.
+function buildAnnouncementContainer(doc) {
+    const components = [];
+    let run = [];
+    const flush = () => { const t = run.join('\n').trim(); if (t) components.push({ type: 10, content: t }); run = []; };
+    for (const line of announcementBody(doc).split('\n')) {
+        if (line.trim() === '---') { flush(); components.push({ type: 14, divider: true, spacing: 1 }); }
+        else run.push(line);
+    }
+    flush();
+    if (doc.bannerImageUrl) components.push({ type: 12, items: [{ media: { url: doc.bannerImageUrl } }] });
+    return { type: 17, accent_color: doc.color, components };
+}
+
+// The classic embed, kept for the portal's tests and any reader of the old shape; nothing delivers it any more.
 function buildAnnouncementEmbed(doc) {
     // No embed title at all (2026-08-13, Harkirat's direct correction: the generic "📢 Announcement" header was still rendering above the text even after the custom-title INPUT field was removed -- those are two different things, and removing the field alone didn't touch this). A custom heading can just be typed into the text itself as markdown (e.g. "# My Title", exactly what Harkirat's own test announcement did) -- separate announcements in one delivery are now told apart by their per-announcement accent color alone, not by title text. A REAL Discord timestamp tag, not the embed's own `timestamp` property (2026-08-13, Harkirat's direct correction) -- that property renders as a STATIC "Today at 2:46 PM" in the embed footer, formatted once at send time and never touched again, unlike every other timestamp in this bot (`<t:UNIX:R>`, live/relative, matches the `/manage` list preview's own convention).
     const postedTs = Math.floor(new Date(doc.createdAt).getTime() / 1000);
@@ -175,11 +211,11 @@ async function maybeSendAnnouncement(interaction) {
     if (due.length === 0) return;
 
     const toShow = fitEmbedBudget(due.slice(0, MAX_EMBEDS_PER_MESSAGE));
-    const embeds = toShow.map(doc => buildAnnouncementEmbed(doc));
+    const containers = toShow.map(doc => buildAnnouncementContainer(doc));
 
-    // Plain discord.js followUp with normal embed objects -- NOT a Components V2 payload, so this doesn't need sendV2Payload's raw-REST bypass (a standard `embeds` array on followUp is fully supported). Only requires the interaction to already be acknowledged, which every caller of this function guarantees by calling it after the command's own reply completed.
+    // A Components V2 follow-up (32768) that only the user sees (64), the way handlers/manage/* send theirs: one Container per announcement, the Why row under the batch. Only requires the interaction to already be acknowledged, which every caller of this function guarantees by calling it after the command's own reply completed.
     try {
-        await interaction.followUp({ embeds, components: [whyButtonRow()], ephemeral: true });
+        await interaction.followUp({ flags: 32768 | 64, components: [...containers, whyButtonRow()] });
     } catch (err) {
         // Interaction likely expired -- don't mark as seen/delivered, so it's retried on their next command instead of silently lost. The real Discord code, so a refusal (50035, invalid form body) reads differently from an expired interaction (10062).
         console.error(`Failed to deliver announcement follow-up (Discord ${err?.code ?? 'no code'}):`, err?.message || err);
@@ -211,4 +247,4 @@ async function maybeSendAnnouncement(interaction) {
 }
 
 // buildAnnouncementEmbed exported 2026-08-23 11:27 EDT so /bot analytics' change-detail panel renders an announcement with the SAME text shape a user is shown, instead of re-describing its fields.
-module.exports = { ANN_WHY_ID, ANN_OFF_ID, ANN_ON_ID, whyButtonRow, buildWhyPanel, setAnnouncementsOff, getActiveAnnouncements, maybeSendAnnouncement, computeExpiresAt, expiryToInputValue, generateAccentColor, buildAnnouncementEmbed, MAX_EMBEDS_PER_MESSAGE, EMBED_CHAR_BUDGET, fitEmbedBudget, isRepeatingAnnouncement, isAnnouncementDue, MIN_HOURS_BETWEEN_REPEATS };
+module.exports = { ANN_WHY_ID, ANN_OFF_ID, ANN_ON_ID, whyButtonRow, buildWhyPanel, setAnnouncementsOff, getActiveAnnouncements, maybeSendAnnouncement, computeExpiresAt, expiryToInputValue, generateAccentColor, buildAnnouncementEmbed, buildAnnouncementContainer, announcementBody, measureComponents, MAX_EMBEDS_PER_MESSAGE, TEXT_CHAR_BUDGET, COMPONENT_BUDGET, ANNOUNCEMENT_TEXT_MAX, fitEmbedBudget, isRepeatingAnnouncement, isAnnouncementDue, MIN_HOURS_BETWEEN_REPEATS };

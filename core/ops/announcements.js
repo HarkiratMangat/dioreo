@@ -6,7 +6,7 @@
 const mongoose = require('mongoose');
 const { registerEntity } = require('./index');
 const { updateDocument, createDocument, deleteDocument } = require('../mongo/document');
-const { computeExpiresAt, generateAccentColor } = require('../../utils/announcement');
+const { computeExpiresAt, generateAccentColor, ANNOUNCEMENT_TEXT_MAX } = require('../../utils/announcement');
 const { parseAdminDate } = require('../../utils/adminParser');
 const { cacheAnnouncementBanner } = require('../../utils/announcementBannerCache');
 const Announcement = require('../../models/Announcement');
@@ -18,7 +18,6 @@ function truncate(text) {
     return text.length > 60 ? `${text.slice(0, 57)}...` : text;
 }
 
-const ANNOUNCEMENT_TEXT_MAX = 4000;
 
 function validatePost(payload) {
     const errors = [];
@@ -42,7 +41,7 @@ function validatePost(payload) {
         startsAt = parsed;
     }
 
-    // An announcement goes out as one embed description, which Discord caps at 4,096 characters; the delivery adds a "Posted" line, so the text itself stops at 4,000. Past that, Discord refused the follow-up on every command and the announcement never reached anyone (found 2026-09-13 by the pins-batch-2 harden pass).
+    // An announcement goes out as a Components V2 Container (since 2026-10-26 23:44 EDT; an embed description before), and a V2 message holds 4,000 characters of text in all; the delivery adds a "Posted" line, so the text itself stops at ANNOUNCEMENT_TEXT_MAX (3,900, utils/announcement.js; it was 4,000 under the embed's 4,096). Past that, Discord refused the follow-up on every command and the announcement never reached anyone (found 2026-09-13 by the pins-batch-2 harden pass).
     if (text.length > ANNOUNCEMENT_TEXT_MAX) errors.push(`An announcement can be at most ${ANNOUNCEMENT_TEXT_MAX} characters; this one is ${text.length}.`);
 
     // Optional banner image (added 2026-09-13 17:34 EDT, portal pins batch 2, spec section 7) -- an https URL string, or null for "no image". No upload pipeline here: the composer decides how a URL is produced, this op only ever validates the string it is handed. The raw shape (a string or null/blank) never differs between a fresh submission and a replayed invert, so this needs no alreadyNormalized-style branch.
