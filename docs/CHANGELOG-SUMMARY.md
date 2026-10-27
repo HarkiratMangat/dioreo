@@ -12,7 +12,7 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
-## v3.0.0 — October 26, 2026
+## v3.0.0 — October 27, 2026
 **Dioreo v3 is here.** The biggest update yet:
 - **Add Dioreo to a server.** `/invite` adds it to a server or to just your own apps, and a server's admins choose where its replies stay private with `/admin`.
 - **`/gunsmith mp` and `/gunsmith dmz`** replace the old weapon commands: search any weapon, even half-typed, or browse the META. Builds show their badges and the rank modes they suit, and you can copy a build's attachments or its Gunsmith Code.
@@ -26,6 +26,7 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 - **Right-click tools:** View Colors on a person or a message, and Convert Times on a message.
 - **`/timestamp`** reads your saved time zone and understands ranges like "8pm to 10pm".
 - **`/settings`** shows when you started using Dioreo, and Your Stats counts your own use (only you see it, and you can reset it).
+- **Announcements** say why you're seeing them, and you can turn them off. Report a bug or suggest an idea with **Bugs & Suggestions** in `/help`.
 - **Updated Terms of Service and Privacy Policy**, at dioreo.app/terms and dioreo.app/privacy.
 
 ## v2.63.1 — August 9, 2026
