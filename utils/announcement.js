@@ -160,15 +160,15 @@ const ANN_WHY_ID = 'ann_why';
 const ANN_OFF_ID = 'ann_off';
 const ANN_ON_ID = 'ann_on';
 
-// "Why am I seeing this?" under every delivered announcement (Harkirat, 2026-10-26 15:20 EDT: "a button under the embed that basically like answers like, why am I seeing these messages? ... so if someone gets the announcement, they're not like just caught off guard"). One row under the whole batch, and never inside buildAnnouncementEmbed: /bot analytics renders that embed too, and must not grow a button.
-// The Why row goes under a delivery only when it repeats something (Harkirat, 2026-10-27 01:10 EDT: "only appears on any 2nd or following repetition of an announcement"): a first showing, including a one-off announcement's only showing, has no button. `seen` is the user's seenAnnouncementIds as strings, read before this delivery marks anything.
-function whyRowNeeded(toShow, seen) {
-    return toShow.some(a => seen.has(String(a._id)));
-}
-
+// "Why am I seeing this?" under a delivered announcement (shown only on a repeat since whyRowNeeded below; Harkirat, 2026-10-26 15:20 EDT: "a button under the embed that basically like answers like, why am I seeing these messages? ... so if someone gets the announcement, they're not like just caught off guard"). One row under the whole batch, and never inside buildAnnouncementEmbed: /bot analytics renders that embed too, and must not grow a button.
 function whyButtonRow() {
     const emojis = require('./emojiMap');
     return { type: 1, components: [{ type: 2, style: 2, label: 'Why am I seeing this?', custom_id: ANN_WHY_ID, emoji: emojis.parseEmoji(emojis.info) }] };
+}
+
+// The Why row goes under a delivery only when it repeats something (Harkirat, 2026-10-27 01:10 EDT: "only appears on any 2nd or following repetition of an announcement"): a first showing, including a one-off announcement's only showing, has no button. `seen` is the user's seenAnnouncementIds as strings, read before this delivery marks anything.
+function whyRowNeeded(toShow, seen) {
+    return toShow.some(a => seen.has(String(a._id)));
 }
 
 // The private answer to that button, with the switch beside it (mock-ups approved 2026-10-26 15:30 EDT with his colours: Turn off red with the DisableReminder bell, Turn back on blue). `state` is 'on' (the explanation), 'off' (just turned off) or 'back' (just turned back on).
