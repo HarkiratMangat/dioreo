@@ -219,17 +219,6 @@
                   "default": false
                 },
                 {
-                  "label": "/calendar",
-                  "value": "/calendar",
-                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
-                  "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/today",
                   "value": "/today",
                   "description": "What's new today, what's going live, and what's leaving soon",
@@ -237,6 +226,17 @@
                     "animated": true,
                     "name": "DailyUpdate",
                     "id": "1563415690738802690"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/calendar",
+                  "value": "/calendar",
+                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
                   },
                   "default": false
                 },
@@ -252,17 +252,6 @@
                   "default": false
                 },
                 {
-                  "label": "/patch notes",
-                  "value": "/patch notes",
-                  "description": "Latest weapon balance changes, plus the full patch-note history",
-                  "emoji": {
-                    "animated": true,
-                    "name": "PatchNotes",
-                    "id": "1523762216954888286"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/season end",
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
@@ -274,13 +263,13 @@
                   "default": false
                 },
                 {
-                  "label": "/colors",
-                  "value": "/colors",
-                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
+                  "label": "/patch notes",
+                  "value": "/patch notes",
+                  "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "ShowColors",
-                    "id": "1537280503105847486"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -296,13 +285,13 @@
                   "default": false
                 },
                 {
-                  "label": "/invite",
-                  "value": "/invite",
-                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "label": "/colors",
+                  "value": "/colors",
+                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "ShareHeart",
-                    "id": "1539021725784739891"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -314,6 +303,17 @@
                     "animated": true,
                     "name": "Settings",
                     "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/invite",
+                  "value": "/invite",
+                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 }
@@ -520,17 +520,6 @@
                   "default": false
                 },
                 {
-                  "label": "/calendar",
-                  "value": "/calendar",
-                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
-                  "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/today",
                   "value": "/today",
                   "description": "What's new today, what's going live, and what's leaving soon",
@@ -538,6 +527,17 @@
                     "animated": true,
                     "name": "DailyUpdate",
                     "id": "1563415690738802690"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/calendar",
+                  "value": "/calendar",
+                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
                   },
                   "default": false
                 },
@@ -553,17 +553,6 @@
                   "default": false
                 },
                 {
-                  "label": "/patch notes",
-                  "value": "/patch notes",
-                  "description": "Latest weapon balance changes, plus the full patch-note history",
-                  "emoji": {
-                    "animated": true,
-                    "name": "PatchNotes",
-                    "id": "1523762216954888286"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/season end",
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
@@ -575,13 +564,13 @@
                   "default": false
                 },
                 {
-                  "label": "/colors",
-                  "value": "/colors",
-                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
+                  "label": "/patch notes",
+                  "value": "/patch notes",
+                  "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "ShowColors",
-                    "id": "1537280503105847486"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -597,13 +586,13 @@
                   "default": false
                 },
                 {
-                  "label": "/invite",
-                  "value": "/invite",
-                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "label": "/colors",
+                  "value": "/colors",
+                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "ShareHeart",
-                    "id": "1539021725784739891"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -615,6 +604,17 @@
                     "animated": true,
                     "name": "Settings",
                     "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/invite",
+                  "value": "/invite",
+                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 }
@@ -816,17 +816,6 @@
                   "default": false
                 },
                 {
-                  "label": "/calendar",
-                  "value": "/calendar",
-                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
-                  "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/today",
                   "value": "/today",
                   "description": "What's new today, what's going live, and what's leaving soon",
@@ -834,6 +823,17 @@
                     "animated": true,
                     "name": "DailyUpdate",
                     "id": "1563415690738802690"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/calendar",
+                  "value": "/calendar",
+                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
                   },
                   "default": false
                 },
@@ -849,17 +849,6 @@
                   "default": false
                 },
                 {
-                  "label": "/patch notes",
-                  "value": "/patch notes",
-                  "description": "Latest weapon balance changes, plus the full patch-note history",
-                  "emoji": {
-                    "animated": true,
-                    "name": "PatchNotes",
-                    "id": "1523762216954888286"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/season end",
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
@@ -871,13 +860,13 @@
                   "default": false
                 },
                 {
-                  "label": "/colors",
-                  "value": "/colors",
-                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
+                  "label": "/patch notes",
+                  "value": "/patch notes",
+                  "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "ShowColors",
-                    "id": "1537280503105847486"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -893,13 +882,13 @@
                   "default": false
                 },
                 {
-                  "label": "/invite",
-                  "value": "/invite",
-                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "label": "/colors",
+                  "value": "/colors",
+                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "ShareHeart",
-                    "id": "1539021725784739891"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -911,6 +900,17 @@
                     "animated": true,
                     "name": "Settings",
                     "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/invite",
+                  "value": "/invite",
+                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 }
@@ -1088,17 +1088,6 @@
                   "default": false
                 },
                 {
-                  "label": "/calendar",
-                  "value": "/calendar",
-                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
-                  "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/today",
                   "value": "/today",
                   "description": "What's new today, what's going live, and what's leaving soon",
@@ -1106,6 +1095,17 @@
                     "animated": true,
                     "name": "DailyUpdate",
                     "id": "1563415690738802690"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/calendar",
+                  "value": "/calendar",
+                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
                   },
                   "default": false
                 },
@@ -1121,17 +1121,6 @@
                   "default": false
                 },
                 {
-                  "label": "/patch notes",
-                  "value": "/patch notes",
-                  "description": "Latest weapon balance changes, plus the full patch-note history",
-                  "emoji": {
-                    "animated": true,
-                    "name": "PatchNotes",
-                    "id": "1523762216954888286"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/season end",
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
@@ -1143,13 +1132,13 @@
                   "default": false
                 },
                 {
-                  "label": "/colors",
-                  "value": "/colors",
-                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
+                  "label": "/patch notes",
+                  "value": "/patch notes",
+                  "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "ShowColors",
-                    "id": "1537280503105847486"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -1165,13 +1154,13 @@
                   "default": false
                 },
                 {
-                  "label": "/invite",
-                  "value": "/invite",
-                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "label": "/colors",
+                  "value": "/colors",
+                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "ShareHeart",
-                    "id": "1539021725784739891"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -1183,6 +1172,17 @@
                     "animated": true,
                     "name": "Settings",
                     "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/invite",
+                  "value": "/invite",
+                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 }
@@ -1360,17 +1360,6 @@
                   "default": false
                 },
                 {
-                  "label": "/calendar",
-                  "value": "/calendar",
-                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
-                  "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/today",
                   "value": "/today",
                   "description": "What's new today, what's going live, and what's leaving soon",
@@ -1378,6 +1367,17 @@
                     "animated": true,
                     "name": "DailyUpdate",
                     "id": "1563415690738802690"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/calendar",
+                  "value": "/calendar",
+                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
                   },
                   "default": false
                 },
@@ -1393,17 +1393,6 @@
                   "default": false
                 },
                 {
-                  "label": "/patch notes",
-                  "value": "/patch notes",
-                  "description": "Latest weapon balance changes, plus the full patch-note history",
-                  "emoji": {
-                    "animated": true,
-                    "name": "PatchNotes",
-                    "id": "1523762216954888286"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/season end",
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
@@ -1415,13 +1404,13 @@
                   "default": false
                 },
                 {
-                  "label": "/colors",
-                  "value": "/colors",
-                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
+                  "label": "/patch notes",
+                  "value": "/patch notes",
+                  "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "ShowColors",
-                    "id": "1537280503105847486"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -1437,13 +1426,13 @@
                   "default": false
                 },
                 {
-                  "label": "/invite",
-                  "value": "/invite",
-                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "label": "/colors",
+                  "value": "/colors",
+                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "ShareHeart",
-                    "id": "1539021725784739891"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -1455,6 +1444,17 @@
                     "animated": true,
                     "name": "Settings",
                     "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/invite",
+                  "value": "/invite",
+                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 }
@@ -1632,17 +1632,6 @@
                   "default": false
                 },
                 {
-                  "label": "/calendar",
-                  "value": "/calendar",
-                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
-                  "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/today",
                   "value": "/today",
                   "description": "What's new today, what's going live, and what's leaving soon",
@@ -1650,6 +1639,17 @@
                     "animated": true,
                     "name": "DailyUpdate",
                     "id": "1563415690738802690"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/calendar",
+                  "value": "/calendar",
+                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
                   },
                   "default": false
                 },
@@ -1665,17 +1665,6 @@
                   "default": false
                 },
                 {
-                  "label": "/patch notes",
-                  "value": "/patch notes",
-                  "description": "Latest weapon balance changes, plus the full patch-note history",
-                  "emoji": {
-                    "animated": true,
-                    "name": "PatchNotes",
-                    "id": "1523762216954888286"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/season end",
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
@@ -1687,13 +1676,13 @@
                   "default": false
                 },
                 {
-                  "label": "/colors",
-                  "value": "/colors",
-                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
+                  "label": "/patch notes",
+                  "value": "/patch notes",
+                  "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "ShowColors",
-                    "id": "1537280503105847486"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -1709,13 +1698,13 @@
                   "default": false
                 },
                 {
-                  "label": "/invite",
-                  "value": "/invite",
-                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "label": "/colors",
+                  "value": "/colors",
+                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "ShareHeart",
-                    "id": "1539021725784739891"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -1727,6 +1716,17 @@
                     "animated": true,
                     "name": "Settings",
                     "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/invite",
+                  "value": "/invite",
+                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 }
@@ -1955,17 +1955,6 @@
                   "default": false
                 },
                 {
-                  "label": "/calendar",
-                  "value": "/calendar",
-                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
-                  "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/today",
                   "value": "/today",
                   "description": "What's new today, what's going live, and what's leaving soon",
@@ -1973,6 +1962,17 @@
                     "animated": true,
                     "name": "DailyUpdate",
                     "id": "1563415690738802690"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/calendar",
+                  "value": "/calendar",
+                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
                   },
                   "default": false
                 },
@@ -1988,17 +1988,6 @@
                   "default": false
                 },
                 {
-                  "label": "/patch notes",
-                  "value": "/patch notes",
-                  "description": "Latest weapon balance changes, plus the full patch-note history",
-                  "emoji": {
-                    "animated": true,
-                    "name": "PatchNotes",
-                    "id": "1523762216954888286"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/season end",
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
@@ -2010,13 +1999,13 @@
                   "default": false
                 },
                 {
-                  "label": "/colors",
-                  "value": "/colors",
-                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
+                  "label": "/patch notes",
+                  "value": "/patch notes",
+                  "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "ShowColors",
-                    "id": "1537280503105847486"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -2032,13 +2021,13 @@
                   "default": false
                 },
                 {
-                  "label": "/invite",
-                  "value": "/invite",
-                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "label": "/colors",
+                  "value": "/colors",
+                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "ShareHeart",
-                    "id": "1539021725784739891"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -2050,6 +2039,17 @@
                     "animated": true,
                     "name": "Settings",
                     "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/invite",
+                  "value": "/invite",
+                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 }
@@ -2289,17 +2289,6 @@
                   "default": false
                 },
                 {
-                  "label": "/calendar",
-                  "value": "/calendar",
-                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
-                  "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/today",
                   "value": "/today",
                   "description": "What's new today, what's going live, and what's leaving soon",
@@ -2307,6 +2296,17 @@
                     "animated": true,
                     "name": "DailyUpdate",
                     "id": "1563415690738802690"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/calendar",
+                  "value": "/calendar",
+                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
                   },
                   "default": false
                 },
@@ -2322,17 +2322,6 @@
                   "default": false
                 },
                 {
-                  "label": "/patch notes",
-                  "value": "/patch notes",
-                  "description": "Latest weapon balance changes, plus the full patch-note history",
-                  "emoji": {
-                    "animated": true,
-                    "name": "PatchNotes",
-                    "id": "1523762216954888286"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/season end",
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
@@ -2344,13 +2333,13 @@
                   "default": false
                 },
                 {
-                  "label": "/colors",
-                  "value": "/colors",
-                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
+                  "label": "/patch notes",
+                  "value": "/patch notes",
+                  "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "ShowColors",
-                    "id": "1537280503105847486"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -2366,13 +2355,13 @@
                   "default": false
                 },
                 {
-                  "label": "/invite",
-                  "value": "/invite",
-                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "label": "/colors",
+                  "value": "/colors",
+                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "ShareHeart",
-                    "id": "1539021725784739891"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -2384,6 +2373,17 @@
                     "animated": true,
                     "name": "Settings",
                     "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/invite",
+                  "value": "/invite",
+                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -2601,17 +2601,6 @@
                   "default": false
                 },
                 {
-                  "label": "/calendar",
-                  "value": "/calendar",
-                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
-                  "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/today",
                   "value": "/today",
                   "description": "What's new today, what's going live, and what's leaving soon",
@@ -2619,6 +2608,17 @@
                     "animated": true,
                     "name": "DailyUpdate",
                     "id": "1563415690738802690"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/calendar",
+                  "value": "/calendar",
+                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
                   },
                   "default": false
                 },
@@ -2634,17 +2634,6 @@
                   "default": false
                 },
                 {
-                  "label": "/patch notes",
-                  "value": "/patch notes",
-                  "description": "Latest weapon balance changes, plus the full patch-note history",
-                  "emoji": {
-                    "animated": true,
-                    "name": "PatchNotes",
-                    "id": "1523762216954888286"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/season end",
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
@@ -2656,13 +2645,13 @@
                   "default": false
                 },
                 {
-                  "label": "/colors",
-                  "value": "/colors",
-                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
+                  "label": "/patch notes",
+                  "value": "/patch notes",
+                  "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "ShowColors",
-                    "id": "1537280503105847486"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -2678,13 +2667,13 @@
                   "default": false
                 },
                 {
-                  "label": "/invite",
-                  "value": "/invite",
-                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "label": "/colors",
+                  "value": "/colors",
+                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "ShareHeart",
-                    "id": "1539021725784739891"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -2696,6 +2685,17 @@
                     "animated": true,
                     "name": "Settings",
                     "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/invite",
+                  "value": "/invite",
+                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -2908,17 +2908,6 @@
                   "default": false
                 },
                 {
-                  "label": "/calendar",
-                  "value": "/calendar",
-                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
-                  "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/today",
                   "value": "/today",
                   "description": "What's new today, what's going live, and what's leaving soon",
@@ -2926,6 +2915,17 @@
                     "animated": true,
                     "name": "DailyUpdate",
                     "id": "1563415690738802690"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/calendar",
+                  "value": "/calendar",
+                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
                   },
                   "default": false
                 },
@@ -2941,17 +2941,6 @@
                   "default": false
                 },
                 {
-                  "label": "/patch notes",
-                  "value": "/patch notes",
-                  "description": "Latest weapon balance changes, plus the full patch-note history",
-                  "emoji": {
-                    "animated": true,
-                    "name": "PatchNotes",
-                    "id": "1523762216954888286"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/season end",
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
@@ -2963,13 +2952,13 @@
                   "default": false
                 },
                 {
-                  "label": "/colors",
-                  "value": "/colors",
-                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
+                  "label": "/patch notes",
+                  "value": "/patch notes",
+                  "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "ShowColors",
-                    "id": "1537280503105847486"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -2985,13 +2974,13 @@
                   "default": false
                 },
                 {
-                  "label": "/invite",
-                  "value": "/invite",
-                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "label": "/colors",
+                  "value": "/colors",
+                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "ShareHeart",
-                    "id": "1539021725784739891"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -3003,6 +2992,17 @@
                     "animated": true,
                     "name": "Settings",
                     "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/invite",
+                  "value": "/invite",
+                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -3191,17 +3191,6 @@
                   "default": false
                 },
                 {
-                  "label": "/calendar",
-                  "value": "/calendar",
-                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
-                  "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/today",
                   "value": "/today",
                   "description": "What's new today, what's going live, and what's leaving soon",
@@ -3209,6 +3198,17 @@
                     "animated": true,
                     "name": "DailyUpdate",
                     "id": "1563415690738802690"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/calendar",
+                  "value": "/calendar",
+                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
                   },
                   "default": false
                 },
@@ -3224,17 +3224,6 @@
                   "default": false
                 },
                 {
-                  "label": "/patch notes",
-                  "value": "/patch notes",
-                  "description": "Latest weapon balance changes, plus the full patch-note history",
-                  "emoji": {
-                    "animated": true,
-                    "name": "PatchNotes",
-                    "id": "1523762216954888286"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/season end",
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
@@ -3246,13 +3235,13 @@
                   "default": false
                 },
                 {
-                  "label": "/colors",
-                  "value": "/colors",
-                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
+                  "label": "/patch notes",
+                  "value": "/patch notes",
+                  "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "ShowColors",
-                    "id": "1537280503105847486"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -3268,13 +3257,13 @@
                   "default": false
                 },
                 {
-                  "label": "/invite",
-                  "value": "/invite",
-                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "label": "/colors",
+                  "value": "/colors",
+                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "ShareHeart",
-                    "id": "1539021725784739891"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -3286,6 +3275,17 @@
                     "animated": true,
                     "name": "Settings",
                     "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/invite",
+                  "value": "/invite",
+                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -3474,17 +3474,6 @@
                   "default": false
                 },
                 {
-                  "label": "/calendar",
-                  "value": "/calendar",
-                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
-                  "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/today",
                   "value": "/today",
                   "description": "What's new today, what's going live, and what's leaving soon",
@@ -3492,6 +3481,17 @@
                     "animated": true,
                     "name": "DailyUpdate",
                     "id": "1563415690738802690"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/calendar",
+                  "value": "/calendar",
+                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
                   },
                   "default": false
                 },
@@ -3507,17 +3507,6 @@
                   "default": false
                 },
                 {
-                  "label": "/patch notes",
-                  "value": "/patch notes",
-                  "description": "Latest weapon balance changes, plus the full patch-note history",
-                  "emoji": {
-                    "animated": true,
-                    "name": "PatchNotes",
-                    "id": "1523762216954888286"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/season end",
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
@@ -3529,13 +3518,13 @@
                   "default": false
                 },
                 {
-                  "label": "/colors",
-                  "value": "/colors",
-                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
+                  "label": "/patch notes",
+                  "value": "/patch notes",
+                  "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "ShowColors",
-                    "id": "1537280503105847486"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -3551,13 +3540,13 @@
                   "default": false
                 },
                 {
-                  "label": "/invite",
-                  "value": "/invite",
-                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "label": "/colors",
+                  "value": "/colors",
+                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "ShareHeart",
-                    "id": "1539021725784739891"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -3569,6 +3558,17 @@
                     "animated": true,
                     "name": "Settings",
                     "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/invite",
+                  "value": "/invite",
+                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -3775,17 +3775,6 @@
                   "default": false
                 },
                 {
-                  "label": "/calendar",
-                  "value": "/calendar",
-                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
-                  "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/today",
                   "value": "/today",
                   "description": "What's new today, what's going live, and what's leaving soon",
@@ -3793,6 +3782,17 @@
                     "animated": true,
                     "name": "DailyUpdate",
                     "id": "1563415690738802690"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/calendar",
+                  "value": "/calendar",
+                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
                   },
                   "default": false
                 },
@@ -3808,17 +3808,6 @@
                   "default": false
                 },
                 {
-                  "label": "/patch notes",
-                  "value": "/patch notes",
-                  "description": "Latest weapon balance changes, plus the full patch-note history",
-                  "emoji": {
-                    "animated": true,
-                    "name": "PatchNotes",
-                    "id": "1523762216954888286"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/season end",
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
@@ -3830,13 +3819,13 @@
                   "default": false
                 },
                 {
-                  "label": "/colors",
-                  "value": "/colors",
-                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
+                  "label": "/patch notes",
+                  "value": "/patch notes",
+                  "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "ShowColors",
-                    "id": "1537280503105847486"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -3852,13 +3841,13 @@
                   "default": false
                 },
                 {
-                  "label": "/invite",
-                  "value": "/invite",
-                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "label": "/colors",
+                  "value": "/colors",
+                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "ShareHeart",
-                    "id": "1539021725784739891"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -3870,6 +3859,17 @@
                     "animated": true,
                     "name": "Settings",
                     "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/invite",
+                  "value": "/invite",
+                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -4109,17 +4109,6 @@
                   "default": false
                 },
                 {
-                  "label": "/calendar",
-                  "value": "/calendar",
-                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
-                  "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/today",
                   "value": "/today",
                   "description": "What's new today, what's going live, and what's leaving soon",
@@ -4127,6 +4116,17 @@
                     "animated": true,
                     "name": "DailyUpdate",
                     "id": "1563415690738802690"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/calendar",
+                  "value": "/calendar",
+                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
                   },
                   "default": false
                 },
@@ -4142,17 +4142,6 @@
                   "default": false
                 },
                 {
-                  "label": "/patch notes",
-                  "value": "/patch notes",
-                  "description": "Latest weapon balance changes, plus the full patch-note history",
-                  "emoji": {
-                    "animated": true,
-                    "name": "PatchNotes",
-                    "id": "1523762216954888286"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/season end",
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
@@ -4164,13 +4153,13 @@
                   "default": false
                 },
                 {
-                  "label": "/colors",
-                  "value": "/colors",
-                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
+                  "label": "/patch notes",
+                  "value": "/patch notes",
+                  "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "ShowColors",
-                    "id": "1537280503105847486"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -4186,13 +4175,13 @@
                   "default": false
                 },
                 {
-                  "label": "/invite",
-                  "value": "/invite",
-                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "label": "/colors",
+                  "value": "/colors",
+                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "ShareHeart",
-                    "id": "1539021725784739891"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -4204,6 +4193,17 @@
                     "animated": true,
                     "name": "Settings",
                     "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/invite",
+                  "value": "/invite",
+                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -4465,17 +4465,6 @@
                   "default": false
                 },
                 {
-                  "label": "/calendar",
-                  "value": "/calendar",
-                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
-                  "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/today",
                   "value": "/today",
                   "description": "What's new today, what's going live, and what's leaving soon",
@@ -4483,6 +4472,17 @@
                     "animated": true,
                     "name": "DailyUpdate",
                     "id": "1563415690738802690"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/calendar",
+                  "value": "/calendar",
+                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
                   },
                   "default": false
                 },
@@ -4498,17 +4498,6 @@
                   "default": false
                 },
                 {
-                  "label": "/patch notes",
-                  "value": "/patch notes",
-                  "description": "Latest weapon balance changes, plus the full patch-note history",
-                  "emoji": {
-                    "animated": true,
-                    "name": "PatchNotes",
-                    "id": "1523762216954888286"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/season end",
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
@@ -4520,13 +4509,13 @@
                   "default": false
                 },
                 {
-                  "label": "/colors",
-                  "value": "/colors",
-                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
+                  "label": "/patch notes",
+                  "value": "/patch notes",
+                  "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "ShowColors",
-                    "id": "1537280503105847486"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -4542,13 +4531,13 @@
                   "default": false
                 },
                 {
-                  "label": "/invite",
-                  "value": "/invite",
-                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "label": "/colors",
+                  "value": "/colors",
+                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "ShareHeart",
-                    "id": "1539021725784739891"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -4560,6 +4549,17 @@
                     "animated": true,
                     "name": "Settings",
                     "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/invite",
+                  "value": "/invite",
+                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -4865,17 +4865,6 @@
                   "default": false
                 },
                 {
-                  "label": "/calendar",
-                  "value": "/calendar",
-                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
-                  "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/today",
                   "value": "/today",
                   "description": "What's new today, what's going live, and what's leaving soon",
@@ -4883,6 +4872,17 @@
                     "animated": true,
                     "name": "DailyUpdate",
                     "id": "1563415690738802690"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/calendar",
+                  "value": "/calendar",
+                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
                   },
                   "default": false
                 },
@@ -4898,17 +4898,6 @@
                   "default": false
                 },
                 {
-                  "label": "/patch notes",
-                  "value": "/patch notes",
-                  "description": "Latest weapon balance changes, plus the full patch-note history",
-                  "emoji": {
-                    "animated": true,
-                    "name": "PatchNotes",
-                    "id": "1523762216954888286"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/season end",
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
@@ -4920,13 +4909,13 @@
                   "default": false
                 },
                 {
-                  "label": "/colors",
-                  "value": "/colors",
-                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
+                  "label": "/patch notes",
+                  "value": "/patch notes",
+                  "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "ShowColors",
-                    "id": "1537280503105847486"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -4942,13 +4931,13 @@
                   "default": false
                 },
                 {
-                  "label": "/invite",
-                  "value": "/invite",
-                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "label": "/colors",
+                  "value": "/colors",
+                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "ShareHeart",
-                    "id": "1539021725784739891"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -4960,6 +4949,17 @@
                     "animated": true,
                     "name": "Settings",
                     "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/invite",
+                  "value": "/invite",
+                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -5260,17 +5260,6 @@
                   "default": false
                 },
                 {
-                  "label": "/calendar",
-                  "value": "/calendar",
-                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
-                  "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/today",
                   "value": "/today",
                   "description": "What's new today, what's going live, and what's leaving soon",
@@ -5278,6 +5267,17 @@
                     "animated": true,
                     "name": "DailyUpdate",
                     "id": "1563415690738802690"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/calendar",
+                  "value": "/calendar",
+                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
                   },
                   "default": false
                 },
@@ -5293,17 +5293,6 @@
                   "default": false
                 },
                 {
-                  "label": "/patch notes",
-                  "value": "/patch notes",
-                  "description": "Latest weapon balance changes, plus the full patch-note history",
-                  "emoji": {
-                    "animated": true,
-                    "name": "PatchNotes",
-                    "id": "1523762216954888286"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/season end",
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
@@ -5315,13 +5304,13 @@
                   "default": false
                 },
                 {
-                  "label": "/colors",
-                  "value": "/colors",
-                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
+                  "label": "/patch notes",
+                  "value": "/patch notes",
+                  "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "ShowColors",
-                    "id": "1537280503105847486"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -5337,13 +5326,13 @@
                   "default": false
                 },
                 {
-                  "label": "/invite",
-                  "value": "/invite",
-                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "label": "/colors",
+                  "value": "/colors",
+                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "ShareHeart",
-                    "id": "1539021725784739891"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -5355,6 +5344,17 @@
                     "animated": true,
                     "name": "Settings",
                     "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/invite",
+                  "value": "/invite",
+                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -5631,17 +5631,6 @@
                   "default": false
                 },
                 {
-                  "label": "/calendar",
-                  "value": "/calendar",
-                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
-                  "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/today",
                   "value": "/today",
                   "description": "What's new today, what's going live, and what's leaving soon",
@@ -5649,6 +5638,17 @@
                     "animated": true,
                     "name": "DailyUpdate",
                     "id": "1563415690738802690"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/calendar",
+                  "value": "/calendar",
+                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
                   },
                   "default": false
                 },
@@ -5664,17 +5664,6 @@
                   "default": false
                 },
                 {
-                  "label": "/patch notes",
-                  "value": "/patch notes",
-                  "description": "Latest weapon balance changes, plus the full patch-note history",
-                  "emoji": {
-                    "animated": true,
-                    "name": "PatchNotes",
-                    "id": "1523762216954888286"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/season end",
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
@@ -5686,13 +5675,13 @@
                   "default": false
                 },
                 {
-                  "label": "/colors",
-                  "value": "/colors",
-                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
+                  "label": "/patch notes",
+                  "value": "/patch notes",
+                  "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "ShowColors",
-                    "id": "1537280503105847486"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -5708,13 +5697,13 @@
                   "default": false
                 },
                 {
-                  "label": "/invite",
-                  "value": "/invite",
-                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "label": "/colors",
+                  "value": "/colors",
+                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "ShareHeart",
-                    "id": "1539021725784739891"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -5726,6 +5715,17 @@
                     "animated": true,
                     "name": "Settings",
                     "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/invite",
+                  "value": "/invite",
+                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -6002,17 +6002,6 @@
                   "default": false
                 },
                 {
-                  "label": "/calendar",
-                  "value": "/calendar",
-                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
-                  "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/today",
                   "value": "/today",
                   "description": "What's new today, what's going live, and what's leaving soon",
@@ -6020,6 +6009,17 @@
                     "animated": true,
                     "name": "DailyUpdate",
                     "id": "1563415690738802690"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/calendar",
+                  "value": "/calendar",
+                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
                   },
                   "default": false
                 },
@@ -6035,17 +6035,6 @@
                   "default": false
                 },
                 {
-                  "label": "/patch notes",
-                  "value": "/patch notes",
-                  "description": "Latest weapon balance changes, plus the full patch-note history",
-                  "emoji": {
-                    "animated": true,
-                    "name": "PatchNotes",
-                    "id": "1523762216954888286"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/season end",
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
@@ -6057,13 +6046,13 @@
                   "default": false
                 },
                 {
-                  "label": "/colors",
-                  "value": "/colors",
-                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
+                  "label": "/patch notes",
+                  "value": "/patch notes",
+                  "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "ShowColors",
-                    "id": "1537280503105847486"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -6079,13 +6068,13 @@
                   "default": false
                 },
                 {
-                  "label": "/invite",
-                  "value": "/invite",
-                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "label": "/colors",
+                  "value": "/colors",
+                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "ShareHeart",
-                    "id": "1539021725784739891"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -6097,6 +6086,17 @@
                     "animated": true,
                     "name": "Settings",
                     "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/invite",
+                  "value": "/invite",
+                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -6391,17 +6391,6 @@
                   "default": false
                 },
                 {
-                  "label": "/calendar",
-                  "value": "/calendar",
-                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
-                  "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/today",
                   "value": "/today",
                   "description": "What's new today, what's going live, and what's leaving soon",
@@ -6409,6 +6398,17 @@
                     "animated": true,
                     "name": "DailyUpdate",
                     "id": "1563415690738802690"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/calendar",
+                  "value": "/calendar",
+                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
                   },
                   "default": false
                 },
@@ -6424,17 +6424,6 @@
                   "default": false
                 },
                 {
-                  "label": "/patch notes",
-                  "value": "/patch notes",
-                  "description": "Latest weapon balance changes, plus the full patch-note history",
-                  "emoji": {
-                    "animated": true,
-                    "name": "PatchNotes",
-                    "id": "1523762216954888286"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/season end",
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
@@ -6446,13 +6435,13 @@
                   "default": false
                 },
                 {
-                  "label": "/colors",
-                  "value": "/colors",
-                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
+                  "label": "/patch notes",
+                  "value": "/patch notes",
+                  "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "ShowColors",
-                    "id": "1537280503105847486"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -6468,13 +6457,13 @@
                   "default": false
                 },
                 {
-                  "label": "/invite",
-                  "value": "/invite",
-                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "label": "/colors",
+                  "value": "/colors",
+                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "ShareHeart",
-                    "id": "1539021725784739891"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -6486,6 +6475,17 @@
                     "animated": true,
                     "name": "Settings",
                     "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/invite",
+                  "value": "/invite",
+                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -6771,17 +6771,6 @@
                   "default": false
                 },
                 {
-                  "label": "/calendar",
-                  "value": "/calendar",
-                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
-                  "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/today",
                   "value": "/today",
                   "description": "What's new today, what's going live, and what's leaving soon",
@@ -6789,6 +6778,17 @@
                     "animated": true,
                     "name": "DailyUpdate",
                     "id": "1563415690738802690"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/calendar",
+                  "value": "/calendar",
+                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
                   },
                   "default": false
                 },
@@ -6804,17 +6804,6 @@
                   "default": false
                 },
                 {
-                  "label": "/patch notes",
-                  "value": "/patch notes",
-                  "description": "Latest weapon balance changes, plus the full patch-note history",
-                  "emoji": {
-                    "animated": true,
-                    "name": "PatchNotes",
-                    "id": "1523762216954888286"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/season end",
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
@@ -6826,13 +6815,13 @@
                   "default": false
                 },
                 {
-                  "label": "/colors",
-                  "value": "/colors",
-                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
+                  "label": "/patch notes",
+                  "value": "/patch notes",
+                  "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "ShowColors",
-                    "id": "1537280503105847486"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -6848,13 +6837,13 @@
                   "default": false
                 },
                 {
-                  "label": "/invite",
-                  "value": "/invite",
-                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "label": "/colors",
+                  "value": "/colors",
+                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "ShareHeart",
-                    "id": "1539021725784739891"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -6866,6 +6855,17 @@
                     "animated": true,
                     "name": "Settings",
                     "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/invite",
+                  "value": "/invite",
+                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -7276,17 +7276,6 @@
                   "default": false
                 },
                 {
-                  "label": "/calendar",
-                  "value": "/calendar",
-                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
-                  "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/today",
                   "value": "/today",
                   "description": "What's new today, what's going live, and what's leaving soon",
@@ -7294,6 +7283,17 @@
                     "animated": true,
                     "name": "DailyUpdate",
                     "id": "1563415690738802690"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/calendar",
+                  "value": "/calendar",
+                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
                   },
                   "default": false
                 },
@@ -7309,17 +7309,6 @@
                   "default": false
                 },
                 {
-                  "label": "/patch notes",
-                  "value": "/patch notes",
-                  "description": "Latest weapon balance changes, plus the full patch-note history",
-                  "emoji": {
-                    "animated": true,
-                    "name": "PatchNotes",
-                    "id": "1523762216954888286"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/season end",
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
@@ -7331,13 +7320,13 @@
                   "default": false
                 },
                 {
-                  "label": "/colors",
-                  "value": "/colors",
-                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
+                  "label": "/patch notes",
+                  "value": "/patch notes",
+                  "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "ShowColors",
-                    "id": "1537280503105847486"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -7353,13 +7342,13 @@
                   "default": false
                 },
                 {
-                  "label": "/invite",
-                  "value": "/invite",
-                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "label": "/colors",
+                  "value": "/colors",
+                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "ShareHeart",
-                    "id": "1539021725784739891"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -7371,6 +7360,17 @@
                     "animated": true,
                     "name": "Settings",
                     "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/invite",
+                  "value": "/invite",
+                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -7599,17 +7599,6 @@
                   "default": false
                 },
                 {
-                  "label": "/calendar",
-                  "value": "/calendar",
-                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
-                  "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/today",
                   "value": "/today",
                   "description": "What's new today, what's going live, and what's leaving soon",
@@ -7617,6 +7606,17 @@
                     "animated": true,
                     "name": "DailyUpdate",
                     "id": "1563415690738802690"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/calendar",
+                  "value": "/calendar",
+                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
                   },
                   "default": false
                 },
@@ -7632,17 +7632,6 @@
                   "default": false
                 },
                 {
-                  "label": "/patch notes",
-                  "value": "/patch notes",
-                  "description": "Latest weapon balance changes, plus the full patch-note history",
-                  "emoji": {
-                    "animated": true,
-                    "name": "PatchNotes",
-                    "id": "1523762216954888286"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/season end",
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
@@ -7654,13 +7643,13 @@
                   "default": false
                 },
                 {
-                  "label": "/colors",
-                  "value": "/colors",
-                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
+                  "label": "/patch notes",
+                  "value": "/patch notes",
+                  "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "ShowColors",
-                    "id": "1537280503105847486"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -7676,13 +7665,13 @@
                   "default": false
                 },
                 {
-                  "label": "/invite",
-                  "value": "/invite",
-                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "label": "/colors",
+                  "value": "/colors",
+                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "ShareHeart",
-                    "id": "1539021725784739891"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -7694,6 +7683,17 @@
                     "animated": true,
                     "name": "Settings",
                     "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/invite",
+                  "value": "/invite",
+                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -7917,17 +7917,6 @@
                   "default": false
                 },
                 {
-                  "label": "/calendar",
-                  "value": "/calendar",
-                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
-                  "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/today",
                   "value": "/today",
                   "description": "What's new today, what's going live, and what's leaving soon",
@@ -7935,6 +7924,17 @@
                     "animated": true,
                     "name": "DailyUpdate",
                     "id": "1563415690738802690"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/calendar",
+                  "value": "/calendar",
+                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
                   },
                   "default": false
                 },
@@ -7950,17 +7950,6 @@
                   "default": false
                 },
                 {
-                  "label": "/patch notes",
-                  "value": "/patch notes",
-                  "description": "Latest weapon balance changes, plus the full patch-note history",
-                  "emoji": {
-                    "animated": true,
-                    "name": "PatchNotes",
-                    "id": "1523762216954888286"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/season end",
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
@@ -7972,13 +7961,13 @@
                   "default": false
                 },
                 {
-                  "label": "/colors",
-                  "value": "/colors",
-                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
+                  "label": "/patch notes",
+                  "value": "/patch notes",
+                  "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "ShowColors",
-                    "id": "1537280503105847486"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -7994,13 +7983,13 @@
                   "default": false
                 },
                 {
-                  "label": "/invite",
-                  "value": "/invite",
-                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "label": "/colors",
+                  "value": "/colors",
+                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "ShareHeart",
-                    "id": "1539021725784739891"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -8012,6 +8001,17 @@
                     "animated": true,
                     "name": "Settings",
                     "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/invite",
+                  "value": "/invite",
+                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -8211,17 +8211,6 @@
                   "default": false
                 },
                 {
-                  "label": "/calendar",
-                  "value": "/calendar",
-                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
-                  "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/today",
                   "value": "/today",
                   "description": "What's new today, what's going live, and what's leaving soon",
@@ -8229,6 +8218,17 @@
                     "animated": true,
                     "name": "DailyUpdate",
                     "id": "1563415690738802690"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/calendar",
+                  "value": "/calendar",
+                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
                   },
                   "default": false
                 },
@@ -8244,17 +8244,6 @@
                   "default": false
                 },
                 {
-                  "label": "/patch notes",
-                  "value": "/patch notes",
-                  "description": "Latest weapon balance changes, plus the full patch-note history",
-                  "emoji": {
-                    "animated": true,
-                    "name": "PatchNotes",
-                    "id": "1523762216954888286"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/season end",
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
@@ -8266,13 +8255,13 @@
                   "default": false
                 },
                 {
-                  "label": "/colors",
-                  "value": "/colors",
-                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
+                  "label": "/patch notes",
+                  "value": "/patch notes",
+                  "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "ShowColors",
-                    "id": "1537280503105847486"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -8288,13 +8277,13 @@
                   "default": false
                 },
                 {
-                  "label": "/invite",
-                  "value": "/invite",
-                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "label": "/colors",
+                  "value": "/colors",
+                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "ShareHeart",
-                    "id": "1539021725784739891"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -8306,6 +8295,17 @@
                     "animated": true,
                     "name": "Settings",
                     "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/invite",
+                  "value": "/invite",
+                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -8505,17 +8505,6 @@
                   "default": false
                 },
                 {
-                  "label": "/calendar",
-                  "value": "/calendar",
-                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
-                  "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/today",
                   "value": "/today",
                   "description": "What's new today, what's going live, and what's leaving soon",
@@ -8523,6 +8512,17 @@
                     "animated": true,
                     "name": "DailyUpdate",
                     "id": "1563415690738802690"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/calendar",
+                  "value": "/calendar",
+                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
                   },
                   "default": false
                 },
@@ -8538,17 +8538,6 @@
                   "default": false
                 },
                 {
-                  "label": "/patch notes",
-                  "value": "/patch notes",
-                  "description": "Latest weapon balance changes, plus the full patch-note history",
-                  "emoji": {
-                    "animated": true,
-                    "name": "PatchNotes",
-                    "id": "1523762216954888286"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/season end",
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
@@ -8560,13 +8549,13 @@
                   "default": false
                 },
                 {
-                  "label": "/colors",
-                  "value": "/colors",
-                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
+                  "label": "/patch notes",
+                  "value": "/patch notes",
+                  "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "ShowColors",
-                    "id": "1537280503105847486"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -8582,13 +8571,13 @@
                   "default": false
                 },
                 {
-                  "label": "/invite",
-                  "value": "/invite",
-                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "label": "/colors",
+                  "value": "/colors",
+                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "ShareHeart",
-                    "id": "1539021725784739891"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -8600,6 +8589,17 @@
                     "animated": true,
                     "name": "Settings",
                     "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/invite",
+                  "value": "/invite",
+                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -8799,17 +8799,6 @@
                   "default": false
                 },
                 {
-                  "label": "/calendar",
-                  "value": "/calendar",
-                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
-                  "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/today",
                   "value": "/today",
                   "description": "What's new today, what's going live, and what's leaving soon",
@@ -8817,6 +8806,17 @@
                     "animated": true,
                     "name": "DailyUpdate",
                     "id": "1563415690738802690"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/calendar",
+                  "value": "/calendar",
+                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
                   },
                   "default": false
                 },
@@ -8832,17 +8832,6 @@
                   "default": false
                 },
                 {
-                  "label": "/patch notes",
-                  "value": "/patch notes",
-                  "description": "Latest weapon balance changes, plus the full patch-note history",
-                  "emoji": {
-                    "animated": true,
-                    "name": "PatchNotes",
-                    "id": "1523762216954888286"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/season end",
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
@@ -8854,13 +8843,13 @@
                   "default": false
                 },
                 {
-                  "label": "/colors",
-                  "value": "/colors",
-                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
+                  "label": "/patch notes",
+                  "value": "/patch notes",
+                  "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "ShowColors",
-                    "id": "1537280503105847486"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -8876,13 +8865,13 @@
                   "default": false
                 },
                 {
-                  "label": "/invite",
-                  "value": "/invite",
-                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "label": "/colors",
+                  "value": "/colors",
+                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "ShareHeart",
-                    "id": "1539021725784739891"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -8894,6 +8883,17 @@
                     "animated": true,
                     "name": "Settings",
                     "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/invite",
+                  "value": "/invite",
+                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },
@@ -9102,17 +9102,6 @@
                   "default": false
                 },
                 {
-                  "label": "/calendar",
-                  "value": "/calendar",
-                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
-                  "emoji": {
-                    "animated": true,
-                    "name": "Calendar",
-                    "id": "1523762208050385107"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/today",
                   "value": "/today",
                   "description": "What's new today, what's going live, and what's leaving soon",
@@ -9120,6 +9109,17 @@
                     "animated": true,
                     "name": "DailyUpdate",
                     "id": "1563415690738802690"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/calendar",
+                  "value": "/calendar",
+                  "description": "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
                   },
                   "default": false
                 },
@@ -9135,17 +9135,6 @@
                   "default": false
                 },
                 {
-                  "label": "/patch notes",
-                  "value": "/patch notes",
-                  "description": "Latest weapon balance changes, plus the full patch-note history",
-                  "emoji": {
-                    "animated": true,
-                    "name": "PatchNotes",
-                    "id": "1523762216954888286"
-                  },
-                  "default": false
-                },
-                {
                   "label": "/season end",
                   "value": "/season end",
                   "description": "See when this season's Battle Pass, Ranked, and DMZ seasons end",
@@ -9157,13 +9146,13 @@
                   "default": false
                 },
                 {
-                  "label": "/colors",
-                  "value": "/colors",
-                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
+                  "label": "/patch notes",
+                  "value": "/patch notes",
+                  "description": "Latest weapon balance changes, plus the full patch-note history",
                   "emoji": {
                     "animated": true,
-                    "name": "ShowColors",
-                    "id": "1537280503105847486"
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
                   },
                   "default": false
                 },
@@ -9179,13 +9168,13 @@
                   "default": false
                 },
                 {
-                  "label": "/invite",
-                  "value": "/invite",
-                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "label": "/colors",
+                  "value": "/colors",
+                  "description": "View the colors extracted from your Discord profile and pick which one accents your panels",
                   "emoji": {
                     "animated": true,
-                    "name": "ShareHeart",
-                    "id": "1539021725784739891"
+                    "name": "ShowColors",
+                    "id": "1537280503105847486"
                   },
                   "default": false
                 },
@@ -9197,6 +9186,17 @@
                     "animated": true,
                     "name": "Settings",
                     "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "/invite",
+                  "value": "/invite",
+                  "description": "Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ShareHeart",
+                    "id": "1539021725784739891"
                   },
                   "default": false
                 },

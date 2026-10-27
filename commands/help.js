@@ -467,6 +467,10 @@ const COMMAND_EMOJI = {
 
 // One command at a time (2026-10-27 10:44 EDT, Harkirat: "add another dropdown so a user can filter for 1 specific command instead of only per category"). Every slash command this viewer may see, in directory order, capped at Discord's 25 options; right-click apps stay out (they have no page of their own). Picking one opens a page with only that command (handlers/help.js, `help_command`).
 // `seasonEmoji` is the current season's own emoji for /season end (2026-10-27 19:01 EDT, Harkirat: "make sure it's using this current season's emoji and not the generic battle pass one"); BP stands in when it is unknown. `jumpDescription` fills the rows whose command has no `description` here (/settings, /admin and the admin tools); it is read only by this list, so their own pages are unchanged (his ask, same message).
+// The list follows the v3 announcement's order (2026-10-27 19:03 EDT, Harkirat: "sort the items so they're following the same order as the list we used in announcements with all of the ... admin type commands after them"). A command not named here keeps its category order, after these; /admin and the admin tools are left out on purpose so they come last.
+const JUMP_ORDER = ['/gunsmith mp', '/gunsmith dmz', '/draws', '/draw prices', '/draw calculator', '/today', '/calendar', '/remind', '/season end', '/patch notes', '/timestamp', '/colors', '/settings', '/invite'];
+const jumpRank = name => { const i = JUMP_ORDER.indexOf(name); return i === -1 ? JUMP_ORDER.length : i; };
+
 function buildCommandSelectRow(focusName, perms = {}, seasonEmoji = null) {
     const options = [];
     for (const cat of visibleCategories(perms)) {
@@ -477,6 +481,7 @@ function buildCommandSelectRow(focusName, perms = {}, seasonEmoji = null) {
             options.push({ label: c.name, value: c.name, ...(description ? { description } : {}), emoji: emojis.parseEmoji((c.name === '/season end' && seasonEmoji) || emojis[COMMAND_EMOJI[c.name]] || emojis[categoryEmojiKey(cat, perms)]), default: c.name === focusName });
         }
     }
+    options.sort((a, b) => jumpRank(a.value) - jumpRank(b.value)); // stable: unlisted commands keep their category order
     return { type: 1, components: [{ type: 3, custom_id: 'help_command', placeholder: 'Jump to one command…', options }] };
 }
 
