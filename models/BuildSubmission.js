@@ -9,7 +9,8 @@ const BuildSubmissionSchema = new mongoose.Schema({
     discordId: { type: String, required: true, index: true },
     mode: { type: String, enum: ['MP', 'DMZ'], default: 'MP' },
     category: { type: String, default: null },
-    weaponName: { type: String, required: true },
+    // Optional since 2026-10-28 00:12 EDT (Harkirat: "make the weapon name optional too. some people are lazy and will likely just attach a screenshot only"); '' when left blank.
+    weaponName: { type: String, default: '' },
     gunsmithCode: { type: String, default: '' },
     attachments: { type: [String], default: [] },
     notes: { type: String, default: '' },
