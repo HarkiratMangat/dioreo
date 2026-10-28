@@ -351,6 +351,15 @@ async function handleInteractionInner(interaction) {
                 uniqueMap.set(w.weaponKey, prev ? { ...prev, isMeta: prev.isMeta || w.isMeta, isToxic: prev.isToxic || w.isToxic, categoryRank: rankOf(w.categoryRank) < rankOf(prev.categoryRank) ? w.categoryRank : prev.categoryRank } : w);
             });
             const distinctChoices = Array.from(uniqueMap.values());
+            // /gunsmith mp also offers the catalogue's weapons that have no build yet (2026-10-27 23:30 EDT, Harkirat: "the bot should have the weapon, even without a build. it would just say 'no build yet'"). Picking one opens the same No build yet card that typing its name already did; before this the search said "No options match" for them. The value is the weapon's name, which utils/loadoutLookup.js resolves to that card.
+            if (commandName === 'gunsmith' && queryFilter.mode === 'MP') {
+                const { normKey } = require('../utils/catalogue');
+                const CatalogueItem = require('../models/CatalogueItem');
+                const known = new Set(distinctChoices.map(w => normKey(w.weaponName)));
+                for (const w of await CatalogueItem.find({ kind: 'weapon', dmzOnly: { $ne: true } }).select('name key category').lean()) {
+                    if (!known.has(w.key || normKey(w.name))) distinctChoices.push({ weaponName: w.name, weaponKey: w.name, category: w.category, noBuild: true });
+                }
+            }
 
             // BUG FIX (2026-07-12, found live): this list had no sort at all -- Mongo returns docs in natural/insertion order, so whichever weapon happened to be migrated/added FIRST (LOCUS, from the original builds.xlsx migration) always showed up first regardless of category or alphabetical order. Originally sorted by a hand-confirmed CATEGORY_SORT_ORDER list (AR/SMG/LMG only, pending Harkirat confirming the rest); per his 2026-07-12 follow-up request, dropped that in favor of just sorting category alphabetically too, then weapon name alphabetically within each category. Only affects display order -- doesn't change which weapons match the typed query.
             distinctChoices.sort((a, b) => {
@@ -380,7 +389,7 @@ async function handleInteractionInner(interaction) {
                 const shown = focusedValue ? matched : require('../utils/search').featuredWeapons(matched, more ? room - 1 : room);
                 const weaponRows = shown
                     .slice(0, more ? room - 1 : room)
-                    .map(w => ({ name: mode === 'MP' ? `[${displayCategoryLabel(w.category)}] ${w.weaponName}` : w.weaponName, value: w.weaponKey }));
+                    .map(w => ({ name: (mode === 'MP' ? `[${displayCategoryLabel(w.category)}] ${w.weaponName}` : w.weaponName) + (w.noBuild ? ' — Build pending' : ''), value: w.weaponKey }));
                 if (more) weaponRows.push({ name: `▸ Type a name to search all ${matched.length} ${focusedValue ? 'matches' : 'weapons'}`, value: `~search~${mode}` });
                 return await interaction.respond([...rows, ...weaponRows]);
             }
