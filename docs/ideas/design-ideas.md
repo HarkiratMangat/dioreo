@@ -65,3 +65,16 @@ Two caption pairs in `assignDynamicLabels` (`utils/colorPaletteView.js`) co-occu
 **This is deliberately not filed as work.** Each caption is individually true, and the swap that created the pairing already removed a worse one (`Brightest Light` beside `Highlight`, which repeated the word itself). Nothing is wrong; the note exists so that if the repetition is ever *felt* in the client, the shape of the fix is already written down rather than re-derived.
 
 **The fix if it is ever wanted** is a variant, not a rename — the same mechanism the rest of that function uses. `Highlight` could take a second wording when a `Lightest` swatch is already on the page, and `Undertone` likewise against `Quiet Neutral`. ⚠️ That needs a new signal: variants there are chosen from the swatch's OWN chroma and lightness, never from what another rule claimed, so the picker would have to see `usedLabels` — a real change in what a variant is allowed to know, and the reason this is not a five-minute edit. **Any new wording is Harkirat's call, not a self-decided one** — that is how this whole vocabulary was built (see `docs/reference/colors-panel.md`'s label section — it moved out of `.claude/rules/accent-and-colors.md` 2026-09-02 15:54 EDT).
+
+---
+
+## A `/gunsmith submit` command with a weapon search
+
+**Status:** proposed 2026-10-28 00:13 EDT while adding Submit a Build to the `/help` footer · **Condition to revisit:** when typed weapon names in submissions turn out to be a real cleanup cost, or a player asks for a way to pick the weapon. Harkirat, the same night: *"file it as a future command idea."*
+
+Submit a Build is a Discord pop-up, and a pop-up cannot search as you type: its fields are text boxes, a file upload and dropdowns of at most 25 fixed options, while the catalogue holds 40 ARs and 31 SMGs. A slash command can. The shape:
+
+- `/gunsmith submit` with a `weapon` option that autocompletes from the same list `/gunsmith mp` uses (builds plus catalogue weapons with no build), a `mode` choice (MP or DMZ), a `screenshot` attachment and a `credit` choice.
+- Submitting it opens the existing pop-up for the attachments and notes, prefilled with the weapon, so the owner's DM card and the approve flow stay as they are (`utils/buildSubmissions.js`).
+- It would also close the gap the `/help` footer button has today: that button always opens the MP version, so a DMZ build cannot be marked as one.
+

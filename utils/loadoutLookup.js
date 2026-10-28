@@ -122,9 +122,9 @@ async function lookupAndRenderWeapon(interaction, { mode, rawQuery, requestedBui
 
     const found = await foundPromise;
     if (found.ambiguous || found.none) {
-        // NOTE: awaited + wrapped in its own try/catch -- an unawaited `return interaction. followUp(...)` inside a try block can reject AFTER the block has already exited, which can crash the whole process. See CLAUDE.md's crash-resilience notes.
+        // NOTE: awaited + wrapped in its own try/catch -- an unawaited `return interaction. followUp(...)` inside a try block can reject AFTER the block has already exited, which can crash the whole process. See CLAUDE.md's crash-resilience notes. Only the person who typed it sees the miss (utils/ephemeral.js privateNotice; Harkirat, 2026-10-27 23:40 EDT).
         try {
-            await interaction.followUp({ content: notFoundText(mode, rawQuery, found) });
+            await require('./ephemeral').privateNotice(interaction, notFoundText(mode, rawQuery, found), { ephemeral: isEphemeral });
         } catch (notifyError) {
             console.error(`Failed to notify user of an unmatched ${mode} weapon (interaction likely expired):`, notifyError);
         }

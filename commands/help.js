@@ -297,7 +297,7 @@ function buildGunsmithBody(commands, client) {
     return [
         { content: buildGunsmithText(commands, client) },
         { divider: true },
-        { content: `### Submit or dispute a build\nNo build for a weapon yet? Its **No build yet** card has **Submit a Build**.\nIf a submitted build uses your screenshot, ask for its removal or the credit. You'll need proof the original is yours and was posted before the build went live. Or DM <@${ALLOWED_ADMIN_ID}> with your proof.`,
+        { content: `### Submit or dispute a build\nHave a build to share? **Submit a Build** is under every /help page, and on a weapon's **No build yet** card.\nIf a submitted build uses your screenshot, ask for its removal or the credit. You'll need proof the original is yours and was posted before the build went live. Or DM <@${ALLOWED_ADMIN_ID}> with your proof.`,
             accessory: { type: 2, style: 2, label: 'Dispute a Build', custom_id: 'gsb~dispute' } },
     ];
 }
@@ -602,6 +602,8 @@ function helpFooterRow() {
     return { type: 1, components: [
         { type: 2, style: 2, label: 'Announcements', custom_id: 'help_announcements', emoji: emojis.parseEmoji(emojis.announcements) },
         { type: 2, style: 2, label: 'Bugs & Suggestions', custom_id: FEEDBACK_BUTTON_ID, emoji: emojis.parseEmoji(emojis.feedback) },
+        // Any build, even for a weapon that already has some (2026-10-28 00:08 EDT, Harkirat: "can we add it as a button in the /help footer nav?"); the No build yet card's button opens the same pop-up. `-` means no weapon to prefill (handlers/loadouts.js).
+        { type: 2, style: 2, label: 'Submit a Build', custom_id: 'gsb~submit~MP~-', emoji: emojis.parseEmoji(emojis.share) },
     ] };
 }
 

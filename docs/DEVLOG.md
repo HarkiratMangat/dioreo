@@ -285,6 +285,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-26 14:17 EDT — Dioreo v3 launches, and the legal documents are made true for it (v3.0.0)
 - 2026-10-26 16:06 EDT — Announcements get a Why button and an off switch (v3.116.0)
 - 2026-10-27 17:45 EDT — Announcements move to Components V2, and /help gets a line to the developer (v3.117.0)
+- 2026-10-28 00:17 EDT — Post-launch bug fixes (v3.0.1)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4763,6 +4764,16 @@ He wanted a way for players to reach him without a server or a support channel. 
 Building it turned up an older leak: every V2 panel sent with Discord's default mentions, so /gunsmith's "Submitted by" line pinged the submitter on every public view, and /help highlighted for @dior. sendV2Payload now sends with mentions off unless a caller asks, which fixed every panel at once rather than one at a time.
 
 The last check ran in his own Chrome, in the background: the button's Feedback emoji, a real note arriving as a DM, no Why row on a first showing and the row on the second, and the off switch both ways. Its only finding was a deprecation warning from the ephemeral option, now the flag.
+
+## 2026-10-28 00:17 EDT — Post-launch bug fixes (v3.0.1)
+
+The first evening on prod turned up a handful of small things, fixed and released together.
+
+**The blank button emojis came back.** v2.60.0 had found that answering a click in one trip makes Discord blank a re-rendered button's custom emoji, and moved four branches back to two trips. Three branches were left on one trip, and the `/draws` arrows blanked on prod within hours of launch. Fixing them one by one is how three were missed, so the one-trip path is gone from `sendV2Payload` itself: an un-acked click is acked there with `deferUpdate()`, and no future branch can bring it back.
+
+**The weapon search knew less than the card did.** Typing MSMC said "No options match", yet sending it opened a "No build yet" card, because the search read only the builds while the card read the catalogue. The search now reads both. Clearing every Meta, Best and Top badge the same night (to be re-judged) showed two more gaps: "All META builds" led nowhere, and the suggested weapons fell back to an order nobody chose. The META row now shows only while a build has Meta, and the suggestions read A-Z within each class.
+
+The rest: Double Epic Characters prices for 20 and 30 CP, warnings that only the person who ran the command sees, and Submit a Build at the foot of every `/help` page, where a screenshot alone is enough.
 
 # Part B — Lessons Ledger (thematic)
 

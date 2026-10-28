@@ -4,4 +4,10 @@ function resolveEphemeral({ argPrivate, prefs, prefsField }) {
     return prefs ? prefs[prefsField] === 'ephemeral' : false;
 }
 
-module.exports = { resolveEphemeral };
+// A warning or error only the person who ran the command should see (2026-10-27 23:40 EDT, Harkirat: "shouldn't a warning like this be ephemeral?"). After a deferReply the first followUp BECOMES that deferred message, so it keeps the defer's visibility, often public. A public placeholder is deleted first and the notice goes out as a new ephemeral message. `ephemeral` is the defer's visibility; discord.js records it on the interaction when the caller does not say.
+async function privateNotice(interaction, content, { ephemeral = interaction.ephemeral } = {}) {
+    if ((interaction.deferred || interaction.replied) && !ephemeral) await interaction.deleteReply().catch(() => {});
+    return interaction.followUp({ content, ephemeral: true });
+}
+
+module.exports = { resolveEphemeral, privateNotice };

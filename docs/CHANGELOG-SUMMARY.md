@@ -12,6 +12,14 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.0.1 — October 28, 2026
+Fixes from launch night:
+- **Button icons** no longer go blank when you page through `/draws` or change a `/settings` option.
+- **`/gunsmith mp`** lists every weapon as you type, including ones with no build yet, and its suggestions are in A-Z order.
+- **`/draw prices`** has the Double Epic Characters draw for the 20 and 30 CP regions.
+- **Submit a Build** is now at the bottom of every `/help` page, and only needs a screenshot.
+- Warnings like "no builds were found" are now only shown to you.
+
 ## v3.0.0 — October 27, 2026
 **Dioreo v3 is here.** The biggest update yet:
 - **Add Dioreo to a server.** `/invite` adds it to a server or to just your own apps, and a server's admins choose where its replies stay private with `/admin`.

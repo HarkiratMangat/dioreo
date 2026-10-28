@@ -18,7 +18,7 @@ function ownsCustomId(customId) {
 async function route(interaction) {
         // DRAWS PAGINATION (New vs Returning)
         if (interaction.customId === 'page_returning_draws' || interaction.customId === 'page_new_draws') {
-            // No deferUpdate() -- single-hop, see sendV2Payload.js's header comment.
+            // No deferUpdate() here: sendV2Payload() acks with one when the render arrives, so this is two trips like every other click (2026-10-27 20:49 EDT; it was one trip until the v3 launch, and /draws' New/Returning switch and arrows blanked their emojis).
             const targetPage = interaction.customId === 'page_returning_draws' ? 'returning' : 'new';
             const drawsCommand = interaction.client.commands.get('draws');
 
@@ -29,7 +29,7 @@ async function route(interaction) {
 
         // DRAWS SUB-PAGE PAGINATION (Prev/Next within a category, once it exceeds CHUNK_SIZE) custom_id format: subpage_<new|returning>_<targetIndex>, e.g. "subpage_new_2"
         if (interaction.customId.startsWith('subpage_new_') || interaction.customId.startsWith('subpage_returning_')) {
-            // No deferUpdate() -- single-hop, see sendV2Payload.js's header comment.
+            // No deferUpdate() here: sendV2Payload() acks with one when the render arrives, so this is two trips like every other click (2026-10-27 20:49 EDT; it was one trip until the v3 launch, and /draws' New/Returning switch and arrows blanked their emojis).
             const isNewCategory = interaction.customId.startsWith('subpage_new_');
             const targetPage = isNewCategory ? 'new' : 'returning';
             const targetSubPage = parseInt(interaction.customId.replace(isNewCategory ? 'subpage_new_' : 'subpage_returning_', ''), 10) || 0;

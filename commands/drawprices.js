@@ -21,11 +21,11 @@ const PRESET_ACCENT = 2067038; // CP Emerald (#1F8A5E) — 3rd nav button (Draw 
 
 // RAW PULL-COST DATA (per pull, in CP), keyed by CP-region tier then draw type. Deliberately stores ONLY the raw per-pull numbers, never a hand-typed total or running-total string — this exact data has already had real hand-typed math mistakes once (a total that didn't match its own draws sum, a wrong draw value, a typo'd draw value — see git history). Totals and the "spent per attempt" cumulative sequence are always derived from these arrays at render time (formatCP/ buildDrawEntries below), so a wrong number can only ever exist in one place, and a total can never silently drift from its own draws again.
 //
-// Refreshed 2026-07-11 from Harkirat's own verified combo-notes re-export (drawprices2.txt). `legendaryGunNonReactive.region_10`'s draws were given with a stated total of 4,540 CP in that source, but they actually sum to 4,550 — matches what was already correctly stored here before this refresh, so 4,550 (the real sum) was kept rather than the source doc's own typo. `doubleEpicCharacters.region_30` has no data yet ("pending data" in the source) — buildDrawEntries renders a placeholder line for it instead of a fabricated number.
+// Refreshed 2026-07-11 from Harkirat's own verified combo-notes re-export (drawprices2.txt). `legendaryGunNonReactive.region_10`'s draws were given with a stated total of 4,540 CP in that source, but they actually sum to 4,550 — matches what was already correctly stored here before this refresh, so 4,550 (the real sum) was kept rather than the source doc's own typo. `doubleEpicCharacters.region_30` has no data yet ("pending data" in the source) — buildDrawEntries renders a placeholder line for it instead of a fabricated number. ✅ Filled 2026-10-27 21:59 EDT from Harkirat's own 10/20/30 CP figures, with region_20.
 //
 // `legendaryBRVehicle` was removed entirely 2026-07-12 to match Harkirat's own hand-adjusted drawPrices_ui.json reference (his final redesign of this command's whole layout) — it's the one entry present in the old build that doesn't appear anywhere in that file, and since he built that mockup himself rather than us generating it, its absence is read as deliberate rather than an oversight. Its old `altLast` mechanism (a Reactive/Non-Reactive split on the final pull) went with it — nothing else ever used that field.
 //
-// `region_20` added 2026-08-07 from Harkirat's own screenshots of the real 10/20/30 CP breakdown — REAL data, not derived. (An earlier pass this same session validated an arithmetic-mean-of- region_10/region_30 model against this exact data before it existed in code: the model matched almost every pull within 0-3%, with the last 1-2 "chase" pulls sometimes running ~9% lower than the model predicted — useful context if a FUTURE draw's 20 CP data is ever missing and needs a stand-in estimate, but every number below is the real sourced value, not that estimate.) `doubleEpicCharacters.region_20` stays `null` — no real data exists for it at any region beyond 10 CP (same "no data yet" convention as `doubleEpicCharacters.region_30` below; a speculative guess was deliberately left out rather than shipped as real pricing). `mythicWeapon`/`mythicCharacter` have NO `upgrade` field at region_20 — the screenshots only gave the per-pull draw totals, not the separate Upgrade cost, so there's no real number to put there yet. buildDrawEntries' `if (entry.upgrade)` check means the Upgrade line simply doesn't render for these two entries in the 20 CP region until real data shows up — not a bug, just unavailable.
+// `region_20` added 2026-08-07 from Harkirat's own screenshots of the real 10/20/30 CP breakdown — REAL data, not derived. (An earlier pass this same session validated an arithmetic-mean-of- region_10/region_30 model against this exact data before it existed in code: the model matched almost every pull within 0-3%, with the last 1-2 "chase" pulls sometimes running ~9% lower than the model predicted — useful context if a FUTURE draw's 20 CP data is ever missing and needs a stand-in estimate, but every number below is the real sourced value, not that estimate.) `doubleEpicCharacters.region_20` stayed `null` until 2026-10-27 21:59 EDT, when Harkirat sent the real figures — no real data exists for it at any region beyond 10 CP (same "no data yet" convention as `doubleEpicCharacters.region_30` below; a speculative guess was deliberately left out rather than shipped as real pricing). `mythicWeapon`/`mythicCharacter` have NO `upgrade` field at region_20 — the screenshots only gave the per-pull draw totals, not the separate Upgrade cost, so there's no real number to put there yet. buildDrawEntries' `if (entry.upgrade)` check means the Upgrade line simply doesn't render for these two entries in the 20 CP region until real data shows up — not a bug, just unavailable.
 const DRAW_DATA = {
     region_10: {
         label: '10 CP Region',
@@ -50,7 +50,7 @@ const DRAW_DATA = {
         legendaryCharacterWeapon: { draws: [20, 55, 80, 210, 350, 560, 900, 1400, 2700, 3800] },
         sevenSpinLegendaryWeapon: { draws: [20, 60, 180, 400, 800, 1500, 2300] },
         pickYourRewardCard: { draws: [90, 120, 120, 180, 240, 1050, 3870] },
-        doubleEpicCharacters: null
+        doubleEpicCharacters: { draws: [20, 50, 70, 175, 280, 500, 980, 1100, 1800, 2000] }
     },
     region_30: {
         label: '30 CP Region',
@@ -62,7 +62,7 @@ const DRAW_DATA = {
         legendaryCharacterWeapon: { draws: [30, 80, 120, 300, 500, 800, 1300, 2000, 3900, 5500] },
         sevenSpinLegendaryWeapon: { draws: [30, 120, 350, 800, 1600, 2800, 3900] },
         pickYourRewardCard: { draws: [120, 150, 180, 240, 360, 1500, 5520] },
-        doubleEpicCharacters: null
+        doubleEpicCharacters: { draws: [30, 70, 100, 250, 400, 700, 1400, 1600, 2600, 2800] }
     }
 };
 

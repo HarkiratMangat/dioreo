@@ -105,7 +105,8 @@ function submitModal({ mode = 'MP', weaponName = '', category = '' }) {
     return {
         title: 'Submit a Build', custom_id: `gsb~subsave~${mode}~${category || ''}`,
         components: [
-            label('Weapon', null, { type: 4, custom_id: 'weapon', style: 1, required: true, max_length: 60, ...(weaponName ? { value: weaponName } : {}) }),
+            // Optional: a screenshot alone is a fine submission (Harkirat, 2026-10-28 00:12 EDT).
+            label('Weapon', 'Optional if the screenshot shows it', { type: 4, custom_id: 'weapon', style: 1, required: false, max_length: 60, ...(weaponName ? { value: weaponName } : {}) }),
             label('Screenshot', 'Preferred: a Gunsmith screenshot of the build', { type: 19, custom_id: 'shot', min_values: 0, max_values: 1, required: false }),
             ...(mode === 'DMZ' ? [] : [label('Gunsmith Code', 'Optional', { type: 4, custom_id: 'code', style: 1, required: false, max_length: 30 })]),
             label('Attachments and notes', 'Attachments one per line; anything else after a blank line', { type: 4, custom_id: 'details', style: 2, required: false, max_length: 1500 }),
@@ -124,7 +125,7 @@ function parseDetails(raw) {
 
 function submissionCard(sub, { imageUrl = null, state = sub.status, note = null } = {}) {
     const { getMpCategoryAccent } = require('./loadoutRender');
-    const head = `## Build submitted: ${sub.weaponName}\n-# ${[sub.mode, sub.category].filter(Boolean).join(' · ')} · from <@${sub.discordId}> · ${sub.credited ? 'wants their name shown' : 'anonymous'}`;
+    const head = `## Build submitted: ${sub.weaponName || 'weapon not named'}\n-# ${[sub.mode, sub.category].filter(Boolean).join(' · ')} · from <@${sub.discordId}> · ${sub.credited ? 'wants their name shown' : 'anonymous'}`;
     const body = [];
     body.push(sub.attachments.length ? `### Attachments\n${sub.attachments.map((a, i) => `${i + 1}. \`${a}\``).join('\n')}` : '*No attachments typed.*');
     if (sub.gunsmithCode) body.push(`### Gunsmith Code: \`${sub.gunsmithCode}\``);
@@ -169,7 +170,7 @@ async function sendSubmission(interaction) {
         await interaction.editReply({ content: `${emojis.cross} Your build could not be sent just now. Please try again later.` });
         return;
     }
-    await interaction.editReply({ content: `${emojis.checkmark} Sent to Dioreo, thanks! You'll get a DM if your **${sub.weaponName}** build is added.` });
+    await interaction.editReply({ content: `${emojis.checkmark} Sent to Dioreo, thanks! You'll get a DM if your ${sub.weaponName ? `**${sub.weaponName}** ` : ''}build is added.` });
 }
 
 // The screenshot on the owner's DM card, fresh: Discord's links expire, so it is read off the message the button sits on.
@@ -233,7 +234,7 @@ async function handleSubmissionButton(interaction) {
 function approveModal(sub) {
     const field = (custom_id, value, style = 1, max = 100, required = false) => ({ type: 4, custom_id, style, required, max_length: max, ...(value ? { value } : {}) });
     return {
-        title: `Approve: ${sub.weaponName}`.slice(0, 45), custom_id: `gsb~subok~${idOf(sub)}`,
+        title: `Approve: ${sub.weaponName || 'a build'}`.slice(0, 45), custom_id: `gsb~subok~${idOf(sub)}`,
         components: [
             label('Weapon | Category', 'e.g. AK117 | AR', field('wc', `${sub.weaponName} | ${sub.category || ''}`.trim(), 1, 80, true)),
             // The code is needed on MP (2026-10-26 01:19 EDT: the picture is keyed by it), so a submission without one saves only once it is typed here.

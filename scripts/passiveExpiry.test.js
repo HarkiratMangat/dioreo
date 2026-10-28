@@ -132,9 +132,10 @@ function mockInteraction({ deferred = true, replied = false, message = undefined
     return {
         id: 'int-1', token: 'tok-1', applicationId: 'app-1',
         deferred, replied, message,
+        deferUpdate: async function () { this.deferred = true; this.deferUpdateCalls = (this.deferUpdateCalls || 0) + 1; },
         client: {
             rest: {
-                post: async () => undefined, // Discord's real light-path response: 204, no body.
+                post: async () => { throw new Error('sendV2Payload must never POST a type 7 single-trip update'); },
                 patch: async () => patchResponse,
             },
         },
@@ -158,11 +159,12 @@ check('sendV2Payload (component re-render, deferred): schedules using interactio
     assert.strictEqual(armed.size, before + 1);
 });
 
-check('sendV2Payload (component re-render, LIGHT/undeferred path): still schedules from interaction.message.id even though POST returns no body', async () => {
+check('sendV2Payload (component re-render, undeferred): acks with deferUpdate() then PATCHes, never a single-trip POST', async () => {
     const before = armed.size;
     const interaction = mockInteraction({ deferred: false, replied: false, message: { id: 'light-path-msg-id' } });
     await sendV2Payload(interaction, WITH_BUTTON);
-    assert.strictEqual(armed.size, before + 1, 'the light POST path (pagination single-hop) resolves to no body, so this must come from interaction.message, not the response');
+    assert.strictEqual(interaction.deferUpdateCalls, 1, 'an un-acked click must be acked with deferUpdate(): one trip blanks button emojis');
+    assert.strictEqual(armed.size, before + 1);
 });
 
 check('sendV2Payload: a payload with NO interactive components schedules nothing at all', async () => {

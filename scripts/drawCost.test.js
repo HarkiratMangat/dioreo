@@ -18,7 +18,7 @@ check('spent + remaining equals the full total at every pull position', () => {
     for (const region of REGION_ORDER) {
         for (const key of drawKeys) {
             const entry = DRAW_DATA[region][key];
-            if (!entry) continue; // doubleEpicCharacters is null at region_20 and region_30
+            if (!entry) continue; // a draw with no figures at a region (none since 2026-10-27 21:59 EDT)
             const total = entry.draws.reduce((a, b) => a + b, 0);
             for (let done = 0; done <= entry.draws.length; done++) {
                 const spent = cost.spentSoFar(region, key, done);
@@ -47,10 +47,19 @@ check('every draw key across every region resolves the correct pull count from d
 });
 
 check('absent data returns null rather than a fabricated number', () => {
-    assert.strictEqual(cost.remainingToFinish('region_20', 'doubleEpicCharacters', 0), null);
-    assert.strictEqual(cost.remainingToFinish('region_30', 'doubleEpicCharacters', 0), null);
-    assert.strictEqual(cost.spentSoFar('region_20', 'doubleEpicCharacters', 0), null);
-    assert.strictEqual(cost.pullCount('region_20', 'doubleEpicCharacters'), null);
+    // Every draw has figures at every region since 2026-10-27 21:59 EDT, so the gap is made here and put back: the rule is for the next draw type added with partial data.
+    const { DRAW_DATA } = require('../commands/drawprices');
+    const saved = [DRAW_DATA.region_20.doubleEpicCharacters, DRAW_DATA.region_30.doubleEpicCharacters];
+    DRAW_DATA.region_20.doubleEpicCharacters = null;
+    DRAW_DATA.region_30.doubleEpicCharacters = null;
+    try {
+        assert.strictEqual(cost.remainingToFinish('region_20', 'doubleEpicCharacters', 0), null);
+        assert.strictEqual(cost.remainingToFinish('region_30', 'doubleEpicCharacters', 0), null);
+        assert.strictEqual(cost.spentSoFar('region_20', 'doubleEpicCharacters', 0), null);
+        assert.strictEqual(cost.pullCount('region_20', 'doubleEpicCharacters'), null);
+    } finally {
+        [DRAW_DATA.region_20.doubleEpicCharacters, DRAW_DATA.region_30.doubleEpicCharacters] = saved;
+    }
 });
 
 check('upgrade cost is perDraw times count where it exists', () => {
