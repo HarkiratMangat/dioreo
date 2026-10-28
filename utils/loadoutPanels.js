@@ -113,7 +113,19 @@ function cataloguePanel({ described, token }) {
     ] }];
 }
 
+// A gunsmith code that looks cut off, before anything is saved (Harkirat, 2026-10-28 01:06 EDT). `lines` is one line per code.
+function codePanel({ lines, token }) {
+    const one = lines.length === 1;
+    return [{ type: 17, accent_color: WARN_ACCENT, components: [
+        { type: 10, content: `### ${emojis.warn} ${one ? 'This code looks' : 'These codes look'} cut off\n${lines.join('\n')}\n-# The game draws O like 0, so a last O is easy to lose. **Back to edit** reopens the box with what you typed; **Save anyway** saves it as it is.` },
+        { type: 1, components: [
+            { type: 2, style: 2, label: 'Back to edit', custom_id: `mng_codeedit|${token}`, emoji: emojis.parseEmoji(emojis.edit) },
+            { type: 2, style: 3, label: 'Save anyway', custom_id: `mng_codeok|${token}`, emoji: emojis.parseEmoji(emojis.checkmark) },
+        ] },
+    ] }];
+}
+
 // A small one-line panel: "Saving…", a revert result, an expired button.
 const notePanel = (text, accent) => [{ type: 17, ...(accent ? { accent_color: accent } : {}), components: [{ type: 10, content: text }] }];
 
-module.exports = { savedPanel, deletePanel, bulkPanel, cataloguePanel, notePanel, changeLines, actionRow, isRealPicture, ACCENT, WARN_ACCENT, FAIL_ACCENT };
+module.exports = { savedPanel, deletePanel, bulkPanel, cataloguePanel, codePanel, notePanel, changeLines, actionRow, isRealPicture, ACCENT, WARN_ACCENT, FAIL_ACCENT };

@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const { ModalBuilder, TextInputBuilder, TextInputStyle, LabelBuilder, StringSelectMenuBuilder } = require('discord.js');
 const Loadout = require('../models/Loadout');
 const { extractLoadoutFromImage } = require('./visionExtract');
-const { correctAttachmentName, correctGunsmithCode, parseLoadoutBadges, normalizeWeaponName, orderAttachmentsBySlot } = require('./adminParser');
+const { correctAttachmentName, correctGunsmithCode, gunsmithCodeProblem, parseLoadoutBadges, normalizeWeaponName, orderAttachmentsBySlot } = require('./adminParser');
 const { getCatalogueIndex, findUnknownNames, learnItems } = require('./catalogue');
 const { sendV2Payload } = require('./sendV2Payload');
 const { computeWeaponKeyAndBuild, getMpCategoryAccent, findDuplicateLoadouts } = require('./loadoutRender');
@@ -42,7 +42,11 @@ function refreshReviewWarnings(data, allBuilds) {
     const dupes = data.mode === 'DMZ'
         ? findDmzDuplicates(weaponKey, data.attachments, sameMode)
         : findDuplicateLoadouts({ gunsmithCode: data.gunsmithCode, attachments: data.attachments }, sameMode);
-    // Every warning has Harkirat's shape (2026-10-20 13:19 EDT): a bold title line, then `>` lines for the detail and what to do.
+    // Every warning has Harkirat's shape (2026-10-20 13:19 EDT): a bold title line, then `>` lines for the detail and what to do. A code that looks cut off (Harkirat, 2026-10-28 01:06 EDT): Save reads Save anyway, and a batch's Save All stops on it.
+    const codeProblem = data.mode !== 'DMZ' && data.gunsmithCode ? gunsmithCodeProblem(data.gunsmithCode) : null;
+    data.codeWarning = codeProblem
+        ? `${BOT_EMOJI.warn} **The code looks cut off:** \`${data.gunsmithCode}\`\n> ${codeProblem[0].toUpperCase()}${codeProblem.slice(1)}; the game draws O like 0, so a last O is easy to lose\n> **Fix:** the code, with **Adjust**, or **Save anyway** if it is right`
+        : null;
     data.equipCapWarning = data.mode === 'MP' && data.attachments.length > 5
         ? `${BOT_EMOJI.warn} **${data.attachments.length} attachments on an MP build**\n> MP equips at most 5, so one is probably misread, or this is a DMZ screenshot\n> **Fix:** the list or the mode, with **Adjust**`
         : null;
@@ -136,7 +140,7 @@ function buildReviewCard(token, data, opts = {}) {
     // Warnings first, above the build (Harkirat, 2026-10-20 13:19 EDT: "warning section should be above the wep name, mode, etc.").
     const warnings = [
         data.categoryConflict ? `${BOT_EMOJI.warn} **Category mismatch:** this weapon is already saved as \`${data.categoryConflict}\`\n> **Saving as:** \`${data.category}\`, so it would sit under two categories\n> **Fix:** change the category with **Adjust**` : null,
-        data.labelWarning, data.duplicateWarning, data.catalogueWarning, data.equipCapWarning, data.confidenceWarning,
+        data.labelWarning, data.duplicateWarning, data.codeWarning, data.catalogueWarning, data.equipCapWarning, data.confidenceWarning,
         // The start form's preset words nothing recognised, and its notes (2026-10-25 12:49 EDT: "shows on that build's review page, never dropped silently").
         data.presetWarning ? `${BOT_EMOJI.warn} ${data.presetWarning}` : null, ...(data.formNotes || []).map(n => `${BOT_EMOJI.warn} ${n}`),
         ...(opts.notes || []),
@@ -187,7 +191,7 @@ function buildReviewCard(token, data, opts = {}) {
     components.push(...(opts.rows || [{
         type: 1,
         components: [
-            { type: 2, style: 3, label: 'Save Build', custom_id: `autobuild_confirm_${token}`, emoji: emojiIcon('saveStar') },
+            { type: 2, style: 3, label: data.codeWarning ? 'Save anyway' : 'Save Build', custom_id: `autobuild_confirm_${token}`, emoji: emojiIcon('saveStar') },
             { type: 2, style: 1, label: 'Adjust', custom_id: `autobuild_editbtn_${token}`, emoji: emojiIcon('edit') },
             { type: 2, style: 4, label: 'Discard', custom_id: `autobuild_cancel_${token}`, emoji: emojiIcon('deleteBin') }
         ]
@@ -508,6 +512,7 @@ function confirmMessage(client, result) {
         case 'nocategory': return glyphs(BOT_EMOJI.cross + ' Category is still unresolved -- click **Adjust** and set one before saving.');
         case 'nomode': return glyphs(BOT_EMOJI.cross + " MP or DMZ is still unresolved -- click **Adjust** and put `| MP` or `| DMZ` after the category before saving.");
         case 'busy': return '⏳ Already saving this build -- give it a moment.';
+        case 'cutcode': return glyphs(`${BOT_EMOJI.warn} Its code looks cut off -- fix it with **Adjust**, or press **Save anyway** on its page.`);
         case 'rival': return glyphs(`${BOT_EMOJI.warn} ${result.message || 'Another admin has this build waiting.'} Pick **Save mine** or **Leave it to them** on its page.`);
         case 'labeltaken': return `${BOT_EMOJI.cross} That build label is already used by another build of this weapon -- pick another with **Adjust**.`;
         // Both places a code can be typed: Adjust on a review, the Approve pop-up on a submitted build.

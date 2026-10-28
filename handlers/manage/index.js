@@ -61,8 +61,8 @@ async function routeManage(interaction) {
     if (interaction.isButton()) {
         const customId = interaction.customId;
 
-        // CATALOGUE AND PICTURE WARNINGS -- Save anyway / Back to edit under a loadout save that met names the catalogue does not know, and Keep / Upload new / Save without under an edit whose picture shows the old build (handlers/manage/loadouts.js).
-        if (['mng_catok|', 'mng_catedit|', 'mng_picok|', 'mng_picnew|', 'mng_picnone|'].some(p => customId.startsWith(p))) return await loadouts.handleCatalogueWarning(interaction);
+        // CATALOGUE, CODE AND PICTURE WARNINGS -- Save anyway / Back to edit under a loadout save that met names the catalogue does not know or a code that looks cut off, and Keep / Upload new / Save without under an edit whose picture shows the old build (handlers/manage/loadouts.js).
+        if (['mng_catok|', 'mng_catedit|', 'mng_codeok|', 'mng_codeedit|', 'mng_picok|', 'mng_picnew|', 'mng_picnone|'].some(p => customId.startsWith(p))) return await loadouts.handleCatalogueWarning(interaction);
         // A saved loadout's own buttons: Open in /gunsmith, Edit again, Revert (handlers/manage/loadouts.js handleSavedAction).
         if (['mng_ldopen_', 'mng_ldedit_', 'mng_ldrevert|'].some(p => customId.startsWith(p))) return await loadouts.handleSavedAction(interaction);
         // The same buttons under a saved draw, event or season: Open, Edit again, Revert (handlers/manage/results.js).

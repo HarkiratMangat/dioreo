@@ -56,6 +56,7 @@ function flagsOf(items, index) {
     if (!d.category) flags.push('category unknown');
     else if (d.categoryConflict) flags.push(`saved elsewhere as ${d.categoryConflict}`);
     if (!d.mode) flags.push('MP or DMZ unknown');
+    if (d.codeWarning) flags.push('code looks cut off');
     if (d.equipCapWarning) flags.push('too many attachments');
     if (d.labelConflict) flags.push('label already used');
     const cu = d.catalogueUnknown;
@@ -167,7 +168,7 @@ function renderPage(batch, key, index, heldImages = null) {
                         { type: 2, style: 2, label: 'Back', custom_id: id('page', key, index) },
                     ] }
                     : { type: 1, components: [
-                        { type: 2, style: 3, label: `Save Build ${n}`, custom_id: id('confirm', key, index), emoji: icon('saveStar') },
+                        { type: 2, style: 3, label: item.data.codeWarning ? `Save Build ${n} anyway` : `Save Build ${n}`, custom_id: id('confirm', key, index), emoji: icon('saveStar') },
                         { type: 2, style: 1, label: 'Adjust', custom_id: id('edit', key, index), emoji: icon('edit') },
                         { type: 2, style: 4, label: `Discard Build ${n}`, custom_id: id('cancel', key, index), emoji: icon('deleteBin') },
                     ] },
@@ -386,6 +387,8 @@ async function confirmAllItems(batch, confirm = confirmCore) {
         if (item.status !== 'pending') continue;
         // A build another admin also has waiting is never saved by Save All; it stops there and asks.
         if (item.data?.rival?.kind === 'build') { item.askRival = true; return { stoppedAt: i, result: { status: 'rival', message: `Build ${i + 1} is also waiting in ${item.data.rival.name}'s batch.` } }; }
+        // A code that looks cut off is saved only from its own page's Save anyway (2026-10-28 01:06 EDT).
+        if (item.data?.codeWarning) return { stoppedAt: i, result: { status: 'cutcode' } };
         const result = await confirm(item.token);
         if (applyResult(item, result) === 'stop') return { stoppedAt: i, result };
     }

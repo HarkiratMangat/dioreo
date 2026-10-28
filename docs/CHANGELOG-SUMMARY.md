@@ -12,6 +12,9 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.0.2 — October 28, 2026
+- **Gunsmith codes** that end in O are no longer cut short, and a code that looks incomplete is flagged before it is saved.
+
 ## v3.0.1 — October 28, 2026
 Fixes from launch night:
 - **Button icons** no longer go blank when you page through `/draws` or change a `/settings` option.
