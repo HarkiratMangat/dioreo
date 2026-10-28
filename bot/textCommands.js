@@ -11,8 +11,9 @@ const { TEXT_COMMANDS, findTextCommand, toIdPart } = require('../utils/textComma
 const { createTextInteraction, TextCommandRefused } = require('../utils/textCommands/adapter');
 const { textCommandAllowed } = require('../utils/textCommands/permissions');
 
-// The same command from the same person within a second is a double-send; a DIFFERENT command goes straight through (his report, 2026-10-28 18:05 EDT: "sending another command quickly after another one wouldnt do anything" under the first 3-second, any-command version).
-const USER_COOLDOWN_MS = 1000;
+// His rule (2026-10-28 18:10 EDT): "a 5 second per person limit if it's the same command (with a warning message and countdown within the message, the message then deletes itself) and 1 second for any command that's not the same (no warning needed)". Replaced a 1-second same-command limit, which had replaced a 3-second any-command one after his 18:05 EDT report that a quick second command did nothing.
+const SAME_COMMAND_COOLDOWN_MS = 5000;
+const ANY_COMMAND_COOLDOWN_MS = 1000;
 const CHANNEL_WINDOW_MS = 10_000;
 const CHANNEL_MAX_REPLIES = 5;
 const EDIT_WINDOW_MS = 60_000;
@@ -56,16 +57,44 @@ function canPost(message) {
     return message.channel.isThread?.() ? perms.has(PermissionFlagsBits.SendMessagesInThreads) : perms.has(PermissionFlagsBits.SendMessages);
 }
 
+// Returns null (go ahead), 'silent', or { warnUntil } for the same command too soon. `lastByUser` holds the person's last command and when; `warned` remembers one warning per cooldown, so a burst of repeats gets one countdown, not one each.
+const warned = new Map();
 function rateLimited(message, verdict) {
     const now = Date.now();
-    const userKey = `${message.author.id}:${verdict.command || verdict.kind}`;
-    if (now - (lastByUser.get(userKey) || 0) < USER_COOLDOWN_MS) return true;
+    const key = verdict.command || verdict.kind;
+    const last = lastByUser.get(message.author.id);
+    if (last) {
+        if (last.key === key && now - last.at < SAME_COMMAND_COOLDOWN_MS) {
+            const until = last.at + SAME_COMMAND_COOLDOWN_MS;
+            if (warned.get(message.author.id) === last.at) return 'silent';
+            warned.set(message.author.id, last.at);
+            return { warnUntil: until, key };
+        }
+        if (last.key !== key && now - last.at < ANY_COMMAND_COOLDOWN_MS) return 'silent';
+    }
     const hits = (channelHits.get(message.channelId) || []).filter(t => now - t < CHANNEL_WINDOW_MS);
-    if (hits.length >= CHANNEL_MAX_REPLIES) return true;
+    if (hits.length >= CHANNEL_MAX_REPLIES) return 'silent';
     hits.push(now);
     channelHits.set(message.channelId, hits);
-    lastByUser.set(userKey, now);
-    return false;
+    lastByUser.set(message.author.id, { key, at: now });
+    return null;
+}
+
+// The countdown is Discord's own relative timestamp (`<t:…:R>`, "in 4 seconds"), which every client counts down live; the warning deletes itself when the wait is over. A bot may always delete its own message.
+async function warnCooldown(message, { warnUntil, key }) {
+    if (!canPost(message)) return;
+    const unix = Math.ceil(warnUntil / 1000);
+    const created = await message.client.rest.post(Routes.channelMessages(message.channelId), {
+        body: {
+            content: `⏳ You can run \`${key}\` again <t:${unix}:R>.`,
+            allowed_mentions: { parse: [], replied_user: false },
+            message_reference: { message_id: message.id, fail_if_not_exists: false },
+        },
+    }).catch(() => null);
+    if (!created?.id) return;
+    setTimeout(() => {
+        message.client.rest.delete(Routes.channelMessage(message.channelId, created.id)).catch(() => {});
+    }, Math.max(1000, warnUntil - Date.now() + 500)).unref?.();
 }
 
 async function dmCantPost(message) {
@@ -172,7 +201,9 @@ async function onMessage(message, { edited = false } = {}) {
         commands: TEXT_COMMANDS,
     });
     if (!verdict.kind) return;
-    if (rateLimited(message, verdict)) return;
+    const limited = rateLimited(message, verdict);
+    if (limited === 'silent') return;
+    if (limited?.warnUntil) return warnCooldown(message, limited);
     answered.set(message.id, Date.now());
     if (!canPost(message)) return dmCantPost(message);
     if (verdict.kind === 'run') return runTextCommand(message, verdict);
@@ -199,7 +230,7 @@ function registerTextCommands(client) {
     // Keeps the in-memory maps small. unref'd so it never holds the process open.
     setInterval(() => {
         const now = Date.now();
-        for (const [k, t] of lastByUser) if (now - t > USER_COOLDOWN_MS) lastByUser.delete(k);
+        for (const [k, last] of lastByUser) if (now - last.at > SAME_COMMAND_COOLDOWN_MS) { lastByUser.delete(k); warned.delete(k); }
         for (const [k, hits] of channelHits) if (!hits.some(t => now - t < CHANNEL_WINDOW_MS)) channelHits.delete(k);
         for (const [k, t] of answered) if (now - t > EDIT_WINDOW_MS * 2) answered.delete(k);
         for (const [k, t] of cantPostDms) if (now - t > CANT_POST_DM_MS) cantPostDms.delete(k);
