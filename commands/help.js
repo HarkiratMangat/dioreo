@@ -261,7 +261,7 @@ async function helpChoices(query, perms = {}) {
     // `announcement` is not a command, so the ranked list never offers it and Enter picked /manage (its alias match) instead of the word typed (found in the 2026-10-28 click-test). Two letters put it first: at three (v3.1.1) a player typing `an` saw "No options match your search", because helpSearch drops `an` as a stop word and no command a non-admin sees starts with it (a player's report, 2026-10-28 13:51 EDT). One letter still shows the ranked list alone.
     const typed = String(query || '').toLowerCase().replace(/^\//, '').trim();
     if (typed.length >= 2 && ('announcement'.startsWith(typed) || typed === 'announcements')) {
-        return [{ name: 'announcement: the launch announcement', value: 'announcement' }, ...choices].slice(0, 25);
+        return [{ name: 'Announcement', value: 'announcement' }, ...choices].slice(0, 25);
     }
     return choices;
 }
