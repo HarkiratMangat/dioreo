@@ -30,7 +30,7 @@ require("dotenv").config({ quiet: true }); // quiet: true suppresses dotenv's ru
 const mongoose = require("mongoose");
 // Atlas dependency timing (2026-08-16, observability stage 2). Installed HERE, before any model is required or any query runs, because it patches Query/Aggregate exec -- see utils/mongoTiming.js.
 require("./utils/mongoTiming").installMongoTiming();
-const { Client, GatewayIntentBits } = require("discord.js");
+const { Client, GatewayIntentBits, Options, Partials } = require("discord.js");
 const { acquireInstanceLock } = require("./utils/instanceLock");
 
 // The four modules this file wires together. Everything that used to live inline here moved into them on 2026-08-13 17:20 EDT (docs/ROADMAP.md's index.js split) -- this file is the entrypoint again: connect, construct, wire, log in. Nothing else.
@@ -38,6 +38,7 @@ const { loadCommandModules, splitCommands } = require("./bot/registry");
 const { registerLifecycle, registerAdminLifecycle } = require("./bot/lifecycle");
 const { setClients, adminTokenFrom } = require("./bot/clients");
 const { handleInteraction } = require("./handlers/router");
+const { registerTextCommands, enableMessageContentIfGranted } = require("./bot/textCommands");
 
 // CONNECT TO MONGO (Atlas in prod; a LOCAL mongodb://localhost database under `.env.dev`) The success line names the actual host rather than hardcoding "Atlas Cluster" -- it used to claim Atlas unconditionally, which reads like the DEV bot just connected to the PRODUCTION database when it did nothing of the sort (mis-read exactly that way 2026-07-26 21:04 EDT). Host only, never the full URI: that string carries the Atlas credentials.
 mongoose.connect(process.env.MONGODB_URI)
@@ -58,7 +59,18 @@ mongoose.connect(process.env.MONGODB_URI)
 // ⚠️ PRESENCE IS DELIVERED ONLY TO USERS WHO SHARE A GUILD with the account, and prod sits at guild_count 0, so on prod this renders to an audience of nobody. That is a DISTRIBUTION fact, not a code bug -- do not "fix" it by adding fields or moving it. Confirmed on the dev bot 2026-08-09 11:27 EDT by a controlled add/kick/re-add cycle. It lights up by itself for any guild the app joins under the v3 guild-install work (docs/ROADMAP.md). The card itself (top line and verb rotating: Watching the season countdown, Competing in ranked, Playing DMZ, Listening to /help; "Add Dioreo · dioreo.app/install" under it) is built by utils/botPresence.js; this is its /help turn, so the first IDENTIFY already carries a presence. bot/lifecycle.js starts the swap on ready (2026-10-21 19:31 EDT).
 const BOT_PRESENCE = require("./utils/botPresence").buildPresence();
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds], presence: BOT_PRESENCE });
+// TEXT COMMANDS (2026-10-28 17:24 EDT): GuildMessages (not privileged) so Dioreo hears `@Dioreo today`; Message Content is added before login only if the app has it (bot/textCommands.js). Discord now sends an event for every message in every server Dioreo is in, so messages are never cached (MessageManager 0) and the users and members those events drag in are swept hourly, keeping only Dioreo's own member: the VM is an e2-micro. Partials.Message lets an edited message arrive without the original in cache, for the one-minute edit window.
+const client = new Client({
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
+    partials: [Partials.Message],
+    makeCache: Options.cacheWithLimits({ ...Options.DefaultMakeCacheSettings, MessageManager: 0 }),
+    sweepers: {
+        ...Options.DefaultSweeperSettings,
+        users: { interval: 3600, filter: () => user => user.id !== client.user?.id },
+        guildMembers: { interval: 3600, filter: () => member => member.id !== client.user?.id },
+    },
+    presence: BOT_PRESENCE,
+});
 
 // ==========================================
 // WIRING
@@ -76,6 +88,7 @@ const { publicCommands, adminCommands } = splitCommands(commands, client.command
 
 registerLifecycle(client, publicCommands);
 client.on("interactionCreate", handleInteraction);
+registerTextCommands(client);
 
 let adminClient = null;
 if (ADMIN_TOKEN) {
@@ -103,6 +116,7 @@ client.once('clientReady', () => bootFailures.clear());
         if (adminClient && !(await acquireInstanceLock(ADMIN_TOKEN))) {
             process.exit(1);
         }
+        await enableMessageContentIfGranted(client, process.env.BOT_TOKEN);
         await client.login(process.env.BOT_TOKEN);
     } catch (err) {
         const n = bootFailures.record();

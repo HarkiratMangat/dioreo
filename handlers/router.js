@@ -42,6 +42,7 @@ const HANDLER_BINDINGS = [
     ['remind', 'handleRemindInteraction'],
     ['announcementControls', 'handleAnnouncementControlsInteraction'],
     ['emojis', 'handleEmojisInteraction'],
+    ['textCommands', 'handleTextCommandsInteraction'],
 ];
 const late = (mod, fn) => (...args) => {
     const impl = require(`./${mod}`)[fn];
@@ -70,6 +71,7 @@ const handlePaginationInteraction = late('pagination', 'handlePaginationInteract
 const handleNavigationInteraction = late('navigation', 'handleNavigationInteraction');
 const handleRemindInteraction = late('remind', 'handleRemindInteraction');
 const handleAnnouncementControlsInteraction = late('announcementControls', 'handleAnnouncementControlsInteraction');
+const handleTextCommandsInteraction = late('textCommands', 'handleTextCommandsInteraction');
 
 // ==========================================
 // ROUTER-PRIVATE STATE
@@ -230,6 +232,8 @@ async function handleInteractionInner(interaction) {
         if (await handleAnnouncementControlsInteraction(interaction)) return;
         markHandler('embedTest');
         if (await handleEmbedTestInteraction(interaction)) return;
+        markHandler('textCommands');
+        if (await handleTextCommandsInteraction(interaction)) return;
         markHandler('addToPatchNotes');
         if (await handleAddToPatchNotesInteraction(interaction)) return;
         markHandler('viewColors');
@@ -495,4 +499,5 @@ async function handleInteractionInner(interaction) {
   }
 }
 
-module.exports = { handleInteraction, HANDLER_BINDINGS };
+// buildInteractionContext is exported for bot/textCommands.js, so a text command records the same analytics event and log attribution an interaction does.
+module.exports = { handleInteraction, HANDLER_BINDINGS, buildInteractionContext };

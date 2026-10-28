@@ -1,0 +1,184 @@
+// bot/textCommands.js -- the text-command listener: `@Dioreo today`, `d today`, `dior today`, `/today` (text commands, PR 1, 2026-10-28 17:24 EDT).
+//
+// WHY THIS EXISTS: a server can switch off Use Application Commands, and a server with more than ~50 bots stops listing newer bots' slash commands (「𝐆𝐇𝐎𝐒𝐓」, 54 bots, measured 2026-10-28 15:54 EDT). A text command is an ordinary message, so neither applies. Buttons on the reply still work where app commands are denied (spike, 2026-10-28 16:31 EDT).
+//
+// ⚠️ THIS IS AN EXCEPTION TO "the bot answers only through interactions" (root CLAUDE.md): a text command is answered with an ordinary channel message, as a reply to the member's own message, and only when they addressed Dioreo. utils/textCommands/parse.js decides that, and when in doubt it stays silent.
+//
+// ⚠️ Not covered by handlers/router.js's crash net: every listener here catches its own errors.
+const { PermissionFlagsBits, IntentsBitField, GatewayIntentBits, Routes } = require('discord.js');
+const { parseTextCommand } = require('../utils/textCommands/parse');
+const { TEXT_COMMANDS, findTextCommand, toIdPart } = require('../utils/textCommands/commands');
+const { createTextInteraction, TextCommandRefused } = require('../utils/textCommands/adapter');
+
+const USER_COOLDOWN_MS = 3000;
+const CHANNEL_WINDOW_MS = 10_000;
+const CHANNEL_MAX_REPLIES = 5;
+const EDIT_WINDOW_MS = 60_000;
+// Where Dioreo can't post, the member gets one DM per channel per day (Harkirat, 2026-10-28 17:18 EDT: "let's do 1 dm PER channel PER server, once per day"). Held in memory only: a restart forgets it, and nothing is stored.
+const CANT_POST_DM_MS = 24 * 60 * 60 * 1000;
+
+const lastByUser = new Map();
+const channelHits = new Map();
+const answered = new Map();
+const cantPostDms = new Map();
+
+// The prefixes come from the environment so the dev bot can use its own: prod and dev are both in Dioreoland and would otherwise both answer `d today` (think-pass, 2026-10-28 16:44 EDT). .env.dev sets TEXT_PREFIXES=dd,diordev.
+function configuredPrefixes(env = process.env) {
+    const raw = env.TEXT_PREFIXES === undefined ? '/,d,dior' : env.TEXT_PREFIXES;
+    return raw.split(',').map(p => p.trim()).filter(Boolean);
+}
+
+// Asks for Message Content only when the app's flags say Discord granted it (bit 18) or allowed it below 100 servers (bit 19). Asking for a privileged intent the app doesn't have makes login fail with "disallowed intents", so this is read before login, never assumed. Without it, only `@Dioreo …` works: Discord sends a message's text to a bot only when the message mentions it.
+async function enableMessageContentIfGranted(client, token) {
+    try {
+        client.rest.setToken(token);
+        const app = await client.rest.get(Routes.currentApplication());
+        const flags = Number(app?.flags || 0);
+        const granted = Boolean(flags & (1 << 18)) || Boolean(flags & (1 << 19));
+        if (granted) {
+            client.options.intents = new IntentsBitField(client.options.intents).add(GatewayIntentBits.MessageContent);
+        }
+        client.textMessageContent = granted;
+        console.log(`💬 Text commands: ${granted ? `@mention and prefixes ${configuredPrefixes().join(' ')}` : '@mention only (Message Content not granted)'}`);
+    } catch (err) {
+        client.textMessageContent = false;
+        console.error('Text commands: could not read the app flags; @mention only:', err?.message || err);
+    }
+}
+
+function canPost(message) {
+    const me = message.guild?.members?.me;
+    if (!me) return false;
+    const perms = message.channel.permissionsFor(me);
+    if (!perms?.has(PermissionFlagsBits.ViewChannel)) return false;
+    return message.channel.isThread?.() ? perms.has(PermissionFlagsBits.SendMessagesInThreads) : perms.has(PermissionFlagsBits.SendMessages);
+}
+
+function rateLimited(message) {
+    const now = Date.now();
+    if (now - (lastByUser.get(message.author.id) || 0) < USER_COOLDOWN_MS) return true;
+    const hits = (channelHits.get(message.channelId) || []).filter(t => now - t < CHANNEL_WINDOW_MS);
+    if (hits.length >= CHANNEL_MAX_REPLIES) return true;
+    hits.push(now);
+    channelHits.set(message.channelId, hits);
+    lastByUser.set(message.author.id, now);
+    return false;
+}
+
+async function dmCantPost(message) {
+    const key = `${message.author.id}:${message.channelId}`;
+    if (Date.now() - (cantPostDms.get(key) || 0) < CANT_POST_DM_MS) return;
+    cantPostDms.set(key, Date.now());
+    const where = message.guild?.name ? ` in **${message.guild.name}**` : '';
+    await message.author.send({
+        content: `I can't post in <#${message.channelId}>${where}. Ask a server admin to let me send messages there, or try another channel.`,
+        allowedMentions: { parse: [] },
+    }).catch(() => { /* their DMs are closed; nothing else can reach them */ });
+}
+
+async function reply(message, body) {
+    await message.client.rest.post(Routes.channelMessages(message.channelId), {
+        body: { allowed_mentions: { parse: [], replied_user: false }, ...body, message_reference: { message_id: message.id, fail_if_not_exists: false } },
+    });
+}
+
+function formsFor(client) {
+    return client.textMessageContent ? '`@Dioreo today` · `d today` · `dior today` · `/today`' : '`@Dioreo today`';
+}
+
+function helpCard(client) {
+    const list = TEXT_COMMANDS.filter(c => c.name !== 'help').map(c => `\`${c.name}\``).join(' · ');
+    return {
+        flags: 32768,
+        components: [{ type: 17, components: [
+            { type: 10, content: `### Text commands\nStart a message with ${formsFor(client)}, then a command:\n${list}\n-# Slash commands work too, where this server shows them.` },
+        ] }],
+    };
+}
+
+function didYouMeanCard(names) {
+    return {
+        flags: 32768,
+        components: [{ type: 17, components: [
+            { type: 10, content: '**Did you mean…**' },
+            { type: 1, components: names.slice(0, 5).map(name => ({ type: 2, style: 2, label: name, custom_id: `txtrun_${toIdPart(name)}` })) },
+        ] }],
+    };
+}
+
+// The emoji a chatty mention gets (Harkirat, 2026-10-28 17:04 EDT: "have it just reply to the message with an emoji (i'll upload something to /emojis later)"). Read by name at reply time, so uploading `MentionReply` to the app switches it over with no code change.
+function mentionReplyEmoji(client) {
+    const emoji = client.application?.emojis?.cache?.find?.(e => e.name === 'MentionReply');
+    return emoji ? `<${emoji.animated ? 'a' : ''}:${emoji.name}:${emoji.id}>` : '👋';
+}
+
+async function runTextCommand(message, verdict) {
+    const textCommand = findTextCommand(verdict.command);
+    const command = textCommand && message.client.commands.get(textCommand.slash);
+    if (!command) return;
+    const via = verdict.fuzzy ? `${verdict.via}+typo` : verdict.via;
+    const interaction = createTextInteraction(message, { textCommand, via });
+    const { buildInteractionContext } = require('../handlers/router');
+    const { runWithContext } = require('../utils/requestContext');
+    const { recordInteractionEvent } = require('../utils/eventStore');
+    const ctx = buildInteractionContext(interaction);
+    ctx.handler = 'textCommands';
+    await runWithContext(ctx, async () => {
+        try {
+            await require('../utils/guildPolicy').attachGuildPolicy(interaction);
+            await command.execute(interaction);
+        } catch (err) {
+            ctx.outcome = 'error';
+            const text = err instanceof TextCommandRefused
+                ? `That one opens a form, so it needs the slash command: \`/${textCommand.slash}${textCommand.sub ? ` ${textCommand.sub}` : ''}\`.`
+                : 'Something went wrong running that. Try again in a moment.';
+            if (!(err instanceof TextCommandRefused)) console.error(`Text command ${textCommand.name} failed:`, err);
+            await interaction.editReply({ content: text }).catch(() => {});
+        } finally {
+            recordInteractionEvent(interaction, ctx, message.author.id);
+        }
+    });
+}
+
+async function onMessage(message, { edited = false } = {}) {
+    if (!message?.guildId || !message.author || message.author.bot || message.webhookId || message.system) return;
+    if (edited && answered.has(message.id)) return;
+    const client = message.client;
+    const verdict = parseTextCommand(message.content || '', {
+        botId: client.user.id,
+        botRoleId: message.guild?.roles?.botRoleFor?.(client.user)?.id || null,
+        prefixes: client.textMessageContent ? configuredPrefixes() : [],
+        commands: TEXT_COMMANDS,
+    });
+    if (!verdict.kind) return;
+    if (rateLimited(message)) return;
+    answered.set(message.id, Date.now());
+    if (!canPost(message)) return dmCantPost(message);
+    if (verdict.kind === 'run') return runTextCommand(message, verdict);
+    if (verdict.kind === 'help') return reply(message, helpCard(client));
+    if (verdict.kind === 'didYouMean') return reply(message, didYouMeanCard(verdict.candidates));
+    if (verdict.kind === 'emojiReply') return reply(message, { content: mentionReplyEmoji(client) });
+    if (verdict.kind === 'roleHint') return reply(message, { content: `Mention me, not my role: pick **${client.user.username}** with the APP tag from the @ list, or type ${formsFor(client)}.` });
+}
+
+// Wired from index.js on the PUBLIC client only. Dioreo Admin is never in a server.
+function registerTextCommands(client) {
+    client.on('messageCreate', message => {
+        onMessage(message).catch(err => console.error('Text command listener failed:', err));
+    });
+    // A member who fixes a typo by editing gets an answer, within a minute and only if the first try got none (think-pass, 2026-10-28 16:46 EDT).
+    client.on('messageUpdate', (_old, message) => {
+        if (!message?.createdTimestamp || Date.now() - message.createdTimestamp > EDIT_WINDOW_MS) return;
+        onMessage(message, { edited: true }).catch(err => console.error('Text command listener (edit) failed:', err));
+    });
+    // Keeps the in-memory maps small. unref'd so it never holds the process open.
+    setInterval(() => {
+        const now = Date.now();
+        for (const [k, t] of lastByUser) if (now - t > USER_COOLDOWN_MS) lastByUser.delete(k);
+        for (const [k, hits] of channelHits) if (!hits.some(t => now - t < CHANNEL_WINDOW_MS)) channelHits.delete(k);
+        for (const [k, t] of answered) if (now - t > EDIT_WINDOW_MS * 2) answered.delete(k);
+        for (const [k, t] of cantPostDms) if (now - t > CANT_POST_DM_MS) cantPostDms.delete(k);
+    }, 10 * 60 * 1000).unref();
+}
+
+module.exports = { registerTextCommands, enableMessageContentIfGranted, configuredPrefixes, onMessage };

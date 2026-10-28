@@ -84,6 +84,8 @@ function clampDetail(detail) {
 function deriveEntry(interaction) {
     if (!interaction) return null;
     if (interaction.__dioreoSynthetic) return 'synthetic';
+    // A text command (2026-10-28 17:24 EDT): a plain message adapted by utils/textCommands/adapter.js.
+    if (interaction.__dioreoText) return 'text';
     const is = (name) => typeof interaction[name] === 'function' && interaction[name]();
     if (is('isAutocomplete')) return 'autocomplete';
     if (is('isModalSubmit')) return 'modal';
@@ -144,6 +146,8 @@ function buildEventDocument(interaction, ctx, extra = {}, rawUserId = null) {
         command,
         subcommand,
         entry: extra.entry || deriveEntry(interaction),
+        // Which text-command form was used (mention · / · d · dior · typo), so he can see which ones people type. Undefined for every interaction.
+        via: interaction?.__dioreoVia || undefined,
         customIdPrefix: prefix,
         outcome: extra.outcome || 'ok',
         ackMs: typeof extra.ackMs === 'number' ? extra.ackMs : null,
