@@ -9,6 +9,7 @@ const { PermissionFlagsBits, IntentsBitField, GatewayIntentBits, Routes } = requ
 const { parseTextCommand } = require('../utils/textCommands/parse');
 const { TEXT_COMMANDS, findTextCommand, toIdPart } = require('../utils/textCommands/commands');
 const { createTextInteraction, TextCommandRefused } = require('../utils/textCommands/adapter');
+const { textCommandAllowed } = require('../utils/textCommands/permissions');
 
 const USER_COOLDOWN_MS = 3000;
 const CHANNEL_WINDOW_MS = 10_000;
@@ -116,6 +117,8 @@ async function runTextCommand(message, verdict) {
     const textCommand = findTextCommand(verdict.command);
     const command = textCommand && message.client.commands.get(textCommand.slash);
     if (!command) return;
+    // The server's own Integrations switches for this command (his call, 2026-10-28 17:52 EDT). Denied → silent, the same as the slash command simply not being there for this member.
+    if (!(await textCommandAllowed({ client: message.client, guildId: message.guildId, member: message.member, userId: message.author.id, channel: message.channel }, textCommand.slash))) return;
     const via = verdict.fuzzy ? `${verdict.via}+typo` : verdict.via;
     const interaction = createTextInteraction(message, { textCommand, via });
     const { buildInteractionContext } = require('../handlers/router');

@@ -23,6 +23,12 @@ async function handleTextCommandsInteraction(interaction) {
         try { await interaction.reply({ content: 'That command is no longer available.', ephemeral: true }); } catch (err) { console.error('Text command button: could not answer a stale click:', err); }
         return true;
     }
+    // The server's Integrations switches for the command it runs, as for a typed text command (utils/textCommands/permissions.js).
+    const { textCommandAllowed } = require('../utils/textCommands/permissions');
+    if (!(await textCommandAllowed({ client: interaction.client, guildId: interaction.guildId, member: interaction.member, userId: interaction.user.id, channel: interaction.channel }, textCommand.slash))) {
+        try { await interaction.reply({ content: "This server has turned that command off for you here.", ephemeral: true }); } catch (err) { console.error('Text command button: could not answer a denied click:', err); }
+        return true;
+    }
     // A Did you mean pick must obey the server's /admin rule for the command it RUNS (security review, 2026-10-28 17:29 EDT): the router resolved the policy for a button, which has no commandName, so the command tier was skipped. Re-resolved here with the target command's name and subcommand; a rule that makes it private makes this answer private too.
     let hidden = isPrivate;
     let policy = interaction.dioreoPolicy || null;
