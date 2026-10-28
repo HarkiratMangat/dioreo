@@ -12,8 +12,8 @@ function parseEmoji(mention) {
 
 // Every mention string below is written with the PRODUCTION app's emoji ids, which stay the literal source of truth in git. The NAMES must match the apps' emoji names, because refreshEmojiIds() re-points by name: twelve /manage emojis were renamed with a DB_ prefix by Harkirat (2026-10-18 11:59 EDT, names only, same images), which is why they read DB_* here. They are also the fallback if the sync below can't run.
 const emojis = {
-    // /settings' "Made with love by @dior" footer -- replaced dioreo with diorHeart (2026-07-12, same day, Harkirat's follow-up correction). Animated this time (a: prefix).
-    diorHeart: '<a:diorHeart:1525941004929339594>',
+    // /settings' "Made with love by @dior" footer -- replaced dioreo with diorHeart (2026-07-12, same day, Harkirat's follow-up correction). Animated this time (a: prefix). Re-uploaded as DiorswrldHeart (2026-10-28, Harkirat uploaded it to prod through /emojis); the key keeps its name so every footer follows.
+    diorHeart: '<a:DiorswrldHeart:1564877429544063088>',
     mythic: '<:7Mythic_CODM:1523190107614744757>',
     legendary: '<:5Legendary_CODM:1523190105152688158>',
     legacy: '<:6Legacy_CODM:1523190105739886663>',
@@ -59,6 +59,7 @@ const emojis = {
     season7: '<a:S7Terminated:1561595008807735447>',
     season8: '<a:S8AgainstAllFate:1561595098767163496>',
     season9: '<a:S9VampiresVsWerewolves:1561595142425550898>',
+    season10: '<a:S107thAnniversary:1564877654044319785>', // Season 10 — 7th Anniversary, prod id from Harkirat 2026-10-28
     settings: '<a:Settings:1523762203537309696>',
     timestamp: '<a:Timestamps:1523762211103969420>',
     drawPrices: '<a:DrawPrices:1525864071776305163>',
@@ -110,7 +111,10 @@ const emojis = {
     serverSettings: '<a:ServerSettings:1536468904996774008>',
     // /manage's Bulk Format Guide headings (added 2026-07-31 17:20 EDT) -- both the rich guide panel's own top header (utils/manageGuides.js) and every page's "Guide" section heading text.
     guide: '<a:DB_Guide:1532894836301238477>',
-    // The calculator's "covered" and "finished" lines (2026-10-18 13:05 EDT, Harkirat: "swap the icon used beside the 'your balance covers this' line").
+    // The calculator's "covered" and "finished" lines (2026-10-18 13:05 EDT, Harkirat: "swap the icon used beside the 'your balance covers this' line"). /emojis' result messages (2026-10-28, Harkirat uploaded all three to prod): Accept = done now, Pending = the other bot adds it within 10 minutes, Deny = failed.
+    accept: '<:Accept:1565022886807208036>',
+    pending: '<:Pending:1565022888229339166>',
+    deny: '<:Deny:1565022884638757075>',
     checkmark: '<a:Checkmark:1561819906205290496>',   // the CURRENT final (checkmark-icon/checkmark-clean-128.avif), swapped on prod 2026-10-19 15:14 EDT (Harkirat: "Use the current final everywhere"); was the old final 1561412941004406955
     // The calculator's Add Draws and Remove buttons (2026-10-18 13:36 EDT, Harkirat supplied both).
     plus: '<a:Plus:1560408706233933845>',
@@ -347,6 +351,8 @@ module.exports = new Proxy(emojis, {
             const map = secondaryMaps.get(currentAppId());
             if (map && typeof map[key] === 'string') return map[key];
         }
+        // A key the map does not hold is tried as an EMOJI NAME on the booted app (2026-10-28 14:20 UTC, Harkirat: a new emoji should not need a map line), so `emojis.S107thAnniversary` works once the emoji is on the app. Exact name, case included; no such emoji answers undefined, as any unknown key always did.
+        if (typeof key === 'string' && !(key in target) && /^\w+$/.test(key)) return byName(key) ?? undefined;
         return Reflect.get(target, key, receiver);
     },
 });

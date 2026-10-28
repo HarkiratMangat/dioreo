@@ -29,7 +29,18 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.0.2 — 2026-10-28 01:24 EDT (#231) — Gunsmith codes cut short
+## v3.1.0 — 2026-10-28 12:45 EDT (#232) — /manage subcommands, Replace on the bots, /embed
+**From Harkirat, 2026-10-28:** "rename /emojis to /manage emojis and put it in the /manage panel's dropdown", "give the other /manage panels their own subcommands", "i want the replace option as well", "put the /embedtest command into dioreo admin, and rename it /embed", and "/help cmd:announcement visibility:public that it'll send the launch announcement as a public message". Approved for the merge flow and redeploy at 12:42 EDT.
+
+- **`/manage` is one subcommand per section** (`commands/manage.js`): `draws`, `calendar`, `patch-notes`, `gunsmith mp`, `gunsmith dmz`, `season titles`, `season draft`, `announcement`, `guide` and `emojis`. The `content` option is gone. Each keeps `action` (autocomplete) and a last `visibility`; `season titles` opens its pop-up straight away.
+- **`/emojis` is now `/manage emojis`** (`utils/emojiPanel.js`). Picking Emojis in /manage's page dropdown swaps the whole message in place, and the emoji panel draws the same dropdown outside its container. Owner only.
+- **Emoji panel and results:** three-line rows (the emoji, its name and code, then each bot and a Cloudinary line), a Hidden/Public option, separate result messages after an upload or a sync, and `DB_Emojis`, `DB_Add` and `DB_Sync` icons. `emojis.<ExactName>` now works with no map line.
+- **Replace reaches the bots:** it deletes and re-adds the emoji on this bot's two apps (the id changes; every consumer re-points by name). The new `models/EmojiApplied.js` records which Cloudinary version each app holds, so the other bot swaps it on its next hourly sync; the first meeting of an app and an original only records the version. Dev and prod have separate databases, so each records its own apps. The result cards now say "within an hour", the real pace.
+- **`/embed` replaces the dev-only `/embedtest`:** owner only, on Dioreo Admin on prod and dev, with `clean:true` to render the JSON with no Edit JSON button and no emoji note.
+- **`/help cmd:announcement`** posts the announcements running now, hidden unless `visibility:public`; it shares one builder with the Announcements button.
+- **`/patch notes`** "View Previous Seasons" shows the Battle Pass start and end dates as the season dates, and **`/settings`** drops the time from "Dioreo User Since", rewords Announcements and uses the new heart.
+
+## v3.0.2 — 2026-10-28 01:24 EDT (#231 · `393c8314`) — Gunsmith codes cut short
 **From Harkirat, 2026-10-28 01:06 EDT:** "yes do all that", answering whether to fix the cleaner so a last 0 becomes O, add a warning for a code that looks cut off, and correct the two FSS Hurricane codes on prod. **01:21 EDT:** "merge flow and deploy".
 
 - **The cleaner keeps a last O** (`utils/adminParser.js`): the game draws O like 0, so a read of `1C2B4C5B70` ended on a 0 that `stripCodePrefix` dropped, and two FSS Hurricane builds saved as `…7`. A digit look-alike now counts in a letter position, and `correctGunsmithCode` maps it to O.

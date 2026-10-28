@@ -287,6 +287,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-27 17:45 EDT — Announcements move to Components V2, and /help gets a line to the developer (v3.117.0)
 - 2026-10-28 00:17 EDT — Post-launch bug fixes (v3.0.1)
 - 2026-10-28 01:24 EDT — Gunsmith codes cut short (v3.0.2)
+- 2026-10-28 12:45 EDT — Emojis move into /manage and Replace reaches the bots (v3.1.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4781,6 +4782,15 @@ The rest: Double Epic Characters prices for 20 and 30 CP, warnings that only the
 The two FSS Hurricane builds on prod had codes one character short, `1C2B5B6A7` and `1C2B4C5B7`, and nothing had asked before saving them. The game draws O like 0, so the read ended `…70`; `stripCodePrefix` counted only letters in letter positions, so its run stopped at the 7 and the 0 was dropped before `correctGunsmithCode` could turn it into O.
 
 A digit look-alike now counts in a letter position, so the last O survives. A code that still isn't number-letter pairs asks first, in `/manage` and `/autobuild` alike: Back to edit or Save anyway. The two prod builds were corrected through the operation core, so each change is in the history with a Revert, and their pictures moved to the new code keys.
+
+## 2026-10-28 12:45 EDT — Emojis move into /manage and Replace reaches the bots (v3.1.0)
+
+Harkirat replaced the DB_Purge original with "Replace the original" and asked whether it would swap the emoji on the bots. It did not: Replace only wrote Cloudinary, and Sync only adds an emoji a bot lacks, so the old image stayed on all four. Discord cannot edit an app emoji's image, so a swap is a delete and a new upload, and nothing on the app records which file it was made from.
+
+That second fact decided the design. He asked whether the emoji map should live in the database; it should not, because the map is only `key → name`, a new key needs code that uses it anyway, and every id already re-points by name at boot. What the database does hold is `models/EmojiApplied.js`: the Cloudinary version of the original each app was last given. The sync swaps an app's emoji when the original is newer. The first time an app and an original meet with no record it writes the version and swaps nothing, because the alternative replaces every emoji on every app on the first run (the originals were uploaded after most of the emojis were). Dev and prod use separate databases, so each side records only its own two apps.
+
+The same session folded `/emojis` into `/manage`, split `/manage` into one subcommand per section, and moved `/embedtest` to Dioreo Admin as `/embed`. A checked claim worth keeping: the result cards said "within 10 minutes" while the timer runs hourly, deliberately, to stay inside Cloudinary's 500 Admin API calls an hour shared by prod and dev.
+
 
 # Part B — Lessons Ledger (thematic)
 

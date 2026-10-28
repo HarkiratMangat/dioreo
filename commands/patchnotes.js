@@ -201,15 +201,36 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
 
     // Build historical dropdown options A season opened from search that is older than the 12 shown joins the list, so the dropdown still shows it picked.
     const listed = recentPatches.some(p => p._id.toString() === activePatch._id.toString()) ? recentPatches : [...recentPatches, activePatch];
-    // Each season's dates as its description (2026-10-25 14:45-15:09 EDT, Harkirat's review): the newest reads "Current Season" (his pick B); an older one runs from its own release date to the next season's ("Aug 25 – Sep 23, 2026"), the only dates a past season has.
+    // Each season's dates as its description (2026-10-25 14:45-15:09 EDT, Harkirat's review). 2026-10-28 14:08 UTC, Harkirat: the Battle Pass start/end IS the season's start/end, and a season whose notes are out early is not "Current". So the LIVE season (the one the Season Titles setting names) reads its Battle Pass range, "Sep 23 – Active" while no end is set; a season newer than it reads its staged draft range or "Upcoming Season"; an older one runs from its own release date to the next season's ("Aug 25 – Sep 23, 2026"), the only dates a past season has. Patch-note release dates were what this showed before, which made the live Season 9 read as ending the day Season 10's notes came out.
     const shortDate = (d, withYear) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', ...(withYear ? { year: 'numeric' } : {}), timeZone: 'UTC' });
-    const seasonRange = (patch) => {
-        const at = newestFirst.findIndex(p => p._id.toString() === patch._id.toString());
-        if (at === 0) return 'Current Season';
-        const start = patch.releaseDate, end = newestFirst[at - 1]?.releaseDate;
-        if (!start || !end) return null;
+    const dateRange = (start, end) => {
         const sameYear = new Date(start).getUTCFullYear() === new Date(end).getUTCFullYear();
         return `${shortDate(start, !sameYear)} – ${shortDate(end, true)}`;
+    };
+    // The live season: the newest entry whose season number (else whole title) matches the Season Titles setting; no setting, or no match, keeps the old reading that the newest is live.
+    const liveTitle = displayTitle({ title: seasonalDoc.currentSeasonTitle || '' });
+    const liveNumber = /season\s*(\d+)/i.exec(liveTitle)?.[1];
+    const matchedLive = !liveTitle ? -1 : newestFirst.findIndex(p => {
+        const title = displayTitle(p);
+        const number = /season\s*(\d+)/i.exec(title)?.[1];
+        return liveNumber ? number === liveNumber : title.toLowerCase() === liveTitle.toLowerCase();
+    });
+    const liveAt = matchedLive === -1 ? 0 : matchedLive;
+    const seasonRange = (patch) => {
+        const at = newestFirst.findIndex(p => p._id.toString() === patch._id.toString());
+        if (at === liveAt) {
+            const { bpStart, bpEnd, bpEndTBD } = seasonalDoc;
+            if (bpStart) return bpEnd && !bpEndTBD ? dateRange(bpStart, bpEnd) : `${shortDate(bpStart, true)} – Active`;
+            return 'Current Season';
+        }
+        if (at < liveAt) {
+            const draft = seasonalDoc.draft;
+            if (draft?.active && draft.bpStart && draft.bpEnd && !draft.bpEndTBD) return dateRange(draft.bpStart, draft.bpEnd);
+            return 'Upcoming Season';
+        }
+        const start = patch.releaseDate, end = newestFirst[at - 1]?.releaseDate;
+        if (!start || !end) return null;
+        return dateRange(start, end);
     };
     const historyOptions = listed.map(patch => ({
         label: displayTitle(patch),

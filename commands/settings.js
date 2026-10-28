@@ -16,6 +16,20 @@ const { resolveEphemeral } = require('../utils/ephemeral');
 // Harkirat's Discord ID, for the "Made with love by @dior" footer's silent mention -- see the bottom of buildContainer() below.
 const DIOR_ID = '1139845545754632283';
 
+// "Saturday, July 4th, 2026" in the given IANA zone (UTC when it is not one Intl knows).
+function longDateWithOrdinal(date, timeZone) {
+    const d = new Date(date);
+    const parts = zone => {
+        const f = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: zone });
+        return Object.fromEntries(f.formatToParts(d).map(p => [p.type, p.value]));
+    };
+    let p;
+    try { p = parts(timeZone); } catch { p = parts('UTC'); }
+    const day = Number(p.day);
+    const suffix = day % 100 >= 11 && day % 100 <= 13 ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' }[day % 10] || 'th');
+    return `${p.weekday}, ${p.month} ${day}${suffix}, ${p.year}`;
+}
+
 // AUTHOR-LOCK (2026-07-14) -- /settings previously had no author-lock at all on some of its own components (set_page_ carried no userId whatsoever); every custom_id this file builds now carries `|{userId}` so the settings handlers can check identity before acting.
 //
 // Idle-timeout expiry used to ALSO be encoded here (a `|{expiresAt}` 3rd segment, checked reactively on click) but that's gone (2026-07-18) -- replaced by `utils/passiveExpiry.js`'s PASSIVE setTimeout-based auto-disable, scheduled at the bottom of execute() after every send. See that module's own comment for the full mechanism and why it replaces rather than supplements the old design.
@@ -176,7 +190,8 @@ module.exports = {
         // Dioreo User Since (2026-10-20 17:53 EDT) is the only date line now: the first command this user ran themselves (UserPreference.firstCommandAt). "Member Since", the Discord account's creation date, was dropped 2026-10-23 (Harkirat: leave the bot-user line, "how long you've been using the bot"). The line sits OUTSIDE the avatar Section (Harkirat, 2026-10-20 17:29 EDT): a Section's text is squeezed into the column beside its thumbnail, so the long date wrapped onto three lines on a phone. It is written after a command finishes, so on someone's very first /settings it is not there yet; a slash invocation is always the user's own, so "now" is right then. A button re-render with no date shows no line rather than a wrong one.
         const firstCommandAt = prefs?.firstCommandAt || (interaction.isChatInputCommand?.() ? new Date() : null);
         const dioreoSince = firstCommandAt ? Math.floor(new Date(firstCommandAt).getTime() / 1000) : null;
-        if (dioreoSince) containerComponents.push({ type: 10, content: `-# Dioreo User Since: \n-# <t:${dioreoSince}:F> (<t:${dioreoSince}:R>)` });
+        // The date without its time (2026-10-28 10:02 EDT, Harkirat: the `:F` style's "at 6:05 PM" wrapped on a phone, so "Saturday, July 4th, 2026 (4 months ago)"). Discord has no weekday-and-date-only timestamp style, so the date is written out in the saved timezone; the relative part stays a live timestamp.
+        if (dioreoSince) containerComponents.push({ type: 10, content: `-# Dioreo User Since: \n-# ${longDateWithOrdinal(firstCommandAt, tz)} (<t:${dioreoSince}:R>)` });
 
         // AVATAR/BANNER DOWNLOAD LINKS: Link-style buttons (style 5) point straight at the full-quality (4096px) CDN asset, so a user can save their own avatar/banner without needing to open Discord's own profile settings. A Section's accessory slot (used above for the avatar thumbnail) only supports ONE thumbnail-or-button, not both, so these live in their own Action Row instead of being crammed into the header Section.
         const profileLinkButtons = [{ type: 2, style: 5, label: "Avatar", url: userAvatarFullUrl }];
@@ -313,10 +328,10 @@ module.exports = {
 
             // Announcements on/off (2026-10-26 15:20 EDT, announcement-controls; his colours 15:30 EDT: Turn off red, Turn on blue), with the divider of the approved mock-up. The same setting as the button under an announcement and /remind's bottom row (utils/announcement.js setAnnouncementsOff). Measured 2026-10-26 15:32 EDT: this page was 35 components, 39 with this row.
             const announcementsOff = Boolean(prefs.announcementsOff);
-            containerComponents.push({ type: 14, divider: true, spacing: 1 });
+            // No divider above the row and a shorter description (2026-10-28 10:02 EDT, Harkirat); the button stays emoji-free, like every other button here.
             containerComponents.push({
                 type: 9,
-                components: [{ type: 10, content: `**Announcements** = \`${announcementsOff ? 'Off' : 'On'}\`\n-# News from Dioreo, shown once after one of your commands.` }],
+                components: [{ type: 10, content: `**Announcements** = \`${announcementsOff ? 'Off' : 'On'}\`\n-# Dioreo bot news and updates.` }],
                 accessory: announcementsOff
                     ? { type: 2, style: 1, label: 'Turn on', custom_id: `toggle_announcements_on|${userId}` }
                     : { type: 2, style: 4, label: 'Turn off', custom_id: `toggle_announcements_off|${userId}` }

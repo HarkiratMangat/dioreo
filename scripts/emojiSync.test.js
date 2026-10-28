@@ -2,7 +2,7 @@
 const assert = require('assert');
 const S = require('../utils/emojiSync');
 const { ModalBuilder } = require('discord.js');
-const { buildEmojiPanel, uploadModal, findModal, pageOf, PAGE_SIZE } = require('../commands/emojis');
+const { buildEmojiPanel, uploadModal, findModal, pageOf, PAGE_SIZE } = require('../utils/emojiPanel');
 
 let passed = 0, failed = 0;
 const pending = [];
@@ -51,6 +51,19 @@ t('an upload skips a file over 256 KB and a non-image, and stops at the first th
     const res = await S.uploadMissing(client, row, { fetchFn });
     assert.deepStrictEqual(res, { ok: true, via: 'original as 128px WebP' }, 'the 96px form is not reached once 128px fits');
     assert.deepStrictEqual(posted, [['/applications/APP/emojis', 'Beta', 'data:image/webp;base64']]);
+});
+
+t('the panel carries /manage\'s page dropdown outside its container, with Emojis picked (2026-10-28)', () => {
+    const rows = S.buildRows(prod, apps, { isProd: false, originals: new Map() });
+    const panel = buildEmojiPanel({ rows, apps: apps.map(a => ({ ...a, client: { application: { id: a.key } } })), senderAppId: 'main' });
+    assert.strictEqual(panel.length, 2);
+    assert.strictEqual(panel[0].type, 17);
+    const row = panel[1];
+    assert.strictEqual(row.type, 1, 'the dropdown sits outside the container');
+    const select = row.components[0];
+    assert.strictEqual(select.custom_id, 'mng_pagesel');
+    assert.deepStrictEqual(select.options.filter(o => o.default).map(o => o.value), ['emojis']);
+    assert.ok(select.options.some(o => o.value === 'draws') && select.options.some(o => o.value === 'announcement'), 'every /manage section is on it');
 });
 
 t('the panel: counts per app, the four views, a page of rows, and Sync naming how many', () => {
@@ -106,6 +119,102 @@ t('the auto-sync pushes only what the code or some bot uses, skips a recent fail
         const again = await S.runAutoSync([main, admin], { originals, other, now: 2000, writeStatusFn: noReport });
         assert.deepStrictEqual([again.added, again.failed, again.held.length], [[], [], 2], 'a failure waits a day instead of failing every run');
     } finally { globalThis['fe' + 'tch'] = okFetch; }
+});
+
+t('the auto-sync swaps an emoji whose original is newer than the version the app holds, and only then (2026-10-28)', async () => {
+    process.env.CLOUDINARY_URL = process.env.CLOUDINARY_URL || 'cloudinary://k:s@democloud';
+    const log = [];
+    const mkApp = (id, label, list) => ({ key: id, label, emojis: [], client: { application: { id }, rest: {
+        get: async () => list.map(e => ({ ...e, animated: false })),
+        delete: async (route) => { log.push(['delete', route]); const id2 = route.split('/').pop(); const i = list.findIndex(e => e.id === id2); if (i >= 0) list.splice(i, 1); },
+        post: async (route, { body }) => { log.push(['post', route, body.name]); list.push({ id: `new${list.length}`, name: body.name }); },
+    } } });
+    const fetchFn = async () => ({ ok: true, headers: { get: () => 'image/png' }, arrayBuffer: async () => new ArrayBuffer(10) });
+    const saved = [];
+    const memory = new Map();
+    const store = { load: async () => new Map(memory), save: async entries => { for (const e of entries) memory.set(`${e.appId}:${e.name}`, e.version); saved.push(...entries); return true; } };
+    const noReport = async () => true;
+    const app = mkApp('M', 'Main', [{ id: 'e1', name: 'Remind' }, { id: 'e2', name: 'Calendar' }]);
+    const run = originals => S.runAutoSync([app], { originals, other: null, now: 1000, writeStatusFn: noReport, store, fetchFn });
+    // First meeting: the versions are written down and nothing is swapped.
+    let res = await run(new Map([['Remind', { version: 100 }], ['Calendar', { version: 100 }]]));
+    assert.deepStrictEqual([res.added, res.replaced], [[], []]);
+    assert.deepStrictEqual(log, [], 'no delete and no upload on first sight');
+    assert.strictEqual(memory.get('M:Remind'), 100);
+    // Unchanged versions: still nothing.
+    res = await run(new Map([['Remind', { version: 100 }], ['Calendar', { version: 100 }]]));
+    assert.deepStrictEqual(res.replaced, []);
+    // Remind's original is replaced: it is deleted, added again, and the new version is recorded; Calendar is left alone.
+    res = await run(new Map([['Remind', { version: 200 }], ['Calendar', { version: 100 }]]));
+    assert.deepStrictEqual(res.replaced, ['Remind → Main']);
+    assert.deepStrictEqual(log.map(l => l[0]), ['delete', 'post']);
+    assert.ok(log[0][1].endsWith('/emojis/e1') && log[1][2] === 'Remind');
+    assert.strictEqual(memory.get('M:Remind'), 200);
+    assert.strictEqual(memory.get('M:Calendar'), 100);
+    // Run again at the same version: nothing more.
+    log.length = 0;
+    res = await run(new Map([['Remind', { version: 200 }], ['Calendar', { version: 100 }]]));
+    assert.deepStrictEqual([res.replaced, log], [[], []]);
+});
+
+t('with no database the auto-sync still adds a missing emoji but never swaps one (2026-10-28)', async () => {
+    process.env.CLOUDINARY_URL = process.env.CLOUDINARY_URL || 'cloudinary://k:s@democloud';
+    const posts = [];
+    const list = [{ id: 'e1', name: 'Remind' }];
+    const app = { key: 'M', label: 'Main', emojis: [], client: { application: { id: 'M' }, rest: { get: async () => list, delete: async () => { throw new Error('must not delete'); }, post: async (r, { body }) => { posts.push(body.name); list.push({ id: 'n', name: body.name }); } } } };
+    const fetchFn = async () => ({ ok: true, headers: { get: () => 'image/png' }, arrayBuffer: async () => new ArrayBuffer(10) });
+    const res = await S.runAutoSync([app], { originals: new Map([['Remind', { version: 9 }], ['Calendar', { version: 9 }]]), other: null, now: 1, writeStatusFn: async () => true, store: { load: async () => null, save: async () => false }, fetchFn });
+    assert.deepStrictEqual([res.added, res.replaced, posts], [['Calendar → Main'], [], ['Calendar']]);
+});
+
+t('replaceEmoji fetches the new file before it deletes the old emoji (2026-10-28)', async () => {
+    const log = [];
+    const client = { application: { id: 'M' }, rest: { delete: async () => log.push('delete'), post: async () => log.push('post') } };
+    const bad = await S.replaceEmoji(client, { name: 'X', version: 1 }, 'e1', { fetchFn: async () => ({ ok: false, status: 404 }) });
+    assert.ok(!bad.ok && !log.includes('delete'), 'a file that cannot be fetched costs nothing');
+});
+
+t('a row is the emoji, name and code, then a quote with the four bots and the Cloudinary original (2026-10-28)', () => {
+    const rows = S.buildRows(prod, apps, { isProd: false, originals: new Map([['Alpha', {}]]) });
+    const withClients = apps.map(a => ({ ...a, client: { application: { id: a.key } } }));
+    const text = JSON.stringify(buildEmojiPanel({ rows, apps: withClients })).replace(/\\n/g, '\n');
+    assert.ok(/\*\*Alpha\*\* · `<:Alpha:1>`\n> -# .*Dioreo \(Dev\).*\n> -# .* Cloudinary \(original\)/.test(text), text.slice(0, 600));
+});
+
+const reportApps = [
+    { key: 'main', env: 'prod', short: 'Dioreo', label: 'Dioreo', emojis: [] },
+    { key: 'admin', env: 'prod', short: 'Admin', label: 'Dioreo Admin', emojis: [{ name: 'Old' }] },
+    { key: 'main', env: 'dev', short: 'Dev', label: 'Dioreo (Dev)', emojis: [], remote: true },
+    { key: 'admin', env: 'dev', short: 'Dev Admin', label: 'Dioreo Admin (Dev)', emojis: [{ name: 'Heart' }], remote: true },
+];
+const { buildUploadReport, buildSyncReport } = require('../utils/emojiPanel');
+const textsOf = c => JSON.stringify(c).replace(/\\n/g, '\n');
+t('the upload result: Cloudinary, each bot, and what is still pending (2026-10-28)', () => {
+    const out = buildUploadReport({ name: 'Heart', replaced: false, preview: '', apps: reportApps, outcome: ['added', 'had', null, null] });
+    const text = textsOf(out);
+    const E = require('../utils/emojiMap');
+    for (const want of ['Emoji Uploaded', '**Heart** · `:Heart:`', '**Cloudinary**', '**Dioreo** ', '**Dioreo Admin** ', '**Dev** ', '**Dev Admin** ', `-# ${E.accept} Added or replaced · ${E.check} Already added; Copy kept`, `-# ${E.pending} Pending will sync within an hour`]) assert.ok(text.includes(want), want);
+    assert.strictEqual(out[0].components[1].divider, false, 'a small gap, no line');
+});
+t('a replaced upload shows Accept on this bot and Pending on the other, and a sync names what it replaced (2026-10-28)', () => {
+    const E = require('../utils/emojiMap');
+    const apps2 = reportApps.map(a => ({ ...a, emojis: [{ name: 'Heart' }] }));
+    const out = textsOf(buildUploadReport({ name: 'Heart', replaced: true, preview: '', apps: apps2, outcome: ['replaced', 'replaced', null, null] }));
+    assert.ok(out.includes('Emoji Replaced') && out.includes(`**Dioreo** ${E.accept}`) && out.includes(`**Dev** ${E.pending}`) && out.includes('Pending will sync within an hour'));
+    const before = { apps: reportApps.map(a => ({ ...a })), rows: [{ name: 'Heart', has: [true, true, true, true] }] };
+    const sync = buildSyncReport({ before, res: { added: [], replaced: ['Heart → Dioreo'], failed: [], held: [] } });
+    const blocks = sync[0].components.filter(c => c.type === 10).map(c => c.content);
+    assert.strictEqual(blocks[0], '## ' + E.checkmark + ' 1 Emojis Synced');
+    assert.ok(blocks[1].includes('**Replaced:** Dioreo') && blocks[1].includes('**In-sync:** Dioreo Admin'));
+});
+t('the sync result: one text block per emoji, in-sync and synced named apart (2026-10-28)', () => {
+    const before = { apps: reportApps.map(a => ({ ...a })), rows: [{ name: 'Tada', has: [true, false, true, true] }, { name: 'Heart', has: [true, true, false, false] }] };
+    const out = buildSyncReport({ before, res: { added: ['Tada → Dioreo Admin', 'Heart → Dioreo (Dev)'], failed: [], held: [] } });
+    const blocks = out[0].components.filter(c => c.type === 10).map(c => c.content);
+    assert.strictEqual(blocks[0], '## ' + require('../utils/emojiMap').checkmark + ' 2 Emojis Synced');
+    assert.deepStrictEqual(blocks.slice(1), ['**Tada**' + '\n-# **In-sync:** Dioreo · Dev · Dev Admin\n-# **Synced:** Dioreo Admin', '**Heart**\n-# **In-sync:** Dioreo · Dioreo Admin\n-# **Synced:** Dev\n-# ' + require('../utils/emojiMap').pending + ' **Pending:** Dev Admin, within an hour']);
+    assert.ok(out[0].components.length <= 40);
+    assert.ok(textsOf(buildSyncReport({ before, res: { added: [], failed: [], held: [] } })).includes('Nothing to sync'));
 });
 
 (async () => {

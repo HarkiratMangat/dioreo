@@ -1,5 +1,5 @@
 // Dioreo Admin, the second application (2026-10-19 13:51 EDT): which app gets each command, the token rule that keeps today's behaviour when the admin app is off, each app answering with its OWN emoji ids, and command mentions that resolve across both apps. See bot/clients.js.
-process.env.NODE_ENV = 'development';   // so the devOnly /embedtest loads, as on the dev bot
+process.env.NODE_ENV = 'development';   // so the devOnly /dmz loads, as on the dev bot
 const assert = require('assert');
 const { Collection } = require('discord.js');
 const { adminTokenFrom } = require('../bot/clients');
@@ -24,11 +24,11 @@ const nameOf = c => (typeof c.toJSON === 'function' ? c.toJSON().name : c.name);
     });
 
     await test('split: admin names, devOnly and adminApp go to the admin app; /admin stays public', () => {
-        const cmds = ['draw', 'admin', 'manage', 'embedtest', 'Add to Draws', 'flagged'].map(name => ({ name }));
-        const mods = new Map([['embedtest', { devOnly: true }], ['flagged', { adminApp: true }]]);
+        const cmds = ['draw', 'admin', 'manage', 'hiddenone', 'Add to Draws', 'flagged'].map(name => ({ name }));
+        const mods = new Map([['hiddenone', { devOnly: true }], ['flagged', { adminApp: true }]]);
         const { publicCommands, adminCommands } = splitCommands(cmds, mods, { adminApp: true });
         assert.deepStrictEqual(publicCommands.map(nameOf), ['draw', 'admin']);
-        assert.deepStrictEqual(adminCommands.map(nameOf), ['manage', 'embedtest', 'Add to Draws', 'flagged']);
+        assert.deepStrictEqual(adminCommands.map(nameOf), ['manage', 'hiddenone', 'Add to Draws', 'flagged']);
     });
 
     await test('MUST NOT: with the admin app off, every command stays on the public app', () => {
@@ -46,8 +46,8 @@ const nameOf = c => (typeof c.toJSON === 'function' ? c.toJSON().name : c.name);
         const adm = adminCommands.map(nameOf).sort();
         for (const name of ADMIN_APP_COMMAND_NAMES) assert.ok(!pub.includes(name), `${name} is still on the public app`);
         assert.ok(pub.includes('admin'), '/admin left the public app');
-        // Every devOnly module joins the admin app: /embedtest, and /dmz while it is hidden (2026-10-21 21:07 EDT).
-        assert.deepStrictEqual(adm, [...ADMIN_APP_COMMAND_NAMES, 'embedtest', 'dmz'].sort());
+        // Every devOnly module joins the admin app, /dmz while it is hidden (2026-10-21 21:07 EDT); /embed is a named admin command since 2026-10-28.
+        assert.deepStrictEqual(adm, [...ADMIN_APP_COMMAND_NAMES, 'dmz'].sort());
         assert.strictEqual(pub.length + adm.length, commands.length);
     });
 

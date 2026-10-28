@@ -196,6 +196,14 @@ async function renderManagePage(interaction) {
         const gate = await resolvePopupEntry(targetPage, interaction.user.id);
         if (!gate.ok) return interaction.reply({ content: gate.message, ephemeral: true });
     }
+    // Emojis swaps this very message for the emoji panel, which carries the same page dropdown outside its container (2026-10-28 12:11 EDT, Harkirat: "the entire /manage panel itself changed when emoji is selected"). Owner only.
+    if (targetPage === 'emojis') {
+        if (!require('../../utils/owner').isOwnerId(interaction.user.id)) return interaction.reply({ content: `${BOT_EMOJI.cross} Only Dioreo's developer can use this.`, ephemeral: true });
+        await interaction.deferUpdate();
+        const P = require('../../utils/emojiPanel');
+        const state = await P.loadState();
+        return require('../../utils/sendV2Payload').sendV2Payload(interaction, P.buildEmojiPanel({ ...state, senderAppId: interaction.applicationId }));
+    }
     if (targetPage === 'season_titlesdeadlines') {
         const SeasonalData = require('../../models/SeasonalData');
         const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
@@ -210,7 +218,7 @@ async function renderManagePage(interaction) {
 
     // manageCommand.buildDynamicData(), not a hand-rolled table (v3-pre-release review, finding #44) -- see commands/manage.js's own comment on this function for why the duplication mattered.
     const dynamicData = await manageCommand.buildDynamicData(targetPage);
-    return sendV2Payload(interaction, manageCommand.buildManagePage(targetPage, dynamicData, interaction.client));
+    return sendV2Payload(interaction, manageCommand.buildManagePage(targetPage, dynamicData, interaction.client, null, { showEmojis: require('../../utils/owner').isOwnerId(interaction.user.id) }));
 }
 
 // Bulk Format Guide's own topic-switcher dropdown (utils/manageGuides.js) -- re-renders the SAME guide message in place, same deferUpdate + sendV2Payload shape as renderManagePage above, just editing a standalone guide message instead of the panel.

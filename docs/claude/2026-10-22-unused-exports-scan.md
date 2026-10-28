@@ -26,7 +26,7 @@ Every module under `commands/`, `handlers/`, `core/`, `bot/` and `utils/` was lo
 | `commands/calendar.js` | `FILTER_OPTIONS`, `entryState` |
 | `commands/drawCalculator.js` | `ADVANCED_GOAL_TEXT`, `SETUP_CONTAINER_BUDGET`, `buildCostBlock`, `buildMissingBasketPanel`, `buildProgressPanel`, `buildSavedPanel`, `groupForDisplay`, `isDoubleCPEventLive`, `metaOf`, `progressTitle`, `regionBalanceSection`, `usedTypes` |
 | `commands/drawprices.js` | `UPGRADE_LABEL`, `formatCP`, `upgradeEmoji` |
-| `commands/embedtest.js` | `MODAL_ID` |
+| `commands/embed.js` | `MODAL_ID` |
 | `commands/help.js` | `resolveCommandToCategory` |
 | `commands/manage.js` | `buildAnnouncementListBlocks`, `buildDraftStatusText`, `buildPastSeasonsOptions` |
 | `commands/patchnotes.js` | `HISTORY_SHOWN`, `INFO_TEXT_BUDGET` |

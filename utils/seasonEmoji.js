@@ -17,7 +17,8 @@ function splitSeasonEmoji(raw) {
 function seasonEmojiFor(title, stored) {
     if (stored) return emojis.repoint(stored);
     const m = /season\s*(\d+)/i.exec(title || '');
-    return m ? emojis[`season${m[1]}`] || null : null;
+    if (!m) return null;
+    return emojis[`season${m[1]}`] || null;
 }
 
 // Puts the emoji in front of buildTitleBlock's caption line, OUTSIDE the bold-italic lettering, which would mangle an emoji's name and id.

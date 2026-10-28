@@ -1,7 +1,7 @@
 // ==========================================
 // EMOJIS — INTERACTION HANDLER
 // ==========================================
-// /emojis' controls (commands/emojis.js): `emo_filter_<view>`, `emo_page_<n>_<view>`, `emo_sync_<view>` (uploads every missing emoji to every app of this process that lacks it, utils/emojiSync.js), `emo_upload` + `emo_upmodal` (an original to Cloudinary under a name of his choosing, then to the bots), and `emo_find_<view>` + `emo_findmodal_<view>` (jump to a name). Owner only on every click: an upload changes the app's own emoji list.
+// /manage emojis' controls (utils/emojiPanel.js): `emo_filter_<view>`, `emo_page_<n>_<view>`, `emo_sync_<view>` (uploads every missing emoji to every app of this process that lacks it, utils/emojiSync.js), `emo_upload` + `emo_upmodal` (an original to Cloudinary under a name of his choosing, then to the bots), and `emo_find_<view>` + `emo_findmodal_<view>` (jump to a name). Owner only on every click: an upload changes the app's own emoji list.
 //
 // ⚠️ THE CRASH NET IS THE ROUTER'S, NOT THIS FILE'S (handlers/router.js); the error replies here are awaited in their own try/catch.
 const emojis = require('../utils/emojiMap');
@@ -25,12 +25,25 @@ async function fileFrom(interaction, id) {
 const pickOf = (interaction, id) => { try { return interaction.fields.getStringSelectValues(id)[0]; } catch { return null; } };
 
 async function refuse(interaction, text) {
-    try { await interaction.reply({ content: `${emojis.cross} ${text}`, ephemeral: true }); } catch (e) { console.error('Failed to answer an /emojis click:', e); }
+    try { await interaction.reply({ content: `${emojis.cross} ${text}`, ephemeral: true }); } catch (e) { console.error('Failed to answer a /manage emojis click:', e); }
 }
+
+// The result of an upload or a sync as its own message under the panel (2026-10-28 10:39 EDT, Harkirat: the one-line footer note "is not noticeable"). It matches the panel's visibility: a hidden panel gets a hidden report. A raw webhook POST because discord.js's followUp does not serialise a Components V2 container; it answers THIS interaction, so it needs no channel permission.
+async function sendCard(interaction, components) {
+    const { Routes } = require('discord.js');
+    const hidden = interaction.message?.flags?.has?.(64) ?? true;
+    try {
+        await interaction.client.rest.post(Routes.webhook(interaction.applicationId, interaction.token), {
+            body: { flags: 32768 | (hidden ? 64 : 0), components, allowed_mentions: { parse: [] } },
+        });
+    } catch (e) { console.error('/manage emojis: could not send the result message:', e?.message || e); }
+}
+// A plain failure: a heading and its reason.
+const failureCard = (title, lines) => [{ type: 17, accent_color: 5793266, components: [{ type: 10, content: [`## ${title}`, ...lines].join('\n') }] }];
 
 async function route(interaction) {
     if (!isOwnerId(interaction.user.id)) return refuse(interaction, "Only Dioreo's developer can use this.");
-    const P = require('../commands/emojis');
+    const P = require('../utils/emojiPanel');
     const S = require('../utils/emojiSync');
     const { sendV2Payload } = require('../utils/sendV2Payload');
     const draw = async (state, extra) => sendV2Payload(interaction, P.buildEmojiPanel({ ...state, ...extra, senderAppId: interaction.applicationId }));
@@ -60,37 +73,43 @@ async function route(interaction) {
         const toBots = pickOf(interaction, 'bots') !== 'no';
         const file = await fileFrom(interaction, 'file').catch(() => null);
         let state = await P.loadState();
-        const again = (note) => draw(state, { filter: 'all', page: Math.max(0, P.pageOf(state.rows, 'all', name)), note });
-        if (!file) return again(`${emojis.cross} The file could not be read. Try the upload again.`);
-        if (!/^image\//.test(file.mime)) return again(`${emojis.cross} That file is not an image (${file.mime || 'unknown type'}).`);
-        if (file.data.length > S.MAX_ORIGINAL_BYTES) return again(`${emojis.cross} That file is ${Math.round(file.data.length / 1048576)} MB; the limit is 10 MB.`);
+        // A failure is reported as its own message too; the panel just redraws.
+        const again = async (note, titleLines) => { await draw(state, { filter: 'all', page: Math.max(0, P.pageOf(state.rows, 'all', name)), note: titleLines ? null : note }); if (titleLines) await sendCard(interaction, failureCard(`${emojis.cross} Upload failed: ${name}`, titleLines)); };
+        const fail = (text) => again(null, [text.replace(new RegExp('^' + emojis.cross + ' '), '')]);
+        if (!file) return fail('The file could not be read. Try the upload again.');
+        if (!/^image\//.test(file.mime)) return fail(`That file is not an image (${file.mime || 'unknown type'}).`);
+        if (file.data.length > S.MAX_ORIGINAL_BYTES) return fail(`That file is ${Math.round(file.data.length / 1048576)} MB; the limit is 10 MB.`);
         let taken = false;
-        try { taken = (await S.listOriginals({ force: true })).has(name); } catch (e) { return again(`${emojis.cross} Could not check Cloudinary for the name: ${S.safeCloudinaryError(e)}`); }
+        try { taken = (await S.listOriginals({ force: true })).has(name); } catch (e) { return fail(`Could not check Cloudinary for the name: ${S.safeCloudinaryError(e)}`); }
         // Names differing only in case are separate files in Cloudinary and separate emojis in Discord, which reads as a duplicate; say so instead of uploading.
         const caseTwin = state.rows.find(r => r.name !== name && r.name.toLowerCase() === name.toLowerCase());
-        if (caseTwin) return again(`${emojis.cross} **${caseTwin.name}** already exists with different capitals. Use that name, or another one.`);
-        if (taken && !replace) return again(`${emojis.cross} **${name}** is already in Cloudinary. Upload again and pick "Replace the original" to swap it.`);
+        if (caseTwin) return fail(`**${caseTwin.name}** already exists with different capitals. Use that name, or another one.`);
+        if (taken && !replace) return fail(`**${name}** is already in Cloudinary. Upload again and pick "Replace the original" to swap it.`);
         const up = await S.uploadOriginal(file.data, name, { mime: file.mime, overwrite: replace });
-        if (!up.ok) { console.error(`/emojis upload of ${name} failed: ${up.error}`); return again(`${emojis.cross} Cloudinary refused **${name}**: ${up.error}`); }
-        const parts = [`${emojis.checkmark} **${name}** ${taken ? 'replaced in' : 'uploaded to'} Cloudinary`];
+        if (!up.ok) { console.error(`/manage emojis upload of ${name} failed: ${up.error}`); return fail(`Cloudinary refused **${name}**: ${up.error}`); }
+        const outcome = state.apps.map(() => 'skipped');
         if (toBots) {
-            const added = [], kept = [], failed = [];
             const row = state.rows.find(r => r.name === name) || { name, animated: /gif|webp|avif/.test(file.mime), knownIds: [], has: state.apps.map(() => false) };
+            const version = (await S.listOriginals()).get(name)?.version;
+            const record = [];
             for (const [i, app] of state.apps.entries()) {
-                if (app.remote) continue; // the other bot adds it from Cloudinary itself
-                if (row.has[i]) { kept.push(app.label); continue; }
-                const res = await S.uploadMissing(app.client, { ...row, version: (await S.listOriginals()).get(name)?.version, knownIds: [] });
-                if (res.ok) added.push(app.label); else { failed.push(app.label); console.error(`/emojis: adding ${name} to ${app.label} failed: ${res.error}`); }
+                if (app.remote) continue; // the other bot adds or swaps it from Cloudinary itself, on its next hourly sync
+                const appId = app.client.application?.id ?? app.client.user?.id;
+                const oldId = row.copies?.[i]?.id;
+                if (row.has[i] && !(replace && taken && oldId)) { outcome[i] = 'had'; continue; }
+                // Replace swaps the app's own copy too (2026-10-28 16:30 EDT, his ask): Discord cannot edit an emoji's image, so it is removed and added again.
+                const res = row.has[i] ? await S.replaceEmoji(app.client, { ...row, version, knownIds: [] }, oldId) : await S.uploadMissing(app.client, { ...row, version, knownIds: [] });
+                if (res.ok) { outcome[i] = row.has[i] ? 'replaced' : 'added'; if (version) record.push({ appId, name, version }); }
+                else { outcome[i] = 'failed'; console.error(`/manage emojis: ${row.has[i] ? 'replacing' : 'adding'} ${name} on ${app.label} failed: ${res.error}`); }
             }
-            for (const app of state.apps.filter(x => !x.remote)) { try { await emojis.refreshEmojiIds(app.client, { secondary: app.key === 'admin' }); } catch (e) { console.error('Emoji map refresh after an /emojis upload failed:', e?.message || e); } }
-            if (added.length) parts.push(`added to ${added.join(' and ')}`);
-            if (kept.length) parts.push(`${kept.join(' and ')} kept ${kept.length > 1 ? 'their' : 'its'} copy${replace && taken ? ' (delete it there to take the new file)' : ''}`);
-            if (failed.length) parts.push(`${emojis.cross} could not add to ${failed.join(' and ')} (details in the log)`);
+            await S.appliedStore.save(record);
+            for (const app of state.apps.filter(x => !x.remote)) { try { await emojis.refreshEmojiIds(app.client, { secondary: app.key === 'admin' }); } catch (e) { console.error('Emoji map refresh after a /manage emojis upload failed:', e?.message || e); } }
         }
+        const appsBefore = state.apps;
         state = await P.loadState();
         await S.writeStatus(state.apps.filter(x => !x.remote));
-        if (toBots) parts.push('the other bot adds it within 10 minutes');
-        return again(parts.join(' · '));
+        await draw(state, { filter: 'all', page: Math.max(0, P.pageOf(state.rows, 'all', name)) });
+        return sendCard(interaction, P.buildUploadReport({ name, replaced: taken, preview: emojis.byName?.(name), apps: appsBefore, outcome }));
     }
 
     if (!interaction.isButton()) return;
@@ -104,20 +123,18 @@ async function route(interaction) {
     let state = await P.loadState();
     if (isSync) {
         filter = a || 'all';
+        const before = state; // who had what just before the sync, for its result message
         // The same run the timer makes (utils/emojiSync.js runAutoSync), sharing its lock: originals only, this process's two apps only.
         const own = state.apps.filter(x => !x.remote);
         const res = await S.runAutoSync(own);
         // Each app's emoji map re-points by name, so the panels using a just-uploaded emoji draw it at once rather than after the next restart.
         for (const app of own) {
-            try { await emojis.refreshEmojiIds(app.client, { secondary: app.key === 'admin' }); } catch (e) { console.error('Emoji map refresh after /emojis sync failed:', e?.message || e); }
+            try { await emojis.refreshEmojiIds(app.client, { secondary: app.key === 'admin' }); } catch (e) { console.error('Emoji map refresh after /manage emojis sync failed:', e?.message || e); }
         }
         state = await P.loadState();
         const noFile = state.rows.filter(r => r.prodEmoji && r.hasOriginal === false && r.has.some((h, i) => !h && !state.apps[i].remote)).length;
-        note = res.skipped ? 'A sync is already running; try again in a moment.'
-            : [res.added.length ? `${emojis.checkmark} Synced ${res.added.length}` : 'Nothing to sync',
-                res.failed.length ? `${emojis.cross} ${res.failed.length} failed: ${res.failed.slice(0, 5).join(', ')}${res.failed.length > 5 ? '…' : ''} (details in the log)` : null,
-                res.held?.length ? `${res.held.length} failed earlier today, retried tomorrow` : null,
-                noFile ? `${noFile} need their original first (No original)` : null].filter(Boolean).join(' · ');
+        await draw(state, { page, filter });
+        return sendCard(interaction, P.buildSyncReport({ before, res, noFile, previewOf: n => emojis.byName?.(n) || '' }));
     }
     return draw(state, { page, filter, note });
 }
