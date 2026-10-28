@@ -134,7 +134,8 @@ function findPatchByQuery(patchNotes, query) {
     const newest = (patchNotes || []).slice().reverse();
     const num = /^\D*?(\d+)\D*$/.exec(q);
     if (num) {
-        const hit = newest.find(p => new RegExp(`season\\s*${num[1]}\\b`, 'i').test(displayTitle(p)));
+        // The title's own season number, compared as a number: no RegExp is built from the query (CodeQL's regex-injection rule flagged the old `new RegExp(...num...)` once scripts/setSeasonDates.js fed it a command-line argument, though only digits ever reached it).
+        const hit = newest.find(p => Number(/season\s*(\d+)/i.exec(displayTitle(p))?.[1]) === Number(num[1]));
         if (hit) return hit;
     }
     return newest.find(p => fuzzyMatch(q, displayTitle(p))) || null;
