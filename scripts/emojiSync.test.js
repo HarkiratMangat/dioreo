@@ -134,7 +134,7 @@ t('the upload result: Cloudinary, each bot, and what is still pending (2026-10-2
     const out = buildUploadReport({ name: 'Heart', replaced: false, preview: '', apps: reportApps, outcome: ['added', 'had', null, null] });
     const text = textsOf(out);
     const E = require('../utils/emojiMap');
-    for (const want of ['Emoji Uploaded', '**Heart** · `:Heart:`', '**Cloudinary**', '**Dioreo** ', '**Dioreo Admin** ', '**Dev** ', '**Dev Admin** ', `-# ${E.accept} Added · ${E.check} Already added; Copy kept`, `-# ${E.pending} Pending will sync within 10 minutes.`]) assert.ok(text.includes(want), want);
+    for (const want of ['Emoji Uploaded', '**Heart** · `:Heart:`', '**Cloudinary**', '**Dioreo** ', '**Dioreo Admin** ', '**Dev** ', '**Dev Admin** ', `-# ${E.accept} Added · ${E.check} Already added; Copy kept`, `-# ${E.pending} Pending will sync within 10 minutes`]) assert.ok(text.includes(want), want);
     assert.strictEqual(out[0].components[1].divider, false, 'a small gap, no line');
 });
 t('the sync result: one text block per emoji, in-sync and synced named apart (2026-10-28)', () => {

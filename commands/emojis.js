@@ -114,7 +114,7 @@ function buildUploadReport({ name, replaced, preview, apps, outcome }) {
         { type: 10, content: `## ${emojis.checkmark} Emoji ${replaced ? 'Replaced' : 'Uploaded'}${preview ? ` ${preview}` : ''}\n${preview ? `${preview} ` : ''}**${name}** · \`:${name}:\`` },
         { type: 14, divider: false, spacing: 1 },
         { type: 10, content: rows.join('\n') },
-        { type: 10, content: [`-# ${m.done} Added · ${m.had} Already added; Copy kept`, ...(pending ? [`-# ${m.wait} Pending will sync within 10 minutes.`] : [])].join('\n') },
+        { type: 10, content: [`-# ${m.done} Added · ${m.had} Already added; Copy kept`, ...(pending ? [`-# ${m.wait} Pending will sync within 10 minutes`] : [])].join('\n') },
     ]);
 }
 
