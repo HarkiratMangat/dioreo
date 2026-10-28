@@ -257,7 +257,13 @@ async function suggestHelpCommandNames(query, perms = {}) {
 // The same, as Discord autocomplete choices: each name with a short plain line, so a confused reader sees what it does.
 async function helpChoices(query, perms = {}) {
     const S = require('../utils/helpSearch');
-    return S.rank(query, searchEntries(perms)).slice(0, 25).map(e => ({ name: S.choiceLabel(e), value: e.name }));
+    const choices = S.rank(query, searchEntries(perms)).slice(0, 25).map(e => ({ name: S.choiceLabel(e), value: e.name }));
+    // `announcement` is not a command, so the ranked list never offers it and Enter picked /manage (its alias match) instead of the word typed (found in the 2026-10-28 click-test). Typing most of the word puts it first.
+    const typed = String(query || '').toLowerCase().replace(/^\//, '').trim();
+    if (typed.length >= 3 && ('announcement'.startsWith(typed) || typed === 'announcements')) {
+        return [{ name: 'announcement: the launch announcement', value: 'announcement' }, ...choices].slice(0, 25);
+    }
+    return choices;
 }
 
 // The command a typed `cmd:` means: an exact name, else an alias word ("server" -> /admin), else the best search match. Used to open its category AND to put that command first on the page. A right-click app is not a command block, so it focuses nothing.

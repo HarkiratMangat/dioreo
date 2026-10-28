@@ -288,6 +288,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-28 00:17 EDT — Post-launch bug fixes (v3.0.1)
 - 2026-10-28 01:24 EDT — Gunsmith codes cut short (v3.0.2)
 - 2026-10-28 12:45 EDT — Emojis move into /manage and Replace reaches the bots (v3.1.0)
+- 2026-10-28 12:58 EDT — The announcement word that autocomplete skipped (v3.1.1)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4791,6 +4792,9 @@ That second fact decided the design. He asked whether the emoji map should live 
 
 The same session folded `/emojis` into `/manage`, split `/manage` into one subcommand per section, and moved `/embedtest` to Dioreo Admin as `/embed`. A checked claim worth keeping: the result cards said "within 10 minutes" while the timer runs hourly, deliberately, to stay inside Cloudinary's 500 Admin API calls an hour shared by prod and dev.
 
+## 2026-10-28 12:58 EDT — The announcement word that autocomplete skipped (v3.1.1)
+
+`/help cmd:announcement` worked when the word was sent as typed, but the suggestion list showed only `/manage` and `/manage emojis`, and picking the top one replaced the word. The list is ranked from real commands and "announcement" is not one; `/manage` matched only because it carries the word as an alias. `helpChoices` now puts "announcement" first once three letters of it are typed. A code change, so it needs a deploy, not a database edit.
 
 # Part B — Lessons Ledger (thematic)
 
