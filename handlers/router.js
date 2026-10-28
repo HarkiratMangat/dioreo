@@ -342,13 +342,16 @@ async function handleInteractionInner(interaction) {
                 return await interaction.respond([]);
             }
 
-            const matchingWeapons = await Loadout.find(queryFilter).select('weaponName weaponKey category isMeta categoryRank isToxic').lean();
+            const matchingWeapons = await Loadout.find(queryFilter).select('weaponName weaponKey category isMeta categoryRank isToxic attachments').lean();
+            // A weapon whose only builds are "Coming Soon" placeholders is listed like a catalogue weapon with no build ("— Build pending") and is never a featured pick.
+            const { isPlaceholderBuild } = require('../utils/loadoutRender');
             const uniqueMap = new Map();
             // One entry per weapon, carrying the best badges among its builds (badges are per build since 2026-10-19), for the featured list below.
             const rankOf = r => ({ best: 1, top3: 3, top5: 5, capable: 6 })[r] ?? 50;
             matchingWeapons.forEach(w => {
                 const prev = uniqueMap.get(w.weaponKey);
-                uniqueMap.set(w.weaponKey, prev ? { ...prev, isMeta: prev.isMeta || w.isMeta, isToxic: prev.isToxic || w.isToxic, categoryRank: rankOf(w.categoryRank) < rankOf(prev.categoryRank) ? w.categoryRank : prev.categoryRank } : w);
+                const noBuild = isPlaceholderBuild(w);
+                uniqueMap.set(w.weaponKey, prev ? { ...prev, noBuild: prev.noBuild && noBuild, isMeta: prev.isMeta || w.isMeta, isToxic: prev.isToxic || w.isToxic, categoryRank: rankOf(w.categoryRank) < rankOf(prev.categoryRank) ? w.categoryRank : prev.categoryRank } : { ...w, noBuild });
             });
             const distinctChoices = Array.from(uniqueMap.values());
             // /gunsmith mp also offers the catalogue's weapons that have no build yet (2026-10-27 23:30 EDT, Harkirat: "the bot should have the weapon, even without a build. it would just say 'no build yet'"). Picking one opens the same No build yet card that typing its name already did; before this the search said "No options match" for them. The value is the weapon's name, which utils/loadoutLookup.js resolves to that card.
@@ -378,15 +381,15 @@ async function handleInteractionInner(interaction) {
                 const { resolveCategorySynonyms, isGenericWeaponQuery, typoDistance } = require('../utils/search');
                 const synonyms = resolveCategorySynonyms(focusedValue);
                 const generic = isGenericWeaponQuery(focusedValue);
-                const rows = browseRows(mode, cats)
+                const rows = browseRows(mode, cats, { hasMeta: matchingWeapons.some(w => w.isMeta) })
                     .filter(r => !focusedValue || generic || fuzzyMatch(focusedValue, r.label) || synonyms.some(c => r.value === `MP.${c}.std`) || (!synonyms.length && /^(META|MP|DMZ)$/.test(r.label.split(' ')[1]) && typoDistance(focusedValue, r.label.split(' ')[1]) !== Infinity))
                     .map(r => ({ name: `▸ ${r.label}`, value: `~scope~${r.value}` }));
                 // When the matches outnumber the 25 Discord shows, the last row says so (Harkirat, 2026-10-24 09:45 EDT: "since only 25 items appear, can we better state to a user that can they search the weapon name?"). Picking that row opens the weapon search pop-up (`~search~<mode>`, 2026-10-25 23:12 EDT, his ask; it opened the mode's whole browse on its first weapon until then).
                 const matched = findWeaponMatches(focusedValue, distinctChoices);
                 const room = 25 - rows.length;
                 const more = matched.length > room;
-                // Nothing typed: a few of each class's best instead of the alphabet's first class (featuredWeapons, his 2026-10-25 23:25 EDT ask).
-                const shown = focusedValue ? matched : require('../utils/search').featuredWeapons(matched, more ? room - 1 : room);
+                // Nothing typed: a few of each class's best instead of the alphabet's first class (featuredWeapons, his 2026-10-25 23:25 EDT ask). A weapon with no build yet is never one of the featured picks; it shows when its name is typed.
+                const shown = focusedValue ? matched : require('../utils/search').featuredWeapons(matched.filter(w => !w.noBuild), more ? room - 1 : room);
                 const weaponRows = shown
                     .slice(0, more ? room - 1 : room)
                     .map(w => ({ name: (mode === 'MP' ? `[${displayCategoryLabel(w.category)}] ${w.weaponName}` : w.weaponName) + (w.noBuild ? ' — Build pending' : ''), value: w.weaponKey }));

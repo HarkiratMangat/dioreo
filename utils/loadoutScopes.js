@@ -44,18 +44,19 @@ const FIXED_SCOPES = [
     { value: 'DMZ.*.std',  label: 'DMZ',           mode: 'DMZ', category: null, metaOnly: false },
 ];
 
-// The browse rows at the top of /gunsmith mp and /gunsmith dmz's weapon suggestions (Harkirat, 2026-10-19 19:43 EDT: "lets just remove gunsmith list, instead put the 'all mp builds, all ar, all lmg, etc' at the top of the /gunsmiths mp command"). Their earlier order and the single META entry came from the same evening (19:38 EDT): META first, then everything in the mode, then each MP class. META opens that mode's meta, and the switch under the panel moves to the other mode's (utils/loadoutRender.js, `gsb~meta~`). A row's value is its scope token; commands/gunsmith.js reads it back as `~scope~<token>`.
-function browseRows(mode, categories = []) {
+// The browse rows at the top of /gunsmith mp and /gunsmith dmz's weapon suggestions (Harkirat, 2026-10-19 19:43 EDT: "lets just remove gunsmith list, instead put the 'all mp builds, all ar, all lmg, etc' at the top of the /gunsmiths mp command"). Their earlier order and the single META entry came from the same evening (19:38 EDT): META first, then everything in the mode, then each MP class. META opens that mode's meta, and the switch under the panel moves to the other mode's (utils/loadoutRender.js, `gsb~meta~`). A row's value is its scope token; commands/gunsmith.js reads it back as `~scope~<token>`. `hasMeta`: the META row shows only while some build in the mode has the Meta badge, and comes back on its own when one does (Harkirat, 2026-10-27 23:46 EDT: "if none have it, then the list disappears").
+function browseRows(mode, categories = [], { hasMeta = true } = {}) {
     const { displayCategoryLabel } = require('./loadoutRender');
+    const meta = hasMeta ? [{ label: 'All META builds', value: `${mode}.*.meta` }] : [];
     if (mode === 'DMZ') {
         return [
-            { label: 'All META builds', value: 'DMZ.*.meta' },
+            ...meta,
             { label: 'All DMZ builds', value: 'DMZ.*.std' },
         ];
     }
     return [
         // "All MP builds" dropped (Harkirat, 2026-10-25 16:10 EDT: "keep all meta builds, drop the 'all mp builds'"); its scope token still opens for a suggestion list a client kept open.
-        { label: 'All META builds', value: 'MP.*.meta' },
+        ...meta,
         ...categories.map(c => ({ label: `All ${displayCategoryLabel(c)} builds`, value: `MP.${c}.std` })),
     ];
 }

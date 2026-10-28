@@ -162,7 +162,8 @@ function featuredWeapons(weapons, slots) {
     for (let round = 0; picked.size < slots && classes.some(c => byClass.get(c)[round]); round++) {
         for (const c of order(round)) { const w = byClass.get(c)[round]; if (w && picked.size < slots) picked.add(w); }
     }
-    return classes.flatMap(c => byClass.get(c).filter(w => picked.has(w)));
+    // Picked by score, shown A-Z inside each class (Harkirat, 2026-10-27 23:48 EDT: "shouldnt these be in alphabetical order?").
+    return classes.flatMap(c => byClass.get(c).filter(w => picked.has(w)).sort((a, b) => a.weaponName.localeCompare(b.weaponName)));
 }
 
 // CATEGORY_SEARCH_SYNONYMS and GENERIC_WEAPON_WORDS are exported for the site's /commands page (scripts/lib/commandsPage.js), whose weapon search ships this same table so it answers a class word the way the bot does.
