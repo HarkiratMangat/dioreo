@@ -25,10 +25,11 @@ async function handleTextCommandsInteraction(interaction) {
     }
     // A Did you mean pick must obey the server's /admin rule for the command it RUNS (security review, 2026-10-28 17:29 EDT): the router resolved the policy for a button, which has no commandName, so the command tier was skipped. Re-resolved here with the target command's name and subcommand; a rule that makes it private makes this answer private too.
     let hidden = isPrivate;
-    if (!hidden && interaction.guildId) {
+    let policy = interaction.dioreoPolicy || null;
+    if (interaction.guildId) {
         const probe = buildSyntheticInteraction(interaction, { commandName: textCommand.slash, options: buildOptions({ sub: textCommand.sub }) });
-        const policy = await require('../utils/guildPolicy').attachGuildPolicy(probe);
-        hidden = policy?.visibility === 'ephemeral';
+        policy = (await require('../utils/guildPolicy').attachGuildPolicy(probe)) || policy;
+        if (policy?.visibility === 'ephemeral') hidden = true;
     }
     // Acknowledged HERE, before the synthetic copy is made: buildSyntheticInteraction copies `deferred` as a value, so a copy made first would still read false and sendV2Payload would try a second acknowledgement. Hidden for Open privately, or where the server's rule says so; public for a Did you mean pick otherwise.
     await interaction.deferReply({ flags: hidden ? 64 : 0 });
@@ -40,6 +41,8 @@ async function handleTextCommandsInteraction(interaction) {
         isMessageComponent: () => false,
         customId: undefined,
         deferReply: async () => {},
+        // The command-tier policy travels with the run, so sendV2Payload strips Show Everyone where the server's rule makes this command private (security review, 2026-10-28 17:31 EDT): otherwise a hidden answer would carry a one-click way to post it publicly.
+        dioreoPolicy: policy,
     });
     await command.execute(synthetic);
     return true;
