@@ -21,6 +21,9 @@ const cases = [
     ['https://dioreo.app/draws', 'https://dioreo.app/draws'],
     ['`/draws`', '`/draws`'],
     ['</draws:2>', '</draws:2>'],
+    // A mention stored with another app's id (the dev bot's) is re-pointed to this app's; one this app does not know is left alone.
+    ['</gunsmith mp:1561919451975123035> · </draws:1538354473586401319>', '</gunsmith mp:1> · </draws:2>'],
+    ['</unknown:1538354473586401319>', '</unknown:1538354473586401319>'],
 ];
 let failed = 0;
 for (const [input, want] of cases) {
