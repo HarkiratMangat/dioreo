@@ -124,7 +124,9 @@ function hslToHex(h, s, l) {
 function announcementBody(doc) {
     const postedTs = Math.floor(new Date(doc.createdAt).getTime() / 1000);
     const text = String(doc.text || '');
-    const body = text.length > ANNOUNCEMENT_TEXT_MAX ? `${text.slice(0, ANNOUNCEMENT_TEXT_MAX - 1)}…` : text;
+    const cut = text.length > ANNOUNCEMENT_TEXT_MAX ? `${text.slice(0, ANNOUNCEMENT_TEXT_MAX - 1)}…` : text;
+    // Typed `/commands` become clickable mentions at render time (utils/commandMentions.js), so the stored text stays plain and the dev and prod apps each link their own ids. Applied after the length cut, so a mention is never sliced in half.
+    const body = require('./commandMentions').linkCommandMentions(cut);
     // A `{posted}` token in the text takes the live time where the writer put it (2026-10-27 10:44 EDT: the v3 launch footer reads "Made with … by @dior · {posted}"), and then no separate Posted line is added.
     if (body.includes('{posted}')) return body.split('{posted}').join(`<t:${postedTs}:R>`);
     return `${body}\n\n-# Posted <t:${postedTs}:R>`;

@@ -289,6 +289,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-28 01:24 EDT — Gunsmith codes cut short (v3.0.2)
 - 2026-10-28 12:45 EDT — Emojis move into /manage and Replace reaches the bots (v3.1.0)
 - 2026-10-28 12:58 EDT — The announcement word that autocomplete skipped (v3.1.1)
+- 2026-10-28 13:58 EDT — Two letters that matched nothing (v3.1.2)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4795,6 +4796,10 @@ The same session folded `/emojis` into `/manage`, split `/manage` into one subco
 ## 2026-10-28 12:58 EDT — The announcement word that autocomplete skipped (v3.1.1)
 
 `/help cmd:announcement` worked when the word was sent as typed, but the suggestion list showed only `/manage` and `/manage emojis`, and picking the top one replaced the word. The list is ranked from real commands and "announcement" is not one; `/manage` matched only because it carries the word as an alias. `helpChoices` now puts "announcement" first once three letters of it are typed. A code change, so it needs a deploy, not a database edit.
+
+## 2026-10-28 13:58 EDT — Two letters that matched nothing (v3.1.2)
+
+An hour after v3.1.1, a player sent a screenshot of `/help cmd:an` showing Discord's "No options match your search", and a reply from another bot, Mimu, saying "no cmds matches announcement". Prod's analytics settled both: her `an` returned zero suggestions, her `ann` returned `announcement`, and she never ran Dioreo's `/help` at all in that window, so the Mimu reply came from Mimu's own `/help` in the same server. The empty list was ours. `helpSearch` drops `an` as a stop word and no command a non-admin sees starts with it, so the three-letter threshold left the first two letters with nothing. It is two letters now. The lesson: a threshold picked to keep a word out of unrelated queries needs checking at the length just below it, where it can leave nothing at all.
 
 # Part B — Lessons Ledger (thematic)
 
