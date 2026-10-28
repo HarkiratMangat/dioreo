@@ -20,4 +20,23 @@ function mentionCommand(client, path) {
     return id ? `</${clean}:${id}>` : `\`/${clean}\``;
 }
 
-module.exports = { mentionCommand, recordCommandIds };
+// Every slash-command path either app registered ('draws', 'draw prices', 'gunsmith mp'), so free text can be linked: a command that has subcommands only links by its full path, because Discord renders a bare `</gunsmith:id>` as plain text. Filled by bot/registry.js from the same PUT response as the ids.
+const commandPaths = new Set();
+function recordCommandPaths(paths) {
+    for (const p of paths) commandPaths.add(p);
+}
+
+// Turns each `/name` or `/name sub` in free text into a clickable mention, longest real path first (2026-10-28, Harkirat on the launch announcement: "why dont the slash commands have clickable?" -- its text is typed in the builder, so it held plain `/gunsmith mp`). Only a slash at the start of a line or after a space, bracket or markdown mark is read, so "Right-click/Tap" and a URL stay text; an unknown name, or one with no id yet, is left exactly as written.
+function linkCommandMentions(text, client = null) {
+    return String(text).replace(/(^|[\s(*_>~|])\/([a-z0-9_-]+)((?: [a-z0-9_-]+){0,2})/gm, (whole, pre, base, rest) => {
+        const words = [base, ...rest.trim().split(' ').filter(Boolean)];
+        for (let n = words.length; n >= 1; n--) {
+            const path = words.slice(0, n).join(' ');
+            const id = client?.commandIds?.get(base) ?? allCommandIds.get(base);
+            if (id && commandPaths.has(path)) return `${pre}${mentionCommand(client, path)}${rest.slice(rest.split(' ').slice(0, n).join(' ').length)}`;
+        }
+        return whole;
+    });
+}
+
+module.exports = { mentionCommand, recordCommandIds, recordCommandPaths, linkCommandMentions };

@@ -29,10 +29,11 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.1.2 — 2026-10-28 13:58 EDT (#PR) — `/help cmd:an` no longer comes back empty
-**From a player, via Harkirat, 2026-10-28:** typing `an` in `/help cmd:` showed Discord's "No options match your search".
+## v3.1.2 — 2026-10-28 13:58 EDT (#PR) — `/help cmd:an` no longer comes back empty; clickable commands in announcements
+**From a player, via Harkirat, 2026-10-28:** typing `an` in `/help cmd:` showed Discord's "No options match your search". **And Harkirat:** "why dont the slash commands have clickable?" on the launch announcement.
 
 - **`announcement` is now suggested from two letters** (`commands/help.js` `helpChoices`), not three. `helpSearch` drops `an` as a stop word and no command a non-admin sees starts with it, so at `an` the list was empty. One letter still shows the ranked list alone. `scripts/helpAnnouncement.test.js` now covers `an`.
+- **Typed `/commands` in an announcement are clickable** (`utils/commandMentions.js` `linkCommandMentions`, applied in `utils/announcement.js` `announcementBody`). The builder stores plain text, so the launch announcement showed `/gunsmith mp` as text. They are linked at render time against the ids and subcommand paths `bot/registry.js` records at boot, so dev and prod each link their own. A command with subcommands links only by its full path (`/draw prices`), since Discord shows a bare `</draw:id>` as text; unknown names, URLs and inline code stay as written. `scripts/commandMentions.test.js` covers it.
 
 ## v3.1.1 — 2026-10-28 12:58 EDT (#233 · `97a1a1b4`) — `/help cmd:` offers "announcement"
 **From Harkirat, 2026-10-28:** typing `/help cmd:announcement` suggested only `/manage` and `/manage emojis`, and Enter picked `/manage` instead of the word.

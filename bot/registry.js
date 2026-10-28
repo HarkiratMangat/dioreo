@@ -123,6 +123,8 @@ async function registerApplicationCommands(client, commands, { token = process.e
         client.commandIds = new Map(registered.map(c => [c.name, c.id]));
         // Also into the process-wide list, so a mention in one app's message resolves a command that lives on the other (/help on Dioreo linking /bot on Dioreo Admin).
         require('../utils/commandMentions').recordCommandIds(client.commandIds);
+        // And every slash path, so typed text (an announcement) can link `/draw prices` -- context menus have no slash form and are left out.
+        require('../utils/commandMentions').recordCommandPaths(registered.filter(c => !c.type || c.type === 1).flatMap(c => require('../utils/guildPolicy').commandPaths(c)));
         client.registeredCommandCount = registered.length; // read by the boot record in bot/lifecycle.js
     } catch (error) {
         console.error('--- DISCORD SYSTEM REGISTRATION FAULT LOG ---');
