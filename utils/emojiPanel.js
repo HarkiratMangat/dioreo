@@ -103,20 +103,21 @@ const reportName = (a) => a.env === 'dev' ? (a.short || a.label) : (a.key === 'a
 const marks = () => ({ done: emojis.accept, had: emojis.check, wait: emojis.pending, bad: emojis.deny });
 const card = (components) => [{ type: 17, accent_color: ACCENT, components }];
 
-// Upload: per bot, what happened. `outcome[i]` is 'added' | 'had' | 'failed' | 'skipped' for each bot of this process (and ignored for the other bot's two, which show 'had' or Pending from their last report).
+// Upload: per bot, what happened. `outcome[i]` is 'added' | 'replaced' | 'had' | 'failed' | 'skipped' for each bot of this process (and ignored for the other bot's two, which show 'had' or Pending from their last report).
 function buildUploadReport({ name, replaced, preview, apps, outcome }) {
     const m = marks();
     const rows = [`**Cloudinary** ${m.done}`, ...apps.map((a, i) => {
-        const o = a.remote ? (a.emojis.some(e => e.name === name) ? 'had' : 'pending') : outcome[i];
-        const mark = { added: m.done, had: m.had, failed: m.bad, pending: m.wait, skipped: '(not added)' }[o];
+        // The other bot swaps a replaced emoji on its next hourly sync, so it shows Pending even when it already has the old one.
+        const o = a.remote ? (replaced || !a.emojis.some(e => e.name === name) ? 'pending' : 'had') : outcome[i];
+        const mark = { added: m.done, replaced: m.done, had: m.had, failed: m.bad, pending: m.wait, skipped: '(not added)' }[o];
         return `**${reportName(a)}** ${mark}`;
     })];
-    const pending = apps.some((a, i) => (a.remote ? !a.emojis.some(e => e.name === name) : false));
+    const pending = apps.some(a => a.remote && (replaced || !a.emojis.some(e => e.name === name)));
     return card([
         { type: 10, content: `## ${emojis.checkmark} Emoji ${replaced ? 'Replaced' : 'Uploaded'}${preview ? ` ${preview}` : ''}\n${preview ? `${preview} ` : ''}**${name}** · \`:${name}:\`` },
         { type: 14, divider: false, spacing: 1 },
         { type: 10, content: rows.join('\n') },
-        { type: 10, content: [`-# ${m.done} Added · ${m.had} Already added; Copy kept`, ...(pending ? [`-# ${m.wait} Pending will sync within 10 minutes`] : [])].join('\n') },
+        { type: 10, content: [`-# ${m.done} Added or replaced · ${m.had} Already added; Copy kept`, ...(pending ? [`-# ${m.wait} Pending will sync within an hour`] : [])].join('\n') },
     ]);
 }
 
@@ -125,28 +126,30 @@ const SYNC_SECTIONS_SHOWN = 14; // two components a section and the Container ho
 function buildSyncReport({ before, res, noFile = 0, previewOf = () => '' }) {
     const m = marks();
     const byName = new Map();
-    const note = (list, key) => { for (const entry of list || []) { const [name, label] = entry.split(' → '); if (!byName.has(name)) byName.set(name, { synced: [], failed: [] }); byName.get(name)[key].push(label); } };
-    note(res.added, 'synced'); note(res.failed, 'failed');
+    const note = (list, key) => { for (const entry of list || []) { const [name, label] = entry.split(' → '); if (!byName.has(name)) byName.set(name, { synced: [], replaced: [], failed: [] }); byName.get(name)[key].push(label); } };
+    note(res.added, 'synced'); note(res.replaced, 'replaced'); note(res.failed, 'failed');
     const title = res.skipped ? `${m.wait} A sync is already running`
         : res.failed.length ? `${m.bad} Sync finished with failures`
-        : res.added.length ? `${emojis.checkmark} ${new Set(res.added.map(a => a.split(' → ')[0])).size} Emojis Synced`
+        : (res.added.length || res.replaced?.length) ? `${emojis.checkmark} ${new Set([...res.added, ...(res.replaced || [])].map(a => a.split(' → ')[0])).size} Emojis Synced`
         : 'Nothing to sync';
     const components = [{ type: 10, content: `## ${title}` }];
-    if (res.skipped) components.push({ type: 10, content: 'The 10-minute timer or another tap is already syncing. Try again in a moment.' });
+    if (res.skipped) components.push({ type: 10, content: 'The hourly timer or another tap is already syncing. Try again in a moment.' });
     else if (!byName.size) components.push({ type: 10, content: 'Every bot already has every emoji that has an original.' });
     if (byName.size) components.push({ type: 14, divider: false, spacing: 1 });
     for (const [name, got] of [...byName].slice(0, SYNC_SECTIONS_SHOWN)) {
         const row = before.rows.find(r => r.name === name);
         const labelOf = a => a.label;
-        const inSync = before.apps.filter((a, i) => row?.has[i] && !got.synced.includes(labelOf(a))).map(reportName);
+        const inSync = before.apps.filter((a, i) => row?.has[i] && !got.synced.includes(labelOf(a)) && !got.replaced.includes(labelOf(a))).map(reportName);
         const synced = before.apps.filter(a => got.synced.includes(labelOf(a))).map(reportName);
+        const swapped = before.apps.filter(a => got.replaced.includes(labelOf(a))).map(reportName);
         const failed = before.apps.filter(a => got.failed.includes(labelOf(a))).map(reportName);
         const pending = before.apps.filter((a, i) => a.remote && !row?.has[i] && !got.synced.includes(labelOf(a))).map(reportName);
         components.push({ type: 10, content: [`${previewOf(name)} **${name}**`.trim(),
             inSync.length ? `-# **In-sync:** ${inSync.join(' · ')}` : null,
             synced.length ? `-# **Synced:** ${synced.join(' · ')}` : null,
+            swapped.length ? `-# **Replaced:** ${swapped.join(' · ')}` : null,
             failed.length ? `-# ${m.bad} **Failed:** ${failed.join(' · ')} (details in the log)` : null,
-            pending.length ? `-# ${m.wait} **Pending:** ${pending.join(' · ')}, within 10 minutes` : null].filter(Boolean).join('\n') });
+            pending.length ? `-# ${m.wait} **Pending:** ${pending.join(' · ')}, within an hour` : null].filter(Boolean).join('\n') });
     }
     if (byName.size > SYNC_SECTIONS_SHOWN) components.push({ type: 10, content: `-# …and ${byName.size - SYNC_SECTIONS_SHOWN} more` });
     const tail = [res.held?.length ? `${res.held.length} failed earlier today and are retried tomorrow` : null, noFile ? `${noFile} still need an original uploaded first (see No original)` : null].filter(Boolean);

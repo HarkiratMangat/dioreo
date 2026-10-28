@@ -402,7 +402,7 @@ function buildBotAdminBody(commands, client) {
     }
     if (has('/manage')) {
         sections.push(`### ${mentionCommand(client, '/manage')}\nThe data-entry panel — seasonal info, draws, calendar, patch notes, loadouts, banners, announcements, and the next-season draft\n`
-            + `-# 🔹 One subcommand per section: \`draws\` · \`calendar\` · \`patch-notes\` · \`gunsmiths mp\` · \`gunsmiths dmz\` · \`season titles\` · \`season draft\` · \`announcement\` · \`guide\`\n`
+            + `-# 🔹 One subcommand per section: \`draws\` · \`calendar\` · \`patch-notes\` · \`gunsmith mp\` · \`gunsmith dmz\` · \`season titles\` · \`season draft\` · \`announcement\` · \`guide\`\n`
             + `-# 🔹 \`[action]\` Jump straight to one of that section's own actions (not on \`season titles\` or \`guide\`)`);
     }
 

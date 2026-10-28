@@ -179,7 +179,7 @@ check('sectionOf maps every subcommand to the page it opens', () => {
     const subs = manageCommand.data.toJSON().options.flatMap(o => o.type === 2 ? o.options.map(x => `${o.name} ${x.name}`) : [o.name]);
     assert.deepStrictEqual([...subs].sort(), Object.keys(SECTION_OF_SUBCOMMAND).sort());
     const fake = (group, sub) => ({ options: { getSubcommandGroup: () => group, getSubcommand: () => sub } });
-    assert.strictEqual(manageCommand.sectionOf(fake('gunsmiths', 'dmz')), 'loadouts_dmz');
+    assert.strictEqual(manageCommand.sectionOf(fake('gunsmith', 'dmz')), 'loadouts_dmz');
     assert.strictEqual(manageCommand.sectionOf(fake(null, 'patch-notes')), 'patchnotes');
     assert.strictEqual(manageCommand.sectionOf(fake(null, null)), null);
 });

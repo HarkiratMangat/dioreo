@@ -182,8 +182,9 @@ function registerLifecycle(client, commands) {
             try {
                 const apps = require('../utils/emojiPanel').appsOfThisProcess();
                 const res = await require('../utils/emojiSync').runAutoSync(apps);
-                if (res.added?.length) {
-                    console.log(`🙂 Emoji auto-sync added ${res.added.length}: ${res.added.slice(0, 10).join(', ')}${res.added.length > 10 ? '…' : ''}`);
+                const changed = [...(res.added || []), ...(res.replaced || [])];
+                if (changed.length) {
+                    console.log(`🙂 Emoji auto-sync added ${res.added.length}, replaced ${res.replaced.length}: ${changed.slice(0, 10).join(', ')}${changed.length > 10 ? '…' : ''}`);
                     for (const a of apps) await require('../utils/emojiMap').refreshEmojiIds(a.client, { secondary: a.key === 'admin' }).catch(e => console.error('Emoji map refresh after auto-sync failed:', e?.message || e));
                 }
                 if (res.failed?.length) console.error(`Emoji auto-sync: ${res.failed.length} failed (each logged above)`);

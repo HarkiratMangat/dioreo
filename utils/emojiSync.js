@@ -2,7 +2,7 @@
 //
 // WHICH APPS: a process only holds its own tokens, so the dev bot writes to Dioreo (Dev) and Dioreo Admin (Dev), and the VM to Dioreo and Dioreo Admin; no token leaves its machine. Each bot leaves a status report of its two apps in Cloudinary (`emoji-status/<dev|prod>.json`), so /emojis shows all four. The prod ids come from utils/emojiMap.js's literals, read off the FILE: at boot the dev bot re-points the map's values to its own ids in place, so the live object no longer holds them.
 //
-// ONE UPLOAD, FOUR BOTS (Harkirat, 2026-10-25 21:14-21:16 EDT: "I don't want to upload each emoji like 4 separate times" / "I don't want it to like download the emoji from Discord, because we saw earlier that that messed with the quality"). Cloudinary's `emoji-originals/` is the source of truth: every file there belongs on every bot, and `runAutoSync` (at start-up and every 10 minutes, bot/lifecycle.js) uploads whatever its own two apps lack. The ONLY source is that original (Logos-&-Emojis/emoji-originals, put there by scripts/uploadEmojiOriginals.js or /emojis' Upload original): as is when it fits Discord's 256 KB, else Cloudinary's WebP of it, else 128px WebP of it. Never a Discord CDN copy: re-encoding those is what lost quality before (scripts/syncMissingDevEmojis.js's header), and an emoji with no original is listed under No original instead of being copied.
+// ONE UPLOAD, FOUR BOTS (Harkirat, 2026-10-25 21:14-21:16 EDT: "I don't want to upload each emoji like 4 separate times" / "I don't want it to like download the emoji from Discord, because we saw earlier that that messed with the quality"). Cloudinary's `emoji-originals/` is the source of truth: every file there belongs on every bot, and `runAutoSync` (at start-up and every hour, bot/lifecycle.js) uploads whatever its own two apps lack. The ONLY source is that original (Logos-&-Emojis/emoji-originals, put there by scripts/uploadEmojiOriginals.js or /emojis' Upload original): as is when it fits Discord's 256 KB, else Cloudinary's WebP of it, else 128px WebP of it. Never a Discord CDN copy: re-encoding those is what lost quality before (scripts/syncMissingDevEmojis.js's header), and an emoji with no original is listed under No original instead of being copied.
 const fs = require('fs');
 const path = require('path');
 
@@ -88,6 +88,57 @@ async function uploadMissing(client, row, { fetchFn = fetchImpl } = {}) {
     return { ok: false, error: tried.slice(-3).join('; ') || 'no source' };
 }
 
+// Swaps an app's emoji for its original's current file (2026-10-28 16:30 EDT, Harkirat: "i want the replace option as well"). Discord cannot edit an app emoji's image, so this is a delete and an upload; the new file is fetched and size-checked FIRST so a bad file never costs the old emoji, and if the upload still fails the name is simply missing and the next sync adds it. The emoji's id changes; every consumer re-points by name (utils/emojiMap.js refreshEmojiIds), but an old message still showing the old id goes blank. Returns { ok, via } or { ok: false, error }.
+async function replaceEmoji(client, row, oldId, { fetchFn = fetchImpl } = {}) {
+    const appId = client.application?.id ?? client.user?.id;
+    let ready = null;
+    const tried = [];
+    for (const c of sourceCandidates(row)) {
+        try {
+            const res = await fetchFn(c.url);
+            if (!res.ok) { tried.push(`${c.label}: ${res.status}`); continue; }
+            const mime = (res.headers.get('content-type') || '').split(';')[0] || 'image/png';
+            const buf = Buffer.from(await res.arrayBuffer());
+            if (!/^image\//.test(mime)) { tried.push(`${c.label}: ${mime}`); continue; }
+            if (buf.length > MAX_UPLOAD_BYTES) { tried.push(`${c.label}: ${Math.round(buf.length / 1024)} KB`); continue; }
+            ready = { c, buf, mime };
+            break;
+        } catch (e) { tried.push(`${c.label}: ${e.message}`); }
+    }
+    if (!ready) return { ok: false, error: tried.slice(-3).join('; ') || 'no source' };
+    try { await client.rest.delete(`/applications/${appId}/emojis/${oldId}`); } catch (e) { return { ok: false, error: `could not remove the old copy: ${e.message}` }; }
+    try {
+        await client.rest.post(`/applications/${appId}/emojis`, { body: { name: row.name, image: `data:${ready.mime};base64,${ready.buf.toString('base64')}` } });
+        return { ok: true, via: ready.c.label };
+    } catch (e) {
+        // The old copy is gone; try the other sources before giving up, and leave the name to the next sync if none works.
+        const again = await uploadMissing(client, row, { fetchFn });
+        return again.ok ? again : { ok: false, error: `the old copy is removed and the new one was refused (${again.error}); the next sync adds it` };
+    }
+}
+
+// ---- Which version of each original each app holds (models/EmojiApplied.js) ---- `load(appIds)` answers a Map of `${appId}:${name}` -> version, or null when the database cannot be read (the sync then never swaps); `save(entries)` upserts [{ appId, name, version }]. Both fail soft.
+const appliedStore = {
+    async load(appIds) {
+        const mongoose = require('mongoose');
+        if (mongoose.connection.readyState !== 1) return null;
+        try {
+            const docs = await require('../models/EmojiApplied').find({ appId: { $in: appIds } }).lean();
+            return new Map(docs.map(d => [`${d.appId}:${d.name}`, d.version]));
+        } catch (e) { console.error('Reading the emoji versions failed:', e?.message || e); return null; }
+    },
+    async save(entries) {
+        const mongoose = require('mongoose');
+        if (!entries.length || mongoose.connection.readyState !== 1) return false;
+        try {
+            await require('../models/EmojiApplied').bulkWrite(entries.map(e => ({
+                updateOne: { filter: { appId: e.appId, name: e.name }, update: { $set: { version: e.version, updatedAt: new Date() } }, upsert: true },
+            })));
+            return true;
+        } catch (e) { console.error('Saving the emoji versions failed:', e?.message || e); return false; }
+    },
+};
+
 // ---- The originals in Cloudinary (Harkirat, 2026-10-25 20:44 EDT: "if an emoji is on the prod app but missing from cloudinary, can i also upload the emoji in the command as a modal attach file form, where it then takes the emojis and uploads it to the cloudinary folder, including setting any custom name i want for it (and checking if that name already exists or not)") ----
 const safeCloudinaryError = (e) => e?.error?.message || e?.message || 'unknown error'; // never the raw object: it carries the account's key and secret (CLAUDE.md)
 const EMOJI_NAME = /^[A-Za-z0-9_]{2,32}$/; // Discord's rule for an emoji name
@@ -161,8 +212,8 @@ async function readOtherStatus({ fetchFn = fetchImpl } = {}) {
 // ---- The auto-sync: every original onto every app of this process that lacks it ---- Which originals go out: one the code names, or one some bot already has (this process's apps, or the other bot's in its last report). A file nobody uses is never pushed, so a stray (EditCalc, saved before the emoji was renamed Edit) or a retired one cannot spread by itself; a new emoji uploaded through /emojis lands on that bot's pair at once, and so reaches the other bot through its report. A failed upload is not retried for a day (DB_Database once failed on every attempt). Used by the timer in bot/lifecycle.js and by /emojis' Sync button, which share the lock so the two never upload the same emoji twice.
 let syncing = false;
 const failedUntil = new Map(); // `${appId}:${name}` -> ms
-async function runAutoSync(apps, { originals = null, other, now = Date.now(), writeStatusFn = writeStatus } = {}) {
-    if (syncing || !apps.length) return { skipped: true, added: [], failed: [] };
+async function runAutoSync(apps, { originals = null, other, now = Date.now(), writeStatusFn = writeStatus, store = appliedStore, fetchFn = fetchImpl } = {}) {
+    if (syncing || !apps.length) return { skipped: true, added: [], replaced: [], failed: [] };
     syncing = true;
     try {
         originals = originals || await listOriginals({ force: true });
@@ -172,22 +223,38 @@ async function runAutoSync(apps, { originals = null, other, now = Date.now(), wr
         const wanted = new Set(prodEmojisFromSource().keys());
         for (const l of lists) for (const e of l) wanted.add(e.name);
         for (const a of other?.apps || []) for (const e of a.emojis || []) wanted.add(e.name);
-        const added = [], failed = [], held = [];
+        const added = [], replaced = [], failed = [], held = [];
+        const appIds = apps.map(a => a.client.application?.id ?? a.client.user?.id);
+        const applied = await store.load(appIds); // null = no database: missing emojis are still added, nothing is swapped
+        const toRecord = [];
         for (const [i, app] of apps.entries()) {
-            const appId = app.client.application?.id ?? app.client.user?.id;
-            const have = new Set(lists[i].map(e => e.name));
+            const appId = appIds[i];
+            const have = new Map(lists[i].map(e => [e.name, e]));
             for (const [name, meta] of originals) {
-                if (have.has(name) || !EMOJI_NAME.test(name) || !wanted.has(name)) continue;
-                if ((failedUntil.get(`${appId}:${name}`) || 0) > now) { held.push(`${name} → ${app.label}`); continue; }
-                const res = await uploadMissing(app.client, { name, version: meta.version, knownIds: [] });
-                if (res.ok) added.push(`${name} → ${app.label}`);
-                else { failed.push(`${name} → ${app.label}`); failedUntil.set(`${appId}:${name}`, now + 24 * 60 * 60 * 1000); console.error(`Emoji sync: ${name} to ${app.label} failed: ${res.error}`); }
+                if (!EMOJI_NAME.test(name) || !wanted.has(name)) continue;
+                const key = `${appId}:${name}`;
+                const exists = have.get(name);
+                if (exists && !applied) continue;
+                if (exists) {
+                    const seen = applied.get(key);
+                    // First meeting of this app and this original: note the version, swap nothing (see models/EmojiApplied.js).
+                    if (seen === undefined) { if (meta.version) toRecord.push({ appId, name, version: meta.version }); continue; }
+                    if (!meta.version || meta.version <= seen) continue;
+                }
+                if ((failedUntil.get(key) || 0) > now) { held.push(`${name} → ${app.label}`); continue; }
+                const row = { name, version: meta.version, knownIds: [] };
+                const res = exists ? await replaceEmoji(app.client, row, exists.id, { fetchFn }) : await uploadMissing(app.client, row, { fetchFn });
+                if (res.ok) {
+                    (exists ? replaced : added).push(`${name} → ${app.label}`);
+                    if (meta.version) toRecord.push({ appId, name, version: meta.version });
+                } else { failed.push(`${name} → ${app.label}`); failedUntil.set(key, now + 24 * 60 * 60 * 1000); console.error(`Emoji sync: ${name} to ${app.label} failed: ${res.error}`); }
             }
         }
+        await store.save(toRecord);
         for (const app of apps) app.emojis = await listAppEmojis(app.client);
         await writeStatusFn(apps);
-        return { added, failed, held };
+        return { added, replaced, failed, held };
     } finally { syncing = false; }
 }
 
-module.exports = { prodEmojisFromSource, listAppEmojis, buildRows, sourceCandidates, uploadMissing, listOriginals, uploadOriginal, safeCloudinaryError, writeStatus, readOtherStatus, runAutoSync, MAX_UPLOAD_BYTES, MAX_ORIGINAL_BYTES, EMOJI_NAME, ORIGINALS_FOLDER };
+module.exports = { prodEmojisFromSource, listAppEmojis, buildRows, sourceCandidates, uploadMissing, replaceEmoji, appliedStore, listOriginals, uploadOriginal, safeCloudinaryError, writeStatus, readOtherStatus, runAutoSync, MAX_UPLOAD_BYTES, MAX_ORIGINAL_BYTES, EMOJI_NAME, ORIGINALS_FOLDER };

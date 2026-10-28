@@ -832,17 +832,17 @@ function prefillModal(modal, values) {
 }
 
 // ==========================================
-// THE SLASH COMMAND: ONE SUBCOMMAND PER SECTION (2026-10-28 12:11 EDT, Harkirat: "give the other /manage panels their own subcommands: /manage draws, /manage gunsmiths mp, /manage gunsmiths dmz, etc.")
+// THE SLASH COMMAND: ONE SUBCOMMAND PER SECTION (2026-10-28 12:11 EDT, Harkirat: "give the other /manage panels their own subcommands: /manage draws, /manage gunsmith mp, /manage gunsmith dmz, etc.")
 // ==========================================
 // It was one command with a `content` choice option and an `action` autocomplete scoped by it (renamed `page` -> `section` -> `data_for` -> `content` over 2026-07-12 to 2026-08-15, each time because the name did not say what was being picked). A subcommand says it in the command itself, and the scoped autocomplete no longer needs a sibling option to know the section: the subcommand IS the section (SECTION_OF_SUBCOMMAND below; handlers/router.js's autocomplete reads it through sectionOf()).
 //
-// Each data section keeps `action` (autocomplete, opens one of that section's own actions straight away; stage 3 of the /manage decomposition, 2026-08-14) and `visibility` LAST (Hidden by default, as this panel always was). Season: Titles & Deadlines opens its pop-up and so takes no options; Guide and Emojis take only visibility. "Start New Season" still has NO subcommand on purpose: it is destructive enough that the extra step through the panel dropdown, with its warning description, is intended. The gunsmith group is spelled `gunsmiths` as he wrote it, unlike the public /gunsmith.
+// Each data section keeps `action` (autocomplete, opens one of that section's own actions straight away; stage 3 of the /manage decomposition, 2026-08-14) and `visibility` LAST (Hidden by default, as this panel always was). Season: Titles & Deadlines opens its pop-up and so takes no options; Guide and Emojis take only visibility. "Start New Season" still has NO subcommand on purpose: it is destructive enough that the extra step through the panel dropdown, with its warning description, is intended. The gunsmith group is spelled as the public /gunsmith is (his call, 2026-10-28 16:25 EDT).
 const SECTION_OF_SUBCOMMAND = {
     'draws': 'draws',
     'calendar': 'calendar',
     'patch-notes': 'patchnotes',
-    'gunsmiths mp': 'loadouts_mp',
-    'gunsmiths dmz': 'loadouts_dmz',
+    'gunsmith mp': 'loadouts_mp',
+    'gunsmith dmz': 'loadouts_dmz',
     'season titles': 'season_titlesdeadlines',
     'season draft': 'seasondraft',
     'announcement': 'announcement',
@@ -876,7 +876,7 @@ function buildManageCommandData() {
         .addSubcommand(section('draws', 'New and returning draws'))
         .addSubcommand(section('calendar', 'Calendar events'))
         .addSubcommand(section('patch-notes', 'Season patch notes'))
-        .addSubcommandGroup(group => group.setName('gunsmiths').setDescription('Gunsmith builds')
+        .addSubcommandGroup(group => group.setName('gunsmith').setDescription('Gunsmith builds')
             .addSubcommand(section('mp', 'Multiplayer builds'))
             .addSubcommand(section('dmz', 'DMZ builds')))
         .addSubcommandGroup(group => group.setName('season').setDescription('Season settings')
