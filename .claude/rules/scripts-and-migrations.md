@@ -11,6 +11,7 @@ paths:
 
 - `migrateBuildsToMongo.js`, `applyBadgesBulk.js` → `.claude/rules/loadouts.md`; `createPlaceholderLoadouts.js` → `docs/reference/scripts-catalogue.md`
 - `backfillLoadoutMetadata.js`, `backfillPatchMetadata.js`, `createCloudinaryMetadataFields.js` → `.claude/rules/loadout-images-and-metadata.md`
+- `setSeasonDates.js` (added 2026-10-28) — gives a past `/patch notes` season its own Battle Pass start and end (`patchNotes[].seasonStart/seasonEnd`), through the `patchnote.setSeasonDates` op so it is revertible; dry run unless `--write`. Promote to Live saves them itself from now on → `commands/patchnotes.js` + `core/ops/season.js`
 - `loadoutPanels.test.js` — the panels /manage's loadout flow answers with (`utils/loadoutPanels.js`): the saved build with its picture, what changed, and Open / Edit again / Revert; the delete, bulk and catalogue panels → `.claude/rules/manage-panel.md`
 - `migrateLoadoutKeys.js` and `loadoutForm.test.js` (added 2026-10-26 11:17 EDT) — MP loadout pictures keyed by gunsmith code (`WEAPON-CODE`, dev keys `DEV-`), `Build N` names with a separate `label`, and the five-field /manage pop-up. The migration is a dry run by default, needs `--env-file`, refuses any database but `diors-builds-dev` without `--prod`, copies pictures (never moves them) and lists any whose `Gunsmith_Code` metadata disagrees with its build; `--write` saves a backup of the previous values first → `.claude/rules/loadout-images-and-metadata.md`
 - `backfillLoadoutSlots.js`, `test-vertex-extract.js` → `.claude/rules/autobuild.md`
