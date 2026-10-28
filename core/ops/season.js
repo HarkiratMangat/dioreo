@@ -8,6 +8,7 @@
 const { registerEntity } = require('./index');
 const { splitTitleDate, parseAdminDate, parseAdminDateRange, parseBulkDrawList, parseBulkEvents } = require('../../utils/adminParser');
 const { resolveThumbnailsForDraws } = require('../../utils/bulkMerge');
+const { seasonEntryIndex } = require('../../commands/patchnotes');
 const { syncPatchEntryMetadata } = require('../../utils/patchNotesCache');
 const { cleanPatchTitle } = require('../../commands/patchnotes');
 const SeasonalData = require('../../models/SeasonalData');
@@ -195,18 +196,27 @@ registerEntity('season', {
             const counts = { newDraws: $set.newDraws.length, returningDraws: $set.returningDraws.length, calendar: $set.calendar.length };
             const newTitle = $set.currentSeasonTitle || before.currentSeasonTitle;
             let patchPrior = null;
-            if (draft.currentSeasonTitle && before.patchNotes.length > 0) {
-                const last = before.patchNotes[before.patchNotes.length - 1];
+            const last = before.patchNotes[before.patchNotes.length - 1];
+            if (draft.currentSeasonTitle && last) {
                 patchPrior = { elementId: String(last._id), title: last.title, emoji: last.emoji || '' };
                 await SeasonalData.updateOne({ ...DOC, 'patchNotes._id': last._id }, { $set: { 'patchNotes.$.title': newTitle, 'patchNotes.$.emoji': $set.currentSeasonEmoji } }, { session });
+            }
+            // The outgoing season keeps its Battle Pass dates on its own patch-notes entry (2026-10-28, Harkirat: "The BP start/end is the season start/end"), since the top-level bpStart/bpEnd now belong to the new season and /patch notes' dropdown would otherwise only have release dates for it. Its end is its Battle Pass end, else (TBD) the new season's start, else today. Skipped when that entry is the one just renamed to the new season above: it is the new season now.
+            let datesPrior = null;
+            const outgoingAt = seasonEntryIndex([...before.patchNotes].reverse(), before.currentSeasonTitle);
+            const outgoing = outgoingAt === -1 ? null : before.patchNotes[before.patchNotes.length - 1 - outgoingAt];
+            if (outgoing && before.bpStart && !(patchPrior && String(outgoing._id) === patchPrior.elementId)) {
+                const seasonEnd = (!before.bpEndTBD && before.bpEnd) || draft.bpStart || new Date();
+                datesPrior = { elementId: String(outgoing._id), seasonStart: outgoing.seasonStart || null, seasonEnd: outgoing.seasonEnd || null };
+                await SeasonalData.updateOne({ ...DOC, 'patchNotes._id': outgoing._id }, { $set: { 'patchNotes.$.seasonStart': before.bpStart, 'patchNotes.$.seasonEnd': seasonEnd } }, { session });
             }
             return {
                 ok: true,
                 change: { action: 'promote', model: 'SeasonalData', target: newTitle, summary: `Promoted draft to live: "${newTitle}"` },
-                applied: { prior, patchPrior, counts }
+                applied: { prior, patchPrior, datesPrior, counts }
             };
         },
-        invert: (c) => ({ type: 'season.restoreSnapshot', payload: { ...c.applied.prior, ...(c.applied.patchPrior ? { __patchTitleRestore: c.applied.patchPrior } : {}) } })
+        invert: (c) => ({ type: 'season.restoreSnapshot', payload: { ...c.applied.prior, ...(c.applied.patchPrior ? { __patchTitleRestore: c.applied.patchPrior } : {}), ...(c.applied.datesPrior ? { __patchDatesRestore: c.applied.datesPrior } : {}) } })
     },
 
     // Not a registry action -- exists solely as promoteDraft's/startNew's inverse. Symmetric: its own apply() snapshots exactly the top-level fields it is about to overwrite (plus, optionally, one patch-notes title) and its invert() hands back another restoreSnapshot carrying that snapshot -- so reverting a revert stays correctly revertible without a second op type.
@@ -215,7 +225,7 @@ registerEntity('season', {
         validate: (op) => (op.payload && typeof op.payload === 'object') ? { ok: true, errors: [], normalized: op } : { ok: false, errors: ['Nothing to restore.'] },
         preview: (op, live) => ({ before: {}, after: op.payload }),
         apply: async (op, { session }) => {
-            const { __patchTitleRestore, ...fields } = op.payload;
+            const { __patchTitleRestore, __patchDatesRestore, ...fields } = op.payload;
             const before = await SeasonalData.findOne(DOC).lean().session(session);
             const prior = {};
             for (const key of Object.keys(fields)) prior[key] = before[key];
@@ -230,13 +240,22 @@ registerEntity('season', {
                     await SeasonalData.updateOne({ ...DOC, 'patchNotes._id': __patchTitleRestore.elementId }, { $set: { 'patchNotes.$.title': __patchTitleRestore.title, ...(hasEmoji ? { 'patchNotes.$.emoji': __patchTitleRestore.emoji } : {}) } }, { session });
                 }
             }
+            // The outgoing season's dates that Promote to Live saved on its entry (2026-10-28), put back the same way.
+            let datesPrior = null;
+            if (__patchDatesRestore) {
+                const entry = before.patchNotes.find(p => String(p._id) === __patchDatesRestore.elementId);
+                if (entry) {
+                    datesPrior = { elementId: __patchDatesRestore.elementId, seasonStart: entry.seasonStart || null, seasonEnd: entry.seasonEnd || null };
+                    await SeasonalData.updateOne({ ...DOC, 'patchNotes._id': __patchDatesRestore.elementId }, { $set: { 'patchNotes.$.seasonStart': __patchDatesRestore.seasonStart, 'patchNotes.$.seasonEnd': __patchDatesRestore.seasonEnd } }, { session });
+                }
+            }
             return {
                 ok: true,
                 change: { action: 'edit', model: 'SeasonalData', target: 'season snapshot', summary: 'Restored a prior season snapshot' },
-                applied: { prior, patchPrior }
+                applied: { prior, patchPrior, datesPrior }
             };
         },
-        invert: (c) => ({ type: 'season.restoreSnapshot', payload: { ...c.applied.prior, ...(c.applied.patchPrior ? { __patchTitleRestore: c.applied.patchPrior } : {}) } })
+        invert: (c) => ({ type: 'season.restoreSnapshot', payload: { ...c.applied.prior, ...(c.applied.patchPrior ? { __patchTitleRestore: c.applied.patchPrior } : {}), ...(c.applied.datesPrior ? { __patchDatesRestore: c.applied.datesPrior } : {}) } })
     },
 
     'season.discardDraft': {

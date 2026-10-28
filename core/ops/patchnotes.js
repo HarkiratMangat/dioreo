@@ -211,6 +211,38 @@ registerEntity('patchnotes', {
         })
     },
 
+    // Not a /manage action (2026-10-28): a season's own dates, its Battle Pass start and end, on its entry. Promote to Live saves them for the outgoing season from now on (core/ops/season.js); this fills in seasons that rotated before that, run by scripts/setSeasonDates.js. Both null clears them, which is what its own inverse does for an entry that had none.
+    'patchnote.setSeasonDates': {
+        page: 'patchnotes', tier: 1,
+        validate: (op) => {
+            if (!op.target?.elementId) return { ok: false, errors: ['No entry to date.'] };
+            const { seasonStart, seasonEnd } = op.payload || {};
+            if (seasonStart == null && seasonEnd == null) return { ok: true, errors: [], normalized: { ...op, payload: { seasonStart: null, seasonEnd: null } } };
+            const start = new Date(seasonStart), end = new Date(seasonEnd);
+            if (isNaN(start) || isNaN(end)) return { ok: false, errors: ['A season needs both a start and an end date.'] };
+            if (start >= end) return { ok: false, errors: ['The season must start before it ends.'] };
+            return { ok: true, errors: [], normalized: { ...op, payload: { seasonStart: start, seasonEnd: end } } };
+        },
+        preview: (op, live) => {
+            const cur = live.patchNotes.find(p => String(p._id) === op.target.elementId);
+            return { before: { seasonStart: cur?.seasonStart || null, seasonEnd: cur?.seasonEnd || null }, after: op.payload };
+        },
+        apply: async (op, { session }) => {
+            const before = await SeasonalData.findOne(DOC).select(PATH).lean().session(session);
+            const cur = before[PATH].find(p => String(p._id) === op.target.elementId);
+            if (!cur) return { ok: false, reason: 'missing' };
+            const expect = { seasonStart: cur.seasonStart || null, seasonEnd: cur.seasonEnd || null };
+            const res = await updateElement({ Model: SeasonalData, docFilter: DOC, arrayPath: PATH, elementId: op.target.elementId, expect, set: op.payload, session });
+            if (!res.ok) return res;
+            return {
+                ok: true,
+                change: { action: 'edit', model: 'SeasonalData', target: displayTitle(cur), summary: `Set the season dates of "${displayTitle(cur)}"` },
+                applied: { elementId: op.target.elementId, prior: expect }
+            };
+        },
+        invert: (c) => ({ type: 'patchnote.setSeasonDates', target: { elementId: c.applied.elementId }, payload: c.applied.prior })
+    },
+
     'patchnote.purge': {
         action: 'patchnotes:purge', tier: 3,
         validate: () => ({ ok: true, errors: [], normalized: {} }),

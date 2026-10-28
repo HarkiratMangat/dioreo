@@ -72,5 +72,31 @@ t("the live season reads its Battle Pass dates and a newer one reads Upcoming Se
     assert.strictEqual(descriptions({ ...bp, ...staged })[0], 'Nov 4, 2026 – Jan 6, 2027');
 });
 
+t("a past season with its own saved dates shows them; without, release to next release (2026-10-28)", () => {
+    const at = (n, iso, extra) => ({ ...patch(n), releaseDate: new Date(iso), ...extra });
+    const s8 = { seasonStart: new Date('2026-08-27T00:00:00Z'), seasonEnd: new Date('2026-09-24T00:00:00Z') };
+    const notes = [at(7, '2026-07-22T10:00:00Z'), at(8, '2026-08-25T10:00:00Z', s8), at(9, '2026-09-23T10:00:00Z')];
+    const s = select(pn.buildContainer({ patchNotes: notes, currentSeasonTitle: 'Season 9', bpStart: new Date('2026-09-24T00:00:00Z') }));
+    assert.deepStrictEqual(s.options.map(o => o.description), ['Sep 24, 2026 – Active', 'Aug 27 – Sep 24, 2026', 'Jul 22 – Aug 25, 2026']);
+});
+t('seasonEntryIndex finds a season by number, else by whole title, and the first in the order given', () => {
+    const list = [patch(9), patch(8), { ...patch(8), _id: { toString: () => 'older8' } }];
+    assert.strictEqual(pn.seasonEntryIndex(list, 'Season 8 — Against All Fate'), 1);
+    assert.strictEqual(pn.seasonEntryIndex(list, 'season 9'), 0);
+    assert.strictEqual(pn.seasonEntryIndex(list, 'Season 3'), -1);
+    assert.strictEqual(pn.seasonEntryIndex(list, ''), -1);
+    assert.strictEqual(pn.seasonEntryIndex([{ title: 'Halloween' }], 'halloween'), 0);
+});
+t('setSeasonDates validates a start before its end, and both null clears', () => {
+    const ops = require('../core/ops');
+    const v = op => ops.resolveOp('patchnote.setSeasonDates').validate({ type: 'patchnote.setSeasonDates', target: { elementId: 'x' }, payload: op });
+    assert.strictEqual(v({ seasonStart: '2026-08-27', seasonEnd: '2026-09-24' }).ok, true);
+    assert.strictEqual(v({ seasonStart: '2026-09-24', seasonEnd: '2026-08-27' }).ok, false);
+    assert.strictEqual(v({ seasonStart: '2026-09-24' }).ok, false);
+    assert.deepStrictEqual(v({ seasonStart: null, seasonEnd: null }).normalized.payload, { seasonStart: null, seasonEnd: null });
+    const inv = ops.resolveOp('patchnote.setSeasonDates').invert({ applied: { elementId: 'x', prior: { seasonStart: null, seasonEnd: null } } });
+    assert.strictEqual(v(inv.payload).ok, true, 'its own inverse validates');
+});
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);
