@@ -72,12 +72,16 @@ t('a stored emoji is re-pointed by NAME at the booted app, as the map\'s own ids
 
 (async () => {
     // refreshEmojiIds against a fake app whose S10Test has another id, the way the dev app's copies do.
-    const client = { application: { id: 'app' }, rest: { get: async () => ({ items: [{ name: 'S10Test', id: '999', animated: true }] }) } };
+    const client = { application: { id: 'app' }, rest: { get: async () => ({ items: [{ name: 'S10Test', id: '999', animated: true }, { name: 'S107thAnniversary', id: '1000', animated: true }] }) } };
     const orig = { ...emojis };
     await emojis.refreshEmojiIds(client);
     t('after the sync the dev copy\'s id is used, and an unknown name is left alone', () => {
         assert.strictEqual(emojis.repoint(S10), '<a:S10Test:999>');
         assert.strictEqual(emojis.repoint('<a:Nope:1>'), '<a:Nope:1>');
+    });
+    t('Season 10\'s emoji is found by name on the booted app, no id in the map (2026-10-28)', () => {
+        assert.strictEqual(seasonEmojiFor('Season 10 — Test', ''), '<a:S107thAnniversary:1000>');
+        assert.strictEqual(seasonEmojiFor('Season 11 — Test', ''), null);
     });
     Object.assign(emojis, orig);
     console.log(`\n${passed} passed, ${failed} failed`);

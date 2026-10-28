@@ -14,10 +14,14 @@ function splitSeasonEmoji(raw) {
     return m ? { emoji: m[1], title: text.slice(m[0].length).trim() } : { emoji: '', title: text.trim() };
 }
 
+// Seasons whose emoji is looked up by NAME on the running app instead of a hardcoded id (2026-10-28 14:09 UTC, Harkirat uploaded Season 10's to the prod app and gave its name). No id to get wrong: the boot sync's live list supplies it, and a season whose emoji is not on the app yet gets none rather than a dead mention.
+const SEASON_EMOJI_BY_NAME = { 10: 'S107thAnniversary' };
+
 function seasonEmojiFor(title, stored) {
     if (stored) return emojis.repoint(stored);
     const m = /season\s*(\d+)/i.exec(title || '');
-    return m ? emojis[`season${m[1]}`] || null : null;
+    if (!m) return null;
+    return emojis[`season${m[1]}`] || (SEASON_EMOJI_BY_NAME[m[1]] && emojis.byName(SEASON_EMOJI_BY_NAME[m[1]])) || null;
 }
 
 // Puts the emoji in front of buildTitleBlock's caption line, OUTSIDE the bold-italic lettering, which would mangle an emoji's name and id.

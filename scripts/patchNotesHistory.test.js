@@ -58,5 +58,17 @@ t("each season's dates are its description: the newest reads Current Season, an 
     assert.ok(s.options.every(o => o.description.length <= 100), 'within a description\'s 100 characters');
 });
 
+t("the live season reads its Battle Pass dates and a newer one reads Upcoming Season (2026-10-28)", () => {
+    const at = (n, iso) => ({ ...patch(n), releaseDate: new Date(iso) });
+    const notes = [at(8, '2026-08-25T10:00:00Z'), at(9, '2026-09-23T10:00:00Z'), at(10, '2026-10-28T10:00:00Z')];
+    const descriptions = extra => select(pn.buildContainer({ patchNotes: notes, currentSeasonTitle: 'Season 9 — Vampires vs Werewolves', ...extra })).options.map(o => o.description);
+    const bp = { bpStart: new Date('2026-09-23T00:00:00Z'), bpEnd: new Date('2026-11-04T00:00:00Z') };
+    assert.deepStrictEqual(descriptions(bp), ['Upcoming Season', 'Sep 23 – Nov 4, 2026', 'Aug 25 – Sep 23, 2026']);
+    assert.strictEqual(descriptions({ ...bp, bpEndTBD: true })[1], 'Sep 23, 2026 – Active');
+    assert.strictEqual(descriptions({})[1], 'Current Season', 'no Battle Pass start: no dates to show');
+    const staged = { draft: { active: true, bpStart: new Date('2026-11-04T00:00:00Z'), bpEnd: new Date('2027-01-06T00:00:00Z') } };
+    assert.strictEqual(descriptions({ ...bp, ...staged })[0], 'Nov 4, 2026 – Jan 6, 2027');
+});
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);
