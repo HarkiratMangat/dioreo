@@ -12,8 +12,7 @@ function parseEmoji(mention) {
 
 // Every mention string below is written with the PRODUCTION app's emoji ids, which stay the literal source of truth in git. The NAMES must match the apps' emoji names, because refreshEmojiIds() re-points by name: twelve /manage emojis were renamed with a DB_ prefix by Harkirat (2026-10-18 11:59 EDT, names only, same images), which is why they read DB_* here. They are also the fallback if the sync below can't run.
 const emojis = {
-    // /settings' "Made with love by @dior" footer -- replaced dioreo with diorHeart (2026-07-12, same day, Harkirat's follow-up correction). Animated this time (a: prefix).
-    // Re-uploaded as DiorswrldHeart (2026-10-28, Harkirat uploaded it to prod through /emojis); the key keeps its name so every footer follows.
+    // /settings' "Made with love by @dior" footer -- replaced dioreo with diorHeart (2026-07-12, same day, Harkirat's follow-up correction). Animated this time (a: prefix). Re-uploaded as DiorswrldHeart (2026-10-28, Harkirat uploaded it to prod through /emojis); the key keeps its name so every footer follows.
     diorHeart: '<a:DiorswrldHeart:1564877429544063088>',
     mythic: '<:7Mythic_CODM:1523190107614744757>',
     legendary: '<:5Legendary_CODM:1523190105152688158>',
@@ -112,8 +111,7 @@ const emojis = {
     serverSettings: '<a:ServerSettings:1536468904996774008>',
     // /manage's Bulk Format Guide headings (added 2026-07-31 17:20 EDT) -- both the rich guide panel's own top header (utils/manageGuides.js) and every page's "Guide" section heading text.
     guide: '<a:DB_Guide:1532894836301238477>',
-    // The calculator's "covered" and "finished" lines (2026-10-18 13:05 EDT, Harkirat: "swap the icon used beside the 'your balance covers this' line").
-    // /emojis' result messages (2026-10-28, Harkirat uploaded all three to prod): Accept = done now, Pending = the other bot adds it within 10 minutes, Deny = failed.
+    // The calculator's "covered" and "finished" lines (2026-10-18 13:05 EDT, Harkirat: "swap the icon used beside the 'your balance covers this' line"). /emojis' result messages (2026-10-28, Harkirat uploaded all three to prod): Accept = done now, Pending = the other bot adds it within 10 minutes, Deny = failed.
     accept: '<:Accept:1565022886807208036>',
     pending: '<:Pending:1565022888229339166>',
     deny: '<:Deny:1565022884638757075>',

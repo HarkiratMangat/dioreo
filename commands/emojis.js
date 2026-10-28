@@ -95,8 +95,7 @@ function buildEmojiPanel({ rows, apps, page = 0, filter = 'all', note = null, se
     return [{ type: 17, accent_color: ACCENT, components }];
 }
 
-// ---- The result messages after an Upload original or a Sync (his mock-ups, 2026-10-28 11:43 EDT) ----
-// The names a result calls each bot: the prod pair by their own names, the dev pair as Dev and Dev Admin.
+// ---- The result messages after an Upload original or a Sync (his mock-ups, 2026-10-28 11:43 EDT) ---- The names a result calls each bot: the prod pair by their own names, the dev pair as Dev and Dev Admin.
 const reportName = (a) => a.env === 'dev' ? (a.short || a.label) : (a.key === 'admin' ? 'Dioreo Admin' : 'Dioreo');
 // Status marks: Accept (done now), Check (already had it), Pending, Deny.
 const marks = () => ({ done: emojis.accept, had: emojis.check, wait: emojis.pending, bad: emojis.deny });
