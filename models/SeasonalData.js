@@ -35,6 +35,9 @@ const SeasonalDataSchema = new mongoose.Schema({
         // /manage "Add New Season"/"Past Seasons" edit) -- lets Harkirat set a placeholder season title on a patch entry when the real season title isn't finalized yet (e.g. patch notes released before the new season's name is announced). Blank = no override, falls back to `title` above. Every display site must read `titleOverride || title`, never `title` alone -- see patchnotes.js's exported `displayTitle()`.
         description: { type: String, default: '' }, // Optional extra info; left blank shows nothing
         releaseDate: { type: Date },
+        // The season's own dates, its Battle Pass start and end (2026-10-28, Harkirat: "The BP start/end is the season start/end"). Only the LIVE season's Battle Pass dates sit at the top of this document, so they are copied onto the outgoing season's entry when Promote to Live rotates it (core/ops/season.js), and /patch notes' dropdown reads them for a past season. Blank = the entry predates this, and the dropdown falls back to release date to next release date.
+        seasonStart: { type: Date },
+        seasonEnd: { type: Date },
         // Cloudinary URLs (2026-07-13) -- re-hosted from whatever external URL the admin typed, via utils/patchNotesCache.js, keyed by this subdocument's own `_id` (see that file for why: season-based retention, not the draws' 45-day age window -- an image stays cached as long as this entry is still one of the 5 most recent in patchNotes[], pruned once it rolls off /patch notes' own history dropdown regardless of age).
         images: [{ type: String }]
     }],

@@ -25,7 +25,18 @@ function cleanPatchTitle(title) {
     return title.replace(/^balance changes for\s*/i, '').trim();
 }
 
-// Resolves a patch entry's actual displayed title -- `titleOverride` (2026-07-24, /manage "Add New Season"/"Past Seasons") wins when set (an admin-typed placeholder, e.g. patch notes released before the new season's real name is announced), otherwise falls back to the auto-synced `title`. Every display site (here, handlers/router.js's autocomplete, the manage-panel dropdown) should call this instead of reading `patch.title` directly, so the override can never be silently ignored somewhere. An emoji typed in front of a patch entry's own title is left out of the title (2026-10-19 09:30 EDT): a select option's label is plain text and would show its raw <a:name:id>. seasonEmoji() below picks it up instead.
+// Resolves a patch entry's actual displayed title -- `titleOverride` (2026-07-24, /manage "Add New Season"/"Past Seasons") wins when set (an admin-typed placeholder, e.g. patch notes released before the new season's real name is announced), otherwise falls back to the auto-synced `title`. Every display site (here, handlers/router.js's autocomplete, the manage-panel dropdown) should call this instead of reading `patch.title` directly, so the override can never be silently ignored somewhere. An emoji typed in front of a patch entry's own title is left out of the title (2026-10-19 09:30 EDT): a select option's label is plain text and would show its raw <a:name:id>. seasonEmoji() below picks it up instead. The entry that IS a given season: the season number decides when the title has one, else the whole title. `entries` is searched in the order given, so pass newest-first to get the newest match. Shared by the dropdown below and Promote to Live (core/ops/season.js), so the two always agree on which entry is the live season.
+function seasonEntryIndex(entries, seasonTitle) {
+    const wanted = displayTitle({ title: seasonTitle || '' });
+    if (!wanted) return -1;
+    const number = /season\s*(\d+)/i.exec(wanted)?.[1];
+    return entries.findIndex(p => {
+        const title = displayTitle(p);
+        const n = /season\s*(\d+)/i.exec(title)?.[1];
+        return number ? n === number : title.toLowerCase() === wanted.toLowerCase();
+    });
+}
+
 function displayTitle(patch) {
     return cleanPatchTitle(splitSeasonEmoji(patch.titleOverride || patch.title).title);
 }
@@ -123,7 +134,8 @@ function findPatchByQuery(patchNotes, query) {
     const newest = (patchNotes || []).slice().reverse();
     const num = /^\D*?(\d+)\D*$/.exec(q);
     if (num) {
-        const hit = newest.find(p => new RegExp(`season\\s*${num[1]}\\b`, 'i').test(displayTitle(p)));
+        // The title's own season number, compared as a number: no RegExp is built from the query (CodeQL's regex-injection rule flagged the old `new RegExp(...num...)` once scripts/setSeasonDates.js fed it a command-line argument, though only digits ever reached it).
+        const hit = newest.find(p => Number(/season\s*(\d+)/i.exec(displayTitle(p))?.[1]) === Number(num[1]));
         if (hit) return hit;
     }
     return newest.find(p => fuzzyMatch(q, displayTitle(p))) || null;
@@ -201,26 +213,22 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
 
     // Build historical dropdown options A season opened from search that is older than the 12 shown joins the list, so the dropdown still shows it picked.
     const listed = recentPatches.some(p => p._id.toString() === activePatch._id.toString()) ? recentPatches : [...recentPatches, activePatch];
-    // Each season's dates as its description (2026-10-25 14:45-15:09 EDT, Harkirat's review). 2026-10-28 14:08 UTC, Harkirat: the Battle Pass start/end IS the season's start/end, and a season whose notes are out early is not "Current". So the LIVE season (the one the Season Titles setting names) reads its Battle Pass range, "Sep 23 – Active" while no end is set; a season newer than it reads its staged draft range or "Upcoming Season"; an older one runs from its own release date to the next season's ("Aug 25 – Sep 23, 2026"), the only dates a past season has. Patch-note release dates were what this showed before, which made the live Season 9 read as ending the day Season 10's notes came out.
+    // Each season's dates as its description (2026-10-25 14:45-15:09 EDT, Harkirat's review). 2026-10-28 14:08 UTC, Harkirat: the Battle Pass start/end IS the season's start/end, and a season whose notes are out early is not "Current". So the LIVE season (the one the Season Titles setting names) reads its Battle Pass start and "Active", "Sep 23, 2026 – Active", until its end has passed; a season newer than it reads its staged draft range or "Upcoming Season"; an older one runs from its own release date to the next season's ("Aug 25 – Sep 23, 2026"), the only dates a past season has. Patch-note release dates were what this showed before, which made the live Season 9 read as ending the day Season 10's notes came out.
     const shortDate = (d, withYear) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', ...(withYear ? { year: 'numeric' } : {}), timeZone: 'UTC' });
     const dateRange = (start, end) => {
         const sameYear = new Date(start).getUTCFullYear() === new Date(end).getUTCFullYear();
         return `${shortDate(start, !sameYear)} – ${shortDate(end, true)}`;
     };
     // The live season: the newest entry whose season number (else whole title) matches the Season Titles setting; no setting, or no match, keeps the old reading that the newest is live.
-    const liveTitle = displayTitle({ title: seasonalDoc.currentSeasonTitle || '' });
-    const liveNumber = /season\s*(\d+)/i.exec(liveTitle)?.[1];
-    const matchedLive = !liveTitle ? -1 : newestFirst.findIndex(p => {
-        const title = displayTitle(p);
-        const number = /season\s*(\d+)/i.exec(title)?.[1];
-        return liveNumber ? number === liveNumber : title.toLowerCase() === liveTitle.toLowerCase();
-    });
+    const matchedLive = seasonEntryIndex(newestFirst, seasonalDoc.currentSeasonTitle);
     const liveAt = matchedLive === -1 ? 0 : matchedLive;
     const seasonRange = (patch) => {
         const at = newestFirst.findIndex(p => p._id.toString() === patch._id.toString());
         if (at === liveAt) {
             const { bpStart, bpEnd, bpEndTBD } = seasonalDoc;
-            if (bpStart) return bpEnd && !bpEndTBD ? dateRange(bpStart, bpEnd) : `${shortDate(bpStart, true)} – Active`;
+            // "Oct 15, 2026 – Active" while the season runs, even with its end date set (2026-10-28 18:20 UTC, Harkirat: Season 9 "shows the end date even tho it should be showing Active"; his first ask was "the season 9 start date dash active"). Only once that end has passed with no newer season promoted does it read as a closed range.
+            const ended = bpEnd && !bpEndTBD && new Date(bpEnd).getTime() <= Date.now();
+            if (bpStart) return ended ? dateRange(bpStart, bpEnd) : `${shortDate(bpStart, true)} – Active`;
             return 'Current Season';
         }
         if (at < liveAt) {
@@ -228,6 +236,8 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
             if (draft?.active && draft.bpStart && draft.bpEnd && !draft.bpEndTBD) return dateRange(draft.bpStart, draft.bpEnd);
             return 'Upcoming Season';
         }
+        // A past season's own Battle Pass dates when its entry carries them (saved by Promote to Live, or set by scripts/setSeasonDates.js), else release date to the next season's release date.
+        if (patch.seasonStart && patch.seasonEnd) return dateRange(patch.seasonStart, patch.seasonEnd);
         const start = patch.releaseDate, end = newestFirst[at - 1]?.releaseDate;
         if (!start || !end) return null;
         return dateRange(start, end);
@@ -259,6 +269,7 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
 module.exports = {
     cleanPatchTitle,
     displayTitle,
+    seasonEntryIndex,
     formatAdditionalInfo,
     clampInfoText,
     INFO_TEXT_BUDGET,
