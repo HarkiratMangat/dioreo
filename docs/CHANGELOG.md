@@ -29,7 +29,12 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.1.0 — 2026-10-28 12:45 EDT (#232) — /manage subcommands, Replace on the bots, /embed
+## v3.1.1 — 2026-10-28 12:58 EDT (#233) — `/help cmd:` offers "announcement"
+**From Harkirat, 2026-10-28:** typing `/help cmd:announcement` suggested only `/manage` and `/manage emojis`, and Enter picked `/manage` instead of the word.
+
+- **`announcement` is now the first suggestion** (`commands/help.js` `helpChoices`) once three letters of the word are typed (`ann`, `announ`, `announcements`). It is not a command, so the ranked list never offered it and `/manage` won on its alias. The empty list and unrelated queries are unchanged. `scripts/helpAnnouncement.test.js` covers both.
+
+## v3.1.0 — 2026-10-28 12:45 EDT (#232 · `0702f322`) — /manage subcommands, Replace on the bots, /embed
 **From Harkirat, 2026-10-28:** "rename /emojis to /manage emojis and put it in the /manage panel's dropdown", "give the other /manage panels their own subcommands", "i want the replace option as well", "put the /embedtest command into dioreo admin, and rename it /embed", and "/help cmd:announcement visibility:public that it'll send the launch announcement as a public message". Approved for the merge flow and redeploy at 12:42 EDT.
 
 - **`/manage` is one subcommand per section** (`commands/manage.js`): `draws`, `calendar`, `patch-notes`, `gunsmith mp`, `gunsmith dmz`, `season titles`, `season draft`, `announcement`, `guide` and `emojis`. The `content` option is gone. Each keeps `action` (autocomplete) and a last `visibility`; `season titles` opens its pop-up straight away.
