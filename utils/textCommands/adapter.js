@@ -80,7 +80,11 @@ function createTextInteraction(message, { textCommand, via }) {
         const opts = files ? { body, files } : { body };
         if (!replyId || newMessage) {
             opts.body = { ...body, message_reference: { message_id: message.id, fail_if_not_exists: false } };
-            const created = await rest.post(Routes.channelMessages(channel.id), opts);
+            // Replying to a message needs Read Message History; a channel that denies Dioreo only that refuses the reply with 50013 (think-pass, 2026-10-28 17:58 EDT). Sent once more as a plain message then.
+            const created = await rest.post(Routes.channelMessages(channel.id), opts).catch(err => {
+                if (err?.code !== 50013) throw err;
+                return rest.post(Routes.channelMessages(channel.id), { ...opts, body });
+            });
             if (!replyId) replyId = created.id;
             return created;
         }

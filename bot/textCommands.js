@@ -78,9 +78,11 @@ async function dmCantPost(message) {
 }
 
 async function reply(message, body) {
-    await message.client.rest.post(Routes.channelMessages(message.channelId), {
-        body: { allowed_mentions: { parse: [], replied_user: false }, ...body, message_reference: { message_id: message.id, fail_if_not_exists: false } },
-    });
+    const plain = { allowed_mentions: { parse: [], replied_user: false }, ...body };
+    const route = Routes.channelMessages(message.channelId);
+    // Without Read Message History a reply is refused (50013); the same text goes out as a plain message instead.
+    await message.client.rest.post(route, { body: { ...plain, message_reference: { message_id: message.id, fail_if_not_exists: false } } })
+        .catch(err => { if (err?.code !== 50013) throw err; return message.client.rest.post(route, { body: plain }); });
 }
 
 function formsFor(client) {

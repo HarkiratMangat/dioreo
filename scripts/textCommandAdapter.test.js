@@ -72,5 +72,18 @@ const shareRow = { type: 1, components: [{ type: 2, style: 1, label: 'Show Every
         assert.strictEqual(i.isChatInputCommand(), true);
         assert.strictEqual(i.isButton(), false);
     }
-    console.log('textCommandAdapter: 4 cases passed');
+    // 5. A channel that denies Read Message History refuses a reply (50013): the answer goes out as a plain message instead.
+    {
+        const { message, calls } = fakeMessage();
+        const post = message.client.rest.post;
+        message.client.rest.post = async (route, opts) => {
+            if (opts.body.message_reference) { const e = new Error('Missing Permissions'); e.code = 50013; throw e; }
+            return post(route, opts);
+        };
+        const i = createTextInteraction(message, { textCommand, via: 'mention' });
+        await i.reply({ content: 'hi' });
+        assert.strictEqual(calls.length, 1);
+        assert.strictEqual(calls[0].body.message_reference, undefined, 'retried without the reference');
+    }
+    console.log('textCommandAdapter: 5 cases passed');
 })().catch(err => { console.error(err); process.exit(1); });
