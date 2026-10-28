@@ -29,7 +29,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.1.2 — 2026-10-28 13:58 EDT (#PR) — `/help cmd:an` no longer comes back empty; clickable commands in announcements
+## v3.1.2 — 2026-10-28 13:58 EDT (#234) — `/help cmd:an` no longer comes back empty; clickable commands in announcements
 **From a player, via Harkirat, 2026-10-28:** typing `an` in `/help cmd:` showed Discord's "No options match your search". **And Harkirat:** "why dont the slash commands have clickable?" on the launch announcement.
 
 - **`announcement` is now suggested from two letters** (`commands/help.js` `helpChoices`), not three. `helpSearch` drops `an` as a stop word and no command a non-admin sees starts with it, so at `an` the list was empty. One letter still shows the ranked list alone. Its label is now just **Announcement** (was "announcement: the launch announcement"). `scripts/helpAnnouncement.test.js` now covers `an`.
