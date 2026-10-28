@@ -127,6 +127,12 @@ function holdPending(interaction, pending) {
     return token;
 }
 
+// A code that looks cut off: the same Back to edit / Save anyway, before the catalogue check (Harkirat, 2026-10-28 01:06 EDT).
+async function warnCutCode(interaction, pending, lines) {
+    const token = holdPending(interaction, pending);
+    return interaction.followUp({ flags: 32768 | 64, components: require('../../utils/loadoutPanels').codePanel({ lines, token }) });
+}
+
 async function warnUnknownNames(interaction, pending, unknown) {
     const token = holdPending(interaction, pending);
     return interaction.followUp({ flags: 32768 | 64, components: require('../../utils/loadoutPanels').cataloguePanel({ described: describeUnknown(unknown), token }) });
@@ -153,7 +159,7 @@ async function warnOldPicture(interaction, pending, imageKey) {
     return interaction.followUp({ flags: 32768 | 64, components: pictureWarningPanel(imageKey, token) });
 }
 
-// custom_ids: mng_catok|{token} · mng_catedit|{token} (the catalogue warning) · mng_picok|{token} · mng_picnew|{token} · mng_picnone|{token} (the picture warning). Only the admin who submitted may press them; the router's /manage admin lock has already run.
+// custom_ids: mng_catok|{token} · mng_catedit|{token} (the catalogue warning) · mng_codeok|{token} · mng_codeedit|{token} (the code warning) · mng_picok|{token} · mng_picnew|{token} · mng_picnone|{token} (the picture warning). Only the admin who submitted may press them; the router's /manage admin lock has already run.
 async function handleCatalogueWarning(interaction) {
     const [kind, token] = interaction.customId.split('|');
     const pending = pendingCatalogue.get(token);
@@ -163,7 +169,7 @@ async function handleCatalogueWarning(interaction) {
     const { customId } = pending;
 
     // Back to edit, and Upload a new picture: the same box, refilled, with the screenshot field ready.
-    if (kind === 'mng_catedit' || kind === 'mng_picnew') {
+    if (kind === 'mng_catedit' || kind === 'mng_codeedit' || kind === 'mng_picnew') {
         let modal;
         if (customId.startsWith('add_loadout_')) modal = manage.buildAddLoadoutModal(customId.replace('add_loadout_', ''));
         else if (customId.startsWith('modal_loadouts_bulk_add_')) modal = manage.buildLoadoutsBulkAddModal(customId.replace('modal_loadouts_bulk_add_', ''));
@@ -182,7 +188,9 @@ async function handleCatalogueWarning(interaction) {
     // Both warnings are Components V2 panels, which take no `content`, so the "saving" state is a panel too.
     const { notePanel } = require('../../utils/loadoutPanels');
     await interaction.update({ flags: 32768, components: notePanel(kind === 'mng_catok' ? '⏳ Saving it as typed, and adding the new names…' : '⏳ Saving…') });
-    const preset = { customId, values: pending.values, pictureChoice };
+    // `acks`: the warnings this save has already been answered on, so a replay asks only what it has not (code, then catalogue, then picture).
+    const acks = [...(pending.acks || []), ...(kind === 'mng_catok' ? ['catalogue'] : kind === 'mng_codeok' ? ['code'] : [])];
+    const preset = { customId, values: pending.values, pictureChoice, acks };
     if (customId.startsWith('add_loadout_')) return await addLoadout(interaction, preset);
     if (customId.startsWith('modal_loadouts_bulk_add_')) return await bulkAddLoadouts(interaction, preset);
     return await editLoadout(interaction, preset);
@@ -201,7 +209,7 @@ function badgeNotes(unrecognized, warnings) {
 // --- SAVE A LOADOUT (Add or Edit) --- custom_ids: add_loadout_{MP|DMZ} · edit_loadout_{id}. One body for both since the five-field pop-up (2026-10-26 01:19 EDT): the two had drifted into near copies. `preset` is a Save anyway replay (handleCatalogueWarning above): the typed values come from the warning's pending store instead of a pop-up, and the catalogue check is skipped because the admin already saw it.
 async function saveLoadout(interaction, preset, isEdit) {
     if (!interaction.deferred && !interaction.replied) await interaction.deferReply({ ephemeral: true });
-    const { parseLoadoutBadges, correctGunsmithCode } = require('../../utils/adminParser');
+    const { parseLoadoutBadges, correctGunsmithCode, gunsmithCodeProblem } = require('../../utils/adminParser');
     const { checkImageExists, isPlaceholderBuild } = require('../../utils/loadoutRender');
     const { isHttpImageSource, isRealImageKey } = require('../../utils/loadoutImageCache');
     const form = require('../../utils/loadoutForm');
@@ -248,18 +256,26 @@ async function saveLoadout(interaction, preset, isEdit) {
     const numbering = form.planNumbering({ siblings, targetId: inPool ? targetId : null, wanted: ident.number });
     if (numbering.error) return await fail(numbering.error);
 
+    // A code that looks cut off asks first (Harkirat, 2026-10-28 01:06 EDT), so a lost last O is caught before it saves.
+    const acks = preset?.acks || [];
+    const codeProblem = mode === 'MP' && code ? gunsmithCodeProblem(code) : null;
+    if (codeProblem && !acks.includes('code')) {
+        const held = shotOf(interaction, preset);
+        return await warnCutCode(interaction, { customId, acks, values: { ...readValues(field, LOADOUT_FIELDS), ...(held ? { [SHOT_KEY]: held.url } : {}) } }, [`\`${code}\`: ${codeProblem}.`]);
+    }
+
     // Checked BEFORE the picture, so Back to edit never leaves an uploaded image behind a build that was not saved.
     const shot = shotOf(interaction, preset);
     const unknown = await findUnknownNames({ weaponName, attachments });
-    if (unknown.count && !preset) {
-        return await warnUnknownNames(interaction, { customId, values: { ...readValues(field, LOADOUT_FIELDS), ...(shot ? { [SHOT_KEY]: shot.url } : {}) } }, unknown);
+    if (unknown.count && !acks.includes('catalogue')) {
+        return await warnUnknownNames(interaction, { customId, acks, values: { ...readValues(field, LOADOUT_FIELDS), ...(shot ? { [SHOT_KEY]: shot.url } : {}) } }, unknown);
     }
     const url = field('image_url').trim();
     if (url && shot) return await fail('Use the image URL or the screenshot, not both.');
     if (url && !isHttpImageSource(url)) return await fail('The image box takes a link starting with https://. Picture keys come from the gunsmith code now, so a key is never typed.');
     const picture = await resolvePicture({ existing, mode, weaponName, code, attachments, url, shot, targetId, choice: preset?.pictureChoice || null });
     if (picture.error) return await fail(picture.error);
-    if (picture.ask) return await warnOldPicture(interaction, { customId, values: readValues(field, LOADOUT_FIELDS) }, existing.imageKey);
+    if (picture.ask) return await warnOldPicture(interaction, { customId, acks: [...acks, 'catalogue'], values: readValues(field, LOADOUT_FIELDS) }, existing.imageKey);
 
     // The number goes to core as `buildNumber`, and core names the build and swaps the one holding it (core/ops/loadouts.js numberBuild, 2026-10-26 12:17 EDT), the same rule the portal gets. The check above only answers early with a clear message.
     const payload = {
@@ -324,17 +340,24 @@ async function bulkAddLoadouts(interaction, preset = null) {
     const bulkText = field('bulk_text');
 
     // The catalogue check over every pasted block, merged into one list; each unknown weapon keeps the category its own block gave.
-    const { parseBulkLoadoutList } = require('../../utils/adminParser');
+    const { parseBulkLoadoutList, correctGunsmithCode, gunsmithCodeProblem } = require('../../utils/adminParser');
+    const parsed = parseBulkLoadoutList(bulkText).parsed;
+    // Codes that look cut off ask first, as a single save does (Harkirat, 2026-10-28 01:06 EDT).
+    const acks = preset?.acks || [];
+    const cut = pageMode === 'MP' ? parsed.map(p => ({ p, code: p.shareCode ? correctGunsmithCode(String(p.shareCode).trim()) : '' })).filter(x => x.code && gunsmithCodeProblem(x.code)) : [];
+    if (cut.length && !acks.includes('code')) {
+        return await warnCutCode(interaction, { customId, acks, values: readValues(field, ['bulk_text']) }, cut.map(x => `**${x.p.weaponName}**: \`${x.code}\``));
+    }
     const unknown = { weapon: null, attachments: [], count: 0, weapons: [] };
     const seen = new Set();
-    for (const p of parseBulkLoadoutList(bulkText).parsed) {
+    for (const p of parsed) {
         const u = await findUnknownNames({ weaponName: p.weaponName, attachments: p.attachments });
         if (u.weapon && !seen.has(`w|${normKey(u.weapon)}`)) { seen.add(`w|${normKey(u.weapon)}`); unknown.weapons.push({ name: u.weapon, category: p.category }); }
         for (const a of u.attachments) if (!seen.has(`a|${normKey(a)}`)) { seen.add(`a|${normKey(a)}`); unknown.attachments.push(a); }
     }
     unknown.count = unknown.weapons.length + unknown.attachments.length;
-    if (unknown.count && !preset) {
-        return await warnUnknownNames(interaction, { customId, values: readValues(field, ['bulk_text']) },
+    if (unknown.count && !acks.includes('catalogue')) {
+        return await warnUnknownNames(interaction, { customId, acks, values: readValues(field, ['bulk_text']) },
             { ...unknown, weapon: unknown.weapons.map(w => w.name).join('`, `') || null });
     }
     const learn = [

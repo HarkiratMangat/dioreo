@@ -396,9 +396,9 @@ const DIGIT_TO_LETTER = { '0': 'O', '1': 'I', '8': 'B', '5': 'S' };
 const LETTER_TO_DIGIT = { O: '0', I: '1', L: '1', B: '8', S: '5' };
 const LOWERCASE_LETTER_CORRECTION = { 'l': 'I', 'o': 'O' }; // digit-like lowercase letters in letter positions
 
-// Weapon-name-prefix backstop (added 2026-07-20, real bug found live: Vertex AI extraction returned "Locus-1B2A4B8C9C" instead of "1B2A4B8C9C" -- the model prepended the weapon name even though the prompt (utils/visionExtract.js) never asked for it). Fixed primarily at the prompt level, but this is a structural backstop here too: a genuine code is a contiguous digit-letter-digit-letter... run, so scan for the LONGEST such run anywhere in the string and use only that, discarding anything before/after it (a weapon name prefix, stray punctuation, etc). Safe against false positives from a weapon name itself -- a name needs its own digits and letters to alternate perfectly for several characters running (e.g. "AK117" fails immediately: '1','1' are two digits in a row, never two letters interleaved), which real weapon names don't do. A code with no prefix at all (the normal case) matches itself in full, so this is a no-op for already-clean input.
+// Weapon-name-prefix backstop (added 2026-07-20, real bug found live: Vertex AI extraction returned "Locus-1B2A4B8C9C" instead of "1B2A4B8C9C" -- the model prepended the weapon name even though the prompt (utils/visionExtract.js) never asked for it). Fixed primarily at the prompt level, but this is a structural backstop here too: a genuine code is a contiguous digit-letter-digit-letter... run, so scan for the LONGEST such run anywhere in the string and use only that, discarding anything before/after it (a weapon name prefix, stray punctuation, etc). Safe against false positives from a weapon name itself -- a name needs its own digits and letters to alternate perfectly for several characters running (e.g. "AK117" fails immediately: '1','1' are two digits in a row, never two letters interleaved), which real weapon names don't do. A code with no prefix at all (the normal case) matches itself in full, so this is a no-op for already-clean input. A digit look-alike counts in a letter position here too (Harkirat, 2026-10-28 01:06 EDT): the game draws O like 0, so a read of `1C2B4C5B70` ends on a "0" that is really the letter O. With letters only, the run stopped at `…7` and the code was saved cut short (two FSS Hurricane builds on prod); correctGunsmithCode below then maps the 0 to O.
 function stripCodePrefix(code) {
-    const runs = code.match(/\d[A-Za-z](?:\d[A-Za-z])*\d?/g);
+    const runs = code.match(/\d[A-Za-z0158](?:\d[A-Za-z0158])*\d?/g);
     if (!runs || runs.length === 0) return code; // nothing alternating found -- leave as-is, let the per-char corrector below do what it can
     return runs.reduce((longest, run) => run.length > longest.length ? run : longest, runs[0]);
 }
@@ -420,6 +420,14 @@ function correctGunsmithCode(code) {
         }
         return ch; // already the right type for its position -- untouched
     }).join('');
+}
+
+// A finished code is number-letter pairs, each number a slot from 1 to 9. Anything else, most often an odd length that ends on a number, is a code the read or the typing cut short, so /manage and /autobuild ask before saving it (Harkirat, 2026-10-28 01:06 EDT: warn, then Adjust or Save anyway). Null when the code is fine or empty; run it on a corrected code.
+function gunsmithCodeProblem(code) {
+    const c = String(code || '').trim();
+    if (!c || /^(?:[1-9][A-Z])+$/.test(c)) return null;
+    if (c.length % 2 === 1 && /\d$/.test(c)) return 'it ends on a number with no letter after it';
+    return 'a code is number-letter pairs, like `1C2B4C5B7O`';
 }
 
 // Fuzzy-corrects one vision-extracted attachment name against the set of attachment strings already used somewhere in the Loadout collection -- a vision model reading a small in-game label can get spacing/punctuation/capitalization slightly wrong ("Gauge-9 Mo" for "Gauge-9 Mono") even when it got the actual attachment right. Checks for an exact normalized match first (cheapest, most common case once the model gets it basically right), then falls back to a two-directional fuzzyMatch scan (either string could be the "noisier" one depending on what the model added or dropped) so a real but imperfect read still resolves to the canonical stored spelling. No match at all -- likely a genuinely new attachment CODM just added -- passes the extracted text through untouched rather than forcing it onto something wrong.
@@ -646,4 +654,4 @@ function formatLoadoutsAsBulkText(loadouts) {
     }).join('\n\n');
 }
 
-module.exports = { PLACEHOLDER_IMAGE, toTitleCase, resolveTier, parseAdminDate, parseAdminDateRange, parseReleaseDateTime, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, formatReleaseDateTime, parseLoadoutBadges, loadoutBadgeTokens, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText, formatLoadoutsAsBulkText, correctGunsmithCode, correctAttachmentName, normalizeWeaponName, orderAttachmentsBySlot, normalizeCalendarCategory, guessCalendarCategory };
+module.exports = { PLACEHOLDER_IMAGE, gunsmithCodeProblem, toTitleCase, resolveTier, parseAdminDate, parseAdminDateRange, parseReleaseDateTime, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, formatReleaseDateTime, parseLoadoutBadges, loadoutBadgeTokens, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText, formatLoadoutsAsBulkText, correctGunsmithCode, correctAttachmentName, normalizeWeaponName, orderAttachmentsBySlot, normalizeCalendarCategory, guessCalendarCategory };
