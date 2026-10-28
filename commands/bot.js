@@ -1006,7 +1006,8 @@ async function buildServersPanel(client, guildId, { armed = null, note = null } 
     const { getGuildSettings } = require('../utils/guildPolicy');
     const { rulesText, lastChangedLine } = require('./admin');
     const settings = await getGuildSettings(guildId);
-    const guild = client?.guilds?.cache?.get(guildId);
+    // Read from the PUBLIC client (2026-10-28): /bot runs on Dioreo Admin, a user-install-only app in no server, so its own guild cache is always empty and every server read as "Dioreo is not in this server".
+    const guild = require('../bot/clients').publicClient(client)?.guilds?.cache?.get(guildId);
     const where = guild ? `-# **${guild.name}** · \`${guildId}\`` : `-# \`${guildId}\` · Dioreo is not in this server, so its name is unknown`;
     const btn = (label, id, style = 2) => ({ type: 2, style, label, custom_id: `bot_srv_${id}|${guildId}` });
     const row = !settings ? null
