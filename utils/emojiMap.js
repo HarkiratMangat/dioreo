@@ -347,6 +347,8 @@ module.exports = new Proxy(emojis, {
             const map = secondaryMaps.get(currentAppId());
             if (map && typeof map[key] === 'string') return map[key];
         }
+        // A key the map does not hold is tried as an EMOJI NAME on the booted app (2026-10-28 14:20 UTC, Harkirat: a new emoji should not need a map line), so `emojis.S107thAnniversary` works once the emoji is on the app. Exact name, case included; no such emoji answers undefined, as any unknown key always did.
+        if (typeof key === 'string' && !(key in target) && /^\w+$/.test(key)) return byName(key) ?? undefined;
         return Reflect.get(target, key, receiver);
     },
 });

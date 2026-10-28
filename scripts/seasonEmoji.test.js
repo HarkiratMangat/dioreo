@@ -83,6 +83,12 @@ t('a stored emoji is re-pointed by NAME at the booted app, as the map\'s own ids
         assert.strictEqual(seasonEmojiFor('Season 10 — Test', ''), '<a:S107thAnniversary:1000>');
         assert.strictEqual(seasonEmojiFor('Season 11 — Test', ''), null);
     });
+    t('an emoji the map has no key for is found by its exact name (2026-10-28)', () => {
+        assert.strictEqual(emojis.S107thAnniversary, '<a:S107thAnniversary:1000>');
+        assert.strictEqual(emojis.s107thanniversary, undefined, 'the name is exact, case included');
+        assert.strictEqual(emojis.NopeNotAnEmoji, undefined);
+        assert.strictEqual(emojis.season9, orig.season9, 'a mapped key is untouched');
+    });
     Object.assign(emojis, orig);
     console.log(`\n${passed} passed, ${failed} failed`);
     process.exit(failed ? 1 : 0);
