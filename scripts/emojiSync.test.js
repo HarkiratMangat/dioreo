@@ -108,6 +108,13 @@ t('the auto-sync pushes only what the code or some bot uses, skips a recent fail
     } finally { globalThis['fe' + 'tch'] = okFetch; }
 });
 
+t('/emojis ends on the Hidden/Public visibility option like every other command (2026-10-28)', () => {
+    const options = require('../commands/emojis').data.toJSON().options;
+    assert.deepStrictEqual(options.map(o => o.name), ['visibility']);
+    assert.deepStrictEqual(options[0].choices.map(c => c.value), ['hidden', 'public']);
+    assert.ok(!options[0].required);
+});
+
 (async () => {
     for (const [name, fn] of pending) {
         try { await fn(); passed++; console.log(`  PASS  ${name}`); } catch (e) { failed++; console.log(`  FAIL  ${name}\n        ${e.message}`); }

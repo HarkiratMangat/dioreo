@@ -112,6 +112,8 @@ const data = new SlashCommandBuilder()
     .setName('emojis')
     .setDescription('Every app emoji, which bots are missing it, and one tap to sync (owner only)')
     .setDefaultMemberPermissions(0)
+    // The same Hidden/Public option every other command ends on (2026-10-28 14:21 UTC, Harkirat: "Emoji commands also doesn't have a visibility option"). Unset stays Hidden, as the panel always was: it lists the apps' emoji ids and holds the Sync and Upload buttons.
+    .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
     .setIntegrationTypes([1]).setContexts([0, 1, 2]);
 
 async function execute(interaction) {
@@ -119,7 +121,7 @@ async function execute(interaction) {
         try { await interaction.reply({ content: `${emojis.cross} Only Dioreo's developer can use this.`, ephemeral: true }); } catch (e) { console.error('Failed to refuse /emojis:', e); }
         return;
     }
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ ephemeral: interaction.options.getString('visibility') !== 'public' });
     const state = await loadState();
     await sendV2Payload(interaction, buildEmojiPanel({ ...state, senderAppId: interaction.applicationId }));
 }
