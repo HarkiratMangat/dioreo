@@ -200,6 +200,13 @@ function buildWhyPanel(state, client = null) {
     ] }];
 }
 
+// Every announcement running now, as the Containers a delivery builds (2026-10-28 16:40 EDT: shared by /help's Announcements button and `/help cmd:announcement`). Nothing is marked seen. With none running, one quiet line.
+async function buildActiveAnnouncementComponents() {
+    const active = await getActiveAnnouncements();
+    const shown = fitEmbedBudget(active.slice(0, MAX_EMBEDS_PER_MESSAGE));
+    return shown.length ? shown.map(a => buildAnnouncementContainer(a)) : [{ type: 17, components: [{ type: 10, content: '-# No announcements right now.' }] }];
+}
+
 // The one write of the setting, from the answer above, /settings and /remind alike: `true` while off, removed when turned back on (models/UserPreference.js announcementsOff).
 async function setAnnouncementsOff(userId, off) {
     await UserPreference.updateOne({ discordId: userId }, off ? { $set: { announcementsOff: true } } : { $unset: { announcementsOff: 1 } }, { upsert: off });
@@ -257,4 +264,4 @@ async function maybeSendAnnouncement(interaction) {
 }
 
 // buildAnnouncementEmbed exported 2026-08-23 11:27 EDT so /bot analytics' change-detail panel renders an announcement with the SAME text shape a user is shown, instead of re-describing its fields.
-module.exports = { ANN_WHY_ID, ANN_OFF_ID, ANN_ON_ID, whyButtonRow, whyRowNeeded, buildWhyPanel, setAnnouncementsOff, getActiveAnnouncements, maybeSendAnnouncement, computeExpiresAt, expiryToInputValue, generateAccentColor, buildAnnouncementEmbed, buildAnnouncementContainer, announcementBody, measureComponents, MAX_EMBEDS_PER_MESSAGE, TEXT_CHAR_BUDGET, COMPONENT_BUDGET, ANNOUNCEMENT_TEXT_MAX, fitEmbedBudget, isRepeatingAnnouncement, isAnnouncementDue, MIN_HOURS_BETWEEN_REPEATS };
+module.exports = { buildActiveAnnouncementComponents, ANN_WHY_ID, ANN_OFF_ID, ANN_ON_ID, whyButtonRow, whyRowNeeded, buildWhyPanel, setAnnouncementsOff, getActiveAnnouncements, maybeSendAnnouncement, computeExpiresAt, expiryToInputValue, generateAccentColor, buildAnnouncementEmbed, buildAnnouncementContainer, announcementBody, measureComponents, MAX_EMBEDS_PER_MESSAGE, TEXT_CHAR_BUDGET, COMPONENT_BUDGET, ANNOUNCEMENT_TEXT_MAX, fitEmbedBudget, isRepeatingAnnouncement, isAnnouncementDue, MIN_HOURS_BETWEEN_REPEATS };

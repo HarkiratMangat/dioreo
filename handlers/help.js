@@ -37,9 +37,7 @@ async function route(interaction) {
         if (interaction.isButton() && interaction.customId === 'help_announcements') {
             const ann = require('../utils/announcement');
             await interaction.deferReply({ ephemeral: true });
-            const active = await ann.getActiveAnnouncements();
-            const shown = ann.fitEmbedBudget(active.slice(0, ann.MAX_EMBEDS_PER_MESSAGE));
-            const components = shown.length ? shown.map(a => ann.buildAnnouncementContainer(a)) : [{ type: 17, components: [{ type: 10, content: '-# No announcements right now.' }] }];
+            const components = await ann.buildActiveAnnouncementComponents();
             const { sendV2Payload } = require('../utils/sendV2Payload');
             return await sendV2Payload(interaction, components, { allowedMentions: { parse: [] } });
         }
