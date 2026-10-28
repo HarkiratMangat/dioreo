@@ -201,7 +201,7 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
 
     // Build historical dropdown options A season opened from search that is older than the 12 shown joins the list, so the dropdown still shows it picked.
     const listed = recentPatches.some(p => p._id.toString() === activePatch._id.toString()) ? recentPatches : [...recentPatches, activePatch];
-    // Each season's dates as its description (2026-10-25 14:45-15:09 EDT, Harkirat's review). 2026-10-28 14:08 UTC, Harkirat: the Battle Pass start/end IS the season's start/end, and a season whose notes are out early is not "Current". So the LIVE season (the one the Season Titles setting names) reads its Battle Pass range, "Sep 23 – Active" while no end is set; a season newer than it reads its staged draft range or "Upcoming Season"; an older one runs from its own release date to the next season's ("Aug 25 – Sep 23, 2026"), the only dates a past season has. Patch-note release dates were what this showed before, which made the live Season 9 read as ending the day Season 10's notes came out.
+    // Each season's dates as its description (2026-10-25 14:45-15:09 EDT, Harkirat's review). 2026-10-28 14:08 UTC, Harkirat: the Battle Pass start/end IS the season's start/end, and a season whose notes are out early is not "Current". So the LIVE season (the one the Season Titles setting names) reads its Battle Pass start and "Active", "Sep 23, 2026 – Active", until its end has passed; a season newer than it reads its staged draft range or "Upcoming Season"; an older one runs from its own release date to the next season's ("Aug 25 – Sep 23, 2026"), the only dates a past season has. Patch-note release dates were what this showed before, which made the live Season 9 read as ending the day Season 10's notes came out.
     const shortDate = (d, withYear) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', ...(withYear ? { year: 'numeric' } : {}), timeZone: 'UTC' });
     const dateRange = (start, end) => {
         const sameYear = new Date(start).getUTCFullYear() === new Date(end).getUTCFullYear();
@@ -220,7 +220,9 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
         const at = newestFirst.findIndex(p => p._id.toString() === patch._id.toString());
         if (at === liveAt) {
             const { bpStart, bpEnd, bpEndTBD } = seasonalDoc;
-            if (bpStart) return bpEnd && !bpEndTBD ? dateRange(bpStart, bpEnd) : `${shortDate(bpStart, true)} – Active`;
+            // "Oct 15, 2026 – Active" while the season runs, even with its end date set (2026-10-28 18:20 UTC, Harkirat: Season 9 "shows the end date even tho it should be showing Active"; his first ask was "the season 9 start date dash active"). Only once that end has passed with no newer season promoted does it read as a closed range.
+            const ended = bpEnd && !bpEndTBD && new Date(bpEnd).getTime() <= Date.now();
+            if (bpStart) return ended ? dateRange(bpStart, bpEnd) : `${shortDate(bpStart, true)} – Active`;
             return 'Current Season';
         }
         if (at < liveAt) {
