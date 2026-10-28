@@ -12,6 +12,9 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.1.2 — October 28, 2026
+- **`/help cmd:`** suggests `announcement` from the first two letters, so typing `an` no longer shows "No options match".
+
 ## v3.1.1 — October 28, 2026
 - **`/help cmd:announcement`** now appears as a suggestion as you type, so picking it no longer chooses `/manage`.
 

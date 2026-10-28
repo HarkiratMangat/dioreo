@@ -29,7 +29,12 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.1.1 — 2026-10-28 12:58 EDT (#233) — `/help cmd:` offers "announcement"
+## v3.1.2 — 2026-10-28 13:58 EDT (#PR) — `/help cmd:an` no longer comes back empty
+**From a player, via Harkirat, 2026-10-28:** typing `an` in `/help cmd:` showed Discord's "No options match your search".
+
+- **`announcement` is now suggested from two letters** (`commands/help.js` `helpChoices`), not three. `helpSearch` drops `an` as a stop word and no command a non-admin sees starts with it, so at `an` the list was empty. One letter still shows the ranked list alone. `scripts/helpAnnouncement.test.js` now covers `an`.
+
+## v3.1.1 — 2026-10-28 12:58 EDT (#233 · `97a1a1b4`) — `/help cmd:` offers "announcement"
 **From Harkirat, 2026-10-28:** typing `/help cmd:announcement` suggested only `/manage` and `/manage emojis`, and Enter picked `/manage` instead of the word.
 
 - **`announcement` is now the first suggestion** (`commands/help.js` `helpChoices`) once three letters of the word are typed (`ann`, `announ`, `announcements`). It is not a command, so the ranked list never offered it and `/manage` won on its alias. The empty list and unrelated queries are unchanged. `scripts/helpAnnouncement.test.js` covers both.

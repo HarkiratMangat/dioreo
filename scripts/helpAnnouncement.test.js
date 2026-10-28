@@ -58,15 +58,15 @@ async function check(name, fn) {
             assert.deepStrictEqual(sent, [CARD], word);
         }
     });
-    await check('the autocomplete offers "announcement" first once most of the word is typed', async () => {
-        for (const q of ['ann', 'announ', '/announcement', 'Announcements']) {
+    await check('the autocomplete offers "announcement" first from two letters', async () => {
+        for (const q of ['an', 'ann', 'announ', '/announcement', 'Announcements']) {
             const [first] = await help.helpChoices(q, {});
             assert.strictEqual(first.value, 'announcement', q);
             assert.ok(first.name.length <= 100, q);
         }
     });
     await check('it stays out of unrelated queries and the empty list', async () => {
-        for (const q of ['', 'an', 'draw', 'manage']) {
+        for (const q of ['', 'a', 'draw', 'manage']) {
             const values = (await help.helpChoices(q, {})).map(c => c.value);
             assert.ok(!values.includes('announcement'), q);
         }
