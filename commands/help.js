@@ -192,7 +192,7 @@ const CATEGORY_DEFS = [
         key: 'botadmin', label: 'Bot Admin', emojiKey: 'botAccess',
         dropdownDescription: 'Data entry, analytics and admin tools',
         // Alphabetical, and it must MATCH buildBotAdminBody's order below -- the first draft listed these one way in the directory and another in the body, which reads as the page having lost track of itself. Harkirat asked for alphabetical here on 2026-08-10 19:34 EDT. ⚠️ Per-command `requires` (added 2026-08-13, per-command admin permissions) -- an admin granted only /bot analytics must not see /manage or /autobuild listed here even though the whole category is visible to them. Category-level `requires: 'botAdmin'` still gates the SECTION (shows if the user has ANY admin access at all, per utils/adminAccess.js's isAdmin()); each command's own key gates that ONE line, same pattern `/admin` already uses inside Preferences. `/bot access` is gated on `botAccess` (isOwner(), not a permission token -- see utils/adminAccess.js's header on why it can never have one).
-        staticCommands: [cmd('/bot analytics', { requires: 'bot', jumpDescription: 'Usage, timing, health, alerts and recent changes' }), cmd('/bot access', { requires: 'botAccess', jumpDescription: 'Grant or revoke admin access' }), cmd('/bot hotpatch', { requires: 'botAccess', jumpDescription: 'Reload changed files into the running bot' }), cmd('/bot servers', { requires: 'botAccess', jumpDescription: 'The servers Dioreo is in, and their settings' }), cmd('/manage emojis', { requires: 'botAccess', jumpDescription: 'Every emoji on each bot, with one-tap sync' }), cmd('/autobuild', { requires: 'autobuild', jumpDescription: 'Turn Gunsmith screenshots into builds' }), cmd('/manage', { requires: 'manage', jumpDescription: 'Add and edit draws, calendar, patch notes, loadouts and more' })],
+        staticCommands: [cmd('/bot analytics', { requires: 'bot', jumpDescription: 'Usage, timing, health, alerts and recent changes' }), cmd('/bot access', { requires: 'botAccess', jumpDescription: 'Grant or revoke admin access' }), cmd('/bot hotpatch', { requires: 'botAccess', jumpDescription: 'Reload changed files into the running bot' }), cmd('/bot servers', { requires: 'botAccess', jumpDescription: 'The servers Dioreo is in, and their settings' }), cmd('/embed', { requires: 'botAccess', jumpDescription: 'Render pasted message JSON to check a design' }), cmd('/manage emojis', { requires: 'botAccess', jumpDescription: 'Every emoji on each bot, with one-tap sync' }), cmd('/autobuild', { requires: 'autobuild', jumpDescription: 'Turn Gunsmith screenshots into builds' }), cmd('/manage', { requires: 'manage', jumpDescription: 'Add and edit draws, calendar, patch notes, loadouts and more' })],
         requires: 'botAdmin',
     },
 ];
@@ -386,6 +386,12 @@ function buildBotAdminBody(commands, client) {
             + `-# 🔹 \`[dry_run]\` Show the plan and change nothing\n`
             + `-# 🔹 \`[file]\` Limit to one changed file (default: everything the pull brought in)`);
     }
+    if (has('/embed')) {
+        sections.push(`### ${mentionCommand(client, '/embed')}\nRender pasted message JSON as a real Components V2 message, to check a design — owner-only\n`
+            + `-# 🔹 \`[json]\` The message JSON; leave both this and \`file\` empty to paste it in a box\n`
+            + `-# 🔹 \`[file]\` A .json or .txt file, for JSON too long to paste\n`
+            + `-# 🔹 \`[clean]\` Render only the JSON: no Edit JSON button and no emoji note`);
+    }
     if (has('/manage emojis')) {
         sections.push(`### ${mentionCommand(client, '/manage emojis')}\nEvery app emoji, which bots lack it and whether its original is saved: sync, upload or find one — owner-only. Also the Emojis entry in the /manage dropdown\n`
             + `-# 🔹 Only the visibility option below`);
@@ -462,7 +468,7 @@ const COMMAND_EMOJI = {
     '/calendar': 'calendar', '/today': 'dailyUpdate', '/remind': 'remind', '/patch notes': 'patchNotes', '/season end': 'bp',
     '/colors': 'showColors', '/timestamp': 'timestamp', '/invite': 'shareHeart',
     '/settings': 'settings', '/admin': 'serverSettings',
-    '/bot analytics': 'mngInfo', '/bot access': 'botAccess', '/bot hotpatch': 'edit', '/bot servers': 'guide', '/manage emojis': 'swatches', '/autobuild': 'gunsmithCode', '/manage': 'database'
+    '/bot analytics': 'mngInfo', '/bot access': 'botAccess', '/bot hotpatch': 'edit', '/bot servers': 'guide', '/embed': 'edit', '/manage emojis': 'swatches', '/autobuild': 'gunsmithCode', '/manage': 'database'
 };
 
 // One command at a time (2026-10-27 10:44 EDT, Harkirat: "add another dropdown so a user can filter for 1 specific command instead of only per category"). Every slash command this viewer may see, in directory order, capped at Discord's 25 options; right-click apps stay out (they have no page of their own). Picking one opens a page with only that command (handlers/help.js, `help_command`). `seasonEmoji` is the current season's own emoji for /season end (2026-10-27 19:01 EDT, Harkirat: "make sure it's using this current season's emoji and not the generic battle pass one"); BP stands in when it is unknown. `jumpDescription` fills the rows whose command has no `description` here (/settings, /admin and the admin tools); it is read only by this list, so their own pages are unchanged (his ask, same message). The list follows the v3 announcement's order (2026-10-27 19:03 EDT, Harkirat: "sort the items so they're following the same order as the list we used in announcements with all of the ... admin type commands after them"). A command not named here keeps its category order, after these; /admin and the admin tools are left out on purpose so they come last.

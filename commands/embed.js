@@ -1,9 +1,11 @@
 // ==========================================
-// COMMAND: /embedtest (DEV BOT ONLY) — render pasted Components V2 JSON
+// COMMAND: /embed (OWNER ONLY, DIOREO ADMIN) — render pasted Components V2 JSON
 // ==========================================
 // Built 2026-10-17 11:05 EDT at Harkirat's ask: "build me an embed testing command on the dev bot … i provide it json … and the bot renders it out into a proper components v2 embed for me to view so i can check that a design/format makes sense. It wouldnt actually be functional embeds, they're use dummy buttons but i want them to use the real emojis from the bot". The parsing, emoji matching and dummy wiring are pure and live in utils/embedTester.js; this file is the I/O.
 //
-// ⚠️ DEV-ONLY IS ENFORCED TWICE. `devOnly: true` below makes bot/registry.js skip this module unless NODE_ENV is 'development' — which only `.env.dev` sets (utils/cloudinaryDevGuard.js's header records why prod can never evaluate it true) — so prod never registers it. execute() refuses outside development and for anyone but the owner as well, because it posts arbitrary content as the bot.
+// 🔄 RENAMED /embed -> /embed AND MOVED TO DIOREO ADMIN, 2026-10-28 16:30 EDT (Harkirat: "put the /embed command into dioreo admin, and rename it /embed, with an option to render the embed without any extra buttons or stuff"). It was dev-bot only (`devOnly`) until then; it is now an admin-app command on prod too ('embed' is in bot/registry.js's ADMIN_COMMAND_NAMES), owner only. The custom ids and the handler keep their `embedtest_` names: they are internal, and renaming them would orphan a message already on screen.
+//
+// `clean:true` renders exactly the JSON: no Edit JSON button under it and no emoji note after it. The dummy controls stay, because the design's own buttons must not run real actions, and a clean render is not editable in place (send it again to change it).
 //
 // Three ways in: `json:` (a string option, 6,000 characters; Discord turns pasted newlines into spaces, harmless for JSON because newlines inside its strings are already `\n`), `file:` (a .json/.txt attachment, for a panel too big for either box), or neither, which opens a modal with one 4,000-character box. The modal's submit is handled in handlers/embedTest.js and comes back through renderPayload() here.
 
@@ -32,7 +34,7 @@ const MAX_REPLY = 1900;
 const clip = s => (s.length > MAX_REPLY ? `${s.slice(0, MAX_REPLY)}\n…(cut)` : s);
 
 function isAllowed(interaction) {
-    return process.env.NODE_ENV === 'development' && isOwner(interaction.user.id);
+    return isOwner(interaction.user.id);
 }
 
 async function fetchAppEmojis(client) {
@@ -55,7 +57,7 @@ async function say(interaction, content, ephemeral = true) {
 /**
  * Parse → defer → resolve emojis → send. Shared by the slash command and the modal submit. `visibility` is 'hidden' | 'public' | null (null: the JSON's own ephemeral bit decides, else public).
  */
-async function renderPayload(interaction, rawText, visibility = null, { edit = false } = {}) {
+async function renderPayload(interaction, rawText, visibility = null, { edit = false, clean = false } = {}) {
     const parsed = tester.parseInput(rawText);
     if (parsed.error) return say(interaction, parsed.error);
     const message = tester.normalizePayload(parsed.value);
@@ -73,7 +75,7 @@ async function renderPayload(interaction, rawText, visibility = null, { edit = f
     const dummies = tester.dummyComponents(message.components);
     const count = tester.countComponents(message.components);
     // The Edit JSON row goes under the design, after the dummies are made so it stays a real button. It costs 2 of the 40, so a design already at the cap renders without it.
-    const editable = count + 2 <= tester.COMPONENT_CAP;
+    const editable = !clean && count + 2 <= tester.COMPONENT_CAP;
     if (editable) message.components.push(tester.editRow(emojis.parseEmoji(emojis.edit)));
 
     let report = { named: [], remapped: [], fixed: [], unresolved: [] };
@@ -100,6 +102,8 @@ async function renderPayload(interaction, rawText, visibility = null, { edit = f
     }
     remember(sent?.id || interaction.message?.id, String(rawText ?? '').trim());
 
+    // A clean render says nothing more: no Edit JSON button, no note.
+    if (clean) return;
     let note = tester.formatReport(report, dummies);
     if (!editable) note = `${note ? `${note}\n` : ''}-# No Edit JSON button: the design already uses ${count} of Discord's ${tester.COMPONENT_CAP} components.`;
     if (note) {
@@ -140,9 +144,10 @@ function buildEditModal(text) {
         ));
 }
 
-function buildModal() {
+// `clean` rides in the id, because a pop-up's submit carries nothing else from the slash command.
+function buildModal(clean = false) {
     return new ModalBuilder()
-        .setCustomId(MODAL_ID)
+        .setCustomId(clean ? `${MODAL_ID}:clean` : MODAL_ID)
         .setTitle('Embed tester')
         .addComponents(new ActionRowBuilder().addComponents(
             new TextInputBuilder()
@@ -156,7 +161,6 @@ function buildModal() {
 }
 
 module.exports = {
-    devOnly: true,
     MODAL_ID,
     MODAL_FIELD,
     isAllowed,
@@ -164,19 +168,21 @@ module.exports = {
     editTextFor,
     buildEditModal,
     data: new SlashCommandBuilder()
-        .setName('embedtest')
-        .setDescription('Dev bot: render pasted message JSON')
+        .setName('embed')
+        .setDescription('Render pasted message JSON')
         .addStringOption(o => o.setName('json').setDescription('The message JSON (leave empty to paste it in a box instead)').setMaxLength(6000))
         .addAttachmentOption(o => o.setName('file').setDescription('A .json or .txt file, for a payload too long to paste'))
+        .addBooleanOption(o => o.setName('clean').setDescription('Render only the JSON: no Edit JSON button and no emoji note (default: no)'))
         .addStringOption(o => o.setName('visibility').setDescription('Show the render only to you, or to everyone in the chat (default: what the JSON says)')
             .addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
-        // Owner tooling, reached anywhere through his own user install -- the same [1] the admin commands use.
+        // Owner tooling on Dioreo Admin, reached anywhere through his own user install -- the same [1] the admin commands use.
         .setIntegrationTypes([1]).setContexts([0, 1, 2]),
 
     async execute(interaction) {
-        if (!isAllowed(interaction)) return say(interaction, '🔒 `/embedtest` is a dev-bot tool for the owner.');
+        if (!isAllowed(interaction)) return say(interaction, '🔒 `/embed` is a tool for the owner.');
 
         const visibility = interaction.options.getString('visibility');
+        const clean = Boolean(interaction.options.getBoolean('clean'));
         const file = interaction.options.getAttachment('file');
         const json = interaction.options.getString('json');
 
@@ -191,9 +197,9 @@ module.exports = {
             } catch (err) {
                 return say(interaction, `Couldn't read that file: ${err?.message || err}`);
             }
-            return renderPayload(interaction, text, visibility);
+            return renderPayload(interaction, text, visibility, { clean });
         }
-        if (json) return renderPayload(interaction, json, visibility);
-        await interaction.showModal(buildModal());
+        if (json) return renderPayload(interaction, json, visibility, { clean });
+        await interaction.showModal(buildModal(clean));
     },
 };

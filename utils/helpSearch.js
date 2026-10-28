@@ -30,6 +30,7 @@ const WORDS = {
     '/bot access': ['admin', 'access', 'permission', 'grant', 'allowlist'],
     '/bot servers': ['server', 'reset', 'rules'],
     '/bot hotpatch': ['update', 'reload', 'deploy', 'restart', 'code'],
+    '/embed': ['embed', 'json', 'render', 'preview', 'design', 'components', 'test'],
     '/manage emojis': ['emoji', 'icon', 'sync', 'upload'],
     '/autobuild': ['weapon', 'gun', 'loadout', 'build', 'screenshot', 'image', 'picture', 'scan', 'read', 'create', 'add', 'import'],
     '/manage': ['manage', 'edit', 'add', 'data', 'database', 'announcement', 'update', 'create', 'delete'],

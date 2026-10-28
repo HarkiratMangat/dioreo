@@ -1,4 +1,4 @@
-// scripts/embedTester.test.js — utils/embedTester.js (the dev-only /embedtest) and its dev-only registration. Run: node scripts/embedTester.test.js
+// scripts/embedTester.test.js — utils/embedTester.js (the owner-only /embed) and its registration. Run: node scripts/embedTester.test.js
 const assert = require('assert');
 const path = require('path');
 const t = require('../utils/embedTester');
@@ -7,6 +7,10 @@ let failed = 0;
 function check(name, fn) {
     try { fn(); console.log(`  ✓ ${name}`); } catch (err) { failed++; console.error(`  ✗ ${name}\n    ${err.message}`); }
 }
+
+// An async case: queued and awaited at the end, because check() above does not wait for a promise.
+const queued = [];
+function later(name, fn) { queued.push([name, fn]); }
 
 // Two fake application emojis with dev-shaped ids, one animated.
 const APP = [
@@ -185,19 +189,63 @@ check('a message turns back into JSON without its Edit row', () => {
 });
 
 console.log('registration');
-check('the command is skipped unless NODE_ENV is development', () => {
-    const { loadCommandModules } = require(path.join(__dirname, '..', 'bot', 'registry'));
+check('/embed registers everywhere, on the admin app, and the old name is gone (2026-10-28)', () => {
+    const { loadCommandModules, ADMIN_APP_COMMAND_NAMES } = require(path.join(__dirname, '..', 'bot', 'registry'));
     const names = env => {
         const before = process.env.NODE_ENV;
         if (env === undefined) delete process.env.NODE_ENV; else process.env.NODE_ENV = env;
         try { return loadCommandModules({}).map(c => (c.toJSON ? c.toJSON().name : c.name)); }
         finally { if (before === undefined) delete process.env.NODE_ENV; else process.env.NODE_ENV = before; }
     };
-    assert.ok(!names(undefined).includes('embedtest'), 'registered with NODE_ENV unset (prod)');
-    assert.ok(!names('production').includes('embedtest'), 'registered with NODE_ENV=production');
-    assert.ok(names('development').includes('embedtest'), 'missing on the dev bot');
+    for (const env of [undefined, 'production', 'development']) {
+        assert.ok(names(env).includes('embed'), `missing with NODE_ENV=${env}`);
+        assert.ok(!names(env).includes('embedtest'), 'the old name is still registered');
+    }
+    assert.ok(ADMIN_APP_COMMAND_NAMES.has('embed'), 'it belongs on Dioreo Admin');
 });
 
-if (failed) { console.error(`\n${failed} check(s) failed`); process.exit(1); }
-console.log('\nall embed tester checks passed');
-process.exit(0);
+later('clean:true renders the JSON alone: no Edit JSON row, no emoji note; the default keeps both (2026-10-28)', async () => {
+    const sendPath = require.resolve('../utils/sendV2Payload');
+    const embedPath = require.resolve('../commands/embed');
+    const sent = [];
+    const saved = require.cache[sendPath];
+    require.cache[sendPath] = { id: sendPath, filename: sendPath, loaded: true, exports: { sendV2Payload: async (i, components) => { sent.push(components); return { id: 'm1' }; } } };
+    delete require.cache[embedPath];
+    try {
+        const embed = require('../commands/embed');
+        const run = async (clean) => {
+            const followUps = [];
+            const interaction = { deferred: false, replied: false, deferReply: async () => {}, followUp: async o => followUps.push(o), client: { application: { id: 'A' }, rest: { get: async () => [] } } };
+            const json = JSON.stringify({ flags: 32768, components: [{ type: 17, components: [{ type: 10, content: 'hi :nope:' }] }] });
+            await embed.renderPayload(interaction, json, null, { clean });
+            return followUps;
+        };
+        const plain = await run(false);
+        const hasEdit = c => JSON.stringify(c).includes('embedtest_edit');
+        assert.ok(hasEdit(sent[0]), 'the default render carries the Edit JSON button');
+        assert.ok(plain.length === 1, 'and an emoji note for the unresolved :nope:');
+        const bare = await run(true);
+        assert.ok(!hasEdit(sent[1]), 'a clean render has no Edit JSON button');
+        assert.strictEqual(bare.length, 0, 'and no note');
+        assert.strictEqual(sent[1].length, 1, 'only the pasted design');
+    } finally {
+        if (saved) require.cache[sendPath] = saved; else delete require.cache[sendPath];
+        delete require.cache[embedPath];
+    }
+});
+
+check('/embed has json, file, clean and a LAST visibility option; clean is a boolean', () => {
+    const opts = require('../commands/embed').data.toJSON().options;
+    assert.deepStrictEqual(opts.map(o => o.name), ['json', 'file', 'clean', 'visibility']);
+    assert.strictEqual(opts[2].type, 5);
+});
+
+
+(async () => {
+    for (const [name, fn] of queued) {
+        try { await fn(); console.log(`  ✓ ${name}`); } catch (err) { failed++; console.error(`  ✗ ${name}\n    ${err.message}`); }
+    }
+    if (failed) { console.error(`\n${failed} check(s) failed`); process.exit(1); }
+    console.log('\nall embed tester checks passed');
+    process.exit(0);
+})();

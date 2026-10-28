@@ -15,7 +15,7 @@ const path = require('path');
 const { REST, Routes, Collection } = require('discord.js');
 
 // The names /admin's "always hidden commands" menu never offers (2026-08-10 15:48 EDT, v3 server-admin visibility policy): a server rule has no business quieting Harkirat's own owner-level commands, and /admin must never be able to hide its own answer from the admin trying to undo a rule. 'Add to Patch Notes' (the right-click command, 2026-10-19 10:22 EDT) is /manage's patch-notes editor by another door, so it is excluded with it.
-const ADMIN_COMMAND_NAMES = new Set(['admin', 'manage', 'autobuild', 'bot', 'Add to Patch Notes', 'Autobuild Gunsmith', 'Add to Draws', 'Add to Calendar']);
+const ADMIN_COMMAND_NAMES = new Set(['admin', 'manage', 'autobuild', 'bot', 'embed', 'Add to Patch Notes', 'Autobuild Gunsmith', 'Add to Draws', 'Add to Calendar']);
 
 // The commands that live on DIOREO ADMIN when it is on (2026-10-19 13:44 EDT, his design; /admin stays public, his "yes." 13:26 EDT, because it is a SERVER command gated by Manage Server and already hidden from everyone without it). Plus, per his "yes." at 13:35 EDT, every `devOnly` module and any module exporting `adminApp: true` -- the experimental ones. Nothing is on both apps.
 const ADMIN_APP_COMMAND_NAMES = new Set([...ADMIN_COMMAND_NAMES].filter(name => name !== 'admin'));

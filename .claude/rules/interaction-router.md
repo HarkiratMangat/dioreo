@@ -79,7 +79,7 @@ paths:
 | `invite_share` | `invite.js` |
 | `emo_` | `emojis.js` (`/manage emojis`: the filter, the pager, Sync; owner only on every click) |
 | `remind_` | `remind.js` (the /remind panel, the bell's `remind_open`, the timezone tip's `remind_tzdm`) |
-| `embedtest_` | `embedTest.js` (the dev-only `/embedtest`: its paste modal and its dummy controls) |
+| `embedtest_` | `embedTest.js` (`/embed`, was the dev-only `/embedtest` until 2026-10-28: its paste modal and its dummy controls) |
 | `select_patch_history` `patch_search` | `patchnotes.js` |
 | `ptn_` | `addToPatchNotes.js` (right-click Add to Patch Notes) |
 | `vc_` | `viewColors.js` (View Colors panel pages) |
