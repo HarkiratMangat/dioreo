@@ -10,9 +10,12 @@ const CACHE_MS = 60 * 1000;
 // A failure to read is remembered for a minute too, so a denied member can't make every message cost a REST call.
 const FAILURE_MS = 60 * 1000;
 const cache = new Map();
+// Bumped by every invalidation. A read that started before an update arrived must not be cached over it (security review, 2026-10-28 17:56 EDT): it would hold the pre-update list for a minute.
+const generation = new Map();
 
 function invalidateGuildOverrides(guildId) {
     cache.delete(guildId);
+    generation.set(guildId, (generation.get(guildId) || 0) + 1);
 }
 
 // One level's answer for each dimension: true / false / undefined (nothing set).
@@ -58,12 +61,14 @@ async function guildOverrides(client, guildId) {
         return hit.list;
     }
     const appId = client.application?.id || client.user?.id;
+    const startedAt = generation.get(guildId) || 0;
+    const current = () => (generation.get(guildId) || 0) === startedAt;
     try {
         const list = await client.rest.get(Routes.guildApplicationCommandsPermissions(appId, guildId));
-        cache.set(guildId, { at: Date.now(), list });
+        if (current()) cache.set(guildId, { at: Date.now(), list });
         return list;
     } catch (err) {
-        cache.set(guildId, { at: Date.now(), failed: true });
+        if (current()) cache.set(guildId, { at: Date.now(), failed: true });
         throw err;
     }
 }
