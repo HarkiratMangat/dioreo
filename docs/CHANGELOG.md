@@ -29,7 +29,17 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.0.0 — 2026-10-27 18:10 EDT (#223) — Dioreo v3: server installs, the draw calculator, /today and reminders, and the legal documents dated for launch
+## v3.0.1 — 2026-10-28 00:17 EDT (#230) — Post-launch bug fixes
+**From Harkirat, 2026-10-27 to 2026-10-28:** the fixes from the first evening on prod, released together ("merge flow v3.0.1 \"post launch bug fixes\"", 2026-10-28 00:13 EDT).
+
+- **Button emojis stay put** (`utils/sendV2Payload.js`): an un-acked click is now acked with `deferUpdate()` and then patched, so every re-render takes two trips. The single-trip path, which makes Discord blank a re-rendered button's custom emoji (v2.60.0), is gone; it was still used by `/draws`' arrows and New/Returning switch and `/settings`' Hide/Show toggles. Harkirat saw the `/draws` arrows blank on prod.
+- **Double Epic Characters prices at 20 and 30 CP** (`commands/drawprices.js`): his figures, so every draw now has prices in every region. The absent-data tests make their own gap and put it back.
+- **`/gunsmith mp` search** (`handlers/router.js`, `utils/loadoutScopes.js`, `utils/search.js`): catalogue weapons with no build are listed as "[SMG] MSMC — Build pending", as are weapons whose only builds are placeholders; "All META builds" shows only while some build has Meta; the suggested weapons are picked by badge and shown A-Z within each class, and never include a Build pending weapon.
+- **Private warnings** (`utils/ephemeral.js` `privateNotice`): a weapon that matches nothing, and the "not set up yet" errors in `/draws`, `/calendar`, `/today` and `/patch notes`, go only to the person who ran the command.
+- **Submit a Build** (`commands/help.js`, `utils/buildSubmissions.js`, `models/BuildSubmission.js`): a button in the `/help` footer for any weapon, and the weapon field is optional, so a screenshot alone is a submission.
+- **Records:** the launch follow-ups are filed in `docs/db-deferred-list.md`; a `/gunsmith submit` command with a weapon search is filed in `docs/ideas/design-ideas.md`.
+
+## v3.0.0 — 2026-10-27 18:10 EDT (#223 · `5b257fd4`) — Dioreo v3: server installs, the draw calculator, /today and reminders, and the legal documents dated for launch
 **From Harkirat, 2026-10-26:** launch v3.0.0 today. **2026-10-19 23:19 EDT:** the version is `v3.0.0` (the MAJOR yes). **23:28 EDT:** rebase and merge, an `archive/v3-pre-release` tag, the pre-release hashes left as they are. **2026-10-27 19:54 EDT:** a fast-forward instead (GitHub could not rebase #223 past the 2026-08-10 merge from `main`), so `main` keeps every pre-release commit with its own hash. **2026-10-26 14:04–14:06 EDT:** Privacy's pending versions publish as one v3 row; the portal sentences are confirmed by a read of the code; the EU-representative reason is reworded; the announcement can go live after the launch.
 
 v3 is the 117 Pre-Release entries below, from `v3.0.0-pre` to `v3.117.0-pre`, brought to `main` by fast-forward, each commit with its original hash. This entry adds only the launch edits; the features themselves are recorded in those entries, and `CHANGELOG-SUMMARY.md`'s v3.0.0 section says what changed for players.
