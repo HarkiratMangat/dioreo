@@ -11,7 +11,8 @@ const { TEXT_COMMANDS, findTextCommand, toIdPart } = require('../utils/textComma
 const { createTextInteraction, TextCommandRefused } = require('../utils/textCommands/adapter');
 const { textCommandAllowed } = require('../utils/textCommands/permissions');
 
-const USER_COOLDOWN_MS = 3000;
+// The same command from the same person within a second is a double-send; a DIFFERENT command goes straight through (his report, 2026-10-28 18:05 EDT: "sending another command quickly after another one wouldnt do anything" under the first 3-second, any-command version).
+const USER_COOLDOWN_MS = 1000;
 const CHANNEL_WINDOW_MS = 10_000;
 const CHANNEL_MAX_REPLIES = 5;
 const EDIT_WINDOW_MS = 60_000;
@@ -55,14 +56,15 @@ function canPost(message) {
     return message.channel.isThread?.() ? perms.has(PermissionFlagsBits.SendMessagesInThreads) : perms.has(PermissionFlagsBits.SendMessages);
 }
 
-function rateLimited(message) {
+function rateLimited(message, verdict) {
     const now = Date.now();
-    if (now - (lastByUser.get(message.author.id) || 0) < USER_COOLDOWN_MS) return true;
+    const userKey = `${message.author.id}:${verdict.command || verdict.kind}`;
+    if (now - (lastByUser.get(userKey) || 0) < USER_COOLDOWN_MS) return true;
     const hits = (channelHits.get(message.channelId) || []).filter(t => now - t < CHANNEL_WINDOW_MS);
     if (hits.length >= CHANNEL_MAX_REPLIES) return true;
     hits.push(now);
     channelHits.set(message.channelId, hits);
-    lastByUser.set(message.author.id, now);
+    lastByUser.set(userKey, now);
     return false;
 }
 
@@ -119,8 +121,10 @@ async function runTextCommand(message, verdict) {
     const textCommand = findTextCommand(verdict.command);
     const command = textCommand && message.client.commands.get(textCommand.slash);
     if (!command) return;
+    const t = { start: Date.now() };
     // The server's own Integrations switches for this command (his call, 2026-10-28 17:52 EDT). Denied → silent, the same as the slash command simply not being there for this member.
     if (!(await textCommandAllowed({ client: message.client, guildId: message.guildId, member: message.member, userId: message.author.id, channel: message.channel }, textCommand.slash))) return;
+    t.perms = Date.now();
     const via = verdict.fuzzy ? `${verdict.via}+typo` : verdict.via;
     const interaction = createTextInteraction(message, { textCommand, via });
     const { buildInteractionContext } = require('../handlers/router');
@@ -131,6 +135,7 @@ async function runTextCommand(message, verdict) {
     await runWithContext(ctx, async () => {
         try {
             await require('../utils/guildPolicy').attachGuildPolicy(interaction);
+            t.policy = Date.now();
             await command.execute(interaction);
         } catch (err) {
             ctx.outcome = 'error';
@@ -141,8 +146,19 @@ async function runTextCommand(message, verdict) {
             await interaction.editReply({ content: text }).catch(() => {});
         } finally {
             recordInteractionEvent(interaction, ctx, message.author.id);
+            logTextTiming(message, textCommand, t, interaction);
         }
     });
+}
+
+// DEV BOT ONLY, like handlers/router.js's click log (2026-10-28 18:01 EDT, his question: "why does dioreo take like a second to send a reply"): where a text command's time goes. Nothing is stored; production prints nothing.
+function logTextTiming(message, textCommand, t, interaction) {
+    try {
+        if (process.env.NODE_ENV !== 'development') return;
+        const ms = (a, b) => (a && b ? `${b - a} ms` : '—');
+        const at = new Date(t.start).toLocaleTimeString('en-US', { hour12: false });
+        console.log(`⌨️ ${at} ${textCommand.name} · arrived ${ms(message.createdTimestamp, t.start)} after sending · permissions ${ms(t.start, t.perms)} · server rules ${ms(t.perms, t.policy)} · reply built +${ms(t.start, interaction.__firstSendAt)} · Discord took ${ms(interaction.__firstSendAt, interaction.__firstSentAt)} · done +${ms(t.start, Date.now())}`);
+    } catch { /* a diagnostic never breaks a command */ }
 }
 
 async function onMessage(message, { edited = false } = {}) {
@@ -156,7 +172,7 @@ async function onMessage(message, { edited = false } = {}) {
         commands: TEXT_COMMANDS,
     });
     if (!verdict.kind) return;
-    if (rateLimited(message)) return;
+    if (rateLimited(message, verdict)) return;
     answered.set(message.id, Date.now());
     if (!canPost(message)) return dmCantPost(message);
     if (verdict.kind === 'run') return runTextCommand(message, verdict);

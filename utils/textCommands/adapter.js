@@ -68,6 +68,7 @@ function createTextInteraction(message, { textCommand, via }) {
     let deferred = false;
     let replied = false;
     let privateCard = false;
+    let typingTimer = null;
 
     const forcedPrivate = () => interaction.dioreoPolicy?.visibility === 'ephemeral';
 
@@ -78,6 +79,8 @@ function createTextInteraction(message, { textCommand, via }) {
         if (typeof body.flags === 'number') body.flags &= ~EPHEMERAL;
         body.allowed_mentions = { ...(body.allowed_mentions || { parse: [] }), replied_user: false };
         const opts = files ? { body, files } : { body };
+        if (!interaction.__firstSendAt) interaction.__firstSendAt = Date.now();
+        clearTimeout(typingTimer);
         if (!replyId || newMessage) {
             opts.body = { ...body, message_reference: { message_id: message.id, fail_if_not_exists: false } };
             // Replying to a message needs Read Message History; a channel that denies Dioreo only that refuses the reply with 50013 (think-pass, 2026-10-28 17:58 EDT). Sent once more as a plain message then.
@@ -85,6 +88,7 @@ function createTextInteraction(message, { textCommand, via }) {
                 if (err?.code !== 50013) throw err;
                 return rest.post(Routes.channelMessages(channel.id), { ...opts, body });
             });
+            if (!interaction.__firstSentAt) interaction.__firstSentAt = Date.now();
             if (!replyId) replyId = created.id;
             return created;
         }
@@ -143,7 +147,9 @@ function createTextInteraction(message, { textCommand, via }) {
         async deferReply() {
             deferred = true;
             if (forcedPrivate()) return openPrivately();
-            channel.sendTyping?.().catch(() => {});
+            // "Dioreo is typing…" only if the answer is slow (2026-10-28 18:06 EDT, his "takes like a second"): sent at once it is one more request racing the reply itself, for a panel that is usually ready in well under half a second.
+            typingTimer = setTimeout(() => { channel.sendTyping?.().catch(() => {}); }, 600);
+            typingTimer.unref?.();
         },
         async reply(opts) {
             replied = true;
