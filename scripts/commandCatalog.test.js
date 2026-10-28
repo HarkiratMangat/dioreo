@@ -130,7 +130,10 @@ check('every non-admin command the bot registers reaches the page', () => {
 check('admin commands are excluded, and by GATING rather than by a hardcoded list', () => {
     const excluded = catalog.excluded.map(e => e.path);
     for (const admin of ['/manage', '/autobuild', '/bot analytics', '/bot access', '/admin']) {
-        assert.ok(excluded.includes(admin), `${admin} must not appear on a public page`);
+        // /manage is one subcommand per section since 2026-10-28, so its leaves are '/manage draws' and so on rather than '/manage'.
+        const leaves = excluded.filter(p => p === admin || p.startsWith(`${admin} `));
+        assert.ok(leaves.length, `${admin} must not appear on a public page`);
+        for (const leaf of leaves) assert.ok(!byPath.has(leaf), `${leaf} leaked into the rendered catalog`);
         assert.ok(!byPath.has(admin), `${admin} leaked into the rendered catalog`);
     }
     // If this ever stops being true, an admin command is being excluded by NAME somewhere, and the next admin command added will quietly ship to the public site.

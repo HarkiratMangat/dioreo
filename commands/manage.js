@@ -336,7 +336,31 @@ function actionButton(pageKey, id) {
     return { type: 2, style: b.style, label: b.label, custom_id: `mng_act_${pageKey}_${b.id}` };
 }
 
-function buildManagePage(page, dynamicData = {}, client, allowedPages = null) {
+// THE PAGE DROPDOWN (mng_pagesel), shared by every /manage page and by the emoji panel, which draws it outside its own container so a click on it swaps the whole /manage message (2026-10-28 12:11 EDT, Harkirat). `showEmojis` adds the Emojis entry: owner only, so the callers pass isOwnerId() of whoever is looking.
+function pageSelectRow(PAGES, pageKey, allowedPages, showEmojis) {
+    // Page nav dropdown — Season has NO page of its own at all (per Harkirat's request: "let that selection open the editing modal right away instead of a dedicated management page"). Rather than one "Season" option leading to an intermediate page with 2 buttons (Titles & Deadlines / Wipe Season), both of Season's actions get their own flat dropdown entries — picking either opens its modal directly with nothing in between, see handlers/manage/shared.js's `mng_pagesel` handler.
+    const showSeasonFlat = !allowedPages || allowedPages.includes('season');
+    const canReach = key => !allowedPages || allowedPages.includes(key);
+    // ⚠️ ORDER (reworked 2026-08-15 13:27 EDT, Harkirat's direct request) is now explicit rather than "whatever order Object.entries(PAGES) happens to iterate, then both flat Season entries dumped at the end" -- that's what disagreed with the `content` slash option's own order above (which grouped the Season entries mid-list) and read as scattered. Same shared grouping here: everyday content pages, then season-lifecycle actions in the order you'd actually touch them, then the two admin-surface pages. `pushPage` is a real PAGES key; the two literal pushes below it are Season's flat (non-PAGES) entries.
+    const pageOptions = [];
+    const pushPage = key => { if (PAGES[key] && canReach(key)) pageOptions.push({ label: PAGES[key].label, value: key, default: key === pageKey }); };
+    pushPage('draws');
+    pushPage('calendar');
+    pushPage('patchnotes');
+    pushPage('loadouts_mp');
+    pushPage('loadouts_dmz');
+    if (showSeasonFlat) pageOptions.push({ label: 'Season: Titles & Deadlines', value: 'season_titlesdeadlines', default: false });
+    pushPage('seasondraft');
+    if (showSeasonFlat) {
+        // Renamed from "Season: Wipe Season" (2026-07-12, Harkirat's request) — the OLD name read as a low-stakes settings toggle; the option's own `description` (rendered as a smaller gray line under the label in Discord's select menu) now spells out exactly what it does, specifically so it isn't mistakenly clicked. Also gained the same 2-step Confirm/Cancel flow as Purge (see handlers/manage/season.js's modal_wipe_season handler) — selecting this used to wipe draws/calendar the INSTANT the title modal was submitted, no confirmation at all.
+        pageOptions.push({ label: 'Start New Season', value: 'season_wipe', default: false, description: '⚠️ Wipes all draws & calendar data. Cannot be undone.' });
+    }
+    pushPage('announcement');
+    if (showEmojis) pageOptions.push({ label: 'Emojis', value: 'emojis', default: pageKey === 'emojis', description: "Every bot's emojis, with sync and upload" });
+    return { type: 1, components: [{ type: 3, custom_id: 'mng_pagesel', placeholder: 'Jump to a section...', options: pageOptions }] };
+}
+
+function buildManagePage(page, dynamicData = {}, client, allowedPages = null, { showEmojis = false } = {}) {
     // Built here, per render, so emoji ids are read AFTER refreshEmojiIds() has run (see buildPagesTable).
     const PAGES = buildPagesTable(client);
     const visibleKeys = allowedPages ? Object.keys(PAGES).filter(k => allowedPages.includes(k)) : Object.keys(PAGES);
@@ -346,7 +370,7 @@ function buildManagePage(page, dynamicData = {}, client, allowedPages = null) {
     // Guarded (v3-pre-release review, finding #17) -- 'season' was a grant token (retired with the flat token list 2026-10-19 19:38 EDT; the scope is now `manage.season`) but a PSEUDO-page: it is not a key in the PAGES table above. Unreachable while every caller passes `allowedPages = null`, and kept for the future view-limited caller that parameter exists for. An admin scoped to EXACTLY 'season' (no other page) made visibleKeys=['season'], fallbackKey=undefined, pageData=undefined -- and the render threw on an already-deferred interaction, leaving a dead panel with no message. Fall back to the same "nothing to show" state a genuinely empty allowedPages would produce, rather than crashing.
     if (!pageData) {
         return {
-            components: [{ type: 10, content: `# ${emojis.database} Database Management\n${emojis.warn} You have access to Season settings only, which isn't a standalone page here — use \`/manage command:season action:...\` instead.` }],
+            components: [{ type: 10, content: `# ${emojis.database} Database Management\n${emojis.warn} You have access to Season settings only, which isn't a standalone page here — use \`/manage season\` instead.` }],
             flags: 32768,
         };
     }
@@ -395,25 +419,7 @@ function buildManagePage(page, dynamicData = {}, client, allowedPages = null) {
 
     components.push({ type: 10, content: '-# Select from the list below to manage a different command\'s data.' });
 
-    // Page nav dropdown — Season has NO page of its own at all (per Harkirat's request: "let that selection open the editing modal right away instead of a dedicated management page"). Rather than one "Season" option leading to an intermediate page with 2 buttons (Titles & Deadlines / Wipe Season), both of Season's actions get their own flat dropdown entries — picking either opens its modal directly with nothing in between, see handlers/manage/shared.js's `mng_pagesel` handler.
-    const showSeasonFlat = !allowedPages || allowedPages.includes('season');
-    const canReach = key => !allowedPages || allowedPages.includes(key);
-    // ⚠️ ORDER (reworked 2026-08-15 13:27 EDT, Harkirat's direct request) is now explicit rather than "whatever order Object.entries(PAGES) happens to iterate, then both flat Season entries dumped at the end" -- that's what disagreed with the `content` slash option's own order above (which grouped the Season entries mid-list) and read as scattered. Same shared grouping here: everyday content pages, then season-lifecycle actions in the order you'd actually touch them, then the two admin-surface pages. `pushPage` is a real PAGES key; the two literal pushes below it are Season's flat (non-PAGES) entries.
-    const pageOptions = [];
-    const pushPage = key => { if (PAGES[key] && canReach(key)) pageOptions.push({ label: PAGES[key].label, value: key, default: key === pageKey }); };
-    pushPage('draws');
-    pushPage('calendar');
-    pushPage('patchnotes');
-    pushPage('loadouts_mp');
-    pushPage('loadouts_dmz');
-    if (showSeasonFlat) pageOptions.push({ label: 'Season: Titles & Deadlines', value: 'season_titlesdeadlines', default: false });
-    pushPage('seasondraft');
-    if (showSeasonFlat) {
-        // Renamed from "Season: Wipe Season" (2026-07-12, Harkirat's request) — the OLD name read as a low-stakes settings toggle; the option's own `description` (rendered as a smaller gray line under the label in Discord's select menu) now spells out exactly what it does, specifically so it isn't mistakenly clicked. Also gained the same 2-step Confirm/Cancel flow as Purge (see handlers/manage/season.js's modal_wipe_season handler) — selecting this used to wipe draws/calendar the INSTANT the title modal was submitted, no confirmation at all.
-        pageOptions.push({ label: 'Start New Season', value: 'season_wipe', default: false, description: '⚠️ Wipes all draws & calendar data. Cannot be undone.' });
-    }
-    pushPage('announcement');
-    components.push({ type: 1, components: [{ type: 3, custom_id: 'mng_pagesel', placeholder: 'Jump to a section...', options: pageOptions }] });
+    components.push(pageSelectRow(PAGES, pageKey, allowedPages, showEmojis));
 
     return [{ type: 17, accent_color: accentColor, components }];
 }
@@ -825,32 +831,68 @@ function prefillModal(modal, values) {
     return modal;
 }
 
-module.exports = {
-    prefillModal,
-    ALLOWED_ADMIN_ID, // Re-exported from utils/owner.js; nothing reads it off this module now (the panel-interaction guard in handlers/router.js gates through hasCommandAccess), so it is kept only as a harmless alias.
-    data: new SlashCommandBuilder()
+// ==========================================
+// THE SLASH COMMAND: ONE SUBCOMMAND PER SECTION (2026-10-28 12:11 EDT, Harkirat: "give the other /manage panels their own subcommands: /manage draws, /manage gunsmiths mp, /manage gunsmiths dmz, etc.")
+// ==========================================
+// It was one command with a `content` choice option and an `action` autocomplete scoped by it (renamed `page` -> `section` -> `data_for` -> `content` over 2026-07-12 to 2026-08-15, each time because the name did not say what was being picked). A subcommand says it in the command itself, and the scoped autocomplete no longer needs a sibling option to know the section: the subcommand IS the section (SECTION_OF_SUBCOMMAND below; handlers/router.js's autocomplete reads it through sectionOf()).
+//
+// Each data section keeps `action` (autocomplete, opens one of that section's own actions straight away; stage 3 of the /manage decomposition, 2026-08-14) and `visibility` LAST (Hidden by default, as this panel always was). Season: Titles & Deadlines opens its pop-up and so takes no options; Guide and Emojis take only visibility. "Start New Season" still has NO subcommand on purpose: it is destructive enough that the extra step through the panel dropdown, with its warning description, is intended. The gunsmith group is spelled `gunsmiths` as he wrote it, unlike the public /gunsmith.
+const SECTION_OF_SUBCOMMAND = {
+    'draws': 'draws',
+    'calendar': 'calendar',
+    'patch-notes': 'patchnotes',
+    'gunsmiths mp': 'loadouts_mp',
+    'gunsmiths dmz': 'loadouts_dmz',
+    'season titles': 'season_titlesdeadlines',
+    'season draft': 'seasondraft',
+    'announcement': 'announcement',
+    'guide': 'guide',
+    'emojis': 'emojis',
+};
+
+// The section a /manage invocation (or its autocomplete) is for, from its subcommand; null when it names none this table knows.
+function sectionOf(interaction) {
+    const group = interaction.options.getSubcommandGroup(false);
+    const sub = interaction.options.getSubcommand(false);
+    if (!sub) return null;
+    return SECTION_OF_SUBCOMMAND[group ? `${group} ${sub}` : sub] || null;
+}
+
+function buildManageCommandData() {
+    const action = option => option.setName('action').setDescription("Jump straight to one of this section's own actions").setAutocomplete(true);
+    const visibility = option => option.setName('visibility').setDescription('Show this panel only to you, or publicly to everyone in the chat. (Defaults to only you.)').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' });
+    const section = (name, description, { withAction = true } = {}) => sub => {
+        sub.setName(name).setDescription(description);
+        if (withAction) sub.addStringOption(action);
+        return sub.addStringOption(visibility);
+    };
+    return new SlashCommandBuilder()
         .setName('manage')
         // Trimmed 2026-07-18 (mobile-width audit, v2 quick-wins batch) -- the old 68-char version truncated on Discord mobile's command picker row.
         .setDescription('Manage gunsmith builds and seasonal bot data')
         .setDefaultMemberPermissions(0)
         // ADMIN-ONLY: stays user-install [1] deliberately -- the 10 public commands moved to [0, 1] (guild install) for v3, but an admin command advertised in every server's command list is noise plus needless surface. Harkirat still reaches it anywhere via his own user install.
         .setIntegrationTypes([1]).setContexts([0, 1, 2])
-        // Renamed from `page` to `section` (2026-07-12), then `section` to `data_for` (2026-07-18, v2 quick-wins batch), then `data_for` to `content` (2026-08-15 13:27 EDT, Harkirat's direct request) -- both prior names failed the same test: neither described what's actually being picked, a data ENTITY (Draws/Calendar/Loadouts/Patch Notes/Season/etc), not a page or a "for" clause. "Content" names the entity directly. "Season: Titles & Deadlines" also gained a direct entry here (previously only reachable via the in-panel mng_pagesel dropdown) — picking it skips the panel entirely and opens that modal as the initial response, same as the dropdown's own flat entry does. "Start New Season" deliberately has NO direct slash-option entry — it's destructive enough that requiring the extra step through the panel dropdown (with its own warning description) is intentional, not an oversight. ⚠️ ORDER (reworked 2026-08-15 13:27 EDT, Harkirat's direct request) is now the shared, intuitive lifecycle grouping this option and mng_pagesel BOTH follow: everyday content pages first (Draws/Calendar/Patch Notes/Loadouts), then season-lifecycle actions in the order you'd actually touch them (adjust the current season's deadlines -> draft the next one), then the two admin-surface pages, then Guide last. The two dropdowns used to disagree on this (this option grouped the Season entries together mid-list; mng_pagesel scattered them to the very end) -- that mismatch, not the number of surfaces, was the actual complaint.
-        .addStringOption(option => option.setName('content').setDescription('Jump directly to a content type').addChoices(
-            { name: 'Draws', value: 'draws' },
-            { name: 'Calendar', value: 'calendar' },
-            { name: 'Patch Notes', value: 'patchnotes' },
-            { name: 'MP Loadouts', value: 'loadouts_mp' },
-            { name: 'DMZ Loadouts', value: 'loadouts_dmz' },
-            { name: 'Season: Titles & Deadlines', value: 'season_titlesdeadlines' },
-            { name: 'Season: Next Season Draft', value: 'seasondraft' },
-            { name: 'Announcement', value: 'announcement' },
-            // Jumps straight to the rich Bulk Format Guide (utils/manageGuides.js) instead of a normal data-entry page -- added 2026-07-31 17:20 EDT, Harkirat's direct request. Not a key in PAGES (same reason Season's two entries above aren't), so it's special-cased in execute() below the same way those are.
-            { name: 'Bulk Format Guide', value: 'guide' }
-        ))
-        // Stage 3 of the /manage decomposition (2026-08-14 18:04 EDT, docs/superpowers/specs/2026-08-14-manage-slash-decomposition-design.md) -- opens one of that section's own actions directly instead of costing three separate interactions (open /manage -> pick the section -> click the button). Scoped autocomplete (handlers/router.js) reads `content` to only ever suggest that section's own actions -- Discord cannot scope one option's static choices by another option's live value, which is the whole reason this is autocomplete and not a `choices()` list (~40 actions total against a 25-choice cap, and it would offer Loadout actions while looking at the Calendar page).
-        .addStringOption(option => option.setName('action').setDescription("Jump straight to one of that section's own actions (pick content first)").setAutocomplete(true))
-        .addStringOption(option => option.setName('visibility').setDescription('Show this panel only to you, or publicly to everyone in the chat. (Defaults to only you.)').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' })),
+        .addSubcommand(section('draws', 'New and returning draws'))
+        .addSubcommand(section('calendar', 'Calendar events'))
+        .addSubcommand(section('patch-notes', 'Season patch notes'))
+        .addSubcommandGroup(group => group.setName('gunsmiths').setDescription('Gunsmith builds')
+            .addSubcommand(section('mp', 'Multiplayer builds'))
+            .addSubcommand(section('dmz', 'DMZ builds')))
+        .addSubcommandGroup(group => group.setName('season').setDescription('Season settings')
+            .addSubcommand(sub => sub.setName('titles').setDescription('Season titles and deadlines'))
+            .addSubcommand(section('draft', 'Stage the next season')))
+        .addSubcommand(section('announcement', 'Announcements'))
+        // Jumps straight to the rich Bulk Format Guide (utils/manageGuides.js) instead of a normal data-entry page (2026-07-31 17:20 EDT, Harkirat). Not a key in PAGES (same reason Season's entries are not), so execute() special-cases it.
+        .addSubcommand(section('guide', 'The bulk format guides', { withAction: false }))
+        // The emoji panel (utils/emojiPanel.js), owner only: this was the /emojis command until 2026-10-28.
+        .addSubcommand(section('emojis', 'Every bot\'s emojis (owner only)', { withAction: false }));
+}
+
+module.exports = {
+    prefillModal,
+    ALLOWED_ADMIN_ID, // Re-exported from utils/owner.js; nothing reads it off this module now (the panel-interaction guard in handlers/router.js gates through hasCommandAccess), so it is kept only as a harmless alias.
+    data: buildManageCommandData(),
 
     // Getter, not a value: the table must be built per access so emoji ids are read after refreshEmojiIds() has run (see buildPagesTable). Don't destructure this at module load.
     get PAGES() { return buildPagesTable(); },
@@ -862,6 +904,9 @@ module.exports = {
     buildCalendarBulkModal, buildCalendarBulkRemoveModal, buildCalendarAddModal, buildEditCalendarModal, buildCalendarBannersModal,
     buildLoadoutsBulkAddModal, buildLoadoutsBulkRemoveModal, buildAddLoadoutModal, buildEditLoadoutModal,
     buildLoadoutsExportUpTo5Modal, buildLoadoutsExportCategoryModal,
+    sectionOf, SECTION_OF_SUBCOMMAND,
+    // The dropdown alone, for the emoji panel (utils/emojiPanel.js), which sits outside the page table.
+    buildPageSelectRow: (pageKey, { showEmojis = false, allowedPages = null } = {}) => pageSelectRow(buildPagesTable(), pageKey, allowedPages, showEmojis),
     buildPatchDateInfoModal, buildPatchUrlsModal, buildPatchAddSeasonModal, buildPatchEditSeasonModal,
     buildWipeSeasonModal, buildSeasonTitlesDeadlinesModal,
     buildDraftTitlesDatesModal, buildDraftBulkDrawsModal, buildDraftBulkCalendarModal, buildDraftStatusText,
@@ -874,7 +919,13 @@ module.exports = {
             return interaction.reply({ content: "🔒 **This one's admin-only.** These buttons run Dioreo's database directly — try any of the bot's public commands instead!", ephemeral: true });
         }
         // Every admin may open every section (the permission restructure, 2026-10-19 19:25 EDT); what they may DO there is checked per button by resolveAction's tier check, and again by core/changeset.js's commitSet on the write.
-        const section = interaction.options.getString('content') || 'draws';
+        const section = sectionOf(interaction) || 'draws';
+
+        // The emoji panel (utils/emojiPanel.js), private or public like this command (2026-10-28 12:11 EDT). It answers its own deferral, so it runs before the deferReply() below. Owner only, checked inside.
+        if (section === 'emojis') {
+            const visibilityChoice = interaction.options.getString('visibility');
+            return require('../utils/emojiPanel').openEmojiPanel(interaction, { ephemeral: visibilityChoice !== 'public' });
+        }
 
         // Season: Titles & Deadlines is reachable directly from this option now (2026-07-12) — skips rendering the panel entirely, same as picking it from the in-panel mng_pagesel dropdown does. showModal() must be the FIRST response to the interaction (can't follow a deferReply()), so this has to branch before the deferReply() below runs at all.
         if (section === 'season_titlesdeadlines') {
@@ -920,6 +971,6 @@ module.exports = {
 
         // buildDynamicData(), not a hand-rolled table (v3-pre-release review, finding #44) -- only fetched when actually landing on a page that needs it; every other page renders from PAGES alone.
         const dynamicData = await buildDynamicData(section);
-        return sendV2Payload(interaction, buildManagePage(section, dynamicData, interaction.client), { content: actionFallbackNote });
+        return sendV2Payload(interaction, buildManagePage(section, dynamicData, interaction.client, null, { showEmojis: require('../utils/owner').isOwnerId(interaction.user.id) }), { content: actionFallbackNote });
     }
 };

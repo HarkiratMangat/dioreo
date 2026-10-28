@@ -49,7 +49,9 @@ async function run() {
             const [base, sub] = name.replace('/', '').split(' ');
             let opts = (registered[base] || {}).options || [];
             if (sub) opts = (opts.find(o => o.name === sub) || {}).options || [];
-            return opts.filter(o => o.type !== 1 && o.type !== 2).map(o => o.name);
+            // /manage is one subcommand per section (2026-10-28), and its /help block names the options its subcommands share, so a bare name here means all of them.
+            const leaves = os => os.flatMap(o => (o.type === 1 || o.type === 2) ? (sub || base !== 'manage' ? [] : leaves(o.options || [])) : [o]);
+            return (base === 'manage' && !sub ? leaves(opts) : opts.filter(o => o.type !== 1 && o.type !== 2)).map(o => o.name);
         };
         const perms = PERM_MATRICES.fullBotAdmin;
         const texts = c => [c.content || '', ...(c.components || []).flatMap(texts)].join('\n');

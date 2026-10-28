@@ -180,7 +180,7 @@ function registerLifecycle(client, commands) {
         // Emojis: every original in Cloudinary's emoji-originals/ onto both of this process's apps (utils/emojiSync.js runAutoSync; Harkirat, 2026-10-25 21:14-21:16 EDT: one upload, four bots, and never a copy downloaded from Discord). Each app's emoji map re-points by name when something was added, so the panels draw it at once. HOW OFTEN (his 21:18 EDT question, "what's that every 10 minute sync costing us?"): an idle check measured 0.9 s of waiting and 21 ms of CPU, but two calls from the Cloudinary account's 500 an hour, which prod shares with the dev bot. So prod checks once an hour, and the dev bot, which restarts on every saved file, checks at start-up at most once an hour (`.emoji-sync-last`); /emojis' Sync button runs the same check at any time.
         const emojiTick = async () => {
             try {
-                const apps = require('../commands/emojis').appsOfThisProcess();
+                const apps = require('../utils/emojiPanel').appsOfThisProcess();
                 const res = await require('../utils/emojiSync').runAutoSync(apps);
                 if (res.added?.length) {
                     console.log(`🙂 Emoji auto-sync added ${res.added.length}: ${res.added.slice(0, 10).join(', ')}${res.added.length > 10 ? '…' : ''}`);

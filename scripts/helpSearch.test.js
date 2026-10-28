@@ -35,8 +35,8 @@ const hasAll = (got, want, q) => { for (const w of want) assert.ok(got.includes(
         const w = await names('weapon', NOBODY);
         assert.ok(!w.includes('/autobuild') && !w.includes('Autobuild Gunsmith'), w.join(', '));
         const all = await names('', NOBODY);
-        for (const admin of ['/manage', '/emojis', '/bot analytics', '/admin', 'Add to Calendar']) assert.ok(!all.includes(admin), admin);
-        assert.ok((await names('emo', OWNER)).includes('/emojis'), 'the owner finds /emojis');
+        for (const admin of ['/manage', '/manage emojis', '/bot analytics', '/admin', 'Add to Calendar']) assert.ok(!all.includes(admin), admin);
+        assert.ok((await names('emo', OWNER)).includes('/manage emojis'), 'the owner finds /manage emojis');
     });
     await check('nonsense finds nothing; every suggestion fits Discord and names its job', async () => {
         assert.deepStrictEqual(await names('xyzzy', OWNER), []);

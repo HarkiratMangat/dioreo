@@ -1,15 +1,14 @@
 // ==========================================
-// COMMAND: /emojis — every app emoji, its prod id, which bots are missing it, and one tap to sync (owner only)
+// PANEL: /manage emojis — every app emoji, its prod id, which bots are missing it, and one tap to sync (owner only)
 // ==========================================
 // Harkirat, 2026-10-25 20:41 EDT: "make me a dioreo admin command /emojis which lists all the prod emojis, the emoji name, the emoji id, and if any of the bots are missing it, as well as a quick 1 tap to sync emojis". The data and the upload live in utils/emojiSync.js (its header has which apps a process can see and where Sync finds a file); this file draws the panel, and handlers/emojis.js answers its buttons (`emo_`).
 //
-// It lives on Dioreo Admin (bot/registry.js ADMIN_COMMAND_NAMES) and answers the owner only, on the command and on every button, like /bot hotpatch: an upload changes the app's own emoji list.
-const { SlashCommandBuilder } = require('discord.js');
-const emojis = require('../utils/emojiMap');
-const { isOwnerId } = require('../utils/owner');
-const { sendV2Payload } = require('../utils/sendV2Payload');
-const { buildPaginationRow } = require('../utils/paginationRow');
-const S = require('../utils/emojiSync');
+// It was the /emojis command until 2026-10-28 (Harkirat: "rename /emojis to /manage emojis and put it in the /manage panel's dropdown"), so this file moved from commands/ to utils/: it is a panel now, opened by commands/manage.js. It answers the owner only, on the opening and on every button, like /bot hotpatch: an upload changes the app's own emoji list.
+const emojis = require('./emojiMap');
+const { isOwnerId } = require('./owner');
+const { sendV2Payload } = require('./sendV2Payload');
+const { buildPaginationRow } = require('./paginationRow');
+const S = require('./emojiSync');
 
 const PAGE_SIZE = 12; // four marks a row since the status reports (21:16 EDT); 15 rows would pass Discord's 4,000 characters
 const ACCENT = 5793266; // Discord Blurple, the admin surfaces' colour
@@ -94,7 +93,8 @@ function buildEmojiPanel({ rows, apps, page = 0, filter = 'all', note = null, se
         { type: 2, style: 1, label: 'Upload original', custom_id: 'emo_upload', emoji: emojis.parseEmoji(emojis.mngAdd) },
         { type: 2, style: 2, label: 'Find...', custom_id: `emo_find_${f.key}`, emoji: emojis.parseEmoji(emojis.search) },
     ] });
-    return [{ type: 17, accent_color: ACCENT, components }];
+    // The /manage page dropdown, outside the container, so picking another section swaps the whole message back to /manage (2026-10-28 12:11 EDT). Every caller is owner-only, hence showEmojis.
+    return [{ type: 17, accent_color: ACCENT, components }, require('../commands/manage').buildPageSelectRow('emojis', { showEmojis: true })];
 }
 
 // ---- The result messages after an Upload original or a Sync (his mock-ups, 2026-10-28 11:43 EDT) ---- The names a result calls each bot: the prod pair by their own names, the dev pair as Dev and Dev Admin.
@@ -171,22 +171,15 @@ function findModal(filter) {
     return { title: 'Find an emoji', custom_id: `emo_findmodal_${filterOf(filter).key}`, components: [label('Emoji name', null, { type: 4, custom_id: 'q', style: 1, required: true, max_length: 32 })] };
 }
 
-const data = new SlashCommandBuilder()
-    .setName('emojis')
-    .setDescription('Every app emoji, which bots are missing it, and one tap to sync (owner only)')
-    .setDefaultMemberPermissions(0)
-    // The same Hidden/Public option every other command ends on (2026-10-28 14:21 UTC, Harkirat: "Emoji commands also doesn't have a visibility option"). Unset stays Hidden, as the panel always was: it lists the apps' emoji ids and holds the Sync and Upload buttons.
-    .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
-    .setIntegrationTypes([1]).setContexts([0, 1, 2]);
-
-async function execute(interaction) {
+// `/manage emojis`: a slash command answering with the panel as its own message, hidden or public by the visibility option. (Picking Emojis in /manage's dropdown does not come here; it swaps the message in place, handlers/manage/shared.js.)
+async function openEmojiPanel(interaction, { ephemeral = true } = {}) {
     if (!isOwnerId(interaction.user.id)) {
-        try { await interaction.reply({ content: `${emojis.cross} Only Dioreo's developer can use this.`, ephemeral: true }); } catch (e) { console.error('Failed to refuse /emojis:', e); }
+        try { await interaction.reply({ content: `${emojis.cross} Only Dioreo's developer can use this.`, ephemeral: true }); } catch (e) { console.error('Failed to refuse /manage emojis:', e); }
         return;
     }
-    await interaction.deferReply({ ephemeral: interaction.options.getString('visibility') !== 'public' });
+    await interaction.deferReply({ flags: ephemeral ? 64 : 0 });
     const state = await loadState();
     await sendV2Payload(interaction, buildEmojiPanel({ ...state, senderAppId: interaction.applicationId }));
 }
 
-module.exports = { data, execute, buildEmojiPanel, buildUploadReport, buildSyncReport, loadState, appsOfThisProcess, uploadModal, findModal, pageOf, FILTERS, PAGE_SIZE };
+module.exports = { openEmojiPanel, buildEmojiPanel, buildUploadReport, buildSyncReport, loadState, appsOfThisProcess, uploadModal, findModal, pageOf, FILTERS, PAGE_SIZE };

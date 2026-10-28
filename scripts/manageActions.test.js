@@ -158,10 +158,30 @@ check('MP and DMZ loadout pages offer the identical action set', () => {
 
 // Stage 3 (2026-08-14 18:05 EDT) -- the action: slash option + its scoped autocomplete route.
 
-check("/manage's action option is registered with autocomplete on", () => {
-    const actionOption = manageCommand.data.options.find(o => o.name === 'action');
-    assert.ok(actionOption, '/manage has no "action" option');
-    assert.strictEqual(actionOption.autocomplete, true, '"action" option does not have autocomplete enabled');
+check("every /manage subcommand with actions registers `action` with autocomplete on, and `visibility` last", () => {
+    const subs = manageCommand.data.toJSON().options.flatMap(o => o.type === 2 ? o.options : [o]); // type 2 = a group, 1 = a subcommand
+    assert.ok(subs.length >= 9, `only ${subs.length} subcommands`);
+    const withoutActions = new Set(['guide', 'emojis', 'titles']);
+    for (const sub of subs) {
+        const names = (sub.options || []).map(x => x.name);
+        // season titles opens a pop-up straight away, so it has no options at all.
+        if (sub.name === 'titles') { assert.deepStrictEqual(names, []); continue; }
+        assert.strictEqual(names[names.length - 1], 'visibility', `/manage ${sub.name}: visibility must be last`);
+        if (withoutActions.has(sub.name)) { assert.ok(!names.includes('action'), `/manage ${sub.name} has no actions to jump to`); continue; }
+        const actionOption = sub.options.find(x => x.name === 'action');
+        assert.ok(actionOption, `/manage ${sub.name} has no "action" option`);
+        assert.strictEqual(actionOption.autocomplete, true, `/manage ${sub.name}: "action" does not have autocomplete enabled`);
+    }
+});
+
+check('sectionOf maps every subcommand to the page it opens', () => {
+    const { SECTION_OF_SUBCOMMAND } = manageCommand;
+    const subs = manageCommand.data.toJSON().options.flatMap(o => o.type === 2 ? o.options.map(x => `${o.name} ${x.name}`) : [o.name]);
+    assert.deepStrictEqual([...subs].sort(), Object.keys(SECTION_OF_SUBCOMMAND).sort());
+    const fake = (group, sub) => ({ options: { getSubcommandGroup: () => group, getSubcommand: () => sub } });
+    assert.strictEqual(manageCommand.sectionOf(fake('gunsmiths', 'dmz')), 'loadouts_dmz');
+    assert.strictEqual(manageCommand.sectionOf(fake(null, 'patch-notes')), 'patchnotes');
+    assert.strictEqual(manageCommand.sectionOf(fake(null, null)), null);
 });
 
 check('listSlashActions returns only slash:true entries for the requested page', () => {

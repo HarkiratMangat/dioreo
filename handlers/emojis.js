@@ -1,7 +1,7 @@
 // ==========================================
 // EMOJIS — INTERACTION HANDLER
 // ==========================================
-// /emojis' controls (commands/emojis.js): `emo_filter_<view>`, `emo_page_<n>_<view>`, `emo_sync_<view>` (uploads every missing emoji to every app of this process that lacks it, utils/emojiSync.js), `emo_upload` + `emo_upmodal` (an original to Cloudinary under a name of his choosing, then to the bots), and `emo_find_<view>` + `emo_findmodal_<view>` (jump to a name). Owner only on every click: an upload changes the app's own emoji list.
+// /manage emojis' controls (utils/emojiPanel.js): `emo_filter_<view>`, `emo_page_<n>_<view>`, `emo_sync_<view>` (uploads every missing emoji to every app of this process that lacks it, utils/emojiSync.js), `emo_upload` + `emo_upmodal` (an original to Cloudinary under a name of his choosing, then to the bots), and `emo_find_<view>` + `emo_findmodal_<view>` (jump to a name). Owner only on every click: an upload changes the app's own emoji list.
 //
 // ⚠️ THE CRASH NET IS THE ROUTER'S, NOT THIS FILE'S (handlers/router.js); the error replies here are awaited in their own try/catch.
 const emojis = require('../utils/emojiMap');
@@ -43,7 +43,7 @@ const failureCard = (title, lines) => [{ type: 17, accent_color: 5793266, compon
 
 async function route(interaction) {
     if (!isOwnerId(interaction.user.id)) return refuse(interaction, "Only Dioreo's developer can use this.");
-    const P = require('../commands/emojis');
+    const P = require('../utils/emojiPanel');
     const S = require('../utils/emojiSync');
     const { sendV2Payload } = require('../utils/sendV2Payload');
     const draw = async (state, extra) => sendV2Payload(interaction, P.buildEmojiPanel({ ...state, ...extra, senderAppId: interaction.applicationId }));

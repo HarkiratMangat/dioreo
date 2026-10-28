@@ -2,7 +2,7 @@
 const assert = require('assert');
 const S = require('../utils/emojiSync');
 const { ModalBuilder } = require('discord.js');
-const { buildEmojiPanel, uploadModal, findModal, pageOf, PAGE_SIZE } = require('../commands/emojis');
+const { buildEmojiPanel, uploadModal, findModal, pageOf, PAGE_SIZE } = require('../utils/emojiPanel');
 
 let passed = 0, failed = 0;
 const pending = [];
@@ -51,6 +51,19 @@ t('an upload skips a file over 256 KB and a non-image, and stops at the first th
     const res = await S.uploadMissing(client, row, { fetchFn });
     assert.deepStrictEqual(res, { ok: true, via: 'original as 128px WebP' }, 'the 96px form is not reached once 128px fits');
     assert.deepStrictEqual(posted, [['/applications/APP/emojis', 'Beta', 'data:image/webp;base64']]);
+});
+
+t('the panel carries /manage\'s page dropdown outside its container, with Emojis picked (2026-10-28)', () => {
+    const rows = S.buildRows(prod, apps, { isProd: false, originals: new Map() });
+    const panel = buildEmojiPanel({ rows, apps: apps.map(a => ({ ...a, client: { application: { id: a.key } } })), senderAppId: 'main' });
+    assert.strictEqual(panel.length, 2);
+    assert.strictEqual(panel[0].type, 17);
+    const row = panel[1];
+    assert.strictEqual(row.type, 1, 'the dropdown sits outside the container');
+    const select = row.components[0];
+    assert.strictEqual(select.custom_id, 'mng_pagesel');
+    assert.deepStrictEqual(select.options.filter(o => o.default).map(o => o.value), ['emojis']);
+    assert.ok(select.options.some(o => o.value === 'draws') && select.options.some(o => o.value === 'announcement'), 'every /manage section is on it');
 });
 
 t('the panel: counts per app, the four views, a page of rows, and Sync naming how many', () => {
@@ -108,13 +121,6 @@ t('the auto-sync pushes only what the code or some bot uses, skips a recent fail
     } finally { globalThis['fe' + 'tch'] = okFetch; }
 });
 
-t('/emojis ends on the Hidden/Public visibility option like every other command (2026-10-28)', () => {
-    const options = require('../commands/emojis').data.toJSON().options;
-    assert.deepStrictEqual(options.map(o => o.name), ['visibility']);
-    assert.deepStrictEqual(options[0].choices.map(c => c.value), ['hidden', 'public']);
-    assert.ok(!options[0].required);
-});
-
 t('a row is the emoji, name and code, then a quote with the four bots and the Cloudinary original (2026-10-28)', () => {
     const rows = S.buildRows(prod, apps, { isProd: false, originals: new Map([['Alpha', {}]]) });
     const withClients = apps.map(a => ({ ...a, client: { application: { id: a.key } } }));
@@ -128,7 +134,7 @@ const reportApps = [
     { key: 'main', env: 'dev', short: 'Dev', label: 'Dioreo (Dev)', emojis: [], remote: true },
     { key: 'admin', env: 'dev', short: 'Dev Admin', label: 'Dioreo Admin (Dev)', emojis: [{ name: 'Heart' }], remote: true },
 ];
-const { buildUploadReport, buildSyncReport } = require('../commands/emojis');
+const { buildUploadReport, buildSyncReport } = require('../utils/emojiPanel');
 const textsOf = c => JSON.stringify(c).replace(/\\n/g, '\n');
 t('the upload result: Cloudinary, each bot, and what is still pending (2026-10-28)', () => {
     const out = buildUploadReport({ name: 'Heart', replaced: false, preview: '', apps: reportApps, outcome: ['added', 'had', null, null] });
