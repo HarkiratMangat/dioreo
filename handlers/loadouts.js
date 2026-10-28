@@ -44,10 +44,12 @@ async function route(interaction) {
             const id = interaction.customId;
             if (interaction.isButton() && id.startsWith('gsb~submit~')) {
                 const [, , mode, key] = id.split('~');
+                // `-` is /help's footer button: no weapon on screen, so nothing to prefill.
+                const fromHelp = key === '-';
                 const CatalogueItem = require('../models/CatalogueItem');
-                const [wait, known] = await Promise.all([subs.recentFrom(interaction.user.id), key ? CatalogueItem.findOne({ kind: 'weapon', key }).lean() : null]);
+                const [wait, known] = await Promise.all([subs.recentFrom(interaction.user.id), key && !fromHelp ? CatalogueItem.findOne({ kind: 'weapon', key }).lean() : null]);
                 if (await subs.rateLimitReply(interaction, wait)) return true;
-                const name = known ? known.name.toUpperCase() : (interaction.message?.components?.[0]?.components?.[0]?.content || '').replace(/^##\s*/, '').split('\n')[0];
+                const name = known ? known.name.toUpperCase() : fromHelp ? '' : (interaction.message?.components?.[0]?.components?.[0]?.content || '').replace(/^##\s*/, '').split('\n')[0];
                 return await interaction.showModal(subs.submitModal({ mode: mode === 'DMZ' ? 'DMZ' : 'MP', weaponName: name, category: known ? known.category : '' }));
             }
             if (interaction.isModalSubmit() && id.startsWith('gsb~subsave~')) return await subs.handleSubmitSave(interaction);
