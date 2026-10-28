@@ -28,6 +28,27 @@ async function refuse(interaction, text) {
     try { await interaction.reply({ content: `${emojis.cross} ${text}`, ephemeral: true }); } catch (e) { console.error('Failed to answer an /emojis click:', e); }
 }
 
+// The result of an upload or a sync as its own message under the panel (2026-10-28 10:39 EDT, Harkirat: the one-line footer note "is not noticeable"). It matches the panel's visibility: a hidden panel gets a hidden report. A raw webhook POST because discord.js's followUp does not serialise a Components V2 container; it answers THIS interaction, so it needs no channel permission.
+const REPORT_LINES_SHOWN = 15;
+function listLines(items) {
+    const shown = items.slice(0, REPORT_LINES_SHOWN).map(i => `- ${i}`);
+    if (items.length > REPORT_LINES_SHOWN) shown.push(`-# …and ${items.length - REPORT_LINES_SHOWN} more`);
+    return shown;
+}
+async function report(interaction, title, lines) {
+    const { Routes } = require('discord.js');
+    const hidden = interaction.message?.flags?.has?.(64) ?? true;
+    try {
+        await interaction.client.rest.post(Routes.webhook(interaction.applicationId, interaction.token), {
+            body: {
+                flags: 32768 | (hidden ? 64 : 0),
+                components: [{ type: 17, accent_color: 5793266, components: [{ type: 10, content: [`## ${title}`, ...lines].join('\n') }] }],
+                allowed_mentions: { parse: [] },
+            },
+        });
+    } catch (e) { console.error('/emojis: could not send the result message:', e?.message || e); }
+}
+
 async function route(interaction) {
     if (!isOwnerId(interaction.user.id)) return refuse(interaction, "Only Dioreo's developer can use this.");
     const P = require('../commands/emojis');
@@ -60,19 +81,22 @@ async function route(interaction) {
         const toBots = pickOf(interaction, 'bots') !== 'no';
         const file = await fileFrom(interaction, 'file').catch(() => null);
         let state = await P.loadState();
-        const again = (note) => draw(state, { filter: 'all', page: Math.max(0, P.pageOf(state.rows, 'all', name)), note });
-        if (!file) return again(`${emojis.cross} The file could not be read. Try the upload again.`);
-        if (!/^image\//.test(file.mime)) return again(`${emojis.cross} That file is not an image (${file.mime || 'unknown type'}).`);
-        if (file.data.length > S.MAX_ORIGINAL_BYTES) return again(`${emojis.cross} That file is ${Math.round(file.data.length / 1048576)} MB; the limit is 10 MB.`);
+        // A failure is reported as its own message too; the panel just redraws.
+        const again = async (note, titleLines) => { await draw(state, { filter: 'all', page: Math.max(0, P.pageOf(state.rows, 'all', name)), note: titleLines ? null : note }); if (titleLines) await report(interaction, `${emojis.cross} Upload failed: ${name}`, titleLines); };
+        const fail = (text) => again(null, [text.replace(new RegExp('^' + emojis.cross + ' '), '')]);
+        if (!file) return fail('The file could not be read. Try the upload again.');
+        if (!/^image\//.test(file.mime)) return fail(`That file is not an image (${file.mime || 'unknown type'}).`);
+        if (file.data.length > S.MAX_ORIGINAL_BYTES) return fail(`That file is ${Math.round(file.data.length / 1048576)} MB; the limit is 10 MB.`);
         let taken = false;
-        try { taken = (await S.listOriginals({ force: true })).has(name); } catch (e) { return again(`${emojis.cross} Could not check Cloudinary for the name: ${S.safeCloudinaryError(e)}`); }
+        try { taken = (await S.listOriginals({ force: true })).has(name); } catch (e) { return fail(`Could not check Cloudinary for the name: ${S.safeCloudinaryError(e)}`); }
         // Names differing only in case are separate files in Cloudinary and separate emojis in Discord, which reads as a duplicate; say so instead of uploading.
         const caseTwin = state.rows.find(r => r.name !== name && r.name.toLowerCase() === name.toLowerCase());
-        if (caseTwin) return again(`${emojis.cross} **${caseTwin.name}** already exists with different capitals. Use that name, or another one.`);
-        if (taken && !replace) return again(`${emojis.cross} **${name}** is already in Cloudinary. Upload again and pick "Replace the original" to swap it.`);
+        if (caseTwin) return fail(`**${caseTwin.name}** already exists with different capitals. Use that name, or another one.`);
+        if (taken && !replace) return fail(`**${name}** is already in Cloudinary. Upload again and pick "Replace the original" to swap it.`);
         const up = await S.uploadOriginal(file.data, name, { mime: file.mime, overwrite: replace });
-        if (!up.ok) { console.error(`/emojis upload of ${name} failed: ${up.error}`); return again(`${emojis.cross} Cloudinary refused **${name}**: ${up.error}`); }
-        const parts = [`${emojis.checkmark} **${name}** ${taken ? 'replaced in' : 'uploaded to'} Cloudinary`];
+        if (!up.ok) { console.error(`/emojis upload of ${name} failed: ${up.error}`); return fail(`Cloudinary refused **${name}**: ${up.error}`); }
+        const lines = [`- Cloudinary: ${taken ? 'replaced the original' : 'uploaded the original'}`];
+        let anyFailed = false;
         if (toBots) {
             const added = [], kept = [], failed = [];
             const row = state.rows.find(r => r.name === name) || { name, animated: /gif|webp|avif/.test(file.mime), knownIds: [], has: state.apps.map(() => false) };
@@ -83,14 +107,18 @@ async function route(interaction) {
                 if (res.ok) added.push(app.label); else { failed.push(app.label); console.error(`/emojis: adding ${name} to ${app.label} failed: ${res.error}`); }
             }
             for (const app of state.apps.filter(x => !x.remote)) { try { await emojis.refreshEmojiIds(app.client, { secondary: app.key === 'admin' }); } catch (e) { console.error('Emoji map refresh after an /emojis upload failed:', e?.message || e); } }
-            if (added.length) parts.push(`added to ${added.join(' and ')}`);
-            if (kept.length) parts.push(`${kept.join(' and ')} kept ${kept.length > 1 ? 'their' : 'its'} copy${replace && taken ? ' (delete it there to take the new file)' : ''}`);
-            if (failed.length) parts.push(`${emojis.cross} could not add to ${failed.join(' and ')} (details in the log)`);
+            if (added.length) lines.push(`- Added to: ${added.join(' and ')}`);
+            if (kept.length) lines.push(`- Already had it, left as is: ${kept.join(' and ')}${replace && taken ? ' (delete it there to take the new file)' : ''}`);
+            if (failed.length) { anyFailed = true; lines.push(`- ${emojis.cross} Could not add to: ${failed.join(' and ')} (details in the log)`); }
+        } else {
+            lines.push('- Bots: not added (you chose Cloudinary only)');
         }
         state = await P.loadState();
         await S.writeStatus(state.apps.filter(x => !x.remote));
-        if (toBots) parts.push('the other bot adds it within 10 minutes');
-        return again(parts.join(' · '));
+        if (toBots) lines.push('-# The other bot adds it from Cloudinary within 10 minutes.');
+        await draw(state, { filter: 'all', page: Math.max(0, P.pageOf(state.rows, 'all', name)) });
+        const preview = emojis.byName?.(name);
+        return report(interaction, `${anyFailed ? emojis.warn : emojis.checkmark} ${taken ? 'Replaced' : 'Uploaded'} ${preview ? `${preview} ` : ''}**${name}**`, lines);
     }
 
     if (!interaction.isButton()) return;
@@ -113,11 +141,18 @@ async function route(interaction) {
         }
         state = await P.loadState();
         const noFile = state.rows.filter(r => r.prodEmoji && r.hasOriginal === false && r.has.some((h, i) => !h && !state.apps[i].remote)).length;
-        note = res.skipped ? 'A sync is already running; try again in a moment.'
-            : [res.added.length ? `${emojis.checkmark} Synced ${res.added.length}` : 'Nothing to sync',
-                res.failed.length ? `${emojis.cross} ${res.failed.length} failed: ${res.failed.slice(0, 5).join(', ')}${res.failed.length > 5 ? '…' : ''} (details in the log)` : null,
-                res.held?.length ? `${res.held.length} failed earlier today, retried tomorrow` : null,
-                noFile ? `${noFile} need their original first (No original)` : null].filter(Boolean).join(' · ');
+        if (res.skipped) {
+            await draw(state, { page, filter });
+            return report(interaction, `${emojis.warn} Sync already running`, ['A sync is already running (the 10-minute timer or another tap). Try again in a moment.']);
+        }
+        await draw(state, { page, filter });
+        const lines = [];
+        if (res.added.length) lines.push(`**Added (${res.added.length})**`, ...listLines(res.added));
+        if (res.failed.length) lines.push(`**${emojis.cross} Failed (${res.failed.length})**`, ...listLines(res.failed), '-# Details are in the log.');
+        if (res.held?.length) lines.push(`-# ${res.held.length} failed earlier today and are retried tomorrow.`);
+        if (noFile) lines.push(`-# ${noFile} still need an original uploaded first (see No original).`);
+        if (!lines.length) lines.push('Every bot already has every emoji that has an original.');
+        return report(interaction, res.failed.length ? `${emojis.warn} Sync finished with failures` : res.added.length ? `${emojis.checkmark} Synced ${res.added.length} emoji${res.added.length > 1 ? 's' : ''}` : 'Nothing to sync', lines);
     }
     return draw(state, { page, filter, note });
 }

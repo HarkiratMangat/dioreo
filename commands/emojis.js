@@ -69,8 +69,9 @@ function buildEmojiPanel({ rows, apps, page = 0, filter = 'all', note = null, se
     const codeOf = r => `<${r.animated ? 'a' : ''}:${r.name}:${r.prodId || r.copies.find(Boolean)?.id || '?'}>`;
     const stats = [`**${prodRows.length}** emojis`, ...apps.map((a, i) => `${a.label} missing **${prodRows.filter(r => !r.has[i]).length}**${a.remote ? ` (as of <t:${Math.floor(new Date(a.at).getTime() / 1000)}:R>)` : ''}`)];
     if (originalsKnown) stats.push(`**${prodRows.filter(r => r.hasOriginal === false).length}** with no original`);
+    // Two lines a row (his example, 2026-10-28 10:39 EDT): the emoji, its name and its code, then the four bots under it as subtext, indented by the blank spacer and an en space so they sit under the name.
     const lines = shown.slice(p * PAGE_SIZE, (p + 1) * PAGE_SIZE).map(r =>
-        `${icon(r)} **${r.name}** · \`${codeOf(r)}\` · ${apps.map((a, i) => `${r.has[i] ? emojis.check : emojis.cross} ${a.short || a.label}`).join('  ')}${r.hasOriginal === false && r.prodEmoji ? ' · *no original*' : ''}`);
+        `${icon(r)} **${r.name}** · \`${codeOf(r)}\`\n-# ${emojis.blank}\u2002${apps.map((a, i) => `${r.has[i] ? emojis.check : emojis.cross} ${a.short || a.label}`).join('  ')}${r.hasOriginal === false && r.prodEmoji ? ' · *no original*' : ''}`);
     const empty = { all: 'No emojis.', missing: `${emojis.checkmark} No bot is missing an emoji.`, nofile: `${emojis.checkmark} Every emoji has its original in Cloudinary.`, unused: `${emojis.checkmark} Every emoji on the bots is one the code uses.` }[f.key];
     const components = [
         { type: 10, content: `## Emojis\n-# ${stats.join(' · ')}` },
