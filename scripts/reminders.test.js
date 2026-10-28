@@ -131,11 +131,13 @@ t('Leaving soon by kind: the old all-kinds key reads as all four, and one kind c
     assert.ok([...p.lastChance, ...p.leavingSoon].every(e => e.type === 'event'), 'only events remind before leaving');
 });
 
-t('New season wears this season\'s emoji, on the panel and in the DM', () => {
-    const d9 = doc({ currentSeasonTitle: 'Season 9: Test', currentSeasonEmoji: '<:S9Test:111>' });
+t('New season wears the live season\'s emoji when no upcoming one exists, on the panel and in the DM', () => {
+    // Season 99 has no next-season emoji in the app, so the button falls back to the live season's (his rule, 2026-10-28 18:16 EDT: upcoming first, else current).
+    const d99 = doc({ currentSeasonTitle: 'Season 99: Test', currentSeasonEmoji: '<:S9Test:111>' });
     const btns = []; const w = c => { if (c.type === 2) btns.push(c); (c.components || []).forEach(w); };
-    R.buildPanel(sub({ categories: ['newSeason'] }), d9, { ownerId: 'u1', nowMs: RUN }).forEach(w);
+    R.buildPanel(sub({ categories: ['newSeason'] }), d99, { ownerId: 'u1', nowMs: RUN }).forEach(w);
     assert.strictEqual(btns.find(b => b.custom_id === 'remind_cat:newSeason:u1').emoji?.name, 'S9Test');
+    const d9 = doc({ currentSeasonTitle: 'Season 9: Test', currentSeasonEmoji: '<:S9Test:111>' });
     const dm = JSON.stringify(R.buildReminderDM({ newSeason: { title: 'Season 9: Test', emoji: '<:S9Test:111>' }, released: [], lastChance: [], leavingSoon: [], seasonEnds: [], patchNotes: [], fired: [] }, d9, { nowMs: RUN }));
     assert.ok(dm.includes('### <:S9Test:111> New season'));
 });
@@ -285,6 +287,18 @@ t('a day busy enough for Search still fits in 40, by dropping the gap above the 
     assert.ok(s.includes('remind_search:1') && s.includes('remind_ann:1'), 'Search and Announcements both shown');
     const n = require('../commands/today').countComponents(panel);
     assert.ok(n <= 40, `within 40, got ${n}`);
+});
+
+t('New season button wears the upcoming season\'s emoji, else the live one (2026-10-28 18:16 EDT)', () => {
+    const { upcomingSeasonEmoji } = require('../utils/seasonEmoji');
+    const emo = require('../utils/emojiMap');
+    assert.strictEqual(upcomingSeasonEmoji({ currentSeasonTitle: 'Season 9 — Vampires vs Werewolves', draft: { active: true, currentSeasonTitle: '' } }), emo.season10, 'no draft title: season N+1');
+    assert.strictEqual(upcomingSeasonEmoji({ currentSeasonTitle: 'Season 9', draft: { active: true, currentSeasonEmoji: '<:S10Draft:222>' } }), emo.repoint('<:S10Draft:222>'), 'the draft\'s own emoji wins');
+    // And the panel itself: Season 9 live with a Season 10 emoji in the app shows Season 10's.
+    const btns = []; const w = c => { if (c.type === 2) btns.push(c); (c.components || []).forEach(w); };
+    R.buildPanel(sub({ categories: ['newSeason'] }), doc({ currentSeasonTitle: 'Season 9: Test', currentSeasonEmoji: '<:S9Test:111>' }), { ownerId: 'u1', nowMs: RUN }).forEach(w);
+    assert.strictEqual(btns.find(b => b.custom_id === 'remind_cat:newSeason:u1').emoji?.id, emo.season10.match(/:(\d+)>$/)[1], 'Season 10\'s emoji on the button');
+    assert.strictEqual(upcomingSeasonEmoji({ currentSeasonTitle: 'Season 99' }), null, 'no such emoji: null, caller falls back');
 });
 
 console.log(`\n${failed ? 'FAILED' : 'all passed'}: ${passed} passed, ${failed} failed`);
