@@ -4,13 +4,13 @@ name: CI
 # Until then this was ONE job running `npm test` — a 132-command `&&` chain, one command at a time, stopping at the first failure — and then the records steps after it. Measured before the rebuild: 267 s for the job, 215 s of it `npm test`, and CI's average run had grown from about 118 s to about 320 s in four weeks with nothing reporting it.
 #
 #   tests         every manifest lane except the browser walks, in a pool (scripts/testRunner.mjs)
-#   browser       the three entries that start Chrome, on their own 4 vCPUs — browser walks sharing a runner with the rest of the suite is where their stalls came from
+#   browser       the three entries that start Chrome, on their own 4 vCPUs — browser walks sharing a runner with the rest of the suite is where their stalls came from. Only when `changes` says the portal's inputs moved
 #   records       the documentation audit and its self-test, emoji captures, the committed site, the dependency audits
-#   changes       whether this change touches the hooks
+#   changes       whether this change touches the hooks, and whether it touches what the browser walks read
 #   hooks-macos   the hook suite on macOS, only when `changes` says so: the hooks run on Harkirat's Mac (bash 3.2, BSD find and date) and CI's Linux has already hidden two real bugs of exactly that kind
 #   syntax-check  the aggregate, and the ONLY required status check. Its name is the one branch protection knows, so it must never be renamed; it fails unless tests, browser, records and changes succeeded. hooks-macos is ADVISORY (a warning on the run, never a failure) until it has been green on real macOS runs — it had never run on a macOS image when it was added (2026-09-14 19:56 EDT), and a first-run environment mismatch must not block every hooks PR. Promoting it is filed in docs/db-deferred-list.md
 #
-# 🔴 CI RUNS EVERYTHING, EVERY TIME. Harkirat, 2026-09-14: "Local only, CI runs everything." The runner's input cache exists only on a developer machine and is never read here (CI=true).
+# 🔴 CI RUNS EVERY ENTRY EXCEPT THE BROWSER WALKS WHEN NOTHING THEY READ CHANGED. Harkirat, 2026-09-14: "Local only, CI runs everything." The runner's input cache exists only on a developer machine and is never read here (CI=true). The one exception, Harkirat 2026-10-28: "why are all these checks running? such as browser walks and stuff when we didn't even touch portal/browser code?" The three walks render the portal harness from static fixtures (no Mongo, no bot code), so a change outside their inputs cannot move their result; `changes` lists those inputs, and any event without a comparable base still runs them.
 #
 # `v3-pre-release` is listed alongside `main` deliberately: under the v3 development structure (docs/superpowers/specs/2026-07-27-v3-development-structure-design.md) every v3 feature PR targets `v3-pre-release`, not `main`. With `main` alone here, none of that work would run CI at all — and the failure is silent, since a repo with no runs looks the same as a repo whose runs all pass. Any future long-lived integration branch needs adding to BOTH lists for the same reason.
 on:
@@ -63,6 +63,8 @@ jobs:
 
   browser:
     name: browser walks
+    needs: changes
+    if: needs.changes.outputs.browser == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -129,6 +131,7 @@ jobs:
     timeout-minutes: 5
     outputs:
       hooks: ${{ steps.diff.outputs.hooks }}
+      browser: ${{ steps.diff.outputs.browser }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -147,12 +150,14 @@ jobs:
           elif [ "$EVENT" = pull_request ]; then base="origin/$BASE_REF"
           elif [ -n "$BEFORE" ] && git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then base="$BEFORE"
           fi
-          # No comparable base (a called run, a new branch, a force-push): run the macOS job rather than guess.
-          if [ -z "$base" ]; then echo "hooks=true" >> "$GITHUB_OUTPUT"; echo "::notice::No comparable base for this event, so hooks-macos runs."; exit 0; fi
+          # No comparable base (a called run, a new branch, a force-push): run both gated jobs rather than guess.
+          if [ -z "$base" ]; then { echo "hooks=true"; echo "browser=true"; } >> "$GITHUB_OUTPUT"; echo "::notice::No comparable base for this event, so hooks-macos and the browser walks run."; exit 0; fi
           changed=$(git diff --name-only "$base"...HEAD)
           # A here-string, never `git diff | grep -q`: under pipefail, grep -q exits at its first match and the writer's SIGPIPE turns a found needle into a failure — the same flake self-check.test.sh had.
           # settings.json counts: the hook self-tests read it (self-check asserts every hook is registered there).
           if grep -Eq '^(\.claude/hooks/|\.claude/settings\.json$|scripts/hookOutputCap)' <<< "$changed"; then echo "hooks=true" >> "$GITHUB_OUTPUT"; else echo "hooks=false" >> "$GITHUB_OUTPUT"; fi
+          # What the browser walks read: portal/ (ui, harness, fixtures and the state/geometry registries), the mockup assets scripts/buildPortal.js copies (its BUILD_INPUTS, which scripts/buildPortalInputs.test.mjs keeps honest), the walk drivers and their helpers, the vendored packages through the lockfile, and the files that decide what runs (the manifest, the runner, this workflow). ⚠️ A NEW INPUT TO A WALK GOES HERE TOO, or a change to it passes CI without the walk that would have caught it.
+          if grep -Eq '^(portal/|docs/superpowers/mockups/2026-08-23-portal-interactive/|scripts/(portal|buildPortal)|scripts/lib/(portal|walkJobs|chromePath)|package(-lock)?\.json$|scripts/test(Manifest|Runner)\.mjs$|\.github/workflows/ci\.yml$)' <<< "$changed"; then echo "browser=true" >> "$GITHUB_OUTPUT"; else echo "browser=false" >> "$GITHUB_OUTPUT"; fi
 
   hooks-macos:
     name: hooks on macOS
@@ -194,11 +199,16 @@ jobs:
           RECORDS: ${{ needs.records.result }}
           CHANGES: ${{ needs.changes.result }}
           HOOKS_MACOS: ${{ needs.hooks-macos.result }}
+          BROWSER_WANTED: ${{ needs.changes.outputs.browser }}
         run: |
           echo "tests=$TESTS browser=$BROWSER records=$RECORDS changes=$CHANGES hooks-macos=$HOOKS_MACOS"
-          for result in "$TESTS" "$BROWSER" "$RECORDS" "$CHANGES"; do
+          for result in "$TESTS" "$RECORDS" "$CHANGES"; do
             [ "$result" = success ] || { echo "::error::a required job ended as '$result'"; exit 1; }
           done
+          # The browser walks are REQUIRED whenever they run, and may be skipped ONLY when `changes` said the portal's inputs did not move. A skip for any other reason (`changes` failing, a cancelled run) is a failure, so a broken diff step can never turn into a quietly green PR.
+          if [ "$BROWSER_WANTED" = false ] && [ "$BROWSER" = skipped ]; then echo "browser walks skipped: nothing they read changed"
+          else [ "$BROWSER" = success ] || { echo "::error::browser walks ended as '$BROWSER'"; exit 1; }
+          fi
           # hooks-macos is ADVISORY until promoted (see the header): skipped when the change does not touch the hooks, and a failure is a warning on the run and a line in the summary, not a red check.
           case "$HOOKS_MACOS" in
             success|skipped) ;;
