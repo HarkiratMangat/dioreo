@@ -315,7 +315,7 @@ module.exports = {
         if (!interaction.deferred) await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
 
         const seasonalDoc = await seasonalDocPromise;
-        if (!seasonalDoc) return interaction.followUp({ content: `${emojis.cross} The global seasonal database document has not been initialized yet.` });
+        if (!seasonalDoc) return require('../utils/ephemeral').privateNotice(interaction, `${emojis.cross} The global seasonal database document has not been initialized yet.`);
 
         // Calendar's accent (his call, 2026-10-23 10:00 EDT), through the same /settings accent style every seasonal command honours.
         const { PRESET_ACCENT } = require('./calendar');

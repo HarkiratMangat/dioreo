@@ -284,7 +284,7 @@ module.exports = {
         const seasonalDoc = await seasonalDocPromise;
 
         if (!seasonalDoc || !seasonalDoc.patchNotes || seasonalDoc.patchNotes.length === 0) {
-            return interaction.followUp({ content: BOT_EMOJI.cross + ' No patch notes have been logged in the database yet.' });
+            return require('../utils/ephemeral').privateNotice(interaction, BOT_EMOJI.cross + ' No patch notes have been logged in the database yet.');
         }
 
         const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);

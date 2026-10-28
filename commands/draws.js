@@ -212,7 +212,7 @@ module.exports = {
 
         const seasonalDoc = await seasonalDocPromise;
         if (!seasonalDoc) {
-            return interaction.followUp({ content: BOT_EMOJI.cross + ' The global seasonal database document has not been initialized yet.' });
+            return require('../utils/ephemeral').privateNotice(interaction, BOT_EMOJI.cross + ' The global seasonal database document has not been initialized yet.');
         }
 
         const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);

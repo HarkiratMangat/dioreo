@@ -367,7 +367,7 @@ module.exports = {
         const seasonalDoc = await seasonalDocPromise;
 
         if (!seasonalDoc) {
-            return interaction.followUp({ content: BOT_EMOJI.cross + ' The global seasonal database document has not been initialized yet.' });
+            return require('../utils/ephemeral').privateNotice(interaction, BOT_EMOJI.cross + ' The global seasonal database document has not been initialized yet.');
         }
 
         // The filter's /settings default preference was SILENCED 2026-08-15 13:01 EDT (Harkirat's direct request) -- the field itself (`calendarEventFilter`) was removed from UserPreference 2026-10-21 15:58 EDT (Harkirat: "remove the setting's default calendar view option since it doesn't matter anymore"). The slash `filter` is a one-off, defaulting to the full timeline. Never saved, only read on a real slash-command launch.
