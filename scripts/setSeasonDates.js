@@ -1,7 +1,6 @@
 // scripts/setSeasonDates.js -- give a past season its own dates, its Battle Pass start and end, so /patch notes' dropdown shows them instead of release date to next release date (2026-10-28). Promote to Live saves them for the outgoing season from now on; this is for seasons that rotated before that.
 //
-// Usage: node --env-file=<env file> scripts/setSeasonDates.js <season number or name> <start YYYY-MM-DD> <end YYYY-MM-DD> [--write]
-// Without --write it only prints what it would change. The write goes through the operation core as the owner, so it shows on /bot analytics' Changes page and can be reverted there.
+// Usage: node --env-file=<env file> scripts/setSeasonDates.js <season number or name> <start YYYY-MM-DD> <end YYYY-MM-DD> [--write] Without --write it only prints what it would change. The write goes through the operation core as the owner, so it shows on /bot analytics' Changes page and can be reverted there.
 require('dotenv').config({ quiet: true });
 const mongoose = require('mongoose');
 const SeasonalData = require('../models/SeasonalData');
