@@ -5,8 +5,15 @@
 // The resolution follows Discord's documented order for command permissions: a member override beats a role override, a role override beats @everyone; a channel override beats "all channels"; a command-level answer beats the app-level one; Administrator bypasses all of it; anything unset is allowed.
 const { Routes, PermissionFlagsBits } = require('discord.js');
 
-const CACHE_MS = 10 * 60 * 1000;
+// One minute, and dropped at once when Discord says the permissions changed (applicationCommandPermissionsUpdate, wired in bot/textCommands.js): a switch an admin just flipped must bite on the next message, not ten minutes later (security review, 2026-10-28 17:55 EDT).
+const CACHE_MS = 60 * 1000;
+// A failure to read is remembered for a minute too, so a denied member can't make every message cost a REST call.
+const FAILURE_MS = 60 * 1000;
 const cache = new Map();
+
+function invalidateGuildOverrides(guildId) {
+    cache.delete(guildId);
+}
 
 // One level's answer for each dimension: true / false / undefined (nothing set).
 function levelAnswer(permissions, { userId, roleIds, channelId, parentId, guildId }) {
@@ -46,31 +53,40 @@ function allowedByOverrides(overrides, { appId, commandId, guildId, userId, role
 
 async function guildOverrides(client, guildId) {
     const hit = cache.get(guildId);
-    if (hit && Date.now() - hit.at < CACHE_MS) return hit.list;
+    if (hit && Date.now() - hit.at < (hit.failed ? FAILURE_MS : CACHE_MS)) {
+        if (hit.failed) throw new Error('permissions unreadable (cached failure)');
+        return hit.list;
+    }
     const appId = client.application?.id || client.user?.id;
-    const list = await client.rest.get(Routes.guildApplicationCommandsPermissions(appId, guildId));
-    cache.set(guildId, { at: Date.now(), list });
-    return list;
+    try {
+        const list = await client.rest.get(Routes.guildApplicationCommandsPermissions(appId, guildId));
+        cache.set(guildId, { at: Date.now(), list });
+        return list;
+    } catch (err) {
+        cache.set(guildId, { at: Date.now(), failed: true });
+        throw err;
+    }
 }
 
-// For a text command's run or a button that runs one. Fails OPEN when Discord can't be asked (the slash command would work in that case too), logging why.
-async function textCommandAllowed({ client, guildId, member, userId, channel }, slashName) {
+// For a text command's run or a button that runs one. Fails CLOSED (security review, 2026-10-28 17:55 EDT): if Discord can't be asked, or the server has overrides but this command's id or the member is unknown, the text command stays silent rather than risk running something an admin switched off. A server with no overrides at all is the common case and costs one cached read a minute.
+async function textCommandAllowed({ client, guildId, member, userId, channel, channelId }, slashName) {
     if (!guildId) return true;
     try {
         const overrides = await guildOverrides(client, guildId);
         if (!overrides?.length) return true;
         // Captured every boot by bot/registry.js from the registration response (the dev and prod apps have different ids).
         const commandId = client.commandIds?.get?.(slashName) ?? null;
+        if (!commandId || !member) return false;
         const roleIds = member?.roles?.cache ? [...member.roles.cache.keys()] : (Array.isArray(member?.roles) ? member.roles : []);
         const isAdministrator = Boolean(member?.permissions?.has?.(PermissionFlagsBits.Administrator));
         return allowedByOverrides(overrides, {
             appId: client.application?.id || client.user?.id, commandId, guildId, userId, roleIds,
-            channelId: channel?.id, parentId: channel?.isThread?.() ? channel.parentId : null, isAdministrator,
+            channelId: channel?.id || channelId, parentId: channel?.isThread?.() ? channel.parentId : null, isAdministrator,
         });
     } catch (err) {
-        console.error('Text commands: could not read the server\'s command permissions; allowing:', err?.message || err);
-        return true;
+        console.error('Text commands: could not read the server\'s command permissions; staying silent:', err?.message || err);
+        return false;
     }
 }
 
-module.exports = { allowedByOverrides, textCommandAllowed };
+module.exports = { allowedByOverrides, textCommandAllowed, invalidateGuildOverrides };

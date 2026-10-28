@@ -174,6 +174,10 @@ function registerTextCommands(client) {
         if (!message?.createdTimestamp || Date.now() - message.createdTimestamp > EDIT_WINDOW_MS) return;
         onMessage(message, { edited: true }).catch(err => console.error('Text command listener (edit) failed:', err));
     });
+    // An admin's switch takes effect on the very next message (utils/textCommands/permissions.js caches a minute otherwise).
+    client.on('applicationCommandPermissionsUpdate', data => {
+        if (data?.guildId) require('../utils/textCommands/permissions').invalidateGuildOverrides(data.guildId);
+    });
     // Keeps the in-memory maps small. unref'd so it never holds the process open.
     setInterval(() => {
         const now = Date.now();
