@@ -193,11 +193,17 @@ t('upgrades multiply PER BANNER -- 3 mythic banners carry exactly 3 upgrades', (
 });
 
 t('an unpriced banner (no data at this region) is EXCLUDED from the total and reported, never silently dropped or estimated', () => {
+    // Made unpriced here and put back: every draw has 20 CP figures since 2026-10-27 21:59 EDT.
+    const { DRAW_DATA } = require('../commands/drawprices');
+    const saved = DRAW_DATA.region_20.doubleEpicCharacters;
+    DRAW_DATA.region_20.doubleEpicCharacters = null;
+    try {
     const { total, perBanner } = basketCost('region_20', [{ drawKey: 'doubleEpicCharacters', pullsDone: 0 }, { drawKey: 'mythicWeapon', pullsDone: 0 }], false);
     assert.strictEqual(perBanner[0].priced, false, 'doubleEpicCharacters has no region_20 data');
     assert.strictEqual(total, perBanner[1].cost, 'the unpriced banner must contribute 0, not be silently dropped from perBanner');
     const panel = render(makeBasket({ region: 'region_20', banners: [{ drawKey: 'doubleEpicCharacters', pullsDone: 0 }, { drawKey: 'mythicWeapon', pullsDone: 0 }] }));
     assert.ok(/excluded/i.test(allText(panel)), 'the panel must NAME the excluded banner, not silently omit it');
+    } finally { DRAW_DATA.region_20.doubleEpicCharacters = saved; }
 });
 
 // ==========================================
@@ -1130,8 +1136,16 @@ t('Help explains what the screen cannot: the price ladder for the open draw, how
     assert.ok(/last 3 spins are \*\*\d+%\*\*/.test(text));
     assert.ok(/Other draw types may start higher, so do not check those\./.test(text), 'never "check any draw": some draws start above the region (his wording, 2026-10-18 19:56 EDT)');
     assert.strictEqual(/Words You'll See|### Buttons/.test(text), false);
-    const fallback = allText(dc.buildHelpPanel(ACCENT, { region: 'region_20', drawKey: 'doubleEpicCharacters' }));
-    assert.ok(/Mythic Weapon\*\* at .*20 CP/.test(fallback), 'a draw with no prices at that region falls back to Mythic Weapon');
+    const own = allText(dc.buildHelpPanel(ACCENT, { region: 'region_20', drawKey: 'doubleEpicCharacters' }));
+    assert.ok(/`20` › `50` › /.test(own), 'Double Epic Characters has its own 20 CP ladder since 2026-10-27 22:01 EDT');
+    // The fallback is for a draw with no figures at a region; none is left, so the gap is made here and put back.
+    const { DRAW_DATA } = require('../commands/drawprices');
+    const saved = DRAW_DATA.region_20.doubleEpicCharacters;
+    DRAW_DATA.region_20.doubleEpicCharacters = null;
+    try {
+        const fallback = allText(dc.buildHelpPanel(ACCENT, { region: 'region_20', drawKey: 'doubleEpicCharacters' }));
+        assert.ok(/Mythic Weapon\*\* at .*20 CP/.test(fallback), 'a draw with no prices at that region falls back to Mythic Weapon');
+    } finally { DRAW_DATA.region_20.doubleEpicCharacters = saved; }
 });
 
 t('the calculator sends no Show Everyone row (2026-10-14 18:34 EDT)', () => {

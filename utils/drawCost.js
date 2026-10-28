@@ -5,7 +5,7 @@
 //
 // ⚠️ PULL COUNTS ARE NOT UNIFORMLY TEN. sevenSpinLegendaryWeapon and pickYourRewardCard have SEVEN pulls. Every bound below derives from draws.length for that reason; a hardcoded 10 would pass testing on the seven common draws and silently overcount on the other two.
 //
-// ⚠️ ABSENT DATA RETURNS null, NEVER AN ESTIMATE. doubleEpicCharacters has no data at region_20 or region_30, and the two mythic draws have no upgrade figure at region_20. Both gaps are deliberate -- Harkirat refused to ship a speculative estimate as real pricing -- so callers render the existing "haven't done the research yet" placeholder rather than computing around them.
+// ⚠️ ABSENT DATA RETURNS null, NEVER AN ESTIMATE. No draw is missing data any more (doubleEpicCharacters' 20 and 30 CP figures arrived 2026-10-27 21:59 EDT, the mythic upgrades at 20 CP on 2026-10-16), but the rule stands for the next draw type added with partial figures. The gaps were deliberate -- Harkirat refused to ship a speculative estimate as real pricing -- so callers render the existing "haven't done the research yet" placeholder rather than computing around them.
 const { DRAW_DATA, MYTHIC_UPGRADE, upgradeFullAmount, SERIES_ARMORY, ARMORY_SPIN_CP, ADVANCED_DOUBLE_LEGENDARY, ADVANCED_DOUBLE_LEGENDARY_CHARACTER } = require('../commands/drawprices');
 
 // ==========================================
