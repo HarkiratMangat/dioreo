@@ -104,6 +104,9 @@ function textOf(components) {
         const slash = textOf(sent[0].components);
         assert.ok(slash.includes('Dioreo User Since'), 'a slash run shows the Dioreo line (now, on a first /settings)');
         assert.ok(!slash.includes('Member Since'), 'the Discord account date is gone');
+        assert.match(slash, /User Since: \n-# [A-Z][a-z]+day, [A-Z][a-z]+ \d{1,2}(st|nd|rd|th), \d{4} \(<t:\d+:R>\)/, 'the date has a weekday and an ordinal but no time of day (2026-10-28)');
+        assert.ok(!slash.includes(' at '), 'no time of day to wrap on a phone');
+        assert.ok(slash.includes('Dioreo bot news and updates.') && !slash.includes('News from Dioreo'), 'the Announcements description, 2026-10-28');
         await settings.execute(fakeInteraction({ slash: false }), 1);
         const button = textOf(sent[1].components);
         assert.ok(!button.includes('Dioreo User Since') && !button.includes('Member Since'), 'no date on a re-render means no line, not a wrong one');
