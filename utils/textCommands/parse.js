@@ -83,7 +83,7 @@ function matchCommand(tokens, index, { allowTypos }) {
     return { candidates: list.map(h => h.cmd) };
 }
 
-// The verdict. kind: 'run' | 'didYouMean' | 'help' | 'roleHint' | null (stay silent).
+// The verdict. kind: 'run' | 'didYouMean' | 'help' | 'roleHint' | 'emojiReply' | null (stay silent).
 function parseTextCommand(content, { botId, botRoleId = null, prefixes = [], commands = [] } = {}) {
     const trigger = readTrigger(content, { botId, botRoleId, prefixes });
     if (!trigger) return { kind: null };
@@ -103,9 +103,10 @@ function parseTextCommand(content, { botId, botRoleId = null, prefixes = [], com
         if (addressed) return { kind: 'didYouMean', via, candidates: [result.cmd.name] };
         return { kind: null };
     }
-    // Only a leading bot mention earns a reply to something unrecognised, and only when it's short: `@Dioreo is the best bot` is someone talking ABOUT Dioreo.
-    if (via === 'mention' && tokens.length <= 3) return result.candidates.length ? { kind: 'didYouMean', via, candidates: result.candidates.map(c => c.name) } : { kind: 'help', via };
-    return { kind: null };
+    // Only a leading bot mention earns a reply to something unrecognised. One or two words read as a command attempt (help card, or Did you mean); three or more are someone talking TO Dioreo (`@Dioreo is the best bot`), which gets a one-emoji reply. His call 2026-10-28 17:04 EDT: "with @ mention and 3 or more words, have it just reply to the message with an emoji".
+    if (via !== 'mention') return { kind: null };
+    if (tokens.length >= 3) return { kind: 'emojiReply', via };
+    return result.candidates.length ? { kind: 'didYouMean', via, candidates: result.candidates.map(c => c.name) } : { kind: 'help', via };
 }
 
 module.exports = { parseTextCommand, typoDistance, isTypoOf, readTrigger };

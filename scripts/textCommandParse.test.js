@@ -51,7 +51,9 @@ const rows = [
     ['d getting there', null, null],                // nor of settings
     ['d getting', null, null],                      // alone too: distance 2 from settings, first letter differs
     ['dior lesson', null, null],                    // nor of season
-    [`<@${BOT}> is the best bot ever`, null, null], // talking ABOUT Dioreo
+    [`<@${BOT}> is the best bot ever`, 'emojiReply', null], // talking TO Dioreo: an emoji reply (his call 2026-10-28 17:04 EDT)
+    [`<@${BOT}> you are cool`, 'emojiReply', null],
+    [`<@${BOT}> hello there`, 'help', null],         // two words: still a command attempt
     [`thanks <@${BOT}>`, null, null],               // mention not at the start (a reply-ping)
     ['hello', null, null],
     ['', null, null],
@@ -66,7 +68,7 @@ for (const [msg, kind, command] of rows) {
     if (!ok) { failed++; console.log(`✗ ${JSON.stringify(msg)} -> ${JSON.stringify(got)} (want ${kind}${command ? ' ' + command : ''})`); }
 }
 // A typo-matched command with real trailing text never runs: after @Dioreo it becomes a Did-you-mean, after a prefix it is silent.
-assert.strictEqual(v(`<@${BOT}> calender stuff here`).kind, 'didYouMean');
+assert.strictEqual(v(`<@${BOT}> calender stuff`).kind, 'didYouMean');
 assert.strictEqual(v('dior calender stuff here').kind, null);
 // The tolerance table itself.
 assert.ok(isTypoOf('calender', 'calendar') && isTypoOf('todya', 'today') && isTypoOf('hlep', 'help'));
