@@ -286,6 +286,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-26 16:06 EDT — Announcements get a Why button and an off switch (v3.116.0)
 - 2026-10-27 17:45 EDT — Announcements move to Components V2, and /help gets a line to the developer (v3.117.0)
 - 2026-10-28 00:17 EDT — Post-launch bug fixes (v3.0.1)
+- 2026-10-28 01:24 EDT — Gunsmith codes cut short (v3.0.2)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4774,6 +4775,12 @@ The first evening on prod turned up a handful of small things, fixed and release
 **The weapon search knew less than the card did.** Typing MSMC said "No options match", yet sending it opened a "No build yet" card, because the search read only the builds while the card read the catalogue. The search now reads both. Clearing every Meta, Best and Top badge the same night (to be re-judged) showed two more gaps: "All META builds" led nowhere, and the suggested weapons fell back to an order nobody chose. The META row now shows only while a build has Meta, and the suggestions read A-Z within each class.
 
 The rest: Double Epic Characters prices for 20 and 30 CP, warnings that only the person who ran the command sees, and Submit a Build at the foot of every `/help` page, where a screenshot alone is enough.
+
+## 2026-10-28 01:24 EDT — Gunsmith codes cut short (v3.0.2)
+
+The two FSS Hurricane builds on prod had codes one character short, `1C2B5B6A7` and `1C2B4C5B7`, and nothing had asked before saving them. The game draws O like 0, so the read ended `…70`; `stripCodePrefix` counted only letters in letter positions, so its run stopped at the 7 and the 0 was dropped before `correctGunsmithCode` could turn it into O.
+
+A digit look-alike now counts in a letter position, so the last O survives. A code that still isn't number-letter pairs asks first, in `/manage` and `/autobuild` alike: Back to edit or Save anyway. The two prod builds were corrected through the operation core, so each change is in the history with a Revert, and their pictures moved to the new code keys.
 
 # Part B — Lessons Ledger (thematic)
 

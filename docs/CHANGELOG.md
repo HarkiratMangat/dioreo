@@ -29,7 +29,14 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.0.1 — 2026-10-28 00:17 EDT (#230) — Post-launch bug fixes
+## v3.0.2 — 2026-10-28 01:24 EDT (#231) — Gunsmith codes cut short
+**From Harkirat, 2026-10-28 01:06 EDT:** "yes do all that", answering whether to fix the cleaner so a last 0 becomes O, add a warning for a code that looks cut off, and correct the two FSS Hurricane codes on prod. **01:21 EDT:** "merge flow and deploy".
+
+- **The cleaner keeps a last O** (`utils/adminParser.js`): the game draws O like 0, so a read of `1C2B4C5B70` ended on a 0 that `stripCodePrefix` dropped, and two FSS Hurricane builds saved as `…7`. A digit look-alike now counts in a letter position, and `correctGunsmithCode` maps it to O.
+- **A code that looks cut off asks first** (`gunsmithCodeProblem`): `/manage` add, edit and bulk add show **Back to edit** or **Save anyway** (`utils/loadoutPanels.js` `codePanel`); `/autobuild`'s review shows a warning and its button reads **Save anyway**; a batch's **Save All** stops on that build. Tested by `scripts/gunsmithCodeShape.test.js`.
+- **Prod data:** the two FSS Hurricane builds now read `1C2B5B6A7O` and `1C2B4C5B7O`, each picture copied to its new key; all 121 MP codes pass the new rule.
+
+## v3.0.1 — 2026-10-28 00:17 EDT (#230 · `934d5c10`) — Post-launch bug fixes
 **From Harkirat, 2026-10-27 to 2026-10-28:** the fixes from the first evening on prod, released together ("merge flow v3.0.1 \"post launch bug fixes\"", 2026-10-28 00:13 EDT).
 
 - **Button emojis stay put** (`utils/sendV2Payload.js`): an un-acked click is now acked with `deferUpdate()` and then patched, so every re-render takes two trips. The single-trip path, which makes Discord blank a re-rendered button's custom emoji (v2.60.0), is gone; it was still used by `/draws`' arrows and New/Returning switch and `/settings`' Hide/Show toggles. Harkirat saw the `/draws` arrows blank on prod.
