@@ -455,7 +455,7 @@ function buildCategorySelectRow(selectedKey, perms = {}) {
     return { type: 1, components: [{ type: 3, custom_id: 'help_category', placeholder: 'Jump to a category…', options }] };
 }
 
-// Each command's own icon in the Jump to one command list (2026-10-27 18:51 EDT, Harkirat: "Give /gunsmith dmz the dmz emoji. Draw prices its own. Draw calc its own. And so on"). Before this every row wore its category's icon, so a category's commands looked identical. The icons match the ones those commands use themselves (and the v3 announcement), and a command missing here falls back to its category's.
+// Each command's own icon in the Jump to one command list (2026-10-27 18:51 EDT, Harkirat: "Give /gunsmith dmz the dmz emoji. Draw prices its own. Draw calc its own. And so on"). Before this every row wore its category's icon, so a category's commands looked identical. The icons match the ones those commands use themselves (and the v3 announcement), and a command missing here falls back to its category's. /emojis wears DB_Emojis where the booted app has it (2026-10-28, Harkirat uploaded it; found by name, see utils/emojiMap.js), and the swatches icon below where it does not.
 const COMMAND_EMOJI = {
     '/gunsmith mp': 'gunsmithSearch', '/gunsmith dmz': 'dmz',
     '/draws': 'newDraws', '/draw prices': 'drawPrices', '/draw calculator': 'calculator',
@@ -476,7 +476,7 @@ function buildCommandSelectRow(focusName, perms = {}, seasonEmoji = null) {
             if (options.length >= 25) break;
             const text = c.description || c.jumpDescription || '';
             const description = text.length > 100 ? `${text.slice(0, 99)}…` : (text || undefined);
-            options.push({ label: c.name, value: c.name, ...(description ? { description } : {}), emoji: emojis.parseEmoji((c.name === '/season end' && seasonEmoji) || emojis[COMMAND_EMOJI[c.name]] || emojis[categoryEmojiKey(cat, perms)]), default: c.name === focusName });
+            options.push({ label: c.name, value: c.name, ...(description ? { description } : {}), emoji: emojis.parseEmoji((c.name === '/season end' && seasonEmoji) || (c.name === '/emojis' && emojis.DB_Emojis) || emojis[COMMAND_EMOJI[c.name]] || emojis[categoryEmojiKey(cat, perms)]), default: c.name === focusName });
         }
     }
     options.sort((a, b) => jumpRank(a.value) - jumpRank(b.value)); // stable: unlisted commands keep their category order

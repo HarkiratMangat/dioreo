@@ -76,8 +76,10 @@ function buildEmojiPanel({ rows, apps, page = 0, filter = 'all', note = null, se
         ...(r.prodEmoji && r.hasOriginal !== undefined ? [`> -# ${r.hasOriginal === false ? emojis.cross : emojis.check} Cloudinary (original)`] : []),
     ].join('\n'));
     const empty = { all: 'No emojis.', missing: `${emojis.checkmark} No bot is missing an emoji.`, nofile: `${emojis.checkmark} Every emoji has its original in Cloudinary.`, unused: `${emojis.checkmark} Every emoji on the bots is one the code uses.` }[f.key];
+    // The sync icon is DB_Sync, found by name on the booted app (2026-10-28, his upload); a bot without it draws the button bare.
+    const syncIcon = emojis.DB_Sync ? { emoji: emojis.parseEmoji(emojis.DB_Sync) } : {};
     const components = [
-        { type: 10, content: `## Emojis\n-# ${stats.join(' · ')}` },
+        { type: 10, content: `## ${emojis.DB_Emojis ? `${emojis.DB_Emojis} ` : ''}Emojis\n-# ${stats.join(' · ')}` },
         { type: 1, components: FILTERS.map(x => ({ type: 2, style: x.key === f.key ? 3 : 2, label: x.label, custom_id: `emo_filter_${x.key}`, disabled: x.key === f.key })) },
         { type: 14, divider: true, spacing: 1 },
         { type: 10, content: lines.length ? lines.join('\n') : empty },
@@ -87,8 +89,8 @@ function buildEmojiPanel({ rows, apps, page = 0, filter = 'all', note = null, se
     if (pager) components.push({ type: 14, divider: true, spacing: 2 }, pager);
     components.push({ type: 1, components: [
         missingCount
-            ? { type: 2, style: 3, label: `Sync ${missingCount} missing`, custom_id: `emo_sync_${f.key}` }
-            : { type: 2, style: 2, label: 'Nothing to sync', custom_id: 'emo_sync_none', disabled: true },
+            ? { type: 2, style: 3, label: `Sync ${missingCount} missing`, custom_id: `emo_sync_${f.key}`, ...syncIcon }
+            : { type: 2, style: 2, label: 'Nothing to sync', custom_id: 'emo_sync_none', disabled: true, ...syncIcon },
         { type: 2, style: 1, label: 'Upload original', custom_id: 'emo_upload', emoji: emojis.parseEmoji(emojis.mngAdd) },
         { type: 2, style: 2, label: 'Find...', custom_id: `emo_find_${f.key}`, emoji: emojis.parseEmoji(emojis.search) },
     ] });
