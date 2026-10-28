@@ -1036,6 +1036,8 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ---
 
+- `[P2 · XS · Sonnet5-Medium]` **Two prod MP builds have a gunsmith code whose pair count doesn't match their attachment count** (filed 2026-10-28 01:33 EDT, found while checking v3.0.2's cut-off rule against all 121 prod MP codes): **JAK-12 Build 1** `1C2B6B9A` (4 pairs, 5 attachments) and **.50 GS Build 1** `1C6C7A8A9A` (5 pairs, 4 attachments). Both pass the number-letter shape check, so v3.0.2's warning does not flag them; one of the code or the attachment list is wrong. **Do:** Harkirat checks each build in the game and fixes it with `/manage` Edit (the picture moves with the code). **Verify:** each build's code has one pair per attachment. A pairs-equals-attachments rule is not safe to enforce in code while these two exist.
+
 ## 🗂️ Queued — worth its own dedicated session
 
 - **The /manage audit's open half: draw end dates, orphaned calendar rows, the 8 id-less draws, and the areas not yet read** `[P2 · M · Sonnet5-High]` *(filed 2026-11-04 00:26 EST, Harkirat: "look into this further and deeper … the edit form missing a draw end field")*. Full findings and evidence: `local/project/features/draw-edit-conflict/audit.md` (this Mac only); the fixes already made are on `fix/draw-edit-items-conflict`. **Open, in order:**
