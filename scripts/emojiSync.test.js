@@ -133,7 +133,8 @@ const textsOf = c => JSON.stringify(c).replace(/\\n/g, '\n');
 t('the upload result: Cloudinary, each bot, and what is still pending (2026-10-28)', () => {
     const out = buildUploadReport({ name: 'Heart', replaced: false, preview: '', apps: reportApps, outcome: ['added', 'had', null, null] });
     const text = textsOf(out);
-    for (const want of ['Uploaded **Heart**', '> `:Heart:`', '**Cloudinary**', '**Dioreo** ', '**Dioreo Admin** ', '**Dev** ', '**Dev Admin** ', 'Pending will sync within 10 minutes.']) assert.ok(text.includes(want), want);
+    const E = require('../utils/emojiMap');
+    for (const want of ['Emoji Uploaded', '**Heart** · `:Heart:`', '**Cloudinary**', '**Dioreo** ', '**Dioreo Admin** ', '**Dev** ', '**Dev Admin** ', `-# ${E.accept} Added · ${E.check} Already added; Copy kept`, `-# ${E.pending} Pending will sync within 10 minutes.`]) assert.ok(text.includes(want), want);
     assert.strictEqual(out[0].components[1].divider, false, 'a small gap, no line');
 });
 t('the sync result: one text block per emoji, in-sync and synced named apart (2026-10-28)', () => {
@@ -141,7 +142,7 @@ t('the sync result: one text block per emoji, in-sync and synced named apart (20
     const out = buildSyncReport({ before, res: { added: ['Tada → Dioreo Admin', 'Heart → Dioreo (Dev)'], failed: [], held: [] } });
     const blocks = out[0].components.filter(c => c.type === 10).map(c => c.content);
     assert.strictEqual(blocks[0], '## ' + require('../utils/emojiMap').checkmark + ' 2 Emojis Synced');
-    assert.deepStrictEqual(blocks.slice(1), ['**Tada**\n-# **In-sync:** Dioreo · Dev · Dev Admin\n-# **Synced:** Dioreo Admin', '**Heart**\n-# **In-sync:** Dioreo · Dioreo Admin\n-# **Synced:** Dev\n-# ' + require('../utils/emojiMap').pending + ' **Pending:** Dev Admin, within 10 minutes']);
+    assert.deepStrictEqual(blocks.slice(1), ['**Tada**' + '\n-# **In-sync:** Dioreo · Dev · Dev Admin\n-# **Synced:** Dioreo Admin', '**Heart**\n-# **In-sync:** Dioreo · Dioreo Admin\n-# **Synced:** Dev\n-# ' + require('../utils/emojiMap').pending + ' **Pending:** Dev Admin, within 10 minutes']);
     assert.ok(out[0].components.length <= 40);
     assert.ok(textsOf(buildSyncReport({ before, res: { added: [], failed: [], held: [] } })).includes('Nothing to sync'));
 });

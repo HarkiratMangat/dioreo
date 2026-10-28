@@ -111,10 +111,10 @@ function buildUploadReport({ name, replaced, preview, apps, outcome }) {
     })];
     const pending = apps.some((a, i) => (a.remote ? !a.emojis.some(e => e.name === name) : false));
     return card([
-        { type: 10, content: `## ${emojis.checkmark} ${replaced ? 'Replaced' : 'Uploaded'} ${preview ? `${preview} ` : ''}**${name}**\n> \`:${name}:\`` },
+        { type: 10, content: `## ${emojis.checkmark} Emoji ${replaced ? 'Replaced' : 'Uploaded'}${preview ? ` ${preview}` : ''}\n${preview ? `${preview} ` : ''}**${name}** · \`:${name}:\`` },
         { type: 14, divider: false, spacing: 1 },
         { type: 10, content: rows.join('\n') },
-        ...(pending ? [{ type: 10, content: '-# Pending will sync within 10 minutes.' }] : []),
+        { type: 10, content: [`-# ${m.done} Added · ${m.had} Already added; Copy kept`, ...(pending ? [`-# ${m.wait} Pending will sync within 10 minutes.`] : [])].join('\n') },
     ]);
 }
 
@@ -140,7 +140,7 @@ function buildSyncReport({ before, res, noFile = 0, previewOf = () => '' }) {
         const synced = before.apps.filter(a => got.synced.includes(labelOf(a))).map(reportName);
         const failed = before.apps.filter(a => got.failed.includes(labelOf(a))).map(reportName);
         const pending = before.apps.filter((a, i) => a.remote && !row?.has[i] && !got.synced.includes(labelOf(a))).map(reportName);
-        components.push({ type: 10, content: [`**${name}** ${previewOf(name)}`.trim(),
+        components.push({ type: 10, content: [`${previewOf(name)} **${name}**`.trim(),
             inSync.length ? `-# **In-sync:** ${inSync.join(' · ')}` : null,
             synced.length ? `-# **Synced:** ${synced.join(' · ')}` : null,
             failed.length ? `-# ${m.bad} **Failed:** ${failed.join(' · ')} (details in the log)` : null,
