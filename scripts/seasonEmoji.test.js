@@ -25,7 +25,8 @@ t('a custom emoji typed in front of the title splits off; the title stays plain'
 t('the stored emoji wins, then the season{N} map, then none', () => {
     assert.strictEqual(seasonEmojiFor('Season 7 — Terminated', S10), S10);
     assert.strictEqual(seasonEmojiFor('Season 7 — Terminated', ''), emojis.season7);
-    assert.strictEqual(seasonEmojiFor('Season 10 — Test', ''), null, 'no map entry, nothing added');
+    assert.strictEqual(seasonEmojiFor('Season 10 — 7th Anniversary', ''), emojis.season10, 'Season 10 has its map entry (2026-10-28)');
+    assert.strictEqual(seasonEmojiFor('Season 11 — Test', ''), null, 'no map entry, nothing added');
     assert.strictEqual(seasonEmojiFor('Halloween', ''), null);
 });
 
@@ -79,15 +80,11 @@ t('a stored emoji is re-pointed by NAME at the booted app, as the map\'s own ids
         assert.strictEqual(emojis.repoint(S10), '<a:S10Test:999>');
         assert.strictEqual(emojis.repoint('<a:Nope:1>'), '<a:Nope:1>');
     });
-    t('Season 10\'s emoji is found by name on the booted app, no id in the map (2026-10-28)', () => {
-        assert.strictEqual(seasonEmojiFor('Season 10 — Test', ''), '<a:S107thAnniversary:1000>');
-        assert.strictEqual(seasonEmojiFor('Season 11 — Test', ''), null);
-    });
-    t('the footer heart is the new DiorswrldHeart where the app has it (2026-10-28)', () => {
+    t('the footer heart is the DiorswrldHeart, re-pointed to the app\'s own copy (2026-10-28)', () => {
         assert.strictEqual(emojis.diorHeart, '<a:DiorswrldHeart:2000>');
     });
     t('an emoji the map has no key for is found by its exact name (2026-10-28)', () => {
-        assert.strictEqual(emojis.S107thAnniversary, '<a:S107thAnniversary:1000>');
+        assert.strictEqual(emojis.S107thAnniversary, '<a:S107thAnniversary:1000>', 'the name finds it');
         assert.strictEqual(emojis.s107thanniversary, undefined, 'the name is exact, case included');
         assert.strictEqual(emojis.NopeNotAnEmoji, undefined);
         assert.strictEqual(emojis.season9, orig.season9, 'a mapped key is untouched');

@@ -69,9 +69,12 @@ function buildEmojiPanel({ rows, apps, page = 0, filter = 'all', note = null, se
     const codeOf = r => `<${r.animated ? 'a' : ''}:${r.name}:${r.prodId || r.copies.find(Boolean)?.id || '?'}>`;
     const stats = [`**${prodRows.length}** emojis`, ...apps.map((a, i) => `${a.label} missing **${prodRows.filter(r => !r.has[i]).length}**${a.remote ? ` (as of <t:${Math.floor(new Date(a.at).getTime() / 1000)}:R>)` : ''}`)];
     if (originalsKnown) stats.push(`**${prodRows.filter(r => r.hasOriginal === false).length}** with no original`);
-    // Two lines a row (his example, 2026-10-28 10:39 EDT): the emoji, its name and its code, then the four bots under it as subtext, indented by the blank spacer and an en space so they sit under the name.
-    const lines = shown.slice(p * PAGE_SIZE, (p + 1) * PAGE_SIZE).map(r =>
-        `${icon(r)} **${r.name}** · \`${codeOf(r)}\`\n-# ${emojis.blank}\u2002${apps.map((a, i) => `${r.has[i] ? emojis.check : emojis.cross} ${a.short || a.label}`).join('  ')}${r.hasOriginal === false && r.prodEmoji ? ' · *no original*' : ''}`);
+    // Three lines a row (his example, 2026-10-28 11:43 EDT): the emoji, its name and its code, then a quote of subtext holding the four bots and whether Cloudinary has the original. Cloudinary is left out where it is not known (the Not in code view).
+    const lines = shown.slice(p * PAGE_SIZE, (p + 1) * PAGE_SIZE).map(r => [
+        `${icon(r)} **${r.name}** · \`${codeOf(r)}\``,
+        `> -# ${apps.map((a, i) => `${r.has[i] ? emojis.check : emojis.cross} ${a.short || a.label}`).join('  ')}`,
+        ...(r.prodEmoji && r.hasOriginal !== undefined ? [`> -# ${r.hasOriginal === false ? emojis.cross : emojis.check} Cloudinary (original)`] : []),
+    ].join('\n'));
     const empty = { all: 'No emojis.', missing: `${emojis.checkmark} No bot is missing an emoji.`, nofile: `${emojis.checkmark} Every emoji has its original in Cloudinary.`, unused: `${emojis.checkmark} Every emoji on the bots is one the code uses.` }[f.key];
     const components = [
         { type: 10, content: `## Emojis\n-# ${stats.join(' · ')}` },
@@ -86,10 +89,68 @@ function buildEmojiPanel({ rows, apps, page = 0, filter = 'all', note = null, se
         missingCount
             ? { type: 2, style: 3, label: `Sync ${missingCount} missing`, custom_id: `emo_sync_${f.key}` }
             : { type: 2, style: 2, label: 'Nothing to sync', custom_id: 'emo_sync_none', disabled: true },
-        { type: 2, style: 1, label: 'Upload original', custom_id: 'emo_upload' },
+        { type: 2, style: 1, label: 'Upload original', custom_id: 'emo_upload', emoji: emojis.parseEmoji(emojis.mngAdd) },
         { type: 2, style: 2, label: 'Find...', custom_id: `emo_find_${f.key}`, emoji: emojis.parseEmoji(emojis.search) },
     ] });
     return [{ type: 17, accent_color: ACCENT, components }];
+}
+
+// ---- The result messages after an Upload original or a Sync (his mock-ups, 2026-10-28 11:43 EDT) ----
+// The names a result calls each bot: the prod pair by their own names, the dev pair as Dev and Dev Admin.
+const reportName = (a) => a.env === 'dev' ? (a.short || a.label) : (a.key === 'admin' ? 'Dioreo Admin' : 'Dioreo');
+// Status marks: Accept (done now), Check (already had it), Pending, Deny.
+const marks = () => ({ done: emojis.accept, had: emojis.check, wait: emojis.pending, bad: emojis.deny });
+const card = (components) => [{ type: 17, accent_color: ACCENT, components }];
+
+// Upload: per bot, what happened. `outcome[i]` is 'added' | 'had' | 'failed' | 'skipped' for each bot of this process (and ignored for the other bot's two, which show 'had' or Pending from their last report).
+function buildUploadReport({ name, replaced, preview, apps, outcome }) {
+    const m = marks();
+    const rows = [`**Cloudinary** ${m.done}`, ...apps.map((a, i) => {
+        const o = a.remote ? (a.emojis.some(e => e.name === name) ? 'had' : 'pending') : outcome[i];
+        const mark = { added: m.done, had: m.had, failed: m.bad, pending: m.wait, skipped: '(not added)' }[o];
+        return `**${reportName(a)}** ${mark}`;
+    })];
+    const pending = apps.some((a, i) => (a.remote ? !a.emojis.some(e => e.name === name) : false));
+    return card([
+        { type: 10, content: `## ${emojis.checkmark} ${replaced ? 'Replaced' : 'Uploaded'} ${preview ? `${preview} ` : ''}**${name}**\n> \`:${name}:\`` },
+        { type: 14, divider: false, spacing: 1 },
+        { type: 10, content: rows.join('\n') },
+        ...(pending ? [{ type: 10, content: '-# Pending will sync within 10 minutes.' }] : []),
+    ]);
+}
+
+const SYNC_SECTIONS_SHOWN = 14; // two components a section and the Container holds 40 in all
+// Sync: one text block per emoji it touched, so each set sits a little apart. `before` is the state just before the sync (who already had what), `res` is runAutoSync's answer.
+function buildSyncReport({ before, res, noFile = 0, previewOf = () => '' }) {
+    const m = marks();
+    const byName = new Map();
+    const note = (list, key) => { for (const entry of list || []) { const [name, label] = entry.split(' → '); if (!byName.has(name)) byName.set(name, { synced: [], failed: [] }); byName.get(name)[key].push(label); } };
+    note(res.added, 'synced'); note(res.failed, 'failed');
+    const title = res.skipped ? `${m.wait} A sync is already running`
+        : res.failed.length ? `${m.bad} Sync finished with failures`
+        : res.added.length ? `${emojis.checkmark} ${new Set(res.added.map(a => a.split(' → ')[0])).size} Emojis Synced`
+        : 'Nothing to sync';
+    const components = [{ type: 10, content: `## ${title}` }];
+    if (res.skipped) components.push({ type: 10, content: 'The 10-minute timer or another tap is already syncing. Try again in a moment.' });
+    else if (!byName.size) components.push({ type: 10, content: 'Every bot already has every emoji that has an original.' });
+    if (byName.size) components.push({ type: 14, divider: false, spacing: 1 });
+    for (const [name, got] of [...byName].slice(0, SYNC_SECTIONS_SHOWN)) {
+        const row = before.rows.find(r => r.name === name);
+        const labelOf = a => a.label;
+        const inSync = before.apps.filter((a, i) => row?.has[i] && !got.synced.includes(labelOf(a))).map(reportName);
+        const synced = before.apps.filter(a => got.synced.includes(labelOf(a))).map(reportName);
+        const failed = before.apps.filter(a => got.failed.includes(labelOf(a))).map(reportName);
+        const pending = before.apps.filter((a, i) => a.remote && !row?.has[i] && !got.synced.includes(labelOf(a))).map(reportName);
+        components.push({ type: 10, content: [`**${name}** ${previewOf(name)}`.trim(),
+            inSync.length ? `-# **In-sync:** ${inSync.join(' · ')}` : null,
+            synced.length ? `-# **Synced:** ${synced.join(' · ')}` : null,
+            failed.length ? `-# ${m.bad} **Failed:** ${failed.join(' · ')} (details in the log)` : null,
+            pending.length ? `-# ${m.wait} **Pending:** ${pending.join(' · ')}, within 10 minutes` : null].filter(Boolean).join('\n') });
+    }
+    if (byName.size > SYNC_SECTIONS_SHOWN) components.push({ type: 10, content: `-# …and ${byName.size - SYNC_SECTIONS_SHOWN} more` });
+    const tail = [res.held?.length ? `${res.held.length} failed earlier today and are retried tomorrow` : null, noFile ? `${noFile} still need an original uploaded first (see No original)` : null].filter(Boolean);
+    if (tail.length) components.push({ type: 10, content: `-# ${tail.join(' · ')}` });
+    return card(components);
 }
 
 // The Upload original pop-up (his 20:44 EDT ask): a name of his choosing, the file, what to do if the name is taken, and whether to add it to the bots too.
@@ -127,4 +188,4 @@ async function execute(interaction) {
     await sendV2Payload(interaction, buildEmojiPanel({ ...state, senderAppId: interaction.applicationId }));
 }
 
-module.exports = { data, execute, buildEmojiPanel, loadState, appsOfThisProcess, uploadModal, findModal, pageOf, FILTERS, PAGE_SIZE };
+module.exports = { data, execute, buildEmojiPanel, buildUploadReport, buildSyncReport, loadState, appsOfThisProcess, uploadModal, findModal, pageOf, FILTERS, PAGE_SIZE };

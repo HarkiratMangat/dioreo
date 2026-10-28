@@ -29,25 +29,17 @@ async function refuse(interaction, text) {
 }
 
 // The result of an upload or a sync as its own message under the panel (2026-10-28 10:39 EDT, Harkirat: the one-line footer note "is not noticeable"). It matches the panel's visibility: a hidden panel gets a hidden report. A raw webhook POST because discord.js's followUp does not serialise a Components V2 container; it answers THIS interaction, so it needs no channel permission.
-const REPORT_LINES_SHOWN = 15;
-function listLines(items) {
-    const shown = items.slice(0, REPORT_LINES_SHOWN).map(i => `- ${i}`);
-    if (items.length > REPORT_LINES_SHOWN) shown.push(`-# …and ${items.length - REPORT_LINES_SHOWN} more`);
-    return shown;
-}
-async function report(interaction, title, lines) {
+async function sendCard(interaction, components) {
     const { Routes } = require('discord.js');
     const hidden = interaction.message?.flags?.has?.(64) ?? true;
     try {
         await interaction.client.rest.post(Routes.webhook(interaction.applicationId, interaction.token), {
-            body: {
-                flags: 32768 | (hidden ? 64 : 0),
-                components: [{ type: 17, accent_color: 5793266, components: [{ type: 10, content: [`## ${title}`, ...lines].join('\n') }] }],
-                allowed_mentions: { parse: [] },
-            },
+            body: { flags: 32768 | (hidden ? 64 : 0), components, allowed_mentions: { parse: [] } },
         });
     } catch (e) { console.error('/emojis: could not send the result message:', e?.message || e); }
 }
+// A plain failure: a heading and its reason.
+const failureCard = (title, lines) => [{ type: 17, accent_color: 5793266, components: [{ type: 10, content: [`## ${title}`, ...lines].join('\n') }] }];
 
 async function route(interaction) {
     if (!isOwnerId(interaction.user.id)) return refuse(interaction, "Only Dioreo's developer can use this.");
@@ -82,7 +74,7 @@ async function route(interaction) {
         const file = await fileFrom(interaction, 'file').catch(() => null);
         let state = await P.loadState();
         // A failure is reported as its own message too; the panel just redraws.
-        const again = async (note, titleLines) => { await draw(state, { filter: 'all', page: Math.max(0, P.pageOf(state.rows, 'all', name)), note: titleLines ? null : note }); if (titleLines) await report(interaction, `${emojis.cross} Upload failed: ${name}`, titleLines); };
+        const again = async (note, titleLines) => { await draw(state, { filter: 'all', page: Math.max(0, P.pageOf(state.rows, 'all', name)), note: titleLines ? null : note }); if (titleLines) await sendCard(interaction, failureCard(`${emojis.cross} Upload failed: ${name}`, titleLines)); };
         const fail = (text) => again(null, [text.replace(new RegExp('^' + emojis.cross + ' '), '')]);
         if (!file) return fail('The file could not be read. Try the upload again.');
         if (!/^image\//.test(file.mime)) return fail(`That file is not an image (${file.mime || 'unknown type'}).`);
@@ -95,30 +87,22 @@ async function route(interaction) {
         if (taken && !replace) return fail(`**${name}** is already in Cloudinary. Upload again and pick "Replace the original" to swap it.`);
         const up = await S.uploadOriginal(file.data, name, { mime: file.mime, overwrite: replace });
         if (!up.ok) { console.error(`/emojis upload of ${name} failed: ${up.error}`); return fail(`Cloudinary refused **${name}**: ${up.error}`); }
-        const lines = [`- Cloudinary: ${taken ? 'replaced the original' : 'uploaded the original'}`];
-        let anyFailed = false;
+        const outcome = state.apps.map(() => 'skipped');
         if (toBots) {
-            const added = [], kept = [], failed = [];
             const row = state.rows.find(r => r.name === name) || { name, animated: /gif|webp|avif/.test(file.mime), knownIds: [], has: state.apps.map(() => false) };
             for (const [i, app] of state.apps.entries()) {
                 if (app.remote) continue; // the other bot adds it from Cloudinary itself
-                if (row.has[i]) { kept.push(app.label); continue; }
+                if (row.has[i]) { outcome[i] = 'had'; continue; }
                 const res = await S.uploadMissing(app.client, { ...row, version: (await S.listOriginals()).get(name)?.version, knownIds: [] });
-                if (res.ok) added.push(app.label); else { failed.push(app.label); console.error(`/emojis: adding ${name} to ${app.label} failed: ${res.error}`); }
+                if (res.ok) outcome[i] = 'added'; else { outcome[i] = 'failed'; console.error(`/emojis: adding ${name} to ${app.label} failed: ${res.error}`); }
             }
             for (const app of state.apps.filter(x => !x.remote)) { try { await emojis.refreshEmojiIds(app.client, { secondary: app.key === 'admin' }); } catch (e) { console.error('Emoji map refresh after an /emojis upload failed:', e?.message || e); } }
-            if (added.length) lines.push(`- Added to: ${added.join(' and ')}`);
-            if (kept.length) lines.push(`- Already had it, left as is: ${kept.join(' and ')}${replace && taken ? ' (delete it there to take the new file)' : ''}`);
-            if (failed.length) { anyFailed = true; lines.push(`- ${emojis.cross} Could not add to: ${failed.join(' and ')} (details in the log)`); }
-        } else {
-            lines.push('- Bots: not added (you chose Cloudinary only)');
         }
+        const appsBefore = state.apps;
         state = await P.loadState();
         await S.writeStatus(state.apps.filter(x => !x.remote));
-        if (toBots) lines.push('-# The other bot adds it from Cloudinary within 10 minutes.');
         await draw(state, { filter: 'all', page: Math.max(0, P.pageOf(state.rows, 'all', name)) });
-        const preview = emojis.byName?.(name);
-        return report(interaction, `${anyFailed ? emojis.warn : emojis.checkmark} ${taken ? 'Replaced' : 'Uploaded'} ${preview ? `${preview} ` : ''}**${name}**`, lines);
+        return sendCard(interaction, P.buildUploadReport({ name, replaced: taken, preview: emojis.byName?.(name), apps: appsBefore, outcome }));
     }
 
     if (!interaction.isButton()) return;
@@ -132,6 +116,7 @@ async function route(interaction) {
     let state = await P.loadState();
     if (isSync) {
         filter = a || 'all';
+        const before = state; // who had what just before the sync, for its result message
         // The same run the timer makes (utils/emojiSync.js runAutoSync), sharing its lock: originals only, this process's two apps only.
         const own = state.apps.filter(x => !x.remote);
         const res = await S.runAutoSync(own);
@@ -141,18 +126,8 @@ async function route(interaction) {
         }
         state = await P.loadState();
         const noFile = state.rows.filter(r => r.prodEmoji && r.hasOriginal === false && r.has.some((h, i) => !h && !state.apps[i].remote)).length;
-        if (res.skipped) {
-            await draw(state, { page, filter });
-            return report(interaction, `${emojis.warn} Sync already running`, ['A sync is already running (the 10-minute timer or another tap). Try again in a moment.']);
-        }
         await draw(state, { page, filter });
-        const lines = [];
-        if (res.added.length) lines.push(`**Added (${res.added.length})**`, ...listLines(res.added));
-        if (res.failed.length) lines.push(`**${emojis.cross} Failed (${res.failed.length})**`, ...listLines(res.failed), '-# Details are in the log.');
-        if (res.held?.length) lines.push(`-# ${res.held.length} failed earlier today and are retried tomorrow.`);
-        if (noFile) lines.push(`-# ${noFile} still need an original uploaded first (see No original).`);
-        if (!lines.length) lines.push('Every bot already has every emoji that has an original.');
-        return report(interaction, res.failed.length ? `${emojis.warn} Sync finished with failures` : res.added.length ? `${emojis.checkmark} Synced ${res.added.length} emoji${res.added.length > 1 ? 's' : ''}` : 'Nothing to sync', lines);
+        return sendCard(interaction, P.buildSyncReport({ before, res, noFile, previewOf: n => emojis.byName?.(n) || '' }));
     }
     return draw(state, { page, filter, note });
 }
