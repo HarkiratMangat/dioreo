@@ -23,8 +23,15 @@ async function handleTextCommandsInteraction(interaction) {
         try { await interaction.reply({ content: 'That command is no longer available.', ephemeral: true }); } catch (err) { console.error('Text command button: could not answer a stale click:', err); }
         return true;
     }
-    // Acknowledged HERE, before the synthetic copy is made: buildSyntheticInteraction copies `deferred` as a value, so a copy made first would still read false and sendV2Payload would try a second acknowledgement. Hidden for Open privately; public for a Did you mean pick.
-    await interaction.deferReply({ flags: isPrivate ? 64 : 0 });
+    // A Did you mean pick must obey the server's /admin rule for the command it RUNS (security review, 2026-10-28 17:29 EDT): the router resolved the policy for a button, which has no commandName, so the command tier was skipped. Re-resolved here with the target command's name and subcommand; a rule that makes it private makes this answer private too.
+    let hidden = isPrivate;
+    if (!hidden && interaction.guildId) {
+        const probe = buildSyntheticInteraction(interaction, { commandName: textCommand.slash, options: buildOptions({ sub: textCommand.sub }) });
+        const policy = await require('../utils/guildPolicy').attachGuildPolicy(probe);
+        hidden = policy?.visibility === 'ephemeral';
+    }
+    // Acknowledged HERE, before the synthetic copy is made: buildSyntheticInteraction copies `deferred` as a value, so a copy made first would still read false and sendV2Payload would try a second acknowledgement. Hidden for Open privately, or where the server's rule says so; public for a Did you mean pick otherwise.
+    await interaction.deferReply({ flags: hidden ? 64 : 0 });
     const synthetic = buildSyntheticInteraction(interaction, {
         commandName: textCommand.slash,
         options: buildOptions({ sub: textCommand.sub }),
