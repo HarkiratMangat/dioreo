@@ -290,6 +290,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-28 12:45 EDT — Emojis move into /manage and Replace reaches the bots (v3.1.0)
 - 2026-10-28 12:58 EDT — The announcement word that autocomplete skipped (v3.1.1)
 - 2026-10-28 13:58 EDT — Two letters that matched nothing (v3.1.2)
+- 2026-10-28 15:30 EDT — A season's dates outlive the season (v3.2.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4800,6 +4801,14 @@ The same session folded `/emojis` into `/manage`, split `/manage` into one subco
 ## 2026-10-28 13:58 EDT — Two letters that matched nothing (v3.1.2)
 
 An hour after v3.1.1, a player sent a screenshot of `/help cmd:an` showing Discord's "No options match your search", and a reply from another bot, Mimu, saying "no cmds matches announcement". Prod's analytics settled both: her `an` returned zero suggestions, her `ann` returned `announcement`, and she never ran Dioreo's `/help` at all in that window, so the Mimu reply came from Mimu's own `/help` in the same server. The empty list was ours. `helpSearch` drops `an` as a stop word and no command a non-admin sees starts with it, so the three-letter threshold left the first two letters with nothing. It is two letters now. The lesson: a threshold picked to keep a word out of unrelated queries needs checking at the length just below it, where it can leave nothing at all.
+
+## 2026-10-28 15:30 EDT — A season's dates outlive the season (v3.2.0)
+
+v3.1.0 had moved the `/patch notes` dropdown from patch-note release dates to Battle Pass dates, the way Harkirat asked: "The BP start/end is the season start/end". Two things were still wrong on prod. Season 9, with its end set, showed `Oct 15 – Nov 12, 2026` where his first ask had been "the season 9 start date dash active"; the build had narrowed that to "Active only when the end is TBD". And every past season still showed release-to-release dates, because only the live season's Battle Pass dates were ever stored. The moment a season rotated, its dates were overwritten by the next one's.
+
+The fix is to save a season's dates on its own patch-notes entry at the one moment they are about to be lost: Promote to Live. Seasons that rotated before that get them once, from a script. Finding those dates took a search of 1,522 local transcripts: he had sent screenshots of each season's end on 2026-10-21, and only that session's own summary of them survived.
+
+**Lesson:** when an ask is narrowed while building it ("Active" became "Active when TBD"), say so in the reply. The narrowing shipped silently and came back as a bug report.
 
 # Part B — Lessons Ledger (thematic)
 

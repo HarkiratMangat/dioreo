@@ -29,7 +29,17 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.1.2 — 2026-10-28 13:58 EDT (#234) — `/help cmd:an` no longer comes back empty; clickable commands in announcements
+## v3.2.0 — 2026-10-28 15:30 EDT (#235) — Season 9 reads Active, and past seasons keep their own dates
+**From Harkirat, 2026-10-28:** "season 9 shows the end date even tho it should be showing Active", and "the patch notes dates didn't change?" for the past seasons.
+
+- **The live season reads its start and Active** (`commands/patchnotes.js` `seasonRange`): `Oct 15, 2026 – Active` until its Battle Pass end has passed, even with that end set. v3.1.0 showed Active only when the end was TBD, so Season 9 read `Oct 15 – Nov 12, 2026`.
+- **Past seasons keep their own dates** (`models/SeasonalData.js` `patchNotes[].seasonStart/seasonEnd`). Only the live season's Battle Pass dates were stored, so a past season could show only release date to next release date. Promote to Live (`core/ops/season.js`) now saves the outgoing season's Battle Pass start and end on its entry: its end, else the new season's start, else today. It is skipped when that entry is the one renamed to the new season. Revert restores them. `seasonEntryIndex` is the one place both the dropdown and Promote decide which entry is the live season.
+- **Seasons that rotated before this** get their dates from `scripts/setSeasonDates.js` (new `patchnote.setSeasonDates` op: revertible, logged on the Changes page, dry run unless `--write`).
+- **`/bot servers` knows which servers Dioreo is in** (`commands/bot.js` `buildServersPanel`). It read Dioreo Admin's guild cache, which is always empty since Admin is user-install only, so every server read as "Dioreo is not in this server". It now reads the public client.
+- **CI:** the browser walks skip on a PR that touches nothing they read (`.github/workflows/ci.yml`, from `ci/skip-browser-walks`).
+- **Tests:** `scripts/patchNotesHistory.test.js` gains four checks. Promote, revert and the script were run against a local Mongo replica set.
+
+## v3.1.2 — 2026-10-28 13:58 EDT (#234 · `ca05f2d8`) — `/help cmd:an` no longer comes back empty; clickable commands in announcements
 **From a player, via Harkirat, 2026-10-28:** typing `an` in `/help cmd:` showed Discord's "No options match your search". **And Harkirat:** "why dont the slash commands have clickable?" on the launch announcement.
 
 - **`announcement` is now suggested from two letters** (`commands/help.js` `helpChoices`), not three. `helpSearch` drops `an` as a stop word and no command a non-admin sees starts with it, so at `an` the list was empty. One letter still shows the ranked list alone. Its label is now just **Announcement** (was "announcement: the launch announcement"). `scripts/helpAnnouncement.test.js` now covers `an`.

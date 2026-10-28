@@ -12,6 +12,9 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.2.0 — October 28, 2026
+- **`/patch notes`:** the current season reads its start date and "Active", and past seasons show their own season dates.
+
 ## v3.1.2 — October 28, 2026
 - **`/help cmd:`** suggests `announcement` from the first two letters, so typing `an` no longer shows "No options match".
 - **Announcements:** the commands they mention are clickable in every server, not only some.
