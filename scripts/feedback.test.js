@@ -39,12 +39,14 @@ check('one note every 10 minutes per person', () => {
     assert.strictEqual(fb.waitUntil('nobody', 5000), null);
 });
 
-check('the /help footer row: Announcements and Bugs & Suggestions, ids /help answers', () => {
+check('the /help footer row: Announcements, Bugs & Suggestions and Submit a Build, each with a handler that answers it', () => {
     const row = require('../commands/help').helpFooterRow();
     assert.strictEqual(row.type, 1);
-    assert.deepStrictEqual(row.components.map(b => b.custom_id), ['help_announcements', fb.FEEDBACK_BUTTON_ID]);
+    // Submit a Build joined 2026-10-28 00:08 EDT (Harkirat); it is answered by handlers/loadouts.js's gsb~submit~ branch, `-` meaning no weapon to prefill.
+    assert.deepStrictEqual(row.components.map(b => b.custom_id), ['help_announcements', fb.FEEDBACK_BUTTON_ID, 'gsb~submit~MP~-']);
     const { OWNED_PREFIXES } = require('../handlers/help');
-    row.components.forEach(b => assert.ok(OWNED_PREFIXES.some(p => b.custom_id.startsWith(p)), b.custom_id));
+    const loadoutPrefixes = require('../handlers/loadouts').OWNED_PREFIXES;
+    row.components.forEach(b => assert.ok([...OWNED_PREFIXES, ...loadoutPrefixes].some(p => b.custom_id.startsWith(p)), b.custom_id));
     assert.ok(OWNED_PREFIXES.some(p => fb.FEEDBACK_MODAL_ID.startsWith(p)));
 });
 
