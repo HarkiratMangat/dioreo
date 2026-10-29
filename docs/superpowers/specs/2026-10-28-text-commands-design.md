@@ -50,7 +50,7 @@ Principle: when unsure a message is for Dioreo, stay silent.
 - **Where Dioreo can't post**, the member gets one DM, at most once per channel per day: "I can't post in #channel. Ask a server admin to let me send messages there, or try another channel." In memory only (17:18 EDT).
 - **Read Message History denied** → the reply is posted as a plain message instead of a reply.
 - **Buttons work** like on a slash reply (clicks are interactions), and the reply greys out after 10 idle minutes (edited with the bot token). Show Everyone is dropped.
-- **A required option missing** (`d gunsmith`) → a one-button card that opens the slash command's own pop-up.
+- **`d timestamp` alone** (no date, not a reply) → a one-button card that opens the timestamp pop-up. `d gunsmith` alone opens the first weapon instead (his trim).
 
 ## How it works (built on `feat/text-commands`)
 
@@ -80,7 +80,7 @@ From his doc after his trim (2026-10-28 21:51 EDT: he struck values in the doc a
 | `option:value` always works | `d calendar filter:past` |
 | After `d`/`dior`, every word must be understood, or Dioreo stays silent | `d calendar is wild today` → nothing |
 | After `@Dioreo` or `/`, an unknown word gets a one-line hint | `@Dioreo calendar purple` → “Try `calendar events`…” |
-| A required option left out gets a one-button card that opens the slash command’s pop-up | `d gunsmith` alone |
+| A required option left out gets a one-button card that opens the slash command’s pop-up | `d timestamp` alone (the only required option left) |
 | `visibility` is never a text option | — |
 | Replies are public, whatever your /settings say | — |
 | A server’s /admin forced-hidden rule shows an Open privately card instead | — |
