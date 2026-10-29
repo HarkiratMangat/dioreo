@@ -30,15 +30,15 @@ status: live
 1. `npm ci`, then `git fetch origin --tags` and `git checkout -B <your branch> origin/feat/text-commands`. Your harness may name a `claude/…` branch: ignore it, Harkirat's prompt gives you this one and permission to push it and `feat/text-commands`.
 2. **Predecessor check.** B2: `git log origin/feat/text-commands --oneline | rg "feat/text-commands-b1-records"` must show B1's merge; B3 the same for `b2-options`. Missing → stop, reply "BLOCKED: <predecessor> not merged yet".
 3. Do your unit below. Write only the files under Owns. One `python3` heredoc for edits that touch several places (assert every anchor, `print()` per edit, timestamps computed, never typed), the test chained with `&&`.
-4. Run your Test command and `npm run docs:audit > /tmp/audit.log 2>&1; echo exit=$?` (read the exit code, never pipe it to `tail`). The audit must have no ERROR. If an ERROR names only tags or version history, check whether it also fails on a clean `origin/feat/text-commands`; if so, report it and go on.
-5. `git diff --name-only origin/feat/text-commands...HEAD` must list only your Owns files.
+4. Run your Test command and `npm run docs:audit > /tmp/audit.log 2>&1; echo exit=$?` (read the exit code, never pipe it to `tail`). The audit must have no ERROR. An ERROR that also fails on a clean `origin/feat/text-commands` checkout is this cloud machine, not you (B1 measured 6, all Mac-only paths): report the count and go on. Every other ERROR is yours.
+5. `git diff --name-only origin/feat/text-commands...HEAD` must list only your Owns files, plus `docs/README.md` if you added a rule file (docs:audit requires every rule file to be listed there).
 6. Commit (Conventional Commits, e.g. `feat(text-commands): …`), with this trailer block:
    ```
    Co-Authored-By: diorswrld <310361322+diorswrld@users.noreply.github.com>
    ```
    plus your harness's own Claude line.
-7. Push your branch. Then `git checkout feat/text-commands && git pull --ff-only origin feat/text-commands && git merge --no-ff <your branch> && git push origin feat/text-commands`, then `git push origin --delete <your branch>`. A push gate may ask for an approval line: `Approved by: Harkirat · to: push <your branch> and merge it into feat/text-commands · when: his prompt that started this thread`.
-7b. **B2 only, if the work runs long:** commit each phase on your branch as it passes its tests. If you cannot finish, push your branch, do NOT merge it, and reply "BLOCKED: <what is left>" so the work continues from your branch.
+7. **Do NOT push your branch** (changed 2026-10-28 22:28 EDT: B1 found the cloud can push a branch but not delete it, so B1's stayed on GitHub). Merge it locally and push only the integration branch: `git checkout feat/text-commands && git pull --ff-only origin feat/text-commands && git merge --no-ff <your branch> && git push origin feat/text-commands && git branch -d <your branch>`. A push gate may ask for an approval line: `Approved by: Harkirat · to: merge <your branch> into feat/text-commands and push it · when: his prompt that started this thread`.
+7b. **B2 only, if the work runs long:** commit each phase on your branch as it passes its tests. If you cannot finish, push your branch (the one time a builder branch goes up; the lead deletes it later), do NOT merge it, and reply "BLOCKED: <what is left>" so the work continues from your branch.
 8. Reply with: the test output, the audit's ERROR/WARN counts, the merge commit hash, and anything you could not do. Never touch `main`, `public/`, `portal/**`, `docs/pins2/**`, never run `npm run site` or `npm run portal*`, never start the bot (there is no token here). A wrong or unclear spec → "BLOCKED: <what>"; never rewrite it.
 
 ## B1 — records
@@ -61,7 +61,7 @@ status: live
 **Groups:**
 - ⟦ONE MESSAGE⟧ Group 0: baseline `docs:audit`, the class-sweep search, and reads of all seven owned files plus `bot/textCommands.js`, `utils/textCommands/adapter.js`, `utils/textCommands/parse.js` and `.claude/rules/legal-site.md`.
 - ⟦ONE MESSAGE⟧ Group 1: one heredoc with all seven edits, `&& npm run docs:audit`.
-- ⟦ONE MESSAGE⟧ Group 2: the Owns check, commit, push, merge, push, delete, as one chained command.
+- ⟦ONE MESSAGE⟧ Group 2: the Owns check, commit, merge, push feat/text-commands, as one chained command.
 
 ## B2 — options, autocomplete and reply-to forms
 
@@ -103,7 +103,7 @@ Also: a table-driven test that every command alias and value alias in `commands.
 - ⟦ONE MESSAGE⟧ Group 1 (Phase 1): one heredoc `&& node scripts/handlerRouting.test.js`, then commit in the same chain.
 - ⟦ONE MESSAGE⟧ Group 2 (Phase 2): one heredoc for `commands.js`, `args.js`, `parse.js`, `adapter.js`, the gunsmith and timestamp changes and `textCommandArgs.test.js`, `&&` the args and parse tests, then commit.
 - ⟦ONE MESSAGE⟧ Group 3 (Phase 3): one heredoc for the listener, `handlers/textCommands.js`, `textCommandListener.test.js`, the manifest lines and the rule file, `&&` the full Test command, then commit.
-- ⟦ONE MESSAGE⟧ Group 4: the Owns check, push, merge, push, delete, as one chained command.
+- ⟦ONE MESSAGE⟧ Group 4: the Owns check, merge, push feat/text-commands, as one chained command.
 
 ## B3 — help and docs
 
@@ -118,7 +118,7 @@ Also: a table-driven test that every command alias and value alias in `commands.
 **Groups:**
 - ⟦ONE MESSAGE⟧ Group 0: reads of `commands/help.js`, `utils/commandMentions.js`, `scripts/lib/commandsPage.js`, `scripts/lib/commandProse.js`, `utils/requestContext.js`, `utils/textCommands/commands.js`, `.claude/rules/legal-site.md`, `scripts/helpAnnouncement.test.js`, and `rg -n "mentionCommand\\("`.
 - ⟦ONE MESSAGE⟧ Group 1: one heredoc for all four sources, the test, the manifest line and the rule file, `&&` the Test command.
-- ⟦ONE MESSAGE⟧ Group 2: the Owns check, commit, push, merge, push, delete, as one chained command.
+- ⟦ONE MESSAGE⟧ Group 2: the Owns check, commit, merge, push feat/text-commands, as one chained command.
 
 ## B4 — verification and review (his ask, 2026-10-28 21:11 EDT: "a 4th 'verification and review' auditor, before it all comes back to you")
 
@@ -151,6 +151,8 @@ Follow "Every builder, in this order" (steps 1–8), with B3's merge as the pred
 7. Push; `gh pr create --base main`; restate his approval (2026-10-28 20:59 EDT: "push and merge the text-commands branch into main"); squash merge with one trailer block; tag `v3.3.0`; delete the branch; refresh refs and the indexes. Deploy is NOT part of this; it waits for his word.
 
 ## Audit log
+
+B1's report, 2026-10-28 22:28 EDT: the cloud cannot delete a branch (403), so step 7 now merges locally and pushes only `feat/text-commands`; B1 also listed its rule file in `docs/README.md` (required, now allowed in step 5); the plan's privacy wording was wrong (with Message Content on, Discord sends EVERY message's text in channels Dioreo can see; Dioreo ignores and stores none of them) and PRIVACY v1.12 says the true version; B1 also made text commands count in Your Stats and Dioreo User Since (his yes in B1's thread).
 
 Deep think-pass, 2026-10-28 21:05 EDT (his ask: "distill the plan and spec so far with a deep /think-pass for this situation"), 15 thoughts, 7 checks. What it changed:
 

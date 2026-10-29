@@ -242,8 +242,7 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
 
     const groups = [];
     const toggle = (c, label, emoji, on) => ({ type: 2, style: on ? 3 : 2, label, custom_id: `remind_cat:${c.key}:${ownerId}`, emoji: parseEmoji(emoji) });
-    // New season wears this season's emoji (seasonEmojiFor: the stored one, else season{N} by its title), the green dot only when there is none (Harkirat, 2026-10-25 01:26 EDT: "for the new season button, can you utilize this season's emoji").
-    // ...and since 2026-10-28 18:16 EDT the UPCOMING season's emoji when there is one (his ask), since the button reminds about the NEXT season starting; the live season's otherwise.
+    // New season wears this season's emoji (seasonEmojiFor: the stored one, else season{N} by its title), the green dot only when there is none (Harkirat, 2026-10-25 01:26 EDT: "for the new season button, can you utilize this season's emoji"). ...and since 2026-10-28 18:16 EDT the UPCOMING season's emoji when there is one (his ask), since the button reminds about the NEXT season starting; the live season's otherwise.
     const { upcomingSeasonEmoji, seasonEmojiFor } = require('./seasonEmoji');
     const seasonIcon = upcomingSeasonEmoji(seasonalDoc) || seasonEmojiFor(seasonalDoc?.currentSeasonTitle, seasonalDoc?.currentSeasonEmoji) || emojis.greenDotGlow;
     const row = key => ({ type: 1, components: CATEGORIES.filter(c => c.group === key).map(c => toggle(c, c.short, c.key === 'newSeason' ? seasonIcon : emojis[c.emoji], cats.has(c.key))) });

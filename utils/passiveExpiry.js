@@ -38,8 +38,7 @@ function schedulePanelExpiry(interaction, messageId, components, timeoutMs = IDL
     const timeoutHandle = setTimeout(async () => {
         pendingTimers.delete(messageId);
         try {
-            // `allowed_mentions` with nothing allowed: an edit that names no rules gets Discord's default, which re-applies every <@id> in the message as a ping, so an expired /colors panel lit up yellow for the person it names (Harkirat, 2026-10-25 12:27 EDT: "don't have that yellow ping highlight (it happens when the message expires)"). The mention stays clickable; only the ping goes. Every expiring panel goes through here.
-            // A text command's reply (utils/textCommands/adapter.js) is an ordinary message with no interaction token, so it is edited with the bot token instead, which never expires.
+            // `allowed_mentions` with nothing allowed: an edit that names no rules gets Discord's default, which re-applies every <@id> in the message as a ping, so an expired /colors panel lit up yellow for the person it names (Harkirat, 2026-10-25 12:27 EDT: "don't have that yellow ping highlight (it happens when the message expires)"). The mention stays clickable; only the ping goes. Every expiring panel goes through here. A text command's reply (utils/textCommands/adapter.js) is an ordinary message with no interaction token, so it is edited with the bot token instead, which never expires.
             const route = interaction.__dioreoText ? Routes.channelMessage(interaction.channelId, messageId) : Routes.webhookMessage(applicationId, token, '@original');
             await client.rest.patch(route, {
                 body: { components: disableAllComponents(components), allowed_mentions: { parse: [] } }
