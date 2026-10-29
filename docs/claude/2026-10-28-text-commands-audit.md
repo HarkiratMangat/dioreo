@@ -55,3 +55,25 @@ Every new test was proven able to fail: eleven mutations (the usage line restore
 | "why does this panel look so barebone??" | Only the listener's own cards were bare (the help card, Did you mean, the timestamp card, the weapon picker, the no-match line); every command's real answer was always its full panel. Each card now has a `##`/`###` title with its command's icon, that command's accent and a `-#` hint; posted as real renders to #testing-spam. |
 
 Beyond B4's Owns, on his "sure build": `utils/search.js`, `utils/loadoutLookup.js`, `commands/gunsmith.js`, `scripts/weaponSearch.test.js` and `.claude/rules/loadouts.md` (its "one fuzzy match auto-resolves" line, now false, is marked superseded).
+
+## For the lead: add a B6 (Harkirat, 2026-10-29 11:55 EDT)
+
+His words: "we need a b6 to review and design/refine each of the newer panels/messages that the bot sends due to the text commands, such as the pick-a-date panel." B4 gave the four cards a first pass (title, icon, accent, hint; rendered in #testing-spam on 2026-10-29). B6 is the real review: each one designed with him, on dev-bot mock-ups, the way /timestamp's and /today's layouts were settled. Every message text commands send themselves, as of `d4fb704`:
+
+| Message | Built in | State after B4 |
+| --- | --- | --- |
+| Help card (`@Dioreo` alone, 1–2 unknown words) | `bot/textCommands.js` `helpCard` | first pass |
+| Did you mean, commands (`@Dioreo calender stuff`) | `bot/textCommands.js` `didYouMeanCard` | first pass |
+| Did you mean, weapons or seasons (`d build kilo`) | `bot/textCommands.js` `pickCard` | first pass |
+| The pick-a-date card (`d timestamp` alone) | `bot/textCommands.js` `needsInputCard` | first pass |
+| The timestamp pop-up (5 fields) | `handlers/textCommands.js` `timestampModal` | built this thread, not seen live with the dropdowns |
+| No match / Couldn't read lines | `bot/textCommands.js` `noMatchLine` | plain line with the cross |
+| Role-mention hint | `bot/textCommands.js` `onMessage` (`roleHint`) | plain line |
+| The 5-second countdown note | `bot/textCommands.js` `warnCooldown` | plain line with the hourglass |
+| The can't-post DM | `bot/textCommands.js` `dmCantPost` | plain DM |
+| The emoji reply to a chatty mention | `bot/textCommands.js` `mentionReplyEmoji` | one brand emoji (his deck, 2026-10-29 10:12 EDT) |
+| The Open privately card | `utils/textCommands/adapter.js` `privateCardBody` | one `-#` line and a button |
+| "That one opens a form…" / "Something went wrong…" | `bot/textCommands.js` `runTextCommand` | plain line |
+| Button notes: expired, no longer available, turned off here, message or person gone | `handlers/textCommands.js` `privately` calls | plain private lines |
+
+Owns for B6 would be those three files and `scripts/textCommandListener.test.js` / `scripts/textCommandAdapter.test.js`, whose card assertions (accent, title, button icon) change with the design.
