@@ -69,7 +69,7 @@ Intents: `Guilds` + `GuildMessages`, plus `MessageContent` only when the app's f
 
 ## Options and aliases
 
-From his doc, as he left it. `new` / `returning` never work on their own (his answer 2). In the calendar, `new` means live now on any page: `d calendar modes new` = Playlists & Modes, Live Right Now (his answer 2026-10-28 21:12 EDT: "was meant for `d calendar modes new` as in calendar + game modes/playlists + live now"). `returning` works only on the calendar's Draws page (its New/Returning split) and in `d draws returning`. Gunsmith also answers to a bare weapon name, `d ak117` (answer 1), and takes a build number, `d gs ak117 2` (answer 3). Remind needs its when word, `d remind live black hole`, `d r end black hole` (answer 4).
+From his doc after his trim (2026-10-28 21:51 EDT: he struck values in the doc and left six comments). Singular and plural always both match; a value matches by its name, any alias or a one-letter typo; `option:value` always works. `new` / `returning` never work on their own (answer 2): `d calendar modes new` = Playlists & Modes, Live Right Now; `returning` works only in `d draws returning`. Calendar shortcut command words `d events`, `d modes`, `d playlists`, `d gamemode`, `d gm` open that calendar page (answer 2).
 
 ### Rules for every command
 
@@ -89,59 +89,45 @@ From his doc, as he left it. `new` / `returning` never work on their own (his an
 
 ### Per command
 
-
 | Command | Command aliases | Argument | Values + their aliases |
 | --- | --- | --- | --- |
 | today | today, td, tdy, daily | — | none |
-| draws | draws, d, lucky draws, ld | page | new, n, all, latest · returning, return, r, back, rerun |
-| calendar | calendar, cal, c, schedule, sched | page | today, td, tdy · draws, d, lucky draws · events, ev, e · playlists, modes, pl, m, gamemode, gm |
-| calendar |  | filter | all, a, full, f, timeline, tl · past, ended, end, over, old · live, l, active, now, current, new · upcoming, u, soon, next, future, up, pending |
+| draws | draws, d, lucky draws, ld | page | new, n, all · returning, return, r |
+| calendar | calendar, cal, c, schedule, sched | page | draws, d · events, ev, e · playlists, modes, pl, m, gamemode, gm |
+| calendar |  | filter | past, ended, end, over, old · live, l, active, now, current, new · upcoming, u, soon, next, future, up, pending |
 | patch notes | patch notes, patchnotes, patch, notes, pn, update | season | new, latest, current (the latest notes posted, even for a season not live yet) · a number: 8, s8, season 8 · a word from its title: terminated |
 | season end | season end, seasonend, season, se, rank end, rankend, ranked end, rank, re, end | — | none |
-| draw prices | draw prices, drawprices, prices, price, dp, cost, cp | region | 10cp, 10 · 20cp, 20 · 30cp, 30 · 30 CP by place: global, na, north america, us, usa, united states, canada, uk, united kingdom, britain, germany, france, eu, western europe, australia, new zealand, nz, oceania · 20 CP by place: la, latam, latin america, brazil, mexico, uae, saudi arabia, saudi, ksa, eastern europe, middle east, me · 10 CP by place: india, pakistan, south africa, egypt, morocco, chile, colombia (no Garena regions or China) |
-| draw prices |  | group | normal, regular, standard · armory, series, sa · advanced, adv |
-| draw prices |  | type | mythic weapon, mythic gun, mw · mythic character, mythic char, mc · legendary reactive, reactive, lr · legendary non-reactive, non-reactive, lnr · legendary character weapon, lcw · double legendary, double, dlw · 7 spins, 7 spin, 7spin · pick your reward, pick, pyr · double epic, epic, dec · mythic armory, ma · legendary weapon armory, lwa · legendary character armory, lca · advanced weapon, aw · advanced character, ac |
+| draw prices | draw prices, drawprices, prices, price, dp, cost, cp | region | 10cp, 10 · 20cp, 20 · 30cp, 30 |
+| draw prices |  | type | mythic weapon, mythic gun, mw · mythic character, mythic char, mc · legendary, legendary weapon, lw, lr, lnr (shows reactive and non-reactive) · legendary character, lcw · double legendary, double, dlw · 7 spins, 7 spin, 7spin · pick your reward, pick, pyr · double epic, epic, dec · armory, series armory (shows all three armories) · advanced weapon, aw · advanced character, ac |
 | draw calculator | draw calculator, drawcalculator, calculator, calc, dc, calculate | page | start, new, begin · saved, save, history, s · help, guide, h |
-| gunsmith MP | gunsmith, gs, mp, build, loadout, meta, gun, smith | weapon (required) | a weapon name, also bare as d ak117 (your call 1), spaces and dashes optional: ak117, ak 117, ak-117, plus /gunsmith’s own nicknames |
-| gunsmith MP |  | build | 1, 2, 3 · b2, build 2, #2 (yes, your call 3) |
-| gunsmith DMZ | dmz, dmz gs, dmz build, dmz loadout | weapon (required) | same as MP |
-| gunsmith DMZ |  | build | same as MP |
-| timestamp | timestamp, time, ts, t, stamp | datetime (required) | every word that isn’t another argument: tomorrow 8pm, friday 6pm, in 2 hours |
-| timestamp |  | style | short · all · relative, rel, countdown · full · date · clock |
-| timestamp |  | view | text, plain, raw, copy |
+| gunsmith MP | gunsmith, gs, mp, build, loadout, meta, gun, wep, weapon | weapon (optional) | a weapon name, also bare as `d ak117`, spaces and dashes optional (ak117, ak 117, ak-117) · a class: ar, smg, lmg, marksman, sniper, shotgun, secondary (and their aliases, below) · nothing: `d gunsmith` alone |
+| gunsmith DMZ | dmz, dmz gs, dmz build, dmz loadout, gsd | weapon (optional) | same as MP |
+| timestamp | timestamp, time, ts, t, convert | datetime (required) | every word that isn’t another argument: tomorrow 8pm, friday 6pm, in 2 hours |
 | timestamp |  | timezone | timezone:toronto, tz:toronto, tz:est |
-| convert times | convert times, convert, conv, times, ct | — | none; send it as a reply to the message |
-| remind | remind, r, reminder, remindme, rm, notify, alert, bell | item | an item’s name (black hole) or a category, exactly as /remind’s own autocomplete lists them for that side |
-| remind |  | when | required: releasing, release, live, out, start · leaving, leave, end, ending, l |
-| colors | colors, colours, col, palette, accent | page | avatar, av, pfp, a · banner, b · deco, decoration · nameplate, np, plate · username, name, display name, n |
-| colors |  | source | main, global, profile, m · server, guild, s |
+| convert times | (none: `d timestamp` sent as a reply) | — | none; send it as a reply to the message |
+| remind | remind, r, reminder, remindme, rm, notify, alert | — | none: `d remind` opens reminders |
+| colors | colors, colours, col, palette, accent | — | none: your own colors |
 | colors |  | someone | @name, or send it as a reply to them |
-| settings | settings, set, config, options, opt | page | visibility, vis, v · preferences, prefs, p · colors, colours, c |
-| help | help, h, commands, cmds, info, ? | command | any command name or alias above |
+| settings | settings, set, config, options, opt, pref, preferences, s | — | none |
+| help | help, h, commands, cmds, info, ?, guide | command | any command name or alias above |
 | invite | invite, inv, add, link | — | none |
 
-
-### How words map, so nothing is guessed (lead's content pass, 2026-10-28 21:09 EDT)
+### How words map, so nothing is guessed
 
 | Word | Becomes |
 | --- | --- |
-| calendar `past` · `upcoming` · `live` · `all` (and aliases) | filter `over` · `soon` · `live` · `all` |
-| colors `username` · `deco` · `main` (and aliases) | page `name` · `decoration` · source `global` |
-| timestamp `short` · `all` · `relative` · `full` · `date` · `clock` | style `short_list` · `all_formats` · `relative` · `fullDateTime` · `longDate` · `shortTime` (my mapping) |
-| draw prices `10cp` / `20cp` / `30cp` and the places | region `region_10` / `region_20` / `region_30` |
-| remind release words · leaving words | the `releases` option · the `leaving` option; the item then resolves through that side's own autocomplete, and the pick flips that reminder as `/remind` does |
+| calendar `past` · `upcoming` · `live` (and aliases, `new` included) | filter `over` · `soon` · `live` |
+| draw prices `10cp` / `20cp` / `30cp` | region `region_10` / `region_20` / `region_30` |
+| draw prices `legendary` (and aliases) | BOTH `legendaryGunReactive` and `legendaryGunNonReactive` (his comment: "it just filters and shows both reactive and non-reactive") |
+| draw prices `legendary character` | `legendaryCharacterWeapon` (his comment) |
+| draw prices `armory`, `series armory` | all three armories (`armoryMythicWeapon`, `armoryLegendaryWeapon`, `armoryLegendaryCharacter`) (his comment) |
 | patch notes `new` · `latest` · `current` | the newest season that has notes, upcoming included |
-| calendar `new` | filter `live` on any page |
-| calendar `returning` | the Draws page's Returning split; on other pages, not understood |
-| calendar shortcut words `events`, `ev`, `playlists`, `modes`, `gamemode`, `gm` as the COMMAND word | calendar on that page (his answer 2); one-letter forms are not shortcuts |
+| gunsmith with no weapon, or with a class word | the first weapon alphabetically in the catalogue, or in that class (his comment: "running a bare `d gunsmith` or something would just open the 1st alphabetic gun on the catalogue") |
+| `d timestamp` (any alias) sent as a REPLY, with no date | Convert Times on the replied message (his comment: "just `d timestamp` reply to a message") |
+| `d timestamp` alone, not a reply | a one-button card that opens the timestamp pop-up |
 
-- **Timestamp style words have no one-letter forms**, because the date is free text: in `d time in a minute`, an `a` alias would be read as the style.
-- **A gunsmith build number is text-only.** He removed `build` from `/gunsmith` on 2026-10-25 15:45 EDT ("remove 'build' as an option in the slash command"); it stays removed. A trailing number is a build only when the words before it resolve to one weapon AND the number is within that weapon's build count; otherwise it is part of the name (`d gs type 19`).
+- **Dropped by his trim**, now panel-only: calendar Today page and full-timeline filter, region by place, draw prices groups, the gunsmith build number (answer 3 is reversed by his trim), timestamp style and view, remind items and when (`d remind` just opens reminders), colors page and source, settings page, the `bell`, `smith`, `stamp` aliases and the separate convert-times aliases.
 - **No alias may belong to two commands, and no value alias to two values of one command.** A test enforces it.
-
-### Settled after the first draft
-
-- `d modes new` was meant as `d calendar modes new` (his answer 2026-10-28 21:12 EDT); see above.
 
 ## Stays slash only
 
