@@ -15,6 +15,7 @@ status: live
 | `feat/text-commands-b1-records` | B1 | builder 1 |
 | `feat/text-commands-b2-options` | B2, started only after B1 is merged | builder 2 |
 | `feat/text-commands-b3-help` | B3, started only after B2 is merged | builder 3 |
+| `feat/text-commands-b4-audit` | B4, verification and review, started only after B3 is merged | auditor |
 
 ## Every builder, in this order
 
@@ -94,9 +95,23 @@ Also: a table-driven test that every command alias and value alias in `commands.
 3. **The site's /commands page** (`scripts/lib/commandsPage.js` / `commandProse.js`): one short note under the intro that every public command also works as `@Dioreo <command>` or `d <command>`, in the page's voice. Do NOT run the site build or touch `public/` (the lead does).
 4. **Test** `scripts/helpTextCommands.test.js`: the help landing contains the text-commands block and stays ≤ 40 components; `mentionCommand` returns the text form inside a fake context with `handler: 'textCommands'` and the slash form otherwise. Prove it can fail.
 
-## The lead, after B3 is merged (on this Mac)
+## B4 — verification and review (his ask, 2026-10-28 21:11 EDT: "a 4th 'verification and review' auditor, before it all comes back to you")
 
-1. `git pull`; read each unit's diff against its Owns and the spec.
+Follow "Every builder, in this order" (steps 1–8), with B3's merge as the predecessor. Your job is to find what is wrong with the whole feature before the lead sees it, and fix what is objectively wrong.
+
+**Owns:** every file B1, B2 and B3 changed (`git diff --name-only origin/main...origin/feat/text-commands`), for fixes only · `docs/claude/2026-10-28-text-commands-audit.md` (new, front matter `kind: record`, `status: frozen`, your report). Never the spec or this plan, never `package.json`, the changelogs or the DEVLOG, never `public/`.
+**Test:** `TEST_CACHE=0 npm test > /tmp/test.log 2>&1; echo exit=$?` and `npm run docs:audit`, exit codes read; then the same after your fixes.
+
+1. **Run everything first**, before reading: the full suite and the audit. Record what fails.
+2. **Spec against code, row by row.** For every row of the spec's "When Dioreo answers", "Replies", Per command and "How words map" tables, find the code that does it and a test that would fail without it. Missing code, missing test, or behaviour that differs is a finding.
+3. **Review the diff** (`git diff origin/main...origin/feat/text-commands`) for correctness: the chat guards (a message not meant for Dioreo must never get a reply), the autocomplete move being byte-for-byte, every `return interaction.X(...)` in an error branch awaited, nothing stored from a message, no slash-command option changed, the 40-component cap on /help, PRIVACY and TERMS true against the code (`GatewayIntentBits`, what is read, what is stored).
+4. **Try to break it** in a scratch test (not committed): the spec's edge rows plus your own (`d time in a minute`, `d gs type 19`, `dior gunsmith skins are cool`, `d new`, `@Dioreo calendar purple`, an alias typed with a typo, a message edited into a command after 60 s).
+5. **Fix** what is objectively wrong (a test failing, code contradicting the spec, a missing test for a spec row), each fix with a test that fails without it. Anything that needs a design call, or contradicts a decision in the spec, is NOT yours to fix: list it as a question.
+6. **Report** in `docs/claude/2026-10-28-text-commands-audit.md`: a table of findings (what · where · severity · fixed or question), the before/after test and audit results, and the questions for Harkirat. Commit it with your fixes, then merge as in step 7.
+
+## The lead, after B4 is merged (on this Mac)
+
+1. `git pull`; read B4's report first, then each unit's diff against its Owns and the spec.
 2. `git merge origin/main` if `main` moved; `npm run site` and commit `public/` (PRIVACY, TERMS and the /commands page changed).
 3. `TEST_CACHE=0 npm test` and `npm run docs:audit`, exit codes read.
 4. Show Harkirat the help card, the Did you mean card and the can't-post DM on the dev bot in #testing-spam, then click-test on the dev bot in Dioreoland: every row of the Per command table that has an argument, the reply-to forms, Did you mean, needsInput, the chat guards.
@@ -128,4 +143,5 @@ Content pass, 2026-10-28 21:09 EDT, after his correction ("hooks and stuff aren'
 15. *Value words mapped to nothing*: a "How words map" table now covers every non-obvious value.
 16. *One-letter timestamp styles would eat date words* (`d time in a minute`): dropped. *Numbers in weapon names* (`type 19`) vs a build number: a rule.
 17. *His answer 2's shortcut words* were never in the spec: added. *Alias clashes*: a test now enforces none.
+19. *B4 added* (2026-10-28 21:11 EDT, his ask): an Opus auditor checks the spec row by row against code and tests, runs the full suite, fixes objective defects and reports design questions, so the lead's pass (which costs his weekly usage) starts from a reviewed branch.
 18. *B2 is the heaviest unit*: per-phase commits and a no-merge BLOCKED path if it can't finish. *Process*: the first pass spent a third of its thoughts on infrastructure he didn't need; content comes first.
