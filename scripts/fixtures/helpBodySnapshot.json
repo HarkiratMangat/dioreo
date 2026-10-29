@@ -356,7 +356,7 @@
         },
         {
           "type": 10,
-          "content": "### `/gunsmith mp`\nFind an MP weapon's loadout, or browse a whole class or the Meta\n-# **Options**\n-# 🔹 `<weapon>` Pick a weapon, or an \"All … builds\" row at the top to browse\n### `/gunsmith dmz`\nFind a DMZ weapon's loadout, or browse Meta or every DMZ build\n-# **Options**\n-# 🔹 `<weapon>` Pick a weapon, or an \"All … builds\" row at the top to browse\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmith mp** weapon:`AK117`\n-# 🔸 **/gunsmith mp** weapon:`Switchblade X9` visibility:`Hidden`\n-# 🔸 **/gunsmith mp** weapon:`All SMG builds`\n-# 🔸 **/gunsmith mp** weapon:`All META builds`\n-# 🔸 **/gunsmith dmz** weapon:`Fennec`"
+          "content": "### `/gunsmith mp`\nFind an MP weapon's loadout, or browse a whole class or the Meta\n-# 💬 Or type `d gunsmith [weapon]`\n-# **Options**\n-# 🔹 `<weapon>` Pick a weapon, or an \"All … builds\" row at the top to browse\n### `/gunsmith dmz`\nFind a DMZ weapon's loadout, or browse Meta or every DMZ build\n-# 💬 Or type `d dmz [weapon]`\n-# **Options**\n-# 🔹 `<weapon>` Pick a weapon, or an \"All … builds\" row at the top to browse\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmith mp** weapon:`AK117` · `d gunsmith ak117`\n-# 🔸 **/gunsmith mp** weapon:`Switchblade X9` visibility:`Hidden`\n-# 🔸 **/gunsmith mp** weapon:`All SMG builds`\n-# 🔸 **/gunsmith mp** weapon:`All META builds`\n-# 🔸 **/gunsmith dmz** weapon:`Fennec` · `d dmz fennec`"
         },
         {
           "type": 14,
@@ -648,14 +648,14 @@
         },
         {
           "type": 10,
-          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# **Options**\n-# 🔹 `[filter]` Quickly open a draw type\n-# 🔹 `[region]` View costs for a specific CP region"
+          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# 💬 Or type `d draws [new|returning]`\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# 💬 Or type `d draw prices [10cp|20cp|30cp] [mythic|mythic weapon|mythic character|legendary|legendary character|double legendary|7 spins|pick your reward|double epic|armory|advanced|advanced weapon|advanced character]`\n-# **Options**\n-# 🔹 `[filter]` Quickly open a draw type\n-# 🔹 `[region]` View costs for a specific CP region"
         },
         {
           "type": 9,
           "components": [
             {
               "type": 10,
-              "content": "### `/draw calculator`\nWork out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy\n-# **Options**\n-# 🔹 `[page]` Open on Start a Calculation, View Saved, or Help"
+              "content": "### `/draw calculator`\nWork out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy\n-# 💬 Or type `d draw calculator [start|saved|help]`\n-# **Options**\n-# 🔹 `[page]` Open on Start a Calculation, View Saved, or Help"
             }
           ],
           "accessory": {
@@ -672,7 +672,7 @@
         },
         {
           "type": 10,
-          "content": "-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/draws** page:`Returning Draws`\n-# 🔸 **/draw prices** region:`30 CP Region`\n-# 🔸 **/draw prices** filter:`Mythic Weapon Draw`\n-# 🔸 **/draw calculator** page:`View Saved`"
+          "content": "-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/draws** page:`Returning Draws` · `d draws returning`\n-# 🔸 **/draw prices** region:`30 CP Region` · `d draw prices 30cp`\n-# 🔸 **/draw prices** filter:`Mythic Weapon Draw` · `d draw prices mythic weapon`\n-# 🔸 **/draw calculator** page:`View Saved` · `d draw calculator saved`"
         },
         {
           "type": 14,
@@ -944,7 +944,7 @@
         },
         {
           "type": 10,
-          "content": "### `/calendar`\nToday's screen, then this season's timeline: Draws, Events, and Playlists & Modes\n-# **Options**\n-# 🔹 `[page]` Open on Today, Draws, Events, or Playlists & Modes\n-# 🔹 `[filter]` Full timeline, or only past, ended, live or upcoming entries (not saved)\n### `/today`\nWhat's new today, what's going live, and what's leaving soon\n### `/remind`\nSet and manage your reminders\n-# **Options**\n-# 🔹 `[releases]` A reminder for when something goes live; pick it again to turn it off\n-# 🔹 `[leaving]` A reminder for when something is leaving; pick it again to turn it off\n### `/patch notes`\nLatest weapon balance changes, plus the full patch-note history\n-# **Options**\n-# 🔹 `[season]` Search for a specific previous season (start typing to see suggestions)\n### `/season end`\nSee when this season's Battle Pass, Ranked, and DMZ seasons end\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/calendar** page:`Events` filter:`Upcoming`\n-# 🔸 **/remind** releases:`New draws` (run it again to turn it off)\n-# 🔸 **/remind** leaving:`Leaving soon (everything)`\n-# 🔸 **/patch notes** season:`Season 6 — Take Your Heart`"
+          "content": "### `/calendar`\nToday's screen, then this season's timeline: Draws, Events, and Playlists & Modes\n-# 💬 Or type `d calendar [draws|events|playlists] [past|live|upcoming]`\n-# **Options**\n-# 🔹 `[page]` Open on Today, Draws, Events, or Playlists & Modes\n-# 🔹 `[filter]` Full timeline, or only past, ended, live or upcoming entries (not saved)\n### `/today`\nWhat's new today, what's going live, and what's leaving soon\n-# 💬 Or type `d today`\n### `/remind`\nSet and manage your reminders\n-# 💬 Or type `d remind`\n-# **Options**\n-# 🔹 `[releases]` A reminder for when something goes live; pick it again to turn it off\n-# 🔹 `[leaving]` A reminder for when something is leaving; pick it again to turn it off\n### `/patch notes`\nLatest weapon balance changes, plus the full patch-note history\n-# 💬 Or type `d patch notes [new|season]`\n-# **Options**\n-# 🔹 `[season]` Search for a specific previous season (start typing to see suggestions)\n### `/season end`\nSee when this season's Battle Pass, Ranked, and DMZ seasons end\n-# 💬 Or type `d season end`\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/calendar** page:`Events` filter:`Upcoming` · `d calendar events upcoming`\n-# 🔸 **/remind** releases:`New draws` (run it again to turn it off)\n-# 🔸 **/remind** leaving:`Leaving soon (everything)`\n-# 🔸 **/patch notes** season:`Season 6 — Take Your Heart` · `d patch notes season 6`"
         },
         {
           "type": 14,
@@ -1216,7 +1216,7 @@
         },
         {
           "type": 10,
-          "content": "### `/colors`\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# **Options**\n-# 🔹 `[page]` Open on Avatar, Banner, Username, Nameplate, or Deco\n-# 🔹 `[source]` Your main profile, or your profile for this server\n### `/timestamp`\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# **Options**\n-# 🔹 `<datetime>` e.g. \"tomorrow\", \"in 2 hours\", \"dec 25 at 9am\", \"8pm to 10pm\", \"19:30\"\n-# 🔹 `[timezone]` Defaults to your saved `/settings` timezone\n-# 🔹 `[style]` Short List, All Formats, or one format; blank uses your saved style\n-# 🔹 `[view]` Embed or plain Text, one-off only\n### `/invite`\nGet a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n### Right-click (Apps)\n**View Colors** on a member or one of their messages: their profile colors\n**Convert Times** on a message: every date and time in it, as a timestamp in your own time zone\n\n-# **Examples**\n-# 🔸 **/colors** page:`Nameplate` source:`From Server Profile`\n-# 🔸 **/timestamp** datetime:`this saturday 7pm` timezone:`Pacific Time`\n-# 🔸 **/timestamp** datetime:`august 20` style:`Short Date (d)`\n-# 🔸 **/timestamp** datetime:`in 45 minutes` view:`Text`"
+          "content": "### `/colors`\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# 💬 Or type `d colors [@someone]`, or reply to someone with `d colors`\n-# **Options**\n-# 🔹 `[page]` Open on Avatar, Banner, Username, Nameplate, or Deco\n-# 🔹 `[source]` Your main profile, or your profile for this server\n### `/timestamp`\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# 💬 Or type `d timestamp <datetime> [tz:timezone]`, or reply to a message with `d timestamp`\n-# **Options**\n-# 🔹 `<datetime>` e.g. \"tomorrow\", \"in 2 hours\", \"dec 25 at 9am\", \"8pm to 10pm\", \"19:30\"\n-# 🔹 `[timezone]` Defaults to your saved `/settings` timezone\n-# 🔹 `[style]` Short List, All Formats, or one format; blank uses your saved style\n-# 🔹 `[view]` Embed or plain Text, one-off only\n### `/invite`\nGet a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord\n-# 💬 Or type `d invite`\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n### Right-click (Apps)\n**View Colors** on a member or one of their messages: their profile colors\n**Convert Times** on a message: every date and time in it, as a timestamp in your own time zone\n\n-# **Examples**\n-# 🔸 **/colors** page:`Nameplate` source:`From Server Profile`\n-# 🔸 **/timestamp** datetime:`this saturday 7pm` timezone:`Pacific Time`\n-# 🔸 **/timestamp** datetime:`august 20` style:`Short Date (d)`\n-# 🔸 **/timestamp** datetime:`in 45 minutes` view:`Text`"
         },
         {
           "type": 14,
@@ -1488,7 +1488,7 @@
         },
         {
           "type": 10,
-          "content": "### `/settings`\nYour own preferences: **Visibility** (who sees your responses by default), **Preferences** (timezone, timestamp style, accent style, and more), and your **Colors**\n\n-# **Options**\n-# 🔹 `[open]` Open straight on Visibility, Preferences, or your Colors\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/settings**\n-# 🔸 **/settings** open:`Preferences`"
+          "content": "### `/settings`\nYour own preferences: **Visibility** (who sees your responses by default), **Preferences** (timezone, timestamp style, accent style, and more), and your **Colors**\n-# 💬 Or type `d settings`\n\n-# **Options**\n-# 🔹 `[open]` Open straight on Visibility, Preferences, or your Colors\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/settings** · `d settings`\n-# 🔸 **/settings** open:`Preferences`"
         },
         {
           "type": 14,
@@ -2455,7 +2455,7 @@
         },
         {
           "type": 10,
-          "content": "### `/gunsmith mp`\nFind an MP weapon's loadout, or browse a whole class or the Meta\n-# **Options**\n-# 🔹 `<weapon>` Pick a weapon, or an \"All … builds\" row at the top to browse\n### `/gunsmith dmz`\nFind a DMZ weapon's loadout, or browse Meta or every DMZ build\n-# **Options**\n-# 🔹 `<weapon>` Pick a weapon, or an \"All … builds\" row at the top to browse\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmith mp** weapon:`AK117`\n-# 🔸 **/gunsmith mp** weapon:`Switchblade X9` visibility:`Hidden`\n-# 🔸 **/gunsmith mp** weapon:`All SMG builds`\n-# 🔸 **/gunsmith mp** weapon:`All META builds`\n-# 🔸 **/gunsmith dmz** weapon:`Fennec`"
+          "content": "### `/gunsmith mp`\nFind an MP weapon's loadout, or browse a whole class or the Meta\n-# 💬 Or type `d gunsmith [weapon]`\n-# **Options**\n-# 🔹 `<weapon>` Pick a weapon, or an \"All … builds\" row at the top to browse\n### `/gunsmith dmz`\nFind a DMZ weapon's loadout, or browse Meta or every DMZ build\n-# 💬 Or type `d dmz [weapon]`\n-# **Options**\n-# 🔹 `<weapon>` Pick a weapon, or an \"All … builds\" row at the top to browse\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmith mp** weapon:`AK117` · `d gunsmith ak117`\n-# 🔸 **/gunsmith mp** weapon:`Switchblade X9` visibility:`Hidden`\n-# 🔸 **/gunsmith mp** weapon:`All SMG builds`\n-# 🔸 **/gunsmith mp** weapon:`All META builds`\n-# 🔸 **/gunsmith dmz** weapon:`Fennec` · `d dmz fennec`"
         },
         {
           "type": 14,
@@ -2758,14 +2758,14 @@
         },
         {
           "type": 10,
-          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# **Options**\n-# 🔹 `[filter]` Quickly open a draw type\n-# 🔹 `[region]` View costs for a specific CP region"
+          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# 💬 Or type `d draws [new|returning]`\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# 💬 Or type `d draw prices [10cp|20cp|30cp] [mythic|mythic weapon|mythic character|legendary|legendary character|double legendary|7 spins|pick your reward|double epic|armory|advanced|advanced weapon|advanced character]`\n-# **Options**\n-# 🔹 `[filter]` Quickly open a draw type\n-# 🔹 `[region]` View costs for a specific CP region"
         },
         {
           "type": 9,
           "components": [
             {
               "type": 10,
-              "content": "### `/draw calculator`\nWork out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy\n-# **Options**\n-# 🔹 `[page]` Open on Start a Calculation, View Saved, or Help"
+              "content": "### `/draw calculator`\nWork out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy\n-# 💬 Or type `d draw calculator [start|saved|help]`\n-# **Options**\n-# 🔹 `[page]` Open on Start a Calculation, View Saved, or Help"
             }
           ],
           "accessory": {
@@ -2782,7 +2782,7 @@
         },
         {
           "type": 10,
-          "content": "-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/draws** page:`Returning Draws`\n-# 🔸 **/draw prices** region:`30 CP Region`\n-# 🔸 **/draw prices** filter:`Mythic Weapon Draw`\n-# 🔸 **/draw calculator** page:`View Saved`"
+          "content": "-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/draws** page:`Returning Draws` · `d draws returning`\n-# 🔸 **/draw prices** region:`30 CP Region` · `d draw prices 30cp`\n-# 🔸 **/draw prices** filter:`Mythic Weapon Draw` · `d draw prices mythic weapon`\n-# 🔸 **/draw calculator** page:`View Saved` · `d draw calculator saved`"
         },
         {
           "type": 14,
@@ -3065,7 +3065,7 @@
         },
         {
           "type": 10,
-          "content": "### `/calendar`\nToday's screen, then this season's timeline: Draws, Events, and Playlists & Modes\n-# **Options**\n-# 🔹 `[page]` Open on Today, Draws, Events, or Playlists & Modes\n-# 🔹 `[filter]` Full timeline, or only past, ended, live or upcoming entries (not saved)\n### `/today`\nWhat's new today, what's going live, and what's leaving soon\n### `/remind`\nSet and manage your reminders\n-# **Options**\n-# 🔹 `[releases]` A reminder for when something goes live; pick it again to turn it off\n-# 🔹 `[leaving]` A reminder for when something is leaving; pick it again to turn it off\n### `/patch notes`\nLatest weapon balance changes, plus the full patch-note history\n-# **Options**\n-# 🔹 `[season]` Search for a specific previous season (start typing to see suggestions)\n### `/season end`\nSee when this season's Battle Pass, Ranked, and DMZ seasons end\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/calendar** page:`Events` filter:`Upcoming`\n-# 🔸 **/remind** releases:`New draws` (run it again to turn it off)\n-# 🔸 **/remind** leaving:`Leaving soon (everything)`\n-# 🔸 **/patch notes** season:`Season 6 — Take Your Heart`"
+          "content": "### `/calendar`\nToday's screen, then this season's timeline: Draws, Events, and Playlists & Modes\n-# 💬 Or type `d calendar [draws|events|playlists] [past|live|upcoming]`\n-# **Options**\n-# 🔹 `[page]` Open on Today, Draws, Events, or Playlists & Modes\n-# 🔹 `[filter]` Full timeline, or only past, ended, live or upcoming entries (not saved)\n### `/today`\nWhat's new today, what's going live, and what's leaving soon\n-# 💬 Or type `d today`\n### `/remind`\nSet and manage your reminders\n-# 💬 Or type `d remind`\n-# **Options**\n-# 🔹 `[releases]` A reminder for when something goes live; pick it again to turn it off\n-# 🔹 `[leaving]` A reminder for when something is leaving; pick it again to turn it off\n### `/patch notes`\nLatest weapon balance changes, plus the full patch-note history\n-# 💬 Or type `d patch notes [new|season]`\n-# **Options**\n-# 🔹 `[season]` Search for a specific previous season (start typing to see suggestions)\n### `/season end`\nSee when this season's Battle Pass, Ranked, and DMZ seasons end\n-# 💬 Or type `d season end`\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/calendar** page:`Events` filter:`Upcoming` · `d calendar events upcoming`\n-# 🔸 **/remind** releases:`New draws` (run it again to turn it off)\n-# 🔸 **/remind** leaving:`Leaving soon (everything)`\n-# 🔸 **/patch notes** season:`Season 6 — Take Your Heart` · `d patch notes season 6`"
         },
         {
           "type": 14,
@@ -3348,7 +3348,7 @@
         },
         {
           "type": 10,
-          "content": "### `/colors`\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# **Options**\n-# 🔹 `[page]` Open on Avatar, Banner, Username, Nameplate, or Deco\n-# 🔹 `[source]` Your main profile, or your profile for this server\n### `/timestamp`\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# **Options**\n-# 🔹 `<datetime>` e.g. \"tomorrow\", \"in 2 hours\", \"dec 25 at 9am\", \"8pm to 10pm\", \"19:30\"\n-# 🔹 `[timezone]` Defaults to your saved `/settings` timezone\n-# 🔹 `[style]` Short List, All Formats, or one format; blank uses your saved style\n-# 🔹 `[view]` Embed or plain Text, one-off only\n### `/invite`\nGet a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n### Right-click (Apps)\n**View Colors** on a member or one of their messages: their profile colors\n**Convert Times** on a message: every date and time in it, as a timestamp in your own time zone\n\n-# **Examples**\n-# 🔸 **/colors** page:`Nameplate` source:`From Server Profile`\n-# 🔸 **/timestamp** datetime:`this saturday 7pm` timezone:`Pacific Time`\n-# 🔸 **/timestamp** datetime:`august 20` style:`Short Date (d)`\n-# 🔸 **/timestamp** datetime:`in 45 minutes` view:`Text`"
+          "content": "### `/colors`\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# 💬 Or type `d colors [@someone]`, or reply to someone with `d colors`\n-# **Options**\n-# 🔹 `[page]` Open on Avatar, Banner, Username, Nameplate, or Deco\n-# 🔹 `[source]` Your main profile, or your profile for this server\n### `/timestamp`\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# 💬 Or type `d timestamp <datetime> [tz:timezone]`, or reply to a message with `d timestamp`\n-# **Options**\n-# 🔹 `<datetime>` e.g. \"tomorrow\", \"in 2 hours\", \"dec 25 at 9am\", \"8pm to 10pm\", \"19:30\"\n-# 🔹 `[timezone]` Defaults to your saved `/settings` timezone\n-# 🔹 `[style]` Short List, All Formats, or one format; blank uses your saved style\n-# 🔹 `[view]` Embed or plain Text, one-off only\n### `/invite`\nGet a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord\n-# 💬 Or type `d invite`\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n### Right-click (Apps)\n**View Colors** on a member or one of their messages: their profile colors\n**Convert Times** on a message: every date and time in it, as a timestamp in your own time zone\n\n-# **Examples**\n-# 🔸 **/colors** page:`Nameplate` source:`From Server Profile`\n-# 🔸 **/timestamp** datetime:`this saturday 7pm` timezone:`Pacific Time`\n-# 🔸 **/timestamp** datetime:`august 20` style:`Short Date (d)`\n-# 🔸 **/timestamp** datetime:`in 45 minutes` view:`Text`"
         },
         {
           "type": 14,
@@ -3631,7 +3631,7 @@
         },
         {
           "type": 10,
-          "content": "### `/settings`\nYour own preferences: **Visibility** (who sees your responses by default), **Preferences** (timezone, timestamp style, accent style, and more), and your **Colors**"
+          "content": "### `/settings`\nYour own preferences: **Visibility** (who sees your responses by default), **Preferences** (timezone, timestamp style, accent style, and more), and your **Colors**\n-# 💬 Or type `d settings`"
         },
         {
           "type": 14,
@@ -4737,7 +4737,7 @@
         },
         {
           "type": 10,
-          "content": "### `/gunsmith mp`\nFind an MP weapon's loadout, or browse a whole class or the Meta\n-# **Options**\n-# 🔹 `<weapon>` Pick a weapon, or an \"All … builds\" row at the top to browse\n### `/gunsmith dmz`\nFind a DMZ weapon's loadout, or browse Meta or every DMZ build\n-# **Options**\n-# 🔹 `<weapon>` Pick a weapon, or an \"All … builds\" row at the top to browse\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmith mp** weapon:`AK117`\n-# 🔸 **/gunsmith mp** weapon:`Switchblade X9` visibility:`Hidden`\n-# 🔸 **/gunsmith mp** weapon:`All SMG builds`\n-# 🔸 **/gunsmith mp** weapon:`All META builds`\n-# 🔸 **/gunsmith dmz** weapon:`Fennec`"
+          "content": "### `/gunsmith mp`\nFind an MP weapon's loadout, or browse a whole class or the Meta\n-# 💬 Or type `d gunsmith [weapon]`\n-# **Options**\n-# 🔹 `<weapon>` Pick a weapon, or an \"All … builds\" row at the top to browse\n### `/gunsmith dmz`\nFind a DMZ weapon's loadout, or browse Meta or every DMZ build\n-# 💬 Or type `d dmz [weapon]`\n-# **Options**\n-# 🔹 `<weapon>` Pick a weapon, or an \"All … builds\" row at the top to browse\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmith mp** weapon:`AK117` · `d gunsmith ak117`\n-# 🔸 **/gunsmith mp** weapon:`Switchblade X9` visibility:`Hidden`\n-# 🔸 **/gunsmith mp** weapon:`All SMG builds`\n-# 🔸 **/gunsmith mp** weapon:`All META builds`\n-# 🔸 **/gunsmith dmz** weapon:`Fennec` · `d dmz fennec`"
         },
         {
           "type": 14,
@@ -5139,14 +5139,14 @@
         },
         {
           "type": 10,
-          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# **Options**\n-# 🔹 `[filter]` Quickly open a draw type\n-# 🔹 `[region]` View costs for a specific CP region"
+          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# 💬 Or type `d draws [new|returning]`\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# 💬 Or type `d draw prices [10cp|20cp|30cp] [mythic|mythic weapon|mythic character|legendary|legendary character|double legendary|7 spins|pick your reward|double epic|armory|advanced|advanced weapon|advanced character]`\n-# **Options**\n-# 🔹 `[filter]` Quickly open a draw type\n-# 🔹 `[region]` View costs for a specific CP region"
         },
         {
           "type": 9,
           "components": [
             {
               "type": 10,
-              "content": "### `/draw calculator`\nWork out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy\n-# **Options**\n-# 🔹 `[page]` Open on Start a Calculation, View Saved, or Help"
+              "content": "### `/draw calculator`\nWork out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy\n-# 💬 Or type `d draw calculator [start|saved|help]`\n-# **Options**\n-# 🔹 `[page]` Open on Start a Calculation, View Saved, or Help"
             }
           ],
           "accessory": {
@@ -5163,7 +5163,7 @@
         },
         {
           "type": 10,
-          "content": "-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/draws** page:`Returning Draws`\n-# 🔸 **/draw prices** region:`30 CP Region`\n-# 🔸 **/draw prices** filter:`Mythic Weapon Draw`\n-# 🔸 **/draw calculator** page:`View Saved`"
+          "content": "-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/draws** page:`Returning Draws` · `d draws returning`\n-# 🔸 **/draw prices** region:`30 CP Region` · `d draw prices 30cp`\n-# 🔸 **/draw prices** filter:`Mythic Weapon Draw` · `d draw prices mythic weapon`\n-# 🔸 **/draw calculator** page:`View Saved` · `d draw calculator saved`"
         },
         {
           "type": 14,
@@ -5545,7 +5545,7 @@
         },
         {
           "type": 10,
-          "content": "### `/calendar`\nToday's screen, then this season's timeline: Draws, Events, and Playlists & Modes\n-# **Options**\n-# 🔹 `[page]` Open on Today, Draws, Events, or Playlists & Modes\n-# 🔹 `[filter]` Full timeline, or only past, ended, live or upcoming entries (not saved)\n### `/today`\nWhat's new today, what's going live, and what's leaving soon\n### `/remind`\nSet and manage your reminders\n-# **Options**\n-# 🔹 `[releases]` A reminder for when something goes live; pick it again to turn it off\n-# 🔹 `[leaving]` A reminder for when something is leaving; pick it again to turn it off\n### `/patch notes`\nLatest weapon balance changes, plus the full patch-note history\n-# **Options**\n-# 🔹 `[season]` Search for a specific previous season (start typing to see suggestions)\n### `/season end`\nSee when this season's Battle Pass, Ranked, and DMZ seasons end\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/calendar** page:`Events` filter:`Upcoming`\n-# 🔸 **/remind** releases:`New draws` (run it again to turn it off)\n-# 🔸 **/remind** leaving:`Leaving soon (everything)`\n-# 🔸 **/patch notes** season:`Season 6 — Take Your Heart`"
+          "content": "### `/calendar`\nToday's screen, then this season's timeline: Draws, Events, and Playlists & Modes\n-# 💬 Or type `d calendar [draws|events|playlists] [past|live|upcoming]`\n-# **Options**\n-# 🔹 `[page]` Open on Today, Draws, Events, or Playlists & Modes\n-# 🔹 `[filter]` Full timeline, or only past, ended, live or upcoming entries (not saved)\n### `/today`\nWhat's new today, what's going live, and what's leaving soon\n-# 💬 Or type `d today`\n### `/remind`\nSet and manage your reminders\n-# 💬 Or type `d remind`\n-# **Options**\n-# 🔹 `[releases]` A reminder for when something goes live; pick it again to turn it off\n-# 🔹 `[leaving]` A reminder for when something is leaving; pick it again to turn it off\n### `/patch notes`\nLatest weapon balance changes, plus the full patch-note history\n-# 💬 Or type `d patch notes [new|season]`\n-# **Options**\n-# 🔹 `[season]` Search for a specific previous season (start typing to see suggestions)\n### `/season end`\nSee when this season's Battle Pass, Ranked, and DMZ seasons end\n-# 💬 Or type `d season end`\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/calendar** page:`Events` filter:`Upcoming` · `d calendar events upcoming`\n-# 🔸 **/remind** releases:`New draws` (run it again to turn it off)\n-# 🔸 **/remind** leaving:`Leaving soon (everything)`\n-# 🔸 **/patch notes** season:`Season 6 — Take Your Heart` · `d patch notes season 6`"
         },
         {
           "type": 14,
@@ -5927,7 +5927,7 @@
         },
         {
           "type": 10,
-          "content": "### `/colors`\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# **Options**\n-# 🔹 `[page]` Open on Avatar, Banner, Username, Nameplate, or Deco\n-# 🔹 `[source]` Your main profile, or your profile for this server\n### `/timestamp`\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# **Options**\n-# 🔹 `<datetime>` e.g. \"tomorrow\", \"in 2 hours\", \"dec 25 at 9am\", \"8pm to 10pm\", \"19:30\"\n-# 🔹 `[timezone]` Defaults to your saved `/settings` timezone\n-# 🔹 `[style]` Short List, All Formats, or one format; blank uses your saved style\n-# 🔹 `[view]` Embed or plain Text, one-off only\n### `/invite`\nGet a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n### Right-click (Apps)\n**View Colors** on a member or one of their messages: their profile colors\n**Convert Times** on a message: every date and time in it, as a timestamp in your own time zone\n\n-# **Examples**\n-# 🔸 **/colors** page:`Nameplate` source:`From Server Profile`\n-# 🔸 **/timestamp** datetime:`this saturday 7pm` timezone:`Pacific Time`\n-# 🔸 **/timestamp** datetime:`august 20` style:`Short Date (d)`\n-# 🔸 **/timestamp** datetime:`in 45 minutes` view:`Text`"
+          "content": "### `/colors`\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# 💬 Or type `d colors [@someone]`, or reply to someone with `d colors`\n-# **Options**\n-# 🔹 `[page]` Open on Avatar, Banner, Username, Nameplate, or Deco\n-# 🔹 `[source]` Your main profile, or your profile for this server\n### `/timestamp`\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# 💬 Or type `d timestamp <datetime> [tz:timezone]`, or reply to a message with `d timestamp`\n-# **Options**\n-# 🔹 `<datetime>` e.g. \"tomorrow\", \"in 2 hours\", \"dec 25 at 9am\", \"8pm to 10pm\", \"19:30\"\n-# 🔹 `[timezone]` Defaults to your saved `/settings` timezone\n-# 🔹 `[style]` Short List, All Formats, or one format; blank uses your saved style\n-# 🔹 `[view]` Embed or plain Text, one-off only\n### `/invite`\nGet a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord\n-# 💬 Or type `d invite`\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n### Right-click (Apps)\n**View Colors** on a member or one of their messages: their profile colors\n**Convert Times** on a message: every date and time in it, as a timestamp in your own time zone\n\n-# **Examples**\n-# 🔸 **/colors** page:`Nameplate` source:`From Server Profile`\n-# 🔸 **/timestamp** datetime:`this saturday 7pm` timezone:`Pacific Time`\n-# 🔸 **/timestamp** datetime:`august 20` style:`Short Date (d)`\n-# 🔸 **/timestamp** datetime:`in 45 minutes` view:`Text`"
         },
         {
           "type": 14,
@@ -6309,7 +6309,7 @@
         },
         {
           "type": 10,
-          "content": "### `/settings`\nYour own preferences: **Visibility** (who sees your responses by default), **Preferences** (timezone, timestamp style, accent style, and more), and your **Colors**"
+          "content": "### `/settings`\nYour own preferences: **Visibility** (who sees your responses by default), **Preferences** (timezone, timestamp style, accent style, and more), and your **Colors**\n-# 💬 Or type `d settings`"
         },
         {
           "type": 14,
@@ -7546,7 +7546,7 @@
         },
         {
           "type": 10,
-          "content": "### `/gunsmith mp`\nFind an MP weapon's loadout, or browse a whole class or the Meta\n-# **Options**\n-# 🔹 `<weapon>` Pick a weapon, or an \"All … builds\" row at the top to browse\n### `/gunsmith dmz`\nFind a DMZ weapon's loadout, or browse Meta or every DMZ build\n-# **Options**\n-# 🔹 `<weapon>` Pick a weapon, or an \"All … builds\" row at the top to browse\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmith mp** weapon:`AK117`\n-# 🔸 **/gunsmith mp** weapon:`Switchblade X9` visibility:`Hidden`\n-# 🔸 **/gunsmith mp** weapon:`All SMG builds`\n-# 🔸 **/gunsmith mp** weapon:`All META builds`\n-# 🔸 **/gunsmith dmz** weapon:`Fennec`"
+          "content": "### `/gunsmith mp`\nFind an MP weapon's loadout, or browse a whole class or the Meta\n-# 💬 Or type `d gunsmith [weapon]`\n-# **Options**\n-# 🔹 `<weapon>` Pick a weapon, or an \"All … builds\" row at the top to browse\n### `/gunsmith dmz`\nFind a DMZ weapon's loadout, or browse Meta or every DMZ build\n-# 💬 Or type `d dmz [weapon]`\n-# **Options**\n-# 🔹 `<weapon>` Pick a weapon, or an \"All … builds\" row at the top to browse\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmith mp** weapon:`AK117` · `d gunsmith ak117`\n-# 🔸 **/gunsmith mp** weapon:`Switchblade X9` visibility:`Hidden`\n-# 🔸 **/gunsmith mp** weapon:`All SMG builds`\n-# 🔸 **/gunsmith mp** weapon:`All META builds`\n-# 🔸 **/gunsmith dmz** weapon:`Fennec` · `d dmz fennec`"
         },
         {
           "type": 14,
@@ -7860,14 +7860,14 @@
         },
         {
           "type": 10,
-          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# **Options**\n-# 🔹 `[filter]` Quickly open a draw type\n-# 🔹 `[region]` View costs for a specific CP region"
+          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# 💬 Or type `d draws [new|returning]`\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# 💬 Or type `d draw prices [10cp|20cp|30cp] [mythic|mythic weapon|mythic character|legendary|legendary character|double legendary|7 spins|pick your reward|double epic|armory|advanced|advanced weapon|advanced character]`\n-# **Options**\n-# 🔹 `[filter]` Quickly open a draw type\n-# 🔹 `[region]` View costs for a specific CP region"
         },
         {
           "type": 9,
           "components": [
             {
               "type": 10,
-              "content": "### `/draw calculator`\nWork out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy\n-# **Options**\n-# 🔹 `[page]` Open on Start a Calculation, View Saved, or Help"
+              "content": "### `/draw calculator`\nWork out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy\n-# 💬 Or type `d draw calculator [start|saved|help]`\n-# **Options**\n-# 🔹 `[page]` Open on Start a Calculation, View Saved, or Help"
             }
           ],
           "accessory": {
@@ -7884,7 +7884,7 @@
         },
         {
           "type": 10,
-          "content": "-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/draws** page:`Returning Draws`\n-# 🔸 **/draw prices** region:`30 CP Region`\n-# 🔸 **/draw prices** filter:`Mythic Weapon Draw`\n-# 🔸 **/draw calculator** page:`View Saved`"
+          "content": "-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/draws** page:`Returning Draws` · `d draws returning`\n-# 🔸 **/draw prices** region:`30 CP Region` · `d draw prices 30cp`\n-# 🔸 **/draw prices** filter:`Mythic Weapon Draw` · `d draw prices mythic weapon`\n-# 🔸 **/draw calculator** page:`View Saved` · `d draw calculator saved`"
         },
         {
           "type": 14,
@@ -8178,7 +8178,7 @@
         },
         {
           "type": 10,
-          "content": "### `/calendar`\nToday's screen, then this season's timeline: Draws, Events, and Playlists & Modes\n-# **Options**\n-# 🔹 `[page]` Open on Today, Draws, Events, or Playlists & Modes\n-# 🔹 `[filter]` Full timeline, or only past, ended, live or upcoming entries (not saved)\n### `/today`\nWhat's new today, what's going live, and what's leaving soon\n### `/remind`\nSet and manage your reminders\n-# **Options**\n-# 🔹 `[releases]` A reminder for when something goes live; pick it again to turn it off\n-# 🔹 `[leaving]` A reminder for when something is leaving; pick it again to turn it off\n### `/patch notes`\nLatest weapon balance changes, plus the full patch-note history\n-# **Options**\n-# 🔹 `[season]` Search for a specific previous season (start typing to see suggestions)\n### `/season end`\nSee when this season's Battle Pass, Ranked, and DMZ seasons end\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/calendar** page:`Events` filter:`Upcoming`\n-# 🔸 **/remind** releases:`New draws` (run it again to turn it off)\n-# 🔸 **/remind** leaving:`Leaving soon (everything)`\n-# 🔸 **/patch notes** season:`Season 6 — Take Your Heart`"
+          "content": "### `/calendar`\nToday's screen, then this season's timeline: Draws, Events, and Playlists & Modes\n-# 💬 Or type `d calendar [draws|events|playlists] [past|live|upcoming]`\n-# **Options**\n-# 🔹 `[page]` Open on Today, Draws, Events, or Playlists & Modes\n-# 🔹 `[filter]` Full timeline, or only past, ended, live or upcoming entries (not saved)\n### `/today`\nWhat's new today, what's going live, and what's leaving soon\n-# 💬 Or type `d today`\n### `/remind`\nSet and manage your reminders\n-# 💬 Or type `d remind`\n-# **Options**\n-# 🔹 `[releases]` A reminder for when something goes live; pick it again to turn it off\n-# 🔹 `[leaving]` A reminder for when something is leaving; pick it again to turn it off\n### `/patch notes`\nLatest weapon balance changes, plus the full patch-note history\n-# 💬 Or type `d patch notes [new|season]`\n-# **Options**\n-# 🔹 `[season]` Search for a specific previous season (start typing to see suggestions)\n### `/season end`\nSee when this season's Battle Pass, Ranked, and DMZ seasons end\n-# 💬 Or type `d season end`\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/calendar** page:`Events` filter:`Upcoming` · `d calendar events upcoming`\n-# 🔸 **/remind** releases:`New draws` (run it again to turn it off)\n-# 🔸 **/remind** leaving:`Leaving soon (everything)`\n-# 🔸 **/patch notes** season:`Season 6 — Take Your Heart` · `d patch notes season 6`"
         },
         {
           "type": 14,
@@ -8472,7 +8472,7 @@
         },
         {
           "type": 10,
-          "content": "### `/colors`\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# **Options**\n-# 🔹 `[page]` Open on Avatar, Banner, Username, Nameplate, or Deco\n-# 🔹 `[source]` Your main profile, or your profile for this server\n### `/timestamp`\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# **Options**\n-# 🔹 `<datetime>` e.g. \"tomorrow\", \"in 2 hours\", \"dec 25 at 9am\", \"8pm to 10pm\", \"19:30\"\n-# 🔹 `[timezone]` Defaults to your saved `/settings` timezone\n-# 🔹 `[style]` Short List, All Formats, or one format; blank uses your saved style\n-# 🔹 `[view]` Embed or plain Text, one-off only\n### `/invite`\nGet a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n### Right-click (Apps)\n**View Colors** on a member or one of their messages: their profile colors\n**Convert Times** on a message: every date and time in it, as a timestamp in your own time zone\n\n-# **Examples**\n-# 🔸 **/colors** page:`Nameplate` source:`From Server Profile`\n-# 🔸 **/timestamp** datetime:`this saturday 7pm` timezone:`Pacific Time`\n-# 🔸 **/timestamp** datetime:`august 20` style:`Short Date (d)`\n-# 🔸 **/timestamp** datetime:`in 45 minutes` view:`Text`"
+          "content": "### `/colors`\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# 💬 Or type `d colors [@someone]`, or reply to someone with `d colors`\n-# **Options**\n-# 🔹 `[page]` Open on Avatar, Banner, Username, Nameplate, or Deco\n-# 🔹 `[source]` Your main profile, or your profile for this server\n### `/timestamp`\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# 💬 Or type `d timestamp <datetime> [tz:timezone]`, or reply to a message with `d timestamp`\n-# **Options**\n-# 🔹 `<datetime>` e.g. \"tomorrow\", \"in 2 hours\", \"dec 25 at 9am\", \"8pm to 10pm\", \"19:30\"\n-# 🔹 `[timezone]` Defaults to your saved `/settings` timezone\n-# 🔹 `[style]` Short List, All Formats, or one format; blank uses your saved style\n-# 🔹 `[view]` Embed or plain Text, one-off only\n### `/invite`\nGet a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord\n-# 💬 Or type `d invite`\n\n-# **Every command above also takes**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n### Right-click (Apps)\n**View Colors** on a member or one of their messages: their profile colors\n**Convert Times** on a message: every date and time in it, as a timestamp in your own time zone\n\n-# **Examples**\n-# 🔸 **/colors** page:`Nameplate` source:`From Server Profile`\n-# 🔸 **/timestamp** datetime:`this saturday 7pm` timezone:`Pacific Time`\n-# 🔸 **/timestamp** datetime:`august 20` style:`Short Date (d)`\n-# 🔸 **/timestamp** datetime:`in 45 minutes` view:`Text`"
         },
         {
           "type": 14,
@@ -8766,7 +8766,7 @@
         },
         {
           "type": 10,
-          "content": "### `/settings`\nYour own preferences: **Visibility** (who sees your responses by default), **Preferences** (timezone, timestamp style, accent style, and more), and your **Colors**\n\n-# **Options**\n-# 🔹 `[open]` Open straight on Visibility, Preferences, or your Colors\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/settings**\n-# 🔸 **/settings** open:`Preferences`"
+          "content": "### `/settings`\nYour own preferences: **Visibility** (who sees your responses by default), **Preferences** (timezone, timestamp style, accent style, and more), and your **Colors**\n-# 💬 Or type `d settings`\n\n-# **Options**\n-# 🔹 `[open]` Open straight on Visibility, Preferences, or your Colors\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/settings** · `d settings`\n-# 🔸 **/settings** open:`Preferences`"
         },
         {
           "type": 14,

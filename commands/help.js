@@ -84,13 +84,100 @@ function textCommandsBlock(client) {
     return `### 💬 **TEXT COMMANDS**\n**Type one in a message:** ${forms.map(f => `\`${f}\``).join(' · ')}\n-# Works anywhere Dioreo can post, for when this server hides slash commands`;
 }
 
+// The typed form beside each command on its detail page (text commands, B5, 2026-10-29 00:15 EDT; B3's gap 2: every Usage line and Example was slash syntax only). Built from utils/textCommands/commands.js, never written per page: the command's first word, and the first spelling of each value its options take, so a page cannot promise a word the parser does not accept (scripts/helpTextCommands.test.js parses every one). `d`, or `@Dioreo` where the app has no Message Content, the same rule utils/commandMentions.js's textForm uses. A command with no text form (/admin, Dioreo Admin's) gets no line.
+function textCommandFor(name) {
+    const { TEXT_COMMANDS } = require('../utils/textCommands/commands');
+    const clean = String(name).replace(/^\//, '');
+    return TEXT_COMMANDS.find(c => `${c.slash}${c.sub ? ` ${c.sub}` : ''}` === clean) || null;
+}
+const textPrefix = client => (client?.textMessageContent === false ? '@Dioreo' : 'd');
+const shortestKey = o => [...(o.keys || [o.name])].sort((a, b) => a.length - b.length)[0];
+
+// `d draws [new|returning]`, in the slash Usage's own brackets: <required> [optional]. A rest option (a weapon, a date, a season) is named by its option; a key-only one shows its key.
+function textUsage(client, name) {
+    const tc = textCommandFor(name);
+    if (!tc) return null;
+    const parts = (tc.options || []).filter(o => o.name !== 'visibility').map(o => {
+        let inner;
+        if (o.keyOnly) inner = `${shortestKey(o)}:${o.name}`;
+        else if (o.mention) inner = `@${o.name}`;
+        else inner = [...(o.values || []).map(v => v.aliases[0]), ...(o.rest ? [o.name] : [])].join('|');
+        return o.required ? `<${inner}>` : `[${inner}]`;
+    });
+    return [textPrefix(client), tc.words[0], ...parts].join(' ');
+}
+
+// What a reply form acts on: `d timestamp` sent as a reply converts that message's times, `d colors` shows that person's colors.
+const REPLY_FORM_TARGET = { convertTimes: 'a message', viewColors: 'someone' };
+function textUsageLine(client, name) {
+    const usage = textUsage(client, name);
+    if (!usage) return null;
+    const tc = textCommandFor(name);
+    const reply = tc.replyForm ? `, or reply to ${REPLY_FORM_TARGET[tc.replyForm]} with \`${textPrefix(client)} ${tc.words[0]}\`` : '';
+    return `-# 💬 Or type \`${usage}\`${reply}`;
+}
+
+// The typed twin of one slash example, from the slash values it uses: each value's first spelling, a rest option's own text. Null when any option has no text form (visibility, style, view, a page with no text option), because a twin without it would be a different answer.
+function textExample(client, name, values) {
+    const tc = textCommandFor(name);
+    if (!tc || !values) return null;
+    const words = [];
+    for (const [key, val] of Object.entries(values)) {
+        const o = (tc.options || []).find(x => x.name === key);
+        if (!o) return null;
+        const hit = (o.values || []).find(v => [].concat(v.value).join(',') === [].concat(val).join(','));
+        if (hit) words.push(hit.aliases[0]);
+        else if (o.keyOnly && !/\s/.test(val)) words.push(`${shortestKey(o)}:${val}`);
+        else if (o.rest) words.push(String(val).toLowerCase());
+        else return null;
+    }
+    return [textPrefix(client), tc.words[0], ...words].join(' ');
+}
+
+// Each page's Examples as data: the slash line as shown, the command, and the slash values it uses (null: a browse row, which no typed word names -- a class word opens that class's first weapon instead). Read by examplesBlock() and by scripts/helpTextCommands.test.js.
+const HELP_EXAMPLES = {
+    gunsmith: [
+        ['**/gunsmith mp** weapon:`AK117`', '/gunsmith mp', { weapon: 'AK117' }],
+        ['**/gunsmith mp** weapon:`Switchblade X9` visibility:`Hidden`', '/gunsmith mp', { weapon: 'Switchblade X9', visibility: 'hidden' }],
+        ['**/gunsmith mp** weapon:`All SMG builds`', '/gunsmith mp', null],
+        ['**/gunsmith mp** weapon:`All META builds`', '/gunsmith mp', null],
+        ['**/gunsmith dmz** weapon:`Fennec`', '/gunsmith dmz', { weapon: 'Fennec' }],
+    ],
+    draws: [
+        ['**/draws** page:`Returning Draws`', '/draws', { page: 'returning' }],
+        ['**/draw prices** region:`30 CP Region`', '/draw prices', { region: 'region_30' }],
+        ['**/draw prices** filter:`Mythic Weapon Draw`', '/draw prices', { filter: 'mythicWeapon' }],
+        ['**/draw calculator** page:`View Saved`', '/draw calculator', { page: 'saved' }],
+    ],
+    seasonal: [
+        ['**/calendar** page:`Events` filter:`Upcoming`', '/calendar', { page: 'events', filter: 'soon' }],
+        ['**/remind** releases:`New draws` (run it again to turn it off)', '/remind', { releases: 'new draws' }],
+        ['**/remind** leaving:`Leaving soon (everything)`', '/remind', { leaving: 'leaving soon' }],
+        ['**/patch notes** season:`Season 6 — Take Your Heart`', '/patch notes', { season: 'Season 6' }],
+    ],
+    utilities: [
+        ['**/colors** page:`Nameplate` source:`From Server Profile`', '/colors', { page: 'nameplate', source: 'server' }],
+        ['**/timestamp** datetime:`this saturday 7pm` timezone:`Pacific Time`', '/timestamp', { datetime: 'this saturday 7pm', timezone: 'Pacific Time' }],
+        ['**/timestamp** datetime:`august 20` style:`Short Date (d)`', '/timestamp', { datetime: 'august 20', style: 'shortDate' }],
+        ['**/timestamp** datetime:`in 45 minutes` view:`Text`', '/timestamp', { datetime: 'in 45 minutes', view: 'text' }],
+    ],
+};
+function exampleLine(client, slashText, name, values) {
+    const twin = textExample(client, name, values);
+    return `-# 🔸 ${slashText}${twin ? ` · \`${twin}\`` : ''}`;
+}
+const examplesBlock = (client, key) => `-# **Examples**\n${HELP_EXAMPLES[key].map(e => exampleLine(client, ...e)).join('\n')}`;
+
 // The ONE renderer every per-command "-# **Options**" detail block parameterizes into (v3-pre-release review finding #49) -- replaces four hand-built escaped-markdown concatenations. Reproduces the exact pre-rewrite shape byte-for-byte, pinned by scripts/helpBodySnapshot.test.js: a header, the description, an Options block (bulleted if the command has any, otherwise just the shared visibility bullet), always ending in VISIBILITY_BULLET -- the shape gunsmith/draws/seasonal/ utilities all already shared before this rewrite, just typed out by hand each time.
 function renderCommandBlock(command, client) {
     const optionLines = command.options.map(o =>
         `-# 🔹 \`${o.required ? '<' : '['}${o.name}${o.required ? '>' : ']'}\` ${resolveText(o.desc, client)}`
     ).join('\n');
     // [visibility] is no longer repeated under every command (2026-10-25 22:44 EDT, critique #19): each page states it once, in SHARED_VISIBILITY, the way Preferences and Bot Admin already did. A command with no options of its own has no Options heading.
+    // The typed form sits under the description, above the slash options (B5): `d draws [new|returning]`.
+    const typed = textUsageLine(client, command.name);
     return `### ${mentionCommand(client, command.name)}\n${resolveText(command.description, client)}\n`
+        + (typed ? `${typed}\n` : '')
         + (optionLines ? `-# **Options**\n${optionLines}\n` : '');
 }
 const SHARED_VISIBILITY = `\n-# **Every command above also takes**\n${VISIBILITY_BULLET}\n`;
@@ -303,7 +390,7 @@ async function getAllHelpCommandNames(perms = {}) {
     return searchEntries(perms).map(e => e.name);
 }
 
-// Each of these four now composes its per-command "-# **Options**" blocks from CATEGORY_DEFS' own data via renderCommandBlock() (v3-pre-release review finding #49) instead of hand-built escaped-markdown concatenation -- only the hand-written "-# **Examples**" trailer (bespoke per page, not worth data-ifying) stays as a literal string. `commands` is the category's own detailCommands (gunsmith) or staticCommands (draws/seasonal/utilities) -- see buildContainer's dispatch below. PARTS since 2026-10-25 17:10 EDT: the Dispute a Build section carries its button as an accessory (Harkirat's /gunsmith review: the dispute form lives in /help only, beside "or DM <@owner>", his clickable @mention). handlers/loadouts.js answers `gsb~dispute`.
+// Each of these four now composes its per-command "-# **Options**" blocks from CATEGORY_DEFS' own data via renderCommandBlock() (v3-pre-release review finding #49) instead of hand-built escaped-markdown concatenation. Their "-# **Examples**" trailers are data too since B5 (2026-10-29 00:15 EDT), in HELP_EXAMPLES above, so each slash example can carry its typed twin. `commands` is the category's own detailCommands (gunsmith) or staticCommands (draws/seasonal/utilities) -- see buildContainer's dispatch below. PARTS since 2026-10-25 17:10 EDT: the Dispute a Build section carries its button as an accessory (Harkirat's /gunsmith review: the dispute form lives in /help only, beside "or DM <@owner>", his clickable @mention). handlers/loadouts.js answers `gsb~dispute`.
 function buildGunsmithBody(commands, client) {
     const { ALLOWED_ADMIN_ID } = require('../utils/owner');
     return [
@@ -315,7 +402,7 @@ function buildGunsmithBody(commands, client) {
 }
 function buildGunsmithText(commands, client) {
     return commands.map(c => renderCommandBlock(c, client)).join('') + SHARED_VISIBILITY
-        + `\n-# **Examples**\n-# 🔸 **/gunsmith mp** weapon:\`AK117\`\n-# 🔸 **/gunsmith mp** weapon:\`Switchblade X9\` visibility:\`Hidden\`\n-# 🔸 **/gunsmith mp** weapon:\`All SMG builds\`\n-# 🔸 **/gunsmith mp** weapon:\`All META builds\`\n-# 🔸 **/gunsmith dmz** weapon:\`Fennec\``;
+        + `\n${examplesBlock(client, 'gunsmith')}`;
 }
 
 // Returns PARTS, not one string (2026-10-17 23:51 EDT): the /draw calculator block is a Section whose button opens the calculator's full Help (Harkirat: "add a button in the /help draws page, as a section+accessory for the /draw calc section, to view the full help panel"). The button reuses the calculator's own `help` verb, so it opens the same private panel the calculator's Help button does; with no author on the state, anyone may press it.
@@ -327,30 +414,31 @@ function buildDrawsBody(commands, client) {
         const dc = require('./drawCalculator');
         parts.push({ content: renderCommandBlock(calc, client).trimEnd(), accessory: { type: 2, style: 2, label: 'Calculator Guide', emoji: emojis.parseEmoji(emojis.calculator), custom_id: dc.encodeState('help', dc.defaultState()) } });
     }
-    parts.push({ content: `${SHARED_VISIBILITY.trim()}\n\n-# **Examples**\n-# 🔸 **/draws** page:\`Returning Draws\`\n-# 🔸 **/draw prices** region:\`30 CP Region\`\n-# 🔸 **/draw prices** filter:\`Mythic Weapon Draw\`\n-# 🔸 **/draw calculator** page:\`View Saved\`` });
+    parts.push({ content: `${SHARED_VISIBILITY.trim()}\n\n${examplesBlock(client, 'draws')}` });
     return parts;
 }
 
 function buildSeasonalBody(commands, client) {
     return commands.map(c => renderCommandBlock(c, client)).join('') + SHARED_VISIBILITY
-        + `\n-# **Examples**\n-# 🔸 **/calendar** page:\`Events\` filter:\`Upcoming\`\n-# 🔸 **/remind** releases:\`New draws\` (run it again to turn it off)\n-# 🔸 **/remind** leaving:\`Leaving soon (everything)\`\n-# 🔸 **/patch notes** season:\`Season 6 — Take Your Heart\``;
+        + `\n${examplesBlock(client, 'seasonal')}`;
 }
 
 function buildUtilitiesBody(commands, client) {
     return commands.map(c => renderCommandBlock(c, client)).join('') + SHARED_VISIBILITY
         + `\n### Right-click (Apps)\n**View Colors** on a member or one of their messages: their profile colors\n**Convert Times** on a message: every date and time in it, as a timestamp in your own time zone\n`
-        + `\n-# **Examples**\n-# 🔸 **/colors** page:\`Nameplate\` source:\`From Server Profile\`\n-# 🔸 **/timestamp** datetime:\`this saturday 7pm\` timezone:\`Pacific Time\`\n-# 🔸 **/timestamp** datetime:\`august 20\` style:\`Short Date (d)\`\n-# 🔸 **/timestamp** datetime:\`in 45 minutes\` view:\`Text\``;
+        + `\n${examplesBlock(client, 'utilities')}`;
 }
 
 // Server admins get a second command appended rather than a page of their own. The `/admin` detail is the one place carrying the full precedence order and the two Discord limits, because the panel itself deliberately stays short -- see commands/admin.js's note on the wall-of-text draft that got rejected 2026-08-10 18:23 EDT. Harkirat's framing on the caps: they are not a real constraint in practice ("why is a server adding 25 role overrides"), so they read as guidance about the intended workflow -- set a default, hand-pick the exceptions -- not as a warning. TWO commands on one page, so they get a real divider between them and the shared `[visibility]` option is stated ONCE at the end rather than under each -- repeating it per command was Harkirat's call on 2026-08-10 19:28 EDT ("visibility is shared in all the commands so having it individually under each of them makes no sense"), and the same pass cut the /admin section roughly in half for being overwhelming to read. Gunsmith already used the shared-options shape for the same reason. `commands` is the category's own visibleCommands(category, perms) result (v3-pre-release review finding #49) -- whether /admin is present is derived from THAT list rather than re-checking perms.serverAdmin directly, so this page's admin filtering can never drift from the directory/ dropdown/autocomplete, which already filter through the exact same CATEGORY_DEFS `requires`.
 function buildPreferencesBody(commands, client) {
-    const settings = `### ${mentionCommand(client, '/settings')}\nYour own preferences: **Visibility** (who sees your responses by default), **Preferences** (timezone, timestamp style, accent style, and more), and your **Colors**`;
+    // /settings' typed form (B5) under its description; /admin has none, so it keeps slash only.
+    const settings = `### ${mentionCommand(client, '/settings')}\nYour own preferences: **Visibility** (who sees your responses by default), **Preferences** (timezone, timestamp style, accent style, and more), and your **Colors**\n${textUsageLine(client, '/settings')}`;
     // `[open]` (2026-10-19 17:49 EDT, named `[customize]` until 2026-10-19 19:33 EDT) is /settings' jump-to option -- see commands/settings.js. Written once here because both branches below print the /settings options.
     const openBullet = '-# 🔹 `[open]` Open straight on Visibility, Preferences, or your Colors';
     const hasAdmin = commands.some(c => c.name === '/admin');
 
     if (!hasAdmin) {
-        return `${settings}\n\n-# **Options**\n${openBullet}\n${VISIBILITY_BULLET}\n\n-# **Examples**\n-# 🔸 **/settings**\n-# 🔸 **/settings** open:\`Preferences\``;
+        return `${settings}\n\n-# **Options**\n${openBullet}\n${VISIBILITY_BULLET}\n\n-# **Examples**\n${exampleLine(client, '**/settings**', '/settings', {})}\n${exampleLine(client, '**/settings** open:`Preferences`', '/settings', { open: 'preferences' })}`;
     }
 
     return settings
@@ -369,8 +457,8 @@ function buildPreferencesBody(commands, client) {
         + SECTION_BREAK
         + `-# **Options** · \`[open]\` is /settings only; both take \`[visibility]\`\n${openBullet}\n${VISIBILITY_BULLET}\n\n`
         + `-# **Examples**\n`
-        + `-# 🔸 **/settings** visibility:\`Public\`\n`
-        + `-# 🔸 **/settings** open:\`Colors\`\n`
+        + `${exampleLine(client, '**/settings** visibility:`Public`', '/settings', { visibility: 'public' })}\n`
+        + `${exampleLine(client, '**/settings** open:`Colors`', '/settings', { open: 'colors' })}\n`
         + `-# 🔸 **/admin** → **Overview** → Default *Private*, then **Channels** → allow \`#bot-spam\`\n`
         + `-# 🔸 **/admin** → **Roles** → *Always public for these roles* → \`@Moderator\`\n`
         + `-# 🔸 **/admin** → **Commands** → \`/colors\` → *Private*: only \`/colors\` answers privately`;
@@ -649,6 +737,9 @@ module.exports = {
     helpChoices,
     searchEntries,
     textCommandsBlock,
+    textUsage,
+    textExample,
+    HELP_EXAMPLES,
 
     // `categoryOverride` (passed by handlers/help.js's `help_category` select-menu handler via a synthetic interaction) skips re-resolving the `cmd` option -- same shape as calendar.js's `pageOverride`. 'landing' is a real dropdown VALUE (the "Commands List" reset option) but behaves identically to null/no-selection, so it's normalized here rather than threading a 6th special case through buildContainer.
     async execute(interaction, categoryOverride = null) {
