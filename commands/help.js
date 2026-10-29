@@ -78,6 +78,12 @@ const categoryDescription = (c, perms) => (perms.serverAdmin && c.dropdownDescri
 
 const resolveText = (value, client) => typeof value === 'function' ? value(client) : value;
 
+// The landing's Text commands block (text commands, B3, 2026-10-29): a member in a server that hides slash commands, or that lists so many bots Discord stops showing Dioreo's, learns they can type one instead. `@Dioreo` works wherever Dioreo can post; the prefixes only where Discord grants the app Message Content, which bot/textCommands.js reads off the app's flags before login and leaves on `client.textMessageContent`. The forms are the ones bot/textCommands.js's own help card shows.
+function textCommandsBlock(client) {
+    const forms = client?.textMessageContent ? ['@Dioreo today', 'd today', 'dior today', '/today'] : ['@Dioreo today'];
+    return `### 💬 **TEXT COMMANDS**\n**Type one in a message:** ${forms.map(f => `\`${f}\``).join(' · ')}\n-# Works anywhere Dioreo can post, for when this server hides slash commands`;
+}
+
 // The ONE renderer every per-command "-# **Options**" detail block parameterizes into (v3-pre-release review finding #49) -- replaces four hand-built escaped-markdown concatenations. Reproduces the exact pre-rewrite shape byte-for-byte, pinned by scripts/helpBodySnapshot.test.js: a header, the description, an Options block (bulleted if the command has any, otherwise just the shared visibility bullet), always ending in VISIBILITY_BULLET -- the shape gunsmith/draws/seasonal/ utilities all already shared before this rewrite, just typed out by hand each time.
 function renderCommandBlock(command, client) {
     const optionLines = command.options.map(o =>
@@ -553,6 +559,9 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client, focu
                 + `\n`
                 + `-# ${emojis.info} Tip: **/help** \`cmd:\` opens one command`
         });
+        // One block under the directory, no new page. It costs 2 of the message's 40 components (27 on the landing with the footer row, counted by scripts/helpTextCommands.test.js).
+        components.push({ type: 14, spacing: 1, divider: true });
+        components.push({ type: 10, content: textCommandsBlock(client) });
         components.push({ type: 14, spacing: 2, divider: true });
         // Deliberately NOT re-mentioning `/help cmd:` here -- the directory above already covers it ("Learn more about a command: /help <cmd>"); this line is the dropdown's own label, and the directory no longer says "Or use the Dropdown below!" as well (critique #28).
         components.push({ type: 10, content: `-# Browse by category, or jump to one command` });
@@ -638,6 +647,7 @@ module.exports = {
     helpPerms,
     helpChoices,
     searchEntries,
+    textCommandsBlock,
 
     // `categoryOverride` (passed by handlers/help.js's `help_category` select-menu handler via a synthetic interaction) skips re-resolving the `cmd` option -- same shape as calendar.js's `pageOverride`. 'landing' is a real dropdown VALUE (the "Commands List" reset option) but behaves identically to null/no-selection, so it's normalized here rather than threading a 6th special case through buildContainer.
     async execute(interaction, categoryOverride = null) {

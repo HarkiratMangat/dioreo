@@ -131,5 +131,6 @@ The words after a command fill its slash command's own options: the design spec'
 
 - `scripts/textCommandArgs.test.js` — the options grammar against the real command list: each spec row, every command and value alias (singular and plural) resolving to what the spec says, no alias in two places (with a planted clash of each kind caught), and every value a real choice of its slash command.
 - `scripts/textCommandListener.test.js` — `onMessage` and the buttons end to end with stub command modules: options arrive, a weapon resolves through the stubbed suggestions, Did you mean after `@Dioreo` and silence after `d`, Convert Times and View Colors from the reply forms, the timestamp card, pop-up and answer.
+- `scripts/helpTextCommands.test.js` — `/help`'s landing carries the Text commands block (every form where Message Content is granted, only `@Dioreo` where it is not) and stays within 40 components for every permission level; `mentionCommand` writes `d draws` inside a text command (`@Dioreo draws` without Message Content), keeps the slash mention elsewhere and for a slash-only command.
 
 *(Later units add their tests to this list.)*
