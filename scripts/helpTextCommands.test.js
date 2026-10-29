@@ -181,6 +181,19 @@ async function check(name, fn) {
             assert.ok(inText.includes('### `d draws`') && inText.includes('-# 💬 Type `d draws [new|returning]`') && !inText.includes('Or type'), 'inside a text command the line should read Type, not Or type');
         });
     });
+    await check('where typed forms do nothing (a DM, a server Dioreo is not in), /help shows none, and still renders', async () => {
+        const dmClient = { ...client(true), guilds: { cache: new Map([['900', {}]]) } };
+        assert.strictEqual(help.typedFormsHere({ guildId: null, client: dmClient }), false, 'a DM');
+        assert.strictEqual(help.typedFormsHere({ guildId: '901', client: dmClient }), false, 'a server Dioreo is not in');
+        assert.strictEqual(help.typedFormsHere({ guildId: '900', client: dmClient }), true, 'a server Dioreo is in');
+        for (const key of [null, ...help.CATEGORY_DEFS.map(c => c.key)]) {
+            const container = await help.buildContainer(key, 0x5865F2, ALL, client(true), null, false, false);
+            const all = texts(container).join('\n');
+            for (const bit of ['Or type', '· `d ', 'TEXT COMMANDS']) assert.ok(!all.includes(bit), `${key || 'landing'}: shows ${bit} where it cannot work`);
+            assert.ok(countComponents([container, help.helpFooterRow()]) <= 40);
+        }
+        assert.ok((await page('draws')).includes('Or type `d draws'), 'a server render lost its typed forms');
+    });
     let largest = { n: 0 };
     // Characters are measured with PROD-LENGTH ids for every command (think-pass, 2026-10-29 00:27 EDT): with the 3-digit fake ids above, and none for /bot, /manage, /embed or /autobuild, a mention is ~20 characters shorter than on prod, and this check passed a page that prod would refuse. Discord's 4,000 is the total of a message's text displays (`.claude/rules/draw-prices.md`, probed 2026-10-16 01:17 EDT).
     const PROD_ID = '1561783498770227300';

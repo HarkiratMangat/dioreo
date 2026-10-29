@@ -5,6 +5,12 @@ status: dead
 
 # ✅ Resolved list — closed items from the Dior's Builds deferred list
 
+## ✅ /help hides typed forms where they do nothing — closed 2026-10-29 00:45 EDT `[DONE · 2026-10-29 00:45 EDT]`
+
+Harkirat answered "sure" (2026-10-29 00:45 EDT). Built on `feat/text-commands`: `commands/help.js`'s `typedFormsHere` shows the Text commands block, the `Or type` lines and the example twins only in a server Dioreo is in (a DM, or a user-installed /help in a server Dioreo was never added to, gets slash forms only); tested in `scripts/helpTextCommands.test.js`.
+
+- **/help in a DM offers typed forms that do nothing there — his call** `[P3 · XS]` — Found 2026-10-29 00:29 EDT by builder B5's think-pass. The /help landing's Text commands block (B3) and every detail page's `Or type` line and example twins (B5) show in a DM too, where the text-command listener ignores every message (no `guildId`), and the landing says "Works anywhere Dioreo can post". **Decide:** hide the typed forms outside servers, or keep them (a reader may carry `d draws` into a server). Hiding is small: `commands/help.js`'s `execute` has the interaction and can pass whether it is in a guild to `buildContainer`. **Verify condition:** his answer recorded here, and if hidden, a `scripts/helpTextCommands.test.js` row for a DM render.
+
 ## ✅ PRIVACY keeps one change-history list — closed 2026-10-26 12:20 EDT `[DONE · 2026-10-26 12:20 EDT]`
 
 Closed on `docs/privacy-one-change-list`. §12.1 *Revision history* is the only list now. Every Appendix B row was compared with its §12.1 row; the facts only Appendix B had went into §12.1 (1.17's `stats` and Reset button, 1.14's origin, 1.6's `scripts/lib/chronicle.js`, 1.5's `*PaletteSource`, 1.2's `db-theme`). Appendix B was deleted, Appendix C became Appendix B, the 1.12 and 1.2 rows and `scripts/buildLegalPages.js:5` were updated, and a pending 1.18 row records the change. The legal re-check's P11 ("ten" against "eighteen") is moot: the "ten" row is gone. `docs/legal/TERMS.md` got the same treatment the same day (Harkirat, 2026-10-22 14:10 EDT: "yea"): its appendix is gone, its two extra facts are in §19.1's 1.4 row, and a pending 1.6 row records it.
