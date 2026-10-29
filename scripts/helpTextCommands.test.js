@@ -77,6 +77,10 @@ async function check(name, fn) {
     await check('without Message Content the text form is `@Dioreo <name>`', async () => {
         await runWithContext({ handler: 'textCommands' }, async () => assert.strictEqual(mentionCommand(client(false), '/draws'), '`@Dioreo draws`'));
     });
+    await check('outside a text command the landing tip still names /help cmd:', async () => {
+        const all = texts(await help.buildContainer(null, 0x5865F2, {}, client(true))).join('\n');
+        assert.ok(all.includes('Tip: **/help** `cmd:` opens one command'));
+    });
     await check('a slash-only command keeps its mention inside a text command', async () => {
         await runWithContext({ handler: 'textCommands' }, async () => {
             assert.strictEqual(mentionCommand(client(true), '/admin'), '</admin:555>');
@@ -96,6 +100,7 @@ async function check(name, fn) {
             const all = texts(await help.buildContainer(null, 0x5865F2, {}, client(true))).join('\n');
             assert.ok(all.includes('`d draws`') && all.includes('`d gunsmith`'), 'directory still shows slash mentions');
             assert.ok(!all.includes('</draws:111>'));
+            assert.ok(all.includes('Tip: `d help <command>` opens one command'), 'the tip still names /help cmd:');
         });
     });
     if (failed) { console.log(`\n${failed} check(s) failed.`); process.exit(1); }
