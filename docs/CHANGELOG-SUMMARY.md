@@ -12,6 +12,10 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.2.1 — October 29, 2026
+- **`/help`** opens again.
+- **Cooldowns** show a new hourglass.
+
 ## v3.2.0 — October 28, 2026
 - **`/patch notes`:** the current season reads its start date and "Active", and past seasons show their own season dates.
 
