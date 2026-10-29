@@ -86,7 +86,7 @@ async function warnCooldown(message, { warnUntil, key }) {
     const unix = Math.ceil(warnUntil / 1000);
     const created = await message.client.rest.post(Routes.channelMessages(message.channelId), {
         body: {
-            content: `⏳ You can run \`${key}\` again <t:${unix}:R>.`,
+            content: `${require('../utils/emojiMap').cooldown} You can run \`${key}\` again <t:${unix}:R>.`,
             allowed_mentions: { parse: [], replied_user: false },
             message_reference: { message_id: message.id, fail_if_not_exists: false },
         },

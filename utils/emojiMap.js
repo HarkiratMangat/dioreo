@@ -174,6 +174,8 @@ const emojis = {
     wcSniper: '<a:WC_Sniper:1563415653644505168>',
     // His reminder set and the mascot's tada (uploaded 2026-10-24 18:16 EDT to Dioreo, Dioreo (Dev) and Dioreo Admin (Dev)): Remind titles the /remind panel and the reminder DMs, RemindAlert marks a heads-up or a warning, AddReminder is the icon-only bell button, ReminderEnabled marks what you follow and turning reminders on, DisableReminder marks turning them off. DioreoTada is uploaded and not used yet.
     dioreoTada: '<a:DioreoTada:1563677558589882510>',
+    // The cooldown hourglass, for every cooldown message instead of the generic ⏳ (Harkirat, 2026-10-29 09:54 EDT).
+    cooldown: '<a:Cooldown:1565362761821847712>',
     // Brand set added 2026-10-29 09:51 EDT (Harkirat's list; prod ids, animated). Not used anywhere yet: ready for the panels and the site.
     dioreowrld: '<a:Dioreowrld:1565359502297923635>',
     dioreoSparkles: '<a:DioreoSparkles:1565359503262883900>',
