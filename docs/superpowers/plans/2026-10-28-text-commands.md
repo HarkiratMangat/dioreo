@@ -17,6 +17,14 @@ status: live
 | `feat/text-commands-b3-help` | B3, started only after B2 is merged | builder 3 |
 | `feat/text-commands-b4-audit` | B4, verification and review, started only after B3 is merged | auditor |
 
+## How to work: batched, never one file or one step per message (his ask, 2026-10-28 21:13 EDT)
+
+- **⟦ONE MESSAGE⟧** below marks a group whose calls all go out in a single message. The test: can I write this call in full now, without seeing an earlier result? Then it belongs in the same message.
+- **Group 0 is one evidence batch**: every read and every command the unit needs before editing, in one message.
+- **Edits are one `python3` heredoc per group**: read every file, assert every anchor, print "anchors verified", write every file, a `print()` per edit, timestamps computed in the script, the group's tests chained with `&&`. Never one `Edit` per file.
+- **Git steps are one chained command** (`git add … && git commit … && git push …`), never a step per message.
+- A failing test gets one fix heredoc for every failure it shows, then the same chained re-run.
+
 ## Every builder, in this order
 
 1. `npm ci`, then `git fetch origin --tags` and `git checkout -B <your branch> origin/feat/text-commands`. Your harness may name a `claude/…` branch: ignore it, Harkirat's prompt gives you this one and permission to push it and `feat/text-commands`.
@@ -49,6 +57,11 @@ status: live
 8. **The class sweep** (do not trust the list above to be complete): search the tree, outside `node_modules`, `local/`, `docs/archive/`, the three changelogs and the frozen `docs/superpowers/specs/`, for `message content`, `read your messages`, `only through interactions`, `answers ONLY through`, `Guilds\` only`, `GatewayIntentBits.Guilds` (case-insensitive). For each hit decide: now false → fix (only in files you own); a dated measurement still true when Message Content is off (the forward-snapshot notes in `utils/patchNoteSource.js`, `commands/addToPatchNotes.js`, `.claude/rules/commands-overview.md`) → leave; a frozen spec → leave. List every hit with its verdict in your final reply.
 6. **docs/reference/platform-constraints.md**: a dated entry: a server with ~50+ bots stops listing newer bots' slash commands (「𝐆𝐇𝐎𝐒𝐓」, 1433978538620616745, 54 bot roles, Dioreo missing from the phone's In This Server list, 2026-10-28 15:54 EDT; user-reported, not in Discord's docs); text commands get around it. Plus: Message Content is a portal toggle under 100 servers even for a verified bot (both apps showed flag bit 19 after he toggled, 2026-10-28 17:08 EDT); approval at 100+. Plus: a role mention carries no text without Message Content (spike, 2026-10-28 16:37 EDT). The file's own rule: an entry is evidence, dated.
 7. **docs/ROADMAP.md**: the v4 "text/prefix commands and the MESSAGE CONTENT intent" item moves to v3.x as in progress, with this branch; strike, don't delete; keep "Deliberately NOT in scope" lines true.
+
+**Groups:**
+- ⟦ONE MESSAGE⟧ Group 0: baseline `docs:audit`, the class-sweep search, and reads of all seven owned files plus `bot/textCommands.js`, `utils/textCommands/adapter.js`, `utils/textCommands/parse.js` and `.claude/rules/legal-site.md`.
+- ⟦ONE MESSAGE⟧ Group 1: one heredoc with all seven edits, `&& npm run docs:audit`.
+- ⟦ONE MESSAGE⟧ Group 2: the Owns check, commit, push, merge, push, delete, as one chained command.
 
 ## B2 — options, autocomplete and reply-to forms
 
@@ -85,6 +98,13 @@ Also: a table-driven test that every command alias and value alias in `commands.
 
 `textCommandArgs.test.js` (≥ 30 rows: `d calendar upcoming`, `d calendar filter:upcoming`, `d draws returning`, `d gs ak117`, `d gunsmith ak 117`, `d timestamp tomorrow 8pm`, `d draw prices na`, `dior calender upcomming`, `d calendar what is this` → silent, `@Dioreo calendar what` → usage, `d gunsmith` → needsInput…). `textCommandListener.test.js`: drive `onMessage` with fake messages and stub command modules that record the interaction they get (options arrive; ambiguous autocomplete → Did you mean; reply-to `d times` passes `targetMessage`; `dior gunsmith skins are cool` sends nothing). Prove each new test can fail (break a rule, see red, restore) and name the mutation.
 
+**Groups:**
+- ⟦ONE MESSAGE⟧ Group 0: reads of `handlers/router.js` (autocomplete block), every `utils/textCommands/*`, `bot/textCommands.js`, `handlers/textCommands.js`, `commands/convertTimes.js`, `commands/viewColors.js`, `commands/gunsmith.js`, `commands/timestamp.js`, `utils/timestampHelper.js`, `utils/reminders.js` (`autocompleteChoices`), the four existing tests, plus one Bash dump of every public command's options JSON.
+- ⟦ONE MESSAGE⟧ Group 1 (Phase 1): one heredoc `&& node scripts/handlerRouting.test.js`, then commit in the same chain.
+- ⟦ONE MESSAGE⟧ Group 2 (Phase 2): one heredoc for `commands.js`, `args.js`, `parse.js`, `adapter.js`, the gunsmith and timestamp changes and `textCommandArgs.test.js`, `&&` the args and parse tests, then commit.
+- ⟦ONE MESSAGE⟧ Group 3 (Phase 3): one heredoc for the listener, `handlers/textCommands.js`, `textCommandListener.test.js`, the manifest lines and the rule file, `&&` the full Test command, then commit.
+- ⟦ONE MESSAGE⟧ Group 4: the Owns check, push, merge, push, delete, as one chained command.
+
 ## B3 — help and docs
 
 **Owns:** `commands/help.js` · `utils/commandMentions.js` · `scripts/lib/commandsPage.js` · `scripts/lib/commandProse.js` · `scripts/helpTextCommands.test.js` (new) · `scripts/testManifest.mjs` (ONE line, right after `helpAnnouncement.test.js`) · `.claude/rules/text-commands.md` (add your test to its Tests list)
@@ -94,6 +114,11 @@ Also: a table-driven test that every command alias and value alias in `commands.
 2. **Slash mentions in text replies**: `mentionCommand(client, path)` returns `` `d draws` `` instead of `</draws:id>` when `require('./requestContext').getContext()?.handler === 'textCommands'` (bot/textCommands.js sets that) — a slash mention is plain text exactly where text commands are needed. Same for any helper that formats a command name for display; find every caller with `rg -n "mentionCommand\\("`.
 3. **The site's /commands page** (`scripts/lib/commandsPage.js` / `commandProse.js`): one short note under the intro that every public command also works as `@Dioreo <command>` or `d <command>`, in the page's voice. Do NOT run the site build or touch `public/` (the lead does).
 4. **Test** `scripts/helpTextCommands.test.js`: the help landing contains the text-commands block and stays ≤ 40 components; `mentionCommand` returns the text form inside a fake context with `handler: 'textCommands'` and the slash form otherwise. Prove it can fail.
+
+**Groups:**
+- ⟦ONE MESSAGE⟧ Group 0: reads of `commands/help.js`, `utils/commandMentions.js`, `scripts/lib/commandsPage.js`, `scripts/lib/commandProse.js`, `utils/requestContext.js`, `utils/textCommands/commands.js`, `.claude/rules/legal-site.md`, `scripts/helpAnnouncement.test.js`, and `rg -n "mentionCommand\\("`.
+- ⟦ONE MESSAGE⟧ Group 1: one heredoc for all four sources, the test, the manifest line and the rule file, `&&` the Test command.
+- ⟦ONE MESSAGE⟧ Group 2: the Owns check, commit, push, merge, push, delete, as one chained command.
 
 ## B4 — verification and review (his ask, 2026-10-28 21:11 EDT: "a 4th 'verification and review' auditor, before it all comes back to you")
 
@@ -107,6 +132,12 @@ Follow "Every builder, in this order" (steps 1–8), with B3's merge as the pred
 3. **Review the diff** (`git diff origin/main...origin/feat/text-commands`) for correctness: the chat guards (a message not meant for Dioreo must never get a reply), the autocomplete move being byte-for-byte, every `return interaction.X(...)` in an error branch awaited, nothing stored from a message, no slash-command option changed, the 40-component cap on /help, PRIVACY and TERMS true against the code (`GatewayIntentBits`, what is read, what is stored).
 4. **Try to break it** in a scratch test (not committed): the spec's edge rows plus your own (`d time in a minute`, `d gs type 19`, `dior gunsmith skins are cool`, `d new`, `@Dioreo calendar purple`, an alias typed with a typo, a message edited into a command after 60 s).
 5. **Fix** what is objectively wrong (a test failing, code contradicting the spec, a missing test for a spec row), each fix with a test that fails without it. Anything that needs a design call, or contradicts a decision in the spec, is NOT yours to fix: list it as a question.
+**Groups:**
+- ⟦ONE MESSAGE⟧ Group 0: start the full suite in the background, run `docs:audit`, take the full diff, and read the spec, every changed file and every new test, all in one message.
+- ⟦ONE MESSAGE⟧ Group 1: one scratch test file holding every break attempt, run once.
+- ⟦ONE MESSAGE⟧ Group 2: one heredoc for every fix and its test, `&&` the affected tests, then the full suite again.
+- ⟦ONE MESSAGE⟧ Group 3: the report, commit, push, merge, push, delete, as one chained command.
+
 6. **Report** in `docs/claude/2026-10-28-text-commands-audit.md`: a table of findings (what · where · severity · fixed or question), the before/after test and audit results, and the questions for Harkirat. Commit it with your fixes, then merge as in step 7.
 
 ## The lead, after B4 is merged (on this Mac)
