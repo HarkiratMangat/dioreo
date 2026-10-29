@@ -2,6 +2,8 @@
 //
 // ⚠️ EVERY ASSERTION HERE IS ABLE TO FAIL. The old format's own test would have been vacuous -- it asserted a parse succeeded, which the redesign also does. The discriminating checks are: the OLD format must now be REJECTED (not merely re-parsed differently), a typo'd key must ERROR rather than become an attachment, and a formatter->parser round trip must reproduce the FIELD VALUES, not just a non-empty result.
 const assert = require('assert');
+// The key rules under test are the production ones; the dev bot's NODE_ENV=development prefixes keys with DEV-, and a shell or cloud machine that exports it would fail these for no reason (found 2026-10-29). Pinned, as CI runs them.
+delete process.env.NODE_ENV;
 const { parseBulkLoadoutList, formatLoadoutsAsBulkText } = require('../utils/adminParser');
 const { deriveImageKey, isHttpImageSource, takenKeyPattern } = require('../utils/loadoutImageCache');
 const retry = require('../handlers/manage/retry');

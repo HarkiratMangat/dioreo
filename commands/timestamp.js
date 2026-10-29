@@ -61,6 +61,15 @@ const SHORTHAND_EXPANSIONS = Object.entries({
     '\\bsat\\b|\\bsaturday\\b': 'Saturday'
 }).map(([pattern, replacement]) => ({ regex: new RegExp(pattern, 'g'), replacement }));
 
+// Clean text input and expand shorthand variations into complete words for the chrono parser engine. Moved out of execute() unchanged (text commands B2, 2026-10-29) so a text command checks a typed date with this same code before answering (utils/textCommands/args.js), never a copy.
+function expandShorthand(queryInput) {
+    let processedQuery = queryInput.toLowerCase().trim();
+    for (const { regex, replacement } of SHORTHAND_EXPANSIONS) {
+        processedQuery = processedQuery.replace(regex, replacement);
+    }
+    return processedQuery;
+}
+
 // Global lookup table mapping standard IANA timezones to descriptive user-facing labels
 const tzLabels = {
     'America/Toronto': 'Eastern (Toronto/NY)',
@@ -122,7 +131,7 @@ async function timezoneAutocomplete(interaction) {
 
 module.exports = {
     autocomplete: timezoneAutocomplete,
-    resolveStyle, OVERVIEW_STYLES,
+    resolveStyle, OVERVIEW_STYLES, expandShorthand,
     PRESET_ACCENT, // Exposed so handlers/timestamp.js's tsmenu re-render handler can resolve the same accent
                    // color the initial render would have used (see overrideState.accentColor above).
     data: new SlashCommandBuilder()
@@ -215,11 +224,7 @@ module.exports = {
                 await interaction.deferReply();
             }
 
-            // Clean text input and expand shorthand variations into complete words for the chrono parser engine
-            let processedQuery = queryInput.toLowerCase().trim();
-            for (const { regex, replacement } of SHORTHAND_EXPANSIONS) {
-                processedQuery = processedQuery.replace(regex, replacement);
-            }
+            const processedQuery = expandShorthand(queryInput);
 
             const timestampsBase = generateTimestamps(processedQuery, tz);
             if (!timestampsBase || !timestampsBase.unix) {

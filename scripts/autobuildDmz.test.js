@@ -4,6 +4,8 @@
 //
 // ⚠️ What this cannot prove is that Gemini answers the four `screen` questions correctly on a real screenshot. That is scripts/autobuildDmzCheck.js, which runs the stored DMZ and MP screenshots through the live model and needs Vertex credentials.
 const assert = require('assert');
+// The key rules under test are the production ones; the dev bot's NODE_ENV=development prefixes keys with DEV-, and a shell or cloud machine that exports it would fail these for no reason (found 2026-10-29). Pinned, as CI runs them.
+delete process.env.NODE_ENV;
 const path = require('path');
 const Module = require('module');
 

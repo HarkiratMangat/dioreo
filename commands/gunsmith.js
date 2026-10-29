@@ -87,6 +87,14 @@ async function renderScopeBrowse(interaction, scope, flatIndex, { isUpdate = fal
     await sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
 }
 
+// The first weapon by name with a real build (a "Coming Soon" placeholder is not one), optionally within one class. Null when there is none.
+async function firstWeaponKey(mode, category) {
+    const { isPlaceholderBuild } = require('../utils/loadoutRender');
+    const builds = await require('../models/Loadout').find({ mode, ...(category ? { category } : {}) }).lean();
+    const real = builds.filter(b => !isPlaceholderBuild(b)).sort((a, b) => a.weaponName.localeCompare(b.weaponName));
+    return real[0]?.weaponKey || null;
+}
+
 async function execute(interaction) {
     const mode = interaction.options.getSubcommand() === 'dmz' ? 'DMZ' : 'MP';
     const raw = interaction.options.getString('weapon');
@@ -99,6 +107,11 @@ async function execute(interaction) {
     if (raw.startsWith('~search~')) {
         const { searchModal } = require('../utils/loadoutLookup');
         return interaction.showModal(searchModal(mode, interaction.options.getString('visibility')));
+    }
+    // A text command with no weapon, or only a class word (`d gunsmith`, `d gs smg`), opens the first weapon alphabetically that has a build, in the whole catalogue or in that class (the text-commands spec, his comment: "running a bare `d gunsmith` or something would just open the 1st alphabetic gun on the catalogue"). Only utils/textCommands/args.js sends `~first~<CATEGORY?>`; the slash command's options are unchanged.
+    if (raw.startsWith('~first~')) {
+        const first = await firstWeaponKey(mode, raw.slice(7) || null);
+        return require('../utils/loadoutLookup').lookupAndRenderWeapon(interaction, { mode, rawQuery: first || raw.slice(7) || 'weapon', requestedBuild: null, visibilityChoice: interaction.options.getString('visibility') });
     }
     // The old `~cat~<CATEGORY>` rows (removed 2026-10-19 18:57 EDT) still resolve, for a suggestion list a client kept open.
     if (raw.startsWith('~cat~')) return renderScopeBrowse(interaction, { mode: 'MP', category: raw.slice(5), metaOnly: false }, 0);

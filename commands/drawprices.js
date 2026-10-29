@@ -595,7 +595,12 @@ module.exports = {
             const userChoice = interaction.options.getString('region');
             if (userChoice) targetRegion = userChoice;
             const jumpChoice = interaction.options.getString('filter');
-            if (jumpChoice) subpageOverride = `f${jumpChoice}`;
+            // A text command can pick several draws at once, comma-joined (`d prices legendary` is both legendary weapon draws, `d prices armory` all three armories; text commands B2, 2026-10-29). The panel's own filter already holds a set, so they open as one filtered view; a single key is still `f<key>`, as the slash option sends.
+            if (jumpChoice) {
+                const keys = jumpChoice.split(',');
+                const picked = JUMP_KEYS.filter(key => keys.includes(key));
+                if (picked.length) subpageOverride = filterToken(picked);
+            }
         }
 
         // NOTE: switched from the old per-command `pricesVisibility` field to the shared `seasonalVisibility` field so this respects the single "Seasonal Content" toggle in /settings (Option A).
