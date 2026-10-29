@@ -973,7 +973,7 @@ function buildHotpatchPanel(out) {
         return [{ type: 17, accent_color: 0x5865F2, components: body }];
     }
     if (plan.verdict === 'REFUSE_STRUCTURAL') {
-        head(`⛔ **Can't hotpatch this — a full restart is required.**\n${plan.escaped.map(f => `• \`${f}\` — owns process lifecycle or is a Mongoose model`).join('\n')}${plan.unresolved?.length ? `\n\nNot a runtime module (deleted by the pull, or a typo): ${plan.unresolved.map(f => `\`${f}\``).join(', ')}` : ''}${plan.stray?.length ? `\n\nYou named ${plan.stray.map(f => `\`${f}\``).join(', ')}, which the pull did not change.` : ''}\n\nThis is permanent for these files, not a missing feature.`);
+        head(`⛔ **Can't hotpatch this — a full restart is required.**\n${plan.escaped.map(f => `• \`${f}\` — owns process lifecycle or is a Mongoose model`).join('\n')}${plan.boundaries?.length ? `\n\nNever reloaded in place (late-bound boundaries): ${plan.boundaries.map(f => `\`${f}\``).join(', ')}` : ''}${plan.unresolved?.length ? `\n\nNot a runtime module (deleted by the pull, or a typo): ${plan.unresolved.map(f => `\`${f}\``).join(', ')}` : ''}${plan.stray?.length ? `\n\nYou named ${plan.stray.map(f => `\`${f}\``).join(', ')}, which the pull did not change.` : ''}\n\nThis is permanent for these files, not a missing feature.`);
     } else if (plan.verdict === 'REFUSE_STATE') {
         head(`${BOT_EMOJI.warn} **Refused — live state in the reload closure.**\n${Object.entries(plan.blocked).map(([f, r]) => `• \`${f}\` — ${r.join(', ')}`).join('\n')}\n\nEach of these can opt in later with a \`__hotSwap\` contract. Until then a restart is the honest option.`);
     } else if (result && !result.ok) {

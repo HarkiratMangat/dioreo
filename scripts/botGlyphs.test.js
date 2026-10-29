@@ -11,7 +11,7 @@ const ROOT = path.join(__dirname, '..');
 const DIRS = ['commands', 'handlers', 'utils', 'core', 'bot'];
 const KEEP = [
     ['commands/manage.js', "description: '⚠️ Wipes all draws"],
-    ['handlers/router.js', "name: '⚠️ Pick a Content type first"],
+    ['utils/autocomplete.js', "name: '⚠️ Pick a Content type first"], // moved out of handlers/router.js with the rest of autocomplete, 2026-10-29
     ['handlers/router.js', "⚠️ past Discord"],
 ];
 const GLYPH = /⚠️|⚠|❌|✅/;

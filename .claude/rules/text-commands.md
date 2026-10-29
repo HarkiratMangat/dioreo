@@ -76,7 +76,7 @@ A command that opens a pop-up first cannot do that from a message (Discord opens
 ## The two buttons (`handlers/textCommands.js`)
 
 - **`txtpriv_<command>`, Open privately**, on the card where the server's rule makes answers private. Anyone may click: it opens THEIR OWN view, hidden, so it needs no lock (think-pass, 2026-10-28 16:46 EDT).
-- **`txtrun_<command>`, a Did you mean pick**, runs the command publicly, the way the member meant to. A two-word command travels as `patch.notes` (`toIdPart`).
+- **`txtrun_<command>`, a Did you mean pick**, runs the command publicly, the way the member meant to. A two-word command travels as `patch.notes` (`toIdPart`). Since B2 both ids can carry `~<payload>` (the options, a reply form's target, or the timestamp pop-up's `open` / `submit`): see Options below.
 - Both re-check the server's Integrations switches for the command they run, and re-resolve the `/admin` policy with that command's own name (security review, 2026-10-28 17:29 EDT: the router resolved it for a button, which has no `commandName`, so the command tier was skipped). The click is acknowledged BEFORE the synthetic copy is made, because `buildSyntheticInteraction` copies `deferred` as a value.
 
 ## Prefixes, and the dev bot

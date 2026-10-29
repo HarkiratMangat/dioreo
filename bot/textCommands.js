@@ -158,8 +158,24 @@ function datetimeChecker(client) {
 // A reply to another message (a forward is not one): `d timestamp` then means Convert Times on it, `d colors` that person's colours (B2, the spec's reply forms).
 const isReplyTo = message => Boolean(message.reference?.messageId) && (message.reference.type ?? 0) === 0;
 
-// OPTIONS THAT NEED A LOOKUP (B2, 2026-10-29): a weapon or a patch-notes season is resolved through the slash command's OWN suggestion list, utils/autocomplete.js, with an interaction whose respond() keeps the list. Deliberately NOT through instrumentAutocomplete: a text command is not someone typing into a search box, so it records no search session.
+// OPTIONS THAT NEED A LOOKUP (B2, 2026-10-29): a weapon or a patch-notes season is resolved through the slash command's OWN suggestion list, utils/autocomplete.js, with an interaction whose respond() keeps the list. Deliberately NOT through instrumentAutocomplete: a text command is not someone typing into a search box, so it records no search session. A suggestion's name without the class tag and the no-build note /gunsmith mp adds (`[AR] AK117 — Build pending`), for comparing with what was typed.
+const choiceName = name => String(name || '').replace(/^\[[^\]]*\]\s*/, '').replace(/\s+—\s+Build pending$/, '');
+const squash = s => String(s || '').toLowerCase().replace(/[\s\-_.]/g, '');
+
+// Held a minute per command, option and text: the lookups run BEFORE the rate limits (so a message that turns out silent does not count against anyone), and this keeps a burst of the same `@Dioreo gs ak` from costing a database read each. Neither list is per person.
+const SUGGEST_MS = 60_000;
+const suggestions = new Map();
 async function suggest(message, textCommand, option, text) {
+    const key = `${textCommand.slash}|${textCommand.sub || ''}|${option}|${squash(text)}`;
+    const hit = suggestions.get(key);
+    if (hit && Date.now() - hit.at < SUGGEST_MS) return hit.list;
+    const list = await lookUp(message, textCommand, option, text);
+    if (list) suggestions.set(key, { list, at: Date.now() });
+    return list || [];
+}
+
+// null when the lookup failed, so a failure is never cached as "no match".
+async function lookUp(message, textCommand, option, text) {
     let list = [];
     const fake = {
         commandName: textCommand.slash, client: message.client, user: message.author, member: message.member,
@@ -172,14 +188,11 @@ async function suggest(message, textCommand, option, text) {
         await require('../utils/autocomplete').runAutocomplete(fake);
     } catch (err) {
         console.error(`Text command ${textCommand.name}: could not look up "${text}":`, err?.message || err);
-        return [];
+        return null;
     }
     return list;
 }
 
-// A suggestion's name without the class tag and the no-build note /gunsmith mp adds (`[AR] AK117 — Build pending`), for comparing with what was typed.
-const choiceName = name => String(name || '').replace(/^\[[^\]]*\]\s*/, '').replace(/\s+—\s+Build pending$/, '');
-const squash = s => String(s || '').toLowerCase().replace(/[\s\-_.]/g, '');
 
 // One confident hit, or the candidates. The browse rows and "Type a name to search…" (values starting `~`) are never a hit: they are not the weapon asked for. A suggestion whose name IS what was typed wins over the others (`m4` beside XM4); `first` takes the top one (patch notes' `latest`: the list is newest first).
 function pickChoice(choices, text, first) {
@@ -191,18 +204,12 @@ function pickChoice(choices, text, first) {
     return { hit: null, several: usable };
 }
 
-// `d ak117`: a first word naming no command runs gunsmith MP only when it is EXACTLY a weapon's name. Held a minute per text, since `d <word>` chat would otherwise cost a lookup each time.
-const WEAPON_GUESS_MS = 60_000;
-const weaponGuesses = new Map();
+// `d ak117`: a first word naming no command runs gunsmith MP only when it is EXACTLY a weapon's name. The lookup is held a minute (suggest above), since `d <word>` chat would otherwise cost one each time.
 async function guessWeapon(message, text) {
     const key = squash(text);
-    const hit = weaponGuesses.get(key);
-    if (hit && Date.now() - hit.at < WEAPON_GUESS_MS) return hit.weapon;
     const choices = (await suggest(message, findTextCommand('gunsmith'), 'weapon', text)).filter(c => !String(c.value).startsWith('~'));
     const exact = choices.filter(c => squash(choiceName(c.name)) === key || squash(c.value) === key);
-    const weapon = exact.length === 1 ? String(exact[0].value) : null;
-    weaponGuesses.set(key, { weapon, at: Date.now() });
-    return weapon;
+    return exact.length === 1 ? String(exact[0].value) : null;
 }
 
 // A run's lookups. Returns { kind: 'run', verdict } with every value filled, { kind: 'pick', … } (several candidates: Did you mean, up to 5), { kind: 'noMatch', text }, or null (silent). After `d`/`dior` anything but one confident hit is silent (`dior gunsmith skins are cool`); only `@Dioreo` or `/` gets the card or the line.
@@ -385,7 +392,7 @@ function registerTextCommands(client) {
         for (const [k, hits] of channelHits) if (!hits.some(t => now - t < CHANNEL_WINDOW_MS)) channelHits.delete(k);
         for (const [k, t] of answered) if (now - t > EDIT_WINDOW_MS * 2) answered.delete(k);
         for (const [k, t] of cantPostDms) if (now - t > CANT_POST_DM_MS) cantPostDms.delete(k);
-        for (const [k, g] of weaponGuesses) if (now - g.at > WEAPON_GUESS_MS) weaponGuesses.delete(k);
+        for (const [k, s] of suggestions) if (now - s.at > SUGGEST_MS) suggestions.delete(k);
     }, 10 * 60 * 1000).unref();
 }
 
