@@ -648,7 +648,7 @@
         },
         {
           "type": 10,
-          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# 💬 Or type `d draws [new|returning]`\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# 💬 Or type `d draw prices [10cp|20cp|30cp] [mythic|mythic weapon|mythic character|legendary|legendary character|double legendary|7 spins|pick your reward|double epic|armory|advanced|advanced weapon|advanced character]`\n-# **Options**\n-# 🔹 `[filter]` Quickly open a draw type\n-# 🔹 `[region]` View costs for a specific CP region"
+          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# 💬 Or type `d draws [new|returning]`\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# 💬 Or type `d draw prices [10cp|20cp|30cp] [type]`\n-# **Options**\n-# 🔹 `[filter]` Quickly open a draw type\n-# 🔹 `[region]` View costs for a specific CP region"
         },
         {
           "type": 9,
@@ -2758,7 +2758,7 @@
         },
         {
           "type": 10,
-          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# 💬 Or type `d draws [new|returning]`\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# 💬 Or type `d draw prices [10cp|20cp|30cp] [mythic|mythic weapon|mythic character|legendary|legendary character|double legendary|7 spins|pick your reward|double epic|armory|advanced|advanced weapon|advanced character]`\n-# **Options**\n-# 🔹 `[filter]` Quickly open a draw type\n-# 🔹 `[region]` View costs for a specific CP region"
+          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# 💬 Or type `d draws [new|returning]`\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# 💬 Or type `d draw prices [10cp|20cp|30cp] [type]`\n-# **Options**\n-# 🔹 `[filter]` Quickly open a draw type\n-# 🔹 `[region]` View costs for a specific CP region"
         },
         {
           "type": 9,
@@ -5139,7 +5139,7 @@
         },
         {
           "type": 10,
-          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# 💬 Or type `d draws [new|returning]`\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# 💬 Or type `d draw prices [10cp|20cp|30cp] [mythic|mythic weapon|mythic character|legendary|legendary character|double legendary|7 spins|pick your reward|double epic|armory|advanced|advanced weapon|advanced character]`\n-# **Options**\n-# 🔹 `[filter]` Quickly open a draw type\n-# 🔹 `[region]` View costs for a specific CP region"
+          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# 💬 Or type `d draws [new|returning]`\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# 💬 Or type `d draw prices [10cp|20cp|30cp] [type]`\n-# **Options**\n-# 🔹 `[filter]` Quickly open a draw type\n-# 🔹 `[region]` View costs for a specific CP region"
         },
         {
           "type": 9,
@@ -7860,7 +7860,7 @@
         },
         {
           "type": 10,
-          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# 💬 Or type `d draws [new|returning]`\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# 💬 Or type `d draw prices [10cp|20cp|30cp] [mythic|mythic weapon|mythic character|legendary|legendary character|double legendary|7 spins|pick your reward|double epic|armory|advanced|advanced weapon|advanced character]`\n-# **Options**\n-# 🔹 `[filter]` Quickly open a draw type\n-# 🔹 `[region]` View costs for a specific CP region"
+          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# 💬 Or type `d draws [new|returning]`\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# 💬 Or type `d draw prices [10cp|20cp|30cp] [type]`\n-# **Options**\n-# 🔹 `[filter]` Quickly open a draw type\n-# 🔹 `[region]` View costs for a specific CP region"
         },
         {
           "type": 9,

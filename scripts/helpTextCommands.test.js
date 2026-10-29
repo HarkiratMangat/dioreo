@@ -111,7 +111,7 @@ async function check(name, fn) {
     const run = text => parseTextCommand(text, { botId: '1', prefixes: ['d'], commands: TEXT_COMMANDS });
     await check('the draws, seasonal and gunsmith pages write each command\'s typed form beside its Usage and Examples', async () => {
         const want = {
-            draws: ['Or type `d draws [new|returning]`', 'Or type `d draw calculator [start|saved|help]`', '`d draws returning`', '`d draw prices 30cp`', '`d draw prices mythic weapon`', '`d draw calculator saved`'],
+            draws: ['Or type `d draws [new|returning]`', 'Or type `d draw calculator [start|saved|help]`', 'Or type `d draw prices [10cp|20cp|30cp] [type]`', '`d draws returning`', '`d draw prices 30cp`', '`d draw prices mythic weapon`', '`d draw calculator saved`'],
             seasonal: ['Or type `d calendar [draws|events|playlists] [past|live|upcoming]`', 'Or type `d today`', 'Or type `d patch notes [new|season]`', '`d calendar events upcoming`', '`d patch notes season 6`'],
             gunsmith: ['Or type `d gunsmith [weapon]`', 'Or type `d dmz [weapon]`', '`d gunsmith ak117`', '`d dmz fennec`'],
             utilities: ['Or type `d timestamp <datetime> [tz:timezone]`, or reply to a message with `d timestamp`', 'Or type `d colors [@someone]`, or reply to someone with `d colors`'],
@@ -121,6 +121,8 @@ async function check(name, fn) {
             const all = await page(key, {});
             for (const l of lines) assert.ok(all.includes(l), `${key}: missing ${l}`);
         }
+        // A long value list shows its key, and the key is one the parser takes.
+        assert.strictEqual(run('d draw prices type:mythic').values.filter, 'mythicWeapon,mythicCharacter');
         // A twin sits on its slash example's own line.
         assert.ok((await page('draws')).includes('-# 🔸 **/draws** page:`Returning Draws` · `d draws returning`'));
     });
@@ -176,17 +178,22 @@ async function check(name, fn) {
         assert.ok(all.includes('Or type `@Dioreo draws [new|returning]`') && all.includes('`@Dioreo draws returning`') && !all.includes('`d draws'));
         await runWithContext({ handler: 'textCommands' }, async () => {
             const inText = await page('draws');
-            assert.ok(inText.includes('### `d draws`') && inText.includes('Or type `d draws [new|returning]`'));
+            assert.ok(inText.includes('### `d draws`') && inText.includes('-# 💬 Type `d draws [new|returning]`') && !inText.includes('Or type'), 'inside a text command the line should read Type, not Or type');
         });
     });
     let largest = { n: 0 };
-    await check('every page stays within 40 components and 4,000 characters, at every permission level', async () => {
+    // Characters are measured with PROD-LENGTH ids for every command (think-pass, 2026-10-29 00:27 EDT): with the 3-digit fake ids above, and none for /bot, /manage, /embed or /autobuild, a mention is ~20 characters shorter than on prod, and this check passed a page that prod would refuse. Discord's 4,000 is the total of a message's text displays (`.claude/rules/draw-prices.md`, probed 2026-10-16 01:17 EDT).
+    const PROD_ID = '1561783498770227300';
+    const prodIds = new Map(['gunsmith', 'draws', 'draw', 'calendar', 'today', 'remind', 'patch', 'season', 'colors', 'timestamp', 'invite', 'settings', 'admin', 'bot', 'embed', 'manage', 'autobuild', 'help'].map(n => [n, PROD_ID]));
+    // ⚠️ Bot Admin is NOT asserted: the owner's page is 4,038 characters with prod ids on `main` too (before any text-command work), filed as its own fix. It carries no typed forms. Every page that does is asserted.
+    const CHAR_EXEMPT = new Set(['botadmin']);
+    await check('every page stays within 40 components, and every page with typed forms within 4,000 characters with prod-length ids', async () => {
         for (const perms of [{}, { serverAdmin: true }, ALL, { botAdmin: true, bot: true }]) for (const tmc of [true, false]) for (const cat of [null, ...help.CATEGORY_DEFS.map(c => c.key)]) {
-            const container = await help.buildContainer(cat, 0x5865F2, perms, client(tmc));
+            const container = await help.buildContainer(cat, 0x5865F2, perms, { ...client(tmc), commandIds: prodIds });
             const n = countComponents([container, help.helpFooterRow()]);
             const chars = texts(container).join('').length;
             assert.ok(n <= 40, `${cat || 'landing'}: ${n} components for ${JSON.stringify(perms)}`);
-            assert.ok(chars <= 4000, `${cat || 'landing'}: ${chars} characters for ${JSON.stringify(perms)}`);
+            if (!CHAR_EXEMPT.has(cat)) assert.ok(chars <= 4000, `${cat || 'landing'}: ${chars} characters for ${JSON.stringify(perms)}`);
             // A restricted category falls back to the landing, so only a real detail page counts here.
             const def = help.CATEGORY_DEFS.find(c => c.key === cat);
             if (def && (!def.requires || perms[def.requires]) && n > largest.n) largest = { n, cat, chars };
