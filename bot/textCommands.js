@@ -166,6 +166,8 @@ async function runTextCommand(message, verdict) {
             await require('../utils/guildPolicy').attachGuildPolicy(interaction);
             t.policy = Date.now();
             await command.execute(interaction);
+            // "Dioreo User Since" and Your Stats count a text command as the person's own command, after it has run and never when it threw, the same as handlers/router.js's slash route (Harkirat, 2026-10-28 22:19 EDT: text commands should count).
+            require('../utils/userStats').noteOwnCommandSafely(interaction);
         } catch (err) {
             ctx.outcome = 'error';
             const text = err instanceof TextCommandRefused
