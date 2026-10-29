@@ -108,12 +108,13 @@ His yes, 2026-10-28 17:52 EDT: *"yes, the admin commands should be able to restr
 
 ## Attribution and analytics
 
-`runTextCommand` builds its context with `handlers/router.js`'s `buildInteractionContext`, sets `handler: 'textCommands'`, and runs inside `runWithContext`, so log lines carry the same attribution as a slash command's. It writes one `AnalyticsEvent` from its `finally` with `entry: 'text'` and `via` (`mention`, `role`, `/`, `d`, `dior` or the env's own prefixes, with `+typo` when a near-miss word ran). Nothing from the message is stored. On the dev bot only, one `⌨️` line per text command says where its time went (his question, 2026-10-28 18:01 EDT); production prints nothing.
+`runTextCommand` builds its context with `handlers/router.js`'s `buildInteractionContext`, sets `handler: 'textCommands'`, and runs inside `runWithContext`, so log lines carry the same attribution as a slash command's. It writes one `AnalyticsEvent` from its `finally` with `entry: 'text'` and `via` (`mention`, `role`, `/`, `d`, `dior` or the env's own prefixes, with `+typo` when a near-miss word ran). Nothing from the message is stored. After the command has run (never when it threw) it calls `utils/userStats.js`'s `noteOwnCommandSafely`, exactly as the router's slash route does, so a text command sets "Dioreo User Since" and counts in Your Stats (Harkirat, 2026-10-28 22:19 EDT). On the dev bot only, one `⌨️` line per text command says where its time went (his question, 2026-10-28 18:01 EDT); production prints nothing.
 
 ## Tests
 
 - `scripts/textCommandParse.test.js` — the trigger rules as a table: each row is a message someone could type, and the verdict it must get.
 - `scripts/textCommandAdapter.test.js` — the adapter's contract against a recording REST stub: reply first, then edit; nothing ephemeral posted publicly; the Open privately card; no pings.
 - `scripts/textCommandPermissions.test.js` — each override set Discord can return and the answer it must give.
+- `scripts/textCommandStats.test.js` — a text command that ran counts as the person's own command (under its full name, `patch notes`), and one that threw or was not for Dioreo counts nothing.
 
 *(Later units add their tests to this list.)*
