@@ -90,10 +90,11 @@ function textCommandFor(name) {
     const clean = String(name).replace(/^\//, '');
     return TEXT_COMMANDS.find(c => `${c.slash}${c.sub ? ` ${c.sub}` : ''}` === clean) || null;
 }
+const MAX_LISTED = 6;
 const textPrefix = client => (client?.textMessageContent === false ? '@Dioreo' : 'd');
 const shortestKey = o => [...(o.keys || [o.name])].sort((a, b) => a.length - b.length)[0];
 
-// `d draws [new|returning]`, in the slash Usage's own brackets: <required> [optional]. A rest option (a weapon, a date, a season) is named by its option; a key-only one shows its key.
+// `d draws [new|returning]`, in the slash Usage's own brackets: <required> [optional]. A rest option (a weapon, a date, a season) is named by its option; a key-only one shows its key. An option with more than MAX_LISTED values shows its key instead of the list (think-pass, 2026-10-29 00:27 EDT: draw prices' 13 types made a 205-character line, five grey lines on a phone, while its Options bullet and its example already show the words), so it reads `d draw prices [10cp|20cp|30cp] [type]`, and `type:mythic` really works.
 function textUsage(client, name) {
     const tc = textCommandFor(name);
     if (!tc) return null;
@@ -101,6 +102,7 @@ function textUsage(client, name) {
         let inner;
         if (o.keyOnly) inner = `${shortestKey(o)}:${o.name}`;
         else if (o.mention) inner = `@${o.name}`;
+        else if ((o.values || []).length > MAX_LISTED) inner = shortestKey(o);
         else inner = [...(o.values || []).map(v => v.aliases[0]), ...(o.rest ? [o.name] : [])].join('|');
         return o.required ? `<${inner}>` : `[${inner}]`;
     });
@@ -114,7 +116,8 @@ function textUsageLine(client, name) {
     if (!usage) return null;
     const tc = textCommandFor(name);
     const reply = tc.replyForm ? `, or reply to ${REPLY_FORM_TARGET[tc.replyForm]} with \`${textPrefix(client)} ${tc.words[0]}\`` : '';
-    return `-# 💬 Or type \`${usage}\`${reply}`;
+    // Inside `d help` the heading above already reads `d draws`, so the line is the form itself, not an alternative to it.
+    return `-# 💬 ${require('../utils/commandMentions').inTextCommand() ? 'Type' : 'Or type'} \`${usage}\`${reply}`;
 }
 
 // The typed twin of one slash example, from the slash values it uses: each value's first spelling, a rest option's own text. Null when any option has no text form (visibility, style, view, a page with no text option), because a twin without it would be a different answer.
