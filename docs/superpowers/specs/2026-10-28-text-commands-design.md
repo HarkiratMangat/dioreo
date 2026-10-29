@@ -107,11 +107,11 @@ From his doc, as he left it. `new` / `returning` work after a page word that has
 | gunsmith DMZ | dmz, dmz gs, dmz build, dmz loadout | weapon (required) | same as MP |
 | gunsmith DMZ |  | build | same as MP |
 | timestamp | timestamp, time, ts, t, stamp | datetime (required) | every word that isn’t another argument: tomorrow 8pm, friday 6pm, in 2 hours |
-| timestamp |  | style | short, s · all, a · relative, rel, r, countdown · full, f · date · clock |
+| timestamp |  | style | short · all · relative, rel, countdown · full · date · clock |
 | timestamp |  | view | text, plain, raw, copy |
 | timestamp |  | timezone | timezone:toronto, tz:toronto, tz:est |
 | convert times | convert times, convert, conv, times, ct | — | none; send it as a reply to the message |
-| remind | remind, r, reminder, remindme, rm, notify, alert, bell | item | an item’s name: black hole · a group: new draws, returning draws, events, modes, new season, patch notes, digest, bp, ranked, dmz |
+| remind | remind, r, reminder, remindme, rm, notify, alert, bell | item | an item’s name (black hole) or a category, exactly as /remind’s own autocomplete lists them for that side |
 | remind |  | when | required: releasing, release, live, out, start · leaving, leave, end, ending, l |
 | colors | colors, colours, col, palette, accent | page | avatar, av, pfp, a · banner, b · deco, decoration · nameplate, np, plate · username, name, display name, n |
 | colors |  | source | main, global, profile, m · server, guild, s |
@@ -120,6 +120,22 @@ From his doc, as he left it. `new` / `returning` work after a page word that has
 | help | help, h, commands, cmds, info, ? | command | any command name or alias above |
 | invite | invite, inv, add, link | — | none |
 
+
+### How words map, so nothing is guessed (lead's content pass, 2026-10-28 21:09 EDT)
+
+| Word | Becomes |
+| --- | --- |
+| calendar `past` · `upcoming` · `live` · `all` (and aliases) | filter `over` · `soon` · `live` · `all` |
+| colors `username` · `deco` · `main` (and aliases) | page `name` · `decoration` · source `global` |
+| timestamp `short` · `all` · `relative` · `full` · `date` · `clock` | style `short_list` · `all_formats` · `relative` · `fullDateTime` · `longDate` · `shortTime` (my mapping) |
+| draw prices `10cp` / `20cp` / `30cp` and the places | region `region_10` / `region_20` / `region_30` |
+| remind release words · leaving words | the `releases` option · the `leaving` option; the item then resolves through that side's own autocomplete, and the pick flips that reminder as `/remind` does |
+| patch notes `new` · `latest` · `current` | the newest season that has notes, upcoming included |
+| calendar shortcut words `events`, `ev`, `playlists`, `modes`, `gamemode`, `gm` as the COMMAND word | calendar on that page (his answer 2); one-letter forms are not shortcuts |
+
+- **Timestamp style words have no one-letter forms**, because the date is free text: in `d time in a minute`, an `a` alias would be read as the style.
+- **A gunsmith build number is text-only.** He removed `build` from `/gunsmith` on 2026-10-25 15:45 EDT ("remove 'build' as an option in the slash command"); it stays removed. A trailing number is a build only when the words before it resolve to one weapon AND the number is within that weapon's build count; otherwise it is part of the name (`d gs type 19`).
+- **No alias may belong to two commands, and no value alias to two values of one command.** A test enforces it.
 
 ### Open
 

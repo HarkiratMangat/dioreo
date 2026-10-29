@@ -29,12 +29,13 @@ status: live
    ```
    plus your harness's own Claude line.
 7. Push your branch. Then `git checkout feat/text-commands && git pull --ff-only origin feat/text-commands && git merge --no-ff <your branch> && git push origin feat/text-commands`, then `git push origin --delete <your branch>`. A push gate may ask for an approval line: `Approved by: Harkirat · to: push <your branch> and merge it into feat/text-commands · when: his prompt that started this thread`.
+7b. **B2 only, if the work runs long:** commit each phase on your branch as it passes its tests. If you cannot finish, push your branch, do NOT merge it, and reply "BLOCKED: <what is left>" so the work continues from your branch.
 8. Reply with: the test output, the audit's ERROR/WARN counts, the merge commit hash, and anything you could not do. Never touch `main`, `public/`, `portal/**`, `docs/pins2/**`, never run `npm run site` or `npm run portal*`, never start the bot (there is no token here). A wrong or unclear spec → "BLOCKED: <what>"; never rewrite it.
 
 ## B1 — records
 
 **Owns:** `CLAUDE.md` · `.claude/rules/text-commands.md` (new) · `.claude/rules/interaction-router.md` · `docs/legal/PRIVACY.md` · `docs/legal/TERMS.md` · `docs/reference/platform-constraints.md` · `docs/ROADMAP.md` · COMMENT-ONLY edits in `utils/inviteLinks.js` (~line 25) and `models/SearchTerm.js` (~line 8)
-**Test:** `npm run docs:audit`. It already fails with 3 ERRORs before you start (`scripts-documented`: the three text-command tests are named in no doc; your rule file fixes them). Run it first as the baseline.
+**Test:** `npm run docs:audit`, 0 ERRORs. Run it first as the baseline (it passes today only because this plan names the three text-command tests; your rule file must name them too, by path).
 
 1. **CLAUDE.md**, section "The bot answers ONLY through interactions":
    - Add one more exception, same style and dating as the others, WITHOUT a number (the existing ones number themselves inconsistently in code comments; do not renumber them, do not add a count): text commands (`bot/textCommands.js`) answer a message that starts with `@Dioreo` or a prefix (`/`, `d`, `dior`) with an ordinary reply in that channel, public, never pinging; where a server's `/admin` rule forces hidden, an Open privately card instead; where Dioreo can't post, one DM to that member per channel per day. His words are in the spec.
@@ -50,7 +51,7 @@ status: live
 
 ## B2 — options, autocomplete and reply-to forms
 
-**Owns:** `utils/autocomplete.js` (new) · `handlers/router.js` (ONLY the autocomplete block, `if (interaction.isAutocomplete())` to its closing brace) · `utils/textCommands/args.js` (new) · `utils/textCommands/commands.js` · `utils/textCommands/parse.js` · `utils/textCommands/adapter.js` · `bot/textCommands.js` · `handlers/textCommands.js` · `scripts/textCommandArgs.test.js` (new) · `scripts/textCommandListener.test.js` (new) · `scripts/textCommandParse.test.js` · `scripts/textCommandAdapter.test.js` · `scripts/testManifest.mjs` (two lines, right after `textCommandPermissions.test.js`) · `.claude/rules/text-commands.md` (add your two tests to its Tests list, and a short Options section)
+**Owns:** `utils/autocomplete.js` (new) · `handlers/router.js` (ONLY the autocomplete block, `if (interaction.isAutocomplete())` to its closing brace) · `utils/textCommands/args.js` (new) · `utils/textCommands/commands.js` · `utils/textCommands/parse.js` · `utils/textCommands/adapter.js` · `bot/textCommands.js` · `handlers/textCommands.js` · `scripts/textCommandArgs.test.js` (new) · `scripts/textCommandListener.test.js` (new) · `scripts/textCommandParse.test.js` · `scripts/textCommandAdapter.test.js` · `scripts/testManifest.mjs` (two lines, right after `textCommandPermissions.test.js`) · `.claude/rules/text-commands.md` (add your two tests to its Tests list, and a short Options section) · `commands/gunsmith.js` (ONLY: `requestedBuild` reads a text-only build value the adapter supplies; the slash command's options do not change) · `commands/timestamp.js` (ONLY: if its shorthand expansion lives inside `execute`, move it into an exported function with no behaviour change, so the text path calls the same code)
 **Test:** `node scripts/textCommandArgs.test.js && node scripts/textCommandListener.test.js && node scripts/textCommandParse.test.js && node scripts/textCommandAdapter.test.js && node scripts/textCommandPermissions.test.js && node scripts/handlerRouting.test.js`
 
 ### Phase 1 — move the router's autocomplete into a callable function (no behaviour change)
@@ -65,8 +66,9 @@ Verified 2026-10-28 18:00 EDT: autocomplete is NOT one function. `handlers/route
 - `args.js` (pure): `parseArgs(tokens, textCommand, commandJson, { allowTypos })` → `{ options, leftover, missing, autocomplete: [{option, text}] }`; values by name, alias or choice value, case-insensitive, singular or plural, the `isTypoOf` rule from parse.js; `key:value` always; a rest option (timestamp `datetime`, gunsmith `weapon`) takes what is left.
 - `parse.js`: a matched command passes its remaining tokens to `parseArgs`. After `d`/`dior`: anything left over → silent, and a rest option must RESOLVE or the message is silent (`dior gunsmith skins are cool`, `d timestamp is wrong lol`): the weapon needs one confident autocomplete hit, the timestamp must parse with `commands/timestamp.js`'s own parser. After `@Dioreo` or `/`: leftover → `kind: 'usage'`; a required option missing → `kind: 'needsInput'`; an unresolved rest → a one-line "No match". A bare weapon name (`d ak117`) runs gunsmith MP only for an exact weapon name or alias. Every existing row of `textCommandParse.test.js` keeps passing.
 - `adapter.js`: `buildOptions({ sub, values })` answers `getString/getInteger/getBoolean/getNumber/getUser` from `values`; `createTextInteraction(message, { textCommand, via, values, targetUser, targetMessage })`.
-- Draw prices regions by place map to `region_10` / `region_20` / `region_30` exactly as the table lists them. Gunsmith `build` needs a build option on `/gunsmith mp` it does not have today; add it the way `commands/dmz.js` has one, and say so in your reply (you own the change only if it stays inside the files above; if `commands/gunsmith.js` must change, end BLOCKED with the exact edit).
-- Remind: `when` is required; without it, `d remind black hole` is silent after `d`/`dior` and gets a usage hint after `@Dioreo`.
+- Every word maps as the spec's "How words map" table says. Gunsmith's build number is text-only and never re-added to the slash command (his 2026-10-25 call); a trailing number is a build only under the spec's rule. Timestamp parsing goes through `utils/timestampHelper.js` and `commands/timestamp.js`'s own expansion, never a copy.
+- Remind: `when` is required and picks the option (`releases` or `leaving`); the item resolves through `/remind`'s own autocomplete for that side (`utils/reminders.js` `autocompleteChoices`). Without `when`, `d remind black hole` is silent after `d`/`dior` and gets a usage hint after `@Dioreo`. The public reply says only on/off and the title, with the button that opens the panel privately.
+- Calendar shortcut command words (`events`, `ev`, `playlists`, `modes`, `gamemode`, `gm`) open that page; `new`/`returning` after a page word pick the New/Returning split only where the page has one.
 
 ### Phase 3 — the listener
 
@@ -77,6 +79,8 @@ Verified 2026-10-28 18:00 EDT: autocomplete is NOT one function. `handlers/route
 - `via` gains `+args` when options were given.
 
 ### Tests
+
+Also: a table-driven test that every command alias and value alias in `commands.js` resolves to what the spec says, and that no alias belongs to two commands and no value alias to two values of one command (prove it fails by adding a clash). Rows for `d time in a minute`, `d gs type 19`, `d gs ak117 2`, `d remind live black hole`, `d r end black hole`, `d remind black hole` (silent), `d modes`, `d events`, `d new` (silent), `d prices na`, `d prices la`, `d prices global`.
 
 `textCommandArgs.test.js` (≥ 30 rows: `d calendar upcoming`, `d calendar filter:upcoming`, `d draws returning`, `d gs ak117`, `d gunsmith ak 117`, `d timestamp tomorrow 8pm`, `d draw prices na`, `dior calender upcomming`, `d calendar what is this` → silent, `@Dioreo calendar what` → usage, `d gunsmith` → needsInput…). `textCommandListener.test.js`: drive `onMessage` with fake messages and stub command modules that record the interaction they get (options arrive; ambiguous autocomplete → Did you mean; reply-to `d times` passes `targetMessage`; `dior gunsmith skins are cool` sends nothing). Prove each new test can fail (break a rule, see red, restore) and name the mutation.
 
@@ -95,7 +99,7 @@ Verified 2026-10-28 18:00 EDT: autocomplete is NOT one function. `handlers/route
 1. `git pull`; read each unit's diff against its Owns and the spec.
 2. `git merge origin/main` if `main` moved; `npm run site` and commit `public/` (PRIVACY, TERMS and the /commands page changed).
 3. `TEST_CACHE=0 npm test` and `npm run docs:audit`, exit codes read.
-4. Click-test on the dev bot in Dioreoland: every row of the Per command table that has an argument, the reply-to forms, Did you mean, needsInput, the chat guards.
+4. Show Harkirat the help card, the Did you mean card and the can't-post DM on the dev bot in #testing-spam, then click-test on the dev bot in Dioreoland: every row of the Per command table that has an argument, the reply-to forms, Did you mean, needsInput, the chat guards.
 5. Show Harkirat the PRIVACY and TERMS wording; his yes before the merge.
 6. Records: `package.json` 3.3.0, CHANGELOG + CHANGELOG-SUMMARY + DEVLOG (`scripts/devlog-add.mjs`), backfill the previous entry's hash.
 7. Push; `gh pr create --base main`; restate his approval (2026-10-28 20:59 EDT: "push and merge the text-commands branch into main"); squash merge with one trailer block; tag `v3.3.0`; delete the branch; refresh refs and the indexes. Deploy is NOT part of this; it waits for his word.
@@ -115,3 +119,13 @@ Deep think-pass, 2026-10-28 21:05 EDT (his ask: "distill the plan and spec so fa
 9. *His "d modes new"* has no meaning in the code yet (modes have no New/Returning split): recorded as Open in the spec, asked.
 10. *"text-commands" vs the convention*: the existing `feat/text-commands` is the integration branch (it already holds the foundation); sub-branches follow `<type>/<kebab>`.
 11. *Process*: the near-miss was carrying Mac tool rules into cloud prompts. Check every instruction against where it will run.
+
+Content pass, 2026-10-28 21:09 EDT, after his correction ("hooks and stuff aren't an issue. the main focus should be the actual plan, spec, the work on-hand, the files needed, the quality of work"), 7 thoughts, 3 checks. What it changed:
+
+12. *The spec told B2 to re-add `build` to `/gunsmith`*, which he removed on 2026-10-25, and B2 did not own `commands/gunsmith.js`, so it would have stopped BLOCKED. Now text-only, with a minimal owned change.
+13. *Timestamp has no exported parser* (`utils/timestampHelper.js` holds chrono; the shorthand expansion sits inside `execute`): B2 owns extracting it, not copying it.
+14. *Remind's group list was my guess*: groups are whatever `/remind`'s autocomplete pins; `when` picks the option.
+15. *Value words mapped to nothing*: a "How words map" table now covers every non-obvious value.
+16. *One-letter timestamp styles would eat date words* (`d time in a minute`): dropped. *Numbers in weapon names* (`type 19`) vs a build number: a rule.
+17. *His answer 2's shortcut words* were never in the spec: added. *Alias clashes*: a test now enforces none.
+18. *B2 is the heaviest unit*: per-phase commits and a no-merge BLOCKED path if it can't finish. *Process*: the first pass spent a third of its thoughts on infrastructure he didn't need; content comes first.
