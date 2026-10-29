@@ -9,7 +9,7 @@
           "components": [
             {
               "type": 10,
-              "content": "## <:DioreoCombo:1534640183230730470> Dioreo's Commands\n> **Dioreo** helps you look up CODM loadouts, lucky draw pricing, the seasonal event calendar, patch notes, and more!"
+              "content": "## <a:DioreoComboCoral:1565359721790177371> Dioreo's Commands\n> **Dioreo** helps you look up CODM loadouts, lucky draw pricing, the seasonal event calendar, patch notes, and more!"
             }
           ],
           "accessory": {
@@ -99,9 +99,9 @@
                   "value": "landing",
                   "description": "Every command at a glance",
                   "emoji": {
-                    "animated": false,
-                    "name": "DioreoCombo",
-                    "id": "1534640183230730470"
+                    "animated": true,
+                    "name": "DioreoComboCoral",
+                    "id": "1565359721790177371"
                   },
                   "default": true
                 },
@@ -400,9 +400,9 @@
                   "value": "landing",
                   "description": "Every command at a glance",
                   "emoji": {
-                    "animated": false,
-                    "name": "DioreoCombo",
-                    "id": "1534640183230730470"
+                    "animated": true,
+                    "name": "DioreoComboCoral",
+                    "id": "1565359721790177371"
                   },
                   "default": false
                 },
@@ -696,9 +696,9 @@
                   "value": "landing",
                   "description": "Every command at a glance",
                   "emoji": {
-                    "animated": false,
-                    "name": "DioreoCombo",
-                    "id": "1534640183230730470"
+                    "animated": true,
+                    "name": "DioreoComboCoral",
+                    "id": "1565359721790177371"
                   },
                   "default": false
                 },
@@ -968,9 +968,9 @@
                   "value": "landing",
                   "description": "Every command at a glance",
                   "emoji": {
-                    "animated": false,
-                    "name": "DioreoCombo",
-                    "id": "1534640183230730470"
+                    "animated": true,
+                    "name": "DioreoComboCoral",
+                    "id": "1565359721790177371"
                   },
                   "default": false
                 },
@@ -1240,9 +1240,9 @@
                   "value": "landing",
                   "description": "Every command at a glance",
                   "emoji": {
-                    "animated": false,
-                    "name": "DioreoCombo",
-                    "id": "1534640183230730470"
+                    "animated": true,
+                    "name": "DioreoComboCoral",
+                    "id": "1565359721790177371"
                   },
                   "default": false
                 },
@@ -1512,9 +1512,9 @@
                   "value": "landing",
                   "description": "Every command at a glance",
                   "emoji": {
-                    "animated": false,
-                    "name": "DioreoCombo",
-                    "id": "1534640183230730470"
+                    "animated": true,
+                    "name": "DioreoComboCoral",
+                    "id": "1565359721790177371"
                   },
                   "default": false
                 },
@@ -1754,7 +1754,7 @@
           "components": [
             {
               "type": 10,
-              "content": "## <:DioreoCombo:1534640183230730470> Dioreo's Commands\n> **Dioreo** helps you look up CODM loadouts, lucky draw pricing, the seasonal event calendar, patch notes, and more!"
+              "content": "## <a:DioreoComboCoral:1565359721790177371> Dioreo's Commands\n> **Dioreo** helps you look up CODM loadouts, lucky draw pricing, the seasonal event calendar, patch notes, and more!"
             }
           ],
           "accessory": {
@@ -1844,9 +1844,9 @@
                   "value": "landing",
                   "description": "Every command at a glance",
                   "emoji": {
-                    "animated": false,
-                    "name": "DioreoCombo",
-                    "id": "1534640183230730470"
+                    "animated": true,
+                    "name": "DioreoComboCoral",
+                    "id": "1565359721790177371"
                   },
                   "default": true
                 },
@@ -2097,7 +2097,7 @@
           "components": [
             {
               "type": 10,
-              "content": "## <:DioreoCombo:1534640183230730470> Dioreo's Commands\n> **Dioreo** helps you look up CODM loadouts, lucky draw pricing, the seasonal event calendar, patch notes, and more!"
+              "content": "## <a:DioreoComboCoral:1565359721790177371> Dioreo's Commands\n> **Dioreo** helps you look up CODM loadouts, lucky draw pricing, the seasonal event calendar, patch notes, and more!"
             }
           ],
           "accessory": {
@@ -2187,9 +2187,9 @@
                   "value": "landing",
                   "description": "Every command at a glance",
                   "emoji": {
-                    "animated": false,
-                    "name": "DioreoCombo",
-                    "id": "1534640183230730470"
+                    "animated": true,
+                    "name": "DioreoComboCoral",
+                    "id": "1565359721790177371"
                   },
                   "default": true
                 },
@@ -2499,9 +2499,9 @@
                   "value": "landing",
                   "description": "Every command at a glance",
                   "emoji": {
-                    "animated": false,
-                    "name": "DioreoCombo",
-                    "id": "1534640183230730470"
+                    "animated": true,
+                    "name": "DioreoComboCoral",
+                    "id": "1565359721790177371"
                   },
                   "default": false
                 },
@@ -2806,9 +2806,9 @@
                   "value": "landing",
                   "description": "Every command at a glance",
                   "emoji": {
-                    "animated": false,
-                    "name": "DioreoCombo",
-                    "id": "1534640183230730470"
+                    "animated": true,
+                    "name": "DioreoComboCoral",
+                    "id": "1565359721790177371"
                   },
                   "default": false
                 },
@@ -3089,9 +3089,9 @@
                   "value": "landing",
                   "description": "Every command at a glance",
                   "emoji": {
-                    "animated": false,
-                    "name": "DioreoCombo",
-                    "id": "1534640183230730470"
+                    "animated": true,
+                    "name": "DioreoComboCoral",
+                    "id": "1565359721790177371"
                   },
                   "default": false
                 },
@@ -3372,9 +3372,9 @@
                   "value": "landing",
                   "description": "Every command at a glance",
                   "emoji": {
-                    "animated": false,
-                    "name": "DioreoCombo",
-                    "id": "1534640183230730470"
+                    "animated": true,
+                    "name": "DioreoComboCoral",
+                    "id": "1565359721790177371"
                   },
                   "default": false
                 },
@@ -3673,9 +3673,9 @@
                   "value": "landing",
                   "description": "Every command at a glance",
                   "emoji": {
-                    "animated": false,
-                    "name": "DioreoCombo",
-                    "id": "1534640183230730470"
+                    "animated": true,
+                    "name": "DioreoComboCoral",
+                    "id": "1565359721790177371"
                   },
                   "default": false
                 },
@@ -3926,7 +3926,7 @@
           "components": [
             {
               "type": 10,
-              "content": "## <:DioreoCombo:1534640183230730470> Dioreo's Commands\n> **Dioreo** helps you look up CODM loadouts, lucky draw pricing, the seasonal event calendar, patch notes, and more!"
+              "content": "## <a:DioreoComboCoral:1565359721790177371> Dioreo's Commands\n> **Dioreo** helps you look up CODM loadouts, lucky draw pricing, the seasonal event calendar, patch notes, and more!"
             }
           ],
           "accessory": {
@@ -4016,9 +4016,9 @@
                   "value": "landing",
                   "description": "Every command at a glance",
                   "emoji": {
-                    "animated": false,
-                    "name": "DioreoCombo",
-                    "id": "1534640183230730470"
+                    "animated": true,
+                    "name": "DioreoComboCoral",
+                    "id": "1565359721790177371"
                   },
                   "default": true
                 },
@@ -4280,7 +4280,7 @@
           "components": [
             {
               "type": 10,
-              "content": "## <:DioreoCombo:1534640183230730470> Dioreo's Commands\n> **Dioreo** helps you look up CODM loadouts, lucky draw pricing, the seasonal event calendar, patch notes, and more!"
+              "content": "## <a:DioreoComboCoral:1565359721790177371> Dioreo's Commands\n> **Dioreo** helps you look up CODM loadouts, lucky draw pricing, the seasonal event calendar, patch notes, and more!"
             }
           ],
           "accessory": {
@@ -4370,9 +4370,9 @@
                   "value": "landing",
                   "description": "Every command at a glance",
                   "emoji": {
-                    "animated": false,
-                    "name": "DioreoCombo",
-                    "id": "1534640183230730470"
+                    "animated": true,
+                    "name": "DioreoComboCoral",
+                    "id": "1565359721790177371"
                   },
                   "default": true
                 },
@@ -4781,9 +4781,9 @@
                   "value": "landing",
                   "description": "Every command at a glance",
                   "emoji": {
-                    "animated": false,
-                    "name": "DioreoCombo",
-                    "id": "1534640183230730470"
+                    "animated": true,
+                    "name": "DioreoComboCoral",
+                    "id": "1565359721790177371"
                   },
                   "default": false
                 },
@@ -5187,9 +5187,9 @@
                   "value": "landing",
                   "description": "Every command at a glance",
                   "emoji": {
-                    "animated": false,
-                    "name": "DioreoCombo",
-                    "id": "1534640183230730470"
+                    "animated": true,
+                    "name": "DioreoComboCoral",
+                    "id": "1565359721790177371"
                   },
                   "default": false
                 },
@@ -5569,9 +5569,9 @@
                   "value": "landing",
                   "description": "Every command at a glance",
                   "emoji": {
-                    "animated": false,
-                    "name": "DioreoCombo",
-                    "id": "1534640183230730470"
+                    "animated": true,
+                    "name": "DioreoComboCoral",
+                    "id": "1565359721790177371"
                   },
                   "default": false
                 },
@@ -5951,9 +5951,9 @@
                   "value": "landing",
                   "description": "Every command at a glance",
                   "emoji": {
-                    "animated": false,
-                    "name": "DioreoCombo",
-                    "id": "1534640183230730470"
+                    "animated": true,
+                    "name": "DioreoComboCoral",
+                    "id": "1565359721790177371"
                   },
                   "default": false
                 },
@@ -6351,9 +6351,9 @@
                   "value": "landing",
                   "description": "Every command at a glance",
                   "emoji": {
-                    "animated": false,
-                    "name": "DioreoCombo",
-                    "id": "1534640183230730470"
+                    "animated": true,
+                    "name": "DioreoComboCoral",
+                    "id": "1565359721790177371"
                   },
                   "default": false
                 },
@@ -6742,9 +6742,9 @@
                   "value": "landing",
                   "description": "Every command at a glance",
                   "emoji": {
-                    "animated": false,
-                    "name": "DioreoCombo",
-                    "id": "1534640183230730470"
+                    "animated": true,
+                    "name": "DioreoComboCoral",
+                    "id": "1565359721790177371"
                   },
                   "default": false
                 },
@@ -7177,7 +7177,7 @@
           "components": [
             {
               "type": 10,
-              "content": "## <:DioreoCombo:1534640183230730470> Dioreo's Commands\n> **Dioreo** helps you look up CODM loadouts, lucky draw pricing, the seasonal event calendar, patch notes, and more!"
+              "content": "## <a:DioreoComboCoral:1565359721790177371> Dioreo's Commands\n> **Dioreo** helps you look up CODM loadouts, lucky draw pricing, the seasonal event calendar, patch notes, and more!"
             }
           ],
           "accessory": {
@@ -7267,9 +7267,9 @@
                   "value": "landing",
                   "description": "Every command at a glance",
                   "emoji": {
-                    "animated": false,
-                    "name": "DioreoCombo",
-                    "id": "1534640183230730470"
+                    "animated": true,
+                    "name": "DioreoComboCoral",
+                    "id": "1565359721790177371"
                   },
                   "default": true
                 },
@@ -7590,9 +7590,9 @@
                   "value": "landing",
                   "description": "Every command at a glance",
                   "emoji": {
-                    "animated": false,
-                    "name": "DioreoCombo",
-                    "id": "1534640183230730470"
+                    "animated": true,
+                    "name": "DioreoComboCoral",
+                    "id": "1565359721790177371"
                   },
                   "default": false
                 },
@@ -7908,9 +7908,9 @@
                   "value": "landing",
                   "description": "Every command at a glance",
                   "emoji": {
-                    "animated": false,
-                    "name": "DioreoCombo",
-                    "id": "1534640183230730470"
+                    "animated": true,
+                    "name": "DioreoComboCoral",
+                    "id": "1565359721790177371"
                   },
                   "default": false
                 },
@@ -8202,9 +8202,9 @@
                   "value": "landing",
                   "description": "Every command at a glance",
                   "emoji": {
-                    "animated": false,
-                    "name": "DioreoCombo",
-                    "id": "1534640183230730470"
+                    "animated": true,
+                    "name": "DioreoComboCoral",
+                    "id": "1565359721790177371"
                   },
                   "default": false
                 },
@@ -8496,9 +8496,9 @@
                   "value": "landing",
                   "description": "Every command at a glance",
                   "emoji": {
-                    "animated": false,
-                    "name": "DioreoCombo",
-                    "id": "1534640183230730470"
+                    "animated": true,
+                    "name": "DioreoComboCoral",
+                    "id": "1565359721790177371"
                   },
                   "default": false
                 },
@@ -8790,9 +8790,9 @@
                   "value": "landing",
                   "description": "Every command at a glance",
                   "emoji": {
-                    "animated": false,
-                    "name": "DioreoCombo",
-                    "id": "1534640183230730470"
+                    "animated": true,
+                    "name": "DioreoComboCoral",
+                    "id": "1565359721790177371"
                   },
                   "default": false
                 },
@@ -9093,9 +9093,9 @@
                   "value": "landing",
                   "description": "Every command at a glance",
                   "emoji": {
-                    "animated": false,
-                    "name": "DioreoCombo",
-                    "id": "1534640183230730470"
+                    "animated": true,
+                    "name": "DioreoComboCoral",
+                    "id": "1565359721790177371"
                   },
                   "default": false
                 },
