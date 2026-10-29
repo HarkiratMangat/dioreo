@@ -16,7 +16,8 @@ status: live
 | `feat/text-commands-b2-options` | B2, started only after B1 is merged | builder 2 |
 | `feat/text-commands-b3-help` | B3, started only after B2 is merged | builder 3 |
 | `feat/text-commands-b5-help-pages` | B5, /help detail pages in text syntax, started only after B3 is merged | builder 5 |
-| `feat/text-commands-b4-audit` | B4, verification and review, started only after B5 is merged (it runs last) | auditor |
+| `feat/text-commands-b4-audit` | B4, verification and review, started only after B5 is merged | auditor |
+| `feat/text-commands-b6-design` | B6, the design pass on every message text commands send, started only after B4 is merged (it runs last) | builder 6 |
 
 ## How to work: batched, never one file or one step per message (his ask, 2026-10-28 21:13 EDT)
 
@@ -159,13 +160,37 @@ Follow "Every builder, in this order" (steps 1–8), with B5's merge as the pred
 
 6. **Report** in `docs/claude/2026-10-28-text-commands-audit.md`: a table of findings (what · where · severity · fixed or question), the before/after test and audit results, and the questions for Harkirat. Commit it with your fixes, then merge as in step 7.
 
-## The lead, after B4 is merged (on this Mac)
+## B6 — design pass on every message text commands send (his ask, 2026-10-29 11:55 EDT: "we need a b6 to review and design/refine each of the newer panels/messages that the bot sends due to the text commands, such as the pick-a-date panel")
+
+Runs after B4, last before the lead. Follow "Every builder, in this order" with B4's merges as the predecessor (`rg "feat/text-commands-b4"`: B4 merged `b4-audit`, then `b4-weapons`). This unit is design done WITH Harkirat in your thread: you show, he picks, you build. Step 8's "never start the bot" still holds; you show renders as below.
+
+**Inventory:** the 13 messages in the table under "For the lead: add a B6" in `docs/claude/2026-10-28-text-commands-audit.md` (as of `d4fb704`). Check it against the code first: a message the listener sends that the table misses is in scope too.
+**Settled, not redesigned:** the brand-emoji deck for chatty mentions (his list, 2026-10-29 10:12 EDT; it is in the inventory only so nothing is missed) · the Cooldown hourglass on cooldown notes and the cross on errors (his calls, 2026-10-29) · every spec decision: public by default, Open privately only where `/admin` forces hidden, never a ping, the can't-post DM once per channel per day, the 5 s / 1 s limits, the pop-up's five fields and their order.
+**Owns:** `bot/textCommands.js` · `handlers/textCommands.js` · `utils/textCommands/adapter.js` · `scripts/textCommandListener.test.js` · `scripts/textCommandAdapter.test.js` · `.claude/rules/text-commands.md` (only the lines describing a message you change) · your report as a paragraph in this plan's Audit log. Never a command's own panel (`commands/**`): only the messages the listener and adapter send themselves.
+**Test:** `node scripts/textCommandListener.test.js && node scripts/textCommandAdapter.test.js && node scripts/helpTextCommands.test.js`, then `TEST_CACHE=0 npm test` once before the merge.
+
+1. **Show what is there.** Render all 13 as they are today, in one go, in #testing-spam (`1536403911676792892`) the way B4 posted its renders on 2026-10-29. If this machine cannot post, give him each message's Components V2 JSON in its own code block, to paste into `/embed` on the dev bot.
+2. **Group them into families, so one choice covers many:** the cards (help, Did you mean for commands, Did you mean for weapons or seasons, pick-a-date, Open privately) · the timestamp pop-up · the one-line notes (no match and Couldn't read, the role-mention hint, the 5-second note, "opens a form", "Something went wrong", the four button notes) · the can't-post DM. For each family show two or three options as real renders, your pick marked, **every family in ONE message**, never a message per family ("How to work", above). Ask him scope, never taste: spacing, line height and wording polish are yours to settle.
+3. **What every option already respects** (a design that breaks one is not an option): the Components V2 rules in `.claude/rules/rendering-and-ui.md` (buttons inside action rows, 40 components, a button label is plain text with its emoji in `emoji:`, the five native styles only) · emojis by name through `utils/emojiMap.js`, so B4's guard drops one the booted app lacks, never a hardcoded id · no allowed mentions · it reads on a phone at 375 px · it looks like the bot's existing panels (the shared title builder, `PRESET_ACCENT` per command) rather than a new style · the pop-up's Discord limits (5 top-level components, labels up to 45 characters, descriptions up to 100).
+4. **Before showing anything, sweep the relations across all of them:** the same title shape and hint line on every card, button order and styles consistent from card to card, no truncated label, one word for one thing ("Open privately", "Did you mean") everywhere.
+5. **Build his picks** in one heredoc with the test updates (each changed card's accent, title and button-icon assertions); turn one assertion per changed card red by mutation to prove it can fail.
+6. **Render again**, every changed message in one message, for his yes. His yes on the renders is what lets you merge (step 7).
+7. **Report** in this plan's Audit log: each message, before and after, his pick, anything left as a question.
+
+**Groups:**
+- ⟦ONE MESSAGE⟧ Group 0: read the three Owns source files, both tests, the rule file and `rendering-and-ui.md`'s Components V2 section, and render the 13 as they are.
+- ⟦ONE MESSAGE⟧ Group 1: every family's options, rendered, in one message to him.
+- ⟦ONE MESSAGE⟧ Group 2: one heredoc for his picks and the tests, `&&` the Test command.
+- ⟦ONE MESSAGE⟧ Group 3: the after renders, for his yes.
+- ⟦ONE MESSAGE⟧ Group 4: the full suite, the Owns check, commit, merge, push, delete, as one chained command.
+
+## The lead, after B6 is merged (on this Mac)
 
 1. `git pull`; read B4's report first, then each unit's diff against its Owns and the spec.
 2. `git merge origin/main` if `main` moved; `npm run site` and commit `public/` (PRIVACY, TERMS and the /commands page changed).
 3. `TEST_CACHE=0 npm test` and `npm run docs:audit`, exit codes read.
-4. Show Harkirat the help card, the Did you mean card and the can't-post DM on the dev bot in #testing-spam, then click-test on the dev bot in Dioreoland: every row of the Per command table that has an argument, the reply-to forms, Did you mean, needsInput, the chat guards.
-5. Show Harkirat the PRIVACY and TERMS wording; his yes before the merge.
+4. B6 settled the listener's messages with Harkirat; re-render one only if the `main` merge changed it. Click-test on the dev bot in Dioreoland: every row of the Per command table that has an argument, the reply-to forms, Did you mean, needsInput, the chat guards.
+5. Show Harkirat the PRIVACY and TERMS wording; his yes before the merge. (PRIVACY §2.3's text-commands bullet he already left to judgement in B4's thread, 2026-10-29: "sure idk, your judgement".)
 6. Records: `package.json` 3.3.0, CHANGELOG + CHANGELOG-SUMMARY + DEVLOG (`scripts/devlog-add.mjs`), backfill the previous entry's hash.
 7. Push; `gh pr create --base main`; restate his approval (2026-10-28 20:59 EDT: "push and merge the text-commands branch into main"); squash merge with one trailer block; tag `v3.3.0`; delete the branch; refresh refs and the indexes. Deploy is NOT part of this; it waits for his word.
 
