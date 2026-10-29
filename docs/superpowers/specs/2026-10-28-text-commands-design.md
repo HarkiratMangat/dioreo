@@ -69,7 +69,7 @@ Intents: `Guilds` + `GuildMessages`, plus `MessageContent` only when the app's f
 
 ## Options and aliases
 
-From his doc, as he left it. `new` / `returning` work after a page word that has a New/Returning split (`d draws new`, `d calendar draws returning`), never on their own (his answer 2). Gunsmith also answers to a bare weapon name, `d ak117` (answer 1), and takes a build number, `d gs ak117 2` (answer 3). Remind needs its when word, `d remind live black hole`, `d r end black hole` (answer 4).
+From his doc, as he left it. `new` / `returning` never work on their own (his answer 2). In the calendar, `new` means live now on any page: `d calendar modes new` = Playlists & Modes, Live Right Now (his answer 2026-10-28 21:12 EDT: "was meant for `d calendar modes new` as in calendar + game modes/playlists + live now"). `returning` works only on the calendar's Draws page (its New/Returning split) and in `d draws returning`. Gunsmith also answers to a bare weapon name, `d ak117` (answer 1), and takes a build number, `d gs ak117 2` (answer 3). Remind needs its when word, `d remind live black hole`, `d r end black hole` (answer 4).
 
 ### Rules for every command
 
@@ -95,7 +95,7 @@ From his doc, as he left it. `new` / `returning` work after a page word that has
 | today | today, td, tdy, daily | — | none |
 | draws | draws, d, lucky draws, ld | page | new, n, all, latest · returning, return, r, back, rerun |
 | calendar | calendar, cal, c, schedule, sched | page | today, td, tdy · draws, d, lucky draws · events, ev, e · playlists, modes, pl, m, gamemode, gm |
-| calendar |  | filter | all, a, full, f, timeline, tl · past, ended, end, over, old · live, l, active, now, current · upcoming, u, soon, next, future, up, pending |
+| calendar |  | filter | all, a, full, f, timeline, tl · past, ended, end, over, old · live, l, active, now, current, new · upcoming, u, soon, next, future, up, pending |
 | patch notes | patch notes, patchnotes, patch, notes, pn, update | season | new, latest, current (the latest notes posted, even for a season not live yet) · a number: 8, s8, season 8 · a word from its title: terminated |
 | season end | season end, seasonend, season, se, rank end, rankend, ranked end, rank, re, end | — | none |
 | draw prices | draw prices, drawprices, prices, price, dp, cost, cp | region | 10cp, 10 · 20cp, 20 · 30cp, 30 · 30 CP by place: global, na, north america, us, usa, united states, canada, uk, united kingdom, britain, germany, france, eu, western europe, australia, new zealand, nz, oceania · 20 CP by place: la, latam, latin america, brazil, mexico, uae, saudi arabia, saudi, ksa, eastern europe, middle east, me · 10 CP by place: india, pakistan, south africa, egypt, morocco, chile, colombia (no Garena regions or China) |
@@ -131,15 +131,17 @@ From his doc, as he left it. `new` / `returning` work after a page word that has
 | draw prices `10cp` / `20cp` / `30cp` and the places | region `region_10` / `region_20` / `region_30` |
 | remind release words · leaving words | the `releases` option · the `leaving` option; the item then resolves through that side's own autocomplete, and the pick flips that reminder as `/remind` does |
 | patch notes `new` · `latest` · `current` | the newest season that has notes, upcoming included |
+| calendar `new` | filter `live` on any page |
+| calendar `returning` | the Draws page's Returning split; on other pages, not understood |
 | calendar shortcut words `events`, `ev`, `playlists`, `modes`, `gamemode`, `gm` as the COMMAND word | calendar on that page (his answer 2); one-letter forms are not shortcuts |
 
 - **Timestamp style words have no one-letter forms**, because the date is free text: in `d time in a minute`, an `a` alias would be read as the style.
 - **A gunsmith build number is text-only.** He removed `build` from `/gunsmith` on 2026-10-25 15:45 EDT ("remove 'build' as an option in the slash command"); it stays removed. A trailing number is a build only when the words before it resolve to one weapon AND the number is within that weapon's build count; otherwise it is part of the name (`d gs type 19`).
 - **No alias may belong to two commands, and no value alias to two values of one command.** A test enforces it.
 
-### Open
+### Settled after the first draft
 
-- His example `d modes new`: modes and events have no New/Returning split in `commands/calendar.js` today. Until he says what it means, `new`/`returning` after `modes` or `events` count as not understood (silent after `d`/`dior`, a usage hint after `@Dioreo` or `/`).
+- `d modes new` was meant as `d calendar modes new` (his answer 2026-10-28 21:12 EDT); see above.
 
 ## Stays slash only
 
