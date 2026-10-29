@@ -165,20 +165,23 @@ const HELP_EXAMPLES = {
         ['**/timestamp** datetime:`in 45 minutes` view:`Text`', '/timestamp', { datetime: 'in 45 minutes', view: 'text' }],
     ],
 };
-function exampleLine(client, slashText, name, values) {
-    const twin = textExample(client, name, values);
+function exampleLine(client, slashText, name, values, typedForms = true) {
+    const twin = typedForms ? textExample(client, name, values) : null;
     return `-# 🔸 ${slashText}${twin ? ` · \`${twin}\`` : ''}`;
 }
-const examplesBlock = (client, key) => `-# **Examples**\n${HELP_EXAMPLES[key].map(e => exampleLine(client, ...e)).join('\n')}`;
+const examplesBlock = (client, key, typedForms = true) => `-# **Examples**\n${HELP_EXAMPLES[key].map(e => exampleLine(client, ...e, typedForms)).join('\n')}`;
+
+// Where typed forms can work: a server Dioreo is in (Harkirat, 2026-10-29 00:45 EDT, "sure" to hiding them outside servers). The listener ignores DMs, and a user-installed /help run in a server Dioreo was never added to has a guildId but no listener there either, so both get slash forms only. `client.guilds.cache` holds exactly the servers Dioreo is in (the Guilds intent). A synthetic re-entry (a dropdown click) and a text command's adapter both carry guildId and client, so every page of one /help agrees.
+const typedFormsHere = interaction => Boolean(interaction?.guildId && interaction.client?.guilds?.cache?.has(interaction.guildId));
 
 // The ONE renderer every per-command "-# **Options**" detail block parameterizes into (v3-pre-release review finding #49) -- replaces four hand-built escaped-markdown concatenations. Reproduces the exact pre-rewrite shape byte-for-byte, pinned by scripts/helpBodySnapshot.test.js: a header, the description, an Options block (bulleted if the command has any, otherwise just the shared visibility bullet), always ending in VISIBILITY_BULLET -- the shape gunsmith/draws/seasonal/ utilities all already shared before this rewrite, just typed out by hand each time.
-function renderCommandBlock(command, client) {
+function renderCommandBlock(command, client, typedForms = true) {
     const optionLines = command.options.map(o =>
         `-# 🔹 \`${o.required ? '<' : '['}${o.name}${o.required ? '>' : ']'}\` ${resolveText(o.desc, client)}`
     ).join('\n');
     // [visibility] is no longer repeated under every command (2026-10-25 22:44 EDT, critique #19): each page states it once, in SHARED_VISIBILITY, the way Preferences and Bot Admin already did. A command with no options of its own has no Options heading.
     // The typed form sits under the description, above the slash options (B5): `d draws [new|returning]`.
-    const typed = textUsageLine(client, command.name);
+    const typed = typedForms ? textUsageLine(client, command.name) : null;
     return `### ${mentionCommand(client, command.name)}\n${resolveText(command.description, client)}\n`
         + (typed ? `${typed}\n` : '')
         + (optionLines ? `-# **Options**\n${optionLines}\n` : '');
@@ -394,54 +397,54 @@ async function getAllHelpCommandNames(perms = {}) {
 }
 
 // Each of these four now composes its per-command "-# **Options**" blocks from CATEGORY_DEFS' own data via renderCommandBlock() (v3-pre-release review finding #49) instead of hand-built escaped-markdown concatenation. Their "-# **Examples**" trailers are data too since B5 (2026-10-29 00:15 EDT), in HELP_EXAMPLES above, so each slash example can carry its typed twin. `commands` is the category's own detailCommands (gunsmith) or staticCommands (draws/seasonal/utilities) -- see buildContainer's dispatch below. PARTS since 2026-10-25 17:10 EDT: the Dispute a Build section carries its button as an accessory (Harkirat's /gunsmith review: the dispute form lives in /help only, beside "or DM <@owner>", his clickable @mention). handlers/loadouts.js answers `gsb~dispute`.
-function buildGunsmithBody(commands, client) {
+function buildGunsmithBody(commands, client, typedForms = true) {
     const { ALLOWED_ADMIN_ID } = require('../utils/owner');
     return [
-        { content: buildGunsmithText(commands, client) },
+        { content: buildGunsmithText(commands, client, typedForms) },
         { divider: true },
         { content: `### Submit or dispute a build\nHave a build to share? **Submit a Build** is under every /help page, and on a weapon's **No build yet** card.\nIf a submitted build uses your screenshot, ask for its removal or the credit. You'll need proof the original is yours and was posted before the build went live. Or DM <@${ALLOWED_ADMIN_ID}> with your proof.`,
             accessory: { type: 2, style: 2, label: 'Dispute a Build', custom_id: 'gsb~dispute' } },
     ];
 }
-function buildGunsmithText(commands, client) {
-    return commands.map(c => renderCommandBlock(c, client)).join('') + SHARED_VISIBILITY
-        + `\n${examplesBlock(client, 'gunsmith')}`;
+function buildGunsmithText(commands, client, typedForms = true) {
+    return commands.map(c => renderCommandBlock(c, client, typedForms)).join('') + SHARED_VISIBILITY
+        + `\n${examplesBlock(client, 'gunsmith', typedForms)}`;
 }
 
 // Returns PARTS, not one string (2026-10-17 23:51 EDT): the /draw calculator block is a Section whose button opens the calculator's full Help (Harkirat: "add a button in the /help draws page, as a section+accessory for the /draw calc section, to view the full help panel"). The button reuses the calculator's own `help` verb, so it opens the same private panel the calculator's Help button does; with no author on the state, anyone may press it.
-function buildDrawsBody(commands, client) {
+function buildDrawsBody(commands, client, typedForms = true) {
     const calc = commands.find(c => c.name === '/draw calculator');
     const others = commands.filter(c => c !== calc);
-    const parts = [{ content: others.map(c => renderCommandBlock(c, client)).join('').trimEnd() }];
+    const parts = [{ content: others.map(c => renderCommandBlock(c, client, typedForms)).join('').trimEnd() }];
     if (calc) {
         const dc = require('./drawCalculator');
-        parts.push({ content: renderCommandBlock(calc, client).trimEnd(), accessory: { type: 2, style: 2, label: 'Calculator Guide', emoji: emojis.parseEmoji(emojis.calculator), custom_id: dc.encodeState('help', dc.defaultState()) } });
+        parts.push({ content: renderCommandBlock(calc, client, typedForms).trimEnd(), accessory: { type: 2, style: 2, label: 'Calculator Guide', emoji: emojis.parseEmoji(emojis.calculator), custom_id: dc.encodeState('help', dc.defaultState()) } });
     }
-    parts.push({ content: `${SHARED_VISIBILITY.trim()}\n\n${examplesBlock(client, 'draws')}` });
+    parts.push({ content: `${SHARED_VISIBILITY.trim()}\n\n${examplesBlock(client, 'draws', typedForms)}` });
     return parts;
 }
 
-function buildSeasonalBody(commands, client) {
-    return commands.map(c => renderCommandBlock(c, client)).join('') + SHARED_VISIBILITY
-        + `\n${examplesBlock(client, 'seasonal')}`;
+function buildSeasonalBody(commands, client, typedForms = true) {
+    return commands.map(c => renderCommandBlock(c, client, typedForms)).join('') + SHARED_VISIBILITY
+        + `\n${examplesBlock(client, 'seasonal', typedForms)}`;
 }
 
-function buildUtilitiesBody(commands, client) {
-    return commands.map(c => renderCommandBlock(c, client)).join('') + SHARED_VISIBILITY
+function buildUtilitiesBody(commands, client, typedForms = true) {
+    return commands.map(c => renderCommandBlock(c, client, typedForms)).join('') + SHARED_VISIBILITY
         + `\n### Right-click (Apps)\n**View Colors** on a member or one of their messages: their profile colors\n**Convert Times** on a message: every date and time in it, as a timestamp in your own time zone\n`
-        + `\n${examplesBlock(client, 'utilities')}`;
+        + `\n${examplesBlock(client, 'utilities', typedForms)}`;
 }
 
 // Server admins get a second command appended rather than a page of their own. The `/admin` detail is the one place carrying the full precedence order and the two Discord limits, because the panel itself deliberately stays short -- see commands/admin.js's note on the wall-of-text draft that got rejected 2026-08-10 18:23 EDT. Harkirat's framing on the caps: they are not a real constraint in practice ("why is a server adding 25 role overrides"), so they read as guidance about the intended workflow -- set a default, hand-pick the exceptions -- not as a warning. TWO commands on one page, so they get a real divider between them and the shared `[visibility]` option is stated ONCE at the end rather than under each -- repeating it per command was Harkirat's call on 2026-08-10 19:28 EDT ("visibility is shared in all the commands so having it individually under each of them makes no sense"), and the same pass cut the /admin section roughly in half for being overwhelming to read. Gunsmith already used the shared-options shape for the same reason. `commands` is the category's own visibleCommands(category, perms) result (v3-pre-release review finding #49) -- whether /admin is present is derived from THAT list rather than re-checking perms.serverAdmin directly, so this page's admin filtering can never drift from the directory/ dropdown/autocomplete, which already filter through the exact same CATEGORY_DEFS `requires`.
-function buildPreferencesBody(commands, client) {
+function buildPreferencesBody(commands, client, typedForms = true) {
     // /settings' typed form (B5) under its description; /admin has none, so it keeps slash only.
-    const settings = `### ${mentionCommand(client, '/settings')}\nYour own preferences: **Visibility** (who sees your responses by default), **Preferences** (timezone, timestamp style, accent style, and more), and your **Colors**\n${textUsageLine(client, '/settings')}`;
+    const settings = `### ${mentionCommand(client, '/settings')}\nYour own preferences: **Visibility** (who sees your responses by default), **Preferences** (timezone, timestamp style, accent style, and more), and your **Colors**${typedForms ? `\n${textUsageLine(client, '/settings')}` : ''}`;
     // `[open]` (2026-10-19 17:49 EDT, named `[customize]` until 2026-10-19 19:33 EDT) is /settings' jump-to option -- see commands/settings.js. Written once here because both branches below print the /settings options.
     const openBullet = '-# 🔹 `[open]` Open straight on Visibility, Preferences, or your Colors';
     const hasAdmin = commands.some(c => c.name === '/admin');
 
     if (!hasAdmin) {
-        return `${settings}\n\n-# **Options**\n${openBullet}\n${VISIBILITY_BULLET}\n\n-# **Examples**\n${exampleLine(client, '**/settings**', '/settings', {})}\n${exampleLine(client, '**/settings** open:`Preferences`', '/settings', { open: 'preferences' })}`;
+        return `${settings}\n\n-# **Options**\n${openBullet}\n${VISIBILITY_BULLET}\n\n-# **Examples**\n${exampleLine(client, '**/settings**', '/settings', {}, typedForms)}\n${exampleLine(client, '**/settings** open:`Preferences`', '/settings', { open: 'preferences' }, typedForms)}`;
     }
 
     return settings
@@ -460,8 +463,8 @@ function buildPreferencesBody(commands, client) {
         + SECTION_BREAK
         + `-# **Options** · \`[open]\` is /settings only; both take \`[visibility]\`\n${openBullet}\n${VISIBILITY_BULLET}\n\n`
         + `-# **Examples**\n`
-        + `${exampleLine(client, '**/settings** visibility:`Public`', '/settings', { visibility: 'public' })}\n`
-        + `${exampleLine(client, '**/settings** open:`Colors`', '/settings', { open: 'colors' })}\n`
+        + `${exampleLine(client, '**/settings** visibility:`Public`', '/settings', { visibility: 'public' }, typedForms)}\n`
+        + `${exampleLine(client, '**/settings** open:`Colors`', '/settings', { open: 'colors' }, typedForms)}\n`
         + `-# 🔸 **/admin** → **Overview** → Default *Private*, then **Channels** → allow \`#bot-spam\`\n`
         + `-# 🔸 **/admin** → **Roles** → *Always public for these roles* → \`@Moderator\`\n`
         + `-# 🔸 **/admin** → **Commands** → \`/colors\` → *Private*: only \`/colors\` answers privately`;
@@ -601,7 +604,7 @@ async function currentSeasonEmoji() {
     } catch { return null; }
 }
 
-async function buildContainer(selectedKey, accentColor, perms = {}, client, focusName = null, onlyFocus = false) {
+async function buildContainer(selectedKey, accentColor, perms = {}, client, focusName = null, onlyFocus = false, typedForms = true) {
     const components = [];
 
     // Someone who reaches a restricted category (a stale dropdown on an older panel, or `/help cmd:manage`) is silently returned to the directory rather than refused -- there is nothing to protect here, and an error message about a page they cannot see is worse than simply not having the page.
@@ -652,8 +655,11 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client, focu
                 + `-# ${emojis.info} Tip: ${require('../utils/commandMentions').inTextCommand() ? `\`${client?.textMessageContent === false ? '@Dioreo' : 'd'} help <command>\`` : '**/help** \`cmd:\`'} opens one command`
         });
         // One block under the directory, no new page. It costs 2 of the message's 40 components (27 on the landing with the footer row, counted by scripts/helpTextCommands.test.js).
-        components.push({ type: 14, spacing: 1, divider: true });
-        components.push({ type: 10, content: textCommandsBlock(client) });
+        // Not where typed forms do nothing (typedFormsHere above): a DM, or a server Dioreo is not in.
+        if (typedForms) {
+            components.push({ type: 14, spacing: 1, divider: true });
+            components.push({ type: 10, content: textCommandsBlock(client) });
+        }
         components.push({ type: 14, spacing: 2, divider: true });
         // Deliberately NOT re-mentioning `/help cmd:` here -- the directory above already covers it ("Learn more about a command: /help <cmd>"); this line is the dropdown's own label, and the directory no longer says "Or use the Dropdown below!" as well (critique #28).
         components.push({ type: 10, content: `-# Browse by category, or jump to one command` });
@@ -670,7 +676,7 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client, focu
         if (focusAt > 0) detailSource = [detailSource[focusAt], ...detailSource.filter((_, i) => i !== focusAt)];
         // From the one-command dropdown (2026-10-27 10:44 EDT): that command's block alone.
         if (onlyFocus && focusAt >= 0) detailSource = [detailSource[0]];
-        const body = BODY_BUILDERS[selectedKey](detailSource, client);
+        const body = BODY_BUILDERS[selectedKey](detailSource, client, typedForms);
         const asked = focusAt >= 0 ? `\n-# You asked about ${mentionCommand(client, focusName)}` : '';
 
         components.push({ type: 10, content: `## ${emojis[categoryEmojiKey(CATEGORY_DEFS.find(c => c.key === selectedKey), perms)]} **${DETAIL_HEADERS[selectedKey]}**\n${USAGE_LEGEND}${asked}` });
@@ -741,6 +747,7 @@ module.exports = {
     searchEntries,
     textCommandsBlock,
     textUsage,
+    typedFormsHere,
     textExample,
     HELP_EXAMPLES,
 
@@ -782,7 +789,7 @@ module.exports = {
         const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);
 
         // No "Show Everyone" button -- the visibility option above already covers that case up front, and repeating it here would be redundant (Harkirat's direct request).
-        const components = [await buildContainer(selectedKey, accentColor, perms, interaction.client, focusName, onlyFocus)];
+        const components = [await buildContainer(selectedKey, accentColor, perms, interaction.client, focusName, onlyFocus, typedFormsHere(interaction))];
         // Under every /help page, outside its card (2026-10-27 01:23 EDT, Harkirat; "regardless of whatever cmd/page of /help is being viewed", 01:21 EDT): Announcements shows what is running now, privately, and Bugs & Suggestions opens the pop-up utils/feedback.js sends to the owner. Answered by handlers/help.js. It costs 3 of the message's 40 components; scripts/feedback.test.js counts every page with it.
         components.push(helpFooterRow());
         // No mention pings or highlights (2026-10-27 10:44 EDT, Harkirat: "i want the clickable username but not the highlight"): the sign-off's <@dior> stays a clickable name, but the panel no longer lights up yellow for him. Same suppression /settings uses.
