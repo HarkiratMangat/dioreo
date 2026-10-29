@@ -70,6 +70,15 @@
         },
         {
           "type": 14,
+          "spacing": 1,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### 💬 **TEXT COMMANDS**\n**Type one in a message:** `@Dioreo today`\n-# Works anywhere Dioreo can post, for when this server hides slash commands"
+        },
+        {
+          "type": 14,
           "spacing": 2,
           "divider": true
         },
@@ -1806,6 +1815,15 @@
         },
         {
           "type": 14,
+          "spacing": 1,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### 💬 **TEXT COMMANDS**\n**Type one in a message:** `@Dioreo today`\n-# Works anywhere Dioreo can post, for when this server hides slash commands"
+        },
+        {
+          "type": 14,
           "spacing": 2,
           "divider": true
         },
@@ -2137,6 +2155,15 @@
         {
           "type": 10,
           "content": "### <a:GunsmithSearch:1564113024225255454> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/today` · `/remind` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:ServerSettings:1536468904996774008> **PREFERENCES**\n**`/settings` · `/admin` *(server)***\n\n-# <a:Info:1564319073540513913> Tip: **/help** `cmd:` opens one command"
+        },
+        {
+          "type": 14,
+          "spacing": 1,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### 💬 **TEXT COMMANDS**\n**Type one in a message:** `@Dioreo today`\n-# Works anywhere Dioreo can post, for when this server hides slash commands"
         },
         {
           "type": 14,
@@ -3960,6 +3987,15 @@
         },
         {
           "type": 14,
+          "spacing": 1,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### 💬 **TEXT COMMANDS**\n**Type one in a message:** `@Dioreo today`\n-# Works anywhere Dioreo can post, for when this server hides slash commands"
+        },
+        {
+          "type": 14,
           "spacing": 2,
           "divider": true
         },
@@ -4302,6 +4338,15 @@
         {
           "type": 10,
           "content": "### <a:GunsmithSearch:1564113024225255454> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/today` · `/remind` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:ServerSettings:1536468904996774008> **PREFERENCES**\n**`/settings` · `/admin` *(server)***\n### <a:BotAccess:1540915865506160660> **BOT ADMIN**\n**`/bot analytics` · `/bot access` · `/bot hotpatch` · `/bot servers` · `/embed` · `/manage emojis` · `/autobuild` · `/manage`**\n\n-# <a:Info:1564319073540513913> Tip: **/help** `cmd:` opens one command"
+        },
+        {
+          "type": 14,
+          "spacing": 1,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### 💬 **TEXT COMMANDS**\n**Type one in a message:** `@Dioreo today`\n-# Works anywhere Dioreo can post, for when this server hides slash commands"
         },
         {
           "type": 14,
@@ -7190,6 +7235,15 @@
         {
           "type": 10,
           "content": "### <a:GunsmithSearch:1564113024225255454> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/today` · `/remind` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:Settings:1523762203537309696> **PREFERENCES**\n**`/settings`**\n### <a:BotAccess:1540915865506160660> **BOT ADMIN**\n**`/bot analytics`**\n\n-# <a:Info:1564319073540513913> Tip: **/help** `cmd:` opens one command"
+        },
+        {
+          "type": 14,
+          "spacing": 1,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### 💬 **TEXT COMMANDS**\n**Type one in a message:** `@Dioreo today`\n-# Works anywhere Dioreo can post, for when this server hides slash commands"
         },
         {
           "type": 14,
