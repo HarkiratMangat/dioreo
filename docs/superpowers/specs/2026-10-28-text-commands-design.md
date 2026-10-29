@@ -49,6 +49,7 @@ Principle: when unsure a message is for Dioreo, stay silent.
 - **Server command permissions are obeyed** (his yes 17:52 EDT): Integrations → Dioreo per-command overrides (member > role > @everyone; channel > all channels; command > app; Administrator bypasses); fails closed; a 1-minute cache dropped on `applicationCommandPermissionsUpdate`. Channel-wide Use Application Commands is ignored, because that is what text commands work around.
 - **Where Dioreo can't post**, the member gets one DM, at most once per channel per day: "I can't post in #channel. Ask a server admin to let me send messages there, or try another channel." In memory only (17:18 EDT).
 - **Read Message History denied** → the reply is posted as a plain message instead of a reply.
+- **A click on a text reply keeps the text forms** (lead's call 2026-10-29 00:05 EDT, B3's gap 1): a page redrawn from a button or menu on a text reply shows `d draws`, not `</draws:id>`. A text reply is a plain bot message in a server, so it has no `interactionMetadata`; a slash reply always has it. The router marks such a click as text, in the same request context `mentionCommand` already reads. A DM card (no guild) is not a text reply.
 - **Buttons work** like on a slash reply (clicks are interactions), and the reply greys out after 10 idle minutes (edited with the bot token). Show Everyone is dropped.
 - **`d timestamp` alone** (no date, not a reply) → a one-button card that opens the timestamp pop-up. `d gunsmith` alone opens the first weapon instead (his trim).
 
