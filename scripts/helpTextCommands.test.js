@@ -198,15 +198,14 @@ async function check(name, fn) {
     // Characters are measured with PROD-LENGTH ids for every command (think-pass, 2026-10-29 00:27 EDT): with the 3-digit fake ids above, and none for /bot, /manage, /embed or /autobuild, a mention is ~20 characters shorter than on prod, and this check passed a page that prod would refuse. Discord's 4,000 is the total of a message's text displays (`.claude/rules/draw-prices.md`, probed 2026-10-16 01:17 EDT).
     const PROD_ID = '1561783498770227300';
     const prodIds = new Map(['gunsmith', 'draws', 'draw', 'calendar', 'today', 'remind', 'patch', 'season', 'colors', 'timestamp', 'invite', 'settings', 'admin', 'bot', 'embed', 'manage', 'autobuild', 'help'].map(n => [n, PROD_ID]));
-    // ⚠️ Bot Admin is NOT asserted: the owner's page is 4,038 characters with prod ids on `main` too (before any text-command work), filed as its own fix. It carries no typed forms. Every page that does is asserted.
-    const CHAR_EXEMPT = new Set(['botadmin']);
-    await check('every page stays within 40 components, and every page with typed forms within 4,000 characters with prod-length ids', async () => {
+    // Bot Admin was exempt here until 2026-10-29 09:29 EDT: the owner's page measured 4,038 characters with prod ids, and was trimmed to fit (commands/help.js's note above buildBotAdminBody). Every page is asserted now.
+    await check('every page stays within 40 components, and every page within 4,000 characters with prod-length ids', async () => {
         for (const perms of [{}, { serverAdmin: true }, ALL, { botAdmin: true, bot: true }]) for (const tmc of [true, false]) for (const cat of [null, ...help.CATEGORY_DEFS.map(c => c.key)]) {
             const container = await help.buildContainer(cat, 0x5865F2, perms, { ...client(tmc), commandIds: prodIds });
             const n = countComponents([container, help.helpFooterRow()]);
             const chars = texts(container).join('').length;
             assert.ok(n <= 40, `${cat || 'landing'}: ${n} components for ${JSON.stringify(perms)}`);
-            if (!CHAR_EXEMPT.has(cat)) assert.ok(chars <= 4000, `${cat || 'landing'}: ${chars} characters for ${JSON.stringify(perms)}`);
+            assert.ok(chars <= 4000, `${cat || 'landing'}: ${chars} characters for ${JSON.stringify(perms)}`);
             // A restricted category falls back to the landing, so only a real detail page counts here.
             const def = help.CATEGORY_DEFS.find(c => c.key === cat);
             if (def && (!def.requires || perms[def.requires]) && n > largest.n) largest = { n, cat, chars };

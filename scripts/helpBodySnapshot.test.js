@@ -69,6 +69,25 @@ async function run() {
         }
     });
 
+    // THE 4,000-CHARACTER TOTAL (2026-10-29 00:46 EDT). Discord refuses a Components V2 message whose text displays add up to more than 4,000 characters (COMPONENT_DISPLAYABLE_TEXT_SIZE_EXCEEDED, probed 2026-10-16 01:17 EDT, .claude/rules/draw-prices.md), counted the way utils/announcement.js's measureComponents does. Measured with PROD-LENGTH ids for every command: the fake client above has none, and each `</bot analytics:ID>` mention on prod is ~20 characters longer than its fallback, which is how the owner's Bot Admin page reached 4,038 characters with no test noticing. Every page, every permission level, opened plain and focused on each of its commands (focus adds a "You asked about" line).
+    await check('every /help page fits Discord\'s 4,000-character total with prod-length command ids', async () => {
+        const PROD_ID = '1561783498770227300';
+        const prodClient = { commandIds: new Map(['gunsmith', 'draws', 'draw', 'calendar', 'today', 'remind', 'patch', 'season', 'colors', 'timestamp', 'invite', 'settings', 'admin', 'bot', 'embed', 'manage', 'autobuild', 'help'].map(n => [n, PROD_ID])) };
+        const chars = c => (typeof c.content === 'string' ? c.content.length : 0) + (c.components || []).reduce((n, x) => n + chars(x), 0) + (c.accessory ? chars(c.accessory) : 0);
+        let worst = { n: 0 };
+        for (const [permsName, perms] of Object.entries(PERM_MATRICES)) {
+            for (const cat of [null, ...helpCommand.CATEGORY_DEFS]) {
+                const names = cat ? (cat.detailCommands || cat.staticCommands).map(c => c.name) : [];
+                for (const [focus, only] of [[null, false], ...names.flatMap(n => [[n, false], [n, true]])]) {
+                    const n = chars(await helpCommand.buildContainer(cat ? cat.key : null, 16743772, perms, prodClient, focus, only));
+                    if (n > worst.n) worst = { n, where: `${permsName} ${cat ? cat.key : 'landing'}${focus ? ` (${focus}${only ? ', only' : ''})` : ''}` };
+                    assert.ok(n <= 4000, `${permsName} ${cat ? cat.key : 'landing'}${focus ? ` focused on ${focus}` : ''}: ${n} characters`);
+                }
+            }
+        }
+        console.log(`      longest: ${worst.where}, ${worst.n} of 4,000 characters`);
+    });
+
     console.log(failures === 0 ? '\nAll help.js snapshot checks passed.' : `\n${failures} check(s) FAILED.`);
     process.exit(failures === 0 ? 0 : 1);
 }
