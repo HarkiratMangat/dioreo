@@ -471,6 +471,7 @@ function buildPreferencesBody(commands, client, typedForms = true) {
 }
 
 // Gated on the bot's own admin whitelist, not on any guild permission -- these write to shared global data (one SeasonalData document, the Loadout collection) rather than to anything scoped to the server they are run in, which is exactly why no per-guild permission could ever grant them. That fact is a HINT at the foot of the page rather than a bullet in the middle: it explains the section, it is not something you do. ⚠️ Filtered per-command, not just per-category (fixed 2026-08-15 13:10 EDT) -- this used to render all three commands' full detail unconditionally, so an admin granted only /bot analytics still read the complete /manage and /autobuild writeups even though the directory/dropdown correctly hid those commands from them elsewhere. Category-level `requires: 'botAdmin'` only gates whether this page exists at all; each command's own perms key (perms.bot/perms.botAccess/perms.autobuild/ perms.manage) has to be checked again HERE, same as visibleCommands() already does for the directory and dropdown. `commands` is visibleCommands(category, perms) -- same reasoning as buildPreferencesBody above. Membership (`has(name)`) replaces the old direct `perms.X` checks, so a command's visibility here can never drift from the directory/dropdown/autocomplete again (the exact class of bug that let the per-command filter go missing from this function until 2026-08-15).
+// ⚠️ THIS PAGE SITS NEAR DISCORD'S 4,000-CHARACTER TOTAL. With prod's 19-digit command ids the owner's view measured 4,038 characters on 2026-10-29 00:46 EDT (4,087 opened on /manage), past the cap `.claude/rules/draw-prices.md` probed (COMPONENT_DISPLAYABLE_TEXT_SIZE_EXCEEDED), so it was trimmed (the /autobuild bullets, /manage emojis, the footer, whose "four are owner-only" was wrong: five are). scripts/helpBodySnapshot.test.js now measures every page with prod-length ids; add a command here and that test says whether it still fits.
 function buildBotAdminBody(commands, client) {
     const has = (name) => commands.some(c => c.name === name);
     const sections = [];
@@ -499,18 +500,18 @@ function buildBotAdminBody(commands, client) {
             + `-# 🔹 \`[clean]\` Render only the JSON: no Edit JSON button and no emoji note`);
     }
     if (has('/manage emojis')) {
-        sections.push(`### ${mentionCommand(client, '/manage emojis')}\nEvery app emoji, which bots lack it and whether its original is saved: sync, upload or find one — owner-only. Also the Emojis entry in the /manage dropdown\n`
+        sections.push(`### ${mentionCommand(client, '/manage emojis')}\nEvery app emoji, which bots lack it, and its saved original: sync, upload or find one — owner-only\n`
             + `-# 🔹 Only the visibility option below`);
     }
     if (has('/autobuild')) {
         sections.push(`### ${mentionCommand(client, '/autobuild')}\nRead an MP or DMZ loadout out of a Gunsmith screenshot and stage it for review — nothing is saved until you press Save\n`
-            + `-# 🔹 Run it on its own for a form that reads up to 10 screenshots and links at once, each with its own mode, category and badges\n`
-            + `-# 🔹 \`[screenshot]\` The Gunsmith screenshot to read — or use \`url\` instead, never both\n`
-            + `-# 🔹 \`[url]\` A link to the screenshot, when the image is already hosted somewhere\n`
-            + `-# 🔹 \`[category]\` \`AR\` · \`SMG\` · \`LMG\` · \`Marksman\` · \`Sniper\` · \`Shotgun\` · \`Secondary\` — looked up from the weapon, or asked for, if left blank\n`
-            + `-# 🔹 \`[mode]\` \`MP\` · \`DMZ\` — read from the screenshot if left blank, and asked for when the screenshot can't tell\n`
-            + `-# 🔹 \`[badges]\` e.g. \`meta,top5\`: any of meta, toxic, ass, best, top3, top5, capable and the rank modes — this build only; blank means none\n`
-            + `-# 🔹 \`[retry_token]\` Only for re-submitting an image after a Cloudinary upload failure`);
+            + `-# 🔹 On its own: a form for up to 10 screenshots or links, each with its own mode, category and badges\n`
+            + `-# 🔹 \`[screenshot]\` The Gunsmith screenshot to read; or \`url\`, never both\n`
+            + `-# 🔹 \`[url]\` A link to the screenshot, if it is already hosted\n`
+            + `-# 🔹 \`[category]\` \`AR\` · \`SMG\` · \`LMG\` · \`Marksman\` · \`Sniper\` · \`Shotgun\` · \`Secondary\`; blank: from the weapon, or asked\n`
+            + `-# 🔹 \`[mode]\` \`MP\` · \`DMZ\`; blank: read from the screenshot, or asked\n`
+            + `-# 🔹 \`[badges]\` e.g. \`meta,top5\`: meta, toxic, ass, best, top3, top5, capable or a rank mode; blank means none\n`
+            + `-# 🔹 \`[retry_token]\` Only to retry an image after a failed upload`);
     }
     if (has('/manage')) {
         sections.push(`### ${mentionCommand(client, '/manage')}\nThe data-entry panel — seasonal info, draws, calendar, patch notes, loadouts, banners, announcements, and the next-season draft\n`
@@ -528,7 +529,6 @@ function buildBotAdminBody(commands, client) {
     if (has('/bot analytics')) examples.push(`-# 🔸 **/bot analytics** page:\`Usage\` visibility:\`Public\` — share usage data in a channel`);
     if (has('/autobuild')) {
         examples.push(`-# 🔸 **/autobuild** screenshot:\`[upload]\` category:\`SMG\` badges:\`meta,top5\``);
-        examples.push(`-# 🔸 **/autobuild** url:\`https://…\` — when the screenshot is already hosted`);
     }
     if (has('/manage')) {
         examples.push(`-# 🔸 **/manage patch-notes** — straight to the section, no clicking through`);
@@ -539,7 +539,7 @@ function buildBotAdminBody(commands, client) {
         + SECTION_BREAK
         + `-# **Options** · every command above except /bot hotpatch and /bot servers\n${VISIBILITY_BULLET}\n\n`
         + `-# **Examples**\n${examples.join('\n')}\n\n`
-        + `-# These are gated on **Dioreo's own admin allowlist** (four are owner-only), not on a server permission — Manage Server does not grant them, and they are not registered for guild install at all.`;
+        + `-# Gated on **Dioreo's own admin allowlist**, not a server permission: Manage Server does not grant them`;
 }
 
 const BODY_BUILDERS = {
