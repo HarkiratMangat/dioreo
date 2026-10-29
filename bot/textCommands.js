@@ -120,24 +120,24 @@ function formsFor(client) {
     return client.textMessageContent ? '`@Dioreo today` · `d today` · `dior today` · `/today`' : '`@Dioreo today`';
 }
 
-function helpCard(client) {
-    const list = TEXT_COMMANDS.filter(c => c.name !== 'help').map(c => `\`${c.name}\``).join(' · ');
-    return {
-        flags: 32768,
-        components: [{ type: 17, components: [
-            { type: 10, content: `### Text commands\nStart a message with ${formsFor(client)}, then a command:\n${list}\n-# Slash commands work too, where this server shows them.` },
-        ] }],
-    };
+// THE LISTENER'S OWN CARDS look like the bot's other panels (Harkirat, 2026-10-29 11:20 EDT, on the plain `d timestamp` card: "why does this panel look so barebone?? ... i hope they're not all barebone like this"): a `##` title with the command's own animated icon, its accent colour, a `-#` hint, and the icon on the main button. Every command's real answer was always its full panel; only these cards, built here, were one bare line. The accents are the commands' own (.claude/rules/rendering-and-ui.md's colour table): /help's coral for the help and Did you mean cards, /timestamp's teal for its card. Emojis are read here, at send time (the emoji-capture rule).
+const HELP_ACCENT = 16743772;      // /help and /invite's coral, #FF7D5C
+const TIMESTAMP_ACCENT = 1548962;  // /timestamp's Cyber Teal, #17A2A2
+function card(accent, content, rows = []) {
+    return { flags: 32768, components: [{ type: 17, accent_color: accent, components: [{ type: 10, content }, ...rows] }] };
 }
 
+function helpCard(client) {
+    const emojis = require('../utils/emojiMap');
+    const list = TEXT_COMMANDS.filter(c => c.name !== 'help').map(c => `\`${c.name}\``).join(' · ');
+    return card(HELP_ACCENT, `## ${emojis.dioreoCombo} Text commands\nStart a message with ${formsFor(client)}, then a command:\n${list}\n-# Slash commands work too, where this server shows them.`);
+}
+
+// The pick buttons under a Did you mean card: grey, as on every other picker.
+const pickRow = buttons => ({ type: 1, components: buttons.slice(0, 5) });
 function didYouMeanCard(names) {
-    return {
-        flags: 32768,
-        components: [{ type: 17, components: [
-            { type: 10, content: '**Did you mean…**' },
-            { type: 1, components: names.slice(0, 5).map(name => ({ type: 2, style: 2, label: name, custom_id: `txtrun_${toIdPart(name)}` })) },
-        ] }],
-    };
+    const emojis = require('../utils/emojiMap');
+    return card(HELP_ACCENT, `### ${emojis.search} Did you mean…\n-# Tap one to run it.`, [pickRow(names.map(name => ({ type: 2, style: 2, label: name, custom_id: `txtrun_${toIdPart(name)}` })))]);
 }
 
 // The emoji a chatty mention gets (Harkirat, 2026-10-28 17:04 EDT: "have it just reply to the message with an emoji"). Since 2026-10-29 10:12 EDT it is one of his 24 brand emojis, picked at random ("adjust the randomness so it actually showcases a variety of emojis instead of showing the same ones again and again"): a shuffled deck, dealt without repeats until every emoji has shown once, then reshuffled so the new deck never opens with the one just shown. Read by name from the app at reply time, so a name the app lacks is skipped; with none, 👋. The deck lives in memory: a restart starts a new one.
@@ -325,29 +325,23 @@ async function runTextCommand(message, verdict) {
 
 function noMatchLine(text, option) {
     const shown = String(text || '').replace(/[`*_~|]/g, '').slice(0, 60);
-    return { content: option === 'datetime' ? `Couldn't read “${shown}” as a date or time.` : `No match for “${shown}”.` };
+    const { cross } = require('../utils/emojiMap');
+    return { content: option === 'datetime' ? `${cross} Couldn't read “${shown}” as a date or time.` : `${cross} No match for “${shown}”.` };
 }
 
 // `d timestamp` alone: the date is the one required option, so a card whose button opens the timestamp pop-up (a click is an interaction, so showModal works there; handlers/textCommands.js).
-function needsInputCard(textCommand) {
-    return {
-        flags: 32768,
-        components: [{ type: 17, components: [
-            { type: 10, content: `\`${textCommand.name}\` needs a date or time, like \`${textCommand.name} tomorrow 8pm\`.` },
-            { type: 1, components: [{ type: 2, style: 1, label: 'Pick a date and time', custom_id: runCustomId('txtrun_', textCommand, 'open') }] },
-        ] }],
-    };
+function needsInputCard(textCommand, via) {
+    const emojis = require('../utils/emojiMap');
+    const typed = via === 'mention' || via === 'role' ? `@Dioreo ${textCommand.name} tomorrow 8pm` : via === '/' ? `/${textCommand.name} tomorrow 8pm` : `${via} ${textCommand.name} tomorrow 8pm`;
+    return card(TIMESTAMP_ACCENT, `## ${emojis.timestamp} Timestamp\nWhat date and time? Pick it below, or type it after the command: \`${typed}\`\n-# Everyone sees the result in their own time zone.`, [
+        { type: 1, components: [{ type: 2, style: 1, label: 'Pick a date and time', emoji: emojis.parseEmoji(emojis.timestamp), custom_id: runCustomId('txtrun_', textCommand, 'open') }] },
+    ]);
 }
 
 // Several weapons or seasons matched after `@Dioreo`: Did you mean, each button carrying the value it runs.
 function pickCard(textCommand, choices) {
-    return {
-        flags: 32768,
-        components: [{ type: 17, components: [
-            { type: 10, content: '**Did you mean…**' },
-            { type: 1, components: choices.map(c => ({ type: 2, style: 2, label: c.label.slice(0, 80), custom_id: runCustomId('txtrun_', textCommand, encodePayload({ values: c.values })) })) },
-        ] }],
-    };
+    const emojis = require('../utils/emojiMap');
+    return card(HELP_ACCENT, `### ${emojis.search} Did you mean…\n-# Tap one to open it.`, [pickRow(choices.map(c => ({ type: 2, style: 2, label: c.label.slice(0, 80), custom_id: runCustomId('txtrun_', textCommand, encodePayload({ values: c.values })) })))]);
 }
 
 // DEV BOT ONLY, like handlers/router.js's click log (2026-10-28 18:01 EDT, his question: "why does dioreo take like a second to send a reply"): where a text command's time goes. Nothing is stored; production prints nothing.
@@ -391,7 +385,7 @@ async function onMessage(message, { edited = false } = {}) {
     if (resolved?.kind === 'pick') return reply(message, pickCard(resolved.textCommand, resolved.choices));
     if (resolved?.kind === 'noMatch') return reply(message, noMatchLine(resolved.text));
     if (resolved?.kind === 'run') return runTextCommand(message, resolved.verdict);
-    if (verdict.kind === 'needsInput') return reply(message, needsInputCard(findTextCommand(verdict.command)));
+    if (verdict.kind === 'needsInput') return reply(message, needsInputCard(findTextCommand(verdict.command), verdict.via));
     if (verdict.kind === 'noMatch') return reply(message, noMatchLine(verdict.text, verdict.option));
     if (verdict.kind === 'help') return reply(message, helpCard(client));
     if (verdict.kind === 'didYouMean') return reply(message, didYouMeanCard(verdict.candidates));

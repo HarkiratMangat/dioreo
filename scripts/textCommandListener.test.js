@@ -113,6 +113,7 @@ async function check(name, fn) {
         assert.strictEqual(ran.length, before, 'nothing ran');
         assert.strictEqual(posts.length, 1);
         assert.ok(JSON.stringify(posts[0]).includes('Did you mean'));
+        assert.strictEqual(posts[0].components[0].accent_color, 16743772, 'the Did you mean card wears /help\'s coral');
         assert.deepStrictEqual(buttons(posts[0]), ['"custom_id":"txtrun_gunsmith~weapon=ak117"', '"custom_id":"txtrun_gunsmith~weapon=ak47"']);
     });
     await check('d build kilo: two weapons fit every word, so Did you mean after d too', async (before) => {
@@ -150,7 +151,7 @@ async function check(name, fn) {
     await check('no match after @Dioreo says so in one line', async () => {
         const { message, posts } = fakeMessage(`<@${BOT}> gs zzz`);
         await onMessage(message);
-        assert.strictEqual(posts[0]?.content, 'No match for “zzz”.');
+        assert.ok(/No match for “zzz”\.$/.test(posts[0]?.content || ''), posts[0]?.content);
     });
     await check('a bare exact weapon name runs gunsmith; a near one stays silent', async (before) => {
         await onMessage(fakeMessage('d fennec').message);
@@ -197,6 +198,12 @@ async function check(name, fn) {
         await onMessage(message);
         assert.strictEqual(ran.length, before);
         assert.deepStrictEqual(buttons(posts[0]), ['"custom_id":"txtrun_timestamp~open"']);
+        // Not a bare line (his "why does this panel look so barebone??", 2026-10-29 11:10 EDT): /timestamp's accent, a titled heading, the typed form with the prefix used, and the icon on the button.
+        const box = posts[0].components[0];
+        assert.strictEqual(box.accent_color, 1548962);
+        assert.ok(/^## .* Timestamp\n/.test(box.components[0].content), box.components[0].content);
+        assert.ok(box.components[0].content.includes('`d timestamp tomorrow 8pm`'));
+        assert.ok(box.components[1].components[0].emoji?.id, 'the button carries the timestamp icon');
         cardId = 'txtrun_timestamp~open';
     });
     await check('@Dioreo calendar purple runs calendar, the unknown word ignored (the spec\'s rules table)', async (before) => {
