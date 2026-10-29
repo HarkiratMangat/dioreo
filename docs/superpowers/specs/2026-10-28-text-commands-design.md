@@ -105,7 +105,7 @@ From his doc after his trim (2026-10-28 21:51 EDT: he struck values in the doc a
 | timestamp | timestamp, time, ts, t, convert | datetime (required) | every word that isn’t another argument: tomorrow 8pm, friday 6pm, in 2 hours |
 | timestamp |  | timezone | timezone:toronto, tz:toronto, tz:est |
 | convert times | (none: `d timestamp` sent as a reply) | — | none; send it as a reply to the message |
-| remind | remind, r, reminder, remindme, rm, notify, alert | — | none: `d remind` replies with only an Open reminders button, because the panel shows a member's reminders and timezone and a text reply is public |
+| remind | remind, r, reminder, remindme, rm, notify, alert | — | none: `d remind` posts the reminders panel in the channel, public like every text reply (his call 2026-10-28 21:56 EDT: "thats fine, show it. its just reminders ... id rather not do the 'open' then show the panel method") |
 | colors | colors, colours, col, palette, accent | — | none: your own colors |
 | colors |  | someone | @name, or send it as a reply to them |
 | settings | settings, set, config, options, opt, pref, preferences, s | — | none |
