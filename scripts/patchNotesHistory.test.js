@@ -33,7 +33,7 @@ t('each season title carries its emoji, in the heading and the dropdown', () => 
     // The title row holds only the heading since 2026-10-24 21:38 EDT; the season line is the next Text Display (utils/reminders.js withBell).
     const texts = panel.flatMap(flat).filter(c => c.type === 10).map(c => c.content);
     assert.ok(texts[1].split('\n')[0].startsWith(`${emojis.season9} `), texts.slice(0, 2).join(' | '));
-    assert.deepStrictEqual(select(panel).options.map(o => o.emoji && o.emoji.name), ['S9VampiresVsWerewolves', 'S8AgainstAllFate', 'S7Terminated', 'S6TakeYourHeart']);
+    assert.deepStrictEqual(select(panel).options.map(o => o.emoji && o.emoji.name), ['S9_VampiresVsWerewolves', 'S8_AgainstAllFate', 'S7_Terminated', 'S6_TakeYourHeart']);
 });
 t('search finds by number exactly, by name, newest first, and nothing for no match', () => {
     const list = doc(20).patchNotes;

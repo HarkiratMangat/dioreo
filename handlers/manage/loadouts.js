@@ -163,7 +163,7 @@ async function warnOldPicture(interaction, pending, imageKey) {
 async function handleCatalogueWarning(interaction) {
     const [kind, token] = interaction.customId.split('|');
     const pending = pendingCatalogue.get(token);
-    if (!pending) return await interaction.reply({ content: '⏳ That save expired. Open it again from /manage.', ephemeral: true });
+    if (!pending) return await interaction.reply({ content: `${require('../../utils/emojiMap').cross} That save expired. Open it again from /manage.`, ephemeral: true });
     if (pending.userId !== interaction.user.id) return await interaction.reply({ content: BOT_EMOJI.cross + ' Only the admin who made this save can finish it.', ephemeral: true });
     const manage = require('../../commands/manage');
     const { customId } = pending;
@@ -187,7 +187,7 @@ async function handleCatalogueWarning(interaction) {
     const pictureChoice = kind === 'mng_picok' ? 'keep' : kind === 'mng_picnone' ? 'none' : pending.pictureChoice;
     // Both warnings are Components V2 panels, which take no `content`, so the "saving" state is a panel too.
     const { notePanel } = require('../../utils/loadoutPanels');
-    await interaction.update({ flags: 32768, components: notePanel(kind === 'mng_catok' ? '⏳ Saving it as typed, and adding the new names…' : '⏳ Saving…') });
+    await interaction.update({ flags: 32768, components: notePanel(kind === 'mng_catok' ? `${require('../../utils/emojiMap').cooldown} Saving it as typed, and adding the new names…` : `${require('../../utils/emojiMap').cooldown} Saving…`) });
     // `acks`: the warnings this save has already been answered on, so a replay asks only what it has not (code, then catalogue, then picture).
     const acks = [...(pending.acks || []), ...(kind === 'mng_catok' ? ['catalogue'] : kind === 'mng_codeok' ? ['code'] : [])];
     const preset = { customId, values: pending.values, pictureChoice, acks };
