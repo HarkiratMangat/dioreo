@@ -211,6 +211,39 @@ async function check(name, fn) {
             if (def && (!def.requires || perms[def.requires]) && n > largest.n) largest = { n, cat, chars };
         }
     });
+    // B4, 2026-10-29 10:32 EDT: a click on a text command's reply is a click on a plain bot message (no interaction metadata), and the page it redraws keeps the text forms (the spec's "Replies"). A slash reply's click, and a DM card's, keep the slash mention.
+    await check('a click on a text reply keeps the text forms; a slash reply and a DM card do not', async () => {
+        const { buildInteractionContext } = require('../handlers/router');
+        const clickOn = (guildId, message) => ({ id: '9', applicationId: 'app', customId: 'help_category', user: { id: 'u1' }, guildId, message });
+        const textReply = buildInteractionContext(clickOn('g1', { interactionMetadata: null }));
+        const slashReply = buildInteractionContext(clickOn('g1', { interactionMetadata: { id: '8' } }));
+        const dmCard = buildInteractionContext(clickOn(null, { interactionMetadata: null }));
+        assert.strictEqual(textReply.textReply, true);
+        assert.strictEqual(runWithContext(textReply, () => mentionCommand(client(true), '/draws')), '`d draws`');
+        assert.strictEqual(runWithContext(slashReply, () => mentionCommand(client(true), '/draws')), '</draws:111>');
+        assert.strictEqual(runWithContext(dmCard, () => mentionCommand(client(true), '/draws')), '</draws:111>');
+    });
+    // B4, 2026-10-29 10:32 EDT (the plan's 4b, from the prod journal): /help failed for everyone on prod with COMPONENT_INVALID_EMOJI, because its Commands List option named an emoji the prod app had deleted. With a booted app that lacks one name, no component on any /help page carries an id that app does not own, and that name gets no emoji at all.
+    await check('no /help component carries an emoji the booted app lacks', async () => {
+        const emojis = require('../utils/emojiMap');
+        const list = [];
+        for (const value of Object.values(emojis)) {
+            const m = typeof value === 'string' && /^<(a)?:(\w+):(\d+)>$/.exec(value);
+            if (m && !list.some(e => e.name === m[2])) list.push({ name: m[2], id: m[3], animated: Boolean(m[1]) });
+        }
+        const lacking = /^<a?:(\w+):/.exec(emojis.dioreoCombo)[1];
+        const owned = list.filter(e => e.name !== lacking);
+        await emojis.refreshEmojiIds({ application: { id: 'app' }, rest: { get: async () => ({ items: owned }) } });
+        assert.strictEqual(emojis.parseEmoji(emojis.dioreoCombo), undefined, 'the missing name gets no emoji');
+        const other = owned[0];
+        assert.strictEqual(emojis.parseEmoji(`<:${other.name}:42>`).id, other.id, 'a stale id is answered with the app\'s own copy');
+        const ownedIds = new Set(owned.map(e => e.id));
+        const emojiIds = node => [...(node?.emoji?.id ? [node.emoji.id] : []), ...[].concat(node?.components || [], node?.options || [], node?.accessory || []).flatMap(emojiIds)];
+        for (const perms of [{}, ALL]) for (const cat of [null, ...help.CATEGORY_DEFS.map(c => c.key)]) {
+            const container = await help.buildContainer(cat, 0x5865F2, perms, client(true));
+            for (const id of emojiIds({ components: [container, help.helpFooterRow()] })) assert.ok(ownedIds.has(id), `${cat || 'landing'}: a component names emoji ${id}, which the app does not own`);
+        }
+    });
     if (failed) { console.log(`\n${failed} check(s) failed.`); process.exit(1); }
     console.log(`\nAll /help text-command checks passed. Landing: ${landingCount} of 40 components. Largest detail page: ${largest.cat}, ${largest.n} of 40 components (${largest.chars} characters). Typed examples: ${twins}.`);
 })();

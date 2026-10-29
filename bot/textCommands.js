@@ -298,16 +298,6 @@ async function runTextCommand(message, verdict) {
     });
 }
 
-// `@Dioreo calendar purple` -> one line built from the command's own options (spec: "Try `calendar events`…").
-function usageLine(textCommand) {
-    const examples = [];
-    for (const o of textCommand.options || []) {
-        if (o.example) examples.push(o.example);
-        else if (o.values) examples.push(...o.values.slice(0, 2).map(val => val.aliases[0]));
-    }
-    return { content: `Try ${examples.slice(0, 4).map(e => `\`${textCommand.name} ${e}\``).join(', ')}.` };
-}
-
 function noMatchLine(text, option) {
     const shown = String(text || '').replace(/[`*_~|]/g, '').slice(0, 60);
     return { content: option === 'datetime' ? `Couldn't read “${shown}” as a date or time.` : `No match for “${shown}”.` };
@@ -376,7 +366,6 @@ async function onMessage(message, { edited = false } = {}) {
     if (resolved?.kind === 'pick') return reply(message, pickCard(resolved.textCommand, resolved.choices));
     if (resolved?.kind === 'noMatch') return reply(message, noMatchLine(resolved.text));
     if (resolved?.kind === 'run') return runTextCommand(message, resolved.verdict);
-    if (verdict.kind === 'usage') return reply(message, usageLine(findTextCommand(verdict.command)));
     if (verdict.kind === 'needsInput') return reply(message, needsInputCard(findTextCommand(verdict.command)));
     if (verdict.kind === 'noMatch') return reply(message, noMatchLine(verdict.text, verdict.option));
     if (verdict.kind === 'help') return reply(message, helpCard(client));

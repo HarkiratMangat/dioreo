@@ -194,7 +194,7 @@ Exists only in the server's memory while it runs, and is **lost on every restart
 - For the admin-only right-click Apps (§3): the text and images of the message an admin right-clicked, for up to 30 minutes while they decide what to keep
 - For a server the Bot is installed in: the server's name, channels and roles, as Discord sends them
 - In a server the Bot is installed in: the Discord user and member details (name, avatar, roles) that arrive with each message posted there, cleared every hour. The messages themselves are not kept, not even in memory (§3)
-- For text commands (§3): your last text command and when you ran it, when the Bot last answered in each channel, which messages it has already answered, each cleared within a quarter of an hour; and whether it has already told you it can't post in a channel, kept for a day
+- For text commands (§3): your last text command and when you ran it, when the Bot last answered in each channel, which messages it has already answered, the words after a command that it looked up as a weapon or a season (so the same words don't search again), and a button's choices when they are too long to fit in the button, each cleared within a quarter of an hour; and whether it has already told you it can't post in a channel, kept for a day
 
 ### 2.4 Operational logs and alerts
 

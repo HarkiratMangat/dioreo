@@ -13,9 +13,10 @@ function recordCommandIds(ids) {
     for (const [name, id] of ids) allCommandIds.set(name, id);
 }
 
-// Inside a text command (bot/textCommands.js runs it with the request context's handler set to 'textCommands', and handlers/router.js marks its txtpriv_/txtrun_ buttons the same), a slash mention is plain text exactly where it is no use: text commands exist for the servers that hide slash commands, or list too many bots for Discord to show Dioreo's (text commands, B3, 2026-10-29). So a command with a text form is written as that form, `d draws` (`d dmz` for /gunsmith dmz), or `@Dioreo draws` where the app was not granted Message Content and the prefixes are off. A command with no text form (/admin, Dioreo Admin's commands) keeps its mention: it is still the only way to it. True while a text command (or one of its txtpriv_/txtrun_ buttons) is running: the one test of it, so a page that words something differently for a typed command asks the same question mentionCommand does.
+// Inside a text command (bot/textCommands.js runs it with the request context's handler set to 'textCommands', and handlers/router.js marks its txtpriv_/txtrun_ buttons the same), a slash mention is plain text exactly where it is no use: text commands exist for the servers that hide slash commands, or list too many bots for Discord to show Dioreo's (text commands, B3, 2026-10-29). So a command with a text form is written as that form, `d draws` (`d dmz` for /gunsmith dmz), or `@Dioreo draws` where the app was not granted Message Content and the prefixes are off. A command with no text form (/admin, Dioreo Admin's commands) keeps its mention: it is still the only way to it. True while a text command (or one of its txtpriv_/txtrun_ buttons) is running, or while a click on a text command's reply is (handlers/router.js sets `textReply`; the spec's "Replies", B4 2026-10-29 10:32 EDT): the one test of it, so a page that words something differently for a typed command asks the same question mentionCommand does.
 function inTextCommand() {
-    return require('./requestContext').getContext()?.handler === 'textCommands';
+    const ctx = require('./requestContext').getContext();
+    return ctx?.handler === 'textCommands' || ctx?.textReply === true;
 }
 
 function textForm(client, clean) {
