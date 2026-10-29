@@ -79,7 +79,7 @@ From his doc after his trim (2026-10-28 21:51 EDT: he struck values in the doc a
 | A word matches by its name, any alias, singular or plural, or a one-letter typo | `d calendar upcomming` |
 | `option:value` always works | `d calendar filter:past` |
 | After `d`/`dior`, every word must be understood, or Dioreo stays silent | `d calendar is wild today` → nothing |
-| After `@Dioreo` or `/`, an unknown word gets a one-line hint | `@Dioreo calendar purple` → “Try `calendar events`…” |
+| After `@Dioreo` or `/`, words it doesn't understand are ignored and the command runs with what it did understand (his 16:25 EDT call; confirmed 2026-10-28 23:29 EDT, "your pick", over B2's hint) | `@Dioreo draws pls` → draws · `@Dioreo calendar purple` → calendar |
 | A required option left out gets a one-button card that opens the slash command’s pop-up | `d timestamp` alone (the only required option left) |
 | `visibility` is never a text option | — |
 | Replies are public, whatever your /settings say | — |
