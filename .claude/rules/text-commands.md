@@ -120,6 +120,7 @@ The words after a command fill its slash command's own options: the design spec'
 - **Reply forms:** `d timestamp` sent as a reply with no date runs Convert Times on the replied message; `d colors` as a reply, or `d colors @name`, runs View Colors on that person. Each runs the right-click module's own code, and its permissions and `/admin` rules are looked up by that module's name.
 - **Buttons carry the values** (`adapter.js` `runCustomId`): `txtrun_<command>~name=value&…`, `@m=`/`@u=` for a reply form's target, `~open`/`~submit` for the timestamp pop-up; past 100 characters the payload is held in memory for 15 minutes as `txtrun_~<id>`, after which the click says to run it again. Open privately carries the same payload, so the private copy is the same answer.
 - **`via` gains `+args`** when options were given.
+- **Short glued forms run commands, and that is decided** (Harkirat, 2026-10-28 23:13 EDT, "keep"): `dc` opens the calendar, `dr` remind, `dt` the timestamp card, and `/s` settings, although each is also ordinary chat ("disconnected", sarcasm). Asked after B2 found them; the one-letter aliases stay as the spec lists them. Do not raise it again as a finding.
 
 ## Tests
 
