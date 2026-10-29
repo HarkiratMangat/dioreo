@@ -98,14 +98,14 @@ From his doc after his trim (2026-10-28 21:51 EDT: he struck values in the doc a
 | patch notes | patch notes, patchnotes, patch, notes, pn, update | season | new, latest, current (the latest notes posted, even for a season not live yet) · a number: 8, s8, season 8 · a word from its title: terminated |
 | season end | season end, seasonend, season, se, rank end, rankend, ranked end, rank, re, end | — | none |
 | draw prices | draw prices, drawprices, prices, price, dp, cost, cp | region | 10cp, 10 · 20cp, 20 · 30cp, 30 |
-| draw prices |  | type | mythic weapon, mythic gun, mw · mythic character, mythic char, mc · legendary, legendary weapon, lw, lr, lnr (shows reactive and non-reactive) · legendary character, lcw · double legendary, double, dlw · 7 spins, 7 spin, 7spin · pick your reward, pick, pyr · double epic, epic, dec · armory, series armory (shows all three armories) · advanced weapon, aw · advanced character, ac |
+| draw prices |  | type | mythic, myth (both mythic draws) · mythic weapon, mythic gun, mythic wep, mw · mythic character, mythic char, mythic operator, mythic op, mc · legendary, legend, leg, legendary weapon, legendary gun, lw, lg, reactive, non-reactive, nonreactive, lr, lnr (both legendary weapon draws) · legendary character, legendary char, legendary operator, lc, lcw · double legendary, double, dl, dlw · 7 spins, seven spins, 7 spin, 7spin, 7s · pick your reward, pick, pyr · double epic, epic, de, dec · armory, armoury, series armory, series, sa, arm (all three armories) · advanced, adv (both advanced draws) · advanced weapon, adv weapon, aw · advanced character, adv char, adv operator, ac |
 | draw calculator | draw calculator, drawcalculator, calculator, calc, dc, calculate | page | start, new, begin · saved, save, history, s · help, guide, h |
-| gunsmith MP | gunsmith, gs, mp, build, loadout, meta, gun, wep, weapon | weapon (optional) | a weapon name, also bare as `d ak117`, spaces and dashes optional (ak117, ak 117, ak-117) · a class: ar, smg, lmg, marksman, sniper, shotgun, secondary (and their aliases, below) · nothing: `d gunsmith` alone |
+| gunsmith MP | gunsmith, gs, mp, build, loadout, meta, gun, wep, weapon | weapon (optional) | a weapon name, also bare as `d ak117`, spaces and dashes optional (ak117, ak 117, ak-117) · a class: ar, assault, assault rifle · smg, sub · lmg · marksman, mr, dmr · sniper, sr · shotgun, sg · secondary, sec, pistol · nothing: `d gunsmith` alone |
 | gunsmith DMZ | dmz, dmz gs, dmz build, dmz loadout, gsd | weapon (optional) | same as MP |
 | timestamp | timestamp, time, ts, t, convert | datetime (required) | every word that isn’t another argument: tomorrow 8pm, friday 6pm, in 2 hours |
 | timestamp |  | timezone | timezone:toronto, tz:toronto, tz:est |
 | convert times | (none: `d timestamp` sent as a reply) | — | none; send it as a reply to the message |
-| remind | remind, r, reminder, remindme, rm, notify, alert | — | none: `d remind` opens reminders |
+| remind | remind, r, reminder, remindme, rm, notify, alert | — | none: `d remind` replies with only an Open reminders button, because the panel shows a member's reminders and timezone and a text reply is public |
 | colors | colors, colours, col, palette, accent | — | none: your own colors |
 | colors |  | someone | @name, or send it as a reply to them |
 | settings | settings, set, config, options, opt, pref, preferences, s | — | none |
@@ -120,12 +120,14 @@ From his doc after his trim (2026-10-28 21:51 EDT: he struck values in the doc a
 | draw prices `10cp` / `20cp` / `30cp` | region `region_10` / `region_20` / `region_30` |
 | draw prices `legendary` (and aliases) | BOTH `legendaryGunReactive` and `legendaryGunNonReactive` (his comment: "it just filters and shows both reactive and non-reactive") |
 | draw prices `legendary character` | `legendaryCharacterWeapon` (his comment) |
+| draw prices `mythic` · `advanced` | both mythic draws · both advanced draws (lead's call, same as his `legendary` and `armory`) |
 | draw prices `armory`, `series armory` | all three armories (`armoryMythicWeapon`, `armoryLegendaryWeapon`, `armoryLegendaryCharacter`) (his comment) |
 | patch notes `new` · `latest` · `current` | the newest season that has notes, upcoming included |
-| gunsmith with no weapon, or with a class word | the first weapon alphabetically in the catalogue, or in that class (his comment: "running a bare `d gunsmith` or something would just open the 1st alphabetic gun on the catalogue") |
+| gunsmith with no weapon, or with a class word | the first weapon alphabetically that has a build, in the catalogue or in that class (his comment: "running a bare `d gunsmith` or something would just open the 1st alphabetic gun on the catalogue") |
 | `d timestamp` (any alias) sent as a REPLY, with no date | Convert Times on the replied message (his comment: "just `d timestamp` reply to a message") |
 | `d timestamp` alone, not a reply | a one-button card that opens the timestamp pop-up |
 
+- **Alias sets are the lead's judgement** where his comments gave examples (his note 2026-10-28 21:53 EDT: "these were just examples, you still had to implement things by your own judgement such as 'sa' for series armory").
 - **Dropped by his trim**, now panel-only: calendar Today page and full-timeline filter, region by place, draw prices groups, the gunsmith build number (answer 3 is reversed by his trim), timestamp style and view, remind items and when (`d remind` just opens reminders), colors page and source, settings page, the `bell`, `smith`, `stamp` aliases and the separate convert-times aliases.
 - **No alias may belong to two commands, and no value alias to two values of one command.** A test enforces it.
 
