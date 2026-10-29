@@ -15,7 +15,8 @@ status: live
 | `feat/text-commands-b1-records` | B1 | builder 1 |
 | `feat/text-commands-b2-options` | B2, started only after B1 is merged | builder 2 |
 | `feat/text-commands-b3-help` | B3, started only after B2 is merged | builder 3 |
-| `feat/text-commands-b4-audit` | B4, verification and review, started only after B3 is merged | auditor |
+| `feat/text-commands-b5-help-pages` | B5, /help detail pages in text syntax, started only after B3 is merged | builder 5 |
+| `feat/text-commands-b4-audit` | B4, verification and review, started only after B5 is merged (it runs last) | auditor |
 
 ## How to work: batched, never one file or one step per message (his ask, 2026-10-28 21:13 EDT)
 
@@ -120,9 +121,26 @@ Also: a table-driven test that every command alias and value alias in `commands.
 - ⟦ONE MESSAGE⟧ Group 1: one heredoc for all four sources, the test, the manifest line and the rule file, `&&` the Test command.
 - ⟦ONE MESSAGE⟧ Group 2: the Owns check, commit, merge, push feat/text-commands, as one chained command.
 
+## B5 — /help detail pages in text-command syntax (his ask, 2026-10-29 00:07 EDT: "b5?", for B3's gap 2)
+
+Runs after B3, before B4. Follow "Every builder, in this order" with B3's merge as the predecessor (`rg "feat/text-commands-b3-help"`).
+
+**Owns:** `commands/help.js` · `scripts/helpTextCommands.test.js` · `scripts/fixtures/helpBodySnapshot.json` (regenerate it with `scripts/fixtures/captureHelpSnapshot.mjs`, only because the pages change on purpose)
+**Test:** `node scripts/helpTextCommands.test.js && node scripts/helpAnnouncement.test.js` and the help snapshot test that reads the fixture (find it with `rg -l helpBodySnapshot scripts`).
+
+1. Every /help detail page (one per command with a text form in `utils/textCommands/commands.js`) gets a text line beside its slash Usage and Examples, e.g. `**/draws** page:\`Returning Draws\`` gains `d draws returning`. Build each text form from `commands.js` (the command's first alias and the value words it accepts), never hand-written per page, so the pages cannot drift from what the parser accepts.
+2. A command with no text form (`/admin`, Dioreo Admin's) keeps slash only. Use `@Dioreo <alias>` instead of `d <alias>` when `client.textMessageContent` is false, the same rule B3 used for `mentionCommand`.
+3. Every page stays within 40 components; give the largest page's count in your reply.
+4. Test: at least three pages (draws, calendar, gunsmith) show their text line, a command with no text form shows none, and the 40 cap holds on every page. Prove it can fail.
+
+**Groups:**
+- ⟦ONE MESSAGE⟧ Group 0: reads of `commands/help.js` (every detail page builder), `utils/textCommands/commands.js`, `utils/commandMentions.js`, the three tests and the snapshot capture script.
+- ⟦ONE MESSAGE⟧ Group 1: one heredoc for `help.js` and the test, regenerate the snapshot, `&&` the Test command.
+- ⟦ONE MESSAGE⟧ Group 2: the Owns check, commit, merge, push feat/text-commands, as one chained command.
+
 ## B4 — verification and review (his ask, 2026-10-28 21:11 EDT: "a 4th 'verification and review' auditor, before it all comes back to you")
 
-Follow "Every builder, in this order" (steps 1–8), with B3's merge as the predecessor. Your job is to find what is wrong with the whole feature before the lead sees it, and fix what is objectively wrong.
+Follow "Every builder, in this order" (steps 1–8), with B5's merge as the predecessor (`rg "feat/text-commands-b5-help-pages"`). Your job is to find what is wrong with the whole feature before the lead sees it, and fix what is objectively wrong.
 
 **Owns:** every file B1, B2 and B3 changed (`git diff --name-only origin/main...origin/feat/text-commands`), for fixes only · `docs/claude/2026-10-28-text-commands-audit.md` (new, front matter `kind: record`, `status: frozen`, your report). Never the spec or this plan, never `package.json`, the changelogs or the DEVLOG, never `public/`.
 **Test:** `TEST_CACHE=0 npm test > /tmp/test.log 2>&1; echo exit=$?` and `npm run docs:audit`, exit codes read; then the same after your fixes.
