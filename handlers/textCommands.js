@@ -12,16 +12,27 @@ function ownsCustomId(customId) {
     return typeof customId === 'string' && OWNED_PREFIXES.some(prefix => customId.startsWith(prefix));
 }
 
-// The pop-up `d timestamp` alone points at: the slash command's date and time zone, nothing else (style and view are panel-only, his trim).
+// The pop-up `d timestamp` alone points at. Date and time zone first; then three optional dropdowns (Harkirat, 2026-10-29 11:07 EDT: "give the 'quick pick' list for timezones as well? and another one for the format ... + the view option as well as a dropdown. all optional"), which un-trims the spec's "style and view are panel-only". Five, Discord's most for a pop-up. The quick-pick zones are /settings' own (utils/timezoneData.js quickZoneOptions) and the formats /timestamp's own `style` choices, so neither list can drift. A typed time zone wins over a picked one. The zone fields say what a zone DOES (his ask, 2026-10-29 11:10 EDT: picking UK with "tomorrow 8pm" gives 8pm tomorrow in the UK); Discord caps a field's description at 100 characters.
+const fieldLabel = (label, description, component) => ({ type: 18, label, ...(description ? { description } : {}), component });
 function timestampModal(textCommand) {
+    const styles = require('../commands/timestamp').data.toJSON().options.find(o => o.name === 'style').choices;
+    const select = (custom_id, placeholder, options) => ({ type: 3, custom_id, placeholder, required: false, options });
     return {
         title: 'Timestamp',
         custom_id: runCustomId('txtrun_', textCommand, 'submit'),
         components: [
-            { type: 1, components: [{ type: 4, custom_id: 'datetime', label: 'Date and time', style: 1, required: true, max_length: 100, placeholder: 'e.g. tomorrow 8pm, sun 4:30pm, 19:30' }] },
-            { type: 1, components: [{ type: 4, custom_id: 'timezone', label: 'Time zone (blank = your /settings one)', style: 1, required: false, max_length: 60, placeholder: 'e.g. Toronto, Tokyo, EST' }] },
+            fieldLabel('Date and time', null, { type: 4, custom_id: 'datetime', style: 1, required: true, max_length: 100, placeholder: 'e.g. tomorrow 8pm, sun 4:30pm, 19:30' }),
+            fieldLabel('Time zone', 'Your time is read in this zone: “tomorrow 8pm” + UK = 8pm tomorrow, UK time.', { type: 4, custom_id: 'timezone', style: 1, required: false, max_length: 60, placeholder: 'e.g. Toronto, Tokyo, EST' }),
+            fieldLabel('Or pick a time zone', 'Used when none is typed above. Blank = your /settings zone.', select('timezone_pick', 'Quick pick…', require('../utils/timezoneData').quickZoneOptions().slice(0, 25))),
+            fieldLabel('Format', 'Blank = your /settings one', select('style', 'Pick a format…', styles.slice(0, 25).map(c => ({ label: c.name.slice(0, 100), value: c.value })))),
+            fieldLabel('View', 'Blank = Embed', select('view', 'Embed or Text…', [{ label: 'Embed (Styled Panel)', value: 'embed' }, { label: 'Text (Plain, Copyable)', value: 'text' }])),
         ],
     };
+}
+
+// One optional dropdown's pick from the submitted pop-up, or null.
+function picked(interaction, id) {
+    try { return interaction.fields.getStringSelectValues(id)[0] ?? null; } catch { return null; }
 }
 
 async function privately(interaction, content) {
@@ -73,7 +84,7 @@ async function handleTextCommandsInteraction(interaction) {
         return true;
     }
     const values = run.submit && interaction.isModalSubmit?.()
-        ? { datetime: interaction.fields.getTextInputValue('datetime'), timezone: interaction.fields.getTextInputValue('timezone') || null }
+        ? { datetime: interaction.fields.getTextInputValue('datetime'), timezone: interaction.fields.getTextInputValue('timezone') || picked(interaction, 'timezone_pick'), style: picked(interaction, 'style'), view: picked(interaction, 'view') }
         : run.values;
     const targets = await readTargets(interaction, run);
     if (!targets) {

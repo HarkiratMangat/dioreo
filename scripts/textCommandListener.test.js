@@ -37,8 +37,16 @@ const { handleTextCommandsInteraction } = require('../handlers/textCommands');
 const BOT = '111';
 const ran = [];
 const record = name => ({ async execute(interaction) { ran.push({ name, interaction }); } });
+// /gunsmith's textWeapon over a small weapon list, with the real pickWeapon (2026-10-29 11:05 EDT): a no-build catalogue weapon's value is its name, as the dropdown sends it.
+const WEAPON_POOL = [['AK117', 'ak117', 'AR'], ['AK-47', 'ak47', 'AR'], ['Fennec', 'fennec', 'SMG'], ['KILO 141', 'kilo141', 'AR'], ['KILO BOLT-ACTION', 'kiloboltaction', 'SNIPER'], ['PPSh-41', 'PPSh-41', 'SMG', true]]
+    .map(([weaponName, weaponKey, category, noBuild]) => ({ weaponName, weaponKey, category, noBuild: Boolean(noBuild) }));
+async function textWeapon(mode, text) {
+    const picked = require('../utils/search').pickWeapon(text, WEAPON_POOL);
+    const view = w => ({ value: w.weaponKey, label: `${w.weaponName}${w.noBuild ? ' · no build yet' : ''}` });
+    return { hit: picked.hit ? view(picked.hit) : null, several: picked.several.map(view), loose: picked.loose.map(view) };
+}
 const commands = new Map([
-    ['calendar', record('calendar')], ['gunsmith', record('gunsmith')], ['timestamp', { ...record('timestamp'), expandShorthand: require('../commands/timestamp').expandShorthand }],
+    ['calendar', record('calendar')], ['gunsmith', { ...record('gunsmith'), textWeapon }], ['timestamp', { ...record('timestamp'), expandShorthand: require('../commands/timestamp').expandShorthand }],
     ['patch', record('patch')], ['draw', record('draw')], ['draws', record('draws')],
     ['Convert Times#3', record('Convert Times')], ['View Colors#2', record('View Colors')],
 ]);
@@ -107,11 +115,31 @@ async function check(name, fn) {
         assert.ok(JSON.stringify(posts[0]).includes('Did you mean'));
         assert.deepStrictEqual(buttons(posts[0]), ['"custom_id":"txtrun_gunsmith~weapon=ak117"', '"custom_id":"txtrun_gunsmith~weapon=ak47"']);
     });
-    await check('the same ambiguity after d is silent', async (before) => {
-        const { message, posts } = fakeMessage('d gs ak');
+    await check('d build kilo: two weapons fit every word, so Did you mean after d too', async (before) => {
+        const { message, posts } = fakeMessage('d build kilo');
         await onMessage(message);
         assert.strictEqual(ran.length, before);
-        assert.strictEqual(posts.length, 0);
+        assert.deepStrictEqual(buttons(posts[0]), ['"custom_id":"txtrun_gunsmith~weapon=kilo141"', '"custom_id":"txtrun_gunsmith~weapon=kiloboltaction"']);
+    });
+    await check('kilo ar opens the AR Kilo; lol after d is silent, after @Dioreo only offered', async (before) => {
+        await onMessage(fakeMessage('d gs kilo ar').message);
+        assert.strictEqual(lastRun().interaction.options.getString('weapon'), 'kilo141');
+        const after = ran.length;
+        const quiet = fakeMessage('d gs lol');
+        await onMessage(quiet.message);
+        assert.strictEqual(quiet.posts.length, 0);
+        const asked = fakeMessage(`<@${BOT}> gs lol`);
+        await onMessage(asked.message);
+        assert.strictEqual(ran.length, after, 'a loose match never runs');
+        assert.deepStrictEqual(buttons(asked.posts[0]), ['"custom_id":"txtrun_gunsmith~weapon=kilo141"']);
+        assert.strictEqual(after, before + 1);
+    });
+    await check('a weapon with no build opens through its name, as the dropdown sends it', async () => {
+        await onMessage(fakeMessage('d gs ppsh').message);
+        assert.strictEqual(lastRun().interaction.options.getString('weapon'), 'PPSh-41');
+        const { message, posts } = fakeMessage(`<@${BOT}> gs ppsh 4`);
+        await onMessage(message);
+        assert.ok(JSON.stringify(posts[0] || {}).includes('no build yet') || lastRun().interaction.options.getString('weapon') === 'PPSh-41');
     });
     await check('dior gunsmith skins are cool sends nothing', async (before) => {
         const { message, posts } = fakeMessage('dior gunsmith skins are cool');
@@ -259,7 +287,7 @@ async function check(name, fn) {
             async deferReply(o) { this.deferred = true; replies.push({ defer: o }); },
             async reply(o) { replies.push(o); }, async editReply(o) { replies.push({ edit: o }); },
             async showModal(m) { replies.push({ modal: m }); },
-            fields: { getTextInputValue: k => (extra.fields || {})[k] || '' },
+            fields: { getTextInputValue: k => (extra.fields || {})[k] || '', getStringSelectValues: k => ((extra.selects || {})[k] ? [extra.selects[k]] : []) },
         };
         return { i, replies };
     };
@@ -275,11 +303,21 @@ async function check(name, fn) {
         await handleTextCommandsInteraction(open.i);
         const modal = open.replies[0]?.modal;
         assert.strictEqual(modal?.custom_id, 'txtrun_timestamp~submit');
-        const submit = click(modal.custom_id, { modal: true, fields: { datetime: 'friday 6pm', timezone: 'Tokyo' } });
+        // Five fields, Discord's most: date, typed zone, then the optional quick-pick zone, format and view dropdowns (his ask, 2026-10-29 11:07 EDT).
+        assert.deepStrictEqual(modal.components.map(c => c.component.custom_id), ['datetime', 'timezone', 'timezone_pick', 'style', 'view']);
+        assert.ok(modal.components.slice(2).every(c => c.component.type === 3 && c.component.required === false), 'the dropdowns are optional');
+        assert.ok(modal.components[3].component.options.some(o => o.value === 'short_list'), 'formats are /timestamp\'s own');
+        const submit = click(modal.custom_id, { modal: true, fields: { datetime: 'friday 6pm', timezone: 'Tokyo' }, selects: { timezone_pick: 'Europe/London', style: 'relative', view: 'text' } });
         await handleTextCommandsInteraction(submit.i);
         assert.strictEqual(lastRun().name, 'timestamp');
         assert.strictEqual(lastRun().interaction.options.getString('datetime'), 'friday 6pm');
-        assert.strictEqual(lastRun().interaction.options.getString('timezone'), 'Tokyo');
+        assert.strictEqual(lastRun().interaction.options.getString('timezone'), 'Tokyo', 'a typed zone wins over a picked one');
+        assert.strictEqual(lastRun().interaction.options.getString('style'), 'relative');
+        assert.strictEqual(lastRun().interaction.options.getString('view'), 'text');
+        const picks = click(modal.custom_id, { modal: true, fields: { datetime: 'friday 6pm' }, selects: { timezone_pick: 'Europe/London' } });
+        await handleTextCommandsInteraction(picks.i);
+        assert.strictEqual(lastRun().interaction.options.getString('timezone'), 'Europe/London', 'the picked zone when none is typed');
+        assert.strictEqual(lastRun().interaction.options.getString('style'), null, 'blank format: /settings decides');
     });
     await check('a button whose stored value expired says to run it again', async () => {
         const { i, replies } = click('txtrun_~nope');

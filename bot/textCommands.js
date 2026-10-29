@@ -226,12 +226,37 @@ async function guessWeapon(message, text) {
     return exact.length === 1 ? String(exact[0].value) : null;
 }
 
-// A run's lookups. Returns { kind: 'run', verdict } with every value filled, { kind: 'pick', … } (several candidates: Did you mean, up to 5), { kind: 'noMatch', text }, or null (silent). After `d`/`dior` anything but one confident hit is silent (`dior gunsmith skins are cool`); only `@Dioreo` or `/` gets the card or the line.
+// A weapon named after gunsmith (`d gs kilo ar`): /gunsmith's own textWeapon (commands/gunsmith.js), read through client.commands. Held a minute like the suggestions above; null when the lookup failed.
+async function weaponFor(message, textCommand, text) {
+    const key = `${textCommand.slash}|${textCommand.sub || ''}|weapon*|${squash(text)}`;
+    const hit = suggestions.get(key);
+    if (hit && Date.now() - hit.at < SUGGEST_MS) return hit.list;
+    try {
+        const found = await message.client.commands.get('gunsmith').textWeapon(textCommand.sub === 'dmz' ? 'DMZ' : 'MP', text);
+        suggestions.set(key, { list: found, at: Date.now() });
+        return found;
+    } catch (err) {
+        console.error(`Text command ${textCommand.name}: could not look up "${text}":`, err?.message || err);
+        return null;
+    }
+}
+
+// A run's lookups. Returns { kind: 'run', verdict } with every value filled, { kind: 'pick', … } (several candidates: Did you mean, up to 5), { kind: 'noMatch', text }, or null (silent). A weapon goes through weaponFor above; a patch-notes season through the slash command's suggestions, where after `d`/`dior` anything but one confident hit is silent; only `@Dioreo` or `/` gets the card or the line.
 async function resolveRun(message, verdict) {
     const textCommand = findTextCommand(verdict.command);
     if (!textCommand) return null;
     const values = { ...(verdict.values || {}) };
     for (const ac of verdict.autocomplete || []) {
+        if (ac.option === 'weapon') {
+            const found = await weaponFor(message, textCommand, ac.text);
+            if (!found) return null;
+            if (found.hit) { values.weapon = found.hit.value; continue; }
+            // Every typed word named a weapon, but more than one fits (`d build kilo`: KILO 141 and KILO BOLT-ACTION). That is a weapon request whichever prefix it came with, so it gets Did you mean after `d` too (Harkirat, 2026-10-29 11:05 EDT: "how do we handle when multiple weapons fit the search? such as if someone typed 'd build kilo'"). A LOOSE match (no typed word is a weapon word: `d gs lol`) is offered only after @Dioreo, and never run.
+            const list = found.several.length ? found.several : (verdict.addressed ? found.loose : []);
+            if (list.length) return { kind: 'pick', textCommand, choices: list.slice(0, 5).map(c => ({ label: c.label, values: { ...values, weapon: c.value } })) };
+            if (!verdict.addressed) return null;
+            return { kind: 'noMatch', text: ac.text };
+        }
         const { hit, several } = pickChoice(await suggest(message, textCommand, ac.option, ac.text), ac.text, ac.first);
         if (hit) { values[ac.option] = String(hit.value); continue; }
         if (!verdict.addressed) return null;
