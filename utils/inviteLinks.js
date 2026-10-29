@@ -18,11 +18,11 @@ function resolveClientId(client) {
  * The three install entry points, as absolute discord.com URLs.
  *
  *   guild   -- "Add to a Server". `integration_type=0` is Discord's GUILD_INSTALL. It asks for
- *              GUILD_PERMISSIONS below: the message permissions v4's text commands will need. Asked for
+ *              GUILD_PERMISSIONS below: the message permissions text commands use (bot/textCommands.js). Asked for
  *              NOW, at v3's launch (Harkirat, 2026-10-20 10:15 EDT), because a permission added later
  *              only reaches a server whose admin re-authorizes the bot, while gateway intents can be
- *              switched on later with no reinstall. Until text commands ship NO code uses them: the bot
- *              still answers only through the interaction-response webhook (root CLAUDE.md). Keep this
+ *              switched on later with no reinstall. Text commands (2026-10-28) use them to reply where a
+ *              member addressed Dioreo; nothing posts on its own (root CLAUDE.md's interactions rule). Keep this
  *              set equal to the Developer Portal's Default Install Settings on each app, or the
  *              `chooser` link and the profile "Add App" button ask for something else.
  *              `scope=bot+applications.commands` is required for a guild install -- `bot` alone

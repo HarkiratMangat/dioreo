@@ -6,8 +6,8 @@ published: true
 
 # Terms of Service — Dioreo
 
-**Effective date:** 27 October 2026
-**Version:** 1.6
+**Effective date:** 28 October 2026
+**Version:** 1.7
 **Applies to:** the Dioreo Discord applications, the public **Dioreo** app and its companion **Dioreo Admin** app (together, the "Bot"), and the website these documents are published on (the "Site")
 
 
@@ -57,7 +57,7 @@ The admin portal at `portal.dioreo.app` is not part of the Site. It is an admin 
 **You accept these Terms by doing any of the following:**
 
 1. **Installing** the Bot to your Discord account **or adding it to a server**, or authorising it via Discord's OAuth flow;
-2. **Invoking any command** — every slash command, at every invocation;
+2. **Invoking any command** — every slash command or text command, at every invocation;
 3. **Interacting with any component** the Bot presents — any button, dropdown, modal, or menu;
 4. **Receiving output** from the Bot in response to something you did; or
 5. **Continuing to use** the Bot after a change to these Terms takes effect.
@@ -125,6 +125,7 @@ The Bot is a **Discord application** (see §4.1 for how it is installed) providi
 | Right-click Apps | View Colors on a person or a message, Convert Times on a message |
 | `/admin` | Lets a server's admins choose where the Bot answers publicly |
 | `/timestamp` | Discord timestamp generation in your timezone |
+| Text commands | In a server: type `@Dioreo today` (or, where Discord allows it, `d today`, `dior today` or `/today`) to run a command where slash commands are hidden |
 | `/settings` | Your display preferences |
 | Accent colours | Message colours matched to your Discord profile |
 
@@ -133,12 +134,12 @@ The Bot is a **Discord application** (see §4.1 for how it is installed) providi
 The Bot can be installed two ways:
 
 - **To your account** (a user install): it travels with you across servers and DMs, is not a member of any server, and holds no permissions anywhere.
-- **To a server** (a server install, done by someone allowed to manage that server): the Bot joins the server as a member and receives the server's basic structure (its name, channels and roles) from Discord so it can work there. The install asks for a small set of message permissions (View Channels, Send Messages, Send Messages in Threads, Embed Links, Attach Files, Read Message History, Use External Emojis and Add Reactions) for text commands planned for a later version. **It uses none of them yet**, the server can withhold any of them, and it never asks for a moderation or administrator permission.
+- **To a server** (a server install, done by someone allowed to manage that server): the Bot joins the server as a member and receives the server's basic structure (its name, channels and roles) from Discord so it can work there. The install asks for a small set of message permissions (View Channels, Send Messages, Send Messages in Threads, Embed Links, Attach Files, Read Message History, Use External Emojis and Add Reactions) for text commands (§4), which use them to answer a member who addresses the Bot in a channel. The server can withhold any of them, and it never asks for a moderation or administrator permission.
 
 Either way:
 
-- It responds to interactions someone starts. It does not have Discord's Message Content permission, does not read ordinary messages (Privacy Policy §3), and does not moderate.
-- It sends a direct message only to someone who asked for it: reminders you turn on with `/remind`, and news about a build you submitted or disputed. It never posts in a channel on its own.
+- It responds to what someone starts: a slash command, a button, or, in a server, a message that begins by addressing it as a text command. Discord lets it see the messages in a server it is in; it ignores every one not addressed to it, keeps none (Privacy Policy §3), and does not moderate.
+- It sends a direct message only to someone who asked for it: reminders you turn on with `/remind`, news about a build you submitted or disputed, and, at most once a day per channel, a note that it can't post in a channel where you ran a text command. It posts in a channel only to answer a text command addressed to it there, never on its own.
 - A server's admins can limit where it answers publicly with `/admin` (Privacy Policy §2.1a), and can remove it at any time (§13.1).
 - Whether it works in a given server is also controlled by that server's own Discord settings and by Discord, not by us.
 
@@ -454,6 +455,7 @@ Kept here as well as in git, because the repository's visibility can change (§7
 
 | Version | Effective | What changed |
 |---|---|---|
+| 1.7 | 28 October 2026 | **Text commands.** In a server, the Bot now also answers a message that starts by addressing it (`@Dioreo today`, and where Discord allows it `d today`, `dior today` or `/today`). §2.1 names a text command as a way of invoking a command; §4 lists the feature; §4.1 says the message permissions a server install asks for are now used for it, that the Bot ignores every other message and keeps none, and that it may send one direct message when it can't post where you asked. **None of this reduces your rights.** |
 | 1.6 | 27 October 2026 | **Dioreo v3.** The Bot can now be added to a server as well as to your account: §4.1 says what a server install receives and asks for, §2.1 and §13.1 cover adding and removing it, and the scope line names the companion **Dioreo Admin** app. §4 lists the new features. §5.1 says what `/draw calculator`'s "Recommended Bundle", "Suggested Purchase" and "Stock Up" mean: arithmetic on the amount you entered, not advice to buy. §8 describes the one AI feature as it now is: admins the owner has granted can use it, and the screenshot it reads can come from someone else's message. §1.1 says the admin portal is covered as part of the Bot, and Cloudflare is added to §7.4 and §9. Editorially, these Terms kept two change lists, this table and a shorter appendix, which told the same history twice and disagreed: the appendix numbered the changes of 1 August as three versions (1.2, 1.3, 1.4), which were never published separately, and it stopped before 1.5. This table is now the only one; the two changes only the appendix recorded are added to the 1.4 row, and the appendix is removed. **None of this reduces your rights.** |
 | 1.5 | 4 August 2026 | **The Bot was renamed from Dior's Builds to Dioreo.** A change of name only: same operator, same Bot, same data, same terms — see §1 and §19.2. §7.1 keeps the former name protected alongside the new one. **Nothing you agreed to has changed**, no new data is collected, and no right of yours is reduced. |
 | 1.4 | 1 August 2026 | Brought the Site into scope. Version 1.1 applied only to the Bot, while the Privacy Policy had begun describing the website — so the warranty disclaimer (§14) and the limitation of liability (§15) did not reach the pages these documents are published on. Adds §1.1 defining the Site and saying exactly which Terms cover it and which do not. **No new obligation on you and no reduction of your rights** — the Site has nothing to sign up for, and the conduct, eligibility and suspension provisions still apply to the Bot alone. The same version added Discord (`diorswrld`) as a second contact route in §1 and §20, alongside the canonical email (anything that has to be on the record still goes by email), and broadened the closing non-affiliation notice to name TiMi Studio Group, Tencent, and the rights holders of licensed in-game content, matching the notice the Site already carried. |
