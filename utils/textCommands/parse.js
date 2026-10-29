@@ -1,4 +1,7 @@
-// utils/textCommands/parse.js -- reads a plain channel message and decides whether it is a text command for Dioreo (text commands, 2026-10-28 16:47 EDT). Pure: no discord.js, no I/O, so every rule below is testable as a table (scripts/textCommandParse.test.js).
+// utils/textCommands/parse.js -- reads a plain channel message and decides whether it is a text command for Dioreo (text commands, 2026-10-28 16:47 EDT). Pure: no discord.js, no I/O, so every rule below is testable as a table (scripts/textCommandParse.test.js, and scripts/textCommandArgs.test.js for the options).
+//
+// OPTIONS (B2, 2026-10-29): the words after a command fill its options through utils/textCommands/args.js. After `d`/`dior` every word must be understood and a date must parse, or Dioreo stays silent; after `@Dioreo` or `/` a word it did not understand gets a one-line hint (`usage`), a date that does not parse a "No match" line, and a missing date a one-button card (`needsInput`). A command with no text options keeps the PR 1 rule below: clearly addressed, trailing text is ignored.
+const { parseArgs, sameWord } = require('./args');
 //
 // THE PRINCIPLE (think-pass, 2026-10-28 16:46 EDT): a channel is shared space, unlike a slash command, which is explicit. When it is unclear whether a message is meant for Dioreo, stay silent. The one loud path is a message that STARTS with a mention of the bot itself.
 //
@@ -57,7 +60,7 @@ function buildWordIndex(commands) {
     const index = [];
     for (const cmd of commands) for (const w of cmd.words) {
         const parts = w.toLowerCase().split(/\s+/);
-        index.push({ cmd, parts, joined: parts.join('') });
+        index.push({ cmd, parts, joined: parts.join(''), word: w.toLowerCase() });
     }
     // Longer spellings first, so `draw prices` wins over `draw`.
     return index.sort((a, b) => b.parts.length - a.parts.length || b.joined.length - a.joined.length);
@@ -65,26 +68,29 @@ function buildWordIndex(commands) {
 
 function matchCommand(tokens, index, { allowTypos }) {
     const lower = tokens.map(t => t.toLowerCase());
+    // Singular and plural both match (spec, B2): `d draw`, `d event`, `d setting`. `word` says which spelling matched, so a calendar shortcut word (`d modes`) can open its page.
     for (const entry of index) {
         const n = entry.parts.length;
-        if (lower.slice(0, n).join(' ') === entry.parts.join(' ')) return { cmd: entry.cmd, used: n, fuzzy: false };
-        if (n > 1 && lower[0] === entry.joined) return { cmd: entry.cmd, used: 1, fuzzy: false };
+        if (lower.length >= n && entry.parts.every((p, i) => (i === n - 1 ? sameWord(lower[i], p) : lower[i] === p))) return { cmd: entry.cmd, used: n, fuzzy: false, word: entry.word };
+        if (n > 1 && sameWord(lower[0], entry.joined)) return { cmd: entry.cmd, used: 1, fuzzy: false, word: entry.word };
     }
     if (!allowTypos || !lower.length) return { candidates: [] };
     const hits = new Map();
     for (const entry of index) {
         const n = entry.parts.length;
         const spaced = lower.slice(0, n).join(' ');
-        if (lower.length >= n && n > 1 && entry.parts.every((p, i) => p === lower[i] || isTypoOf(lower[i], p))) hits.set(entry.cmd.name, { cmd: entry.cmd, used: n });
-        else if (isTypoOf(lower[0], entry.joined) || (n === 1 && isTypoOf(spaced, entry.joined))) { if (!hits.has(entry.cmd.name)) hits.set(entry.cmd.name, { cmd: entry.cmd, used: 1 }); }
+        if (lower.length >= n && n > 1 && entry.parts.every((p, i) => p === lower[i] || isTypoOf(lower[i], p))) hits.set(entry.cmd.name, { cmd: entry.cmd, used: n, word: entry.word });
+        else if (isTypoOf(lower[0], entry.joined) || (n === 1 && isTypoOf(spaced, entry.joined))) { if (!hits.has(entry.cmd.name)) hits.set(entry.cmd.name, { cmd: entry.cmd, used: 1, word: entry.word }); }
     }
     const list = [...hits.values()];
     if (list.length === 1) return { ...list[0], fuzzy: true };
     return { candidates: list.map(h => h.cmd) };
 }
 
-// The verdict. kind: 'run' | 'didYouMean' | 'help' | 'roleHint' | 'emojiReply' | null (stay silent).
-function parseTextCommand(content, { botId, botRoleId = null, prefixes = [], commands = [] } = {}) {
+// The verdict. kind: 'run' | 'didYouMean' | 'help' | 'roleHint' | 'emojiReply' | 'usage' | 'needsInput' | 'noMatch' | null (stay silent).
+// A run carries `values` (the options), `autocomplete` (option text still to look up), `form` ('convertTimes' / 'viewColors' for the reply forms) and `addressed`. `weaponGuess` rides on a verdict whose first word named no command: bot/textCommands.js runs gunsmith when it is an exact weapon name (`d ak117`), and otherwise acts on the verdict as it is.
+// isReply: the message replies to another one (`d timestamp` then means Convert Times on it). checkDatetime: tests may pass their own; args.js defaults to /timestamp's parser.
+function parseTextCommand(content, { botId, botRoleId = null, prefixes = [], commands = [], isReply = false, checkDatetime } = {}) {
     const trigger = readTrigger(content, { botId, botRoleId, prefixes });
     if (!trigger) return { kind: null };
     const { via, rest, spaced } = trigger;
@@ -96,17 +102,39 @@ function parseTextCommand(content, { botId, botRoleId = null, prefixes = [], com
     // Typos are forgiven only when the message clearly addresses Dioreo, or the prefix is followed by a space (`d todya`). Glued forms must be exact, or `d` + `raws` would fire on the plain word "draws".
     const result = matchCommand(tokens, buildWordIndex(commands), { allowTypos: addressed || spaced });
     if (result.cmd) {
-        const trailing = tokens.slice(result.used).join(' ');
-        // `dior draws o`: a stray key or two after the command is forgiven. Longer trailing text after `d`/`dior` is chat (`d today is cold lol`).
-        const strayOnly = trailing.length <= 2;
-        if (!trailing || (result.fuzzy ? strayOnly : (addressed || strayOnly))) return { kind: 'run', via, command: result.cmd.name, args: '', fuzzy: result.fuzzy };
-        if (addressed) return { kind: 'didYouMean', via, candidates: [result.cmd.name] };
-        return { kind: null };
+        const cmd = result.cmd;
+        const base = { via, command: cmd.name, fuzzy: result.fuzzy, addressed };
+        if (!cmd.options?.length) {
+            const trailing = tokens.slice(result.used).join(' ');
+            // `dior draws o`: a stray key or two after the command is forgiven. Longer trailing text after `d`/`dior` is chat (`d today is cold lol`).
+            const strayOnly = trailing.length <= 2;
+            if (!trailing || (result.fuzzy ? strayOnly : (addressed || strayOnly))) return { kind: 'run', ...base, args: '', values: {}, autocomplete: [], hasArgs: false };
+            if (addressed) return { kind: 'didYouMean', via, candidates: [cmd.name] };
+            return { kind: null };
+        }
+        const parsed = parseArgs(tokens.slice(result.used), cmd, null, { allowTypos: addressed || spaced, prefill: (cmd.presets || {})[result.word] || {}, checkDatetime });
+        // The same stray-key forgiveness: one or two characters nothing understood are ignored (`dior draws o`).
+        const leftover = parsed.leftover.join(' ').length <= 2 ? [] : parsed.leftover;
+        if (leftover.length) {
+            if (result.fuzzy) return addressed ? { kind: 'didYouMean', via, candidates: [cmd.name] } : { kind: null };
+            // `@Dioreo calendar purple` -> "Try `calendar events`…"; `d calendar is wild today` is chat.
+            return addressed ? { kind: 'usage', ...base } : { kind: null };
+        }
+        // `d timestamp is wrong lol` is chat; after `@Dioreo` it gets a line saying the date was not understood.
+        if (parsed.unresolved) return addressed ? { kind: 'noMatch', ...base, option: parsed.unresolved.option, text: parsed.unresolved.text } : { kind: null };
+        const values = parsed.options;
+        let form = null;
+        if (cmd.replyForm === 'convertTimes' && isReply && !values.datetime) form = 'convertTimes';
+        else if (parsed.missing.length) return { kind: 'needsInput', ...base, missing: parsed.missing };
+        if (cmd.replyForm === 'viewColors' && (values.someone || isReply)) form = 'viewColors';
+        return { kind: 'run', ...base, args: '', values, autocomplete: parsed.autocomplete, hasArgs: parsed.hasArgs, form };
     }
+    // A first word that names no command may be a weapon (`d ak117`, his "also bare as `d ak117`"). Only spaced or clearly addressed, and short: a glued `dak117` must be exact like every glued form, and the guess costs bot/textCommands.js one lookup.
+    const weaponGuess = (addressed || spaced) && commands.some(c => c.name === 'gunsmith') && tokens.length <= 3 && rest.length <= 24 ? tokens.join(' ') : null;
     // Only a leading bot mention earns a reply to something unrecognised. One or two words read as a command attempt (help card, or Did you mean); three or more are someone talking TO Dioreo (`@Dioreo is the best bot`), which gets a one-emoji reply. His call 2026-10-28 17:04 EDT: "with @ mention and 3 or more words, have it just reply to the message with an emoji".
-    if (via !== 'mention') return { kind: null };
-    if (tokens.length >= 3) return { kind: 'emojiReply', via };
-    return result.candidates.length ? { kind: 'didYouMean', via, candidates: result.candidates.map(c => c.name) } : { kind: 'help', via };
+    if (via !== 'mention') return { kind: null, via, addressed, weaponGuess };
+    if (tokens.length >= 3) return { kind: 'emojiReply', via, addressed, weaponGuess };
+    return result.candidates.length ? { kind: 'didYouMean', via, addressed, weaponGuess, candidates: result.candidates.map(c => c.name) } : { kind: 'help', via, addressed, weaponGuess };
 }
 
 module.exports = { parseTextCommand, typoDistance, isTypoOf, readTrigger };

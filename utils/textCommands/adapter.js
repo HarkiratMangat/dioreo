@@ -7,19 +7,25 @@
 //   - ...EXCEPT when the SERVER's /admin rule forces hidden (attachGuildPolicy sets dioreoPolicy.visibility). A normal message can never be private, so the answer becomes the Open privately card instead, and every later send is swallowed: nothing private is ever posted publicly.
 //   - Never pings: replied_user is always false and allowed_mentions defaults to none.
 const { Routes } = require('discord.js');
-const { toIdPart } = require('./commands');
+const { toIdPart, fromIdPart, findTextCommand } = require('./commands');
 
 const EPHEMERAL = 64;
 
 // A command that opens a pop-up first cannot do that from a message (Discord only opens a modal in answer to an interaction). bot/textCommands.js turns this into a "use the slash command" line.
 class TextCommandRefused extends Error {}
 
-// Every getter a command might call on a command with no options. getSubcommand answers the text command's own subcommand, so /draw prices and /draw calculator route as they do from Discord.
-function buildOptions({ sub = null } = {}) {
+// Every getter a command might call. `values` are the options utils/textCommands/args.js read from the message ({ page: 'events' }, { datetime: 'tomorrow 8pm' }); anything not in them answers null, `visibility` included, so a text reply never carries one. getSubcommand answers the text command's own subcommand, so /draw prices and /draw calculator route as they do from Discord.
+function buildOptions({ sub = null, values = {} } = {}) {
     const nil = () => null;
+    const has = name => values[name] !== undefined && values[name] !== null && values[name] !== '';
+    const num = name => (has(name) && Number.isFinite(Number(values[name])) ? Number(values[name]) : null);
     return {
-        getString: nil, getInteger: nil, getNumber: nil, getBoolean: nil, getUser: nil, getMember: nil,
-        getChannel: nil, getRole: nil, getAttachment: nil, getMentionable: nil, get: nil,
+        getString: name => (has(name) ? String(values[name]) : null),
+        getInteger: name => (num(name) === null ? null : Math.trunc(num(name))),
+        getNumber: num,
+        getBoolean: name => (has(name) ? ['true', '1', 'yes'].includes(String(values[name]).toLowerCase()) : null),
+        getUser: nil, getMember: nil, getChannel: nil, getRole: nil, getAttachment: nil, getMentionable: nil,
+        get: name => (has(name) ? { name, value: values[name] } : null),
         getFocused: () => '',
         getSubcommandGroup: () => null,
         getSubcommand: (required = true) => {
@@ -27,8 +33,55 @@ function buildOptions({ sub = null } = {}) {
             if (required) throw new Error('This text command has no subcommand');
             return null;
         },
-        data: [],
+        data: Object.keys(values).filter(has).map(name => ({ name, value: values[name] })),
     };
+}
+
+// WHAT A TEXT-COMMAND BUTTON CARRIES (B2, 2026-10-29). `txtrun_<command>` and `txtpriv_<command>` gain `~<payload>`: the options as `name=value&…` (values URI-encoded), `@m=<id>` / `@u=<id>` for a reply form's message or person, or the literal `open` (the timestamp pop-up) / `submit` (its answer). A payload that would push the id past Discord's 100 characters is held in memory for 15 minutes as `txtrun_~<id>`; after that the click says to run it again. Ids from before (no `~`) still answer.
+const RUN_STORE_MS = 15 * 60 * 1000;
+const runStore = new Map();
+
+function encodePayload({ values = {}, targetMessageId = null, targetUserId = null } = {}) {
+    const pairs = Object.entries(values).filter(([, v]) => v !== undefined && v !== null && v !== '').map(([k, v]) => `${k}=${encodeURIComponent(String(v))}`);
+    if (targetMessageId) pairs.push(`@m=${targetMessageId}`);
+    if (targetUserId) pairs.push(`@u=${targetUserId}`);
+    return pairs.join('&');
+}
+
+function runCustomId(prefix, textCommand, payload = '') {
+    const base = `${prefix}${toIdPart(textCommand.name)}`;
+    if (!payload) return base;
+    if (base.length + 1 + payload.length <= 100) return `${base}~${payload}`;
+    const now = Date.now();
+    for (const [key, hit] of runStore) if (now - hit.at > RUN_STORE_MS) runStore.delete(key);
+    const id = `${now.toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+    runStore.set(id, { name: textCommand.name, payload, at: now });
+    return `${prefix}~${id}`;
+}
+
+// `rest` is the custom_id after its prefix. Returns { textCommand, values, targetMessageId, targetUserId, open, submit } or { expired: true }.
+function readRunCustomId(rest) {
+    let name, payload;
+    if (rest.startsWith('~')) {
+        const hit = runStore.get(rest.slice(1));
+        if (!hit || Date.now() - hit.at > RUN_STORE_MS) return { expired: true };
+        ({ name, payload } = hit);
+    } else {
+        const cut = rest.indexOf('~');
+        name = fromIdPart(cut < 0 ? rest : rest.slice(0, cut));
+        payload = cut < 0 ? '' : rest.slice(cut + 1);
+    }
+    const out = { textCommand: findTextCommand(name), values: {}, targetMessageId: null, targetUserId: null, open: payload === 'open', submit: payload === 'submit' };
+    if (out.open || out.submit) return out;
+    for (const pair of payload.split('&').filter(Boolean)) {
+        const eq = pair.indexOf('=');
+        if (eq < 1) continue;
+        const key = pair.slice(0, eq), value = decodeURIComponent(pair.slice(eq + 1));
+        if (key === '@m') out.targetMessageId = value;
+        else if (key === '@u') out.targetUserId = value;
+        else out.values[key] = value;
+    }
+    return out;
 }
 
 // discord.js reply options -> a raw REST message body. Builders are flattened with toJSON().
@@ -45,7 +98,7 @@ function toBody(opts) {
 }
 
 // The card shown where the server's /admin rule says answers are private (his mock-up A, 2026-10-28 17:09 EDT). Anyone may click: it opens THEIR OWN view, privately (think-pass, 2026-10-28 16:46 EDT), so there is nothing to lock.
-function privateCardBody(textCommand) {
+function privateCardBody(textCommand, payload = '') {
     return {
         flags: 32768,
         allowed_mentions: { parse: [], replied_user: false },
@@ -53,13 +106,14 @@ function privateCardBody(textCommand) {
             type: 17,
             components: [
                 { type: 10, content: `-# This server shows Dioreo's answers privately here.` },
-                { type: 1, components: [{ type: 2, style: 2, label: 'Open privately', custom_id: `txtpriv_${toIdPart(textCommand.name)}` }] },
+                { type: 1, components: [{ type: 2, style: 2, label: 'Open privately', custom_id: runCustomId('txtpriv_', textCommand, payload) }] },
             ],
         }],
     };
 }
 
-function createTextInteraction(message, { textCommand, via }) {
+// values: the options read from the message. targetUser / targetMember / targetMessage: what a reply form acts on (View Colors' person, Convert Times' message), read by those modules exactly as from a right-click. The Open privately card carries all of it, so the private copy is the same answer.
+function createTextInteraction(message, { textCommand, via, values = {}, targetUser = null, targetMember = null, targetMessage = null }) {
     const client = message.client;
     const channel = message.channel;
     const rest = client.rest;
@@ -97,7 +151,7 @@ function createTextInteraction(message, { textCommand, via }) {
 
     async function openPrivately() {
         if (privateCard) return;
-        await send(privateCardBody(textCommand));
+        await send(privateCardBody(textCommand, encodePayload({ values, targetMessageId: targetMessage?.id, targetUserId: targetUser?.id })));
         privateCard = true;
     }
 
@@ -123,7 +177,11 @@ function createTextInteraction(message, { textCommand, via }) {
         authorizingIntegrationOwners: { 0: message.guildId },
         memberPermissions: message.member ? channel.permissionsFor(message.member) : null,
         appPermissions: me ? channel.permissionsFor(me) : null,
-        options: buildOptions({ sub: textCommand.sub }),
+        options: buildOptions({ sub: textCommand.sub, values }),
+        targetUser,
+        targetMember,
+        targetMessage,
+        targetId: targetMessage?.id || targetUser?.id || null,
         ephemeral: false,
         get deferred() { return deferred; },
         get replied() { return replied; },
@@ -187,4 +245,4 @@ function createTextInteraction(message, { textCommand, via }) {
     return interaction;
 }
 
-module.exports = { createTextInteraction, buildOptions, TextCommandRefused, privateCardBody };
+module.exports = { createTextInteraction, buildOptions, TextCommandRefused, privateCardBody, encodePayload, runCustomId, readRunCustomId };
