@@ -124,4 +124,12 @@ async function execute(interaction) {
     });
 }
 
-module.exports = { data, execute, renderScopeBrowse };
+// What a text command's weapon words mean (2026-10-29 11:05 EDT): bot/textCommands.js reaches this through client.commands, never a require(), since bot/ is structural to the hotpatch planner. { hit, several, loose }, each weapon as { value, label }: value is what the weapon option takes (its weaponKey, or a no-build catalogue weapon's name, exactly as the dropdown sends them), so a weapon with no build opens the same No build yet card picking it in the dropdown does; label is its name, marked when it has no build.
+async function textWeapon(mode, text) {
+    const { weaponCandidates } = require('../utils/loadoutLookup');
+    const picked = require('../utils/search').pickWeapon(text, await weaponCandidates(mode));
+    const view = w => ({ value: String(w.weaponKey), label: `${w.weaponName}${w.noBuild ? ' · no build yet' : ''}` });
+    return { hit: picked.hit ? view(picked.hit) : null, several: picked.several.map(view), loose: picked.loose.map(view) };
+}
+
+module.exports = { data, execute, renderScopeBrowse, textWeapon };

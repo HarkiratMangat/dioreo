@@ -43,3 +43,37 @@ Every new test was proven able to fail: eleven mutations (the usage line restore
 1. **`@Dioreo time to sleep` answers "Couldn't read “to sleep” as a date or time."** The rules table says that after `@Dioreo`, words Dioreo doesn't understand are ignored and the command runs with what it understood. For timestamp that would leave no date, which is the one-button pop-up card. Keep the "Couldn't read" line, or show the card?
 2. **After `d`, a weapon runs when the search returns exactly one weapon, even through its look-alike or typo fallback.** Measured against a sample weapon list: `d gs lol` and `d meta lol` both open the Kilo 141 ("lol" folds to "101"). The spec's principle is "when unsure, stay silent". Should a weapon after `d` need an exact or starts-with match, as a bare `d ak117` already does?
 3. **PRIVACY §2.3 wording (v1.12, not yet published):** the text-commands bullet now reads "your last text command and when you ran it, when the Bot last answered in each channel, which messages it has already answered, the words after a command that it looked up as a weapon or a season (so the same words don't search again), and a button's choices when they are too long to fit in the button, each cleared within a quarter of an hour; and whether it has already told you it can't post in a channel, kept for a day". OK?
+
+## Follow-up in the same thread (2026-10-29 11:25 EDT, not yet pushed when written)
+
+| His answer or ask | What was done |
+| --- | --- |
+| Question 1: "an error message for that is fine" | `@Dioreo time to sleep` keeps the "Couldn't read" line. No change. |
+| Question 2: `lol` opening the KILO 141 is "a bit too loose"; "142", "kilo ar" should open it; then "sure build" | `utils/search.js` `pickWeapon` matches words, not fragments, over every weapon (`utils/loadoutLookup.js` `weaponCandidates`, no-build ones included, which open the No build yet card as the dropdown does), read by text commands through `commands/gunsmith.js` `textWeapon`. Several weapons fitting every word (`d build kilo`) get Did you mean after `d` too; a loose match is only offered after `@Dioreo`. The typed /gunsmith uses the same check. Measured on the 68 real MP weapons: 142 and kilo ar open the KILO 141; lol, no, op, pls, bruh, true, real, br open nothing. |
+| Question 3: "sure idk, your judgement" | The PRIVACY §2.3 wording stays as written. |
+| The pop-up: quick-pick time zones, format and view dropdowns, all optional; a description saying what the zone does | Five fields, Discord's most: date, typed zone ("Whose clock your time is on: “8pm” + UK = 8pm in the UK. Everyone sees it in their own time."), then the optional quick-pick zone (/settings' list), format (/timestamp's `style` choices) and view. A typed zone wins over a picked one. |
+| "why does this panel look so barebone??" | Only the listener's own cards were bare (the help card, Did you mean, the timestamp card, the weapon picker, the no-match line); every command's real answer was always its full panel. Each card now has a `##`/`###` title with its command's icon, that command's accent and a `-#` hint; posted as real renders to #testing-spam. |
+
+Beyond B4's Owns, on his "sure build": `utils/search.js`, `utils/loadoutLookup.js`, `commands/gunsmith.js`, `scripts/weaponSearch.test.js` and `.claude/rules/loadouts.md` (its "one fuzzy match auto-resolves" line, now false, is marked superseded).
+
+## For the lead: add a B6 (Harkirat, 2026-10-29 11:55 EDT)
+
+His words: "we need a b6 to review and design/refine each of the newer panels/messages that the bot sends due to the text commands, such as the pick-a-date panel." B4 gave the four cards a first pass (title, icon, accent, hint; rendered in #testing-spam on 2026-10-29). B6 is the real review: each one designed with him, on dev-bot mock-ups, the way /timestamp's and /today's layouts were settled. Every message text commands send themselves, as of `d4fb704`:
+
+| Message | Built in | State after B4 |
+| --- | --- | --- |
+| Help card (`@Dioreo` alone, 1–2 unknown words) | `bot/textCommands.js` `helpCard` | first pass |
+| Did you mean, commands (`@Dioreo calender stuff`) | `bot/textCommands.js` `didYouMeanCard` | first pass |
+| Did you mean, weapons or seasons (`d build kilo`) | `bot/textCommands.js` `pickCard` | first pass |
+| The pick-a-date card (`d timestamp` alone) | `bot/textCommands.js` `needsInputCard` | first pass |
+| The timestamp pop-up (5 fields) | `handlers/textCommands.js` `timestampModal` | built this thread, not seen live with the dropdowns |
+| No match / Couldn't read lines | `bot/textCommands.js` `noMatchLine` | plain line with the cross |
+| Role-mention hint | `bot/textCommands.js` `onMessage` (`roleHint`) | plain line |
+| The 5-second countdown note | `bot/textCommands.js` `warnCooldown` | plain line with the hourglass |
+| The can't-post DM | `bot/textCommands.js` `dmCantPost` | plain DM |
+| The emoji reply to a chatty mention | `bot/textCommands.js` `mentionReplyEmoji` | one brand emoji (his deck, 2026-10-29 10:12 EDT) |
+| The Open privately card | `utils/textCommands/adapter.js` `privateCardBody` | one `-#` line and a button |
+| "That one opens a form…" / "Something went wrong…" | `bot/textCommands.js` `runTextCommand` | plain line |
+| Button notes: expired, no longer available, turned off here, message or person gone | `handlers/textCommands.js` `privately` calls | plain private lines |
+
+Owns for B6 would be those three files and `scripts/textCommandListener.test.js` / `scripts/textCommandAdapter.test.js`, whose card assertions (accent, title, button icon) change with the design.
