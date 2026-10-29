@@ -140,10 +140,24 @@ function didYouMeanCard(names) {
     };
 }
 
-// The emoji a chatty mention gets (Harkirat, 2026-10-28 17:04 EDT: "have it just reply to the message with an emoji (i'll upload something to /emojis later)"). Read by name at reply time, so uploading `MentionReply` to the app switches it over with no code change.
+// The emoji a chatty mention gets (Harkirat, 2026-10-28 17:04 EDT: "have it just reply to the message with an emoji"). Since 2026-10-29 10:12 EDT it is one of his 24 brand emojis, picked at random ("adjust the randomness so it actually showcases a variety of emojis instead of showing the same ones again and again"): a shuffled deck, dealt without repeats until every emoji has shown once, then reshuffled so the new deck never opens with the one just shown. Read by name from the app at reply time, so a name the app lacks is skipped; with none, 👋. The deck lives in memory: a restart starts a new one.
+const MENTION_REPLY_EMOJIS = ['DioreoWorkmarkTeal', 'DioreoWorkmarkPeriwinkle', 'DioreoWorkmarkRose', 'DioreoWorkmarkOrange', 'DioreoWorkmarkPurple', 'DioreoWorkmarkYellow', 'DioreoWorkmarkGreen', 'DioreoWorkmarkCoral', 'DioreoComboTeal', 'DioreoComboGreen', 'DioreoComboYellow', 'DioreoComboCoral', 'DioreoComboPurple', 'DioreoComboRose', 'DioreoComboPeriwinkle', 'DioreoComboOrange', 'DioreoStandingStillBlink', 'DioreoSeatedStillBlink', 'DioreoHeartFlyPink', 'DioreoHeartPopPink', 'DioreoHeartPopRed', 'DioreoHeartFlyRed', 'DioreoSparkles', 'Dioreowrld'];
+let mentionDeck = [];
+let lastMentionEmoji = null;
 function mentionReplyEmoji(client) {
-    const emoji = client.application?.emojis?.cache?.find?.(e => e.name === 'MentionReply');
-    return emoji ? `<${emoji.animated ? 'a' : ''}:${emoji.name}:${emoji.id}>` : '👋';
+    const cache = client.application?.emojis?.cache;
+    const available = MENTION_REPLY_EMOJIS.map(name => cache?.find?.(e => e.name === name)).filter(Boolean);
+    if (!available.length) return '👋';
+    mentionDeck = mentionDeck.filter(name => available.some(e => e.name === name));
+    if (!mentionDeck.length) {
+        mentionDeck = available.map(e => e.name);
+        for (let i = mentionDeck.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [mentionDeck[i], mentionDeck[j]] = [mentionDeck[j], mentionDeck[i]]; }
+        if (mentionDeck.length > 1 && mentionDeck[mentionDeck.length - 1] === lastMentionEmoji) [mentionDeck[0], mentionDeck[mentionDeck.length - 1]] = [mentionDeck[mentionDeck.length - 1], mentionDeck[0]];
+    }
+    const name = mentionDeck.pop();
+    lastMentionEmoji = name;
+    const emoji = available.find(e => e.name === name);
+    return `<${emoji.animated ? 'a' : ''}:${emoji.name}:${emoji.id}>`;
 }
 
 // /timestamp's own reading of a date: its shorthand expansion, then utils/timestampHelper.js (B2). The command module is read through client.commands, the same late-bound door handlers/router.js uses, never require()d: this file is structural to the hotpatch planner, so a require edge into commands/timestamp.js would make /timestamp un-hot-patchable.
@@ -396,4 +410,4 @@ function registerTextCommands(client) {
     }, 10 * 60 * 1000).unref();
 }
 
-module.exports = { registerTextCommands, enableMessageContentIfGranted, configuredPrefixes, onMessage };
+module.exports = { mentionReplyEmoji, registerTextCommands, enableMessageContentIfGranted, configuredPrefixes, onMessage };
