@@ -5,7 +5,11 @@ const { TEXT_COMMANDS, aliasClashes, LATEST } = require('../utils/textCommands/c
 const { pluralOf } = require('../utils/textCommands/args');
 
 const BOT = '111';
-const v = (text, extra = {}) => parseTextCommand(text, { botId: BOT, prefixes: ['/', 'd', 'dior'], commands: TEXT_COMMANDS, ...extra });
+// The date check bot/textCommands.js passes in: /timestamp's own expansion, then its chrono helper.
+const { expandShorthand } = require('../commands/timestamp');
+const { generateTimestamps } = require('../utils/timestampHelper');
+const checkDatetime = text => Boolean(generateTimestamps(expandShorthand(text))?.unix);
+const v = (text, extra = {}) => parseTextCommand(text, { botId: BOT, prefixes: ['/', 'd', 'dior'], commands: TEXT_COMMANDS, checkDatetime, ...extra });
 const M = `<@${BOT}>`;
 const LEG = 'legendaryGunReactive,legendaryGunNonReactive';
 const ARM = 'armoryMythicWeapon,armoryLegendaryWeapon,armoryLegendaryCharacter';
@@ -51,6 +55,7 @@ const rows = [
     [`${M} ak117`, { kind: 'help', weaponGuess: 'ak117' }],
     ['d timestamp tomorrow 8pm', { kind: 'run', command: 'timestamp', values: { datetime: 'tomorrow 8pm' } }],
     ['d time in a minute', { kind: 'run', command: 'timestamp', values: { datetime: 'in a minute' } }],
+    ['d ts tom 8pm', { kind: 'run', values: { datetime: 'tom 8pm' } }],         // /timestamp's own shorthand (tom = tomorrow)
     ['d ts tomorrow 8pm tz:est', { kind: 'run', values: { datetime: 'tomorrow 8pm', timezone: 'est' } }],
     ['d t friday 6pm timezone:toronto', { kind: 'run', values: { datetime: 'friday 6pm', timezone: 'toronto' } }],
     ['d timestamp is wrong lol', { kind: null }],

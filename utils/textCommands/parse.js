@@ -87,9 +87,7 @@ function matchCommand(tokens, index, { allowTypos }) {
     return { candidates: list.map(h => h.cmd) };
 }
 
-// The verdict. kind: 'run' | 'didYouMean' | 'help' | 'roleHint' | 'emojiReply' | 'usage' | 'needsInput' | 'noMatch' | null (stay silent).
-// A run carries `values` (the options), `autocomplete` (option text still to look up), `form` ('convertTimes' / 'viewColors' for the reply forms) and `addressed`. `weaponGuess` rides on a verdict whose first word named no command: bot/textCommands.js runs gunsmith when it is an exact weapon name (`d ak117`), and otherwise acts on the verdict as it is.
-// isReply: the message replies to another one (`d timestamp` then means Convert Times on it). checkDatetime: tests may pass their own; args.js defaults to /timestamp's parser.
+// The verdict. kind: 'run' | 'didYouMean' | 'help' | 'roleHint' | 'emojiReply' | 'usage' | 'needsInput' | 'noMatch' | null (stay silent). A run carries `values` (the options), `autocomplete` (option text still to look up), `form` ('convertTimes' / 'viewColors' for the reply forms) and `addressed`. `weaponGuess` rides on a verdict whose first word named no command: bot/textCommands.js runs gunsmith when it is an exact weapon name (`d ak117`), and otherwise acts on the verdict as it is. isReply: the message replies to another one (`d timestamp` then means Convert Times on it). checkDatetime: tests may pass their own; args.js defaults to /timestamp's parser.
 function parseTextCommand(content, { botId, botRoleId = null, prefixes = [], commands = [], isReply = false, checkDatetime } = {}) {
     const trigger = readTrigger(content, { botId, botRoleId, prefixes });
     if (!trigger) return { kind: null };

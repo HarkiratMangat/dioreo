@@ -101,11 +101,23 @@ const TEXT_COMMANDS = [
     // `d remind` posts the reminders panel in the channel, public like every text reply (his call 2026-10-28 21:56 EDT).
     { name: 'remind', slash: 'remind', words: ['remind', 'r', 'reminder', 'remindme', 'rm', 'notify', 'alert'] },
     // `d colors @name`, or `d colors` sent as a reply, shows THAT person's colours through the View Colors right-click's own code.
-    { name: 'colors', slash: 'colors', words: ['colors', 'colours', 'col', 'palette', 'accent'], replyForm: 'viewColors', options: [{ name: 'someone', keys: ['someone', 'user'], mention: true }] },
+    { name: 'colors', slash: 'colors', words: ['colors', 'colours', 'col', 'palette', 'accent'], replyForm: 'viewColors', options: [{ name: 'someone', keys: ['someone', 'user'], mention: true, example: '@name' }] },
     { name: 'settings', slash: 'settings', words: ['settings', 'set', 'config', 'options', 'opt', 'pref', 'preferences', 's'] },
     { name: 'help', slash: 'help', words: ['help', 'h', 'commands', 'cmds', 'info', '?', 'guide'] },
     { name: 'invite', slash: 'invite', words: ['invite', 'inv', 'add', 'link'] },
 ];
+
+// The reply forms run a right-click module's own code: Convert Times on the replied message, View Colors on the person (stored by bot/registry.js under `name#type` as well as the name).
+const REPLY_FORMS = {
+    convertTimes: { module: 'Convert Times', type: 3 },
+    viewColors: { module: 'View Colors', type: 2 },
+};
+// The command module a text command runs, and the name its server permissions and /admin rules are looked up by.
+function moduleFor(client, textCommand, form = null) {
+    const f = REPLY_FORMS[form];
+    if (!f) return { name: textCommand.slash, command: client.commands.get(textCommand.slash) || null };
+    return { name: f.module, command: client.commands.get(`${f.module}#${f.type}`) || client.commands.get(f.module) || null };
+}
 
 // help's argument is any command name or alias above, passed as the name /help itself lists (`/gunsmith mp`, `/patch notes`).
 const helpNameOf = c => (c.name === 'help' ? '/help' : `/${c.slash}${c.sub ? ` ${c.sub}` : ''}`);
@@ -150,4 +162,4 @@ function aliasClashes(commands = TEXT_COMMANDS) {
 const toIdPart = name => name.replace(/ /g, '.');
 const fromIdPart = part => String(part || '').replace(/\./g, ' ');
 
-module.exports = { TEXT_COMMANDS, findTextCommand, toIdPart, fromIdPart, aliasClashes, CLASS_WORDS, LATEST };
+module.exports = { TEXT_COMMANDS, findTextCommand, toIdPart, fromIdPart, aliasClashes, moduleFor, REPLY_FORMS, CLASS_WORDS, LATEST };

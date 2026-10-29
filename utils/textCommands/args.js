@@ -1,4 +1,4 @@
-// utils/textCommands/args.js -- reads the words after a text command into its slash command's own options (text commands B2, 2026-10-29). Pure, apart from one lazily-required check: a date must parse with /timestamp's own parser (commands/timestamp.js expandShorthand + utils/timestampHelper.js), never a copy.
+// utils/textCommands/args.js -- reads the words after a text command into its slash command's own options (text commands B2, 2026-10-29). Pure, apart from the date check: a date must parse with /timestamp's own parser, which bot/textCommands.js passes in as `checkDatetime` (commands/timestamp.js expandShorthand + utils/timestampHelper.js, never a copy).
 //
 // The grammar is the design spec's "Options and aliases" section (docs/superpowers/specs/2026-10-28-text-commands-design.md), Harkirat's trim of 2026-10-28 21:51 EDT:
 //   - words fill options in any order; a word matches a value by its name or any alias, singular or plural, or (where parse.js allows typos) a one-letter typo by parse.js's own isTypoOf;
@@ -19,10 +19,9 @@ function sameWord(typed, word) {
 const mentionId = token => (/^<@!?(\d+)>$/.exec(token) || [])[1] || null;
 const squash = s => String(s || '').toLowerCase().replace(/[\s\-_.]/g, '');
 
+// Without a checker from the caller, chrono alone (utils/timestampHelper.js), with no shorthand expansion. Deliberately NOT a require of commands/timestamp.js: this file is required by bot/textCommands.js, which is structural to the hotpatch planner (utils/hotpatch.js), so any require edge from here into commands/ would make that command un-hot-patchable. bot/textCommands.js reaches /timestamp's expansion through client.commands instead, the router's own late-bound door.
 function defaultCheckDatetime(text) {
-    const { expandShorthand } = require('../../commands/timestamp');
-    const { generateTimestamps } = require('../timestampHelper');
-    return Boolean(generateTimestamps(expandShorthand(text))?.unix);
+    return Boolean(require('../timestampHelper').generateTimestamps(text)?.unix);
 }
 
 // Every value alias of these options, longest first, so `legendary character` wins over `legendary` and `mythic weapon` over `mythic`.
