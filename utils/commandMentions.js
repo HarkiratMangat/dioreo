@@ -14,8 +14,13 @@ function recordCommandIds(ids) {
 }
 
 // Inside a text command (bot/textCommands.js runs it with the request context's handler set to 'textCommands', and handlers/router.js marks its txtpriv_/txtrun_ buttons the same), a slash mention is plain text exactly where it is no use: text commands exist for the servers that hide slash commands, or list too many bots for Discord to show Dioreo's (text commands, B3, 2026-10-29). So a command with a text form is written as that form, `d draws` (`d dmz` for /gunsmith dmz), or `@Dioreo draws` where the app was not granted Message Content and the prefixes are off. A command with no text form (/admin, Dioreo Admin's commands) keeps its mention: it is still the only way to it.
+// True while a text command (or one of its txtpriv_/txtrun_ buttons) is running: the one test of it, so a page that words something differently for a typed command asks the same question mentionCommand does.
+function inTextCommand() {
+    return require('./requestContext').getContext()?.handler === 'textCommands';
+}
+
 function textForm(client, clean) {
-    if (require('./requestContext').getContext()?.handler !== 'textCommands') return null;
+    if (!inTextCommand()) return null;
     const { TEXT_COMMANDS } = require('./textCommands/commands');
     const hit = TEXT_COMMANDS.find(c => `${c.slash}${c.sub ? ` ${c.sub}` : ''}` === clean) || TEXT_COMMANDS.find(c => c.slash === clean);
     if (!hit) return null;
@@ -55,4 +60,4 @@ function linkCommandMentions(text, client = null) {
     });
 }
 
-module.exports = { mentionCommand, recordCommandIds, recordCommandPaths, linkCommandMentions };
+module.exports = { mentionCommand, recordCommandIds, recordCommandPaths, linkCommandMentions, inTextCommand };

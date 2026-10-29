@@ -557,7 +557,8 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client, focu
                 })
                 .join('')
                 + `\n`
-                + `-# ${emojis.info} Tip: **/help** \`cmd:\` opens one command`
+                // In a `d help` reply the tip names the typed form, like every mention above it (text commands, B3, 2026-10-29).
+                + `-# ${emojis.info} Tip: ${require('../utils/commandMentions').inTextCommand() ? `\`${client?.textMessageContent === false ? '@Dioreo' : 'd'} help <command>\`` : '**/help** \`cmd:\`'} opens one command`
         });
         // One block under the directory, no new page. It costs 2 of the message's 40 components (27 on the landing with the footer row, counted by scripts/helpTextCommands.test.js).
         components.push({ type: 14, spacing: 1, divider: true });
