@@ -29,7 +29,17 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.2.0 — 2026-10-28 15:30 EDT (#235) — Season 9 reads Active, and past seasons keep their own dates
+## v3.2.1 — 2026-10-29 10:00 EDT (#236) — /help works on prod again; new brand emojis and the Cooldown hourglass
+**From Harkirat, 2026-10-29:** "i updated the emojis and deleted the old dioreo combo... where we were currently showing dioreocombo, please put dioreocombocoral there", the new brand set and season icons, and "for any cooldown message, to replace the generic hourglass emoji".
+
+- **/help works on prod again** (`utils/emojiMap.js` `dioreoCombo`). It failed for everyone with `COMPONENT_INVALID_EMOJI`: `DioreoCombo` was deleted from the prod app, so the old id was sent and Discord rejected the reply. It now points at `DioreoComboCoral`, in /help's title, its Commands List option and /invite's title.
+- **New emojis in the map:** 26 brand emojis (Dioreowrld, Sparkles, Heart Fly/Pop Red/Pink, Early Supporter Red/Pink, Seated/Standing Still-Blink, eight Combo and eight Workmark colours), not used anywhere yet.
+- **Season icons:** S6 to S9 follow their new names (`S6_TakeYourHeart`…), and S10 points at its re-uploaded `S10_7thAnniversary`.
+- **The Cooldown hourglass** (`<a:Cooldown>`) replaces ⏳ in View Colors' refresh cooldown (`handlers/colors.js`), `/manage`'s "Saving…" (`handlers/manage/loadouts.js`) and /autobuild's "Already saving / processing" (`utils/autobuildPipeline.js`). An expired `/manage` save shows the cross instead, as an error.
+- **Originals** for all 33 are in Cloudinary's `emoji-originals`, so `/manage emojis` Sync can copy them to Dioreo Admin and the dev apps.
+- **Tests:** `scripts/patchNotesHistory.test.js` follows the season names; `scripts/fixtures/helpBodySnapshot.json` regenerated (only the emoji changed).
+
+## v3.2.0 — 2026-10-28 15:30 EDT (#235 · `60784981`) — Season 9 reads Active, and past seasons keep their own dates
 **From Harkirat, 2026-10-28:** "season 9 shows the end date even tho it should be showing Active", and "the patch notes dates didn't change?" for the past seasons.
 
 - **The live season reads its start and Active** (`commands/patchnotes.js` `seasonRange`): `Oct 15, 2026 – Active` until its Battle Pass end has passed, even with that end set. v3.1.0 showed Active only when the end was TBD, so Season 9 read `Oct 15 – Nov 12, 2026`.

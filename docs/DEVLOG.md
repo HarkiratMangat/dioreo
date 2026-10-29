@@ -291,6 +291,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-28 12:58 EDT — The announcement word that autocomplete skipped (v3.1.1)
 - 2026-10-28 13:58 EDT — Two letters that matched nothing (v3.1.2)
 - 2026-10-28 15:30 EDT — A season's dates outlive the season (v3.2.0)
+- 2026-10-29 10:00 EDT — Prod /help fixed: the deleted DioreoCombo emoji (v3.2.1)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4809,6 +4810,14 @@ v3.1.0 had moved the `/patch notes` dropdown from patch-note release dates to Ba
 The fix is to save a season's dates on its own patch-notes entry at the one moment they are about to be lost: Promote to Live. Seasons that rotated before that get them once, from a script. Finding those dates took a search of 1,522 local transcripts: he had sent screenshots of each season's end on 2026-10-21, and only that session's own summary of them survived.
 
 **Lesson:** when an ask is narrowed while building it ("Active" became "Active when TBD"), say so in the reply. The narrowing shipped silently and came back as a bug report.
+
+## 2026-10-29 10:00 EDT — Prod /help fixed: the deleted DioreoCombo emoji (v3.2.1)
+
+**What happened.** Harkirat replaced the `DioreoCombo` emoji on the prod app with eight animated colours and deleted the old one. The code still named the old id, so every `/help` on prod failed: Discord rejects a whole message when one component carries an emoji id the app does not own (`COMPONENT_INVALID_EMOJI`, two in the journal that morning). A builder's earlier guess, the Bot Admin page's 4,000-character overflow, was real but was not this; the journal said which.
+
+**What changed.** `dioreoCombo` now points at `DioreoComboCoral`. The renamed season icons, 26 new brand emojis and an animated `Cooldown` hourglass went into the map, with every original uploaded to Cloudinary's `emoji-originals` so Sync can copy them to the other apps. The hourglass replaces the generic ⏳ in cooldown and still-saving messages; an expired `/manage` save shows the cross instead.
+
+**Lesson.** Read the journal before naming a cause. The plausible one (a length limit) was true and still the wrong answer. The text-commands branch adds a guard so an emoji the booted app lacks is dropped rather than failing the whole reply.
 
 # Part B — Lessons Ledger (thematic)
 

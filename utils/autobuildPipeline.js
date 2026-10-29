@@ -511,7 +511,7 @@ function confirmMessage(client, result) {
         case 'expired': return glyphs(`${BOT_EMOJI.cross} This review has expired or was already handled. Run ${mentionCommand(client, '/autobuild')} again.`);
         case 'nocategory': return glyphs(BOT_EMOJI.cross + ' Category is still unresolved -- click **Adjust** and set one before saving.');
         case 'nomode': return glyphs(BOT_EMOJI.cross + " MP or DMZ is still unresolved -- click **Adjust** and put `| MP` or `| DMZ` after the category before saving.");
-        case 'busy': return '⏳ Already saving this build -- give it a moment.';
+        case 'busy': return `${require('./emojiMap').cooldown} Already saving this build -- give it a moment.`;
         case 'cutcode': return glyphs(`${BOT_EMOJI.warn} Its code looks cut off -- fix it with **Adjust**, or press **Save anyway** on its page.`);
         case 'rival': return glyphs(`${BOT_EMOJI.warn} ${result.message || 'Another admin has this build waiting.'} Pick **Save mine** or **Leave it to them** on its page.`);
         case 'labeltaken': return `${BOT_EMOJI.cross} That build label is already used by another build of this weapon -- pick another with **Adjust**.`;
@@ -552,7 +552,7 @@ async function retryImageUpload(interaction, token, newImageUrl) {
 
     // Claim the token before any slow work starts -- see retryInProgress's own comment above.
     if (retryInProgress.has(token)) {
-        return interaction.followUp({ content: '⏳ Already processing this retry -- give it a moment.', ephemeral: true });
+        return interaction.followUp({ content: `${require('./emojiMap').cooldown} Already processing this retry -- give it a moment.`, ephemeral: true });
     }
     retryInProgress.add(token);
 

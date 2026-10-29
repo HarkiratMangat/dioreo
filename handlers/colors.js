@@ -230,7 +230,7 @@ async function handleColorsButton(interaction) {
         if (now - lastRefresh < COLORS_REFRESH_COOLDOWN_MS) {
             const remainingSec = Math.ceil((COLORS_REFRESH_COOLDOWN_MS - (now - lastRefresh)) / 1000);
             try {
-                await interaction.reply({ content: `⏳ **Slow down!** Please wait ${remainingSec}s before refreshing colors again.`, ephemeral: true });
+                await interaction.reply({ content: `${require('../utils/emojiMap').cooldown} **Slow down!** Please wait ${remainingSec}s before refreshing colors again.`, ephemeral: true });
             } catch (notifyError) {
                 console.error('Failed to notify user of colors-refresh cooldown (interaction likely expired):', notifyError);
             }
