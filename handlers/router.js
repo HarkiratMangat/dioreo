@@ -96,6 +96,13 @@ const INTERACTION_COOLDOWN_MS = 600;
 //
 // `command` is best-effort: the slash command name for a chat-input interaction, or the raw customId for a button/select/modal (still greppable, just not a "friendly" name -- the richer per-type schema belongs to stage 2's event plane, not this attribution-only stage).
 //
+// A click on a text command's reply (the spec's "Replies", the lead's call 2026-10-29 00:05 EDT; built by B4): a text reply is a plain bot message in a server, so it carries no interaction metadata, while a slash reply and its follow-ups always do. utils/commandMentions.js reads `textReply`, so the page the click redraws keeps `d draws` rather than `</draws:id>`. A DM card has no guild and is never a text reply. Inline here rather than a require, since this file is the hotpatch boundary.
+function isTextReplyClick(interaction) {
+    const message = interaction?.message;
+    if (!interaction?.guildId || !message) return false;
+    return !(message.interactionMetadata || message.interaction_metadata);
+}
+
 // `handler` starts null and is filled in by markHandler() right before each dispatch call below, so a log line emitted from inside e.g. handlers/manage/*.js says "manage", not just the raw customId. It stays null for a guard that rejects the interaction before any subsystem ever gets it (anti-spam cooldown, the /manage admin-only lock) -- there is no handler to attribute those lines to. ⚠️ STAGE 2 (2026-08-16) ADDED THE MUTABLE HALF. Everything from `startedAt` down is written to by guards and dependency wrappers DURING the interaction and read once by the finally below. It lives on the same object for the same reason `handler` does: getContext() returns it by reference, so a guard eleven frames deep can report an outcome without threading a return value back up through every caller. None of it is logged by patchConsole -- utils/logger.js reads only the four stage-1 fields, which is deliberate: a log line wants attribution, not a timing accumulator.
 function buildInteractionContext(interaction) {
     return {
@@ -104,6 +111,7 @@ function buildInteractionContext(interaction) {
         appId: interaction.applicationId ?? null,
         command: interaction.commandName || interaction.customId || null,
         handler: null,
+        textReply: isTextReplyClick(interaction),
         userHash: hashUserId(interaction.user?.id),
         startedAt: Date.now(),
         outcome: null,     // set by the guards below and by the catch; first writer wins

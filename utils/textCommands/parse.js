@@ -1,6 +1,6 @@
 // utils/textCommands/parse.js -- reads a plain channel message and decides whether it is a text command for Dioreo (text commands, 2026-10-28 16:47 EDT). Pure: no discord.js, no I/O, so every rule below is testable as a table (scripts/textCommandParse.test.js, and scripts/textCommandArgs.test.js for the options).
 //
-// OPTIONS (B2, 2026-10-29): the words after a command fill its options through utils/textCommands/args.js. After `d`/`dior` every word must be understood and a date must parse, or Dioreo stays silent; after `@Dioreo` or `/` a word it did not understand gets a one-line hint (`usage`), a date that does not parse a "No match" line, and a missing date a one-button card (`needsInput`). A command with no text options keeps the PR 1 rule below: clearly addressed, trailing text is ignored.
+// OPTIONS (B2, 2026-10-29): the words after a command fill its options through utils/textCommands/args.js. After `d`/`dior` every word must be understood and a date must parse, or Dioreo stays silent; after `@Dioreo` or `/` a word it did not understand is ignored and the command runs with the words it did understand (the spec's rules table, his 16:25 EDT call, confirmed 2026-10-28 23:29 EDT over B2's usage hint; B4 removed the hint 2026-10-29 10:32 EDT), a date that does not parse gets a "No match" line, and a missing date a one-button card (`needsInput`). A command with no text options keeps the PR 1 rule below: clearly addressed, trailing text is ignored.
 const { parseArgs, sameWord } = require('./args');
 //
 // THE PRINCIPLE (think-pass, 2026-10-28 16:46 EDT): a channel is shared space, unlike a slash command, which is explicit. When it is unclear whether a message is meant for Dioreo, stay silent. The one loud path is a message that STARTS with a mention of the bot itself.
@@ -87,7 +87,7 @@ function matchCommand(tokens, index, { allowTypos }) {
     return { candidates: list.map(h => h.cmd) };
 }
 
-// The verdict. kind: 'run' | 'didYouMean' | 'help' | 'roleHint' | 'emojiReply' | 'usage' | 'needsInput' | 'noMatch' | null (stay silent). A run carries `values` (the options), `autocomplete` (option text still to look up), `form` ('convertTimes' / 'viewColors' for the reply forms) and `addressed`. `weaponGuess` rides on a verdict whose first word named no command: bot/textCommands.js runs gunsmith when it is an exact weapon name (`d ak117`), and otherwise acts on the verdict as it is. isReply: the message replies to another one (`d timestamp` then means Convert Times on it). checkDatetime: tests may pass their own; args.js defaults to /timestamp's parser.
+// The verdict. kind: 'run' | 'didYouMean' | 'help' | 'roleHint' | 'emojiReply' | 'needsInput' | 'noMatch' | null (stay silent). A run carries `values` (the options), `autocomplete` (option text still to look up), `form` ('convertTimes' / 'viewColors' for the reply forms) and `addressed`. `weaponGuess` rides on a verdict whose first word named no command: bot/textCommands.js runs gunsmith when it is an exact weapon name (`d ak117`), and otherwise acts on the verdict as it is. isReply: the message replies to another one (`d timestamp` then means Convert Times on it). checkDatetime: tests may pass their own; args.js defaults to /timestamp's parser.
 function parseTextCommand(content, { botId, botRoleId = null, prefixes = [], commands = [], isReply = false, checkDatetime } = {}) {
     const trigger = readTrigger(content, { botId, botRoleId, prefixes });
     if (!trigger) return { kind: null };
@@ -115,8 +115,8 @@ function parseTextCommand(content, { botId, botRoleId = null, prefixes = [], com
         const leftover = parsed.leftover.join(' ').length <= 2 ? [] : parsed.leftover;
         if (leftover.length) {
             if (result.fuzzy) return addressed ? { kind: 'didYouMean', via, candidates: [cmd.name] } : { kind: null };
-            // `@Dioreo calendar purple` -> "Try `calendar events`…"; `d calendar is wild today` is chat.
-            return addressed ? { kind: 'usage', ...base } : { kind: null };
+            // `d calendar is wild today` is chat. `@Dioreo calendar purple` and `@Dioreo draws pls` are clearly addressed, so the words nothing understood are ignored and the command runs with the rest (the spec's rules table, confirmed 2026-10-28 23:29 EDT; B2 had built a usage hint here, removed by B4 2026-10-29 10:32 EDT).
+            if (!addressed) return { kind: null };
         }
         // `d timestamp is wrong lol` is chat; after `@Dioreo` it gets a line saying the date was not understood.
         if (parsed.unresolved) return addressed ? { kind: 'noMatch', ...base, option: parsed.unresolved.option, text: parsed.unresolved.text } : { kind: null };

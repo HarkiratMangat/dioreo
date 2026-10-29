@@ -171,10 +171,82 @@ async function check(name, fn) {
         assert.deepStrictEqual(buttons(posts[0]), ['"custom_id":"txtrun_timestamp~open"']);
         cardId = 'txtrun_timestamp~open';
     });
-    await check('@Dioreo calendar purple gets the usage line', async () => {
-        const { message, posts } = fakeMessage(`<@${BOT}> calendar purple`);
+    await check('@Dioreo calendar purple runs calendar, the unknown word ignored (the spec\'s rules table)', async (before) => {
+        const { message, posts } = fakeMessage(`<@${BOT}> calendar purple upcoming`);
         await onMessage(message);
-        assert.ok(/^Try `calendar /.test(posts[0]?.content || ''), posts[0]?.content);
+        assert.strictEqual(ran.length, before + 1);
+        assert.strictEqual(lastRun().name, 'calendar');
+        assert.strictEqual(lastRun().interaction.options.getString('filter'), 'soon');
+        assert.ok(!posts.some(p => /^Try /.test(p.content || '')), 'no usage line');
+    });
+
+    // The spec's "When Dioreo answers" limits and guards, each one end to end (B4, 2026-10-29 10:32 EDT: none had a test).
+    await check('bots, webhooks, system messages and DMs are ignored', async (before) => {
+        for (const patch of [{ author: { id: 'b', bot: true } }, { webhookId: 'w1' }, { system: true }, { guildId: null }]) {
+            const { message, posts } = fakeMessage('d calendar');
+            Object.assign(message, patch);
+            await onMessage(message);
+            assert.strictEqual(posts.length, 0, JSON.stringify(patch));
+        }
+        assert.strictEqual(ran.length, before);
+    });
+    await check('same command, same person, within 5 s: one countdown note, then nothing', async (before) => {
+        const posts = [];
+        for (let k = 0; k < 3; k++) {
+            const m = fakeMessage('d draws');
+            m.message.author.id = 'repeat';
+            await onMessage(m.message);
+            posts.push(...m.posts);
+        }
+        assert.strictEqual(ran.length, before + 1, 'ran once');
+        const notes = posts.filter(p => /again <t:\d+:R>/.test(p.content || ''));
+        assert.strictEqual(notes.length, 1, 'one countdown note');
+    });
+    await check('a different command within 1 s: nothing, no warning', async (before) => {
+        const a = fakeMessage('d draws'); a.message.author.id = 'quick';
+        const b = fakeMessage('d calendar'); b.message.author.id = 'quick';
+        await onMessage(a.message);
+        await onMessage(b.message);
+        assert.strictEqual(ran.length, before + 1);
+        assert.strictEqual(b.posts.length, 0);
+    });
+    await check('one channel: at most 5 replies in 10 s', async (before) => {
+        let silent = 0;
+        for (let k = 0; k < 7; k++) {
+            const m = fakeMessage('d draws');
+            m.message.channelId = 'busy'; m.message.channel.id = 'busy';
+            await onMessage(m.message);
+        }
+        assert.strictEqual(ran.length, before + 5);
+    });
+    await check('an edit within 60 s runs a command the first version did not; after 60 s it does not', async (before) => {
+        const listeners = {};
+        require('../bot/textCommands').registerTextCommands({ on: (event, fn) => { listeners[event] = fn; } });
+        const settle = () => new Promise(r => setTimeout(r, 20));
+        const late = fakeMessage('d calendar'); late.message.createdTimestamp = Date.now() - 61_000;
+        listeners.messageUpdate(null, late.message); await settle();
+        assert.strictEqual(ran.length, before, 'past the window');
+        const early = fakeMessage('d calendar'); early.message.createdTimestamp = Date.now() - 10_000;
+        listeners.messageUpdate(null, early.message); await settle();
+        assert.strictEqual(ran.length, before + 1, 'inside the window');
+        listeners.messageUpdate(null, early.message); await settle();
+        assert.strictEqual(ran.length, before + 1, 'an answered message is not answered again');
+    });
+    await check('where Dioreo cannot post: one DM per channel per day, nothing in the channel', async (before) => {
+        const dms = [];
+        for (let k = 0; k < 2; k++) {
+            const m = fakeMessage(k ? 'd calendar' : 'd draws');
+            m.message.author.id = 'muted';
+            m.message.author.send = async (o) => { dms.push(o.content); };
+            m.message.channelId = 'locked'; m.message.channel.id = 'locked';
+            m.message.channel.permissionsFor = () => ({ has: () => false });
+            if (k) await new Promise(r => setTimeout(r, 1100)); // past the 1-second any-command limit
+            await onMessage(m.message);
+            assert.strictEqual(m.posts.length, 0);
+        }
+        assert.strictEqual(ran.length, before);
+        assert.strictEqual(dms.length, 1, 'one DM for the channel');
+        assert.ok(/I can't post in <#locked>/.test(dms[0]), dms[0]);
     });
 
     // The buttons those replies carry.

@@ -56,6 +56,8 @@ function runCustomId(prefix, textCommand, payload = '') {
     for (const [key, hit] of runStore) if (now - hit.at > RUN_STORE_MS) runStore.delete(key);
     const id = `${now.toString(36)}${Math.random().toString(36).slice(2, 6)}`;
     runStore.set(id, { name: textCommand.name, payload, at: now });
+    // Dropped by its own timer when it expires, not at the next long id: the payload can hold words from the member's message (a typed date), and PRIVACY §2.3 says these are cleared within a quarter of an hour (B4, 2026-10-29 10:32 EDT).
+    setTimeout(() => runStore.delete(id), RUN_STORE_MS).unref?.();
     return `${prefix}~${id}`;
 }
 
@@ -239,8 +241,11 @@ function createTextInteraction(message, { textCommand, via, values = {}, targetU
         async deferUpdate() {},
         async update(opts) { return interaction.editReply(opts); },
         async showModal() { throw new TextCommandRefused('modal'); },
-        // utils/sendV2Payload.js's text branch writes through here, so the Show Everyone strip and the idle grey-out stay in one place.
-        __textSend(body, options = {}) { return send(body, options.files); },
+        // utils/sendV2Payload.js's text branch writes through here, so the Show Everyone strip and the idle grey-out stay in one place. Behind the same gate as reply() and editReply() (B4, 2026-10-29 10:32 EDT): a command that sends its panel without deferring first must still get the Open privately card where the server's rule forces hidden, never a public panel.
+        __textSend(body, options = {}) {
+            if (forcedPrivate()) return openPrivately();
+            return send(body, options.files);
+        },
     };
     return interaction;
 }

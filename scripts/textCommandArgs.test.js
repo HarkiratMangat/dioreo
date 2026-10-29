@@ -26,8 +26,10 @@ const rows = [
     ['d calendar what is this', { kind: null }],
     ['d calendar filter:purple', { kind: null }],
     ['d calendar visibility:public', { kind: null }],                 // visibility is never a text option
-    [`${M} calendar what`, { kind: 'usage', command: 'calendar' }],
-    [`${M} calendar purple`, { kind: 'usage', command: 'calendar' }],
+    [`${M} calendar what`, { kind: 'run', command: 'calendar', values: {} }],   // clearly addressed: an unknown word is ignored (the spec's rules table)
+    [`${M} calendar purple`, { kind: 'run', command: 'calendar', values: {} }],
+    [`${M} calendar purple upcoming`, { kind: 'run', command: 'calendar', values: { filter: 'soon' } }],  // ...and the words it did understand still count
+    ['/calendar purple', { kind: 'run', command: 'calendar', values: {} }],
     ['d calendar modes new', { kind: 'run', values: { page: 'playlists', filter: 'live' } }],
     ['d modes', { kind: 'run', command: 'calendar', values: { page: 'playlists' } }],
     ['d events', { kind: 'run', command: 'calendar', values: { page: 'events' } }],
@@ -39,7 +41,9 @@ const rows = [
     ['d draws r', { kind: 'run', values: { page: 'returning' } }],
     ['d draws n', { kind: 'run', values: { page: 'new' } }],
     ['dior draws o', { kind: 'run', command: 'draws', values: {} }],   // a stray key is still forgiven
-    [`${M} draws pls`, { kind: 'usage', command: 'draws' }],           // an options command: the unknown word gets the hint
+    [`${M} draws pls`, { kind: 'run', command: 'draws', values: {} }],  // the spec's own row: trailing text ignored
+    ['/draws pls', { kind: 'run', command: 'draws', values: {} }],
+    ['d draws pls', { kind: null }],                                   // after d every word must be understood
     ['d gs ak117', { kind: 'run', command: 'gunsmith', autocomplete: [{ option: 'weapon', text: 'ak117' }] }],
     ['d gunsmith ak 117', { kind: 'run', command: 'gunsmith', autocomplete: [{ option: 'weapon', text: 'ak 117' }] }],
     ['d gs type 19', { kind: 'run', command: 'gunsmith', autocomplete: [{ option: 'weapon', text: 'type 19' }] }],

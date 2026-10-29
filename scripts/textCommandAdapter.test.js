@@ -1,8 +1,8 @@
 // scripts/textCommandAdapter.test.js -- the text-command adapter's contract (utils/textCommands/adapter.js), against a recording REST stub: a command answering a plain message must REPLY to it, then EDIT that reply; never post anything ephemeral publicly; never ping; and, where a server rule makes answers private, post only the Open privately card. Written 2026-10-28 17:26 EDT.
 const assert = require('assert');
-const { createTextInteraction, TextCommandRefused } = require('../utils/textCommands/adapter');
+const { createTextInteraction, TextCommandRefused, runCustomId, readRunCustomId } = require('../utils/textCommands/adapter');
 const { sendV2Payload } = require('../utils/sendV2Payload');
-const { cancelPanelExpiry } = require('../utils/passiveExpiry');
+const { cancelPanelExpiry, schedulePanelExpiry } = require('../utils/passiveExpiry');
 const { SHARE_BUTTON_CUSTOM_ID } = require('../utils/shareButton');
 
 function fakeMessage() {
@@ -85,5 +85,41 @@ const shareRow = { type: 1, components: [{ type: 2, style: 1, label: 'Show Every
         assert.strictEqual(calls.length, 1);
         assert.strictEqual(calls[0].body.message_reference, undefined, 'retried without the reference');
     }
-    console.log('textCommandAdapter: 5 cases passed');
+    // 6. A forced-private answer stays private even when the command sends its panel without deferring first (B4, 2026-10-29 10:32 EDT: sendV2Payload's text branch went straight to send()).
+    {
+        const { message, calls } = fakeMessage();
+        const i = createTextInteraction(message, { textCommand, via: 'd' });
+        i.dioreoPolicy = { visibility: 'ephemeral' };
+        await sendV2Payload(i, panel());
+        assert.strictEqual(calls.length, 1, 'only the card');
+        assert.ok(JSON.stringify(calls[0].body).includes('txtpriv_today'));
+        assert.ok(!JSON.stringify(calls[0].body).includes('page_next'), 'the panel itself never posts');
+    }
+    // 7. The reply greys out after its idle time, edited with the bot token (a text reply has no interaction token).
+    {
+        const { message, calls } = fakeMessage();
+        const i = createTextInteraction(message, { textCommand, via: 'd' });
+        schedulePanelExpiry(i, 'reply9', panel(), 5);
+        await new Promise(r => setTimeout(r, 40));
+        const edit = calls.find(c => c.verb === 'patch');
+        assert.ok(edit, 'the idle edit happened');
+        assert.strictEqual(edit.route, '/channels/chan1/messages/reply9');
+        assert.strictEqual(edit.body.components[0].components[1].components[0].disabled, true);
+    }
+    // 8. A button payload too long for its custom_id is held for 15 minutes and dropped by its own timer, never left until the next long one.
+    {
+        const realTimeout = global.setTimeout;
+        const timers = [];
+        global.setTimeout = (fn, ms) => { timers.push({ fn, ms }); return { unref() {} }; };
+        let id;
+        try { id = runCustomId('txtrun_', { name: 'timestamp' }, `datetime=${'x'.repeat(120)}`); } finally { global.setTimeout = realTimeout; }
+        assert.ok(id.startsWith('txtrun_~'));
+        const rest = id.slice('txtrun_'.length);
+        assert.strictEqual(readRunCustomId(rest).expired, undefined, 'readable while fresh');
+        const timer = timers.find(t => t.ms === 15 * 60 * 1000);
+        assert.ok(timer, 'a 15-minute timer was set');
+        timer.fn();
+        assert.strictEqual(readRunCustomId(rest).expired, true, 'gone once its timer fires');
+    }
+    console.log('textCommandAdapter: 8 cases passed');
 })().catch(err => { console.error(err); process.exit(1); });
