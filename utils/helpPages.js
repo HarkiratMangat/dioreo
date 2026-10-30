@@ -323,8 +323,7 @@ function emojiField(key) {
 const hasPage = name => Boolean(PAGES[name]);
 const hasTextView = name => Boolean(PAGES[name] && !PAGES[name].slashOnly && textCommandOf(name));
 
-// One command's page: the card's components. `canSwitch` says the other view works here (typed forms where Dioreo is in the server, and a command with a text form).
-// The prefix a typed page's examples use: the server's first (B7: "every typed Usage line on /help shows the prefixes of the server it is read in"), `@Dioreo` where Message Content is off.
+// One command's page: the card's components. `canSwitch` says the other view works here (typed forms where Dioreo is in the server, and a command with a text form). The prefix a typed page's examples use: the server's first (B7: "every typed Usage line on /help shows the prefixes of the server it is read in"), `@Dioreo` where Message Content is off.
 const firstPrefix = (client, prefixes) => (client?.textMessageContent === false ? '@Dioreo' : (prefixes?.[0] || 'd'));
 
 function buildPage(name, { client, view, detail = false, canSwitch = false, seasonEmoji = null, prefixes = null }) {

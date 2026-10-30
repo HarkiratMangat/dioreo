@@ -986,8 +986,7 @@ function buildHotpatchPanel(out) {
     return [{ type: 17, accent_color: 0xFEE75C, components: body }];
 }
 
-// /bot servers with no ID: "this server" where it was run in one, and a box for any other ID.
-// Since B7 it also shows the week's misfires across every server (his pick A), so an alias that fires on chat anywhere is visible before opening one server.
+// /bot servers with no ID: "this server" where it was run in one, and a box for any other ID. Since B7 it also shows the week's misfires across every server (his pick A), so an alias that fires on chat anywhere is visible before opening one server.
 async function buildServersPicker(currentGuildId, currentName) {
     const misfires = require('mongoose').connection.readyState === 1 ? await require('../utils/textCommands/misfires').recent(null) : null;
     const { line } = require('../utils/textCommands/misfires');
@@ -1007,8 +1006,7 @@ async function buildServersPicker(currentGuildId, currentName) {
     }];
 }
 
-// /bot servers -- THE OWNER'S OVERRIDE FOR ONE SERVER'S /admin RULES (Harkirat 2026-10-22 15:35 EDT, "yeah build it"). For the case where a server's admins lost access (a hacked owner, say) and ask Dioreo's owner for help: view the rules, reset them, or delete the record (also the route for a server's data-deletion request). Admin power itself comes from Discord, so this never grants anyone /admin; it only changes the stored rules. Both changes are two presses and land on /bot analytics' Changes page with the rules as they were, so a server's setup can be rebuilt by hand -- neither has an Undo.
-// Since B7: a checkup under the rules, and a second row for the owner's own tools (reply limits, leave, block), whether or not the server has settings.
+// /bot servers -- THE OWNER'S OVERRIDE FOR ONE SERVER'S /admin RULES (Harkirat 2026-10-22 15:35 EDT, "yeah build it"). For the case where a server's admins lost access (a hacked owner, say) and ask Dioreo's owner for help: view the rules, reset them, or delete the record (also the route for a server's data-deletion request). Admin power itself comes from Discord, so this never grants anyone /admin; it only changes the stored rules. Both changes are two presses and land on /bot analytics' Changes page with the rules as they were, so a server's setup can be rebuilt by hand -- neither has an Undo. Since B7: a checkup under the rules, and a second row for the owner's own tools (reply limits, leave, block), whether or not the server has settings.
 async function buildServersPanel(client, guildId, { armed = null, note = null } = {}) {
     const { getGuildSettings } = require('../utils/guildPolicy');
     const { rulesText, lastChangedLine } = require('./admin');

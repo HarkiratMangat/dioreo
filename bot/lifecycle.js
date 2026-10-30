@@ -228,8 +228,7 @@ function registerLifecycle(client, commands) {
         installShutdownFlush();
     });
 
-    // --- THE OWNER'S SWITCHES, THE SERVER FEED AND BLOCKED SERVERS (B7) --- utils/botControls.js loads its one record into memory here, then leaves any server the owner blocked that Dioreo is still in (block = "leave again if re-added", his "ok", 2026-10-30 13:09 EDT).
-    // The feed (his "oh okay, sure", 2026-10-30 13:18 EDT): one line in the alerts channel per server Dioreo is added to or removed from, posted and never stored (`record: false`). discord.js emits guildCreate only for a server joined after ready, and guildDelete also for an outage, which says `available: false` and is skipped. Each title names its server, because sendAlert throttles one per title per minute and two joins in a minute must both show.
+    // --- THE OWNER'S SWITCHES, THE SERVER FEED AND BLOCKED SERVERS (B7) --- utils/botControls.js loads its one record into memory here, then leaves any server the owner blocked that Dioreo is still in (block = "leave again if re-added", his "ok", 2026-10-30 13:09 EDT). The feed (his "oh okay, sure", 2026-10-30 13:18 EDT): one line in the alerts channel per server Dioreo is added to or removed from, posted and never stored (`record: false`). discord.js emits guildCreate only for a server joined after ready, and guildDelete also for an outage, which says `available: false` and is skipped. Each title names its server, because sendAlert throttles one per title per minute and two joins in a minute must both show.
     const serverLine = (guild, extra = '') => `**${String(guild.name || 'Unknown server').replace(/[`*_~|]/g, '')}** · \`${guild.id}\`${guild.memberCount ? ` · ${guild.memberCount.toLocaleString('en-US')} members` : ''}${extra}\nNow in ${client.guilds.cache.size} servers.`;
     const leaveBlocked = guild => {
         const controls = require('../utils/botControls');

@@ -411,8 +411,7 @@ module.exports = {
         const prefs = await UserPreference.findOne({ discordId: interaction.user.id });
         const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);
 
-        // No "Show Everyone" button -- the visibility option above already covers that case up front, and repeating it here would be redundant (Harkirat's direct request).
-        // The server's own text-command prefixes on every typed page (B7).
+        // No "Show Everyone" button -- the visibility option above already covers that case up front, and repeating it here would be redundant (Harkirat's direct request). The server's own text-command prefixes on every typed page (B7).
         const prefixes = await require('../utils/textCommands/server').prefixesFor(interaction.guildId);
         const components = await buildHelpMessage({ perms, client: interaction.client, accentColor, cmd, view, detail, typedForms: typedFormsHere(interaction), prefixes });
         // Under every /help page, outside its card (2026-10-27 01:23 EDT, Harkirat; "regardless of whatever cmd/page of /help is being viewed", 01:21 EDT): Announcements shows what is running now, privately, Bugs & Suggestions opens the pop-up utils/feedback.js sends to the owner, and Submit a Build. Answered by handlers/help.js and handlers/loadouts.js.

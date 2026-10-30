@@ -16,8 +16,7 @@ const { textCommandAllowed } = require('../utils/textCommands/permissions');
 const SAME_COMMAND_COOLDOWN_MS = 5000;
 const ANY_COMMAND_COOLDOWN_MS = 1000;
 const CHANNEL_WINDOW_MS = 10_000;
-// At most 5 replies per channel and 30 per server in any 10 s (a server's: his call, B6, 2026-10-29 23:51 EDT, "okay" to 30; only a flood reaches it, and then Dioreo goes quiet). Since B7 the owner can set other numbers for one server (his "build it as an owner command for me to tweak per server", 2026-10-30 13:09 EDT): utils/botControls.js `limitsFor`, defaults in its DEFAULT_LIMITS.
-// The listener's own cards and lines that delete themselves (B6, his yes 2026-10-29 14:54-14:55 EDT; utils/textCommands/cardTimers.js). The listener's cards wear their command's accent (.claude/rules/rendering-and-ui.md's colour table).
+// At most 5 replies per channel and 30 per server in any 10 s (a server's: his call, B6, 2026-10-29 23:51 EDT, "okay" to 30; only a flood reaches it, and then Dioreo goes quiet). Since B7 the owner can set other numbers for one server (his "build it as an owner command for me to tweak per server", 2026-10-30 13:09 EDT): utils/botControls.js `limitsFor`, defaults in its DEFAULT_LIMITS. The listener's own cards and lines that delete themselves (B6, his yes 2026-10-29 14:54-14:55 EDT; utils/textCommands/cardTimers.js). The listener's cards wear their command's accent (.claude/rules/rendering-and-ui.md's colour table).
 const HELP_ACCENT = 16743772;      // /help and /invite's coral, #FF7D5C
 const TIMESTAMP_ACCENT = 1548962;  // /timestamp's Cyber Teal, #17A2A2
 const CARD_TTL_MS = 10_000;
@@ -153,8 +152,7 @@ async function dmCantPost(message, typed) {
         .catch(() => { /* their DMs are closed; nothing else can reach them */ });
 }
 
-// Returns the message Dioreo posted (null if it could not); `ttl` makes it delete itself unless someone presses it first.
-// `misfire` ({ kind, word, via }, Dioreo's own words only) is counted when a self-deleting card expires unpressed: utils/textCommands/misfires.js (B7, his pick A).
+// Returns the message Dioreo posted (null if it could not); `ttl` makes it delete itself unless someone presses it first. `misfire` ({ kind, word, via }, Dioreo's own words only) is counted when a self-deleting card expires unpressed: utils/textCommands/misfires.js (B7, his pick A).
 async function reply(message, body, { ttl = 0, misfire = null } = {}) {
     const plain = { allowed_mentions: { parse: [], replied_user: false }, ...body };
     const route = Routes.channelMessages(message.channelId);

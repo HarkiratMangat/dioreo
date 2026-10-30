@@ -2,8 +2,7 @@
 //
 // READS ARE SYNCHRONOUS, from memory. The message listener and the router ask on every message and every interaction, so nothing here may wait on the database: load() fills the cache once at start-up (bot/lifecycle.js), and every write updates memory first and then saves. Both apps share one process, so a change from Dioreo Admin is seen by the public app on the next event. Until load() succeeds the defaults hold: nothing frozen, nobody blocked, the ladder's own numbers. A failed load is logged and leaves them; it never stops the bot.
 //
-// THE FREEZE (his "ok good", 2026-10-30 13:09 EDT): slash commands, buttons and pop-ups on the public app get one private line, "Dioreo is paused: <reason>"; typed commands go silent. Everything, or chosen slash commands. The owner, /bot and Dioreo Admin are never frozen, so it can always be undone.
-// BLOCKED PEOPLE get the same treatment with their own line; blocked servers are left (bot/lifecycle.js) and, until the leave lands, ignored.
+// THE FREEZE (his "ok good", 2026-10-30 13:09 EDT): slash commands, buttons and pop-ups on the public app get one private line, "Dioreo is paused: <reason>"; typed commands go silent. Everything, or chosen slash commands. The owner, /bot and Dioreo Admin are never frozen, so it can always be undone. BLOCKED PEOPLE get the same treatment with their own line; blocked servers are left (bot/lifecycle.js) and, until the leave lands, ignored.
 const { isOwnerId } = require('./owner');
 
 const DEFAULT_SPAM = Object.freeze({ reply: 1, warning: 3, threshold: 10, rungsMin: Object.freeze([1, 5, 15, 60, 360, 720]) });
@@ -155,8 +154,7 @@ async function setLimits(guildId, { perChannel = null, perServer = null } = {}) 
     await save();
 }
 
-// --- the router's gate ---
-// For an interaction on the PUBLIC app: null to let it through, or the private line to answer with. The owner, Dioreo Admin and /bot always pass.
+// --- the router's gate --- For an interaction on the PUBLIC app: null to let it through, or the private line to answer with. The owner, Dioreo Admin and /bot always pass.
 function gateInteraction(interaction) {
     const userId = interaction?.user?.id;
     if (!userId || isOwnerId(userId)) return null;
