@@ -667,7 +667,7 @@ Home held its own copy of Armory's fault predicate; the copy happened to AGREE, 
 -# Use **`d help`** to learn more!
 -# Text commands are for **server-install only**
 ----
--# Made with <a:diorHeart:1525941004929339594> by <@1139845545754632283> · {posted}
+-# Made with <a:diorHeart:1525941004929339594> by <@1139845545754632283> · Posted {posted}
 ```
 
 - `[P2 · S]` **`deploy-site.yml`'s live check fails on a Cloudflare 403, not on the site** *(filed 2026-10-27 20:10 EDT, the v3.0.0 launch)*. The publish step succeeded and `dioreo.app` served the new build from the Mac (title, `/commands`, Privacy dated 27 October), but every `curl` from the GitHub runner got **403**, so the run went red after ~90s. Cloudflare's bot protection blocks the runner. **Do:** let the check through: a Cloudflare WAF skip rule for a header the workflow sends, or check the Pages deployment URL (`*.pages.dev`) instead of `dioreo.app`. **Verify:** the next site-touching merge to `main` shows `deploy-site` green with "Live site matches the published build."
