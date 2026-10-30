@@ -64,7 +64,7 @@ const emojis = {
     newDraws: '<a:NewDraws:1523837409211453613>',
     returningDraws: '<a:ReturningDraws:1523838126596817016>',
     patchNotes: '<a:PatchNotes:1523762216954888286>',
-    // One per season (2026-10-19 00:30 EDT, Harkirat), beside the season's title on /patch notes and in its history dropdown (commands/patchnotes.js seasonEmoji, keyed by the season number). Seasons 8 and 9 have no patch notes yet; theirs are here for when they do. Season icons renamed and S10 re-uploaded on the prod app (Harkirat, 2026-10-29 09:51 EDT: "also updated the season emoji, please swap them").
+    // One per season (2026-10-19 00:30 EDT, Harkirat), beside the season's title on /patch notes and in its history dropdown (commands/patchnotes.js seasonEmoji, keyed by the season number). Seasons 8 and 9 have no patch notes yet; theirs are here for when they do. Season icons renamed and S10 re-uploaded on the prod app (Harkirat, 2026-10-29 09:58 EDT: "also updated the season emoji, please swap them").
     season6: '<a:S6_TakeYourHeart:1561594930542018611>',
     season7: '<a:S7_Terminated:1561595008807735447>',
     season8: '<a:S8_AgainstAllFate:1561595098767163496>',
@@ -129,7 +129,7 @@ const emojis = {
     // The calculator's Add Draws and Remove buttons (2026-10-18 13:36 EDT, Harkirat supplied both).
     plus: '<a:Plus:1560408706233933845>',
     deleteBin: '<a:DeleteBin:1560788313508683807>',
-    // /help's redesign (2026-08-08 20:52 EDT) -- dioreoCombo is the landing page's own logo/wordmark icon; loadouts is the Gunsmith category header icon (distinct from the DMZ-specific `dmz` icon above, since Gunsmith now covers /all + every per-category command too, not just DMZ). DioreoCombo was deleted from the prod app and replaced by eight animated colours (Harkirat, 2026-10-29 09:51 EDT: "where we were currently showing dioreocombo, please put dioreocombocoral there"). Its old id broke /help on prod with COMPONENT_INVALID_EMOJI.
+    // /help's redesign (2026-08-08 20:52 EDT) -- dioreoCombo is the landing page's own logo/wordmark icon; loadouts is the Gunsmith category header icon (distinct from the DMZ-specific `dmz` icon above, since Gunsmith now covers /all + every per-category command too, not just DMZ). DioreoCombo was deleted from the prod app and replaced by eight animated colours (Harkirat, 2026-10-29 09:58 EDT: "where we were currently showing dioreocombo, please put dioreocombocoral there"). Its old id broke /help on prod with COMPONENT_INVALID_EMOJI.
     dioreoCombo: '<a:DioreoComboCoral:1565359721790177371>',
     // /invite's Share Link line (2026-10-18 20:15 EDT, Harkirat supplied the prod id). Unused since 2026-10-21 20:10 EDT, when he took it off that line; kept so it can come back without a new id.
     dioreoKawaii: '<:DioreoKawaii3B:1534640190491070599>',
@@ -182,7 +182,7 @@ const emojis = {
     wcSniper: '<a:WC_Sniper:1563415653644505168>',
     // His reminder set and the mascot's tada (uploaded 2026-10-24 18:16 EDT to Dioreo, Dioreo (Dev) and Dioreo Admin (Dev)): Remind titles the /remind panel and the reminder DMs, RemindAlert marks a heads-up or a warning, AddReminder is the icon-only bell button, ReminderEnabled marks what you follow and turning reminders on, DisableReminder marks turning them off. DioreoTada is uploaded and not used yet.
     dioreoTada: '<a:DioreoTada:1563677558589882510>',
-    // The cooldown hourglass, for every cooldown message instead of the generic ⏳ (Harkirat, 2026-10-29 09:54 EDT).
+    // The cooldown hourglass, for every cooldown or still-working message instead of the generic ⏳ (Harkirat, 2026-10-29 09:58 EDT).
     cooldown: '<a:Cooldown:1565362761821847712>',
     // B6 (2026-10-29): the help card's icon button, the Slash Command / Text Command switch on every /help page, and Dispute a Build. Prod ids, his uploads.
     helpHint: '<a:HelpHint:1565419610323558542>',
