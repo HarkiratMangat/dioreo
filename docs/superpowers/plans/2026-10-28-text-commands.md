@@ -579,20 +579,19 @@ What the check against the code had already found, now in B7's scope in the hand
 - /bot servers' owner reset clears the text switch and prefix too, and its summary shows them (found by the think-pass).
 - The spam ladder backend (`utils/textCommands/spamLadder.js`, `models/TextPenalty.js`): score, rungs, the stored penalty, the countdown note, the owner DM at 6 h and 12 h, the press note from 5 m, the restart reload.
 
-**Still to build from before 2026-10-30 13:00 EDT:**
-- `/bot penalties` and `/bot penalties user:<id>`. His layout (2026-10-30 13:26 EDT, over 3A and 3B): "plain text showing who has the penalty and then a search using user id to remove it or extend it or whatever". So: a plain list of who is penalised, their rung and when it ends; then a user-ID box (pop-up or the `user:` option) that opens that person, with Lift, Extend (to the next rung, or a time) and Exempt.
-- PRIVACY (§2 and Appendix A: `TextPenalty`, `textRules`, `textPrefixes`) and TERMS (one spam line); folded into the unpublished v1.12 / v1.7 rows; wording to him through the lead.
-- Records: CLAUDE.md (the text-commands exception still names the Open privately card; one owner-DM line for the spam DM), `.claude/rules/text-commands.md` and `.claude/rules/admin-controls.md`.
-- Mutation proofs, the after-renders for his yes, `TEST_CACHE=0 npm test`, `docs:audit`, the Owns check, this Audit log entry, the merge.
-
-**Agreed 2026-10-30 12:47–13:21 EDT, to build in B7 (his "build it here"):**
-- **Freeze** (`/bot`, owner only): slash commands get one private line ("Dioreo is paused: <reason>"), typed commands go silent; everything or one command; stored so a restart keeps it; the owner and `/bot` are never frozen.
-- **Spam tuning live** in `/bot penalties`: the 1/3/10 score and the rungs, stored. **Exempt a person** (kept, his "keep") beside Lift. **No server exemption** (dropped, his "your judgement").
-- **Reply limits per server**, owner only (his "build it as an owner command for me to tweak per server"): default 5 replies per channel and 30 per server per 10 s.
-- **Server checkup** in `/bot servers`: is Dioreo in it, where it can't post, text and slash rules, prefix, Integrations blocks, 7-day commands and errors from AnalyticsEvent.
-- **Leave server / Block server** (block = leave again if re-added) and **Block user** everywhere (stores an id: PRIVACY and TERMS lines).
-- **Join/leave feed** to the alerts webhook: one line per add or removal, nothing stored.
-- **False-trigger counts**, his pick A: daily counts per server of Dioreo's OWN words that misfired (an alias or typo rule whose card was ignored, a `d ` message read as chat), never the person's words.
+**Built after the compact (2026-10-30 13:28-13:48 EDT, commit `1a493f9`), on his "work autonomously and get it all done since im busy"; the design calls B7 made alone are marked ⟨B7⟩, for his review in the after-renders:**
+- `/bot penalties` and `/bot penalties user:<id>`, his layout (13:26 EDT): a plain list (who, rung, when it ends, where it started; 15 shown, then "look one up"), Look Up a User, Tune the Ladder (a three-box pop-up, blank = default, bounds checked), Lift All (two presses). One person: Lift, Extend (blank = next rung, or minutes; the countdown note is edited to the new end), Exempt / Unexempt (exempting lifts), Block (two presses; lifts). The owner is never a target.
+- **Freeze** (`/bot freeze`): Freeze Everything / Freeze Commands (names checked against the real command list; `bot` refused) / Unfreeze, each with a reason pop-up. The line: `Dioreo is paused: <reason>` (no reason: "Dioreo is paused. Try again a little later."). ⟨B7⟩ the freeze covers the PUBLIC app only: Dioreo Admin's commands are never frozen, so another admin can still fix data during a freeze. ⟨B7⟩ a one-command freeze stops that command's slash form, autocomplete and typed form; buttons on its older panels still work unless everything is frozen (a click carries no command name).
+- **Block user** (`blockedUsers`) and **Exempt** (`exemptUsers`): a blocked person's typed commands are silent and their slash commands get `Dioreo isn't available to you.` privately.
+- **Reply limits per server**: `/bot servers` → Reply Limits (two boxes, blank = 5 and 30), read by the listener per message.
+- **Server checkup** in `/bot servers`: in the server and members, where Dioreo can't post (count and the first five), Integrations rules, 7 days of uses (typed among them) and errors, reply limits, the week's misfires, blocked. Each line says "unreadable" rather than failing the panel. `/bot servers` with no ID shows the week's misfires across every server.
+- **Leave Server / Block Server / Unblock Server**, each two presses and logged on /bot analytics' Changes page; a blocked server is left again on ready and whenever re-added.
+- **Join/leave feed**: one line per server added or removed (left from /bot servers says "Left"), to the alerts webhook, never stored (`sendAlert`'s new `record: false`), never pings; an outage's `guildDelete` is skipped.
+- **False-trigger counts** (his A): per server per day, a Did you mean, pick or timestamp card that expired unpressed and every no-match line, keyed by Dioreo's word and the form only; 30 days. ⚠️ ⟨B7⟩ the "a `d ` message read as chat" half is NOT built: the parser's silence carries nothing to key it on, and counting it would count every chat line that starts with "d ".
+- **PRIVACY** §2.1h (new), §2.1a, §4, §7, §9.4, Appendix A; **TERMS** §4.1, §6, §13.2; both folded into the unpublished v1.12 / v1.7 rows. Wording to him through the lead. TERMS' can't-post line said "once a day per channel", B6's old rule; now "per server".
+- **Records**: CLAUDE.md (the Open privately card replaced by the switch and the spam ladder; the spam owner-DM line), `.claude/rules/text-commands.md` (a "Per server, and the owner's tools" section, the buttons, the tests), `.claude/rules/admin-controls.md` (the text switch and prefix), `.claude/rules/interaction-router.md` (`txtpriv_` is the help icon only).
+- **/help**: Spam Penalties and Freeze pages on Bot Admin. ⚠️ ⟨B7⟩ the owner's command switcher now has 26 entries against Discord's 25, so `/embed`, the last, drops off the switcher for the owner only (still on the Bot Admin list). Put to him.
+- Tests: `scripts/botControls.test.js` (new) and four listener cases; ten one-change mutations each turned a test red.
 
 ## The lead, after B7 is merged (on this Mac)
 
