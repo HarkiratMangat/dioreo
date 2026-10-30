@@ -569,7 +569,7 @@ What the check against the code had already found, now in B7's scope in the hand
 
 ### B7's thread: decided and built, and still to build (written 2026-10-30 13:21 EDT by B7, so a compact or the next reader loses none of it)
 
-**Design is one item at a time** (his "go 1 by 1, you dumped everything in there", 2026-10-30 13:21 EDT): one item's renders in #testing-spam, his pick, then the next. This overrides "every option for a step in ONE message" above.
+**Design is one item at a time** (his "go 1 by 1, you dumped everything in there", his answer to B7's first round of renders, 2026-10-30): one item's renders in #testing-spam, his pick, then the next. This overrides "every option for a step in ONE message" above.
 
 **Built on `feat/text-commands-b7-server`** (commits `234b910`, `7024253`, `7e8a0ef`, `7bae54e`):
 - Per-server prefixes (`GuildSettings.textPrefixes`, `utils/textCommands/server.js`). His middle ground (2026-10-30 12:35 EDT): a server's prefix (up to 3) takes `d`'s place; `dior` and `@Dioreo` always work. /help's typed pages, the help card and the home use them. **Edit Prefix** and **Reset to d** on the text view.
