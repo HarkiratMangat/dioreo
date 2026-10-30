@@ -143,6 +143,23 @@ const text = body => JSON.stringify(body);
         assert.deepStrictEqual(Object.keys(dym.filter).sort(), ['day', 'guildId', 'kind', 'via', 'word'], 'no person, no text');
     });
 
+    await check('a write never saves over a record it could not read (think-pass): it retries the read, then refuses', async () => {
+        const model = require('../models/BotControls');
+        const realFind = model.findById;
+        const before = writes.controls.length;
+        model.findById = () => ({ lean: async () => { throw new Error('atlas down'); } });
+        try {
+            await assert.rejects(controls.setFlag('blockedUsers', 'u9', true), /could not be read/);
+            await assert.rejects(controls.setFreeze({ all: true }), /could not be read/);
+            assert.strictEqual(writes.controls.length, before, 'nothing written');
+            assert.strictEqual(controls.isBlockedUser('u9'), false, 'nothing changed in memory either');
+            model.findById = () => ({ lean: async () => ({ blockedUsers: ['stored1'], exemptUsers: ['stored2'] }) });
+            await controls.setFlag('blockedUsers', 'u9', true);
+            assert.deepStrictEqual(writes.controls.at(-1).blockedUsers.sort(), ['stored1', 'u9'], 'the stored list is kept, the new id added');
+            assert.deepStrictEqual(writes.controls.at(-1).exemptUsers, ['stored2']);
+        } finally { model.findById = realFind; }
+    });
+
     const { handleBotInteraction } = require('../handlers/bot');
 
     await check('/bot penalties: only the owner; Look Up opens one person; Block takes two presses and lifts', async () => {

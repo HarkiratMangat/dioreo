@@ -183,7 +183,7 @@ async function route(interaction) {
                 note = await saved(() => controls.clearFreeze(), 'Unfrozen. Dioreo answers again.');
             }
             await interaction.deferUpdate();
-            return sendV2Payload(interaction, bot.buildFreezePanel({ note }));
+            return sendV2Payload(interaction, bot.buildFreezePanel({ note }), NO_PINGS);
         }
 
         if (kind === 'penm' && verb === 'ask') {

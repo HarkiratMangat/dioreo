@@ -1356,7 +1356,7 @@ module.exports = {
                 return interaction.reply({ content: '🔒 **Only the bot owner can use this.**', ephemeral: true });
             }
             await interaction.deferReply({ flags: 64 });
-            if (sub === 'freeze') return sendV2Payload(interaction, buildFreezePanel());
+            if (sub === 'freeze') return sendV2Payload(interaction, buildFreezePanel(), { allowedMentions: { parse: [] } });
             const userId = (interaction.options.getString('user') || '').replace(/[<@!>]/g, '').trim();
             if (!userId) return sendV2Payload(interaction, buildPenaltiesPanel(interaction.client), { allowedMentions: { parse: [] } });
             if (!/^\d{15,22}$/.test(userId)) return sendV2Payload(interaction, buildPenaltiesPanel(interaction.client, { note: `-# ${emojis.cross} That is not a user ID: 17–20 digits.` }), { allowedMentions: { parse: [] } });

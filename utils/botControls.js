@@ -1,6 +1,6 @@
 // utils/botControls.js -- the owner's bot-wide switches (B7, his asks 2026-10-30 12:47-13:21 EDT, "build it here"): the freeze, the spam ladder's numbers, exemptions, blocked people and servers, and per-server reply limits. Stored in models/BotControls.js, one document.
 //
-// READS ARE SYNCHRONOUS, from memory. The message listener and the router ask on every message and every interaction, so nothing here may wait on the database: load() fills the cache once at start-up (bot/lifecycle.js), and every write updates memory first and then saves. Both apps share one process, so a change from Dioreo Admin is seen by the public app on the next event. Until load() succeeds the defaults hold: nothing frozen, nobody blocked, the ladder's own numbers. A failed load is logged and leaves them; it never stops the bot.
+// READS ARE SYNCHRONOUS, from memory. The message listener and the router ask on every message and every interaction, so nothing here may wait on the database: load() fills the cache once at start-up (bot/lifecycle.js), and every write updates memory first and then saves. Both apps share one process, so a change from Dioreo Admin is seen by the public app on the next event. Until load() succeeds the defaults hold: nothing frozen, nobody blocked, the ladder's own numbers. A failed load is logged and leaves them; it never stops the bot. It FAILS OPEN on purpose: with the record unread nothing is frozen or blocked, because failing closed would silence the whole bot on every database blip; so a restart during a freeze with Atlas down un-freezes it, and the first second or two after a restart (before the read lands) runs on the defaults too.
 //
 // THE FREEZE (his "ok good", 2026-10-30 13:09 EDT): slash commands, buttons and pop-ups on the public app get one private line, "Dioreo is paused: <reason>"; typed commands go silent. Everything, or chosen slash commands. The owner, /bot and Dioreo Admin are never frozen, so it can always be undone. BLOCKED PEOPLE get the same treatment with their own line; blocked servers are left (bot/lifecycle.js) and, until the leave lands, ignored.
 const { isOwnerId } = require('./owner');
@@ -53,6 +53,12 @@ async function load() {
     return loaded;
 }
 
+// Before any write: the stored record must be in memory, because save() writes the WHOLE record. A start-up read that failed leaves the defaults in memory, and saving over them would wipe the stored blocks, exemptions, tuning and limits (end-of-session think-pass, 2026-10-30 14:23 EDT). So a write retries the read first, and throws before changing anything if it still fails.
+async function ensureLoaded() {
+    if (!loaded) await load();
+    if (!loaded) throw new Error('the owner controls could not be read, so nothing was changed');
+}
+
 // Every write: memory first, then the database. Throws when the save fails, so the panel can say so; memory keeps the change until the next restart.
 async function save() {
     await model().updateOne({ _id: 'global' }, { $set: toDoc() }, { upsert: true });
@@ -62,10 +68,12 @@ async function save() {
 const freezeState = () => ({ ...state.freeze, commands: [...state.freeze.commands] });
 const isFrozen = slashName => state.freeze.all || (Boolean(slashName) && state.freeze.commands.includes(slashName));
 async function setFreeze({ all = false, commands = [], reason = '' } = {}) {
+    await ensureLoaded();
     state.freeze = { all: Boolean(all), commands: [...new Set(commands)], reason: String(reason || '').trim().slice(0, 200), since: new Date() };
     await save();
 }
 async function clearFreeze() {
+    await ensureLoaded();
     state.freeze = { all: false, commands: [], reason: '', since: null };
     await save();
 }
@@ -84,8 +92,9 @@ const markLeaving = id => leaving.add(id);
 const wasLeaving = id => leaving.delete(id);
 const counts = () => ({ exempt: state.exemptUsers.size, blockedUsers: state.blockedUsers.size, blockedGuilds: state.blockedGuilds.size });
 async function setFlag(kind, id, on) {
+    if (!state[kind] || !id) return;
+    await ensureLoaded();
     const set = state[kind];
-    if (!set || !id) return;
     if (on) set.add(id); else set.delete(id);
     await save();
 }
@@ -126,6 +135,7 @@ function parseSpam({ points = '', threshold = '', rungs = '' } = {}) {
     return { spam: out };
 }
 async function setSpam(values) {
+    await ensureLoaded();
     state.spam = { ...values };
     await save();
 }
@@ -149,6 +159,7 @@ function parseLimits({ perChannel = '', perServer = '' } = {}) {
     return { limits: { perChannel: c.value, perServer: s.value } };
 }
 async function setLimits(guildId, { perChannel = null, perServer = null } = {}) {
+    await ensureLoaded();
     if (perChannel == null && perServer == null) state.replyLimits.delete(guildId);
     else state.replyLimits.set(guildId, { perChannel: perChannel ?? DEFAULT_LIMITS.perChannel, perServer: perServer ?? DEFAULT_LIMITS.perServer });
     await save();

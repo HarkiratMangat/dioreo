@@ -165,9 +165,10 @@ async function handleInteractionInner(interaction) {
     // --- THE OWNER'S FREEZE AND BLOCKS (B7, his "ok good" 2026-10-30 13:09 EDT) --- First, before anything else runs: a frozen command, or a person the owner blocked, gets one private line and nothing else (an autocomplete gets an empty list). utils/botControls.js decides, from memory; the owner, /bot and every Dioreo Admin interaction always pass, so the freeze can always be undone.
     const ownerGate = require('../utils/botControls').gateInteraction(interaction);
     if (ownerGate) {
-        markOutcome('blocked_by_owner');
+        // An existing outcome on purpose: AnalyticsRollup's OUTCOME_KEYS and the portal's labels are a closed set, and a new value would be counted with no outcome column (think-pass, 2026-10-30 14:23 EDT). The owner's freeze or block is a policy block.
+        markOutcome('blocked_by_policy');
         if (interaction.isAutocomplete()) return await interaction.respond([]).catch(() => {});
-        return await interaction.reply({ content: ownerGate, flags: 64 }).catch(() => {});
+        return await interaction.reply({ content: ownerGate, flags: 64, allowedMentions: { parse: [] } }).catch(() => {});
     }
 
     // --- SERVER VISIBILITY POLICY (2026-08-10 15:48 EDT, v3) --- resolved ONCE here, before any routing, and attached as interaction.dioreoPolicy. It also clamps reply/deferReply/followUp on this interaction when the server has forced ephemeral, which is what makes the rule impossible for ANY command to bypass or forget -- applied here in the router rather than per-command precisely so a command module can't (accidentally or otherwise) skip it. See utils/guildPolicy.js for the precedence tiers and why nothing here refuses a command. No-ops outside a guild. Deliberately BEFORE the anti-spam guard: a swallowed click still returns below, and a policy resolved on every interaction (rather than only the ones that survive the cooldown) keeps the per-guild cache warm and the behaviour uniform.
