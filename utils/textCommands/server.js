@@ -8,7 +8,8 @@ function configuredPrefixes(env = process.env) {
     return raw.split(',').map(p => p.trim()).filter(Boolean);
 }
 
-const MAX_PREFIXES = 3;
+// ONE prefix per server (his call, 2026-10-30 16:44 EDT: "why do we even have 3? make it 1 only ... no space allowed in a prefix"). B7 allowed three.
+const MAX_PREFIXES = 1;
 const MAX_LENGTH = 6;
 // `/` is the slash-command picker's (his 2026-10-29 12:40 EDT: "leave it for the real slash commands"); `@ < # :` begin a mention, a channel or an emoji; `` ` * _ ~ | > \ `` are Discord markdown and would change how the message itself renders.
 const FORBIDDEN = /[/@<#:`*_~|>\\]/;
@@ -17,14 +18,14 @@ const FORBIDDEN = /[/@<#:`*_~|>\\]/;
 // The words that put the prefix back (`d prefix reset`), so none of them can be a prefix: `prefix remove` would be a set or a reset, nobody could tell which (his ask, 2026-10-30 16:02 EDT: "These words can also never be set as a server prefix (give a warning message if a server tries to use them)").
 const REMOVE_WORDS = ['remove', 'reset', 'erase', 'default', 'delete'];
 
-// What an admin typed, as a list: commas or spaces between prefixes, any case. Blank is the default again. Returns { prefixes } or { error } in words the pop-up shows.
+// What an admin typed in /admin's Edit Prefix: one word, any case. Two words (or a comma between them) is an error the pop-up shows, since a prefix can't hold a space. Blank is the default again. Returns { prefixes } (zero or one) or { error }. The text command passes only the first word it was given (prefixCommand.js).
 function parsePrefixes(text) {
     const prefixes = [...new Set(String(text || '').split(/[,\s]+/).map(p => p.trim().toLowerCase()).filter(Boolean))];
-    if (prefixes.length > MAX_PREFIXES) return { error: `Up to ${MAX_PREFIXES} prefixes.` };
-    const long = prefixes.find(p => p.length > MAX_LENGTH);
-    if (long) return { error: `\`${long}\` is too long: ${MAX_LENGTH} characters at most.` };
     const reserved = prefixes.find(p => REMOVE_WORDS.includes(p));
     if (reserved) return { error: `\`${reserved}\` can't be a prefix: ${REMOVE_WORDS.map(w => `\`${w}\``).join(', ')} put the prefix back.` };
+    if (prefixes.length > MAX_PREFIXES) return { error: 'One prefix, with no spaces.' };
+    const long = prefixes.find(p => p.length > MAX_LENGTH);
+    if (long) return { error: `\`${long}\` is too long: ${MAX_LENGTH} characters at most.` };
     if (prefixes.some(p => FORBIDDEN.test(p))) return { error: "A prefix can't use / @ < # : or Discord's formatting characters." };
     return { prefixes };
 }

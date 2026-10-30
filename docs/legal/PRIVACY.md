@@ -80,7 +80,7 @@ If you administer a Discord server, you can use `/admin` to decide where the Bot
 | **Server ID** | The server's permanent numeric Discord ID | The key linking the rules to the server. Required. |
 | **Channel and role IDs** | The channels and roles named in the rules an admin set | Without them a rule cannot say *where* or *for whom* it applies |
 | **Command settings** | Which of the Bot's commands have their own settings there, and those settings: a default (public or private) and any channel or role exceptions | Applies the admin's choice |
-| **Text-command settings** | Whether the Bot answers text commands there by default, any channel, role or command exceptions, and up to three prefixes the server chose in place of `d` | Applies the admin's choice |
+| **Text-command settings** | Whether the Bot answers text commands there by default, any channel, role or command exceptions, and a prefix the server chose in place of `d` | Applies the admin's choice |
 | **Last editor's Discord user ID** | The single ID of whoever most recently saved a change | So a server's other admins can see who changed a shared setting |
 | **Change log** | One entry per saved change: the server ID, the Discord user ID of whoever made it, whether it was one of the server's admins or the Bot's owner (acting on a server admin's request), when, and what changed (for example "Default: Public → Private", naming channels, roles and commands by ID) | So a server's admins can export a record of who changed what. It cannot be cleared from Discord, so a change cannot be hidden by whoever made it |
 

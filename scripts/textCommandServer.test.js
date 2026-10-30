@@ -36,9 +36,10 @@ const HOUR = 60 * 60 * 1000;
 
 (async () => {
     await check('prefixes: commas or spaces, any case, at most three, blank for the default', async () => {
-        assert.deepStrictEqual(parsePrefixes('!, ?').prefixes, ['!', '?']);
-        assert.deepStrictEqual(parsePrefixes('COD  dd').prefixes, ['cod', 'dd']);
-        assert.deepStrictEqual(parsePrefixes('the, yo').prefixes, ['the', 'yo'], 'an everyday word is the server\'s choice (his call, 2026-10-30 15:26 EDT)');
+        assert.deepStrictEqual(parsePrefixes('!').prefixes, ['!']);
+        assert.deepStrictEqual(parsePrefixes('COD').prefixes, ['cod']);
+        assert.deepStrictEqual(parsePrefixes('the').prefixes, ['the'], 'an everyday word is the server\'s choice (his call, 2026-10-30 15:26 EDT)');
+        for (const two of ['!, ?', 'COD  dd', 'the, yo']) assert.ok(parsePrefixes(two).error, `one prefix only (his call, 2026-10-30 16:43 EDT): ${two}`);
         assert.deepStrictEqual(parsePrefixes('d, d').prefixes, ['d']);
         assert.deepStrictEqual(parsePrefixes('  ').prefixes, []);
         assert.ok(parsePrefixes('a b c e').error);

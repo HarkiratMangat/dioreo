@@ -357,11 +357,14 @@ t('the /admin text view: its ids, On/Off, the flip button and a save into textRu
         assert.strictEqual(doc.channelRules.length, 0, 'no slash channel rule');
         const bad = await click('admin_t_prefixm', { fields: { getTextInputValue: () => '/, @' } });
         assert.ok(bad.some(c => c.method === 'reply' && /Nothing was saved/.test(c.options.content)), 'a refused prefix');
-        await click('admin_t_prefixm', { fields: { getTextInputValue: () => '!, COD' } });
-        assert.deepStrictEqual([...doc.textPrefixes], ['!', 'cod']);
+        const two = await click('admin_t_prefixm', { fields: { getTextInputValue: () => '!, COD' } });
+        assert.strictEqual(doc.textPrefixes, undefined, 'two prefixes save nothing: one per server (his call, 2026-10-30 16:43 EDT)');
+        assert.ok(two.some(c => c.method === 'reply' && /One prefix/.test(c.options.content)), 'and say why');
+        await click('admin_t_prefixm', { fields: { getTextInputValue: () => 'COD' } });
+        assert.deepStrictEqual([...doc.textPrefixes], ['cod']);
         await new Promise(r => setImmediate(r));
         assert.ok(log.some(r => r.changes.includes('Text commands · Default: On → Off')), JSON.stringify(log.map(r => r.changes)));
-        assert.ok(log.some(r => r.changes.includes('Text command prefixes: default → ! cod')));
+        assert.ok(log.some(r => r.changes.includes('Text command prefixes: default → cod')));
         await click('admin_t_prefix_reset');
         assert.strictEqual(doc.textPrefixes, undefined, 'Reset to d');
         await click('admin_t_prefixm', { fields: { getTextInputValue: () => '!' } });

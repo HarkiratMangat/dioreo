@@ -75,7 +75,7 @@ const SET = p => `${cmd} Dioreoland's server prefix: **\`${p}\`**\n-# **<@${BOT}
         assert.deepStrictEqual(c.words, ['prefix', 'pre', 'prefixes']);
         assert.deepStrictEqual(aliasClashes(), []);
     });
-    await check('the parser: bare and with one word run; a typo, several words, or a short typo after d are chat', () => {
+    await check('the parser: an exact word runs with or without words after it; a typo with words, or a short typo after d, is chat', () => {
         assert.strictEqual(parse('d prefix').kind, 'run');
         assert.strictEqual(parse('d pre').command, 'prefix');
         assert.strictEqual(parse('D PREFIXES').command, 'prefix', 'plural and any case');
@@ -85,8 +85,8 @@ const SET = p => `${cmd} Dioreoland's server prefix: **\`${p}\`**\n-# **<@${BOT}
         assert.strictEqual(parse('dior prefix remove').args, 'remove');
         assert.strictEqual(parse('<@111> pre reset').args, 'reset');
         assert.strictEqual(parse('<@111> prefix a b').args, 'a b', '@Dioreo always runs');
-        assert.strictEqual(parse('d prefix a b').kind, null, 'two words after d is chat');
-        assert.strictEqual(parse('d pre owned lol').kind, null);
+        assert.strictEqual(parse('d prefix is cool').args, 'is cool', 'an exact word runs with any words after it (his call, 2026-10-30 16:43 EDT)');
+        assert.strictEqual(parse('d pre owned lol').kind, 'run');
         assert.strictEqual(parse('d per').kind, null, 'a typo of a three-letter word is not an answer');
         assert.strictEqual(parse('d prefxi').kind, 'run', 'a longer word forgives a swapped pair');
         assert.strictEqual(parse('d prefxi x').kind, null, 'a typo with any argument is chat');

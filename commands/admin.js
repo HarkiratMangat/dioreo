@@ -598,8 +598,8 @@ async function readMember(interaction, userId) {
     return { member: { id: userId, roleIds: [...m.roles.cache.keys()], isAdmin, gate } };
 }
 
-// THE HELP PANEL (Harkirat 2026-10-22 14:57 EDT: "create a help panel for this command, similar to draw calc's help panel"). Sent as its own private message rather than replacing the panel (Harkirat 2026-10-22 23:39 EDT: "When you press help, can you make it send another private message instead of changing the panel?"), so it carries no tabs: the settings stay open above it. Same shape as commands/drawCalculator.js's buildHelpPanel: emoji headings, short "**term** · meaning" rows under dividers, no paragraphs. It carries the explanations that used to sit on the pages, so the pages can stay visual.
-function buildHelp(client, place = {}) {
+// THE HELP PANEL (Harkirat 2026-10-22 14:57 EDT: "create a help panel for this command, similar to draw calc's help panel"). Sent as its own private message rather than replacing the panel (Harkirat 2026-10-22 23:39 EDT: "When you press help, can you make it send another private message instead of changing the panel?"), so it carries no tabs: the settings stay open above it. Same shape as commands/drawCalculator.js's buildHelpPanel: emoji headings, short "**term** · meaning" rows under dividers, no paragraphs. It carries the explanations that used to sit on the pages, so the pages can stay visual. `prefix` is the server's own text prefix, so the examples read the way this server types them (his ask, 2026-10-30 16:46 EDT); `d` when none is set.
+function buildHelp(client, place = {}, prefix = 'd') {
     const row = (term, meaning) => `${emojis.smallDot} **${term}** · ${meaning}`;
     const divider = { type: 14, spacing: 2, divider: true };
     return [
@@ -635,9 +635,9 @@ function buildHelp(client, place = {}) {
                 // The text-command view (B7, 2026-10-30).
                 { type: 10, content: [
                     '### ⌨️ Text Commands',
-                    row('On or Off', 'a typed command (`d today`, `@Dioreo today`) is never private, so it is on or off; off means Dioreo stays silent'),
+                    row('On or Off', `a typed command (\`${prefix} today\`, \`@Dioreo today\`) is never private, so it is on or off; off means Dioreo stays silent`),
                     row('Same order', 'a command\'s own settings, then role in this channel › role everywhere › channel › default'),
-                    row('Prefix', 'up to 3 of your own in place of `d`; `dior` and `@Dioreo` always work. **Reset to d** puts it back'),
+                    row('Prefix', 'one of your own in place of `d`; `dior` and `@Dioreo` always work. **Reset to d** puts it back'),
                     row('Admins', 'can use typed commands anywhere, whatever is off'),
                     row('Where', '**Config Text Commands** under the tabs on Overview'),
                 ].join('\n') },
@@ -882,7 +882,7 @@ async function handleComponent(interaction) {
         // Help opens as its own private message, the way the draw calculator's does (handlers/drawCalc.js), and leaves the panel as it was. Nothing on it can go stale, so it skips the idle timeout.
         case 'admin_help':
             await interaction.deferReply({ flags: 64 });
-            return sendV2Payload(interaction, buildHelp(interaction.client, place), { allowedMentions: NO_PINGS, skipExpiry: true });
+            return sendV2Payload(interaction, buildHelp(interaction.client, place, (await getGuildSettings(guildId))?.textPrefixes?.[0] || 'd'), { allowedMentions: NO_PINGS, skipExpiry: true });
 
         case 'admin_cmd_open':
             settings = await getGuildSettings(guildId);
@@ -922,7 +922,7 @@ async function handleComponent(interaction) {
             return interaction.showModal({
                 title: 'Text command prefixes',
                 custom_id: 'admin_t_prefixm',
-                components: [{ type: 18, label: 'Your prefix', description: 'Replaces d. Up to 3, commas between. Blank = d. dior and @Dioreo always work.', component: { type: 4, custom_id: 'prefixes', style: 1, required: false, max_length: 30, placeholder: 'e.g. !, ?', ...(current ? { value: current } : {}) } }],
+                components: [{ type: 18, label: 'Your prefix', description: 'Replaces d. One word, no spaces. Blank = d. dior and @Dioreo always work.', component: { type: 4, custom_id: 'prefixes', style: 1, required: false, max_length: 6, placeholder: 'e.g. !', ...(current ? { value: current } : {}) } }],
             });
         }
         case 'admin_prefixm': {

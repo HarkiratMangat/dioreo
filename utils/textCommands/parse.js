@@ -106,11 +106,10 @@ function parseTextCommand(content, { botId, botRoleId = null, prefixes = [], com
     if (result.cmd) {
         const cmd = result.cmd;
         const base = { via, command: cmd.name, fuzzy: result.fuzzy, addressed };
-        // A text-only command that reads its own words (`d prefix d!`, commands.js `rawArgs`). Chat guards: a typo answers only when bare and long enough not to be an everyday word (`d per`), and after `d`/`dior` more than one word is chat (`d pre owned lol`); `@Dioreo` always runs.
+        // A text-only command that reads its own words (`d prefix d!`, commands.js `rawArgs`). Chat guard: a typo answers only when bare and long enough not to be an everyday word (`d per`). An exact word runs with any words after it: `d prefix is cool` sets `is` for an admin and shows the prefix to anyone else (his call, 2026-10-30 16:44 EDT).
         if (cmd.rawArgs) {
             const argWords = tokens.slice(result.used);
             if (result.fuzzy && (argWords.length || (!addressed && result.word.length <= 4))) return { kind: null };
-            if (!addressed && argWords.length > 1) return { kind: null };
             return { kind: 'run', ...base, args: argWords.join(' '), values: {}, autocomplete: [], hasArgs: argWords.length > 0 };
         }
         if (!cmd.options?.length) {

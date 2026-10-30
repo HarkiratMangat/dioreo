@@ -80,14 +80,14 @@ const PAGES = {
         blurb: "See the prefix your server uses, or change it if you're a server admin",
         textOnly: true,
         page(x) {
-            const { REMOVE_WORDS, MAX_LENGTH, MAX_PREFIXES, configuredPrefixes, prefixParts } = require('./textCommands/server');
+            const { REMOVE_WORDS, MAX_LENGTH, configuredPrefixes, prefixParts } = require('./textCommands/server');
             const back = prefixParts().replaceable || configuredPrefixes()[0] || 'd';
             return {
                 args: '[new prefix|remove]',
                 boxes: [
                     text(`**See it**\n-# Anyone can ask which prefix this server uses\n> -# ${dot([`${x.p} prefix`, `${x.p} pre`])}`),
                     text(`**Change it** *(server admins)*\n-# Needs **Manage Server**. Anyone else is just shown the prefix\n> -# **Set**  ${code(`${x.p} prefix !`)}\n> -# **Put ${code(back)} back**  ${dot(REMOVE_WORDS)}`),
-                    text(`**Good to know**\n> -# Your prefix takes ${code(back)}'s place; ${code('dior')} and **@Dioreo** always work\n> -# Up to ${MAX_LENGTH} characters, no spaces. The panel can set up to ${MAX_PREFIXES}\n> -# ${dot(REMOVE_WORDS)} can't be a prefix: they put it back\n> -# **Edit Prefix** in ${emojis.serverSettings || ''} /admin → Config Text Commands does the same`),
+                    text(`**Good to know**\n> -# Your prefix takes ${code(back)}'s place; ${code('dior')} and **@Dioreo** always work\n> -# Up to ${MAX_LENGTH} characters, no spaces\n> -# ${dot(REMOVE_WORDS)} can't be a prefix: they put it back\n> -# **Edit Prefix** in ${emojis.serverSettings || ''} /admin → Config Text Commands does the same`),
                 ],
                 examples: [[`${x.p} prefix`, "This server's prefix"], [`${x.p} pre !`, 'Set it to ! (admins)'], [`${x.p} prefix reset`, `Back to ${back} (admins)`]],
             };
@@ -232,13 +232,13 @@ const PAGES = {
     '/admin': {
         blurb: "Config custom settings for Dioreo in your server.\n-# These control where Dioreo answers **publicly or privately for /slash commands**, and where **typed (prefix) commands are allowed or disabled**.",
         slashOnly: true,
-        page() {
+        page(x) {
             const rows = (title, list) => text(`${title}\n${list.map(([term, meaning]) => `> -# **${term}**  *${meaning}*`).join('\n')}`);
             return {
                 usageNote: `${emojis.info} **Important:** an admin needs the **Manage Server** permission to use this command!\n-# /admin only works as a slash command, so use it in a channel where you have **Use Application Commands** enabled.`,
                 boxes: [
                     VIS,
-                    rows('**Config Text Commands**\nSet typed commands like `d today` **on or off**', [['On', 'the command works (Dioreo replies publicly)'], ['Off', 'the command is disabled (Dioreo stays silent)'], ['Prefix', 'your own in place of `d`; `dior` and `@Dioreo` always work. **Reset to d** puts it back'], ['Admins', 'can use typed commands anywhere, whatever is off']]),
+                    rows(`**Config Text Commands**\nSet typed commands like \`${x?.p || 'd'} today\` **on or off**`, [['On', 'the command works (Dioreo replies publicly)'], ['Off', 'the command is disabled (Dioreo stays silent)'], ['Prefix', 'your own in place of `d`; `dior` and `@Dioreo` always work. **Reset to d** puts it back'], ['Admins', 'can use typed commands anywhere, whatever is off']]),
                     rows('**Config Slash Commands**\nSet slash commands like `/today` **public or private**', [['Public', "Dioreo's replies are visible to everyone in the channel"], ['Private', 'only the person who ran the command sees the reply']]),
                     rows('**Pages in the panel**', [['Overview', 'Your default, and every rule at a glance'], ['Channels', 'Channel-specific settings'], ['Roles', 'Role-specific settings, everywhere or in some channels'], ['Commands', "Each command's own settings"], ['Help', 'How the rules work, in full']]),
                     rows('**Extra Tools**', [['Check a Member', 'What a member gets, and why'], ['Export Log', "An audit safeguard: every /admin change in the last 60 days. It can't be deleted"], ['Reset Slash Rules · Reset Text Rules', 'Back to the defaults, for that view only']]),

@@ -5,8 +5,7 @@
 //
 // ⚠️ DEV AND PROD SHARE ONE CLOUDINARY ACCOUNT (utils/cloudinaryDevGuard.js), so `--write` renames the LIVE images whichever database it is pointed at, and the stored URLs it rewrites are only the ones in THAT database. Run against a database that is not prod's and the prod bot's thumbnails 404 until the same run is repeated there. Hence `--write` refuses without DRAW_BACKFILL_APPROVED=1, which is Harkirat's word for the run, and it is meant to be run ONCE, on the prod database, right after the deploy of the code that reads draws/ (the code still finds a legacy temp_draws/ image, so deploying first is safe).
 //
-// Re-runnable: a moved image is no longer in temp_draws/, so a second run plans nothing for it. It deletes nothing: archive/draws/ copies that are not moved are listed and left.
-// SECURITY: every Cloudinary error goes through safeErrorMessage() (CLAUDE.md's secret-logging ban).
+// Re-runnable: a moved image is no longer in temp_draws/, so a second run plans nothing for it. It deletes nothing: archive/draws/ copies that are not moved are listed and left. SECURITY: every Cloudinary error goes through safeErrorMessage() (CLAUDE.md's secret-logging ban).
 const mongoose = require('mongoose');
 const cloudinary = require('cloudinary').v2;
 const SeasonalData = require('../models/SeasonalData');

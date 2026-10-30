@@ -46,8 +46,8 @@ async function execute(interaction, args = '') {
     const guildName = interaction.guild?.name;
     const client = interaction.client;
     const words = String(args || '').trim().split(/\s+/).filter(Boolean);
-    // One word is an attempt to set or reset; more than that is not (`d prefix is what`), and neither is an argument from a non-admin.
-    if (words.length === 1 && policy.isServerAdmin(interaction)) {
+    // The FIRST word is the attempt to set or reset: `d prefix is cool` sets `is` (his call, 2026-10-30 16:44 EDT: "d prefix is cool should set `is` as the prefix. no space allowed in a prefix"). A non-admin's words are ignored.
+    if (words.length && policy.isServerAdmin(interaction)) {
         const action = readAction(words[0]);
         if (action.error) return interaction.reply({ content: `${emojis.warn || ''} ${action.error} Nothing was saved.`.trim() });
         const settings = await policy.updateGuildSettings(guildId, interaction.user.id, doc => { doc.textPrefixes = action.reset ? undefined : action.prefixes; });
