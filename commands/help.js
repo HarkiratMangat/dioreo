@@ -292,7 +292,13 @@ async function currentSeasonEmoji() {
 function visiblePageNames(perms = {}) {
     const { PAGE_ORDER, hasPage } = require('../utils/helpPages');
     const seen = new Set(searchEntries(perms).filter(e => !e.app).map(e => e.name));
-    return PAGE_ORDER.filter(n => seen.has(n) && hasPage(n));
+    // /bot is one page for its subcommands (2026-10-30 14:05 EDT): shown when any of them is.
+    return PAGE_ORDER.filter(n => (seen.has(n) || (n === '/bot' && visibleBotSubs(perms).length)) && hasPage(n));
+}
+// The /bot subcommands this viewer may open, in the page's dropdown order.
+function visibleBotSubs(perms = {}) {
+    const seen = new Set(searchEntries(perms).filter(e => !e.app).map(e => e.name));
+    return require('../utils/helpPages').BOT_SUB_ORDER.filter(n => seen.has(n));
 }
 
 // A right-click app has no page of its own: it opens the page of the command it belongs to.
@@ -301,7 +307,8 @@ const APP_PAGE = { 'View Colors': '/colors', 'Convert Times': '/timestamp', 'Add
 // The page a `cmd:` (or `d help <word>`) means: an exact page, `/gunsmith` as MP, an app as its command, else what matchHelpCommand and the search find. Null: the home page.
 async function resolvePage(query, perms = {}) {
     if (!query) return null;
-    const visible = visiblePageNames(perms);
+    // A /bot subcommand stays named (`/bot servers`) so the page opens on it; buildHelpMessage turns it into the /bot page.
+    const visible = [...visiblePageNames(perms), ...visibleBotSubs(perms)];
     const lower = String(query).trim().toLowerCase();
     const slashed = lower.startsWith('/') ? lower : `/${lower}`;
     if (visible.includes(slashed)) return slashed;
@@ -336,12 +343,16 @@ async function buildHelpMessage({ perms = {}, client, accentColor = PRESET_ACCEN
     const H = require('../utils/helpPages');
     const seasonEmoji = await currentSeasonEmoji();
     const names = visiblePageNames(perms);
+    const botSubs = visibleBotSubs(perms);
+    let sub = null;
+    if (cmd && botSubs.includes(cmd)) { sub = cmd; cmd = '/bot'; }
     if (cmd && !names.includes(cmd)) cmd = null;
     const canSwitch = typedForms && (!cmd || H.hasTextView(cmd));
     if (view === 'text' && !canSwitch) view = 'slash';
     const card = cmd
-        ? H.buildPage(cmd, { client, view, detail: detail && view === 'text', canSwitch, seasonEmoji, prefixes })
-        : [...H.buildHome({ client, view, canSwitch, hero: homeHero(client), adminNames: names.filter(n => !H.hasTextView(n)), prefixes }),
+        ? H.buildPage(cmd, { client, view, detail: detail && view === 'text', canSwitch, seasonEmoji, prefixes, sub, subs: botSubs })
+        // The home page's Admin line names each /bot subcommand: a mention of bare /bot would not resolve, since /bot has subcommands.
+        : [...H.buildHome({ client, view, canSwitch, hero: homeHero(client), adminNames: names.filter(n => !H.hasTextView(n)).flatMap(n => (n === '/bot' ? botSubs : [n])), prefixes }),
             { type: 14, spacing: 1, divider: true },
             // The sign-off in the launch announcement's style (2026-10-27 01:23 EDT, Harkirat).
             { type: 10, content: `-# Made with ${emojis.diorHeart} by <@${HARKIRAT_ID}>` }];
@@ -380,6 +391,7 @@ module.exports = {
     searchEntries,
     typedFormsHere,
     visiblePageNames,
+    visibleBotSubs,
 
     // `override` comes from handlers/help.js: { cmd, view, detail } from the switcher and the view buttons, or the older `cmd:<name>` / 'landing' strings a panel posted before B6 still sends. A typed view is the default inside a text command or a click on its reply (utils/commandMentions.js inTextCommand), a slash view everywhere else.
     async execute(interaction, override = null) {

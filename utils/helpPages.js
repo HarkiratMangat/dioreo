@@ -25,14 +25,14 @@ const PAGE_NAMES = {
     '/gunsmith mp': 'MP Gunsmith', '/gunsmith dmz': 'DMZ Gunsmith', '/draws': 'Lucky Draws', '/draw prices': 'Lucky Draw Prices', '/draw calculator': 'Draw Calculator',
     '/today': 'Today', '/calendar': 'Calendar', '/remind': 'Reminders', '/season end': 'Season End', '/patch notes': 'Patch Notes',
     '/timestamp': 'Timestamps', '/colors': 'Profile Colors', '/settings': 'Settings', '/invite': 'Invite Dioreo', '/admin': 'Server Settings',
-    '/manage': 'Manage Data', '/manage emojis': 'Emoji Manager', '/autobuild': 'Autobuild', '/bot analytics': 'Bot Analytics', '/bot access': 'Admin Access', '/bot servers': 'Servers', '/bot penalties': 'Spam Penalties', '/bot freeze': 'Freeze', '/bot hotpatch': 'Hot Patch', '/embed': 'Embed Preview',
+    '/manage': 'Manage Data', '/manage emojis': 'Emoji Manager', '/autobuild': 'Autobuild', '/bot': 'Bot Tools', '/embed': 'Embed Preview',
 };
 const PAGE_ORDER = Object.keys(PAGE_NAMES);
 const PAGE_ICON = {
     '/gunsmith mp': 'gunsmithSearch', '/gunsmith dmz': 'dmz', '/draws': 'newDraws', '/draw prices': 'drawPrices', '/draw calculator': 'calculator',
     '/today': 'dailyUpdate', '/calendar': 'calendar', '/remind': 'remind', '/season end': 'bp', '/patch notes': 'patchNotes',
     '/timestamp': 'timestamp', '/colors': 'showColors', '/settings': 'settings', '/invite': 'shareHeart', '/admin': 'serverSettings',
-    '/manage': 'database', '/manage emojis': 'swatches', '/autobuild': 'gunsmithCode', '/bot analytics': 'mngInfo', '/bot access': 'botAccess', '/bot servers': 'guide', '/bot penalties': 'cooldown', '/bot freeze': 'pending', '/bot hotpatch': 'edit', '/embed': 'edit',
+    '/manage': 'database', '/manage emojis': 'swatches', '/autobuild': 'gunsmithCode', '/bot': 'botAccess', '/embed': 'edit',
 };
 // /season end wears the live season's own emoji (his call, 2026-10-29 22:55 EDT); /manage emojis its DB_Emojis where the app has it.
 function pageIcon(name, seasonEmoji) {
@@ -265,14 +265,8 @@ const PAGES = {
             };
         },
     },
-    // The other Bot Admin pages carry their old /help text, one page each (his "skip bot admin", 2026-10-29 22:49 EDT).
-    '/bot analytics': adminPage("The bot's usage, timing and health, without opening the server it runs on", [text('`[page]`\n-# Jump directly to a page: `Health` · `Alerts` · `Changes` · `Usage` · `Timing`'), VIS], [['/bot analytics page:Usage visibility:Public', 'Share usage data in a channel']]),
-    '/bot access': adminPage('Who has admin access, and to what — owner-only', [VIS], [['/bot access']]),
-    '/bot servers': adminPage("One server's /admin rules, a checkup, reply limits, and leave or block — owner-only", [text("`[server]`\n-# A server ID; leave it blank to pick the server you're in or type one")], [['/bot servers']]),
-    // B7's owner tools (2026-10-30 13:43 EDT), in the same style as the other Bot Admin pages.
-    '/bot penalties': adminPage('Text-command spam penalties: who has one, then lift, extend, exempt or block one person, and tune the ladder — owner-only', [text('`[user]`\n-# A user ID to open; leave it blank for everyone on a penalty now')], [['/bot penalties']]),
-    '/bot freeze': adminPage('Pause Dioreo, or chosen commands, without a deploy; you and /bot are never frozen — owner-only', [], [['/bot freeze']]),
-    '/bot hotpatch': adminPage('Reload changed files into the running bot without a restart — owner-only', [text('`[pull]`\n-# git pull first (default: yes)'), text('`[dry_run]`\n-# Show the plan and change nothing'), text('`[file]`\n-# Limit to one changed file (default: everything the pull brought in)')], [['/bot hotpatch dry_run:True']]),
+    // The other Bot Admin pages carry their old /help text (his "skip bot admin", 2026-10-29 22:49 EDT). /bot's six subcommands are ONE page with a dropdown inside it (his call, 2026-10-30 14:05 EDT: "Merge the /bot pages into a Singular /bot page with a dropdown inside of it"), so the owner's switcher fits Discord's 25 again: see BOT_SUBS below.
+    '/bot': { slashOnly: true, admin: true, subPages: true, blurb: '', page: () => ({}) },
     '/embed': adminPage('Render pasted message JSON as a real Components V2 message, to check a design — owner-only', [text('`[json]`\n-# The message JSON; leave both this and `file` empty to paste it in a box'), text('`[file]`\n-# A .json or .txt file, for JSON too long to paste'), text('`[clean]`\n-# Render only the JSON: no Edit JSON button and no emoji note'), VIS], [['/embed clean:True']]),
     '/manage emojis': adminPage('Every app emoji, which bots lack it, and its saved original: sync, upload or find one — owner-only', [VIS], [['/manage emojis']]),
     '/autobuild': adminPage('Read an MP or DMZ loadout out of a Gunsmith screenshot and stage it for review — nothing is saved until you press Save', [
@@ -284,6 +278,19 @@ const PAGES = {
         sections: [text('**Right-click or tap and hold a message**\n-# Apps → **Autobuild Gunsmith** on a message with a Gunsmith screenshot: the same review as /autobuild')],
     }),
 };
+
+// /bot's subcommands, each the page it was before the merge. buildPage shows the one asked for (`sub`), or the first this viewer may open, with a dropdown (`help_bot`) to the others; commands/help.js decides which a viewer may open.
+const BOT_SUBS = {
+    '/bot analytics': adminPage("The bot's usage, timing and health, without opening the server it runs on", [text('`[page]`\n-# Jump directly to a page: `Health` · `Alerts` · `Changes` · `Usage` · `Timing`'), VIS], [['/bot analytics page:Usage visibility:Public', 'Share usage data in a channel']]),
+    '/bot access': adminPage('Who has admin access, and to what — owner-only', [VIS], [['/bot access']]),
+    '/bot servers': adminPage("One server's /admin rules, a checkup, reply limits, and leave or block — owner-only", [text("`[server]`\n-# A server ID; leave it blank to pick the server you're in or type one")], [['/bot servers']]),
+    '/bot penalties': adminPage('Text-command spam penalties: who has one, then lift, extend, exempt or block one person, and tune the ladder — owner-only', [text('`[user]`\n-# A user ID to open; leave it blank for everyone on a penalty now')], [['/bot penalties']]),
+    '/bot freeze': adminPage('Pause Dioreo, or chosen commands, without a deploy; you and /bot are never frozen — owner-only', [], [['/bot freeze']]),
+    '/bot hotpatch': adminPage('Reload changed files into the running bot without a restart — owner-only', [text('`[pull]`\n-# git pull first (default: yes)'), text('`[dry_run]`\n-# Show the plan and change nothing'), text('`[file]`\n-# Limit to one changed file (default: everything the pull brought in)')], [['/bot hotpatch dry_run:True']]),
+};
+const BOT_SUB_NAMES = { '/bot analytics': 'Bot Analytics', '/bot access': 'Admin Access', '/bot servers': 'Servers', '/bot penalties': 'Spam Penalties', '/bot freeze': 'Freeze', '/bot hotpatch': 'Hot Patch' };
+const BOT_SUB_ICON = { '/bot analytics': 'mngInfo', '/bot access': 'botAccess', '/bot servers': 'guide', '/bot penalties': 'cooldown', '/bot freeze': 'pending', '/bot hotpatch': 'edit' };
+const BOT_SUB_ORDER = Object.keys(BOT_SUB_NAMES);
 
 function adminPage(blurb, boxes, examples, extra = {}) {
     return { blurb, slashOnly: true, admin: true, page: () => ({ boxes, examples, legendNote: ' · no text command', gate: true, ...extra }) };
@@ -326,19 +333,38 @@ const hasTextView = name => Boolean(PAGES[name] && !PAGES[name].slashOnly && tex
 // One command's page: the card's components. `canSwitch` says the other view works here (typed forms where Dioreo is in the server, and a command with a text form). The prefix a typed page's examples use: the server's first (B7: "every typed Usage line on /help shows the prefixes of the server it is read in"), `@Dioreo` where Message Content is off.
 const firstPrefix = (client, prefixes) => (client?.textMessageContent === false ? '@Dioreo' : (prefixes?.[0] || 'd'));
 
-function buildPage(name, { client, view, detail = false, canSwitch = false, seasonEmoji = null, prefixes = null }) {
-    const def = PAGES[name];
+function buildPage(name, { client, view, detail = false, canSwitch = false, seasonEmoji = null, prefixes = null, sub = null, subs = null }) {
+    let def = PAGES[name];
+    let title = PAGE_NAMES[name];
+    let icon = pageIcon(name, seasonEmoji);
+    let usageName = name;
+    let picker = null;
+    // /bot: the subcommand's own page under its own name and icon, and the dropdown to the others it may open.
+    if (def.subPages) {
+        const allowed = BOT_SUB_ORDER.filter(s => !subs || subs.includes(s));
+        const current = allowed.includes(sub) ? sub : allowed[0];
+        def = BOT_SUBS[current];
+        title = BOT_SUB_NAMES[current];
+        icon = emojis[BOT_SUB_ICON[current]] || '';
+        usageName = current;
+        if (allowed.length > 1) {
+            picker = { type: 1, components: [{ type: 3, custom_id: 'help_bot', placeholder: 'Another /bot command…', options: allowed.map(s => {
+                const emoji = emojis.parseEmoji(emojis[BOT_SUB_ICON[s]] || '');
+                return { label: BOT_SUB_NAMES[s], value: s, description: s, default: s === current, ...(emoji ? { emoji } : {}) };
+            }) }] };
+        }
+    }
     const typed = view === 'text';
     const p = firstPrefix(client, prefixes);
     const part = def.page({ client, p, view, detail });
     const tc = textCommandOf(name);
     const usage = typed
         ? text(`### ${code(`${p} ${tc.helpWord}${part.args ? ` ${part.args}` : ''}`)}\n${dot(tc.shown || [])}${part.usageExtra || ''}`)
-        : text(`### ${slashMention(client, name)}${part.usageNote ? `\n${part.usageNote}` : ''}`);
+        : text(`### ${slashMention(client, usageName)}${part.usageNote ? `\n${part.usageNote}` : ''}`);
     const buttons = [];
     if (canSwitch) buttons.push({ type: 2, style: 2, label: typed ? 'Slash Command' : 'Text Command', custom_id: `help_view~${typed ? 'slash' : 'text'}~${name}`, ...emojiField('command') });
     buttons.push(...(part.buttons || []));
-    const out = [text(`## ${pageIcon(name, seasonEmoji)} ${PAGE_NAMES[name]}\n-# ${def.blurb}`), line(2), usage, ...(part.boxes || [])];
+    const out = [text(`## ${icon} ${title}\n-# ${def.blurb}`), ...(picker ? [picker] : []), line(2), usage, ...(part.boxes || [])];
     if (buttons.length) out.push({ type: 1, components: buttons });
     out.push(line(1));
     if (part.sections?.length) out.push(...part.sections, line(1));
@@ -371,7 +397,7 @@ function buildHome({ client, view, canSwitch, hero, adminNames = [], prefixes = 
     return out;
 }
 
-// The command switcher, outside the card above the footer (his ask, 2026-10-29 18:17 EDT): All commands first; on a typed view each page's name with its typed word under it, on a slash view the slash command with the name under it (18:56 EDT). Commands with no text form show as slash on both. A full admin's list was 24 of Discord's 25; B7's two owner pages (/bot penalties, /bot freeze) make the owner's 26, so the last, /embed, falls off the switcher for the owner only and stays on the Bot Admin list (2026-10-30 13:43 EDT, put to him as a question).
+// The command switcher, outside the card above the footer (his ask, 2026-10-29 18:17 EDT): All commands first; on a typed view each page's name with its typed word under it, on a slash view the slash command with the name under it (18:56 EDT). Commands with no text form show as slash on both. A full admin's list is 19 of Discord's 25 since /bot's subcommands became one page (2026-10-30 14:05 EDT).
 function buildSwitcher({ names, current = null, view, client, seasonEmoji = null, prefixes = null }) {
     const typed = view === 'text';
     const p = firstPrefix(client, prefixes);
@@ -384,4 +410,4 @@ function buildSwitcher({ names, current = null, view, client, seasonEmoji = null
     return { type: 1, components: [{ type: 3, custom_id: typed ? 'help_command~text' : 'help_command', placeholder: 'Jump to a command…', options }] };
 }
 
-module.exports = { PAGES, PAGE_NAMES, PAGE_ORDER, buildPage, buildHome, buildSwitcher, hasPage, hasTextView, pageIcon };
+module.exports = { PAGES, PAGE_NAMES, PAGE_ORDER, BOT_SUB_ORDER, BOT_SUB_NAMES, buildPage, buildHome, buildSwitcher, hasPage, hasTextView, pageIcon };

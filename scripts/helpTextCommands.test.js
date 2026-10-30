@@ -180,6 +180,23 @@ async function check(name, fn) {
         const full = (await msg(null, 'slash', { perms: ALL }))[1].components[0].options;
         assert.ok(full.length <= 25 && full.some(o => o.value === '/manage'), `${full.length} options`);
     });
+    await check("/bot is one page with a dropdown to its subcommands (his call, 2026-10-30 14:05 EDT), and each viewer sees only theirs", async () => {
+        const full = (await msg(null, 'slash', { perms: ALL }))[1].components[0].options.map(o => o.value);
+        assert.ok(full.includes('/bot') && !full.some(v => v.startsWith('/bot ')) && full.includes('/embed'), full.join(' '));
+        assert.strictEqual(await help.resolvePage('/bot servers', ALL), '/bot servers', 'a subcommand keeps its name, so the page opens on it');
+        const servers = await msg('/bot servers', 'slash', { perms: ALL });
+        const json = JSON.stringify(servers[0]);
+        const picker = JSON.parse(json.match(/\{"type":3,"custom_id":"help_bot"[^]*?\]\}/)[0]);
+        assert.deepStrictEqual(picker.options.map(o => o.value), ['/bot analytics', '/bot access', '/bot servers', '/bot penalties', '/bot freeze', '/bot hotpatch']);
+        assert.strictEqual(picker.options.find(o => o.default).value, '/bot servers');
+        assert.ok(json.includes('## ') && json.includes('Servers'), 'titled with the subcommand');
+        const analyticsOnly = { botAdmin: true, bot: true };
+        const narrow = JSON.stringify((await msg('/bot', 'slash', { perms: analyticsOnly }))[0]);
+        assert.ok(narrow.includes('Bot Analytics') && !narrow.includes('help_bot'), 'an analytics-only admin gets Analytics, with no dropdown');
+        assert.ok(!JSON.stringify((await msg('/bot servers', 'slash', { perms: analyticsOnly }))[0]).includes('Spam Penalties'), 'and an owner-only subcommand never opens for them');
+        const home = JSON.stringify((await msg(null, 'slash', { perms: ALL }))[0]);
+        assert.ok(home.includes('/bot penalties') && !/`\/bot`/.test(home), "the home page's Admin line names each subcommand, never a bare /bot");
+    });
     await check('the switcher: page name over `d word` on a typed view, the slash command over the name on a slash view', async () => {
         const typed = (await msg('/season end', 'text'))[1].components[0];
         assert.strictEqual(typed.custom_id, 'help_command~text');

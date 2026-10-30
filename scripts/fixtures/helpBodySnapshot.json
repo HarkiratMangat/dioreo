@@ -16385,20 +16385,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -16407,42 +16396,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -16798,20 +16754,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -16820,42 +16765,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -17172,20 +17084,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -17194,42 +17095,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -17546,20 +17414,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -17568,42 +17425,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -17920,20 +17744,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -17942,42 +17755,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -18294,20 +18074,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -18316,42 +18085,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -18639,20 +18375,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -18661,42 +18386,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -18988,20 +18680,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -19010,42 +18691,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -19344,20 +18992,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -19366,42 +19003,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -19693,20 +19297,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -19715,42 +19308,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -20045,20 +19605,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -20067,42 +19616,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -20401,20 +19917,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -20423,42 +19928,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -20751,20 +20223,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -20773,42 +20234,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -21105,20 +20533,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -21127,42 +20544,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -21454,20 +20838,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -21476,42 +20849,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -21807,20 +21147,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -21829,42 +21158,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -22161,20 +21457,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -22183,42 +21468,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -22527,20 +21779,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -22549,42 +21790,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -22877,20 +22085,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -22899,42 +22096,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -23231,20 +22395,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -23253,42 +22406,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -23576,20 +22696,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -23598,42 +22707,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -23925,20 +23001,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -23947,42 +23012,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -24283,20 +23315,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -24305,42 +23326,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -24649,20 +23637,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -24671,42 +23648,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -25003,20 +23947,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -25025,42 +23958,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -25365,20 +24265,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -25387,42 +24276,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -25710,20 +24566,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -25732,42 +24577,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -26063,20 +24875,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -26085,42 +24886,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -26404,20 +25172,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -26426,42 +25183,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -26749,20 +25473,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -26771,42 +25484,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -27098,20 +25778,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -27120,42 +25789,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -27521,20 +26157,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -27543,42 +26168,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -27846,20 +26438,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -27868,42 +26449,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -28204,20 +26752,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -28226,42 +26763,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -28282,6 +26786,84 @@
           {
             "type": 10,
             "content": "## <a:DB_Info:1525337539085340722> Bot Analytics\n-# The bot's usage, timing and health, without opening the server it runs on"
+          },
+          {
+            "type": 1,
+            "components": [
+              {
+                "type": 3,
+                "custom_id": "help_bot",
+                "placeholder": "Another /bot command…",
+                "options": [
+                  {
+                    "label": "Bot Analytics",
+                    "value": "/bot analytics",
+                    "description": "/bot analytics",
+                    "default": true,
+                    "emoji": {
+                      "animated": true,
+                      "name": "DB_Info",
+                      "id": "1525337539085340722"
+                    }
+                  },
+                  {
+                    "label": "Admin Access",
+                    "value": "/bot access",
+                    "description": "/bot access",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "BotAccess",
+                      "id": "1540915865506160660"
+                    }
+                  },
+                  {
+                    "label": "Servers",
+                    "value": "/bot servers",
+                    "description": "/bot servers",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "DB_Guide",
+                      "id": "1532894836301238477"
+                    }
+                  },
+                  {
+                    "label": "Spam Penalties",
+                    "value": "/bot penalties",
+                    "description": "/bot penalties",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "Cooldown",
+                      "id": "1565362761821847712"
+                    }
+                  },
+                  {
+                    "label": "Freeze",
+                    "value": "/bot freeze",
+                    "description": "/bot freeze",
+                    "default": false,
+                    "emoji": {
+                      "animated": false,
+                      "name": "Pending",
+                      "id": "1565022888229339166"
+                    }
+                  },
+                  {
+                    "label": "Hot Patch",
+                    "value": "/bot hotpatch",
+                    "description": "/bot hotpatch",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "Edit",
+                      "id": "1560408533160296519"
+                    }
+                  }
+                ]
+              }
+            ]
           },
           {
             "type": 14,
@@ -28533,21 +27115,10 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": true,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
-                "default": false,
                 "emoji": {
                   "animated": true,
                   "name": "BotAccess",
@@ -28555,42 +27126,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -28611,6 +27149,84 @@
           {
             "type": 10,
             "content": "## <a:BotAccess:1540915865506160660> Admin Access\n-# Who has admin access, and to what — owner-only"
+          },
+          {
+            "type": 1,
+            "components": [
+              {
+                "type": 3,
+                "custom_id": "help_bot",
+                "placeholder": "Another /bot command…",
+                "options": [
+                  {
+                    "label": "Bot Analytics",
+                    "value": "/bot analytics",
+                    "description": "/bot analytics",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "DB_Info",
+                      "id": "1525337539085340722"
+                    }
+                  },
+                  {
+                    "label": "Admin Access",
+                    "value": "/bot access",
+                    "description": "/bot access",
+                    "default": true,
+                    "emoji": {
+                      "animated": true,
+                      "name": "BotAccess",
+                      "id": "1540915865506160660"
+                    }
+                  },
+                  {
+                    "label": "Servers",
+                    "value": "/bot servers",
+                    "description": "/bot servers",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "DB_Guide",
+                      "id": "1532894836301238477"
+                    }
+                  },
+                  {
+                    "label": "Spam Penalties",
+                    "value": "/bot penalties",
+                    "description": "/bot penalties",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "Cooldown",
+                      "id": "1565362761821847712"
+                    }
+                  },
+                  {
+                    "label": "Freeze",
+                    "value": "/bot freeze",
+                    "description": "/bot freeze",
+                    "default": false,
+                    "emoji": {
+                      "animated": false,
+                      "name": "Pending",
+                      "id": "1565022888229339166"
+                    }
+                  },
+                  {
+                    "label": "Hot Patch",
+                    "value": "/bot hotpatch",
+                    "description": "/bot hotpatch",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "Edit",
+                      "id": "1560408533160296519"
+                    }
+                  }
+                ]
+              }
+            ]
           },
           {
             "type": 14,
@@ -28858,20 +27474,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": true,
                 "emoji": {
                   "animated": true,
@@ -28880,42 +27485,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -28936,6 +27508,84 @@
           {
             "type": 10,
             "content": "## <a:DB_Guide:1532894836301238477> Servers\n-# One server's /admin rules, a checkup, reply limits, and leave or block — owner-only"
+          },
+          {
+            "type": 1,
+            "components": [
+              {
+                "type": 3,
+                "custom_id": "help_bot",
+                "placeholder": "Another /bot command…",
+                "options": [
+                  {
+                    "label": "Bot Analytics",
+                    "value": "/bot analytics",
+                    "description": "/bot analytics",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "DB_Info",
+                      "id": "1525337539085340722"
+                    }
+                  },
+                  {
+                    "label": "Admin Access",
+                    "value": "/bot access",
+                    "description": "/bot access",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "BotAccess",
+                      "id": "1540915865506160660"
+                    }
+                  },
+                  {
+                    "label": "Servers",
+                    "value": "/bot servers",
+                    "description": "/bot servers",
+                    "default": true,
+                    "emoji": {
+                      "animated": true,
+                      "name": "DB_Guide",
+                      "id": "1532894836301238477"
+                    }
+                  },
+                  {
+                    "label": "Spam Penalties",
+                    "value": "/bot penalties",
+                    "description": "/bot penalties",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "Cooldown",
+                      "id": "1565362761821847712"
+                    }
+                  },
+                  {
+                    "label": "Freeze",
+                    "value": "/bot freeze",
+                    "description": "/bot freeze",
+                    "default": false,
+                    "emoji": {
+                      "animated": false,
+                      "name": "Pending",
+                      "id": "1565022888229339166"
+                    }
+                  },
+                  {
+                    "label": "Hot Patch",
+                    "value": "/bot hotpatch",
+                    "description": "/bot hotpatch",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "Edit",
+                      "id": "1560408533160296519"
+                    }
+                  }
+                ]
+              }
+            ]
           },
           {
             "type": 14,
@@ -29183,21 +27833,10 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
-                "default": false,
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
+                "default": true,
                 "emoji": {
                   "animated": true,
                   "name": "BotAccess",
@@ -29205,42 +27844,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": true,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -29261,6 +27867,84 @@
           {
             "type": 10,
             "content": "## <a:Cooldown:1565362761821847712> Spam Penalties\n-# Text-command spam penalties: who has one, then lift, extend, exempt or block one person, and tune the ladder — owner-only"
+          },
+          {
+            "type": 1,
+            "components": [
+              {
+                "type": 3,
+                "custom_id": "help_bot",
+                "placeholder": "Another /bot command…",
+                "options": [
+                  {
+                    "label": "Bot Analytics",
+                    "value": "/bot analytics",
+                    "description": "/bot analytics",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "DB_Info",
+                      "id": "1525337539085340722"
+                    }
+                  },
+                  {
+                    "label": "Admin Access",
+                    "value": "/bot access",
+                    "description": "/bot access",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "BotAccess",
+                      "id": "1540915865506160660"
+                    }
+                  },
+                  {
+                    "label": "Servers",
+                    "value": "/bot servers",
+                    "description": "/bot servers",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "DB_Guide",
+                      "id": "1532894836301238477"
+                    }
+                  },
+                  {
+                    "label": "Spam Penalties",
+                    "value": "/bot penalties",
+                    "description": "/bot penalties",
+                    "default": true,
+                    "emoji": {
+                      "animated": true,
+                      "name": "Cooldown",
+                      "id": "1565362761821847712"
+                    }
+                  },
+                  {
+                    "label": "Freeze",
+                    "value": "/bot freeze",
+                    "description": "/bot freeze",
+                    "default": false,
+                    "emoji": {
+                      "animated": false,
+                      "name": "Pending",
+                      "id": "1565022888229339166"
+                    }
+                  },
+                  {
+                    "label": "Hot Patch",
+                    "value": "/bot hotpatch",
+                    "description": "/bot hotpatch",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "Edit",
+                      "id": "1560408533160296519"
+                    }
+                  }
+                ]
+              }
+            ]
           },
           {
             "type": 14,
@@ -29508,21 +28192,10 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
-                "default": false,
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
+                "default": true,
                 "emoji": {
                   "animated": true,
                   "name": "BotAccess",
@@ -29530,42 +28203,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": true,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -29586,6 +28226,84 @@
           {
             "type": 10,
             "content": "## <:Pending:1565022888229339166> Freeze\n-# Pause Dioreo, or chosen commands, without a deploy; you and /bot are never frozen — owner-only"
+          },
+          {
+            "type": 1,
+            "components": [
+              {
+                "type": 3,
+                "custom_id": "help_bot",
+                "placeholder": "Another /bot command…",
+                "options": [
+                  {
+                    "label": "Bot Analytics",
+                    "value": "/bot analytics",
+                    "description": "/bot analytics",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "DB_Info",
+                      "id": "1525337539085340722"
+                    }
+                  },
+                  {
+                    "label": "Admin Access",
+                    "value": "/bot access",
+                    "description": "/bot access",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "BotAccess",
+                      "id": "1540915865506160660"
+                    }
+                  },
+                  {
+                    "label": "Servers",
+                    "value": "/bot servers",
+                    "description": "/bot servers",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "DB_Guide",
+                      "id": "1532894836301238477"
+                    }
+                  },
+                  {
+                    "label": "Spam Penalties",
+                    "value": "/bot penalties",
+                    "description": "/bot penalties",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "Cooldown",
+                      "id": "1565362761821847712"
+                    }
+                  },
+                  {
+                    "label": "Freeze",
+                    "value": "/bot freeze",
+                    "description": "/bot freeze",
+                    "default": true,
+                    "emoji": {
+                      "animated": false,
+                      "name": "Pending",
+                      "id": "1565022888229339166"
+                    }
+                  },
+                  {
+                    "label": "Hot Patch",
+                    "value": "/bot hotpatch",
+                    "description": "/bot hotpatch",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "Edit",
+                      "id": "1560408533160296519"
+                    }
+                  }
+                ]
+              }
+            ]
           },
           {
             "type": 14,
@@ -29829,21 +28547,10 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
-                "default": false,
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
+                "default": true,
                 "emoji": {
                   "animated": true,
                   "name": "BotAccess",
@@ -29851,42 +28558,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": true,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -29907,6 +28581,84 @@
           {
             "type": 10,
             "content": "## <a:Edit:1560408533160296519> Hot Patch\n-# Reload changed files into the running bot without a restart — owner-only"
+          },
+          {
+            "type": 1,
+            "components": [
+              {
+                "type": 3,
+                "custom_id": "help_bot",
+                "placeholder": "Another /bot command…",
+                "options": [
+                  {
+                    "label": "Bot Analytics",
+                    "value": "/bot analytics",
+                    "description": "/bot analytics",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "DB_Info",
+                      "id": "1525337539085340722"
+                    }
+                  },
+                  {
+                    "label": "Admin Access",
+                    "value": "/bot access",
+                    "description": "/bot access",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "BotAccess",
+                      "id": "1540915865506160660"
+                    }
+                  },
+                  {
+                    "label": "Servers",
+                    "value": "/bot servers",
+                    "description": "/bot servers",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "DB_Guide",
+                      "id": "1532894836301238477"
+                    }
+                  },
+                  {
+                    "label": "Spam Penalties",
+                    "value": "/bot penalties",
+                    "description": "/bot penalties",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "Cooldown",
+                      "id": "1565362761821847712"
+                    }
+                  },
+                  {
+                    "label": "Freeze",
+                    "value": "/bot freeze",
+                    "description": "/bot freeze",
+                    "default": false,
+                    "emoji": {
+                      "animated": false,
+                      "name": "Pending",
+                      "id": "1565022888229339166"
+                    }
+                  },
+                  {
+                    "label": "Hot Patch",
+                    "value": "/bot hotpatch",
+                    "description": "/bot hotpatch",
+                    "default": true,
+                    "emoji": {
+                      "animated": true,
+                      "name": "Edit",
+                      "id": "1560408533160296519"
+                    }
+                  }
+                ]
+              }
+            ]
           },
           {
             "type": 14,
@@ -30162,21 +28914,10 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
-                "default": false,
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
+                "default": true,
                 "emoji": {
                   "animated": true,
                   "name": "BotAccess",
@@ -30184,43 +28925,10 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
-                "default": true,
                 "emoji": {
                   "animated": true,
                   "name": "Edit",
@@ -30499,20 +29207,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -30521,43 +29218,10 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
-                "default": false,
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
+                "default": true,
                 "emoji": {
                   "animated": true,
                   "name": "Edit",
@@ -30867,20 +29531,9 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
-                }
-              },
-              {
-                "label": "/bot access",
-                "value": "/bot access",
-                "description": "Admin Access",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -30889,42 +29542,9 @@
                 }
               },
               {
-                "label": "/bot servers",
-                "value": "/bot servers",
-                "description": "Servers",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "DB_Guide",
-                  "id": "1532894836301238477"
-                }
-              },
-              {
-                "label": "/bot penalties",
-                "value": "/bot penalties",
-                "description": "Spam Penalties",
-                "default": false,
-                "emoji": {
-                  "animated": true,
-                  "name": "Cooldown",
-                  "id": "1565362761821847712"
-                }
-              },
-              {
-                "label": "/bot freeze",
-                "value": "/bot freeze",
-                "description": "Freeze",
-                "default": false,
-                "emoji": {
-                  "animated": false,
-                  "name": "Pending",
-                  "id": "1565022888229339166"
-                }
-              },
-              {
-                "label": "/bot hotpatch",
-                "value": "/bot hotpatch",
-                "description": "Hot Patch",
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -31233,14 +29853,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]
@@ -31547,14 +30167,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]
@@ -31822,14 +30442,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]
@@ -32097,14 +30717,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]
@@ -32372,14 +30992,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]
@@ -32647,14 +31267,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]
@@ -32893,14 +31513,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]
@@ -33143,14 +31763,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]
@@ -33400,14 +32020,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]
@@ -33650,14 +32270,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]
@@ -33903,14 +32523,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]
@@ -34160,14 +32780,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]
@@ -34411,14 +33031,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]
@@ -34666,14 +33286,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]
@@ -34916,14 +33536,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]
@@ -35170,14 +33790,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]
@@ -35425,14 +34045,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]
@@ -35692,14 +34312,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]
@@ -35943,14 +34563,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]
@@ -36198,14 +34818,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]
@@ -36444,14 +35064,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]
@@ -36694,14 +35314,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]
@@ -36953,14 +35573,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]
@@ -37220,14 +35840,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]
@@ -37475,14 +36095,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]
@@ -37738,14 +36358,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]
@@ -37984,14 +36604,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]
@@ -38238,14 +36858,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]
@@ -38480,14 +37100,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]
@@ -38726,14 +37346,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]
@@ -38956,14 +37576,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": true,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]
@@ -39225,14 +37845,14 @@
                 }
               },
               {
-                "label": "/bot analytics",
-                "value": "/bot analytics",
-                "description": "Bot Analytics",
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
                 "default": false,
                 "emoji": {
                   "animated": true,
-                  "name": "DB_Info",
-                  "id": "1525337539085340722"
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
                 }
               }
             ]

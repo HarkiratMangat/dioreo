@@ -10,7 +10,7 @@
 const { buildSyntheticInteraction } = require('../utils/interactionContext');
 const { hasCommandAccess } = require('../utils/adminAccess');
 
-const OWNED_PREFIXES = ["help_category", "help_command", "help_view", "help_guide_pick", "help_announcements", "help_feedback", "help_fbsave"];
+const OWNED_PREFIXES = ["help_category", "help_command", "help_bot", "help_view", "help_guide_pick", "help_announcements", "help_feedback", "help_fbsave"];
 
 function ownsCustomId(customId) {
     return typeof customId === 'string' && OWNED_PREFIXES.some(prefix => customId.startsWith(prefix));
@@ -32,6 +32,14 @@ async function route(interaction) {
             const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });
             const pick = interaction.values[0];
             return await helpCommand.execute(syntheticInteraction, { cmd: pick === 'landing' ? null : pick, view: interaction.customId.endsWith('~text') ? 'text' : 'slash' });
+        }
+
+        // THE /bot PAGE'S DROPDOWN (2026-10-30 14:05 EDT): one /bot subcommand's page, slash only. buildHelpMessage re-checks that this viewer may open it.
+        if (interaction.isStringSelectMenu() && interaction.customId === 'help_bot') {
+            await interaction.deferUpdate();
+            const helpCommand = interaction.client.commands.get('help');
+            const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });
+            return await helpCommand.execute(syntheticInteraction, { cmd: interaction.values[0], view: 'slash' });
         }
 
         // THE VIEW BUTTONS (B6): Slash Command / Text Command on every page that has both, and Draw Prices' Detailed view / Simple view. `help_view~<text|slash|detail>~<page or landing>`.
