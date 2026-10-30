@@ -12,7 +12,8 @@
 const mongoose = require('mongoose');
 
 const OUTCOME_KEYS = ['ok', 'error', 'expired', 'blocked_by_policy', 'swallowed_by_cooldown', 'rejected_admin'];
-const ENTRY_KEYS = ['slash', 'button', 'select', 'autocomplete', 'modal', 'synthetic', 'background'];
+// 'text' added 2026-10-30 14:59 EDT (B7's fix-up): text commands have written `entry: 'text'` since B1 (2026-10-28), and with no key here every one was dropped from the daily entry counts while still counted in `invocations`. Prod had no text commands yet, so no stored day is missing any.
+const ENTRY_KEYS = ['slash', 'button', 'select', 'autocomplete', 'modal', 'synthetic', 'background', 'text'];
 
 const CountMapSchema = new mongoose.Schema(
     Object.fromEntries(OUTCOME_KEYS.map(k => [k, { type: Number, default: 0 }])),

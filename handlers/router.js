@@ -171,6 +171,12 @@ async function handleInteractionInner(interaction) {
         return await interaction.reply({ content: ownerGate, flags: 64, allowedMentions: { parse: [] } }).catch(() => {});
     }
 
+    // --- THE PREFIX A TEXT REPLY'S MENTIONS USE (B7's fix-up, 2026-10-30 15:02 EDT) --- A click on a text command's reply, or on one of its txtrun_/txtpriv_ buttons, redraws typed forms (utils/commandMentions.js textForm); they must show the SERVER's prefix, since a server's own replaces `d`. One cached read (utils/guildPolicy.js getGuildSettings), and a failure falls back to `d`.
+    const textCtx = getContext();
+    if (textCtx && interaction.guildId && (textCtx.textReply || /^txt(run|priv)_/.test(interaction.customId || ''))) {
+        textCtx.textPrefix = await require('../utils/textCommands/server').prefixesFor(interaction.guildId).then(p => p[0] || null).catch(() => null);
+    }
+
     // --- SERVER VISIBILITY POLICY (2026-08-10 15:48 EDT, v3) --- resolved ONCE here, before any routing, and attached as interaction.dioreoPolicy. It also clamps reply/deferReply/followUp on this interaction when the server has forced ephemeral, which is what makes the rule impossible for ANY command to bypass or forget -- applied here in the router rather than per-command precisely so a command module can't (accidentally or otherwise) skip it. See utils/guildPolicy.js for the precedence tiers and why nothing here refuses a command. No-ops outside a guild. Deliberately BEFORE the anti-spam guard: a swallowed click still returns below, and a policy resolved on every interaction (rather than only the ones that survive the cooldown) keeps the per-guild cache warm and the behaviour uniform.
     const { attachGuildPolicy } = require('../utils/guildPolicy');
     await attachGuildPolicy(interaction);

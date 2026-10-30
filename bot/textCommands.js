@@ -373,6 +373,8 @@ async function runTextCommand(message, verdict) {
     const { recordInteractionEvent } = require('../utils/eventStore');
     const ctx = buildInteractionContext(interaction);
     ctx.handler = 'textCommands';
+    // Every typed form this reply mentions uses the prefix the person typed (utils/commandMentions.js textForm; B7's fix-up).
+    ctx.textPrefix = prefixShown(String(verdict.via || '').split('+')[0]);
     await runWithContext(ctx, async () => {
         try {
             // No visibility clamp (B7): a text reply is public whatever the server's slash-command rules say, and where its text-command switch is off nothing got this far.

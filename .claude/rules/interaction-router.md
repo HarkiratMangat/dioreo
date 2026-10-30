@@ -75,7 +75,7 @@ paths:
 | `page_` `subpage_` `calpage_` `calsel_` | `pagination.js` |
 | `share_public` | `share.js` |
 | `tsmenu\|` | `timestamp.js` |
-| `help_category` `help_guide_pick` | `help.js` |
+| `help_category` `help_command` `help_bot` `help_view` `help_guide_pick` `help_announcements` `help_feedback` `help_fbsave` | `help.js` (the switcher, /bot's one page and its dropdown since 2026-10-30 14:05 EDT, the Slash/Text view buttons, the footer row) |
 | `invite_share` | `invite.js` |
 | `emo_` | `emojis.js` (`/manage emojis`: the filter, the pager, Sync; owner only on every click) |
 | `remind_` | `remind.js` (the /remind panel, the bell's `remind_open`, the timezone tip's `remind_tzdm`) |

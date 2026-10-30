@@ -13,7 +13,7 @@ require.cache[rollupPath].loaded = true;
 require.cache[rollupPath].exports = {
     bulkWrite: async (ops) => { rollupOps.push(...ops); },
     OUTCOME_KEYS: ['ok', 'error', 'expired', 'blocked_by_policy', 'swallowed_by_cooldown', 'rejected_admin'],
-    ENTRY_KEYS: ['slash', 'button', 'select', 'autocomplete', 'modal', 'synthetic', 'background'],
+    ENTRY_KEYS: ['slash', 'button', 'select', 'autocomplete', 'modal', 'synthetic', 'background', 'text'],
 };
 
 let stateDoc = null;
@@ -91,6 +91,17 @@ check('buildRollupDoc tallies outcome and entry rows into the fixed key sets', (
     assert.strictEqual(doc.ackMs.p50, 120);
     assert.strictEqual(doc.durationMs.p95, 900);
 });
+// The stub above copies the model's two key lists by hand; this keeps the copy honest, and pins that a text command's entry is counted (it was dropped from B1 until B7's fix-up, 2026-10-30 14:59 EDT, because 'text' was missing from both).
+check("the stub's key lists match models/AnalyticsRollup.js, and a text command's entry is counted", () => {
+    const src = require('fs').readFileSync(require.resolve('../models/AnalyticsRollup'), 'utf8');
+    const list = name => JSON.parse(src.match(new RegExp(`const ${name} = (\\[[^\\]]*\\]);`))[1].replace(/'/g, '"'));
+    const stub = require('../models/AnalyticsRollup');
+    assert.deepStrictEqual(stub.ENTRY_KEYS, list('ENTRY_KEYS'));
+    assert.deepStrictEqual(stub.OUTCOME_KEYS, list('OUTCOME_KEYS'));
+    const doc = S.buildRollupDoc('2026-10-30', { command: 'today', invocations: 4, userHashes: [], outcomeRows: [], entryRows: [{ _id: 'text', c: 3 }, { _id: 'slash', c: 1 }], ackP: null, durP: null });
+    assert.strictEqual(doc.entry.text, 3);
+});
+
 check('buildRollupDoc dedupes userHashes before counting distinctUsers', () => {
     const doc = S.buildRollupDoc('2026-08-16', {
         command: 'draws', invocations: 3, userHashes: ['x', 'x', 'y', null],

@@ -500,9 +500,12 @@ function recordBoot(fields) {
 let shutdownInstalled = false;
 let shutdownFlushPromise = null;
 
-// Memoized on purpose: BOTH this listener and instanceLock.js's releaseLock call this instead of calling flushSearchSessions()/flushEvents() directly, so a second call -- from whichever listener runs second on the SAME signal -- awaits the SAME real promise the first call kicked off, rather than re-invoking functions that have already spliced their buffers empty and would resolve instantly with nothing left to write.
+// Memoized on purpose: BOTH this listener and instanceLock.js's releaseLock call this instead of calling flushSearchSessions()/flushEvents() directly, so a second call -- from whichever listener runs second on the SAME signal -- awaits the SAME real promise the first call kicked off, rather than re-invoking functions that have already spliced their buffers empty and would resolve instantly with nothing left to write. Other in-memory buffers that must reach the database before a restart register here (B7's fix-up, 2026-10-30 14:59 EDT: the text-command misfire counts, utils/textCommands/misfires.js, which otherwise lost up to ten minutes on every deploy). Each must splice its buffer synchronously and never throw, like the two above; it joins the same memoized promise, so the two-listener race stays closed.
+const extraShutdownFlushes = new Set();
+const onShutdownFlush = fn => { if (typeof fn === 'function') extraShutdownFlushes.add(fn); };
+
 function flushAllForShutdown() {
-    if (!shutdownFlushPromise) shutdownFlushPromise = Promise.all([flushSearchSessions(), flushEvents()]);
+    if (!shutdownFlushPromise) shutdownFlushPromise = Promise.all([flushSearchSessions(), flushEvents(), ...[...extraShutdownFlushes].map(fn => Promise.resolve().then(fn).catch(() => {}))]);
     return shutdownFlushPromise;
 }
 
@@ -529,7 +532,7 @@ module.exports = {
     markOutcome, mergeDetail, noteDep, timeDependency, noteAck, noteResponseFailure, instrumentAck,
     instrumentAutocomplete, notePicked, flushSearchSessions,
     // emission
-    recordInteractionEvent, recordRenderTiming, recordBoot, flushEvents, installShutdownFlush, flushAllForShutdown,
+    recordInteractionEvent, recordRenderTiming, recordBoot, flushEvents, installShutdownFlush, flushAllForShutdown, onShutdownFlush,
     // constants worth asserting on
     FLUSH_AT, TERM_MAX_CHARS, DETAIL_MAX_KEYS, DETAIL_MAX_BYTES,
 };

@@ -67,6 +67,8 @@ Measured 2026-10-28 16:44 EDT against `/usr/share/dict/words`: distance 2 on six
 | A different command within 1 s | nothing, no warning |
 | One channel | at most 5 replies per 10 s |
 | One server | at most 30 replies per 10 s (his "okay", 2026-10-29 23:51 EDT): only a flood reaches it |
+| A server the owner tuned | its own per-channel and per-server numbers, from `/bot servers` → Reply Limits (B7, `utils/botControls.js` `limitsFor`) |
+| One person, over 60 s | the spam ladder: a reply 1 point, a warning 3, a penalty at 10 (tunable in `/bot penalties`); see "Per server, and the owner's tools" |
 
 His rule, 2026-10-28 18:10 EDT: *"a 5 second per person limit if it's the same command (with a warning message and countdown within the message, the message then deletes itself) and 1 second for any command that's not the same (no warning needed)"*. The countdown is Discord's own relative timestamp, which every client counts down live. All of this lives in memory and a restart forgets it.
 

@@ -342,6 +342,16 @@ async function check(name, fn) {
         assert.strictEqual(lastRun().interaction.options.getSubcommand(), 'mp');
         assert.deepStrictEqual(replies[0], { defer: { flags: 0 } });
     });
+    await check('a Did you mean button for a frozen command says Dioreo is paused, and runs nothing (B7 fix-up)', async (before) => {
+        const controls = require('../utils/botControls');
+        try {
+            controls.__reset({ freeze: { all: false, commands: ['gunsmith'], reason: 'fixing builds' } });
+            const { i, replies } = click('txtrun_gunsmith~weapon=ak47');
+            await handleTextCommandsInteraction(i);
+            assert.strictEqual(ran.length, before, 'not run');
+            assert.ok(/Dioreo is paused: fixing builds/.test(replies[0]?.content || ''), JSON.stringify(replies));
+        } finally { controls.__reset(); }
+    });
     await check('a pick from a card edits that card into the answer, and stops it deleting itself', async () => {
         const cardTimers = require('../utils/textCommands/cardTimers');
         cardTimers.schedule('card9', 10_000, () => {});
@@ -487,6 +497,14 @@ async function check(name, fn) {
             await onMessage(fakeMessage('d calendar', { guildId: 'gblocked' }).message);
             assert.strictEqual(ran.length, before + 2, 'a blocked person and a blocked server get nothing');
         } finally { controls.__reset(); }
+    });
+    await check("a text reply's mentions use the prefix the person typed (B7 fix-up): `dior draws` writes `dior calendar`", async () => {
+        let said = null;
+        commands.set('draws', { ...record('draws'), execute: async i => { said = require('../utils/commandMentions').mentionCommand(i.client, '/calendar'); } });
+        try {
+            await onMessage(fakeMessage('dior draws', { guildId: 'gpx' }).message);
+            assert.strictEqual(said, '`dior calendar`');
+        } finally { commands.set('draws', record('draws')); }
     });
     await check("a server's own reply limit (B7): the owner's 2 per channel stops the third", async (before) => {
         const controls = require('../utils/botControls');

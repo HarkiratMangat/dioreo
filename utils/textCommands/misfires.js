@@ -1,6 +1,6 @@
 // utils/textCommands/misfires.js -- counts text-command answers nobody wanted, per server and day (B7, his pick A, 2026-10-30 13:21 EDT). Stored in models/TextMisfire.js; read by /bot servers' checkup.
 //
-// ONLY DIOREO'S OWN WORDS: the command a card suggested or answered for, and the form that reached it. Never the person, never what they typed (his question "then how do we know what phrases are falsely triggering it often?", answered by A: almost every false trigger is one of our aliases or typo rules, and knowing which one is enough to fix it). What counts: a Did you mean or pick card that expired unpressed, a timestamp card (What date or time?, Couldn't read) left unanswered, and every no-match line. ⚠️ A message Dioreo stayed silent on is NOT counted, though one was agreed as "a `d ` message read as chat": the parser's silence carries nothing to key it on, and counting it would count every chat line that starts with "d ", which is the parser working. Counted in memory and written every ten minutes as one $inc per row (bot/textCommands.js's sweep), so a misfire costs no database write of its own. A restart loses at most ten minutes of counts.
+// ONLY DIOREO'S OWN WORDS: the command a card suggested or answered for, and the form that reached it. Never the person, never what they typed (his question "then how do we know what phrases are falsely triggering it often?", answered by A: almost every false trigger is one of our aliases or typo rules, and knowing which one is enough to fix it). What counts: a Did you mean or pick card that expired unpressed, a timestamp card (What date or time?, Couldn't read) left unanswered, and every no-match line. ⚠️ A message Dioreo stayed silent on is NOT counted, though one was agreed as "a `d ` message read as chat": the parser's silence carries nothing to key it on, and counting it would count every chat line that starts with "d ", which is the parser working. Counted in memory and written every ten minutes as one $inc per row (bot/textCommands.js's sweep), so a misfire costs no database write of its own. A clean restart (SIGTERM, every deploy) flushes them first; only a crash loses up to ten minutes.
 const DAY_MS = 24 * 60 * 60 * 1000;
 const KEEP_DAYS = 30;
 const pending = new Map();
@@ -46,5 +46,8 @@ async function recent(guildId = null, { days = 7, limit = 5, now = Date.now() } 
 
 const KIND_LABEL = { didYouMean: 'Did you mean ignored', pick: 'Pick ignored', askedForInput: 'Card unanswered', couldntRead: "Couldn't read, ignored", noMatch: 'No match' };
 const line = r => `${KIND_LABEL[r.kind] || r.kind} · \`${r.word || '—'}\`${r.via ? ` via \`${r.via}\`` : ''} · **${r.count}**`;
+
+// A deploy restart flushes the counts too, through eventStore's shutdown flush (B7's fix-up), so a restart no longer loses up to ten minutes of them.
+require('../eventStore').onShutdownFlush?.(flush);
 
 module.exports = { note, flush, recent, line, KIND_LABEL, __pending: pending };
