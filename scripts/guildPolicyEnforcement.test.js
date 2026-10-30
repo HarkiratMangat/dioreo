@@ -678,7 +678,8 @@ const SERVER_ADMIN = { serverAdmin: true, botAdmin: false };
 const BOT_ADMIN = { serverAdmin: false, botAdmin: true, manage: true, bot: true, botAccess: true, autobuild: true };
 
 // B6 (2026-10-30 00:15 EDT): /help is one page per command now (utils/helpPages.js), and CATEGORY_DEFS' `requires` decides which pages a viewer may open, list in the switcher, or reach through `cmd:`.
-const pageNames = async (help, perms) => help.visiblePageNames(perms);
+// /bot's subcommands share one /help page with a dropdown since 2026-10-30 14:05 EDT; listed here by subcommand, the pages a viewer can actually open.
+const pageNames = async (help, perms) => help.visiblePageNames(perms).flatMap(n => (n === '/bot' ? help.visibleBotSubs(perms) : [n]));
 const homeOf = async (help, perms) => JSON.stringify(await help.buildHelpMessage({ perms, client: {}, view: 'slash' }));
 
 t('an ordinary member sees neither /admin nor any Bot Admin page', async () => {
