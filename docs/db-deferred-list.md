@@ -653,7 +653,7 @@ Home held its own copy of Armory's fault predicate; the copy happened to AGREE, 
 
 ## 🔔 Reminders / watch-for
 
-- `[P1 · XS]` **Post the text-commands announcement once text commands are live on prod.** *Filed 2026-10-30 16:21 EDT.* Harkirat's text, layout and accent `#6273EF` (his, 2026-10-30 16:20 EDT), rendered through the real builder in #testing-spam (message `1565822895358214346`). Create it on prod only on his word at that time, through `/manage` announcements or the portal; `core/ops/announcements.js` accepts `payload.color`, so pass `0x6273EF` (6452207) rather than a random one. The text, prod emoji ids:
+- `[P1 · XS]` **Post the text-commands announcement once text commands are live on prod.** *Filed 2026-10-30 16:21 EDT.* Harkirat's text, layout and accent `#6273EF` (his, 2026-10-30 16:20 EDT), rendered in #testing-spam (message `1565823355578224721`, mock 3). **Needs the `--` box split below first:** the mention box and the `d help` box are two text boxes with no divider between them (his correction, 2026-10-30 16:22 EDT). Create it on prod only on his word at that time, through `/manage` announcements or the portal; `core/ops/announcements.js` accepts `payload.color`, so pass `0x6273EF` (6452207) rather than a random one. The text, prod emoji ids:
 
 ```
 ## <a:DioreoTada:1563677558589882510> Dioreo now supports text commands!
@@ -663,6 +663,7 @@ Home held its own copy of Armory's fault predicate; the copy happened to AGREE, 
 `@dioreo calendar`
 `d draws new`
 `dior build static hv`
+--
 -# Use **`d help`** to learn more!
 ---
 -# Made with <a:diorHeart:1525941004929339594> by <@1139845545754632283> · {posted}
@@ -1095,7 +1096,7 @@ Approved direction 2026-10-25 22:16 EDT (Harkirat, bot-polish thread); built in 
 
 **Archive, never delete (Harkirat, 2026-10-21 11:25 EDT: "instead of deleting, can we move any \"deleted\" images to an archive folder instead from now on? ... with respective sub-folders for draws, banners, etc.").** Three delete sites: draws' 45-day prune (`utils/cloudinaryCache.js`, `delete_resources`), a deleted patch-notes entry's folder (`utils/patchNotesCache.js`, `delete_resources`) and a cleared calendar banner (`utils/calendarBannerCache.js`, `uploader.destroy`). **Do:** move each to `archive/draws/`, `archive/patch_notes/`, `archive/calendar_banners/` (rename the `public_id`, set `asset_folder`, archive date in the name so repeats never clash); nothing ever deletes from `archive/`. ✅ **Built 2026-10-21 11:45 EDT** on `fix/command-refresh-polish` (Harkirat, 2026-10-21 11:39 EDT: "yes go ahead", to both this and archiving the old image when one is replaced): `utils/cloudinaryArchive.js`, all four modules, `scripts/cloudinaryArchive.test.js`. Live once v3 deploys. **Still open: the live check below.** Storage is not a concern: 1.4 GB, 25% of the free plan's credits (Admin API `usage`, 2026-10-21 11:26 EDT). **Verify:** a unit test per site shows a move, not a delete (the dev bot cannot write to Cloudinary), then one real prune on prod after the v3 deploy leaves the moved asset under `archive/`.
 
-### Announcements: split text boxes without a divider `[P3 · XS]`
+### Announcements: split text boxes without a divider `[P2 · XS]` (the text-commands announcement needs it)
 
 *Filed 2026-10-30 16:21 EDT, Harkirat: "we'll do it later, just file it for now".* `utils/announcement.js` `buildAnnouncementContainer` starts a new Text Display only at a line that is exactly `---`, and that line always adds a divider (`type: 14, divider: true`), so two text boxes with nothing between them can't be written. **Do:** a line that is exactly `--` starts a new box with no divider; `---` keeps its divider. Update the composer's help text in `/manage` and the portal's Broadcast realm if either describes `---` (portal is pins2's: a proposal). **Verify:** a test where `--` yields two `type: 10` blocks with no divider between them, and `---` still yields one.
 
