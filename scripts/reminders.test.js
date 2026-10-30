@@ -131,11 +131,13 @@ t('Leaving soon by kind: the old all-kinds key reads as all four, and one kind c
     assert.ok([...p.lastChance, ...p.leavingSoon].every(e => e.type === 'event'), 'only events remind before leaving');
 });
 
-t('New season wears this season\'s emoji, on the panel and in the DM', () => {
-    const d9 = doc({ currentSeasonTitle: 'Season 9: Test', currentSeasonEmoji: '<:S9Test:111>' });
+t('New season wears the live season\'s emoji when no upcoming one exists, on the panel and in the DM', () => {
+    // Season 99 has no next-season emoji in the app, so the button falls back to the live season's (his rule, 2026-10-28 18:16 EDT: upcoming first, else current).
+    const d99 = doc({ currentSeasonTitle: 'Season 99: Test', currentSeasonEmoji: '<:S9Test:111>' });
     const btns = []; const w = c => { if (c.type === 2) btns.push(c); (c.components || []).forEach(w); };
-    R.buildPanel(sub({ categories: ['newSeason'] }), d9, { ownerId: 'u1', nowMs: RUN }).forEach(w);
+    R.buildPanel(sub({ categories: ['newSeason'] }), d99, { ownerId: 'u1', nowMs: RUN }).forEach(w);
     assert.strictEqual(btns.find(b => b.custom_id === 'remind_cat:newSeason:u1').emoji?.name, 'S9Test');
+    const d9 = doc({ currentSeasonTitle: 'Season 9: Test', currentSeasonEmoji: '<:S9Test:111>' });
     const dm = JSON.stringify(R.buildReminderDM({ newSeason: { title: 'Season 9: Test', emoji: '<:S9Test:111>' }, released: [], lastChance: [], leavingSoon: [], seasonEnds: [], patchNotes: [], fired: [] }, d9, { nowMs: RUN }));
     assert.ok(dm.includes('### <:S9Test:111> New season'));
 });
@@ -185,7 +187,8 @@ t("/remind's set: values and autocomplete: categories pinned first, entries twic
     assert.deepStrictEqual(all.slice(0, R.CATEGORIES.length).map(c => c.value), R.CATEGORIES.map(c => `cat:${c.key}`));
     assert.ok(all.length <= 25 && all.every(c => c.name.length <= 100 && c.value.length <= 100));
     const grim = R.autocompleteChoices('grim', doc(), RUN);
-    assert.deepStrictEqual(grim.map(c => c.value), ['rel:Grim Duo Draw']);
+    // Not out yet, so it is offered both ways since 2026-10-28 18:34 EDT: when it releases, and (his ask) when it leaves.
+    assert.deepStrictEqual(grim.map(c => c.value), ['rel:Grim Duo Draw', 'lv:Grim Duo Draw']);
 });
 
 t("/remind's releases and leaving options each offer only their own side (his 2026-10-25 21:56 EDT intake)", () => {
@@ -196,7 +199,8 @@ t("/remind's releases and leaving options each offer only their own side (his 20
     // Every category sits on exactly one side, so nothing falls out of both lists.
     for (const c of R.CATEGORIES) assert.ok(['releases', 'leaving'].includes(R.sideOf(c)), c.key);
     assert.deepStrictEqual(R.resolveSetValue('halloween', doc(), RUN, 'leaving'), { type: 'follow', kind: 'leaving', title: 'Halloween Sale' });
-    assert.strictEqual(R.resolveSetValue('call of the', doc(), RUN, 'leaving'), null, 'a release is not on the leaving side');
+    // Since 2026-10-28 18:34 EDT an upcoming thing can be followed for when it leaves (his ask: "pre-set the reminder for whenever its about to leave").
+    assert.deepStrictEqual(R.resolveSetValue('call of the', doc(), RUN, 'leaving'), { type: 'follow', kind: 'leaving', title: 'Call of the Dead' }, 'an upcoming thing on the leaving side');
 });
 
 t('failed DMs, his rule: a note on the first failure; paused once the note was shown and 3 more days fail', () => {
@@ -285,6 +289,28 @@ t('a day busy enough for Search still fits in 40, by dropping the gap above the 
     assert.ok(s.includes('remind_search:1') && s.includes('remind_ann:1'), 'Search and Announcements both shown');
     const n = require('../commands/today').countComponents(panel);
     assert.ok(n <= 40, `within 40, got ${n}`);
+});
+
+t('New season button wears the upcoming season\'s emoji, else the live one (2026-10-28 18:16 EDT)', () => {
+    const { upcomingSeasonEmoji } = require('../utils/seasonEmoji');
+    const emo = require('../utils/emojiMap');
+    assert.strictEqual(upcomingSeasonEmoji({ currentSeasonTitle: 'Season 9 — Vampires vs Werewolves', draft: { active: true, currentSeasonTitle: '' } }), emo.season10, 'no draft title: season N+1');
+    assert.strictEqual(upcomingSeasonEmoji({ currentSeasonTitle: 'Season 9', draft: { active: true, currentSeasonEmoji: '<:S10Draft:222>' } }), emo.repoint('<:S10Draft:222>'), 'the draft\'s own emoji wins');
+    // And the panel itself: Season 9 live with a Season 10 emoji in the app shows Season 10's.
+    const btns = []; const w = c => { if (c.type === 2) btns.push(c); (c.components || []).forEach(w); };
+    R.buildPanel(sub({ categories: ['newSeason'] }), doc({ currentSeasonTitle: 'Season 9: Test', currentSeasonEmoji: '<:S9Test:111>' }), { ownerId: 'u1', nowMs: RUN }).forEach(w);
+    assert.strictEqual(btns.find(b => b.custom_id === 'remind_cat:newSeason:u1').emoji?.id, emo.season10.match(/:(\d+)>$/)[1], 'Season 10\'s emoji on the button');
+    assert.strictEqual(upcomingSeasonEmoji({ currentSeasonTitle: 'Season 99' }), null, 'no such emoji: null, caller falls back');
+});
+
+t('the leaving dropdown lists live things first, then upcoming ones (2026-10-28 18:34 EDT)', () => {
+    const sels = []; const w = c => { if (c.type === 3) sels.push(c); (c.components || []).forEach(w); };
+    R.buildPanel(sub({ categories: [] }), doc(), { ownerId: 'u1', nowMs: RUN }).forEach(w);
+    const lv = sels.find(x => x.custom_id === 'remind_lv:u1');
+    assert.ok(/^Pick from \d+ live, \d+ upcoming…$/.test(lv.placeholder), lv.placeholder);
+    const labels = lv.options.map(o => o.label);
+    assert.ok(labels.indexOf('Halloween Sale') < labels.indexOf('Call of the Dead'), 'live before upcoming');
+    assert.ok(/releases .* · ends /.test(lv.options.find(o => o.label === 'Call of the Dead').description));
 });
 
 console.log(`\n${failed ? 'FAILED' : 'all passed'}: ${passed} passed, ${failed} failed`);

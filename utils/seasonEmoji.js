@@ -27,4 +27,15 @@ function withCaptionEmoji(block, emoji) {
     return block;
 }
 
-module.exports = { splitSeasonEmoji, seasonEmojiFor, withCaptionEmoji };
+// The UPCOMING season's emoji, for /remind's New season button (Harkirat, 2026-10-28 18:15 EDT: "for reminder's \"new season\" can you use the upcoming season's emoji when it's available, else fallback to the current season's emoji"): the season draft's own emoji or season{N} by the draft's title; else season{N+1} after the live season's number, when the app has that emoji; else null, and the caller falls back to the live season's.
+function upcomingSeasonEmoji(doc) {
+    const draft = doc?.draft;
+    if (draft?.active) {
+        const fromDraft = seasonEmojiFor(draft.currentSeasonTitle, draft.currentSeasonEmoji);
+        if (fromDraft) return fromDraft;
+    }
+    const m = /season\s*(\d+)/i.exec(doc?.currentSeasonTitle || '');
+    return m ? (emojis[`season${Number(m[1]) + 1}`] || null) : null;
+}
+
+module.exports = { splitSeasonEmoji, seasonEmojiFor, withCaptionEmoji, upcomingSeasonEmoji };

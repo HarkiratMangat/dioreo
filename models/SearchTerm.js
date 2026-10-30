@@ -5,7 +5,7 @@
 //
 // Why the term text is stored at all (reversed during design, and worth not re-litigating): a search that returned nothing is the single best input to an alias table -- people type `kilo`, the weapon is `KILO 141`, nothing matched -- and that fix is only findable if the term survives.
 //
-// ⚠️ This is NOT message content and must never be described as such. Text typed into a slash command's own field is deliberately sent to the Bot; that is how commands work. The "we cannot read your messages" claim in docs/legal/PRIVACY.md concerns the MESSAGE CONTENT intent, which this app does not hold, and is entirely unaffected. See PRIVACY §2.4b.
+// ⚠️ This is NOT message content and must never be described as such. Text typed into a slash command's own field is deliberately sent to the Bot; that is how commands work. The "we don't keep your messages" claim in docs/legal/PRIVACY.md is about channel messages: since text commands (2026-10-28) the Bot receives them, answers the ones addressed to it and stores none, and nothing from a message ever reaches this collection. See PRIVACY §2.4b and §3.
 //
 // The term is normalised (lowercased, trimmed, whitespace-collapsed) and capped at 100 characters by utils/eventStore.js's normalizeTerm() before it ever reaches here, so a mis-paste into the wrong field cannot dump a wall of text into a permanent record.
 

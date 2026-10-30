@@ -21,7 +21,8 @@ const AnalyticsEventSchema = new mongoose.Schema({
                                                 // stats by default so a self-observing system doesn't distort its own numbers. (/alerts and /audit retired as command names in stage 3; their panels are now /bot analytics pages, still under the 'bot' token.)
     command: { type: String },
     subcommand: { type: String },
-    entry: { type: String },             // 'slash' | 'button' | 'select' | 'autocomplete' | 'modal' | 'synthetic' | 'background'
+    entry: { type: String },             // 'slash' | 'button' | 'select' | 'autocomplete' | 'modal' | 'synthetic' | 'background' | 'text'
+    via: { type: String },               // text commands only (2026-10-28 17:24 EDT): 'mention' | 'role' | '/' | 'd' | 'dior' (or the env's own prefixes), with '+typo' when a near-miss word ran
     customIdPrefix: { type: String },    // the segment BEFORE the first '_', nothing after it. custom_ids
                                          // here embed Mongo _ids and user snowflakes (bot_admin_*, mng_announce_*), so a looser capture would leak one.
     outcome: { type: String },           // 'ok' | 'error' | 'expired' | 'blocked_by_policy'

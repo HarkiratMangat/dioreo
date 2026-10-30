@@ -39,10 +39,10 @@ async function addDraw(interaction) {
         return await failWithRetry(interaction, `Date "${dateStr}" wasn't understood -- nothing was saved.`);
     }
 
-    // URL is optional -- blank reuses a Cloudinary cache hit for this exact title if one exists. No URL AND no cache hit used to hard-reject the whole submission -- relaxed 2026-08-22 19:40 EDT (click-test fix): a draw's info is sometimes known before any image exists to link/cache. thumbnailUrl has no `required` on the schema (models/SeasonalData.js) -- this was purely an app-level choice. commands/draws.js's render renders a plain no-image row instead of a broken thumbnail when thumbnailUrl is null.
-    const thumbResult = await resolveThumbnail(title, rawUrl);
-
+    // URL is optional -- blank reuses a Cloudinary cache hit for this exact title if one exists. No URL AND no cache hit used to hard-reject the whole submission -- relaxed 2026-08-22 19:40 EDT (click-test fix): a draw's info is sometimes known before any image exists to link/cache. thumbnailUrl has no `required` on the schema (models/SeasonalData.js) -- this was purely an app-level choice. commands/draws.js's render renders a plain no-image row instead of a broken thumbnail when thumbnailUrl is null. The items go along so a draw that comes back under a new name finds its old image by what it contains (utils/cloudinaryCache.js).
     const parsedItems = rawItems.split('\n').filter(l => l.trim().length > 0).map(parseItemLine);
+    const thumbResult = await resolveThumbnail(title, rawUrl, { items: parsedItems, priceType });
+
     const newDrawObj = { title, items: parsedItems, date: parsedSingleDate, thumbnailUrl: thumbResult.url, ...(priceType ? { priceType } : {}) };
 
     const result = await commitSet(
@@ -77,10 +77,9 @@ async function editDraw(interaction) {
 
         // URL field is optional -- blank reuses whatever's cached in Cloudinary for this draw's (possibly just-renamed) title. No URL AND no cache hit used to be a hard rejection; relaxed 2026-08-22 19:40 EDT (click-test fix) to save without an image instead (matches addDraw's same-day fix) rather than blocking an otherwise-valid edit.
         const rawUrl = interaction.fields.getTextInputValue('url');
-        const thumbResult = await resolveThumbnail(newTitle, rawUrl);
-
         const rawItems = interaction.fields.getTextInputValue('items');
         const parsedItems = rawItems.split('\n').filter(l => l.trim().length > 0).map(parseItemLine);
+        const thumbResult = await resolveThumbnail(newTitle, rawUrl, { items: parsedItems, priceType: arrayTarget[drawIndex].priceType || '' });
 
         // Draw Type (2026-10-18 11:06 EDT): the form's dropdown; nothing picked clears it. Sent only when it CHANGED, so an edit that never touches it leaves the stored type, and the op's conflict check, alone. A modal built before this field existed (an old open form) has no dropdown and is read as unchanged.
         let pickedType = null;

@@ -80,6 +80,20 @@ check('nothing typed: a few of every class, each class\'s Meta and best-ranked f
     assert.deepStrictEqual(counts, { AR: 3, LMG: 2, MARKSMAN: 2, SECONDARIES: 2, SHOTGUN: 2, SMG: 3, SNIPER: 2 });
 });
 
+// pickWeapon: the weapon someone MEANT, for a text command or a name sent without picking (2026-10-29 11:05 EDT). Words, never fragments: his "142", "kilo ar" open the KILO 141, bare "lol" opens nothing, and everyday chat after `d gs` opens nothing.
+check('pickWeapon opens a weapon only when the typed words name it', () => {
+    const { pickWeapon } = require('../utils/search');
+    const w = (weaponName, category, extra = {}) => ({ weaponName, weaponKey: weaponName.toLowerCase().replace(/[^a-z0-9]/g, ''), category, ...extra });
+    const pool = [w('AK117', 'AR'), w('AK-47', 'AR'), w('KILO 141', 'AR'), w('KILO BOLT-ACTION', 'SNIPER'), w('FENNEC', 'SMG'), w('HS0405', 'SHOTGUN'), w('DL Q33', 'SNIPER'), w('LOCUS', 'SNIPER'), w('MAN-O-WAR', 'AR'), w('CHOPPER', 'LMG'), w('Bruen MK9', 'LMG'), w('RAAL MG', 'LMG'), w('MACHINE PISTOL', 'SECONDARIES'), w('M4', 'AR'), w('XM4', 'AR'), w('TYPE 19', 'AR'), w('L-CAR 9', 'SECONDARIES'), w('MAC-10', 'SMG')];
+    const hit = q => pickWeapon(q, pool).hit?.weaponName || null;
+    for (const [q, want] of [['142', 'KILO 141'], ['kilo ar', 'KILO 141'], ['kilo 141', 'KILO 141'], ['kilo141', 'KILO 141'], ['ak117', 'AK117'], ['ak 117', 'AK117'], ['ak-117', 'AK117'], ['fenec', 'FENNEC'], ['hso405', 'HS0405'], ['dlq', 'DL Q33'], ['lokus', 'LOCUS'], ['man o war', 'MAN-O-WAR'], ['m4', 'M4'], ['xm4', 'XM4'], ['type 19', 'TYPE 19'], ['mac10', 'MAC-10'], ['kilo sniper', 'KILO BOLT-ACTION']]) assert.strictEqual(hit(q), want, q);
+    for (const q of ['lol', 'no', 'op', 'pls', 'bruh', 'true', 'real', 'br', 'l', 'gg', 'ok', 'skins are cool', 'is broken', 'kilo lol']) assert.strictEqual(hit(q), null, q);
+    assert.deepStrictEqual(pickWeapon('kilo', pool).several.map(x => x.weaponName), ['KILO 141', 'KILO BOLT-ACTION'], 'one word, two weapons: Did you mean');
+    assert.deepStrictEqual(pickWeapon('ak', pool).several.map(x => x.weaponName), ['AK117', 'AK-47']);
+    assert.deepStrictEqual(pickWeapon('lol', pool).loose.map(x => x.weaponName), ['KILO 141'], 'the dropdown search still finds it, to offer and never to run');
+    assert.deepStrictEqual(pickWeapon('lol', pool).several, []);
+});
+
 if (failures) { console.error(`\n${failures} check(s) failed.`); process.exit(1); }
 console.log('\nweaponSearch: all checks passed.');
 process.exit(0);

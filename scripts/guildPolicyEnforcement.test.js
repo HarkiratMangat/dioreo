@@ -279,7 +279,7 @@ t('/bot servers is owner-only on every click, and a reset clears the rules and i
     const realLogCreate = GuildSettingsLog.create;
     const serverLog = [];
     GuildSettingsLog.create = async row => { serverLog.push(row); return row; };
-    const saved = { guildId: '123456789012345678', defaultVisibility: 'ephemeral', channelRules: [{ channelId: 'C', visibility: 'ephemeral' }], roleRules: [], ephemeralCommands: ['colors'], save: async () => {} };
+    const saved = { guildId: '123456789012345678', defaultVisibility: 'ephemeral', channelRules: [{ channelId: 'C', visibility: 'ephemeral' }], roleRules: [], ephemeralCommands: ['colors'], textRules: { defaultVisibility: 'ephemeral', channelRules: [], roleRules: [], commandSettings: [] }, textPrefixes: ['!'], save: async () => {} };
     const original = GuildSettings.findOne;
     GuildSettings.findOne = () => ({ lean: async () => saved, then: (ok) => ok(saved) });
     try {
@@ -296,8 +296,10 @@ t('/bot servers is owner-only on every click, and a reset clears the rules and i
         Object.assign(owner.interaction, { customId: 'bot_srv_reset|123456789012345678', isButton: () => true, isModalSubmit: () => false, deferUpdate: async () => {}, deferred: true, client: { ...owner.interaction.client, guilds: { cache: new Map() } } });
         await handleBotInteraction(owner.interaction);
         assert.deepStrictEqual([saved.channelRules.length, saved.ephemeralCommands.length, saved.defaultVisibility], [0, 0, 'public']);
+        assert.deepStrictEqual([saved.textRules, saved.textPrefixes], [undefined, undefined], 'the owner\'s reset clears the text switch and the prefix too (B7)');
         assert.strictEqual(logged.length, 1);
         assert.ok(/Before: .*Private/.test(logged[0].summary), 'the log must carry the rules as they were');
+        assert.ok(/\*\*Text commands\*\* · Off by default · 0 rules · prefix `!`/.test(logged[0].summary), 'and the text settings as they were');
         await new Promise(r => setImmediate(r));
         assert.strictEqual(serverLog.length, 1, "the owner's reset must appear in the server's own change log");
         assert.strictEqual(serverLog[0].source, 'owner');
@@ -307,6 +309,73 @@ t('/bot servers is owner-only on every click, and a reset clears the rules and i
         changeStore.recordChange = realRecord;
         GuildSettings.findOne = original;
         guildPolicy.invalidateGuildPolicy('123456789012345678');
+    }
+});
+
+// B7 (2026-10-30): the text-command view. Its own ids, On/Off words, the flip button, and a click that writes textRules and never the slash settings.
+t('the /admin text view: its ids, On/Off, the flip button and a save into textRules only', async () => {
+    const admin = require('../commands/admin');
+    const { inView, textView, buildHome } = admin.__testRenderers;
+    const stored = { guildId: 'G_T', defaultVisibility: 'ephemeral', textRules: { defaultVisibility: 'ephemeral', channelRules: [], roleRules: [], commandSettings: [] }, textPrefixes: ['!'] };
+    const json = JSON.stringify(inView('text', () => buildHome(textView(stored), { textMessageContent: true }, {})));
+    assert.ok(json.includes('"custom_id":"admin_t_default|public"') && json.includes('"label":"On"') && json.includes('"label":"Off"'), 'On/Off in the text namespace');
+    assert.ok(json.includes('"custom_id":"admin_view|slash"') && json.includes('Config Slash Commands'), 'the flip back');
+    assert.ok(json.includes('"custom_id":"admin_t_prefix"') && json.includes('`!` *(in place of `d`)*') && json.includes('`dior` and `@Dioreo` always work'), 'the prefix block');
+    assert.ok(json.includes('"custom_id":"admin_t_prefix_reset"') && json.includes('Reset to d'), 'Reset to d, shown once the server has its own');
+    assert.ok(json.includes('Reset Text Rules'), 'the text view names its reset');
+    assert.ok(json.includes('"custom_id":"admin_t_check"'), 'Check a Member has its own text copy');
+    const { buildCheck } = admin.__testRenderers;
+    const off = JSON.stringify(inView('text', () => buildCheck(textView(stored), [], { who: 'r:R_X' }, {})));
+    assert.ok(off.includes('**Off**') && off.includes('Off means Dioreo stays silent'), 'the text check reads On / Off');
+    const boss = JSON.stringify(inView('text', () => buildCheck(textView(stored), [], { who: 'u:U_9', member: { roleIds: [], isAdmin: true, gate: () => 'private' } }, {})));
+    assert.ok(boss.includes('typed commands work for them everywhere') && !boss.includes('Discord keeps'), 'an admin is never off, and Discord\'s slash gates stay out');
+    assert.ok(!/"custom_id":"admin_(default|channels|roles|commands|home)/.test(json), 'no slash-view control on the text view');
+    const slash = JSON.stringify(inView('slash', () => buildHome(stored, {}, {})));
+    assert.ok(slash.includes('"custom_id":"admin_view|text"') && slash.includes('Config Text Commands') && slash.includes('"label":"Private"'), 'the slash view keeps its words and flips to text');
+    assert.ok(slash.includes('Reset Slash Rules') && !slash.includes('Reset Everything'), 'the slash view names its reset');
+    const doc = new GuildSettings({ guildId: 'G_T', defaultVisibility: 'ephemeral' });
+    doc.save = async () => doc;
+    const original = GuildSettings.findOne;
+    GuildSettings.findOne = () => ({ lean: async () => doc.toObject(), then: ok => ok(doc) });
+    guildPolicy.invalidateGuildPolicy('G_T');
+    const GuildSettingsLog = require('../models/GuildSettingsLog');
+    const realLogCreate = GuildSettingsLog.create;
+    const log = [];
+    GuildSettingsLog.create = async row => { log.push(row); return row; };
+    try {
+        const click = async (customId, extra = {}) => {
+            const { interaction, calls } = makeInteraction({ isAdmin: true });
+            Object.assign(interaction, { guildId: 'G_T', customId, values: [], ...extra });
+            await admin.handleComponent(interaction);
+            return calls;
+        };
+        await click('admin_t_default|ephemeral');
+        assert.strictEqual(doc.textRules.defaultVisibility, 'ephemeral', 'the text default');
+        assert.strictEqual(doc.defaultVisibility, 'ephemeral', 'the slash default is untouched');
+        await click('admin_t_ch_public', { values: ['C_9'] });
+        assert.deepStrictEqual(doc.textRules.channelRules.map(r => [r.channelId, r.visibility]), [['C_9', 'public']]);
+        assert.strictEqual(doc.channelRules.length, 0, 'no slash channel rule');
+        const bad = await click('admin_t_prefixm', { fields: { getTextInputValue: () => '/, @' } });
+        assert.ok(bad.some(c => c.method === 'reply' && /Nothing was saved/.test(c.options.content)), 'a refused prefix');
+        const two = await click('admin_t_prefixm', { fields: { getTextInputValue: () => '!, COD' } });
+        assert.strictEqual(doc.textPrefixes, undefined, 'two prefixes save nothing: one per server (his call, 2026-10-30 16:43 EDT)');
+        assert.ok(two.some(c => c.method === 'reply' && /One prefix/.test(c.options.content)), 'and say why');
+        await click('admin_t_prefixm', { fields: { getTextInputValue: () => 'COD' } });
+        assert.deepStrictEqual([...doc.textPrefixes], ['cod']);
+        await new Promise(r => setImmediate(r));
+        assert.ok(log.some(r => r.changes.includes('Text commands · Default: On → Off')), JSON.stringify(log.map(r => r.changes)));
+        assert.ok(log.some(r => r.changes.includes('Text command prefixes: default → cod')));
+        await click('admin_t_prefix_reset');
+        assert.strictEqual(doc.textPrefixes, undefined, 'Reset to d');
+        await click('admin_t_prefixm', { fields: { getTextInputValue: () => '!' } });
+        await click('admin_t_reset');
+        assert.strictEqual(doc.textPrefixes, undefined, 'the text reset clears the prefix too');
+        assert.strictEqual(doc.textRules, undefined, 'the text reset clears the text rules');
+        assert.strictEqual(doc.defaultVisibility, 'ephemeral', 'and leaves the slash settings');
+    } finally {
+        GuildSettings.findOne = original;
+        GuildSettingsLog.create = realLogCreate;
+        guildPolicy.invalidateGuildPolicy('G_T');
     }
 });
 
@@ -342,7 +411,7 @@ t('describeChanges names each change, and an unchanged save logs nothing', () =>
     assert.deepStrictEqual(describeChanges(before, before), []);
 });
 
-t('every save writes a log row, and Reset Everything adds one rather than clearing the log', async () => {
+t('every save writes a log row, and a reset adds one rather than clearing the log', async () => {
     const GuildSettingsLog = require('../models/GuildSettingsLog');
     const realCreate = GuildSettingsLog.create;
     const rows = [];
@@ -555,9 +624,9 @@ t("Check a Member shows a member's whole picture, no channel needed", () => {
     assert.ok(text({ error: "That member isn't in this server." }).includes("isn't in this server"));
 });
 
-// --- 6. no panel page can exceed the Components V2 ceiling ----------------------------------- 40 components per message, counted RECURSIVELY through containers, sections and rows. Exceeding it is not a soft failure: Discord rejects the whole message (COMPONENT_MAX_TOTAL_COMPONENTS_ EXCEEDED) and the panel simply refuses to open. This repo has already shipped that as a real production crash once (see .claude/rules/rendering-and-ui.md), and every explanatory line added to a panel costs one -- which is exactly the kind of harmless-looking edit that trips it.
+// --- 6. no panel page can exceed the Components V2 ceiling ----------------------------------- 40 components per message, counted RECURSIVELY through containers, sections and rows. Exceeding it is not a soft failure: Discord rejects the whole message (COMPONENT_MAX_TOTAL_COMPONENTS_ EXCEEDED) and the panel simply refuses to open. This repo has already shipped that as a real production crash once (see .claude/rules/rendering-and-ui.md), and every explanatory line added to a panel costs one -- which is exactly the kind of harmless-looking edit that trips it. A Section's accessory (a Clear button, a server icon) is a component too, and Discord counts it; this skipped it until B7's fix-up (2026-10-30 15:01 EDT), undercounting Overview by 4.
 function countComponents(nodes) {
-    return (nodes || []).reduce((total, node) => total + 1 + countComponents(node.components), 0);
+    return (nodes || []).reduce((total, node) => total + 1 + countComponents(node.components) + (node.accessory ? countComponents([node.accessory]) : 0), 0);
 }
 
 t('every /admin page stays under the 40-component ceiling', () => {
@@ -592,6 +661,18 @@ t('every /admin page stays under the 40-component ceiling', () => {
         const used = countComponents(page);
         assert.ok(used <= 40, `${name} renders ${used} components, over Discord's 40 -- the page would fail to open`);
     }
+    // The text view (B7) adds the view switch and the Prefix block to Overview: the same maximal rules, read as On/Off, with three prefixes.
+    const { inView, textView } = require('../commands/admin').__testRenderers;
+    const text = textView({ ...settings, textRules: { ...settings, ephemeralCommands: undefined, commandSettings: [{ command: 'ID_1', defaultVisibility: 'ephemeral', channelRules: settings.channelRules, roleRules: settings.roleRules }] }, textPrefixes: ['!', 'cod', 'dd'] });
+    const place = { guildName: 'A server', guildIcon: 'https://cdn.discordapp.com/icons/1/a.png', channelId: 'C_1' };
+    const textPages = {
+        home: () => buildHome(text, null, place), resetArmed: () => buildHome(text, null, place, { resetArmed: true }), channels: () => buildChannels(text), roles: () => buildRoles(text),
+        roleScope: () => buildRoleScope(text, 'R_S'), commands: () => buildCommands(text, ids(30)), commandHome: () => buildHome(text, null, place, { scope: 'ID_1' }), check: () => buildCheck(text, ids(30), { who: 'r:ID_1', channelIds: ids(25) }),
+    };
+    for (const [name, build] of Object.entries(textPages)) {
+        const used = countComponents(inView('text', build));
+        assert.ok(used <= 40, `text view ${name} renders ${used} components, over Discord's 40`);
+    }
 });
 
 // --- 7. /help hides the Server Admin category from non-admins -------------------------------- Filtered in THREE places -- the dropdown, the landing directory, and the `cmd:` autocomplete -- because the landing directory is a hardcoded string rather than a map over CATEGORY_DEFS, so the two can disagree, and because suggesting `/admin` in autocomplete and then bouncing the user to the directory is worse than never offering it. One test per surface, since filtering two and forgetting the third is the realistic mistake.
@@ -611,91 +692,64 @@ const SERVER_ADMIN = { serverAdmin: true, botAdmin: false };
 // Per-command keys (manage/bot/botAccess/autobuild) added 2026-08-13, 'bot'/'botAccess' replacing the retired 'alerts'/'audit' 2026-08-16 -- this fixture represents a FULL bot admin (owner or a Mongo-granted admin with `all`), so every one of the four command lines within the Bot Admin category must be individually true too, or commands/help.js's per-command `requires` filtering hides them even though the category shows. `botAccess` is isOwner() in real code, not a token -- true here because this fixture represents the OWNER, the only identity that can ever be true.
 const BOT_ADMIN = { serverAdmin: false, botAdmin: true, manage: true, bot: true, botAccess: true, autobuild: true };
 
-t('an ordinary member sees neither /admin nor the Bot Admin category', async () => {
+// B6 (2026-10-30 00:15 EDT): /help is one page per command now (utils/helpPages.js), and CATEGORY_DEFS' `requires` decides which pages a viewer may open, list in the switcher, or reach through `cmd:`. /bot's subcommands share one /help page with a dropdown since 2026-10-30 14:05 EDT; listed here by subcommand, the pages a viewer can actually open.
+const pageNames = async (help, perms) => help.visiblePageNames(perms).flatMap(n => (n === '/bot' ? help.visibleBotSubs(perms) : [n]));
+const homeOf = async (help, perms) => JSON.stringify(await help.buildHelpMessage({ perms, client: {}, view: 'slash' }));
+
+t('an ordinary member sees neither /admin nor any Bot Admin page', async () => {
     const help = require('../commands/help');
     await withNoLoadouts(async () => {
-        const menu = JSON.stringify(await help.buildContainer(null, 0, NOBODY));
-        assert.ok(!menu.includes('/admin'), 'the landing directory must not list /admin');
-        assert.ok(!menu.includes('Bot Admin') && !menu.includes('BOT ADMIN'), 'the Bot Admin category must be absent entirely');
+        const home = await homeOf(help, NOBODY);
+        assert.ok(!home.includes('/admin') && !home.includes('/manage'), 'the home page and its switcher must list neither');
         const names = await help.getAllHelpCommandNames(NOBODY);
         assert.ok(!names.includes('/admin') && !names.includes('/manage'), 'autocomplete must suggest neither');
+        assert.ok(!(await pageNames(help, NOBODY)).includes('/admin'));
     });
 });
 
-// /admin sits INSIDE Preferences rather than in a heading of its own, so the assertions are about the category's contents changing -- not about a category appearing.
-t('a server admin sees /admin inside Preferences, with the swapped emoji and description', async () => {
+t('a server admin sees /admin, and Manage Server grants no Bot Admin page', async () => {
     const help = require('../commands/help');
     await withNoLoadouts(async () => {
-        const container = await help.buildContainer(null, 0, SERVER_ADMIN);
-        const menu = JSON.stringify(container);
-        assert.ok(menu.includes('/admin'), 'the landing directory must list /admin');
-        assert.ok(!menu.includes('SERVER ADMIN'), 'it must NOT get a heading of its own any more');
-        assert.ok(menu.includes('(server)'), '/admin must be marked as an admin command');
-        assert.ok(!menu.includes('Bot Admin'), 'Manage Server must NOT grant the bot-admin category');
-
-        const select = container.components.find(c => c.type === 1 && c.components?.[0]?.type === 3);
-        const preferences = select.components[0].options.find(o => o.label === 'Preferences');
-        assert.strictEqual(preferences.description, "Your preferences and your server's rules");
-        assert.strictEqual(preferences.emoji.name, 'ServerSettings', 'Preferences must swap to the ServerSettings emoji');
-
+        const home = await homeOf(help, SERVER_ADMIN);
+        assert.ok(home.includes('/admin'), 'the home page must list /admin');
+        assert.ok(!home.includes('/manage'), 'Manage Server must NOT grant the bot-admin pages');
         assert.ok((await help.getAllHelpCommandNames(SERVER_ADMIN)).includes('/admin'));
-    });
-});
-
-t('a plain member sees the ordinary Preferences emoji and description', async () => {
-    const help = require('../commands/help');
-    await withNoLoadouts(async () => {
-        const container = await help.buildContainer(null, 0, NOBODY);
-        const select = container.components.find(c => c.type === 1 && c.components?.[0]?.type === 3);
-        const preferences = select.components[0].options.find(o => o.label === 'Preferences');
-        assert.strictEqual(preferences.description, 'Your saved preferences');
-        assert.strictEqual(preferences.emoji.name, 'Settings');
+        assert.strictEqual(await help.resolvePage('/admin', SERVER_ADMIN), '/admin');
     });
 });
 
 // The two levels are independent, not a hierarchy: this is the case that would break if `requires` were ever collapsed back into one boolean.
-t('a bot admin sees the Bot Admin category without holding Manage Server', async () => {
+t('a bot admin sees the Bot Admin pages without holding Manage Server', async () => {
     const help = require('../commands/help');
     await withNoLoadouts(async () => {
-        const menu = JSON.stringify(await help.buildContainer(null, 0, BOT_ADMIN));
-        assert.ok(menu.includes('BOT ADMIN'), 'the landing directory must list the category');
-        assert.ok(menu.includes('/manage') && menu.includes('/bot analytics') && menu.includes('/bot access') && menu.includes('/autobuild'));
-        assert.ok(!menu.includes('/admin'), 'bot admin alone must NOT reveal the server-admin command');
-        const names = await help.getAllHelpCommandNames(BOT_ADMIN);
-        assert.ok(names.includes('/manage') && !names.includes('/admin'));
+        const names = await pageNames(help, BOT_ADMIN);
+        for (const n of ['/manage', '/bot analytics', '/bot access', '/autobuild']) assert.ok(names.includes(n), `missing ${n}`);
+        assert.ok(!names.includes('/admin'), 'bot admin alone must NOT reveal the server-admin command');
+        const all = await help.getAllHelpCommandNames(BOT_ADMIN);
+        assert.ok(all.includes('/manage') && !all.includes('/admin'));
     });
 });
 
-// CATEGORY_DEFS is now the single source for the dropdown, the landing directory and autocomplete, so a category can no longer be half-added to the LIST. What it can still be half-added to is the detail page: BODY_BUILDERS and DETAIL_HEADERS are separate objects keyed by the same strings, and a category present in the array but missing from either renders `undefined` as its heading or throws outright when someone picks it. Rendering every declared category is the cheapest check that covers both, and it needs no knowledge of either object's internals.
-t('every declared category renders a detail page', async () => {
+t('every page a full admin can open renders, in each of its views', async () => {
     const help = require('../commands/help');
+    const H = require('../utils/helpPages');
+    const ALL = { serverAdmin: true, botAdmin: true, manage: true, bot: true, botAccess: true, autobuild: true };
     await withNoLoadouts(async () => {
-        for (const category of help.CATEGORY_DEFS) {
-            const page = await help.buildContainer(category.key, 0, { serverAdmin: true, botAdmin: true, manage: true, bot: true, botAccess: true, autobuild: true });
-            const text = JSON.stringify(page);
-            assert.ok(!text.includes('undefined'), `${category.key} renders "undefined" -- it is missing from DETAIL_HEADERS or BODY_BUILDERS`);
-            assert.ok(text.includes(category.label) || text.includes(category.staticCommands[0].name), `${category.key} rendered no recognisable content`);
+        for (const name of help.visiblePageNames(ALL)) for (const view of H.hasTextView(name) ? ['text', 'slash'] : ['slash']) {
+            const text = JSON.stringify(await help.buildHelpMessage({ perms: ALL, client: {}, cmd: name, view }));
+            assert.ok(!text.includes('undefined'), `${name} ${view} renders "undefined"`);
+            assert.ok(text.includes(H.PAGE_NAMES[name]), `${name} ${view} rendered no title`);
         }
     });
 });
 
-t('a non-admin reaching a restricted page is returned to the directory, not refused', async () => {
+t('a non-admin reaching a restricted page is returned to the home page, not refused', async () => {
     const help = require('../commands/help');
     await withNoLoadouts(async () => {
-        const page = JSON.stringify(await help.buildContainer('botadmin', 0, NOBODY));
-        assert.ok(page.includes('GUNSMITH'), 'expected the landing directory');
-        assert.ok(!page.includes('/manage'), 'the restricted body must not render');
-    });
-});
-
-// The per-COMMAND gate is a different code path from the per-CATEGORY one, and its failure is quieter: Preferences renders either way, just with an extra line. Asserting on the body rather than the category is the only way to see it.
-t('a non-admin opening Preferences gets no /admin section in the body', async () => {
-    const help = require('../commands/help');
-    await withNoLoadouts(async () => {
-        const plain = JSON.stringify(await help.buildContainer('preferences', 0, NOBODY));
-        const admin = JSON.stringify(await help.buildContainer('preferences', 0, SERVER_ADMIN));
-        assert.ok(!plain.includes('/admin') && !plain.includes('Manage Server'), 'the /admin section must be absent');
-        assert.ok(admin.includes('/admin') && admin.includes('Manage Server'), 'the /admin section must be present for an admin');
+        assert.strictEqual(await help.resolvePage('/manage', NOBODY), null);
+        const page = JSON.stringify(await help.buildHelpMessage({ perms: NOBODY, client: {}, cmd: '/manage', view: 'slash' }));
+        assert.ok(page.includes("Dioreo's Commands"), 'expected the home page');
+        assert.ok(!page.includes('Manage Data'), 'the restricted page must not render');
     });
 });
 

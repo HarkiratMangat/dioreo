@@ -57,6 +57,8 @@ async function renderScopeBrowse(interaction, scope, flatIndex, { isUpdate = fal
     }
     const builds = await resolveScopeBuilds(scope);
     const firstOfWeapon = weaponKey ? builds.findIndex(b => b.weaponKey === weaponKey) : 0;
+    // An empty META list gets its own card, not an error (his ask and wording, B6, 2026-10-29 20:06-20:13 EDT): `d meta` and the All META row land here between a season's start and the first META build.
+    if (!builds.length && scope.metaOnly && !weaponKey) return sendV2Payload(interaction, emptyMetaCard(scope.mode), { flags: 32768 });
     if (!builds.length || firstOfWeapon === -1) {
         try {
             await interaction.followUp({ content: BOT_EMOJI.cross + (weaponKey ? ' That weapon no longer has any builds saved.' : ' That scope has no builds saved yet.'), ephemeral: true });
@@ -87,6 +89,29 @@ async function renderScopeBrowse(interaction, scope, flatIndex, { isUpdate = fal
     await sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
 }
 
+// The empty META card: the title, the pending line in italics, the footer, then Search builds (the card's own one-box search, gsb~search~<mode>) and Submit a Build (`-`: no weapon on screen, as on /help's footer).
+function emptyMetaCard(mode) {
+    return [{ type: 17, accent_color: getMpCategoryAccent(null), components: [
+        { type: 10, content: `## Meta — ${mode}` },
+        { type: 14, spacing: 1, divider: true },
+        { type: 10, content: '*The Meta list is pending an update. Check back soon.*' },
+        { type: 10, content: `-# ${mode} • Meta pending` },
+        { type: 14, spacing: 2, divider: true },
+        { type: 1, components: [
+            { type: 2, style: 2, label: 'Search builds', custom_id: `gsb~search~${mode}`, emoji: BOT_EMOJI.parseEmoji(BOT_EMOJI.gunsmithSearch) },
+            { type: 2, style: 1, label: 'Submit a Build', custom_id: `gsb~submit~${mode}~-`, emoji: BOT_EMOJI.parseEmoji(BOT_EMOJI.share) },
+        ] },
+    ] }];
+}
+
+// The first weapon by name with a real build (a "Coming Soon" placeholder is not one), optionally within one class. Null when there is none.
+async function firstWeaponKey(mode, category) {
+    const { isPlaceholderBuild } = require('../utils/loadoutRender');
+    const builds = await require('../models/Loadout').find({ mode, ...(category ? { category } : {}) }).lean();
+    const real = builds.filter(b => !isPlaceholderBuild(b)).sort((a, b) => a.weaponName.localeCompare(b.weaponName));
+    return real[0]?.weaponKey || null;
+}
+
 async function execute(interaction) {
     const mode = interaction.options.getSubcommand() === 'dmz' ? 'DMZ' : 'MP';
     const raw = interaction.options.getString('weapon');
@@ -100,6 +125,11 @@ async function execute(interaction) {
         const { searchModal } = require('../utils/loadoutLookup');
         return interaction.showModal(searchModal(mode, interaction.options.getString('visibility')));
     }
+    // A text command with no weapon, or only a class word (`d gunsmith`, `d gs smg`), opens the first weapon alphabetically that has a build, in the whole catalogue or in that class (the text-commands spec, his comment: "running a bare `d gunsmith` or something would just open the 1st alphabetic gun on the catalogue"). Only utils/textCommands/args.js sends `~first~<CATEGORY?>`; the slash command's options are unchanged.
+    if (raw.startsWith('~first~')) {
+        const first = await firstWeaponKey(mode, raw.slice(7) || null);
+        return require('../utils/loadoutLookup').lookupAndRenderWeapon(interaction, { mode, rawQuery: first || raw.slice(7) || 'weapon', requestedBuild: null, visibilityChoice: interaction.options.getString('visibility') });
+    }
     // The old `~cat~<CATEGORY>` rows (removed 2026-10-19 18:57 EDT) still resolve, for a suggestion list a client kept open.
     if (raw.startsWith('~cat~')) return renderScopeBrowse(interaction, { mode: 'MP', category: raw.slice(5), metaOnly: false }, 0);
     const { lookupAndRenderWeapon } = require('../utils/loadoutLookup');
@@ -111,4 +141,12 @@ async function execute(interaction) {
     });
 }
 
-module.exports = { data, execute, renderScopeBrowse };
+// What a text command's weapon words mean (2026-10-29 11:05 EDT): bot/textCommands.js reaches this through client.commands, never a require(), since bot/ is structural to the hotpatch planner. { hit, several, loose }, each weapon as { value, label }: value is what the weapon option takes (its weaponKey, or a no-build catalogue weapon's name, exactly as the dropdown sends them), so a weapon with no build opens the same No build yet card picking it in the dropdown does; label is its name, marked when it has no build.
+async function textWeapon(mode, text) {
+    const { weaponCandidates } = require('../utils/loadoutLookup');
+    const picked = require('../utils/search').pickWeapon(text, await weaponCandidates(mode));
+    const view = w => ({ value: String(w.weaponKey), label: `${w.weaponName}${w.noBuild ? ' · no build yet' : ''}` });
+    return { hit: picked.hit ? view(picked.hit) : null, several: picked.several.map(view), loose: picked.loose.map(view) };
+}
+
+module.exports = { data, execute, renderScopeBrowse, textWeapon, emptyMetaCard };

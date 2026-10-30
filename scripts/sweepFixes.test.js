@@ -16,29 +16,8 @@ function textLength(node) {
     return n;
 }
 
-// ── #1 the thumbnail cleanup ──────────────────────────────────────────────
-const { selectExpiredThumbnails, EXPIRY_DAYS } = require('../utils/cloudinaryCache');
 const DAY = 24 * 60 * 60 * 1000;
 const NOW = Date.UTC(2026, 9, 20);
-const asset = (id, ageDays) => ({
-    public_id: `temp_draws/${id}`,
-    secure_url: `https://res.cloudinary.com/demo/image/upload/v1/temp_draws/${id}.png`,
-    created_at: new Date(NOW - ageDays * DAY).toISOString()
-});
-
-check('an in-use thumbnail older than 45 days is KEPT, whatever URL form it was stored in', () => {
-    const assets = [asset('live', EXPIRY_DAYS + 15), asset('legacy', EXPIRY_DAYS + 15)];
-    const inUse = new Set([
-        'https://res.cloudinary.com/demo/image/upload/f_auto,q_auto/v1/temp_draws/live.png', // what cacheThumbnail stores today
-        'https://res.cloudinary.com/demo/image/upload/v1/temp_draws/legacy.png'               // a URL stored before the f_auto,q_auto convention
-    ]);
-    assert.deepStrictEqual(selectExpiredThumbnails(assets, inUse, NOW), []);
-});
-
-check('an unused thumbnail is deleted only once it is past 45 days', () => {
-    const assets = [asset('old', EXPIRY_DAYS + 1), asset('young', EXPIRY_DAYS - 1)];
-    assert.deepStrictEqual(selectExpiredThumbnails(assets, new Set([undefined, null]), NOW).map(a => a.public_id), ['temp_draws/old']);
-});
 
 // ── #4 /draws and the 4,000-character text cap ─────────────────────────────
 const draws = require('../commands/draws');

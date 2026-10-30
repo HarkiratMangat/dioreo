@@ -13,7 +13,33 @@ function recordCommandIds(ids) {
     for (const [name, id] of ids) allCommandIds.set(name, id);
 }
 
+// Inside a text command (bot/textCommands.js runs it with the request context's handler set to 'textCommands', and handlers/router.js marks its txtpriv_/txtrun_ buttons the same), a slash mention is plain text exactly where it is no use: text commands exist for the servers that hide slash commands, or list too many bots for Discord to show Dioreo's (text commands, B3, 2026-10-29). So a command with a text form is written as that form, `d draws` (`d dmz` for /gunsmith dmz), or `@Dioreo draws` where the app was not granted Message Content and the prefixes are off. A command with no text form (/admin, Dioreo Admin's commands) keeps its mention: it is still the only way to it. True while a text command (or one of its txtpriv_/txtrun_ buttons) is running, or while a click on a text command's reply is (handlers/router.js sets `textReply`; the spec's "Replies", B4 2026-10-29 10:32 EDT): the one test of it, so a page that words something differently for a typed command asks the same question mentionCommand does.
+function inTextCommand() {
+    const ctx = require('./requestContext').getContext();
+    return ctx?.handler === 'textCommands' || ctx?.textReply === true;
+}
+
+function textForm(client, clean) {
+    if (!inTextCommand()) return null;
+    const { TEXT_COMMANDS } = require('./textCommands/commands');
+    const hit = TEXT_COMMANDS.find(c => `${c.slash}${c.sub ? ` ${c.sub}` : ''}` === clean) || TEXT_COMMANDS.find(c => c.slash === clean);
+    if (!hit) return null;
+    // The first word in its list, never its name: gunsmith DMZ is named `gunsmith dmz` but typed `dmz` (`d gunsmith dmz` reads `dmz` as a weapon). The prefix is the one the person typed, or the server's own on a click (`textPrefix`, set by bot/textCommands.js and handlers/router.js; B7's fix-up, 2026-10-30 15:02 EDT): it was always `d`, which does not work in a server whose prefix replaced it, and his rule is that the example uses the prefix the person used.
+    const prefix = client?.textMessageContent === false ? '@Dioreo' : (require('./requestContext').getContext()?.textPrefix || 'd');
+    return `\`${prefix} ${hit.words[0]}\``;
+}
+
 function mentionCommand(client, path) {
+    const clean = path.replace(/^\//, '');
+    const text = textForm(client, clean);
+    if (text) return text;
+    const base = clean.split(' ')[0];
+    const id = client?.commandIds?.get(base) ?? allCommandIds.get(base);
+    return id ? `</${clean}:${id}>` : `\`/${clean}\``;
+}
+
+// The slash mention even inside a text command: /help's slash pages show slash names whatever opened them (B6, his rule 2026-10-29 20:45 EDT: a typed page names commands typed, a slash page keeps slash names).
+function slashMention(client, path) {
     const clean = path.replace(/^\//, '');
     const base = clean.split(' ')[0];
     const id = client?.commandIds?.get(base) ?? allCommandIds.get(base);
@@ -30,7 +56,7 @@ function recordCommandPaths(paths) {
 function linkCommandMentions(text, client = null) {
     const repointed = String(text).replace(/<\/([a-z0-9_-]+(?: [a-z0-9_-]+){0,2}):(\d{17,20})>/g, (whole, path) => {
         const id = client?.commandIds?.get(path.split(' ')[0]) ?? allCommandIds.get(path.split(' ')[0]);
-        return id && commandPaths.has(path) ? `</${path}:${id}>` : whole;
+        return id && commandPaths.has(path) ? mentionCommand(client, path) : whole;
     });
     return repointed.replace(/(^|[\s(*_>~|])\/([a-z0-9_-]+)((?: [a-z0-9_-]+){0,2})/gm, (whole, pre, base, rest) => {
         const words = [base, ...rest.trim().split(' ').filter(Boolean)];
@@ -43,4 +69,4 @@ function linkCommandMentions(text, client = null) {
     });
 }
 
-module.exports = { mentionCommand, recordCommandIds, recordCommandPaths, linkCommandMentions };
+module.exports = { mentionCommand, slashMention, recordCommandIds, recordCommandPaths, linkCommandMentions, inTextCommand };

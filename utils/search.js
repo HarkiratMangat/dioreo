@@ -166,5 +166,55 @@ function featuredWeapons(weapons, slots) {
     return classes.flatMap(c => byClass.get(c).filter(w => picked.has(w)).sort((a, b) => a.weaponName.localeCompare(b.weaponName)));
 }
 
-// CATEGORY_SEARCH_SYNONYMS and GENERIC_WEAPON_WORDS are exported for the site's /commands page (scripts/lib/commandsPage.js), whose weapon search ships this same table so it answers a class word the way the bot does.
-module.exports = { featuredWeapons, fuzzyMatch, normalizeForSearch, foldLookalikes, findWeaponMatches, resolveCategorySynonyms, categoryByExactAlias, isGenericWeaponQuery, typoDistance, isSameDrawTitle, CATEGORY_SEARCH_SYNONYMS, GENERIC_WEAPON_WORDS };
+// CATEGORY_SEARCH_SYNONYMS and GENERIC_WEAPON_WORDS are exported for the site's /commands page (scripts/lib/commandsPage.js), whose weapon search ships this same table so it answers a class word the way the bot does. THE WEAPON SOMEONE MEANT, for a path that ACTS on the answer instead of listing it: a text command (`d gs ak117`) and a /gunsmith name typed and sent without picking a suggestion (utils/loadoutLookup.js resolveWeapon). Harkirat, 2026-10-29 11:05 EDT: `lol` opening the KILO 141 "is a bit too loose ... if someone has typed '142' or 'kilo ar' or 'kilo lol' then sure". findWeaponMatches above is for the dropdown, where a person still chooses, so it matches FRAGMENTS: a substring anywhere, look-alikes across a word gap ("ki-LO 1" is "lol"), a typo against the first letters. Acting on its single result turned chat into builds (lol, op, real, bruh, pls all opened a weapon, measured 2026-10-29 11:05 EDT on the 68 real MP weapons) while missing "142" and "kilo ar". This matches WORDS:
+//   - the whole text IS a name or key, the same after look-alike folding (hso405 = HS0405), or the start of exactly one squashed name (dlq = DL Q33);
+//   - otherwise every typed word must fit its own word of the name: the same word, its start once 3+ letters are typed, a typo by text commands' own rule (utils/textCommands/parse.js isTypoOf, first letter fixed), or a number one digit off when it has 3+ digits (142 = 141; 1- and 2-digit numbers are too crowded, 19/14/12/10 are all weapons). A class word (ar, smg) narrows to that class: `kilo ar` is the AR Kilo.
+// Returns { hit, several, loose }: hit = the one weapon that fits; several = every typed word fit more than one weapon (a real weapon request, `kilo`: Did you mean); loose = no weapon fits by words but the dropdown's search finds these (offered, never run). Pure; candidates are { weaponName, weaponKey, category }.
+const squashAll = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+const wordsOf = s => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').replace(/([a-z])(?=\d)|(\d)(?=[a-z])/g, '$1$2 ').trim().split(/\s+/).filter(Boolean);
+function wordFits(typed, word) {
+    const typedNum = /^\d+$/.test(typed), wordNum = /^\d+$/.test(word);
+    if (typedNum !== wordNum) return false;
+    if (typed === word) return true;
+    if (typedNum) return typed.length >= 3 && typed.length === word.length && [...typed].filter((c, i) => c !== word[i]).length === 1;
+    if (typed.length <= 2) return false;
+    return word.startsWith(typed) || (typed.length >= 4 && require('./textCommands/parse').isTypoOf(typed, word));
+}
+function pickWeapon(query, candidates) {
+    const none = { hit: null, several: [], loose: [] };
+    const sq = squashAll(query);
+    if (sq.length < 2) return none;
+    const whole = candidates.filter(c => squashAll(c.weaponName) === sq || squashAll(c.weaponKey) === sq || foldLookalikes(c.weaponName) === foldLookalikes(query));
+    if (whole.length === 1) return { ...none, hit: whole[0] };
+    if (whole.length > 1) return { ...none, several: whole };
+    let words = wordsOf(query);
+    if (words.length === 1 && sq.length >= 3) {
+        const starts = candidates.filter(c => squashAll(c.weaponName).startsWith(sq));
+        if (starts.length === 1) return { ...none, hit: starts[0] };
+    }
+    let pool = candidates;
+    const classWord = words.length > 1 ? words.find(w => categoryByExactAlias(w) && !candidates.some(c => wordsOf(c.weaponName).includes(w))) : null;
+    if (classWord) {
+        pool = pool.filter(c => c.category === categoryByExactAlias(classWord));
+        words = words.filter(w => w !== classWord);
+    }
+    const fits = pool.filter(c => {
+        const names = wordsOf(c.weaponName);
+        const used = new Set();
+        return words.every(w => {
+            const i = names.findIndex((n, j) => !used.has(j) && wordFits(w, n));
+            if (i < 0) return false;
+            used.add(i);
+            return true;
+        });
+    });
+    if (fits.length === 1) return { ...none, hit: fits[0] };
+    if (fits.length > 1) {
+        // `m4` fits M4 and not XM4 already; this settles a name every typed word covers exactly (`type 19` beside a longer name with both words).
+        const exact = fits.filter(c => wordsOf(c.weaponName).length === words.length);
+        return exact.length === 1 ? { ...none, hit: exact[0] } : { ...none, several: fits };
+    }
+    return { ...none, loose: findWeaponMatches(query, candidates) };
+}
+
+module.exports = { pickWeapon, featuredWeapons, fuzzyMatch, normalizeForSearch, foldLookalikes, findWeaponMatches, resolveCategorySynonyms, categoryByExactAlias, isGenericWeaponQuery, typoDistance, isSameDrawTitle, CATEGORY_SEARCH_SYNONYMS, GENERIC_WEAPON_WORDS };

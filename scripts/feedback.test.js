@@ -51,34 +51,31 @@ check('the /help footer row: Announcements, Bugs & Suggestions and Submit a Buil
 });
 
 async function main() {
-    // The one-command dropdown: every option is a real command page, at most 25, and picking one shows only that command.
-    {
-        const help = require('../commands/help');
-        const perms = { manage: true, botAdmin: true, serverAdmin: true, owner: true, bot: true, botAccess: true };
-        const client = { application: { commands: { cache: new Map() } }, user: { id: '0' } };
-        const page = await help.buildContainer('utilities', 0, perms, client, '/colors', true);
-        const rows = page.components.filter(c => c.type === 1).map(r => r.components[0]);
-        const cmdSelect = rows.find(s => s.custom_id === 'help_command');
-        if (!cmdSelect || cmdSelect.options.length > 25 || cmdSelect.options.find(o => o.default)?.value !== '/colors') { failures++; console.error('  ✗ the one-command dropdown is missing, too long, or not set to /colors'); }
-        else console.log(`  ✓ the one-command dropdown: ${cmdSelect.options.length} commands, /colors selected`);
-        const blocks = page.components.filter(c => c.type === 10).map(c => c.content).join('\n');
-        if (/### `\/timestamp`/.test(blocks)) { failures++; console.error('  ✗ the /colors page still shows /timestamp'); }
-        else console.log('  ✓ the one-command page shows only that command');
-        if (!require('../handlers/help').OWNED_PREFIXES.includes('help_command')) { failures++; console.error('  ✗ handlers/help.js does not own help_command'); }
-    }
-    // Every /help page, with the footer row under it, as the most-privileged viewer sees it (the longest pages), stays inside Discord's 40 components.
+    // The command switcher (B6, 2026-10-30 00:15 EDT: one page per command): every option a real page, at most 25, the page shown selected, and handlers/help.js owning its ids.
     const help = require('../commands/help');
-    const count = (list) => { let n = 0; const walk = c => { n++; (c.components || []).forEach(walk); if (c.accessory) walk(c.accessory); }; list.forEach(walk); return n; };
-    const perms = { manage: true, botAdmin: true, serverAdmin: true, owner: true };
+    const H = require('../utils/helpPages');
+    const perms = { manage: true, botAdmin: true, serverAdmin: true, owner: true, bot: true, botAccess: true, autobuild: true };
     const client = { application: { commands: { cache: new Map() } }, user: { id: '0' } };
-    for (const key of [null, ...help.CATEGORY_DEFS.map(c => c.key)]) {
-        let msg;
-        try { msg = [await help.buildContainer(key, 0, perms, client, null), help.helpFooterRow()]; }
-        catch (e) { failures++; console.error(`  ✗ /help page ${key || 'landing'} would not build: ${e.message}`); continue; }
-        const n = count(msg);
-        if (n > 40) { failures++; console.error(`  ✗ /help page ${key || 'landing'} is ${n} components with the footer row`); }
-        else console.log(`  ✓ /help page ${key || 'landing'}: ${n} components with the footer row`);
+    {
+        const [card, switcher] = await help.buildHelpMessage({ perms, client, cmd: '/colors', view: 'slash' });
+        const select = switcher.components[0];
+        if (select.custom_id !== 'help_command' || select.options.length > 25 || select.options.find(o => o.default)?.value !== '/colors') { failures++; console.error('  ✗ the switcher is missing, too long, or not set to /colors'); }
+        else console.log(`  ✓ the switcher: ${select.options.length} options, /colors selected`);
+        if (JSON.stringify(card).includes('/timestamp')) { failures++; console.error('  ✗ the /colors page names /timestamp'); }
+        else console.log('  ✓ a page shows only its command');
+        const owned = require('../handlers/help').OWNED_PREFIXES;
+        if (!['help_command', 'help_view'].every(p => owned.includes(p))) { failures++; console.error('  ✗ handlers/help.js does not own help_command and help_view'); }
     }
+    // Every /help page, with the footer row under it, as the most-privileged viewer sees it, stays inside Discord's 40 components.
+    const count = (list) => { let n = 0; const walk = c => { n++; (c.components || []).forEach(walk); if (c.accessory) walk(c.accessory); }; list.forEach(walk); return n; };
+    for (const [cmd, view] of [[null, 'text'], [null, 'slash'], ...help.visiblePageNames(perms).flatMap(n => (H.hasTextView(n) ? [[n, 'text'], [n, 'slash']] : [[n, 'slash']]))]) {
+        let msg;
+        try { msg = [...await help.buildHelpMessage({ perms, client, cmd, view }), help.helpFooterRow()]; }
+        catch (e) { failures++; console.error(`  ✗ /help ${cmd || 'home'} ${view} would not build: ${e.message}`); continue; }
+        const n = count(msg);
+        if (n > 40) { failures++; console.error(`  ✗ /help ${cmd || 'home'} ${view} is ${n} components with the footer row`); }
+    }
+    console.log('  ✓ every /help page fits 40 components with the footer row');
     process.exit(failures ? 1 : 0);
 }
 main();

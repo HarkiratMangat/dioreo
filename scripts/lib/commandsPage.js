@@ -309,6 +309,9 @@ ${toneCss()}
   font-weight:800;letter-spacing:-.03em;line-height:1}
 .rx-sub{margin:.55rem 0 0;font-family:var(--serif);font-size:1.06rem;color:var(--ink2);max-width:62rem}
 .rx-sub em{font-style:italic;color:var(--ink)}
+.rx-also{margin:.45rem 0 0;font-size:.92rem;color:var(--ink2);max-width:62rem}
+.rx-also code{font-family:var(--mono);font-size:.9em;padding:.05rem .3rem;border-radius:4px;
+  background:color-mix(in srgb,var(--ink) 11%,transparent);color:var(--ink)}
 
 /* ── THE RAIL ────────────────────────────────────────────────────────────────── */
 .rx-rail{position:sticky;top:var(--bar-h,58px);z-index:30;margin:1.25rem 0 0;padding:.7rem 0 .6rem;
@@ -1606,6 +1609,9 @@ ${C.mobileNav(page, '')}
   <header class="rx-top">
     <h1 class="rx-h1">${esc(page.title)}</h1>
     <p class="rx-sub">${ledeHtml}</p>
+    <!-- Text commands (B3, 2026-10-29): every command on this page also runs from a message,
+         for a server that hides slash commands. /admin, the one that does not, is not listed here. -->
+    <p class="rx-also">Every command here also works typed in a message, as <code>@Dioreo today</code> or <code>d today</code>, for a server that hides slash commands.</p>
   </header>
 
   <div class="rx-find" role="search">

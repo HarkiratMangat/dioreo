@@ -4,10 +4,20 @@ const fs = require('fs');
 const path = require('path');
 
 // Buttons have a dedicated `emoji` field ({ id, name, animated }) — unlike Text Displays, a button's `label` is plain text only, so pasting a raw "<a:Name:123>" mention string into label just shows that literal text instead of rendering the emoji. This parses the mention strings above into the object shape ButtonBuilder/the raw API expects.
-function parseEmoji(mention) {
+//
+// ⚠️ A COMPONENT'S EMOJI MUST BE ONE THE BOOTED APP OWNS (B4, 2026-10-29 10:32 EDT, from the prod journal): Discord rejects the whole message with COMPONENT_INVALID_EMOJI when a button or a select option names an emoji id the app does not have, where a Text Display only shows the name. /help failed for everyone on prod that way, because DioreoCombo had been deleted from the prod app and refreshEmojiIds() keeps a missing name's hardcoded id. So once the app's emoji list is known, parseEmoji answers with that app's own copy BY NAME (as repoint() does), and a name the app lacks gets no emoji at all instead of a foreign id. Before the first sync (a script, a test, the first moments of boot) the mention is parsed as written. parseMention is the plain parse, for the sync itself.
+function parseMention(mention) {
     const match = mention.match(/^<(a)?:(\w+):(\d+)>$/);
     if (!match) return undefined;
     return { animated: !!match[1], name: match[2], id: match[3] };
+}
+function parseEmoji(mention) {
+    const parsed = parseMention(mention);
+    if (!parsed) return undefined;
+    const live = secondaryLiveByName.get(currentAppId()) || liveByName;
+    if (!live) return parsed;
+    const match = live.get(parsed.name);
+    return match ? { animated: Boolean(match.animated), name: match.name, id: match.id } : undefined;
 }
 
 // Every mention string below is written with the PRODUCTION app's emoji ids, which stay the literal source of truth in git. The NAMES must match the apps' emoji names, because refreshEmojiIds() re-points by name: twelve /manage emojis were renamed with a DB_ prefix by Harkirat (2026-10-18 11:59 EDT, names only, same images), which is why they read DB_* here. They are also the fallback if the sync below can't run.
@@ -174,7 +184,13 @@ const emojis = {
     dioreoTada: '<a:DioreoTada:1563677558589882510>',
     // The cooldown hourglass, for every cooldown or still-working message instead of the generic ⏳ (Harkirat, 2026-10-29 09:58 EDT).
     cooldown: '<a:Cooldown:1565362761821847712>',
-    // Brand set added 2026-10-29 09:58 EDT (Harkirat's list; prod ids, animated). Not used anywhere yet: ready for the panels and the site.
+    // The prefix command's reset line (Harkirat, 2026-10-30 16:55 EDT; prod id, his upload). Upload it to the dev apps through /manage emojis Sync, or it shows as text there.
+    broom: '<a:Broom:1565830760991039608>',
+    // B6 (2026-10-29): the help card's icon button, the Slash Command / Text Command switch on every /help page, and Dispute a Build. Prod ids, his uploads.
+    helpHint: '<a:HelpHint:1565419610323558542>',
+    command: '<a:Command:1565523050982801468>',
+    dispute: '<a:Dispute:1565521175990378566>',
+    // Brand set added 2026-10-29 09:51 EDT (Harkirat's list; prod ids, animated). Not used anywhere yet: ready for the panels and the site.
     dioreowrld: '<a:Dioreowrld:1565359502297923635>',
     dioreoSparkles: '<a:DioreoSparkles:1565359503262883900>',
     dioreoHeartFlyRed: '<a:DioreoHeartFlyRed:1565359504713973781>',
@@ -193,14 +209,15 @@ const emojis = {
     dioreoComboYellow: '<a:DioreoComboYellow:1565359723451121904>',
     dioreoComboGreen: '<a:DioreoComboGreen:1565359724956749914>',
     dioreoComboTeal: '<a:DioreoComboTeal:1565359726194327602>',
-    dioreoWorkmarkTeal: '<a:DioreoWorkmarkTeal:1565359727867855038>',
-    dioreoWorkmarkPeriwinkle: '<a:DioreoWorkmarkPeriwinkle:1565359729365090355>',
-    dioreoWorkmarkRose: '<a:DioreoWorkmarkRose:1565359731378360472>',
-    dioreoWorkmarkOrange: '<a:DioreoWorkmarkOrange:1565359732682924193>',
-    dioreoWorkmarkPurple: '<a:DioreoWorkmarkPurple:1565359734545055894>',
-    dioreoWorkmarkYellow: '<a:DioreoWorkmarkYellow:1565359736918909099>',
-    dioreoWorkmarkGreen: '<a:DioreoWorkmarkGreen:1565359738986692819>',
-    dioreoWorkmarkCoral: '<a:DioreoWorkmarkCoral:1565359740752494682>',
+    // Wordmark, not Workmark (Harkirat, 2026-10-29 10:14 EDT: "the dioreowordmark emojis say workmark instead of wordmark... rename those"); the ids do not change on a rename.
+    dioreoWordmarkTeal: '<a:DioreoWordmarkTeal:1565359727867855038>',
+    dioreoWordmarkPeriwinkle: '<a:DioreoWordmarkPeriwinkle:1565359729365090355>',
+    dioreoWordmarkRose: '<a:DioreoWordmarkRose:1565359731378360472>',
+    dioreoWordmarkOrange: '<a:DioreoWordmarkOrange:1565359732682924193>',
+    dioreoWordmarkPurple: '<a:DioreoWordmarkPurple:1565359734545055894>',
+    dioreoWordmarkYellow: '<a:DioreoWordmarkYellow:1565359736918909099>',
+    dioreoWordmarkGreen: '<a:DioreoWordmarkGreen:1565359738986692819>',
+    dioreoWordmarkCoral: '<a:DioreoWordmarkCoral:1565359740752494682>',
     // The Early Supporter badge's emoji (Harkirat, 2026-10-26 14:08 EDT: "only the emoji is created"; showing the badge on /settings is still deferred). On Dioreo, Dioreo (Dev) and Dioreo Admin (Dev) since 2026-10-26 14:37 EDT; prod Dioreo Admin gets it from the hourly sync once its token is on the VM. Not used yet.
     earlySupporter: '<a:EarlySupporter:1564347395222012005>',
     remind: '<a:Remind:1563677560431452180>',
@@ -299,7 +316,7 @@ async function refreshEmojiIds(client, { secondary = false } = {}) {
 
         for (const [key, value] of Object.entries(target)) {
             if (typeof value !== 'string') continue;
-            const parsed = parseEmoji(value);
+            const parsed = parseMention(value);
             if (!parsed) continue;
             const match = byName.get(parsed.name);
             if (!match) { result.missing.push(`${key} (:${parsed.name}:)`); continue; }
@@ -319,7 +336,7 @@ async function refreshEmojiIds(client, { secondary = false } = {}) {
             if (fs.existsSync(DEV_OVERRIDE_FILE)) {
                 const overrides = JSON.parse(fs.readFileSync(DEV_OVERRIDE_FILE, 'utf8'));
                 for (const [key, mention] of Object.entries(overrides)) {
-                    if (typeof mention !== 'string' || !parseEmoji(mention)) {
+                    if (typeof mention !== 'string' || !parseMention(mention)) {
                         console.warn(`⚠️  emojiMap.dev.json: "${key}" is not a valid emoji mention, ignored`);
                         continue;
                     }
@@ -347,7 +364,7 @@ function currentAppId() {
 
 // Re-points ONE stored mention at the booted app's own copy, matching on name, the same rule refreshEmojiIds applies to the map above. For a mention that lives in the database rather than in this file: a season emoji typed into /manage on prod carries prod's id, and the dev bot's clone of that data would show it as broken text. Unknown name, or before the first sync: the mention comes back unchanged.
 function repoint(mention) {
-    const parsed = typeof mention === 'string' ? parseEmoji(mention) : undefined;
+    const parsed = typeof mention === 'string' ? parseMention(mention) : undefined;
     const live = secondaryLiveByName.get(currentAppId()) || liveByName;
     const match = parsed && live?.get(parsed.name);
     return match ? `<${match.animated ? 'a' : ''}:${match.name}:${match.id}>` : mention;

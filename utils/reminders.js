@@ -200,13 +200,13 @@ function markFollowed(component, titles) {
 
 // ---------- The panel ----------
 
-// The entries a one-thing follow can pick from: what has not released yet (soonest first), and what is live with an end date (leaving first).
+// The entries a one-thing follow can pick from: what has not released yet (soonest first), and for "leaving", what is live with an end date (leaving first) THEN what has not released yet (soonest first), so a leaving reminder can be set before a thing is out (Harkirat, 2026-10-28 18:34 EDT: "what if i want to send a reminder for an item thats still to be released, and i want to pre-set the reminder for whenever its about to leave?", then "sure" to live first, upcoming after). An upcoming thing with no end date yet still counts: its reminder fires once the end is known and near. Every reader of the leaving list (the panel, its submit check, /remind's `leaving:` suggestions and typed values) goes through here.
 function followable(seasonalDoc, nowMs = Date.now()) {
     const { collectEntries } = require('../commands/today');
     const entries = collectEntries(seasonalDoc, nowMs);
     const releases = entries.filter(e => e.state === 'soon').sort((a, b) => a.startMs - b.startMs || a.title.localeCompare(b.title));
-    const leaving = entries.filter(e => e.state === 'live' && Number.isFinite(e.endMs)).sort((a, b) => a.endMs - b.endMs || a.title.localeCompare(b.title));
-    return { releases, leaving };
+    const live = entries.filter(e => e.state === 'live' && Number.isFinite(e.endMs)).sort((a, b) => a.endMs - b.endMs || a.title.localeCompare(b.title));
+    return { releases, leaving: [...live, ...releases] };
 }
 
 const MAX_OPTIONS = 25; // Discord's select-menu cap
@@ -242,8 +242,9 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
 
     const groups = [];
     const toggle = (c, label, emoji, on) => ({ type: 2, style: on ? 3 : 2, label, custom_id: `remind_cat:${c.key}:${ownerId}`, emoji: parseEmoji(emoji) });
-    // New season wears this season's emoji (seasonEmojiFor: the stored one, else season{N} by its title), the green dot only when there is none (Harkirat, 2026-10-25 01:26 EDT: "for the new season button, can you utilize this season's emoji").
-    const seasonIcon = require('./seasonEmoji').seasonEmojiFor(seasonalDoc?.currentSeasonTitle, seasonalDoc?.currentSeasonEmoji) || emojis.greenDotGlow;
+    // New season wears this season's emoji (seasonEmojiFor: the stored one, else season{N} by its title), the green dot only when there is none (Harkirat, 2026-10-25 01:26 EDT: "for the new season button, can you utilize this season's emoji"). ...and since 2026-10-28 18:16 EDT the UPCOMING season's emoji when there is one (his ask), since the button reminds about the NEXT season starting; the live season's otherwise.
+    const { upcomingSeasonEmoji, seasonEmojiFor } = require('./seasonEmoji');
+    const seasonIcon = upcomingSeasonEmoji(seasonalDoc) || seasonEmojiFor(seasonalDoc?.currentSeasonTitle, seasonalDoc?.currentSeasonEmoji) || emojis.greenDotGlow;
     const row = key => ({ type: 1, components: CATEGORIES.filter(c => c.group === key).map(c => toggle(c, c.short, c.key === 'newSeason' ? seasonIcon : emojis[c.emoji], cats.has(c.key))) });
     const on = leavingKeys(cats);
     // Draws, events & modes: a green-dot Going live row and a yellow-dot Leaving soon row of the same four kinds (option A, 2026-10-25 00:32 EDT), the yellow dot on every leaving button so the two rows differ at a glance.
@@ -268,7 +269,14 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
         }] };
     };
     const relRow = select('release', releases, `Pick from ${Math.min(releases.length, MAX_OPTIONS)} upcoming…`, e => `${e.kind} · releases ${optionTime(e.startMs, timeZone)}`);
-    const lvRow = select('leaving', leaving, `Pick from ${Math.min(leaving.length, MAX_OPTIONS)} live…`, e => `${e.kind} · ends ${optionTime(e.endMs, timeZone)}`);
+    // Live ones read "ends …"; upcoming ones "releases … · ends …" (or "end not set yet"), and the placeholder counts both within the 25 shown.
+    const lvShown = leaving.slice(0, MAX_OPTIONS);
+    const lvLive = lvShown.filter(e => e.state === 'live').length;
+    const lvUpcoming = lvShown.length - lvLive;
+    const lvPlaceholder = `Pick from ${[lvLive ? `${lvLive} live` : null, lvUpcoming ? `${lvUpcoming} upcoming` : null].filter(Boolean).join(', ')}…`;
+    const lvRow = select('leaving', leaving, lvPlaceholder, e => e.state === 'live'
+        ? `${e.kind} · ends ${optionTime(e.endMs, timeZone)}`
+        : `${e.kind} · releases ${optionTime(e.startMs, timeZone)} · ${Number.isFinite(e.endMs) ? `ends ${optionTime(e.endMs, timeZone)}` : 'end not set yet'}`);
 
     const foot = [];
     // A timezone search with several matches answers in a private message, never in the panel (Harkirat, 2026-10-25 01:19 EDT: "why not just a new ephemeral message?" … "yes").

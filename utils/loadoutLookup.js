@@ -25,14 +25,17 @@ async function resolveWeapon(mode, rawQuery) {
         }
     }
 
-    // Short/partial-query fallback (2026-07-18, v2 quick-wins batch) -- the exact weaponKey lookup above only reliably matches when the option came from an actual autocomplete pick, so a short/partial free-typed query (e.g. "loc") used to just fail with no explanation. Fuzzy- match the raw query against every candidate weapon's real name in this mode before giving up -- an unambiguous single match auto-resolves, 2+ matches asks the user to pick one instead of silently guessing which they meant.
+    // Short/partial-query fallback (2026-07-18, v2 quick-wins batch) -- the exact weaponKey lookup above only reliably matches when the option came from an actual autocomplete pick, so a short/partial free-typed query (e.g. "loc") used to just fail with no explanation. Fuzzy- match the raw query against every candidate weapon's real name in this mode before giving up -- an unambiguous single match auto-resolves, 2+ matches asks the user to pick one instead of silently guessing which they meant. A free-typed name opens a build only when utils/search.js pickWeapon is sure of the weapon (words, not fragments: 2026-10-29 11:05 EDT; a single fragment match used to open, so `lol` opened the KILO 141). Anything less is listed, never opened.
     if (!builds.length) {
-        const { findWeaponMatches } = require('./search');
+        const { pickWeapon } = require('./search');
         const allCandidates = await Loadout.find({ mode }).select('weaponKey weaponName category').lean();
         const uniqueCandidates = Array.from(new Map(allCandidates.map(w => [w.weaponKey, w])).values());
-        const fuzzyMatches = findWeaponMatches(rawQuery, uniqueCandidates);
-        if (fuzzyMatches.length === 1) builds = await Loadout.find({ weaponKey: fuzzyMatches[0].weaponKey, mode }).lean();
-        else if (fuzzyMatches.length > 1) return { ambiguous: fuzzyMatches.slice(0, 10).map(w => w.weaponName) };
+        const picked = pickWeapon(rawQuery, uniqueCandidates);
+        if (picked.hit) builds = await Loadout.find({ weaponKey: picked.hit.weaponKey, mode }).lean();
+        else {
+            const list = picked.several.length ? picked.several : picked.loose;
+            if (list.length) return { ambiguous: list.slice(0, 10).map(w => w.weaponName) };
+        }
     }
 
     // In build-number order (utils/loadoutForm.js compareBuilds, 2026-10-26 01:19 EDT), so "Build N of M" is the build # the Edit pop-up shows and a swap there swaps the cards. It was Mongo's natural order, about _id order, before.
@@ -143,4 +146,25 @@ function searchModal(mode, visibility = null) {
     };
 }
 
-module.exports = { lookupAndRenderWeapon, resolveWeapon, renderResolved, notFoundText, missingWeapons, missingWeaponsAll, formatMissingWeapons, searchModal };
+// Every weapon a typed name could mean, one row per weapon, from the same two places the /gunsmith dropdown reads (utils/autocomplete.js): the builds, a weapon whose only builds are "Coming Soon" placeholders marked noBuild, and for MP the CODM catalogue's weapons with no build at all. A catalogue weapon's weaponKey is its NAME, as the dropdown sends it, which resolveWeapon turns into the No build yet card. Text commands ask through commands/gunsmith.js textWeapon (2026-10-29 11:05 EDT).
+async function weaponCandidates(mode) {
+    const builds = await Loadout.find({ mode }).select('weaponName weaponKey category attachments').lean();
+    const byKey = new Map();
+    for (const b of builds) {
+        const prev = byKey.get(b.weaponKey);
+        const noBuild = isPlaceholderBuild(b);
+        byKey.set(b.weaponKey, prev ? { ...prev, noBuild: prev.noBuild && noBuild } : { weaponName: b.weaponName, weaponKey: b.weaponKey, category: b.category, noBuild });
+    }
+    const list = [...byKey.values()];
+    if (mode === 'MP') {
+        const { normKey } = require('./catalogue');
+        const CatalogueItem = require('../models/CatalogueItem');
+        const known = new Set(list.map(w => normKey(w.weaponName)));
+        for (const w of await CatalogueItem.find({ kind: 'weapon', dmzOnly: { $ne: true } }).select('name key category').lean()) {
+            if (!known.has(w.key || normKey(w.name))) list.push({ weaponName: w.name, weaponKey: w.name, category: w.category, noBuild: true });
+        }
+    }
+    return list;
+}
+
+module.exports = { weaponCandidates, lookupAndRenderWeapon, resolveWeapon, renderResolved, notFoundText, missingWeapons, missingWeaponsAll, formatMissingWeapons, searchModal };

@@ -37,6 +37,29 @@ check('handlers/router.js is a boundary, never a member', () => {
     assert.strictEqual(p.verdict, 'ALLOW');
 });
 
+// utils/autocomplete.js is the second boundary (2026-10-29): bot/textCommands.js calls it, and without the boundary every command an autocomplete answer reads became REFUSE_STRUCTURAL.
+check('utils/autocomplete.js is a boundary: commands/help.js stays hot-patchable', () => {
+    const p = planHotpatch({ files: ['commands/help.js'] });
+    assert.ok(!p.members.includes('utils/autocomplete.js'), 'autocomplete.js must be a boundary, not a closure member');
+    assert.strictEqual(p.verdict, 'ALLOW', JSON.stringify(p.escaped));
+});
+
+// A boundary is only sound while it resolves everything at call time.
+check('utils/autocomplete.js requires nothing at load time', () => {
+    const src = require('fs').readFileSync(require('path').join(__dirname, '..', 'utils', 'autocomplete.js'), 'utf8');
+    const head = src.slice(0, src.indexOf('async function runAutocomplete'));
+    assert.ok(!/require\(/.test(head.replace(/^\s*\/\/.*$/gm, '')), 'a top-level require would hold a stale reference across a hotpatch');
+});
+
+// A changed boundary needs a restart; it must never come back as an empty ALLOW.
+check('a changed boundary is refused, never an empty ALLOW', () => {
+    for (const f of ['handlers/router.js', 'utils/autocomplete.js']) {
+        const p = planHotpatch({ files: [f] });
+        assert.strictEqual(p.verdict, 'REFUSE_STRUCTURAL', f);
+        assert.deepStrictEqual(p.boundaries, [f]);
+    }
+});
+
 // A constant lookup table is not state. This is the false positive that must stay fixed.
 check('a never-mutated `new Set([...])` is not treated as state', () => {
     const p = planHotpatch({ files: ['utils/colorNames.js'] });

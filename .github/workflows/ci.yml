@@ -156,6 +156,13 @@ jobs:
           # A here-string, never `git diff | grep -q`: under pipefail, grep -q exits at its first match and the writer's SIGPIPE turns a found needle into a failure — the same flake self-check.test.sh had.
           # settings.json counts: the hook self-tests read it (self-check asserts every hook is registered there).
           if grep -Eq '^(\.claude/hooks/|\.claude/settings\.json$|scripts/hookOutputCap)' <<< "$changed"; then echo "hooks=true" >> "$GITHUB_OUTPUT"; else echo "hooks=false" >> "$GITHUB_OUTPUT"; fi
+          # A release bumps "version" in package.json and package-lock.json on every PR, and that alone changes nothing the walks read (Harkirat, 2026-10-29 10:18 EDT: "make the CI fix"), so either file is dropped from the list when its diff touches only "version" lines. Any other change to it (a dependency) still runs the walks.
+          for f in package.json package-lock.json; do
+            if grep -qx "$f" <<< "$changed"; then
+              lines=$(git diff --unified=0 "$base"...HEAD -- "$f" | grep -E '^[-+]' | grep -Ev '^(\+\+\+|---) ' || true)
+              if [ -n "$lines" ] && ! grep -Evq '^[-+][[:space:]]*"version": ' <<< "$lines"; then changed=$(grep -vx "$f" <<< "$changed" || true); fi
+            fi
+          done
           # What the browser walks read: portal/ (ui, harness, fixtures and the state/geometry registries), the mockup assets scripts/buildPortal.js copies (its BUILD_INPUTS, which scripts/buildPortalInputs.test.mjs keeps honest), the walk drivers and their helpers, the vendored packages through the lockfile, and the files that decide what runs (the manifest, the runner, this workflow). ⚠️ A NEW INPUT TO A WALK GOES HERE TOO, or a change to it passes CI without the walk that would have caught it.
           if grep -Eq '^(portal/|docs/superpowers/mockups/2026-08-23-portal-interactive/|scripts/(portal|buildPortal)|scripts/lib/(portal|walkJobs|chromePath)|package(-lock)?\.json$|scripts/test(Manifest|Runner)\.mjs$|\.github/workflows/ci\.yml$)' <<< "$changed"; then echo "browser=true" >> "$GITHUB_OUTPUT"; else echo "browser=false" >> "$GITHUB_OUTPUT"; fi
 

@@ -102,6 +102,19 @@ check('a "---" line is a drawn divider; blank lines stay in the text', () => {
     assert.strictEqual(c.components[0].content, 'a\n\nb');
     assert.strictEqual(c.components[1].divider, true);
 });
+check('layout marks: ---- ==== -- == draw their separators, ++ starts a new box, --- still works (his marks, 2026-10-30 16:34 EDT)', () => {
+    const c = buildAnnouncementContainer({ text: 'a\n----\nb\n====\nc\n--\nd\n==\ne\n++\nf\n---\ng', createdAt: new Date(0), color: 1 });
+    assert.deepStrictEqual(c.components.map(x => x.type), [10, 14, 10, 14, 10, 14, 10, 14, 10, 10, 14, 10]);
+    const seps = c.components.filter(x => x.type === 14).map(x => [x.divider, x.spacing]);
+    assert.deepStrictEqual(seps, [[true, 1], [true, 2], [false, 1], [false, 2], [true, 1]]);
+    assert.strictEqual(c.components[8].content, 'e');
+    assert.strictEqual(c.components[9].content, 'f', '++ puts f in its own box with nothing between');
+    assert.ok(!JSON.stringify(c).includes('++'), 'the mark itself is never shown');
+});
+check('a mark only counts on its own line: "-- like this" stays text', () => {
+    const c = buildAnnouncementContainer({ text: 'a -- b\n++ c', createdAt: new Date(0), color: 1 });
+    assert.deepStrictEqual(c.components.map(x => x.type), [10]);
+});
 check('the Why button only comes with a repeat showing, never a first one', () => {
     const a = { _id: 'a1' }, b = { _id: 'b2' };
     assert.strictEqual(whyRowNeeded([a], new Set()), false, 'first showing of a one-off or a repeating one');

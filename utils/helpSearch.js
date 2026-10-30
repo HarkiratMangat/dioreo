@@ -29,6 +29,8 @@ const WORDS = {
     '/bot analytics': ['stats', 'usage', 'health', 'uptime', 'errors', 'logs', 'analytics', 'alerts', 'changes'],
     '/bot access': ['admin', 'access', 'permission', 'grant', 'allowlist'],
     '/bot servers': ['server', 'reset', 'rules'],
+    '/bot penalties': ['spam', 'penalty', 'cooldown', 'block'],
+    '/bot freeze': ['pause', 'freeze', 'stop', 'kill'],
     '/bot hotpatch': ['update', 'reload', 'deploy', 'restart', 'code'],
     '/embed': ['embed', 'json', 'render', 'preview', 'design', 'components', 'test'],
     '/manage emojis': ['emoji', 'icon', 'sync', 'upload'],

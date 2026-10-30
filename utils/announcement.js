@@ -132,13 +132,23 @@ function announcementBody(doc) {
     return `${body}\n\n-# Posted <t:${postedTs}:R>`;
 }
 
-// One announcement as a Components V2 Container (2026-10-26 23:44 EDT, replacing the embed below as what is delivered). Its accent is the announcement's own colour. A line that is exactly `---` becomes a Separator with its divider line drawn; everything else stays text, blank lines included, so an announcement typed for the embed renders the same. The banner, when there is one, sits under the text as a Media Gallery, where the embed put its image.
+// One announcement as a Components V2 Container (2026-10-26 23:44 EDT, replacing the embed below as what is delivered). Its accent is the announcement's own colour. A line that is exactly `---` becomes a Separator with its divider line drawn; everything else stays text, blank lines included, so an announcement typed for the embed renders the same. The banner, when there is one, sits under the text as a Media Gallery, where the embed put its image. Layout marks, each a line on its own (Harkirat, 2026-10-30 16:34 EDT: "---- for divider:true small spacing, ==== for divider:true large spacing, -- for divider:false small spacing, == for divider:false small spacing, ++ for next text box"). He wrote `==` as small too; read as LARGE, since small with no line is already `--`. `---` stays a small divider, so announcements saved before this render the same. `++` starts a new Text Display with nothing between the boxes.
+const SEPARATOR_MARKS = {
+    '---': { divider: true, spacing: 1 },
+    '----': { divider: true, spacing: 1 },
+    '====': { divider: true, spacing: 2 },
+    '--': { divider: false, spacing: 1 },
+    '==': { divider: false, spacing: 2 },
+};
+
 function buildAnnouncementContainer(doc) {
     const components = [];
     let run = [];
     const flush = () => { const t = run.join('\n').trim(); if (t) components.push({ type: 10, content: t }); run = []; };
     for (const line of announcementBody(doc).split('\n')) {
-        if (line.trim() === '---') { flush(); components.push({ type: 14, divider: true, spacing: 1 }); }
+        const mark = line.trim();
+        if (mark === '++') flush();
+        else if (SEPARATOR_MARKS[mark]) { flush(); components.push({ type: 14, ...SEPARATOR_MARKS[mark] }); }
         else run.push(line);
     }
     flush();

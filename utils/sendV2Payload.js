@@ -37,6 +37,18 @@ async function sendV2Payload(interaction, components, { content = '', flags = 32
         if (!skipExpiry && messageId && hasInteractiveComponents(outgoing)) schedulePanelExpiry(interaction, messageId, outgoing, expiryMs);
     };
 
+    // TEXT COMMANDS (2026-10-28 17:24 EDT): an answer to a plain channel message has no interaction token. utils/textCommands/adapter.js writes it as a reply to that message, then edits it. The Show Everyone row is dropped too: the reply is public already, and the command only added the row because the member's /settings said Hidden, which a text command ignores.
+    if (interaction?.__dioreoText) {
+        const { SHARE_BUTTON_CUSTOM_ID } = require('./shareButton');
+        body.components = (body.components || []).filter(row =>
+            !(row?.type === 1 && (row.components || []).some(c => c?.custom_id === SHARE_BUTTON_CUSTOM_ID))
+        );
+        outgoing = body.components;
+        const response = await interaction.__textSend(body, options);
+        maybeSchedule(response?.id);
+        return response;
+    }
+
     // Not yet acknowledged: a click whose branch skipped deferUpdate(). It is acked HERE with deferUpdate() and the content then goes out by the PATCH below, always two trips (2026-10-27 20:48 EDT, Harkirat: the /draws arrows still blanked their emojis). This used to POST a type 7 UPDATE_MESSAGE as the one and only response, and that single trip is what makes Discord blank a re-rendered button's custom emoji (v2.60.0). Fixing it branch by branch left three branches on one trip (/draws' New/Returning switch and arrows, /settings' Hide/Show toggles), so the one trip is now gone at the choke point and no new branch can bring it back.
     if (!interaction.deferred && !interaction.replied) {
         await interaction.deferUpdate();

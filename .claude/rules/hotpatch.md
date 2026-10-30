@@ -24,11 +24,13 @@ The runtime cache only records requires that have actually **executed**, so the 
 
 ## `handlers/router.js` is the boundary — never let it become a member
 
-A **boundary** resolves its dependency at call time, not require time, so it never holds a stale reference and never needs reloading. Two exist:
-- `handlers/router.js` → the handler modules, via the `late()` accessors (Task 2, 2026-08-20 11:47 EDT) — a Map lookup on an already-cached `require()`, benchmarked at well under 2µs, not a disk read.
-- `handlers/router.js` → commands, via `interaction.client.commands` (a `Collection`, read per-interaction).
+A **boundary** resolves its dependency at call time, not require time, so it never holds a stale reference and never needs reloading. Two modules are boundaries:
+- `handlers/router.js` → the handler modules, via the `late()` accessors (Task 2, 2026-08-20 11:47 EDT) — a Map lookup on an already-cached `require()`, benchmarked at well under 2µs, not a disk read; and → commands, via `interaction.client.commands` (a `Collection`, read per-interaction).
+- `utils/autocomplete.js` (2026-10-29, text commands B2) — the router's autocomplete branch, moved out unchanged so `bot/textCommands.js` can ask the same lists. Every `require` in it sits inside `runAutocomplete` and it holds no state. Without the boundary, `bot/textCommands.js` (structural) reached `commands/help.js` through it and eight modules lost their hot swap (48 → 39 ALLOW). `scripts/hotpatch.test.js` fails if it gains a load-time `require`.
+- **A changed boundary is refused** (`REFUSE_STRUCTURAL`, listed in `plan.boundaries`): it is never reloaded, so only a restart picks it up. Until 2026-10-29 it fell through to an empty `ALLOW` and announced "Hotpatch applied · 0 module(s)" over the old file.
+- **`bot/textCommands.js` and `utils/textCommands/*` must not `require()` a command module**: `bot/` is structural, so the edge makes that command un-hot-patchable. They read one through `client.commands` instead (the `/timestamp` date check does).
 
-`BOUNDARIES` in `utils/hotpatch.js` is a `Set` containing exactly `'handlers/router.js'`. **Do not remove it or let a future refactor make router.js require a handler eagerly again** — that would drag `interactionCooldowns` and the router's own module state into every handler's closure, and the whole per-handler hot-swap story collapses.
+`BOUNDARIES` in `utils/hotpatch.js` is a `Set` containing `'handlers/router.js'` and `'utils/autocomplete.js'`. **Do not remove it or let a future refactor make router.js require a handler eagerly again** — that would drag `interactionCooldowns` and the router's own module state into every handler's closure, and the whole per-handler hot-swap story collapses.
 
 ## Why `index.js` / `bot/*` / `models/*` are permanently structural
 

@@ -2,7 +2,7 @@
 //
 // Per-GUILD (server) settings, set by that server's own admins via /admin. Distinct from models/UserPreference.js, which is per-USER and travels with the person across every server.
 //
-// This model holds a RESPONSE-VISIBILITY POLICY, not an access-control list, and the distinction is deliberate: the bot holds no moderation permission and, by root CLAUDE.md's hard invariant, never posts outside the interaction that triggered it (the guild install has asked for message permissions since 2026-10-20 10:15 EDT, for v4's text commands, but no code uses them), so it cannot delete a message or hide an invocation. The one thing it CAN enforce is whether its own response is public or ephemeral. Since the bot is slash-command-only, an ephemeral answer is a complete experience for the invoker while being invisible to everyone else -- which is why "blocked in this channel" means forced-ephemeral here rather than refused. Design + the rejected alternatives: docs/superpowers/specs/2026-08-10-server-admin-visibility-policy-design.md.
+// This model holds a RESPONSE-VISIBILITY POLICY, not an access-control list, and the distinction is deliberate: the bot holds no moderation permission and, by root CLAUDE.md's hard invariant, never posts outside the interaction that triggered it (the guild install has asked for message permissions since 2026-10-20 10:15 EDT, for v4's text commands, but no code uses them), so it cannot delete a message or hide an invocation. The one thing it CAN enforce is whether its own response is public or ephemeral. Since a slash command's ephemeral answer is a complete experience for the invoker while being invisible to everyone else -- which is why "blocked in this channel" means forced-ephemeral here rather than refused. Text commands (2026-10-28) cannot be private, so their control below is on/off instead. Design + the rejected alternatives: docs/superpowers/specs/2026-08-10-server-admin-visibility-policy-design.md.
 //
 // ⚠️ SCHEMA-SAVE GOTCHA (root CLAUDE.md, .claude/rules/models.md): Mongoose only persists fields declared here. Adding `doc.someNewField = x; await doc.save()` without declaring it works in memory and silently reverts on the next fetch. Declare the field in the SAME change.
 const mongoose = require('mongoose');
@@ -44,6 +44,27 @@ const guildSettingsSchema = new mongoose.Schema({
         channelRules: [{ _id: false, channelId: { type: String, required: true }, visibility: VISIBILITY }],
         roleRules: [{ _id: false, roleId: { type: String, required: true }, visibility: VISIBILITY, channelIds: { type: [String], default: [] } }],
     }],
+
+    // TEXT COMMANDS, PER SERVER (B7, 2026-10-30; Harkirat 2026-10-29 15:54 EDT: "admins need 2 controls, for slash commands and for text commands. text commands aren't private, so they're either a "turn off here or allow here" sort of system"). The SAME rule set as the visibility one above, so utils/guildPolicy.js resolves it with the same code and the same precedence, and 'public' here means ON, 'ephemeral' OFF. The shape is reused on purpose: the spec asks for "the same precedence model as /admin's visibility rules", and one resolver cannot drift from itself. Absent until an admin saves a text-command rule; absent means every text command is on.
+    textRules: {
+        type: new mongoose.Schema({
+            defaultVisibility: { type: VISIBILITY.type, enum: VISIBILITY.enum, default: 'public' },
+            channelRules: [{ _id: false, channelId: { type: String, required: true }, visibility: VISIBILITY }],
+            roleRules: [{ _id: false, roleId: { type: String, required: true }, visibility: VISIBILITY, channelIds: { type: [String], default: [] } }],
+            ephemeralCommands: { type: [String], default: [] },
+            commandSettings: [{
+                _id: false,
+                command: { type: String, required: true },
+                defaultVisibility: { type: VISIBILITY.type, enum: VISIBILITY.enum, default: 'ephemeral' },
+                channelRules: [{ _id: false, channelId: { type: String, required: true }, visibility: VISIBILITY }],
+                roleRules: [{ _id: false, roleId: { type: String, required: true }, visibility: VISIBILITY, channelIds: { type: [String], default: [] } }],
+            }],
+        }, { _id: false }),
+        default: undefined,
+    },
+
+    // The server's own text-command prefixes (B7; his ask 2026-10-29 12:40 EDT, "we still need to implement a per server prefix system"). Empty or absent means the bot-wide default (env TEXT_PREFIXES, `d,dior`). `@Dioreo` always works and is never stored here, and `/` is refused (B6 removed it: it belongs to the slash-command picker). Checked by utils/textCommands/server.js parsePrefixes before every save.
+    textPrefixes: { type: [String], default: undefined },
 
     // Last writer only -- enough for "who changed this", not a history. A real audit log is filed in docs/db-deferred-list.md to be built alongside the v3 /admin DB-change log rather than as a second, parallel logging mechanism.
     updatedBy: { type: String },
