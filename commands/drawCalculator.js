@@ -1681,8 +1681,7 @@ async function newCalculation(userId, basket, state = {}) {
         if (!basket.name) await basketStore.remove(userId, String(basket._id));
         return basketStore.save(userId, { banners: [], region: basket.region, previous });
     }
-    // `submitted: false` is what makes this "New Calculation" rather than "empty result" -- it returns the panel to the setup form.
-    // Any change marks the view dirty (handlers/drawCalc.js writeTo's rule, 2026-10-18 14:57 EDT).
+    // `submitted: false` is what makes this "New Calculation" rather than "empty result" -- it returns the panel to the setup form. Any change marks the view dirty (handlers/drawCalc.js writeTo's rule, 2026-10-18 14:57 EDT).
     state.dirty = true;
     return basketStore.save(userId, { _id: String(basket._id), banners: [], balance: 0, mythicCards: 0, mythicCoins: 0, currency: null, submitted: false, previous });
 }

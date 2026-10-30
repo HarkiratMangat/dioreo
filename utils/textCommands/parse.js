@@ -93,8 +93,7 @@ function parseTextCommand(content, { botId, botRoleId = null, prefixes = [], com
     const trigger = readTrigger(content, { botId, botRoleId, prefixes });
     if (!trigger) return { kind: null };
     const { via, rest, spaced } = trigger;
-    // Without Message Content a role mention arrives with no text at all (spike 2b, 2026-10-28 16:37 EDT), so the caller sees an empty rest.
-    // The role hint was dropped (his call, B6, 2026-10-29 15:00 EDT): the role is not pingable unless an admin makes it so, so a bare role mention is silent.
+    // Without Message Content a role mention arrives with no text at all (spike 2b, 2026-10-28 16:37 EDT), so the caller sees an empty rest. The role hint was dropped (his call, B6, 2026-10-29 15:00 EDT): the role is not pingable unless an admin makes it so, so a bare role mention is silent.
     if (via === 'role' && !rest) return { kind: null, via };
     const addressed = via === 'mention' || via === 'role';
     const tokens = rest.split(/\s+/).filter(Boolean);

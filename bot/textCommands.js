@@ -18,7 +18,9 @@ const CHANNEL_WINDOW_MS = 10_000;
 const CHANNEL_MAX_REPLIES = 5;
 // A whole server's replies (his call, B6, 2026-10-29 23:51 EDT: "okay" to 30): only a flood reaches it, and then Dioreo goes quiet. Same 10 s window as a channel's.
 const SERVER_MAX_REPLIES = 30;
-// The listener's own cards and lines that delete themselves (B6, his yes 2026-10-29 14:54-14:55 EDT; utils/textCommands/cardTimers.js).
+// The listener's own cards and lines that delete themselves (B6, his yes 2026-10-29 14:54-14:55 EDT; utils/textCommands/cardTimers.js). The listener's cards wear their command's accent (.claude/rules/rendering-and-ui.md's colour table).
+const HELP_ACCENT = 16743772;      // /help and /invite's coral, #FF7D5C
+const TIMESTAMP_ACCENT = 1548962;  // /timestamp's Cyber Teal, #17A2A2
 const CARD_TTL_MS = 10_000;
 const POPUP_TTL_MS = 5 * 60_000;
 const EDIT_WINDOW_MS = 60_000;
@@ -168,8 +170,6 @@ async function reply(message, body, { ttl = 0 } = {}) {
 }
 
 // THE LISTENER'S OWN CARDS look like the bot's other panels (Harkirat, 2026-10-29 11:20 EDT, on the plain `d timestamp` card: "why does this panel look so barebone?? ... i hope they're not all barebone like this"), and since B6 each is his layout (approved 2026-10-29 13:40-16:07 EDT): a title with a `-#` line, the command's own icon on its buttons, the command's accent (.claude/rules/rendering-and-ui.md's colour table: /help's coral for the help and Did you mean cards, /timestamp's teal for its cards). Emojis are read here, at send time (the emoji-capture rule).
-const HELP_ACCENT = 16743772;      // /help and /invite's coral, #FF7D5C
-const TIMESTAMP_ACCENT = 1548962;  // /timestamp's Cyber Teal, #17A2A2
 const card = (accent, components) => ({ flags: 32768, components: [{ type: 17, accent_color: accent, components }] });
 // A title beside one button, or a title over a row of them.
 const titled = (content, buttons) => (buttons.length === 1
