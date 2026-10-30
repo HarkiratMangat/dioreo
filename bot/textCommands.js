@@ -6,7 +6,7 @@
 //
 // ⚠️ Not covered by handlers/router.js's crash net: every listener here catches its own errors.
 const { PermissionFlagsBits, IntentsBitField, GatewayIntentBits, Routes } = require('discord.js');
-const { parseTextCommand } = require('../utils/textCommands/parse');
+const { parseTextCommand, readTrigger } = require('../utils/textCommands/parse');
 const { TEXT_COMMANDS, findTextCommand, toIdPart, moduleFor } = require('../utils/textCommands/commands');
 const { createTextInteraction, TextCommandRefused, runCustomId, encodePayload } = require('../utils/textCommands/adapter');
 const { textCommandAllowed } = require('../utils/textCommands/permissions');
@@ -16,18 +16,26 @@ const SAME_COMMAND_COOLDOWN_MS = 5000;
 const ANY_COMMAND_COOLDOWN_MS = 1000;
 const CHANNEL_WINDOW_MS = 10_000;
 const CHANNEL_MAX_REPLIES = 5;
+// A whole server's replies (his call, B6, 2026-10-29 23:51 EDT: "okay" to 30): only a flood reaches it, and then Dioreo goes quiet. Same 10 s window as a channel's.
+const SERVER_MAX_REPLIES = 30;
+// The listener's own cards and lines that delete themselves (B6, his yes 2026-10-29 14:54-14:55 EDT; utils/textCommands/cardTimers.js).
+const CARD_TTL_MS = 10_000;
+const POPUP_TTL_MS = 5 * 60_000;
 const EDIT_WINDOW_MS = 60_000;
-// Where Dioreo can't post, the member gets one DM per channel per day (Harkirat, 2026-10-28 17:18 EDT: "let's do 1 dm PER channel PER server, once per day"). Held in memory only: a restart forgets it, and nothing is stored.
+// Where Dioreo can't post, the member gets one DM per SERVER per day, and three a day in all (B6, his layout and limits 2026-10-29 15:45-15:49 EDT; it was one per channel per day, his 2026-10-28 17:18 EDT call). Held in memory only: a restart forgets it, and nothing is stored.
 const CANT_POST_DM_MS = 24 * 60 * 60 * 1000;
+const CANT_POST_DMS_PER_DAY = 3;
 
 const lastByUser = new Map();
 const channelHits = new Map();
+const serverHits = new Map();
 const answered = new Map();
 const cantPostDms = new Map();
 
 // The prefixes come from the environment so the dev bot can use its own: prod and dev are both in Dioreoland and would otherwise both answer `d today` (think-pass, 2026-10-28 16:44 EDT). .env.dev sets TEXT_PREFIXES=dd,diordev.
 function configuredPrefixes(env = process.env) {
-    const raw = env.TEXT_PREFIXES === undefined ? '/,d,dior' : env.TEXT_PREFIXES;
+    // `/` was a prefix until B6 (his call, 2026-10-29): it collides with the slash-command picker.
+    const raw = env.TEXT_PREFIXES === undefined ? 'd,dior' : env.TEXT_PREFIXES;
     return raw.split(',').map(p => p.trim()).filter(Boolean);
 }
 
@@ -57,16 +65,17 @@ function canPost(message) {
     return message.channel.isThread?.() ? perms.has(PermissionFlagsBits.SendMessagesInThreads) : perms.has(PermissionFlagsBits.SendMessages);
 }
 
-// Returns null (go ahead), 'silent', or { warnUntil } for the same command too soon. `lastByUser` holds the person's last command and when; `warned` remembers one warning per cooldown, so a burst of repeats gets one countdown, not one each.
+// Returns null (go ahead), 'silent', or { warnUntil } for the same command too soon. `lastByUser` holds the person's last command and when; `warned` remembers one warning per cooldown, so a burst of repeats gets one countdown, not one each. Only a real command earns the countdown (B6, his call 2026-10-29 15:06 EDT): a second help card, emoji or Did you mean within 5 s is silent.
 const warned = new Map();
 function rateLimited(message, verdict) {
     const now = Date.now();
     const key = verdict.command || verdict.kind;
+    const real = verdict.kind === 'run' || verdict.kind === 'needsInput';
     const last = lastByUser.get(message.author.id);
     if (last) {
         if (last.key === key && now - last.at < SAME_COMMAND_COOLDOWN_MS) {
             const until = last.at + SAME_COMMAND_COOLDOWN_MS;
-            if (warned.get(message.author.id) === last.at) return 'silent';
+            if (!real || warned.get(message.author.id) === last.at) return 'silent';
             warned.set(message.author.id, last.at);
             return { warnUntil: until, key };
         }
@@ -74,70 +83,135 @@ function rateLimited(message, verdict) {
     }
     const hits = (channelHits.get(message.channelId) || []).filter(t => now - t < CHANNEL_WINDOW_MS);
     if (hits.length >= CHANNEL_MAX_REPLIES) return 'silent';
+    const inServer = (serverHits.get(message.guildId) || []).filter(t => now - t < CHANNEL_WINDOW_MS);
+    if (inServer.length >= SERVER_MAX_REPLIES) return 'silent';
     hits.push(now);
+    inServer.push(now);
     channelHits.set(message.channelId, hits);
+    serverHits.set(message.guildId, inServer);
     lastByUser.set(message.author.id, { key, at: now });
     return null;
 }
 
-// The countdown is Discord's own relative timestamp (`<t:…:R>`, "in 4 seconds"), which every client counts down live; the warning deletes itself when the wait is over. A bot may always delete its own message.
-async function warnCooldown(message, { warnUntil, key }) {
+// How a person reached Dioreo, as they would type it again: `d`, `dior`, or `@Dioreo` (B6: every card's examples use the prefix the person used).
+const prefixShown = via => (via === 'mention' || via === 'role' ? '@Dioreo' : via);
+// What they typed after the prefix, cleaned for a code span and kept short.
+const shownText = text => String(text || '').replace(/[`*_~|]/g, '').replace(/\s+/g, ' ').trim().slice(0, 40);
+const typedAs = (via, rest) => `${prefixShown(via)} ${shownText(rest)}`.trim();
+
+// Deletes a message of Dioreo's own, quietly (a bot may always delete its own message).
+const deleteLater = (client, channelId, messageId) => () => client.rest.delete(Routes.channelMessage(channelId, messageId)).catch(() => {});
+
+// The countdown is Discord's own relative timestamp (`<t:…:R>`, "in 4 seconds"), which every client counts down live; the note deletes itself when the wait is over. His wording (B6, 2026-10-29 15:06 EDT): the command as the person typed it, in small text.
+async function warnCooldown(message, { warnUntil }, typed) {
     if (!canPost(message)) return;
     const unix = Math.ceil(warnUntil / 1000);
     const created = await message.client.rest.post(Routes.channelMessages(message.channelId), {
         body: {
-            content: `${require('../utils/emojiMap').cooldown} You can run \`${key}\` again <t:${unix}:R>.`,
+            content: `-# ${require('../utils/emojiMap').cooldown} Slow down! Try \`${typed}\` again <t:${unix}:R>`,
             allowed_mentions: { parse: [], replied_user: false },
             message_reference: { message_id: message.id, fail_if_not_exists: false },
         },
     }).catch(() => null);
     if (!created?.id) return;
-    setTimeout(() => {
-        message.client.rest.delete(Routes.channelMessage(message.channelId, created.id)).catch(() => {});
-    }, Math.max(1000, warnUntil - Date.now() + 500)).unref?.();
+    setTimeout(deleteLater(message.client, message.channelId, created.id), Math.max(1000, warnUntil - Date.now() + 500)).unref?.();
 }
 
-async function dmCantPost(message) {
-    const key = `${message.author.id}:${message.channelId}`;
-    if (Date.now() - (cantPostDms.get(key) || 0) < CANT_POST_DM_MS) return;
-    cantPostDms.set(key, Date.now());
-    const where = message.guild?.name ? ` in **${message.guild.name}**` : '';
-    await message.author.send({
-        content: `I can't post in <#${message.channelId}>${where}. Ask a server admin to let me send messages there, or try another channel.`,
-        allowedMentions: { parse: [] },
-    }).catch(() => { /* their DMs are closed; nothing else can reach them */ });
+// Text channels where BOTH Dioreo and this member can view and send (so no hidden channel is ever named), in the server's own order, the current one left out.
+function postableChannels(message) {
+    const me = message.guild?.members?.me;
+    const member = message.member;
+    if (!me || !member) return [];
+    const can = (channel, who) => {
+        const perms = channel.permissionsFor?.(who);
+        return Boolean(perms?.has(PermissionFlagsBits.ViewChannel) && perms.has(PermissionFlagsBits.SendMessages));
+    };
+    return [...(message.guild.channels?.cache?.values?.() || [])]
+        .filter(c => c.type === 0 && c.id !== message.channelId && can(c, me) && can(c, member))
+        .sort((a, b) => (a.rawPosition ?? a.position ?? 0) - (b.rawPosition ?? b.position ?? 0));
 }
 
-async function reply(message, body) {
+// #9, his layout take 3 (B6, 2026-10-29 15:49 EDT): what failed and where, what they typed and the fix in one line, then up to 10 channels that would work (then +N more).
+function cantPostCard(message, typed) {
+    const emojis = require('../utils/emojiMap');
+    const server = message.guild?.name ? ` · ${message.guild.name.replace(/[`*_~|]/g, '')}` : '';
+    const components = [{ type: 10, content: `### ${emojis.cross} I can't post in <#${message.channelId}>${server}\n-# **You typed \`${typed}\`** · Ask a server admin to let me send messages there.` }];
+    const channels = postableChannels(message);
+    if (channels.length) {
+        const shown = channels.slice(0, 10).map(c => `<#${c.id}>`).join(' · ');
+        const more = channels.length > 10 ? ` · +${channels.length - 10} more` : '';
+        components.push({ type: 14, spacing: 1, divider: true }, { type: 10, content: `Or try again in these channels:\n-# ${shown}${more}` });
+    }
+    return { flags: 32768, components: [{ type: 17, accent_color: HELP_ACCENT, components }] };
+}
+
+async function dmCantPost(message, typed) {
+    const now = Date.now();
+    const key = `${message.author.id}:${message.guildId}`;
+    if (now - (cantPostDms.get(key) || 0) < CANT_POST_DM_MS) return;
+    const today = [...cantPostDms].filter(([k, t]) => k.startsWith(`${message.author.id}:`) && now - t < CANT_POST_DM_MS).length;
+    if (today >= CANT_POST_DMS_PER_DAY) return;
+    cantPostDms.set(key, now);
+    await message.author.send({ ...cantPostCard(message, typed), allowedMentions: { parse: [] } })
+        .catch(() => { /* their DMs are closed; nothing else can reach them */ });
+}
+
+// Returns the message Dioreo posted (null if it could not); `ttl` makes it delete itself unless someone presses it first.
+async function reply(message, body, { ttl = 0 } = {}) {
     const plain = { allowed_mentions: { parse: [], replied_user: false }, ...body };
     const route = Routes.channelMessages(message.channelId);
     // Without Read Message History a reply is refused (50013); the same text goes out as a plain message instead.
-    await message.client.rest.post(route, { body: { ...plain, message_reference: { message_id: message.id, fail_if_not_exists: false } } })
+    const created = await message.client.rest.post(route, { body: { ...plain, message_reference: { message_id: message.id, fail_if_not_exists: false } } })
         .catch(err => { if (err?.code !== 50013) throw err; return message.client.rest.post(route, { body: plain }); });
+    if (ttl && created?.id) require('../utils/textCommands/cardTimers').schedule(created.id, ttl, deleteLater(message.client, message.channelId, created.id));
+    return created || null;
 }
 
-function formsFor(client) {
-    return client.textMessageContent ? '`@Dioreo today` · `d today` · `dior today` · `/today`' : '`@Dioreo today`';
-}
-
-// THE LISTENER'S OWN CARDS look like the bot's other panels (Harkirat, 2026-10-29 11:20 EDT, on the plain `d timestamp` card: "why does this panel look so barebone?? ... i hope they're not all barebone like this"): a `##` title with the command's own animated icon, its accent colour, a `-#` hint, and the icon on the main button. Every command's real answer was always its full panel; only these cards, built here, were one bare line. The accents are the commands' own (.claude/rules/rendering-and-ui.md's colour table): /help's coral for the help and Did you mean cards, /timestamp's teal for its card. Emojis are read here, at send time (the emoji-capture rule).
+// THE LISTENER'S OWN CARDS look like the bot's other panels (Harkirat, 2026-10-29 11:20 EDT, on the plain `d timestamp` card: "why does this panel look so barebone?? ... i hope they're not all barebone like this"), and since B6 each is his layout (approved 2026-10-29 13:40-16:07 EDT): a title with a `-#` line, the command's own icon on its buttons, the command's accent (.claude/rules/rendering-and-ui.md's colour table: /help's coral for the help and Did you mean cards, /timestamp's teal for its cards). Emojis are read here, at send time (the emoji-capture rule).
 const HELP_ACCENT = 16743772;      // /help and /invite's coral, #FF7D5C
 const TIMESTAMP_ACCENT = 1548962;  // /timestamp's Cyber Teal, #17A2A2
-function card(accent, content, rows = []) {
-    return { flags: 32768, components: [{ type: 17, accent_color: accent, components: [{ type: 10, content }, ...rows] }] };
-}
+const card = (accent, components) => ({ flags: 32768, components: [{ type: 17, accent_color: accent, components }] });
+// A title beside one button, or a title over a row of them.
+const titled = (content, buttons) => (buttons.length === 1
+    ? [{ type: 9, components: [{ type: 10, content }], accessory: buttons[0] }]
+    : [{ type: 10, content }, { type: 1, components: buttons.slice(0, 5) }]);
+const code = list => list.map(w => `\`${w}\``).join(' · ');
+// `a`, `b` or `c`
+const orList = names => names.map(n => `\`${n}\``).reduce((out, n, i, all) => (i === 0 ? n : i === all.length - 1 ? `${out} or ${n}` : `${out}, ${n}`), '');
 
+// #1, the help card (his layout, take 3, approved 2026-10-29 13:40 EDT): the prefixes under the title, the four groups in short words, examples and the slash /help underneath. The icon beside the title opens /help privately for whoever taps it (his "private is fine", 2026-10-29 23:51 EDT); the card never deletes itself. Without Message Content only `@Dioreo` works, so only it is shown.
+const HELP_GROUPS = [['gunsmithSearch', 'Gunsmith', ['gunsmith', 'dmz']], ['newDraws', 'Draws', ['draws', 'prices', 'calculator']], ['calendar', 'Season', ['today', 'calendar', 'remind', 'patch notes', 'end']], ['eyedropper', 'Utilities', ['timestamp', 'colors', 'settings', 'invite', 'help']]];
 function helpCard(client) {
     const emojis = require('../utils/emojiMap');
-    const list = TEXT_COMMANDS.filter(c => c.name !== 'help').map(c => `\`${c.name}\``).join(' · ');
-    return card(HELP_ACCENT, `## ${emojis.dioreoCombo} Text commands\nStart a message with ${formsFor(client)}, then a command:\n${list}\n-# Slash commands work too, where this server shows them.`);
+    const words = client.textMessageContent ? ['@Dioreo', ...configuredPrefixes()] : ['@Dioreo'];
+    const ex = client.textMessageContent ? configuredPrefixes()[0] || '@Dioreo' : '@Dioreo';
+    const bold = words.map(w => `**\`${w}\`**`);
+    const prefixLine = bold.length > 1 ? `${bold.slice(0, -1).join(', ')} or ${bold[bold.length - 1]}` : bold[0];
+    const icon = emojis.parseEmoji(emojis.helpHint);
+    // An emoji-only button needs its emoji on the booted app; without it, a label.
+    const open = { type: 2, style: 2, custom_id: runCustomId('txtpriv_', findTextCommand('help')), ...(icon ? { emoji: icon } : { label: 'Help' }) };
+    const helpId = client.commandIds?.get?.('help');
+    return card(HELP_ACCENT, [
+        { type: 9, components: [{ type: 10, content: `## ${emojis.dioreowrld} Need help?\n-# Prefix: ${prefixLine}` }], accessory: open },
+        { type: 14, spacing: 1, divider: true },
+        ...HELP_GROUPS.map(([key, label, list]) => ({ type: 10, content: `${emojis[key]} **${label}:** ${code(list)}` })),
+        { type: 10, content: `-# e.g. ${code([`${ex} draws`, `${ex} gs ak117`, `${ex} help calc`])}\n-# Or use **slash commands** ${helpId ? `</help:${helpId}>` : '`/help`'}` },
+    ]);
 }
 
-// The pick buttons under a Did you mean card: grey, as on every other picker.
-const pickRow = buttons => ({ type: 1, components: buttons.slice(0, 5) });
-function didYouMeanCard(names) {
+// A grey pick button with the command's (or the weapon's) icon, where the booted app has it.
+function pickButton(label, customId, iconKey) {
     const emojis = require('../utils/emojiMap');
-    return card(HELP_ACCENT, `### ${emojis.search} Did you mean…\n-# Tap one to run it.`, [pickRow(names.map(name => ({ type: 2, style: 2, label: name, custom_id: `txtrun_${toIdPart(name)}` })))]);
+    const emoji = iconKey ? emojis.parseEmoji(emojis[iconKey]) : undefined;
+    return { type: 2, style: 2, label: String(label).slice(0, 80), custom_id: customId, ...(emoji ? { emoji } : {}) };
+}
+
+// #2, Did you mean for commands (his wording, B6, 2026-10-29 13:52 EDT): `Did you mean \`a\` or \`b\`?` over what they typed; one match sits beside its button, several get a row. Deletes itself 10 s after it is posted unless pressed.
+function didYouMeanCard(names, typed) {
+    const emojis = require('../utils/emojiMap');
+    const list = names.slice(0, 5);
+    const buttons = list.map(name => pickButton(name, `txtrun_${toIdPart(name)}`, findTextCommand(name)?.icon));
+    return card(HELP_ACCENT, titled(`### ${emojis.search} Did you mean ${orList(list)}?\n-# You typed \`${shownText(typed)}\``, buttons));
 }
 
 // The emoji a chatty mention gets (Harkirat, 2026-10-28 17:04 EDT: "have it just reply to the message with an emoji"). Since 2026-10-29 10:12 EDT it is one of his 24 brand emojis, picked at random ("adjust the randomness so it actually showcases a variety of emojis instead of showing the same ones again and again"): a shuffled deck, dealt without repeats until every emoji has shown once, then reshuffled so the new deck never opens with the one just shown. Read by name from the app at reply time, so a name the app lacks is skipped; with none, 👋. The deck lives in memory: a restart starts a new one.
@@ -311,11 +385,13 @@ async function runTextCommand(message, verdict) {
             require('../utils/userStats').noteOwnCommandSafely(interaction);
         } catch (err) {
             ctx.outcome = 'error';
+            // A command that opens a form first cannot from a message: unreachable today (every such path has a text form), kept as a guard. The crash line is his #12 (B6, 2026-10-29 16:05 EDT): the Warn sign, the command as typed, gone after 10 s.
             const text = err instanceof TextCommandRefused
                 ? `That one opens a form, so it needs the slash command: \`/${textCommand.slash}${textCommand.sub ? ` ${textCommand.sub}` : ''}\`.`
-                : 'Something went wrong running that. Try again in a moment.';
+                : `${require('../utils/emojiMap').warn} Something went wrong running \`${verdict.typed || textCommand.name}\`. Try again in a moment.`;
             if (!(err instanceof TextCommandRefused)) console.error(`Text command ${textCommand.name} failed:`, err);
-            await interaction.editReply({ content: text }).catch(() => {});
+            const sent = await interaction.editReply({ content: text }).catch(() => null);
+            if (sent && !(err instanceof TextCommandRefused)) setTimeout(() => { interaction.deleteReply().catch(() => {}); }, CARD_TTL_MS).unref?.();
         } finally {
             recordInteractionEvent(interaction, ctx, message.author.id);
             logTextTiming(message, textCommand, t, interaction);
@@ -323,25 +399,35 @@ async function runTextCommand(message, verdict) {
     });
 }
 
-function noMatchLine(text, option) {
-    const shown = String(text || '').replace(/[`*_~|]/g, '').slice(0, 60);
+// The plain No match line (his pick, B6, 2026-10-29 14:31 EDT); it deletes itself after 10 s.
+function noMatchLine(text) {
     const { cross } = require('../utils/emojiMap');
-    return { content: option === 'datetime' ? `${cross} Couldn't read “${shown}” as a date or time.` : `${cross} No match for “${shown}”.` };
+    return { content: `${cross} No match for “${shownText(text)}”.` };
 }
 
-// `d timestamp` alone: the date is the one required option, so a card whose button opens the timestamp pop-up (a click is an interaction, so showModal works there; handlers/textCommands.js).
+// #4, the timestamp cards (his text, B6, 2026-10-29 14:49 EDT), in /timestamp's teal, the blurple button beside the title opening the pop-up. Case 1: no date at all (`d time`). Case 2: a date that did not read (`@Dioreo time to sleep`). Both delete themselves after 10 s unless pressed.
+function timestampCard(textCommand, title, label) {
+    const emojis = require('../utils/emojiMap');
+    const icon = emojis.parseEmoji(emojis.timestamp);
+    return card(TIMESTAMP_ACCENT, [{ type: 9, components: [{ type: 10, content: title }], accessory: { type: 2, style: 1, label, custom_id: runCustomId('txtrun_', textCommand, 'open'), ...(icon ? { emoji: icon } : {}) } }]);
+}
 function needsInputCard(textCommand, via) {
-    const emojis = require('../utils/emojiMap');
-    const typed = via === 'mention' || via === 'role' ? `@Dioreo ${textCommand.name} tomorrow 8pm` : via === '/' ? `/${textCommand.name} tomorrow 8pm` : `${via} ${textCommand.name} tomorrow 8pm`;
-    return card(TIMESTAMP_ACCENT, `## ${emojis.timestamp} Timestamp\nWhat date and time? Pick it below, or type it after the command: \`${typed}\`\n-# Everyone sees the result in their own time zone.`, [
-        { type: 1, components: [{ type: 2, style: 1, label: 'Pick a date and time', emoji: emojis.parseEmoji(emojis.timestamp), custom_id: runCustomId('txtrun_', textCommand, 'open') }] },
-    ]);
+    const { timestamp } = require('../utils/emojiMap');
+    const p = prefixShown(via);
+    return timestampCard(textCommand, `### ${timestamp} What date or time?\n-# e.g: \`${p} time in 2 days\` · \`${p} time fri 6pm\`\n-# Confused? \`${p} help timestamp\``, 'Pick date & time');
+}
+function couldntReadCard(textCommand, via, text) {
+    const { cross } = require('../utils/emojiMap');
+    const p = prefixShown(via);
+    return timestampCard(textCommand, `### ${cross} Couldn't read \`${shownText(text)}\`\n-# Try a date or time: \`${p} time 6 month 7day\` · \`${p} ts fri 6pm\``, 'Try again');
 }
 
-// Several weapons or seasons matched after `@Dioreo`: Did you mean, each button carrying the value it runs.
-function pickCard(textCommand, choices) {
+// #3, Did you mean for weapons and seasons: #2's card, each button carrying the value it runs, with the command's icon.
+function pickCard(textCommand, choices, typed) {
     const emojis = require('../utils/emojiMap');
-    return card(HELP_ACCENT, `### ${emojis.search} Did you mean…\n-# Tap one to open it.`, [pickRow(choices.map(c => ({ type: 2, style: 2, label: c.label.slice(0, 80), custom_id: runCustomId('txtrun_', textCommand, encodePayload({ values: c.values })) })))]);
+    const list = choices.slice(0, 5);
+    const buttons = list.map(c => pickButton(c.label, runCustomId('txtrun_', textCommand, encodePayload({ values: c.values })), textCommand.icon));
+    return card(HELP_ACCENT, titled(`### ${emojis.search} Did you mean ${orList(list.map(c => String(c.label).slice(0, 60)))}?\n-# You typed \`${shownText(typed)}\``, buttons));
 }
 
 // DEV BOT ONLY, like handlers/router.js's click log (2026-10-28 18:01 EDT, his question: "why does dioreo take like a second to send a reply"): where a text command's time goes. Nothing is stored; production prints nothing.
@@ -377,20 +463,23 @@ async function onMessage(message, { edited = false } = {}) {
         resolved = await resolveRun(message, verdict);
         if (!resolved) return;
     }
+    // What they typed after the prefix, for the cards that quote it back.
+    const rest = readTrigger(message.content || '', { botId: client.user.id, botRoleId: message.guild?.roles?.botRoleFor?.(client.user)?.id || null, prefixes: client.textMessageContent ? configuredPrefixes() : [] })?.rest || '';
+    const typed = typedAs(verdict.via, rest);
     const limited = rateLimited(message, verdict);
     if (limited === 'silent') return;
-    if (limited?.warnUntil) return warnCooldown(message, limited);
+    if (limited?.warnUntil) return warnCooldown(message, limited, typed);
     answered.set(message.id, Date.now());
-    if (!canPost(message)) return dmCantPost(message);
-    if (resolved?.kind === 'pick') return reply(message, pickCard(resolved.textCommand, resolved.choices));
-    if (resolved?.kind === 'noMatch') return reply(message, noMatchLine(resolved.text));
-    if (resolved?.kind === 'run') return runTextCommand(message, resolved.verdict);
-    if (verdict.kind === 'needsInput') return reply(message, needsInputCard(findTextCommand(verdict.command), verdict.via));
-    if (verdict.kind === 'noMatch') return reply(message, noMatchLine(verdict.text, verdict.option));
+    if (!canPost(message)) return dmCantPost(message, typed);
+    if (resolved?.kind === 'pick') return reply(message, pickCard(resolved.textCommand, resolved.choices, rest), { ttl: CARD_TTL_MS });
+    if (resolved?.kind === 'noMatch') return reply(message, noMatchLine(resolved.text), { ttl: CARD_TTL_MS });
+    if (resolved?.kind === 'run') return runTextCommand(message, { ...resolved.verdict, typed });
+    if (verdict.kind === 'needsInput') return reply(message, needsInputCard(findTextCommand(verdict.command), verdict.via), { ttl: CARD_TTL_MS });
+    if (verdict.kind === 'noMatch' && verdict.option === 'datetime') return reply(message, couldntReadCard(findTextCommand(verdict.command), verdict.via, verdict.text), { ttl: CARD_TTL_MS });
+    if (verdict.kind === 'noMatch') return reply(message, noMatchLine(verdict.text), { ttl: CARD_TTL_MS });
     if (verdict.kind === 'help') return reply(message, helpCard(client));
-    if (verdict.kind === 'didYouMean') return reply(message, didYouMeanCard(verdict.candidates));
+    if (verdict.kind === 'didYouMean') return reply(message, didYouMeanCard(verdict.candidates, rest), { ttl: CARD_TTL_MS });
     if (verdict.kind === 'emojiReply') return reply(message, { content: mentionReplyEmoji(client) });
-    if (verdict.kind === 'roleHint') return reply(message, { content: `Mention me, not my role: pick **${client.user.username}** with the APP tag from the @ list, or type ${formsFor(client)}.` });
 }
 
 // Wired from index.js on the PUBLIC client only. Dioreo Admin is never in a server.
@@ -412,10 +501,11 @@ function registerTextCommands(client) {
         const now = Date.now();
         for (const [k, last] of lastByUser) if (now - last.at > SAME_COMMAND_COOLDOWN_MS) { lastByUser.delete(k); warned.delete(k); }
         for (const [k, hits] of channelHits) if (!hits.some(t => now - t < CHANNEL_WINDOW_MS)) channelHits.delete(k);
+        for (const [k, hits] of serverHits) if (!hits.some(t => now - t < CHANNEL_WINDOW_MS)) serverHits.delete(k);
         for (const [k, t] of answered) if (now - t > EDIT_WINDOW_MS * 2) answered.delete(k);
         for (const [k, t] of cantPostDms) if (now - t > CANT_POST_DM_MS) cantPostDms.delete(k);
         for (const [k, s] of suggestions) if (now - s.at > SUGGEST_MS) suggestions.delete(k);
     }, 10 * 60 * 1000).unref();
 }
 
-module.exports = { mentionReplyEmoji, registerTextCommands, enableMessageContentIfGranted, configuredPrefixes, onMessage };
+module.exports = { mentionReplyEmoji, registerTextCommands, enableMessageContentIfGranted, configuredPrefixes, onMessage, helpCard, didYouMeanCard, pickCard, cantPostCard, POPUP_TTL_MS };

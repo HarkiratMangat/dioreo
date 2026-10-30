@@ -9,7 +9,7 @@ const BOT = '111';
 const { expandShorthand } = require('../commands/timestamp');
 const { generateTimestamps } = require('../utils/timestampHelper');
 const checkDatetime = text => Boolean(generateTimestamps(expandShorthand(text))?.unix);
-const v = (text, extra = {}) => parseTextCommand(text, { botId: BOT, prefixes: ['/', 'd', 'dior'], commands: TEXT_COMMANDS, checkDatetime, ...extra });
+const v = (text, extra = {}) => parseTextCommand(text, { botId: BOT, prefixes: ['d', 'dior'], commands: TEXT_COMMANDS, checkDatetime, ...extra });
 const M = `<@${BOT}>`;
 const LEG = 'legendaryGunReactive,legendaryGunNonReactive';
 const ARM = 'armoryMythicWeapon,armoryLegendaryWeapon,armoryLegendaryCharacter';
@@ -24,12 +24,13 @@ const rows = [
     ['dior calender upcomming', { kind: 'run', command: 'calendar', values: { filter: 'soon' }, fuzzy: true }],
     ['d calendar is wild today', { kind: null }],
     ['d calendar what is this', { kind: null }],
-    ['d calendar filter:purple', { kind: null }],
-    ['d calendar visibility:public', { kind: null }],                 // visibility is never a text option
+    ['d calendar filter:purple', { kind: 'run', command: 'calendar', values: {} }], // B6: one word nothing understood is ignored after d
+    ['d calendar filter:purple yo', { kind: null }],                   // two are chat
+    ['d calendar visibility:public', { kind: 'run', command: 'calendar', values: {} }], // visibility is never a text option: the word is ignored
     [`${M} calendar what`, { kind: 'run', command: 'calendar', values: {} }],   // clearly addressed: an unknown word is ignored (the spec's rules table)
     [`${M} calendar purple`, { kind: 'run', command: 'calendar', values: {} }],
     [`${M} calendar purple upcoming`, { kind: 'run', command: 'calendar', values: { filter: 'soon' } }],  // ...and the words it did understand still count
-    ['/calendar purple', { kind: 'run', command: 'calendar', values: {} }],
+    ['@calendar purple', { kind: null }],
     ['d calendar modes new', { kind: 'run', values: { page: 'playlists', filter: 'live' } }],
     ['d modes', { kind: 'run', command: 'calendar', values: { page: 'playlists' } }],
     ['d events', { kind: 'run', command: 'calendar', values: { page: 'events' } }],
@@ -42,15 +43,23 @@ const rows = [
     ['d draws n', { kind: 'run', values: { page: 'new' } }],
     ['dior draws o', { kind: 'run', command: 'draws', values: {} }],   // a stray key is still forgiven
     [`${M} draws pls`, { kind: 'run', command: 'draws', values: {} }],  // the spec's own row: trailing text ignored
-    ['/draws pls', { kind: 'run', command: 'draws', values: {} }],
-    ['d draws pls', { kind: null }],                                   // after d every word must be understood
+    ['d draws pls', { kind: 'run', command: 'draws', values: {} }],    // B6: one more word is ignored after d (his rule, 2026-10-29 14:29 EDT)
+    ['d draws pls now', { kind: null }],
     ['d gs ak117', { kind: 'run', command: 'gunsmith', autocomplete: [{ option: 'weapon', text: 'ak117' }] }],
     ['d gunsmith ak 117', { kind: 'run', command: 'gunsmith', autocomplete: [{ option: 'weapon', text: 'ak 117' }] }],
     ['d gs type 19', { kind: 'run', command: 'gunsmith', autocomplete: [{ option: 'weapon', text: 'type 19' }] }],
     ['d gunsmith', { kind: 'run', command: 'gunsmith', values: { weapon: '~first~' } }],
     ['d gs smg', { kind: 'run', values: { weapon: '~first~SMG' } }],
     ['d gs assault rifles', { kind: 'run', values: { weapon: '~first~AR' } }],
-    ['d meta pistols', { kind: 'run', command: 'gunsmith', values: { weapon: '~first~SECONDARIES' } }],
+    ['d meta pistols', { kind: 'run', command: 'gunsmith', values: { weapon: '~scope~MP.*.meta' } }], // B6: `d meta` is the META browse; one more word is ignored after d
+    ['d meta', { kind: 'run', command: 'gunsmith', values: { weapon: '~scope~MP.*.meta' } }],
+    ['d gs meta', { kind: 'run', command: 'gunsmith', values: { weapon: '~scope~MP.*.meta' } }],
+    ['d dmz meta', { kind: 'run', command: 'gunsmith dmz', values: { weapon: '~scope~DMZ.*.meta' } }],
+    ['d smg', { kind: 'run', command: 'gunsmith', values: { weapon: '~first~SMG' } }], // B6: a bare main class word
+    ['d snipers', { kind: 'run', command: 'gunsmith', values: { weapon: '~first~SNIPER' } }],
+    ['d secondary', { kind: 'run', command: 'gunsmith', values: { weapon: '~first~SECONDARIES' } }],
+    ['d sub', { kind: null }],                       // the short class forms still need gunsmith first
+    ['d smg is busted', { kind: null }],
     ['d dmz', { kind: 'run', command: 'gunsmith dmz', values: { weapon: '~first~' } }],
     ['d dmz fennec', { kind: 'run', command: 'gunsmith dmz', autocomplete: [{ option: 'weapon', text: 'fennec' }] }],
     ['dior gunsmith skins are cool', { kind: 'run', autocomplete: [{ option: 'weapon', text: 'skins are cool' }] }],  // silenced by the listener: no confident weapon
@@ -61,7 +70,21 @@ const rows = [
     ['d time in a minute', { kind: 'run', command: 'timestamp', values: { datetime: 'in a minute' } }],
     ['d ts tom 8pm', { kind: 'run', values: { datetime: 'tom 8pm' } }],         // /timestamp's own shorthand (tom = tomorrow)
     ['d ts tomorrow 8pm tz:est', { kind: 'run', values: { datetime: 'tomorrow 8pm', timezone: 'est' } }],
-    ['d t friday 6pm timezone:toronto', { kind: 'run', values: { datetime: 'friday 6pm', timezone: 'toronto' } }],
+    ['d ts friday 6pm timezone:toronto', { kind: 'run', values: { datetime: 'friday 6pm', timezone: 'toronto' } }],
+    ['d t friday 6pm', { kind: null }],              // B6: `t` is no longer timestamp's
+    ['d ts fri 6pm tokyo', { kind: 'run', values: { datetime: 'fri 6pm', timezone: 'Asia/Tokyo' } }], // B6: a zone named at the end
+    ['d ts 8pm new york', { kind: 'run', values: { datetime: '8pm', timezone: 'America/Toronto' } }],
+    ['d ts 8pm tz:utc+5', { kind: 'run', values: { datetime: '8pm utc+5' } }], // B6: an offset joins the date text
+    ['d ts sat 5pm', { kind: 'run', values: { datetime: 'sat 5pm' } }],    // `sat` stays a day, never a zone
+    ['d ts 8pm to 10pm', { kind: 'run', values: { datetime: '8pm to 10pm' } }],
+    ['d calc new', { kind: 'run', command: 'draw calculator', values: { page: 'new' } }], // B6: New Calculation
+    ['d calc reset', { kind: 'run', command: 'draw calculator', values: { page: 'new' } }],
+    ['d calc home', { kind: 'run', command: 'draw calculator', values: { page: 'start' } }],
+    ['d price leggy', { kind: 'run', command: 'draw prices', values: { filter: 'legendaryGunReactive,legendaryGunNonReactive' } }], // B6: his new aliases
+    ['d price leggy char', { kind: 'run', command: 'draw prices', values: { filter: 'legendaryCharacterWeapon' } }],
+    ['d price double leggy', { kind: 'run', command: 'draw prices', values: { filter: 'doubleLegendaryWeapons' } }],
+    ['d price adv wep', { kind: 'run', command: 'draw prices', values: { filter: 'advancedWeapon' } }],
+    ['d draw', { kind: 'run', command: 'draws' }],
     ['d timestamp is wrong lol', { kind: null }],
     [`${M} timestamp is wrong lol`, { kind: 'noMatch', command: 'timestamp', text: 'is wrong lol' }],
     ['d timestamp', { kind: 'needsInput', command: 'timestamp', missing: ['datetime'] }],
@@ -92,7 +115,7 @@ const rows = [
     ['d colors', { kind: 'run', command: 'colors', form: null }],
     ['d remind', { kind: 'run', command: 'remind' }],
     ['d today is cold', { kind: null }],
-    ['/calendar upcoming', { kind: 'run', command: 'calendar', values: { filter: 'soon' } }],
+    ['d cal upcoming', { kind: 'run', command: 'calendar', values: { filter: 'soon' } }],
     ['d lucky draws', { kind: 'run', command: 'draws' }],
     ['d rank end', { kind: 'run', command: 'season end' }],
 ];

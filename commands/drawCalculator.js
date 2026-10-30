@@ -1646,7 +1646,10 @@ async function execute(interaction) {
         const openRow = { type: 1, components: [{ type: 2, style: 2, label: 'Open Calculator', emoji: emojis.parseEmoji(emojis.calculator), custom_id: encodeState('page', { ...openState, page: 0 }) }] };
         return sendV2Payload(interaction, [help, openRow], { skipExpiry: true });
     }
-    const viewState = pageChoice === 'saved' ? { ...openState, page: 3 } : pageChoice === 'start' ? state : openState;
+    // `page:New Calculation` / `d calc new`: the New Calculation button's own action on the last calculation, then the fresh form (his ask, B6, 2026-10-29 20:39 EDT). With none yet, it is just Home.
+    if (pageChoice === 'new' && latest) latest = await require('../handlers/drawCalc').newCalculation(userId, latest);
+    const freshState = latest ? { ...state, basketId: String(latest._id) } : state;
+    const viewState = pageChoice === 'saved' ? { ...openState, page: 3 } : pageChoice === 'start' ? state : pageChoice === 'new' ? freshState : openState;
     const viewBasket = pageChoice === 'start' ? null : latest;
     const panel = buildCalculatorPanel(viewState, viewBasket, accentColor, {
         savedBaskets, region, notice: shortcut.notice, seasonDraws: await listSeasonDraws(),

@@ -21,10 +21,11 @@ function timestampModal(textCommand) {
         title: 'Timestamp',
         custom_id: runCustomId('txtrun_', textCommand, 'submit'),
         components: [
-            fieldLabel('Date and time', null, { type: 4, custom_id: 'datetime', style: 1, required: true, max_length: 100, placeholder: 'e.g. tomorrow 8pm, sun 4:30pm, 19:30' }),
+            // His wording (B6, 2026-10-29 14:57 EDT).
+            fieldLabel('Date or time', null, { type: 4, custom_id: 'datetime', style: 1, required: true, max_length: 100, placeholder: 'e.g. in 2 days · fri 6pm · dec 25' }),
             fieldLabel('Time zone', 'Whose clock your time is on: “8pm” + UK = 8pm in the UK. Everyone sees it in their own time.', { type: 4, custom_id: 'timezone', style: 1, required: false, max_length: 60, placeholder: 'e.g. Toronto, Tokyo, EST' }),
-            fieldLabel('Or pick a time zone', 'Used when none is typed above. Blank = your /settings zone.', select('timezone_pick', 'Quick pick…', require('../utils/timezoneData').quickZoneOptions().slice(0, 25))),
-            fieldLabel('Format', 'Blank = your /settings one', select('style', 'Pick a format…', styles.slice(0, 25).map(c => ({ label: c.name.slice(0, 100), value: c.value })))),
+            fieldLabel('Or pick a time zone', 'Used if none is typed above. Blank = your /settings zone.', select('timezone_pick', 'Quick pick…', require('../utils/timezoneData').quickZoneOptions().slice(0, 25))),
+            fieldLabel('Format', 'Blank = your /settings format', select('style', 'Pick a format…', styles.slice(0, 25).map(c => ({ label: c.name.slice(0, 100), value: c.value })))),
             fieldLabel('View', 'Blank = Embed', select('view', 'Embed or Text…', [{ label: 'Embed (Styled Panel)', value: 'embed' }, { label: 'Text (Plain, Copyable)', value: 'text' }])),
         ],
     };
@@ -34,6 +35,15 @@ function timestampModal(textCommand) {
 function picked(interaction, id) {
     try { return interaction.fields.getStringSelectValues(id)[0] ?? null; } catch { return null; }
 }
+
+// The private notes a press can get (his wording and icons, B6, 2026-10-29 16:07 EDT).
+const NOTES = {
+    expired: ['pending', 'This button expired. Type the command again.'],
+    gone: ['warn', "That command isn't available anymore."],
+    off: ['Locked', 'This server turned that command off for you here.'],
+    missing: ['warn', "That message or person isn't there anymore."],
+};
+const note = key => `${require('../utils/emojiMap')[NOTES[key][0]] || ''} ${NOTES[key][1]}`.trim();
 
 async function privately(interaction, content) {
     try { await interaction.reply({ content, ephemeral: true }); } catch (err) { console.error('Text command button: could not answer a click:', err); }
@@ -61,26 +71,35 @@ async function handleTextCommandsInteraction(interaction) {
     const isRun = interaction.customId.startsWith('txtrun_');
     if (!isPrivate && !isRun) return false;
     const run = readRunCustomId(interaction.customId.slice(isPrivate ? 'txtpriv_'.length : 'txtrun_'.length));
+    // Any press stops a card deleting itself (B6, his yes 2026-10-29 14:54 EDT; utils/textCommands/cardTimers.js).
+    const cardTimers = require('../utils/textCommands/cardTimers');
+    const cardId = interaction.message?.id || null;
+    cardTimers.cancel(cardId);
     if (run.expired) {
-        await privately(interaction, 'That button has expired. Run it again.');
+        await privately(interaction, note('expired'));
         return true;
     }
     const textCommand = run.textCommand;
     const form = run.targetMessageId ? 'convertTimes' : run.targetUserId ? 'viewColors' : null;
     const { name: moduleName, command } = textCommand ? moduleFor(interaction.client, textCommand, form) : { command: null };
     if (!command) {
-        await privately(interaction, 'That command is no longer available.');
+        await privately(interaction, note('gone'));
         return true;
     }
     // The server's Integrations switches for the command it runs, as for a typed text command (utils/textCommands/permissions.js).
     const { textCommandAllowed } = require('../utils/textCommands/permissions');
     if (!(await textCommandAllowed({ client: interaction.client, guildId: interaction.guildId, member: interaction.member, userId: interaction.user.id, channel: interaction.channel }, moduleName))) {
-        await privately(interaction, "This server has turned that command off for you here.");
+        await privately(interaction, note('off'));
         return true;
     }
     // The pop-up opens BEFORE anything is acknowledged: Discord opens a modal only as the first answer to a click.
     if (run.open) {
         await interaction.showModal(timestampModal(textCommand));
+        // Discord says nothing when a pop-up is closed unsent, so the card gives it 5 minutes, then goes.
+        if (cardId) {
+            const { Routes } = require('discord.js');
+            cardTimers.schedule(cardId, 5 * 60_000, () => interaction.client.rest.delete(Routes.channelMessage(interaction.channelId, cardId)).catch(() => {}));
+        }
         return true;
     }
     const values = run.submit && interaction.isModalSubmit?.()
@@ -88,7 +107,7 @@ async function handleTextCommandsInteraction(interaction) {
         : run.values;
     const targets = await readTargets(interaction, run);
     if (!targets) {
-        await privately(interaction, 'That message or person is no longer available.');
+        await privately(interaction, note('missing'));
         return true;
     }
     const options = buildOptions({ sub: form ? null : textCommand.sub, values });
@@ -100,8 +119,15 @@ async function handleTextCommandsInteraction(interaction) {
         policy = (await require('../utils/guildPolicy').attachGuildPolicy(probe)) || policy;
         if (policy?.visibility === 'ephemeral') hidden = true;
     }
-    // Acknowledged HERE, before the synthetic copy is made: buildSyntheticInteraction copies `deferred` as a value, so a copy made first would still read false and sendV2Payload would try a second acknowledgement. Hidden for Open privately, or where the server's rule says so; public for a Did you mean pick otherwise.
-    await interaction.deferReply({ flags: hidden ? 64 : 0 });
+    // Acknowledged HERE, before the synthetic copy is made: buildSyntheticInteraction copies `deferred` as a value, so a copy made first would still read false and sendV2Payload would try a second acknowledgement. Hidden for Open privately, or where the server's rule says so. A public pick from one of the listener's cards (Did you mean, the timestamp card and its pop-up) EDITS that card into the answer, so nothing is left over (B6, his yes 2026-10-29 14:54 EDT); a plain-text timestamp cannot replace a card's layout, so it comes as a new message and the card goes.
+    const textView = run.submit && values?.view === 'text';
+    const intoCard = isRun && !hidden && Boolean(cardId) && !textView;
+    if (intoCard) await interaction.deferUpdate();
+    else await interaction.deferReply({ flags: hidden ? 64 : 0 });
+    if (isRun && !hidden && cardId && textView) {
+        const { Routes } = require('discord.js');
+        interaction.client.rest.delete(Routes.channelMessage(interaction.channelId, cardId)).catch(() => {});
+    }
     const synthetic = buildSyntheticInteraction(interaction, {
         commandName: moduleName,
         options,

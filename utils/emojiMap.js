@@ -184,6 +184,10 @@ const emojis = {
     dioreoTada: '<a:DioreoTada:1563677558589882510>',
     // The cooldown hourglass, for every cooldown message instead of the generic ⏳ (Harkirat, 2026-10-29 09:54 EDT).
     cooldown: '<a:Cooldown:1565362761821847712>',
+    // B6 (2026-10-29): the help card's icon button, the Slash Command / Text Command switch on every /help page, and Dispute a Build. Prod ids, his uploads.
+    helpHint: '<a:HelpHint:1565419610323558542>',
+    command: '<a:Command:1565523050982801468>',
+    dispute: '<a:Dispute:1565521175990378566>',
     // Brand set added 2026-10-29 09:51 EDT (Harkirat's list; prod ids, animated). Not used anywhere yet: ready for the panels and the site.
     dioreowrld: '<a:Dioreowrld:1565359502297923635>',
     dioreoSparkles: '<a:DioreoSparkles:1565359503262883900>',

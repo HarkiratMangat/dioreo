@@ -114,6 +114,20 @@ async function writeTo(userId, state, basket, fields) {
     return basketStore.save(userId, { _id: state.basketId, ...fields });
 }
 
+// New Calculation, shared by the button and the typed `d calc new` / slash `page:New Calculation` (his ask, B6, 2026-10-29 20:37-20:39 EDT). Returns the calculation the panel should now show: the same one emptied, or a new one. `state` is marked dirty, as every write here does.
+async function newCalculation(userId, basket, state = {}) {
+    // A saved one is reopened, never copied; an empty form keeps the copy it already holds, so a second press loses nothing.
+    const previous = basket.name ? { savedId: String(basket._id) } : (basket.banners || []).length ? restorableCopy(basket) : (basket.previous || null);
+    // A SAVED calculation is never emptied by New Calculation (2026-10-14 16:51 EDT, Harkirat: "i clicked new calc, so why is it still saying viewing saved: test?"). A new, unnamed calculation starts instead, at the same region; the saved one stays in Saved untouched. A working copy of a saved one starts fresh too and the copy is dropped (click-test 2026-10-14 18:58 EDT): cleared in place it kept its `sourceId`, so the empty form still read "Edited from Saved: test". Its contents live on in `previous`.
+    if (basket.name || basket.sourceId) {
+        if (!basket.name) await basketStore.remove(userId, String(basket._id));
+        return basketStore.save(userId, { banners: [], region: basket.region, previous });
+    }
+    // `submitted: false` is what makes this "New Calculation" rather than "empty result" -- it returns the panel to the setup form.
+    return writeTo(userId, state, basket, { banners: [], balance: 0, mythicCards: 0, mythicCoins: 0, currency: null, submitted: false, previous });
+}
+
+
 // The calculation a Saved-view render shows at its top: loaded quietly, since a gone one only drops that section.
 async function currentBasket(userId, state) {
     return state.basketId ? basketStore.load(userId, state.basketId) : null;
@@ -800,18 +814,8 @@ async function route(interaction) {
     if (interaction.isButton() && (state.verb === 'reset' || state.verb === 'resetarm')) {
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
-        // A saved one is reopened, never copied; an empty form keeps the copy it already holds, so a second press loses nothing.
-        const previous = basket.name ? { savedId: String(basket._id) } : (basket.banners || []).length ? restorableCopy(basket) : (basket.previous || null);
-        // A SAVED calculation is never emptied by New Calculation (2026-10-14 16:51 EDT, Harkirat: "i clicked new calc, so why is it still saying viewing saved: test?"). A new, unnamed calculation starts instead, at the same region; the saved one stays in Saved untouched. A working copy of a saved one starts fresh too and the copy is dropped (click-test 2026-10-14 18:58 EDT): cleared in place it kept its `sourceId`, so the empty form still read "Edited from Saved: test". Its contents live on in `previous`.
-        if (basket.name || basket.sourceId) {
-            if (!basket.name) await basketStore.remove(actingUserId, String(basket._id));
-            const fresh = await basketStore.save(actingUserId, { banners: [], region: basket.region, previous });
-            await renderPanel(interaction, { ...state, basketId: String(fresh._id), page: 0, focus: null, bpage: 0, detail: false, verb: 'landing' }, fresh);
-            return true;
-        }
-        // `submitted: false` is what makes this "New Calculation" rather than "empty result" -- it returns the panel to the setup form.
-        const updated = await writeTo(actingUserId, state, basket, { banners: [], balance: 0, mythicCards: 0, mythicCoins: 0, currency: null, submitted: false, previous });
-        await renderPanel(interaction, { ...state, page: 0, focus: null, bpage: 0, detail: false, verb: 'landing' }, updated);
+        const fresh = await newCalculation(actingUserId, basket, state);
+        await renderPanel(interaction, { ...state, basketId: String(fresh._id), page: 0, focus: null, bpage: 0, detail: false, verb: 'landing' }, fresh);
         return true;
     }
     // RESTORE CALCULATION: brings back what New Calculation cleared, as it was (a result reopens as a result), and drops the empty form it replaces.
@@ -848,4 +852,4 @@ async function handleDrawCalcInteraction(interaction) {
     return handled !== false;
 }
 
-module.exports = { handleDrawCalcInteraction, OWNED_PREFIXES };
+module.exports = { handleDrawCalcInteraction, newCalculation, OWNED_PREFIXES };

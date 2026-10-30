@@ -16,6 +16,9 @@ function sameWord(typed, word) {
     return typed === word || pluralOf(word) === typed || pluralOf(typed) === word;
 }
 
+// `utc+5`, `gmt-4`, `UTC+5:30`: a fixed offset, which the date parser reads inside the date text.
+const OFFSET = /^(utc|gmt)\s*[+-]\s*\d{1,2}(:?\d{2})?$/i;
+
 const mentionId = token => (/^<@!?(\d+)>$/.exec(token) || [])[1] || null;
 const squash = s => String(s || '').toLowerCase().replace(/[\s\-_.]/g, '');
 
@@ -136,15 +139,28 @@ function parseArgs(tokens, textCommand, commandJson = null, { allowTypos = false
     if (restOpt) {
         const filled = values[restOpt.name] !== undefined;
         const words = restFromKey !== null ? [restFromKey, ...restWords] : restWords;
-        const text = words.join(' ').trim();
+        let text = words.join(' ').trim();
         if (filled && words.length) leftover.push(...words);
         else if (!filled && restOpt.rest === 'datetime' && text) {
+            // B6, his calls 2026-10-29 20:49-20:53 EDT: an offset given with tz: (`tz:utc+5`) joins the date text, where /timestamp's parser already reads it; a zone named at the END of the date (`fri 6pm tokyo`, `8pm new york`) is the zone, exact names only, when what is left still reads as a date.
+            if (values.timezone && OFFSET.test(values.timezone)) { text = `${text} ${values.timezone}`; delete values.timezone; }
+            if (values.timezone === undefined) {
+                const parts = text.split(/\s+/);
+                for (const n of [2, 1]) {
+                    if (parts.length <= n) continue;
+                    const zone = require('../timezoneData').exactTimezone(parts.slice(-n).join(' '));
+                    const date = parts.slice(0, -n).join(' ');
+                    if (zone && (!checkDatetime || checkDatetime(date))) { values.timezone = zone; text = date; break; }
+                }
+            }
             if (checkDatetime && !checkDatetime(text)) unresolved = { option: restOpt.name, text };
             else values[restOpt.name] = text;
         } else if (!filled && restOpt.rest === 'weapon') {
             // No weapon, or only a class word: the first weapon alphabetically with a build (commands/gunsmith.js reads `~first~`, which no weaponKey can be).
             const category = classOf(text, restOpt.classes);
-            if (!text || category) values[restOpt.name] = `~first~${category || ''}`;
+            // `d gs meta` / `d dmz meta`: that mode's META browse (his ask, B6, 2026-10-29 20:06 EDT); commands/gunsmith.js opens `~scope~` as the dropdown's All META row.
+            if (sameWord(squash(text), 'meta')) values[restOpt.name] = `~scope~${textCommand.sub === 'dmz' ? 'DMZ' : 'MP'}.*.meta`;
+            else if (!text || category) values[restOpt.name] = `~first~${category || ''}`;
             else autocomplete.push({ option: restOpt.name, text });
         } else if (!filled && restOpt.rest === 'autocomplete' && text) {
             autocomplete.push({ option: restOpt.name, text: restOpt.restText ? restOpt.restText(text) : text });
