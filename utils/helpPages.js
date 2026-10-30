@@ -25,14 +25,14 @@ const PAGE_NAMES = {
     '/gunsmith mp': 'MP Gunsmith', '/gunsmith dmz': 'DMZ Gunsmith', '/draws': 'Lucky Draws', '/draw prices': 'Lucky Draw Prices', '/draw calculator': 'Draw Calculator',
     '/today': 'Today', '/calendar': 'Calendar', '/remind': 'Reminders', '/season end': 'Season End', '/patch notes': 'Patch Notes',
     '/timestamp': 'Timestamps', '/colors': 'Profile Colors', '/settings': 'Settings', '/invite': 'Invite Dioreo', '/admin': 'Server Settings',
-    '/manage': 'Manage Data', '/manage emojis': 'Emoji Manager', '/autobuild': 'Autobuild', '/bot analytics': 'Bot Analytics', '/bot access': 'Admin Access', '/bot servers': 'Server Rules', '/bot hotpatch': 'Hot Patch', '/embed': 'Embed Preview',
+    '/manage': 'Manage Data', '/manage emojis': 'Emoji Manager', '/autobuild': 'Autobuild', '/bot analytics': 'Bot Analytics', '/bot access': 'Admin Access', '/bot servers': 'Servers', '/bot penalties': 'Spam Penalties', '/bot freeze': 'Freeze', '/bot hotpatch': 'Hot Patch', '/embed': 'Embed Preview',
 };
 const PAGE_ORDER = Object.keys(PAGE_NAMES);
 const PAGE_ICON = {
     '/gunsmith mp': 'gunsmithSearch', '/gunsmith dmz': 'dmz', '/draws': 'newDraws', '/draw prices': 'drawPrices', '/draw calculator': 'calculator',
     '/today': 'dailyUpdate', '/calendar': 'calendar', '/remind': 'remind', '/season end': 'bp', '/patch notes': 'patchNotes',
     '/timestamp': 'timestamp', '/colors': 'showColors', '/settings': 'settings', '/invite': 'shareHeart', '/admin': 'serverSettings',
-    '/manage': 'database', '/manage emojis': 'swatches', '/autobuild': 'gunsmithCode', '/bot analytics': 'mngInfo', '/bot access': 'botAccess', '/bot servers': 'guide', '/bot hotpatch': 'edit', '/embed': 'edit',
+    '/manage': 'database', '/manage emojis': 'swatches', '/autobuild': 'gunsmithCode', '/bot analytics': 'mngInfo', '/bot access': 'botAccess', '/bot servers': 'guide', '/bot penalties': 'cooldown', '/bot freeze': 'pending', '/bot hotpatch': 'edit', '/embed': 'edit',
 };
 // /season end wears the live season's own emoji (his call, 2026-10-29 22:55 EDT); /manage emojis its DB_Emojis where the app has it.
 function pageIcon(name, seasonEmoji) {
@@ -268,7 +268,10 @@ const PAGES = {
     // The other Bot Admin pages carry their old /help text, one page each (his "skip bot admin", 2026-10-29 22:49 EDT).
     '/bot analytics': adminPage("The bot's usage, timing and health, without opening the server it runs on", [text('`[page]`\n-# Jump directly to a page: `Health` · `Alerts` · `Changes` · `Usage` · `Timing`'), VIS], [['/bot analytics page:Usage visibility:Public', 'Share usage data in a channel']]),
     '/bot access': adminPage('Who has admin access, and to what — owner-only', [VIS], [['/bot access']]),
-    '/bot servers': adminPage("View, reset or delete one server's /admin rules, for an admin who lost access — owner-only", [text("`[server]`\n-# A server ID; leave it blank to pick the server you're in or type one")], [['/bot servers']]),
+    '/bot servers': adminPage("One server's /admin rules, a checkup, reply limits, and leave or block — owner-only", [text("`[server]`\n-# A server ID; leave it blank to pick the server you're in or type one")], [['/bot servers']]),
+    // B7's owner tools (2026-10-30 13:43 EDT), in the same style as the other Bot Admin pages.
+    '/bot penalties': adminPage('Text-command spam penalties: who has one, then lift, extend, exempt or block one person, and tune the ladder — owner-only', [text('`[user]`\n-# A user ID to open; leave it blank for everyone on a penalty now')], [['/bot penalties']]),
+    '/bot freeze': adminPage('Pause Dioreo, or chosen commands, without a deploy; you and /bot are never frozen — owner-only', [], [['/bot freeze']]),
     '/bot hotpatch': adminPage('Reload changed files into the running bot without a restart — owner-only', [text('`[pull]`\n-# git pull first (default: yes)'), text('`[dry_run]`\n-# Show the plan and change nothing'), text('`[file]`\n-# Limit to one changed file (default: everything the pull brought in)')], [['/bot hotpatch dry_run:True']]),
     '/embed': adminPage('Render pasted message JSON as a real Components V2 message, to check a design — owner-only', [text('`[json]`\n-# The message JSON; leave both this and `file` empty to paste it in a box'), text('`[file]`\n-# A .json or .txt file, for JSON too long to paste'), text('`[clean]`\n-# Render only the JSON: no Edit JSON button and no emoji note'), VIS], [['/embed clean:True']]),
     '/manage emojis': adminPage('Every app emoji, which bots lack it, and its saved original: sync, upload or find one — owner-only', [VIS], [['/manage emojis']]),
@@ -369,7 +372,7 @@ function buildHome({ client, view, canSwitch, hero, adminNames = [], prefixes = 
     return out;
 }
 
-// The command switcher, outside the card above the footer (his ask, 2026-10-29 18:17 EDT): All commands first; on a typed view each page's name with its typed word under it, on a slash view the slash command with the name under it (18:56 EDT). Commands with no text form show as slash on both. A full admin's list is 24 of Discord's 25.
+// The command switcher, outside the card above the footer (his ask, 2026-10-29 18:17 EDT): All commands first; on a typed view each page's name with its typed word under it, on a slash view the slash command with the name under it (18:56 EDT). Commands with no text form show as slash on both. A full admin's list was 24 of Discord's 25; B7's two owner pages (/bot penalties, /bot freeze) make the owner's 26, so the last, /embed, falls off the switcher for the owner only and stays on the Bot Admin list (2026-10-30 13:43 EDT, put to him as a question).
 function buildSwitcher({ names, current = null, view, client, seasonEmoji = null, prefixes = null }) {
     const typed = view === 'text';
     const p = firstPrefix(client, prefixes);

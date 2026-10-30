@@ -8,10 +8,9 @@ const { Routes } = require('discord.js');
 
 const MINUTE = 60_000;
 const SCORE_WINDOW_MS = 60 * 1000;
-const REPLY_POINTS = 1;
-const WARNING_POINTS = 3;
-const PENALTY_SCORE = 10;
-const RUNGS_MS = [1 * MINUTE, 5 * MINUTE, 15 * MINUTE, 60 * MINUTE, 6 * 60 * MINUTE, 12 * 60 * MINUTE];
+// The points, the limit and the rungs are the owner's to tune live in /bot penalties (his ask, 2026-10-30 12:55 EDT, built in B7): utils/botControls.js holds them, its DEFAULT_SPAM is 1 / 3 / 10 and 1 m, 5 m, 15 m, 1 h, 6 h, 12 h, and the exported REPLY_POINTS, WARNING_POINTS, PENALTY_SCORE and RUNGS_MS below read the live values.
+const tuned = () => require('../botControls').spam();
+const rungsMs = () => tuned().rungsMin.map(m => m * MINUTE);
 const PRESS_NOTE_FROM_MS = 5 * MINUTE;
 const OWNER_DM_FROM_MS = 6 * 60 * MINUTE;
 // The record outlives its penalty by a day: the bot deletes it itself (note first, then record), and the TTL only catches one it missed. A TTL alone would leave a 12 h countdown note up for good if the bot was down when the penalty ended (B6's think-pass, 2026-10-29 15:31 EDT).
@@ -26,7 +25,10 @@ let noteClient = null;
 
 const isOwner = id => require('../owner').isOwnerId(id);
 const utcDay = (t = Date.now()) => new Date(t).toISOString().slice(0, 10);
-const rungMs = p => RUNGS_MS[Math.min(Math.max(p.step, 1), RUNGS_MS.length) - 1];
+function rungMs(p) {
+    const r = rungsMs();
+    return r[Math.min(Math.max(p.step, 1), r.length) - 1];
+}
 const model = () => require('../../models/TextPenalty');
 
 // The person's running penalty, or null. One that is past its end counts as over even before its timer has fired.
@@ -43,10 +45,11 @@ function pressNote(p) {
 
 // Adds an event's points; true when this event reaches the limit (the score then starts over).
 function addPoints(userId, points, now = Date.now()) {
-    if (isOwner(userId)) return false;
+    // The owner, and anyone he exempted in /bot penalties (his "keep", 2026-10-30 13:18 EDT), never score.
+    if (isOwner(userId) || require('../botControls').isExempt(userId)) return false;
     const list = (scores.get(userId) || []).filter(e => now - e.at < SCORE_WINDOW_MS);
     list.push({ at: now, points });
-    if (list.reduce((n, e) => n + e.points, 0) >= PENALTY_SCORE) {
+    if (list.reduce((n, e) => n + e.points, 0) >= tuned().threshold) {
         scores.delete(userId);
         return true;
     }
@@ -58,7 +61,7 @@ function addPoints(userId, points, now = Date.now()) {
 function nextStep(userId, now = Date.now()) {
     const day = utcDay(now);
     const held = steps.get(userId);
-    const step = Math.min((held && held.day === day ? held.step : 0) + 1, RUNGS_MS.length);
+    const step = Math.min((held && held.day === day ? held.step : 0) + 1, rungsMs().length);
     steps.set(userId, { step, day });
     return step;
 }
@@ -84,7 +87,7 @@ async function startPenalty(message, { canPost = true, now = Date.now() } = {}) 
     if (isOwner(userId) || penaltyFor(userId, now)) return null;
     noteClient = message.client;
     const step = nextStep(userId, now);
-    const entry = { userId, step, until: now + RUNGS_MS[step - 1], guildId: message.guildId || null, channelId: message.channelId || null, noteMessageId: null };
+    const entry = { userId, step, until: now + rungsMs()[step - 1], guildId: message.guildId || null, channelId: message.channelId || null, noteMessageId: null };
     active.set(userId, entry);
     arm(userId, entry);
     if (canPost && entry.channelId) {
@@ -124,6 +127,30 @@ async function endPenalty(userId, { lift = false, client = null } = {}) {
 }
 
 const liftPenalty = (userId, opts = {}) => endPenalty(userId, { ...opts, lift: true });
+
+// The owner's Extend (/bot penalties, his layout 2026-10-30 13:26 EDT: "remove it or extend it or whatever"): the next rung up from the running one, or `ms` from now. The countdown note is edited to the new end, so it never shows a time that is no longer true. Returns the entry, or null when none is running.
+async function extendPenalty(userId, { ms = null, now = Date.now(), client = null } = {}) {
+    const entry = penaltyFor(userId, now);
+    if (!entry) return null;
+    if (ms == null) {
+        const r = rungsMs();
+        entry.step = Math.min(entry.step + 1, r.length);
+        steps.set(userId, { step: entry.step, day: utcDay(now) });
+        ms = r[entry.step - 1];
+    }
+    entry.until = now + ms;
+    arm(userId, entry);
+    const rest = (client || noteClient)?.rest;
+    if (entry.noteMessageId && entry.channelId && rest) await rest.patch(Routes.channelMessage(entry.channelId, entry.noteMessageId), { body: { content: `-# ${pressNote(entry)}` } }).catch(() => {});
+    await save(userId, entry);
+    return entry;
+}
+
+// The rung the person reached today (0 when none), for /bot penalties.
+function stepToday(userId, now = Date.now()) {
+    const s = steps.get(userId);
+    return s && s.day === utcDay(now) ? s.step : 0;
+}
 async function liftAll(opts = {}) {
     const ids = [...active.keys()];
     for (const id of ids) await liftPenalty(id, opts);
@@ -159,4 +186,11 @@ function sweep(now = Date.now()) {
     for (const [k, s] of steps) if (s.day !== day && !active.has(k)) steps.delete(k);
 }
 
-module.exports = { penaltyFor, blocksPresses, pressNote, addPoints, startPenalty, endPenalty, liftPenalty, liftAll, listActive, loadPenalties, sweep, REPLY_POINTS, WARNING_POINTS, PENALTY_SCORE, RUNGS_MS, SCORE_WINDOW_MS, PRESS_NOTE_FROM_MS, OWNER_DM_FROM_MS };
+module.exports = { penaltyFor, blocksPresses, pressNote, addPoints, startPenalty, endPenalty, liftPenalty, extendPenalty, stepToday, rungMs, liftAll, listActive, loadPenalties, sweep, SCORE_WINDOW_MS, PRESS_NOTE_FROM_MS, OWNER_DM_FROM_MS };
+// Read live, so a value the owner just tuned is the one the listener uses next.
+Object.defineProperties(module.exports, {
+    REPLY_POINTS: { enumerable: true, get: () => tuned().reply },
+    WARNING_POINTS: { enumerable: true, get: () => tuned().warning },
+    PENALTY_SCORE: { enumerable: true, get: () => tuned().threshold },
+    RUNGS_MS: { enumerable: true, get: rungsMs },
+});

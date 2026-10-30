@@ -94,4 +94,5 @@ async function textCommandAllowed({ client, guildId, member, userId, channel, ch
     }
 }
 
-module.exports = { allowedByOverrides, textCommandAllowed, invalidateGuildOverrides };
+// guildOverrides is exported for /bot servers' checkup (B7), which shows whether a server switched commands off in Integrations; it shares the one-minute cache.
+module.exports = { allowedByOverrides, textCommandAllowed, invalidateGuildOverrides, guildOverrides };

@@ -75,11 +75,18 @@ The obvious design — make `resolveEphemeral()` policy-aware and pass the polic
 - **Wording:** a panel reads **Private**, never Hidden (2026-10-22 19:01 EDT); the stored value stays `'ephemeral'`, and the bot-wide `visibility` option keeps its Hidden choice (his "leave it").
 - **Tools on Overview:** Check a Member (member select, role select or an ID pop-up; the whole picture, no channel to pick), Export Log, Reset Everything (two presses).
 
+## The text-command switch and prefix (B7, 2026-10-30 13:41 EDT)
+
+- **Config Text Commands / Config Slash Commands** (his labels, 2026-10-29 23:28 EDT; his pick 1A): one blurple button in its own row under Overview's tabs flips the whole panel between the two rule sets. The text view is the same tabs read as **On/Off** (`WORDS[VIEW]`), plus a Prefix block (Edit Prefix, Reset to d). Its ids are `admin_t_…`, rewritten by `textIds()`; `SHARED_IDS` (`admin_view`, `admin_log`, `admin_help`) are the same on both.
+- **Stored** in `GuildSettings.textRules` (the same shape as the visibility set: `'public'` = On, `'ephemeral'` = Off) and `GuildSettings.textPrefixes`, resolved by `explainVisibility` through `explainTextCommand`. Off is SILENCE, never a private answer: a message cannot be private, which is why the Open privately card was retired.
+- **Server admins skip every text rule** (his "sure", 2026-10-30 12:47 EDT), so an admin can always test; Check a Member's text copy says so. It is the one place the admin bypass applies to a rule set rather than to a command's own settings.
+- **Resets:** Reset Slash Rules and Reset Text Rules, one per view (his "'reset everything' implies everything"). `/bot servers`' owner reset clears both, and the prefix.
+
 ## The change log, the notice and the owner tool
 
 - **`GuildSettingsLog`** — every save goes through `updateGuildSettings()`, which writes one row (`describeChanges()` → `logGuildChange()`): who, `source` (`admin` or `owner`), what. Nothing deletes a row but its 60-day TTL, so Reset Everything cannot hide a change. Export Log turns the ids into names.
 - **`PolicyNotice`** — when a rule made someone's public answer private, `sendPolicyNotice()` (called from `handlers/router.js` after the command answers) tells them why, at most twice per version of the server's rules, keyed by the HMAC user hash.
-- **`/bot servers`** (owner only, `commands/bot.js` + `handlers/bot.js`) — view, reset or delete one server's settings by ID; each action is logged in that server's log with `source: 'owner'`.
+- **`/bot servers`** (owner only, `commands/bot.js` + `handlers/bot.js`) — view, reset or delete one server's settings by ID; each action is logged in that server's log with `source: 'owner'`. Since B7 it also carries a checkup (in the server, where Dioreo can't post, Integrations rules, 7 days of uses and errors, reply limits, the week's misfires) and Reply Limits, Leave Server and Block Server, which are the owner's (`utils/botControls.js`), not the server's, and are not in its `/admin` settings.
 
 ## Other things already paid for
 

@@ -47,6 +47,7 @@ export const TESTS = [
     {"cmd": "node scripts/textCommandListener.test.js", "lane": "unit"},
     {"cmd": "node scripts/textCommandStats.test.js", "lane": "unit"},
     {"cmd": "node scripts/textCommandServer.test.js", "lane": "unit"},
+    {"cmd": "node scripts/botControls.test.js", "lane": "unit"},
     {"cmd": "node scripts/guildPolicyEnforcement.test.js", "lane": "unit"},
     {"cmd": "node scripts/embedTester.test.js", "lane": "unit"},
     {"cmd": "node scripts/helpAnnouncement.test.js", "lane": "unit"},

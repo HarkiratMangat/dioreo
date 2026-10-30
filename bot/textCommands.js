@@ -16,9 +16,7 @@ const { textCommandAllowed } = require('../utils/textCommands/permissions');
 const SAME_COMMAND_COOLDOWN_MS = 5000;
 const ANY_COMMAND_COOLDOWN_MS = 1000;
 const CHANNEL_WINDOW_MS = 10_000;
-const CHANNEL_MAX_REPLIES = 5;
-// A whole server's replies (his call, B6, 2026-10-29 23:51 EDT: "okay" to 30): only a flood reaches it, and then Dioreo goes quiet. Same 10 s window as a channel's.
-const SERVER_MAX_REPLIES = 30;
+// At most 5 replies per channel and 30 per server in any 10 s (a server's: his call, B6, 2026-10-29 23:51 EDT, "okay" to 30; only a flood reaches it, and then Dioreo goes quiet). Since B7 the owner can set other numbers for one server (his "build it as an owner command for me to tweak per server", 2026-10-30 13:09 EDT): utils/botControls.js `limitsFor`, defaults in its DEFAULT_LIMITS.
 // The listener's own cards and lines that delete themselves (B6, his yes 2026-10-29 14:54-14:55 EDT; utils/textCommands/cardTimers.js). The listener's cards wear their command's accent (.claude/rules/rendering-and-ui.md's colour table).
 const HELP_ACCENT = 16743772;      // /help and /invite's coral, #FF7D5C
 const TIMESTAMP_ACCENT = 1548962;  // /timestamp's Cyber Teal, #17A2A2
@@ -79,10 +77,11 @@ function rateLimited(message, verdict) {
         }
         if (last.key !== key && now - last.at < ANY_COMMAND_COOLDOWN_MS) return 'silent';
     }
+    const { perChannel, perServer } = require('../utils/botControls').limitsFor(message.guildId);
     const hits = (channelHits.get(message.channelId) || []).filter(t => now - t < CHANNEL_WINDOW_MS);
-    if (hits.length >= CHANNEL_MAX_REPLIES) return 'silent';
+    if (hits.length >= perChannel) return 'silent';
     const inServer = (serverHits.get(message.guildId) || []).filter(t => now - t < CHANNEL_WINDOW_MS);
-    if (inServer.length >= SERVER_MAX_REPLIES) return 'silent';
+    if (inServer.length >= perServer) return 'silent';
     hits.push(now);
     inServer.push(now);
     channelHits.set(message.channelId, hits);
@@ -155,13 +154,16 @@ async function dmCantPost(message, typed) {
 }
 
 // Returns the message Dioreo posted (null if it could not); `ttl` makes it delete itself unless someone presses it first.
-async function reply(message, body, { ttl = 0 } = {}) {
+// `misfire` ({ kind, word, via }, Dioreo's own words only) is counted when a self-deleting card expires unpressed: utils/textCommands/misfires.js (B7, his pick A).
+async function reply(message, body, { ttl = 0, misfire = null } = {}) {
     const plain = { allowed_mentions: { parse: [], replied_user: false }, ...body };
     const route = Routes.channelMessages(message.channelId);
     // Without Read Message History a reply is refused (50013); the same text goes out as a plain message instead.
     const created = await message.client.rest.post(route, { body: { ...plain, message_reference: { message_id: message.id, fail_if_not_exists: false } } })
         .catch(err => { if (err?.code !== 50013) throw err; return message.client.rest.post(route, { body: plain }); });
-    if (ttl && created?.id) require('../utils/textCommands/cardTimers').schedule(created.id, ttl, deleteLater(message.client, message.channelId, created.id));
+    const remove = deleteLater(message.client, message.channelId, created?.id);
+    const expired = misfire ? () => { require('../utils/textCommands/misfires').note(message.guildId, misfire.kind, misfire.word, misfire.via); return remove(); } : remove;
+    if (ttl && created?.id) require('../utils/textCommands/cardTimers').schedule(created.id, ttl, expired);
     return created || null;
 }
 
@@ -453,6 +455,10 @@ async function onMessage(message, { edited = false } = {}) {
         checkDatetime: datetimeChecker(client),
     });
     if (!verdict.kind && !verdict.weaponGuess) return;
+    // THE OWNER'S SWITCHES (B7, utils/botControls.js): a blocked person or server, or a freeze of everything, is silent; a freeze of one command is checked below, once the command is known. The owner is never stopped, so he can always test.
+    const controls = require('../utils/botControls');
+    const owner = require('../utils/owner').isOwnerId(message.author.id);
+    if (!owner && (controls.isBlockedUser(message.author.id) || controls.isBlockedGuild(message.guildId) || controls.isFrozen(null))) return;
     // THE SPAM LADDER (B7): someone serving a penalty gets nothing, checked before any lookup so a spammer costs no database read (B6's think-pass, his "sure", 2026-10-29 15:15 EDT). Their countdown note is already up.
     const spam = require('../utils/textCommands/spamLadder');
     if (spam.penaltyFor(message.author.id)) return;
@@ -464,6 +470,7 @@ async function onMessage(message, { edited = false } = {}) {
     }
     if (!verdict.kind) return;
     const asked = verdict.command ? findTextCommand(verdict.command) : null;
+    if (!owner && asked && controls.isFrozen(asked.slash)) return;
     if (!(await allowed(asked ? textPathOf(asked) : null))) return;
     // Lookups happen BEFORE the limits and the edit-window record, so a message that turns out silent (`d gs skins are cool`) neither counts against the person nor stops an edit from answering.
     let resolved = null;
@@ -484,14 +491,17 @@ async function onMessage(message, { edited = false } = {}) {
     answered.set(message.id, Date.now());
     if (!canPost(message)) return dmCantPost(message, typed);
     if (spam.addPoints(message.author.id, spam.REPLY_POINTS)) return spam.startPenalty(message, { canPost: true });
-    if (resolved?.kind === 'pick') return reply(message, pickCard(resolved.textCommand, resolved.choices, rest), { ttl: CARD_TTL_MS });
-    if (resolved?.kind === 'noMatch') return reply(message, noMatchLine(resolved.text), { ttl: CARD_TTL_MS });
+    // A misfire is keyed by Dioreo's word: the command it answered for or suggested, never what was typed.
+    const misfire = (kind, word = verdict.command) => ({ kind, word, via: verdict.via });
+    const noteNoMatch = () => require('../utils/textCommands/misfires').note(message.guildId, 'noMatch', verdict.command, verdict.via);
+    if (resolved?.kind === 'pick') return reply(message, pickCard(resolved.textCommand, resolved.choices, rest), { ttl: CARD_TTL_MS, misfire: misfire('pick') });
+    if (resolved?.kind === 'noMatch') { noteNoMatch(); return reply(message, noMatchLine(resolved.text), { ttl: CARD_TTL_MS }); }
     if (resolved?.kind === 'run') return runTextCommand(message, { ...resolved.verdict, typed });
-    if (verdict.kind === 'needsInput') return reply(message, needsInputCard(findTextCommand(verdict.command), verdict.via), { ttl: CARD_TTL_MS });
-    if (verdict.kind === 'noMatch' && verdict.option === 'datetime') return reply(message, couldntReadCard(findTextCommand(verdict.command), verdict.via, verdict.text), { ttl: CARD_TTL_MS });
-    if (verdict.kind === 'noMatch') return reply(message, noMatchLine(verdict.text), { ttl: CARD_TTL_MS });
+    if (verdict.kind === 'needsInput') return reply(message, needsInputCard(findTextCommand(verdict.command), verdict.via), { ttl: CARD_TTL_MS, misfire: misfire('askedForInput') });
+    if (verdict.kind === 'noMatch' && verdict.option === 'datetime') return reply(message, couldntReadCard(findTextCommand(verdict.command), verdict.via, verdict.text), { ttl: CARD_TTL_MS, misfire: misfire('couldntRead') });
+    if (verdict.kind === 'noMatch') { noteNoMatch(); return reply(message, noMatchLine(verdict.text), { ttl: CARD_TTL_MS }); }
     if (verdict.kind === 'help') return reply(message, helpCard(client, prefixes));
-    if (verdict.kind === 'didYouMean') return reply(message, didYouMeanCard(verdict.candidates, rest), { ttl: CARD_TTL_MS });
+    if (verdict.kind === 'didYouMean') return reply(message, didYouMeanCard(verdict.candidates, rest), { ttl: CARD_TTL_MS, misfire: misfire('didYouMean', verdict.candidates.join('/')) });
     if (verdict.kind === 'emojiReply') return reply(message, { content: mentionReplyEmoji(client) });
 }
 
@@ -523,6 +533,8 @@ function registerTextCommands(client) {
         for (const [k, t] of cantPostDms) if (now - t > CANT_POST_DM_MS) cantPostDms.delete(k);
         for (const [k, s] of suggestions) if (now - s.at > SUGGEST_MS) suggestions.delete(k);
         require('../utils/textCommands/spamLadder').sweep(now);
+        // The misfire counts gathered since the last sweep, one $inc per row.
+        require('../utils/textCommands/misfires').flush().catch(() => {});
     }, 10 * 60 * 1000).unref();
 }
 
