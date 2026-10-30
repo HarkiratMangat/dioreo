@@ -292,6 +292,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-28 13:58 EDT — Two letters that matched nothing (v3.1.2)
 - 2026-10-28 15:30 EDT — A season's dates outlive the season (v3.2.0)
 - 2026-10-29 10:00 EDT — Prod /help fixed: the deleted DioreoCombo emoji (v3.2.1)
+- 2026-10-30 17:44 EDT — Text commands ship: typed commands, per-server prefixes and the spam ladder (v3.3.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4818,6 +4819,14 @@ The fix is to save a season's dates on its own patch-notes entry at the one mome
 **What changed.** `dioreoCombo` now points at `DioreoComboCoral`. The renamed season icons, 26 new brand emojis and an animated `Cooldown` hourglass went into the map, with every original uploaded to Cloudinary's `emoji-originals` so Sync can copy them to the other apps. The hourglass replaces the generic ⏳ in cooldown and still-saving messages; an expired `/manage` save shows the cross instead.
 
 **Lesson.** Read the journal before naming a cause. The plausible one (a length limit) was true and still the wrong answer. The text-commands branch adds a guard so an emoji the booted app lacks is dropped rather than failing the whole reply.
+
+## 2026-10-30 17:44 EDT — Text commands ship: typed commands, per-server prefixes and the spam ladder (v3.3.0)
+
+**What shipped.** Text commands: Dioreo answers a message that starts with `@Dioreo`, `d` or `dior`, in public, for servers where slash commands are hidden or just slower to type. On top of the parser and listener came a per-server prefix, a /admin switch for typed commands, a spam ladder with owner tools, a /help page for every command, permanent draw images linked to their items, and announcement layout marks.
+
+**How it was built.** Harkirat ran the units as standalone cloud threads (B1 to B7, then a Sonnet builder on the Mac), each on its own sub-branch merged into `feat/text-commands`, with this lead verifying and releasing. B6 and B7 designed every panel with him live in #testing-spam before building it.
+
+**Lessons.** (1) An agreement made inside one cloud thread is invisible to the next: B7's spec lived only in B6's transcript until it was copied into the plan word for word, and a builder step now requires that before a merge. (2) A live pass finds what unit tests can't: Discord's modal cut `default` to its first six letters because the box allowed 6 characters, so the reserved-word check never ran. (3) Copy an emoji to another app from its original in `emoji-originals`, never from Discord's CDN.
 
 # Part B — Lessons Ledger (thematic)
 

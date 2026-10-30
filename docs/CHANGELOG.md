@@ -29,7 +29,21 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.2.1 — 2026-10-29 10:00 EDT (#236) — /help works on prod again; new brand emojis and the Cooldown hourglass
+## v3.3.0 — 2026-10-30 17:44 EDT (#237) — Text commands: `@Dioreo today`, `d today`, `dior today`, per-server prefixes and the spam ladder
+**From Harkirat, 2026-10-28 to 2026-10-30:** text commands with `@Dioreo`, `d` and `dior`, typo-forgiving and public by default; then "we need a b6 to review and design/refine each of the newer panels/messages", per-server prefixes, a /admin on/off control, the spam ladder, "make it 1 only" for prefixes, draw images "linked to a draw", and the announcement layout marks.
+
+- **Text commands** (`bot/textCommands.js`, `utils/textCommands/**`, `handlers/textCommands.js`): a message that starts with `@Dioreo`, `d` or `dior` runs that command and answers in public, never pinging. Every public command has a typed form with aliases and value words (`d draws new`, `d gs ak117`, `d time fri 6pm`), typo-forgiving where the message clearly addresses Dioreo; reply-to forms; Did you mean, the pick-a-date card and its pop-up, the help card, the can't-post DM; a 5-second same-command and 1-second any-command limit. Intents gain `GuildMessages` and, where the app's flags allow it, `MessageContent`; no message is stored.
+- **Per server:** one prefix of its own in place of `d` (`d prefix d!`, `d prefix reset`, or /admin's Edit Prefix; `dior` and `@Dioreo` always work), and /admin's **Config Text Commands** turns typed commands on or off by default, channel, role and command (`utils/textCommands/server.js`, `utils/guildPolicy.js`, `commands/admin.js`).
+- **The spam ladder and owner tools:** a per-person score over a rolling 60 seconds pauses someone's text commands for 1 minute up to 12 hours, with a countdown note; `/bot penalties`, `/bot freeze`, `/bot servers` (checkup, reply limits, misfire counts, leave, block) and a join/leave feed (`utils/textCommands/spam.js`, `models/TextPenalty.js`, `models/BotControls.js`, `commands/bot.js`).
+- **/help** is one page per command, each in a typed and a slash view whose typed forms come from the parser's own word list (`utils/helpPages.js`); a new **Server Prefix** page.
+- **Draw images** live in a permanent `draws/` folder on Cloudinary, each tagged with its items and rarities; a draw saved without an image reuses the one whose items match exactly, and a near match is only named in the error (`utils/cloudinaryCache.js`). `scripts/backfillDrawImages.js` moves the existing images; its prod run waits for Harkirat.
+- **Announcements** take layout marks on a line of their own: `----` and `====` draw a divider, `--` and `==` a gap, `++` a new text box (`utils/announcement.js`).
+- **Weapons match whole words** after `d` (`utils/search.js`), and `Workmark` emojis are `Wordmark` now (`utils/emojiMap.js`).
+- **Legal:** PRIVACY v1.12 and TERMS 1.7 say what text commands read, never keep, and what the spam ladder holds; the site is rebuilt.
+- **CI:** a version-only `package.json` bump no longer runs the browser walks (`.github/workflows/ci.yml`).
+- **Tests:** new suites for the parser, arguments, listener, adapter, server rules, prefix command, draw-image linking and the announcement marks; `TEST_CACHE=0 npm test` 191/191, and a live pass on the dev bot (`local/project/features/text-commands/live-pass-report.md`).
+
+## v3.2.1 — 2026-10-29 10:00 EDT (#236 · `b78c8011`) — /help works on prod again; new brand emojis and the Cooldown hourglass
 **From Harkirat, 2026-10-29:** "i updated the emojis and deleted the old dioreo combo... where we were currently showing dioreocombo, please put dioreocombocoral there", the new brand set and season icons, and "for any cooldown message, to replace the generic hourglass emoji".
 
 - **/help works on prod again** (`utils/emojiMap.js` `dioreoCombo`). It failed for everyone with `COMPONENT_INVALID_EMOJI`: `DioreoCombo` was deleted from the prod app, so the old id was sent and Discord rejected the reply. It now points at `DioreoComboCoral`, in /help's title, its Commands List option and /invite's title.
