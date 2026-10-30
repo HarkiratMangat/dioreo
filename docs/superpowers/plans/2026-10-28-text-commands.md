@@ -40,6 +40,7 @@ status: live
    Co-Authored-By: diorswrld <310361322+diorswrld@users.noreply.github.com>
    ```
    plus your harness's own Claude line.
+   - **Before you merge: anything you agreed with Harkirat for a later unit goes into that unit's section of this plan, verbatim, in your merge.** Your thread, its scratchpad and `local/` are gone for the next reader. (B6 put B7's spec only in its cloud thread and a gitignored handoff, which blocked B7, 2026-10-30 02:50 EDT.)
 7. **Do NOT push your branch** (changed 2026-10-28 22:28 EDT: B1 found the cloud can push a branch but not delete it, so B1's stayed on GitHub). Merge it locally and push only the integration branch: `git checkout feat/text-commands && git pull --ff-only origin feat/text-commands && git merge --no-ff <your branch> && git push origin feat/text-commands && git branch -d <your branch>`. A push gate may ask for an approval line: `Approved by: Harkirat · to: merge <your branch> into feat/text-commands and push it · when: his prompt that started this thread`.
 7b. **B2 only, if the work runs long:** commit each phase on your branch as it passes its tests. If you cannot finish, push your branch (the one time a builder branch goes up; the lead deletes it later), do NOT merge it, and reply "BLOCKED: <what is left>" so the work continues from your branch.
 8. Reply with: the test output, the audit's ERROR/WARN counts, the merge commit hash, and anything you could not do. Never touch `main`, `public/`, `portal/**`, `docs/pins2/**`, never run `npm run site` or `npm run portal*`, never start the bot (there is no token here). A wrong or unclear spec → "BLOCKED: <what>"; never rewrite it.
@@ -191,13 +192,13 @@ Runs after B4, last before the lead. Follow "Every builder, in this order" with 
 
 Runs after B6, last before the lead. Follow "Every builder, in this order" with B6's merge as the predecessor (`rg "feat/text-commands-b6-design"`). Like B6, the panels in it are designed WITH Harkirat in your thread: show renders in #testing-spam (`1536403911676792892`) the way B6 did, every option for a step in ONE message, he picks, you build, his yes on the after-renders before the merge.
 
-**His spec comes first.** B6's thread agreed the detail of this unit with him (the spam score and rungs, the /admin control's layout, his draft of the /admin help page). Before you design anything, the section "B7 spec, as agreed in B6's thread" below must hold it verbatim. If that section is missing or says "to be filled", stop and reply "BLOCKED: B7's spec isn't committed yet".
+**His spec comes first.** B6's thread agreed the detail of this unit with him (the spam score and rungs, what the /admin control does and its button's labels, and B6's draft of the /admin help page with his reactions; the control's layout was never drawn, so you design it with him). Before you design anything, the section "B7 spec, as agreed in B6's thread" below must hold it verbatim. If that section is missing or says "to be filled", stop and reply "BLOCKED: B7's spec isn't committed yet".
 
 **Scope, from B6's report (the Audit log entry of 2026-10-30 00:53 EDT):**
 1. **Per-server prefixes.** A server can set its own prefixes in place of the default `d,dior` (env `TEXT_PREFIXES`); `@Dioreo` always works. Every typed Usage line on /help shows the prefixes of the server it is read in.
 2. **A /admin on/off control for text commands** (server default, channel, role, command), the same precedence model as `/admin`'s visibility rules (`.claude/rules/admin-controls.md`). It replaces the Open privately card (B6's #11): where text commands are off, Dioreo stays silent instead.
 3. **The spam ladder.** A score per person over a rolling 60 s; rungs from 1 m up to 12 h of silence; the active penalties kept in Mongo; `/bot penalties` on Dioreo Admin to list and lift them; an owner DM when someone reaches 6 h and again at 12 h; PRIVACY and TERMS lines for all of it.
-4. **The /admin help page**, reviewed with him from his draft: drop "Typed commands offer Open privately", the panel's own wording and rule order, "Rules apply only while Dioreo is in your server", the per-server prefixes on every typed Usage line. One /admin button flips between **Config Text Commands** and **Config Slash Commands** (his labels, 2026-10-29 23:28 EDT).
+4. **The /admin help page**, reviewed with him from B6's draft (in the spec section below): drop "Typed commands offer Open privately", the panel's own wording and rule order, "Rules apply only while Dioreo is in your server", the per-server prefixes on every typed Usage line. One /admin button flips between **Config Text Commands** and **Config Slash Commands** (his labels, 2026-10-29 23:28 EDT).
 
 **Owns** (confirm against the code in Group 0; a file it truly needs that is missing here is fine, named in your report): `commands/admin.js` · `utils/guildPolicy.js` · `models/GuildSettings.js` · a new model for the penalties under `models/` · `bot/textCommands.js` · `utils/textCommands/**` · `utils/helpPages.js` · `commands/help.js` · `commands/bot.js` and `handlers/bot.js` (only `/bot penalties`) · `docs/legal/PRIVACY.md` (§2 and Appendix A) and `docs/legal/TERMS.md` · `.claude/rules/text-commands.md` and `.claude/rules/admin-controls.md` · their tests, including `guildPolicy.test.js`, `guildPolicyEnforcement.test.js`, the text-command tests and the help tests and snapshot · your report in this plan's Audit log.
 **Test:** every test you touch, `&&`-chained, then `TEST_CACHE=0 npm test` once before the merge; `npm run docs:audit` with no new ERROR (its `privacy-model-coverage` check must pass with the new model).
@@ -219,15 +220,360 @@ Runs after B6, last before the lead. Follow "Every builder, in this order" with 
 
 ### B7 spec, as agreed in B6's thread
 
-To be filled: B6's thread holds his agreed detail and his /admin help draft. They go here verbatim before B7 starts.
+Copied 2026-10-30 02:47 EDT by B6's session from its transcript. Two kinds of text, kept apart: **his words**, quoted exactly with the time he sent them (EDT), and **B6's messages he answered**, copied exactly in ```` fences (closing questions dropped, since they were questions, not agreements). Where a later answer of his changed an earlier proposal, the later one wins; the order below is the order they happened.
+
+⚠️ **Two things the hand-off names are not in B6's thread, so B7 designs them with him in its Group 2:**
+- **No layout for the /admin text-command control was agreed.** The thread settled what it does (on/off, by default, channel, role, command, separate from the visibility control) and the one button's two labels. Its panel layout was never drawn.
+- **The /admin help draft is B6's, not his.** He reviewed it, called one line wrong, and handed the whole review to B7 (21:59 and 22:00 EDT below). It is copied here as B7's starting point, with his reactions and B6's findings.
+- **No PRIVACY or TERMS wording was agreed.** Only that B7 adds the PRIVACY lines and one TERMS spam line, with the wording put to him through the lead.
+
+#### 1. Per-server prefixes
+
+His words:
+> "we still need to implement a per server prefix system" (2026-10-29 12:40 EDT)
+
+> "per server can be b7" (2026-10-29 13:40 EDT)
+
+> "fyi, in these panels, the prefix being used in the example should = the prefix the user used. so if they use d timestamp, the panel shows d as the prefix in the examples, etc." (2026-10-29 14:49 EDT; built in B6, and a server's own prefix must keep it true)
+
+> "let's remove / for text commands as an option altogether and just leave it for the real slash commands" (2026-10-29 12:40 EDT; built in B6, so `/` is never a per-server prefix either)
+
+#### 2. The /admin text-command on/off control, and its button
+
+B6's message (2026-10-29 15:50 EDT) proposing the Open privately card:
+````markdown
+# #9 is done; #11 is posted
+
+#10 (the brand-emoji reply) is your settled deck, so it's skipped.
+
+**#11 · Open privately** is what a text command posts where a server's /admin rule makes Dioreo's answers private. Anyone can press it, and it opens their own copy, hidden.
+
+| | Shape |
+|---|---|
+| NOW | one small grey line + a bare **Open privately** button, with no title or colour |
+| NEW | a title naming the command it opens (/today's icon + `today`, /today's colour) + `This server keeps Dioreo's answers private here.`, with **Open privately** beside it |
+````
+
+His words:
+> "tf that makes no sense.
+>
+> admins need 2 controls, for slash commands and for text commands. text commands aren't private, so they're either a "turn off here or allow here" sort of system." (2026-10-29 15:54 EDT)
+
+B6's message he answered (2026-10-29 15:54 EDT):
+````markdown
+# Right: the Open privately card is a slash-command idea forced onto text
+
+A typed message is public no matter what, so "make text answers private" can't exist. That leaves two separate /admin controls:
+
+| Control | Applies to | Values |
+|---|---|---|
+| Visibility (today's /admin) | slash commands | public / private, as now |
+| **Text commands** (new) | `d` / `dior` / `@Dioreo` | **on / off**, by default, channel, role or command |
+
+Then Open privately (#11) goes away: where text commands are off, Dioreo is silent. Today an admin's only way to turn text commands off is Server Settings → Integrations, which turns the slash command off too.
+
+> **My pick:** build it in **B7** alongside per-server prefixes. Both are /admin text-command settings stored per server. B6 drops #11 from the design pass and leaves the card untouched until B7 replaces it.
+````
+
+His words:
+> "sure b7" (2026-10-29 15:55 EDT)
+
+> "so does this panel also account for the new settings that will be built by d7 for the text commands? such as disabling a textcommand in a channel" (2026-10-29 21:55 EDT, about the /admin help page)
+
+> "okay, and also add that it should include a button in there which switch the panel to text commands view. the button being slightly different worded so its easier to understand the view is additional admin tools" (2026-10-29 21:58 EDT)
+
+> "config text commands? config slash commands?" (2026-10-29 23:28 EDT, his answer to "What should B7's /admin button say? My pick is "Text Command Tools".")
+
+B6's message recording it (2026-10-29 23:28 EDT):
+````markdown
+# Recorded for B7: one /admin button that flips between your two labels
+
+| /admin is showing | The button reads |
+|---|---|
+| Slash-command controls (where it opens) | **Config Text Commands** |
+| Text-command controls | **Config Slash Commands** |
+
+It replaces my "Text Command Tools" in the B7 notes, and both labels fit on one line on a phone.
+````
+
+#### 3. The spam ladder
+
+His words, the ask:
+> "-# :Cooldown: Slow down! Try `d today` again in an hour
+>
+> add a spam prevention method as well, if the cooldown is triggered 5+ times within 60 seconds, bump their cooldown to 1 minute. if offense repeats, then 5 minutes, then 15, then 1h, then 6h, then 12h. the window for offenses resets daily when the "daily update" happens. Does that make sense? anything else we need to add similar to that? run it through a /think-pass please" (2026-10-29 15:06 EDT)
+
+B6's message (2026-10-29 15:07 EDT):
+````markdown
+# The ladder makes sense; here's how the think-pass pinned it down
+
+**#8 note:** `-# ⏳ Slow down! Try d today again in 5 seconds`. It uses the prefix and word the person typed, and the countdown is live.
+
+| Rule | How it works |
+|---|---|
+| What counts | **every blocked message**, not just warnings (one warning per 5 s would need ~25 s of spam to reach 5) |
+| Scope | per person, **all** text commands, so switching commands doesn't dodge it |
+| Trigger | 5 blocked in a rolling 60 s → 1 m, then 5 m, 15 m, 1 h, 6 h, 12 h (12 h is the cap) |
+| Reset | the step count clears at 00:00 UTC (the daily update); a penalty already running **runs out** rather than being pardoned at 23:59 |
+| During a penalty | **one** note (`Slow down! Try again in an hour`, deletes after 10 s), then silence |
+| Cost | the penalty is checked **before** any weapon/season lookup, so a spammer costs no database reads |
+| Exempt | you (the owner), so testing on prod never locks you out |
+| Storage | in memory only, so a restart clears it. PRIVACY §2.3's in-memory list gains one line, and the lead brings you that wording. |
+
+## Similar gaps found
+
+| Gap | Proposal |
+|---|---|
+| No per-**server** cap: a raid across 50 channels gets 5 replies / 10 s in *each* | at most 20 replies / 10 s per server, then silent |
+| The can't-post DM is per channel, so 30 locked channels = 30 DMs a day | at most 3 can't-post DMs per person a day |
+````
+
+His replies, quoting its rows (2026-10-29 15:15 EDT):
+> on "every blocked message, not just warnings": "wdym?"
+>
+> on "per person, all text commands": "makes sense"
+>
+> on "the step count clears at 00:00 UTC (the daily update); a penalty already running runs out": "ok"
+>
+> on "one note (Slow down! Try again in an hour, deletes after 10 s), then silence": ""You're on cooldown for spamming! Try again in an hour". send it once and don't delete it, this way it can be used as their countdown timer. only delete once the penalty finishes."
+>
+> on "the penalty is checked before any weapon/season lookup": "sure"
+>
+> on "in memory only, so a restart clears it.": "you sure?
+>
+> what if i want to override it? remove someone penalty that was accidentally triggered, etc?"
+
+B6's message (2026-10-29 15:15 EDT):
+````markdown
+# Answers
+
+**What "every blocked message" means.** Today the 5-second rule warns **once**, and every repeat after the warning is blocked silently. Say someone sends `d today` six times in 3 seconds:
+
+| Counting | Number counted |
+|---|---|
+| warnings only | 1 (one warning per 5 s), so 5 strikes needs ~25 s of nonstop spam |
+| every blocked message | 5, so the penalty lands on the 6th message |
+
+So I count every blocked message.
+
+**The penalty note:** `You're on cooldown for spamming! Try again in an hour`. Sent once, it counts down live and deletes itself when the penalty ends.
+
+**"Are you sure?" on memory-only: no, it's the wrong call.** Memory breaks two of your rules:
+
+| Problem | Why |
+|---|---|
+| A deploy or crash wipes a 12 h penalty | every restart pardons everyone |
+| The countdown note is left behind forever | the "delete when it ends" timer dies with the restart |
+| You can't lift one | an in-memory penalty can only be reached from inside the running bot |
+
+> **Fix:** store it. One small database record per penalised person: their Discord id, the step, when it ends, and the note's message id. It's **deleted automatically** once the penalty ends and the day's count has reset. A restart reloads it and re-arms the note's delete. This is new stored data, so PRIVACY gets a line (wording to you via the lead).
+
+**Lifting a penalty:** add **`/bot penalties`** to Dioreo Admin, owner only. It lists active penalties, each with a **Lift** button, plus **Lift all**. Lifting also deletes that person's countdown note.
+````
+
+His replies (2026-10-29 15:19 EDT):
+> on "Similar gaps found": "makes sense i think"
+>
+> on the counting table: "nah that feels too strict."
+>
+> on "Fix: store it…": "sure. but not when day has reset, just when the penalty has ended."
+>
+> on "Lifting a penalty: add /bot penalties…": "sure + a user id direct method"
+>
+> on "Build it in B6, or move it to B7 with per-server prefixes?": "b7"
+
+His words:
+> "honestly the counting system needs a better think-pass. because i dont want to strictly spam penalize different command usage but i also want the prevention in there. so the count needs to accomidate for same command spam and multi command spam (since that only has a 1 second cooldown" (2026-10-29 15:21 EDT)
+
+B6's message, the score (2026-10-29 15:28 EDT):
+````markdown
+# Spam score: 10 points in 60 s means a penalty
+
+| Event | Points |
+|---|---|
+| Reply posted | 1 |
+| 5-second warning | 3 |
+
+| Who | Points | Result |
+|---|---|---|
+| Explorer, 6–9 commands | 6–9 | ✅ fine |
+| One double-tap | 4 | ✅ fine |
+| Spam, 1 command a second | 10 in ~10 s | ⛔ penalty |
+| Same-command spam | 12 in ~15 s | ⛔ penalty |
+
+Measured with the real listener: different commands 1 s apart get **no warnings**, so a warnings-only count would miss them.
+````
+
+His words:
+> "i think so? idk...
+>
+> for storage, id say memory until daily reset, with penalties themselves in mongo so they dont get lifted by bot restarts to on daily update (assuming they're active)" (2026-10-29 15:30 EDT)
+
+B6's message (2026-10-29 15:30 EDT):
+````markdown
+# Storage is settled, and B7 tunes the score
+
+| Part | Where it lives |
+|---|---|
+| Step count | in memory, cleared at 00:00 UTC |
+| Active penalty | **Mongo**, so neither a restart nor the daily reset lifts it; deleted when it ends |
+| Score (1 / 3 / 10) | numbers kept as named constants, tuned on the dev bot in B7, since you're unsure |
+
+Both are in the B7 notes.
+````
+
+His words, on "Is the ladder approved as a B7 starting point": "not sure, /think-pass it" (2026-10-29 15:30 EDT)
+
+B6's message, the think-pass's fixes (2026-10-29 15:31 EDT):
+````markdown
+# Not ready yet: four fixes are in, two calls are yours
+
+| Found | Fix (in the B7 notes) |
+|---|---|
+| Mongo's auto-delete would leave the 12 h countdown note up **forever** if the bot is down when a penalty ends | delete the note first, then the record; auto-delete is only a backup, a day later |
+| The new penalty record **fails docs-audit** (any per-user record must be in PRIVACY) | B7 adds PRIVACY lines + one TERMS spam line; wording to you via the lead |
+| A penalised person can still press Did you mean buttons | those presses get a private "you're on cooldown" |
+| A per-server cap of 20 / 10 s could silence a big server right after the daily update | raised to 30 / 10 s |
+````
+
+His replies:
+> on "those presses get a private "you're on cooldown"": "only if penalty is 5min or longer." (2026-10-29 15:34 EDT)
+
+> on "Should a penalty apply to the person everywhere, or only in the server where they spammed? My pick is per server": "everywhere because we're preventing the spammer so what if they're hijacked by a bot?" (2026-10-29 15:35 EDT)
+
+> on "Should Dioreo Admin DM you when someone reaches the 6 h or 12 h rung?": "yes" (2026-10-29 15:35 EDT)
+
+> "yes approved" (2026-10-29 15:35 EDT, the ladder as B7's starting spec)
+
+B6's notes at the time (its build list, written as each answer came in):
+````text
+- Spam ladder (his ask 2026-10-29 15:06 EDT; think-pass definitions, pending his OK): offense = any blocked text command (same within 5 s or any within 1 s), counted per person across all text commands; 5 in a rolling 60 s -> penalty 1 m, then 5 m, 15 m, 1 h, 6 h, 12 h (cap); step count resets 00:00 UTC (the daily update), a running penalty runs out; during a penalty ONE note ("-# :Cooldown: Slow down! Try again <t:R>", deleted after 10 s) then silence, checked before any weapon/season lookup; owner exempt; memory only (restart clears) -> PRIVACY §2.3 list gains it.
+- Spam ladder update (his answers 2026-10-29 15:19 EDT): a strike = a 5-second WARNING (not every blocked message; "too strict"); 5 warnings in 60 s -> penalty. Penalty note: "You're on cooldown for spamming! Try again <t:R>", sent once, NOT deleted until the penalty ends (it is the countdown). Stored record deleted when the penalty ends (not at the daily reset) -> PENDING A/B/C on where the step lives. Lift: `/bot penalties` (list, Lift, Lift all) + a direct `user:<id>` lift; lifting deletes the note.
+- Similar limits (his "makes sense", 2026-10-29 15:19 EDT): per-server cap 20 replies / 10 s; can't-post DMs capped at 3 per person per day.
+- MOVED TO B7 (his "b7", 2026-10-29 15:19 EDT): the spam ladder, its stored penalty record, the penalty note, and `/bot penalties` (list / Lift / Lift all / user:<id>). Open for B7: where the step lives (A: memory until the daily reset, stored record only during a penalty; B: one record until the reset; C: none). B6 keeps the in-memory limits it owns: the per-server cap and the can't-post DM cap.
+- B7 ladder, his answers 2026-10-29 15:30 EDT: score per person over rolling 60 s (reply posted = 1, 5-s warning = 3, 10 = penalty; score clears when a penalty starts) — his "i think so? idk", so B7 tunes it on the dev bot with the numbers as constants; step count in memory until 00:00 UTC; ACTIVE penalties stored in Mongo so neither a restart nor the daily reset lifts them (record deleted when the penalty ends).
+- B7 think-pass findings (2026-10-29 15:31 EDT): (1) a TTL-deleted record orphans the Discord countdown note if the bot is down at the end -> delete the record explicitly after deleting the note, with a TTL safety at until + 1 day; the check compares `until > now` (TTL runs about once a minute). (2) A new model with a discordId fails docs-audit's privacy-model-coverage until PRIVACY names it -> B7 adds the PRIVACY lines (and a TERMS acceptable-use line), wording via the lead. (3) txtrun_ clicks honour a penalty with a private line, only on the 5 min rung and up; during the 1 min rung presses work normally (his call 2026-10-29 15:34 EDT). (4) per-server cap raised to 30 replies / 10 s (20 could silence a big server right after the daily update; a guess either way). Penalty applies to the person EVERYWHERE (his call 2026-10-29 15:35 EDT: a hijacked account spamming several servers). Owner DM from Dioreo Admin when someone reaches the 6 h or 12 h rung (his yes 2026-10-29 15:35 EDT; a new owner-DM exception for CLAUDE.md, via buildSubmissions dmOwner).
+- B7 spam ladder APPROVED as B7's starting spec (his 'yes approved', 2026-10-29 15:35 EDT).
+````
+
+#### 4. The /admin help page: B6's draft, his reactions, B6's findings
+
+B6's draft (2026-10-29 21:53 EDT, copied from B6's scratch mock, which lived only in its container; one box per block; `</admin:id>` is the clickable command):
+````markdown
+## :ServerSettings: Server Admin
+-# Choose where Dioreo answers publicly or privately in your server. Needs **Manage Server**.
+
+### </admin:id>
+
+`[visibility]`
+-# Show only to you, or everyone in the chat
+
+**In the panel**
+> -# **Overview**  *Your default, and every rule at a glance*
+> -# **Channels**  *Public or private in chosen channels*
+> -# **Roles**  *Its own setting for chosen roles*
+> -# **Commands**  *One command's own settings*
+> -# **Help**  *How the rules work, in full*
+
+**Tools on Overview**
+> -# **Check a Member**  *What someone gets, and why*
+> -# **Export Log**  *Every change, last 60 days*
+> -# **Reset Everything**  *Back to all public*
+
+**Which rule wins**
+-# The first that applies decides:
+> -# `1` Their role, in this channel
+> -# `2` Their role, everywhere
+> -# `3` This channel
+> -# `4` Your default
+-# A command with its own settings uses only those.
+
+**Good to know**
+> -# **Private** always wins over someone's own choice
+> -# **Public** lets them choose, in `/settings`
+> -# Typed commands offer **Open privately** where answers are private
+
+-# **Common setups**
+-# **Private, except one channel**
+> -# Overview → **Private** · Channels → `#bot-spam` **Public**
+-# **Mods always public**
+> -# Roles → `@Moderator` → **Public**
+-# **One command private**
+> -# Commands → `/colors` → **Private**
+
+-# Usage: `/cmd <required> [optional]` · no text command
+````
+
+His words:
+> "no, honestly, it needs a drastic ease of use, understanding, design, structure, review and redesign. it's so confusing and relies purely on prose. give it a /workstyle:think-pass" (2026-10-29 21:52 EDT, about the old page; the draft above is the result)
+
+B6's message on what B7 updates (2026-10-29 21:56 EDT):
+````markdown
+# No. The page covers `/admin` as it works today, and B7's text-command control isn't built yet
+
+I didn't describe it now on purpose, because a help page that names settings nobody can find yet is wrong. Instead, B7's scope (Decided 4 in the handoff, which goes into the Audit log at merge) now says that B7 updates this page:
+
+- **In the panel:** a row for the text-command control (on/off by default, channel, role, command)
+- **Which rule wins:** where that control sits in the order
+- **Common setups:** a recipe, e.g. "Typed commands off in one channel"
+- **Good to know:** the "Open privately" row is replaced, since B7 retires that card
+- **Prefixes:** per-server prefixes on the help card and in every typed page's Usage line
+````
+
+His words:
+> ""Typed commands offer Open privately where answers are private" is incorrect. so i fear other stuff might be misinforming. as such please distil it through a harsh, uncomfortable critique and review /workstyle:think-pass" (2026-10-29 21:59 EDT)
+
+> "actually let's just leave the full /admin help panel review and fix to b7. that way it can correct the staleness" (2026-10-29 22:00 EDT)
+
+B6's hand-over (2026-10-29 22:00 EDT):
+````markdown
+# The `/admin` help page review is now B7's. I've handed over what the review had found
+
+| | |
+|---|---|
+| **B6 builds** | `/admin` on its own page with today's help text unchanged, since the category page it lived on is gone |
+| **B7 gets** | the full review and redesign, and my draft as a starting point |
+| **Mockup** | removed from the channel |
+
+What the check against the code had already found, now in B7's scope in the handoff:
+
+- **Open privately row:** wrong for your design, since B7 drops that card
+- **"Public lets them choose, in /settings":** should match the panel's own Help: "Public allows it; anyone who chose private still gets private"
+- **Common setups:** should name the panel's real controls ("Always private in these channels…", "Always public for these roles…", "Open a command's settings…")
+- **Roles line:** missing "everywhere or in some channels"
+- **Missing:** "Rules apply only while Dioreo is in your server"
+
+> **Lesson I'm applying to the rest:** that row came from a rule file and contradicted a decision in my own handoff. Every sentence on the remaining pages gets checked against the code and the Decided list before I post it.
+````
+
+#### 5. B6's other notes for B7 (its build list, verbatim)
+
+````text
+- B7: per-server prefixes (stored setting, /admin control, PRIVACY line).
+- #11 Open privately: DROPPED from B6 (his 'sure b7', 2026-10-29 15:55 EDT). B7 adds a separate /admin control for text commands (on/off by default, channel, role, command); where off, Dioreo is silent; the Open privately card goes away then. B6 leaves the card's code untouched.
+- /admin page REDESIGN after his think-pass ask (2026-10-29 21:52 EDT): the old /help admin text described the panel loosely and in a different rule order from the panel's own Help tab. New page: header, `</admin>`, [visibility], "In the panel" (5 tabs, one italic line each), "Tools on Overview" (3), divider, "Which rule wins" (1 role-in-channel › 2 role › 3 channel › 4 default; a command's own settings use only those — the panel's wording), "Good to know" (Private wins / Public lets them choose / typed commands offer Open privately), divider, "Common setups" (3 recipes, title + quoted steps), Usage. B7 must update the typed-commands row when its text-command control replaces Open privately.
+- /admin help page: B6 carries the existing text over unchanged onto its own per-command page; the review and redesign moved to B7 (his call, 2026-10-29 22:00 EDT; findings in the handoff's Decided (4)).
+- 2026-10-29 23:28 EDT · B7 /admin button label (his words): "Config Text Commands" on the slash view, "Config Slash Commands" on the text view (one button that flips). Supersedes my "Text Command Tools". B7 input.
+````
+
+#### 6. How he wants the design done (his words, B6's thread)
+
+- "why tf are dumping everything into the channel... lets go 1 by 1" (2026-10-29 12:12 EDT)
+- "wait on #9 until i aprove the spam ladder. stop jumping the gun" (2026-10-29 15:22 EDT)
+- "too much prose" (2026-10-29 15:27 EDT) · "please keep the prose down, keep your summaries to the point. i dont want to read essays" (2026-10-29 17:04 EDT)
+- "omg YOU SOME OF YOUR OWN DESIGN JUDGEMENT! YOU SERIOUES COPY PASTED MY EXACT TEMPLATE?? like clean it up, polish it up, utilize components to make it look neat!!!" (2026-10-29 17:22 EDT) · "you're annoying me...what did i say about copy pasting my EXACT template? use some of your own judgement ffs! like does that make sense to you?" (2026-10-29 18:02 EDT)
+- "can you put each line, like ":GunsmithSearch: Gunsmith gunsmith · dmz" in a text box for some slight spacing" (2026-10-29 12:45 EDT) · "no extra large spacing after the labels btw, it's just a normal space" (2026-10-29 13:26 EDT) · "why such big gaps??" (2026-10-29 18:04 EDT) · "the seperate text box space isnt the same as the spacer space, its less" (2026-10-29 18:14 EDT)
+- "drop the "where available" it wraps the line." (2026-10-29 12:44 EDT) · "I want to reduce the wrapping and keep the code backtick on the commands pls" (2026-10-29 13:12 EDT)
+- "no, honestly, it needs a drastic ease of use, understanding, design, structure, review and redesign. it's so confusing and relies purely on prose." (2026-10-29 21:52 EDT, the /admin help page)
+- How B6 posted its renders to #testing-spam: `docs/claude/2026-10-30-b6-render-harness.md`.
 
 ## The lead, after B7 is merged (on this Mac)
 
 1. `git pull`; read B4's report first, then each unit's diff against its Owns and the spec.
-2. `git merge origin/main` if `main` moved; `npm run site` and commit `public/` (PRIVACY, TERMS and the /commands page changed).
+2. `git merge origin/main` if `main` moved; `npm run site` and commit `public/` (PRIVACY, TERMS and the /commands page changed). B6's changes are already built in `f96e205` (his yes, 2026-10-30 00:59 EDT, against step 8's "never run `npm run site`"; the changelog pages were left unbuilt), so this rebuild picks up B7's. A `public/` conflict in the `main` merge is settled by this rebuild, never by hand.
 3. `TEST_CACHE=0 npm test` and `npm run docs:audit`, exit codes read.
 4. B6 and B7 settled the listener's messages and /admin with Harkirat; re-render one only if the `main` merge changed it. B6's question about prod's `TEXT_PREFIXES` is answered: the VM's `.env` sets none (per B6's hand-off, relayed by Harkirat 2026-10-30 02:41 EDT), so the default `d,dior` reaches prod. Click-test on the dev bot in Dioreoland: every row of the Per command table that has an argument, the reply-to forms, Did you mean, needsInput, the chat guards.
-5. Show Harkirat the PRIVACY and TERMS wording; his yes before the merge. (PRIVACY §2.3's text-commands bullet he already left to judgement in B4's thread, 2026-10-29: "sure idk, your judgement".)
+5. Show Harkirat the PRIVACY and TERMS wording; his yes before the merge. B6's lines (the `/` prefix removed from their current text) already have it: "yes, proceed. go ahead." (2026-10-30 00:59 EDT). B7's new lines still need it. (PRIVACY §2.3's text-commands bullet he already left to judgement in B4's thread, 2026-10-29: "sure idk, your judgement".)
 6. Records: `package.json` 3.3.0, CHANGELOG + CHANGELOG-SUMMARY + DEVLOG (`scripts/devlog-add.mjs`), backfill the previous entry's hash.
 7. Push; `gh pr create --base main`; restate his approval (2026-10-28 20:59 EDT: "push and merge the text-commands branch into main"); squash merge with one trailer block; tag `v3.3.0`; delete the branch; refresh refs and the indexes. Deploy is NOT part of this; it waits for his word.
 
