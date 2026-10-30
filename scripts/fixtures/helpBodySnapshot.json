@@ -8020,7 +8020,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -8334,7 +8334,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -8609,7 +8609,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -8884,7 +8884,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -9159,7 +9159,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -9434,7 +9434,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -9680,7 +9680,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -9930,7 +9930,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -10187,7 +10187,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -10437,7 +10437,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -10690,7 +10690,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -10947,7 +10947,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -11198,7 +11198,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -11453,7 +11453,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -11703,7 +11703,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -11957,7 +11957,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -12212,7 +12212,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -12479,7 +12479,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -12730,7 +12730,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -12985,7 +12985,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -13231,7 +13231,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -13481,7 +13481,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -13740,7 +13740,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -14007,7 +14007,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -14262,7 +14262,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -14525,7 +14525,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -14771,7 +14771,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -15025,7 +15025,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -15267,7 +15267,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -15513,7 +15513,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -15533,7 +15533,7 @@
         "components": [
           {
             "type": 10,
-            "content": "## <a:ServerSettings:1536468904996774008> Server Admin\n-# Choose where Dioreo's replies stay private in your server"
+            "content": "## <a:ServerSettings:1536468904996774008> Server Settings\n-# Config custom settings for Dioreo in your server.\n-# These control where Dioreo answers **publicly or privately for /slash commands**, and where **typed (prefix) commands are allowed or disabled**."
           },
           {
             "type": 14,
@@ -15542,19 +15542,35 @@
           },
           {
             "type": 10,
-            "content": "### `/admin`\nWhere Dioreo answers **publicly** and where it stays **private**, for the whole server. Needs **Manage Server**."
-          },
-          {
-            "type": 10,
-            "content": "-# Opens a four-page panel — **Overview · Channels · Roles · Commands**\n\n-# **Rule order** · the most specific one wins\n-# 🔹 Command **→** Role **→** Channel **→** the Overview default\n-# 🔹 Threads follow their parent channel · if two roles disagree, **public wins**"
-          },
-          {
-            "type": 10,
-            "content": "-# **Setting it up**\n-# 🔸 Pick a default on **Overview**, then hand-pick the few channels or roles that should differ\n-# 🔸 Rules only make Dioreo **quieter** — Public *permits* a public answer, it never overrides someone's own `/settings`\n\n-# **Worth knowing**\n-# 🔸 Each menu holds up to **25 picks** (Discord's limit). Needing more usually means a different default would suit better\n-# 🔸 It hides the **answer**, not the command — to remove a command entirely, use **Server Settings → Integrations**"
+            "content": "### `/admin`\n<a:Info:1564319073540513913> **Important:** an admin needs the **Manage Server** permission to use this command!\n-# /admin only works as a slash command, so use it in a channel where you have **Use Application Commands** enabled."
           },
           {
             "type": 10,
             "content": "`[visibility]`\n-# Show only to you, or everyone in the chat"
+          },
+          {
+            "type": 10,
+            "content": "**Config Text Commands**\nSet typed commands like `d today` **on or off**\n> -# **On**  *the command works (Dioreo replies publicly)*\n> -# **Off**  *the command is disabled (Dioreo stays silent)*\n> -# **Prefix**  *your own in place of `d`; `dior` and `@Dioreo` always work. **Reset to d** puts it back*\n> -# **Admins**  *can use typed commands anywhere, whatever is off*"
+          },
+          {
+            "type": 10,
+            "content": "**Config Slash Commands**\nSet slash commands like `/today` **public or private**\n> -# **Public**  *Dioreo's replies are visible to everyone in the channel*\n> -# **Private**  *only the person who ran the command sees the reply*"
+          },
+          {
+            "type": 10,
+            "content": "**Pages in the panel**\n> -# **Overview**  *Your default, and every rule at a glance*\n> -# **Channels**  *Channel-specific settings*\n> -# **Roles**  *Role-specific settings, everywhere or in some channels*\n> -# **Commands**  *Each command's own settings*\n> -# **Help**  *How the rules work, in full*"
+          },
+          {
+            "type": 10,
+            "content": "**Extra Tools**\n> -# **Check a Member**  *What a member gets, and why*\n> -# **Export Log**  *An audit safeguard: every /admin change in the last 60 days. It can't be deleted*\n> -# **Reset Slash Rules · Reset Text Rules**  *Back to the defaults, for that view only*"
+          },
+          {
+            "type": 10,
+            "content": "**Which rule wins**\n-# A command with its own settings uses only those; every other command uses the server's. Then the first that applies:\n> -# **`1`** Their role, in this channel\n> -# **`2`** Their role, everywhere\n> -# **`3`** This channel *(threads follow it)*\n> -# **`4`** Your default\n-# Two roles that disagree: Public (or On) wins, as in Discord's own permissions"
+          },
+          {
+            "type": 10,
+            "content": "**<a:Info:1564319073540513913> Good to know...**\n> -# **Private** always wins over someone's own choice\n> -# **Public** allows it; anyone who chose private in their own /settings still gets private\n> -# **Typed commands** are never private: turn them off instead\n> -# **Admins** skip a command's own slash settings; the default, channel and role rules still apply to them\n> -# **Rules apply only while Dioreo is in your server.** Without it, members' own installs follow each member's own /settings. Turning off **Use External Apps** in a channel makes every app answer privately there"
           },
           {
             "type": 14,
@@ -15563,7 +15579,7 @@
           },
           {
             "type": 10,
-            "content": "-# **Examples**\n-# 🔸 **/admin** → **Overview** → Default *Private*, then **Channels** → allow `#bot-spam`\n-# 🔸 **/admin** → **Roles** → *Always public for these roles* → `@Moderator`\n-# 🔸 **/admin** → **Commands** → `/colors` → *Private*: only `/colors` answers privately"
+            "content": "-# **Common setups**\n-# 🔸 **Private, except one channel**: Overview → **Private**, then Channels → *Always public in these channels…* → `#bot-spam`\n-# 🔸 **Mods always public**: Roles → *Always public for these roles…* → `@Moderator`\n-# 🔸 **One command private**: Commands → *Open a command's settings…* → `/colors` → **Private**\n-# 🔸 **Typed commands off in one channel**: Config Text Commands → Channels → *Off in these channels…* → `#general`\n-# 🔸 **Your own prefix**: Config Text Commands → **Edit Prefix** → `!`"
           },
           {
             "type": 10,
@@ -15747,7 +15763,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": true,
                 "emoji": {
                   "animated": true,
@@ -16016,7 +16032,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -16327,7 +16343,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -16729,7 +16745,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -17092,7 +17108,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -17455,7 +17471,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -17818,7 +17834,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -18181,7 +18197,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -18515,7 +18531,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -18853,7 +18869,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -19198,7 +19214,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -19536,7 +19552,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -19877,7 +19893,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -20222,7 +20238,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -20561,7 +20577,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -20904,7 +20920,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -21242,7 +21258,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -21584,7 +21600,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -21927,7 +21943,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -22282,7 +22298,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -22621,7 +22637,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -22964,7 +22980,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -23298,7 +23314,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -23636,7 +23652,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -23983,7 +23999,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -24338,7 +24354,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -24681,7 +24697,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -25032,7 +25048,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -25366,7 +25382,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -25708,7 +25724,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -26038,7 +26054,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -26372,7 +26388,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -26480,7 +26496,7 @@
         "components": [
           {
             "type": 10,
-            "content": "## <a:ServerSettings:1536468904996774008> Server Admin\n-# Choose where Dioreo's replies stay private in your server"
+            "content": "## <a:ServerSettings:1536468904996774008> Server Settings\n-# Config custom settings for Dioreo in your server.\n-# These control where Dioreo answers **publicly or privately for /slash commands**, and where **typed (prefix) commands are allowed or disabled**."
           },
           {
             "type": 14,
@@ -26489,19 +26505,35 @@
           },
           {
             "type": 10,
-            "content": "### `/admin`\nWhere Dioreo answers **publicly** and where it stays **private**, for the whole server. Needs **Manage Server**."
-          },
-          {
-            "type": 10,
-            "content": "-# Opens a four-page panel — **Overview · Channels · Roles · Commands**\n\n-# **Rule order** · the most specific one wins\n-# 🔹 Command **→** Role **→** Channel **→** the Overview default\n-# 🔹 Threads follow their parent channel · if two roles disagree, **public wins**"
-          },
-          {
-            "type": 10,
-            "content": "-# **Setting it up**\n-# 🔸 Pick a default on **Overview**, then hand-pick the few channels or roles that should differ\n-# 🔸 Rules only make Dioreo **quieter** — Public *permits* a public answer, it never overrides someone's own `/settings`\n\n-# **Worth knowing**\n-# 🔸 Each menu holds up to **25 picks** (Discord's limit). Needing more usually means a different default would suit better\n-# 🔸 It hides the **answer**, not the command — to remove a command entirely, use **Server Settings → Integrations**"
+            "content": "### `/admin`\n<a:Info:1564319073540513913> **Important:** an admin needs the **Manage Server** permission to use this command!\n-# /admin only works as a slash command, so use it in a channel where you have **Use Application Commands** enabled."
           },
           {
             "type": 10,
             "content": "`[visibility]`\n-# Show only to you, or everyone in the chat"
+          },
+          {
+            "type": 10,
+            "content": "**Config Text Commands**\nSet typed commands like `d today` **on or off**\n> -# **On**  *the command works (Dioreo replies publicly)*\n> -# **Off**  *the command is disabled (Dioreo stays silent)*\n> -# **Prefix**  *your own in place of `d`; `dior` and `@Dioreo` always work. **Reset to d** puts it back*\n> -# **Admins**  *can use typed commands anywhere, whatever is off*"
+          },
+          {
+            "type": 10,
+            "content": "**Config Slash Commands**\nSet slash commands like `/today` **public or private**\n> -# **Public**  *Dioreo's replies are visible to everyone in the channel*\n> -# **Private**  *only the person who ran the command sees the reply*"
+          },
+          {
+            "type": 10,
+            "content": "**Pages in the panel**\n> -# **Overview**  *Your default, and every rule at a glance*\n> -# **Channels**  *Channel-specific settings*\n> -# **Roles**  *Role-specific settings, everywhere or in some channels*\n> -# **Commands**  *Each command's own settings*\n> -# **Help**  *How the rules work, in full*"
+          },
+          {
+            "type": 10,
+            "content": "**Extra Tools**\n> -# **Check a Member**  *What a member gets, and why*\n> -# **Export Log**  *An audit safeguard: every /admin change in the last 60 days. It can't be deleted*\n> -# **Reset Slash Rules · Reset Text Rules**  *Back to the defaults, for that view only*"
+          },
+          {
+            "type": 10,
+            "content": "**Which rule wins**\n-# A command with its own settings uses only those; every other command uses the server's. Then the first that applies:\n> -# **`1`** Their role, in this channel\n> -# **`2`** Their role, everywhere\n> -# **`3`** This channel *(threads follow it)*\n> -# **`4`** Your default\n-# Two roles that disagree: Public (or On) wins, as in Discord's own permissions"
+          },
+          {
+            "type": 10,
+            "content": "**<a:Info:1564319073540513913> Good to know...**\n> -# **Private** always wins over someone's own choice\n> -# **Public** allows it; anyone who chose private in their own /settings still gets private\n> -# **Typed commands** are never private: turn them off instead\n> -# **Admins** skip a command's own slash settings; the default, channel and role rules still apply to them\n> -# **Rules apply only while Dioreo is in your server.** Without it, members' own installs follow each member's own /settings. Turning off **Use External Apps** in a channel makes every app answer privately there"
           },
           {
             "type": 14,
@@ -26510,7 +26542,7 @@
           },
           {
             "type": 10,
-            "content": "-# **Examples**\n-# 🔸 **/admin** → **Overview** → Default *Private*, then **Channels** → allow `#bot-spam`\n-# 🔸 **/admin** → **Roles** → *Always public for these roles* → `@Moderator`\n-# 🔸 **/admin** → **Commands** → `/colors` → *Private*: only `/colors` answers privately"
+            "content": "-# **Common setups**\n-# 🔸 **Private, except one channel**: Overview → **Private**, then Channels → *Always public in these channels…* → `#bot-spam`\n-# 🔸 **Mods always public**: Roles → *Always public for these roles…* → `@Moderator`\n-# 🔸 **One command private**: Commands → *Open a command's settings…* → `/colors` → **Private**\n-# 🔸 **Typed commands off in one channel**: Config Text Commands → Channels → *Off in these channels…* → `#general`\n-# 🔸 **Your own prefix**: Config Text Commands → **Edit Prefix** → `!`"
           },
           {
             "type": 10,
@@ -26694,7 +26726,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": true,
                 "emoji": {
                   "animated": true,
@@ -27106,7 +27138,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -27420,7 +27452,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -27767,7 +27799,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -28085,7 +28117,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -28399,7 +28431,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -28713,7 +28745,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -29035,7 +29067,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -29361,7 +29393,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,
@@ -29718,7 +29750,7 @@
               {
                 "label": "/admin",
                 "value": "/admin",
-                "description": "Server Admin",
+                "description": "Server Settings",
                 "default": false,
                 "emoji": {
                   "animated": true,

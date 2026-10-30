@@ -302,8 +302,7 @@ function toolsRow(settings, resetArmed) {
         ] };
     }
     return { type: 1, components: [
-        // Check a Member reads the slash-command visibility only.
-        ...(isText() ? [] : [{ type: 2, style: 2, label: 'Check a Member', custom_id: 'admin_check' }]),
+        { type: 2, style: 2, label: 'Check a Member', custom_id: 'admin_check' },
         { type: 2, style: 2, label: 'Export Log', custom_id: 'admin_log' },
         // Named for the view it resets (his 2026-10-30 12:35 EDT: "reset everything kind of implies everything"): each view's reset clears only its own rules.
         ...(changed ? [{ type: 2, style: 4, label: isText() ? 'Reset Text Rules' : 'Reset Slash Rules', custom_id: 'admin_reset_arm' }] : []),
@@ -538,12 +537,16 @@ function buildCheck(settings, gateable, { who = null, member = null, error = nul
     const ready = Boolean((userId && member) || roleId);
     const roleIds = member ? member.roleIds : (roleId ? [roleId] : []);
     const isAdmin = Boolean(member?.isAdmin);
-    const gate = member ? member.gate : (roleId && place.discordGate ? id => place.discordGate(id, roleId) : null);
+    // Discord's gates are about slash commands, so the text view leaves them out.
+    const gate = isText() ? null : member ? member.gate : (roleId && place.discordGate ? id => place.discordGate(id, roleId) : null);
     const pic = ready ? memberPicture(settings, { roleIds, isAdmin, gate, channelIds }) : null;
     const blocks = [];
     if (error) blocks.push({ type: 10, content: `-# ${BOT_EMOJI.cross} ${error}` });
     else if (!ready) blocks.push({ type: 10, content: '-# Pick a member below, or enter their ID. A role works too: it shows what anyone with that role gets.' });
-    else {
+    else if (isText() && isAdmin) {
+        // A server admin skips every text rule (his "sure", 2026-10-30 12:47 EDT).
+        blocks.push({ type: 10, content: `### <@${userId}>\n-# **Server admin**: typed commands work for them everywhere, whatever is off` });
+    } else {
         const roles = member ? member.roleIds.filter(id => id !== place.guildId).map(id => `<@&${id}>`).join(' ') : '';
         blocks.push({ type: 10, content: userId
             ? `### <@${userId}>\n-# ${isAdmin ? '**Server admin**: commands\' own settings skip them · ' : ''}Roles: ${roles || 'none'}`
@@ -553,14 +556,14 @@ function buildCheck(settings, gateable, { who = null, member = null, error = nul
         for (const c of pic.commands.slice(0, 6)) blocks.push({ type: 10, content: `**${commandText(c.command)}** · its own settings\n${pictureLines(c).join('\n')}` });
         if (pic.commands.length > 6) blocks.push({ type: 10, content: `-# +${pic.commands.length - 6} more commands with their own settings` });
         if (pic.blocked.length) blocks.push({ type: 10, content: `${BOT_EMOJI.warn} **Discord keeps their answers private in** ${channelList(pic.blocked.map(x => x.id))}\n-# Discord blocks Use External Apps (or commands) for them there, before any rule on this panel.` });
-        blocks.push({ type: 10, content: '-# Public only *allows* public: their own `/settings` can still make an answer private.' });
+        blocks.push({ type: 10, content: isText() ? '-# Off means Dioreo stays silent for them there. Server admins are never turned off.' : '-# Public only *allows* public: their own `/settings` can still make an answer private.' });
     }
     return [
         {
             type: 17,
             accent_color: ACCENT,
             components: [
-                ...header('Check a Member', place, '-# Everything Dioreo does for one member, and why.'),
+                ...header('Check a Member', place, isText() ? '-# Where typed commands work for one member, and why.' : '-# Everything Dioreo does for one member, and why.'),
                 { type: 14, spacing: 2 },
                 ...blocks,
                 { type: 1, components: [{ type: 2, style: 2, label: 'Enter a Member ID', custom_id: 'admin_check_id' }] },
@@ -634,6 +637,7 @@ function buildHelp(client, place = {}) {
                     row('On or Off', 'a typed command (`d today`, `@Dioreo today`) is never private, so it is on or off; off means Dioreo stays silent'),
                     row('Same order', 'a command\'s own settings, then role in this channel › role everywhere › channel › default'),
                     row('Prefix', 'up to 3 of your own in place of `d`; `dior` and `@Dioreo` always work. **Reset to d** puts it back'),
+                    row('Admins', 'can use typed commands anywhere, whatever is off'),
                     row('Where', '**Config Text Commands** under the tabs on Overview'),
                 ].join('\n') },
                 divider,
@@ -800,8 +804,8 @@ function textRoot(doc) {
     return doc.textRules;
 }
 
-// Ids shared by both views: the view switch, Export Log, Help and Check a Member.
-const SHARED_IDS = /^admin_(view|log|help|check)/;
+// Ids shared by both views: the view switch, Export Log and Help. Check a Member has a copy on each view (B7: the text view's reads the text rules).
+const SHARED_IDS = /^admin_(view|log|help)/;
 function textIds(node) {
     if (Array.isArray(node)) return node.map(textIds);
     if (!node || typeof node !== 'object') return node;
@@ -979,14 +983,14 @@ async function handleComponent(interaction) {
             }
             // The server's text channels, for where Discord itself blocks them (from the cache: no REST call).
             state.channelIds = [...(interaction.guild?.channels?.cache?.values?.() || [])].filter(ch => ch.isTextBased?.() && !ch.isThread?.()).map(ch => ch.id);
-            return send(interaction, buildCheck(settings, gateable, state, place));
+            return send(interaction, inView(view, () => buildCheck(onText ? textView(settings) : settings, gateable, state, place)));
         }
 
         // "Enter a Member ID": a one-box pop-up; its submit is admin_check_idm above.
         case 'admin_check_id':
             return interaction.showModal({
                 title: 'Check a Member',
-                custom_id: 'admin_check_idm',
+                custom_id: onText ? 'admin_t_check_idm' : 'admin_check_idm',
                 components: [{ type: 1, components: [{ type: 4, custom_id: 'id', label: 'Member ID', style: 1, min_length: 15, max_length: 25, required: true, placeholder: '17–20 digits' }] }],
             });
 

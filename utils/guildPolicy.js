@@ -297,8 +297,10 @@ function logGuildChange(guildId, actorId, changes, source = 'admin') {
 // THE "WHY IS THIS PRIVATE?" NOTICE (Harkirat 2026-10-22 15:51 EDT: "make it like a 2x repeat ... private notification, if the settings change ... and they don't match the user's own settings"). Sent as a private follow-up after a slash command whose public answer a server rule made private, at most twice per member per change to that server's rules. Called by handlers/router.js after the command has answered; it never throws.
 const NOTICE_LIMIT = 2;
 
-// TEXT COMMANDS ON OR OFF (B7, 2026-10-30; his 2026-10-29 15:54 EDT call, "turn off here or allow here"). The server's textRules set is resolved by explainVisibility exactly as the visibility set is, with 'public' read as On, so a command's own settings, role › channel › default, thread inheritance, the admin bypass and "a same-tier conflict allows" (Discord's own allow-beats-deny) all hold unchanged. No textRules, or no settings at all, is On. The visibility rules never decide a text command: a message is public whatever they say (the spec's "Replies"), which is why the Open privately card is gone.
+// TEXT COMMANDS ON OR OFF (B7, 2026-10-30; his 2026-10-29 15:54 EDT call, "turn off here or allow here"). The server's textRules set is resolved by explainVisibility exactly as the visibility set is, with 'public' read as On, so a command's own settings, role › channel › default, thread inheritance and "a same-tier conflict allows" (Discord's own allow-beats-deny) all hold unchanged; a server admin skips every text rule (below). No textRules, or no settings at all, is On. The visibility rules never decide a text command: a message is public whatever they say (the spec's "Replies"), which is why the Open privately card is gone.
 function explainTextCommand(settings, context) {
+    // Server admins (owner, Administrator, Manage Server) use text commands anywhere, whatever is off (his "sure", 2026-10-30 12:47 EDT), as Discord's own Integrations page lets Administrator past an app's command rules. Members still get silence.
+    if (context?.isAdmin) return { visibility: 'public', tier: 'admin', rule: null, on: true };
     const result = explainVisibility(settings?.textRules || null, context);
     return { ...result, on: result.visibility === 'public' };
 }

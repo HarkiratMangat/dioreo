@@ -323,7 +323,12 @@ t('the /admin text view: its ids, On/Off, the flip button and a save into textRu
     assert.ok(json.includes('"custom_id":"admin_t_prefix"') && json.includes('`!` *(in place of `d`)*') && json.includes('`dior` and `@Dioreo` always work'), 'the prefix block');
     assert.ok(json.includes('"custom_id":"admin_t_prefix_reset"') && json.includes('Reset to d'), 'Reset to d, shown once the server has its own');
     assert.ok(json.includes('Reset Text Rules'), 'the text view names its reset');
-    assert.ok(!json.includes('admin_check'), 'Check a Member is slash only');
+    assert.ok(json.includes('"custom_id":"admin_t_check"'), 'Check a Member has its own text copy');
+    const { buildCheck } = admin.__testRenderers;
+    const off = JSON.stringify(inView('text', () => buildCheck(textView(stored), [], { who: 'r:R_X' }, {})));
+    assert.ok(off.includes('**Off**') && off.includes('Off means Dioreo stays silent'), 'the text check reads On / Off');
+    const boss = JSON.stringify(inView('text', () => buildCheck(textView(stored), [], { who: 'u:U_9', member: { roleIds: [], isAdmin: true, gate: () => 'private' } }, {})));
+    assert.ok(boss.includes('typed commands work for them everywhere') && !boss.includes('Discord keeps'), 'an admin is never off, and Discord\'s slash gates stay out');
     assert.ok(!/"custom_id":"admin_(default|channels|roles|commands|home)/.test(json), 'no slash-view control on the text view');
     const slash = JSON.stringify(inView('slash', () => buildHome(stored, {}, {})));
     assert.ok(slash.includes('"custom_id":"admin_view|text"') && slash.includes('Config Text Commands') && slash.includes('"label":"Private"'), 'the slash view keeps its words and flips to text');

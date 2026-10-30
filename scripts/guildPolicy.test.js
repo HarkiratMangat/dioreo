@@ -122,7 +122,7 @@ t('text: a command off everywhere', on(TEXT, { commandName: 'colors', commandPat
 t('text: ...except its own channel', on(TEXT, { channelId: 'C_BOT', commandName: 'colors', commandPath: 'colors' }), true);
 t('text: a command with its own On ignores the server\'s off channel', on(TEXT, { channelId: 'C_OFF', commandName: 'draws', commandPath: 'draws' }), true);
 t('text: an admin skips a command\'s own settings', on(TEXT, { commandName: 'colors', commandPath: 'colors', isAdmin: true }), true);
-t('text: an admin still follows the server\'s channel rule', on(TEXT, { channelId: 'C_OFF', commandName: 'colors', commandPath: 'colors', isAdmin: true }), false);
+t('text: an admin is never turned off, not even in an off channel (his "sure", 2026-10-30)', on(TEXT, { channelId: 'C_OFF', roleIds: ['R_QUIET'], commandName: 'colors', commandPath: 'colors', isAdmin: true }), true);
 const BASE = { defaultVisibility: 'public', channelRules: [], roleRules: [], ephemeralCommands: [], commands: [], text: null, textPrefixes: [] };
 const logged = describeChanges(BASE, { ...BASE, text: { defaultVisibility: 'ephemeral', channelRules: [{ channelId: 'C1', visibility: 'public' }], roleRules: [], ephemeralCommands: [], commands: [{ command: 'colors', defaultVisibility: 'ephemeral', channelRules: [], roleRules: [] }] }, textPrefixes: ['!'] });
 t('log: the text default, in On / Off', logged.includes('Text commands · Default: On → Off'), true);

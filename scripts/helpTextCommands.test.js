@@ -164,7 +164,8 @@ async function check(name, fn) {
         for (const name of help.visiblePageNames(ALL).filter(n => !H.hasTextView(n))) {
             const comps = await msg(name, 'text');
             const page = texts({ components: comps }).join('\n');
-            assert.ok(!/`d [a-z]/.test(page), `${name}: shows a typed form`);
+            // /admin's page names `d today` as what its Config Text Commands view switches on and off (B7, his draft 2026-10-30): a description, never a typed usage line, so only the usage heading is checked there.
+            assert.ok(name === '/admin' ? !/### `d /.test(page) : !/`d [a-z]/.test(page), `${name}: shows a typed form`);
             assert.ok(!buttonIds({ components: comps }).some(id => id.startsWith('help_view~text')), `${name}: offers the text view`);
             assert.ok(page.includes('no text command'), `${name}: no slash-only note`);
         }
@@ -200,7 +201,7 @@ async function check(name, fn) {
         for (const [cmd] of every(ALL)) {
             const comps = await msg(cmd, 'text', { typedForms: false });
             const page = texts({ components: comps }).join('\n');
-            assert.ok(!/`d [a-z]/.test(page) && !page.includes('Text commands'), `${cmd || 'home'}: shows a typed form where it cannot work`);
+            assert.ok((cmd === '/admin' ? !/### `d /.test(page) : !/`d [a-z]/.test(page)) && !page.includes('Text commands'), `${cmd || 'home'}: shows a typed form where it cannot work`);
             assert.ok(!buttonIds({ components: comps }).some(id => id.startsWith('help_view~')), `${cmd || 'home'}: offers a view switch`);
             assert.ok(countComponents([...comps, help.helpFooterRow()]) <= 40);
         }

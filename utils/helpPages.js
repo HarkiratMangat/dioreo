@@ -24,7 +24,7 @@ const valuesOf = (name, option) => (textCommandOf(name)?.options || []).find(o =
 const PAGE_NAMES = {
     '/gunsmith mp': 'MP Gunsmith', '/gunsmith dmz': 'DMZ Gunsmith', '/draws': 'Lucky Draws', '/draw prices': 'Lucky Draw Prices', '/draw calculator': 'Draw Calculator',
     '/today': 'Today', '/calendar': 'Calendar', '/remind': 'Reminders', '/season end': 'Season End', '/patch notes': 'Patch Notes',
-    '/timestamp': 'Timestamps', '/colors': 'Profile Colors', '/settings': 'Settings', '/invite': 'Invite Dioreo', '/admin': 'Server Admin',
+    '/timestamp': 'Timestamps', '/colors': 'Profile Colors', '/settings': 'Settings', '/invite': 'Invite Dioreo', '/admin': 'Server Settings',
     '/manage': 'Manage Data', '/manage emojis': 'Emoji Manager', '/autobuild': 'Autobuild', '/bot analytics': 'Bot Analytics', '/bot access': 'Admin Access', '/bot servers': 'Server Rules', '/bot hotpatch': 'Hot Patch', '/embed': 'Embed Preview',
 };
 const PAGE_ORDER = Object.keys(PAGE_NAMES);
@@ -210,19 +210,31 @@ const PAGES = {
                 : { boxes: [text('`[open]`\n-# Open straight on Visibility, Preferences or Colors'), VIS, ...detail], examples: [['/settings open:Preferences'], ['/settings visibility:Public']] };
         },
     },
-    // /admin's own text, carried over unchanged (his call, 2026-10-29 22:00 EDT: "leave the full /admin help panel review and fix to b7").
+    // /admin: his draft (2026-10-30 12:29 EDT), corrected against the panel in B7 (the prefix takes `d`'s place, Use External Apps makes answers private rather than hiding commands, a member's own installs follow their own /settings, Check a Member, per-view resets) and with his later calls (admins skip text rules, Reset to d). The full review was B7's (his call, 2026-10-29 22:00 EDT).
     '/admin': {
-        blurb: "Choose where Dioreo's replies stay private in your server",
+        blurb: "Config custom settings for Dioreo in your server.\n-# These control where Dioreo answers **publicly or privately for /slash commands**, and where **typed (prefix) commands are allowed or disabled**.",
         slashOnly: true,
-        page(x) {
+        page() {
+            const rows = (title, list) => text(`${title}\n${list.map(([term, meaning]) => `> -# **${term}**  *${meaning}*`).join('\n')}`);
             return {
-                usageNote: 'Where Dioreo answers **publicly** and where it stays **private**, for the whole server. Needs **Manage Server**.',
+                usageNote: `${emojis.info} **Important:** an admin needs the **Manage Server** permission to use this command!\n-# /admin only works as a slash command, so use it in a channel where you have **Use Application Commands** enabled.`,
                 boxes: [
-                    text('-# Opens a four-page panel — **Overview · Channels · Roles · Commands**\n\n-# **Rule order** · the most specific one wins\n-# 🔹 Command **→** Role **→** Channel **→** the Overview default\n-# 🔹 Threads follow their parent channel · if two roles disagree, **public wins**'),
-                    text(`-# **Setting it up**\n-# 🔸 Pick a default on **Overview**, then hand-pick the few channels or roles that should differ\n-# 🔸 Rules only make Dioreo **quieter** — Public *permits* a public answer, it never overrides someone's own ${slashMention(x.client, '/settings')}\n\n-# **Worth knowing**\n-# 🔸 Each menu holds up to **25 picks** (Discord's limit). Needing more usually means a different default would suit better\n-# 🔸 It hides the **answer**, not the command — to remove a command entirely, use **Server Settings → Integrations**`),
                     VIS,
+                    rows('**Config Text Commands**\nSet typed commands like `d today` **on or off**', [['On', 'the command works (Dioreo replies publicly)'], ['Off', 'the command is disabled (Dioreo stays silent)'], ['Prefix', 'your own in place of `d`; `dior` and `@Dioreo` always work. **Reset to d** puts it back'], ['Admins', 'can use typed commands anywhere, whatever is off']]),
+                    rows('**Config Slash Commands**\nSet slash commands like `/today` **public or private**', [['Public', "Dioreo's replies are visible to everyone in the channel"], ['Private', 'only the person who ran the command sees the reply']]),
+                    rows('**Pages in the panel**', [['Overview', 'Your default, and every rule at a glance'], ['Channels', 'Channel-specific settings'], ['Roles', 'Role-specific settings, everywhere or in some channels'], ['Commands', "Each command's own settings"], ['Help', 'How the rules work, in full']]),
+                    rows('**Extra Tools**', [['Check a Member', 'What a member gets, and why'], ['Export Log', "An audit safeguard: every /admin change in the last 60 days. It can't be deleted"], ['Reset Slash Rules · Reset Text Rules', 'Back to the defaults, for that view only']]),
+                    text("**Which rule wins**\n-# A command with its own settings uses only those; every other command uses the server's. Then the first that applies:\n> -# **`1`** Their role, in this channel\n> -# **`2`** Their role, everywhere\n> -# **`3`** This channel *(threads follow it)*\n> -# **`4`** Your default\n-# Two roles that disagree: Public (or On) wins, as in Discord's own permissions"),
+                    text(`**${emojis.info} Good to know...**\n> -# **Private** always wins over someone's own choice\n> -# **Public** allows it; anyone who chose private in their own /settings still gets private\n> -# **Typed commands** are never private: turn them off instead\n> -# **Admins** skip a command's own slash settings; the default, channel and role rules still apply to them\n> -# **Rules apply only while Dioreo is in your server.** Without it, members' own installs follow each member's own /settings. Turning off **Use External Apps** in a channel makes every app answer privately there`),
                 ],
-                examples: [['-# 🔸 **/admin** → **Overview** → Default *Private*, then **Channels** → allow `#bot-spam`'], ['-# 🔸 **/admin** → **Roles** → *Always public for these roles* → `@Moderator`'], ['-# 🔸 **/admin** → **Commands** → `/colors` → *Private*: only `/colors` answers privately']],
+                examplesTitle: 'Common setups',
+                examples: [
+                    ['-# 🔸 **Private, except one channel**: Overview → **Private**, then Channels → *Always public in these channels…* → `#bot-spam`'],
+                    ['-# 🔸 **Mods always public**: Roles → *Always public for these roles…* → `@Moderator`'],
+                    ["-# 🔸 **One command private**: Commands → *Open a command's settings…* → `/colors` → **Private**"],
+                    ['-# 🔸 **Typed commands off in one channel**: Config Text Commands → Channels → *Off in these channels…* → `#general`'],
+                    ['-# 🔸 **Your own prefix**: Config Text Commands → **Edit Prefix** → `!`'],
+                ],
                 legendNote: ' · no text command',
             };
         },
@@ -328,8 +340,8 @@ function buildPage(name, { client, view, detail = false, canSwitch = false, seas
     if (buttons.length) out.push({ type: 1, components: buttons });
     out.push(line(1));
     if (part.sections?.length) out.push(...part.sections, line(1));
-    // An example is [code, description?]; one already written as a line (/admin's recipes, kept as they were) is used as it is.
-    out.push(text(`-# **Examples**\n${part.examples.map(([ex, d]) => (ex.startsWith('-# ') ? ex : `-# ${code(ex)}${d ? `  ${d}` : ''}`)).join('\n')}`));
+    // An example is [code, description?]; one already written as a line (/admin's setups) is used as it is.
+    out.push(text(`-# **${part.examplesTitle || 'Examples'}**\n${part.examples.map(([ex, d]) => (ex.startsWith('-# ') ? ex : `-# ${code(ex)}${d ? `  ${d}` : ''}`)).join('\n')}`));
     out.push(text(`-# Usage: ${code(typed ? `${p} cmd <required> [optional]` : '/cmd <required> [optional]')}${part.legendNote || ''}${part.gate ? `\n${GATE}` : ''}`));
     if (part.tail?.length) out.push(line(1), ...part.tail);
     return out;
