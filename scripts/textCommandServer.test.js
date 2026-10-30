@@ -17,7 +17,7 @@ stub('models/GuildSettings', { findOne: q => ({ lean: async () => SERVERS[q.guil
 const ownerDms = [];
 stub('utils/buildSubmissions', { dmOwner: async build => { ownerDms.push(typeof build === 'function' ? build() : build); return {}; } });
 
-const { parsePrefixes, configuredPrefixes, prefixParts, prefixesFor } = require('../utils/textCommands/server');
+const { parsePrefixes, configuredPrefixes, prefixParts, prefixesFor, MAX_LENGTH, REMOVE_WORDS } = require('../utils/textCommands/server');
 const spam = require('../utils/textCommands/spamLadder');
 const { ALLOWED_ADMIN_ID } = require('../utils/owner');
 
@@ -35,7 +35,7 @@ function fakeMessage(userId) {
 const HOUR = 60 * 60 * 1000;
 
 (async () => {
-    await check('prefixes: commas or spaces, any case, at most three, blank for the default', async () => {
+    await check('prefixes: one word, any case, blank for the default; the /admin box lets every reserved word through whole', async () => {
         assert.deepStrictEqual(parsePrefixes('!').prefixes, ['!']);
         assert.deepStrictEqual(parsePrefixes('COD').prefixes, ['cod']);
         assert.deepStrictEqual(parsePrefixes('the').prefixes, ['the'], 'an everyday word is the server\'s choice (his call, 2026-10-30 15:26 EDT)');
@@ -44,6 +44,13 @@ const HOUR = 60 * 60 * 1000;
         assert.deepStrictEqual(parsePrefixes('  ').prefixes, []);
         assert.ok(parsePrefixes('a b c e').error);
         assert.ok(parsePrefixes('toolongg').error);
+        // /admin's Edit Prefix box must let every reserved word through whole, or Discord trims it before the check: at max_length 6, `default` arrived as `defaul` and saved (live pass, 2026-10-30 17:30 EDT).
+        const adminSrc = require('fs').readFileSync(require('path').join(__dirname, '..', 'commands', 'admin.js'), 'utf8');
+        const box = adminSrc.match(/custom_id: 'prefixes'[^}]*max_length: (\d+)/);
+        assert.ok(box, 'the Edit Prefix box is found');
+        const longest = Math.max(MAX_LENGTH, ...REMOVE_WORDS.map(w => w.length));
+        assert.ok(Number(box[1]) > longest, `the box allows ${box[1]}, longer than any prefix or reserved word (${longest})`);
+        assert.ok(parsePrefixes('default').error, 'and default is refused there');
         for (const bad of ['/', '@d', '<d', '#', ':)', '`d', '*', '_', '~', '|', '>']) assert.ok(parsePrefixes(bad).error, bad);
         assert.deepStrictEqual(configuredPrefixes({ TEXT_PREFIXES: 'dd,diordev' }), ['dd', 'diordev']);
         assert.deepStrictEqual(configuredPrefixes({}), ['d', 'dior']);

@@ -918,11 +918,12 @@ async function handleComponent(interaction) {
         case 'admin_prefix': {
             if (!onText) return;
             settings = await getGuildSettings(guildId);
+            // The box allows 20 characters although a prefix holds 6 (MAX_LENGTH), so a longer word reaches parsePrefixes and gets its warning; at max_length 6 Discord cut `default` to `defaul` and it saved with no warning (live pass, 2026-10-30 17:39 EDT). The description names the defaults this app really uses.
             const current = (settings?.textPrefixes || []).join(', ');
             return interaction.showModal({
                 title: 'Text command prefixes',
                 custom_id: 'admin_t_prefixm',
-                components: [{ type: 18, label: 'Your prefix', description: 'Replaces d. One word, no spaces. Blank = d. dior and @Dioreo always work.', component: { type: 4, custom_id: 'prefixes', style: 1, required: false, max_length: 6, placeholder: 'e.g. !', ...(current ? { value: current } : {}) } }],
+                components: [{ type: 18, label: 'Your prefix', description: (() => { const { replaceable, fixed } = require('../utils/textCommands/server').prefixParts(); return `Replaces ${replaceable}. One word, no spaces. Blank = ${replaceable}. ${fixed.join(', ')} and @Dioreo always work.`.slice(0, 100); })(), component: { type: 4, custom_id: 'prefixes', style: 1, required: false, max_length: 20, placeholder: 'e.g. !', ...(current ? { value: current } : {}) } }],
             });
         }
         case 'admin_prefixm': {

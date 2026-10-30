@@ -46,7 +46,7 @@ const NOTES = {
 const note = key => `${require('../utils/emojiMap')[NOTES[key][0]] || ''} ${NOTES[key][1]}`.trim();
 
 async function privately(interaction, content) {
-    try { await interaction.reply({ content, ephemeral: true }); } catch (err) { console.error('Text command button: could not answer a click:', err); }
+    try { await interaction.reply({ content, flags: 64 }); } catch (err) { console.error('Text command button: could not answer a click:', err); }
 }
 
 // The message or person a reply form's button points at, read again with the bot token. Null when it is gone.
