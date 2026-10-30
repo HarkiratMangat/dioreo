@@ -580,7 +580,7 @@ What the check against the code had already found, now in B7's scope in the hand
 - The spam ladder backend (`utils/textCommands/spamLadder.js`, `models/TextPenalty.js`): score, rungs, the stored penalty, the countdown note, the owner DM at 6 h and 12 h, the press note from 5 m, the restart reload.
 
 **Still to build from before 2026-10-30 13:00 EDT:**
-- `/bot penalties` (panel: his pick between 3A, a Lift beside each, and 3B, a list with a picker, is still open) and `/bot penalties user:<id>`.
+- `/bot penalties` and `/bot penalties user:<id>`. His layout (2026-10-30 13:26 EDT, over 3A and 3B): "plain text showing who has the penalty and then a search using user id to remove it or extend it or whatever". So: a plain list of who is penalised, their rung and when it ends; then a user-ID box (pop-up or the `user:` option) that opens that person, with Lift, Extend (to the next rung, or a time) and Exempt.
 - PRIVACY (§2 and Appendix A: `TextPenalty`, `textRules`, `textPrefixes`) and TERMS (one spam line); folded into the unpublished v1.12 / v1.7 rows; wording to him through the lead.
 - Records: CLAUDE.md (the text-commands exception still names the Open privately card; one owner-DM line for the spam DM), `.claude/rules/text-commands.md` and `.claude/rules/admin-controls.md`.
 - Mutation proofs, the after-renders for his yes, `TEST_CACHE=0 npm test`, `docs:audit`, the Owns check, this Audit log entry, the merge.
