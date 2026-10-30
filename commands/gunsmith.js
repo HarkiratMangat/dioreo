@@ -149,4 +149,4 @@ async function textWeapon(mode, text) {
     return { hit: picked.hit ? view(picked.hit) : null, several: picked.several.map(view), loose: picked.loose.map(view) };
 }
 
-module.exports = { data, execute, renderScopeBrowse, textWeapon };
+module.exports = { data, execute, renderScopeBrowse, textWeapon, emptyMetaCard };

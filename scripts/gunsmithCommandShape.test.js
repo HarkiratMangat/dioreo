@@ -34,6 +34,15 @@ for (const sub of json.options) {
     for (const sub of json.options) assert.ok(!sub.options.some(o => o.name === 'build'), `${sub.name} has no build option`);
 }
 
+{
+    // The empty META card (B6, his wording 2026-10-29 20:13 EDT): no heading, the pending line in italics, Search builds and Submit a Build for that mode.
+    const card = require('../commands/gunsmith').emptyMetaCard('DMZ')[0];
+    const text = card.components.filter(c => c.type === 10).map(c => c.content).join('\n');
+    assert.ok(text.includes('## Meta — DMZ') && text.includes('*The Meta list is pending an update. Check back soon.*') && !/No META builds/i.test(text), text);
+    const ids = card.components.find(c => c.type === 1).components.map(b => b.custom_id);
+    assert.deepStrictEqual(ids, ['gsb~search~DMZ', 'gsb~submit~DMZ~-']);
+}
+
 // The falsifier: a builder that mixes a top-level option MUST trip the first assertion.
 const { SlashCommandBuilder } = require('discord.js');
 const bad = new SlashCommandBuilder().setName('x').setDescription('x')

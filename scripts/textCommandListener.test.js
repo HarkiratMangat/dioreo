@@ -249,6 +249,23 @@ async function check(name, fn) {
         assert.strictEqual(ran.length, before + 1, 'ran once');
         const notes = posts.filter(p => /again <t:\d+:R>/.test(p.content || ''));
         assert.strictEqual(notes.length, 1, 'one countdown note');
+        // His wording (B6, 2026-10-29 15:06 EDT): small text, the command as typed.
+        assert.ok(/^-# <a?:\w+:\d+> Slow down! Try `d draws` again <t:\d+:R>$/.test(notes[0].content), notes[0].content);
+    });
+    await check('a repeated help card within 5 s gets no countdown, only a real command does', async () => {
+        const posts = [];
+        for (let k = 0; k < 2; k++) { const m = fakeMessage(`<@${BOT}>`); m.message.author.id = 'helpy'; await onMessage(m.message); posts.push(...m.posts); }
+        assert.strictEqual(posts.length, 1, 'one help card, then silence');
+    });
+    await check('a command that throws gets the crash line with what was typed', async () => {
+        const boom = { async execute() { throw new Error('boom'); } };
+        commands.set('draws', boom);
+        const err = console.error; console.error = () => {};
+        try {
+            const { message, posts } = fakeMessage('d draws');
+            await onMessage(message);
+            assert.ok(/<a?:\w+:\d+> Something went wrong running `d draws`\. Try again in a moment\.$/.test(posts[0]?.content || ''), posts[0]?.content);
+        } finally { console.error = err; commands.set('draws', record('draws')); }
     });
     await check('a different command within 1 s: nothing, no warning', async (before) => {
         const a = fakeMessage('d draws'); a.message.author.id = 'quick';
