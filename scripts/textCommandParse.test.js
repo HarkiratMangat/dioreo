@@ -14,14 +14,13 @@ const commands = [
     { name: 'patch', words: ['patch notes', 'patchnotes', 'notes'] },
     { name: 'drawprices', words: ['draw prices', 'drawprices', 'prices'] },
 ];
-const opts = { botId: BOT, botRoleId: ROLE, prefixes: ['/', 'd', 'dior'], commands };
+const opts = { botId: BOT, botRoleId: ROLE, prefixes: ['d', 'dior'], commands };
 const v = (text) => parseTextCommand(text, opts);
 
 const rows = [
     // [message, kind, command]
     [`<@${BOT}> today`, 'run', 'today'],
     [`<@!${BOT}> TODAY`, 'run', 'today'],
-    ['/today', 'run', 'today'],
     ['d today', 'run', 'today'],
     ['Dtoday', 'run', 'today'],
     ['dior today', 'run', 'today'],
@@ -30,7 +29,9 @@ const rows = [
     ['dior draws o', 'run', 'draws'],               // his stray-key example
     ['d todya', 'run', 'today'],                    // a swap
     [`<@${BOT}> draws pls`, 'run', 'draws'],
-    ['/draws pls', 'run', 'draws'],
+    ['d draws pls', 'run', 'draws'],              // B6: an exact command and ONE more word still runs after d
+    ['d calendar stuff', 'run', 'calendar'],
+    [`<@${BOT}> calender stuff`, 'run', 'calendar'], // B6: after @Dioreo a typo with more words runs
     ['d patch notes', 'run', 'patch'],
     ['d patchnotes', 'run', 'patch'],
     ['dior season end', 'run', 'season'],
@@ -38,7 +39,7 @@ const rows = [
     ['d setting', 'run', 'settings'],
     [`<@${BOT}>`, 'help', null],
     [`<@${BOT}> blorp`, 'help', null],
-    [`<@&${ROLE}>`, 'roleHint', null],
+    [`<@&${ROLE}>`, null, null],                    // B6: the role hint was dropped (his call 2026-10-29 15:00 EDT)
     [`<@&${ROLE}> today`, 'run', 'today'],          // once Message Content is granted
     // stays silent
     ['draws', null, null],                          // the plain word, glued d + raws
@@ -46,7 +47,9 @@ const rows = [
     ['d today is cold lol', null, null],
     ['dior calendar drop is insane', null, null],
     ['d lol', null, null],
-    ['/whatever', null, null],
+    ['/today', null, null],                         // B6: `/` is no longer a prefix
+    ['d calender stuff', null, null],               // B6: a typo with any more words is chat after d
+    ['d calendar stuff yo', null, null],            // B6: two or more more words is chat
     ['d mind blown', null, null],                   // mind is not a typo of remind (first letter)
     ['d getting there', null, null],                // nor of settings
     ['d getting', null, null],                      // alone too: distance 2 from settings, first letter differs
@@ -54,6 +57,10 @@ const rows = [
     [`<@${BOT}> is the best bot ever`, 'emojiReply', null], // talking TO Dioreo: an emoji reply (his call 2026-10-28 17:04 EDT)
     [`<@${BOT}> you are cool`, 'emojiReply', null],
     [`<@${BOT}> hello there`, 'help', null],         // two words: still a command attempt
+    [`<@${BOT}> hi`, 'help', null],
+    [`<@${BOT}> thanks`, 'emojiReply', null],         // B6: thanks gets an emoji, not the help card
+    [`<@${BOT}> thank you!`, 'emojiReply', null],
+    [`<@${BOT}> ty`, 'emojiReply', null],
     [`thanks <@${BOT}>`, null, null],               // mention not at the start (a reply-ping)
     ['hello', null, null],
     ['', null, null],
@@ -67,8 +74,8 @@ for (const [msg, kind, command] of rows) {
     const ok = got.kind === kind && (command === null || got.command === command);
     if (!ok) { failed++; console.log(`✗ ${JSON.stringify(msg)} -> ${JSON.stringify(got)} (want ${kind}${command ? ' ' + command : ''})`); }
 }
-// A typo-matched command with real trailing text never runs: after @Dioreo it becomes a Did-you-mean, after a prefix it is silent.
-assert.strictEqual(v(`<@${BOT}> calender stuff`).kind, 'didYouMean');
+// A typo-matched command with trailing text: after @Dioreo it runs with what was understood (B6), after a prefix it is silent.
+assert.strictEqual(v(`<@${BOT}> calender stuff`).kind, 'run');
 assert.strictEqual(v('dior calender stuff here').kind, null);
 // The tolerance table itself.
 assert.ok(isTypoOf('calender', 'calendar') && isTypoOf('todya', 'today') && isTypoOf('hlep', 'help'));

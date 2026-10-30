@@ -145,4 +145,13 @@ function searchTimezones(query, limit = 25) {
         .map(z => ({ value: z.tz, label: displayLabel(z.tz, z.label) }));
 }
 
-module.exports = { ALL_TIMEZONES, EVERY_TIMEZONE, QUICK_TIMEZONES, findTimezoneLabel, timezoneBaseLabel, searchTimezones, resolveTimezone, displayLabel, utcOffsetMinutes, quickZoneOptions };
+// A zone named EXACTLY: its IANA id, its city (`tokyo`, `new york`), its label, or one of its aliases (`est`, `uk`). Never fuzzy, unlike resolveTimezone: a typed text command reads a zone off the end of a date with this (`d ts fri 6pm tokyo`; his ask, B6, 2026-10-29 20:53 EDT), and a fuzzy match would read `to` or `fri` as a zone.
+function exactTimezone(input) {
+    const q = String(input || '').trim().toLowerCase().replace(/\s+/g, ' ');
+    if (!q) return null;
+    const city = tz => tz.split('/').pop().replace(/_/g, ' ').toLowerCase();
+    const hit = EVERY_TIMEZONE.find(z => z.aliases.includes(q)) || EVERY_TIMEZONE.find(z => z.tz.toLowerCase() === q || city(z.tz) === q || String(z.label || '').toLowerCase() === q);
+    return hit ? hit.tz : null;
+}
+
+module.exports = { ALL_TIMEZONES, EVERY_TIMEZONE, QUICK_TIMEZONES, findTimezoneLabel, timezoneBaseLabel, searchTimezones, resolveTimezone, exactTimezone, displayLabel, utcOffsetMinutes, quickZoneOptions };

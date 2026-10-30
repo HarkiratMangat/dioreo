@@ -28,7 +28,7 @@ stub('utils/autocomplete', {
         return i.respond(pool.filter(c => c.value.startsWith('~') ? !text : c.name.toLowerCase().replace(/[\s-]/g, '').includes(text)));
     },
 });
-process.env.TEXT_PREFIXES = '/,d,dior';
+process.env.TEXT_PREFIXES = 'd,dior';
 process.env.NODE_ENV = 'test'; // the dev-only timing line stays out of the output
 
 const { onMessage } = require('../bot/textCommands');
@@ -198,13 +198,26 @@ async function check(name, fn) {
         await onMessage(message);
         assert.strictEqual(ran.length, before);
         assert.deepStrictEqual(buttons(posts[0]), ['"custom_id":"txtrun_timestamp~open"']);
-        // Not a bare line (his "why does this panel look so barebone??", 2026-10-29 11:10 EDT): /timestamp's accent, a titled heading, the typed form with the prefix used, and the icon on the button.
+        // His #4 case 1 (B6, 2026-10-29 14:49 EDT): /timestamp's teal, the title and examples with the prefix used beside a blurple Pick date & time, and the card deletes itself unless pressed.
         const box = posts[0].components[0];
         assert.strictEqual(box.accent_color, 1548962);
-        assert.ok(/^## .* Timestamp\n/.test(box.components[0].content), box.components[0].content);
-        assert.ok(box.components[0].content.includes('`d timestamp tomorrow 8pm`'));
-        assert.ok(box.components[1].components[0].emoji?.id, 'the button carries the timestamp icon');
+        const section = box.components[0];
+        assert.strictEqual(section.type, 9);
+        assert.ok(/^### .* What date or time\?\n-# e\.g: `d time in 2 days` · `d time fri 6pm`\n-# Confused\? `d help timestamp`$/.test(section.components[0].content), section.components[0].content);
+        assert.strictEqual(section.accessory.label, 'Pick date & time');
+        assert.strictEqual(section.accessory.style, 1);
+        assert.ok(section.accessory.emoji?.id, 'the button carries the timestamp icon');
+        assert.ok(require('../utils/textCommands/cardTimers').pending(`r${message.id.slice(1)}`), 'the card deletes itself unless pressed');
         cardId = 'txtrun_timestamp~open';
+    });
+    await check('a date that does not read gets the Couldn\'t read card, with the prefix used', async (before) => {
+        const { message, posts } = fakeMessage(`<@${BOT}> time to sleep`);
+        await onMessage(message);
+        assert.strictEqual(ran.length, before);
+        const section = posts[0].components[0].components[0];
+        assert.ok(/Couldn't read `to sleep`\n-# Try a date or time: `@Dioreo time 6 month 7day` · `@Dioreo ts fri 6pm`$/.test(section.components[0].content), section.components[0].content);
+        assert.strictEqual(section.accessory.label, 'Try again');
+        assert.strictEqual(section.accessory.custom_id, 'txtrun_timestamp~open');
     });
     await check('@Dioreo calendar purple runs calendar, the unknown word ignored (the spec\'s rules table)', async (before) => {
         const { message, posts } = fakeMessage(`<@${BOT}> calendar purple upcoming`);
@@ -236,6 +249,23 @@ async function check(name, fn) {
         assert.strictEqual(ran.length, before + 1, 'ran once');
         const notes = posts.filter(p => /again <t:\d+:R>/.test(p.content || ''));
         assert.strictEqual(notes.length, 1, 'one countdown note');
+        // His wording (B6, 2026-10-29 15:06 EDT): small text, the command as typed.
+        assert.ok(/^-# <a?:\w+:\d+> Slow down! Try `d draws` again <t:\d+:R>$/.test(notes[0].content), notes[0].content);
+    });
+    await check('a repeated help card within 5 s gets no countdown, only a real command does', async () => {
+        const posts = [];
+        for (let k = 0; k < 2; k++) { const m = fakeMessage(`<@${BOT}>`); m.message.author.id = 'helpy'; await onMessage(m.message); posts.push(...m.posts); }
+        assert.strictEqual(posts.length, 1, 'one help card, then silence');
+    });
+    await check('a command that throws gets the crash line with what was typed', async () => {
+        const boom = { async execute() { throw new Error('boom'); } };
+        commands.set('draws', boom);
+        const err = console.error; console.error = () => {};
+        try {
+            const { message, posts } = fakeMessage('d draws');
+            await onMessage(message);
+            assert.ok(/<a?:\w+:\d+> Something went wrong running `d draws`\. Try again in a moment\.$/.test(posts[0]?.content || ''), posts[0]?.content);
+        } finally { console.error = err; commands.set('draws', record('draws')); }
     });
     await check('a different command within 1 s: nothing, no warning', async (before) => {
         const a = fakeMessage('d draws'); a.message.author.id = 'quick';
@@ -272,7 +302,8 @@ async function check(name, fn) {
         for (let k = 0; k < 2; k++) {
             const m = fakeMessage(k ? 'd calendar' : 'd draws');
             m.message.author.id = 'muted';
-            m.message.author.send = async (o) => { dms.push(o.content); };
+            m.message.author.send = async (o) => { dms.push(JSON.stringify(o)); };
+            m.message.guild.name = 'Dioreoland';
             m.message.channelId = 'locked'; m.message.channel.id = 'locked';
             m.message.channel.permissionsFor = () => ({ has: () => false });
             if (k) await new Promise(r => setTimeout(r, 1100)); // past the 1-second any-command limit
@@ -280,8 +311,9 @@ async function check(name, fn) {
             assert.strictEqual(m.posts.length, 0);
         }
         assert.strictEqual(ran.length, before);
-        assert.strictEqual(dms.length, 1, 'one DM for the channel');
-        assert.ok(/I can't post in <#locked>/.test(dms[0]), dms[0]);
+        assert.strictEqual(dms.length, 1, 'one DM for the server');
+        // His layout take 3 (B6, 2026-10-29 15:49 EDT).
+        assert.ok(dms[0].includes("I can't post in <#locked> · Dioreoland") && dms[0].includes('**You typed `d draws`** · Ask a server admin to let me send messages there.'), dms[0]);
     });
 
     // The buttons those replies carry.
@@ -291,7 +323,9 @@ async function check(name, fn) {
             customId, guildId: 'g1', channelId: 'c1', channel: null, member: null, user: { id: 'clicker' }, client: { commands, users: { fetch: async uid => ({ id: uid }) }, channels: { fetch: async () => null } },
             token: 't', deferred: false,
             isButton: () => !extra.modal, isModalSubmit: () => Boolean(extra.modal),
+            message: extra.message || null,
             async deferReply(o) { this.deferred = true; replies.push({ defer: o }); },
+            async deferUpdate() { this.deferred = true; replies.push({ update: true }); },
             async reply(o) { replies.push(o); }, async editReply(o) { replies.push({ edit: o }); },
             async showModal(m) { replies.push({ modal: m }); },
             fields: { getTextInputValue: k => (extra.fields || {})[k] || '', getStringSelectValues: k => ((extra.selects || {})[k] ? [extra.selects[k]] : []) },
@@ -304,6 +338,14 @@ async function check(name, fn) {
         assert.strictEqual(lastRun().interaction.options.getString('weapon'), 'ak47');
         assert.strictEqual(lastRun().interaction.options.getSubcommand(), 'mp');
         assert.deepStrictEqual(replies[0], { defer: { flags: 0 } });
+    });
+    await check('a pick from a card edits that card into the answer, and stops it deleting itself', async () => {
+        const cardTimers = require('../utils/textCommands/cardTimers');
+        cardTimers.schedule('card9', 10_000, () => {});
+        const { i, replies } = click('txtrun_gunsmith~weapon=ak47', { message: { id: 'card9' } });
+        await handleTextCommandsInteraction(i);
+        assert.deepStrictEqual(replies[0], { update: true });
+        assert.strictEqual(cardTimers.pending('card9'), false);
     });
     await check('the card button opens the timestamp pop-up, and its answer runs /timestamp', async () => {
         const open = click(cardId);
@@ -329,7 +371,28 @@ async function check(name, fn) {
     await check('a button whose stored value expired says to run it again', async () => {
         const { i, replies } = click('txtrun_~nope');
         await handleTextCommandsInteraction(i);
-        assert.ok(/Run it again/.test(replies[0]?.content || ''));
+        assert.ok(/This button expired\. Type the command again\./.test(replies[0]?.content || ''), replies[0]?.content);
+    });
+    // The cards' own shapes (B6, his layouts 2026-10-29 13:40-15:49 EDT).
+    const { helpCard, didYouMeanCard } = require('../bot/textCommands');
+    await check('the help card: prefixes, four groups, the private /help icon, never deleting itself', async () => {
+        const c = helpCard({ textMessageContent: true, commandIds: new Map([['help', '42']]) }).components[0];
+        assert.strictEqual(c.accent_color, 16743772);
+        assert.ok(/Need help\?\n-# Prefix: \*\*`@Dioreo`\*\*, \*\*`d`\*\* or \*\*`dior`\*\*$/.test(c.components[0].components[0].content), c.components[0].components[0].content);
+        assert.strictEqual(c.components[0].accessory.custom_id, 'txtpriv_help');
+        assert.deepStrictEqual(c.components.slice(2, 6).map(x => x.content.replace(/^<a?:\w+:\d+> /, '')), ['**Gunsmith:** `gunsmith` · `dmz`', '**Draws:** `draws` · `prices` · `calculator`', '**Season:** `today` · `calendar` · `remind` · `patch notes` · `end`', '**Utilities:** `timestamp` · `colors` · `settings` · `invite` · `help`']);
+        assert.ok(c.components[6].content.endsWith('Or use **slash commands** </help:42>'));
+        const noContent = helpCard({ textMessageContent: false }).components[0];
+        assert.ok(noContent.components[0].components[0].content.endsWith('Prefix: **`@Dioreo`**') && noContent.components[6].content.includes('`@Dioreo draws`'));
+    });
+    await check('Did you mean: one match beside its button, several in a row, with what was typed', async () => {
+        const one = didYouMeanCard(['calendar'], 'calender stuff').components[0].components[0];
+        assert.strictEqual(one.type, 9);
+        assert.ok(one.components[0].content.endsWith('Did you mean `calendar`?\n-# You typed `calender stuff`'));
+        assert.strictEqual(one.accessory.custom_id, 'txtrun_calendar');
+        const two = didYouMeanCard(['calendar', 'draw calculator'], 'cal').components[0].components;
+        assert.ok(two[0].content.includes('Did you mean `calendar` or `draw calculator`?'));
+        assert.deepStrictEqual(two[1].components.map(b => b.custom_id), ['txtrun_calendar', 'txtrun_draw.calculator']);
     });
     console.log(failures ? `\n${failures} failing` : '\ntextCommandListener: all passing');
     process.exit(failures ? 1 : 0);

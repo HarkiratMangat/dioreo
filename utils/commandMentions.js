@@ -37,6 +37,14 @@ function mentionCommand(client, path) {
     return id ? `</${clean}:${id}>` : `\`/${clean}\``;
 }
 
+// The slash mention even inside a text command: /help's slash pages show slash names whatever opened them (B6, his rule 2026-10-29 20:45 EDT: a typed page names commands typed, a slash page keeps slash names).
+function slashMention(client, path) {
+    const clean = path.replace(/^\//, '');
+    const base = clean.split(' ')[0];
+    const id = client?.commandIds?.get(base) ?? allCommandIds.get(base);
+    return id ? `</${clean}:${id}>` : `\`/${clean}\``;
+}
+
 // Every slash-command path either app registered ('draws', 'draw prices', 'gunsmith mp'), so free text can be linked: a command that has subcommands only links by its full path, because Discord renders a bare `</gunsmith:id>` as plain text. Filled by bot/registry.js from the same PUT response as the ids.
 const commandPaths = new Set();
 function recordCommandPaths(paths) {
@@ -60,4 +68,4 @@ function linkCommandMentions(text, client = null) {
     });
 }
 
-module.exports = { mentionCommand, recordCommandIds, recordCommandPaths, linkCommandMentions, inTextCommand };
+module.exports = { mentionCommand, slashMention, recordCommandIds, recordCommandPaths, linkCommandMentions, inTextCommand };

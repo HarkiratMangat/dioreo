@@ -125,7 +125,7 @@ The Bot is a **Discord application** (see §4.1 for how it is installed) providi
 | Right-click Apps | View Colors on a person or a message, Convert Times on a message |
 | `/admin` | Lets a server's admins choose where the Bot answers publicly |
 | `/timestamp` | Discord timestamp generation in your timezone |
-| Text commands | In a server: type `@Dioreo today` (or, where Discord allows it, `d today`, `dior today` or `/today`) to run a command where slash commands are hidden |
+| Text commands | In a server: type `@Dioreo today` (or, where Discord allows it, `d today` or `dior today`) to run a command where slash commands are hidden |
 | `/settings` | Your display preferences |
 | Accent colours | Message colours matched to your Discord profile |
 

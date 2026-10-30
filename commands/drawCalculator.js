@@ -1646,7 +1646,10 @@ async function execute(interaction) {
         const openRow = { type: 1, components: [{ type: 2, style: 2, label: 'Open Calculator', emoji: emojis.parseEmoji(emojis.calculator), custom_id: encodeState('page', { ...openState, page: 0 }) }] };
         return sendV2Payload(interaction, [help, openRow], { skipExpiry: true });
     }
-    const viewState = pageChoice === 'saved' ? { ...openState, page: 3 } : pageChoice === 'start' ? state : openState;
+    // `page:New Calculation` / `d calc new`: the New Calculation button's own action on the last calculation, then the fresh form (his ask, B6, 2026-10-29 20:39 EDT). With none yet, it is just Home.
+    if (pageChoice === 'new' && latest) latest = await newCalculation(userId, latest);
+    const freshState = latest ? { ...state, basketId: String(latest._id) } : state;
+    const viewState = pageChoice === 'saved' ? { ...openState, page: 3 } : pageChoice === 'start' ? state : pageChoice === 'new' ? freshState : openState;
     const viewBasket = pageChoice === 'start' ? null : latest;
     const panel = buildCalculatorPanel(viewState, viewBasket, accentColor, {
         savedBaskets, region, notice: shortcut.notice, seasonDraws: await listSeasonDraws(),
@@ -1659,8 +1662,32 @@ async function execute(interaction) {
     return sendV2Payload(interaction, panel, { skipExpiry: true });
 }
 
+// What New Calculation keeps as `previous`, so Restore Calculation can bring it back as it was (moved here from handlers/drawCalc.js with newCalculation, B6 2026-10-29 20:39 EDT, so the typed and slash `new` reach it too).
+function restorableCopy(basket) {
+    return {
+        banners: basket.banners, region: basket.region, balance: basket.balance || 0, includeUpgrades: Boolean(basket.includeUpgrades),
+        mythicCards: basket.mythicCards || 0, mythicCoins: basket.mythicCoins || 0, currency: basket.currency || null,
+        entitlementMask: basket.entitlementMask || 0, submitted: Boolean(basket.submitted), ...(basket.sourceId ? { sourceId: String(basket.sourceId) } : {})
+    };
+}
+
+// New Calculation, shared by the button and the typed `d calc new` / slash `page:New Calculation` (his ask, B6, 2026-10-29 20:37-20:39 EDT). Returns the calculation the panel should now show: the same one emptied, or a new one. `state` is marked dirty, as every write here does.
+async function newCalculation(userId, basket, state = {}) {
+    const basketStore = require('../utils/drawBasketStore');
+    // A saved one is reopened, never copied; an empty form keeps the copy it already holds, so a second press loses nothing.
+    const previous = basket.name ? { savedId: String(basket._id) } : (basket.banners || []).length ? restorableCopy(basket) : (basket.previous || null);
+    // A SAVED calculation is never emptied by New Calculation (2026-10-14 16:51 EDT, Harkirat: "i clicked new calc, so why is it still saying viewing saved: test?"). A new, unnamed calculation starts instead, at the same region; the saved one stays in Saved untouched. A working copy of a saved one starts fresh too and the copy is dropped (click-test 2026-10-14 18:58 EDT): cleared in place it kept its `sourceId`, so the empty form still read "Edited from Saved: test". Its contents live on in `previous`.
+    if (basket.name || basket.sourceId) {
+        if (!basket.name) await basketStore.remove(userId, String(basket._id));
+        return basketStore.save(userId, { banners: [], region: basket.region, previous });
+    }
+    // `submitted: false` is what makes this "New Calculation" rather than "empty result" -- it returns the panel to the setup form. Any change marks the view dirty (handlers/drawCalc.js writeTo's rule, 2026-10-18 14:57 EDT).
+    state.dirty = true;
+    return basketStore.save(userId, { _id: String(basket._id), banners: [], balance: 0, mythicCards: 0, mythicCoins: 0, currency: null, submitted: false, previous });
+}
+
 module.exports = {
-    encodeState, decodeState, defaultState, clampFocus,
+    encodeState, decodeState, newCalculation, restorableCopy, defaultState, clampFocus,
     buildCalculatorPanel, buildSetupPanel, buildMissingBasketPanel, buildExportText, buildDrawInfoPanel, buildHelpPanel, buildSavedPanel, savedChecksum, savedDescription,
     buildCostBlock, entryFor, usedTypes, groupForDisplay,
     isDoubleCPEventLive, findLiveDoubleCPEntry, execute,

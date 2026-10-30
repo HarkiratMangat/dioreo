@@ -57,6 +57,8 @@ async function renderScopeBrowse(interaction, scope, flatIndex, { isUpdate = fal
     }
     const builds = await resolveScopeBuilds(scope);
     const firstOfWeapon = weaponKey ? builds.findIndex(b => b.weaponKey === weaponKey) : 0;
+    // An empty META list gets its own card, not an error (his ask and wording, B6, 2026-10-29 20:06-20:13 EDT): `d meta` and the All META row land here between a season's start and the first META build.
+    if (!builds.length && scope.metaOnly && !weaponKey) return sendV2Payload(interaction, emptyMetaCard(scope.mode), { flags: 32768 });
     if (!builds.length || firstOfWeapon === -1) {
         try {
             await interaction.followUp({ content: BOT_EMOJI.cross + (weaponKey ? ' That weapon no longer has any builds saved.' : ' That scope has no builds saved yet.'), ephemeral: true });
@@ -85,6 +87,21 @@ async function renderScopeBrowse(interaction, scope, flatIndex, { isUpdate = fal
         browse: { scopeToken, flatIndex, flatTotal: builds.length, scopeLabel },
     });
     await sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
+}
+
+// The empty META card: the title, the pending line in italics, the footer, then Search builds (the card's own one-box search, gsb~search~<mode>) and Submit a Build (`-`: no weapon on screen, as on /help's footer).
+function emptyMetaCard(mode) {
+    return [{ type: 17, accent_color: getMpCategoryAccent(null), components: [
+        { type: 10, content: `## Meta — ${mode}` },
+        { type: 14, spacing: 1, divider: true },
+        { type: 10, content: '*The Meta list is pending an update. Check back soon.*' },
+        { type: 10, content: `-# ${mode} • Meta pending` },
+        { type: 14, spacing: 2, divider: true },
+        { type: 1, components: [
+            { type: 2, style: 2, label: 'Search builds', custom_id: `gsb~search~${mode}`, emoji: BOT_EMOJI.parseEmoji(BOT_EMOJI.gunsmithSearch) },
+            { type: 2, style: 1, label: 'Submit a Build', custom_id: `gsb~submit~${mode}~-`, emoji: BOT_EMOJI.parseEmoji(BOT_EMOJI.share) },
+        ] },
+    ] }];
 }
 
 // The first weapon by name with a real build (a "Coming Soon" placeholder is not one), optionally within one class. Null when there is none.
@@ -132,4 +149,4 @@ async function textWeapon(mode, text) {
     return { hit: picked.hit ? view(picked.hit) : null, several: picked.several.map(view), loose: picked.loose.map(view) };
 }
 
-module.exports = { data, execute, renderScopeBrowse, textWeapon };
+module.exports = { data, execute, renderScopeBrowse, textWeapon, emptyMetaCard };

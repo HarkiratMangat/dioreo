@@ -24,17 +24,16 @@ const PERM_MATRICES = {
 async function run() {
     const helpCommand = require('../commands/help');
 
+    // Every page this matrix may open, in each of its views (B6, 2026-10-30 00:15 EDT: the category pages became one page per command, utils/helpPages.js).
+    const H = require('../utils/helpPages');
+    const views = perms => [[null, 'text'], [null, 'slash'], ...helpCommand.visiblePageNames(perms).flatMap(n => (H.hasTextView(n) ? [[n, 'text'], [n, 'slash']] : [[n, 'slash']])), ...(helpCommand.visiblePageNames(perms).includes('/draw prices') ? [['/draw prices', 'detail']] : [])];
+    const render = (perms, cmd, view, client = fakeClient) => helpCommand.buildHelpMessage({ perms, client, cmd, view: view === 'detail' ? 'text' : view, detail: view === 'detail' });
     for (const [permsName, perms] of Object.entries(PERM_MATRICES)) {
-        await check(`${permsName}: landing page renders byte-identical to the pre-rewrite fixture`, async () => {
-            const actual = await helpCommand.buildContainer(null, 16743772, perms, fakeClient);
-            assert.deepStrictEqual(actual, expected[permsName].landing);
+        await check(`${permsName}: every page renders as the fixture pins it`, async () => {
+            const actual = {};
+            for (const [cmd, view] of views(perms)) actual[`${cmd || 'home'} ${view}`] = await render(perms, cmd, view);
+            assert.deepStrictEqual(actual, expected[permsName]);
         });
-        for (const cat of helpCommand.CATEGORY_DEFS) {
-            await check(`${permsName}: "${cat.key}" detail page renders byte-identical to the pre-rewrite fixture`, async () => {
-                const actual = await helpCommand.buildContainer(cat.key, 16743772, perms, fakeClient);
-                assert.deepStrictEqual(actual, expected[permsName][cat.key]);
-            });
-        }
     }
 
     // OPTION DRIFT (2026-10-17 23:51 EDT). The snapshot above freezes what /help SAYS; this checks it against what each command REGISTERS. /help had gone stale three ways nobody saw: /draw prices' type (then jump_to) missing, /manage still listing the retired Manage Admins and not its `action`, and two "Options" lines promising [visibility] on commands without it. Every registered option except visibility must be named on its command's page as `[name]` or `<name>`, and every such name on a page must belong to a command on it.
@@ -55,17 +54,13 @@ async function run() {
         };
         const perms = PERM_MATRICES.fullBotAdmin;
         const texts = c => [c.content || '', ...(c.components || []).flatMap(texts)].join('\n');
-        for (const cat of helpCommand.CATEGORY_DEFS) {
-            const page = texts(await helpCommand.buildContainer(cat.key, 16743772, perms, fakeClient));
-            const commands = cat.detailCommands || cat.staticCommands;
-            const expected = new Set(commands.flatMap(c => optionsOf(c.name)).filter(n => n !== 'visibility'));
-            const named = new Set([...page.matchAll(/🔹 `[<\[]([a-z_]+\d*)[>\]]`/g)].map(m => m[1]).filter(n => n !== 'visibility'));
-            // A numbered run is named once as a range, `[screenshot2]` to `[screenshot10]` (bulk /autobuild, 2026-10-20 10:42 EDT), and stands for every name in it.
-            for (const m of page.matchAll(/🔹 `\[([a-z_]+)(\d+)\]` to `\[\1(\d+)\]`/g)) {
-                for (let n = Number(m[2]); n <= Number(m[3]); n++) named.add(`${m[1]}${n}`);
-            }
-            for (const n of expected) assert.ok(named.has(n), `${cat.key}: registered option "${n}" is not on the /help page`);
-            for (const n of named) assert.ok(expected.has(n), `${cat.key}: /help names "${n}", which no command on the page registers`);
+        // Each slash page names its options one box each, `[name]` or `<name>` at the start of the box (B6's layout).
+        for (const name of helpCommand.visiblePageNames(perms)) {
+            const page = texts({ components: await render(perms, name, 'slash') });
+            const expected = new Set(optionsOf(name).filter(n => n !== 'visibility'));
+            const named = new Set([...page.matchAll(/(?:^|\n)`[<\[]([a-z_]+\d*)[>\]]`\n/g)].map(m => m[1]).filter(n => n !== 'visibility'));
+            for (const n of expected) assert.ok(named.has(n), `${name}: registered option "${n}" is not on its /help page`);
+            for (const n of named) assert.ok(expected.has(n), `${name}: /help names "${n}", which the command does not register`);
         }
     });
 
@@ -76,13 +71,10 @@ async function run() {
         const chars = c => (typeof c.content === 'string' ? c.content.length : 0) + (c.components || []).reduce((n, x) => n + chars(x), 0) + (c.accessory ? chars(c.accessory) : 0);
         let worst = { n: 0 };
         for (const [permsName, perms] of Object.entries(PERM_MATRICES)) {
-            for (const cat of [null, ...helpCommand.CATEGORY_DEFS]) {
-                const names = cat ? (cat.detailCommands || cat.staticCommands).map(c => c.name) : [];
-                for (const [focus, only] of [[null, false], ...names.flatMap(n => [[n, false], [n, true]])]) {
-                    const n = chars(await helpCommand.buildContainer(cat ? cat.key : null, 16743772, perms, prodClient, focus, only));
-                    if (n > worst.n) worst = { n, where: `${permsName} ${cat ? cat.key : 'landing'}${focus ? ` (${focus}${only ? ', only' : ''})` : ''}` };
-                    assert.ok(n <= 4000, `${permsName} ${cat ? cat.key : 'landing'}${focus ? ` focused on ${focus}` : ''}: ${n} characters`);
-                }
+            for (const [cmd, view] of views(perms)) {
+                const n = chars({ components: await render(perms, cmd, view, prodClient) });
+                if (n > worst.n) worst = { n, where: `${permsName} ${cmd || 'home'} ${view}` };
+                assert.ok(n <= 4000, `${permsName} ${cmd || 'home'} ${view}: ${n} characters`);
             }
         }
         console.log(`      longest: ${worst.where}, ${worst.n} of 4,000 characters`);

@@ -7,7 +7,7 @@ paths:
   - "handlers/textCommands.js"
 ---
 
-# Text commands — `@Dioreo today`, `d today`, `dior today`, `/today`
+# Text commands — `@Dioreo today`, `d today`, `dior today`
 
 *Loads when you touch the parser, the adapter, the listener or the two buttons. Written 2026-10-28 22:13 EDT from the code's own comments; the design is `docs/superpowers/specs/2026-10-28-text-commands-design.md` and the build plan `docs/superpowers/plans/2026-10-28-text-commands.md`. Every decision named here is Harkirat's and settled.*
 
@@ -35,11 +35,16 @@ A server can switch off Use Application Commands, and a server with more than ab
 - **Only a LEADING mention counts.** A reply to a Dioreo message pings the bot too, and "thanks" under a panel must not summon a help card.
 - **Ignored outright:** bots, webhooks, system messages, DMs (no `guildId`), and anything on Dioreo Admin, whose client never registers the listener (`index.js` wires it on the public client only).
 - **Prefixes are longest first,** so `dior` is never read as `d` + `ior`. A word prefix glued to the command (`dtoday`) must be followed by a letter; `d.` or `d123` is chat.
-- **Typos are forgiven only when the message clearly addresses Dioreo** (a mention, the bot's role, or `/`) **or the prefix is followed by a space** (`d todya`). Glued forms must be exact, or `d` + `raws` would fire on the plain word "draws".
-- **A stray key or two after a command is forgiven** (`dior draws o`); longer trailing text after `d`/`dior` is chat (`d today is cold lol`) and gets nothing. After a mention or `/`, an exact command still runs with trailing text, and a typo'd one with trailing text gets Did you mean.
-- **A bare mention (or a bare `/`), or one or two unknown words after a mention,** gets the help card or Did you mean. **Three or more words after a mention with no command** is someone talking TO Dioreo (`@Dioreo is the best bot`) and gets a reply holding one app emoji (his call, 2026-10-28 17:04 EDT): since 2026-10-29 10:12 EDT, one of his 24 brand emojis (`MENTION_REPLY_EMOJIS` in `bot/textCommands.js`), dealt from a shuffled deck so all 24 show before any repeats and a new deck never opens with the last one shown. Read by name at reply time; with none on the app, 👋. Any other unrecognised message, after any trigger but a mention, is silent.
-- **The cards the listener builds itself look like the bot's other panels** (Harkirat, 2026-10-29 11:10 EDT: "why does this panel look so barebone??"): the help card, Did you mean, the timestamp card and the weapon picker each carry a title with the command's own icon, that command's accent (/help's coral, /timestamp's teal) and a `-#` hint; the timestamp card shows the typed form with the prefix that was used. The no-match line starts with the bot's cross.
-- **The bot's managed ROLE mentioned without Message Content** arrives with no text at all (spike, 2026-10-28 16:37 EDT), so it gets a one-line hint to mention the bot instead.
+- **Typos are forgiven only when the message clearly addresses Dioreo** (a mention or the bot's role) **or the prefix is followed by a space** (`d todya`). Glued forms must be exact, or `d` + `raws` would fire on the plain word "draws".
+- **A stray key or two after a command is forgiven** (`dior draws o`). After `d`/`dior` an exact command with ONE word nothing understood still runs (`d calendar stuff`), while a typo with any such word (`d calender stuff`) or two or more of them (`d today is cold lol`) is chat and gets nothing (his rule, B6, 2026-10-29 14:29 EDT). After a mention a command runs with whatever it understood, typo or not (`@Dioreo calender stuff`).
+- **A bare mention, or one or two unknown words after a mention,** gets the help card or Did you mean (`@Dioreo hi` the help card); **`@Dioreo thanks`** (thank you, thank u, thx, ty, tysm, tyvm) gets the emoji reply below (B6). **Three or more words after a mention with no command** is someone talking TO Dioreo (`@Dioreo is the best bot`) and gets a reply holding one app emoji (his call, 2026-10-28 17:04 EDT): since 2026-10-29 10:12 EDT, one of his 24 brand emojis (`MENTION_REPLY_EMOJIS` in `bot/textCommands.js`), dealt from a shuffled deck so all 24 show before any repeats and a new deck never opens with the last one shown. Read by name at reply time; with none on the app, 👋. Any other unrecognised message, after any trigger but a mention, is silent.
+- **The cards the listener builds itself are Harkirat's B6 designs** (approved in #testing-spam 2026-10-29 13:40-16:07 EDT; the mock-ups and every call are in `docs/superpowers/plans/2026-10-28-text-commands.md`'s Audit log), in the commands' own accents (/help's coral, /timestamp's teal), every example in the prefix the person used:
+  - **Help card** (`@Dioreo` alone, `@Dioreo hi`): `Need help?` with the prefixes, the four groups in short words, examples and the slash /help; the icon beside the title (`txtpriv_help`) opens /help privately for whoever taps it. It never deletes itself.
+  - **Did you mean** (`Did you mean \`a\` or \`b\`?` over `You typed …`): one match sits beside its button, several get a row, each with its command's icon (`icon` in `commands.js`). Weapons and seasons use the same card.
+  - **The timestamp cards:** `What date or time?` with a blurple Pick date & time (nothing typed), `Couldn't read \`…\`` with Try again (a date that did not read); both open the pop-up.
+  - **Lines:** `No match for “…”` (a weapon or season with no match) and the crash line `Something went wrong running \`d …\``, both gone after 10 s.
+  - **Self-deleting:** Did you mean, the weapon/season pick and the timestamp cards delete themselves 10 s after they are posted unless pressed; any press cancels that; a pick or a sent pop-up EDITS the card into the answer (a plain-text timestamp comes as a new message and the card goes); a pop-up opened and never sent leaves the card 5 minutes (`utils/textCommands/cardTimers.js`, in memory).
+- **The bot's managed ROLE mentioned without Message Content** arrives with no text at all (spike, 2026-10-28 16:37 EDT), and is silent since B6 (his call, 2026-10-29 15:00 EDT: the role is not pingable unless an admin makes it so); the role hint it used to get is gone.
 - **An edit within 60 s** that turns a message into a command runs it, but only if the first version got no answer (think-pass, 2026-10-28 16:46 EDT).
 
 ### The typo limits, and the measurement behind them
@@ -58,9 +63,10 @@ Measured 2026-10-28 16:44 EDT against `/usr/share/dict/words`: distance 2 on six
 
 | Limit | What happens |
 |---|---|
-| Same command, same person, within 5 s | one "⏳ You can run `x` again <t:…:R>" note, a reply that deletes itself when the wait ends; further repeats get nothing |
+| Same command, same person, within 5 s | one small `Slow down! Try \`d today\` again <t:…:R>` note (the command as typed; B6, his wording 2026-10-29 15:06 EDT), a reply that deletes itself when the wait ends; further repeats get nothing. Only a real command gets it: a second help card, emoji or Did you mean is silent |
 | A different command within 1 s | nothing, no warning |
 | One channel | at most 5 replies per 10 s |
+| One server | at most 30 replies per 10 s (his "okay", 2026-10-29 23:51 EDT): only a flood reaches it |
 
 His rule, 2026-10-28 18:10 EDT: *"a 5 second per person limit if it's the same command (with a warning message and countdown within the message, the message then deletes itself) and 1 second for any command that's not the same (no warning needed)"*. The countdown is Discord's own relative timestamp, which every client counts down live. All of this lives in memory and a restart forgets it.
 
@@ -82,7 +88,7 @@ A command that opens a pop-up first cannot do that from a message (Discord opens
 
 ## Prefixes, and the dev bot
 
-The prefixes come from env `TEXT_PREFIXES`: unset means `/,d,dior` (Harkirat, 2026-10-28 16:21 EDT: `d`/`dior` rather than `d!`, because `!` needs a keyboard switch on mobile). `.env.dev` sets `TEXT_PREFIXES=dd,diordev`, because prod and dev are both in Dioreoland and would otherwise both answer `d today` (think-pass, 2026-10-28 16:44 EDT). Prefixes work only where Message Content is granted; a mention always works.
+The prefixes come from env `TEXT_PREFIXES`: unset means `d,dior` (`/,d,dior` until B6 removed `/`, his call 2026-10-29: it collides with the slash-command picker; ⚠️ a server whose `.env` sets `TEXT_PREFIXES` explicitly keeps `/` until that line changes) (Harkirat, 2026-10-28 16:21 EDT: `d`/`dior` rather than `d!`, because `!` needs a keyboard switch on mobile). `.env.dev` sets `TEXT_PREFIXES=dd,diordev`, because prod and dev are both in Dioreoland and would otherwise both answer `d today` (think-pass, 2026-10-28 16:44 EDT). Prefixes work only where Message Content is granted; a mention always works.
 
 ## Intents and the Message Content flag check
 
@@ -94,7 +100,7 @@ The public client runs `Guilds` + `GuildMessages` (`index.js`). `enableMessageCo
 
 ## Where Dioreo can't post
 
-- **No View Channel or Send Messages (Send Messages in Threads in a thread):** the member gets ONE DM, at most once per channel per day: "I can't post in #channel. Ask a server admin to let me send messages there, or try another channel." Held in memory only, so a restart forgets it and nothing is stored (Harkirat, 2026-10-28 17:18 EDT). If their DMs are closed, nothing else can reach them.
+- **No View Channel or Send Messages (Send Messages in Threads in a thread):** the member gets ONE DM card, at most once per SERVER per day and three a day in all (B6, his layout and limits 2026-10-29 15:45-15:49 EDT; it was once per channel): `I can't post in #channel · Server`, `You typed \`d today\` · Ask a server admin to let me send messages there.`, then up to 10 channels where BOTH Dioreo and that member can view and send (`+N more` past that), so no hidden channel is ever named. Held in memory only, so a restart forgets it and nothing is stored. If their DMs are closed, nothing else can reach them.
 - **Read Message History denied:** a reply is refused with 50013 (think-pass, 2026-10-28 17:58 EDT), so the same body is sent once more as a plain message, both in the listener's own `reply()` and in the adapter's `send()`.
 - **`/colors`' swatch images need Attach Files in the channel**, because they go out as files on the reply.
 
@@ -124,6 +130,15 @@ The words after a command fill its slash command's own options: the design spec'
 - **`via` gains `+args`** when options were given.
 - **A click on a text reply keeps the text forms** (the spec's "Replies", the lead's call 2026-10-29 00:05 EDT; built by B4): `handlers/router.js` sets `textReply` in the request context for a click on a bot message in a server that has no interaction metadata (a slash reply and its follow-ups always have it), and `utils/commandMentions.js`'s `inTextCommand()` reads it, so a `d help` dropdown or pager redraws `d draws`, not `</draws:id>`. A DM card has no guild and is never a text reply.
 - **Short glued forms run commands, and that is decided** (Harkirat, 2026-10-28 23:13 EDT, "keep"): `dc` opens the calendar, `dr` remind, `dt` the timestamp card, and `/s` settings, although each is also ordinary chat ("disconnected", sarcasm). Asked after B2 found them; the one-letter aliases stay as the spec lists them. Do not raise it again as a finding.
+
+## B6 additions to the options (2026-10-29)
+
+- **`d meta`, `d gs meta`, `d dmz meta`** open that mode's META browse (`~scope~<mode>.*.meta`); with no META build the browse answers his empty-list card (`commands/gunsmith.js` `emptyMetaCard`: *The Meta list is pending an update. Check back soon.*, Search builds, Submit a Build).
+- **A bare main class word** (`d smg`; ar, smg, lmg, marksman, sniper, shotgun, secondary, singular or plural) opens that class's first build. The short forms (sub, sr, sg, sec, mr, dmr, assault, pistol) still need gunsmith first: they turn up in chat.
+- **`d calc new` / `reset`** run New Calculation (the button's own action, `commands/drawCalculator.js` `newCalculation`, restorable from the empty form); `home` / `start` / `begin` open the calculator's home. The slash `page:` gained New Calculation and renamed Start a Calculation to Home.
+- **A zone named at the END of a date** (`d ts fri 6pm tokyo`, `8pm new york`) is read as the zone, exact names only (`utils/timezoneData.js` `exactTimezone`, never the fuzzy search, which reads `to` and `fri` as zones), and only when what is left still reads as a date. An offset given with `tz:` (`tz:utc+5`) joins the date text, where the date parser reads it. `t` is no longer timestamp's word.
+- **His draw type aliases:** leggy, leggy char, double leggy, adv wep; and `draw` for draws.
+- **The help pages read their words from `commands.js`:** `helpWord`, `shown`, and a value's `shown` / `group` / `label` (see `utils/helpPages.js`).
 
 ## Tests
 

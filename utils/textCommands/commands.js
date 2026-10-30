@@ -12,6 +12,10 @@
 //   multi    several values join into one comma list (draw prices' type: `legendary` is two draws)
 //   keyOnly  reachable only as `key:value` (timestamp's timezone)
 //   mention  takes an @mention (colors' someone)
+//
+// The help pages read their words from here too (B6, his approved pages 2026-10-29 19:02-23:13 EDT), so a page never shows a word the parser does not accept: `helpWord` is the word in a page's usage line and in the command switcher (`d price`, `d end`), and `shown` the aliases listed under it, his picks from `words`. A value's `shown` is the short forms listed beside it, its `group` the Draw Prices group it sits in, and its `label` what a page says it opens.
+//
+// A command's `icon` is the utils/emojiMap.js key its buttons carry on the listener's own cards (a Did you mean pick shows the command's icon; B6, 2026-10-29 13:52 EDT), the same icon /help gives it.
 
 // The patch notes value `new` / `latest` / `current`: the newest notes posted, even for a season not live yet (spec, "How words map"). bot/textCommands.js asks /patch notes' own autocomplete and takes its first, which is the newest.
 const LATEST = '~latest';
@@ -37,15 +41,22 @@ const seasonText = text => {
 
 const weaponOption = { name: 'weapon', rest: 'weapon', classes: CLASS_WORDS, example: 'ak117' };
 
+// A bare class word runs gunsmith MP on that class's first build (`d smg`; his ask, B6, 2026-10-29 20:07 EDT). Only the seven main words: the short forms (sub, sr, sg, sec, mr, dmr, assault, pistol) turn up in chat, so they still need gunsmith first.
+const BARE_CLASS_WORDS = { ar: 'AR', smg: 'SMG', lmg: 'LMG', marksman: 'MARKSMAN', sniper: 'SNIPER', shotgun: 'SHOTGUN', secondary: 'SECONDARIES' };
+
+// What a person says to thank Dioreo (`@Dioreo thanks`): an emoji reply, never a help card (his ask, B6, 2026-10-29).
+const THANKS = ['thanks', 'thank you', 'thank u', 'thx', 'ty', 'tysm', 'tyvm'];
+
 const TEXT_COMMANDS = [
-    { name: 'today', slash: 'today', words: ['today', 'td', 'tdy', 'daily'] },
+    { name: 'today', helpWord: 'today', shown: ['td', 'tdy', 'daily'], icon: 'dailyUpdate', slash: 'today', words: ['today', 'td', 'tdy', 'daily'] },
     {
-        name: 'draws', slash: 'draws', words: ['draws', 'd', 'lucky draws', 'ld'],
+        // `draw` shown on the help page (his ask, 2026-10-29 23:01 EDT); singular and plural always matched anyway.
+        name: 'draws', helpWord: 'draws', shown: ['draw', 'ld', 'lucky draws'], icon: 'newDraws', slash: 'draws', words: ['draws', 'draw', 'd', 'lucky draws', 'ld'],
         options: [{ name: 'page', values: [{ value: 'new', aliases: ['new', 'n', 'all'] }, { value: 'returning', aliases: ['returning', 'return', 'r'] }] }],
     },
     {
         // `d events`, `d modes`, `d playlists`, `d gamemode`, `d gm` open that calendar page (his answer 2), so they are calendar's words with the page already picked.
-        name: 'calendar', slash: 'calendar', words: ['calendar', 'cal', 'c', 'schedule', 'sched', 'events', 'ev', 'playlists', 'modes', 'gamemode', 'gm'],
+        name: 'calendar', helpWord: 'calendar', shown: ['cal', 'c', 'schedule', 'sched'], icon: 'calendar', slash: 'calendar', words: ['calendar', 'cal', 'c', 'schedule', 'sched', 'events', 'ev', 'playlists', 'modes', 'gamemode', 'gm'],
         presets: { events: { page: 'events' }, ev: { page: 'events' }, playlists: { page: 'playlists' }, modes: { page: 'playlists' }, gamemode: { page: 'playlists' }, gm: { page: 'playlists' } },
         options: [
             { name: 'page', values: [{ value: 'draws', aliases: ['draws', 'd'] }, { value: 'events', aliases: ['events', 'ev', 'e'] }, { value: 'playlists', aliases: ['playlists', 'modes', 'pl', 'm', 'gamemode', 'gm'] }] },
@@ -54,57 +65,59 @@ const TEXT_COMMANDS = [
         ],
     },
     {
-        name: 'patch notes', slash: 'patch', sub: 'notes', words: ['patch notes', 'patchnotes', 'patch', 'notes', 'pn', 'update'],
+        name: 'patch notes', helpWord: 'patch notes', shown: ['pn', 'patch', 'notes', 'patchnotes', 'update'], icon: 'patchNotes', slash: 'patch', sub: 'notes', words: ['patch notes', 'patchnotes', 'patch', 'notes', 'pn', 'update'],
         options: [{ name: 'season', values: [{ value: LATEST, aliases: ['new', 'latest', 'current'] }], rest: 'autocomplete', restText: seasonText, example: 'latest' }],
     },
-    { name: 'season end', slash: 'season', sub: 'end', words: ['season end', 'seasonend', 'season', 'se', 'rank end', 'rankend', 'ranked end', 'rank', 're', 'end'] },
+    { name: 'season end', helpWord: 'end', shown: ['se', 'season end', 'rank end'], icon: 'bp', slash: 'season', sub: 'end', words: ['season end', 'seasonend', 'season', 'se', 'rank end', 'rankend', 'ranked end', 'rank', 're', 'end'] },
     {
-        name: 'draw prices', slash: 'draw', sub: 'prices', words: ['draw prices', 'drawprices', 'prices', 'price', 'dp', 'cost', 'cp'],
+        name: 'draw prices', helpWord: 'price', shown: ['prices', 'dp', 'cost', 'cp', 'draw prices'], icon: 'drawPrices', slash: 'draw', sub: 'prices', words: ['draw prices', 'drawprices', 'prices', 'price', 'dp', 'cost', 'cp'],
         options: [
-            { name: 'region', values: [{ value: 'region_10', aliases: ['10cp', '10'] }, { value: 'region_20', aliases: ['20cp', '20'] }, { value: 'region_30', aliases: ['30cp', '30'] }] },
+            { name: 'region', values: [{ value: 'region_10', aliases: ['10cp', '10'], shown: ['10'] }, { value: 'region_20', aliases: ['20cp', '20'], shown: ['20'] }, { value: 'region_30', aliases: ['30cp', '30'], shown: ['30'] }] },
             // The slash option is `filter`; the spec calls it type. A word naming a group shows every draw in it (his comments: legendary shows reactive and non-reactive, armory all three; mythic and advanced the same by the lead's call), which commands/drawprices.js opens as one filtered view.
             {
                 name: 'filter', keys: ['type', 'filter'], multi: true,
                 values: [
-                    { value: ['mythicWeapon', 'mythicCharacter'], aliases: ['mythic', 'myth'] },
-                    { value: ['mythicWeapon'], aliases: ['mythic weapon', 'mythic gun', 'mythic wep', 'mw'] },
-                    { value: ['mythicCharacter'], aliases: ['mythic character', 'mythic char', 'mythic operator', 'mythic op', 'mc'] },
-                    { value: ['legendaryGunReactive', 'legendaryGunNonReactive'], aliases: ['legendary', 'legend', 'leg', 'legendary weapon', 'legendary gun', 'lw', 'lg', 'reactive', 'non-reactive', 'nonreactive', 'lr', 'lnr'] },
-                    { value: ['legendaryCharacterWeapon'], aliases: ['legendary character', 'legendary char', 'legendary operator', 'lc', 'lcw'] },
-                    { value: ['doubleLegendaryWeapons'], aliases: ['double legendary', 'double', 'dl', 'dlw'] },
-                    { value: ['sevenSpinLegendaryWeapon'], aliases: ['7 spins', 'seven spins', '7 spin', '7spin', '7s'] },
-                    { value: ['pickYourRewardCard'], aliases: ['pick your reward', 'pick', 'pyr'] },
-                    { value: ['doubleEpicCharacters'], aliases: ['double epic', 'epic', 'de', 'dec'] },
-                    { value: ARMORIES, aliases: ['armory', 'armoury', 'series armory', 'series', 'sa', 'arm'] },
-                    { value: ['advancedWeapon', 'advancedCharacter'], aliases: ['advanced', 'adv'] },
-                    { value: ['advancedWeapon'], aliases: ['advanced weapon', 'adv weapon', 'aw'] },
-                    { value: ['advancedCharacter'], aliases: ['advanced character', 'adv char', 'adv operator', 'ac'] },
+                    { value: ['mythicWeapon', 'mythicCharacter'], aliases: ['mythic', 'myth'], shown: ['myth'], group: 'Mythic' },
+                    { value: ['mythicWeapon'], aliases: ['mythic weapon', 'mythic gun', 'mythic wep', 'mw'], shown: ['mythic wep', 'mw'], group: 'Mythic' },
+                    { value: ['mythicCharacter'], aliases: ['mythic character', 'mythic char', 'mythic operator', 'mythic op', 'mc'], shown: ['mythic char', 'mc'], group: 'Mythic' },
+                    // leggy, leggy char, double leggy and adv wep are his (B6, 2026-10-29 17:58 EDT).
+                    { value: ['legendaryGunReactive', 'legendaryGunNonReactive'], aliases: ['legendary', 'legend', 'leg', 'leggy', 'legendary weapon', 'legendary gun', 'lw', 'lg', 'reactive', 'non-reactive', 'nonreactive', 'lr', 'lnr'], shown: ['leg', 'leggy', 'lw'], group: 'Legendary' },
+                    { value: ['legendaryCharacterWeapon'], aliases: ['legendary character', 'legendary char', 'leggy char', 'legendary operator', 'lc', 'lcw'], shown: ['leggy char', 'lc'], group: 'Legendary' },
+                    { value: ['doubleLegendaryWeapons'], aliases: ['double legendary', 'double leggy', 'double', 'dl', 'dlw'], shown: ['double leggy', 'dl'], group: 'Legendary' },
+                    { value: ['sevenSpinLegendaryWeapon'], aliases: ['7 spins', 'seven spins', '7 spin', '7spin', '7s'], shown: ['7s'], group: 'More' },
+                    { value: ['pickYourRewardCard'], aliases: ['pick your reward', 'pick', 'pyr'], shown: ['pick', 'pyr'], group: 'More' },
+                    { value: ['doubleEpicCharacters'], aliases: ['double epic', 'epic', 'de', 'dec'], shown: ['epic', 'de'], group: 'More' },
+                    { value: ARMORIES, aliases: ['armory', 'armoury', 'series armory', 'series', 'sa', 'arm'], shown: ['series', 'sa', 'arm'], group: 'Special' },
+                    { value: ['advancedWeapon', 'advancedCharacter'], aliases: ['advanced', 'adv'], shown: ['adv'], group: 'Special' },
+                    { value: ['advancedWeapon'], aliases: ['advanced weapon', 'adv weapon', 'adv wep', 'aw'], shown: ['adv wep', 'aw'], group: 'Special' },
+                    { value: ['advancedCharacter'], aliases: ['advanced character', 'adv char', 'adv operator', 'ac'], shown: ['adv char', 'ac'], group: 'Special' },
                 ],
             },
         ],
     },
     {
-        name: 'draw calculator', slash: 'draw', sub: 'calculator', words: ['draw calculator', 'drawcalculator', 'calculator', 'calc', 'dc', 'calculate'],
-        options: [{ name: 'page', values: [{ value: 'start', aliases: ['start', 'new', 'begin'] }, { value: 'saved', aliases: ['saved', 'save', 'history', 's'] }, { value: 'help', aliases: ['help', 'guide', 'h'] }] }],
+        name: 'draw calculator', helpWord: 'calculator', shown: ['calc', 'dc', 'calculate', 'draw calculator'], icon: 'calculator', slash: 'draw', sub: 'calculator', words: ['draw calculator', 'drawcalculator', 'calculator', 'calc', 'dc', 'calculate'],
+        // `new` and `reset` run New Calculation (wipes the current one, restorable from the empty form); `home`, `start` and `begin` open the calculator's home (his calls, B6, 2026-10-29 20:37-20:41 EDT).
+        options: [{ name: 'page', values: [{ value: 'new', aliases: ['new', 'reset'], shown: ['reset'], label: 'Clear it and start fresh' }, { value: 'start', aliases: ['home', 'start', 'begin'], shown: ['start', 'begin'], label: 'Calculator home' }, { value: 'saved', aliases: ['saved', 'save', 'history', 's'], shown: ['save', 'history'], label: 'View saved' }, { value: 'help', aliases: ['help', 'guide', 'h'], shown: ['guide'], label: 'The guide' }] }],
     },
-    // A bare weapon name (`d ak117`) runs this one too, but only for an exact weapon name: bot/textCommands.js checks it against /gunsmith mp's own suggestions.
-    { name: 'gunsmith', slash: 'gunsmith', sub: 'mp', words: ['gunsmith', 'gs', 'mp', 'build', 'loadout', 'meta', 'gun', 'wep', 'weapon'], options: [weaponOption] },
-    { name: 'gunsmith dmz', slash: 'gunsmith', sub: 'dmz', words: ['dmz', 'dmz gs', 'dmz build', 'dmz loadout', 'gsd'], options: [weaponOption] },
+    // A bare weapon name (`d ak117`) runs this one too, but only for an exact weapon name: bot/textCommands.js checks it against /gunsmith mp's own suggestions. `d meta` opens the MP META browse (his ask, B6, 2026-10-29 20:06 EDT); `d gs meta` / `d dmz meta` reach it through args.js.
+    { name: 'gunsmith', helpWord: 'gunsmith', shown: ['gs', 'mp', 'gun', 'build', 'loadout'], icon: 'gunsmithSearch', slash: 'gunsmith', sub: 'mp', words: ['gunsmith', 'gs', 'mp', 'build', 'loadout', 'meta', 'gun', 'wep', 'weapon'], presets: { meta: { weapon: '~scope~MP.*.meta' } }, options: [weaponOption] },
+    { name: 'gunsmith dmz', helpWord: 'dmz', shown: ['gsd', 'dmz gs', 'dmz build', 'dmz loadout'], icon: 'dmz', slash: 'gunsmith', sub: 'dmz', words: ['dmz', 'dmz gs', 'dmz build', 'dmz loadout', 'gsd'], options: [weaponOption] },
     {
-        // Sent as a REPLY with no date, it runs Convert Times on the replied message (his comment: "just `d timestamp` reply to a message"); alone, a one-button card opens the pop-up. No style or view (his trim).
-        name: 'timestamp', slash: 'timestamp', words: ['timestamp', 'time', 'ts', 't', 'convert'], replyForm: 'convertTimes',
+        // Sent as a REPLY with no date, it runs Convert Times on the replied message (his comment: "just `d timestamp` reply to a message"); alone, a one-button card opens the pop-up. No style or view (his trim). `t` removed (his call, B6, 2026-10-29): too common in chat; `ts` stays.
+        name: 'timestamp', helpWord: 'timestamp', shown: ['ts', 'time', 'convert'], icon: 'timestamp', slash: 'timestamp', words: ['timestamp', 'time', 'ts', 'convert'], replyForm: 'convertTimes',
         options: [
             { name: 'datetime', keys: ['datetime', 'date'], rest: 'datetime', required: true, example: 'tomorrow 8pm' },
             { name: 'timezone', keys: ['timezone', 'tz'], keyOnly: true },
         ],
     },
     // `d remind` posts the reminders panel in the channel, public like every text reply (his call 2026-10-28 21:56 EDT).
-    { name: 'remind', slash: 'remind', words: ['remind', 'r', 'reminder', 'remindme', 'rm', 'notify', 'alert'] },
+    { name: 'remind', helpWord: 'remind', shown: ['r', 'rm', 'reminder', 'remindme', 'notify'], icon: 'remind', slash: 'remind', words: ['remind', 'r', 'reminder', 'remindme', 'rm', 'notify', 'alert'] },
     // `d colors @name`, or `d colors` sent as a reply, shows THAT person's colours through the View Colors right-click's own code.
-    { name: 'colors', slash: 'colors', words: ['colors', 'colours', 'col', 'palette', 'accent'], replyForm: 'viewColors', options: [{ name: 'someone', keys: ['someone', 'user'], mention: true, example: '@name' }] },
-    { name: 'settings', slash: 'settings', words: ['settings', 'set', 'config', 'options', 'opt', 'pref', 'preferences', 's'] },
-    { name: 'help', slash: 'help', words: ['help', 'h', 'commands', 'cmds', 'info', '?', 'guide'] },
-    { name: 'invite', slash: 'invite', words: ['invite', 'inv', 'add', 'link'] },
+    { name: 'colors', helpWord: 'colors', shown: ['colours', 'col', 'palette', 'accent'], icon: 'showColors', slash: 'colors', words: ['colors', 'colours', 'col', 'palette', 'accent'], replyForm: 'viewColors', options: [{ name: 'someone', keys: ['someone', 'user'], mention: true, example: '@name' }] },
+    { name: 'settings', helpWord: 'settings', shown: ['s', 'set', 'opt', 'pref', 'config', 'options', 'preferences'], icon: 'settings', slash: 'settings', words: ['settings', 'set', 'config', 'options', 'opt', 'pref', 'preferences', 's'] },
+    { name: 'help', icon: 'info', slash: 'help', words: ['help', 'h', 'commands', 'cmds', 'info', '?', 'guide'] },
+    { name: 'invite', helpWord: 'invite', shown: ['inv', 'add', 'link'], icon: 'shareHeart', slash: 'invite', words: ['invite', 'inv', 'add', 'link'] },
 ];
 
 // The reply forms run a right-click module's own code: Convert Times on the replied message, View Colors on the person (stored by bot/registry.js under `name#type` as well as the name).
@@ -162,4 +175,4 @@ function aliasClashes(commands = TEXT_COMMANDS) {
 const toIdPart = name => name.replace(/ /g, '.');
 const fromIdPart = part => String(part || '').replace(/\./g, ' ');
 
-module.exports = { TEXT_COMMANDS, findTextCommand, toIdPart, fromIdPart, aliasClashes, moduleFor, REPLY_FORMS, CLASS_WORDS, LATEST };
+module.exports = { TEXT_COMMANDS, findTextCommand, toIdPart, fromIdPart, aliasClashes, moduleFor, REPLY_FORMS, CLASS_WORDS, BARE_CLASS_WORDS, THANKS, LATEST };
