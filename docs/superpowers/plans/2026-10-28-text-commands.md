@@ -567,6 +567,33 @@ What the check against the code had already found, now in B7's scope in the hand
 - "no, honestly, it needs a drastic ease of use, understanding, design, structure, review and redesign. it's so confusing and relies purely on prose." (2026-10-29 21:52 EDT, the /admin help page)
 - How B6 posted its renders to #testing-spam: `docs/claude/2026-10-30-b6-render-harness.md`.
 
+### B7's thread: decided and built, and still to build (written 2026-10-30 13:21 EDT by B7, so a compact or the next reader loses none of it)
+
+**Design is one item at a time** (his "go 1 by 1, you dumped everything in there", 2026-10-30 13:21 EDT): one item's renders in #testing-spam, his pick, then the next. This overrides "every option for a step in ONE message" above.
+
+**Built on `feat/text-commands-b7-server`** (commits `234b910`, `7024253`, `7e8a0ef`, `7bae54e`):
+- Per-server prefixes (`GuildSettings.textPrefixes`, `utils/textCommands/server.js`). His middle ground (2026-10-30 12:35 EDT): a server's prefix (up to 3) takes `d`'s place; `dior` and `@Dioreo` always work. /help's typed pages, the help card and the home use them. **Edit Prefix** and **Reset to d** on the text view.
+- The text-command switch (`GuildSettings.textRules`, the visibility rule set read as On/Off; `utils/guildPolicy.js` `explainTextCommand`, `textCommandOnHere`). Off is silent; the Open privately card is retired. **Server admins skip every text rule** (his "sure", 2026-10-30 12:47 EDT).
+- /admin **Config Text Commands** / **Config Slash Commands**: one blurple button in its own row under Overview's tabs (his pick 1A); the text view is the same tabs read as On/Off plus the Prefix block (his pick 2A). Resets are **Reset Slash Rules** and **Reset Text Rules**, one per view (his "reset everything implies everything"). Check a Member has a text copy.
+- /help's /admin page (now **Server Settings**): his draft of 2026-10-30 12:29 EDT with B7's corrections.
+- /bot servers' owner reset clears the text switch and prefix too, and its summary shows them (found by the think-pass).
+- The spam ladder backend (`utils/textCommands/spamLadder.js`, `models/TextPenalty.js`): score, rungs, the stored penalty, the countdown note, the owner DM at 6 h and 12 h, the press note from 5 m, the restart reload.
+
+**Still to build from before 2026-10-30 13:00 EDT:**
+- `/bot penalties` (panel: his pick between 3A, a Lift beside each, and 3B, a list with a picker, is still open) and `/bot penalties user:<id>`.
+- PRIVACY (§2 and Appendix A: `TextPenalty`, `textRules`, `textPrefixes`) and TERMS (one spam line); folded into the unpublished v1.12 / v1.7 rows; wording to him through the lead.
+- Records: CLAUDE.md (the text-commands exception still names the Open privately card; one owner-DM line for the spam DM), `.claude/rules/text-commands.md` and `.claude/rules/admin-controls.md`.
+- Mutation proofs, the after-renders for his yes, `TEST_CACHE=0 npm test`, `docs:audit`, the Owns check, this Audit log entry, the merge.
+
+**Agreed 2026-10-30 12:47–13:21 EDT, to build in B7 (his "build it here"):**
+- **Freeze** (`/bot`, owner only): slash commands get one private line ("Dioreo is paused: <reason>"), typed commands go silent; everything or one command; stored so a restart keeps it; the owner and `/bot` are never frozen.
+- **Spam tuning live** in `/bot penalties`: the 1/3/10 score and the rungs, stored. **Exempt a person** (kept, his "keep") beside Lift. **No server exemption** (dropped, his "your judgement").
+- **Reply limits per server**, owner only (his "build it as an owner command for me to tweak per server"): default 5 replies per channel and 30 per server per 10 s.
+- **Server checkup** in `/bot servers`: is Dioreo in it, where it can't post, text and slash rules, prefix, Integrations blocks, 7-day commands and errors from AnalyticsEvent.
+- **Leave server / Block server** (block = leave again if re-added) and **Block user** everywhere (stores an id: PRIVACY and TERMS lines).
+- **Join/leave feed** to the alerts webhook: one line per add or removal, nothing stored.
+- **False-trigger counts**, his pick A: daily counts per server of Dioreo's OWN words that misfired (an alias or typo rule whose card was ignored, a `d ` message read as chat), never the person's words.
+
 ## The lead, after B7 is merged (on this Mac)
 
 1. `git pull`; read B4's report first, then each unit's diff against its Owns and the spec.
