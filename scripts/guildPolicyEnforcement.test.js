@@ -677,8 +677,7 @@ const SERVER_ADMIN = { serverAdmin: true, botAdmin: false };
 // Per-command keys (manage/bot/botAccess/autobuild) added 2026-08-13, 'bot'/'botAccess' replacing the retired 'alerts'/'audit' 2026-08-16 -- this fixture represents a FULL bot admin (owner or a Mongo-granted admin with `all`), so every one of the four command lines within the Bot Admin category must be individually true too, or commands/help.js's per-command `requires` filtering hides them even though the category shows. `botAccess` is isOwner() in real code, not a token -- true here because this fixture represents the OWNER, the only identity that can ever be true.
 const BOT_ADMIN = { serverAdmin: false, botAdmin: true, manage: true, bot: true, botAccess: true, autobuild: true };
 
-// B6 (2026-10-30 00:15 EDT): /help is one page per command now (utils/helpPages.js), and CATEGORY_DEFS' `requires` decides which pages a viewer may open, list in the switcher, or reach through `cmd:`.
-// /bot's subcommands share one /help page with a dropdown since 2026-10-30 14:05 EDT; listed here by subcommand, the pages a viewer can actually open.
+// B6 (2026-10-30 00:15 EDT): /help is one page per command now (utils/helpPages.js), and CATEGORY_DEFS' `requires` decides which pages a viewer may open, list in the switcher, or reach through `cmd:`. /bot's subcommands share one /help page with a dropdown since 2026-10-30 14:05 EDT; listed here by subcommand, the pages a viewer can actually open.
 const pageNames = async (help, perms) => help.visiblePageNames(perms).flatMap(n => (n === '/bot' ? help.visibleBotSubs(perms) : [n]));
 const homeOf = async (help, perms) => JSON.stringify(await help.buildHelpMessage({ perms, client: {}, view: 'slash' }));
 
