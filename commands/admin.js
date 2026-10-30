@@ -2,7 +2,7 @@
 //
 // /admin -- the SERVER-ADMIN control panel. Deliberately distinct from /manage, which is Harkirat's owner-level panel gated on hasCommandAccess(userId, 'manage') (utils/adminAccess.js) and stays user-install-only. This one belongs to whoever administers the server the command was run in.
 //
-// It configures exactly one thing: the RESPONSE-VISIBILITY POLICY (utils/guildPolicy.js). Nothing here refuses a command or touches a channel, because the bot holds no moderation permission and never acts on a channel outside an interaction (root CLAUDE.md), so it could not enforce either. Design + the rejected alternatives: docs/superpowers/specs/2026-08-10-server-admin-visibility-policy-design.md
+// It configures the RESPONSE-VISIBILITY POLICY for slash commands (utils/guildPolicy.js) and, since B7 (2026-10-30), the text-command switch and prefixes on its Config Text Commands view. Nothing here refuses a command or touches a channel, because the bot holds no moderation permission and never acts on a channel outside an interaction (root CLAUDE.md), so it could not enforce either. Design + the rejected alternatives: docs/superpowers/specs/2026-08-10-server-admin-visibility-policy-design.md
 const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { sendV2Payload } = require('../utils/sendV2Payload');
@@ -22,7 +22,10 @@ const ACCENT = 0x5865F2;
 // A select menu accepts at most 25 options. The bot registers 12 gate-able commands today (measured 2026-08-18, v3-pre-release review finding #64 -- was stale at 19), so this is headroom rather than a live truncation -- but it is a real cliff, and a silent one: Discord rejects the whole payload rather than trimming, which renders as a dead button.
 const SELECT_OPTION_CAP = 25;
 
-const VISIBILITY_LABEL = { public: 'Public', ephemeral: 'Private' };
+// THE TEXT-COMMAND VIEW (B7, 2026-10-30; Harkirat 2026-10-29 15:54 EDT: "admins need 2 controls, for slash commands and for text commands. text commands aren't private, so they're either a 'turn off here or allow here' sort of system"). The same pages, reached by one button that flips between **Config Text Commands** and **Config Slash Commands** (his labels, 2026-10-29 23:28 EDT), editing GuildSettings.textRules: the same rule set, read as On / Off. Every builder below draws either view. `VIEW` says which while one draws (a render is synchronous, and inView() puts it back), and textIds() moves each control into the `admin_t_` namespace so a click edits the text rules and stays on that view.
+let VIEW = 'slash';
+const WORDS = { slash: { public: 'Public', ephemeral: 'Private' }, text: { public: 'On', ephemeral: 'Off' } };
+const isText = () => VIEW === 'text';
 
 // ---------------------------------------------------------------------------------------------
 // Rendering
@@ -30,12 +33,16 @@ const VISIBILITY_LABEL = { public: 'Public', ephemeral: 'Private' };
 
 // Discord requires slash-command names in lowercase, so a capital letter marks a right-click command ("Convert Times") -- which is gateable too, because the policy reads interaction.commandName and a context menu carries one. It must never be shown with a slash (click test 2026-10-21 22:26 EDT: "/Convert Times").
 const isMenuCommand = value => /[A-Z]/.test(value);
-const commandLabel = value => (isMenuCommand(value) ? value : `/${value}`);
-const commandText = value => (isMenuCommand(value) ? `${value} *(right-click)*` : `\`/${value}\``);
+// On the text view a command is named as it is typed (`today`, `gunsmith dmz`), its rules stored under the slash path (`gunsmith mp`).
+const textName = value => require('../utils/textCommands/commands').TEXT_COMMANDS.find(c => require('../utils/textCommands/commands').textPathOf(c) === value)?.name || value;
+const commandLabel = value => (isText() ? textName(value) : isMenuCommand(value) ? value : `/${value}`);
+const commandText = value => (isText() ? `\`${textName(value)}\`` : isMenuCommand(value) ? `${value} *(right-click)*` : `\`/${value}\``);
+// Every text command's path, the text view's Commands menu.
+const textPaths = () => { const c = require('../utils/textCommands/commands'); return c.TEXT_COMMANDS.map(c.textPathOf); };
 
 // A rule's visibility as a coloured dot and a word, the same everywhere on the panel, so the state reads before the text does (Harkirat 2026-10-22 14:57 EDT: "make it more visual rather than prose"). Read at render time: the dev bot re-points these ids at boot.
 const dot = visibility => (visibility === 'public' ? emojis.greenDotGlow : emojis.redDotGlow);
-const visText = visibility => `${dot(visibility)} **${VISIBILITY_LABEL[visibility]}**`;
+const visText = visibility => `${dot(visibility)} **${WORDS[VIEW][visibility]}**`;
 
 // THE PER-COMMAND MODEL (Harkirat 2026-10-22 18:31 EDT: "man idk, this is confusing ... build it out autonomously and then show me"). One sentence: server settings cover every command; give a command its own settings and it uses only those. The panel has ONE set of pages (Overview, Channels, Roles) and a SCOPE: blank for the server, or one command path. Every control in a scoped page carries the scope as the last `|` field of its custom_id, so a click edits that command's own rules and never the server's.
 const sid = (id, arg, scope) => (scope ? `${id}|${arg ?? ''}|${scope}` : (arg !== undefined && arg !== null && arg !== '' ? `${id}|${arg}` : id));
@@ -50,8 +57,8 @@ function ruleSet(settings, scope) {
 function commandState(entry) {
     if (!entry) return { word: 'Follows server', style: 2 };
     const custom = entry.channelRules.length || entry.roleRules.length;
-    if (custom) return { word: `${VISIBILITY_LABEL[entry.defaultVisibility]}, ${entry.channelRules.length + entry.roleRules.length} exception${entry.channelRules.length + entry.roleRules.length === 1 ? '' : 's'}`, style: 1 };
-    return { word: VISIBILITY_LABEL[entry.defaultVisibility], style: entry.defaultVisibility === 'public' ? 3 : 4 };
+    if (custom) return { word: `${WORDS[VIEW][entry.defaultVisibility]}, ${entry.channelRules.length + entry.roleRules.length} exception${entry.channelRules.length + entry.roleRules.length === 1 ? '' : 's'}`, style: 1 };
+    return { word: WORDS[VIEW][entry.defaultVisibility], style: entry.defaultVisibility === 'public' ? 3 : 4 };
 }
 
 function commandSummary(entry) {
@@ -90,7 +97,24 @@ function hasRules(settings) {
 // "Server Settings" with the server-settings emoji on every page (Harkirat 2026-10-22 14:57 EDT, "title to Server Settings"; the one emoji is his 13:40 EDT option A). Custom emoji per sub-page are filed for after v3 in docs/db-deferred-list.md. The tabs say which page is open.
 function pageTitle(page, scope) {
     const where = scope ? ` · ${commandLabel(scope)}` : '';
-    return `## ${emojis.serverSettings} Server Settings${page ? ` · ${page}` : ''}${where}`;
+    // The text view is titled for what it sets, so its pages never read as the slash ones (B7).
+    return `## ${isText() ? `${emojis.command || emojis.serverSettings} Text Commands` : `${emojis.serverSettings} Server Settings`}${page ? ` · ${page}` : ''}${where}`;
+}
+
+// The one button that flips between the two views (his labels, 2026-10-29 23:28 EDT), blurple so it reads as a tool rather than a tab. On Overview, in its own row under the tabs.
+function viewRow() {
+    const icon = emojis.parseEmoji(isText() ? emojis.serverSettings : (emojis.command || ''));
+    return { type: 1, components: [{ type: 2, style: 1, label: isText() ? 'Config Slash Commands' : 'Config Text Commands', custom_id: `admin_view|${isText() ? 'slash' : 'text'}`, ...(icon ? { emoji: icon } : {}) }] };
+}
+
+// The prefixes block on the text view's Overview, with its Edit button (a pop-up).
+function prefixSection(settings, client) {
+    const { configuredPrefixes } = require('../utils/textCommands/server');
+    const own = settings?.textPrefixes || [];
+    const code = list => list.map(p => `\`${p}\``).join(' · ');
+    const lines = [own.length ? `${code(own)} · \`@Dioreo\` always works` : `${code(configuredPrefixes())} *(default)* · \`@Dioreo\` always works`];
+    if (client?.textMessageContent === false) lines.push(`-# ${BOT_EMOJI.warn} Discord hasn't given Dioreo Message Content yet, so only \`@Dioreo\` works for now.`);
+    return { type: 9, components: [{ type: 10, content: `### Prefixes\n${lines.join('\n')}` }], accessory: { type: 2, style: 2, label: 'Edit', custom_id: 'admin_prefix' } };
 }
 
 function roleRuleText(rule) {
@@ -151,6 +175,7 @@ function buildHome(settings, client, place = {}, { resetArmed = false, scope = n
     const channelRules = settings?.channelRules || [];
     const roleRules = settings?.roleRules || [];
     const commands = commandEntries(settings);
+    const text = isText();
     const byVis = v => channelRules.filter(r => r.visibility === v).map(r => r.channelId);
 
     const channelLines = channelRules.length
@@ -159,8 +184,8 @@ function buildHome(settings, client, place = {}, { resetArmed = false, scope = n
     const roleLines = roleRules.length ? roleRules.map(roleRuleText) : ['-# No role rules'];
     const commandLines = commands.length ? commands.slice(0, 6).map(commandSummary).concat(commands.length > 6 ? [`-# +${commands.length - 6} more`] : []) : ['-# Every command follows the settings above'];
 
-    // What this very channel does right now, for a member with no role rule: the one fact an admin otherwise has to work out from the rules above.
-    const hereGate = place.channelId && place.discordGate ? place.discordGate(place.channelId) : null;
+    // What this very channel does right now, for a member with no role rule: the one fact an admin otherwise has to work out from the rules above. Discord's gates are about slash commands, so the text view leaves them out.
+    const hereGate = !text && place.channelId && place.discordGate ? place.discordGate(place.channelId) : null;
     const here = place.channelId
         ? resolveVisibility(settings || { defaultVisibility: 'public' }, { channelId: place.channelId, parentChannelId: place.parentId || null, roleIds: [] })
         : null;
@@ -168,13 +193,15 @@ function buildHome(settings, client, place = {}, { resetArmed = false, scope = n
     // The explainer shows in full only while the server has no rules (Harkirat 2026-10-22 13:47 EDT, "Text 1"); the rest lives on Help.
     const explainer = hasRules(settings)
         ? '-# A command with its own settings uses only those. Otherwise: role › channel › default. More on **Help**.'
-        : `-# **These settings cover every command.** Give one command its own on **Commands**.\n-# A rule can only make Dioreo **quieter** — Public *permits* a public answer, it never overrides someone's own ${mentionCommand(client, '/settings')}.`;
+        : text
+            ? '-# **These cover every text command.** Give one its own on **Commands**.\n-# Off means Dioreo stays silent there. Slash commands are set on **Config Slash Commands**.'
+            : `-# **These settings cover every command.** Give one command its own on **Commands**.\n-# A rule can only make Dioreo **quieter** — Public *permits* a public answer, it never overrides someone's own ${mentionCommand(client, '/settings')}.`;
 
     const defaultButton = v => ({
         type: 2,
         // The in-panel switcher convention: the current choice is green and disabled (rendering-and-ui.md).
         style: def === v ? 3 : 2,
-        label: VISIBILITY_LABEL[v],
+        label: WORDS[VIEW][v],
         custom_id: `admin_default|${v}`,
         ...(def === v ? { disabled: true } : {}),
     });
@@ -184,11 +211,12 @@ function buildHome(settings, client, place = {}, { resetArmed = false, scope = n
             type: 17,
             accent_color: ACCENT,
             components: [
-                ...header(null, place, '-# Where Dioreo answers **publicly**, and where only the person who asked sees it.'),
+                ...header(null, place, text ? '-# Where typed commands like `d today` work, and where Dioreo stays silent.' : '-# Where Dioreo answers **publicly**, and where only the person who asked sees it.'),
                 ...notIn,
                 { type: 14, spacing: 2 },
-                { type: 10, content: `### Default\n-# Every answer is ${visText(def)} unless a rule below says otherwise.` },
+                { type: 10, content: text ? `### Default\n-# Text commands are ${visText(def)} unless a rule below says otherwise.` : `### Default\n-# Every answer is ${visText(def)} unless a rule below says otherwise.` },
                 { type: 1, components: [defaultButton('public'), defaultButton('ephemeral')] },
+                ...(text ? [prefixSection(settings, client)] : []),
                 { type: 14, spacing: 2 },
                 areaSection(`Channels${channelRules.length ? ` (${channelRules.length})` : ''}`, channelLines, 'admin_channels'),
                 areaSection(`Roles${roleRules.length ? ` (${roleRules.length})` : ''}`, roleLines, 'admin_roles'),
@@ -204,6 +232,7 @@ function buildHome(settings, client, place = {}, { resetArmed = false, scope = n
             ],
         },
         navRow('admin_home'),
+        viewRow(),
     ];
 }
 
@@ -226,7 +255,7 @@ function buildCommandHome(settings, client, place, scope) {
             areaSection(`Roles${rules.roleRules.length ? ` (${rules.roleRules.length})` : ''}`, rules.roleRules.length ? rules.roleRules.map(roleRuleText) : ['-# No role exceptions'], 'admin_roles', scope),
         ]
         : [
-            { type: 10, content: `### ${commandLabel(scope)} follows the server settings\n-# Pick Public or Private to give it its own. Then add channel or role exceptions for it alone.` },
+            { type: 10, content: `### ${commandLabel(scope)} follows the server settings\n-# Pick ${WORDS[VIEW].public} or ${WORDS[VIEW].ephemeral} to give it its own. Then add channel or role exceptions for it alone.` },
             { type: 1, components: [btn('follow', 'Follow Server'), btn('public', 'Public'), btn('ephemeral', 'Private')] },
         ];
     return [
@@ -255,15 +284,18 @@ function ruleCount(settings) {
 // Overview's last row: Check a Member, and Reset Everything once there is something to reset. Reset is two presses: the first turns the row into Cancel · Confirm, so one stray click cannot wipe a server's setup (picked 2026-10-22 15:23 EDT).
 function toolsRow(settings, resetArmed) {
     const count = ruleCount(settings);
-    const changed = count || (settings?.defaultVisibility || 'public') !== 'public';
+    // The text view's reset also puts the prefixes back.
+    const prefixes = isText() && (settings?.textPrefixes || []).length;
+    const changed = count || prefixes || (settings?.defaultVisibility || 'public') !== 'public';
     if (resetArmed && changed) {
         return { type: 1, components: [
             { type: 2, style: 2, label: 'Cancel', custom_id: 'admin_home|cancel' },
-            { type: 2, style: 4, label: `Confirm: clear ${count} rule${count === 1 ? '' : 's'} and set Public`, custom_id: 'admin_reset' },
+            { type: 2, style: 4, label: `Confirm: clear ${count} rule${count === 1 ? '' : 's'}${prefixes ? ', prefixes' : ''} and set ${WORDS[VIEW].public}`, custom_id: 'admin_reset' },
         ] };
     }
     return { type: 1, components: [
-        { type: 2, style: 2, label: 'Check a Member', custom_id: 'admin_check' },
+        // Check a Member reads the slash-command visibility only.
+        ...(isText() ? [] : [{ type: 2, style: 2, label: 'Check a Member', custom_id: 'admin_check' }]),
         { type: 2, style: 2, label: 'Export Log', custom_id: 'admin_log' },
         ...(changed ? [{ type: 2, style: 4, label: 'Reset Everything', custom_id: 'admin_reset_arm' }] : []),
     ] };
@@ -304,8 +336,8 @@ function buildChannels(settings, place = {}, scope = null) {
     const def = set.defaultVisibility || 'public';
     const ephemeral = rules.filter(r => r.visibility === 'ephemeral').map(r => r.channelId);
     const publicIds = rules.filter(r => r.visibility === 'public').map(r => r.channelId);
-    // Channels this page sets to Public that Discord itself keeps private: the confusion the Discord line exists for.
-    const gated = place.discordGate ? publicIds.filter(id => place.discordGate(id)) : [];
+    // Channels this page sets to Public that Discord itself keeps private: the confusion the Discord line exists for. Not on the text view: those gates are about slash commands.
+    const gated = place.discordGate && !isText() ? publicIds.filter(id => place.discordGate(id)) : [];
     const lead = scope
         ? `-# Only for ${commandLabel(scope)}. Its default is ${visText(def)}. Pick channels where it answers differently.`
         : `-# Your default is ${visText(def)}. Pick channels that answer differently.`;
@@ -322,8 +354,8 @@ function buildChannels(settings, place = {}, scope = null) {
                 { type: 10, content: '-# 🔎 Type to search · threads follow their channel' },
             ],
         },
-        channelSelect(sid('admin_ch_ephemeral', '', scope), 'Always private in these channels…', ephemeral),
-        channelSelect(sid('admin_ch_public', '', scope), 'Always public in these channels…', publicIds),
+        channelSelect(sid('admin_ch_ephemeral', '', scope), isText() ? 'Off in these channels…' : 'Always private in these channels…', ephemeral),
+        channelSelect(sid('admin_ch_public', '', scope), isText() ? 'On in these channels…' : 'Always public in these channels…', publicIds),
         navRow('admin_channels', { scope }),
     ];
 }
@@ -362,8 +394,8 @@ function buildRoles(settings, place = {}, scope = null) {
                 { type: 10, content: '-# 🔎 Type to search your roles' },
             ],
         },
-        roleSelect(sid('admin_role_public', '', scope), 'Always public for these roles…', rules.filter(r => r.visibility === 'public').map(r => r.roleId)),
-        roleSelect(sid('admin_role_ephemeral', '', scope), 'Always private for these roles…', rules.filter(r => r.visibility === 'ephemeral').map(r => r.roleId)),
+        roleSelect(sid('admin_role_public', '', scope), isText() ? 'Always on for these roles…' : 'Always public for these roles…', rules.filter(r => r.visibility === 'public').map(r => r.roleId)),
+        roleSelect(sid('admin_role_ephemeral', '', scope), isText() ? 'Always off for these roles…' : 'Always private for these roles…', rules.filter(r => r.visibility === 'ephemeral').map(r => r.roleId)),
         roleSelect(sid('admin_role_pick', '', scope), 'Set a role for specific channels…', [], 1),
         navRow('admin_roles', { scope }),
     ];
@@ -384,8 +416,8 @@ function buildRoleScope(settings, roleId, place = {}, scope = null) {
                 withClear(`${visText('public')} in · ${channelList(pub?.channelIds)}\n${visText('ephemeral')} in · ${channelList(eph?.channelIds)}`, sid('admin_role_scope_clear', roleId, scope), existing.length, 'Clear'),
             ],
         },
-        channelSelect(sid('admin_role_scope_public', roleId, scope), 'Public for this role, only in…', pub?.channelIds || []),
-        channelSelect(sid('admin_role_scope_ephemeral', roleId, scope), 'Private for this role, only in…', eph?.channelIds || []),
+        channelSelect(sid('admin_role_scope_public', roleId, scope), `${WORDS[VIEW].public} for this role, only in…`, pub?.channelIds || []),
+        channelSelect(sid('admin_role_scope_ephemeral', roleId, scope), `${WORDS[VIEW].ephemeral} for this role, only in…`, eph?.channelIds || []),
         // The tabs, with Roles blurple but live: this screen sits under Roles, and dropping the tabs stranded the admin (click test 2026-10-21 22:26 EDT).
         navRow('admin_roles', { subpage: true, scope }),
     ];
@@ -429,9 +461,9 @@ function buildCommands(settings, gateable, targets = new Map(), place = {}) {
                 ...header('Commands', place, '-# Every command follows the server settings, until you give it its own. Then it uses only those.'),
                 { type: 14, spacing: 2 },
                 withClear(entries.length ? `**With their own settings**\n${entries.map(commandSummary).join('\n')}` : '-# No command has its own settings yet.', 'admin_cmd_clear', entries.length),
-                { type: 10, content: `-# Pick a command below to open its settings. ${emojis.whiteDotGlow} follows the server · ${dot('ephemeral')} Private · ${dot('public')} Public. Capitalised ones are right-click commands.` },
+                { type: 10, content: `-# Pick a command below to open its settings. ${emojis.whiteDotGlow} follows the server · ${dot('ephemeral')} ${WORDS[VIEW].ephemeral} · ${dot('public')} ${WORDS[VIEW].public}.${isText() ? '' : ' Capitalised ones are right-click commands.'}` },
                 // Said plainly because an admin will otherwise expect the command to disappear, and then read its continued presence as a bug rather than a platform limit.
-                { type: 10, content: '-# Hides the **answer**, not the command. To remove a command entirely: **Server Settings → Integrations**.' },
+                { type: 10, content: isText() ? '-# Turns off the **typed** form only. The slash command is set on **Config Slash Commands**.' : '-# Hides the **answer**, not the command. To remove a command entirely: **Server Settings → Integrations**.' },
                 ...(omitted.length ? [{ type: 10, content: `-# ${BOT_EMOJI.warn} Discord allows 25 options per menu, so ${omitted.length} command(s) are missing from the list below: ${omitted.map(commandLabel).join(', ')}. Please report this.` }] : []),
             ],
         },
@@ -446,8 +478,8 @@ function checkReason(result, cmd) {
     switch (result.tier) {
         case 'command': return `${commandText(result.rule)} has its own settings: ${checkReason(result.inner).replace('the server default decides', 'its own default decides')}`;
         case 'roleChannel': return `<@&${result.rule.roleId}> has its own setting in ${channelList(result.rule.channelIds)}`;
-        case 'role': return `<@&${result.rule.roleId}> is ${VISIBILITY_LABEL[result.rule.visibility]} everywhere`;
-        case 'channel': return `${where(result.rule.channelId)} is set to ${VISIBILITY_LABEL[result.rule.visibility]}`;
+        case 'role': return `<@&${result.rule.roleId}> is ${WORDS[VIEW][result.rule.visibility]} everywhere`;
+        case 'channel': return `${where(result.rule.channelId)} is set to ${WORDS[VIEW][result.rule.visibility]}`;
         case 'parent': return `this thread follows ${where(result.rule.channelId)}`;
         case 'default': return 'no rule applies, so the server default decides';
         case 'discord': return `${GATE_TEXT[result.rule].replace(' here', ' in this channel for them')}, before any rule on this panel`;
@@ -578,6 +610,15 @@ function buildHelp(client, place = {}) {
                     row('Public', `allows a public answer; anyone who chose private in ${mentionCommand(client, '/settings')} still gets private`),
                     row('Not the command', 'it still shows in the list; remove it in **Server Settings → Integrations**'),
                     row('Show Everyone', 'cannot make a private answer public'),
+                ].join('\n') },
+                divider,
+                // The text-command view (B7, 2026-10-30).
+                { type: 10, content: [
+                    '### ⌨️ Text Commands',
+                    row('On or Off', 'a typed command (`d today`, `@Dioreo today`) is never private, so it is on or off; off means Dioreo stays silent'),
+                    row('Same order', 'a command\'s own settings, then role in this channel › role everywhere › channel › default'),
+                    row('Prefixes', 'up to 3 of your own in place of `d` and `dior`; `@Dioreo` always works'),
+                    row('Where', '**Config Text Commands** under the tabs on Overview'),
                 ].join('\n') },
                 divider,
                 { type: 10, content: [
@@ -730,6 +771,43 @@ function deniedHints(client) {
     return `-# **Lost access?** Discord Support can restore ownership; once Discord says you're an admin again, this panel will open. Dioreo's dev can also reset this server's rules on request · ${mentionCommand(client, '/help')}\n-# **Looking for your own settings?** Check out ${mentionCommand(client, '/settings')}`;
 }
 
+// The text view's settings, shaped like a whole rule set, so every builder reads it as it reads the server's (B7).
+function textView(settings) {
+    if (!settings) return null;
+    const t = settings.textRules || {};
+    return { defaultVisibility: t.defaultVisibility || 'public', channelRules: t.channelRules || [], roleRules: t.roleRules || [], ephemeralCommands: t.ephemeralCommands || [], commandSettings: t.commandSettings || [], textPrefixes: settings.textPrefixes || [], updatedBy: settings.updatedBy, updatedAt: settings.updatedAt };
+}
+
+// The stored text rule set, made on first edit.
+function textRoot(doc) {
+    if (!doc.textRules) doc.textRules = {};
+    return doc.textRules;
+}
+
+// Ids shared by both views: the view switch, Export Log, Help and Check a Member.
+const SHARED_IDS = /^admin_(view|log|help|check)/;
+function textIds(node) {
+    if (Array.isArray(node)) return node.map(textIds);
+    if (!node || typeof node !== 'object') return node;
+    const out = { ...node };
+    if (typeof out.custom_id === 'string' && out.custom_id.startsWith('admin_') && !SHARED_IDS.test(out.custom_id)) out.custom_id = `admin_t_${out.custom_id.slice('admin_'.length)}`;
+    if (out.components) out.components = textIds(out.components);
+    if (out.accessory) out.accessory = textIds(out.accessory);
+    return out;
+}
+
+// Draws one view: `view` is 'slash' or 'text'.
+function inView(view, build) {
+    const before = VIEW;
+    VIEW = view;
+    try {
+        const components = build();
+        return view === 'text' ? textIds(components) : components;
+    } finally {
+        VIEW = before;
+    }
+}
+
 // Single entry point for every `admin_*` component. handlers/router.js routes here rather than growing another dozen branches in its own handler, and the admin gate lives here so there is exactly one place that decides who may change a server's rules.
 async function handleComponent(interaction) {
     if (!interaction.guildId) {
@@ -745,21 +823,29 @@ async function handleComponent(interaction) {
     }
 
     const parts = interaction.customId.split('|');
-    const [id, arg] = parts;
+    // `admin_t_*` is the text view's copy of a control (B7): the same case below, writing the text rules.
+    const onText = parts[0].startsWith('admin_t_');
+    const id = onText ? `admin_${parts[0].slice('admin_t_'.length)}` : parts[0];
+    const arg = parts[1];
     const guildId = interaction.guildId;
     const actorId = interaction.user.id;
     const values = interaction.values || [];
-    const place = placeOf(interaction);
-    const gateable = interaction.client.gateableCommandNames || [];
+    const gateable = onText ? textPaths() : (interaction.client.gateableCommandNames || []);
+    const place = onText ? { ...placeOf(interaction), gateable, discordGate: null } : placeOf(interaction);
+    // The rule set an edit changes: the server document, or its text rules.
+    const root = doc => (onText ? textRoot(doc) : doc);
+    // The view the page draws in; the view switch changes it.
+    let view = onText ? 'text' : 'slash';
     // The command a scoped page is about (the last `|` field). Only a registered command, or one that already has settings here, is accepted, so a forged id cannot create settings for a name that does not exist.
     let scope = id.startsWith('admin_check') ? null : (parts[2] || null);
     if (id === 'admin_cmd_open') scope = values[0] || null;
     if (scope && !gateable.includes(scope)) {
-        const known = commandEntries(await getGuildSettings(guildId)).some(e => e.command === scope);
+        const stored = await getGuildSettings(guildId);
+        const known = commandEntries(onText ? textView(stored) : stored).some(e => e.command === scope);
         if (!known) scope = null;
     }
     // An edit inside a scope: change the command's own rule set, or the server's when there is no scope.
-    const edit = fn => updateGuildSettings(guildId, actorId, doc => fn(editTarget(doc, scope, gateable)));
+    const edit = fn => updateGuildSettings(guildId, actorId, doc => fn(editTarget(root(doc), scope, gateable)));
 
     let settings;
     let page = null;
@@ -797,10 +883,45 @@ async function handleComponent(interaction) {
 
         case 'admin_reset_arm':
             settings = await getGuildSettings(guildId);
-            return send(interaction, buildHome(settings, interaction.client, place, { resetArmed: true }));
+            return send(interaction, inView(view, () => buildHome(onText ? textView(settings) : settings, interaction.client, place, { resetArmed: true })));
+
+        // THE VIEW SWITCH (B7): Config Text Commands / Config Slash Commands.
+        case 'admin_view':
+            settings = await getGuildSettings(guildId);
+            view = arg === 'text' ? 'text' : 'slash';
+            page = 'admin_home';
+            scope = null;
+            break;
+
+        // The text view's prefixes: a pop-up, and its submit (B7). Blank puts the default back.
+        case 'admin_prefix': {
+            if (!onText) return;
+            settings = await getGuildSettings(guildId);
+            const current = (settings?.textPrefixes || []).join(', ');
+            return interaction.showModal({
+                title: 'Text command prefixes',
+                custom_id: 'admin_t_prefixm',
+                components: [{ type: 18, label: 'Prefixes', description: 'Up to 3, with commas between. Blank = d, dior. @Dioreo always works.', component: { type: 4, custom_id: 'prefixes', style: 1, required: false, max_length: 30, placeholder: 'e.g. !, ?', ...(current ? { value: current } : {}) } }],
+            });
+        }
+        case 'admin_prefixm': {
+            if (!onText) return;
+            const read = require('../utils/textCommands/server').parsePrefixes(interaction.fields?.getTextInputValue('prefixes') || '');
+            if (read.error) return interaction.reply({ content: `${BOT_EMOJI.cross} ${read.error} Nothing was saved.`, ephemeral: true });
+            scope = null;
+            settings = await updateGuildSettings(guildId, actorId, doc => { doc.textPrefixes = read.prefixes.length ? read.prefixes : undefined; });
+            page = 'admin_home';
+            break;
+        }
 
         case 'admin_reset':
             scope = null;
+            if (onText) {
+                // The text view's reset: every text rule and the prefixes go; the slash settings stay.
+                settings = await updateGuildSettings(guildId, actorId, doc => { doc.textRules = undefined; doc.textPrefixes = undefined; });
+                page = 'admin_home';
+                break;
+            }
             settings = await updateGuildSettings(guildId, actorId, doc => {
                 doc.channelRules = [];
                 doc.roleRules = [];
@@ -849,7 +970,7 @@ async function handleComponent(interaction) {
         case 'admin_default':
             if (arg !== 'public' && arg !== 'ephemeral') return;
             scope = null;
-            settings = await updateGuildSettings(guildId, actorId, doc => { doc.defaultVisibility = arg; });
+            settings = await updateGuildSettings(guildId, actorId, doc => { root(doc).defaultVisibility = arg; });
             page = 'admin_home';
             break;
 
@@ -857,8 +978,8 @@ async function handleComponent(interaction) {
         case 'admin_cmd_default':
             if (!scope || !['follow', 'public', 'ephemeral'].includes(arg)) return;
             settings = await updateGuildSettings(guildId, actorId, doc => {
-                if (arg === 'follow') return dropCommand(doc, scope, gateable);
-                editTarget(doc, scope, gateable).defaultVisibility = arg;
+                if (arg === 'follow') return dropCommand(root(doc), scope, gateable);
+                editTarget(root(doc), scope, gateable).defaultVisibility = arg;
             });
             page = 'admin_home';
             break;
@@ -887,34 +1008,37 @@ async function handleComponent(interaction) {
 
         case 'admin_cmd_clear':
             scope = null;
-            settings = await updateGuildSettings(guildId, actorId, doc => { doc.ephemeralCommands = []; doc.commandSettings = []; });
+            settings = await updateGuildSettings(guildId, actorId, doc => { const r = root(doc); r.ephemeralCommands = []; r.commandSettings = []; });
             page = 'admin_commands';
             break;
 
         case 'admin_role_scope_clear':
             settings = await edit(set => { set.roleRules = (set.roleRules || []).filter(r => !(r.roleId === arg && r.channelIds?.length)); });
-            return send(interaction, buildRoleScope(settings, arg, place, scope));
+            return send(interaction, inView(view, () => buildRoleScope(onText ? textView(settings) : settings, arg, place, scope)));
 
         case 'admin_role_pick':
             settings = await getGuildSettings(guildId);
-            return send(interaction, buildRoleScope(settings, values[0], place, scope));
+            return send(interaction, inView(view, () => buildRoleScope(onText ? textView(settings) : settings, values[0], place, scope)));
 
         case 'admin_role_scope_public':
         case 'admin_role_scope_ephemeral':
             settings = await edit(set => setScopedRoleRule(set, arg, id === 'admin_role_scope_public' ? 'public' : 'ephemeral', values));
-            return send(interaction, buildRoleScope(settings, arg, place, scope));
+            return send(interaction, inView(view, () => buildRoleScope(onText ? textView(settings) : settings, arg, place, scope)));
 
         default:
             return;
     }
 
-    // A scoped page whose command no longer has settings (Follow Server, Reset) still opens: it shows the command following the server.
+    // A scoped page whose command no longer has settings (Follow Server, Reset) still opens: it shows the command following the server. The view switch draws the other view's Overview with that view's commands and place.
+    const textNow = view === 'text';
+    const shown = textNow ? textView(settings) : settings;
+    const pagePlace = textNow ? { ...placeOf(interaction), gateable: textPaths(), discordGate: null } : placeOf(interaction);
     const PAGE_BUILDERS = {
-        admin_channels: () => buildChannels(settings, place, scope),
-        admin_roles: () => buildRoles(settings, place, scope),
-        admin_commands: () => buildCommands(settings, gateable, interaction.client.contextMenuTargets, place),
+        admin_channels: () => buildChannels(shown, pagePlace, scope),
+        admin_roles: () => buildRoles(shown, pagePlace, scope),
+        admin_commands: () => buildCommands(shown, pagePlace.gateable, textNow ? new Map() : interaction.client.contextMenuTargets, pagePlace),
     };
-    const components = (PAGE_BUILDERS[page] || (() => buildHome(settings, interaction.client, place, { scope })))();
+    const components = inView(view, () => (PAGE_BUILDERS[page] || (() => buildHome(shown, interaction.client, pagePlace, { scope })))());
 
     // ⚠️ Was a raw `interaction.update({ components, flags: 32768 })` until 2026-08-14 10:59 EDT -- sendV2Payload is the established pattern for a V2 render (CLAUDE.md's "V2 sends" cheat-sheet), and it is what makes this panel pick up the passive 10-minute idle-disable for free (utils/sendV2Payload.js's own header comment).
     return send(interaction, components);
@@ -939,7 +1063,7 @@ module.exports = {
     rulesText,
     lastChangedLine,
     // Exported for scripts/guildPolicyEnforcement.test.js only -- nothing in the bot calls these from outside this file. They are here because both limits these tests pin (25 options on a select, 40 components per message) are invisible right up until a panel refuses to open, and a test is the only thing that will notice before an admin does.
-    __testRenderers: { readMember, buildHome, buildChannels, buildRoles, buildRoleScope, buildCommands, buildHelp, buildCheck, buildLogFile, discordGate, editTarget, dropCommand },
+    __testRenderers: { inView, textView, readMember, buildHome, buildChannels, buildRoles, buildRoleScope, buildCommands, buildHelp, buildCheck, buildLogFile, discordGate, editTarget, dropCommand },
 
     async execute(interaction) {
         // Private unless the admin picks Public. The refusals below stay private whatever was picked: a non-admin's "Public" must not post a refusal into the channel.

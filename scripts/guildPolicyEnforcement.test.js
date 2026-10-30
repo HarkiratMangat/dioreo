@@ -310,6 +310,58 @@ t('/bot servers is owner-only on every click, and a reset clears the rules and i
     }
 });
 
+// B7 (2026-10-30): the text-command view. Its own ids, On/Off words, the flip button, and a click that writes textRules and never the slash settings.
+t('the /admin text view: its ids, On/Off, the flip button and a save into textRules only', async () => {
+    const admin = require('../commands/admin');
+    const { inView, textView, buildHome } = admin.__testRenderers;
+    const stored = { guildId: 'G_T', defaultVisibility: 'ephemeral', textRules: { defaultVisibility: 'ephemeral', channelRules: [], roleRules: [], commandSettings: [] }, textPrefixes: ['!'] };
+    const json = JSON.stringify(inView('text', () => buildHome(textView(stored), { textMessageContent: true }, {})));
+    assert.ok(json.includes('"custom_id":"admin_t_default|public"') && json.includes('"label":"On"') && json.includes('"label":"Off"'), 'On/Off in the text namespace');
+    assert.ok(json.includes('"custom_id":"admin_view|slash"') && json.includes('Config Slash Commands'), 'the flip back');
+    assert.ok(json.includes('"custom_id":"admin_t_prefix"') && json.includes('`!` · `@Dioreo` always works'), 'the prefixes block');
+    assert.ok(!json.includes('admin_check'), 'Check a Member is slash only');
+    assert.ok(!/"custom_id":"admin_(default|channels|roles|commands|home)/.test(json), 'no slash-view control on the text view');
+    const slash = JSON.stringify(inView('slash', () => buildHome(stored, {}, {})));
+    assert.ok(slash.includes('"custom_id":"admin_view|text"') && slash.includes('Config Text Commands') && slash.includes('"label":"Private"'), 'the slash view keeps its words and flips to text');
+    const doc = new GuildSettings({ guildId: 'G_T', defaultVisibility: 'ephemeral' });
+    doc.save = async () => doc;
+    const original = GuildSettings.findOne;
+    GuildSettings.findOne = () => ({ lean: async () => doc.toObject(), then: ok => ok(doc) });
+    guildPolicy.invalidateGuildPolicy('G_T');
+    const GuildSettingsLog = require('../models/GuildSettingsLog');
+    const realLogCreate = GuildSettingsLog.create;
+    const log = [];
+    GuildSettingsLog.create = async row => { log.push(row); return row; };
+    try {
+        const click = async (customId, extra = {}) => {
+            const { interaction, calls } = makeInteraction({ isAdmin: true });
+            Object.assign(interaction, { guildId: 'G_T', customId, values: [], ...extra });
+            await admin.handleComponent(interaction);
+            return calls;
+        };
+        await click('admin_t_default|ephemeral');
+        assert.strictEqual(doc.textRules.defaultVisibility, 'ephemeral', 'the text default');
+        assert.strictEqual(doc.defaultVisibility, 'ephemeral', 'the slash default is untouched');
+        await click('admin_t_ch_public', { values: ['C_9'] });
+        assert.deepStrictEqual(doc.textRules.channelRules.map(r => [r.channelId, r.visibility]), [['C_9', 'public']]);
+        assert.strictEqual(doc.channelRules.length, 0, 'no slash channel rule');
+        const bad = await click('admin_t_prefixm', { fields: { getTextInputValue: () => '/, @' } });
+        assert.ok(bad.some(c => c.method === 'reply' && /Nothing was saved/.test(c.options.content)), 'a refused prefix');
+        await click('admin_t_prefixm', { fields: { getTextInputValue: () => '!, YO' } });
+        assert.deepStrictEqual([...doc.textPrefixes], ['!', 'yo']);
+        await new Promise(r => setImmediate(r));
+        assert.ok(log.some(r => r.changes.includes('Text commands · Default: On → Off')), JSON.stringify(log.map(r => r.changes)));
+        assert.ok(log.some(r => r.changes.includes('Text command prefixes: default → ! yo')));
+        await click('admin_t_reset');
+        assert.strictEqual(doc.textRules, undefined, 'the text reset clears the text rules');
+        assert.strictEqual(doc.defaultVisibility, 'ephemeral', 'and leaves the slash settings');
+    } finally {
+        GuildSettings.findOne = original;
+        GuildSettingsLog.create = realLogCreate;
+        guildPolicy.invalidateGuildPolicy('G_T');
+    }
+});
+
 t('the /admin panel never pings: every send turns mentions off', async () => {
     const admin = require('../commands/admin');
     const original = GuildSettings.findOne;
