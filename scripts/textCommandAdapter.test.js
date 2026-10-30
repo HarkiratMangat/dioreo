@@ -45,17 +45,18 @@ const shareRow = { type: 1, components: [{ type: 2, style: 1, label: 'Show Every
         assert.ok(calls[1].route.endsWith('/reply1'), 'second send edits the first reply');
         cancelPanelExpiry('reply1');
     }
-    // 2. A server rule forcing hidden: only the Open privately card is posted, and nothing after it.
+    // 2. A server's slash-command visibility rule never reaches a text reply (B7, 2026-10-30, his "text commands aren't private"): the panel posts publicly, and the Open privately card is gone.
     {
         const { message, calls } = fakeMessage();
         const i = createTextInteraction(message, { textCommand, via: 'd' });
         i.dioreoPolicy = { visibility: 'ephemeral' };
         await i.deferReply({ flags: 64 });
         await sendV2Payload(i, panel());
-        await i.followUp({ content: 'notice', ephemeral: true });
-        assert.strictEqual(calls.length, 1, 'only the card');
-        assert.ok(JSON.stringify(calls[0].body).includes('txtpriv_today'), 'the card carries the Open privately button');
-        assert.ok(!JSON.stringify(calls[0].body).includes('page_next'), 'the panel itself never posts');
+        assert.strictEqual(calls.length, 1);
+        assert.ok(JSON.stringify(calls[0].body).includes('page_next'), 'the panel itself');
+        assert.ok(!JSON.stringify(calls[0].body).includes('txtpriv_'), 'no Open privately card');
+        assert.strictEqual(calls[0].body.flags & 64, 0);
+        cancelPanelExpiry('reply1');
     }
     // 3. A modal-first command is refused rather than half-run.
     {
@@ -85,15 +86,14 @@ const shareRow = { type: 1, components: [{ type: 2, style: 1, label: 'Show Every
         assert.strictEqual(calls.length, 1);
         assert.strictEqual(calls[0].body.message_reference, undefined, 'retried without the reference');
     }
-    // 6. A forced-private answer stays private even when the command sends its panel without deferring first (B4, 2026-10-29 10:32 EDT: sendV2Payload's text branch went straight to send()).
+    // 6. A command that sends its panel without deferring first (sendV2Payload's text branch) posts it the same way (B4's case, 2026-10-29; the Open privately half retired by B7).
     {
         const { message, calls } = fakeMessage();
         const i = createTextInteraction(message, { textCommand, via: 'd' });
-        i.dioreoPolicy = { visibility: 'ephemeral' };
         await sendV2Payload(i, panel());
-        assert.strictEqual(calls.length, 1, 'only the card');
-        assert.ok(JSON.stringify(calls[0].body).includes('txtpriv_today'));
-        assert.ok(!JSON.stringify(calls[0].body).includes('page_next'), 'the panel itself never posts');
+        assert.strictEqual(calls.length, 1);
+        assert.ok(JSON.stringify(calls[0].body).includes('page_next'));
+        cancelPanelExpiry('reply1');
     }
     // 7. The reply greys out after its idle time, edited with the bot token (a text reply has no interaction token).
     {

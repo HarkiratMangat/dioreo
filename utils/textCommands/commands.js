@@ -136,6 +136,9 @@ function moduleFor(client, textCommand, form = null) {
 const helpNameOf = c => (c.name === 'help' ? '/help' : `/${c.slash}${c.sub ? ` ${c.sub}` : ''}`);
 TEXT_COMMANDS.find(c => c.name === 'help').options = [{ name: 'cmd', keys: ['command', 'cmd'], values: TEXT_COMMANDS.map(c => ({ value: helpNameOf(c), aliases: c.words })) }];
 
+// The path a text command's server switch is stored under in /admin (`draw prices`, `gunsmith mp`), the same path its slash command's rules use.
+const textPathOf = c => `${c.slash}${c.sub ? ` ${c.sub}` : ''}`;
+
 function findTextCommand(name) {
     return TEXT_COMMANDS.find(c => c.name === name) || null;
 }
@@ -175,4 +178,4 @@ function aliasClashes(commands = TEXT_COMMANDS) {
 const toIdPart = name => name.replace(/ /g, '.');
 const fromIdPart = part => String(part || '').replace(/\./g, ' ');
 
-module.exports = { TEXT_COMMANDS, findTextCommand, toIdPart, fromIdPart, aliasClashes, moduleFor, REPLY_FORMS, CLASS_WORDS, BARE_CLASS_WORDS, THANKS, LATEST };
+module.exports = { TEXT_COMMANDS, textPathOf, findTextCommand, toIdPart, fromIdPart, aliasClashes, moduleFor, REPLY_FORMS, CLASS_WORDS, BARE_CLASS_WORDS, THANKS, LATEST };

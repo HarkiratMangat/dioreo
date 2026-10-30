@@ -50,6 +50,17 @@ async function check(name, fn) {
     const run = text => parseTextCommand(text, { botId: '1', prefixes: ['d'], commands: TEXT_COMMANDS });
     const tcFor = name => TEXT_COMMANDS.find(c => `/${c.slash}${c.sub ? ` ${c.sub}` : ''}` === name);
 
+    // B7: a typed page and the typed home show the server's own prefixes.
+    await check('a server\'s own prefixes on the typed home and on a typed page', async () => {
+        const own = { perms: ALL, client: client(true), view: 'text', prefixes: ['!', 'yo'] };
+        const home = texts({ components: await help.buildHelpMessage({ ...own, cmd: null }) }).join('\n');
+        assert.ok(home.includes('**`@Dioreo`**, **`!`** or **`yo`**'), 'home prefix line');
+        assert.ok(home.includes('`! help <command>`'), 'home tip');
+        const page = texts({ components: await help.buildHelpMessage({ ...own, cmd: '/draws' }) }).join('\n');
+        assert.ok(page.includes('`! draws [new|returning]`') && page.includes('`! draws returning`'), 'typed usage and examples');
+        assert.ok(!/`d draws/.test(page), 'the default prefix is gone');
+    });
+
     let homeCount = 0;
     await check('the typed home: the #1 card\'s four groups in short words, the prefixes, and a Slash Commands button', async () => {
         const home = await all(null, 'text');

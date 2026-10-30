@@ -98,6 +98,39 @@ t('admin bypasses the command rule', resolveVisibility(SETTINGS, { channelId: 'C
 // The bypass covers the COMMAND tier only. An admin is still bound by the channel and role rules they set for the whole server, themselves included -- if this ever returns 'public', the bypass has widened into "admins are exempt from their own configuration".
 t('admin is still bound by channel/role rules', resolveVisibility(SETTINGS, { channelId: 'X', roleIds: [], commandName: 'colors', isAdmin: true }), 'ephemeral');
 
+// --- text commands (B7, 2026-10-30): the same resolver, read as On / Off ------------------- His 2026-10-29 15:54 EDT call: text commands get their own on/off control, by default, channel, role and command, with /admin's precedence. Stored as textRules, 'public' = On.
+const { explainTextCommand, describeChanges } = require('../utils/guildPolicy');
+const on = (settings, ctx = {}) => explainTextCommand(settings, { channelId: 'X', roleIds: [], ...ctx }).on;
+const TEXT = { defaultVisibility: 'ephemeral', textRules: {
+    defaultVisibility: 'public',
+    channelRules: [{ channelId: 'C_OFF', visibility: 'ephemeral' }],
+    roleRules: [{ roleId: 'R_MOD', visibility: 'public', channelIds: ['C_OFF'] }, { roleId: 'R_QUIET', visibility: 'ephemeral', channelIds: [] }],
+    commandSettings: [
+        { command: 'colors', defaultVisibility: 'ephemeral', channelRules: [{ channelId: 'C_BOT', visibility: 'public' }], roleRules: [] },
+        { command: 'draws', defaultVisibility: 'public', channelRules: [], roleRules: [] },
+    ],
+} };
+t('text: no settings is on', on(null), true);
+t('text: the visibility rules never decide text', on({ defaultVisibility: 'ephemeral', channelRules: [{ channelId: 'X', visibility: 'ephemeral' }] }), true);
+t('text: on by default here', on(TEXT), true);
+t('text: a channel turned off', on(TEXT, { channelId: 'C_OFF' }), false);
+t('text: a thread follows its channel', on(TEXT, { channelId: 'T_9', parentChannelId: 'C_OFF' }), false);
+t('text: a role on in that channel beats it', on(TEXT, { channelId: 'C_OFF', roleIds: ['R_MOD'] }), true);
+t('text: a role off everywhere', on(TEXT, { roleIds: ['R_QUIET'] }), false);
+t('text: two roles disagreeing allow, as Discord does', on(TEXT, { channelId: 'C_OFF', roleIds: ['R_QUIET', 'R_MOD'] }), true);
+t('text: a command off everywhere', on(TEXT, { commandName: 'colors', commandPath: 'colors' }), false);
+t('text: ...except its own channel', on(TEXT, { channelId: 'C_BOT', commandName: 'colors', commandPath: 'colors' }), true);
+t('text: a command with its own On ignores the server\'s off channel', on(TEXT, { channelId: 'C_OFF', commandName: 'draws', commandPath: 'draws' }), true);
+t('text: an admin skips a command\'s own settings', on(TEXT, { commandName: 'colors', commandPath: 'colors', isAdmin: true }), true);
+t('text: an admin still follows the server\'s channel rule', on(TEXT, { channelId: 'C_OFF', commandName: 'colors', commandPath: 'colors', isAdmin: true }), false);
+const BASE = { defaultVisibility: 'public', channelRules: [], roleRules: [], ephemeralCommands: [], commands: [], text: null, textPrefixes: [] };
+const logged = describeChanges(BASE, { ...BASE, text: { defaultVisibility: 'ephemeral', channelRules: [{ channelId: 'C1', visibility: 'public' }], roleRules: [], ephemeralCommands: [], commands: [{ command: 'colors', defaultVisibility: 'ephemeral', channelRules: [], roleRules: [] }] }, textPrefixes: ['!'] });
+t('log: the text default, in On / Off', logged.includes('Text commands · Default: On → Off'), true);
+t('log: a text channel rule', logged.includes('Text commands · Channel <#C1> set to On'), true);
+t('log: a command\'s own text settings', logged.includes('Text commands · `colors`: own settings added (Off)'), true);
+t('log: the prefixes', logged.includes('Text command prefixes: default → !'), true);
+t('log: no text change writes no text line', describeChanges(BASE, BASE).length, 0);
+
 if (failures.length) {
     console.error(`❌ guildPolicy: ${failures.length} precedence case(s) failed\n  - ${failures.join('\n  - ')}`);
     process.exit(1);

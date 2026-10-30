@@ -309,10 +309,13 @@ const hasPage = name => Boolean(PAGES[name]);
 const hasTextView = name => Boolean(PAGES[name] && !PAGES[name].slashOnly && textCommandOf(name));
 
 // One command's page: the card's components. `canSwitch` says the other view works here (typed forms where Dioreo is in the server, and a command with a text form).
-function buildPage(name, { client, view, detail = false, canSwitch = false, seasonEmoji = null }) {
+// The prefix a typed page's examples use: the server's first (B7: "every typed Usage line on /help shows the prefixes of the server it is read in"), `@Dioreo` where Message Content is off.
+const firstPrefix = (client, prefixes) => (client?.textMessageContent === false ? '@Dioreo' : (prefixes?.[0] || 'd'));
+
+function buildPage(name, { client, view, detail = false, canSwitch = false, seasonEmoji = null, prefixes = null }) {
     const def = PAGES[name];
     const typed = view === 'text';
-    const p = client?.textMessageContent === false ? '@Dioreo' : 'd';
+    const p = firstPrefix(client, prefixes);
     const part = def.page({ client, p, view, detail });
     const tc = textCommandOf(name);
     const usage = typed
@@ -334,12 +337,13 @@ function buildPage(name, { client, view, detail = false, canSwitch = false, seas
 
 // The home page, his approved layout (2026-10-29 23:52 EDT): today's hero, links and sign-off; the #1 card's four groups in short words (typed) or as mentions (slash); a Text commands line and its button where typed forms work.
 const HOME_GROUPS = [['gunsmithSearch', 'Gunsmith', ['gunsmith', 'dmz'], ['/gunsmith mp', '/gunsmith dmz']], ['newDraws', 'Draws', ['draws', 'prices', 'calculator'], ['/draws', '/draw prices', '/draw calculator']], ['calendar', 'Season', ['today', 'calendar', 'remind', 'patch notes', 'end'], ['/today', '/calendar', '/remind', '/patch notes', '/season end']], ['eyedropper', 'Utilities', ['timestamp', 'colors', 'settings', 'invite', 'help'], ['/timestamp', '/colors', '/settings', '/invite', '/help']]];
-function buildHome({ client, view, canSwitch, hero, adminNames = [] }) {
+function buildHome({ client, view, canSwitch, hero, adminNames = [], prefixes = null }) {
     const typed = view === 'text';
-    const p = client?.textMessageContent === false ? '@Dioreo' : 'd';
+    const p = firstPrefix(client, prefixes);
     const out = [...hero, line(2)];
     if (typed) {
-        const start = client?.textMessageContent === false ? `**${code('@Dioreo')}**` : `**${code('@Dioreo')}**, **${code('d')}** or **${code('dior')}**`;
+        const words = ['@Dioreo', ...(client?.textMessageContent === false ? [] : (prefixes?.length ? prefixes : ['d', 'dior']))].map(w => `**${code(w)}**`);
+        const start = words.length > 1 ? `${words.slice(0, -1).join(', ')} or ${words[words.length - 1]}` : words[0];
         out.push(text(`### ${emojis.command || ''} Type a command\n-# Start with ${start}, such as ${code(`${p} today`)}`.replace('###  ', '### ')));
         out.push(...HOME_GROUPS.map(([icon, label, words]) => text(`**${emojis[icon]} ${label}**\n${dot(words)}`)));
     } else {
@@ -354,9 +358,9 @@ function buildHome({ client, view, canSwitch, hero, adminNames = [] }) {
 }
 
 // The command switcher, outside the card above the footer (his ask, 2026-10-29 18:17 EDT): All commands first; on a typed view each page's name with its typed word under it, on a slash view the slash command with the name under it (18:56 EDT). Commands with no text form show as slash on both. A full admin's list is 24 of Discord's 25.
-function buildSwitcher({ names, current = null, view, client, seasonEmoji = null }) {
+function buildSwitcher({ names, current = null, view, client, seasonEmoji = null, prefixes = null }) {
     const typed = view === 'text';
-    const p = client?.textMessageContent === false ? '@Dioreo' : 'd';
+    const p = firstPrefix(client, prefixes);
     const options = [{ label: 'All commands', value: 'landing', description: 'Back to the list of every command', default: !current, ...emojiField('dioreoCombo') }];
     for (const name of names.slice(0, 24)) {
         const tc = hasTextView(name) ? textCommandOf(name) : null;

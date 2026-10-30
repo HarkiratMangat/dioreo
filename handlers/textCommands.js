@@ -1,9 +1,9 @@
 // handlers/textCommands.js -- the buttons a text command's reply can carry (text commands, PR 1, 2026-10-28 17:24 EDT; values and the timestamp pop-up added by B2, 2026-10-29):
-//   txtpriv_<command>[~payload]  "Open privately", on the card shown where the server's /admin rule makes Dioreo's answers private. Opens the command HIDDEN for whoever clicks: their own view, so it needs no lock.
+//   txtpriv_<command>[~payload]  opens the command HIDDEN for whoever clicks: their own view, so it needs no lock. Only the help card's icon carries it since B7 retired the Open privately card (2026-10-30).
 //   txtrun_<command>[~payload]   a "Did you mean…" pick after `@Dioreo` (a command name, or a weapon / season with its value), and the needs-a-date card's button (`txtrun_timestamp~open`), which opens the timestamp pop-up; its answer comes back as the modal `txtrun_timestamp~submit`. Runs the command publicly, the way the member meant to.
 // The payload (utils/textCommands/adapter.js readRunCustomId) carries the options, or the message / person a reply form acts on. A two-word command travels as `patch.notes` (utils/textCommands/commands.js toIdPart).
 const { buildSyntheticInteraction } = require('../utils/interactionContext');
-const { moduleFor } = require('../utils/textCommands/commands');
+const { moduleFor, textPathOf } = require('../utils/textCommands/commands');
 const { buildOptions, readRunCustomId, runCustomId } = require('../utils/textCommands/adapter');
 
 const OWNED_PREFIXES = ['txtpriv_', 'txtrun_'];
@@ -92,6 +92,18 @@ async function handleTextCommandsInteraction(interaction) {
         await privately(interaction, note('off'));
         return true;
     }
+    // The server's text-command switch for the command it runs (B7): a card posted before an admin turned it off must not run it after.
+    if (interaction.guildId && !(await require('../utils/guildPolicy').textCommandOnHere(interaction, textPathOf(textCommand)).catch(() => true))) {
+        await privately(interaction, note('off'));
+        return true;
+    }
+    // A press during a penalty of 5 minutes or more gets a private line; during the 1-minute rung presses work (his call, 2026-10-29 15:34 EDT: "only if penalty is 5min or longer").
+    const spam = require('../utils/textCommands/spamLadder');
+    const penalty = isRun ? spam.penaltyFor(interaction.user.id) : null;
+    if (penalty && spam.blocksPresses(penalty)) {
+        await privately(interaction, spam.pressNote(penalty));
+        return true;
+    }
     // The pop-up opens BEFORE anything is acknowledged: Discord opens a modal only as the first answer to a click.
     if (run.open) {
         await interaction.showModal(timestampModal(textCommand));
@@ -111,15 +123,10 @@ async function handleTextCommandsInteraction(interaction) {
         return true;
     }
     const options = buildOptions({ sub: form ? null : textCommand.sub, values });
-    // A Did you mean pick must obey the server's /admin rule for the command it RUNS (security review, 2026-10-28 17:29 EDT): the router resolved the policy for a button, which has no commandName, so the command tier was skipped. Re-resolved here with the target command's name and subcommand; a rule that makes it private makes this answer private too.
-    let hidden = isPrivate;
-    let policy = interaction.dioreoPolicy || null;
-    if (interaction.guildId) {
-        const probe = buildSyntheticInteraction(interaction, { commandName: moduleName, options });
-        policy = (await require('../utils/guildPolicy').attachGuildPolicy(probe)) || policy;
-        if (policy?.visibility === 'ephemeral') hidden = true;
-    }
-    // Acknowledged HERE, before the synthetic copy is made: buildSyntheticInteraction copies `deferred` as a value, so a copy made first would still read false and sendV2Payload would try a second acknowledgement. Hidden for Open privately, or where the server's rule says so. A public pick from one of the listener's cards (Did you mean, the timestamp card and its pop-up) EDITS that card into the answer, so nothing is left over (B6, his yes 2026-10-29 14:54 EDT); a plain-text timestamp cannot replace a card's layout, so it comes as a new message and the card goes.
+    // Only the help icon's press is private. A Did you mean pick used to re-resolve the server's visibility rule for the command it runs (security review, 2026-10-28 17:29 EDT); since B7 those rules are for slash commands only, and the text-command switch above is what decides a typed command's pick.
+    const hidden = isPrivate;
+    const policy = { visibility: hidden ? 'ephemeral' : 'public', allowShare: false };
+    // Acknowledged HERE, before the synthetic copy is made: buildSyntheticInteraction copies `deferred` as a value, so a copy made first would still read false and sendV2Payload would try a second acknowledgement. Hidden for the help icon's press. A public pick from one of the listener's cards (Did you mean, the timestamp card and its pop-up) EDITS that card into the answer, so nothing is left over (B6, his yes 2026-10-29 14:54 EDT); a plain-text timestamp cannot replace a card's layout, so it comes as a new message and the card goes.
     const textView = run.submit && values?.view === 'text';
     const intoCard = isRun && !hidden && Boolean(cardId) && !textView;
     if (intoCard) await interaction.deferUpdate();
@@ -140,7 +147,7 @@ async function handleTextCommandsInteraction(interaction) {
         deferReply: async () => {},
         // Convert Times answers with reply(); this interaction is already deferred, so its answer goes to the deferred message.
         reply: opts => interaction.editReply(opts),
-        // The command-tier policy travels with the run, so sendV2Payload strips Show Everyone where the server's rule makes this command private (security review, 2026-10-28 17:31 EDT): otherwise a hidden answer would carry a one-click way to post it publicly.
+        // Show Everyone stays off a typed command's answer (sendV2Payload reads allowShare).
         dioreoPolicy: policy,
     });
     await command.execute(synthetic);

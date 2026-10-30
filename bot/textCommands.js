@@ -7,7 +7,8 @@
 // ⚠️ Not covered by handlers/router.js's crash net: every listener here catches its own errors.
 const { PermissionFlagsBits, IntentsBitField, GatewayIntentBits, Routes } = require('discord.js');
 const { parseTextCommand, readTrigger } = require('../utils/textCommands/parse');
-const { TEXT_COMMANDS, findTextCommand, toIdPart, moduleFor } = require('../utils/textCommands/commands');
+const { TEXT_COMMANDS, findTextCommand, toIdPart, moduleFor, textPathOf } = require('../utils/textCommands/commands');
+const { configuredPrefixes, prefixesFor } = require('../utils/textCommands/server');
 const { createTextInteraction, TextCommandRefused, runCustomId, encodePayload } = require('../utils/textCommands/adapter');
 const { textCommandAllowed } = require('../utils/textCommands/permissions');
 
@@ -34,12 +35,7 @@ const serverHits = new Map();
 const answered = new Map();
 const cantPostDms = new Map();
 
-// The prefixes come from the environment so the dev bot can use its own: prod and dev are both in Dioreoland and would otherwise both answer `d today` (think-pass, 2026-10-28 16:44 EDT). .env.dev sets TEXT_PREFIXES=dd,diordev.
-function configuredPrefixes(env = process.env) {
-    // `/` was a prefix until B6 (his call, 2026-10-29): it collides with the slash-command picker.
-    const raw = env.TEXT_PREFIXES === undefined ? 'd,dior' : env.TEXT_PREFIXES;
-    return raw.split(',').map(p => p.trim()).filter(Boolean);
-}
+// The bot-wide prefixes (configuredPrefixes) and a server's own (prefixesFor) live in utils/textCommands/server.js since B7, so /help reads them without requiring this structural file.
 
 // Asks for Message Content only when the app's flags say Discord granted it (bit 18) or allowed it below 100 servers (bit 19). Asking for a privileged intent the app doesn't have makes login fail with "disallowed intents", so this is read before login, never assumed. Without it, only `@Dioreo …` works: Discord sends a message's text to a bot only when the message mentions it.
 async function enableMessageContentIfGranted(client, token) {
@@ -181,10 +177,11 @@ const orList = names => names.map(n => `\`${n}\``).reduce((out, n, i, all) => (i
 
 // #1, the help card (his layout, take 3, approved 2026-10-29 13:40 EDT): the prefixes under the title, the four groups in short words, examples and the slash /help underneath. The icon beside the title opens /help privately for whoever taps it (his "private is fine", 2026-10-29 23:51 EDT); the card never deletes itself. Without Message Content only `@Dioreo` works, so only it is shown.
 const HELP_GROUPS = [['gunsmithSearch', 'Gunsmith', ['gunsmith', 'dmz']], ['newDraws', 'Draws', ['draws', 'prices', 'calculator']], ['calendar', 'Season', ['today', 'calendar', 'remind', 'patch notes', 'end']], ['eyedropper', 'Utilities', ['timestamp', 'colors', 'settings', 'invite', 'help']]];
-function helpCard(client) {
+function helpCard(client, prefixes = configuredPrefixes()) {
     const emojis = require('../utils/emojiMap');
-    const words = client.textMessageContent ? ['@Dioreo', ...configuredPrefixes()] : ['@Dioreo'];
-    const ex = client.textMessageContent ? configuredPrefixes()[0] || '@Dioreo' : '@Dioreo';
+    // The server's own prefixes where it set some (B7).
+    const words = client.textMessageContent ? ['@Dioreo', ...prefixes] : ['@Dioreo'];
+    const ex = client.textMessageContent ? prefixes[0] || '@Dioreo' : '@Dioreo';
     const bold = words.map(w => `**\`${w}\`**`);
     const prefixLine = bold.length > 1 ? `${bold.slice(0, -1).join(', ')} or ${bold[bold.length - 1]}` : bold[0];
     const icon = emojis.parseEmoji(emojis.helpHint);
@@ -378,7 +375,7 @@ async function runTextCommand(message, verdict) {
     ctx.handler = 'textCommands';
     await runWithContext(ctx, async () => {
         try {
-            await require('../utils/guildPolicy').attachGuildPolicy(interaction);
+            // No visibility clamp (B7): a text reply is public whatever the server's slash-command rules say, and where its text-command switch is off nothing got this far.
             t.policy = Date.now();
             await command.execute(interaction);
             // "Dioreo User Since" and Your Stats count a text command as the person's own command, after it has run and never when it threw, the same as handlers/router.js's slash route (Harkirat, 2026-10-28 22:19 EDT: text commands should count).
@@ -444,19 +441,30 @@ async function onMessage(message, { edited = false } = {}) {
     if (!message?.guildId || !message.author || message.author.bot || message.webhookId || message.system) return;
     if (edited && answered.has(message.id)) return;
     const client = message.client;
+    // The server's own prefixes, or the default (B7).
+    const prefixes = client.textMessageContent ? await prefixesFor(message.guildId) : [];
+    const botRoleId = message.guild?.roles?.botRoleFor?.(client.user)?.id || null;
     let verdict = parseTextCommand(message.content || '', {
         botId: client.user.id,
-        botRoleId: message.guild?.roles?.botRoleFor?.(client.user)?.id || null,
-        prefixes: client.textMessageContent ? configuredPrefixes() : [],
+        botRoleId,
+        prefixes,
         commands: TEXT_COMMANDS,
         isReply: isReplyTo(message),
         checkDatetime: datetimeChecker(client),
     });
-    if (verdict.weaponGuess) {
+    if (!verdict.kind && !verdict.weaponGuess) return;
+    // THE SPAM LADDER (B7): someone serving a penalty gets nothing, checked before any lookup so a spammer costs no database read (B6's think-pass, his "sure", 2026-10-29 15:15 EDT). Their countdown note is already up.
+    const spam = require('../utils/textCommands/spamLadder');
+    if (spam.penaltyFor(message.author.id)) return;
+    // THE SERVER'S SWITCH (B7): where /admin turned text commands off, Dioreo is silent, the help card and Did you mean included. A failed read leaves them on, as the default is.
+    const allowed = path => require('../utils/guildPolicy').textCommandOnHere(message, path).catch(() => true);
+    if (verdict.weaponGuess && await allowed('gunsmith mp')) {
         const weapon = await guessWeapon(message, verdict.weaponGuess);
         if (weapon) verdict = { kind: 'run', via: verdict.via, command: 'gunsmith', addressed: verdict.addressed, values: { weapon }, autocomplete: [], hasArgs: true };
     }
     if (!verdict.kind) return;
+    const asked = verdict.command ? findTextCommand(verdict.command) : null;
+    if (!(await allowed(asked ? textPathOf(asked) : null))) return;
     // Lookups happen BEFORE the limits and the edit-window record, so a message that turns out silent (`d gs skins are cool`) neither counts against the person nor stops an edit from answering.
     let resolved = null;
     if (verdict.kind === 'run') {
@@ -464,20 +472,25 @@ async function onMessage(message, { edited = false } = {}) {
         if (!resolved) return;
     }
     // What they typed after the prefix, for the cards that quote it back.
-    const rest = readTrigger(message.content || '', { botId: client.user.id, botRoleId: message.guild?.roles?.botRoleFor?.(client.user)?.id || null, prefixes: client.textMessageContent ? configuredPrefixes() : [] })?.rest || '';
+    const rest = readTrigger(message.content || '', { botId: client.user.id, botRoleId, prefixes })?.rest || '';
     const typed = typedAs(verdict.via, rest);
     const limited = rateLimited(message, verdict);
     if (limited === 'silent') return;
-    if (limited?.warnUntil) return warnCooldown(message, limited, typed);
+    // The spam score (B7): a 5-second warning is worth more than a reply, and the event that reaches the limit gets the penalty note instead of its own answer.
+    if (limited?.warnUntil) {
+        if (spam.addPoints(message.author.id, spam.WARNING_POINTS)) return spam.startPenalty(message, { canPost: canPost(message) });
+        return warnCooldown(message, limited, typed);
+    }
     answered.set(message.id, Date.now());
     if (!canPost(message)) return dmCantPost(message, typed);
+    if (spam.addPoints(message.author.id, spam.REPLY_POINTS)) return spam.startPenalty(message, { canPost: true });
     if (resolved?.kind === 'pick') return reply(message, pickCard(resolved.textCommand, resolved.choices, rest), { ttl: CARD_TTL_MS });
     if (resolved?.kind === 'noMatch') return reply(message, noMatchLine(resolved.text), { ttl: CARD_TTL_MS });
     if (resolved?.kind === 'run') return runTextCommand(message, { ...resolved.verdict, typed });
     if (verdict.kind === 'needsInput') return reply(message, needsInputCard(findTextCommand(verdict.command), verdict.via), { ttl: CARD_TTL_MS });
     if (verdict.kind === 'noMatch' && verdict.option === 'datetime') return reply(message, couldntReadCard(findTextCommand(verdict.command), verdict.via, verdict.text), { ttl: CARD_TTL_MS });
     if (verdict.kind === 'noMatch') return reply(message, noMatchLine(verdict.text), { ttl: CARD_TTL_MS });
-    if (verdict.kind === 'help') return reply(message, helpCard(client));
+    if (verdict.kind === 'help') return reply(message, helpCard(client, prefixes));
     if (verdict.kind === 'didYouMean') return reply(message, didYouMeanCard(verdict.candidates, rest), { ttl: CARD_TTL_MS });
     if (verdict.kind === 'emojiReply') return reply(message, { content: mentionReplyEmoji(client) });
 }
@@ -492,6 +505,10 @@ function registerTextCommands(client) {
         if (!message?.createdTimestamp || Date.now() - message.createdTimestamp > EDIT_WINDOW_MS) return;
         onMessage(message, { edited: true }).catch(err => console.error('Text command listener (edit) failed:', err));
     });
+    // Running spam penalties come back from the database once the client is up (B7), and any that ran out while the bot was down are ended, their notes deleted.
+    client.once?.(require('discord.js').Events.ClientReady, () => {
+        require('../utils/textCommands/spamLadder').loadPenalties(client).catch(err => console.error('Spam penalties failed to load:', err));
+    });
     // An admin's switch takes effect on the very next message (utils/textCommands/permissions.js caches a minute otherwise).
     client.on('applicationCommandPermissionsUpdate', data => {
         if (data?.guildId) require('../utils/textCommands/permissions').invalidateGuildOverrides(data.guildId);
@@ -505,6 +522,7 @@ function registerTextCommands(client) {
         for (const [k, t] of answered) if (now - t > EDIT_WINDOW_MS * 2) answered.delete(k);
         for (const [k, t] of cantPostDms) if (now - t > CANT_POST_DM_MS) cantPostDms.delete(k);
         for (const [k, s] of suggestions) if (now - s.at > SUGGEST_MS) suggestions.delete(k);
+        require('../utils/textCommands/spamLadder').sweep(now);
     }, 10 * 60 * 1000).unref();
 }
 

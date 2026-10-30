@@ -330,7 +330,7 @@ function homeHero(client) {
 }
 
 // One /help message: the card (the home page or one command's page) and the command switcher under it; execute() adds the footer row. `view` is 'text' or 'slash'; a typed view is offered only where typed forms work (typedFormsHere) and for a command that has one, and falls back to slash otherwise. `detail` is Draw Prices' Detailed view.
-async function buildHelpMessage({ perms = {}, client, accentColor = PRESET_ACCENT, cmd = null, view = 'slash', detail = false, typedForms = true } = {}) {
+async function buildHelpMessage({ perms = {}, client, accentColor = PRESET_ACCENT, cmd = null, view = 'slash', detail = false, typedForms = true, prefixes = null } = {}) {
     const H = require('../utils/helpPages');
     const seasonEmoji = await currentSeasonEmoji();
     const names = visiblePageNames(perms);
@@ -338,12 +338,12 @@ async function buildHelpMessage({ perms = {}, client, accentColor = PRESET_ACCEN
     const canSwitch = typedForms && (!cmd || H.hasTextView(cmd));
     if (view === 'text' && !canSwitch) view = 'slash';
     const card = cmd
-        ? H.buildPage(cmd, { client, view, detail: detail && view === 'text', canSwitch, seasonEmoji })
-        : [...H.buildHome({ client, view, canSwitch, hero: homeHero(client), adminNames: names.filter(n => !H.hasTextView(n)) }),
+        ? H.buildPage(cmd, { client, view, detail: detail && view === 'text', canSwitch, seasonEmoji, prefixes })
+        : [...H.buildHome({ client, view, canSwitch, hero: homeHero(client), adminNames: names.filter(n => !H.hasTextView(n)), prefixes }),
             { type: 14, spacing: 1, divider: true },
             // The sign-off in the launch announcement's style (2026-10-27 01:23 EDT, Harkirat).
             { type: 10, content: `-# Made with ${emojis.diorHeart} by <@${HARKIRAT_ID}>` }];
-    return [{ type: 17, accent_color: accentColor, components: card }, H.buildSwitcher({ names, current: cmd, view, client, seasonEmoji })];
+    return [{ type: 17, accent_color: accentColor, components: card }, H.buildSwitcher({ names, current: cmd, view, client, seasonEmoji, prefixes })];
 }
 
 function helpFooterRow() {
@@ -410,7 +410,9 @@ module.exports = {
         const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);
 
         // No "Show Everyone" button -- the visibility option above already covers that case up front, and repeating it here would be redundant (Harkirat's direct request).
-        const components = await buildHelpMessage({ perms, client: interaction.client, accentColor, cmd, view, detail, typedForms: typedFormsHere(interaction) });
+        // The server's own text-command prefixes on every typed page (B7).
+        const prefixes = await require('../utils/textCommands/server').prefixesFor(interaction.guildId);
+        const components = await buildHelpMessage({ perms, client: interaction.client, accentColor, cmd, view, detail, typedForms: typedFormsHere(interaction), prefixes });
         // Under every /help page, outside its card (2026-10-27 01:23 EDT, Harkirat; "regardless of whatever cmd/page of /help is being viewed", 01:21 EDT): Announcements shows what is running now, privately, Bugs & Suggestions opens the pop-up utils/feedback.js sends to the owner, and Submit a Build. Answered by handlers/help.js and handlers/loadouts.js.
         components.push(helpFooterRow());
         // No mention pings or highlights (2026-10-27 10:44 EDT, Harkirat: "i want the clickable username but not the highlight"): the sign-off's <@dior> stays a clickable name, but the panel no longer lights up yellow for him. Same suppression /settings uses.
