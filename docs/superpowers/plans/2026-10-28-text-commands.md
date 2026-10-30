@@ -17,7 +17,8 @@ status: live
 | `feat/text-commands-b3-help` | B3, started only after B2 is merged | builder 3 |
 | `feat/text-commands-b5-help-pages` | B5, /help detail pages in text syntax, started only after B3 is merged | builder 5 |
 | `feat/text-commands-b4-audit` | B4, verification and review, started only after B5 is merged | auditor |
-| `feat/text-commands-b6-design` | B6, the design pass on every message text commands send, started only after B4 is merged (it runs last) | builder 6 |
+| `feat/text-commands-b6-design` | B6, the design pass on every message text commands send, started only after B4 is merged | builder 6 |
+| `feat/text-commands-b7-server` | B7, per-server prefixes, the /admin on/off control and the spam ladder, started only after B6 is merged (it runs last) | builder 7 |
 
 ## How to work: batched, never one file or one step per message (his ask, 2026-10-28 21:13 EDT)
 
@@ -186,12 +187,46 @@ Runs after B4, last before the lead. Follow "Every builder, in this order" with 
 - ⟦ONE MESSAGE⟧ Group 3: the after renders, for his yes.
 - ⟦ONE MESSAGE⟧ Group 4: the full suite, the Owns check, commit, merge, push, delete, as one chained command.
 
-## The lead, after B6 is merged (on this Mac)
+## B7 — text commands per server: prefixes, the /admin control, the spam ladder (B6's hand-off, 2026-10-30 00:53 EDT; started on his word)
+
+Runs after B6, last before the lead. Follow "Every builder, in this order" with B6's merge as the predecessor (`rg "feat/text-commands-b6-design"`). Like B6, the panels in it are designed WITH Harkirat in your thread: show renders in #testing-spam (`1536403911676792892`) the way B6 did, every option for a step in ONE message, he picks, you build, his yes on the after-renders before the merge.
+
+**His spec comes first.** B6's thread agreed the detail of this unit with him (the spam score and rungs, the /admin control's layout, his draft of the /admin help page). Before you design anything, the section "B7 spec, as agreed in B6's thread" below must hold it verbatim. If that section is missing or says "to be filled", stop and reply "BLOCKED: B7's spec isn't committed yet".
+
+**Scope, from B6's report (the Audit log entry of 2026-10-30 00:53 EDT):**
+1. **Per-server prefixes.** A server can set its own prefixes in place of the default `d,dior` (env `TEXT_PREFIXES`); `@Dioreo` always works. Every typed Usage line on /help shows the prefixes of the server it is read in.
+2. **A /admin on/off control for text commands** (server default, channel, role, command), the same precedence model as `/admin`'s visibility rules (`.claude/rules/admin-controls.md`). It replaces the Open privately card (B6's #11): where text commands are off, Dioreo stays silent instead.
+3. **The spam ladder.** A score per person over a rolling 60 s; rungs from 1 m up to 12 h of silence; the active penalties kept in Mongo; `/bot penalties` on Dioreo Admin to list and lift them; an owner DM when someone reaches 6 h and again at 12 h; PRIVACY and TERMS lines for all of it.
+4. **The /admin help page**, reviewed with him from his draft: drop "Typed commands offer Open privately", the panel's own wording and rule order, "Rules apply only while Dioreo is in your server", the per-server prefixes on every typed Usage line. One /admin button flips between **Config Text Commands** and **Config Slash Commands** (his labels, 2026-10-29 23:28 EDT).
+
+**Owns** (confirm against the code in Group 0; a file it truly needs that is missing here is fine, named in your report): `commands/admin.js` · `utils/guildPolicy.js` · `models/GuildSettings.js` · a new model for the penalties under `models/` · `bot/textCommands.js` · `utils/textCommands/**` · `utils/helpPages.js` · `commands/help.js` · `commands/bot.js` and `handlers/bot.js` (only `/bot penalties`) · `docs/legal/PRIVACY.md` (§2 and Appendix A) and `docs/legal/TERMS.md` · `.claude/rules/text-commands.md` and `.claude/rules/admin-controls.md` · their tests, including `guildPolicy.test.js`, `guildPolicyEnforcement.test.js`, the text-command tests and the help tests and snapshot · your report in this plan's Audit log.
+**Test:** every test you touch, `&&`-chained, then `TEST_CACHE=0 npm test` once before the merge; `npm run docs:audit` with no new ERROR (its `privacy-model-coverage` check must pass with the new model).
+
+**What every option already respects:**
+- **A new stored field goes in its Mongoose schema in the same change** (CLAUDE.md, Database schema gotcha), and every per-user field in PRIVACY Appendix A and §2.
+- **No message is ever stored**: a penalty keeps a user id, a server id, a rung and an expiry, never a message's words.
+- **The owner DM is the owner only**, through `utils/buildSubmissions.js` `dmOwner`, with no allowed mentions. It is one more case of the owner-DM exception in CLAUDE.md, so add one line there.
+- **The dev database only.** Never a prod write.
+- Everything B6's step 3 lists: the Components V2 rules, emojis by name, phone width, existing panel style, the 40 components and 4,000 characters on every /help page.
+
+**Groups:**
+- ⟦ONE MESSAGE⟧ Group 0: read the spec section below, every Owns file and its tests, and render /admin, its help page and the current text-command messages that change.
+- ⟦ONE MESSAGE⟧ Group 1: the per-server prefix and on/off code with their tests (no new panel yet), one heredoc, `&&` the tests.
+- ⟦ONE MESSAGE⟧ Group 2: the /admin panel and its help page options, rendered, in one message to him.
+- ⟦ONE MESSAGE⟧ Group 3: one heredoc for his picks, the spam ladder, `/bot penalties`, the model, PRIVACY and TERMS, with their tests.
+- ⟦ONE MESSAGE⟧ Group 4: the after renders, for his yes.
+- ⟦ONE MESSAGE⟧ Group 5: the full suite, the Owns check, commit, merge, push, delete, as one chained command.
+
+### B7 spec, as agreed in B6's thread
+
+To be filled: B6's thread holds his agreed detail and his /admin help draft. They go here verbatim before B7 starts.
+
+## The lead, after B7 is merged (on this Mac)
 
 1. `git pull`; read B4's report first, then each unit's diff against its Owns and the spec.
 2. `git merge origin/main` if `main` moved; `npm run site` and commit `public/` (PRIVACY, TERMS and the /commands page changed).
 3. `TEST_CACHE=0 npm test` and `npm run docs:audit`, exit codes read.
-4. B6 settled the listener's messages with Harkirat; re-render one only if the `main` merge changed it. Click-test on the dev bot in Dioreoland: every row of the Per command table that has an argument, the reply-to forms, Did you mean, needsInput, the chat guards.
+4. B6 and B7 settled the listener's messages and /admin with Harkirat; re-render one only if the `main` merge changed it. B6's question about prod's `TEXT_PREFIXES` is answered: the VM's `.env` sets none (per B6's hand-off, relayed by Harkirat 2026-10-30 02:41 EDT), so the default `d,dior` reaches prod. Click-test on the dev bot in Dioreoland: every row of the Per command table that has an argument, the reply-to forms, Did you mean, needsInput, the chat guards.
 5. Show Harkirat the PRIVACY and TERMS wording; his yes before the merge. (PRIVACY §2.3's text-commands bullet he already left to judgement in B4's thread, 2026-10-29: "sure idk, your judgement".)
 6. Records: `package.json` 3.3.0, CHANGELOG + CHANGELOG-SUMMARY + DEVLOG (`scripts/devlog-add.mjs`), backfill the previous entry's hash.
 7. Push; `gh pr create --base main`; restate his approval (2026-10-28 20:59 EDT: "push and merge the text-commands branch into main"); squash merge with one trailer block; tag `v3.3.0`; delete the branch; refresh refs and the indexes. Deploy is NOT part of this; it waits for his word.
