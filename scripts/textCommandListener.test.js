@@ -528,6 +528,34 @@ async function check(name, fn) {
         assert.ok(!JSON.stringify(keys).includes('zzqqxx'), 'never what they typed');
         misfires.__pending.clear();
     });
+    await check('a due announcement adds a New announcement button to the text reply, and nothing else (his "go C", 2026-10-30 18:18 EDT)', async () => {
+        const path = require('path');
+        const f = require.resolve(path.join(__dirname, '..', 'utils', 'announcement'));
+        const real = require.cache[f];
+        let due = true;
+        const realA = require('../utils/announcement');
+        require.cache[f] = { id: f, filename: f, loaded: true, exports: { ...realA, hasDueAnnouncement: async () => due, maybeSendAnnouncement: async () => { throw new Error('a text command must never deliver one itself'); } } };
+        try {
+            const { addAnnouncementButton } = require('../bot/textCommands');
+            const edits = [];
+            const panel = { type: 17, components: [{ type: 10, content: 'Today' }] };
+            const mk = (extra = {}) => ({ user: { id: 'ua' }, __firstSentAt: Date.now(), __lastBody: { flags: 32768, components: [panel] }, editReply: async o => { edits.push(o); }, ...extra });
+            assert.strictEqual(await addAnnouncementButton(mk()), true);
+            const row = edits[0].components.at(-1);
+            assert.deepStrictEqual(edits[0].components[0], panel, 'the reply keeps what it had');
+            assert.strictEqual(row.components[0].custom_id, 'ann_open');
+            due = false;
+            assert.strictEqual(await addAnnouncementButton(mk()), false, 'nothing due: no button');
+            due = true;
+            assert.strictEqual(await addAnnouncementButton(mk({ __lastBody: null })), false, 'no reply went out: no button');
+            const sized = n => ({ type: 17, components: Array.from({ length: n - 1 }, () => ({ type: 10, content: 'x' })) });
+            assert.strictEqual(await addAnnouncementButton(mk({ __lastBody: { flags: 32768, components: [sized(39)] } })), false, 'a 39-component reply gets no button (his rule: 38 or less)');
+            assert.strictEqual(await addAnnouncementButton(mk({ __lastBody: { flags: 32768, components: [sized(38)] } })), true, 'a 38-component reply does');
+            assert.strictEqual(edits.length, 2);
+            const src = require('fs').readFileSync(path.join(__dirname, '..', 'bot', 'textCommands.js'), 'utf8');
+            assert.ok(/noteOwnCommandSafely\(interaction\);\s*addAnnouncementButton\(interaction\)/.test(src), 'runTextCommand adds it after a successful command');
+        } finally { if (real) require.cache[f] = real; else delete require.cache[f]; }
+    });
     console.log(failures ? `\n${failures} failing` : '\ntextCommandListener: all passing');
     process.exit(failures ? 1 : 0);
 })();

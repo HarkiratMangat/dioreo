@@ -173,6 +173,7 @@ function buildAnnouncementEmbed(doc) {
 const ANN_WHY_ID = 'ann_why';
 const ANN_OFF_ID = 'ann_off';
 const ANN_ON_ID = 'ann_on';
+const ANN_OPEN_ID = 'ann_open';
 
 // "Why am I seeing this?" under a delivered announcement (shown only on a repeat since whyRowNeeded below; Harkirat, 2026-10-26 15:20 EDT: "a button under the embed that basically like answers like, why am I seeing these messages? ... so if someone gets the announcement, they're not like just caught off guard"). One row under the whole batch, and never inside buildAnnouncementEmbed: /bot analytics renders that embed too, and must not grow a button.
 function whyButtonRow() {
@@ -224,19 +225,37 @@ async function setAnnouncementsOff(userId, off) {
     await UserPreference.updateOne({ discordId: userId }, off ? { $set: { announcementsOff: true } } : { $unset: { announcementsOff: 1 } }, { upsert: off });
 }
 
+// The text-command route (Harkirat, 2026-10-30 18:20 EDT: "let's go C ... Only auto announcements from a slash command trigger a repeat ... the button press will count as 1 of the slash command repeats"): a typed command never delivers an announcement itself. When one is due for the person, its reply gets a New announcement button (bot/textCommands.js addAnnouncementButton); pressing it delivers privately through maybeSendAnnouncement below, which counts as one showing like a slash command's. Read-only: nothing is marked seen here.
+async function hasDueAnnouncement(userId) {
+    const active = await getActiveAnnouncements();
+    if (active.length === 0) return false;
+    const prefs = await UserPreference.findOne({ discordId: userId }).select('seenAnnouncementIds announcementDeliveries announcementsOff');
+    if (prefs?.announcementsOff) return false;
+    const seen = new Set((prefs?.seenAnnouncementIds || []).map(id => id.toString()));
+    const deliveryById = new Map((prefs?.announcementDeliveries || []).map(d => [d.announcementId.toString(), d]));
+    const now = Date.now();
+    return active.some(a => isAnnouncementDue(a, seen, deliveryById, now));
+}
+function openButtonRow() {
+    const emojis = require('./emojiMap');
+    const emoji = emojis.parseEmoji(emojis.announcements);
+    return { type: 1, components: [{ type: 2, style: 2, label: 'New announcement', custom_id: ANN_OPEN_ID, ...(emoji ? { emoji } : {}) }] };
+}
+
+// Returns TRUE when it delivered (and marked) at least one announcement, FALSE when nothing was due or the send failed; the New announcement button uses it to tell an empty press apart.
 async function maybeSendAnnouncement(interaction) {
     const active = await getActiveAnnouncements();
-    if (active.length === 0) return;
+    if (active.length === 0) return false;
 
     const prefs = await UserPreference.findOne({ discordId: interaction.user.id }).select('seenAnnouncementIds announcementDeliveries announcementsOff');
     // Turned off: nothing is shown and nothing is marked seen, so one that is still running shows once they turn announcements back on.
-    if (prefs?.announcementsOff) return;
+    if (prefs?.announcementsOff) return false;
     const seen = new Set((prefs?.seenAnnouncementIds || []).map(id => id.toString()));
     const deliveryById = new Map((prefs?.announcementDeliveries || []).map(d => [d.announcementId.toString(), d]));
     const now = Date.now();
     // "unseen OR (unseen)" collapsed into one predicate -- isAnnouncementDue() covers both the pre-existing seen-once check AND the new repeat check, so a non-repeating announcement is due under EXACTLY the same condition it always was.
     const due = active.filter(a => isAnnouncementDue(a, seen, deliveryById, now));
-    if (due.length === 0) return;
+    if (due.length === 0) return false;
 
     const toShow = fitEmbedBudget(due.slice(0, MAX_EMBEDS_PER_MESSAGE));
     const containers = toShow.map(doc => buildAnnouncementContainer(doc));
@@ -248,7 +267,7 @@ async function maybeSendAnnouncement(interaction) {
     } catch (err) {
         // Interaction likely expired -- don't mark as seen/delivered, so it's retried on their next command instead of silently lost. The real Discord code, so a refusal (50035, invalid form body) reads differently from an expired interaction (10062).
         console.error(`Failed to deliver announcement follow-up (Discord ${err?.code ?? 'no code'}):`, err?.message || err);
-        return;
+        return false;
     }
 
     const nowDate = new Date(now);
@@ -273,7 +292,8 @@ async function maybeSendAnnouncement(interaction) {
             );
         }
     }
+    return true;
 }
 
 // buildAnnouncementEmbed exported 2026-08-23 11:27 EDT so /bot analytics' change-detail panel renders an announcement with the SAME text shape a user is shown, instead of re-describing its fields.
-module.exports = { buildActiveAnnouncementComponents, ANN_WHY_ID, ANN_OFF_ID, ANN_ON_ID, whyButtonRow, whyRowNeeded, buildWhyPanel, setAnnouncementsOff, getActiveAnnouncements, maybeSendAnnouncement, computeExpiresAt, expiryToInputValue, generateAccentColor, buildAnnouncementEmbed, buildAnnouncementContainer, announcementBody, measureComponents, MAX_EMBEDS_PER_MESSAGE, TEXT_CHAR_BUDGET, COMPONENT_BUDGET, ANNOUNCEMENT_TEXT_MAX, fitEmbedBudget, isRepeatingAnnouncement, isAnnouncementDue, MIN_HOURS_BETWEEN_REPEATS };
+module.exports = { hasDueAnnouncement, openButtonRow, ANN_OPEN_ID, buildActiveAnnouncementComponents, ANN_WHY_ID, ANN_OFF_ID, ANN_ON_ID, whyButtonRow, whyRowNeeded, buildWhyPanel, setAnnouncementsOff, getActiveAnnouncements, maybeSendAnnouncement, computeExpiresAt, expiryToInputValue, generateAccentColor, buildAnnouncementEmbed, buildAnnouncementContainer, announcementBody, measureComponents, MAX_EMBEDS_PER_MESSAGE, TEXT_CHAR_BUDGET, COMPONENT_BUDGET, ANNOUNCEMENT_TEXT_MAX, fitEmbedBudget, isRepeatingAnnouncement, isAnnouncementDue, MIN_HOURS_BETWEEN_REPEATS };

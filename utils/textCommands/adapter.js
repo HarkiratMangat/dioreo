@@ -118,6 +118,8 @@ function createTextInteraction(message, { textCommand, via, values = {}, targetU
         body.allowed_mentions = { ...(body.allowed_mentions || { parse: [] }), replied_user: false };
         const opts = files ? { body, files } : { body };
         if (!interaction.__firstSendAt) interaction.__firstSendAt = Date.now();
+        // What the reply now holds, so a later edit can add to it (bot/textCommands.js addAnnouncementButton) without reading the message back.
+        interaction.__lastBody = body;
         clearTimeout(typingTimer);
         if (!replyId || newMessage) {
             opts.body = { ...body, message_reference: { message_id: message.id, fail_if_not_exists: false } };

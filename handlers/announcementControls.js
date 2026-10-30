@@ -22,6 +22,12 @@ async function route(interaction) {
         await interaction.deferReply({ flags: 64 });
         return await sendV2Payload(interaction, A.buildWhyPanel('on', interaction.client));
     }
+    // The New announcement button under a text-command reply (2026-10-30 18:20 EDT): whoever presses it gets the announcements due for THEM, privately, and it counts as one showing. The thinking placeholder goes once the follow-up is out.
+    if (interaction.isButton() && interaction.customId === 'ann_open') {
+        await interaction.deferReply({ flags: 64 });
+        if (await A.maybeSendAnnouncement(interaction)) return await interaction.deleteReply().catch(() => {});
+        return await sendV2Payload(interaction, [{ type: 10, content: '-# No new announcements for you right now.' }], { flags: 32768 | 64 });
+    }
     // The switch, redrawn in place.
     if (interaction.isButton() && (interaction.customId === 'ann_off' || interaction.customId === 'ann_on')) {
         const off = interaction.customId === 'ann_off';
