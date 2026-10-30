@@ -65,7 +65,7 @@ async function check(name, fn) {
     await check('the typed home: the #1 card\'s four groups in short words, the prefixes, and a Slash Commands button', async () => {
         const home = await all(null, 'text');
         assert.ok(home.includes('Type a command') && home.includes('**`@Dioreo`**, **`d`** or **`dior`**'), 'no prefix line');
-        for (const g of ['`gunsmith` · `dmz`', '`draws` · `prices` · `calculator`', '`today` · `calendar` · `remind` · `patch notes` · `end`', '`timestamp` · `colors` · `settings` · `invite` · `prefix` · `help`']) assert.ok(home.includes(g), `missing ${g}`);
+        for (const g of ['`gunsmith` · `dmz`', '`draws` · `prices` · `calculator`', '`today` · `calendar` · `remind` · `patch notes` · `end`', '`timestamp` · `colors` · `settings` · `prefix` · `invite` · `help`']) assert.ok(home.includes(g), `missing ${g}`);
         assert.ok(home.includes('`d help <command>` opens its page'));
         assert.ok(!home.includes('/today'), 'the retired `/` prefix is still named');
         assert.ok(buttonIds({ components: await msg(null, 'text') }).includes('help_view~slash~landing'));

@@ -24,7 +24,7 @@ const valuesOf = (name, option) => (textCommandOf(name)?.options || []).find(o =
 const PAGE_NAMES = {
     '/gunsmith mp': 'MP Gunsmith', '/gunsmith dmz': 'DMZ Gunsmith', '/draws': 'Lucky Draws', '/draw prices': 'Lucky Draw Prices', '/draw calculator': 'Draw Calculator',
     '/today': 'Today', '/calendar': 'Calendar', '/remind': 'Reminders', '/season end': 'Season End', '/patch notes': 'Patch Notes',
-    '/timestamp': 'Timestamps', '/colors': 'Profile Colors', '/settings': 'Settings', '/invite': 'Invite Dioreo', '/prefix': 'Server Prefix', '/admin': 'Server Settings',
+    '/timestamp': 'Timestamps', '/colors': 'Profile Colors', '/settings': 'Settings', '/prefix': 'Server Prefix', '/invite': 'Invite Dioreo', '/admin': 'Server Settings',
     '/manage': 'Manage Data', '/manage emojis': 'Emoji Manager', '/autobuild': 'Autobuild', '/bot': 'Bot Tools', '/embed': 'Embed Preview',
 };
 const PAGE_ORDER = Object.keys(PAGE_NAMES);
@@ -83,10 +83,10 @@ const PAGES = {
             const { REMOVE_WORDS, MAX_LENGTH, configuredPrefixes, prefixParts } = require('./textCommands/server');
             const back = prefixParts().replaceable || configuredPrefixes()[0] || 'd';
             return {
-                args: '[new prefix|remove]',
+                args: '[newPrefix|remove]',
                 boxes: [
-                    text(`**See it**\n-# Anyone can ask which prefix this server uses\n> -# ${dot([`${x.p} prefix`, `${x.p} pre`])}`),
-                    text(`**Change it** *(server admins)*\n-# Needs **Manage Server**. Anyone else is just shown the prefix\n> -# **Set**  ${code(`${x.p} prefix !`)}\n> -# **Put ${code(back)} back**  ${dot(REMOVE_WORDS)}`),
+                    text(`**Check prefix**\n-# Anyone can ask which prefix this server uses\n> -# ${dot([`${x.p} prefix`, `${x.p} pre`])}`),
+                    text(`**Change it** *(server admins)*\n-# Needs **Manage Server**\n> -# **Set**  ${code(`${x.p} prefix d!`)}  *Prefix changed to ${code('d!')}*\n> -# **Dioreo defaults**  ${dot(REMOVE_WORDS)}`),
                     text(`**Good to know**\n> -# Your prefix takes ${code(back)}'s place; ${code('dior')} and **@Dioreo** always work\n> -# Up to ${MAX_LENGTH} characters, no spaces\n> -# ${dot(REMOVE_WORDS)} can't be a prefix: they put it back\n> -# **Edit Prefix** in ${emojis.serverSettings || ''} /admin → Config Text Commands does the same`),
                 ],
                 examples: [[`${x.p} prefix`, "This server's prefix"], [`${x.p} pre !`, 'Set it to ! (admins)'], [`${x.p} prefix reset`, `Back to ${back} (admins)`]],
@@ -394,7 +394,7 @@ function buildPage(name, { client, view, detail = false, canSwitch = false, seas
 }
 
 // The home page, his approved layout (2026-10-29 23:52 EDT): today's hero, links and sign-off; the #1 card's four groups in short words (typed) or as mentions (slash); a Text commands line and its button where typed forms work.
-const HOME_GROUPS = [['gunsmithSearch', 'Gunsmith', ['gunsmith', 'dmz'], ['/gunsmith mp', '/gunsmith dmz']], ['newDraws', 'Draws', ['draws', 'prices', 'calculator'], ['/draws', '/draw prices', '/draw calculator']], ['calendar', 'Season', ['today', 'calendar', 'remind', 'patch notes', 'end'], ['/today', '/calendar', '/remind', '/patch notes', '/season end']], ['eyedropper', 'Utilities', ['timestamp', 'colors', 'settings', 'invite', 'prefix', 'help'], ['/timestamp', '/colors', '/settings', '/invite', '/help']]];
+const HOME_GROUPS = [['gunsmithSearch', 'Gunsmith', ['gunsmith', 'dmz'], ['/gunsmith mp', '/gunsmith dmz']], ['newDraws', 'Draws', ['draws', 'prices', 'calculator'], ['/draws', '/draw prices', '/draw calculator']], ['calendar', 'Season', ['today', 'calendar', 'remind', 'patch notes', 'end'], ['/today', '/calendar', '/remind', '/patch notes', '/season end']], ['eyedropper', 'Utilities', ['timestamp', 'colors', 'settings', 'prefix', 'invite', 'help'], ['/timestamp', '/colors', '/settings', '/invite', '/help']]];
 function buildHome({ client, view, canSwitch, hero, adminNames = [], prefixes = null }) {
     const typed = view === 'text';
     const p = firstPrefix(client, prefixes);
