@@ -12,6 +12,10 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.3.1 — October 30, 2026
+- **Announcements** reach text commands: a **New announcement** button on your reply when one is waiting.
+- **`d b`** and **`d bd`** open Gunsmith MP and DMZ.
+
 ## v3.3.0 — October 30, 2026
 - **Text commands:** type `@Dioreo today`, `d today` or `dior today` in a server Dioreo is in.
 - **Server prefix:** admins can swap `d` for their own with `d prefix`.

@@ -81,5 +81,15 @@ assert.strictEqual(v('dior calender stuff here').kind, null);
 assert.ok(isTypoOf('calender', 'calendar') && isTypoOf('todya', 'today') && isTypoOf('hlep', 'help'));
 assert.ok(!isTypoOf('heap', 'help') && !isTypoOf('mind', 'remind') && !isTypoOf('lesson', 'season'));
 assert.ok(!isTypoOf('getting', 'settings') && !isTypoOf('kalendar', 'calendar'));
+// His `b` and `bd` aliases (2026-10-30 18:38 EDT), against the REAL word list: the fixture above has no gunsmith.
+{
+    const { TEXT_COMMANDS } = require('../utils/textCommands/commands');
+    const real = { ...opts, commands: TEXT_COMMANDS };
+    for (const [m, want] of [['d b ak117', 'gunsmith'], ['d bd ak117', 'gunsmith dmz'], ['dior b', 'gunsmith'], ['d bd', 'gunsmith dmz']]) {
+        const r = parseTextCommand(m, real);
+        assert.strictEqual(r.kind, 'run', m);
+        assert.strictEqual(r.command, want, m);
+    }
+}
 if (failed) { console.error(`${failed} of ${rows.length} rows failed`); process.exit(1); }
-console.log(`textCommandParse: ${rows.length} rows + 5 asserts passed`);
+console.log(`textCommandParse: ${rows.length} rows + 9 asserts passed`);

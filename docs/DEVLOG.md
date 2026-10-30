@@ -293,6 +293,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-28 15:30 EDT — A season's dates outlive the season (v3.2.0)
 - 2026-10-29 10:00 EDT — Prod /help fixed: the deleted DioreoCombo emoji (v3.2.1)
 - 2026-10-30 17:44 EDT — Text commands ship: typed commands, per-server prefixes and the spam ladder (v3.3.0)
+- 2026-10-30 18:43 EDT — A New announcement button on text replies; b and bd for gunsmith (v3.3.1)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4827,6 +4828,12 @@ The fix is to save a season's dates on its own patch-notes entry at the one mome
 **How it was built.** Harkirat ran the units as standalone cloud threads (B1 to B7, then a Sonnet builder on the Mac), each on its own sub-branch merged into `feat/text-commands`, with this lead verifying and releasing. B6 and B7 designed every panel with him live in #testing-spam before building it.
 
 **Lessons.** (1) An agreement made inside one cloud thread is invisible to the next: B7's spec lived only in B6's transcript until it was copied into the plan word for word, and a builder step now requires that before a merge. (2) A live pass finds what unit tests can't: Discord's modal cut `default` to its first six letters because the box allowed 6 characters, so the reserved-word check never ran. (3) Copy an emoji to another app from its original in `emoji-originals`, never from Discord's CDN.
+
+## 2026-10-30 18:43 EDT — A New announcement button on text replies; b and bd for gunsmith (v3.3.1)
+
+Text commands now get announcements too, without a second message landing in a busy channel. A text reply carries a **New announcement** button while one is due for the person who sent it; pressing it shows the announcement privately and counts as one showing, the same as a slash command's. Text commands themselves never count toward the repeat, so a server full of `d today` cannot use up someone's two showings. Only a reply with 38 components or fewer takes the button, so it never pushes a full panel past Discord's 40.
+
+Also: `b` runs `/gunsmith mp` and `bd` runs `/gunsmith dmz`; both were free, and both are on their /help pages.
 
 # Part B — Lessons Ledger (thematic)
 
