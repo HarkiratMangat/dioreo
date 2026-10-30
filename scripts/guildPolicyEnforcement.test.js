@@ -357,8 +357,6 @@ t('the /admin text view: its ids, On/Off, the flip button and a save into textRu
         assert.strictEqual(doc.channelRules.length, 0, 'no slash channel rule');
         const bad = await click('admin_t_prefixm', { fields: { getTextInputValue: () => '/, @' } });
         assert.ok(bad.some(c => c.method === 'reply' && /Nothing was saved/.test(c.options.content)), 'a refused prefix');
-        const chatty = await click('admin_t_prefixm', { fields: { getTextInputValue: () => '!, the' } });
-        assert.ok(chatty.some(c => c.method === 'reply' && /starts ordinary sentences/.test(c.options.content)), 'an everyday word is refused (B7 fix-up)');
         await click('admin_t_prefixm', { fields: { getTextInputValue: () => '!, COD' } });
         assert.deepStrictEqual([...doc.textPrefixes], ['!', 'cod']);
         await new Promise(r => setImmediate(r));

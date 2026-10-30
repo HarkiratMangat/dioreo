@@ -38,8 +38,7 @@ const HOUR = 60 * 60 * 1000;
     await check('prefixes: commas or spaces, any case, at most three, blank for the default', async () => {
         assert.deepStrictEqual(parsePrefixes('!, ?').prefixes, ['!', '?']);
         assert.deepStrictEqual(parsePrefixes('COD  dd').prefixes, ['cod', 'dd']);
-        for (const word of ['the', 'yo', 'i', 'Hey']) assert.ok(/starts ordinary sentences/.test(parsePrefixes(`!, ${word}`).error || ''), `${word} is refused: "the draws" would post the draws`);
-        assert.deepStrictEqual(parsePrefixes('d').prefixes, ['d'], 'the default letter stays allowed');
+        assert.deepStrictEqual(parsePrefixes('the, yo').prefixes, ['the', 'yo'], 'an everyday word is the server\'s choice (his call, 2026-10-30 15:26 EDT)');
         assert.deepStrictEqual(parsePrefixes('d, d').prefixes, ['d']);
         assert.deepStrictEqual(parsePrefixes('  ').prefixes, []);
         assert.ok(parsePrefixes('a b c e').error);

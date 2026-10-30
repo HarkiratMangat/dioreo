@@ -12,8 +12,7 @@ const MAX_PREFIXES = 3;
 const MAX_LENGTH = 6;
 // `/` is the slash-command picker's (his 2026-10-29 12:40 EDT: "leave it for the real slash commands"); `@ < # :` begin a mention, a channel or an emoji; `` ` * _ ~ | > \ `` are Discord markdown and would change how the message itself renders.
 const FORBIDDEN = /[/@<#:`*_~|>\\]/;
-// Everyday words and single letters a member types to start a sentence (B7's fix-up think-pass, 2026-10-30 15:01 EDT). The parser runs an exact command with one more word after a prefix, so with `the` as a prefix "the draws" would post the draws, and `yo` would read "yo todya" as a typo of today. `d` is the default and stays allowed: it was his choice, and it is not a word.
-const EVERYDAY = new Set(['a', 'an', 'and', 'at', 'b', 'bro', 'but', 'c', 'e', 'g', 'h', 'hey', 'hi', 'i', 'im', 'in', 'is', 'it', 'k', 'lol', 'm', 'me', 'my', 'n', 'no', 'o', 'of', 'oh', 'ok', 'on', 'or', 'r', 's', 'so', 't', 'the', 'to', 'u', 'w', 'we', 'y', 'ya', 'ye', 'yes', 'yo', 'you']);
+// Any word is allowed, everyday ones included (his call, 2026-10-30 15:26 EDT: "if a server wants to use that as their prefix, let them"). With `the` as a prefix "the draws" posts the draws; that is the server's choice.
 
 // What an admin typed, as a list: commas or spaces between prefixes, any case. Blank is the default again. Returns { prefixes } or { error } in words the pop-up shows.
 function parsePrefixes(text) {
@@ -22,8 +21,6 @@ function parsePrefixes(text) {
     const long = prefixes.find(p => p.length > MAX_LENGTH);
     if (long) return { error: `\`${long}\` is too long: ${MAX_LENGTH} characters at most.` };
     if (prefixes.some(p => FORBIDDEN.test(p))) return { error: "A prefix can't use / @ < # : or Discord's formatting characters." };
-    const word = prefixes.find(p => EVERYDAY.has(p));
-    if (word) return { error: `\`${word}\` starts ordinary sentences, so Dioreo would answer your members' chat. Try a symbol like \`!\` or a short word like \`cod\`.` };
     return { prefixes };
 }
 
