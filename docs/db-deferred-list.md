@@ -653,20 +653,20 @@ Home held its own copy of Armory's fault predicate; the copy happened to AGREE, 
 
 ## 🔔 Reminders / watch-for
 
-- `[P1 · XS]` **Post the text-commands announcement once text commands are live on prod.** *Filed 2026-10-30 16:21 EDT.* Harkirat's text, layout and accent `#6273EF` (his, 2026-10-30 16:20 EDT), rendered in #testing-spam (mock 4; mock 3 was `1565823355578224721`). **Needs the `--` box split below first:** the mention box and the `d help` box are two text boxes with no divider between them (his correction, 2026-10-30 16:22 EDT). Create it on prod only on his word at that time, through `/manage` announcements or the portal; `core/ops/announcements.js` accepts `payload.color`, so pass `0x6273EF` (6452207) rather than a random one. The text, prod emoji ids:
+- `[P1 · XS]` **Post the text-commands announcement once text commands are live on prod.** *Filed 2026-10-30 16:21 EDT.* Harkirat's text, layout and accent `#6273EF` (his, 2026-10-30 16:20 EDT), rendered in #testing-spam (mock 5, `1565826860149907477`, through the real builder). **Uses the layout marks built below (`++` between the two boxes, `----` for the dividers):** the mention box and the `d help` box are two text boxes with no divider between them (his correction, 2026-10-30 16:22 EDT). Create it on prod only on his word at that time, through `/manage` announcements or the portal; `core/ops/announcements.js` accepts `payload.color`, so pass `0x6273EF` (6452207) rather than a random one. The text, prod emoji ids:
 
 ```
 ## <a:DioreoTada:1563677558589882510> Dioreo now supports text commands!
----
+----
 ### <a:Command:1565523050982801468> Mention <@1491474871778021550>, or use **`d`** or **`dior`** as a prefix.
 -# **Example:**
 `@dioreo calendar`
 `d draws new`
 `dior build static hv`
---
+++
 -# Use **`d help`** to learn more!
 -# Text commands are for **server-install only**
----
+----
 -# Made with <a:diorHeart:1525941004929339594> by <@1139845545754632283> · {posted}
 ```
 
@@ -1099,11 +1099,13 @@ Approved direction 2026-10-25 22:16 EDT (Harkirat, bot-polish thread); built in 
 
 ### Announcements: split text boxes without a divider `[P2 · XS]` (the text-commands announcement needs it)
 
+> ✅ **BUILT 2026-10-30 16:36 EDT** on `feat/text-commands`, wider than filed, his five marks: `----` divider small · `====` divider large · `--` no line small · `==` no line large (he wrote small; read as large) · `++` next text box. `---` still works. Tested in `scripts/announcementDelivery.test.js`. Closes when text commands merge.
+
 *Filed 2026-10-30 16:21 EDT, Harkirat: "we'll do it later, just file it for now".* `utils/announcement.js` `buildAnnouncementContainer` starts a new Text Display only at a line that is exactly `---`, and that line always adds a divider (`type: 14, divider: true`), so two text boxes with nothing between them can't be written. **Do:** a line that is exactly `--` starts a new box with no divider; `---` keeps its divider. Update the composer's help text in `/manage` and the portal's Broadcast realm if either describes `---` (portal is pins2's: a proposal). **Verify:** a test where `--` yields two `type: 10` blocks with no divider between them, and `---` still yields one.
 
 ### Reuse a returning draw's image by matching its items, not its title `[P2 · M]`
 
-> ✅ **BUILT 2026-10-30 16:24 EDT** on `feat/text-commands` (builder thread, Harkirat's "draws/ folder, image linked to a draw"): `utils/cloudinaryCache.js` (tags + context + fingerprint, `draws/` permanent, override in place), `utils/drawImageBackfill.js` + `scripts/backfillDrawImages.js`, `scripts/drawImageLink.test.js`. Rule chosen: exact fingerprint (items + rarities, comments ignored) reuses; ≥60% shared items is named, never reused; price type vetoes only when both set. **Still open: the prod run** of `DRAW_BACKFILL_APPROVED=1 node scripts/backfillDrawImages.js --write` against the PROD database right after the deploy (dev dry run: 12 current draws, 12 in `temp_draws/`, 0 in `archive/draws/`), which needs his word.
+> ✅ **BUILT 2026-10-30 16:24 EDT** on `feat/text-commands` (builder thread, Harkirat's "draws/ folder, image linked to a draw"): `utils/cloudinaryCache.js` (tags + context + fingerprint, `draws/` permanent, override in place), `utils/drawImageBackfill.js` + `scripts/backfillDrawImages.js`, `scripts/drawImageLink.test.js`. Rule chosen: exact fingerprint (items + rarities, comments ignored) reuses, the newest image carrying them winning; a replaced image is overwritten only under the same title; ≥60% shared items is named, never reused; price type vetoes only when both set. **Still open: the prod run** of `DRAW_BACKFILL_APPROVED=1 node scripts/backfillDrawImages.js --write` against the PROD database right after the deploy (dev dry run: 12 current draws, 12 in `temp_draws/`, 0 in `archive/draws/`), which needs his word. The backfill also rewrites the image URLs inside `ChangeLog.inverse` (Undo), so an Undo after the move does not restore a dead link.
 
 *Filed 2026-10-30 15:40 EDT, from Harkirat's question in the text-commands lead thread (2026-10-30 15:33 EDT): "since many draws return/repeat, instead of me having to search for the image each time, we could essentially link an image to each specific draw. so even if the draw name is slightly modified/edited, as long the items and rarity and stuff also match and provide a high confidence that it's the same draw, we can then just re-use the same image".* **Today:** `utils/cloudinaryCache.js` keys a draw image only by its title's slug (`temp_draws/<slug>`), uploads it with no tags, context or structured metadata, and moves it to `archive/draws/<slug>-<stamp>` once the draw ends past 45 days; lookups never search `archive/`. So a renamed draw, or any draw back after its image was archived, gets no image. **What already exists:** each draw record in `models/SeasonalData.js` stores `items: [{ tier, name }]` and `priceType`. **Do:** on upload, tag the asset (Cloudinary `context`, or structured metadata) with the draw's title, item names, tiers and price type plus a fingerprint built from the sorted item names and tiers. When a draw is added or edited with no image, search Cloudinary, `archive/draws/` included, for that fingerprint and offer the match (exact fingerprint = reuse; most items matching = suggest, never auto-apply). Backfill tags on the images already in `archive/draws/` from the records that still name them. Respect `utils/cloudinaryDevGuard.js` (the dev bot may not write to the live account) and the secret-logging ban. **Verify:** add a draw whose items match an archived one under a different title and see the old image offered; a draw with one item changed is suggested, not reused. Needs his call on the match threshold.
 
