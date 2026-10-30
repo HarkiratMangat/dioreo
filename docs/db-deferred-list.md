@@ -653,6 +653,21 @@ Home held its own copy of Armory's fault predicate; the copy happened to AGREE, 
 
 ## 🔔 Reminders / watch-for
 
+- `[P1 · XS]` **Post the text-commands announcement once text commands are live on prod.** *Filed 2026-10-30 16:21 EDT.* Harkirat's text, layout and accent `#6273EF` (his, 2026-10-30 16:20 EDT), rendered through the real builder in #testing-spam (message `1565822895358214346`). Create it on prod only on his word at that time, through `/manage` announcements or the portal; `core/ops/announcements.js` accepts `payload.color`, so pass `0x6273EF` (6452207) rather than a random one. The text, prod emoji ids:
+
+```
+## <a:DioreoTada:1563677558589882510> Dioreo now supports text commands!
+---
+### <a:Command:1565523050982801468> Mention <@1491474871778021550>, or use **`d`** or **`dior`** as a prefix.
+-# **Example:**
+`@dioreo calendar`
+`d draws new`
+`dior build static hv`
+-# Use **`d help`** to learn more!
+---
+-# Made with <a:diorHeart:1525941004929339594> by <@1139845545754632283> · {posted}
+```
+
 - `[P2 · S]` **`deploy-site.yml`'s live check fails on a Cloudflare 403, not on the site** *(filed 2026-10-27 20:10 EDT, the v3.0.0 launch)*. The publish step succeeded and `dioreo.app` served the new build from the Mac (title, `/commands`, Privacy dated 27 October), but every `curl` from the GitHub runner got **403**, so the run went red after ~90s. Cloudflare's bot protection blocks the runner. **Do:** let the check through: a Cloudflare WAF skip rule for a header the workflow sends, or check the Pages deployment URL (`*.pages.dev`) instead of `dioreo.app`. **Verify:** the next site-touching merge to `main` shows `deploy-site` green with "Live site matches the published build."
 - `[P2 · XS]` **`v3-pre-release` is gone; every "`--base v3-pre-release`" instruction is now stale** *(filed 2026-10-27 20:10 EDT)*. GitHub deleted the branch when #223 merged (main fast-forwarded to it; tag `archive/v3-pre-release` keeps it). PRs now target `main`. **Do:** reword CLAUDE.md's "Two bases now exist" paragraph and the v3 pre-release versioning lines for the post-launch world, and retire `.github/workflows/sync-v3-pre-release.yml`. The Dioreo-Bot and pins2 project instructions are his to update (told the coordinator). **Verify:** `rg -n "base v3-pre-release"` finds only dated history.
 - ✅ **CLOSED 2026-10-23 12:04 EDT:** prod ids read at his word ("yeah, that's fine", 12:03 EDT); both names exist on the prod app and `utils/emojiMap.js` carries them; images saved in the main checkout's `Logos-&-Emojis/emoji-originals/`. Original: `[P2 · XS]` ~~**/today's yellow and blue dot emoji carry the DEV app's ids**~~ (filed 2026-10-23 11:58 EDT, `feat/badge-today-notifications`). `utils/emojiMap.js`'s `yellowDotGlow` / `blueDotGlow` hold `YellowDotGlow_YDG` / `BlueDotGlow_BDG` ids read from the dev app, because the prod ids were never read. `refreshEmojiIds()` re-points them by name at boot, so prod renders them only if its app has emoji with those exact names. **Do:** with his OK (asked in the badge/today thread, 2026-10-23 11:57 EDT), read the prod app's emoji list read-only, swap in the prod ids, and upload the two emoji to prod first if they are missing. **Verify:** both names appear in the prod app's emoji list and `emojiMap.js` carries those ids, before the branch merges.
@@ -1079,6 +1094,10 @@ Approved direction 2026-10-25 22:16 EDT (Harkirat, bot-polish thread); built in 
 *Filed 2026-10-21 11:21 EDT, narrowed 11:22 EDT.* All 14 draws on prod (and dev) show a broken image: every stored `thumbnailUrl` returns 404, and Cloudinary's `temp_draws/` holds **0 assets** (Admin API read, prod account, 2026-10-21 11:19 EDT). **The cause is already fixed:** the 45-day cleanup deleting in-use thumbnails was found by the bug sweep and fixed in #212 (Pre-Release v3.103.0, `f8373419`, in `utils/cloudinaryCache.js` and `bot/lifecycle.js`). Prod still runs `main`, which has the bug, and Harkirat chose no `main` hotfix, so the fix ships with v3. **Open: the images themselves.** **Do:** re-cache the 14 from Harkirat's source links through `/manage`'s draw edit (or `resolveThumbnail`), after the v3 deploy so prod's old cleanup cannot delete them again. **Verify:** `/draws` on prod shows every thumbnail a day after the deploy.
 
 **Archive, never delete (Harkirat, 2026-10-21 11:25 EDT: "instead of deleting, can we move any \"deleted\" images to an archive folder instead from now on? ... with respective sub-folders for draws, banners, etc.").** Three delete sites: draws' 45-day prune (`utils/cloudinaryCache.js`, `delete_resources`), a deleted patch-notes entry's folder (`utils/patchNotesCache.js`, `delete_resources`) and a cleared calendar banner (`utils/calendarBannerCache.js`, `uploader.destroy`). **Do:** move each to `archive/draws/`, `archive/patch_notes/`, `archive/calendar_banners/` (rename the `public_id`, set `asset_folder`, archive date in the name so repeats never clash); nothing ever deletes from `archive/`. ✅ **Built 2026-10-21 11:45 EDT** on `fix/command-refresh-polish` (Harkirat, 2026-10-21 11:39 EDT: "yes go ahead", to both this and archiving the old image when one is replaced): `utils/cloudinaryArchive.js`, all four modules, `scripts/cloudinaryArchive.test.js`. Live once v3 deploys. **Still open: the live check below.** Storage is not a concern: 1.4 GB, 25% of the free plan's credits (Admin API `usage`, 2026-10-21 11:26 EDT). **Verify:** a unit test per site shows a move, not a delete (the dev bot cannot write to Cloudinary), then one real prune on prod after the v3 deploy leaves the moved asset under `archive/`.
+
+### Announcements: split text boxes without a divider `[P3 · XS]`
+
+*Filed 2026-10-30 16:21 EDT, Harkirat: "we'll do it later, just file it for now".* `utils/announcement.js` `buildAnnouncementContainer` starts a new Text Display only at a line that is exactly `---`, and that line always adds a divider (`type: 14, divider: true`), so two text boxes with nothing between them can't be written. **Do:** a line that is exactly `--` starts a new box with no divider; `---` keeps its divider. Update the composer's help text in `/manage` and the portal's Broadcast realm if either describes `---` (portal is pins2's: a proposal). **Verify:** a test where `--` yields two `type: 10` blocks with no divider between them, and `---` still yields one.
 
 ### Reuse a returning draw's image by matching its items, not its title `[P2 · M]`
 
