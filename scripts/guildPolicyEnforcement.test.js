@@ -357,11 +357,13 @@ t('the /admin text view: its ids, On/Off, the flip button and a save into textRu
         assert.strictEqual(doc.channelRules.length, 0, 'no slash channel rule');
         const bad = await click('admin_t_prefixm', { fields: { getTextInputValue: () => '/, @' } });
         assert.ok(bad.some(c => c.method === 'reply' && /Nothing was saved/.test(c.options.content)), 'a refused prefix');
-        await click('admin_t_prefixm', { fields: { getTextInputValue: () => '!, YO' } });
-        assert.deepStrictEqual([...doc.textPrefixes], ['!', 'yo']);
+        const chatty = await click('admin_t_prefixm', { fields: { getTextInputValue: () => '!, the' } });
+        assert.ok(chatty.some(c => c.method === 'reply' && /starts ordinary sentences/.test(c.options.content)), 'an everyday word is refused (B7 fix-up)');
+        await click('admin_t_prefixm', { fields: { getTextInputValue: () => '!, COD' } });
+        assert.deepStrictEqual([...doc.textPrefixes], ['!', 'cod']);
         await new Promise(r => setImmediate(r));
         assert.ok(log.some(r => r.changes.includes('Text commands · Default: On → Off')), JSON.stringify(log.map(r => r.changes)));
-        assert.ok(log.some(r => r.changes.includes('Text command prefixes: default → ! yo')));
+        assert.ok(log.some(r => r.changes.includes('Text command prefixes: default → ! cod')));
         await click('admin_t_prefix_reset');
         assert.strictEqual(doc.textPrefixes, undefined, 'Reset to d');
         await click('admin_t_prefixm', { fields: { getTextInputValue: () => '!' } });
@@ -621,9 +623,9 @@ t("Check a Member shows a member's whole picture, no channel needed", () => {
     assert.ok(text({ error: "That member isn't in this server." }).includes("isn't in this server"));
 });
 
-// --- 6. no panel page can exceed the Components V2 ceiling ----------------------------------- 40 components per message, counted RECURSIVELY through containers, sections and rows. Exceeding it is not a soft failure: Discord rejects the whole message (COMPONENT_MAX_TOTAL_COMPONENTS_ EXCEEDED) and the panel simply refuses to open. This repo has already shipped that as a real production crash once (see .claude/rules/rendering-and-ui.md), and every explanatory line added to a panel costs one -- which is exactly the kind of harmless-looking edit that trips it.
+// --- 6. no panel page can exceed the Components V2 ceiling ----------------------------------- 40 components per message, counted RECURSIVELY through containers, sections and rows. Exceeding it is not a soft failure: Discord rejects the whole message (COMPONENT_MAX_TOTAL_COMPONENTS_ EXCEEDED) and the panel simply refuses to open. This repo has already shipped that as a real production crash once (see .claude/rules/rendering-and-ui.md), and every explanatory line added to a panel costs one -- which is exactly the kind of harmless-looking edit that trips it. A Section's accessory (a Clear button, a server icon) is a component too, and Discord counts it; this skipped it until B7's fix-up (2026-10-30 15:01 EDT), undercounting Overview by 4.
 function countComponents(nodes) {
-    return (nodes || []).reduce((total, node) => total + 1 + countComponents(node.components), 0);
+    return (nodes || []).reduce((total, node) => total + 1 + countComponents(node.components) + (node.accessory ? countComponents([node.accessory]) : 0), 0);
 }
 
 t('every /admin page stays under the 40-component ceiling', () => {
@@ -657,6 +659,18 @@ t('every /admin page stays under the 40-component ceiling', () => {
     for (const [name, page] of Object.entries(pages)) {
         const used = countComponents(page);
         assert.ok(used <= 40, `${name} renders ${used} components, over Discord's 40 -- the page would fail to open`);
+    }
+    // The text view (B7) adds the view switch and the Prefix block to Overview: the same maximal rules, read as On/Off, with three prefixes.
+    const { inView, textView } = require('../commands/admin').__testRenderers;
+    const text = textView({ ...settings, textRules: { ...settings, ephemeralCommands: undefined, commandSettings: [{ command: 'ID_1', defaultVisibility: 'ephemeral', channelRules: settings.channelRules, roleRules: settings.roleRules }] }, textPrefixes: ['!', 'cod', 'dd'] });
+    const place = { guildName: 'A server', guildIcon: 'https://cdn.discordapp.com/icons/1/a.png', channelId: 'C_1' };
+    const textPages = {
+        home: () => buildHome(text, null, place), resetArmed: () => buildHome(text, null, place, { resetArmed: true }), channels: () => buildChannels(text), roles: () => buildRoles(text),
+        roleScope: () => buildRoleScope(text, 'R_S'), commands: () => buildCommands(text, ids(30)), commandHome: () => buildHome(text, null, place, { scope: 'ID_1' }), check: () => buildCheck(text, ids(30), { who: 'r:ID_1', channelIds: ids(25) }),
+    };
+    for (const [name, build] of Object.entries(textPages)) {
+        const used = countComponents(inView('text', build));
+        assert.ok(used <= 40, `text view ${name} renders ${used} components, over Discord's 40`);
     }
 });
 

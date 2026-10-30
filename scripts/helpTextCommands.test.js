@@ -104,6 +104,9 @@ async function check(name, fn) {
     });
     await check('without Message Content the text form is `@Dioreo <name>`', async () => {
         await runWithContext({ handler: 'textCommands' }, async () => assert.strictEqual(mentionCommand(client(false), '/draws'), '`@Dioreo draws`'));
+        // B7's fix-up: the prefix the person typed, or the server's own on a click, never a hard-coded `d` (which a server's prefix replaces).
+        await runWithContext({ handler: 'textCommands', textPrefix: '!' }, async () => assert.strictEqual(mentionCommand(client(true), '/draws'), '`! draws`'));
+        await runWithContext({ textReply: true, textPrefix: 'cod' }, async () => assert.strictEqual(mentionCommand(client(true), '/draws'), '`cod draws`'));
     });
     await check('a slash-only command keeps its mention inside a text command', async () => {
         await runWithContext({ handler: 'textCommands' }, async () => {

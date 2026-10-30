@@ -13,6 +13,8 @@ function t(name, fn) {
 
 // 14:00 UTC on Oct 23: the game day began at 00:00 UTC Oct 23 and ends at 00:00 UTC Oct 24.
 const NOW = Date.UTC(2026, 9, 23, 14);
+// The clock is pinned for the whole file (B7's fix-up, 2026-10-30 14:59 EDT): /calendar's Today page reads Date.now() itself, so its cases passed only while the real date sat inside the fixture's season and began failing on 2026-10-30, when 'COD Point Rush Week 8' (ending d(30)) ended for real.
+Date.now = () => NOW;
 const d = (day, hour = 0) => new Date(Date.UTC(2026, 9, day, hour)); // a day past 31 rolls into November
 
 function doc(overrides = {}) {

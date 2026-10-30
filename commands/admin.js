@@ -219,7 +219,8 @@ function buildHome(settings, client, place = {}, { resetArmed = false, scope = n
             type: 17,
             accent_color: ACCENT,
             components: [
-                ...header(null, place, text ? '-# Where typed commands like `d today` work, and where Dioreo stays silent.' : '-# Where Dioreo answers **publicly**, and where only the person who asked sees it.'),
+                // The server's own prefix in the example once it has one (B7's fix-up, 2026-10-30 15:03 EDT).
+                ...header(null, place, text ? `-# Where typed commands like \`${(settings?.textPrefixes || [])[0] || 'd'} today\` work, and where Dioreo stays silent.` : '-# Where Dioreo answers **publicly**, and where only the person who asked sees it.'),
                 ...notIn,
                 { type: 14, spacing: 2 },
                 { type: 10, content: text ? `### Default\n-# Text commands are ${visText(def)} unless a rule below says otherwise.` : `### Default\n-# Every answer is ${visText(def)} unless a rule below says otherwise.` },

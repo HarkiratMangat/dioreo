@@ -24,8 +24,9 @@ function textForm(client, clean) {
     const { TEXT_COMMANDS } = require('./textCommands/commands');
     const hit = TEXT_COMMANDS.find(c => `${c.slash}${c.sub ? ` ${c.sub}` : ''}` === clean) || TEXT_COMMANDS.find(c => c.slash === clean);
     if (!hit) return null;
-    // The first word in its list, never its name: gunsmith DMZ is named `gunsmith dmz` but typed `dmz` (`d gunsmith dmz` reads `dmz` as a weapon).
-    return `\`${client?.textMessageContent === false ? '@Dioreo' : 'd'} ${hit.words[0]}\``;
+    // The first word in its list, never its name: gunsmith DMZ is named `gunsmith dmz` but typed `dmz` (`d gunsmith dmz` reads `dmz` as a weapon). The prefix is the one the person typed, or the server's own on a click (`textPrefix`, set by bot/textCommands.js and handlers/router.js; B7's fix-up, 2026-10-30 15:02 EDT): it was always `d`, which does not work in a server whose prefix replaced it, and his rule is that the example uses the prefix the person used.
+    const prefix = client?.textMessageContent === false ? '@Dioreo' : (require('./requestContext').getContext()?.textPrefix || 'd');
+    return `\`${prefix} ${hit.words[0]}\``;
 }
 
 function mentionCommand(client, path) {

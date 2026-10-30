@@ -86,7 +86,8 @@ t('the panel: counts per app, the four views, a page of rows, and Sync naming ho
     assert.strictEqual(pageOf(rows, 'all', 'Extra'), -1, 'and only looks in the view asked');
     const many = Array.from({ length: PAGE_SIZE * 2 + 1 }, (_, i) => ({ name: `E${i}`, prodId: String(i), animated: false, has: [true, true], copies: [null, null], knownIds: [], inCode: true, prodEmoji: true, hasOriginal: true }));
     const big = buildEmojiPanel({ rows: many, apps: withClients, page: 2 });
-    const count = (c) => 1 + (c.components || []).reduce((n, x) => n + count(x), 0);
+    // A Section's accessory counts toward Discord's 40 too (B7's fix-up, 2026-10-30 15:01 EDT: this skipped it).
+    const count = (c) => 1 + [...(c.components || []), ...(c.accessory ? [c.accessory] : [])].reduce((n, x) => n + count(x), 0);
     assert.ok(count(big[0]) <= 40 && JSON.stringify(big).includes('emo_page_') && JSON.stringify(big).includes('Nothing to sync'));
 });
 

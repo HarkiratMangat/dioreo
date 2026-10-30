@@ -97,6 +97,12 @@ async function handleTextCommandsInteraction(interaction) {
         await privately(interaction, note('off'));
         return true;
     }
+    // A frozen command (the owner's /bot freeze, B7's fix-up 2026-10-30 15:04 EDT): a Did you mean card posted before the freeze must not run it after, since the freeze names it for its typed form too. The owner always passes.
+    const controls = require('../utils/botControls');
+    if (!require('../utils/owner').isOwnerId(interaction.user.id) && controls.isFrozen(textCommand.slash)) {
+        await privately(interaction, controls.pausedLine());
+        return true;
+    }
     // A press during a penalty of 5 minutes or more gets a private line; during the 1-minute rung presses work (his call, 2026-10-29 15:34 EDT: "only if penalty is 5min or longer").
     const spam = require('../utils/textCommands/spamLadder');
     const penalty = isRun ? spam.penaltyFor(interaction.user.id) : null;
