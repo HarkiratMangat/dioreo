@@ -631,7 +631,7 @@
           },
           {
             "type": 10,
-            "content": "### `d gunsmith [weapon|class|meta]`\n`gs` · `mp` · `gun` · `build` · `loadout`\n> -# Or just the weapon, class or meta: `d ak117` · `d smg` · `d meta`"
+            "content": "### `d gunsmith [weapon|class|meta]`\n`gs` · `b` · `mp` · `gun` · `build` · `loadout`\n> -# Or just the weapon, class or meta: `d ak117` · `d smg` · `d meta`"
           },
           {
             "type": 10,
@@ -1181,7 +1181,7 @@
           },
           {
             "type": 10,
-            "content": "### `d dmz [weapon|class|meta]`\n`gsd` · `dmz gs` · `dmz build` · `dmz loadout`"
+            "content": "### `d dmz [weapon|class|meta]`\n`gsd` · `bd` · `dmz gs` · `dmz build` · `dmz loadout`"
           },
           {
             "type": 10,
@@ -9194,7 +9194,7 @@
           },
           {
             "type": 10,
-            "content": "### `d gunsmith [weapon|class|meta]`\n`gs` · `mp` · `gun` · `build` · `loadout`\n> -# Or just the weapon, class or meta: `d ak117` · `d smg` · `d meta`"
+            "content": "### `d gunsmith [weapon|class|meta]`\n`gs` · `b` · `mp` · `gun` · `build` · `loadout`\n> -# Or just the weapon, class or meta: `d ak117` · `d smg` · `d meta`"
           },
           {
             "type": 10,
@@ -9766,7 +9766,7 @@
           },
           {
             "type": 10,
-            "content": "### `d dmz [weapon|class|meta]`\n`gsd` · `dmz gs` · `dmz build` · `dmz loadout`"
+            "content": "### `d dmz [weapon|class|meta]`\n`gsd` · `bd` · `dmz gs` · `dmz build` · `dmz loadout`"
           },
           {
             "type": 10,
@@ -18469,7 +18469,7 @@
           },
           {
             "type": 10,
-            "content": "### `d gunsmith [weapon|class|meta]`\n`gs` · `mp` · `gun` · `build` · `loadout`\n> -# Or just the weapon, class or meta: `d ak117` · `d smg` · `d meta`"
+            "content": "### `d gunsmith [weapon|class|meta]`\n`gs` · `b` · `mp` · `gun` · `build` · `loadout`\n> -# Or just the weapon, class or meta: `d ak117` · `d smg` · `d meta`"
           },
           {
             "type": 10,
@@ -19151,7 +19151,7 @@
           },
           {
             "type": 10,
-            "content": "### `d dmz [weapon|class|meta]`\n`gsd` · `dmz gs` · `dmz build` · `dmz loadout`"
+            "content": "### `d dmz [weapon|class|meta]`\n`gsd` · `bd` · `dmz gs` · `dmz build` · `dmz loadout`"
           },
           {
             "type": 10,
@@ -32933,7 +32933,7 @@
           },
           {
             "type": 10,
-            "content": "### `d gunsmith [weapon|class|meta]`\n`gs` · `mp` · `gun` · `build` · `loadout`\n> -# Or just the weapon, class or meta: `d ak117` · `d smg` · `d meta`"
+            "content": "### `d gunsmith [weapon|class|meta]`\n`gs` · `b` · `mp` · `gun` · `build` · `loadout`\n> -# Or just the weapon, class or meta: `d ak117` · `d smg` · `d meta`"
           },
           {
             "type": 10,
@@ -33505,7 +33505,7 @@
           },
           {
             "type": 10,
-            "content": "### `d dmz [weapon|class|meta]`\n`gsd` · `dmz gs` · `dmz build` · `dmz loadout`"
+            "content": "### `d dmz [weapon|class|meta]`\n`gsd` · `bd` · `dmz gs` · `dmz build` · `dmz loadout`"
           },
           {
             "type": 10,

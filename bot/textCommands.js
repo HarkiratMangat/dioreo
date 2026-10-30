@@ -354,6 +354,21 @@ async function formTargets(message, form, values) {
     return {};
 }
 
+// Announcements on text commands (Harkirat, 2026-10-30 18:20 EDT: "let's go C"): a typed command never delivers one itself, and never counts as a showing. When one is due for the person, the reply gets a New announcement button under it; pressing it shows it privately (handlers/announcementControls.js `ann_open`), and that press counts as one showing, the same as a slash command's. Added only after a reply went out, with the components the reply was sent with, and never past Discord's 40 components or 5 rows.
+async function addAnnouncementButton(interaction) {
+    const last = interaction?.__lastBody;
+    if (!interaction?.user?.id || !last || !interaction.__firstSentAt) return false;
+    const A = require('../utils/announcement');
+    if (!(await A.hasDueAnnouncement(interaction.user.id))) return false;
+    const comps = last.components || [];
+    const row = A.openButtonRow();
+    const v2 = typeof last.flags === 'number' && (last.flags & 32768) !== 0;
+    // Only a reply of 38 components or fewer takes the button (his rule, 2026-10-30 18:19 EDT: "It needs 38 or less"): the row and its button are 2 more, so it never reaches Discord's 40.
+    if (v2 ? A.measureComponents(comps).count > 38 : comps.length >= 5) return false;
+    await interaction.editReply({ components: [...comps, row] });
+    return true;
+}
+
 async function runTextCommand(message, verdict) {
     const textCommand = findTextCommand(verdict.command);
     if (!textCommand) return;
@@ -386,6 +401,7 @@ async function runTextCommand(message, verdict) {
             await command.execute(interaction);
             // "Dioreo User Since" and Your Stats count a text command as the person's own command, after it has run and never when it threw, the same as handlers/router.js's slash route (Harkirat, 2026-10-28 22:19 EDT: text commands should count).
             require('../utils/userStats').noteOwnCommandSafely(interaction);
+            addAnnouncementButton(interaction).catch(err => console.error('Could not add the New announcement button:', err?.message || err));
         } catch (err) {
             ctx.outcome = 'error';
             // A command that opens a form first cannot from a message: unreachable today (every such path has a text form), kept as a guard. The crash line is his #12 (B6, 2026-10-29 16:05 EDT): the Warn sign, the command as typed, gone after 10 s.
@@ -542,4 +558,4 @@ function registerTextCommands(client) {
     }, 10 * 60 * 1000).unref();
 }
 
-module.exports = { mentionReplyEmoji, registerTextCommands, enableMessageContentIfGranted, configuredPrefixes, onMessage, helpCard, didYouMeanCard, pickCard, cantPostCard, needsInputCard, couldntReadCard, noMatchLine, POPUP_TTL_MS };
+module.exports = { addAnnouncementButton, mentionReplyEmoji, registerTextCommands, enableMessageContentIfGranted, configuredPrefixes, onMessage, helpCard, didYouMeanCard, pickCard, cantPostCard, needsInputCard, couldntReadCard, noMatchLine, POPUP_TTL_MS };

@@ -29,7 +29,14 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.3.0 — 2026-10-30 17:44 EDT (#237) — Text commands: `@Dioreo today`, `d today`, `dior today`, per-server prefixes and the spam ladder
+## v3.3.1 — 2026-10-30 18:43 EDT (#238) — Text replies carry a New announcement button; `b` and `bd` for /gunsmith
+**From Harkirat, 2026-10-30:** "I just did \"d h\" and I didn't get the announcement", then option C, "Only auto announcements from a slash command trigger a repeat", "It needs 38 or less", and "is \"b\" available as an alias? if yes, add it to the mp gunsmith command. and bd for dmz".
+
+- **New announcement button** (`bot/textCommands.js`, `handlers/announcementControls.js`, `utils/announcement.js`): while an announcement is due for someone, their text reply gets a **New announcement** button. Pressing it shows the announcement privately and counts as one showing; text commands never count toward the repeat. Only a reply of 38 components or fewer (or under 5 rows) takes it.
+- **Aliases:** `b` runs `/gunsmith mp` and `bd` runs `/gunsmith dmz` (`utils/textCommands/commands.js`), and both show on their /help pages.
+- **Tests:** the listener test covers the button (nothing due, no reply, 38 vs 39 components); the parse test runs `b` and `bd` against the real word list; the /help snapshot is recaptured.
+
+## v3.3.0 — 2026-10-30 17:44 EDT (#237 · `b19232ae`) — Text commands: `@Dioreo today`, `d today`, `dior today`, per-server prefixes and the spam ladder
 **From Harkirat, 2026-10-28 to 2026-10-30:** text commands with `@Dioreo`, `d` and `dior`, typo-forgiving and public by default; then "we need a b6 to review and design/refine each of the newer panels/messages", per-server prefixes, a /admin on/off control, the spam ladder, "make it 1 only" for prefixes, draw images "linked to a draw", and the announcement layout marks.
 
 - **Text commands** (`bot/textCommands.js`, `utils/textCommands/**`, `handlers/textCommands.js`): a message that starts with `@Dioreo`, `d` or `dior` runs that command and answers in public, never pinging. Every public command has a typed form with aliases and value words (`d draws new`, `d gs ak117`, `d time fri 6pm`), typo-forgiving where the message clearly addresses Dioreo; reply-to forms; Did you mean, the pick-a-date card and its pop-up, the help card, the can't-post DM; a 5-second same-command and 1-second any-command limit. Intents gain `GuildMessages` and, where the app's flags allow it, `MessageContent`; no message is stored.

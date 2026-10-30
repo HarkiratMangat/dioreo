@@ -5,6 +5,27 @@ status: dead
 
 # ✅ Resolved list — closed items from the Dior's Builds deferred list
 
+## ✅ The text-commands announcement is posted on prod — closed 2026-10-30 18:24 EDT `[DONE · 2026-10-30 18:24 EDT]`
+
+Posted 2026-10-30 17:51 EDT right after v3.3.0 deployed (Harkirat, 2026-10-30 17:12 EDT: "go ahead and post the announcement after you merge as well ... the announcement is 2x repeat"), through `core/ops/announcements.js` on the VM: id `6ae5115ffdcc1343ce032a48`, accent `#6273EF`, repeat 2, expires 2026-12-29.
+
+- ✅ **DONE 2026-10-30 18:17 EDT: posted on prod 2026-10-30 17:51 EDT (id `6ae5115ffdcc1343ce032a48`, 2x repeat, `#6273EF`), right after v3.3.0 deployed.** `[P1 · XS]` **Post the text-commands announcement once text commands are live on prod.** *Filed 2026-10-30 16:21 EDT.* Harkirat's text, layout and accent `#6273EF` (his, 2026-10-30 16:20 EDT), rendered in #testing-spam (mock 5, `1565826860149907477`, through the real builder). **Uses the layout marks built below (`++` between the two boxes, `----` for the dividers):** the mention box and the `d help` box are two text boxes with no divider between them (his correction, 2026-10-30 16:22 EDT). Create it on prod only on his word at that time, through `/manage` announcements or the portal; `core/ops/announcements.js` accepts `payload.color`, so pass `0x6273EF` (6452207) rather than a random one. The text, prod emoji ids:
+
+```
+## <a:DioreoTada:1563677558589882510> Dioreo now supports text commands!
+----
+### <a:Command:1565523050982801468> Mention <@1491474871778021550>, or use **`d`** or **`dior`** as a prefix.
+-# **Example:**
+`@dioreo calendar`
+`d draws new`
+`dior build static hv`
+++
+-# Use **`d help`** to learn more!
+-# Text commands are for **server-install only**
+----
+-# Made with <a:diorHeart:1525941004929339594> by <@1139845545754632283> · Posted {posted}
+```
+
 ## ✅ The owner's /help Bot Admin page fits under 4,000 characters — closed 2026-10-29 09:29 EDT `[DONE · 2026-10-29 09:29 EDT]`
 
 Harkirat, 2026-10-29 09:29 EDT: "You can push the bot admin fix but push it to the text-command branch so it all merges as a collective pr", with a screenshot of two `/help` runs on Dioreo answering "There was an error executing this command!" (read as this overflow on prod; not confirmed from logs). The trim (`fix/help-botadmin-length`, moved onto `feat/text-commands`) takes the longest page from 4,038 to 3,694 characters with prod-length ids; `scripts/helpBodySnapshot.test.js` measures every page, plain and focused, and failed on the old page; `CHAR_EXEMPT` came out of `scripts/helpTextCommands.test.js`. Reaches prod with the text-commands PR and a deploy.
