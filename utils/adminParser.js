@@ -165,7 +165,7 @@ function parseBulkDrawList(bulkText) {
         parsedDraws.push({
             title: title,
             date: parsedDate,
-            // Null means "no URL given, resolve via Cloudinary cache lookup at save time" -- a bare Cloudinary key still gets expanded to a full URL here same as before; a real HTTP URL passes through untouched either way (resolveThumbnail re-uploads it into temp_draws/).
+            // Null means "no URL given, resolve via Cloudinary cache lookup at save time" -- a bare Cloudinary key still gets expanded to a full URL here same as before; a real HTTP URL passes through untouched either way (resolveThumbnail re-uploads it into draws/).
             thumbnailUrl: url ? (url.startsWith('http') ? url : `https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_auto/v1/${url}`) : null,
             items: items,
             // Only when tagged: Replace Multiple merges a parsed draw over the stored one (utils/bulkMerge.js's Object.assign), so an untagged line must not carry an empty type that would wipe a stored one.

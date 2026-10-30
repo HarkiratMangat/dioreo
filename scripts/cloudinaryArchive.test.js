@@ -80,19 +80,10 @@ async function t(name, fn) {
         assert.ok(!archive.isSameAsset('not a url', 'temp_draws/molten-fusion-draw'));
     });
 
-    await t('the draw prune moves unused thumbnails to archive/draws/ and deletes nothing', async () => {
-        const old = '2026-01-01T00:00:00Z';
-        resources = [
-            { public_id: 'temp_draws/in-use', created_at: old, secure_url: 'https://res.cloudinary.com/acct/image/upload/v1/temp_draws/in-use.jpg' },
-            { public_id: 'temp_draws/unused', created_at: old, secure_url: 'https://res.cloudinary.com/acct/image/upload/v1/temp_draws/unused.jpg' }
-        ];
-        existing = new Set(['temp_draws/in-use', 'temp_draws/unused']);
-        const result = await draws.pruneExpiredThumbnails(new Set(['https://res.cloudinary.com/acct/image/upload/f_auto,q_auto/v1/temp_draws/in-use.jpg']));
-        assert.strictEqual(result.archivedCount, 1);
-        assert.deepStrictEqual(calls.filter(c => c[0] === 'rename').map(c => c[1]), ['temp_draws/unused']);
-        assert.ok(calls.some(c => c[0] === 'update' && c[2].asset_folder === 'archive/draws'), 'filed in the archive/draws dashboard folder');
-        assert.ok(!kinds(calls).includes('delete_resources') && !kinds(calls).includes('destroy'), 'nothing deleted');
-        assert.ok(existing.has('temp_draws/in-use'), 'the in-use thumbnail stays');
+    await t('draw images are permanent: nothing prunes them and nothing archives them (his rule, 2026-10-30 16:02 EDT)', () => {
+        assert.strictEqual(draws.pruneExpiredThumbnails, undefined);
+        assert.strictEqual(draws.selectExpiredThumbnails, undefined);
+        assert.strictEqual(draws.FOLDER, 'draws');
     });
 
     await t('the patch-notes prune moves a deleted season\'s images to archive/patch_notes/', async () => {
@@ -114,20 +105,17 @@ async function t(name, fn) {
         assert.deepStrictEqual(moved, { archived: [], missing: ['calendar_banners/draws'], failed: [] });
     });
 
-    await t('replacing a draw thumbnail copies the old one to the archive before the upload', async () => {
-        existing = new Set(['temp_draws/molten-fusion-draw']);
+    await t('replacing a draw image overwrites it in place and keeps no copy', async () => {
+        existing = new Set(['draws/molten-fusion-draw']);
         const out = await draws.cacheThumbnail('Molten Fusion Draw', 'https://example.com/new.jpg');
         assert.ok(out.cached);
         const uploads = calls.filter(c => c[0] === 'upload');
-        assert.strictEqual(uploads.length, 2, 'one archive copy, one replacement');
-        assert.ok(uploads[0][2].startsWith('archive/draws/molten-fusion-draw-'), 'the copy comes first');
-        assert.strictEqual(uploads[0][1], 'https://res.cloudinary.com/acct/image/upload/v1/temp_draws/molten-fusion-draw.jpg', 'copied from the live image');
-        assert.strictEqual(uploads[1][2], 'temp_draws/molten-fusion-draw');
+        assert.deepStrictEqual(uploads.map(c => c[2]), ['draws/molten-fusion-draw'], 'one upload, same public_id, nothing under archive/');
     });
 
     await t('a first upload, or re-saving the same stored image, archives nothing', async () => {
         await draws.cacheThumbnail('Brand New Draw', 'https://example.com/a.jpg');
-        assert.deepStrictEqual(calls.filter(c => c[0] === 'upload').map(c => c[2]), ['temp_draws/brand-new-draw']);
+        assert.deepStrictEqual(calls.filter(c => c[0] === 'upload').map(c => c[2]), ['draws/brand-new-draw']);
         reset();
         existing = new Set(['patch_notes/p1/0']);
         await patches.cachePatchImage('p1', 0, 'https://res.cloudinary.com/acct/image/upload/f_auto,q_auto/v3/patch_notes/p1/0.webp');
@@ -144,11 +132,11 @@ async function t(name, fn) {
     });
 
     await t('a failed archive copy does not stop the replacement', async () => {
-        existing = new Set(['temp_draws/molten-fusion-draw']);
+        existing = new Set(['calendar_banners/draws']);
         failCopy = true;
-        const out = await draws.cacheThumbnail('Molten Fusion Draw', 'https://example.com/new.jpg');
+        const out = await banners.cacheBannerImage('draws', 'https://example.com/banner.png');
         assert.ok(out.cached, 'the admin\'s new image still saves');
-        assert.ok(calls.some(c => c[0] === 'upload' && c[2] === 'temp_draws/molten-fusion-draw'));
+        assert.ok(calls.some(c => c[0] === 'upload' && c[2] === 'calendar_banners/draws'));
     });
 
     console.error = silence;

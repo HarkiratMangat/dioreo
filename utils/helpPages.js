@@ -24,14 +24,14 @@ const valuesOf = (name, option) => (textCommandOf(name)?.options || []).find(o =
 const PAGE_NAMES = {
     '/gunsmith mp': 'MP Gunsmith', '/gunsmith dmz': 'DMZ Gunsmith', '/draws': 'Lucky Draws', '/draw prices': 'Lucky Draw Prices', '/draw calculator': 'Draw Calculator',
     '/today': 'Today', '/calendar': 'Calendar', '/remind': 'Reminders', '/season end': 'Season End', '/patch notes': 'Patch Notes',
-    '/timestamp': 'Timestamps', '/colors': 'Profile Colors', '/settings': 'Settings', '/invite': 'Invite Dioreo', '/admin': 'Server Settings',
+    '/timestamp': 'Timestamps', '/colors': 'Profile Colors', '/settings': 'Settings', '/invite': 'Invite Dioreo', '/prefix': 'Server Prefix', '/admin': 'Server Settings',
     '/manage': 'Manage Data', '/manage emojis': 'Emoji Manager', '/autobuild': 'Autobuild', '/bot': 'Bot Tools', '/embed': 'Embed Preview',
 };
 const PAGE_ORDER = Object.keys(PAGE_NAMES);
 const PAGE_ICON = {
     '/gunsmith mp': 'gunsmithSearch', '/gunsmith dmz': 'dmz', '/draws': 'newDraws', '/draw prices': 'drawPrices', '/draw calculator': 'calculator',
     '/today': 'dailyUpdate', '/calendar': 'calendar', '/remind': 'remind', '/season end': 'bp', '/patch notes': 'patchNotes',
-    '/timestamp': 'timestamp', '/colors': 'showColors', '/settings': 'settings', '/invite': 'shareHeart', '/admin': 'serverSettings',
+    '/timestamp': 'timestamp', '/colors': 'showColors', '/settings': 'settings', '/invite': 'shareHeart', '/prefix': 'command', '/admin': 'serverSettings',
     '/manage': 'database', '/manage emojis': 'swatches', '/autobuild': 'gunsmithCode', '/bot': 'botAccess', '/embed': 'edit',
 };
 // /season end wears the live season's own emoji (his call, 2026-10-29 22:55 EDT); /manage emojis its DB_Emojis where the app has it.
@@ -73,6 +73,24 @@ const PAGES = {
             return x.view === 'text'
                 ? { boxes: [shows], examples: [[`${x.p} invite`, 'The invite panel'], [`${x.p} link`, 'The same']] }
                 : { boxes: [VIS_PUBLIC, shows], examples: [['/invite'], ['/invite visibility:Hidden']] };
+        },
+    },
+    // TEXT ONLY (`textOnly`): there is no slash command, so the page is the typed view in both views and has no Slash Command button (his ask, 2026-10-30 16:02 EDT: "create a new /help page for prefix").
+    '/prefix': {
+        blurb: "See the prefix your server uses, or change it if you're a server admin",
+        textOnly: true,
+        page(x) {
+            const { REMOVE_WORDS, MAX_LENGTH, MAX_PREFIXES, configuredPrefixes, prefixParts } = require('./textCommands/server');
+            const back = prefixParts().replaceable || configuredPrefixes()[0] || 'd';
+            return {
+                args: '[new prefix|remove]',
+                boxes: [
+                    text(`**See it**\n-# Anyone can ask which prefix this server uses\n> -# ${dot([`${x.p} prefix`, `${x.p} pre`])}`),
+                    text(`**Change it** *(server admins)*\n-# Needs **Manage Server**. Anyone else is just shown the prefix\n> -# **Set**  ${code(`${x.p} prefix !`)}\n> -# **Put ${code(back)} back**  ${dot(REMOVE_WORDS)}`),
+                    text(`**Good to know**\n> -# Your prefix takes ${code(back)}'s place; ${code('dior')} and **@Dioreo** always work\n> -# Up to ${MAX_LENGTH} characters, no spaces. The panel can set up to ${MAX_PREFIXES}\n> -# ${dot(REMOVE_WORDS)} can't be a prefix: they put it back\n> -# **Edit Prefix** in ${emojis.serverSettings || ''} /admin → Config Text Commands does the same`),
+                ],
+                examples: [[`${x.p} prefix`, "This server's prefix"], [`${x.p} pre !`, 'Set it to ! (admins)'], [`${x.p} prefix reset`, `Back to ${back} (admins)`]],
+            };
         },
     },
     '/remind': {
@@ -354,7 +372,7 @@ function buildPage(name, { client, view, detail = false, canSwitch = false, seas
             }) }] };
         }
     }
-    const typed = view === 'text';
+    const typed = view === 'text' || Boolean(def.textOnly);
     const p = firstPrefix(client, prefixes);
     const part = def.page({ client, p, view, detail });
     const tc = textCommandOf(name);
@@ -362,7 +380,7 @@ function buildPage(name, { client, view, detail = false, canSwitch = false, seas
         ? text(`### ${code(`${p} ${tc.helpWord}${part.args ? ` ${part.args}` : ''}`)}\n${dot(tc.shown || [])}${part.usageExtra || ''}`)
         : text(`### ${slashMention(client, usageName)}${part.usageNote ? `\n${part.usageNote}` : ''}`);
     const buttons = [];
-    if (canSwitch) buttons.push({ type: 2, style: 2, label: typed ? 'Slash Command' : 'Text Command', custom_id: `help_view~${typed ? 'slash' : 'text'}~${name}`, ...emojiField('command') });
+    if (canSwitch && !def.textOnly) buttons.push({ type: 2, style: 2, label: typed ? 'Slash Command' : 'Text Command', custom_id: `help_view~${typed ? 'slash' : 'text'}~${name}`, ...emojiField('command') });
     buttons.push(...(part.buttons || []));
     const out = [text(`## ${icon} ${title}\n-# ${def.blurb}`), ...(picker ? [picker] : []), line(2), usage, ...(part.boxes || [])];
     if (buttons.length) out.push({ type: 1, components: buttons });
@@ -376,7 +394,7 @@ function buildPage(name, { client, view, detail = false, canSwitch = false, seas
 }
 
 // The home page, his approved layout (2026-10-29 23:52 EDT): today's hero, links and sign-off; the #1 card's four groups in short words (typed) or as mentions (slash); a Text commands line and its button where typed forms work.
-const HOME_GROUPS = [['gunsmithSearch', 'Gunsmith', ['gunsmith', 'dmz'], ['/gunsmith mp', '/gunsmith dmz']], ['newDraws', 'Draws', ['draws', 'prices', 'calculator'], ['/draws', '/draw prices', '/draw calculator']], ['calendar', 'Season', ['today', 'calendar', 'remind', 'patch notes', 'end'], ['/today', '/calendar', '/remind', '/patch notes', '/season end']], ['eyedropper', 'Utilities', ['timestamp', 'colors', 'settings', 'invite', 'help'], ['/timestamp', '/colors', '/settings', '/invite', '/help']]];
+const HOME_GROUPS = [['gunsmithSearch', 'Gunsmith', ['gunsmith', 'dmz'], ['/gunsmith mp', '/gunsmith dmz']], ['newDraws', 'Draws', ['draws', 'prices', 'calculator'], ['/draws', '/draw prices', '/draw calculator']], ['calendar', 'Season', ['today', 'calendar', 'remind', 'patch notes', 'end'], ['/today', '/calendar', '/remind', '/patch notes', '/season end']], ['eyedropper', 'Utilities', ['timestamp', 'colors', 'settings', 'invite', 'prefix', 'help'], ['/timestamp', '/colors', '/settings', '/invite', '/help']]];
 function buildHome({ client, view, canSwitch, hero, adminNames = [], prefixes = null }) {
     const typed = view === 'text';
     const p = firstPrefix(client, prefixes);
@@ -405,7 +423,9 @@ function buildSwitcher({ names, current = null, view, client, seasonEmoji = null
     for (const name of names.slice(0, 24)) {
         const tc = hasTextView(name) ? textCommandOf(name) : null;
         const emoji = emojis.parseEmoji(pageIcon(name, seasonEmoji) || '');
-        options.push({ label: typed && tc ? PAGE_NAMES[name] : name, value: name, description: typed && tc ? `${p} ${tc.helpWord}` : PAGE_NAMES[name], default: name === current, ...(emoji ? { emoji } : {}) });
+        // A text-only page has no slash name to show, so it reads as its typed word on both views.
+        const asTyped = tc && (typed || PAGES[name]?.textOnly);
+        options.push({ label: asTyped ? PAGE_NAMES[name] : name, value: name, description: asTyped ? `${p} ${tc.helpWord}` : PAGE_NAMES[name], default: name === current, ...(emoji ? { emoji } : {}) });
     }
     return { type: 1, components: [{ type: 3, custom_id: typed ? 'help_command~text' : 'help_command', placeholder: 'Jump to a command…', options }] };
 }

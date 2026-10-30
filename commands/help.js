@@ -290,10 +290,10 @@ async function currentSeasonEmoji() {
 
 // The pages this viewer may open, in the switcher's order (utils/helpPages.js PAGE_ORDER): what CATEGORY_DEFS lets them see, so a restricted command is hidden from the page, the switcher and `cmd:` alike.
 function visiblePageNames(perms = {}) {
-    const { PAGE_ORDER, hasPage } = require('../utils/helpPages');
+    const { PAGE_ORDER, PAGES, hasPage } = require('../utils/helpPages');
     const seen = new Set(searchEntries(perms).filter(e => !e.app).map(e => e.name));
-    // /bot is one page for its subcommands (2026-10-30 14:05 EDT): shown when any of them is.
-    return PAGE_ORDER.filter(n => (seen.has(n) || (n === '/bot' && visibleBotSubs(perms).length)) && hasPage(n));
+    // /bot is one page for its subcommands (2026-10-30 14:05 EDT): shown when any of them is. A text-only page (`/prefix`) has no slash command to be hidden, so everyone sees it.
+    return PAGE_ORDER.filter(n => hasPage(n) && (seen.has(n) || PAGES[n].textOnly || (n === '/bot' && visibleBotSubs(perms).length)));
 }
 // The /bot subcommands this viewer may open, in the page's dropdown order.
 function visibleBotSubs(perms = {}) {
@@ -342,7 +342,8 @@ function homeHero(client) {
 async function buildHelpMessage({ perms = {}, client, accentColor = PRESET_ACCENT, cmd = null, view = 'slash', detail = false, typedForms = true, prefixes = null } = {}) {
     const H = require('../utils/helpPages');
     const seasonEmoji = await currentSeasonEmoji();
-    const names = visiblePageNames(perms);
+    // A text-only page (`/prefix`) is a typed form, so where typed forms do nothing (a DM, a server Dioreo is not in) it is not offered.
+    const names = visiblePageNames(perms).filter(n => typedForms || !H.PAGES[n]?.textOnly);
     const botSubs = visibleBotSubs(perms);
     let sub = null;
     if (cmd && botSubs.includes(cmd)) { sub = cmd; cmd = '/bot'; }

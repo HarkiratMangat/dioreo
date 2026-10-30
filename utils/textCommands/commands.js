@@ -116,6 +116,8 @@ const TEXT_COMMANDS = [
     // `d colors @name`, or `d colors` sent as a reply, shows THAT person's colours through the View Colors right-click's own code.
     { name: 'colors', helpWord: 'colors', shown: ['colours', 'col', 'palette', 'accent'], icon: 'showColors', slash: 'colors', words: ['colors', 'colours', 'col', 'palette', 'accent'], replyForm: 'viewColors', options: [{ name: 'someone', keys: ['someone', 'user'], mention: true, example: '@name' }] },
     { name: 'settings', helpWord: 'settings', shown: ['s', 'set', 'opt', 'pref', 'config', 'options', 'preferences'], icon: 'settings', slash: 'settings', words: ['settings', 'set', 'config', 'options', 'opt', 'pref', 'preferences', 's'] },
+    // `d prefix` shows the server's prefix to anyone; `d prefix <new>` / `d prefix remove` change it for a server admin (his ask, 2026-10-30 16:02 EDT). TEXT ONLY: no slash command exists (`textOnly`), and the words after it are read by utils/textCommands/prefixCommand.js, not args.js (`rawArgs`), so parse.js hands them over as they were typed.
+    { name: 'prefix', helpWord: 'prefix', shown: ['pre'], icon: 'command', slash: 'prefix', textOnly: true, rawArgs: true, words: ['prefix', 'pre', 'prefixes'] },
     { name: 'help', icon: 'info', slash: 'help', words: ['help', 'h', 'commands', 'cmds', 'info', '?', 'guide'] },
     { name: 'invite', helpWord: 'invite', shown: ['inv', 'add', 'link'], icon: 'shareHeart', slash: 'invite', words: ['invite', 'inv', 'add', 'link'] },
 ];

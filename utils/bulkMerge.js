@@ -6,7 +6,8 @@ const { fuzzyMatch } = require('./search');
 
 // Resolves (and Cloudinary-caches) a thumbnail for every parsed item, dropping anything that has neither a provided URL nor a cache hit. Named "ForDraws" for historical reasons — it is shape- agnostic (title + thumbnailUrl) and used identically for calendar/patch-note assets too.
 async function resolveThumbnailsForDraws(draws) {
-    const results = await Promise.all(draws.map(d => resolveThumbnail(d.title, d.thumbnailUrl)));
+    // items + price type let a renamed draw find its image by what it contains (utils/cloudinaryCache.js); a calendar or patch-note item has neither and matches by title as before.
+    const results = await Promise.all(draws.map(d => resolveThumbnail(d.title, d.thumbnailUrl, d.items ? { items: d.items, priceType: d.priceType || '' } : null)));
     const validDraws = [];
     const skipped = [];
     const warnings = [];
@@ -19,7 +20,7 @@ async function resolveThumbnailsForDraws(draws) {
         draw.thumbnailUrl = result.url;
         validDraws.push(draw);
         if (result.error) warnings.push(`${draw.title} (${result.error})`);
-        else if (result.reused && result.matchedTitle) warnings.push(`${draw.title} (thumbnail reused from a similarly-named cached draw: "${result.matchedTitle}")`);
+        else if (result.reused && result.matchedTitle) warnings.push(`${draw.title} (thumbnail reused from ${result.matchedBy === 'items' ? 'the cached draw with the same items' : 'a similarly-named cached draw'}: "${result.matchedTitle}")`);
     });
     return { validDraws, skipped, warnings };
 }

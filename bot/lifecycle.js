@@ -11,28 +11,18 @@ const { Events } = require('discord.js');
 const { version: BOT_VERSION } = require('../package.json');
 const { sendAlert } = require('../utils/alertWebhook');
 const { createGatewayRecovery } = require('../utils/gatewayRecovery');
-const { pruneExpiredThumbnails } = require('../utils/cloudinaryCache');
 const { pruneOrphanedPatchFolders } = require('../utils/patchNotesCache');
 const { registerApplicationCommands } = require('./registry');
 
-// --- DRAW THUMBNAIL CLOUDINARY CACHE: SCHEDULED CLEANUP (2026-07-12) --- Cloudinary has no native per-asset TTL (confirmed against the current cloudinary_npm docs before building this feature) -- so "auto-expire after 45 days" only happens because THIS runs on a schedule, not because Cloudinary does it on its own. Archives (moves to archive/draws/, never deletes -- 2026-10-21) only assets that are BOTH 45+ days old AND no longer referenced by any current draw (Harkirat's confirmed rule), so a long-lived draw's cached image is never at risk just because it's been up a while. Wrapped in its own try/catch since this runs unawaited from the ClientReady handler below and then every 24 h -- a failure here must never be able to crash the bot (matches the crash-resilience convention documented in CLAUDE.md).
+// --- CLOUDINARY CLEANUP (patch notes only since 2026-10-30 16:17 EDT) --- Draw images are permanent now (Harkirat: they "will remain forever in a draws/ folder"), so there is no 45-day draw prune and nothing is archived to archive/draws/ any more: utils/cloudinaryCache.js overwrites a replaced image in place. Cloudinary has no native per-asset TTL, so the only cleanup left is the patch-notes one below, which this runs on boot and then every 24 h. Wrapped in its own try/catch since this runs unawaited from the ClientReady handler and a failure here must never be able to crash the bot (matches the crash-resilience convention documented in CLAUDE.md).
 async function runCloudinaryCleanup() {
     try {
         const SeasonalData = require('../models/SeasonalData');
         const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
-        // 🔴 NO DOCUMENT, NO PRUNE (2026-10-20, v3 sweep). Both keep-sets below are built from this document, so a missing one (a fresh database, a failed read that returned null) used to hand the pruners EMPTY keep-sets -- every thumbnail over 45 days old and every patch-notes folder would have been deleted as "unreferenced". Skipping one daily pass costs nothing.
+        // 🔴 NO DOCUMENT, NO PRUNE (2026-10-20, v3 sweep). The keep-set below is built from this document, so a missing one (a fresh database, a failed read that returned null) used to hand the pruner an EMPTY keep-set -- every patch-notes folder would have been archived as "unreferenced".
         if (!seasonalDoc) {
             console.warn('🧹 Cloudinary cleanup skipped: no global SeasonalData document to tell in-use images from unused ones.');
             return;
-        }
-        const currentUrls = new Set([
-            ...(seasonalDoc?.newDraws || []).map(d => d.thumbnailUrl),
-            ...(seasonalDoc?.returningDraws || []).map(d => d.thumbnailUrl)
-        ]);
-
-        const result = await pruneExpiredThumbnails(currentUrls);
-        if (result.archivedCount > 0) {
-            console.log(`🧹 Cloudinary cleanup: archived ${result.archivedCount} expired, unused draw thumbnail(s) to archive/draws/.`);
         }
 
         // PATCH NOTES: every season stays reachable now (2026-10-19 00:30 EDT, Harkirat, superseding "only the previous 5": the dropdown lists 12 and search finds the rest), so every entry's images are kept. Only a folder whose patch note entry was deleted is pruned -- see utils/patchNotesCache.js.
@@ -42,7 +32,7 @@ async function runCloudinaryCleanup() {
             console.log(`🧹 Cloudinary cleanup: archived ${patchResult.archivedCount} patch-notes image(s) from deleted seasons to archive/patch_notes/.`);
         }
     } catch (error) {
-        // SECURITY: never fall back to logging the raw `error` object here -- a Cloudinary error's shape can carry the account's API key/secret in a nested `request_options.auth` field (see utils/cloudinaryCache.js's safeErrorMessage note). This should be unreachable in practice now (pruneExpiredThumbnails sanitizes everything it catches internally), but this is the last line of defense for a SeasonalData/Mongoose error from the same block, so it stays just as strict rather than assuming the callee always behaves.
+        // SECURITY: never fall back to logging the raw `error` object here -- a Cloudinary error's shape can carry the account's API key/secret in a nested `request_options.auth` field (see utils/cloudinaryCache.js's safeErrorMessage note). This should be unreachable in practice now (pruneOrphanedPatchFolders sanitizes everything it catches internally), but this is the last line of defense for a SeasonalData/Mongoose error from the same block, so it stays just as strict rather than assuming the callee always behaves.
         console.error(`Cloudinary cleanup pass failed (bot stays alive): ${error?.message || 'Unknown error'}`);
     }
 }

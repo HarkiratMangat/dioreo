@@ -357,11 +357,15 @@ async function formTargets(message, form, values) {
 async function runTextCommand(message, verdict) {
     const textCommand = findTextCommand(verdict.command);
     if (!textCommand) return;
-    const { name: moduleName, command } = moduleFor(message.client, textCommand, verdict.form);
+    // A text-only command (`prefix`) has no slash module: utils/textCommands/prefixCommand.js answers through the same text interaction, and there is no Integrations override to look up for a command Discord does not know.
+    const textOnly = Boolean(textCommand.textOnly);
+    const { name: moduleName, command } = textOnly
+        ? { name: textCommand.slash, command: { execute: i => require('../utils/textCommands/prefixCommand').execute(i, verdict.args || '') } }
+        : moduleFor(message.client, textCommand, verdict.form);
     if (!command) return;
     const t = { start: Date.now() };
     // The server's own Integrations switches for this command (his call, 2026-10-28 17:52 EDT). Denied → silent, the same as the slash command simply not being there for this member. A reply form is checked as the right-click it runs.
-    if (!(await textCommandAllowed({ client: message.client, guildId: message.guildId, member: message.member, userId: message.author.id, channel: message.channel }, moduleName))) return;
+    if (!textOnly && !(await textCommandAllowed({ client: message.client, guildId: message.guildId, member: message.member, userId: message.author.id, channel: message.channel }, moduleName))) return;
     t.perms = Date.now();
     const targets = await formTargets(message, verdict.form, verdict.values || {});
     if (!targets) return;

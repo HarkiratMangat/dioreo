@@ -83,7 +83,7 @@
           },
           {
             "type": 10,
-            "content": "**<a:Eyedropper:1526293991166054541> Utilities**\n`timestamp` · `colors` · `settings` · `invite` · `help`"
+            "content": "**<a:Eyedropper:1526293991166054541> Utilities**\n`timestamp` · `colors` · `settings` · `invite` · `prefix` · `help`"
           },
           {
             "type": 10,
@@ -287,6 +287,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               }
             ]
@@ -587,6 +598,17 @@
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
                 }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
               }
             ]
           }
@@ -850,6 +872,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               }
             ]
@@ -1115,6 +1148,17 @@
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
                 }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
               }
             ]
           }
@@ -1378,6 +1422,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               }
             ]
@@ -1643,6 +1698,17 @@
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
                 }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
               }
             ]
           }
@@ -1877,6 +1943,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               }
             ]
@@ -2116,6 +2193,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               }
             ]
@@ -2363,6 +2451,17 @@
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
                 }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
               }
             ]
           }
@@ -2601,6 +2700,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               }
             ]
@@ -2843,6 +2953,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               }
             ]
@@ -3090,6 +3211,17 @@
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
                 }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
               }
             ]
           }
@@ -3329,6 +3461,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               }
             ]
@@ -3574,6 +3717,17 @@
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
                 }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
               }
             ]
           }
@@ -3812,6 +3966,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               }
             ]
@@ -4056,6 +4221,17 @@
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
                 }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
               }
             ]
           }
@@ -4299,6 +4475,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               }
             ]
@@ -4556,6 +4743,17 @@
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
                 }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
               }
             ]
           }
@@ -4795,6 +4993,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               }
             ]
@@ -5040,6 +5249,17 @@
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
                 }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
               }
             ]
           }
@@ -5274,6 +5494,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               }
             ]
@@ -5513,6 +5744,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               }
             ]
@@ -5761,6 +6003,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               }
             ]
@@ -6018,6 +6271,17 @@
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
                 }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
               }
             ]
           }
@@ -6261,6 +6525,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               }
             ]
@@ -6514,6 +6789,17 @@
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
                 }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
               }
             ]
           }
@@ -6748,6 +7034,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               }
             ]
@@ -6992,6 +7289,17 @@
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
                 }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
               }
             ]
           }
@@ -7222,6 +7530,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               }
             ]
@@ -7457,6 +7776,485 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "/prefix text": [
+      {
+        "type": 17,
+        "accent_color": 16743772,
+        "components": [
+          {
+            "type": 10,
+            "content": "## <a:Command:1565523050982801468> Server Prefix\n-# See the prefix your server uses, or change it if you're a server admin"
+          },
+          {
+            "type": 14,
+            "spacing": 2,
+            "divider": true
+          },
+          {
+            "type": 10,
+            "content": "### `d prefix [new prefix|remove]`\n`pre`"
+          },
+          {
+            "type": 10,
+            "content": "**See it**\n-# Anyone can ask which prefix this server uses\n> -# `d prefix` · `d pre`"
+          },
+          {
+            "type": 10,
+            "content": "**Change it** *(server admins)*\n-# Needs **Manage Server**. Anyone else is just shown the prefix\n> -# **Set**  `d prefix !`\n> -# **Put `d` back**  `remove` · `reset` · `erase` · `default` · `delete`"
+          },
+          {
+            "type": 10,
+            "content": "**Good to know**\n> -# Your prefix takes `d`'s place; `dior` and **@Dioreo** always work\n> -# Up to 6 characters, no spaces. The panel can set up to 3\n> -# `remove` · `reset` · `erase` · `default` · `delete` can't be a prefix: they put it back\n> -# **Edit Prefix** in <a:ServerSettings:1536468904996774008> /admin → Config Text Commands does the same"
+          },
+          {
+            "type": 14,
+            "spacing": 1,
+            "divider": true
+          },
+          {
+            "type": 10,
+            "content": "-# **Examples**\n-# `d prefix`  This server's prefix\n-# `d pre !`  Set it to ! (admins)\n-# `d prefix reset`  Back to d (admins)"
+          },
+          {
+            "type": 10,
+            "content": "-# Usage: `d cmd <required> [optional]`"
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 3,
+            "custom_id": "help_command~text",
+            "placeholder": "Jump to a command…",
+            "options": [
+              {
+                "label": "All commands",
+                "value": "landing",
+                "description": "Back to the list of every command",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DioreoComboCoral",
+                  "id": "1565359721790177371"
+                }
+              },
+              {
+                "label": "MP Gunsmith",
+                "value": "/gunsmith mp",
+                "description": "d gunsmith",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "GunsmithSearch",
+                  "id": "1564113024225255454"
+                }
+              },
+              {
+                "label": "DMZ Gunsmith",
+                "value": "/gunsmith dmz",
+                "description": "d dmz",
+                "default": false,
+                "emoji": {
+                  "animated": false,
+                  "name": "DMZ_CODM",
+                  "id": "1523190115319549963"
+                }
+              },
+              {
+                "label": "Lucky Draws",
+                "value": "/draws",
+                "description": "d draws",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "NewDraws",
+                  "id": "1523837409211453613"
+                }
+              },
+              {
+                "label": "Lucky Draw Prices",
+                "value": "/draw prices",
+                "description": "d price",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DrawPrices",
+                  "id": "1525864071776305163"
+                }
+              },
+              {
+                "label": "Draw Calculator",
+                "value": "/draw calculator",
+                "description": "d calculator",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DrawCalc",
+                  "id": "1560743128934256680"
+                }
+              },
+              {
+                "label": "Today",
+                "value": "/today",
+                "description": "d today",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DailyUpdate",
+                  "id": "1563415690738802690"
+                }
+              },
+              {
+                "label": "Calendar",
+                "value": "/calendar",
+                "description": "d calendar",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Calendar",
+                  "id": "1523762208050385107"
+                }
+              },
+              {
+                "label": "Reminders",
+                "value": "/remind",
+                "description": "d remind",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Remind",
+                  "id": "1563677560431452180"
+                }
+              },
+              {
+                "label": "Season End",
+                "value": "/season end",
+                "description": "d end",
+                "default": false,
+                "emoji": {
+                  "animated": false,
+                  "name": "BP_CODM",
+                  "id": "1523190108386365470"
+                }
+              },
+              {
+                "label": "Patch Notes",
+                "value": "/patch notes",
+                "description": "d patch notes",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "PatchNotes",
+                  "id": "1523762216954888286"
+                }
+              },
+              {
+                "label": "Timestamps",
+                "value": "/timestamp",
+                "description": "d timestamp",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Timestamps",
+                  "id": "1523762211103969420"
+                }
+              },
+              {
+                "label": "Profile Colors",
+                "value": "/colors",
+                "description": "d colors",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "ShowColors",
+                  "id": "1537280503105847486"
+                }
+              },
+              {
+                "label": "Settings",
+                "value": "/settings",
+                "description": "d settings",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Settings",
+                  "id": "1523762203537309696"
+                }
+              },
+              {
+                "label": "Invite Dioreo",
+                "value": "/invite",
+                "description": "d invite",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "ShareHeart",
+                  "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": true,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "/prefix slash": [
+      {
+        "type": 17,
+        "accent_color": 16743772,
+        "components": [
+          {
+            "type": 10,
+            "content": "## <a:Command:1565523050982801468> Server Prefix\n-# See the prefix your server uses, or change it if you're a server admin"
+          },
+          {
+            "type": 14,
+            "spacing": 2,
+            "divider": true
+          },
+          {
+            "type": 10,
+            "content": "### `d prefix [new prefix|remove]`\n`pre`"
+          },
+          {
+            "type": 10,
+            "content": "**See it**\n-# Anyone can ask which prefix this server uses\n> -# `d prefix` · `d pre`"
+          },
+          {
+            "type": 10,
+            "content": "**Change it** *(server admins)*\n-# Needs **Manage Server**. Anyone else is just shown the prefix\n> -# **Set**  `d prefix !`\n> -# **Put `d` back**  `remove` · `reset` · `erase` · `default` · `delete`"
+          },
+          {
+            "type": 10,
+            "content": "**Good to know**\n> -# Your prefix takes `d`'s place; `dior` and **@Dioreo** always work\n> -# Up to 6 characters, no spaces. The panel can set up to 3\n> -# `remove` · `reset` · `erase` · `default` · `delete` can't be a prefix: they put it back\n> -# **Edit Prefix** in <a:ServerSettings:1536468904996774008> /admin → Config Text Commands does the same"
+          },
+          {
+            "type": 14,
+            "spacing": 1,
+            "divider": true
+          },
+          {
+            "type": 10,
+            "content": "-# **Examples**\n-# `d prefix`  This server's prefix\n-# `d pre !`  Set it to ! (admins)\n-# `d prefix reset`  Back to d (admins)"
+          },
+          {
+            "type": 10,
+            "content": "-# Usage: `d cmd <required> [optional]`"
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 3,
+            "custom_id": "help_command",
+            "placeholder": "Jump to a command…",
+            "options": [
+              {
+                "label": "All commands",
+                "value": "landing",
+                "description": "Back to the list of every command",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DioreoComboCoral",
+                  "id": "1565359721790177371"
+                }
+              },
+              {
+                "label": "/gunsmith mp",
+                "value": "/gunsmith mp",
+                "description": "MP Gunsmith",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "GunsmithSearch",
+                  "id": "1564113024225255454"
+                }
+              },
+              {
+                "label": "/gunsmith dmz",
+                "value": "/gunsmith dmz",
+                "description": "DMZ Gunsmith",
+                "default": false,
+                "emoji": {
+                  "animated": false,
+                  "name": "DMZ_CODM",
+                  "id": "1523190115319549963"
+                }
+              },
+              {
+                "label": "/draws",
+                "value": "/draws",
+                "description": "Lucky Draws",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "NewDraws",
+                  "id": "1523837409211453613"
+                }
+              },
+              {
+                "label": "/draw prices",
+                "value": "/draw prices",
+                "description": "Lucky Draw Prices",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DrawPrices",
+                  "id": "1525864071776305163"
+                }
+              },
+              {
+                "label": "/draw calculator",
+                "value": "/draw calculator",
+                "description": "Draw Calculator",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DrawCalc",
+                  "id": "1560743128934256680"
+                }
+              },
+              {
+                "label": "/today",
+                "value": "/today",
+                "description": "Today",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DailyUpdate",
+                  "id": "1563415690738802690"
+                }
+              },
+              {
+                "label": "/calendar",
+                "value": "/calendar",
+                "description": "Calendar",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Calendar",
+                  "id": "1523762208050385107"
+                }
+              },
+              {
+                "label": "/remind",
+                "value": "/remind",
+                "description": "Reminders",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Remind",
+                  "id": "1563677560431452180"
+                }
+              },
+              {
+                "label": "/season end",
+                "value": "/season end",
+                "description": "Season End",
+                "default": false,
+                "emoji": {
+                  "animated": false,
+                  "name": "BP_CODM",
+                  "id": "1523190108386365470"
+                }
+              },
+              {
+                "label": "/patch notes",
+                "value": "/patch notes",
+                "description": "Patch Notes",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "PatchNotes",
+                  "id": "1523762216954888286"
+                }
+              },
+              {
+                "label": "/timestamp",
+                "value": "/timestamp",
+                "description": "Timestamps",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Timestamps",
+                  "id": "1523762211103969420"
+                }
+              },
+              {
+                "label": "/colors",
+                "value": "/colors",
+                "description": "Profile Colors",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "ShowColors",
+                  "id": "1537280503105847486"
+                }
+              },
+              {
+                "label": "/settings",
+                "value": "/settings",
+                "description": "Settings",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Settings",
+                  "id": "1523762203537309696"
+                }
+              },
+              {
+                "label": "/invite",
+                "value": "/invite",
+                "description": "Invite Dioreo",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "ShareHeart",
+                  "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": true,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               }
             ]
@@ -7716,6 +8514,17 @@
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
                 }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
               }
             ]
           }
@@ -7807,7 +8616,7 @@
           },
           {
             "type": 10,
-            "content": "**<a:Eyedropper:1526293991166054541> Utilities**\n`timestamp` · `colors` · `settings` · `invite` · `help`"
+            "content": "**<a:Eyedropper:1526293991166054541> Utilities**\n`timestamp` · `colors` · `settings` · `invite` · `prefix` · `help`"
           },
           {
             "type": 10,
@@ -8015,6 +8824,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -8332,6 +9152,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/admin",
                 "value": "/admin",
                 "description": "Server Settings",
@@ -8604,6 +9435,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -8882,6 +9724,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/admin",
                 "value": "/admin",
                 "description": "Server Settings",
@@ -9154,6 +10007,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -9432,6 +10296,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/admin",
                 "value": "/admin",
                 "description": "Server Settings",
@@ -9675,6 +10550,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -9925,6 +10811,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -10185,6 +11082,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/admin",
                 "value": "/admin",
                 "description": "Server Settings",
@@ -10432,6 +11340,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -10685,6 +11604,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -10945,6 +11875,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/admin",
                 "value": "/admin",
                 "description": "Server Settings",
@@ -11193,6 +12134,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -11451,6 +12403,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/admin",
                 "value": "/admin",
                 "description": "Server Settings",
@@ -11698,6 +12661,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -11955,6 +12929,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/admin",
                 "value": "/admin",
                 "description": "Server Settings",
@@ -12207,6 +13192,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -12477,6 +13473,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/admin",
                 "value": "/admin",
                 "description": "Server Settings",
@@ -12725,6 +13732,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -12983,6 +14001,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/admin",
                 "value": "/admin",
                 "description": "Server Settings",
@@ -13226,6 +14255,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -13476,6 +14516,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -13735,6 +14786,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -14005,6 +15067,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/admin",
                 "value": "/admin",
                 "description": "Server Settings",
@@ -14257,6 +15330,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -14523,6 +15607,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/admin",
                 "value": "/admin",
                 "description": "Server Settings",
@@ -14766,6 +15861,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -15023,6 +16129,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/admin",
                 "value": "/admin",
                 "description": "Server Settings",
@@ -15262,6 +16379,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -15508,6 +16636,507 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
+                "label": "/admin",
+                "value": "/admin",
+                "description": "Server Settings",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "ServerSettings",
+                  "id": "1536468904996774008"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "/prefix text": [
+      {
+        "type": 17,
+        "accent_color": 16743772,
+        "components": [
+          {
+            "type": 10,
+            "content": "## <a:Command:1565523050982801468> Server Prefix\n-# See the prefix your server uses, or change it if you're a server admin"
+          },
+          {
+            "type": 14,
+            "spacing": 2,
+            "divider": true
+          },
+          {
+            "type": 10,
+            "content": "### `d prefix [new prefix|remove]`\n`pre`"
+          },
+          {
+            "type": 10,
+            "content": "**See it**\n-# Anyone can ask which prefix this server uses\n> -# `d prefix` · `d pre`"
+          },
+          {
+            "type": 10,
+            "content": "**Change it** *(server admins)*\n-# Needs **Manage Server**. Anyone else is just shown the prefix\n> -# **Set**  `d prefix !`\n> -# **Put `d` back**  `remove` · `reset` · `erase` · `default` · `delete`"
+          },
+          {
+            "type": 10,
+            "content": "**Good to know**\n> -# Your prefix takes `d`'s place; `dior` and **@Dioreo** always work\n> -# Up to 6 characters, no spaces. The panel can set up to 3\n> -# `remove` · `reset` · `erase` · `default` · `delete` can't be a prefix: they put it back\n> -# **Edit Prefix** in <a:ServerSettings:1536468904996774008> /admin → Config Text Commands does the same"
+          },
+          {
+            "type": 14,
+            "spacing": 1,
+            "divider": true
+          },
+          {
+            "type": 10,
+            "content": "-# **Examples**\n-# `d prefix`  This server's prefix\n-# `d pre !`  Set it to ! (admins)\n-# `d prefix reset`  Back to d (admins)"
+          },
+          {
+            "type": 10,
+            "content": "-# Usage: `d cmd <required> [optional]`"
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 3,
+            "custom_id": "help_command~text",
+            "placeholder": "Jump to a command…",
+            "options": [
+              {
+                "label": "All commands",
+                "value": "landing",
+                "description": "Back to the list of every command",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DioreoComboCoral",
+                  "id": "1565359721790177371"
+                }
+              },
+              {
+                "label": "MP Gunsmith",
+                "value": "/gunsmith mp",
+                "description": "d gunsmith",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "GunsmithSearch",
+                  "id": "1564113024225255454"
+                }
+              },
+              {
+                "label": "DMZ Gunsmith",
+                "value": "/gunsmith dmz",
+                "description": "d dmz",
+                "default": false,
+                "emoji": {
+                  "animated": false,
+                  "name": "DMZ_CODM",
+                  "id": "1523190115319549963"
+                }
+              },
+              {
+                "label": "Lucky Draws",
+                "value": "/draws",
+                "description": "d draws",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "NewDraws",
+                  "id": "1523837409211453613"
+                }
+              },
+              {
+                "label": "Lucky Draw Prices",
+                "value": "/draw prices",
+                "description": "d price",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DrawPrices",
+                  "id": "1525864071776305163"
+                }
+              },
+              {
+                "label": "Draw Calculator",
+                "value": "/draw calculator",
+                "description": "d calculator",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DrawCalc",
+                  "id": "1560743128934256680"
+                }
+              },
+              {
+                "label": "Today",
+                "value": "/today",
+                "description": "d today",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DailyUpdate",
+                  "id": "1563415690738802690"
+                }
+              },
+              {
+                "label": "Calendar",
+                "value": "/calendar",
+                "description": "d calendar",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Calendar",
+                  "id": "1523762208050385107"
+                }
+              },
+              {
+                "label": "Reminders",
+                "value": "/remind",
+                "description": "d remind",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Remind",
+                  "id": "1563677560431452180"
+                }
+              },
+              {
+                "label": "Season End",
+                "value": "/season end",
+                "description": "d end",
+                "default": false,
+                "emoji": {
+                  "animated": false,
+                  "name": "BP_CODM",
+                  "id": "1523190108386365470"
+                }
+              },
+              {
+                "label": "Patch Notes",
+                "value": "/patch notes",
+                "description": "d patch notes",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "PatchNotes",
+                  "id": "1523762216954888286"
+                }
+              },
+              {
+                "label": "Timestamps",
+                "value": "/timestamp",
+                "description": "d timestamp",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Timestamps",
+                  "id": "1523762211103969420"
+                }
+              },
+              {
+                "label": "Profile Colors",
+                "value": "/colors",
+                "description": "d colors",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "ShowColors",
+                  "id": "1537280503105847486"
+                }
+              },
+              {
+                "label": "Settings",
+                "value": "/settings",
+                "description": "d settings",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Settings",
+                  "id": "1523762203537309696"
+                }
+              },
+              {
+                "label": "Invite Dioreo",
+                "value": "/invite",
+                "description": "d invite",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "ShareHeart",
+                  "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": true,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
+                "label": "/admin",
+                "value": "/admin",
+                "description": "Server Settings",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "ServerSettings",
+                  "id": "1536468904996774008"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "/prefix slash": [
+      {
+        "type": 17,
+        "accent_color": 16743772,
+        "components": [
+          {
+            "type": 10,
+            "content": "## <a:Command:1565523050982801468> Server Prefix\n-# See the prefix your server uses, or change it if you're a server admin"
+          },
+          {
+            "type": 14,
+            "spacing": 2,
+            "divider": true
+          },
+          {
+            "type": 10,
+            "content": "### `d prefix [new prefix|remove]`\n`pre`"
+          },
+          {
+            "type": 10,
+            "content": "**See it**\n-# Anyone can ask which prefix this server uses\n> -# `d prefix` · `d pre`"
+          },
+          {
+            "type": 10,
+            "content": "**Change it** *(server admins)*\n-# Needs **Manage Server**. Anyone else is just shown the prefix\n> -# **Set**  `d prefix !`\n> -# **Put `d` back**  `remove` · `reset` · `erase` · `default` · `delete`"
+          },
+          {
+            "type": 10,
+            "content": "**Good to know**\n> -# Your prefix takes `d`'s place; `dior` and **@Dioreo** always work\n> -# Up to 6 characters, no spaces. The panel can set up to 3\n> -# `remove` · `reset` · `erase` · `default` · `delete` can't be a prefix: they put it back\n> -# **Edit Prefix** in <a:ServerSettings:1536468904996774008> /admin → Config Text Commands does the same"
+          },
+          {
+            "type": 14,
+            "spacing": 1,
+            "divider": true
+          },
+          {
+            "type": 10,
+            "content": "-# **Examples**\n-# `d prefix`  This server's prefix\n-# `d pre !`  Set it to ! (admins)\n-# `d prefix reset`  Back to d (admins)"
+          },
+          {
+            "type": 10,
+            "content": "-# Usage: `d cmd <required> [optional]`"
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 3,
+            "custom_id": "help_command",
+            "placeholder": "Jump to a command…",
+            "options": [
+              {
+                "label": "All commands",
+                "value": "landing",
+                "description": "Back to the list of every command",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DioreoComboCoral",
+                  "id": "1565359721790177371"
+                }
+              },
+              {
+                "label": "/gunsmith mp",
+                "value": "/gunsmith mp",
+                "description": "MP Gunsmith",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "GunsmithSearch",
+                  "id": "1564113024225255454"
+                }
+              },
+              {
+                "label": "/gunsmith dmz",
+                "value": "/gunsmith dmz",
+                "description": "DMZ Gunsmith",
+                "default": false,
+                "emoji": {
+                  "animated": false,
+                  "name": "DMZ_CODM",
+                  "id": "1523190115319549963"
+                }
+              },
+              {
+                "label": "/draws",
+                "value": "/draws",
+                "description": "Lucky Draws",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "NewDraws",
+                  "id": "1523837409211453613"
+                }
+              },
+              {
+                "label": "/draw prices",
+                "value": "/draw prices",
+                "description": "Lucky Draw Prices",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DrawPrices",
+                  "id": "1525864071776305163"
+                }
+              },
+              {
+                "label": "/draw calculator",
+                "value": "/draw calculator",
+                "description": "Draw Calculator",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DrawCalc",
+                  "id": "1560743128934256680"
+                }
+              },
+              {
+                "label": "/today",
+                "value": "/today",
+                "description": "Today",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DailyUpdate",
+                  "id": "1563415690738802690"
+                }
+              },
+              {
+                "label": "/calendar",
+                "value": "/calendar",
+                "description": "Calendar",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Calendar",
+                  "id": "1523762208050385107"
+                }
+              },
+              {
+                "label": "/remind",
+                "value": "/remind",
+                "description": "Reminders",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Remind",
+                  "id": "1563677560431452180"
+                }
+              },
+              {
+                "label": "/season end",
+                "value": "/season end",
+                "description": "Season End",
+                "default": false,
+                "emoji": {
+                  "animated": false,
+                  "name": "BP_CODM",
+                  "id": "1523190108386365470"
+                }
+              },
+              {
+                "label": "/patch notes",
+                "value": "/patch notes",
+                "description": "Patch Notes",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "PatchNotes",
+                  "id": "1523762216954888286"
+                }
+              },
+              {
+                "label": "/timestamp",
+                "value": "/timestamp",
+                "description": "Timestamps",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Timestamps",
+                  "id": "1523762211103969420"
+                }
+              },
+              {
+                "label": "/colors",
+                "value": "/colors",
+                "description": "Profile Colors",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "ShowColors",
+                  "id": "1537280503105847486"
+                }
+              },
+              {
+                "label": "/settings",
+                "value": "/settings",
+                "description": "Settings",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Settings",
+                  "id": "1523762203537309696"
+                }
+              },
+              {
+                "label": "/invite",
+                "value": "/invite",
+                "description": "Invite Dioreo",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "ShareHeart",
+                  "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": true,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -15758,6 +17387,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -16030,6 +17670,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/admin",
                 "value": "/admin",
                 "description": "Server Settings",
@@ -16130,7 +17781,7 @@
           },
           {
             "type": 10,
-            "content": "**<a:Eyedropper:1526293991166054541> Utilities**\n`timestamp` · `colors` · `settings` · `invite` · `help`"
+            "content": "**<a:Eyedropper:1526293991166054541> Utilities**\n`timestamp` · `colors` · `settings` · `invite` · `prefix` · `help`"
           },
           {
             "type": 10,
@@ -16338,6 +17989,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -16710,6 +18372,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/admin",
                 "value": "/admin",
                 "description": "Server Settings",
@@ -17037,6 +18710,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -17370,6 +19054,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/admin",
                 "value": "/admin",
                 "description": "Server Settings",
@@ -17697,6 +19392,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -18030,6 +19736,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/admin",
                 "value": "/admin",
                 "description": "Server Settings",
@@ -18328,6 +20045,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -18633,6 +20361,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -18948,6 +20687,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/admin",
                 "value": "/admin",
                 "description": "Server Settings",
@@ -19250,6 +21000,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -19558,6 +21319,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -19873,6 +21645,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/admin",
                 "value": "/admin",
                 "description": "Server Settings",
@@ -20176,6 +21959,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -20489,6 +22283,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/admin",
                 "value": "/admin",
                 "description": "Server Settings",
@@ -20791,6 +22596,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -21103,6 +22919,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/admin",
                 "value": "/admin",
                 "description": "Server Settings",
@@ -21410,6 +23237,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -21735,6 +23573,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/admin",
                 "value": "/admin",
                 "description": "Server Settings",
@@ -22038,6 +23887,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -22351,6 +24211,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/admin",
                 "value": "/admin",
                 "description": "Server Settings",
@@ -22649,6 +24520,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -22954,6 +24836,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -23268,6 +25161,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -23593,6 +25497,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/admin",
                 "value": "/admin",
                 "description": "Server Settings",
@@ -23900,6 +25815,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -24221,6 +26147,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/admin",
                 "value": "/admin",
                 "description": "Server Settings",
@@ -24519,6 +26456,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -24831,6 +26779,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/admin",
                 "value": "/admin",
                 "description": "Server Settings",
@@ -25125,6 +27084,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -25426,6 +27396,617 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
+                "label": "/admin",
+                "value": "/admin",
+                "description": "Server Settings",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "ServerSettings",
+                  "id": "1536468904996774008"
+                }
+              },
+              {
+                "label": "/manage",
+                "value": "/manage",
+                "description": "Manage Data",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DB_Database",
+                  "id": "1524967327437815899"
+                }
+              },
+              {
+                "label": "/manage emojis",
+                "value": "/manage emojis",
+                "description": "Emoji Manager",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Swatches",
+                  "id": "1537301451506847947"
+                }
+              },
+              {
+                "label": "/autobuild",
+                "value": "/autobuild",
+                "description": "Autobuild",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "GunsmithCode",
+                  "id": "1564113023025676308"
+                }
+              },
+              {
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
+                }
+              },
+              {
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Edit",
+                  "id": "1560408533160296519"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "/prefix text": [
+      {
+        "type": 17,
+        "accent_color": 16743772,
+        "components": [
+          {
+            "type": 10,
+            "content": "## <a:Command:1565523050982801468> Server Prefix\n-# See the prefix your server uses, or change it if you're a server admin"
+          },
+          {
+            "type": 14,
+            "spacing": 2,
+            "divider": true
+          },
+          {
+            "type": 10,
+            "content": "### `d prefix [new prefix|remove]`\n`pre`"
+          },
+          {
+            "type": 10,
+            "content": "**See it**\n-# Anyone can ask which prefix this server uses\n> -# `d prefix` · `d pre`"
+          },
+          {
+            "type": 10,
+            "content": "**Change it** *(server admins)*\n-# Needs **Manage Server**. Anyone else is just shown the prefix\n> -# **Set**  `d prefix !`\n> -# **Put `d` back**  `remove` · `reset` · `erase` · `default` · `delete`"
+          },
+          {
+            "type": 10,
+            "content": "**Good to know**\n> -# Your prefix takes `d`'s place; `dior` and **@Dioreo** always work\n> -# Up to 6 characters, no spaces. The panel can set up to 3\n> -# `remove` · `reset` · `erase` · `default` · `delete` can't be a prefix: they put it back\n> -# **Edit Prefix** in <a:ServerSettings:1536468904996774008> /admin → Config Text Commands does the same"
+          },
+          {
+            "type": 14,
+            "spacing": 1,
+            "divider": true
+          },
+          {
+            "type": 10,
+            "content": "-# **Examples**\n-# `d prefix`  This server's prefix\n-# `d pre !`  Set it to ! (admins)\n-# `d prefix reset`  Back to d (admins)"
+          },
+          {
+            "type": 10,
+            "content": "-# Usage: `d cmd <required> [optional]`"
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 3,
+            "custom_id": "help_command~text",
+            "placeholder": "Jump to a command…",
+            "options": [
+              {
+                "label": "All commands",
+                "value": "landing",
+                "description": "Back to the list of every command",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DioreoComboCoral",
+                  "id": "1565359721790177371"
+                }
+              },
+              {
+                "label": "MP Gunsmith",
+                "value": "/gunsmith mp",
+                "description": "d gunsmith",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "GunsmithSearch",
+                  "id": "1564113024225255454"
+                }
+              },
+              {
+                "label": "DMZ Gunsmith",
+                "value": "/gunsmith dmz",
+                "description": "d dmz",
+                "default": false,
+                "emoji": {
+                  "animated": false,
+                  "name": "DMZ_CODM",
+                  "id": "1523190115319549963"
+                }
+              },
+              {
+                "label": "Lucky Draws",
+                "value": "/draws",
+                "description": "d draws",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "NewDraws",
+                  "id": "1523837409211453613"
+                }
+              },
+              {
+                "label": "Lucky Draw Prices",
+                "value": "/draw prices",
+                "description": "d price",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DrawPrices",
+                  "id": "1525864071776305163"
+                }
+              },
+              {
+                "label": "Draw Calculator",
+                "value": "/draw calculator",
+                "description": "d calculator",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DrawCalc",
+                  "id": "1560743128934256680"
+                }
+              },
+              {
+                "label": "Today",
+                "value": "/today",
+                "description": "d today",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DailyUpdate",
+                  "id": "1563415690738802690"
+                }
+              },
+              {
+                "label": "Calendar",
+                "value": "/calendar",
+                "description": "d calendar",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Calendar",
+                  "id": "1523762208050385107"
+                }
+              },
+              {
+                "label": "Reminders",
+                "value": "/remind",
+                "description": "d remind",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Remind",
+                  "id": "1563677560431452180"
+                }
+              },
+              {
+                "label": "Season End",
+                "value": "/season end",
+                "description": "d end",
+                "default": false,
+                "emoji": {
+                  "animated": false,
+                  "name": "BP_CODM",
+                  "id": "1523190108386365470"
+                }
+              },
+              {
+                "label": "Patch Notes",
+                "value": "/patch notes",
+                "description": "d patch notes",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "PatchNotes",
+                  "id": "1523762216954888286"
+                }
+              },
+              {
+                "label": "Timestamps",
+                "value": "/timestamp",
+                "description": "d timestamp",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Timestamps",
+                  "id": "1523762211103969420"
+                }
+              },
+              {
+                "label": "Profile Colors",
+                "value": "/colors",
+                "description": "d colors",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "ShowColors",
+                  "id": "1537280503105847486"
+                }
+              },
+              {
+                "label": "Settings",
+                "value": "/settings",
+                "description": "d settings",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Settings",
+                  "id": "1523762203537309696"
+                }
+              },
+              {
+                "label": "Invite Dioreo",
+                "value": "/invite",
+                "description": "d invite",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "ShareHeart",
+                  "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": true,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
+                "label": "/admin",
+                "value": "/admin",
+                "description": "Server Settings",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "ServerSettings",
+                  "id": "1536468904996774008"
+                }
+              },
+              {
+                "label": "/manage",
+                "value": "/manage",
+                "description": "Manage Data",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DB_Database",
+                  "id": "1524967327437815899"
+                }
+              },
+              {
+                "label": "/manage emojis",
+                "value": "/manage emojis",
+                "description": "Emoji Manager",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Swatches",
+                  "id": "1537301451506847947"
+                }
+              },
+              {
+                "label": "/autobuild",
+                "value": "/autobuild",
+                "description": "Autobuild",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "GunsmithCode",
+                  "id": "1564113023025676308"
+                }
+              },
+              {
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
+                }
+              },
+              {
+                "label": "/embed",
+                "value": "/embed",
+                "description": "Embed Preview",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Edit",
+                  "id": "1560408533160296519"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "/prefix slash": [
+      {
+        "type": 17,
+        "accent_color": 16743772,
+        "components": [
+          {
+            "type": 10,
+            "content": "## <a:Command:1565523050982801468> Server Prefix\n-# See the prefix your server uses, or change it if you're a server admin"
+          },
+          {
+            "type": 14,
+            "spacing": 2,
+            "divider": true
+          },
+          {
+            "type": 10,
+            "content": "### `d prefix [new prefix|remove]`\n`pre`"
+          },
+          {
+            "type": 10,
+            "content": "**See it**\n-# Anyone can ask which prefix this server uses\n> -# `d prefix` · `d pre`"
+          },
+          {
+            "type": 10,
+            "content": "**Change it** *(server admins)*\n-# Needs **Manage Server**. Anyone else is just shown the prefix\n> -# **Set**  `d prefix !`\n> -# **Put `d` back**  `remove` · `reset` · `erase` · `default` · `delete`"
+          },
+          {
+            "type": 10,
+            "content": "**Good to know**\n> -# Your prefix takes `d`'s place; `dior` and **@Dioreo** always work\n> -# Up to 6 characters, no spaces. The panel can set up to 3\n> -# `remove` · `reset` · `erase` · `default` · `delete` can't be a prefix: they put it back\n> -# **Edit Prefix** in <a:ServerSettings:1536468904996774008> /admin → Config Text Commands does the same"
+          },
+          {
+            "type": 14,
+            "spacing": 1,
+            "divider": true
+          },
+          {
+            "type": 10,
+            "content": "-# **Examples**\n-# `d prefix`  This server's prefix\n-# `d pre !`  Set it to ! (admins)\n-# `d prefix reset`  Back to d (admins)"
+          },
+          {
+            "type": 10,
+            "content": "-# Usage: `d cmd <required> [optional]`"
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 3,
+            "custom_id": "help_command",
+            "placeholder": "Jump to a command…",
+            "options": [
+              {
+                "label": "All commands",
+                "value": "landing",
+                "description": "Back to the list of every command",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DioreoComboCoral",
+                  "id": "1565359721790177371"
+                }
+              },
+              {
+                "label": "/gunsmith mp",
+                "value": "/gunsmith mp",
+                "description": "MP Gunsmith",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "GunsmithSearch",
+                  "id": "1564113024225255454"
+                }
+              },
+              {
+                "label": "/gunsmith dmz",
+                "value": "/gunsmith dmz",
+                "description": "DMZ Gunsmith",
+                "default": false,
+                "emoji": {
+                  "animated": false,
+                  "name": "DMZ_CODM",
+                  "id": "1523190115319549963"
+                }
+              },
+              {
+                "label": "/draws",
+                "value": "/draws",
+                "description": "Lucky Draws",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "NewDraws",
+                  "id": "1523837409211453613"
+                }
+              },
+              {
+                "label": "/draw prices",
+                "value": "/draw prices",
+                "description": "Lucky Draw Prices",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DrawPrices",
+                  "id": "1525864071776305163"
+                }
+              },
+              {
+                "label": "/draw calculator",
+                "value": "/draw calculator",
+                "description": "Draw Calculator",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DrawCalc",
+                  "id": "1560743128934256680"
+                }
+              },
+              {
+                "label": "/today",
+                "value": "/today",
+                "description": "Today",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DailyUpdate",
+                  "id": "1563415690738802690"
+                }
+              },
+              {
+                "label": "/calendar",
+                "value": "/calendar",
+                "description": "Calendar",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Calendar",
+                  "id": "1523762208050385107"
+                }
+              },
+              {
+                "label": "/remind",
+                "value": "/remind",
+                "description": "Reminders",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Remind",
+                  "id": "1563677560431452180"
+                }
+              },
+              {
+                "label": "/season end",
+                "value": "/season end",
+                "description": "Season End",
+                "default": false,
+                "emoji": {
+                  "animated": false,
+                  "name": "BP_CODM",
+                  "id": "1523190108386365470"
+                }
+              },
+              {
+                "label": "/patch notes",
+                "value": "/patch notes",
+                "description": "Patch Notes",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "PatchNotes",
+                  "id": "1523762216954888286"
+                }
+              },
+              {
+                "label": "/timestamp",
+                "value": "/timestamp",
+                "description": "Timestamps",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Timestamps",
+                  "id": "1523762211103969420"
+                }
+              },
+              {
+                "label": "/colors",
+                "value": "/colors",
+                "description": "Profile Colors",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "ShowColors",
+                  "id": "1537280503105847486"
+                }
+              },
+              {
+                "label": "/settings",
+                "value": "/settings",
+                "description": "Settings",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Settings",
+                  "id": "1523762203537309696"
+                }
+              },
+              {
+                "label": "/invite",
+                "value": "/invite",
+                "description": "Invite Dioreo",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "ShareHeart",
+                  "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": true,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -25731,6 +28312,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -26113,6 +28705,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/admin",
                 "value": "/admin",
                 "description": "Server Settings",
@@ -26391,6 +28994,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -26705,6 +29319,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -27071,6 +29696,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/admin",
                 "value": "/admin",
                 "description": "Server Settings",
@@ -27427,6 +30063,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -27789,6 +30436,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/admin",
                 "value": "/admin",
                 "description": "Server Settings",
@@ -28148,6 +30806,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/admin",
                 "value": "/admin",
                 "description": "Server Settings",
@@ -28500,6 +31169,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -28870,6 +31550,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/admin",
                 "value": "/admin",
                 "description": "Server Settings",
@@ -29160,6 +31851,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -29487,6 +32189,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/admin",
                 "value": "/admin",
                 "description": "Server Settings",
@@ -29642,7 +32355,7 @@
           },
           {
             "type": 10,
-            "content": "**<a:Eyedropper:1526293991166054541> Utilities**\n`timestamp` · `colors` · `settings` · `invite` · `help`"
+            "content": "**<a:Eyedropper:1526293991166054541> Utilities**\n`timestamp` · `colors` · `settings` · `invite` · `prefix` · `help`"
           },
           {
             "type": 10,
@@ -29850,6 +32563,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -30167,6 +32891,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/bot",
                 "value": "/bot",
                 "description": "Bot Tools",
@@ -30439,6 +33174,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -30717,6 +33463,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/bot",
                 "value": "/bot",
                 "description": "Bot Tools",
@@ -30989,6 +33746,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -31267,6 +34035,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/bot",
                 "value": "/bot",
                 "description": "Bot Tools",
@@ -31510,6 +34289,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -31760,6 +34550,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -32020,6 +34821,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/bot",
                 "value": "/bot",
                 "description": "Bot Tools",
@@ -32267,6 +35079,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -32520,6 +35343,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -32780,6 +35614,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/bot",
                 "value": "/bot",
                 "description": "Bot Tools",
@@ -33028,6 +35873,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -33286,6 +36142,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/bot",
                 "value": "/bot",
                 "description": "Bot Tools",
@@ -33533,6 +36400,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -33790,6 +36668,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/bot",
                 "value": "/bot",
                 "description": "Bot Tools",
@@ -34042,6 +36931,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -34312,6 +37212,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/bot",
                 "value": "/bot",
                 "description": "Bot Tools",
@@ -34560,6 +37471,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -34818,6 +37740,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/bot",
                 "value": "/bot",
                 "description": "Bot Tools",
@@ -35061,6 +37994,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -35311,6 +38255,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -35570,6 +38525,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -35840,6 +38806,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/bot",
                 "value": "/bot",
                 "description": "Bot Tools",
@@ -36092,6 +39069,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -36358,6 +39346,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/bot",
                 "value": "/bot",
                 "description": "Bot Tools",
@@ -36601,6 +39600,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -36858,6 +39868,17 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/bot",
                 "value": "/bot",
                 "description": "Bot Tools",
@@ -37097,6 +40118,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -37346,6 +40378,507 @@
                 }
               },
               {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "/prefix text": [
+      {
+        "type": 17,
+        "accent_color": 16743772,
+        "components": [
+          {
+            "type": 10,
+            "content": "## <a:Command:1565523050982801468> Server Prefix\n-# See the prefix your server uses, or change it if you're a server admin"
+          },
+          {
+            "type": 14,
+            "spacing": 2,
+            "divider": true
+          },
+          {
+            "type": 10,
+            "content": "### `d prefix [new prefix|remove]`\n`pre`"
+          },
+          {
+            "type": 10,
+            "content": "**See it**\n-# Anyone can ask which prefix this server uses\n> -# `d prefix` · `d pre`"
+          },
+          {
+            "type": 10,
+            "content": "**Change it** *(server admins)*\n-# Needs **Manage Server**. Anyone else is just shown the prefix\n> -# **Set**  `d prefix !`\n> -# **Put `d` back**  `remove` · `reset` · `erase` · `default` · `delete`"
+          },
+          {
+            "type": 10,
+            "content": "**Good to know**\n> -# Your prefix takes `d`'s place; `dior` and **@Dioreo** always work\n> -# Up to 6 characters, no spaces. The panel can set up to 3\n> -# `remove` · `reset` · `erase` · `default` · `delete` can't be a prefix: they put it back\n> -# **Edit Prefix** in <a:ServerSettings:1536468904996774008> /admin → Config Text Commands does the same"
+          },
+          {
+            "type": 14,
+            "spacing": 1,
+            "divider": true
+          },
+          {
+            "type": 10,
+            "content": "-# **Examples**\n-# `d prefix`  This server's prefix\n-# `d pre !`  Set it to ! (admins)\n-# `d prefix reset`  Back to d (admins)"
+          },
+          {
+            "type": 10,
+            "content": "-# Usage: `d cmd <required> [optional]`"
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 3,
+            "custom_id": "help_command~text",
+            "placeholder": "Jump to a command…",
+            "options": [
+              {
+                "label": "All commands",
+                "value": "landing",
+                "description": "Back to the list of every command",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DioreoComboCoral",
+                  "id": "1565359721790177371"
+                }
+              },
+              {
+                "label": "MP Gunsmith",
+                "value": "/gunsmith mp",
+                "description": "d gunsmith",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "GunsmithSearch",
+                  "id": "1564113024225255454"
+                }
+              },
+              {
+                "label": "DMZ Gunsmith",
+                "value": "/gunsmith dmz",
+                "description": "d dmz",
+                "default": false,
+                "emoji": {
+                  "animated": false,
+                  "name": "DMZ_CODM",
+                  "id": "1523190115319549963"
+                }
+              },
+              {
+                "label": "Lucky Draws",
+                "value": "/draws",
+                "description": "d draws",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "NewDraws",
+                  "id": "1523837409211453613"
+                }
+              },
+              {
+                "label": "Lucky Draw Prices",
+                "value": "/draw prices",
+                "description": "d price",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DrawPrices",
+                  "id": "1525864071776305163"
+                }
+              },
+              {
+                "label": "Draw Calculator",
+                "value": "/draw calculator",
+                "description": "d calculator",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DrawCalc",
+                  "id": "1560743128934256680"
+                }
+              },
+              {
+                "label": "Today",
+                "value": "/today",
+                "description": "d today",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DailyUpdate",
+                  "id": "1563415690738802690"
+                }
+              },
+              {
+                "label": "Calendar",
+                "value": "/calendar",
+                "description": "d calendar",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Calendar",
+                  "id": "1523762208050385107"
+                }
+              },
+              {
+                "label": "Reminders",
+                "value": "/remind",
+                "description": "d remind",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Remind",
+                  "id": "1563677560431452180"
+                }
+              },
+              {
+                "label": "Season End",
+                "value": "/season end",
+                "description": "d end",
+                "default": false,
+                "emoji": {
+                  "animated": false,
+                  "name": "BP_CODM",
+                  "id": "1523190108386365470"
+                }
+              },
+              {
+                "label": "Patch Notes",
+                "value": "/patch notes",
+                "description": "d patch notes",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "PatchNotes",
+                  "id": "1523762216954888286"
+                }
+              },
+              {
+                "label": "Timestamps",
+                "value": "/timestamp",
+                "description": "d timestamp",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Timestamps",
+                  "id": "1523762211103969420"
+                }
+              },
+              {
+                "label": "Profile Colors",
+                "value": "/colors",
+                "description": "d colors",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "ShowColors",
+                  "id": "1537280503105847486"
+                }
+              },
+              {
+                "label": "Settings",
+                "value": "/settings",
+                "description": "d settings",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Settings",
+                  "id": "1523762203537309696"
+                }
+              },
+              {
+                "label": "Invite Dioreo",
+                "value": "/invite",
+                "description": "d invite",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "ShareHeart",
+                  "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": true,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
+                "label": "/bot",
+                "value": "/bot",
+                "description": "Bot Tools",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "BotAccess",
+                  "id": "1540915865506160660"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "/prefix slash": [
+      {
+        "type": 17,
+        "accent_color": 16743772,
+        "components": [
+          {
+            "type": 10,
+            "content": "## <a:Command:1565523050982801468> Server Prefix\n-# See the prefix your server uses, or change it if you're a server admin"
+          },
+          {
+            "type": 14,
+            "spacing": 2,
+            "divider": true
+          },
+          {
+            "type": 10,
+            "content": "### `d prefix [new prefix|remove]`\n`pre`"
+          },
+          {
+            "type": 10,
+            "content": "**See it**\n-# Anyone can ask which prefix this server uses\n> -# `d prefix` · `d pre`"
+          },
+          {
+            "type": 10,
+            "content": "**Change it** *(server admins)*\n-# Needs **Manage Server**. Anyone else is just shown the prefix\n> -# **Set**  `d prefix !`\n> -# **Put `d` back**  `remove` · `reset` · `erase` · `default` · `delete`"
+          },
+          {
+            "type": 10,
+            "content": "**Good to know**\n> -# Your prefix takes `d`'s place; `dior` and **@Dioreo** always work\n> -# Up to 6 characters, no spaces. The panel can set up to 3\n> -# `remove` · `reset` · `erase` · `default` · `delete` can't be a prefix: they put it back\n> -# **Edit Prefix** in <a:ServerSettings:1536468904996774008> /admin → Config Text Commands does the same"
+          },
+          {
+            "type": 14,
+            "spacing": 1,
+            "divider": true
+          },
+          {
+            "type": 10,
+            "content": "-# **Examples**\n-# `d prefix`  This server's prefix\n-# `d pre !`  Set it to ! (admins)\n-# `d prefix reset`  Back to d (admins)"
+          },
+          {
+            "type": 10,
+            "content": "-# Usage: `d cmd <required> [optional]`"
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 3,
+            "custom_id": "help_command",
+            "placeholder": "Jump to a command…",
+            "options": [
+              {
+                "label": "All commands",
+                "value": "landing",
+                "description": "Back to the list of every command",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DioreoComboCoral",
+                  "id": "1565359721790177371"
+                }
+              },
+              {
+                "label": "/gunsmith mp",
+                "value": "/gunsmith mp",
+                "description": "MP Gunsmith",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "GunsmithSearch",
+                  "id": "1564113024225255454"
+                }
+              },
+              {
+                "label": "/gunsmith dmz",
+                "value": "/gunsmith dmz",
+                "description": "DMZ Gunsmith",
+                "default": false,
+                "emoji": {
+                  "animated": false,
+                  "name": "DMZ_CODM",
+                  "id": "1523190115319549963"
+                }
+              },
+              {
+                "label": "/draws",
+                "value": "/draws",
+                "description": "Lucky Draws",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "NewDraws",
+                  "id": "1523837409211453613"
+                }
+              },
+              {
+                "label": "/draw prices",
+                "value": "/draw prices",
+                "description": "Lucky Draw Prices",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DrawPrices",
+                  "id": "1525864071776305163"
+                }
+              },
+              {
+                "label": "/draw calculator",
+                "value": "/draw calculator",
+                "description": "Draw Calculator",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DrawCalc",
+                  "id": "1560743128934256680"
+                }
+              },
+              {
+                "label": "/today",
+                "value": "/today",
+                "description": "Today",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "DailyUpdate",
+                  "id": "1563415690738802690"
+                }
+              },
+              {
+                "label": "/calendar",
+                "value": "/calendar",
+                "description": "Calendar",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Calendar",
+                  "id": "1523762208050385107"
+                }
+              },
+              {
+                "label": "/remind",
+                "value": "/remind",
+                "description": "Reminders",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Remind",
+                  "id": "1563677560431452180"
+                }
+              },
+              {
+                "label": "/season end",
+                "value": "/season end",
+                "description": "Season End",
+                "default": false,
+                "emoji": {
+                  "animated": false,
+                  "name": "BP_CODM",
+                  "id": "1523190108386365470"
+                }
+              },
+              {
+                "label": "/patch notes",
+                "value": "/patch notes",
+                "description": "Patch Notes",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "PatchNotes",
+                  "id": "1523762216954888286"
+                }
+              },
+              {
+                "label": "/timestamp",
+                "value": "/timestamp",
+                "description": "Timestamps",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Timestamps",
+                  "id": "1523762211103969420"
+                }
+              },
+              {
+                "label": "/colors",
+                "value": "/colors",
+                "description": "Profile Colors",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "ShowColors",
+                  "id": "1537280503105847486"
+                }
+              },
+              {
+                "label": "/settings",
+                "value": "/settings",
+                "description": "Settings",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Settings",
+                  "id": "1523762203537309696"
+                }
+              },
+              {
+                "label": "/invite",
+                "value": "/invite",
+                "description": "Invite Dioreo",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "ShareHeart",
+                  "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": true,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
+                }
+              },
+              {
                 "label": "/bot",
                 "value": "/bot",
                 "description": "Bot Tools",
@@ -37573,6 +41106,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {
@@ -37842,6 +41386,17 @@
                   "animated": true,
                   "name": "ShareHeart",
                   "id": "1539021725784739891"
+                }
+              },
+              {
+                "label": "Server Prefix",
+                "value": "/prefix",
+                "description": "d prefix",
+                "default": false,
+                "emoji": {
+                  "animated": true,
+                  "name": "Command",
+                  "id": "1565523050982801468"
                 }
               },
               {

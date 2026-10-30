@@ -14,12 +14,17 @@ const MAX_LENGTH = 6;
 const FORBIDDEN = /[/@<#:`*_~|>\\]/;
 // Any word is allowed, everyday ones included (his call, 2026-10-30 15:26 EDT: "if a server wants to use that as their prefix, let them"). With `the` as a prefix "the draws" posts the draws; that is the server's choice.
 
+// The words that put the prefix back (`d prefix reset`), so none of them can be a prefix: `prefix remove` would be a set or a reset, nobody could tell which (his ask, 2026-10-30 16:02 EDT: "These words can also never be set as a server prefix (give a warning message if a server tries to use them)").
+const REMOVE_WORDS = ['remove', 'reset', 'erase', 'default', 'delete'];
+
 // What an admin typed, as a list: commas or spaces between prefixes, any case. Blank is the default again. Returns { prefixes } or { error } in words the pop-up shows.
 function parsePrefixes(text) {
     const prefixes = [...new Set(String(text || '').split(/[,\s]+/).map(p => p.trim().toLowerCase()).filter(Boolean))];
     if (prefixes.length > MAX_PREFIXES) return { error: `Up to ${MAX_PREFIXES} prefixes.` };
     const long = prefixes.find(p => p.length > MAX_LENGTH);
     if (long) return { error: `\`${long}\` is too long: ${MAX_LENGTH} characters at most.` };
+    const reserved = prefixes.find(p => REMOVE_WORDS.includes(p));
+    if (reserved) return { error: `\`${reserved}\` can't be a prefix: ${REMOVE_WORDS.map(w => `\`${w}\``).join(', ')} put the prefix back.` };
     if (prefixes.some(p => FORBIDDEN.test(p))) return { error: "A prefix can't use / @ < # : or Discord's formatting characters." };
     return { prefixes };
 }
@@ -43,4 +48,4 @@ async function prefixesFor(guildId, fallback = configuredPrefixes()) {
     }
 }
 
-module.exports = { configuredPrefixes, prefixParts, parsePrefixes, prefixesFor, MAX_PREFIXES, MAX_LENGTH };
+module.exports = { configuredPrefixes, prefixParts, parsePrefixes, prefixesFor, MAX_PREFIXES, MAX_LENGTH, REMOVE_WORDS };
