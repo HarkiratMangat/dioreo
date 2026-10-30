@@ -67,6 +67,9 @@ function fakeMessage(content, { admin = false, guildId = 'g1', guildName = 'Dior
 const cmd = emojis.command;
 const NOT_SET = `${cmd} Dioreo's prefixes: **<@${BOT}> · \`dior\` · \`d\`**\n-# Dioreoland's server prefix: *Not set*`;
 const SET = p => `${cmd} Dioreoland's server prefix: **\`${p}\`**\n-# **<@${BOT}> · \`dior\`** also work!`;
+// His confirmations (2026-10-30 16:54 EDT).
+const NOW_SET = p => `${emojis.checkmark} Dioreoland's server prefix is now set to **\`${p}\`**\n-# **<@${BOT}> · \`dior\`** also work!`;
+const WAS_RESET = `${emojis.broom} Dioreoland's server prefix was **reset**!\n-# ${cmd} Now using Dioreo's default prefixes: **<@${BOT}> · \`dior\` · \`d\`**`;
 
 (async () => {
     await check('the command and its aliases: prefix and pre, no clash with any other word', () => {
@@ -140,13 +143,13 @@ const SET = p => `${cmd} Dioreoland's server prefix: **\`${p}\`**\n-# **<@${BOT}
         await onMessage(set.message);
         assert.deepStrictEqual(SERVER.gadm.textPrefixes, ['yo']);
         assert.strictEqual(saves[saves.length - 1].actorId, set.message.author.id);
-        assert.ok(set.posts[0].content.endsWith(SET('yo')), set.posts[0].content);
+        assert.strictEqual(set.posts[0].content, NOW_SET('yo'));
         for (const word of REMOVE_WORDS) {
             SERVER.gadm.textPrefixes = ['yo'];
             const m = fakeMessage(`dior pre ${word}`, { guildId: 'gadm', admin: true });
             await onMessage(m.message);
             assert.strictEqual(SERVER.gadm.textPrefixes, undefined, word);
-            assert.ok(m.posts[0].content.endsWith(NOT_SET), m.posts[0].content);
+            assert.strictEqual(m.posts[0].content, WAS_RESET, word);
         }
     });
     await check('an admin\'s bad word is refused with the warning and saves nothing', async () => {

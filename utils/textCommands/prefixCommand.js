@@ -52,10 +52,13 @@ async function execute(interaction, args = '') {
         if (action.error) return interaction.reply({ content: `${emojis.warn || ''} ${action.error} Nothing was saved.`.trim() });
         const settings = await policy.updateGuildSettings(guildId, interaction.user.id, doc => { doc.textPrefixes = action.reset ? undefined : action.prefixes; });
         const own = settings?.textPrefixes || [];
-        const shown = showPrefixes({ client, guildName, own });
-        // The same two-line reply as asking, with one lead line saying what just happened.
-        const done = action.reset ? `${emojis.command || ''} ${plainName(guildName)}'s server prefix was reset.` : `${emojis.command || ''} ${plainName(guildName)}'s server prefix is now set.`;
-        return interaction.reply({ content: `${done}\n${shown}`.trim() });
+        const { fixed } = prefixParts();
+        // His two confirmations (2026-10-30 16:55 EDT): set names the new prefix and what also works; reset names the defaults now in use.
+        if (action.reset || !own.length) {
+            const all = [`<@${client.user.id}>`, ...longestFirst(configuredPrefixes()).map(code)];
+            return interaction.reply({ content: `${emojis.broom || ''} ${plainName(guildName)}'s server prefix was **reset**!\n-# ${emojis.command || ''} Now using Dioreo's default prefixes: **${all.join(' · ')}**` });
+        }
+        return interaction.reply({ content: `${emojis.checkmark || ''} ${plainName(guildName)}'s server prefix is now set to **${own.map(code).join(' · ')}**\n${alsoWorks(client, fixed)}` });
     }
     const settings = await policy.getGuildSettings(guildId);
     return interaction.reply({ content: showPrefixes({ client, guildName, own: settings?.textPrefixes || [] }) });

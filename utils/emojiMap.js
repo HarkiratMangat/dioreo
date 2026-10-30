@@ -184,6 +184,8 @@ const emojis = {
     dioreoTada: '<a:DioreoTada:1563677558589882510>',
     // The cooldown hourglass, for every cooldown or still-working message instead of the generic ⏳ (Harkirat, 2026-10-29 09:58 EDT).
     cooldown: '<a:Cooldown:1565362761821847712>',
+    // The prefix command's reset line (Harkirat, 2026-10-30 16:55 EDT; prod id, his upload). Upload it to the dev apps through /manage emojis Sync, or it shows as text there.
+    broom: '<a:Broom:1565830760991039608>',
     // B6 (2026-10-29): the help card's icon button, the Slash Command / Text Command switch on every /help page, and Dispute a Build. Prod ids, his uploads.
     helpHint: '<a:HelpHint:1565419610323558542>',
     command: '<a:Command:1565523050982801468>',
