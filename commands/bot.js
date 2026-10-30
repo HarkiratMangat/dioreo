@@ -986,13 +986,18 @@ function buildHotpatchPanel(out) {
     return [{ type: 17, accent_color: 0xFEE75C, components: body }];
 }
 
-// /bot servers with no ID: "this server" where it was run in one, and a box for any other ID.
-function buildServersPicker(currentGuildId, currentName) {
+// /bot servers with no ID: "this server" where it was run in one, and a box for any other ID. Since B7 it also shows the week's misfires across every server (his pick A), so an alias that fires on chat anywhere is visible before opening one server.
+async function buildServersPicker(currentGuildId, currentName) {
+    const misfires = require('mongoose').connection.readyState === 1 ? await require('../utils/textCommands/misfires').recent(null) : null;
+    const { line } = require('../utils/textCommands/misfires');
+    const blocked = require('../utils/botControls').counts().blockedGuilds;
     return [{
         type: 17,
         accent_color: 0x5865F2,
         components: [
-            { type: 10, content: `## ${emojis.serverSettings} Server Settings · Owner Tools\n-# Which server's /admin rules?` },
+            { type: 10, content: `## ${emojis.serverSettings} Server Settings · Owner Tools\n-# Which server? Its /admin rules, a checkup, reply limits, and leave or block.` },
+            ...(misfires?.length ? [{ type: 10, content: `**Misfires, 7 days, every server**\n${misfires.map(r => `-# ${line(r)}`).join('\n')}` }] : []),
+            ...(blocked ? [{ type: 10, content: `-# Blocked servers · ${blocked}` }] : []),
             { type: 1, components: [
                 ...(currentGuildId ? [{ type: 2, style: 1, label: `This Server${currentName ? `: ${currentName}`.slice(0, 60) : ''}`, custom_id: `bot_srv_view|${currentGuildId}` }] : []),
                 { type: 2, style: 2, label: currentGuildId ? 'Enter Another ID' : 'Enter a Server ID', custom_id: 'bot_srv_ask' },
@@ -1001,7 +1006,7 @@ function buildServersPicker(currentGuildId, currentName) {
     }];
 }
 
-// /bot servers -- THE OWNER'S OVERRIDE FOR ONE SERVER'S /admin RULES (Harkirat 2026-10-22 15:35 EDT, "yeah build it"). For the case where a server's admins lost access (a hacked owner, say) and ask Dioreo's owner for help: view the rules, reset them, or delete the record (also the route for a server's data-deletion request). Admin power itself comes from Discord, so this never grants anyone /admin; it only changes the stored rules. Both changes are two presses and land on /bot analytics' Changes page with the rules as they were, so a server's setup can be rebuilt by hand -- neither has an Undo.
+// /bot servers -- THE OWNER'S OVERRIDE FOR ONE SERVER'S /admin RULES (Harkirat 2026-10-22 15:35 EDT, "yeah build it"). For the case where a server's admins lost access (a hacked owner, say) and ask Dioreo's owner for help: view the rules, reset them, or delete the record (also the route for a server's data-deletion request). Admin power itself comes from Discord, so this never grants anyone /admin; it only changes the stored rules. Both changes are two presses and land on /bot analytics' Changes page with the rules as they were, so a server's setup can be rebuilt by hand -- neither has an Undo. Since B7: a checkup under the rules, and a second row for the owner's own tools (reply limits, leave, block), whether or not the server has settings.
 async function buildServersPanel(client, guildId, { armed = null, note = null } = {}) {
     const { getGuildSettings } = require('../utils/guildPolicy');
     const { rulesText, lastChangedLine } = require('./admin');
@@ -1010,10 +1015,16 @@ async function buildServersPanel(client, guildId, { armed = null, note = null } 
     const guild = require('../bot/clients').publicClient(client)?.guilds?.cache?.get(guildId);
     const where = guild ? `-# **${guild.name}** · \`${guildId}\`` : `-# \`${guildId}\` · Dioreo is not in this server, so its name is unknown`;
     const btn = (label, id, style = 2) => ({ type: 2, style, label, custom_id: `bot_srv_${id}|${guildId}` });
-    const row = !settings ? null
-        : armed === 'reset' ? { type: 1, components: [btn('Cancel', 'view'), btn('Confirm: clear every rule, default Public', 'reset', 4)] }
-            : armed === 'delete' ? { type: 1, components: [btn('Cancel', 'view'), btn('Confirm: delete the whole record', 'del', 4)] }
-                : { type: 1, components: [btn('Reset Rules', 'resetarm', 4), btn('Delete Record', 'delarm', 4)] };
+    const blockedHere = require('../utils/botControls').isBlockedGuild(guildId);
+    const confirm = { reset: 'Confirm: clear every slash and text rule', delete: 'Confirm: delete the whole record', leave: 'Confirm: leave this server', block: 'Confirm: leave and block it' };
+    const verbs = { reset: 'reset', delete: 'del', leave: 'leave', block: 'block' };
+    const row = armed ? { type: 1, components: [btn('Cancel', 'view'), btn(confirm[armed], verbs[armed], 4)] }
+        : settings ? { type: 1, components: [btn('Reset Rules', 'resetarm', 4), btn('Delete Record', 'delarm', 4)] } : null;
+    const tools = armed ? null : { type: 1, components: [
+        btn('Reply Limits', 'limits'),
+        ...(guild ? [btn('Leave Server', 'leavearm')] : []),
+        blockedHere ? btn('Unblock Server', 'unblock', 3) : btn('Block Server', 'blockarm', 4),
+    ] };
     return [{
         type: 17,
         accent_color: 0x5865F2,
@@ -1022,11 +1033,240 @@ async function buildServersPanel(client, guildId, { armed = null, note = null } 
             { type: 14, spacing: 2 },
             { type: 10, content: rulesText(settings) },
             ...(lastChangedLine(settings) ? [{ type: 10, content: lastChangedLine(settings) }] : []),
-            ...(note ? [{ type: 10, content: note }] : []),
             ...(row ? [row] : []),
+            { type: 14, spacing: 1 },
+            { type: 10, content: `### Checkup\n${await serverCheckup(client, guildId)}` },
+            ...(note ? [{ type: 10, content: note }] : []),
+            ...(tools ? [tools] : []),
         ],
     }];
 }
+
+// ==========================================
+// THE OWNER'S TEXT-COMMAND AND SERVER TOOLS (B7, his asks 2026-10-30 12:47-13:26 EDT, "build it here")
+// ==========================================
+// /bot penalties, /bot freeze and /bot servers' checkup. All owner-only (isOwner at the command and again on every click, in handlers/bot.js), all private. The state lives in utils/botControls.js (one stored record, read from memory) and utils/textCommands/spamLadder.js (the running penalties).
+
+const PENALTY_ACCENT = 0xF0B232;
+const FREEZE_ACCENT = 0x5BC0EB;
+const PENALTIES_SHOWN = 15;
+// A database read for a panel only when Mongo is connected, so a panel never sits on Mongoose's ten-second buffer (a test, or the database down) and says "unreadable" instead.
+const dbUp = () => require('mongoose').connection.readyState === 1;
+
+// 90000 -> "1 m 30 s" is never needed: rungs are whole minutes. 5 m, 1 h, 1 h 30 m, 12 h.
+function fmtLength(ms) {
+    const m = Math.round(ms / 60000);
+    if (m < 60) return `${m} m`;
+    return m % 60 ? `${Math.floor(m / 60)} h ${m % 60} m` : `${m / 60} h`;
+}
+const serverName = (client, guildId) => {
+    const name = guildId ? require('../bot/clients').publicClient(client)?.guilds?.cache?.get(guildId)?.name : null;
+    return name ? String(name).replace(/[`*_~|]/g, '') : null;
+};
+const ownerBtn = (label, id, style = 2, disabled = false) => ({ type: 2, style, label, custom_id: id, ...(disabled ? { disabled: true } : {}) });
+
+// The ladder in one line each: the score, then the rungs, marked Tuned when the owner has changed them.
+function ladderText() {
+    const s = require('../utils/botControls').spam();
+    return `**The ladder** · ${s.tuned ? 'tuned' : 'default'}\n-# Reply ${s.reply} pt · warning ${s.warning} pts · penalty at ${s.threshold} in 60 s\n-# Rungs ${s.rungsMin.map(m => fmtLength(m * 60000)).join(' · ')}`;
+}
+
+// /bot penalties (his layout, 2026-10-30 13:26 EDT: "probably just plain text showing who has the penalty and then a search using user id to remove it or extend it or whatever"): who is on one now, plain text, and a box to open one person.
+function buildPenaltiesPanel(client, { note = null, armed = null } = {}) {
+    const spam = require('../utils/textCommands/spamLadder');
+    const controls = require('../utils/botControls');
+    const list = spam.listActive();
+    const lines = list.slice(0, PENALTIES_SHOWN).map(p => {
+        const where = serverName(client, p.guildId);
+        return `- <@${p.userId}> \`${p.userId}\` · ${fmtLength(spam.rungMs(p))} · ends <t:${Math.ceil(p.until / 1000)}:R>${where ? ` · ${where}` : ''}`;
+    });
+    if (list.length > PENALTIES_SHOWN) lines.push(`-# +${list.length - PENALTIES_SHOWN} more: look one up by ID`);
+    const c = controls.counts();
+    const row = armed === 'liftall'
+        ? [ownerBtn('Cancel', 'bot_pen_list'), ownerBtn(`Confirm: lift all ${list.length}`, 'bot_pen_liftall', 4)]
+        : [ownerBtn('Look Up a User', 'bot_pen_ask', 1), ownerBtn('Tune the Ladder', 'bot_pen_tune'), ...(list.length ? [ownerBtn('Lift All', 'bot_pen_liftallarm', 4)] : [])];
+    return [{
+        type: 17,
+        accent_color: PENALTY_ACCENT,
+        components: [
+            { type: 10, content: `## ${emojis.cooldown} Spam Penalties · Owner Tools\n-# Typed commands only. A penalty silences someone in every server until it ends.` },
+            { type: 14, spacing: 1 },
+            { type: 10, content: `### On a penalty now · ${list.length}\n${lines.length ? lines.join('\n') : '-# Nobody.'}` },
+            { type: 10, content: `-# Exempt ${c.exempt} · Blocked from Dioreo ${c.blockedUsers}` },
+            { type: 14, spacing: 1 },
+            { type: 10, content: ladderText() },
+            ...(note ? [{ type: 10, content: note }] : []),
+            { type: 1, components: row },
+        ],
+    }];
+}
+
+// One person, opened by ID: what they are serving, today's rung, and the four actions.
+function buildPenaltyUserPanel(client, userId, { note = null, armed = null } = {}) {
+    const spam = require('../utils/textCommands/spamLadder');
+    const controls = require('../utils/botControls');
+    const head = { type: 10, content: `## ${emojis.cooldown} Spam Penalties · <@${userId}>\n-# \`${userId}\`` };
+    const back = { type: 1, components: [ownerBtn('Back to the List', 'bot_pen_list')] };
+    if (isOwner(userId)) {
+        return [{ type: 17, accent_color: PENALTY_ACCENT, components: [head, { type: 10, content: "-# That's you. The owner is never scored, penalised or blocked." }, back] }];
+    }
+    const p = spam.penaltyFor(userId);
+    const today = spam.stepToday(userId);
+    const rungs = controls.spam().rungsMin.length;
+    const where = p ? serverName(client, p.guildId) : null;
+    const exempt = controls.isExempt(userId);
+    const blocked = controls.isBlockedUser(userId);
+    const status = [
+        p ? `**Penalty** · ${fmtLength(spam.rungMs(p))}, ends <t:${Math.ceil(p.until / 1000)}:R>${where ? ` · started in ${where}` : ''}` : '**Penalty** · none running',
+        `**Today's rung** · ${today ? `${today} of ${rungs}` : 'none yet'}`,
+        `**Exempt** · ${exempt ? 'yes, never scored' : 'no'} · **Blocked** · ${blocked ? 'yes, Dioreo ignores them everywhere' : 'no'}`,
+    ];
+    const id = verb => `bot_pen_${verb}|${userId}`;
+    const actions = armed === 'block'
+        ? [ownerBtn('Cancel', id('user')), ownerBtn('Confirm: block from Dioreo everywhere', id('block'), 4)]
+        : [
+            ownerBtn('Lift', id('lift'), 3, !p && !today),
+            ownerBtn('Extend', id('extend'), 2, !p),
+            exempt ? ownerBtn('Unexempt', id('unexempt')) : ownerBtn('Exempt', id('exempt')),
+            blocked ? ownerBtn('Unblock', id('unblock')) : ownerBtn('Block', id('blockarm'), 4),
+        ];
+    return [{
+        type: 17,
+        accent_color: PENALTY_ACCENT,
+        components: [
+            head,
+            { type: 14, spacing: 1 },
+            { type: 10, content: status.join('\n') },
+            ...(note ? [{ type: 10, content: note }] : []),
+            { type: 1, components: actions },
+            back,
+        ],
+    }];
+}
+
+const penaltyLookupModal = () => ({
+    title: 'Look up a user',
+    custom_id: 'bot_penm_ask',
+    components: [{ type: 1, components: [{ type: 4, custom_id: 'id', label: 'Discord user ID', style: 1, min_length: 15, max_length: 22, required: true, placeholder: '17–20 digits' }] }],
+});
+const penaltyExtendModal = userId => ({
+    title: 'Extend the penalty',
+    custom_id: `bot_penm_extend|${userId}`,
+    components: [{ type: 1, components: [{ type: 4, custom_id: 'minutes', label: 'Minutes from now', style: 1, max_length: 5, required: false, placeholder: 'Blank: the next rung up' }] }],
+});
+function ladderTuneModal() {
+    const s = require('../utils/botControls').spam();
+    const field = (id, label, value, placeholder) => ({ type: 1, components: [{ type: 4, custom_id: id, label, style: 1, max_length: 60, required: false, value, placeholder }] });
+    return {
+        title: 'Tune the ladder',
+        custom_id: 'bot_penm_tune',
+        components: [
+            field('points', "Points: a reply's, a warning's", `${s.reply}, ${s.warning}`, 'Blank: 1, 3'),
+            field('threshold', 'Penalty at (points in 60 s)', String(s.threshold), 'Blank: 10'),
+            field('rungs', 'Rungs, in minutes', s.rungsMin.join(', '), 'Blank: 1, 5, 15, 60, 360, 720'),
+        ],
+    };
+}
+
+// /bot freeze (his "ok good", 2026-10-30 13:09 EDT): stop everything or chosen commands in seconds, without a deploy.
+function buildFreezePanel({ note = null } = {}) {
+    const f = require('../utils/botControls').freezeState();
+    const frozen = f.all || f.commands.length;
+    const what = f.all ? 'everything' : f.commands.map(c => `\`/${c}\``).join(', ');
+    const now = frozen
+        ? `**Frozen** · ${what}${f.since ? ` · since <t:${Math.floor(new Date(f.since).getTime() / 1000)}:R>` : ''}\n> ${emojis.pending} Dioreo is paused${f.reason ? `: ${f.reason}` : '. Try again a little later.'}`
+        : '**Running normally.**';
+    return [{
+        type: 17,
+        accent_color: FREEZE_ACCENT,
+        components: [
+            { type: 10, content: `## ${emojis.pending} Freeze · Owner Tools\n-# For a bug or a spam wave after a release: stops Dioreo answering until you unfreeze it.` },
+            { type: 14, spacing: 1 },
+            { type: 10, content: now },
+            { type: 10, content: '-# **Everything:** every slash command, button and pop-up answers with the line above, privately; typed commands stay silent.\n-# **Commands:** only those, slash and typed.\n-# You, /bot and Dioreo Admin are never frozen.' },
+            ...(note ? [{ type: 10, content: note }] : []),
+            { type: 1, components: [
+                ownerBtn('Freeze Everything', 'bot_frz_all', 4),
+                ownerBtn('Freeze Commands', 'bot_frz_some'),
+                ownerBtn('Unfreeze', 'bot_frz_off', 3, !frozen),
+            ] },
+        ],
+    }];
+}
+function freezeModal(all) {
+    const f = require('../utils/botControls').freezeState();
+    const reason = { type: 1, components: [{ type: 4, custom_id: 'reason', label: 'Reason, shown after "Dioreo is paused:"', style: 1, max_length: 200, required: false, value: f.reason || undefined, placeholder: 'Blank: "Try again a little later."' }] };
+    return {
+        title: all ? 'Freeze everything' : 'Freeze commands',
+        custom_id: all ? 'bot_frzm_all' : 'bot_frzm_some',
+        components: all ? [reason] : [
+            { type: 1, components: [{ type: 4, custom_id: 'commands', label: 'Slash command names', style: 1, max_length: 200, required: true, value: f.commands.join(', ') || undefined, placeholder: 'gunsmith, draws' }] },
+            reason,
+        ],
+    };
+}
+
+// /bot servers' checkup (his "ok", 2026-10-30 13:09 EDT): one place for "Dioreo doesn't answer here". Each line reads what already exists; nothing new is stored. A read that fails says so on its own line instead of failing the panel.
+async function serverCheckup(client, guildId) {
+    const controls = require('../utils/botControls');
+    const pub = require('../bot/clients').publicClient(client);
+    const guild = pub?.guilds?.cache?.get(guildId);
+    const lines = [];
+    if (guild) {
+        lines.push(`**In the server** · yes${guild.memberCount ? ` · ${guild.memberCount.toLocaleString('en-US')} members` : ''}`);
+        const me = guild.members?.me;
+        const text = [...(guild.channels?.cache?.values?.() || [])].filter(ch => ch.type === 0 || ch.type === 5);
+        const { PermissionFlagsBits } = require('discord.js');
+        const blocked = me ? text.filter(ch => { const p = ch.permissionsFor?.(me); return !p?.has(PermissionFlagsBits.ViewChannel) || !p?.has(PermissionFlagsBits.SendMessages); }) : [];
+        lines.push(!me ? "**Can't post in** · unknown (Dioreo's own member isn't cached)"
+            : blocked.length ? `**Can't post in** · ${blocked.length} of ${text.length} channels: ${blocked.slice(0, 5).map(ch => `<#${ch.id}>`).join(' ')}${blocked.length > 5 ? ` +${blocked.length - 5}` : ''}`
+                : `**Can't post in** · none of ${text.length} channels`);
+        try {
+            const list = await require('../utils/textCommands/permissions').guildOverrides(pub, guildId);
+            const appId = pub.application?.id || pub.user?.id;
+            const deny = (list || []).filter(o => (o.permissions || []).some(p => p.permission === false));
+            lines.push(`**Integrations** · ${!deny.length ? 'nothing switched off' : `${deny.some(o => o.id === appId) ? 'the whole app has rules' : `${deny.length} command${deny.length === 1 ? ' has' : 's have'} rules`} (see Integrations)`}`);
+        } catch {
+            lines.push('**Integrations** · unreadable right now');
+        }
+    } else {
+        lines.push('**In the server** · no');
+    }
+    if (dbUp()) {
+        try {
+            const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+            const [row] = await require('../models/AnalyticsEvent').aggregate([
+                { $match: { guildId, createdAt: { $gte: since }, isAdmin: { $ne: true }, entry: { $ne: 'autocomplete' } } },
+                { $group: { _id: null, n: { $sum: 1 }, errors: { $sum: { $cond: [{ $eq: ['$outcome', 'error'] }, 1, 0] } }, typed: { $sum: { $cond: [{ $eq: ['$entry', 'text'] }, 1, 0] } } } },
+            ]);
+            lines.push(`**Last 7 days** · ${row?.n || 0} uses (${row?.typed || 0} typed) · ${row?.errors || 0} errors`);
+        } catch {
+            lines.push('**Last 7 days** · unreadable right now');
+        }
+    } else {
+        lines.push('**Last 7 days** · the database is not connected');
+    }
+    const l = controls.limitsFor(guildId);
+    lines.push(`**Reply limits** · ${l.perChannel} per channel · ${l.perServer} per server, per 10 s${l.custom ? '' : ' (default)'}`);
+    const misfires = dbUp() ? await require('../utils/textCommands/misfires').recent(guildId) : null;
+    const mf = require('../utils/textCommands/misfires');
+    lines.push(`**Misfires, 7 days** · ${misfires == null ? 'unreadable right now' : misfires.length ? `\n${misfires.map(r => `-# ${mf.line(r)}`).join('\n')}` : 'none'}`);
+    if (controls.isBlockedGuild(guildId)) lines.push(`**Blocked** · yes: Dioreo leaves it whenever it is re-added`);
+    return lines.join('\n');
+}
+
+const replyLimitsModal = guildId => {
+    const l = require('../utils/botControls').limitsFor(guildId);
+    const field = (id, label, value, placeholder) => ({ type: 1, components: [{ type: 4, custom_id: id, label, style: 1, max_length: 3, required: false, value, placeholder }] });
+    return {
+        title: 'Reply limits, per 10 s',
+        custom_id: `bot_srvlim|${guildId}`,
+        components: [
+            field('perChannel', 'Replies per channel', l.custom ? String(l.perChannel) : undefined, 'Blank: 5'),
+            field('perServer', 'Replies per server', l.custom ? String(l.perServer) : undefined, 'Blank: 30'),
+        ],
+    };
+};
 
 module.exports = {
     buildAnalyticsPanel,
@@ -1044,6 +1284,16 @@ module.exports = {
     buildAdminListBlocks,
     buildServersPanel,
     buildServersPicker,
+    buildPenaltiesPanel,
+    buildPenaltyUserPanel,
+    penaltyLookupModal,
+    penaltyExtendModal,
+    ladderTuneModal,
+    buildFreezePanel,
+    freezeModal,
+    serverCheckup,
+    replyLimitsModal,
+    fmtLength,
     buildAdminGrantModal,
     buildAdminEditPermissionsModal,
     // PAGE_LABEL stays OUT of exports (v3-pre-release review, finding #47) -- confirmed dead as a CROSS-MODULE export, this file uses it itself. PAGE_META/pageSelectRow were re-added 2026-08-23 00:22 EDT (bot analytics redesign) so scripts/botAnalyticsBody.test.js can assert on the page-switcher descriptions without duplicating them. decodeState (and FILTERABLE_PAGES/encodeState alongside it) was removed entirely in the same change -- the page/actor filter branches that were its only callers, in this file and handlers/bot.js, moved to the portal.
@@ -1062,8 +1312,11 @@ module.exports = {
             .addStringOption(o => o.setName('visibility').setDescription('Show this panel only to you, or publicly to everyone in the chat. (Defaults to only you.)').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' })))
         .addSubcommand(sub => sub.setName('access').setDescription('Manage the admin allowlist (owner-only)')
             .addStringOption(o => o.setName('visibility').setDescription('Show this panel only to you, or publicly to everyone in the chat. (Defaults to only you.)').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' })))
-        .addSubcommand(sub => sub.setName('servers').setDescription("View or reset a server's /admin rules (owner-only)")
+        .addSubcommand(sub => sub.setName('servers').setDescription("A server's /admin rules, checkup, reply limits, leave or block (owner-only)")
             .addStringOption(o => o.setName('server').setDescription('Server ID (blank: pick this server or type an ID)')))
+        .addSubcommand(sub => sub.setName('penalties').setDescription('Text-command spam penalties: lift, extend, exempt, block, tune (owner-only)')
+            .addStringOption(o => o.setName('user').setDescription('A user ID to open (blank: everyone on a penalty now)')))
+        .addSubcommand(sub => sub.setName('freeze').setDescription('Pause Dioreo, or some commands, without a deploy (owner-only)'))
         .addSubcommand(sub => sub.setName('hotpatch').setDescription('Reload changed files without a restart')
             .addBooleanOption(o => o.setName('pull').setDescription('git pull first (default: yes)'))
             .addBooleanOption(o => o.setName('dry_run').setDescription('Show the plan and change nothing'))
@@ -1090,11 +1343,24 @@ module.exports = {
             await interaction.deferReply({ flags: 64 });
             const guildId = (interaction.options.getString('server') || '').trim();
             // No ID: offer the server it was run in, or a box to type one (Harkirat 2026-10-22 15:51 EDT: a name picker would not work; default to the ID).
-            if (!guildId) return sendV2Payload(interaction, buildServersPicker(interaction.guildId, interaction.guild?.name));
+            if (!guildId) return sendV2Payload(interaction, await buildServersPicker(interaction.guildId, interaction.guild?.name));
             if (!/^\d{15,22}$/.test(guildId)) {
                 return sendV2Payload(interaction, [{ type: 17, accent_color: 0x5865F2, components: [{ type: 10, content: '## Server Settings · Owner Tools\nThat is not a server ID. Pick one from the list, or paste the 17–20 digit ID.' }] }]);
             }
             return sendV2Payload(interaction, await buildServersPanel(interaction.client, guildId), { allowedMentions: { parse: [] } });
+        }
+
+        if (sub === 'penalties' || sub === 'freeze') {
+            // Owner-only, never grantable (B7): these silence people and commands bot-wide. Always private.
+            if (!isOwner(interaction.user.id)) {
+                return interaction.reply({ content: '🔒 **Only the bot owner can use this.**', ephemeral: true });
+            }
+            await interaction.deferReply({ flags: 64 });
+            if (sub === 'freeze') return sendV2Payload(interaction, buildFreezePanel(), { allowedMentions: { parse: [] } });
+            const userId = (interaction.options.getString('user') || '').replace(/[<@!>]/g, '').trim();
+            if (!userId) return sendV2Payload(interaction, buildPenaltiesPanel(interaction.client), { allowedMentions: { parse: [] } });
+            if (!/^\d{15,22}$/.test(userId)) return sendV2Payload(interaction, buildPenaltiesPanel(interaction.client, { note: `-# ${emojis.cross} That is not a user ID: 17–20 digits.` }), { allowedMentions: { parse: [] } });
+            return sendV2Payload(interaction, buildPenaltyUserPanel(interaction.client, userId), { allowedMentions: { parse: [] } });
         }
 
         if (sub === 'hotpatch') {

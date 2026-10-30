@@ -27,6 +27,8 @@ const COMMAND_ALIASES = {
     '/bot analytics': ['alert', 'alerts', 'health', 'log', 'logs', 'uptime', 'usage', 'timing', 'audit', 'changes'],
     '/bot access': ['access', 'admins', 'permissions'],
     '/bot servers': ['servers', 'server settings', 'override', 'reset'],
+    '/bot penalties': ['penalties', 'spam', 'penalty', 'lift', 'block user'],
+    '/bot freeze': ['freeze', 'pause', 'kill switch', 'stop'],
     '/autobuild': ['screenshot', 'scan', 'ocr', 'import'],
     '/settings': ['preferences', 'prefs', 'config', 'timezone'],
     '/invite': ['add', 'install', 'addbot', 'share', 'link'],
@@ -183,7 +185,7 @@ const CATEGORY_DEFS = [
         key: 'botadmin', label: 'Bot Admin', emojiKey: 'botAccess',
         dropdownDescription: 'Data entry, analytics and admin tools',
         // Alphabetical, and it must MATCH buildBotAdminBody's order below -- the first draft listed these one way in the directory and another in the body, which reads as the page having lost track of itself. Harkirat asked for alphabetical here on 2026-08-10 19:34 EDT. ⚠️ Per-command `requires` (added 2026-08-13, per-command admin permissions) -- an admin granted only /bot analytics must not see /manage or /autobuild listed here even though the whole category is visible to them. Category-level `requires: 'botAdmin'` still gates the SECTION (shows if the user has ANY admin access at all, per utils/adminAccess.js's isAdmin()); each command's own key gates that ONE line, same pattern `/admin` already uses inside Preferences. `/bot access` is gated on `botAccess` (isOwner(), not a permission token -- see utils/adminAccess.js's header on why it can never have one).
-        staticCommands: [cmd('/bot analytics', { requires: 'bot', jumpDescription: 'Usage, timing, health, alerts and recent changes' }), cmd('/bot access', { requires: 'botAccess', jumpDescription: 'Grant or revoke admin access' }), cmd('/bot hotpatch', { requires: 'botAccess', jumpDescription: 'Reload changed files into the running bot' }), cmd('/bot servers', { requires: 'botAccess', jumpDescription: 'The servers Dioreo is in, and their settings' }), cmd('/embed', { requires: 'botAccess', jumpDescription: 'Render pasted message JSON to check a design' }), cmd('/manage emojis', { requires: 'botAccess', jumpDescription: 'Every emoji on each bot, with one-tap sync' }), cmd('/autobuild', { requires: 'autobuild', jumpDescription: 'Turn Gunsmith screenshots into builds' }), cmd('/manage', { requires: 'manage', jumpDescription: 'Add and edit draws, calendar, patch notes, loadouts and more' })],
+        staticCommands: [cmd('/bot analytics', { requires: 'bot', jumpDescription: 'Usage, timing, health, alerts and recent changes' }), cmd('/bot access', { requires: 'botAccess', jumpDescription: 'Grant or revoke admin access' }), cmd('/bot hotpatch', { requires: 'botAccess', jumpDescription: 'Reload changed files into the running bot' }), cmd('/bot servers', { requires: 'botAccess', jumpDescription: 'The servers Dioreo is in, and their settings' }), cmd('/bot penalties', { requires: 'botAccess', jumpDescription: 'Spam penalties: lift, extend, exempt, block' }), cmd('/bot freeze', { requires: 'botAccess', jumpDescription: 'Pause Dioreo or some commands, no deploy' }), cmd('/embed', { requires: 'botAccess', jumpDescription: 'Render pasted message JSON to check a design' }), cmd('/manage emojis', { requires: 'botAccess', jumpDescription: 'Every emoji on each bot, with one-tap sync' }), cmd('/autobuild', { requires: 'autobuild', jumpDescription: 'Turn Gunsmith screenshots into builds' }), cmd('/manage', { requires: 'manage', jumpDescription: 'Add and edit draws, calendar, patch notes, loadouts and more' })],
         requires: 'botAdmin',
     },
 ];
@@ -290,7 +292,13 @@ async function currentSeasonEmoji() {
 function visiblePageNames(perms = {}) {
     const { PAGE_ORDER, hasPage } = require('../utils/helpPages');
     const seen = new Set(searchEntries(perms).filter(e => !e.app).map(e => e.name));
-    return PAGE_ORDER.filter(n => seen.has(n) && hasPage(n));
+    // /bot is one page for its subcommands (2026-10-30 14:05 EDT): shown when any of them is.
+    return PAGE_ORDER.filter(n => (seen.has(n) || (n === '/bot' && visibleBotSubs(perms).length)) && hasPage(n));
+}
+// The /bot subcommands this viewer may open, in the page's dropdown order.
+function visibleBotSubs(perms = {}) {
+    const seen = new Set(searchEntries(perms).filter(e => !e.app).map(e => e.name));
+    return require('../utils/helpPages').BOT_SUB_ORDER.filter(n => seen.has(n));
 }
 
 // A right-click app has no page of its own: it opens the page of the command it belongs to.
@@ -299,7 +307,8 @@ const APP_PAGE = { 'View Colors': '/colors', 'Convert Times': '/timestamp', 'Add
 // The page a `cmd:` (or `d help <word>`) means: an exact page, `/gunsmith` as MP, an app as its command, else what matchHelpCommand and the search find. Null: the home page.
 async function resolvePage(query, perms = {}) {
     if (!query) return null;
-    const visible = visiblePageNames(perms);
+    // A /bot subcommand stays named (`/bot servers`) so the page opens on it; buildHelpMessage turns it into the /bot page.
+    const visible = [...visiblePageNames(perms), ...visibleBotSubs(perms)];
     const lower = String(query).trim().toLowerCase();
     const slashed = lower.startsWith('/') ? lower : `/${lower}`;
     if (visible.includes(slashed)) return slashed;
@@ -330,20 +339,24 @@ function homeHero(client) {
 }
 
 // One /help message: the card (the home page or one command's page) and the command switcher under it; execute() adds the footer row. `view` is 'text' or 'slash'; a typed view is offered only where typed forms work (typedFormsHere) and for a command that has one, and falls back to slash otherwise. `detail` is Draw Prices' Detailed view.
-async function buildHelpMessage({ perms = {}, client, accentColor = PRESET_ACCENT, cmd = null, view = 'slash', detail = false, typedForms = true } = {}) {
+async function buildHelpMessage({ perms = {}, client, accentColor = PRESET_ACCENT, cmd = null, view = 'slash', detail = false, typedForms = true, prefixes = null } = {}) {
     const H = require('../utils/helpPages');
     const seasonEmoji = await currentSeasonEmoji();
     const names = visiblePageNames(perms);
+    const botSubs = visibleBotSubs(perms);
+    let sub = null;
+    if (cmd && botSubs.includes(cmd)) { sub = cmd; cmd = '/bot'; }
     if (cmd && !names.includes(cmd)) cmd = null;
     const canSwitch = typedForms && (!cmd || H.hasTextView(cmd));
     if (view === 'text' && !canSwitch) view = 'slash';
     const card = cmd
-        ? H.buildPage(cmd, { client, view, detail: detail && view === 'text', canSwitch, seasonEmoji })
-        : [...H.buildHome({ client, view, canSwitch, hero: homeHero(client), adminNames: names.filter(n => !H.hasTextView(n)) }),
+        ? H.buildPage(cmd, { client, view, detail: detail && view === 'text', canSwitch, seasonEmoji, prefixes, sub, subs: botSubs })
+        // The home page's Admin line names each /bot subcommand: a mention of bare /bot would not resolve, since /bot has subcommands.
+        : [...H.buildHome({ client, view, canSwitch, hero: homeHero(client), adminNames: names.filter(n => !H.hasTextView(n)).flatMap(n => (n === '/bot' ? botSubs : [n])), prefixes }),
             { type: 14, spacing: 1, divider: true },
             // The sign-off in the launch announcement's style (2026-10-27 01:23 EDT, Harkirat).
             { type: 10, content: `-# Made with ${emojis.diorHeart} by <@${HARKIRAT_ID}>` }];
-    return [{ type: 17, accent_color: accentColor, components: card }, H.buildSwitcher({ names, current: cmd, view, client, seasonEmoji })];
+    return [{ type: 17, accent_color: accentColor, components: card }, H.buildSwitcher({ names, current: cmd, view, client, seasonEmoji, prefixes })];
 }
 
 function helpFooterRow() {
@@ -378,6 +391,7 @@ module.exports = {
     searchEntries,
     typedFormsHere,
     visiblePageNames,
+    visibleBotSubs,
 
     // `override` comes from handlers/help.js: { cmd, view, detail } from the switcher and the view buttons, or the older `cmd:<name>` / 'landing' strings a panel posted before B6 still sends. A typed view is the default inside a text command or a click on its reply (utils/commandMentions.js inTextCommand), a slash view everywhere else.
     async execute(interaction, override = null) {
@@ -409,8 +423,9 @@ module.exports = {
         const prefs = await UserPreference.findOne({ discordId: interaction.user.id });
         const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);
 
-        // No "Show Everyone" button -- the visibility option above already covers that case up front, and repeating it here would be redundant (Harkirat's direct request).
-        const components = await buildHelpMessage({ perms, client: interaction.client, accentColor, cmd, view, detail, typedForms: typedFormsHere(interaction) });
+        // No "Show Everyone" button -- the visibility option above already covers that case up front, and repeating it here would be redundant (Harkirat's direct request). The server's own text-command prefixes on every typed page (B7).
+        const prefixes = await require('../utils/textCommands/server').prefixesFor(interaction.guildId);
+        const components = await buildHelpMessage({ perms, client: interaction.client, accentColor, cmd, view, detail, typedForms: typedFormsHere(interaction), prefixes });
         // Under every /help page, outside its card (2026-10-27 01:23 EDT, Harkirat; "regardless of whatever cmd/page of /help is being viewed", 01:21 EDT): Announcements shows what is running now, privately, Bugs & Suggestions opens the pop-up utils/feedback.js sends to the owner, and Submit a Build. Answered by handlers/help.js and handlers/loadouts.js.
         components.push(helpFooterRow());
         // No mention pings or highlights (2026-10-27 10:44 EDT, Harkirat: "i want the clickable username but not the highlight"): the sign-off's <@dior> stays a clickable name, but the panel no longer lights up yellow for him. Same suppression /settings uses.

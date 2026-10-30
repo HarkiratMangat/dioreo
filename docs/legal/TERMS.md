@@ -139,8 +139,8 @@ The Bot can be installed two ways:
 Either way:
 
 - It responds to what someone starts: a slash command, a button, or, in a server, a message that begins by addressing it as a text command. Discord lets it see the messages in a server it is in; it ignores every one not addressed to it, keeps none (Privacy Policy §3), and does not moderate.
-- It sends a direct message only to someone who asked for it: reminders you turn on with `/remind`, news about a build you submitted or disputed, and, at most once a day per channel, a note that it can't post in a channel where you ran a text command. It posts in a channel only to answer a text command addressed to it there, never on its own.
-- A server's admins can limit where it answers publicly with `/admin` (Privacy Policy §2.1a), and can remove it at any time (§13.1).
+- It sends a direct message only to someone who asked for it: reminders you turn on with `/remind`, news about a build you submitted or disputed, and, at most once a day per server, a note that it can't post in a channel where you ran a text command. It posts in a channel only to answer a text command addressed to it there, never on its own.
+- A server's admins can limit where it answers publicly, turn its text commands off where they want and set the server's own prefix with `/admin` (Privacy Policy §2.1a), and can remove it at any time (§13.1).
 - Whether it works in a given server is also controlled by that server's own Discord settings and by Discord, not by us.
 
 ### 4.2 It's free
@@ -186,7 +186,7 @@ Nothing in the Bot is financial, legal, medical, or other professional advice.
 
 You must not:
 
-1. **Abuse or overload it** — no spamming commands, no automated or scripted invocation, no scraping, no deliberately exhausting rate limits or resources.
+1. **Abuse or overload it** — no spamming commands, no automated or scripted invocation, no scraping, no deliberately exhausting rate limits or resources. Sending text commands fast enough to flood a channel stops the Bot answering your text commands for a while, in every server: from one minute up to 12 hours, longer each time in the same day (Privacy Policy §2.1h).
 2. **Attack it** — no attempting unauthorised access to the Bot, its database, its media storage, or its infrastructure; no exploiting a vulnerability beyond the minimum needed to demonstrate it; no denial-of-service.
 3. **Circumvent controls** — no bypassing cooldowns, permission checks, or admin-only gates.
 4. **Impersonate** — no presenting the Bot's output as your own or someone else's, and no claiming affiliation with or authorisation from us.
@@ -343,7 +343,7 @@ Removing it does **not** automatically delete your stored preferences — see §
 
 ### 13.2 By us
 
-We may restrict, suspend, or permanently block your access, with or without notice, if we reasonably believe you have breached these Terms — particularly §6 — or where necessary to protect the Bot, its users, or ourselves. We may also do so if we discontinue the Bot.
+We may restrict, suspend, or permanently block your access (or a server's: the Bot can leave a server and not return), with or without notice, if we reasonably believe you have breached these Terms — particularly §6 — or where necessary to protect the Bot, its users, or ourselves. We may also do so if we discontinue the Bot.
 
 We have no obligation to give reasons, though we generally will if you ask in good faith.
 
@@ -455,7 +455,7 @@ Kept here as well as in git, because the repository's visibility can change (§7
 
 | Version | Effective | What changed |
 |---|---|---|
-| 1.7 | 28 October 2026 | **Text commands.** In a server, the Bot now also answers a message that starts by addressing it (`@Dioreo today`, and where Discord allows it `d today`, `dior today` or `/today`). §2.1 names a text command as a way of invoking a command; §4 lists the feature; §4.1 says the message permissions a server install asks for are now used for it, that the Bot ignores every other message and keeps none, and that it may send one direct message when it can't post where you asked. **None of this reduces your rights.** |
+| 1.7 | 28 October 2026 | **Text commands.** In a server, the Bot now also answers a message that starts by addressing it (`@Dioreo today`, and where Discord allows it `d today`, `dior today` or `/today`). §2.1 names a text command as a way of invoking a command; §4 lists the feature; §4.1 says the message permissions a server install asks for are now used for it, that the Bot ignores every other message and keeps none, and that it may send one direct message when it can't post where you asked. **Then, before publishing:** §6 says what flooding a channel with text commands does (a pause of one minute up to 12 hours); §4.1 says a server's admins can turn text commands off and set their own prefix, and that the can't-post note is once a day per server; §13.2 says we can also have the Bot leave a server and stay out. **None of this reduces your rights.** |
 | 1.6 | 27 October 2026 | **Dioreo v3.** The Bot can now be added to a server as well as to your account: §4.1 says what a server install receives and asks for, §2.1 and §13.1 cover adding and removing it, and the scope line names the companion **Dioreo Admin** app. §4 lists the new features. §5.1 says what `/draw calculator`'s "Recommended Bundle", "Suggested Purchase" and "Stock Up" mean: arithmetic on the amount you entered, not advice to buy. §8 describes the one AI feature as it now is: admins the owner has granted can use it, and the screenshot it reads can come from someone else's message. §1.1 says the admin portal is covered as part of the Bot, and Cloudflare is added to §7.4 and §9. Editorially, these Terms kept two change lists, this table and a shorter appendix, which told the same history twice and disagreed: the appendix numbered the changes of 1 August as three versions (1.2, 1.3, 1.4), which were never published separately, and it stopped before 1.5. This table is now the only one; the two changes only the appendix recorded are added to the 1.4 row, and the appendix is removed. **None of this reduces your rights.** |
 | 1.5 | 4 August 2026 | **The Bot was renamed from Dior's Builds to Dioreo.** A change of name only: same operator, same Bot, same data, same terms — see §1 and §19.2. §7.1 keeps the former name protected alongside the new one. **Nothing you agreed to has changed**, no new data is collected, and no right of yours is reduced. |
 | 1.4 | 1 August 2026 | Brought the Site into scope. Version 1.1 applied only to the Bot, while the Privacy Policy had begun describing the website — so the warranty disclaimer (§14) and the limitation of liability (§15) did not reach the pages these documents are published on. Adds §1.1 defining the Site and saying exactly which Terms cover it and which do not. **No new obligation on you and no reduction of your rights** — the Site has nothing to sign up for, and the conduct, eligibility and suspension provisions still apply to the Bot alone. The same version added Discord (`diorswrld`) as a second contact route in §1 and §20, alongside the canonical email (anything that has to be on the record still goes by email), and broadened the closing non-affiliation notice to name TiMi Studio Group, Tencent, and the rights holders of licensed in-game content, matching the notice the Site already carried. |

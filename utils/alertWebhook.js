@@ -109,8 +109,8 @@ function sendAlert(title, detail = '', level = 'error', opts = {}) {
             .finally(() => clearTimeout(timeout));
     }
 
-    // Persist to the alert store — INDEPENDENT of the POST above (see hard rules). Fire-and-forget, never awaited, never throws. Runs for silent alerts too — logging them is the whole point of `silent`.
-    recordAlert({ level, title, detail: rawDesc, pinged: shouldPing, host, rssMb: rss, uptimeSec, silent });
+    // Persist to the alert store — INDEPENDENT of the POST above (see hard rules). Fire-and-forget, never awaited, never throws. Runs for silent alerts too — logging them is the whole point of `silent`. `record: false` posts without storing (B7's join/leave feed: one line per server added or removed, which his "nothing stored" rules out of AlertLog, and which is not an alert for /bot analytics' Alerts page either).
+    if (opts.record !== false) recordAlert({ level, title, detail: rawDesc, pinged: shouldPing, host, rssMb: rss, uptimeSec, silent });
 }
 
 module.exports = { sendAlert };

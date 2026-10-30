@@ -4,7 +4,7 @@
 //
 // Three rules it enforces, each Harkirat's:
 //   - Public by default. A text command ignores the member's /settings "Hidden" (2026-10-28 17:14 EDT: "why dont we just default to public for @mention or prefix commands"), because typing in a channel is already public. So the ephemeral flag a command passes is dropped...
-//   - ...EXCEPT when the SERVER's /admin rule forces hidden (attachGuildPolicy sets dioreoPolicy.visibility). A normal message can never be private, so the answer becomes the Open privately card instead, and every later send is swallowed: nothing private is ever posted publicly.
+//   - ...and the server's slash-command visibility rules do not apply either (B7, 2026-10-30; his 2026-10-29 15:54 EDT: "text commands aren't private, so they're either a 'turn off here or allow here' sort of system"). A message can never be private, so the Open privately card this adapter used to post there is gone; where a server's /admin turns text commands off, bot/textCommands.js stays silent and nothing reaches here.
 //   - Never pings: replied_user is always false and allowed_mentions defaults to none.
 const { Routes } = require('discord.js');
 const { toIdPart, fromIdPart, findTextCommand } = require('./commands');
@@ -99,22 +99,7 @@ function toBody(opts) {
     return { body, files: o.files };
 }
 
-// The card shown where the server's /admin rule says answers are private (his mock-up A, 2026-10-28 17:09 EDT). Anyone may click: it opens THEIR OWN view, privately (think-pass, 2026-10-28 16:46 EDT), so there is nothing to lock.
-function privateCardBody(textCommand, payload = '') {
-    return {
-        flags: 32768,
-        allowed_mentions: { parse: [], replied_user: false },
-        components: [{
-            type: 17,
-            components: [
-                { type: 10, content: `-# This server shows Dioreo's answers privately here.` },
-                { type: 1, components: [{ type: 2, style: 2, label: 'Open privately', custom_id: runCustomId('txtpriv_', textCommand, payload) }] },
-            ],
-        }],
-    };
-}
-
-// values: the options read from the message. targetUser / targetMember / targetMessage: what a reply form acts on (View Colors' person, Convert Times' message), read by those modules exactly as from a right-click. The Open privately card carries all of it, so the private copy is the same answer.
+// values: the options read from the message. targetUser / targetMember / targetMessage: what a reply form acts on (View Colors' person, Convert Times' message), read by those modules exactly as from a right-click.
 function createTextInteraction(message, { textCommand, via, values = {}, targetUser = null, targetMember = null, targetMessage = null }) {
     const client = message.client;
     const channel = message.channel;
@@ -123,14 +108,11 @@ function createTextInteraction(message, { textCommand, via, values = {}, targetU
     let replyId = null;
     let deferred = false;
     let replied = false;
-    let privateCard = false;
     let typingTimer = null;
 
-    const forcedPrivate = () => interaction.dioreoPolicy?.visibility === 'ephemeral';
 
     // The one place a message is written. The first send REPLIES to the member's message (and falls back to a plain send if they deleted it); every later send edits that same reply, the way a slash command edits @original.
     async function send(rawBody, files, { newMessage = false } = {}) {
-        if (privateCard) return null;
         const body = { ...rawBody };
         if (typeof body.flags === 'number') body.flags &= ~EPHEMERAL;
         body.allowed_mentions = { ...(body.allowed_mentions || { parse: [] }), replied_user: false };
@@ -149,12 +131,6 @@ function createTextInteraction(message, { textCommand, via, values = {}, targetU
             return created;
         }
         return rest.patch(Routes.channelMessage(channel.id, replyId), opts);
-    }
-
-    async function openPrivately() {
-        if (privateCard) return;
-        await send(privateCardBody(textCommand, encodePayload({ values, targetMessageId: targetMessage?.id, targetUserId: targetUser?.id })));
-        privateCard = true;
     }
 
     const interaction = {
@@ -206,26 +182,22 @@ function createTextInteraction(message, { textCommand, via, values = {}, targetU
         isMessageContextMenuCommand: () => false,
         async deferReply() {
             deferred = true;
-            if (forcedPrivate()) return openPrivately();
             // "Dioreo is typing…" only if the answer is slow (2026-10-28 18:06 EDT, his "takes like a second"): sent at once it is one more request racing the reply itself, for a panel that is usually ready in well under half a second.
             typingTimer = setTimeout(() => { channel.sendTyping?.().catch(() => {}); }, 600);
             typingTimer.unref?.();
         },
         async reply(opts) {
             replied = true;
-            if (forcedPrivate()) return openPrivately();
             const { body, files } = toBody(opts);
             return send(body, files);
         },
         async editReply(opts) {
             replied = true;
-            if (forcedPrivate()) return openPrivately();
             const { body, files } = toBody(opts);
             return send(body, files);
         },
         // A follow-up is a NEW message (utils/ephemeral.js's privateNotice uses it for a short notice after deleting the panel).
         async followUp(opts) {
-            if (privateCard) return null;
             const { body, files } = toBody(opts);
             return send(body, files, { newMessage: true });
         },
@@ -241,13 +213,12 @@ function createTextInteraction(message, { textCommand, via, values = {}, targetU
         async deferUpdate() {},
         async update(opts) { return interaction.editReply(opts); },
         async showModal() { throw new TextCommandRefused('modal'); },
-        // utils/sendV2Payload.js's text branch writes through here, so the Show Everyone strip and the idle grey-out stay in one place. Behind the same gate as reply() and editReply() (B4, 2026-10-29 10:32 EDT): a command that sends its panel without deferring first must still get the Open privately card where the server's rule forces hidden, never a public panel.
+        // utils/sendV2Payload.js's text branch writes through here, so the Show Everyone strip and the idle grey-out stay in one place.
         __textSend(body, options = {}) {
-            if (forcedPrivate()) return openPrivately();
             return send(body, options.files);
         },
     };
     return interaction;
 }
 
-module.exports = { createTextInteraction, buildOptions, TextCommandRefused, privateCardBody, encodePayload, runCustomId, readRunCustomId };
+module.exports = { createTextInteraction, buildOptions, TextCommandRefused, encodePayload, runCustomId, readRunCustomId };

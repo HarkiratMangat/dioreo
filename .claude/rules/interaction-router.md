@@ -84,7 +84,7 @@ paths:
 | `ptn_` | `addToPatchNotes.js` (right-click Add to Patch Notes) |
 | `vc_` | `viewColors.js` (View Colors panel pages) |
 | `calc~` | `drawCalc.js` (`/draw calculator`) |
-| `txtpriv_` `txtrun_` | `textCommands.js` (a text command's Open privately card and its Did you mean picks; `.claude/rules/text-commands.md`) |
+| `txtpriv_` `txtrun_` | `textCommands.js` (the help card's /help icon, `txtpriv_help`, and a text command's Did you mean picks; the Open privately card was retired in B7, 2026-10-30; `.claude/rules/text-commands.md`) |
 | `admin_` | dispatched straight to `commands/admin.js`, above the chain |
 
 ✅ **THE ~100 CROSS-REFERENCES IN COMMENTS AND RULES WERE UPDATED TOO** (2026-08-13 18:00 EDT), across 40 files in `commands/`, `utils/`, `scripts/`, `handlers/`, `docs/reference/` and these rule files. A mention of *"index.js's `mng_search_` handler"* now names `handlers/manage/shared.js`'s `handleSearchSubmit()` (further split into a directory 2026-08-14, see above), and so on.

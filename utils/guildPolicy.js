@@ -219,8 +219,12 @@ async function updateGuildSettings(guildId, actorId, mutate, { source = 'admin' 
     return doc;
 }
 
-// The fields a change is described from, as plain data.
+// The fields a change is described from, as plain data: the visibility rules, and the text-command rules and prefixes beside them (B7).
 function snapshot(doc) {
+    return { ...snapshotSet(doc), text: doc?.textRules ? snapshotSet(doc.textRules) : null, textPrefixes: [...(doc?.textPrefixes || [])] };
+}
+
+function snapshotSet(doc) {
     return {
         defaultVisibility: doc?.defaultVisibility || 'public',
         channelRules: (doc?.channelRules || []).map(r => ({ channelId: r.channelId, visibility: r.visibility })),
@@ -231,34 +235,49 @@ function snapshot(doc) {
 }
 
 const LABEL = { public: 'Public', ephemeral: 'Private' };
+// The text-command rules are the same shape read as On / Off (models/GuildSettings.js textRules).
+const TEXT_LABEL = { public: 'On', ephemeral: 'Off' };
+const EMPTY_SET = { defaultVisibility: 'public', channelRules: [], roleRules: [], ephemeralCommands: [], commands: [] };
 
 // One plain line per thing that changed, with channels and roles as <#id> / <@&id> tokens the log export turns into names. Empty when nothing changed, and then nothing is logged.
 function describeChanges(before, after) {
-    const lines = describeRuleSet(before, after, '');
-    // A command's own settings: added, removed, or changed inside, each line prefixed with the command.
-    const cmd = c => (/[A-Z]/.test(c) ? c : `/${c}`);
+    const lines = describeFullSet(before, after, '', LABEL, c => (/[A-Z]/.test(c) ? c : `/${c}`));
+    // The text-command rules and prefixes (B7), from a snapshot's `text` or a raw document's `textRules`.
+    const textOf = s => (s.text !== undefined ? s.text : (s.textRules ? snapshotSet(s.textRules) : null));
+    const tb = textOf(before);
+    const ta = textOf(after);
+    if (tb || ta) lines.push(...describeFullSet(tb || EMPTY_SET, ta || EMPTY_SET, 'Text commands · ', TEXT_LABEL, c => `\`${c}\``));
+    const pb = (before.textPrefixes || []).join(' ');
+    const pa = (after.textPrefixes || []).join(' ');
+    if (pb !== pa) lines.push(`Text command prefixes: ${pb || 'default'} → ${pa || 'default'}`);
+    return lines;
+}
+
+// One rule set and its commands' own sets, each line given `prefix`, worded with `labels`.
+function describeFullSet(before, after, prefix, labels, cmd) {
+    const lines = describeRuleSet(before, after, prefix, labels);
     // A snapshot carries `commands`; a raw settings object is read through commandEntries, the older ephemeralCommands included.
     const bCmd = new Map((before.commands || commandEntries(before)).map(e => [e.command, e]));
     const aCmd = new Map((after.commands || commandEntries(after)).map(e => [e.command, e]));
     for (const [c, e] of aCmd) {
-        if (!bCmd.has(c)) lines.push(`${cmd(c)}: own settings added (${LABEL[e.defaultVisibility]})`);
-        lines.push(...describeRuleSet(bCmd.get(c) || { defaultVisibility: e.defaultVisibility, channelRules: [], roleRules: [] }, e, `${cmd(c)}: `));
+        if (!bCmd.has(c)) lines.push(`${prefix}${cmd(c)}: own settings added (${labels[e.defaultVisibility]})`);
+        lines.push(...describeRuleSet(bCmd.get(c) || { defaultVisibility: e.defaultVisibility, channelRules: [], roleRules: [] }, e, `${prefix}${cmd(c)}: `, labels));
     }
-    for (const c of bCmd.keys()) if (!aCmd.has(c)) lines.push(`${cmd(c)}: own settings removed, follows the server again`);
+    for (const c of bCmd.keys()) if (!aCmd.has(c)) lines.push(`${prefix}${cmd(c)}: own settings removed, follows the server again`);
     return lines;
 }
 
 // One rule set's changes (the server's, or one command's), each line given `prefix`.
-function describeRuleSet(before, after, prefix) {
+function describeRuleSet(before, after, prefix, labels = LABEL) {
     const lines = [];
-    if (before.defaultVisibility !== after.defaultVisibility) lines.push(`Default: ${LABEL[before.defaultVisibility]} → ${LABEL[after.defaultVisibility]}`);
+    if (before.defaultVisibility !== after.defaultVisibility) lines.push(`Default: ${labels[before.defaultVisibility]} → ${labels[after.defaultVisibility]}`);
     const chKey = r => `${r.channelId}:${r.visibility}`;
     const bCh = new Set(before.channelRules.map(chKey));
     const aCh = new Set(after.channelRules.map(chKey));
-    for (const r of after.channelRules) if (!bCh.has(chKey(r))) lines.push(`Channel <#${r.channelId}> set to ${LABEL[r.visibility]}`);
-    for (const r of before.channelRules) if (!aCh.has(chKey(r)) && !after.channelRules.some(x => x.channelId === r.channelId)) lines.push(`Channel <#${r.channelId}> rule removed (was ${LABEL[r.visibility]})`);
+    for (const r of after.channelRules) if (!bCh.has(chKey(r))) lines.push(`Channel <#${r.channelId}> set to ${labels[r.visibility]}`);
+    for (const r of before.channelRules) if (!aCh.has(chKey(r)) && !after.channelRules.some(x => x.channelId === r.channelId)) lines.push(`Channel <#${r.channelId}> rule removed (was ${labels[r.visibility]})`);
     const roleKey = r => `${r.roleId}:${r.visibility}:${[...r.channelIds].sort().join(',')}`;
-    const roleText = r => `<@&${r.roleId}> ${LABEL[r.visibility]} ${r.channelIds.length ? `in ${r.channelIds.map(id => `<#${id}>`).join(' ')}` : 'everywhere'}`;
+    const roleText = r => `<@&${r.roleId}> ${labels[r.visibility]} ${r.channelIds.length ? `in ${r.channelIds.map(id => `<#${id}>`).join(' ')}` : 'everywhere'}`;
     const bRole = new Set(before.roleRules.map(roleKey));
     const aRole = new Set(after.roleRules.map(roleKey));
     for (const r of after.roleRules) if (!bRole.has(roleKey(r))) lines.push(`Role rule added: ${roleText(r)}`);
@@ -277,6 +296,30 @@ function logGuildChange(guildId, actorId, changes, source = 'admin') {
 
 // THE "WHY IS THIS PRIVATE?" NOTICE (Harkirat 2026-10-22 15:51 EDT: "make it like a 2x repeat ... private notification, if the settings change ... and they don't match the user's own settings"). Sent as a private follow-up after a slash command whose public answer a server rule made private, at most twice per member per change to that server's rules. Called by handlers/router.js after the command has answered; it never throws.
 const NOTICE_LIMIT = 2;
+
+// TEXT COMMANDS ON OR OFF (B7, 2026-10-30; his 2026-10-29 15:54 EDT call, "turn off here or allow here"). The server's textRules set is resolved by explainVisibility exactly as the visibility set is, with 'public' read as On, so a command's own settings, role › channel › default, thread inheritance and "a same-tier conflict allows" (Discord's own allow-beats-deny) all hold unchanged; a server admin skips every text rule (below). No textRules, or no settings at all, is On. The visibility rules never decide a text command: a message is public whatever they say (the spec's "Replies"), which is why the Open privately card is gone.
+function explainTextCommand(settings, context) {
+    // Server admins (owner, Administrator, Manage Server) use text commands anywhere, whatever is off (his "sure", 2026-10-30 12:47 EDT), as Discord's own Integrations page lets Administrator past an app's command rules. Members still get silence.
+    if (context?.isAdmin) return { visibility: 'public', tier: 'admin', rule: null, on: true };
+    const result = explainVisibility(settings?.textRules || null, context);
+    return { ...result, on: result.visibility === 'public' };
+}
+
+// The resolver's context for a message or a click. A message's member is a real GuildMember (permissions across the server); a click carries memberPermissions.
+function textContextOf(source, commandPath = null) {
+    const userId = source.author?.id || source.user?.id;
+    const perms = source.memberPermissions || source.member?.permissions || null;
+    const isAdmin = Boolean((source.guild?.ownerId && source.guild.ownerId === userId) || perms?.has?.(PermissionFlagsBits.Administrator) || perms?.has?.(PermissionFlagsBits.ManageGuild));
+    return { channelId: source.channelId, parentChannelId: source.channel?.parentId ?? null, roleIds: memberRoleIds(source), commandName: commandPath ? commandPath.split(' ')[0] : null, commandPath, isAdmin };
+}
+
+// Whether a text command may answer here. `commandPath` is the command's path ('draw prices'), or null for what belongs to no command (the help card, Did you mean, the emoji reply), which the server-wide rules decide.
+async function textCommandOnHere(source, commandPath = null) {
+    if (!source?.guildId) return true;
+    const settings = await getGuildSettings(source.guildId);
+    if (!settings?.textRules) return true;
+    return explainTextCommand(settings, textContextOf(source, commandPath)).on;
+}
 async function sendPolicyNotice(interaction) {
     try {
         const policy = interaction.dioreoPolicy;
@@ -314,6 +357,9 @@ module.exports = {
     commandPaths,
     commandPathOf,
     explainVisibility,
+    explainTextCommand,
+    textCommandOnHere,
+    TEXT_LABEL,
     getGuildSettings,
     invalidateGuildPolicy,
     isServerAdmin,

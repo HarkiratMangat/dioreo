@@ -50,6 +50,17 @@ async function check(name, fn) {
     const run = text => parseTextCommand(text, { botId: '1', prefixes: ['d'], commands: TEXT_COMMANDS });
     const tcFor = name => TEXT_COMMANDS.find(c => `/${c.slash}${c.sub ? ` ${c.sub}` : ''}` === name);
 
+    // B7: a typed page and the typed home show the server's own prefixes.
+    await check('a server\'s own prefixes on the typed home and on a typed page', async () => {
+        const own = { perms: ALL, client: client(true), view: 'text', prefixes: ['!', 'dior'] };
+        const home = texts({ components: await help.buildHelpMessage({ ...own, cmd: null }) }).join('\n');
+        assert.ok(home.includes('**`@Dioreo`**, **`!`** or **`dior`**'), 'home prefix line');
+        assert.ok(home.includes('`! help <command>`'), 'home tip');
+        const page = texts({ components: await help.buildHelpMessage({ ...own, cmd: '/draws' }) }).join('\n');
+        assert.ok(page.includes('`! draws [new|returning]`') && page.includes('`! draws returning`'), 'typed usage and examples');
+        assert.ok(!/`d draws/.test(page), 'the default prefix is gone');
+    });
+
     let homeCount = 0;
     await check('the typed home: the #1 card\'s four groups in short words, the prefixes, and a Slash Commands button', async () => {
         const home = await all(null, 'text');
@@ -153,7 +164,8 @@ async function check(name, fn) {
         for (const name of help.visiblePageNames(ALL).filter(n => !H.hasTextView(n))) {
             const comps = await msg(name, 'text');
             const page = texts({ components: comps }).join('\n');
-            assert.ok(!/`d [a-z]/.test(page), `${name}: shows a typed form`);
+            // /admin's page names `d today` as what its Config Text Commands view switches on and off (B7, his draft 2026-10-30): a description, never a typed usage line, so only the usage heading is checked there.
+            assert.ok(name === '/admin' ? !/### `d /.test(page) : !/`d [a-z]/.test(page), `${name}: shows a typed form`);
             assert.ok(!buttonIds({ components: comps }).some(id => id.startsWith('help_view~text')), `${name}: offers the text view`);
             assert.ok(page.includes('no text command'), `${name}: no slash-only note`);
         }
@@ -167,6 +179,23 @@ async function check(name, fn) {
         assert.ok(!switcher.includes('/manage') && !switcher.includes('/admin') && switcher[0] === 'landing', switcher.join(' '));
         const full = (await msg(null, 'slash', { perms: ALL }))[1].components[0].options;
         assert.ok(full.length <= 25 && full.some(o => o.value === '/manage'), `${full.length} options`);
+    });
+    await check("/bot is one page with a dropdown to its subcommands (his call, 2026-10-30 14:05 EDT), and each viewer sees only theirs", async () => {
+        const full = (await msg(null, 'slash', { perms: ALL }))[1].components[0].options.map(o => o.value);
+        assert.ok(full.includes('/bot') && !full.some(v => v.startsWith('/bot ')) && full.includes('/embed'), full.join(' '));
+        assert.strictEqual(await help.resolvePage('/bot servers', ALL), '/bot servers', 'a subcommand keeps its name, so the page opens on it');
+        const servers = await msg('/bot servers', 'slash', { perms: ALL });
+        const json = JSON.stringify(servers[0]);
+        const picker = JSON.parse(json.match(/\{"type":3,"custom_id":"help_bot"[^]*?\]\}/)[0]);
+        assert.deepStrictEqual(picker.options.map(o => o.value), ['/bot analytics', '/bot access', '/bot servers', '/bot penalties', '/bot freeze', '/bot hotpatch']);
+        assert.strictEqual(picker.options.find(o => o.default).value, '/bot servers');
+        assert.ok(json.includes('## ') && json.includes('Servers'), 'titled with the subcommand');
+        const analyticsOnly = { botAdmin: true, bot: true };
+        const narrow = JSON.stringify((await msg('/bot', 'slash', { perms: analyticsOnly }))[0]);
+        assert.ok(narrow.includes('Bot Analytics') && !narrow.includes('help_bot'), 'an analytics-only admin gets Analytics, with no dropdown');
+        assert.ok(!JSON.stringify((await msg('/bot servers', 'slash', { perms: analyticsOnly }))[0]).includes('Spam Penalties'), 'and an owner-only subcommand never opens for them');
+        const home = JSON.stringify((await msg(null, 'slash', { perms: ALL }))[0]);
+        assert.ok(home.includes('/bot penalties') && !/`\/bot`/.test(home), "the home page's Admin line names each subcommand, never a bare /bot");
     });
     await check('the switcher: page name over `d word` on a typed view, the slash command over the name on a slash view', async () => {
         const typed = (await msg('/season end', 'text'))[1].components[0];
@@ -189,7 +218,7 @@ async function check(name, fn) {
         for (const [cmd] of every(ALL)) {
             const comps = await msg(cmd, 'text', { typedForms: false });
             const page = texts({ components: comps }).join('\n');
-            assert.ok(!/`d [a-z]/.test(page) && !page.includes('Text commands'), `${cmd || 'home'}: shows a typed form where it cannot work`);
+            assert.ok((cmd === '/admin' ? !/### `d /.test(page) : !/`d [a-z]/.test(page)) && !page.includes('Text commands'), `${cmd || 'home'}: shows a typed form where it cannot work`);
             assert.ok(!buttonIds({ components: comps }).some(id => id.startsWith('help_view~')), `${cmd || 'home'}: offers a view switch`);
             assert.ok(countComponents([...comps, help.helpFooterRow()]) <= 40);
         }

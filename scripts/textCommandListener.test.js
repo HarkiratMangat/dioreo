@@ -8,7 +8,10 @@ const stub = (rel, exports) => {
 };
 stub('utils/textCommands/permissions', { textCommandAllowed: async () => true, invalidateGuildOverrides() {} });
 stub('handlers/router', { buildInteractionContext: () => ({}) });
-stub('utils/guildPolicy', { attachGuildPolicy: async () => null });
+// The server's stored settings, per guild id (B7): the real utils/guildPolicy.js reads them through this stand-in model, so prefixes and the text-command switch are tested with the real resolver. A guild id is read once and cached for five minutes, so each case uses its own.
+const SERVER = {};
+stub('models/GuildSettings', { findOne: q => ({ lean: async () => SERVER[q.guildId] || null }) });
+stub('models/TextPenalty', { updateOne: async () => ({}), deleteOne: async () => ({}), find: () => ({ lean: async () => [] }) });
 stub('utils/eventStore', { recordInteractionEvent() {} });
 stub('utils/userStats', { noteOwnCommandSafely() {} });
 // The suggestion lists, as /gunsmith mp and /patch notes would give them.
@@ -51,7 +54,7 @@ const commands = new Map([
     ['Convert Times#3', record('Convert Times')], ['View Colors#2', record('View Colors')],
 ]);
 let n = 0;
-function fakeMessage(content, { reference = null, target = null } = {}) {
+function fakeMessage(content, { reference = null, target = null, guildId = 'g1' } = {}) {
     const id = ++n;
     const posts = [];
     const client = {
@@ -61,7 +64,7 @@ function fakeMessage(content, { reference = null, target = null } = {}) {
     };
     const channel = { id: `c${id}`, permissionsFor: () => ({ has: () => true }), isThread: () => false, sendTyping: async () => {} };
     const message = {
-        id: `m${id}`, guildId: 'g1', channelId: channel.id, channel, client, content,
+        id: `m${id}`, guildId, channelId: channel.id, channel, client, content,
         author: { id: `u${id}`, bot: false }, member: null, createdTimestamp: Date.now(),
         guild: { members: { me: {} }, roles: { botRoleFor: () => null } },
         reference, fetchReference: async () => target,
@@ -393,6 +396,119 @@ async function check(name, fn) {
         const two = didYouMeanCard(['calendar', 'draw calculator'], 'cal').components[0].components;
         assert.ok(two[0].content.includes('Did you mean `calendar` or `draw calculator`?'));
         assert.deepStrictEqual(two[1].components.map(b => b.custom_id), ['txtrun_calendar', 'txtrun_draw.calculator']);
+    });
+    // B7: a server's own prefixes, its text-command switch, and the spam ladder.
+    await check('a server with its own prefix answers it, and no longer the default', async (before) => {
+        SERVER.gp = { textPrefixes: ['!'] };
+        await onMessage(fakeMessage('!calendar', { guildId: 'gp' }).message);
+        assert.strictEqual(ran.length, before + 1);
+        assert.strictEqual(lastRun().name, 'calendar');
+        const d = fakeMessage('d calendar', { guildId: 'gp' });
+        await onMessage(d.message);
+        assert.strictEqual(ran.length, before + 1, '`d` is not this server\'s prefix');
+        assert.strictEqual(d.posts.length, 0);
+        await onMessage(fakeMessage('dior draws', { guildId: 'gp' }).message);
+        assert.strictEqual(lastRun().name, 'draws', '`dior` always stays (his middle ground, 2026-10-30)');
+    });
+    await check('the help card lists the server\'s own prefixes', async () => {
+        SERVER.gh = { textPrefixes: ['!', 'yo'] };
+        const m = fakeMessage('<@111>', { guildId: 'gh' });
+        await onMessage(m.message);
+        assert.ok(/Prefix: \*\*`@Dioreo`\*\*, \*\*`!`\*\*, \*\*`yo`\*\* or \*\*`dior`\*\*/.test(JSON.stringify(m.posts[0])), JSON.stringify(m.posts[0]).slice(0, 300));
+    });
+    await check('text commands off for the server: silent, the help card and the emoji reply included', async (before) => {
+        SERVER.goff = { textRules: { defaultVisibility: 'ephemeral', channelRules: [], roleRules: [], commandSettings: [] } };
+        for (const text of ['d calendar', '<@111>', '<@111> you are the best bot']) {
+            const m = fakeMessage(text, { guildId: 'goff' });
+            await onMessage(m.message);
+            assert.strictEqual(m.posts.length, 0, text);
+        }
+        assert.strictEqual(ran.length, before);
+    });
+    await check('one command off: that one is silent, the others still run, and its Did you mean pick is refused', async (before) => {
+        SERVER.gcmd = { textRules: { defaultVisibility: 'public', channelRules: [], roleRules: [], commandSettings: [{ command: 'calendar', defaultVisibility: 'ephemeral', channelRules: [], roleRules: [] }] } };
+        await onMessage(fakeMessage('d calendar', { guildId: 'gcmd' }).message);
+        assert.strictEqual(ran.length, before);
+        await onMessage(fakeMessage('d draws', { guildId: 'gcmd' }).message);
+        assert.strictEqual(lastRun().name, 'draws');
+        const { i, replies } = click('txtrun_calendar');
+        i.guildId = 'gcmd';
+        await handleTextCommandsInteraction(i);
+        assert.ok(/This server turned that command off for you here\./.test(replies[0]?.content || ''), JSON.stringify(replies));
+    });
+    await check('a command on in a channel where the server turned text commands off runs there', async (before) => {
+        SERVER.gch = { textRules: { defaultVisibility: 'public', channelRules: [{ channelId: 'cX', visibility: 'ephemeral' }], roleRules: [], commandSettings: [{ command: 'draws', defaultVisibility: 'public', channelRules: [], roleRules: [] }] } };
+        const draws = fakeMessage('d draws', { guildId: 'gch' });
+        draws.message.channelId = 'cX';
+        await onMessage(draws.message);
+        assert.strictEqual(ran.length, before + 1, 'draws has its own settings, which say on');
+        const cal = fakeMessage('d calendar', { guildId: 'gch' });
+        cal.message.channelId = 'cX';
+        await onMessage(cal.message);
+        assert.strictEqual(ran.length, before + 1, 'calendar follows the server, off in that channel');
+    });
+    await check('the spam ladder: the event that reaches 10 points gets the note, then silence in every server', async (before) => {
+        const spam = require('../utils/textCommands/spamLadder');
+        const first = fakeMessage('d calendar', { guildId: 'gs1' });
+        for (let k = 0; k < 9; k++) spam.addPoints(first.message.author.id, spam.REPLY_POINTS);
+        await onMessage(first.message);
+        assert.strictEqual(ran.length, before, 'the tenth point is not answered');
+        assert.ok(/^-# .*You're on cooldown for spamming! Try again <t:\d+:R>$/.test(first.posts[0]?.content || ''), JSON.stringify(first.posts));
+        assert.strictEqual(first.posts[0].message_reference.message_id, first.message.id, 'the note replies to the message that reached the limit');
+        const elsewhere = fakeMessage('d draws', { guildId: 'gs2' });
+        elsewhere.message.author = first.message.author;
+        await onMessage(elsewhere.message);
+        assert.strictEqual(elsewhere.posts.length, 0, 'a penalty is everywhere');
+        assert.strictEqual(ran.length, before);
+        await spam.liftPenalty(first.message.author.id);
+        assert.strictEqual(spam.penaltyFor(first.message.author.id), null, 'lifted');
+    });
+    await check("the owner's switches (B7): a freeze, a blocked person or server is silent; the owner still runs", async (before) => {
+        const controls = require('../utils/botControls');
+        try {
+            controls.__reset({ freeze: { all: true, commands: [], reason: 'bug' } });
+            // Each case its own server: the earlier cases have used g1's 30 replies per 10 s.
+            const frozen = fakeMessage('d calendar', { guildId: 'gfz' });
+            await onMessage(frozen.message);
+            assert.deepStrictEqual([ran.length, frozen.posts.length], [before, 0], 'everything frozen');
+            const owner = fakeMessage('d calendar', { guildId: 'gfz' });
+            owner.message.author.id = require('../utils/owner').ALLOWED_ADMIN_ID;
+            await onMessage(owner.message);
+            assert.strictEqual(ran.length, before + 1, 'the owner is never frozen');
+            controls.__reset({ freeze: { all: false, commands: ['draws'] } });
+            await onMessage(fakeMessage('d draws', { guildId: 'gfz' }).message);
+            assert.strictEqual(ran.length, before + 1, 'a frozen command is silent');
+            await onMessage(fakeMessage('d calendar', { guildId: 'gfz' }).message);
+            assert.strictEqual(ran.length, before + 2, 'another command runs');
+            controls.__reset({ blockedUsers: ['ublocked'], blockedGuilds: ['gblocked'] });
+            const person = fakeMessage('d calendar', { guildId: 'gfz' });
+            person.message.author.id = 'ublocked';
+            await onMessage(person.message);
+            await onMessage(fakeMessage('d calendar', { guildId: 'gblocked' }).message);
+            assert.strictEqual(ran.length, before + 2, 'a blocked person and a blocked server get nothing');
+        } finally { controls.__reset(); }
+    });
+    await check("a server's own reply limit (B7): the owner's 2 per channel stops the third", async (before) => {
+        const controls = require('../utils/botControls');
+        try {
+            controls.__reset({ replyLimits: [{ guildId: 'glim', perChannel: 2, perServer: 30 }] });
+            for (const word of ['calendar', 'draws', 'calendar']) {
+                const m = fakeMessage(`d ${word}`, { guildId: 'glim' });
+                m.message.channelId = 'cLim';
+                m.message.channel.id = 'cLim';
+                await onMessage(m.message);
+            }
+            assert.strictEqual(ran.length, before + 2);
+        } finally { controls.__reset(); }
+    });
+    await check("a no-match line counts as a misfire under Dioreo's word, never the person's", async () => {
+        const misfires = require('../utils/textCommands/misfires');
+        misfires.__pending.clear();
+        await onMessage(fakeMessage(`<@${BOT}> gs zzqqxx`, { guildId: 'gmf' }).message);
+        const keys = [...misfires.__pending.keys()].map(k => JSON.parse(k));
+        assert.ok(keys.some(k => k[2] === 'noMatch' && k[3] === 'gunsmith'), JSON.stringify(keys));
+        assert.ok(!JSON.stringify(keys).includes('zzqqxx'), 'never what they typed');
+        misfires.__pending.clear();
     });
     console.log(failures ? `\n${failures} failing` : '\ntextCommandListener: all passing');
     process.exit(failures ? 1 : 0);

@@ -26,7 +26,9 @@ async function run() {
 
     // Every page this matrix may open, in each of its views (B6, 2026-10-30 00:15 EDT: the category pages became one page per command, utils/helpPages.js).
     const H = require('../utils/helpPages');
-    const views = perms => [[null, 'text'], [null, 'slash'], ...helpCommand.visiblePageNames(perms).flatMap(n => (H.hasTextView(n) ? [[n, 'text'], [n, 'slash']] : [[n, 'slash']])), ...(helpCommand.visiblePageNames(perms).includes('/draw prices') ? [['/draw prices', 'detail']] : [])];
+    // /bot is one page with a dropdown (2026-10-30 14:05 EDT); each of its subcommands is rendered as its own page here, so none goes unchecked.
+    const pageNames = perms => helpCommand.visiblePageNames(perms).flatMap(n => (n === '/bot' ? helpCommand.visibleBotSubs(perms) : [n]));
+    const views = perms => [[null, 'text'], [null, 'slash'], ...pageNames(perms).flatMap(n => (H.hasTextView(n) ? [[n, 'text'], [n, 'slash']] : [[n, 'slash']])), ...(helpCommand.visiblePageNames(perms).includes('/draw prices') ? [['/draw prices', 'detail']] : [])];
     const render = (perms, cmd, view, client = fakeClient) => helpCommand.buildHelpMessage({ perms, client, cmd, view: view === 'detail' ? 'text' : view, detail: view === 'detail' });
     for (const [permsName, perms] of Object.entries(PERM_MATRICES)) {
         await check(`${permsName}: every page renders as the fixture pins it`, async () => {
@@ -55,7 +57,7 @@ async function run() {
         const perms = PERM_MATRICES.fullBotAdmin;
         const texts = c => [c.content || '', ...(c.components || []).flatMap(texts)].join('\n');
         // Each slash page names its options one box each, `[name]` or `<name>` at the start of the box (B6's layout).
-        for (const name of helpCommand.visiblePageNames(perms)) {
+        for (const name of pageNames(perms)) {
             const page = texts({ components: await render(perms, name, 'slash') });
             const expected = new Set(optionsOf(name).filter(n => n !== 'visibility'));
             const named = new Set([...page.matchAll(/(?:^|\n)`[<\[]([a-z_]+\d*)[>\]]`\n/g)].map(m => m[1]).filter(n => n !== 'visibility'));

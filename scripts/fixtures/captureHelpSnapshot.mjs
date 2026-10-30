@@ -16,7 +16,8 @@ const { default: H } = await import('../../utils/helpPages.js');
 const snapshot = {};
 for (const [permsName, perms] of Object.entries(PERM_MATRICES)) {
     snapshot[permsName] = {};
-    const names = helpCommand.visiblePageNames(perms);
+    // /bot's subcommands are one page with a dropdown; each is captured as its own page, matching the test's pageNames().
+    const names = helpCommand.visiblePageNames(perms).flatMap(n => (n === '/bot' ? helpCommand.visibleBotSubs(perms) : [n]));
     const views = [[null, 'text'], [null, 'slash'], ...names.flatMap(n => (H.hasTextView(n) ? [[n, 'text'], [n, 'slash']] : [[n, 'slash']])), ...(names.includes('/draw prices') ? [['/draw prices', 'detail']] : [])];
     for (const [cmd, view] of views) snapshot[permsName][`${cmd || 'home'} ${view}`] = await helpCommand.buildHelpMessage({ perms, client: fakeClient, cmd, view: view === 'detail' ? 'text' : view, detail: view === 'detail' });
 }

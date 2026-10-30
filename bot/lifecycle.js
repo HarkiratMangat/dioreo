@@ -228,6 +228,31 @@ function registerLifecycle(client, commands) {
         installShutdownFlush();
     });
 
+    // --- THE OWNER'S SWITCHES, THE SERVER FEED AND BLOCKED SERVERS (B7) --- utils/botControls.js loads its one record into memory here, then leaves any server the owner blocked that Dioreo is still in (block = "leave again if re-added", his "ok", 2026-10-30 13:09 EDT). The feed (his "oh okay, sure", 2026-10-30 13:18 EDT): one line in the alerts channel per server Dioreo is added to or removed from, posted and never stored (`record: false`). discord.js emits guildCreate only for a server joined after ready, and guildDelete also for an outage, which says `available: false` and is skipped. Each title names its server, because sendAlert throttles one per title per minute and two joins in a minute must both show.
+    const serverLine = (guild, extra = '') => `**${String(guild.name || 'Unknown server').replace(/[`*_~|]/g, '')}** · \`${guild.id}\`${guild.memberCount ? ` · ${guild.memberCount.toLocaleString('en-US')} members` : ''}${extra}\nNow in ${client.guilds.cache.size} servers.`;
+    const leaveBlocked = guild => {
+        const controls = require('../utils/botControls');
+        controls.markLeaving(guild.id);
+        guild.leave().catch(err => console.error(`Could not leave blocked server ${guild.id}:`, err?.message || err));
+    };
+    client.once(Events.ClientReady, async (c) => {
+        const controls = require('../utils/botControls');
+        await controls.load();
+        for (const guild of c.guilds.cache.values()) if (controls.isBlockedGuild(guild.id)) leaveBlocked(guild);
+    });
+    client.on(Events.GuildCreate, (guild) => {
+        if (require('../utils/botControls').isBlockedGuild(guild.id)) {
+            sendAlert(`Re-added to blocked ${guild.name}`.slice(0, 200), serverLine(guild, ' · blocked, so Dioreo is leaving it again'), 'caution', { record: false });
+            return leaveBlocked(guild);
+        }
+        sendAlert(`Added to ${guild.name}`.slice(0, 200), serverLine(guild), 'info', { record: false });
+    });
+    client.on(Events.GuildDelete, (guild) => {
+        if (guild.available === false) return;
+        const byOwner = require('../utils/botControls').wasLeaving(guild.id);
+        sendAlert(`${byOwner ? 'Left' : 'Removed from'} ${guild.name}`.slice(0, 200), serverLine(guild, byOwner ? ' · left from /bot servers' : ''), 'info', { record: false });
+    });
+
     // --- RESTART LABELING + "BOT ONLINE" ALERT --- Alerting: a one-time "online" ping on each (re)start, so deploys/crashes/restarts are visible in Discord. systemd auto-restarts the bot on crash, so an "online" alert you DIDN'T trigger is itself a useful signal that the process restarted unexpectedly.
     client.once(Events.ClientReady, (c) => {
         const reason = readRestartReason();

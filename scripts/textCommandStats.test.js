@@ -8,7 +8,8 @@ const stub = (rel, exports) => {
 };
 stub('utils/textCommands/permissions', { textCommandAllowed: async () => true, invalidateGuildOverrides() {} });
 stub('handlers/router', { buildInteractionContext: () => ({}) });
-stub('utils/guildPolicy', { attachGuildPolicy: async () => null });
+stub('utils/guildPolicy', { attachGuildPolicy: async () => null, textCommandOnHere: async () => true });
+stub('models/TextPenalty', { updateOne: async () => ({}), deleteOne: async () => ({}), find: () => ({ lean: async () => [] }) });
 stub('utils/eventStore', { recordInteractionEvent() {} });
 
 const userStats = require('../utils/userStats');

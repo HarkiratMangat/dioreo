@@ -2,7 +2,7 @@ const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, 
 // ==========================================
 // BOT — INTERACTION HANDLER
 // ==========================================
-// /bot analytics + /bot access. Ownership is decided by custom_id prefix, once: `bot_` — the single prefix everything this command mints uses (buttons, selects, AND modals; unlike /manage there is no second `modal_`-style prefix to reserve, since /bot owns nothing else).
+// /bot analytics + /bot access, /bot servers, and since B7 /bot penalties and /bot freeze. Ownership is decided by custom_id prefix, once: `bot_` — the single prefix everything this command mints uses (buttons, selects, AND modals; unlike /manage there is no second `modal_`-style prefix to reserve, since /bot owns nothing else).
 //
 // Alerts and Changes branches port the retired handlers/alerts.js's and handlers/audit.js's routing logic verbatim (query/parsing logic unchanged, only the custom_id prefix and the render target changed — they now re-render through commands/bot.js's shared buildAnalyticsPanel() so the page select dropdown and header stay in place across a click, instead of each page owning its own standalone panel). Access ports the retired handlers/manage/admins.js's routing logic verbatim.
 //
@@ -74,12 +74,35 @@ async function route(interaction) {
             });
         }
         if (!/^\d{15,22}$/.test(guildId || '')) return;
+        // Reply Limits is a pop-up, so it opens before the acknowledgement (B7).
+        if (verb === 'limits') return await interaction.showModal(require('../commands/bot').replyLimitsModal(guildId));
         await interaction.deferUpdate();
         const { buildServersPanel } = require('../commands/bot');
         const { sendV2Payload } = require('../utils/sendV2Payload');
         const NO_PINGS = { allowedMentions: { parse: [] } };
-        if (verb === 'resetarm' || verb === 'delarm') {
-            return sendV2Payload(interaction, await buildServersPanel(interaction.client, guildId, { armed: verb === 'resetarm' ? 'reset' : 'delete' }), NO_PINGS);
+        if (verb === 'resetarm' || verb === 'delarm' || verb === 'leavearm' || verb === 'blockarm') {
+            const armed = { resetarm: 'reset', delarm: 'delete', leavearm: 'leave', blockarm: 'block' }[verb];
+            return sendV2Payload(interaction, await buildServersPanel(interaction.client, guildId, { armed }), NO_PINGS);
+        }
+        // Leave, Block and Unblock (B7, his "ok", 2026-10-30 13:09 EDT): Dioreo can leave a server with no permission at all; a blocked server is left again whenever it is re-added (bot/lifecycle.js). Each is two presses and lands on /bot analytics' Changes page.
+        if (verb === 'leave' || verb === 'block' || verb === 'unblock') {
+            const controls = require('../utils/botControls');
+            const guild = require('../bot/clients').publicClient(interaction.client)?.guilds?.cache?.get(guildId);
+            const name = guild?.name || guildId;
+            let note;
+            try {
+                if (verb !== 'leave') await controls.setFlag('blockedGuilds', guildId, verb === 'block');
+                if (verb !== 'unblock' && guild) {
+                    controls.markLeaving(guildId);
+                    await guild.leave();
+                }
+                note = `-# ${BOT_EMOJI.checkmark} ${verb === 'unblock' ? 'Unblocked: it can add Dioreo again.' : `${guild ? 'Left' : 'Not in it'}${verb === 'block' ? ', and blocked: Dioreo leaves again if it is re-added' : ''}.`}`;
+            } catch (err) {
+                console.error(`/bot servers: ${verb} failed for ${guildId}:`, err?.message || err);
+                note = `-# ${BOT_EMOJI.cross} That did not finish: ${String(err?.message || err).slice(0, 120)}`;
+            }
+            require('../utils/changeStore').recordChange({ actorId: interaction.user.id, page: 'access', action: { leave: 'serverLeave', block: 'serverBlock', unblock: 'serverUnblock' }[verb], model: 'BotControls', target: guildId, summary: `${{ leave: 'Left', block: 'Left and blocked', unblock: 'Unblocked' }[verb]} ${name}` });
+            return sendV2Payload(interaction, await buildServersPanel(interaction.client, guildId, { note }), NO_PINGS);
         }
         if (verb === 'reset' || verb === 'del') {
             const { getGuildSettings, updateGuildSettings, invalidateGuildPolicy } = require('../utils/guildPolicy');
@@ -97,6 +120,9 @@ async function route(interaction) {
                         doc.ephemeralCommands = [];
                         doc.commandSettings = [];
                         doc.defaultVisibility = 'public';
+                        // The text-command switch and prefix too (B7 think-pass, 2026-10-30): the owner's reset is for a hijacked server, and a hijacker who turned text commands off or set a prefix must not survive it.
+                        doc.textRules = undefined;
+                        doc.textPrefixes = undefined;
                     }, { source: 'owner' });
                 } else {
                     await GuildSettings.deleteOne({ guildId });
@@ -109,10 +135,135 @@ async function route(interaction) {
                 // The rules as they were go in the summary: neither action has an Undo, so this is what lets a server's setup be rebuilt by hand.
                 recordChange({ actorId: interaction.user.id, page: 'access', action: verb === 'reset' ? 'serverReset' : 'serverDelete', model: 'GuildSettings', target: guildId, summary: `${verb === 'reset' ? 'Reset' : 'Deleted'} /admin settings for ${name || guildId}. Before: ${beforeText}` });
             }
-            const note = verb === 'reset' ? `-# ${BOT_EMOJI.checkmark} Every rule cleared and the default set to Public.` : `-# ${BOT_EMOJI.checkmark} Record deleted. The server behaves as if /admin was never used.`;
+            const note = verb === 'reset' ? `-# ${BOT_EMOJI.checkmark} Every slash and text rule cleared, the prefix back to the default, and the default set to Public.` : `-# ${BOT_EMOJI.checkmark} Record deleted. The server behaves as if /admin was never used.`;
             return sendV2Payload(interaction, await buildServersPanel(interaction.client, guildId, { note }), NO_PINGS);
         }
         return sendV2Payload(interaction, await buildServersPanel(interaction.client, guildId), NO_PINGS);
+    }
+
+    // --- THE OWNER'S TEXT-COMMAND TOOLS (B7): /bot penalties and /bot freeze --- 🔴 Owner re-check on every click and pop-up, as /bot servers does: the router's `bot_` guard proves only SOME /bot access. A save that fails says so on the panel; memory keeps the change until a restart.
+    if ((interaction.isButton() || interaction.isModalSubmit()) && (customId.startsWith('bot_pen') || customId.startsWith('bot_frz'))) {
+        const { isOwner } = require('../utils/adminAccess');
+        if (!isOwner(interaction.user.id)) {
+            return await interaction.reply({ content: '🔒 **Only the bot owner can use this.**', ephemeral: true });
+        }
+        const bot = require('../commands/bot');
+        const controls = require('../utils/botControls');
+        const spam = require('../utils/textCommands/spamLadder');
+        const { sendV2Payload } = require('../utils/sendV2Payload');
+        const NO_PINGS = { allowedMentions: { parse: [] } };
+        const saved = async (fn, done) => {
+            try { await fn(); return `-# ${BOT_EMOJI.checkmark} ${done}`; } catch (err) {
+                console.error('Bot controls: could not save:', err?.message || err);
+                return `-# ${BOT_EMOJI.cross} Done for now, but it could not be saved, so a restart undoes it.`;
+            }
+        };
+        const [verb, arg] = customId.replace(/^bot_(penm|pen|frzm|frz)_/, '').split('|');
+        const kind = customId.match(/^bot_(penm|pen|frzm|frz)_/)?.[1];
+
+        // Pop-ups open before any acknowledgement.
+        if (kind === 'pen' && verb === 'ask') return await interaction.showModal(bot.penaltyLookupModal());
+        if (kind === 'pen' && verb === 'tune') return await interaction.showModal(bot.ladderTuneModal());
+        if (kind === 'pen' && verb === 'extend') return await interaction.showModal(bot.penaltyExtendModal(arg));
+        if (kind === 'frz' && (verb === 'all' || verb === 'some')) return await interaction.showModal(bot.freezeModal(verb === 'all'));
+
+        if (kind === 'frz' || kind === 'frzm') {
+            let note = null;
+            if (kind === 'frzm' && verb === 'some') {
+                const asked = (interaction.fields.getTextInputValue('commands') || '').toLowerCase().split(/[\s,/]+/).filter(Boolean);
+                const known = new Set([...(interaction.client.commands?.keys?.() || [])].filter(n => n !== 'bot'));
+                const unknown = asked.filter(n => !known.has(n));
+                if (!asked.length || unknown.length) {
+                    return await interaction.reply({ content: `${BOT_EMOJI.cross} ${unknown.length ? `Not a command: ${unknown.map(n => `\`${n}\``).join(', ')}.` : 'Name at least one command.'} Use slash names, e.g. \`gunsmith, draws\`.`, ephemeral: true });
+                }
+                note = await saved(() => controls.setFreeze({ commands: asked, reason: interaction.fields.getTextInputValue('reason') }), `Frozen: ${asked.map(n => `/${n}`).join(', ')}.`);
+            } else if (kind === 'frzm' && verb === 'all') {
+                note = await saved(() => controls.setFreeze({ all: true, reason: interaction.fields.getTextInputValue('reason') }), 'Everything is frozen.');
+            } else if (kind === 'frz' && verb === 'off') {
+                note = await saved(() => controls.clearFreeze(), 'Unfrozen. Dioreo answers again.');
+            }
+            await interaction.deferUpdate();
+            return sendV2Payload(interaction, bot.buildFreezePanel({ note }), NO_PINGS);
+        }
+
+        if (kind === 'penm' && verb === 'ask') {
+            const userId = (interaction.fields.getTextInputValue('id') || '').replace(/[<@!>]/g, '').trim();
+            if (!/^\d{15,22}$/.test(userId)) {
+                return await interaction.reply({ content: `${BOT_EMOJI.cross} That is not a user ID: 17–20 digits, from their profile's right-click menu with Developer Mode on.`, ephemeral: true });
+            }
+            await interaction.deferUpdate();
+            return sendV2Payload(interaction, bot.buildPenaltyUserPanel(interaction.client, userId), NO_PINGS);
+        }
+        if (kind === 'penm' && verb === 'tune') {
+            const parsed = controls.parseSpam({ points: interaction.fields.getTextInputValue('points'), threshold: interaction.fields.getTextInputValue('threshold'), rungs: interaction.fields.getTextInputValue('rungs') });
+            if (parsed.error) return await interaction.reply({ content: `${BOT_EMOJI.cross} ${parsed.error}`, ephemeral: true });
+            const note = await saved(() => controls.setSpam(parsed.spam), 'Ladder saved. It applies from the next message; running penalties keep their end time.');
+            await interaction.deferUpdate();
+            return sendV2Payload(interaction, bot.buildPenaltiesPanel(interaction.client, { note }), NO_PINGS);
+        }
+        if (kind === 'penm' && verb === 'extend') {
+            const text = (interaction.fields.getTextInputValue('minutes') || '').trim();
+            const minutes = text ? Number(text) : null;
+            if (text && !(Number.isInteger(minutes) && minutes >= 1 && minutes <= 7 * 24 * 60)) {
+                return await interaction.reply({ content: `${BOT_EMOJI.cross} Minutes: a whole number from 1 to ${7 * 24 * 60} (a week), or blank for the next rung.`, ephemeral: true });
+            }
+            await interaction.deferUpdate();
+            const entry = await spam.extendPenalty(arg, { ms: minutes == null ? null : minutes * 60000, client: require('../bot/clients').publicClient(interaction.client) });
+            const note = entry ? `-# ${BOT_EMOJI.checkmark} Extended: now ends <t:${Math.ceil(entry.until / 1000)}:R>.` : `-# ${BOT_EMOJI.cross} Their penalty already ended.`;
+            return sendV2Payload(interaction, bot.buildPenaltyUserPanel(interaction.client, arg, { note }), NO_PINGS);
+        }
+
+        await interaction.deferUpdate();
+        if (verb === 'list') return sendV2Payload(interaction, bot.buildPenaltiesPanel(interaction.client), NO_PINGS);
+        if (verb === 'liftallarm') return sendV2Payload(interaction, bot.buildPenaltiesPanel(interaction.client, { armed: 'liftall' }), NO_PINGS);
+        if (verb === 'liftall') {
+            const n = await spam.liftAll({ client: require('../bot/clients').publicClient(interaction.client) });
+            return sendV2Payload(interaction, bot.buildPenaltiesPanel(interaction.client, { note: `-# ${BOT_EMOJI.checkmark} Lifted ${n}, and today's rungs forgotten.` }), NO_PINGS);
+        }
+        if (!/^\d{15,22}$/.test(arg || '')) return;
+        if (verb === 'user') return sendV2Payload(interaction, bot.buildPenaltyUserPanel(interaction.client, arg), NO_PINGS);
+        if (verb === 'blockarm') return sendV2Payload(interaction, bot.buildPenaltyUserPanel(interaction.client, arg, { armed: 'block' }), NO_PINGS);
+        // The owner is never a target, whatever a crafted id says.
+        if (isOwner(arg)) return sendV2Payload(interaction, bot.buildPenaltyUserPanel(interaction.client, arg), NO_PINGS);
+        const pub = require('../bot/clients').publicClient(interaction.client);
+        let note = null;
+        if (verb === 'lift') {
+            const had = await spam.liftPenalty(arg, { client: pub });
+            note = `-# ${BOT_EMOJI.checkmark} ${had ? 'Lifted, its note deleted,' : 'Nothing running;'} and today's rung forgotten.`;
+        } else if (verb === 'exempt' || verb === 'unexempt') {
+            // Exempting lifts a running penalty too: the point of it is that they are never silenced.
+            if (verb === 'exempt') await spam.liftPenalty(arg, { client: pub });
+            note = await saved(() => controls.setFlag('exemptUsers', arg, verb === 'exempt'), verb === 'exempt' ? 'Exempt: never scored or penalised.' : 'No longer exempt.');
+        } else if (verb === 'block' || verb === 'unblock') {
+            if (verb === 'block') await spam.liftPenalty(arg, { client: pub });
+            note = await saved(() => controls.setFlag('blockedUsers', arg, verb === 'block'), verb === 'block' ? 'Blocked: Dioreo ignores their typed commands and answers their slash commands with one private line.' : 'Unblocked.');
+        }
+        return sendV2Payload(interaction, bot.buildPenaltyUserPanel(interaction.client, arg, { note }), NO_PINGS);
+    }
+
+    // /bot servers' Reply Limits pop-up.
+    if (interaction.isModalSubmit() && customId.startsWith('bot_srvlim|')) {
+        const { isOwner } = require('../utils/adminAccess');
+        if (!isOwner(interaction.user.id)) {
+            return await interaction.reply({ content: "🔒 **Only the bot owner can change another server's settings.**", ephemeral: true });
+        }
+        const guildId = customId.split('|')[1];
+        if (!/^\d{15,22}$/.test(guildId || '')) return;
+        const controls = require('../utils/botControls');
+        const parsed = controls.parseLimits({ perChannel: interaction.fields.getTextInputValue('perChannel'), perServer: interaction.fields.getTextInputValue('perServer') });
+        if (parsed.error) return await interaction.reply({ content: `${BOT_EMOJI.cross} ${parsed.error}`, ephemeral: true });
+        let note;
+        try {
+            await controls.setLimits(guildId, parsed.limits);
+            note = `-# ${BOT_EMOJI.checkmark} Reply limits saved.`;
+        } catch (err) {
+            console.error('Bot controls: could not save:', err?.message || err);
+            note = `-# ${BOT_EMOJI.cross} Applied for now, but it could not be saved, so a restart undoes it.`;
+        }
+        await interaction.deferUpdate();
+        const { buildServersPanel } = require('../commands/bot');
+        const { sendV2Payload } = require('../utils/sendV2Payload');
+        return sendV2Payload(interaction, await buildServersPanel(interaction.client, guildId, { note }), { allowedMentions: { parse: [] } });
     }
 
     // --- HOTPATCH PANEL BUTTONS --- 🔴 Owner re-check, independent of the router's coarse `bot_` -> hasCommandAccess(userId,'bot') guard, exactly as every /bot access mutation does. That guard proves "has SOME /bot access", not ownership -- and this button restarts production.

@@ -24,15 +24,15 @@ const valuesOf = (name, option) => (textCommandOf(name)?.options || []).find(o =
 const PAGE_NAMES = {
     '/gunsmith mp': 'MP Gunsmith', '/gunsmith dmz': 'DMZ Gunsmith', '/draws': 'Lucky Draws', '/draw prices': 'Lucky Draw Prices', '/draw calculator': 'Draw Calculator',
     '/today': 'Today', '/calendar': 'Calendar', '/remind': 'Reminders', '/season end': 'Season End', '/patch notes': 'Patch Notes',
-    '/timestamp': 'Timestamps', '/colors': 'Profile Colors', '/settings': 'Settings', '/invite': 'Invite Dioreo', '/admin': 'Server Admin',
-    '/manage': 'Manage Data', '/manage emojis': 'Emoji Manager', '/autobuild': 'Autobuild', '/bot analytics': 'Bot Analytics', '/bot access': 'Admin Access', '/bot servers': 'Server Rules', '/bot hotpatch': 'Hot Patch', '/embed': 'Embed Preview',
+    '/timestamp': 'Timestamps', '/colors': 'Profile Colors', '/settings': 'Settings', '/invite': 'Invite Dioreo', '/admin': 'Server Settings',
+    '/manage': 'Manage Data', '/manage emojis': 'Emoji Manager', '/autobuild': 'Autobuild', '/bot': 'Bot Tools', '/embed': 'Embed Preview',
 };
 const PAGE_ORDER = Object.keys(PAGE_NAMES);
 const PAGE_ICON = {
     '/gunsmith mp': 'gunsmithSearch', '/gunsmith dmz': 'dmz', '/draws': 'newDraws', '/draw prices': 'drawPrices', '/draw calculator': 'calculator',
     '/today': 'dailyUpdate', '/calendar': 'calendar', '/remind': 'remind', '/season end': 'bp', '/patch notes': 'patchNotes',
     '/timestamp': 'timestamp', '/colors': 'showColors', '/settings': 'settings', '/invite': 'shareHeart', '/admin': 'serverSettings',
-    '/manage': 'database', '/manage emojis': 'swatches', '/autobuild': 'gunsmithCode', '/bot analytics': 'mngInfo', '/bot access': 'botAccess', '/bot servers': 'guide', '/bot hotpatch': 'edit', '/embed': 'edit',
+    '/manage': 'database', '/manage emojis': 'swatches', '/autobuild': 'gunsmithCode', '/bot': 'botAccess', '/embed': 'edit',
 };
 // /season end wears the live season's own emoji (his call, 2026-10-29 22:55 EDT); /manage emojis its DB_Emojis where the app has it.
 function pageIcon(name, seasonEmoji) {
@@ -210,19 +210,31 @@ const PAGES = {
                 : { boxes: [text('`[open]`\n-# Open straight on Visibility, Preferences or Colors'), VIS, ...detail], examples: [['/settings open:Preferences'], ['/settings visibility:Public']] };
         },
     },
-    // /admin's own text, carried over unchanged (his call, 2026-10-29 22:00 EDT: "leave the full /admin help panel review and fix to b7").
+    // /admin: his draft (2026-10-30 12:29 EDT), corrected against the panel in B7 (the prefix takes `d`'s place, Use External Apps makes answers private rather than hiding commands, a member's own installs follow their own /settings, Check a Member, per-view resets) and with his later calls (admins skip text rules, Reset to d). The full review was B7's (his call, 2026-10-29 22:00 EDT).
     '/admin': {
-        blurb: "Choose where Dioreo's replies stay private in your server",
+        blurb: "Config custom settings for Dioreo in your server.\n-# These control where Dioreo answers **publicly or privately for /slash commands**, and where **typed (prefix) commands are allowed or disabled**.",
         slashOnly: true,
-        page(x) {
+        page() {
+            const rows = (title, list) => text(`${title}\n${list.map(([term, meaning]) => `> -# **${term}**  *${meaning}*`).join('\n')}`);
             return {
-                usageNote: 'Where Dioreo answers **publicly** and where it stays **private**, for the whole server. Needs **Manage Server**.',
+                usageNote: `${emojis.info} **Important:** an admin needs the **Manage Server** permission to use this command!\n-# /admin only works as a slash command, so use it in a channel where you have **Use Application Commands** enabled.`,
                 boxes: [
-                    text('-# Opens a four-page panel — **Overview · Channels · Roles · Commands**\n\n-# **Rule order** · the most specific one wins\n-# 🔹 Command **→** Role **→** Channel **→** the Overview default\n-# 🔹 Threads follow their parent channel · if two roles disagree, **public wins**'),
-                    text(`-# **Setting it up**\n-# 🔸 Pick a default on **Overview**, then hand-pick the few channels or roles that should differ\n-# 🔸 Rules only make Dioreo **quieter** — Public *permits* a public answer, it never overrides someone's own ${slashMention(x.client, '/settings')}\n\n-# **Worth knowing**\n-# 🔸 Each menu holds up to **25 picks** (Discord's limit). Needing more usually means a different default would suit better\n-# 🔸 It hides the **answer**, not the command — to remove a command entirely, use **Server Settings → Integrations**`),
                     VIS,
+                    rows('**Config Text Commands**\nSet typed commands like `d today` **on or off**', [['On', 'the command works (Dioreo replies publicly)'], ['Off', 'the command is disabled (Dioreo stays silent)'], ['Prefix', 'your own in place of `d`; `dior` and `@Dioreo` always work. **Reset to d** puts it back'], ['Admins', 'can use typed commands anywhere, whatever is off']]),
+                    rows('**Config Slash Commands**\nSet slash commands like `/today` **public or private**', [['Public', "Dioreo's replies are visible to everyone in the channel"], ['Private', 'only the person who ran the command sees the reply']]),
+                    rows('**Pages in the panel**', [['Overview', 'Your default, and every rule at a glance'], ['Channels', 'Channel-specific settings'], ['Roles', 'Role-specific settings, everywhere or in some channels'], ['Commands', "Each command's own settings"], ['Help', 'How the rules work, in full']]),
+                    rows('**Extra Tools**', [['Check a Member', 'What a member gets, and why'], ['Export Log', "An audit safeguard: every /admin change in the last 60 days. It can't be deleted"], ['Reset Slash Rules · Reset Text Rules', 'Back to the defaults, for that view only']]),
+                    text("**Which rule wins**\n-# A command with its own settings uses only those; every other command uses the server's. Then the first that applies:\n> -# **`1`** Their role, in this channel\n> -# **`2`** Their role, everywhere\n> -# **`3`** This channel *(threads follow it)*\n> -# **`4`** Your default\n-# Two roles that disagree: Public (or On) wins, as in Discord's own permissions"),
+                    text(`**${emojis.info} Good to know...**\n> -# **Private** always wins over someone's own choice\n> -# **Public** allows it; anyone who chose private in their own /settings still gets private\n> -# **Typed commands** are never private: turn them off instead\n> -# **Admins** skip a command's own slash settings; the default, channel and role rules still apply to them\n> -# **Rules apply only while Dioreo is in your server.** Without it, members' own installs follow each member's own /settings. Turning off **Use External Apps** in a channel makes every app answer privately there`),
                 ],
-                examples: [['-# 🔸 **/admin** → **Overview** → Default *Private*, then **Channels** → allow `#bot-spam`'], ['-# 🔸 **/admin** → **Roles** → *Always public for these roles* → `@Moderator`'], ['-# 🔸 **/admin** → **Commands** → `/colors` → *Private*: only `/colors` answers privately']],
+                examplesTitle: 'Common setups',
+                examples: [
+                    ['-# 🔸 **Private, except one channel**: Overview → **Private**, then Channels → *Always public in these channels…* → `#bot-spam`'],
+                    ['-# 🔸 **Mods always public**: Roles → *Always public for these roles…* → `@Moderator`'],
+                    ["-# 🔸 **One command private**: Commands → *Open a command's settings…* → `/colors` → **Private**"],
+                    ['-# 🔸 **Typed commands off in one channel**: Config Text Commands → Channels → *Off in these channels…* → `#general`'],
+                    ['-# 🔸 **Your own prefix**: Config Text Commands → **Edit Prefix** → `!`'],
+                ],
                 legendNote: ' · no text command',
             };
         },
@@ -253,11 +265,8 @@ const PAGES = {
             };
         },
     },
-    // The other Bot Admin pages carry their old /help text, one page each (his "skip bot admin", 2026-10-29 22:49 EDT).
-    '/bot analytics': adminPage("The bot's usage, timing and health, without opening the server it runs on", [text('`[page]`\n-# Jump directly to a page: `Health` · `Alerts` · `Changes` · `Usage` · `Timing`'), VIS], [['/bot analytics page:Usage visibility:Public', 'Share usage data in a channel']]),
-    '/bot access': adminPage('Who has admin access, and to what — owner-only', [VIS], [['/bot access']]),
-    '/bot servers': adminPage("View, reset or delete one server's /admin rules, for an admin who lost access — owner-only", [text("`[server]`\n-# A server ID; leave it blank to pick the server you're in or type one")], [['/bot servers']]),
-    '/bot hotpatch': adminPage('Reload changed files into the running bot without a restart — owner-only', [text('`[pull]`\n-# git pull first (default: yes)'), text('`[dry_run]`\n-# Show the plan and change nothing'), text('`[file]`\n-# Limit to one changed file (default: everything the pull brought in)')], [['/bot hotpatch dry_run:True']]),
+    // The other Bot Admin pages carry their old /help text (his "skip bot admin", 2026-10-29 22:49 EDT). /bot's six subcommands are ONE page with a dropdown inside it (his call, 2026-10-30 14:05 EDT: "Merge the /bot pages into a Singular /bot page with a dropdown inside of it"), so the owner's switcher fits Discord's 25 again: see BOT_SUBS below.
+    '/bot': { slashOnly: true, admin: true, subPages: true, blurb: '', page: () => ({}) },
     '/embed': adminPage('Render pasted message JSON as a real Components V2 message, to check a design — owner-only', [text('`[json]`\n-# The message JSON; leave both this and `file` empty to paste it in a box'), text('`[file]`\n-# A .json or .txt file, for JSON too long to paste'), text('`[clean]`\n-# Render only the JSON: no Edit JSON button and no emoji note'), VIS], [['/embed clean:True']]),
     '/manage emojis': adminPage('Every app emoji, which bots lack it, and its saved original: sync, upload or find one — owner-only', [VIS], [['/manage emojis']]),
     '/autobuild': adminPage('Read an MP or DMZ loadout out of a Gunsmith screenshot and stage it for review — nothing is saved until you press Save', [
@@ -269,6 +278,19 @@ const PAGES = {
         sections: [text('**Right-click or tap and hold a message**\n-# Apps → **Autobuild Gunsmith** on a message with a Gunsmith screenshot: the same review as /autobuild')],
     }),
 };
+
+// /bot's subcommands, each the page it was before the merge. buildPage shows the one asked for (`sub`), or the first this viewer may open, with a dropdown (`help_bot`) to the others; commands/help.js decides which a viewer may open.
+const BOT_SUBS = {
+    '/bot analytics': adminPage("The bot's usage, timing and health, without opening the server it runs on", [text('`[page]`\n-# Jump directly to a page: `Health` · `Alerts` · `Changes` · `Usage` · `Timing`'), VIS], [['/bot analytics page:Usage visibility:Public', 'Share usage data in a channel']]),
+    '/bot access': adminPage('Who has admin access, and to what — owner-only', [VIS], [['/bot access']]),
+    '/bot servers': adminPage("One server's /admin rules, a checkup, reply limits, and leave or block — owner-only", [text("`[server]`\n-# A server ID; leave it blank to pick the server you're in or type one")], [['/bot servers']]),
+    '/bot penalties': adminPage('Text-command spam penalties: who has one, then lift, extend, exempt or block one person, and tune the ladder — owner-only', [text('`[user]`\n-# A user ID to open; leave it blank for everyone on a penalty now')], [['/bot penalties']]),
+    '/bot freeze': adminPage('Pause Dioreo, or chosen commands, without a deploy; you and /bot are never frozen — owner-only', [], [['/bot freeze']]),
+    '/bot hotpatch': adminPage('Reload changed files into the running bot without a restart — owner-only', [text('`[pull]`\n-# git pull first (default: yes)'), text('`[dry_run]`\n-# Show the plan and change nothing'), text('`[file]`\n-# Limit to one changed file (default: everything the pull brought in)')], [['/bot hotpatch dry_run:True']]),
+};
+const BOT_SUB_NAMES = { '/bot analytics': 'Bot Analytics', '/bot access': 'Admin Access', '/bot servers': 'Servers', '/bot penalties': 'Spam Penalties', '/bot freeze': 'Freeze', '/bot hotpatch': 'Hot Patch' };
+const BOT_SUB_ICON = { '/bot analytics': 'mngInfo', '/bot access': 'botAccess', '/bot servers': 'guide', '/bot penalties': 'cooldown', '/bot freeze': 'pending', '/bot hotpatch': 'edit' };
+const BOT_SUB_ORDER = Object.keys(BOT_SUB_NAMES);
 
 function adminPage(blurb, boxes, examples, extra = {}) {
     return { blurb, slashOnly: true, admin: true, page: () => ({ boxes, examples, legendNote: ' · no text command', gate: true, ...extra }) };
@@ -308,25 +330,46 @@ function emojiField(key) {
 const hasPage = name => Boolean(PAGES[name]);
 const hasTextView = name => Boolean(PAGES[name] && !PAGES[name].slashOnly && textCommandOf(name));
 
-// One command's page: the card's components. `canSwitch` says the other view works here (typed forms where Dioreo is in the server, and a command with a text form).
-function buildPage(name, { client, view, detail = false, canSwitch = false, seasonEmoji = null }) {
-    const def = PAGES[name];
+// One command's page: the card's components. `canSwitch` says the other view works here (typed forms where Dioreo is in the server, and a command with a text form). The prefix a typed page's examples use: the server's first (B7: "every typed Usage line on /help shows the prefixes of the server it is read in"), `@Dioreo` where Message Content is off.
+const firstPrefix = (client, prefixes) => (client?.textMessageContent === false ? '@Dioreo' : (prefixes?.[0] || 'd'));
+
+function buildPage(name, { client, view, detail = false, canSwitch = false, seasonEmoji = null, prefixes = null, sub = null, subs = null }) {
+    let def = PAGES[name];
+    let title = PAGE_NAMES[name];
+    let icon = pageIcon(name, seasonEmoji);
+    let usageName = name;
+    let picker = null;
+    // /bot: the subcommand's own page under its own name and icon, and the dropdown to the others it may open.
+    if (def.subPages) {
+        const allowed = BOT_SUB_ORDER.filter(s => !subs || subs.includes(s));
+        const current = allowed.includes(sub) ? sub : allowed[0];
+        def = BOT_SUBS[current];
+        title = BOT_SUB_NAMES[current];
+        icon = emojis[BOT_SUB_ICON[current]] || '';
+        usageName = current;
+        if (allowed.length > 1) {
+            picker = { type: 1, components: [{ type: 3, custom_id: 'help_bot', placeholder: 'Another /bot command…', options: allowed.map(s => {
+                const emoji = emojis.parseEmoji(emojis[BOT_SUB_ICON[s]] || '');
+                return { label: BOT_SUB_NAMES[s], value: s, description: s, default: s === current, ...(emoji ? { emoji } : {}) };
+            }) }] };
+        }
+    }
     const typed = view === 'text';
-    const p = client?.textMessageContent === false ? '@Dioreo' : 'd';
+    const p = firstPrefix(client, prefixes);
     const part = def.page({ client, p, view, detail });
     const tc = textCommandOf(name);
     const usage = typed
         ? text(`### ${code(`${p} ${tc.helpWord}${part.args ? ` ${part.args}` : ''}`)}\n${dot(tc.shown || [])}${part.usageExtra || ''}`)
-        : text(`### ${slashMention(client, name)}${part.usageNote ? `\n${part.usageNote}` : ''}`);
+        : text(`### ${slashMention(client, usageName)}${part.usageNote ? `\n${part.usageNote}` : ''}`);
     const buttons = [];
     if (canSwitch) buttons.push({ type: 2, style: 2, label: typed ? 'Slash Command' : 'Text Command', custom_id: `help_view~${typed ? 'slash' : 'text'}~${name}`, ...emojiField('command') });
     buttons.push(...(part.buttons || []));
-    const out = [text(`## ${pageIcon(name, seasonEmoji)} ${PAGE_NAMES[name]}\n-# ${def.blurb}`), line(2), usage, ...(part.boxes || [])];
+    const out = [text(`## ${icon} ${title}\n-# ${def.blurb}`), ...(picker ? [picker] : []), line(2), usage, ...(part.boxes || [])];
     if (buttons.length) out.push({ type: 1, components: buttons });
     out.push(line(1));
     if (part.sections?.length) out.push(...part.sections, line(1));
-    // An example is [code, description?]; one already written as a line (/admin's recipes, kept as they were) is used as it is.
-    out.push(text(`-# **Examples**\n${part.examples.map(([ex, d]) => (ex.startsWith('-# ') ? ex : `-# ${code(ex)}${d ? `  ${d}` : ''}`)).join('\n')}`));
+    // An example is [code, description?]; one already written as a line (/admin's setups) is used as it is.
+    out.push(text(`-# **${part.examplesTitle || 'Examples'}**\n${part.examples.map(([ex, d]) => (ex.startsWith('-# ') ? ex : `-# ${code(ex)}${d ? `  ${d}` : ''}`)).join('\n')}`));
     out.push(text(`-# Usage: ${code(typed ? `${p} cmd <required> [optional]` : '/cmd <required> [optional]')}${part.legendNote || ''}${part.gate ? `\n${GATE}` : ''}`));
     if (part.tail?.length) out.push(line(1), ...part.tail);
     return out;
@@ -334,12 +377,13 @@ function buildPage(name, { client, view, detail = false, canSwitch = false, seas
 
 // The home page, his approved layout (2026-10-29 23:52 EDT): today's hero, links and sign-off; the #1 card's four groups in short words (typed) or as mentions (slash); a Text commands line and its button where typed forms work.
 const HOME_GROUPS = [['gunsmithSearch', 'Gunsmith', ['gunsmith', 'dmz'], ['/gunsmith mp', '/gunsmith dmz']], ['newDraws', 'Draws', ['draws', 'prices', 'calculator'], ['/draws', '/draw prices', '/draw calculator']], ['calendar', 'Season', ['today', 'calendar', 'remind', 'patch notes', 'end'], ['/today', '/calendar', '/remind', '/patch notes', '/season end']], ['eyedropper', 'Utilities', ['timestamp', 'colors', 'settings', 'invite', 'help'], ['/timestamp', '/colors', '/settings', '/invite', '/help']]];
-function buildHome({ client, view, canSwitch, hero, adminNames = [] }) {
+function buildHome({ client, view, canSwitch, hero, adminNames = [], prefixes = null }) {
     const typed = view === 'text';
-    const p = client?.textMessageContent === false ? '@Dioreo' : 'd';
+    const p = firstPrefix(client, prefixes);
     const out = [...hero, line(2)];
     if (typed) {
-        const start = client?.textMessageContent === false ? `**${code('@Dioreo')}**` : `**${code('@Dioreo')}**, **${code('d')}** or **${code('dior')}**`;
+        const words = ['@Dioreo', ...(client?.textMessageContent === false ? [] : (prefixes?.length ? prefixes : ['d', 'dior']))].map(w => `**${code(w)}**`);
+        const start = words.length > 1 ? `${words.slice(0, -1).join(', ')} or ${words[words.length - 1]}` : words[0];
         out.push(text(`### ${emojis.command || ''} Type a command\n-# Start with ${start}, such as ${code(`${p} today`)}`.replace('###  ', '### ')));
         out.push(...HOME_GROUPS.map(([icon, label, words]) => text(`**${emojis[icon]} ${label}**\n${dot(words)}`)));
     } else {
@@ -353,10 +397,10 @@ function buildHome({ client, view, canSwitch, hero, adminNames = [] }) {
     return out;
 }
 
-// The command switcher, outside the card above the footer (his ask, 2026-10-29 18:17 EDT): All commands first; on a typed view each page's name with its typed word under it, on a slash view the slash command with the name under it (18:56 EDT). Commands with no text form show as slash on both. A full admin's list is 24 of Discord's 25.
-function buildSwitcher({ names, current = null, view, client, seasonEmoji = null }) {
+// The command switcher, outside the card above the footer (his ask, 2026-10-29 18:17 EDT): All commands first; on a typed view each page's name with its typed word under it, on a slash view the slash command with the name under it (18:56 EDT). Commands with no text form show as slash on both. A full admin's list is 19 of Discord's 25 since /bot's subcommands became one page (2026-10-30 14:05 EDT).
+function buildSwitcher({ names, current = null, view, client, seasonEmoji = null, prefixes = null }) {
     const typed = view === 'text';
-    const p = client?.textMessageContent === false ? '@Dioreo' : 'd';
+    const p = firstPrefix(client, prefixes);
     const options = [{ label: 'All commands', value: 'landing', description: 'Back to the list of every command', default: !current, ...emojiField('dioreoCombo') }];
     for (const name of names.slice(0, 24)) {
         const tc = hasTextView(name) ? textCommandOf(name) : null;
@@ -366,4 +410,4 @@ function buildSwitcher({ names, current = null, view, client, seasonEmoji = null
     return { type: 1, components: [{ type: 3, custom_id: typed ? 'help_command~text' : 'help_command', placeholder: 'Jump to a command…', options }] };
 }
 
-module.exports = { PAGES, PAGE_NAMES, PAGE_ORDER, buildPage, buildHome, buildSwitcher, hasPage, hasTextView, pageIcon };
+module.exports = { PAGES, PAGE_NAMES, PAGE_ORDER, BOT_SUB_ORDER, BOT_SUB_NAMES, buildPage, buildHome, buildSwitcher, hasPage, hasTextView, pageIcon };
