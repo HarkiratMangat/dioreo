@@ -3,6 +3,8 @@
 // ==========================================
 // ARCHITECTURE: Redesigned 2026-08-08 20:56 EDT from Harkirat's own JSON mockups (local/landingPageUI.json, local/gunsmithsUI.json), then revised again 21:31 EDT the same day from his direct review feedback. Landing page is a Section+thumbnail "hero" (mascot + tagline), two Link buttons (Website/Install), a flat command DIRECTORY grouped by category, then a category select menu. Picking a category (or using the `cmd:` autocomplete option) swaps to that category's own detail page: a real Usage/Options/ Examples breakdown per command, options split under whichever command actually has them (never merged across commands with different option sets -- `/gunsmith mp` and `/gunsmith dmz` have identical shapes (weapon/build/visibility) but each is its own detailCommands entry with its own options block; the `/gunsmith search` and `list` subcommands this used to document were removed 2026-10-19. Consolidated from `/all` + the eight per-category MP commands 2026-08-15 -- see docs/superpowers/specs/2026-08-15-gunsmiths-command-consolidation-design.md.
 //
+// 🔄 B6 (2026-10-29, Harkirat's designs, approved 19:02-23:52 EDT): the category pages and the category dropdown are GONE. /help is a home page and one page per command, each in a typed and a slash view, built by utils/helpPages.js; the command switcher sits outside the card. CATEGORY_DEFS below stays as data: it still decides who may see which command (`requires`), feeds the `cmd:` search, and is what the dioreo.app /commands page (scripts/lib/commandCatalog.js) and scripts/commandOptions.test.js read.
+//
 // Categories: Gunsmith (/gunsmith mp, /gunsmith dmz, /dmz) / Draws / Seasonal Info / Utilities / Preferences (which also carries `/admin` for server admins) / Bot Admin (whitelist-gated, hidden entirely from everyone else).
 //
 // The `hidden` boolean option was renamed BOT-WIDE to `visibility` (every command, not just this one), and its TYPE changed from boolean to a 2-choice string (Hidden/Public) -- "visibility: True/False" doesn't read sensibly, "visibility: Hidden/Public" does. /help carries the SAME option itself now too (2026-08-08 21:29 EDT review pass) -- it's the one command that had been hardcoded ephemeral-only with no way to make it public, an inconsistency with every other command in the bot. No "Show Everyone" button here anymore (removed same pass, Harkirat's direct request) -- the visibility option already covers that case up front.
@@ -57,10 +59,7 @@ const { MASCOT_URL } = require('../utils/brandAssets');
 
 // Single source of truth for the visibility option's copy -- reused verbatim as the real SlashCommandBuilder description AND every /help category's own [visibility] bullet, so the two can never drift apart the way "hidden ephemeral message" vs "True/False" once did.
 const VISIBILITY_DESCRIPTION = 'Show this response only to you, or publicly to everyone in the chat.';
-const VISIBILITY_BULLET = `-# 🔹 \`[visibility]\` ${VISIBILITY_DESCRIPTION}`;
 
-// A body may ask for a REAL divider by embedding this marker; buildContainer splits on it and inserts a type-14 separator. Added 2026-08-10 19:28 EDT because Preferences documents two unrelated commands (`/settings` and `/admin`) on one page and they ran together -- a markdown rule inside a Text Display is not a divider, it is a row of dashes. ⚠️ USE IT BETWEEN SUBJECTS, NOT BETWEEN COMMANDS. Harkirat, 19:31 EDT: "i dont want a divider on EVERY command... i just want it between /settings and /server" -- then, on seeing it removed from the shared-Options boundary too, 19:38 EDT: "revert back to how you implemented it, i kind of liked your idea." So the live rule is the middle one: a divider separates two genuinely different SUBJECTS (one command from another, the commands from the options that apply to all of them), and never sits between a command and its own bullets. Once every section has one they stop marking anything at all.
-const SECTION_BREAK = '\n<<<SECTION_BREAK>>>\n';
 
 // `staticCommands` is used for `/help cmd:` matching and autocomplete. `dropdownDescription`s are written to be genuinely useful at a glance, not filler -- what you'll actually find in there. ⚠️ This USED to be the user-facing command list only, with manage/alerts/autobuild deliberately excluded. That changed 2026-08-10 18:57 EDT: they are listed now, in a Bot Admin category gated on the whitelist, because a command Harkirat cannot look up in his own help panel is a gap rather than a security measure. Restricted entries are HIDDEN from everyone else, not absent. Two INDEPENDENT permission levels, and they are not a hierarchy -- a server owner is not a bot admin, and Harkirat is a bot admin in servers where he holds no Manage Server. So visibility is a `requires` string naming which one a thing needs, checked against a `{ serverAdmin, botAdmin }` object, rather than a single boolean that would silently conflate them.
 //   · `requires` on a CATEGORY hides the whole section (Bot Admin).
@@ -78,114 +77,8 @@ const categoryDescription = (c, perms) => (perms.serverAdmin && c.dropdownDescri
 
 const resolveText = (value, client) => typeof value === 'function' ? value(client) : value;
 
-// The landing's Text commands block (text commands, B3, 2026-10-29): a member in a server that hides slash commands, or that lists so many bots Discord stops showing Dioreo's, learns they can type one instead. `@Dioreo` works wherever Dioreo can post; the prefixes only where Discord grants the app Message Content, which bot/textCommands.js reads off the app's flags before login and leaves on `client.textMessageContent`. The forms are the ones bot/textCommands.js's own help card shows.
-function textCommandsBlock(client) {
-    const forms = client?.textMessageContent ? ['@Dioreo today', 'd today', 'dior today', '/today'] : ['@Dioreo today'];
-    return `### 💬 **TEXT COMMANDS**\n**Type one in a message:** ${forms.map(f => `\`${f}\``).join(' · ')}\n-# Works anywhere Dioreo can post, for when this server hides slash commands`;
-}
-
-// The typed form beside each command on its detail page (text commands, B5, 2026-10-29 00:15 EDT; B3's gap 2: every Usage line and Example was slash syntax only). Built from utils/textCommands/commands.js, never written per page: the command's first word, and the first spelling of each value its options take, so a page cannot promise a word the parser does not accept (scripts/helpTextCommands.test.js parses every one). `d`, or `@Dioreo` where the app has no Message Content, the same rule utils/commandMentions.js's textForm uses. A command with no text form (/admin, Dioreo Admin's) gets no line.
-function textCommandFor(name) {
-    const { TEXT_COMMANDS } = require('../utils/textCommands/commands');
-    const clean = String(name).replace(/^\//, '');
-    return TEXT_COMMANDS.find(c => `${c.slash}${c.sub ? ` ${c.sub}` : ''}` === clean) || null;
-}
-const MAX_LISTED = 6;
-const textPrefix = client => (client?.textMessageContent === false ? '@Dioreo' : 'd');
-const shortestKey = o => [...(o.keys || [o.name])].sort((a, b) => a.length - b.length)[0];
-
-// `d draws [new|returning]`, in the slash Usage's own brackets: <required> [optional]. A rest option (a weapon, a date, a season) is named by its option; a key-only one shows its key. An option with more than MAX_LISTED values shows its key instead of the list (think-pass, 2026-10-29 00:27 EDT: draw prices' 13 types made a 205-character line, five grey lines on a phone, while its Options bullet and its example already show the words), so it reads `d draw prices [10cp|20cp|30cp] [type]`, and `type:mythic` really works.
-function textUsage(client, name) {
-    const tc = textCommandFor(name);
-    if (!tc) return null;
-    const parts = (tc.options || []).filter(o => o.name !== 'visibility').map(o => {
-        let inner;
-        if (o.keyOnly) inner = `${shortestKey(o)}:${o.name}`;
-        else if (o.mention) inner = `@${o.name}`;
-        else if ((o.values || []).length > MAX_LISTED) inner = shortestKey(o);
-        else inner = [...(o.values || []).map(v => v.aliases[0]), ...(o.rest ? [o.name] : [])].join('|');
-        return o.required ? `<${inner}>` : `[${inner}]`;
-    });
-    return [textPrefix(client), tc.words[0], ...parts].join(' ');
-}
-
-// What a reply form acts on: `d timestamp` sent as a reply converts that message's times, `d colors` shows that person's colors.
-const REPLY_FORM_TARGET = { convertTimes: 'a message', viewColors: 'someone' };
-function textUsageLine(client, name) {
-    const usage = textUsage(client, name);
-    if (!usage) return null;
-    const tc = textCommandFor(name);
-    const reply = tc.replyForm ? `, or reply to ${REPLY_FORM_TARGET[tc.replyForm]} with \`${textPrefix(client)} ${tc.words[0]}\`` : '';
-    // Inside `d help` the heading above already reads `d draws`, so the line is the form itself, not an alternative to it.
-    return `-# 💬 ${require('../utils/commandMentions').inTextCommand() ? 'Type' : 'Or type'} \`${usage}\`${reply}`;
-}
-
-// The typed twin of one slash example, from the slash values it uses: each value's first spelling, a rest option's own text. Null when any option has no text form (visibility, style, view, a page with no text option), because a twin without it would be a different answer.
-function textExample(client, name, values) {
-    const tc = textCommandFor(name);
-    if (!tc || !values) return null;
-    const words = [];
-    for (const [key, val] of Object.entries(values)) {
-        const o = (tc.options || []).find(x => x.name === key);
-        if (!o) return null;
-        const hit = (o.values || []).find(v => [].concat(v.value).join(',') === [].concat(val).join(','));
-        if (hit) words.push(hit.aliases[0]);
-        else if (o.keyOnly && !/\s/.test(val)) words.push(`${shortestKey(o)}:${val}`);
-        else if (o.rest) words.push(String(val).toLowerCase());
-        else return null;
-    }
-    return [textPrefix(client), tc.words[0], ...words].join(' ');
-}
-
-// Each page's Examples as data: the slash line as shown, the command, and the slash values it uses (null: a browse row, which no typed word names -- a class word opens that class's first weapon instead). Read by examplesBlock() and by scripts/helpTextCommands.test.js.
-const HELP_EXAMPLES = {
-    gunsmith: [
-        ['**/gunsmith mp** weapon:`AK117`', '/gunsmith mp', { weapon: 'AK117' }],
-        ['**/gunsmith mp** weapon:`Switchblade X9` visibility:`Hidden`', '/gunsmith mp', { weapon: 'Switchblade X9', visibility: 'hidden' }],
-        ['**/gunsmith mp** weapon:`All SMG builds`', '/gunsmith mp', null],
-        ['**/gunsmith mp** weapon:`All META builds`', '/gunsmith mp', null],
-        ['**/gunsmith dmz** weapon:`Fennec`', '/gunsmith dmz', { weapon: 'Fennec' }],
-    ],
-    draws: [
-        ['**/draws** page:`Returning Draws`', '/draws', { page: 'returning' }],
-        ['**/draw prices** region:`30 CP Region`', '/draw prices', { region: 'region_30' }],
-        ['**/draw prices** filter:`Mythic Weapon Draw`', '/draw prices', { filter: 'mythicWeapon' }],
-        ['**/draw calculator** page:`View Saved`', '/draw calculator', { page: 'saved' }],
-    ],
-    seasonal: [
-        ['**/calendar** page:`Events` filter:`Upcoming`', '/calendar', { page: 'events', filter: 'soon' }],
-        ['**/remind** releases:`New draws` (run it again to turn it off)', '/remind', { releases: 'new draws' }],
-        ['**/remind** leaving:`Leaving soon (everything)`', '/remind', { leaving: 'leaving soon' }],
-        ['**/patch notes** season:`Season 6 — Take Your Heart`', '/patch notes', { season: 'Season 6' }],
-    ],
-    utilities: [
-        ['**/colors** page:`Nameplate` source:`From Server Profile`', '/colors', { page: 'nameplate', source: 'server' }],
-        ['**/timestamp** datetime:`this saturday 7pm` timezone:`Pacific Time`', '/timestamp', { datetime: 'this saturday 7pm', timezone: 'Pacific Time' }],
-        ['**/timestamp** datetime:`august 20` style:`Short Date (d)`', '/timestamp', { datetime: 'august 20', style: 'shortDate' }],
-        ['**/timestamp** datetime:`in 45 minutes` view:`Text`', '/timestamp', { datetime: 'in 45 minutes', view: 'text' }],
-    ],
-};
-function exampleLine(client, slashText, name, values, typedForms = true) {
-    const twin = typedForms ? textExample(client, name, values) : null;
-    return `-# 🔸 ${slashText}${twin ? ` · \`${twin}\`` : ''}`;
-}
-const examplesBlock = (client, key, typedForms = true) => `-# **Examples**\n${HELP_EXAMPLES[key].map(e => exampleLine(client, ...e, typedForms)).join('\n')}`;
-
 // Where typed forms can work: a server Dioreo is in (Harkirat, 2026-10-29 00:45 EDT, "sure" to hiding them outside servers). The listener ignores DMs, and a user-installed /help run in a server Dioreo was never added to has a guildId but no listener there either, so both get slash forms only. `client.guilds.cache` holds exactly the servers Dioreo is in (the Guilds intent). A synthetic re-entry (a dropdown click) and a text command's adapter both carry guildId and client, so every page of one /help agrees.
 const typedFormsHere = interaction => Boolean(interaction?.guildId && interaction.client?.guilds?.cache?.has(interaction.guildId));
-
-// The ONE renderer every per-command "-# **Options**" detail block parameterizes into (v3-pre-release review finding #49) -- replaces four hand-built escaped-markdown concatenations. Reproduces the exact pre-rewrite shape byte-for-byte, pinned by scripts/helpBodySnapshot.test.js: a header, the description, an Options block (bulleted if the command has any, otherwise just the shared visibility bullet), always ending in VISIBILITY_BULLET -- the shape gunsmith/draws/seasonal/ utilities all already shared before this rewrite, just typed out by hand each time.
-function renderCommandBlock(command, client, typedForms = true) {
-    const optionLines = command.options.map(o =>
-        `-# 🔹 \`${o.required ? '<' : '['}${o.name}${o.required ? '>' : ']'}\` ${resolveText(o.desc, client)}`
-    ).join('\n');
-    // [visibility] is no longer repeated under every command (2026-10-25 22:44 EDT, critique #19): each page states it once, in SHARED_VISIBILITY, the way Preferences and Bot Admin already did. A command with no options of its own has no Options heading. The typed form sits under the description, above the slash options (B5): `d draws [new|returning]`.
-    const typed = typedForms ? textUsageLine(client, command.name) : null;
-    return `### ${mentionCommand(client, command.name)}\n${resolveText(command.description, client)}\n`
-        + (typed ? `${typed}\n` : '')
-        + (optionLines ? `-# **Options**\n${optionLines}\n` : '');
-}
-const SHARED_VISIBILITY = `\n-# **Every command above also takes**\n${VISIBILITY_BULLET}\n`;
 
 const CATEGORY_DEFS = [
     {
@@ -283,7 +176,7 @@ const CATEGORY_DEFS = [
         emojiKey: 'settings', emojiKeyServerAdmin: 'serverSettings',
         dropdownDescription: 'Your saved preferences',
         dropdownDescriptionServerAdmin: "Your preferences and your server's rules",
-        staticCommands: [cmd('/settings', { jumpDescription: 'Your timezone, reply visibility, CP region, colors and stats' }), cmd('/admin', { requires: 'serverAdmin', suffix: '(server)', jumpDescription: "Choose where Dioreo's replies stay private in your server" })],
+        staticCommands: [cmd('/settings', { jumpDescription: 'Your timezone, reply visibility, CP region and colors' }), cmd('/admin', { requires: 'serverAdmin', suffix: '(server)', jumpDescription: "Choose where Dioreo's replies stay private in your server" })],
     },
     // Whole-category gating, unlike `/admin` above: these are useless to anyone who is not on the bot's own admin whitelist, and unlike Manage Server there is no per-guild version of that permission. `botAccess` is the emoji (2026-08-22, Harkirat's call) -- the SAME icon /bot access's own panel heading uses, so the category and the surface it leads to read as one thing. It replaced `database`, which was borrowed from the `mng*` data-entry family and described only one of the five commands listed here.
     {
@@ -294,17 +187,6 @@ const CATEGORY_DEFS = [
         requires: 'botAdmin',
     },
 ];
-
-const DETAIL_HEADERS = {
-    gunsmith: 'Gunsmith Commands',
-    draws: 'Draw Commands',
-    seasonal: 'Seasonal Info Commands',
-    utilities: 'Utility Commands',
-    botadmin: 'Bot Admin Commands',
-    preferences: 'Preference Commands'
-};
-
-const USAGE_LEGEND = '-# **Usage: `/cmd <required> [optional]`**';
 
 // The right-click apps /help's search can find (2026-10-25 23:05 EDT, his "right" and "app" searches found nothing). Each opens the page that documents it, and an admin one shows only to whoever can use the command it feeds.
 const HELP_APPS = [
@@ -395,204 +277,6 @@ async function getAllHelpCommandNames(perms = {}) {
     return searchEntries(perms).map(e => e.name);
 }
 
-// Each of these four now composes its per-command "-# **Options**" blocks from CATEGORY_DEFS' own data via renderCommandBlock() (v3-pre-release review finding #49) instead of hand-built escaped-markdown concatenation. Their "-# **Examples**" trailers are data too since B5 (2026-10-29 00:15 EDT), in HELP_EXAMPLES above, so each slash example can carry its typed twin. `commands` is the category's own detailCommands (gunsmith) or staticCommands (draws/seasonal/utilities) -- see buildContainer's dispatch below. PARTS since 2026-10-25 17:10 EDT: the Dispute a Build section carries its button as an accessory (Harkirat's /gunsmith review: the dispute form lives in /help only, beside "or DM <@owner>", his clickable @mention). handlers/loadouts.js answers `gsb~dispute`.
-function buildGunsmithBody(commands, client, typedForms = true) {
-    const { ALLOWED_ADMIN_ID } = require('../utils/owner');
-    return [
-        { content: buildGunsmithText(commands, client, typedForms) },
-        { divider: true },
-        { content: `### Submit or dispute a build\nHave a build to share? **Submit a Build** is under every /help page, and on a weapon's **No build yet** card.\nIf a submitted build uses your screenshot, ask for its removal or the credit. You'll need proof the original is yours and was posted before the build went live. Or DM <@${ALLOWED_ADMIN_ID}> with your proof.`,
-            accessory: { type: 2, style: 2, label: 'Dispute a Build', custom_id: 'gsb~dispute' } },
-    ];
-}
-function buildGunsmithText(commands, client, typedForms = true) {
-    return commands.map(c => renderCommandBlock(c, client, typedForms)).join('') + SHARED_VISIBILITY
-        + `\n${examplesBlock(client, 'gunsmith', typedForms)}`;
-}
-
-// Returns PARTS, not one string (2026-10-17 23:51 EDT): the /draw calculator block is a Section whose button opens the calculator's full Help (Harkirat: "add a button in the /help draws page, as a section+accessory for the /draw calc section, to view the full help panel"). The button reuses the calculator's own `help` verb, so it opens the same private panel the calculator's Help button does; with no author on the state, anyone may press it.
-function buildDrawsBody(commands, client, typedForms = true) {
-    const calc = commands.find(c => c.name === '/draw calculator');
-    const others = commands.filter(c => c !== calc);
-    const parts = [{ content: others.map(c => renderCommandBlock(c, client, typedForms)).join('').trimEnd() }];
-    if (calc) {
-        const dc = require('./drawCalculator');
-        parts.push({ content: renderCommandBlock(calc, client, typedForms).trimEnd(), accessory: { type: 2, style: 2, label: 'Calculator Guide', emoji: emojis.parseEmoji(emojis.calculator), custom_id: dc.encodeState('help', dc.defaultState()) } });
-    }
-    parts.push({ content: `${SHARED_VISIBILITY.trim()}\n\n${examplesBlock(client, 'draws', typedForms)}` });
-    return parts;
-}
-
-function buildSeasonalBody(commands, client, typedForms = true) {
-    return commands.map(c => renderCommandBlock(c, client, typedForms)).join('') + SHARED_VISIBILITY
-        + `\n${examplesBlock(client, 'seasonal', typedForms)}`;
-}
-
-function buildUtilitiesBody(commands, client, typedForms = true) {
-    return commands.map(c => renderCommandBlock(c, client, typedForms)).join('') + SHARED_VISIBILITY
-        + `\n### Right-click (Apps)\n**View Colors** on a member or one of their messages: their profile colors\n**Convert Times** on a message: every date and time in it, as a timestamp in your own time zone\n`
-        + `\n${examplesBlock(client, 'utilities', typedForms)}`;
-}
-
-// Server admins get a second command appended rather than a page of their own. The `/admin` detail is the one place carrying the full precedence order and the two Discord limits, because the panel itself deliberately stays short -- see commands/admin.js's note on the wall-of-text draft that got rejected 2026-08-10 18:23 EDT. Harkirat's framing on the caps: they are not a real constraint in practice ("why is a server adding 25 role overrides"), so they read as guidance about the intended workflow -- set a default, hand-pick the exceptions -- not as a warning. TWO commands on one page, so they get a real divider between them and the shared `[visibility]` option is stated ONCE at the end rather than under each -- repeating it per command was Harkirat's call on 2026-08-10 19:28 EDT ("visibility is shared in all the commands so having it individually under each of them makes no sense"), and the same pass cut the /admin section roughly in half for being overwhelming to read. Gunsmith already used the shared-options shape for the same reason. `commands` is the category's own visibleCommands(category, perms) result (v3-pre-release review finding #49) -- whether /admin is present is derived from THAT list rather than re-checking perms.serverAdmin directly, so this page's admin filtering can never drift from the directory/ dropdown/autocomplete, which already filter through the exact same CATEGORY_DEFS `requires`.
-function buildPreferencesBody(commands, client, typedForms = true) {
-    // /settings' typed form (B5) under its description; /admin has none, so it keeps slash only.
-    const settings = `### ${mentionCommand(client, '/settings')}\nYour own preferences: **Visibility** (who sees your responses by default), **Preferences** (timezone, timestamp style, accent style, and more), and your **Colors**${typedForms ? `\n${textUsageLine(client, '/settings')}` : ''}`;
-    // `[open]` (2026-10-19 17:49 EDT, named `[customize]` until 2026-10-19 19:33 EDT) is /settings' jump-to option -- see commands/settings.js. Written once here because both branches below print the /settings options.
-    const openBullet = '-# 🔹 `[open]` Open straight on Visibility, Preferences, or your Colors';
-    const hasAdmin = commands.some(c => c.name === '/admin');
-
-    if (!hasAdmin) {
-        return `${settings}\n\n-# **Options**\n${openBullet}\n${VISIBILITY_BULLET}\n\n-# **Examples**\n${exampleLine(client, '**/settings**', '/settings', {}, typedForms)}\n${exampleLine(client, '**/settings** open:`Preferences`', '/settings', { open: 'preferences' }, typedForms)}`;
-    }
-
-    return settings
-        + SECTION_BREAK
-        + `### ${mentionCommand(client, '/admin')}\nWhere Dioreo answers **publicly** and where it stays **private**, for the whole server. Needs **Manage Server**.\n`
-        + `-# Opens a four-page panel — **Overview · Channels · Roles · Commands**\n\n`
-        + `-# **Rule order** · the most specific one wins\n`
-        + `-# 🔹 Command **→** Role **→** Channel **→** the Overview default\n`
-        + `-# 🔹 Threads follow their parent channel · if two roles disagree, **public wins**\n\n`
-        + `-# **Setting it up**\n`
-        + `-# 🔸 Pick a default on **Overview**, then hand-pick the few channels or roles that should differ\n`
-        + `-# 🔸 Rules only make Dioreo **quieter** — Public *permits* a public answer, it never overrides someone's own ${mentionCommand(client, '/settings')}\n\n`
-        + `-# **Worth knowing**\n`
-        + `-# 🔸 Each menu holds up to **25 picks** (Discord's limit). Needing more usually means a different default would suit better\n`
-        + `-# 🔸 It hides the **answer**, not the command — to remove a command entirely, use **Server Settings → Integrations**`
-        + SECTION_BREAK
-        + `-# **Options** · \`[open]\` is /settings only; both take \`[visibility]\`\n${openBullet}\n${VISIBILITY_BULLET}\n\n`
-        + `-# **Examples**\n`
-        + `${exampleLine(client, '**/settings** visibility:`Public`', '/settings', { visibility: 'public' }, typedForms)}\n`
-        + `${exampleLine(client, '**/settings** open:`Colors`', '/settings', { open: 'colors' }, typedForms)}\n`
-        + `-# 🔸 **/admin** → **Overview** → Default *Private*, then **Channels** → allow \`#bot-spam\`\n`
-        + `-# 🔸 **/admin** → **Roles** → *Always public for these roles* → \`@Moderator\`\n`
-        + `-# 🔸 **/admin** → **Commands** → \`/colors\` → *Private*: only \`/colors\` answers privately`;
-}
-
-// Gated on the bot's own admin whitelist, not on any guild permission -- these write to shared global data (one SeasonalData document, the Loadout collection) rather than to anything scoped to the server they are run in, which is exactly why no per-guild permission could ever grant them. That fact is a HINT at the foot of the page rather than a bullet in the middle: it explains the section, it is not something you do. ⚠️ Filtered per-command, not just per-category (fixed 2026-08-15 13:10 EDT) -- this used to render all three commands' full detail unconditionally, so an admin granted only /bot analytics still read the complete /manage and /autobuild writeups even though the directory/dropdown correctly hid those commands from them elsewhere. Category-level `requires: 'botAdmin'` only gates whether this page exists at all; each command's own perms key (perms.bot/perms.botAccess/perms.autobuild/ perms.manage) has to be checked again HERE, same as visibleCommands() already does for the directory and dropdown. `commands` is visibleCommands(category, perms) -- same reasoning as buildPreferencesBody above. Membership (`has(name)`) replaces the old direct `perms.X` checks, so a command's visibility here can never drift from the directory/dropdown/autocomplete again (the exact class of bug that let the per-command filter go missing from this function until 2026-08-15). ⚠️ THIS PAGE SITS NEAR DISCORD'S 4,000-CHARACTER TOTAL. With prod's 19-digit command ids the owner's view measured 4,038 characters on 2026-10-29 00:46 EDT (4,087 opened on /manage), past the cap `.claude/rules/draw-prices.md` probed (COMPONENT_DISPLAYABLE_TEXT_SIZE_EXCEEDED), so it was trimmed (the /autobuild bullets, /manage emojis, the footer, whose "four are owner-only" was wrong: five are). scripts/helpBodySnapshot.test.js now measures every page with prod-length ids; add a command here and that test says whether it still fits.
-function buildBotAdminBody(commands, client) {
-    const has = (name) => commands.some(c => c.name === name);
-    const sections = [];
-    if (has('/bot analytics')) {
-        sections.push(`### ${mentionCommand(client, '/bot analytics')}\nThe bot's usage, timing and health, without opening the server it runs on\n`
-            + `-# 🔹 \`[page]\` Jump directly to a page: \`Health\` · \`Alerts\` · \`Changes\` · \`Usage\` · \`Timing\``);
-    }
-    if (has('/bot access')) {
-        sections.push(`### ${mentionCommand(client, '/bot access')}\nWho has admin access, and to what — owner-only\n`
-            + `-# 🔹 No options of its own`);
-    }
-    if (has('/bot servers')) {
-        sections.push(`### ${mentionCommand(client, '/bot servers')}\nView, reset or delete one server's /admin rules, for an admin who lost access — owner-only\n`
-            + `-# 🔹 \`[server]\` A server ID; leave it blank to pick the server you're in or type one`);
-    }
-    if (has('/bot hotpatch')) {
-        sections.push(`### ${mentionCommand(client, '/bot hotpatch')}\nReload changed files into the running bot without a restart — owner-only\n`
-            + `-# 🔹 \`[pull]\` git pull first (default: yes)\n`
-            + `-# 🔹 \`[dry_run]\` Show the plan and change nothing\n`
-            + `-# 🔹 \`[file]\` Limit to one changed file (default: everything the pull brought in)`);
-    }
-    if (has('/embed')) {
-        sections.push(`### ${mentionCommand(client, '/embed')}\nRender pasted message JSON as a real Components V2 message, to check a design — owner-only\n`
-            + `-# 🔹 \`[json]\` The message JSON; leave both this and \`file\` empty to paste it in a box\n`
-            + `-# 🔹 \`[file]\` A .json or .txt file, for JSON too long to paste\n`
-            + `-# 🔹 \`[clean]\` Render only the JSON: no Edit JSON button and no emoji note`);
-    }
-    if (has('/manage emojis')) {
-        sections.push(`### ${mentionCommand(client, '/manage emojis')}\nEvery app emoji, which bots lack it, and its saved original: sync, upload or find one — owner-only\n`
-            + `-# 🔹 Only the visibility option below`);
-    }
-    if (has('/autobuild')) {
-        sections.push(`### ${mentionCommand(client, '/autobuild')}\nRead an MP or DMZ loadout out of a Gunsmith screenshot and stage it for review — nothing is saved until you press Save\n`
-            + `-# 🔹 On its own: a form for up to 10 screenshots or links, each with its own mode, category and badges\n`
-            + `-# 🔹 \`[screenshot]\` The Gunsmith screenshot to read; or \`url\`, never both\n`
-            + `-# 🔹 \`[url]\` A link to the screenshot, if it is already hosted\n`
-            + `-# 🔹 \`[category]\` \`AR\` · \`SMG\` · \`LMG\` · \`Marksman\` · \`Sniper\` · \`Shotgun\` · \`Secondary\`; blank: from the weapon, or asked\n`
-            + `-# 🔹 \`[mode]\` \`MP\` · \`DMZ\`; blank: read from the screenshot, or asked\n`
-            + `-# 🔹 \`[badges]\` e.g. \`meta,top5\`: meta, toxic, ass, best, top3, top5, capable or a rank mode; blank means none\n`
-            + `-# 🔹 \`[retry_token]\` Only to retry an image after a failed upload`);
-    }
-    if (has('/manage')) {
-        sections.push(`### ${mentionCommand(client, '/manage')}\nThe data-entry panel — seasonal info, draws, calendar, patch notes, loadouts, banners, announcements, and the next-season draft\n`
-            + `-# 🔹 One subcommand per section: \`draws\` · \`calendar\` · \`patch-notes\` · \`gunsmith mp\` · \`gunsmith dmz\` · \`season titles\` · \`season draft\` · \`announcement\` · \`guide\`\n`
-            + `-# 🔹 \`[action]\` Jump straight to one of that section's own actions (not on \`season titles\` or \`guide\`)`);
-    }
-
-    // The admin right-clicks (critique #44), each shown to whoever can use the command it feeds.
-    const apps = [];
-    if (has('/manage')) apps.push('**Add to Calendar** · **Add to Draws** · **Add to Patch Notes** on a message: stage its text into that /manage page');
-    if (has('/autobuild')) apps.push('**Autobuild Gunsmith** on a message with a Gunsmith screenshot: the same review as /autobuild');
-    if (apps.length) sections.push(`### Right-click (Apps)\n${apps.join('\n')}`);
-
-    const examples = [];
-    if (has('/bot analytics')) examples.push(`-# 🔸 **/bot analytics** page:\`Usage\` visibility:\`Public\` — share usage data in a channel`);
-    if (has('/autobuild')) {
-        examples.push(`-# 🔸 **/autobuild** screenshot:\`[upload]\` category:\`SMG\` badges:\`meta,top5\``);
-    }
-    if (has('/manage')) {
-        examples.push(`-# 🔸 **/manage patch-notes** — straight to the section, no clicking through`);
-        examples.push(`-# 🔸 **/manage season draft** — stage next season without touching what is live`);
-    }
-
-    return sections.join('\n')
-        + SECTION_BREAK
-        + `-# **Options** · every command above except /bot hotpatch and /bot servers\n${VISIBILITY_BULLET}\n\n`
-        + `-# **Examples**\n${examples.join('\n')}\n\n`
-        + `-# Gated on **Dioreo's own admin allowlist**, not a server permission: Manage Server does not grant them`;
-}
-
-const BODY_BUILDERS = {
-    gunsmith: buildGunsmithBody,
-    draws: buildDrawsBody,
-    seasonal: buildSeasonalBody,
-    utilities: buildUtilitiesBody,
-    preferences: buildPreferencesBody,
-    botadmin: buildBotAdminBody
-};
-
-// `isAdmin` hides the Server Admin category from everyone who could not use `/admin` anyway. Harkirat's call, 2026-08-10 18:36 EDT. It is filtered in THREE places, not one -- the dropdown here, the landing directory, and the `cmd:` lookup in execute() -- because filtering only the visible menu leaves `/help cmd:server` working, which reads as the gate being broken rather than as a deliberate exception. Nothing here is secret; the point is that a member who cannot open the panel should not be shown a page about it. `selectedKey` is 'landing', a category key, or null. Null leaves every option unselected so the placeholder shows: the one-command page belongs to no category, and marking Commands List there said you were on it (2026-10-27 19:16 EDT, Harkirat: "That should be switching to the unselected 'Jump to a category…'").
-function buildCategorySelectRow(selectedKey, perms = {}) {
-    const isLanding = selectedKey === 'landing';
-    const options = [
-        { label: 'Commands List', value: 'landing', description: 'Every command at a glance', emoji: emojis.parseEmoji(emojis.dioreoCombo), default: isLanding },
-        ...visibleCategories(perms).map(c => ({
-            label: c.label,
-            value: c.key,
-            description: categoryDescription(c, perms),
-            emoji: emojis.parseEmoji(emojis[categoryEmojiKey(c, perms)]),
-            default: c.key === selectedKey
-        }))
-    ];
-    return { type: 1, components: [{ type: 3, custom_id: 'help_category', placeholder: 'Jump to a category…', options }] };
-}
-
-// Each command's own icon in the Jump to one command list (2026-10-27 18:51 EDT, Harkirat: "Give /gunsmith dmz the dmz emoji. Draw prices its own. Draw calc its own. And so on"). Before this every row wore its category's icon, so a category's commands looked identical. The icons match the ones those commands use themselves (and the v3 announcement), and a command missing here falls back to its category's. /emojis wears DB_Emojis where the booted app has it (2026-10-28, Harkirat uploaded it; found by name, see utils/emojiMap.js), and the swatches icon below where it does not.
-const COMMAND_EMOJI = {
-    '/gunsmith mp': 'gunsmithSearch', '/gunsmith dmz': 'dmz',
-    '/draws': 'newDraws', '/draw prices': 'drawPrices', '/draw calculator': 'calculator',
-    '/calendar': 'calendar', '/today': 'dailyUpdate', '/remind': 'remind', '/patch notes': 'patchNotes', '/season end': 'bp',
-    '/colors': 'showColors', '/timestamp': 'timestamp', '/invite': 'shareHeart',
-    '/settings': 'settings', '/admin': 'serverSettings',
-    '/bot analytics': 'mngInfo', '/bot access': 'botAccess', '/bot hotpatch': 'edit', '/bot servers': 'guide', '/embed': 'edit', '/manage emojis': 'swatches', '/autobuild': 'gunsmithCode', '/manage': 'database'
-};
-
-// One command at a time (2026-10-27 10:44 EDT, Harkirat: "add another dropdown so a user can filter for 1 specific command instead of only per category"). Every slash command this viewer may see, in directory order, capped at Discord's 25 options; right-click apps stay out (they have no page of their own). Picking one opens a page with only that command (handlers/help.js, `help_command`). `seasonEmoji` is the current season's own emoji for /season end (2026-10-27 19:01 EDT, Harkirat: "make sure it's using this current season's emoji and not the generic battle pass one"); BP stands in when it is unknown. `jumpDescription` fills the rows whose command has no `description` here (/settings, /admin and the admin tools); it is read only by this list, so their own pages are unchanged (his ask, same message). The list follows the v3 announcement's order (2026-10-27 19:03 EDT, Harkirat: "sort the items so they're following the same order as the list we used in announcements with all of the ... admin type commands after them"). A command not named here keeps its category order, after these; /admin and the admin tools are left out on purpose so they come last.
-const JUMP_ORDER = ['/gunsmith mp', '/gunsmith dmz', '/draws', '/draw prices', '/draw calculator', '/today', '/calendar', '/remind', '/season end', '/patch notes', '/timestamp', '/colors', '/settings', '/invite'];
-const jumpRank = name => { const i = JUMP_ORDER.indexOf(name); return i === -1 ? JUMP_ORDER.length : i; };
-
-function buildCommandSelectRow(focusName, perms = {}, seasonEmoji = null) {
-    const options = [];
-    for (const cat of visibleCategories(perms)) {
-        for (const c of cat.detailCommands || visibleCommands(cat, perms)) {
-            if (options.length >= 25) break;
-            const text = c.description || c.jumpDescription || '';
-            const description = text.length > 100 ? `${text.slice(0, 99)}…` : (text || undefined);
-            options.push({ label: c.name, value: c.name, ...(description ? { description } : {}), emoji: emojis.parseEmoji((c.name === '/season end' && seasonEmoji) || (c.name === '/manage emojis' && emojis.DB_Emojis) || emojis[COMMAND_EMOJI[c.name]] || emojis[categoryEmojiKey(cat, perms)]), default: c.name === focusName });
-        }
-    }
-    options.sort((a, b) => jumpRank(a.value) - jumpRank(b.value)); // stable: unlisted commands keep their category order
-    return { type: 1, components: [{ type: 3, custom_id: 'help_command', placeholder: 'Jump to one command…', options }] };
-}
-
 // The current season's emoji, as /today and /calendar find it. Only when the database is connected: the snapshot test renders this panel with no Mongo, and a buffered query there would wait ten seconds and fail.
 async function currentSeasonEmoji() {
     try {
@@ -602,115 +286,64 @@ async function currentSeasonEmoji() {
     } catch { return null; }
 }
 
-async function buildContainer(selectedKey, accentColor, perms = {}, client, focusName = null, onlyFocus = false, typedForms = true) {
-    const components = [];
+// The pages this viewer may open, in the switcher's order (utils/helpPages.js PAGE_ORDER): what CATEGORY_DEFS lets them see, so a restricted command is hidden from the page, the switcher and `cmd:` alike.
+function visiblePageNames(perms = {}) {
+    const { PAGE_ORDER, hasPage } = require('../utils/helpPages');
+    const seen = new Set(searchEntries(perms).filter(e => !e.app).map(e => e.name));
+    return PAGE_ORDER.filter(n => seen.has(n) && hasPage(n));
+}
 
-    // Someone who reaches a restricted category (a stale dropdown on an older panel, or `/help cmd:manage`) is silently returned to the directory rather than refused -- there is nothing to protect here, and an error message about a page they cannot see is worse than simply not having the page.
-    const requested = selectedKey && CATEGORY_DEFS.find(c => c.key === selectedKey);
-    if (requested && !permitted(requested, perms)) selectedKey = null;
+// A right-click app has no page of its own: it opens the page of the command it belongs to.
+const APP_PAGE = { 'View Colors': '/colors', 'Convert Times': '/timestamp', 'Add to Calendar': '/manage', 'Add to Draws': '/manage', 'Add to Patch Notes': '/manage', 'Autobuild Gunsmith': '/autobuild' };
 
-    if (!selectedKey) {
-        components.push({
-            type: 9,
-            components: [{
-                type: 10,
-                content: `## ${emojis.dioreoCombo} Dioreo's Commands\n> **Dioreo** helps you look up CODM loadouts, lucky draw pricing, the seasonal event calendar, patch notes, and more!`
-            }],
-            accessory: { type: 11, media: { url: MASCOT_URL } }
-        });
-        // `INSTALL_URL` used to be a hardcoded const with the PROD client_id baked in, which meant the DEV bot's own help panel offered an install link for the production application -- silent, and wrong. utils/inviteLinks.js resolves the id off the live client instead; its `chooser` shape is byte-identical to the old literal, so this button is unchanged on prod.
-        const { buildInviteUrls } = require('../utils/inviteLinks');
-        components.push({
-            type: 1,
-            components: [
-                { type: 2, style: 5, label: 'Website', url: WEBSITE_URL },
-                // "Invite Dioreo" (2026-10-18 20:15 EDT, Harkirat), the same word /invite uses. "Add to server or apps" since 2026-10-27 10:44 EDT (Harkirat).
-                { type: 2, style: 5, label: 'Add to server or apps', url: buildInviteUrls(client).chooser }
-            ]
-        });
-        // Credits · Terms · Privacy Policy, under Website and Invite (2026-10-19 09:41 EDT, Harkirat: "a button to 'Credits' that links to the notice page on the dioreo.app website. ToS and Privacy Policy as well"; "Terms", short, 09:42 EDT). NOTICE carries every third-party credit, hence its button's name.
-        components.push({
-            type: 1,
-            components: [
-                { type: 2, style: 5, label: 'Credits', url: `${WEBSITE_URL}/notice` },
-                { type: 2, style: 5, label: 'Terms', url: `${WEBSITE_URL}/terms` },
-                { type: 2, style: 5, label: 'Policy', url: `${WEBSITE_URL}/privacy` }
-            ]
-        });
-        components.push({ type: 14, spacing: 2, divider: true });
-        components.push({
-            type: 10,
-            // GENERATED FROM CATEGORY_DEFS, not hand-written -- this used to be five hardcoded lines, and adding the Server Admin category on 2026-08-10 walked straight into the trap: the entry appeared in the dropdown (which does map over CATEGORY_DEFS) and was missing from this list, because nothing ties the two together. Harkirat's call the same day, on being told about it: "that's a real gap that will create staleness and needs a proper solution." One source of truth is that solution -- a new category is now a single array entry and cannot be half-added. Byte-for-byte identical output to the hardcoded version, checked by diffing the rendered container before and after. scripts/guildPolicyEnforcement.test.js asserts every category reaches this list.
-            content: visibleCategories(perms)
-                .map(c => {
-                    // A command's `suffix` rides here too -- that is how `/admin` announces itself as an admin command while sitting inside Preferences.
-                    const commands = (c.detailCommands || visibleCommands(c, perms)).map(x => `${mentionCommand(client, x.name)}${x.suffix ? ` *${x.suffix}*` : ''}`).join(' · ');
-                    return `### ${emojis[categoryEmojiKey(c, perms)]} **${c.label.toUpperCase()}**\n**${commands}**\n`;
-                })
-                .join('')
-                + `\n`
-                // In a `d help` reply the tip names the typed form, like every mention above it (text commands, B3, 2026-10-29).
-                + `-# ${emojis.info} Tip: ${require('../utils/commandMentions').inTextCommand() ? `\`${client?.textMessageContent === false ? '@Dioreo' : 'd'} help <command>\`` : '**/help** \`cmd:\`'} opens one command`
-        });
-        // One block under the directory, no new page. It costs 2 of the message's 40 components (27 on the landing with the footer row, counted by scripts/helpTextCommands.test.js). Not where typed forms do nothing (typedFormsHere above): a DM, or a server Dioreo is not in.
-        if (typedForms) {
-            components.push({ type: 14, spacing: 1, divider: true });
-            components.push({ type: 10, content: textCommandsBlock(client) });
-        }
-        components.push({ type: 14, spacing: 2, divider: true });
-        // Deliberately NOT re-mentioning `/help cmd:` here -- the directory above already covers it ("Learn more about a command: /help <cmd>"); this line is the dropdown's own label, and the directory no longer says "Or use the Dropdown below!" as well (critique #28).
-        components.push({ type: 10, content: `-# Browse by category, or jump to one command` });
-        components.push(buildCategorySelectRow('landing', perms));
-        components.push(buildCommandSelectRow(null, perms, await currentSeasonEmoji()));
-        components.push({ type: 14, spacing: 1, divider: true });
-        // The sign-off in the launch announcement's style (2026-10-27 01:23 EDT, Harkirat). "Report bugs & suggestions to @dior" went with it: the Bugs & Suggestions button under this panel does that now.
-        components.push({ type: 10, content: `-# Made with ${emojis.diorHeart} by <@${HARKIRAT_ID}>` });
-    } else {
-        // `requested` is the already-permission-checked category from the guard above. detailCommands (gunsmith only) or visibleCommands(requested, perms) -- see each builder's own comment for why membership drives filtering instead of raw `perms`.
-        let detailSource = requested.detailCommands || visibleCommands(requested, perms);
-        // `/help cmd:<x>` opens x's whole page (critique #4): x moves to the top where a page lists one block per command, and the header says what was asked for.
-        const focusAt = focusName ? detailSource.findIndex(c => c.name === focusName) : -1;
-        if (focusAt > 0) detailSource = [detailSource[focusAt], ...detailSource.filter((_, i) => i !== focusAt)];
-        // From the one-command dropdown (2026-10-27 10:44 EDT): that command's block alone.
-        if (onlyFocus && focusAt >= 0) detailSource = [detailSource[0]];
-        const body = BODY_BUILDERS[selectedKey](detailSource, client, typedForms);
-        const asked = focusAt >= 0 ? `\n-# You asked about ${mentionCommand(client, focusName)}` : '';
+// The page a `cmd:` (or `d help <word>`) means: an exact page, `/gunsmith` as MP, an app as its command, else what matchHelpCommand and the search find. Null: the home page.
+async function resolvePage(query, perms = {}) {
+    if (!query) return null;
+    const visible = visiblePageNames(perms);
+    const lower = String(query).trim().toLowerCase();
+    const slashed = lower.startsWith('/') ? lower : `/${lower}`;
+    if (visible.includes(slashed)) return slashed;
+    // A page this viewer may not open, named exactly, is the home page, never a near miss (`manage` must not land on Reminders).
+    if (require('../utils/helpPages').hasPage(slashed)) return null;
+    if (slashed === '/gunsmith' && visible.includes('/gunsmith mp')) return '/gunsmith mp';
+    const entries = searchEntries(perms);
+    const app = entries.find(e => e.app && e.name.toLowerCase() === lower);
+    if (app) return visible.includes(APP_PAGE[app.name]) ? APP_PAGE[app.name] : null;
+    const name = await matchHelpCommand(query, perms);
+    if (name) return visible.includes(name) ? name : name === '/gunsmith' && visible.includes('/gunsmith mp') ? '/gunsmith mp' : null;
+    const best = require('../utils/helpSearch').rank(query, entries)[0];
+    const fromApp = best?.app ? APP_PAGE[best.name] : null;
+    return fromApp && visible.includes(fromApp) ? fromApp : null;
+}
 
-        components.push({ type: 10, content: `## ${emojis[categoryEmojiKey(CATEGORY_DEFS.find(c => c.key === selectedKey), perms)]} **${DETAIL_HEADERS[selectedKey]}**\n${USAGE_LEGEND}${asked}` });
-        components.push({ type: 14, spacing: 2, divider: true });
-        // A builder returns either one string (split on SECTION_BREAK into Text Displays with dividers) or a list of parts, where a part with an `accessory` becomes a Section. Parts sit together with no divider, as one page.
-        if (Array.isArray(body)) {
-            body.forEach(p => components.push(p.divider ? { type: 14, spacing: 1, divider: true } : p.accessory ? { type: 9, components: [{ type: 10, content: p.content }], accessory: p.accessory } : { type: 10, content: p.content }));
-        } else {
-            body.split(SECTION_BREAK).forEach((chunk, i) => {
-                if (i > 0) components.push({ type: 14, spacing: 1, divider: true });
-                components.push({ type: 10, content: chunk });
-            });
-        }
-        components.push({ type: 14, spacing: 2, divider: true });
-        // Detail pages DON'T already mention /help cmd: in their main content (unlike the landing page above), so it's worth surfacing here -- reworded from the landing hint rather than reused verbatim, since the two pages need different things said.
-        components.push({ type: 10, content: `-# Browse by category, or jump to one command` });
-        components.push(buildCategorySelectRow(onlyFocus ? null : selectedKey, perms));
-        components.push(buildCommandSelectRow(onlyFocus ? focusName : null, perms, await currentSeasonEmoji()));
+// The home page's hero, link rows and sign-off, as they were (2026-08-08 to 2026-10-27 EDT, his calls in the comments that came with them).
+function homeHero(client) {
+    // `INSTALL_URL` used to be a hardcoded const with the PROD client_id baked in, which meant the DEV bot's own help panel offered an install link for the production application. utils/inviteLinks.js resolves the id off the live client instead.
+    const { buildInviteUrls } = require('../utils/inviteLinks');
+    return [
+        { type: 9, components: [{ type: 10, content: `## ${emojis.dioreoCombo} Dioreo's Commands\n> **Dioreo** helps you look up CODM loadouts, lucky draw pricing, the seasonal event calendar, patch notes, and more!` }], accessory: { type: 11, media: { url: MASCOT_URL } } },
+        // "Add to server or apps" since 2026-10-27 10:44 EDT (Harkirat).
+        { type: 1, components: [{ type: 2, style: 5, label: 'Website', url: WEBSITE_URL }, { type: 2, style: 5, label: 'Add to server or apps', url: buildInviteUrls(client).chooser }] },
+        // Credits · Terms · Privacy Policy (2026-10-19 09:41 EDT, Harkirat). NOTICE carries every third-party credit, hence its button's name.
+        { type: 1, components: [{ type: 2, style: 5, label: 'Credits', url: `${WEBSITE_URL}/notice` }, { type: 2, style: 5, label: 'Terms', url: `${WEBSITE_URL}/terms` }, { type: 2, style: 5, label: 'Policy', url: `${WEBSITE_URL}/privacy` }] },
+    ];
+}
 
-        // Bulk Format Guide dropdown (item 10, added 2026-08-15 13:11 EDT) -- lets an admin jump straight to one of /manage's rich guide topics from THIS page, without having to open /manage first. Only offered when perms.manage is true (Announcement's own guide is manage-gated, same as every other /manage guide topic) -- gating this on perms.botAdmin instead would offer it to an admin granted only /bot analytics, who cannot open /manage at all. handlers/help.js's `help_guide_pick` branch opens the real guide container.
-        if (selectedKey === 'botadmin' && perms.manage) {
-            const { topicDefs } = require('../utils/manageGuides');
-            components.push({ type: 14, spacing: 1, divider: true });
-            components.push({ type: 10, content: `-# ${emojis.guide} Jump straight to a \`/manage\` bulk format guide:` });
-            components.push({
-                type: 1,
-                components: [{
-                    type: 3,
-                    custom_id: 'help_guide_pick',
-                    placeholder: 'Open a /manage guide topic…',
-                    options: topicDefs().map(t => ({ label: t.label, value: t.key, description: t.description, emoji: t.emoji || undefined }))
-                }]
-            });
-        }
-    }
-
-    return { type: 17, accent_color: accentColor, components };
+// One /help message: the card (the home page or one command's page) and the command switcher under it; execute() adds the footer row. `view` is 'text' or 'slash'; a typed view is offered only where typed forms work (typedFormsHere) and for a command that has one, and falls back to slash otherwise. `detail` is Draw Prices' Detailed view.
+async function buildHelpMessage({ perms = {}, client, accentColor = PRESET_ACCENT, cmd = null, view = 'slash', detail = false, typedForms = true } = {}) {
+    const H = require('../utils/helpPages');
+    const seasonEmoji = await currentSeasonEmoji();
+    const names = visiblePageNames(perms);
+    if (cmd && !names.includes(cmd)) cmd = null;
+    const canSwitch = typedForms && (!cmd || H.hasTextView(cmd));
+    if (view === 'text' && !canSwitch) view = 'slash';
+    const card = cmd
+        ? H.buildPage(cmd, { client, view, detail: detail && view === 'text', canSwitch, seasonEmoji })
+        : [...H.buildHome({ client, view, canSwitch, hero: homeHero(client), adminNames: names.filter(n => !H.hasTextView(n)) }),
+            { type: 14, spacing: 1, divider: true },
+            // The sign-off in the launch announcement's style (2026-10-27 01:23 EDT, Harkirat).
+            { type: 10, content: `-# Made with ${emojis.diorHeart} by <@${HARKIRAT_ID}>` }];
+    return [{ type: 17, accent_color: accentColor, components: card }, H.buildSwitcher({ names, current: cmd, view, client, seasonEmoji })];
 }
 
 function helpFooterRow() {
@@ -734,7 +367,8 @@ module.exports = {
 
     CATEGORY_DEFS,
     PRESET_ACCENT,
-    buildContainer,
+    buildHelpMessage,
+    resolvePage,
     getAllHelpCommandNames,
     resolveCommandToCategory,
     suggestHelpCommandNames,
@@ -742,40 +376,30 @@ module.exports = {
     helpPerms,
     helpChoices,
     searchEntries,
-    textCommandsBlock,
-    textUsage,
     typedFormsHere,
-    textExample,
-    HELP_EXAMPLES,
+    visiblePageNames,
 
-    // `categoryOverride` (passed by handlers/help.js's `help_category` select-menu handler via a synthetic interaction) skips re-resolving the `cmd` option -- same shape as calendar.js's `pageOverride`. 'landing' is a real dropdown VALUE (the "Commands List" reset option) but behaves identically to null/no-selection, so it's normalized here rather than threading a 6th special case through buildContainer.
-    async execute(interaction, categoryOverride = null) {
+    // `override` comes from handlers/help.js: { cmd, view, detail } from the switcher and the view buttons, or the older `cmd:<name>` / 'landing' strings a panel posted before B6 still sends. A typed view is the default inside a text command or a click on its reply (utils/commandMentions.js inTextCommand), a slash view everywhere else.
+    async execute(interaction, override = null) {
         // The two permission levels, resolved once and threaded everywhere. Both are free: server admin comes off the interaction's own computed permissions (no REST call, no privileged intent, false outside a guild), and bot admin is an id comparison.
         const perms = await helpPerms(interaction);
 
-        let selectedKey = categoryOverride;
-        let focusName = null;
-        // `cmd:<name>` comes from the one-command dropdown: open that command's page with only its block.
-        const onlyFocus = typeof categoryOverride === 'string' && categoryOverride.startsWith('cmd:');
-        if (onlyFocus) {
-            const name = categoryOverride.slice(4);
-            selectedKey = await resolveCommandToCategory(name, perms);
-            focusName = selectedKey ? await matchHelpCommand(name, perms) : null;
-        }
-        if (selectedKey === null && interaction.isChatInputCommand()) {
+        let cmd = null, view = null, detail = false;
+        if (override && typeof override === 'object') ({ cmd = null, view = null, detail = false } = override);
+        else if (typeof override === 'string' && override.startsWith('cmd:')) cmd = override.slice(4);
+        if (!override && interaction.isChatInputCommand()) {
             const cmdOption = interaction.options.getString('cmd');
-            // `cmd:announcement` posts the announcements running now instead of a command page (2026-10-28 16:40 EDT, Harkirat: "if i type /help cmd:announcement visibility:public that it'll send the launch announcement as a public message"). Hidden unless visibility says public, like every /help answer. It claims the word before the alias match below, which sent `announcement` to /manage.
+            // `cmd:announcement` posts the announcements running now instead of a command page (2026-10-28 16:40 EDT, Harkirat: "if i type /help cmd:announcement visibility:public that it'll send the launch announcement as a public message"). Hidden unless visibility says public, like every /help answer. It claims the word before the page lookup, which sent `announcement` to /manage.
             if (cmdOption && /^\/?announcements?$/i.test(cmdOption.trim())) {
                 const choice = interaction.options.getString('visibility');
                 await interaction.deferReply({ flags: choice === 'public' ? 0 : 64 });
                 return await sendV2Payload(interaction, await require('../utils/announcement').buildActiveAnnouncementComponents(), { allowedMentions: { parse: [] } });
             }
-            if (cmdOption) {
-                selectedKey = await resolveCommandToCategory(cmdOption, perms);
-                focusName = selectedKey ? await matchHelpCommand(cmdOption, perms) : null;
-            }
+            cmd = cmdOption || null;
         }
-        if (selectedKey === 'landing') selectedKey = null;
+        if (cmd === 'landing') cmd = null;
+        if (cmd) cmd = await resolvePage(cmd, perms);
+        if (!view) view = require('../utils/commandMentions').inTextCommand() ? 'text' : 'slash';
 
         // Unlike every other command, /help has no saved preference to fall back to -- defaults to hidden (matches /manage's own-panel convention) unless explicitly made public.
         const visibilityChoice = interaction.isChatInputCommand() ? interaction.options.getString('visibility') : null;
@@ -786,8 +410,8 @@ module.exports = {
         const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);
 
         // No "Show Everyone" button -- the visibility option above already covers that case up front, and repeating it here would be redundant (Harkirat's direct request).
-        const components = [await buildContainer(selectedKey, accentColor, perms, interaction.client, focusName, onlyFocus, typedFormsHere(interaction))];
-        // Under every /help page, outside its card (2026-10-27 01:23 EDT, Harkirat; "regardless of whatever cmd/page of /help is being viewed", 01:21 EDT): Announcements shows what is running now, privately, and Bugs & Suggestions opens the pop-up utils/feedback.js sends to the owner. Answered by handlers/help.js. It costs 3 of the message's 40 components; scripts/feedback.test.js counts every page with it.
+        const components = await buildHelpMessage({ perms, client: interaction.client, accentColor, cmd, view, detail, typedForms: typedFormsHere(interaction) });
+        // Under every /help page, outside its card (2026-10-27 01:23 EDT, Harkirat; "regardless of whatever cmd/page of /help is being viewed", 01:21 EDT): Announcements shows what is running now, privately, Bugs & Suggestions opens the pop-up utils/feedback.js sends to the owner, and Submit a Build. Answered by handlers/help.js and handlers/loadouts.js.
         components.push(helpFooterRow());
         // No mention pings or highlights (2026-10-27 10:44 EDT, Harkirat: "i want the clickable username but not the highlight"): the sign-off's <@dior> stays a clickable name, but the panel no longer lights up yellow for him. Same suppression /settings uses.
         return await sendV2Payload(interaction, components, { allowedMentions: { parse: [] } });

@@ -1,4 +1,4 @@
-// bot/textCommands.js -- the text-command listener: `@Dioreo today`, `d today`, `dior today`, `/today` (text commands, PR 1, 2026-10-28 17:24 EDT).
+// bot/textCommands.js -- the text-command listener: `@Dioreo today`, `d today`, `dior today` (text commands, PR 1, 2026-10-28 17:24 EDT; `/today` until B6 removed the `/` prefix, 2026-10-29).
 //
 // WHY THIS EXISTS: a server can switch off Use Application Commands, and a server with more than ~50 bots stops listing newer bots' slash commands (「𝐆𝐇𝐎𝐒𝐓」, 54 bots, measured 2026-10-28 15:54 EDT). A text command is an ordinary message, so neither applies. Buttons on the reply still work where app commands are denied (spike, 2026-10-28 16:31 EDT).
 //

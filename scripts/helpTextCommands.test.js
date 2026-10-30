@@ -1,4 +1,4 @@
-// scripts/helpTextCommands.test.js: /help and slash mentions for text commands (text commands, B3, 2026-10-29). The /help landing carries one Text commands block (every form where the app has Message Content, only `@Dioreo` where it does not) and stays within Discord's 40 components at every permission level; mentionCommand() writes a command's text form inside a text command, where a slash mention may be exactly what the server hides, and the slash mention everywhere else. Since B5 (2026-10-29 00:15 EDT) every detail page also writes each command's typed form beside its slash Usage and Examples, built from utils/textCommands/commands.js: every one of them must be a message the real parser runs as that command with those values, a command with no text form shows none, and every page stays within 40 components. The real commands/help.js renders; only the store reads it would make are stubbed through require.cache.
+// scripts/helpTextCommands.test.js: /help and slash mentions for text commands (text commands, B3, 2026-10-29; rewritten for B6's per-command pages, 2026-10-30 00:15 EDT: every page in its typed and slash view, built by utils/helpPages.js). The /help landing carries one Text commands block (every form where the app has Message Content, only `@Dioreo` where it does not) and stays within Discord's 40 components at every permission level; mentionCommand() writes a command's text form inside a text command, where a slash mention may be exactly what the server hides, and the slash mention everywhere else. Since B5 (2026-10-29 00:15 EDT) every detail page also writes each command's typed form beside its slash Usage and Examples, built from utils/textCommands/commands.js: every one of them must be a message the real parser runs as that command with those values, a command with no text form shows none, and every page stays within 40 components. The real commands/help.js renders; only the store reads it would make are stubbed through require.cache.
 const assert = require('assert');
 const path = require('path');
 const Module = require('module');
@@ -41,23 +41,38 @@ async function check(name, fn) {
 }
 
 (async () => {
-    let landingCount = 0;
-    await check('the landing carries the Text commands block with every form where Message Content is granted', async () => {
-        const all = texts(await help.buildContainer(null, 0x5865F2, {}, client(true))).join('\n');
-        assert.ok(all.includes('**TEXT COMMANDS**'), 'no Text commands heading');
-        for (const f of ['`@Dioreo today`', '`d today`', '`dior today`', '`/today`']) assert.ok(all.includes(f), `missing ${f}`);
-        assert.ok(/hides slash commands/.test(all), 'no line on why');
+    const H = require('../utils/helpPages');
+    // Every page this viewer may open, in each view it has, the home page first.
+    const every = perms => [[null, 'text'], [null, 'slash'], ...help.visiblePageNames(perms).flatMap(n => (H.hasTextView(n) ? [[n, 'text'], [n, 'slash']] : [[n, 'slash']]))];
+    const msg = async (cmd, view, { perms = ALL, c = client(true), detail = false, typedForms = true } = {}) => help.buildHelpMessage({ perms, client: c, cmd, view, detail, typedForms });
+    const all = async (...a) => texts({ components: await msg(...a) }).join('\n');
+    const buttonIds = node => [...(node?.custom_id ? [node.custom_id] : []), ...[].concat(node?.components || [], node?.accessory || []).flatMap(buttonIds)];
+    const run = text => parseTextCommand(text, { botId: '1', prefixes: ['d'], commands: TEXT_COMMANDS });
+    const tcFor = name => TEXT_COMMANDS.find(c => `/${c.slash}${c.sub ? ` ${c.sub}` : ''}` === name);
+
+    let homeCount = 0;
+    await check('the typed home: the #1 card\'s four groups in short words, the prefixes, and a Slash Commands button', async () => {
+        const home = await all(null, 'text');
+        assert.ok(home.includes('Type a command') && home.includes('**`@Dioreo`**, **`d`** or **`dior`**'), 'no prefix line');
+        for (const g of ['`gunsmith` · `dmz`', '`draws` · `prices` · `calculator`', '`today` · `calendar` · `remind` · `patch notes` · `end`', '`timestamp` · `colors` · `settings` · `invite` · `help`']) assert.ok(home.includes(g), `missing ${g}`);
+        assert.ok(home.includes('`d help <command>` opens its page'));
+        assert.ok(!home.includes('/today'), 'the retired `/` prefix is still named');
+        assert.ok(buttonIds({ components: await msg(null, 'text') }).includes('help_view~slash~landing'));
+        const noContent = await all(null, 'text', { c: client(false) });
+        assert.ok(noContent.includes('Start with **`@Dioreo`**, such as `@Dioreo today`') && !noContent.includes('**`d`**'));
     });
-    await check('without Message Content it offers only @Dioreo, the one form that works', async () => {
-        const block = help.textCommandsBlock(client(false));
-        assert.ok(block.includes('`@Dioreo today`'));
-        for (const f of ['`d today`', '`dior today`', '`/today`']) assert.ok(!block.includes(f), `${f} shown without Message Content`);
+    await check('the slash home: the groups as mentions, a Text commands line and its button, and no category dropdown', async () => {
+        const home = await all(null, 'slash', { perms: {} });
+        assert.ok(home.includes('</draws:111>') && home.includes('</gunsmith mp:333>'));
+        assert.ok(home.includes('Works where a server hides slash commands'));
+        const ids = buttonIds({ components: await msg(null, 'slash', { perms: {} }) });
+        assert.ok(ids.includes('help_view~text~landing') && ids.includes('help_command') && !ids.includes('help_category'), ids.join(' '));
     });
-    await check('the landing and its footer row stay within 40 components at every permission level', async () => {
-        for (const perms of [{}, { serverAdmin: true }, ALL]) {
-            const n = countComponents([await help.buildContainer(null, 0x5865F2, perms, client(true)), help.helpFooterRow()]);
-            assert.ok(n <= 40, `${n} components for ${JSON.stringify(perms)}`);
-            landingCount = Math.max(landingCount, n);
+    await check('the home page and its footer stay within 40 components at every permission level', async () => {
+        for (const perms of [{}, { serverAdmin: true }, ALL]) for (const view of ['text', 'slash']) {
+            const n = countComponents([...await msg(null, view, { perms }), help.helpFooterRow()]);
+            assert.ok(n <= 40, `${n} components for ${JSON.stringify(perms)} ${view}`);
+            homeCount = Math.max(homeCount, n);
         }
     });
     await check('outside a text command a slash mention stays a slash mention', async () => {
@@ -79,10 +94,6 @@ async function check(name, fn) {
     await check('without Message Content the text form is `@Dioreo <name>`', async () => {
         await runWithContext({ handler: 'textCommands' }, async () => assert.strictEqual(mentionCommand(client(false), '/draws'), '`@Dioreo draws`'));
     });
-    await check('outside a text command the landing tip still names /help cmd:', async () => {
-        const all = texts(await help.buildContainer(null, 0x5865F2, {}, client(true))).join('\n');
-        assert.ok(all.includes('Tip: **/help** `cmd:` opens one command'));
-    });
     await check('a slash-only command keeps its mention inside a text command', async () => {
         await runWithContext({ handler: 'textCommands' }, async () => {
             assert.strictEqual(mentionCommand(client(true), '/admin'), '</admin:555>');
@@ -97,124 +108,110 @@ async function check(name, fn) {
         });
         assert.strictEqual(linkCommandMentions('Open /draws now', client(true)), 'Open </draws:111> now');
     });
-    await check('the /help landing rendered from a text command lists text forms, not mentions', async () => {
-        await runWithContext({ handler: 'textCommands' }, async () => {
-            const all = texts(await help.buildContainer(null, 0x5865F2, {}, client(true))).join('\n');
-            assert.ok(all.includes('`d draws`') && all.includes('`d gunsmith`'), 'directory still shows slash mentions');
-            assert.ok(!all.includes('</draws:111>'));
-            assert.ok(all.includes('Tip: `d help <command>` opens one command'), 'the tip still names /help cmd:');
-        });
-    });
-    // ---- B5: the detail pages' typed forms ----
-    const page = async (key, perms = ALL, c = client(true)) => texts(await help.buildContainer(key, 0x5865F2, perms, c)).join('\n');
-    const tcFor = name => TEXT_COMMANDS.find(c => `/${c.slash}${c.sub ? ` ${c.sub}` : ''}` === name);
-    const run = text => parseTextCommand(text, { botId: '1', prefixes: ['d'], commands: TEXT_COMMANDS });
-    await check('the draws, seasonal and gunsmith pages write each command\'s typed form beside its Usage and Examples', async () => {
-        const want = {
-            draws: ['Or type `d draws [new|returning]`', 'Or type `d draw calculator [start|saved|help]`', 'Or type `d draw prices [10cp|20cp|30cp] [type]`', '`d draws returning`', '`d draw prices 30cp`', '`d draw prices mythic weapon`', '`d draw calculator saved`'],
-            seasonal: ['Or type `d calendar [draws|events|playlists] [past|live|upcoming]`', 'Or type `d today`', 'Or type `d patch notes [new|season]`', '`d calendar events upcoming`', '`d patch notes season 6`'],
-            gunsmith: ['Or type `d gunsmith [weapon]`', 'Or type `d dmz [weapon]`', '`d gunsmith ak117`', '`d dmz fennec`'],
-            utilities: ['Or type `d timestamp <datetime> [tz:timezone]`, or reply to a message with `d timestamp`', 'Or type `d colors [@someone]`, or reply to someone with `d colors`'],
-            preferences: ['Or type `d settings`'],
-        };
-        for (const [key, lines] of Object.entries(want)) {
-            const all = await page(key, {});
-            for (const l of lines) assert.ok(all.includes(l), `${key}: missing ${l}`);
-        }
-        // A long value list shows its key, and the key is one the parser takes.
-        assert.strictEqual(run('d draw prices type:mythic').values.filter, 'mythicWeapon,mythicCharacter');
-        // A twin sits on its slash example's own line.
-        assert.ok((await page('draws')).includes('-# 🔸 **/draws** page:`Returning Draws` · `d draws returning`'));
-    });
-    await check('a command with no text form keeps slash only: /admin and every Bot Admin command', async () => {
-        const prefs = await page('preferences', { serverAdmin: true });
-        const adminPart = prefs.slice(prefs.indexOf('</admin:555>'));
-        assert.ok(adminPart.length > 100 && !adminPart.includes('Or type'), '/admin got a typed line');
-        assert.ok(!adminPart.includes('· `d '), 'an /admin example got a typed twin');
-        const botAdmin = await page('botadmin');
-        assert.ok(botAdmin.includes('/manage') && !botAdmin.includes('Or type') && !botAdmin.includes('`d '), 'a Bot Admin command got a typed form');
-        assert.strictEqual(help.textUsage(client(true), '/admin'), null);
-        assert.strictEqual(help.textExample(client(true), '/bot analytics', {}), null);
-    });
-    let twins = 0;
-    await check('every typed example is a message the parser runs as that command, with that example\'s values', async () => {
-        for (const [key, list] of Object.entries(help.HELP_EXAMPLES)) for (const [, name, values] of list) {
-            const twin = help.textExample(client(true), name, values);
-            if (!twin) continue;
-            twins++;
-            const v = run(twin);
+    await check('each typed page names its command with its help word and shown aliases, and both run that command', async () => {
+        for (const name of help.visiblePageNames(ALL).filter(H.hasTextView)) {
             const tc = tcFor(name);
-            assert.strictEqual(v.kind, 'run', `${key}: "${twin}" does not run (${v.kind})`);
-            assert.strictEqual(v.command, tc.name, `${key}: "${twin}" runs ${v.command}, not ${tc.name}`);
-            for (const [opt, val] of Object.entries(values)) {
-                const o = tc.options.find(x => x.name === opt);
-                if (o.rest && !(o.values || []).some(x => [].concat(x.value).join(',') === [].concat(val).join(','))) {
-                    const wanted = o.rest === 'datetime' ? val : (o.restText ? o.restText(val.toLowerCase()) : val.toLowerCase());
-                    const got = o.rest === 'datetime' ? v.values[opt] : (v.autocomplete.find(a => a.option === opt) || {}).text;
-                    assert.strictEqual(got, wanted, `${key}: "${twin}" reads ${opt} as ${got}`);
-                } else assert.strictEqual(v.values[opt], [].concat(val).join(','), `${key}: "${twin}" reads ${opt} as ${v.values[opt]}`);
-            }
-        }
-        assert.ok(twins >= 7, `only ${twins} typed examples`);
-    });
-    await check('every value word a page\'s typed line offers is one the parser runs as that value', async () => {
-        let pages = '';
-        for (const cat of help.CATEGORY_DEFS) pages += await page(cat.key);
-        for (const cat of help.CATEGORY_DEFS) for (const c of cat.detailCommands || cat.staticCommands) {
-            const tc = tcFor(c.name);
-            if (!tc) continue;
-            assert.ok(pages.includes(`Or type \`${help.textUsage(client(true), c.name)}\``), `${c.name}: its typed line is not on its page`);
-            assert.strictEqual(run(`d ${tc.words[0]}`).command, tc.name, `${c.name}: \`d ${tc.words[0]}\` runs something else`);
-            for (const o of tc.options || []) for (const val of o.values || []) {
-                const v = run(`d ${tc.words[0]} ${val.aliases[0]}`);
-                assert.strictEqual(v.kind, 'run', `${c.name}: "${val.aliases[0]}" does not run`);
-                if (val.value === LATEST) assert.ok(v.autocomplete.some(a => a.option === o.name && a.first), `${c.name}: "${val.aliases[0]}" is not the latest`);
-                else assert.strictEqual(v.values[o.name], [].concat(val.value).join(','), `${c.name}: "${val.aliases[0]}" reads as ${v.values[o.name]}`);
-            }
+            const page = await all(name, 'text');
+            assert.ok(page.includes(`### \`d ${tc.helpWord}`), `${name}: no usage line`);
+            assert.ok(page.includes(tc.shown.map(w => `\`${w}\``).join(' · ')), `${name}: no aliases line`);
+            for (const w of [tc.helpWord, ...tc.shown]) assert.strictEqual(run(`d ${w}`).command, tc.name, `${name}: \`d ${w}\` runs ${run(`d ${w}`).command}`);
         }
     });
-    await check('without Message Content the typed forms read @Dioreo, and inside a text command the page still renders them', async () => {
-        const all = await page('draws', ALL, client(false));
-        assert.ok(all.includes('Or type `@Dioreo draws [new|returning]`') && all.includes('`@Dioreo draws returning`') && !all.includes('`d draws'));
-        await runWithContext({ handler: 'textCommands' }, async () => {
-            const inText = await page('draws');
-            assert.ok(inText.includes('### `d draws`') && inText.includes('-# 💬 Type `d draws [new|returning]`') && !inText.includes('Or type'), 'inside a text command the line should read Type, not Or type');
-        });
+    let spans = 0;
+    await check('every typed form a page shows is a message the parser answers', async () => {
+        for (const perms of [{}, ALL]) for (const [cmd, view] of every(perms).filter(([, v]) => v === 'text')) {
+            const page = await all(cmd, view, { perms, detail: cmd === '/draw prices' });
+            for (const [, span] of page.matchAll(/`(d [^`]+)`/g)) {
+                if (/[<[]/.test(span)) continue; // a usage line or the legend, not a message
+                spans++;
+                const v = run(span);
+                assert.ok(['run', 'needsInput'].includes(v.kind) || (v.kind === null && v.weaponGuess), `${cmd || 'home'}: "${span}" gets ${v.kind}`);
+            }
+        }
+        assert.ok(spans >= 60, `only ${spans} typed forms checked`);
     });
-    await check('where typed forms do nothing (a DM, a server Dioreo is not in), /help shows none, and still renders', async () => {
+    await check('every value word a page shows runs as that value', async () => {
+        for (const name of ['/draws', '/draw prices', '/draw calculator', '/calendar', '/patch notes']) {
+            const tc = tcFor(name);
+            for (const o of tc.options || []) for (const val of o.values || []) for (const w of [val.aliases[0], ...(val.shown || [])]) {
+                const v = run(`d ${tc.helpWord} ${w}`);
+                assert.strictEqual(v.kind, 'run', `${name}: "${w}" does not run`);
+                if (val.value === LATEST) assert.ok(v.autocomplete.some(a => a.option === o.name && a.first), `${name}: "${w}" is not the latest`);
+                else assert.strictEqual(v.values[o.name], [].concat(val.value).join(','), `${name}: "${w}" reads as ${v.values[o.name]}`);
+            }
+        }
+    });
+    await check('Draw Prices: the Simple view lists the group words, the Detailed view every type in its quoted group', async () => {
+        const simple = await all('/draw prices', 'text');
+        assert.ok(simple.includes('`mythic` · `legendary` · `armory` · `advanced`') && simple.includes('*+9 more in Detailed view*'));
+        const detail = await all('/draw prices', 'text', { detail: true });
+        for (const bit of ['-# **Mythic**', '> -# **`double legendary`** · `double leggy` · `dl`', '-# **Special**', '-# or just `10` · `20` · `30`']) assert.ok(detail.includes(bit), `missing ${bit}`);
+        assert.ok(!detail.includes('`lcw`') && !detail.includes('`dlw`'), 'lcw / dlw shown');
+        assert.ok(buttonIds({ components: await msg('/draw prices', 'text', { detail: true }) }).includes('help_view~text~/draw prices'));
+    });
+    await check('a slash-only page (/admin and every Bot Admin page) has no typed form and no Text Command button', async () => {
+        for (const name of help.visiblePageNames(ALL).filter(n => !H.hasTextView(n))) {
+            const comps = await msg(name, 'text');
+            const page = texts({ components: comps }).join('\n');
+            assert.ok(!/`d [a-z]/.test(page), `${name}: shows a typed form`);
+            assert.ok(!buttonIds({ components: comps }).some(id => id.startsWith('help_view~text')), `${name}: offers the text view`);
+            assert.ok(page.includes('no text command'), `${name}: no slash-only note`);
+        }
+    });
+    await check('a restricted page is neither opened nor listed for someone who cannot use it', async () => {
+        assert.strictEqual(await help.resolvePage('/manage', {}), null);
+        assert.strictEqual(await help.resolvePage('manage', ALL), '/manage');
+        assert.strictEqual(await help.resolvePage('View Colors', {}), '/colors');
+        assert.strictEqual(await help.resolvePage('/gunsmith', {}), '/gunsmith mp');
+        const switcher = (await msg(null, 'slash', { perms: {} }))[1].components[0].options.map(o => o.value);
+        assert.ok(!switcher.includes('/manage') && !switcher.includes('/admin') && switcher[0] === 'landing', switcher.join(' '));
+        const full = (await msg(null, 'slash', { perms: ALL }))[1].components[0].options;
+        assert.ok(full.length <= 25 && full.some(o => o.value === '/manage'), `${full.length} options`);
+    });
+    await check('the switcher: page name over `d word` on a typed view, the slash command over the name on a slash view', async () => {
+        const typed = (await msg('/season end', 'text'))[1].components[0];
+        assert.strictEqual(typed.custom_id, 'help_command~text');
+        const se = typed.options.find(o => o.value === '/season end');
+        assert.ok(se.label === 'Season End' && se.description === 'd end' && se.default, JSON.stringify(se));
+        const slash = (await msg('/season end', 'slash'))[1].components[0];
+        const se2 = slash.options.find(o => o.value === '/season end');
+        assert.ok(slash.custom_id === 'help_command' && se2.label === '/season end' && se2.description === 'Season End');
+    });
+    await check('without Message Content every typed form reads @Dioreo', async () => {
+        const page = await all('/draws', 'text', { c: client(false) });
+        assert.ok(page.includes('### `@Dioreo draws [new|returning]`') && page.includes('`@Dioreo draws returning`') && !page.includes('`d draws'));
+    });
+    await check('where typed forms do nothing (a DM, a server Dioreo is not in), /help is slash only and still renders', async () => {
         const dmClient = { ...client(true), guilds: { cache: new Map([['900', {}]]) } };
         assert.strictEqual(help.typedFormsHere({ guildId: null, client: dmClient }), false, 'a DM');
         assert.strictEqual(help.typedFormsHere({ guildId: '901', client: dmClient }), false, 'a server Dioreo is not in');
         assert.strictEqual(help.typedFormsHere({ guildId: '900', client: dmClient }), true, 'a server Dioreo is in');
-        for (const key of [null, ...help.CATEGORY_DEFS.map(c => c.key)]) {
-            const container = await help.buildContainer(key, 0x5865F2, ALL, client(true), null, false, false);
-            const all = texts(container).join('\n');
-            for (const bit of ['Or type', '· `d ', 'TEXT COMMANDS']) assert.ok(!all.includes(bit), `${key || 'landing'}: shows ${bit} where it cannot work`);
-            assert.ok(countComponents([container, help.helpFooterRow()]) <= 40);
+        for (const [cmd] of every(ALL)) {
+            const comps = await msg(cmd, 'text', { typedForms: false });
+            const page = texts({ components: comps }).join('\n');
+            assert.ok(!/`d [a-z]/.test(page) && !page.includes('Text commands'), `${cmd || 'home'}: shows a typed form where it cannot work`);
+            assert.ok(!buttonIds({ components: comps }).some(id => id.startsWith('help_view~')), `${cmd || 'home'}: offers a view switch`);
+            assert.ok(countComponents([...comps, help.helpFooterRow()]) <= 40);
         }
-        assert.ok((await page('draws')).includes('Or type `d draws'), 'a server render lost its typed forms');
     });
     let largest = { n: 0 };
-    // Characters are measured with PROD-LENGTH ids for every command (think-pass, 2026-10-29 00:27 EDT): with the 3-digit fake ids above, and none for /bot, /manage, /embed or /autobuild, a mention is ~20 characters shorter than on prod, and this check passed a page that prod would refuse. Discord's 4,000 is the total of a message's text displays (`.claude/rules/draw-prices.md`, probed 2026-10-16 01:17 EDT).
+    // Characters are measured with PROD-LENGTH ids for every command (think-pass, 2026-10-29 00:27 EDT): a mention is ~20 characters longer on prod than with the 3-digit ids above. Discord's 4,000 is the total of a message's text displays (`.claude/rules/draw-prices.md`, probed 2026-10-16 01:17 EDT).
     const PROD_ID = '1561783498770227300';
     const prodIds = new Map(['gunsmith', 'draws', 'draw', 'calendar', 'today', 'remind', 'patch', 'season', 'colors', 'timestamp', 'invite', 'settings', 'admin', 'bot', 'embed', 'manage', 'autobuild', 'help'].map(n => [n, PROD_ID]));
-    // Bot Admin was exempt here until 2026-10-29 09:29 EDT: the owner's page measured 4,038 characters with prod ids, and was trimmed to fit (commands/help.js's note above buildBotAdminBody). Every page is asserted now.
-    await check('every page stays within 40 components, and every page within 4,000 characters with prod-length ids', async () => {
-        for (const perms of [{}, { serverAdmin: true }, ALL, { botAdmin: true, bot: true }]) for (const tmc of [true, false]) for (const cat of [null, ...help.CATEGORY_DEFS.map(c => c.key)]) {
-            const container = await help.buildContainer(cat, 0x5865F2, perms, { ...client(tmc), commandIds: prodIds });
-            const n = countComponents([container, help.helpFooterRow()]);
-            const chars = texts(container).join('').length;
-            assert.ok(n <= 40, `${cat || 'landing'}: ${n} components for ${JSON.stringify(perms)}`);
-            assert.ok(chars <= 4000, `${cat || 'landing'}: ${chars} characters for ${JSON.stringify(perms)}`);
-            // A restricted category falls back to the landing, so only a real detail page counts here.
-            const def = help.CATEGORY_DEFS.find(c => c.key === cat);
-            if (def && (!def.requires || perms[def.requires]) && n > largest.n) largest = { n, cat, chars };
+    await check('every page stays within 40 components and 4,000 characters with prod-length ids, in every view', async () => {
+        for (const perms of [{}, { serverAdmin: true }, ALL, { botAdmin: true, bot: true }]) for (const tmc of [true, false]) for (const [cmd, view] of every(perms)) for (const detail of cmd === '/draw prices' ? [false, true] : [false]) {
+            const comps = await msg(cmd, view, { perms, c: { ...client(tmc), commandIds: prodIds }, detail });
+            const n = countComponents([...comps, help.helpFooterRow()]);
+            const chars = texts({ components: comps }).join('').length;
+            assert.ok(n <= 40, `${cmd || 'home'} ${view}: ${n} components for ${JSON.stringify(perms)}`);
+            assert.ok(chars <= 4000, `${cmd || 'home'} ${view}: ${chars} characters for ${JSON.stringify(perms)}`);
+            if (cmd && n > largest.n) largest = { n, cmd, view, chars };
         }
     });
     // B4, 2026-10-29 10:32 EDT: a click on a text command's reply is a click on a plain bot message (no interaction metadata), and the page it redraws keeps the text forms (the spec's "Replies"). A slash reply's click, and a DM card's, keep the slash mention.
     await check('a click on a text reply keeps the text forms; a slash reply and a DM card do not', async () => {
         const { buildInteractionContext } = require('../handlers/router');
-        const clickOn = (guildId, message) => ({ id: '9', applicationId: 'app', customId: 'help_category', user: { id: 'u1' }, guildId, message });
+        const clickOn = (guildId, message) => ({ id: '9', applicationId: 'app', customId: 'help_command', user: { id: 'u1' }, guildId, message });
         const textReply = buildInteractionContext(clickOn('g1', { interactionMetadata: null }));
         const slashReply = buildInteractionContext(clickOn('g1', { interactionMetadata: { id: '8' } }));
         const dmCard = buildInteractionContext(clickOn(null, { interactionMetadata: null }));
@@ -239,11 +236,11 @@ async function check(name, fn) {
         assert.strictEqual(emojis.parseEmoji(`<:${other.name}:42>`).id, other.id, 'a stale id is answered with the app\'s own copy');
         const ownedIds = new Set(owned.map(e => e.id));
         const emojiIds = node => [...(node?.emoji?.id ? [node.emoji.id] : []), ...[].concat(node?.components || [], node?.options || [], node?.accessory || []).flatMap(emojiIds)];
-        for (const perms of [{}, ALL]) for (const cat of [null, ...help.CATEGORY_DEFS.map(c => c.key)]) {
-            const container = await help.buildContainer(cat, 0x5865F2, perms, client(true));
-            for (const id of emojiIds({ components: [container, help.helpFooterRow()] })) assert.ok(ownedIds.has(id), `${cat || 'landing'}: a component names emoji ${id}, which the app does not own`);
+        for (const perms of [{}, ALL]) for (const [cmd, view] of every(perms)) {
+            const msg = await help.buildHelpMessage({ perms, client: client(true), cmd, view });
+            for (const id of emojiIds({ components: [...msg, help.helpFooterRow()] })) assert.ok(ownedIds.has(id), `${cmd || 'home'} ${view}: a component names emoji ${id}, which the app does not own`);
         }
     });
     if (failed) { console.log(`\n${failed} check(s) failed.`); process.exit(1); }
-    console.log(`\nAll /help text-command checks passed. Landing: ${landingCount} of 40 components. Largest detail page: ${largest.cat}, ${largest.n} of 40 components (${largest.chars} characters). Typed examples: ${twins}.`);
+    console.log(`\nAll /help text-command checks passed. Home: ${homeCount} of 40 components. Largest page: ${largest.cmd} (${largest.view}), ${largest.n} of 40 components (${largest.chars} characters). Typed forms parsed: ${spans}.`);
 })();

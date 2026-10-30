@@ -11,15 +11,14 @@ const PERM_MATRICES = {
     partialBotAdmin: { serverAdmin: false, botAdmin: true, manage: false, bot: true, botAccess: false, autobuild: false }
 };
 
+// One entry per page and view this matrix may open (B6, 2026-10-30 00:15 EDT: one page per command, each typed and slash, utils/helpPages.js), keyed `<page or home> <view>`.
+const { default: H } = await import('../../utils/helpPages.js');
 const snapshot = {};
 for (const [permsName, perms] of Object.entries(PERM_MATRICES)) {
     snapshot[permsName] = {};
-    // Landing page.
-    snapshot[permsName].landing = await helpCommand.buildContainer(null, 16743772, perms, fakeClient);
-    // Every category this perms matrix can see, plus every category regardless (buildContainer itself falls back to the landing page for a restricted key, and that fallback is worth pinning too).
-    for (const cat of helpCommand.CATEGORY_DEFS) {
-        snapshot[permsName][cat.key] = await helpCommand.buildContainer(cat.key, 16743772, perms, fakeClient);
-    }
+    const names = helpCommand.visiblePageNames(perms);
+    const views = [[null, 'text'], [null, 'slash'], ...names.flatMap(n => (H.hasTextView(n) ? [[n, 'text'], [n, 'slash']] : [[n, 'slash']])), ...(names.includes('/draw prices') ? [['/draw prices', 'detail']] : [])];
+    for (const [cmd, view] of views) snapshot[permsName][`${cmd || 'home'} ${view}`] = await helpCommand.buildHelpMessage({ perms, client: fakeClient, cmd, view: view === 'detail' ? 'text' : view, detail: view === 'detail' });
 }
 
 process.stdout.write(JSON.stringify(snapshot, null, 2) + '\n');
