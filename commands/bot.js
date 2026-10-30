@@ -1011,7 +1011,7 @@ async function buildServersPanel(client, guildId, { armed = null, note = null } 
     const where = guild ? `-# **${guild.name}** · \`${guildId}\`` : `-# \`${guildId}\` · Dioreo is not in this server, so its name is unknown`;
     const btn = (label, id, style = 2) => ({ type: 2, style, label, custom_id: `bot_srv_${id}|${guildId}` });
     const row = !settings ? null
-        : armed === 'reset' ? { type: 1, components: [btn('Cancel', 'view'), btn('Confirm: clear every rule, default Public', 'reset', 4)] }
+        : armed === 'reset' ? { type: 1, components: [btn('Cancel', 'view'), btn('Confirm: clear every slash and text rule', 'reset', 4)] }
             : armed === 'delete' ? { type: 1, components: [btn('Cancel', 'view'), btn('Confirm: delete the whole record', 'del', 4)] }
                 : { type: 1, components: [btn('Reset Rules', 'resetarm', 4), btn('Delete Record', 'delarm', 4)] };
     return [{

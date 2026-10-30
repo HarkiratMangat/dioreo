@@ -52,9 +52,9 @@ async function check(name, fn) {
 
     // B7: a typed page and the typed home show the server's own prefixes.
     await check('a server\'s own prefixes on the typed home and on a typed page', async () => {
-        const own = { perms: ALL, client: client(true), view: 'text', prefixes: ['!', 'yo'] };
+        const own = { perms: ALL, client: client(true), view: 'text', prefixes: ['!', 'dior'] };
         const home = texts({ components: await help.buildHelpMessage({ ...own, cmd: null }) }).join('\n');
-        assert.ok(home.includes('**`@Dioreo`**, **`!`** or **`yo`**'), 'home prefix line');
+        assert.ok(home.includes('**`@Dioreo`**, **`!`** or **`dior`**'), 'home prefix line');
         assert.ok(home.includes('`! help <command>`'), 'home tip');
         const page = texts({ components: await help.buildHelpMessage({ ...own, cmd: '/draws' }) }).join('\n');
         assert.ok(page.includes('`! draws [new|returning]`') && page.includes('`! draws returning`'), 'typed usage and examples');

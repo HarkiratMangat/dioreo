@@ -1,6 +1,6 @@
 // utils/textCommands/server.js -- one server's text-command prefixes (B7, 2026-10-30; Harkirat 2026-10-29 12:40 EDT: "we still need to implement a per server prefix system"). The on/off switch beside them is utils/guildPolicy.js textCommandOnHere; both are saved from /admin's Config Text Commands view.
 //
-// `@Dioreo` always works and is not a prefix. A server's prefixes REPLACE the default rather than adding to it, so a server whose members say "d" in chat can take it away.
+// THE MIDDLE GROUND (his call, 2026-10-30 12:35 EDT: "dior and @dioreo remain but `d` gets replaced"): a server's prefixes take the place of the FIRST default (`d`) only; the rest (`dior`) and `@Dioreo` always work. So a server whose members say "d" in chat, or that runs another bot on it, can swap it out, and a bad prefix can never leave its members without a typed form.
 
 // The bot-wide default, from the environment so the dev bot can use its own: prod and dev are both in Dioreoland and would otherwise both answer `d today` (think-pass, 2026-10-28 16:44 EDT). .env.dev sets TEXT_PREFIXES=dd,diordev. `/` was a prefix until B6 (his call, 2026-10-29): it collides with the slash-command picker.
 function configuredPrefixes(env = process.env) {
@@ -23,15 +23,23 @@ function parsePrefixes(text) {
     return { prefixes };
 }
 
-// The prefixes that work in one server: its own, or the default. Read through utils/guildPolicy.js's cached settings, so after the first read in five minutes a message costs a Map lookup. A failed read falls back to the default rather than silencing every prefix.
+// The default split in two: the first word a server's own prefixes replace, and the words that always stay (`dior`; on the dev bot `dd` and `diordev`).
+function prefixParts(env = process.env) {
+    const [replaceable = null, ...fixed] = configuredPrefixes(env);
+    return { replaceable, fixed };
+}
+
+// The prefixes that work in one server: its own in place of `d`, then `dior`; or the default. Read through utils/guildPolicy.js's cached settings, so after the first read in five minutes a message costs a Map lookup. A failed read falls back to the default rather than silencing every prefix.
 async function prefixesFor(guildId, fallback = configuredPrefixes()) {
     if (!guildId) return fallback;
     try {
         const settings = await require('../guildPolicy').getGuildSettings(guildId);
-        return settings?.textPrefixes?.length ? [...settings.textPrefixes] : fallback;
+        if (!settings?.textPrefixes?.length) return fallback;
+        const { fixed } = prefixParts();
+        return [...new Set([...settings.textPrefixes, ...fixed])];
     } catch {
         return fallback;
     }
 }
 
-module.exports = { configuredPrefixes, parsePrefixes, prefixesFor, MAX_PREFIXES, MAX_LENGTH };
+module.exports = { configuredPrefixes, prefixParts, parsePrefixes, prefixesFor, MAX_PREFIXES, MAX_LENGTH };

@@ -2,7 +2,7 @@
 //
 // One row per change to a server's /admin settings: who, when, and what changed, kept 60 days. Harkirat 2026-10-22 15:51 EDT: "a server admin like log ... the log cannot be reset ... it has to be like a source of truth ... export a log file ... maybe like the last 60 days".
 //
-// ⚠️ NOTHING DELETES THESE ROWS BUT THE TTL. /admin's Reset Everything and the owner's Reset Rules / Delete Record (/bot servers) all leave the log in place and add a row of their own, so a takeover cannot hide what it changed. A row's only personal data is the actor's Discord user id (PRIVACY.md §2.1a, Appendix A).
+// ⚠️ NOTHING DELETES THESE ROWS BUT THE TTL. /admin's Reset Slash Rules and Reset Text Rules and the owner's Reset Rules / Delete Record (/bot servers) all leave the log in place and add a row of their own, so a takeover cannot hide what it changed. A row's only personal data is the actor's Discord user id (PRIVACY.md §2.1a, Appendix A).
 const mongoose = require('mongoose');
 
 const guildSettingsLogSchema = new mongoose.Schema({

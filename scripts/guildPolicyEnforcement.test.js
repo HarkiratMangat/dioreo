@@ -279,7 +279,7 @@ t('/bot servers is owner-only on every click, and a reset clears the rules and i
     const realLogCreate = GuildSettingsLog.create;
     const serverLog = [];
     GuildSettingsLog.create = async row => { serverLog.push(row); return row; };
-    const saved = { guildId: '123456789012345678', defaultVisibility: 'ephemeral', channelRules: [{ channelId: 'C', visibility: 'ephemeral' }], roleRules: [], ephemeralCommands: ['colors'], save: async () => {} };
+    const saved = { guildId: '123456789012345678', defaultVisibility: 'ephemeral', channelRules: [{ channelId: 'C', visibility: 'ephemeral' }], roleRules: [], ephemeralCommands: ['colors'], textRules: { defaultVisibility: 'ephemeral', channelRules: [], roleRules: [], commandSettings: [] }, textPrefixes: ['!'], save: async () => {} };
     const original = GuildSettings.findOne;
     GuildSettings.findOne = () => ({ lean: async () => saved, then: (ok) => ok(saved) });
     try {
@@ -296,8 +296,10 @@ t('/bot servers is owner-only on every click, and a reset clears the rules and i
         Object.assign(owner.interaction, { customId: 'bot_srv_reset|123456789012345678', isButton: () => true, isModalSubmit: () => false, deferUpdate: async () => {}, deferred: true, client: { ...owner.interaction.client, guilds: { cache: new Map() } } });
         await handleBotInteraction(owner.interaction);
         assert.deepStrictEqual([saved.channelRules.length, saved.ephemeralCommands.length, saved.defaultVisibility], [0, 0, 'public']);
+        assert.deepStrictEqual([saved.textRules, saved.textPrefixes], [undefined, undefined], 'the owner\'s reset clears the text switch and the prefix too (B7)');
         assert.strictEqual(logged.length, 1);
         assert.ok(/Before: .*Private/.test(logged[0].summary), 'the log must carry the rules as they were');
+        assert.ok(/\*\*Text commands\*\* · Off by default · 0 rules · prefix `!`/.test(logged[0].summary), 'and the text settings as they were');
         await new Promise(r => setImmediate(r));
         assert.strictEqual(serverLog.length, 1, "the owner's reset must appear in the server's own change log");
         assert.strictEqual(serverLog[0].source, 'owner');
@@ -318,11 +320,14 @@ t('the /admin text view: its ids, On/Off, the flip button and a save into textRu
     const json = JSON.stringify(inView('text', () => buildHome(textView(stored), { textMessageContent: true }, {})));
     assert.ok(json.includes('"custom_id":"admin_t_default|public"') && json.includes('"label":"On"') && json.includes('"label":"Off"'), 'On/Off in the text namespace');
     assert.ok(json.includes('"custom_id":"admin_view|slash"') && json.includes('Config Slash Commands'), 'the flip back');
-    assert.ok(json.includes('"custom_id":"admin_t_prefix"') && json.includes('`!` · `@Dioreo` always works'), 'the prefixes block');
+    assert.ok(json.includes('"custom_id":"admin_t_prefix"') && json.includes('`!` *(in place of `d`)*') && json.includes('`dior` and `@Dioreo` always work'), 'the prefix block');
+    assert.ok(json.includes('"custom_id":"admin_t_prefix_reset"') && json.includes('Reset to d'), 'Reset to d, shown once the server has its own');
+    assert.ok(json.includes('Reset Text Rules'), 'the text view names its reset');
     assert.ok(!json.includes('admin_check'), 'Check a Member is slash only');
     assert.ok(!/"custom_id":"admin_(default|channels|roles|commands|home)/.test(json), 'no slash-view control on the text view');
     const slash = JSON.stringify(inView('slash', () => buildHome(stored, {}, {})));
     assert.ok(slash.includes('"custom_id":"admin_view|text"') && slash.includes('Config Text Commands') && slash.includes('"label":"Private"'), 'the slash view keeps its words and flips to text');
+    assert.ok(slash.includes('Reset Slash Rules') && !slash.includes('Reset Everything'), 'the slash view names its reset');
     const doc = new GuildSettings({ guildId: 'G_T', defaultVisibility: 'ephemeral' });
     doc.save = async () => doc;
     const original = GuildSettings.findOne;
@@ -352,7 +357,11 @@ t('the /admin text view: its ids, On/Off, the flip button and a save into textRu
         await new Promise(r => setImmediate(r));
         assert.ok(log.some(r => r.changes.includes('Text commands · Default: On → Off')), JSON.stringify(log.map(r => r.changes)));
         assert.ok(log.some(r => r.changes.includes('Text command prefixes: default → ! yo')));
+        await click('admin_t_prefix_reset');
+        assert.strictEqual(doc.textPrefixes, undefined, 'Reset to d');
+        await click('admin_t_prefixm', { fields: { getTextInputValue: () => '!' } });
         await click('admin_t_reset');
+        assert.strictEqual(doc.textPrefixes, undefined, 'the text reset clears the prefix too');
         assert.strictEqual(doc.textRules, undefined, 'the text reset clears the text rules');
         assert.strictEqual(doc.defaultVisibility, 'ephemeral', 'and leaves the slash settings');
     } finally {
@@ -394,7 +403,7 @@ t('describeChanges names each change, and an unchanged save logs nothing', () =>
     assert.deepStrictEqual(describeChanges(before, before), []);
 });
 
-t('every save writes a log row, and Reset Everything adds one rather than clearing the log', async () => {
+t('every save writes a log row, and a reset adds one rather than clearing the log', async () => {
     const GuildSettingsLog = require('../models/GuildSettingsLog');
     const realCreate = GuildSettingsLog.create;
     const rows = [];

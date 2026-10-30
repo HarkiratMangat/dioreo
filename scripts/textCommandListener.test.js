@@ -407,12 +407,14 @@ async function check(name, fn) {
         await onMessage(d.message);
         assert.strictEqual(ran.length, before + 1, '`d` is not this server\'s prefix');
         assert.strictEqual(d.posts.length, 0);
+        await onMessage(fakeMessage('dior draws', { guildId: 'gp' }).message);
+        assert.strictEqual(lastRun().name, 'draws', '`dior` always stays (his middle ground, 2026-10-30)');
     });
     await check('the help card lists the server\'s own prefixes', async () => {
         SERVER.gh = { textPrefixes: ['!', 'yo'] };
         const m = fakeMessage('<@111>', { guildId: 'gh' });
         await onMessage(m.message);
-        assert.ok(/Prefix: \*\*`@Dioreo`\*\*, \*\*`!`\*\* or \*\*`yo`\*\*/.test(JSON.stringify(m.posts[0])), JSON.stringify(m.posts[0]).slice(0, 300));
+        assert.ok(/Prefix: \*\*`@Dioreo`\*\*, \*\*`!`\*\*, \*\*`yo`\*\* or \*\*`dior`\*\*/.test(JSON.stringify(m.posts[0])), JSON.stringify(m.posts[0]).slice(0, 300));
     });
     await check('text commands off for the server: silent, the help card and the emoji reply included', async (before) => {
         SERVER.goff = { textRules: { defaultVisibility: 'ephemeral', channelRules: [], roleRules: [], commandSettings: [] } };

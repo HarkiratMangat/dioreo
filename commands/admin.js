@@ -107,14 +107,22 @@ function viewRow() {
     return { type: 1, components: [{ type: 2, style: 1, label: isText() ? 'Config Slash Commands' : 'Config Text Commands', custom_id: `admin_view|${isText() ? 'slash' : 'text'}`, ...(icon ? { emoji: icon } : {}) }] };
 }
 
-// The prefixes block on the text view's Overview, with its Edit button (a pop-up).
+// The prefixes block on the text view's Overview: what works here, Edit (a pop-up), and Reset Prefix once the server has its own (his ask, 2026-10-30 12:35 EDT: "we also need a reset prefix option"). A server's prefix takes `d`'s place; `dior` and `@Dioreo` always stay.
 function prefixSection(settings, client) {
-    const { configuredPrefixes } = require('../utils/textCommands/server');
+    const { prefixParts } = require('../utils/textCommands/server');
+    const { replaceable, fixed } = prefixParts();
     const own = settings?.textPrefixes || [];
     const code = list => list.map(p => `\`${p}\``).join(' · ');
-    const lines = [own.length ? `${code(own)} · \`@Dioreo\` always works` : `${code(configuredPrefixes())} *(default)* · \`@Dioreo\` always works`];
+    const always = [...fixed, '@Dioreo'].map(p => `\`${p}\``).join(' and ');
+    const lines = [own.length ? `${code(own)} *(in place of \`${replaceable}\`)*\n-# ${always} always work` : `\`${replaceable}\` *(default)*\n-# ${always} always work`];
     if (client?.textMessageContent === false) lines.push(`-# ${BOT_EMOJI.warn} Discord hasn't given Dioreo Message Content yet, so only \`@Dioreo\` works for now.`);
-    return { type: 9, components: [{ type: 10, content: `### Prefixes\n${lines.join('\n')}` }], accessory: { type: 2, style: 2, label: 'Edit', custom_id: 'admin_prefix' } };
+    return [
+        { type: 10, content: `### Prefix\n${lines.join('\n')}` },
+        { type: 1, components: [
+            { type: 2, style: 2, label: 'Edit Prefix', custom_id: 'admin_prefix' },
+            ...(own.length ? [{ type: 2, style: 4, label: `Reset to ${replaceable}`, custom_id: 'admin_prefix_reset' }] : []),
+        ] },
+    ];
 }
 
 function roleRuleText(rule) {
@@ -216,7 +224,7 @@ function buildHome(settings, client, place = {}, { resetArmed = false, scope = n
                 { type: 14, spacing: 2 },
                 { type: 10, content: text ? `### Default\n-# Text commands are ${visText(def)} unless a rule below says otherwise.` : `### Default\n-# Every answer is ${visText(def)} unless a rule below says otherwise.` },
                 { type: 1, components: [defaultButton('public'), defaultButton('ephemeral')] },
-                ...(text ? [prefixSection(settings, client)] : []),
+                ...(text ? prefixSection(settings, client) : []),
                 { type: 14, spacing: 2 },
                 areaSection(`Channels${channelRules.length ? ` (${channelRules.length})` : ''}`, channelLines, 'admin_channels'),
                 areaSection(`Roles${roleRules.length ? ` (${roleRules.length})` : ''}`, roleLines, 'admin_roles'),
@@ -281,7 +289,7 @@ function ruleCount(settings) {
     return commandEntries(settings).length + (settings?.roleRules?.length || 0) + (settings?.channelRules?.length || 0);
 }
 
-// Overview's last row: Check a Member, and Reset Everything once there is something to reset. Reset is two presses: the first turns the row into Cancel · Confirm, so one stray click cannot wipe a server's setup (picked 2026-10-22 15:23 EDT).
+// Overview's last row: Check a Member, and Reset Slash Rules (Reset Text Rules on the text view) once there is something to reset. Reset is two presses: the first turns the row into Cancel · Confirm, so one stray click cannot wipe a server's setup (picked 2026-10-22 15:23 EDT).
 function toolsRow(settings, resetArmed) {
     const count = ruleCount(settings);
     // The text view's reset also puts the prefixes back.
@@ -290,14 +298,15 @@ function toolsRow(settings, resetArmed) {
     if (resetArmed && changed) {
         return { type: 1, components: [
             { type: 2, style: 2, label: 'Cancel', custom_id: 'admin_home|cancel' },
-            { type: 2, style: 4, label: `Confirm: clear ${count} rule${count === 1 ? '' : 's'}${prefixes ? ', prefixes' : ''} and set ${WORDS[VIEW].public}`, custom_id: 'admin_reset' },
+            { type: 2, style: 4, label: `Confirm: clear ${count} ${isText() ? 'text' : 'slash'} rule${count === 1 ? '' : 's'}${prefixes ? ' and the prefix' : ''}, set ${WORDS[VIEW].public}`, custom_id: 'admin_reset' },
         ] };
     }
     return { type: 1, components: [
         // Check a Member reads the slash-command visibility only.
         ...(isText() ? [] : [{ type: 2, style: 2, label: 'Check a Member', custom_id: 'admin_check' }]),
         { type: 2, style: 2, label: 'Export Log', custom_id: 'admin_log' },
-        ...(changed ? [{ type: 2, style: 4, label: 'Reset Everything', custom_id: 'admin_reset_arm' }] : []),
+        // Named for the view it resets (his 2026-10-30 12:35 EDT: "reset everything kind of implies everything"): each view's reset clears only its own rules.
+        ...(changed ? [{ type: 2, style: 4, label: isText() ? 'Reset Text Rules' : 'Reset Slash Rules', custom_id: 'admin_reset_arm' }] : []),
     ] };
 }
 
@@ -312,6 +321,13 @@ function rulesText(settings) {
     lines.push(`**Roles** · ${(settings.roleRules || []).length ? settings.roleRules.map(roleRuleText).join(' · ') : 'none'}`);
     const commands = commandEntries(settings);
     lines.push(`**Commands with own settings** · ${commands.length ? commands.map(commandSummary).join(' · ') : 'none'}`);
+    // The text-command switch and prefix (B7), so the owner's tool shows and records them too.
+    const text = settings.textRules;
+    const prefix = settings.textPrefixes || [];
+    if (text || prefix.length) {
+        const n = (text?.channelRules?.length || 0) + (text?.roleRules?.length || 0) + commandEntries(text || {}).length;
+        lines.push(`**Text commands** · ${text?.defaultVisibility === 'ephemeral' ? 'Off' : 'On'} by default · ${n} rule${n === 1 ? '' : 's'}${prefix.length ? ` · prefix ${prefix.map(p => `\`${p}\``).join(' ')}` : ''}`);
+    }
     return lines.join('\n');
 }
 
@@ -617,7 +633,7 @@ function buildHelp(client, place = {}) {
                     '### ⌨️ Text Commands',
                     row('On or Off', 'a typed command (`d today`, `@Dioreo today`) is never private, so it is on or off; off means Dioreo stays silent'),
                     row('Same order', 'a command\'s own settings, then role in this channel › role everywhere › channel › default'),
-                    row('Prefixes', 'up to 3 of your own in place of `d` and `dior`; `@Dioreo` always works'),
+                    row('Prefix', 'up to 3 of your own in place of `d`; `dior` and `@Dioreo` always work. **Reset to d** puts it back'),
                     row('Where', '**Config Text Commands** under the tabs on Overview'),
                 ].join('\n') },
                 divider,
@@ -627,9 +643,9 @@ function buildHelp(client, place = {}) {
                     row('Threads', 'follow their channel, unless the thread has its own rule'),
                     row('Menus', 'save when you click outside them; Esc cancels'),
                     row('Clear', 'each page has one once it has rules'),
-                    row('Export Log', 'on Overview: every change in the last 60 days, who made it and when. It cannot be cleared, not even by Reset Everything'),
+                    row('Export Log', 'on Overview: every change in the last 60 days, who made it and when. It cannot be cleared, not even by a reset'),
                     row('Check a Member', 'on Overview: pick a role, channel and command to see the answer and the rule behind it'),
-                    row('Reset Everything', 'on Overview, two presses: clears every rule and sets the default back to Public'),
+                    row('Reset Slash Rules', 'on Overview, two presses: clears every slash rule and sets the default back to Public. **Reset Text Rules** on the text view does the same for text commands and the prefix'),
                 ].join('\n') },
             ],
         },
@@ -901,7 +917,7 @@ async function handleComponent(interaction) {
             return interaction.showModal({
                 title: 'Text command prefixes',
                 custom_id: 'admin_t_prefixm',
-                components: [{ type: 18, label: 'Prefixes', description: 'Up to 3, with commas between. Blank = d, dior. @Dioreo always works.', component: { type: 4, custom_id: 'prefixes', style: 1, required: false, max_length: 30, placeholder: 'e.g. !, ?', ...(current ? { value: current } : {}) } }],
+                components: [{ type: 18, label: 'Your prefix', description: 'Replaces d. Up to 3, commas between. Blank = d. dior and @Dioreo always work.', component: { type: 4, custom_id: 'prefixes', style: 1, required: false, max_length: 30, placeholder: 'e.g. !, ?', ...(current ? { value: current } : {}) } }],
             });
         }
         case 'admin_prefixm': {
@@ -913,6 +929,14 @@ async function handleComponent(interaction) {
             page = 'admin_home';
             break;
         }
+
+        // Reset to d (his ask, 2026-10-30 12:35 EDT).
+        case 'admin_prefix_reset':
+            if (!onText) return;
+            scope = null;
+            settings = await updateGuildSettings(guildId, actorId, doc => { doc.textPrefixes = undefined; });
+            page = 'admin_home';
+            break;
 
         case 'admin_reset':
             scope = null;

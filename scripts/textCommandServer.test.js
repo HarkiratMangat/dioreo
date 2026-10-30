@@ -12,10 +12,12 @@ stub('models/TextPenalty', {
     deleteOne: async q => { records.delete(q.discordId); return {}; },
     find: () => ({ lean: async () => [...records.values()] }),
 });
+const SERVERS = { own: { textPrefixes: ['!', '?'] }, none: null };
+stub('models/GuildSettings', { findOne: q => ({ lean: async () => SERVERS[q.guildId] || null }) });
 const ownerDms = [];
 stub('utils/buildSubmissions', { dmOwner: async build => { ownerDms.push(typeof build === 'function' ? build() : build); return {}; } });
 
-const { parsePrefixes, configuredPrefixes } = require('../utils/textCommands/server');
+const { parsePrefixes, configuredPrefixes, prefixParts, prefixesFor } = require('../utils/textCommands/server');
 const spam = require('../utils/textCommands/spamLadder');
 const { ALLOWED_ADMIN_ID } = require('../utils/owner');
 
@@ -43,6 +45,15 @@ const HOUR = 60 * 60 * 1000;
         for (const bad of ['/', '@d', '<d', '#', ':)', '`d', '*', '_', '~', '|', '>']) assert.ok(parsePrefixes(bad).error, bad);
         assert.deepStrictEqual(configuredPrefixes({ TEXT_PREFIXES: 'dd,diordev' }), ['dd', 'diordev']);
         assert.deepStrictEqual(configuredPrefixes({}), ['d', 'dior']);
+    });
+
+    await check('a server\'s prefix takes `d`\'s place; `dior` always stays (his middle ground, 2026-10-30)', async () => {
+        assert.deepStrictEqual(prefixParts({}), { replaceable: 'd', fixed: ['dior'] });
+        assert.deepStrictEqual(prefixParts({ TEXT_PREFIXES: 'dd,diordev' }), { replaceable: 'dd', fixed: ['diordev'] });
+        process.env.TEXT_PREFIXES = 'd,dior';
+        assert.deepStrictEqual(await prefixesFor('own'), ['!', '?', 'dior']);
+        assert.deepStrictEqual(await prefixesFor('none'), ['d', 'dior']);
+        assert.deepStrictEqual(await prefixesFor(null), ['d', 'dior']);
     });
 
     await check('the score: replies 1, warnings 3, the limit 10, over a rolling 60 s', async () => {

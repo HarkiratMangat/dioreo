@@ -97,6 +97,9 @@ async function route(interaction) {
                         doc.ephemeralCommands = [];
                         doc.commandSettings = [];
                         doc.defaultVisibility = 'public';
+                        // The text-command switch and prefix too (B7 think-pass, 2026-10-30): the owner's reset is for a hijacked server, and a hijacker who turned text commands off or set a prefix must not survive it.
+                        doc.textRules = undefined;
+                        doc.textPrefixes = undefined;
                     }, { source: 'owner' });
                 } else {
                     await GuildSettings.deleteOne({ guildId });
@@ -109,7 +112,7 @@ async function route(interaction) {
                 // The rules as they were go in the summary: neither action has an Undo, so this is what lets a server's setup be rebuilt by hand.
                 recordChange({ actorId: interaction.user.id, page: 'access', action: verb === 'reset' ? 'serverReset' : 'serverDelete', model: 'GuildSettings', target: guildId, summary: `${verb === 'reset' ? 'Reset' : 'Deleted'} /admin settings for ${name || guildId}. Before: ${beforeText}` });
             }
-            const note = verb === 'reset' ? `-# ${BOT_EMOJI.checkmark} Every rule cleared and the default set to Public.` : `-# ${BOT_EMOJI.checkmark} Record deleted. The server behaves as if /admin was never used.`;
+            const note = verb === 'reset' ? `-# ${BOT_EMOJI.checkmark} Every slash and text rule cleared, the prefix back to the default, and the default set to Public.` : `-# ${BOT_EMOJI.checkmark} Record deleted. The server behaves as if /admin was never used.`;
             return sendV2Payload(interaction, await buildServersPanel(interaction.client, guildId, { note }), NO_PINGS);
         }
         return sendV2Payload(interaction, await buildServersPanel(interaction.client, guildId), NO_PINGS);
