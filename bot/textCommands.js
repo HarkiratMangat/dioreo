@@ -508,4 +508,4 @@ function registerTextCommands(client) {
     }, 10 * 60 * 1000).unref();
 }
 
-module.exports = { mentionReplyEmoji, registerTextCommands, enableMessageContentIfGranted, configuredPrefixes, onMessage, helpCard, didYouMeanCard, pickCard, cantPostCard, POPUP_TTL_MS };
+module.exports = { mentionReplyEmoji, registerTextCommands, enableMessageContentIfGranted, configuredPrefixes, onMessage, helpCard, didYouMeanCard, pickCard, cantPostCard, needsInputCard, couldntReadCard, noMatchLine, POPUP_TTL_MS };
