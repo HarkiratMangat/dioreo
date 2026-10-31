@@ -12,6 +12,10 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.3.2 — October 30, 2026
+- **New announcement** stays on screen when you tap it.
+- **Announcements** end with a footer saying who made them and when they were posted.
+
 ## v3.3.1 — October 30, 2026
 - **Announcements** reach text commands: a **New announcement** button on your reply when one is waiting.
 - **`d b`** and **`d bd`** open Gunsmith MP and DMZ.
