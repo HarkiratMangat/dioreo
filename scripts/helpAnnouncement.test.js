@@ -46,15 +46,15 @@ async function check(name, fn) {
         assert.deepStrictEqual(i.defers, [{ flags: 0 }]);
         assert.deepStrictEqual(sent, [CARD]);
     });
-    await check('visibility:public with two running opens a private picker, posting nothing yet', async () => {
+    await check('visibility:public with two running posts a picker only the asker can use, posting nothing yet', async () => {
         sent.length = 0;
         RUNNING = [{ _id: 'a1', text: 'Out of Beta!\nDioreo v3 is here' }, { _id: 'a2', text: 'Halloween\nEvent live' }];
         const i = fake('announcement', 'public');
         await help.execute(i);
         RUNNING = RUNNING.slice(0, 1);
-        assert.deepStrictEqual(i.defers, [{ flags: 64 }]);
+        assert.deepStrictEqual(i.defers, [{ flags: 0 }]);
         const select = sent[0][0].components[1].components[0];
-        assert.strictEqual(select.custom_id, 'ann_pick~42~s');
+        assert.strictEqual(select.custom_id, 'ann_pick~42~t');
         assert.deepStrictEqual(select.options.map(o => [o.label, o.description, o.value]), [['Out of Beta!', 'Dioreo v3 is here', 'a1'], ['Halloween', 'Event live', 'a2']]);
         assert.strictEqual(select.max_values, 2);
     });

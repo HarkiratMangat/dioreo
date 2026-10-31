@@ -7,7 +7,7 @@ const { PermissionFlagsBits, Routes } = require('discord.js');
 const A = require('./announcement');
 const { sendV2Payload } = require('./sendV2Payload');
 
-// `ann_pick~<user id>~<where>`: `s` posts publicly as a follow-up (the picker is the private /help reply), `t` replaces the picker in place (the picker is the public text reply), a channel id posts there.
+// `ann_pick~<user id>~<where>`: `t` replaces the picker in place (the picker is the public reply, slash or typed), a channel id posts there. `s` (a private picker posting a public follow-up) was tried and retired the same night: the follow-up came out private.
 const PICK_PREFIX = 'ann_pick';
 const NO_RUNNING = '-# No announcements right now.';
 
@@ -122,13 +122,13 @@ async function executeText(interaction, args = '') {
     return sendV2Payload(interaction, posted(containers.length, target.id), { allowedMentions: { parse: [] } });
 }
 
-// `/help cmd:announcement`: hidden shows every running one privately, as before; public posts the one running, or with several opens the picker privately first.
+// `/help cmd:announcement`: hidden shows every running one privately, as before; public posts the one running, or with several posts the picker publicly, locked to the person who asked, and the pick replaces it in place (the text form's `t`). A PRIVATE picker cannot hand off to a public post: a follow-up from a select on an ephemeral message came out ephemeral too (his click-test, 2026-10-30 22:29 EDT: "it still posted them privately despite \"public\"").
 async function executeSlash(interaction, visibility) {
     const isPublic = visibility === 'public';
     const active = isPublic ? await A.getActiveAnnouncements() : null;
     if (isPublic && active.length > 1) {
-        await interaction.deferReply({ flags: 64 });
-        return sendV2Payload(interaction, buildPicker(active, { userId: interaction.user.id, where: 's' }), { allowedMentions: { parse: [] } });
+        await interaction.deferReply({ flags: 0 });
+        return sendV2Payload(interaction, buildPicker(active, { userId: interaction.user.id, where: 't' }), { allowedMentions: { parse: [] } });
     }
     await interaction.deferReply({ flags: isPublic ? 0 : 64 });
     return sendV2Payload(interaction, await A.buildActiveAnnouncementComponents(), { allowedMentions: { parse: [] } });
@@ -147,10 +147,6 @@ async function handlePick(interaction) {
     if (!chosen.length) return sendV2Payload(interaction, quiet('-# Those announcements are no longer running.'), { allowedMentions: { parse: [] } });
     const containers = containersFor(chosen);
     if (where === 't') return sendV2Payload(interaction, containers, { allowedMentions: { parse: [] }, skipExpiry: true });
-    if (where === 's') {
-        await interaction.followUp({ flags: 32768, components: containers, allowedMentions: { parse: [] } });
-        return sendV2Payload(interaction, posted(containers.length, null), { allowedMentions: { parse: [] } });
-    }
     // A channel: checked again at the pick, since permissions can change while the picker is open.
     const t = await channelTarget(interaction, where);
     if (t.error) return sendV2Payload(interaction, quiet(t.error), { allowedMentions: { parse: [] } });
