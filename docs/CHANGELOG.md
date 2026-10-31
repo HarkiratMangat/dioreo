@@ -29,7 +29,18 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.3.3 — 2026-10-30 22:09 EDT (#240) — The New announcement button rides on the first post
+## v3.4.0 — 2026-10-30 22:57 EDT (#241) — Post chosen announcements, by picker, by word, or into a channel
+**From Harkirat, 2026-10-30:** his option 3 (a multi-select, a text form matched on the first two lines, `d repost <name> <channel id>`), then "for channel posting, yes the suggestion and exception make sense. for the delete message, leave that out then", "what about me? the owner?", "can't i just do `d! announce beta|prefix`", "show the announcement as it was originally posted", and "make it where d announcement doesn't direct reply".
+
+- **Picker** (`utils/announcementRepost.js`, `commands/help.js`, `handlers/announcementControls.js`): `/help cmd:announcement visibility:public` with several running posts a multi-select in the channel, usable only by whoever ran it (`ann_pick~<user>~<where>`); the pick replaces it. A private picker was tried first: Discord kept its follow-up private.
+- **Typed form** (`utils/textCommands/commands.js`, `bot/textCommands.js`): `d announcement` / `announce` / `repost`, text-only like `prefix` (a new `textModule` field). Words match an announcement's first two lines without emoji or markdown; `beta|prefix` posts several, and a part that matches nothing posts nothing. Posted plainly, never as a reply. Obeys the server's /help permissions (`policyAs`). Error lines delete after 10 s. `news` was left out: its singular `new` never works alone.
+- **Another channel**: a trailing channel id or #mention posts there, for Manage Server or the owner, only if the member and Dioreo can both post there. Recorded as an exception in CLAUDE.md.
+- **As posted** (`utils/commandMentions.js`, `utils/announcement.js`): an announcement keeps its slash mentions even when shown from a typed command.
+- **`d help admin`**: `d help` now opens the slash-only pages (admin, manage, manage emojis, autobuild, bot, embed) for whoever may see them.
+- **Running only**: reposting an expired announcement is filed as future scope.
+- **Tests:** `scripts/announcementRepost.test.js` (matching, groups, channel split, the picker lock); `scripts/helpAnnouncement.test.js` covers the picker.
+
+## v3.3.3 — 2026-10-30 22:09 EDT (#240 · `41be104f`) — The New announcement button rides on the first post
 **From Harkirat, 2026-10-30:** "why does it edit into the message instead of just being latched onto it from the start?", "test the speed of the up front vs after (edited) scenarios on dev bot?", then "yea build it and deploy".
 
 - **Up front** (`bot/textCommands.js` `addAnnouncementRow`, `utils/textCommands/adapter.js`): the row goes on the reply's first post instead of an edit after it. `runTextCommand` starts the "is one due?" check (83 ms on prod) while the command builds its panel, and every write to the reply carries the row. Dev bot, median of 8: reply 869 ms and button 1,699 ms before, both 446 ms now. It also removes the gap that left one prod `d today` reply edited with no button.

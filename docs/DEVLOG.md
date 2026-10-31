@@ -296,6 +296,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-30 18:43 EDT — A New announcement button on text replies; b and bd for gunsmith (v3.3.1)
 - 2026-10-30 21:41 EDT — The New announcement button stays on screen; a permanent announcement footer (v3.3.2)
 - 2026-10-30 22:09 EDT — The New announcement button rides on the first post (v3.3.3)
+- 2026-10-30 22:57 EDT — Post chosen announcements, by picker, by word, or into a channel (v3.4.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4848,6 +4849,14 @@ Every announcement also ends with a permanent footer now: a divider, then "Made 
 The New announcement button on text replies used to be edited in after the reply posted. That meant a second request to Discord, an "(edited)" mark, and on prod one `d today` reply that was edited and still had no button. Measured on the dev bot over eight runs each, the reply showed in 869 ms and the button in 1,699 ms; with the row on the first post both show in 446 ms.
 
 The "is one due?" check, 83 ms on prod, now starts while the command builds its panel, and every write to the reply carries the row, so the reply goes out once, complete.
+
+## 2026-10-30 22:57 EDT — Post chosen announcements, by picker, by word, or into a channel (v3.4.0)
+
+Announcements could only be reposted all at once, through `/help cmd:announcement visibility:public`. Now one or several can be chosen: a picker under that command when several are running, and a typed form, `d announcement` (also `announce` and `repost`), whose words match an announcement's first two lines, with `beta|prefix` for several.
+
+`d repost <words> <channel id>` posts into another channel, a new exception to the rule that Dioreo only answers where it was asked. It needs Manage Server (or the owner), the member able to post in that channel, and Dioreo able to post there. Deleting the member's command afterwards was proposed and dropped; instead the typed form posts plainly, not as a reply, so a mod can delete their own command and leave only the announcement.
+
+The click-test turned up the rest. A private picker cannot make a public post (Discord kept the follow-up private), so the picker is public and locked to whoever ran it. An announcement shown from a typed command had its `/gunsmith mp` rewritten as `d! gunsmith`; it now always shows as posted. And `d help admin` had been opening the home page, because `admin` was no text command's word.
 
 # Part B — Lessons Ledger (thematic)
 
