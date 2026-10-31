@@ -123,14 +123,15 @@ function hslToHex(h, s, l) {
 // The text a user is shown, with the live Posted line under it. Shared by the Container below and /bot analytics' change panel, so the two never word it differently.
 function announcementBody(doc) {
     const postedTs = Math.floor(new Date(doc.createdAt).getTime() / 1000);
-    const text = String(doc.text || '');
+    // Written text only: a footer typed by hand before the permanent one (the v3 launch's "Made with … by @dior · {posted}") is dropped with the separator mark above it, so no announcement ever shows two.
+    const lines = String(doc.text || '').split('\n');
+    while (lines.length && (!lines.at(-1).trim() || SEPARATOR_MARKS[lines.at(-1).trim()] || /\{posted\}|^\s*(-#\s*)?Made with\b.*\bby\b/i.test(lines.at(-1)))) lines.pop();
+    const text = lines.join('\n');
     const cut = text.length > ANNOUNCEMENT_TEXT_MAX ? `${text.slice(0, ANNOUNCEMENT_TEXT_MAX - 1)}…` : text;
-    // Typed `/commands` become clickable mentions at render time (utils/commandMentions.js), so the stored text stays plain and the dev and prod apps each link their own ids. Applied after the length cut, so a mention is never sliced in half. The footer heart (2026-10-30 21:30 EDT, Harkirat: "the emoji is supposed to be <a:DiorswrldHeart:1564877429544063088> not diorHeart"): stored text written before the 2026-10-28 re-upload still carries the retired `<a:diorHeart:…>`, so any heart named diorHeart or DiorswrldHeart is swapped for utils/emojiMap.js's current one at render time, the same way each app resolves its own emoji ids. `{heart}` writes it without an id.
-    const heart = require('./emojiMap').diorHeart;
-    const body = require('./commandMentions').linkCommandMentions(cut).replace(/<a?:(?:diorHeart|DiorswrldHeart):\d+>/g, heart).split('{heart}').join(heart);
-    // A `{posted}` token in the text takes the live time where the writer put it (2026-10-27 10:44 EDT: the v3 launch footer reads "Made with … by @dior · {posted}"), and then no separate Posted line is added.
-    if (body.includes('{posted}')) return body.split('{posted}').join(`<t:${postedTs}:R>`);
-    return `${body}\n\n-# Posted <t:${postedTs}:R>`;
+    // Typed `/commands` become clickable mentions at render time (utils/commandMentions.js), so the stored text stays plain and the dev and prod apps each link their own ids. Applied after the length cut, so a mention is never sliced in half.
+    const body = require('./commandMentions').linkCommandMentions(cut);
+    // The permanent footer (Harkirat, 2026-10-30 21:33 EDT: "can this part just be a permanent footer on the announcements"): a divider, then "Made with {heart} by @dior · Posted {live time}" on every announcement, so nobody types it. The heart comes from utils/emojiMap.js at render time (his correction the same night: DiorswrldHeart, not the retired diorHeart). Mentions never ping here (every send passes allowedMentions: { parse: [] }).
+    return `${body}\n----\n-# Made with ${require('./emojiMap').diorHeart} by <@${DIOR_ID}> · Posted <t:${postedTs}:R>`;
 }
 
 // One announcement as a Components V2 Container (2026-10-26 23:44 EDT, replacing the embed below as what is delivered). Its accent is the announcement's own colour. A line that is exactly `---` becomes a Separator with its divider line drawn; everything else stays text, blank lines included, so an announcement typed for the embed renders the same. The banner, when there is one, sits under the text as a Media Gallery, where the embed put its image. Layout marks, each a line on its own (Harkirat, 2026-10-30 16:34 EDT: "---- for divider:true small spacing, ==== for divider:true large spacing, -- for divider:false small spacing, == for divider:false small spacing, ++ for next text box"). He wrote `==` as small too; read as LARGE, since small with no line is already `--`. `---` stays a small divider, so announcements saved before this render the same. `++` starts a new Text Display with nothing between the boxes.
@@ -153,7 +154,8 @@ function buildAnnouncementContainer(doc) {
         else run.push(line);
     }
     flush();
-    if (doc.bannerImageUrl) components.push({ type: 12, items: [{ media: { url: doc.bannerImageUrl } }] });
+    // The banner sits above the permanent footer (its divider and line are always the last two), so the footer stays the last thing in every announcement.
+    if (doc.bannerImageUrl) components.splice(components.length - 2, 0, { type: 12, items: [{ media: { url: doc.bannerImageUrl } }] });
     return { type: 17, accent_color: doc.color, components };
 }
 
@@ -169,6 +171,9 @@ function buildAnnouncementEmbed(doc) {
     if (doc.bannerImageUrl) embed.image = { url: doc.bannerImageUrl };
     return embed;
 }
+
+// The developer the announcement footer names (the same id commands/help.js and commands/settings.js sign with).
+const DIOR_ID = '1139845545754632283';
 
 // The `ann_` ids handlers/announcementControls.js answers.
 const ANN_WHY_ID = 'ann_why';

@@ -94,26 +94,28 @@ check('an announcement is a V2 Container in its own colour, with no button insid
     assert.strictEqual(c.type, 17);
     assert.strictEqual(c.accent_color, 7);
     assert.ok(!JSON.stringify(c).includes('"type":1,'), 'no action row');
-    assert.ok(c.components.at(-1).content.endsWith('-# Posted <t:0:R>'));
+    assert.ok(/^-# Made with <a?:\w+:\d+> by <@1139845545754632283> · Posted <t:0:R>$/.test(c.components.at(-1).content), c.components.at(-1).content);
+    assert.deepStrictEqual(c.components.at(-2), { type: 14, divider: true, spacing: 1 }, 'a divider above the footer');
 });
 check('a "---" line is a drawn divider; blank lines stay in the text', () => {
     const c = buildAnnouncementContainer({ text: 'a\n\nb\n---\nc', createdAt: new Date(0), color: 1 });
-    assert.deepStrictEqual(c.components.map(x => x.type), [10, 14, 10]);
+    assert.deepStrictEqual(c.components.map(x => x.type), [10, 14, 10, 14, 10], 'the text, then the footer under its divider');
     assert.strictEqual(c.components[0].content, 'a\n\nb');
     assert.strictEqual(c.components[1].divider, true);
 });
 check('layout marks: ---- ==== -- == draw their separators, ++ starts a new box, --- still works (his marks, 2026-10-30 16:34 EDT)', () => {
     const c = buildAnnouncementContainer({ text: 'a\n----\nb\n====\nc\n--\nd\n==\ne\n++\nf\n---\ng', createdAt: new Date(0), color: 1 });
-    assert.deepStrictEqual(c.components.map(x => x.type), [10, 14, 10, 14, 10, 14, 10, 14, 10, 10, 14, 10]);
+    assert.deepStrictEqual(c.components.map(x => x.type), [10, 14, 10, 14, 10, 14, 10, 14, 10, 10, 14, 10, 14, 10]);
     const seps = c.components.filter(x => x.type === 14).map(x => [x.divider, x.spacing]);
-    assert.deepStrictEqual(seps, [[true, 1], [true, 2], [false, 1], [false, 2], [true, 1]]);
+    assert.deepStrictEqual(seps, [[true, 1], [true, 2], [false, 1], [false, 2], [true, 1], [true, 1]]);
     assert.strictEqual(c.components[8].content, 'e');
     assert.strictEqual(c.components[9].content, 'f', '++ puts f in its own box with nothing between');
     assert.ok(!JSON.stringify(c).includes('++'), 'the mark itself is never shown');
 });
 check('a mark only counts on its own line: "-- like this" stays text', () => {
     const c = buildAnnouncementContainer({ text: 'a -- b\n++ c', createdAt: new Date(0), color: 1 });
-    assert.deepStrictEqual(c.components.map(x => x.type), [10]);
+    assert.deepStrictEqual(c.components.map(x => x.type), [10, 14, 10]);
+    assert.strictEqual(c.components[0].content, 'a -- b\n++ c');
 });
 check('the Why button only comes with a repeat showing, never a first one', () => {
     const a = { _id: 'a1' }, b = { _id: 'b2' };
@@ -121,15 +123,19 @@ check('the Why button only comes with a repeat showing, never a first one', () =
     assert.strictEqual(whyRowNeeded([a], new Set(['a1'])), true, 'second showing');
     assert.strictEqual(whyRowNeeded([a, b], new Set(['b2'])), true, 'a batch with one repeat');
 });
-check('a {posted} token takes the live time where it is written, and no Posted line is added', () => {
-    const c = buildAnnouncementContainer({ text: 'hi\n-# Made with x by y · {posted}', createdAt: new Date(0), color: 1 });
-    const text = c.components.map(x => x.content || '').join('\n');
-    assert.ok(text.endsWith('-# Made with x by y · <t:0:R>'));
-    assert.ok(!text.includes('Posted'));
+check('every announcement ends with ONE permanent footer; a hand-typed one is dropped (his ask, 2026-10-30 21:33 EDT)', () => {
+    const heart = require('../utils/emojiMap').diorHeart;
+    for (const text of ['hi', 'hi\n----\n-# Made with <a:diorHeart:1525941004929339594> by @dior · {posted}', 'hi\n---\nMade with x by y · {posted}\n']) {
+        const c = buildAnnouncementContainer({ text, createdAt: new Date(0), color: 1 });
+        assert.deepStrictEqual(c.components.map(x => x.type), [10, 14, 10], text);
+        assert.strictEqual(c.components[0].content, 'hi', text);
+        assert.strictEqual(c.components[2].content, `-# Made with ${heart} by <@1139845545754632283> · Posted <t:0:R>`);
+    }
 });
-check('a banner goes under the text as a Media Gallery', () => {
+check('a banner goes under the text as a Media Gallery, above the footer', () => {
     const c = buildAnnouncementContainer({ text: 'x', createdAt: new Date(0), color: 1, bannerImageUrl: 'https://example.com/a.png' });
-    assert.deepStrictEqual(c.components.at(-1), { type: 12, items: [{ media: { url: 'https://example.com/a.png' } }] });
+    assert.deepStrictEqual(c.components.map(x => x.type), [10, 12, 14, 10], 'text, banner, then the footer');
+    assert.deepStrictEqual(c.components[1], { type: 12, items: [{ media: { url: 'https://example.com/a.png' } }] });
 });
 
 process.exit(failures ? 1 : 0);
