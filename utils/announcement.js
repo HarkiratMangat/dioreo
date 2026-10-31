@@ -125,8 +125,9 @@ function announcementBody(doc) {
     const postedTs = Math.floor(new Date(doc.createdAt).getTime() / 1000);
     const text = String(doc.text || '');
     const cut = text.length > ANNOUNCEMENT_TEXT_MAX ? `${text.slice(0, ANNOUNCEMENT_TEXT_MAX - 1)}…` : text;
-    // Typed `/commands` become clickable mentions at render time (utils/commandMentions.js), so the stored text stays plain and the dev and prod apps each link their own ids. Applied after the length cut, so a mention is never sliced in half.
-    const body = require('./commandMentions').linkCommandMentions(cut);
+    // Typed `/commands` become clickable mentions at render time (utils/commandMentions.js), so the stored text stays plain and the dev and prod apps each link their own ids. Applied after the length cut, so a mention is never sliced in half. The footer heart (2026-10-30 21:30 EDT, Harkirat: "the emoji is supposed to be <a:DiorswrldHeart:1564877429544063088> not diorHeart"): stored text written before the 2026-10-28 re-upload still carries the retired `<a:diorHeart:…>`, so any heart named diorHeart or DiorswrldHeart is swapped for utils/emojiMap.js's current one at render time, the same way each app resolves its own emoji ids. `{heart}` writes it without an id.
+    const heart = require('./emojiMap').diorHeart;
+    const body = require('./commandMentions').linkCommandMentions(cut).replace(/<a?:(?:diorHeart|DiorswrldHeart):\d+>/g, heart).split('{heart}').join(heart);
     // A `{posted}` token in the text takes the live time where the writer put it (2026-10-27 10:44 EDT: the v3 launch footer reads "Made with … by @dior · {posted}"), and then no separate Posted line is added.
     if (body.includes('{posted}')) return body.split('{posted}').join(`<t:${postedTs}:R>`);
     return `${body}\n\n-# Posted <t:${postedTs}:R>`;
@@ -242,8 +243,7 @@ function openButtonRow() {
     return { type: 1, components: [{ type: 2, style: 2, label: 'New announcement', custom_id: ANN_OPEN_ID, ...(emoji ? { emoji } : {}) }] };
 }
 
-// Returns TRUE when it delivered (and marked) at least one announcement, FALSE when nothing was due or the send failed; the New announcement button uses it to tell an empty press apart.
-// `asReply` (2026-10-30 21:28 EDT, the New announcement button was broken): send the announcement AS the interaction's own deferred reply instead of a follow-up. A follow-up sent straight after deferReply() does not make a new message: Discord turns it into an edit of the "thinking" placeholder (its documented, deprecated compatibility path), so the old ann_open branch delivered into the placeholder and then deleteReply() deleted the announcement it had just shown, while still counting it as a showing.
+// Returns TRUE when it delivered (and marked) at least one announcement, FALSE when nothing was due or the send failed; the New announcement button uses it to tell an empty press apart. `asReply` (2026-10-30 21:28 EDT, the New announcement button was broken): send the announcement AS the interaction's own deferred reply instead of a follow-up. A follow-up sent straight after deferReply() does not make a new message: Discord turns it into an edit of the "thinking" placeholder (its documented, deprecated compatibility path), so the old ann_open branch delivered into the placeholder and then deleteReply() deleted the announcement it had just shown, while still counting it as a showing.
 async function maybeSendAnnouncement(interaction, { asReply = false } = {}) {
     const active = await getActiveAnnouncements();
     if (active.length === 0) return false;

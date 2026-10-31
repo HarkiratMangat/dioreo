@@ -586,6 +586,14 @@ async function check(name, fn) {
             assert.ok(/if \(asReply\) await require\('\.\/sendV2Payload'\)\.sendV2Payload\(/.test(src), 'asReply sends through @original, not a follow-up');
         } finally { if (real) require.cache[f] = real; else delete require.cache[f]; if (realSv) require.cache[sv] = realSv; else delete require.cache[sv]; delete require.cache[h]; }
     });
+    await check('an announcement footer with the retired diorHeart shows the current heart (2026-10-30 21:30 EDT)', async () => {
+        const A = require('../utils/announcement');
+        const heart = require('../utils/emojiMap').diorHeart;
+        const c = A.buildAnnouncementContainer({ text: 'Made with <a:diorHeart:1525941004929339594> by @dior · {posted} {heart}', createdAt: new Date(0), color: 1 });
+        const text = c.components.map(x => x.content || '').join('\n');
+        assert.ok(!text.includes('diorHeart:1525941004929339594'), text);
+        assert.strictEqual(text.split(heart).length - 1, 2, text);
+    });
     console.log(failures ? `\n${failures} failing` : '\ntextCommandListener: all passing');
     process.exit(failures ? 1 : 0);
 })();
