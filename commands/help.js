@@ -406,9 +406,8 @@ module.exports = {
             const cmdOption = interaction.options.getString('cmd');
             // `cmd:announcement` posts the announcements running now instead of a command page (2026-10-28 16:40 EDT, Harkirat: "if i type /help cmd:announcement visibility:public that it'll send the launch announcement as a public message"). Hidden unless visibility says public, like every /help answer. It claims the word before the page lookup, which sent `announcement` to /manage.
             if (cmdOption && /^\/?announcements?$/i.test(cmdOption.trim())) {
-                const choice = interaction.options.getString('visibility');
-                await interaction.deferReply({ flags: choice === 'public' ? 0 : 64 });
-                return await sendV2Payload(interaction, await require('../utils/announcement').buildActiveAnnouncementComponents(), { allowedMentions: { parse: [] } });
+                // Public with several running opens a private picker first (2026-10-30 22:15 EDT, his option 3): utils/announcementRepost.js.
+                return await require('../utils/announcementRepost').executeSlash(interaction, interaction.options.getString('visibility'));
             }
             cmd = cmdOption || null;
         }

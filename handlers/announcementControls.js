@@ -3,7 +3,7 @@
 // ==========================================
 // The `ann_` buttons: "Why am I seeing this?" under every delivered announcement (utils/announcement.js whyButtonRow), and the Turn off / Turn back on switch in its private answer (buildWhyPanel). Built 2026-10-26 15:20 EDT from Harkirat's announcement-controls ask; the same setting is also in /settings (page 2, Preferences) and /remind (its bottom row).
 //
-// No owner lock, deliberately: every `ann_` button sits on a message only one person can see, and each one changes the PRESSER's own setting, never anyone else's.
+// No owner lock on the buttons, deliberately: every `ann_` button sits on a message only one person can see, and each one changes the PRESSER's own setting, never anyone else's. The `ann_pick` select is the exception: the text form's picker is public, so it is locked to the person who asked (utils/announcementRepost.js handlePick).
 //
 // ⚠️ THE CRASH NET IS THE ROUTER'S, NOT THIS FILE'S (.claude/rules/interaction-router.md): no try/catch that swallows, no listeners, every reply awaited.
 
@@ -27,6 +27,10 @@ async function route(interaction) {
         await interaction.deferReply({ flags: 64 });
         if (await A.maybeSendAnnouncement(interaction, { asReply: true })) return;
         return await sendV2Payload(interaction, [{ type: 10, content: '-# No new announcements for you right now.' }], { flags: 32768 | 64 });
+    }
+    // The repost picker (utils/announcementRepost.js, 2026-10-30 22:15 EDT): `ann_pick~<user>~<where>`, from /help cmd:announcement or `d announcement`.
+    if (interaction.isStringSelectMenu() && interaction.customId.startsWith('ann_pick~')) {
+        return await require('../utils/announcementRepost').handlePick(interaction);
     }
     // The switch, redrawn in place.
     if (interaction.isButton() && (interaction.customId === 'ann_off' || interaction.customId === 'ann_on')) {
