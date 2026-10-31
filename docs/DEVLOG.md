@@ -295,6 +295,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-30 17:44 EDT — Text commands ship: typed commands, per-server prefixes and the spam ladder (v3.3.0)
 - 2026-10-30 18:43 EDT — A New announcement button on text replies; b and bd for gunsmith (v3.3.1)
 - 2026-10-30 21:41 EDT — The New announcement button stays on screen; a permanent announcement footer (v3.3.2)
+- 2026-10-30 22:09 EDT — The New announcement button rides on the first post (v3.3.3)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4841,6 +4842,12 @@ Also: `b` runs `/gunsmith mp` and `bd` runs `/gunsmith dmz`; both were free, and
 The New announcement button on text replies showed the announcement and deleted it straight away. Discord turns the first follow-up after a deferred reply into an edit of the "thinking" placeholder, and the button's handler then deleted that placeholder, taking the announcement with it, and still counted it as a showing. The announcement is now sent as the private reply itself.
 
 Every announcement also ends with a permanent footer now: a divider, then "Made with" the DiorswrldHeart "by @dior · Posted" and the live time. A footer typed into the text by hand, like the launch announcement's, is dropped so none shows twice, and a banner sits above the footer.
+
+## 2026-10-30 22:09 EDT — The New announcement button rides on the first post (v3.3.3)
+
+The New announcement button on text replies used to be edited in after the reply posted. That meant a second request to Discord, an "(edited)" mark, and on prod one `d today` reply that was edited and still had no button. Measured on the dev bot over eight runs each, the reply showed in 869 ms and the button in 1,699 ms; with the row on the first post both show in 446 ms.
+
+The "is one due?" check, 83 ms on prod, now starts while the command builds its panel, and every write to the reply carries the row, so the reply goes out once, complete.
 
 # Part B — Lessons Ledger (thematic)
 

@@ -29,7 +29,13 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.3.2 — 2026-10-30 21:41 EDT (#239) — The New announcement button stays on screen; a permanent announcement footer
+## v3.3.3 — 2026-10-30 22:09 EDT (#240) — The New announcement button rides on the first post
+**From Harkirat, 2026-10-30:** "why does it edit into the message instead of just being latched onto it from the start?", "test the speed of the up front vs after (edited) scenarios on dev bot?", then "yea build it and deploy".
+
+- **Up front** (`bot/textCommands.js` `addAnnouncementRow`, `utils/textCommands/adapter.js`): the row goes on the reply's first post instead of an edit after it. `runTextCommand` starts the "is one due?" check (83 ms on prod) while the command builds its panel, and every write to the reply carries the row. Dev bot, median of 8: reply 869 ms and button 1,699 ms before, both 446 ms now. It also removes the gap that left one prod `d today` reply edited with no button.
+- **Tests:** the listener test runs a text command end to end and checks the first post carries the button with no edit.
+
+## v3.3.2 — 2026-10-30 21:41 EDT (#239 · `e1d38e8f`) — The New announcement button stays on screen; a permanent announcement footer
 **From Harkirat, 2026-10-30:** "the \"new announcement\" button is broken", "the message posted and instantly deleted itself", "the emoji is supposed to be <a:DiorswrldHeart:1564877429544063088> not diorHeart", and "can this part just be a permanent footer on the announcements".
 
 - **New announcement button** (`handlers/announcementControls.js`, `utils/announcement.js`): pressing it showed the announcement and deleted it at once, still counting a showing. A follow-up sent straight after `deferReply()` edits the thinking placeholder, and the handler deleted that placeholder. `maybeSendAnnouncement(interaction, { asReply: true })` now sends the announcement as the private reply itself.
