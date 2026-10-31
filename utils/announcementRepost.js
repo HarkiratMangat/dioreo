@@ -11,11 +11,11 @@ const { sendV2Payload } = require('./sendV2Payload');
 const PICK_PREFIX = 'ann_pick';
 const NO_RUNNING = '-# No announcements right now.';
 
-// What a picker option and a typed word see: the first two written lines, without markdown, emoji or layout marks.
+// What a picker option and a typed word see: the first two written lines, without markdown, emoji or layout marks. Emoji are stored both as `<a:Name:id>` and as `:Name:` (resolved at render), so both go.
 function headline(doc) {
     const marks = new Set(['---', '----', '====', '--', '==', '++']);
     return String(doc?.text || '').split('\n')
-        .map(line => line.replace(/<a?:(\w+):\d+>/g, '').replace(/<t:\d+(:\w)?>/g, '').replace(/^\s*-#\s*/, '').replace(/^\s*[-*]\s+/, '').replace(/[*_~`>|#]/g, '').replace(/\s+/g, ' ').trim())
+        .map(line => line.replace(/<a?:(\w+):\d+>/g, '').replace(/:\w+:/g, '').replace(/<t:\d+(:\w)?>/g, '').replace(/^\s*-#\s*/, '').replace(/^\s*[-*]\s+/, '').replace(/[*_~`>|#]/g, '').replace(/\s+/g, ' ').trim())
         .filter(line => line && !marks.has(line))
         .slice(0, 2);
 }
