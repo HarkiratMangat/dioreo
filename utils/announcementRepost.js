@@ -88,21 +88,29 @@ function splitChannel(words) {
     return m ? { words: words.slice(0, -1), channelId: m[1] || m[2] } : { words, channelId: null };
 }
 
+// A text-command error line deletes itself after 10 s, like every other one the listener posts (his ask, 2026-10-30 22:25 EDT: "that error message also should have auto deleted"; bot/textCommands.js CARD_TTL_MS).
+const ERROR_TTL_MS = 10_000;
+async function brief(interaction, text) {
+    const sent = await sendV2Payload(interaction, quiet(text), { allowedMentions: { parse: [] }, skipExpiry: true });
+    setTimeout(() => { interaction.deleteReply().catch(() => {}); }, ERROR_TTL_MS).unref?.();
+    return sent;
+}
+
 // The typed form: `d announcement`, `d announce launch`, `d repost launch 123…`. `args` is everything after the command word.
 async function executeText(interaction, args = '') {
     const split = splitChannel(String(args || '').trim().split(/\s+/).filter(Boolean));
     let target = null;
     if (split.channelId) {
         const t = await channelTarget(interaction, split.channelId);
-        if (t.error) return sendV2Payload(interaction, quiet(t.error), { allowedMentions: { parse: [] } });
+        if (t.error) return brief(interaction, t.error);
         target = t.channel;
     }
     const active = await A.getActiveAnnouncements();
-    if (!active.length) return sendV2Payload(interaction, quiet(NO_RUNNING), { allowedMentions: { parse: [] } });
+    if (!active.length) return brief(interaction, NO_RUNNING);
     const chosen = matchAnnouncements(active, split.words);
     if (split.words.length && !chosen.length) {
         const typed = split.words.join(' ').replace(/[`\\]/g, '');
-        return sendV2Payload(interaction, quiet(`${require('./emojiMap').cross || ''} No running announcement matches “${clip(typed, 80)}”.`.trim()), { allowedMentions: { parse: [] } });
+        return brief(interaction, `${require('./emojiMap').cross || ''} No running announcement matches “${clip(typed, 80)}”.`.trim());
     }
     // No words and several running: the picker. Words always post what they matched.
     if (!split.words.length && chosen.length > 1) {
