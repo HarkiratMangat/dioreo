@@ -71,6 +71,9 @@ async function channelTarget(interaction, channelId) {
     const perms = me ? channel.permissionsFor(me) : null;
     const send = channel.isThread?.() ? PermissionFlagsBits.SendMessagesInThreads : PermissionFlagsBits.SendMessages;
     if (!perms?.has(PermissionFlagsBits.ViewChannel) || !perms.has(send)) return { error: `I can't post in <#${channelId}>.` };
+    // Manage Server is server-wide, so it says nothing about one channel: the member must be able to see and post in the target themselves, or Dioreo would post for them where they can't (his question, 2026-10-30 22:35 EDT: Manage Server for #a #b #c, aimed at #d). The owner is exempt, as above.
+    const mine = owner ? null : channel.permissionsFor(member);
+    if (!owner && (!mine?.has(PermissionFlagsBits.ViewChannel) || !mine.has(send))) return { error: `You can't post in <#${channelId}> yourself, so I won't either.` };
     return { channel };
 }
 
