@@ -129,7 +129,8 @@ function announcementBody(doc) {
     const text = lines.join('\n');
     const cut = text.length > ANNOUNCEMENT_TEXT_MAX ? `${text.slice(0, ANNOUNCEMENT_TEXT_MAX - 1)}…` : text;
     // Typed `/commands` become clickable mentions at render time (utils/commandMentions.js), so the stored text stays plain and the dev and prod apps each link their own ids. Applied after the length cut, so a mention is never sliced in half.
-    const body = require('./commandMentions').linkCommandMentions(cut);
+    // Always as posted: slash mentions even when shown from a text command (his call, 2026-10-30 22:48 EDT).
+    const body = require('./commandMentions').linkCommandMentions(cut, null, { slash: true });
     // The permanent footer (Harkirat, 2026-10-30 21:33 EDT: "can this part just be a permanent footer on the announcements"): a divider, then "Made with {heart} by @dior · Posted {live time}" on every announcement, so nobody types it. The heart comes from utils/emojiMap.js at render time (his correction the same night: DiorswrldHeart, not the retired diorHeart). Mentions never ping here (every send passes allowedMentions: { parse: [] }).
     return `${body}\n----\n-# Made with ${require('./emojiMap').diorHeart} by <@${DIOR_ID}> · Posted <t:${postedTs}:R>`;
 }
