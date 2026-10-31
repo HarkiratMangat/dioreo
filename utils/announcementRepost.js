@@ -32,6 +32,18 @@ function matchAnnouncements(active, words) {
     });
 }
 
+// `beta|prefix`: each `|`-separated group is matched on its own and the results are joined, in posting order, without repeats (his ask, 2026-10-30 22:44 EDT: "can't i just do `d! announce beta|prefix` and repost both"). Returns { docs } or { missing } naming the first group that matched nothing, so nothing is posted by half.
+function matchGroups(active, text) {
+    const groups = String(text || '').split('|').map(g => g.trim()).filter(Boolean);
+    const ids = new Set();
+    for (const g of groups) {
+        const hits = matchAnnouncements(active, g.split(/\s+/));
+        if (!hits.length) return { missing: g };
+        hits.forEach(d => ids.add(String(d._id)));
+    }
+    return { docs: active.filter(d => ids.has(String(d._id))) };
+}
+
 // The Containers for a chosen set, cut to what one message holds (utils/announcement.js fitEmbedBudget).
 function containersFor(docs) {
     return A.fitEmbedBudget(docs.slice(0, A.MAX_EMBEDS_PER_MESSAGE)).map(doc => A.buildAnnouncementContainer(doc));
@@ -110,11 +122,12 @@ async function executeText(interaction, args = '') {
     }
     const active = await A.getActiveAnnouncements();
     if (!active.length) return brief(interaction, NO_RUNNING);
-    const chosen = matchAnnouncements(active, split.words);
-    if (split.words.length && !chosen.length) {
-        const typed = split.words.join(' ').replace(/[`\\]/g, '');
+    const found = matchGroups(active, split.words.join(' '));
+    if (found.missing) {
+        const typed = found.missing.replace(/[`\\]/g, '');
         return brief(interaction, `${require('./emojiMap').cross || ''} No running announcement matches “${clip(typed, 80)}”.`.trim());
     }
+    const chosen = split.words.length ? found.docs : [...active];
     // No words and several running: the picker. Words always post what they matched.
     if (!split.words.length && chosen.length > 1) {
         return sendV2Payload(interaction, buildPicker(chosen, { userId: interaction.user.id, where: target ? target.id : 't' }), { allowedMentions: { parse: [] } });
@@ -157,4 +170,4 @@ async function handlePick(interaction) {
     return sendV2Payload(interaction, posted(containers.length, t.channel.id), { allowedMentions: { parse: [] } });
 }
 
-module.exports = { executeText, execute: executeText, executeSlash, handlePick, headline, matchAnnouncements, buildPicker, splitChannel, PICK_PREFIX };
+module.exports = { executeText, execute: executeText, executeSlash, handlePick, headline, matchAnnouncements, matchGroups, buildPicker, splitChannel, PICK_PREFIX };
