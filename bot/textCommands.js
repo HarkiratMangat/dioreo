@@ -377,7 +377,9 @@ async function runTextCommand(message, verdict) {
     if (!command) return;
     const t = { start: Date.now() };
     // The server's own Integrations switches for this command (his call, 2026-10-28 17:52 EDT). Denied → silent, the same as the slash command simply not being there for this member. A reply form is checked as the right-click it runs.
-    if (!textOnly && !(await textCommandAllowed({ client: message.client, guildId: message.guildId, member: message.member, userId: message.author.id, channel: message.channel }, moduleName))) return;
+    // A text-only command that stands in for a slash command's output (`announcement` is /help cmd:announcement) obeys that command's switches through `policyAs`; `prefix` has none to obey.
+    const policyName = textOnly ? textCommand.policyAs : moduleName;
+    if (policyName && !(await textCommandAllowed({ client: message.client, guildId: message.guildId, member: message.member, userId: message.author.id, channel: message.channel }, policyName))) return;
     t.perms = Date.now();
     const targets = await formTargets(message, verdict.form, verdict.values || {});
     if (!targets) return;
