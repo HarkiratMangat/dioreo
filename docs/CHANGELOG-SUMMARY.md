@@ -12,6 +12,11 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.4.0 — October 30, 2026
+- **Repost announcements:** pick one or several from `/help cmd:announcement`, or type `d announce <word>` (`beta|prefix` for several).
+- **Another channel:** `d repost <word> <channel id>` for members with Manage Server.
+- **`d help admin`** opens the admin pages.
+
 ## v3.3.3 — October 30, 2026
 - **New announcement** shows up with your reply, with no edit.
 

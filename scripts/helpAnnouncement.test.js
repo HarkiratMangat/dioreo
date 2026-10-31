@@ -13,7 +13,9 @@ function stub(rel, exports) {
 const sent = [];
 const CARD = [{ type: 17, components: [{ type: 10, content: 'LAUNCH ANNOUNCEMENT' }] }];
 stub('utils/sendV2Payload.js', { sendV2Payload: async (interaction, components) => { sent.push(components); } });
-stub('utils/announcement.js', { buildActiveAnnouncementComponents: async () => CARD });
+// One running announcement unless a check says otherwise; two open the private picker (2026-10-30 22:15 EDT, option 3).
+let RUNNING = [{ _id: 'a1', text: 'Out of Beta!\nDioreo v3 is here' }];
+stub('utils/announcement.js', { buildActiveAnnouncementComponents: async () => CARD, getActiveAnnouncements: async () => RUNNING });
 stub('utils/adminAccess.js', { isAdmin: async () => false, hasCommandAccess: async () => false, isOwner: () => false });
 stub('utils/guildPolicy.js', { isServerAdmin: () => false });
 
@@ -43,6 +45,18 @@ async function check(name, fn) {
         await help.execute(i);
         assert.deepStrictEqual(i.defers, [{ flags: 0 }]);
         assert.deepStrictEqual(sent, [CARD]);
+    });
+    await check('visibility:public with two running posts a picker only the asker can use, posting nothing yet', async () => {
+        sent.length = 0;
+        RUNNING = [{ _id: 'a1', text: 'Out of Beta!\nDioreo v3 is here' }, { _id: 'a2', text: 'Halloween\nEvent live' }];
+        const i = fake('announcement', 'public');
+        await help.execute(i);
+        RUNNING = RUNNING.slice(0, 1);
+        assert.deepStrictEqual(i.defers, [{ flags: 0 }]);
+        const select = sent[0][0].components[1].components[0];
+        assert.strictEqual(select.custom_id, 'ann_pick~42~t');
+        assert.deepStrictEqual(select.options.map(o => [o.label, o.description, o.value]), [['Out of Beta!', 'Dioreo v3 is here', 'a1'], ['Halloween', 'Event live', 'a2']]);
+        assert.strictEqual(select.max_values, 2);
     });
     await check('with no visibility it is hidden, like every /help answer', async () => {
         sent.length = 0;

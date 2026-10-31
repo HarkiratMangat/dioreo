@@ -162,7 +162,8 @@ const modules = { draws: 'draws', calendar: 'calendar', draw: 'drawprices' };
 for (const c of TEXT_COMMANDS) for (const o of c.options || []) {
     if (!o.values || o.values.every(val => val.value === LATEST)) continue;
     let choices;
-    if (c.name === 'help') choices = require('../commands/help').searchEntries({}).map(e => e.name).concat('/help', TEXT_COMMANDS.filter(t => t.textOnly).map(t => `/${t.slash}`));
+    // help's slash-only pages (`d help admin`, 2026-10-30 22:38 EDT) are pages a viewer with the rights can open, so every help page counts.
+    if (c.name === 'help') choices = require('../commands/help').searchEntries({}).map(e => e.name).concat('/help', TEXT_COMMANDS.filter(t => t.textOnly).map(t => `/${t.slash}`), Object.keys(require('../utils/helpPages').PAGES));
     else {
         const json = require(`../commands/${modules[c.slash]}`).data.toJSON();
         const node = c.sub ? json.options.find(x => x.name === c.sub).options : json.options;

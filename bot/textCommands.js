@@ -369,15 +369,16 @@ async function addAnnouncementRow(body, duePromise) {
 async function runTextCommand(message, verdict) {
     const textCommand = findTextCommand(verdict.command);
     if (!textCommand) return;
-    // A text-only command (`prefix`) has no slash module: utils/textCommands/prefixCommand.js answers through the same text interaction, and there is no Integrations override to look up for a command Discord does not know.
+    // A text-only command (`prefix`, `announcement`) has no slash module: its `textModule` (utils/textCommands/prefixCommand.js, utils/announcementRepost.js) answers through the same text interaction, and there is no Integrations override to look up for a command Discord does not know.
     const textOnly = Boolean(textCommand.textOnly);
     const { name: moduleName, command } = textOnly
-        ? { name: textCommand.slash, command: { execute: i => require('../utils/textCommands/prefixCommand').execute(i, verdict.args || '') } }
+        ? { name: textCommand.slash, command: { execute: i => require(`../utils/${textCommand.textModule}`).execute(i, verdict.args || '') } }
         : moduleFor(message.client, textCommand, verdict.form);
     if (!command) return;
     const t = { start: Date.now() };
-    // The server's own Integrations switches for this command (his call, 2026-10-28 17:52 EDT). Denied → silent, the same as the slash command simply not being there for this member. A reply form is checked as the right-click it runs.
-    if (!textOnly && !(await textCommandAllowed({ client: message.client, guildId: message.guildId, member: message.member, userId: message.author.id, channel: message.channel }, moduleName))) return;
+    // The server's own Integrations switches for this command (his call, 2026-10-28 17:52 EDT). Denied → silent, the same as the slash command simply not being there for this member. A reply form is checked as the right-click it runs. A text-only command that stands in for a slash command's output (`announcement` is /help cmd:announcement) obeys that command's switches through `policyAs`; `prefix` has none to obey.
+    const policyName = textOnly ? textCommand.policyAs : moduleName;
+    if (policyName && !(await textCommandAllowed({ client: message.client, guildId: message.guildId, member: message.member, userId: message.author.id, channel: message.channel }, policyName))) return;
     t.perms = Date.now();
     const targets = await formTargets(message, verdict.form, verdict.values || {});
     if (!targets) return;
@@ -386,7 +387,8 @@ async function runTextCommand(message, verdict) {
     const interaction = createTextInteraction(message, { textCommand: { ...textCommand, slash: moduleName, sub: verdict.form ? null : textCommand.sub }, via, values: verdict.values || {}, ...targets });
     // Started now so it runs while the command builds its panel; awaited only when the reply is first written (addAnnouncementRow above).
     const annDue = require('../utils/announcement').hasDueAnnouncement(message.author.id).catch(() => false);
-    interaction.__decorateReply = body => addAnnouncementRow(body, annDue);
+    // Not on `d announcement` itself: its reply already IS announcements.
+    if (textCommand.name !== 'announcement') interaction.__decorateReply = body => addAnnouncementRow(body, annDue);
     const { buildInteractionContext } = require('../handlers/router');
     const { runWithContext } = require('../utils/requestContext');
     const { recordInteractionEvent } = require('../utils/eventStore');

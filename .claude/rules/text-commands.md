@@ -177,3 +177,12 @@ Every decision here is his, from B7's thread (the plan's "B7's thread: decided a
 - **Chat guards** (`parse.js`): a typo answers only bare and only when the word is longer than four letters (`d per` is chat); after `d`/`dior` two or more words are chat (`d pre owned lol`); `@Dioreo` always runs.
 - **/help** has a `/prefix` page (`utils/helpPages.js`, `textOnly`): the typed view in both views, no Slash Command button, in every viewer's list, and left out where typed forms do nothing (a DM). `d help prefix` / `d help pre` work through the same `/help cmd` values as every command.
 - Tests: `scripts/textCommandPrefix.test.js` (parser, reserved words, both formats, the admin path end to end through `onMessage`); `scripts/helpBodySnapshot.test.js`'s fixture gained the page and the home line (regenerated, diff checked: only those).
+
+## `announcement` / `announce` / `repost`: posting chosen announcements (v3.4.0, 2026-10-30 22:57 EDT, Harkirat's option 3)
+- Text-only like `prefix` (`textModule: 'announcementRepost'`), but it obeys /help's server permissions (`policyAs: 'help'`). Code: `utils/announcementRepost.js`; tests: `scripts/announcementRepost.test.js`.
+- Words match an announcement's first two lines (emoji, markdown and layout marks stripped); every word of a part must match; `|` separates parts, and a part that matches nothing posts nothing. No words and several running: a picker locked to the asker (`ann_pick~<user>~<where>`), replaced by the pick.
+- Posted plainly, never as a reply (`interaction.__plainPost` in the adapter), so a mod can delete their command. Error lines delete after 10 s.
+- A trailing channel id or #mention posts there: Manage Server or the owner, the member able to post there, and Dioreo able to post there. Never deletes the member's message (his call).
+- Announcements keep their slash mentions here (`linkCommandMentions(…, { slash: true })`), never the typed form.
+- `news` is not a word: its singular `new` would run it.
+- `d help <page>` also reaches the slash-only pages (`SLASH_ONLY_PAGES` in `commands.js`); `commands/help.js` resolvePage still gates who sees them.

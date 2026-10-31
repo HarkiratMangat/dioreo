@@ -52,18 +52,19 @@ function recordCommandPaths(paths) {
     for (const p of paths) commandPaths.add(p);
 }
 
-// Turns each `/name` or `/name sub` in free text into a clickable mention, longest real path first (2026-10-28, Harkirat on the launch announcement: "why dont the slash commands have clickable?" -- its text is typed in the builder, so it held plain `/gunsmith mp`). Only a slash at the start of a line or after a space, bracket or markdown mark is read, so "Right-click/Tap" and a URL stay text; an unknown name, or one with no id yet, is left exactly as written. ⚠️ A mention already written as `</gunsmith mp:ID>` is re-pointed to THIS app's live id too. The launch announcement was written on the dev bot with the dev app's ids baked in and copied to prod, so its mentions resolved only in dioreoland (where the dev app is installed) and showed as plain text in every other server (sirri's, 2026-10-28). Ids differ per application, so stored text can never carry the right one.
-function linkCommandMentions(text, client = null) {
+// Turns each `/name` or `/name sub` in free text into a clickable mention, longest real path first (2026-10-28, Harkirat on the launch announcement: "why dont the slash commands have clickable?" -- its text is typed in the builder, so it held plain `/gunsmith mp`). Only a slash at the start of a line or after a space, bracket or markdown mark is read, so "Right-click/Tap" and a URL stay text; an unknown name, or one with no id yet, is left exactly as written. ⚠️ A mention already written as `</gunsmith mp:ID>` is re-pointed to THIS app's live id too. The launch announcement was written on the dev bot with the dev app's ids baked in and copied to prod, so its mentions resolved only in dioreoland (where the dev app is installed) and showed as plain text in every other server (sirri's, 2026-10-28). Ids differ per application, so stored text can never carry the right one. `slash: true` keeps slash mentions even inside a text command: an announcement always shows as it was posted (his call, 2026-10-30 22:48 EDT: "show the announcement as it was originally posted because otherwise it would show the prefix announce using slash commands, and that makes no sense"), so `d announce` never rewrites `/gunsmith mp` as `d gunsmith`.
+function linkCommandMentions(text, client = null, { slash = false } = {}) {
+    const mention = (c, path) => (slash ? slashMention(c, path) : mentionCommand(c, path));
     const repointed = String(text).replace(/<\/([a-z0-9_-]+(?: [a-z0-9_-]+){0,2}):(\d{17,20})>/g, (whole, path) => {
         const id = client?.commandIds?.get(path.split(' ')[0]) ?? allCommandIds.get(path.split(' ')[0]);
-        return id && commandPaths.has(path) ? mentionCommand(client, path) : whole;
+        return id && commandPaths.has(path) ? mention(client, path) : whole;
     });
     return repointed.replace(/(^|[\s(*_>~|])\/([a-z0-9_-]+)((?: [a-z0-9_-]+){0,2})/gm, (whole, pre, base, rest) => {
         const words = [base, ...rest.trim().split(' ').filter(Boolean)];
         for (let n = words.length; n >= 1; n--) {
             const path = words.slice(0, n).join(' ');
             const id = client?.commandIds?.get(base) ?? allCommandIds.get(base);
-            if (id && commandPaths.has(path)) return `${pre}${mentionCommand(client, path)}${rest.slice(rest.split(' ').slice(0, n).join(' ').length)}`;
+            if (id && commandPaths.has(path)) return `${pre}${mention(client, path)}${rest.slice(rest.split(' ').slice(0, n).join(' ').length)}`;
         }
         return whole;
     });

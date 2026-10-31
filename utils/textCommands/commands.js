@@ -117,7 +117,9 @@ const TEXT_COMMANDS = [
     { name: 'colors', helpWord: 'colors', shown: ['colours', 'col', 'palette', 'accent'], icon: 'showColors', slash: 'colors', words: ['colors', 'colours', 'col', 'palette', 'accent'], replyForm: 'viewColors', options: [{ name: 'someone', keys: ['someone', 'user'], mention: true, example: '@name' }] },
     { name: 'settings', helpWord: 'settings', shown: ['s', 'set', 'opt', 'pref', 'config', 'options', 'preferences'], icon: 'settings', slash: 'settings', words: ['settings', 'set', 'config', 'options', 'opt', 'pref', 'preferences', 's'] },
     // `d prefix` shows the server's prefix to anyone; `d prefix <new>` / `d prefix remove` change it for a server admin (his ask, 2026-10-30 16:02 EDT). TEXT ONLY: no slash command exists (`textOnly`), and the words after it are read by utils/textCommands/prefixCommand.js, not args.js (`rawArgs`), so parse.js hands them over as they were typed.
-    { name: 'prefix', helpWord: 'prefix', shown: ['pre'], icon: 'command', slash: 'prefix', textOnly: true, rawArgs: true, words: ['prefix', 'pre', 'prefixes'] },
+    { name: 'prefix', helpWord: 'prefix', shown: ['pre'], icon: 'command', slash: 'prefix', textOnly: true, textModule: 'textCommands/prefixCommand', rawArgs: true, words: ['prefix', 'pre', 'prefixes'] },
+    // `d announcement [words] [channel]` posts running announcements (his option 3, 2026-10-30 22:15 EDT; `news` left out at his word 22:22 EDT, since its singular `new` never works alone): words match an announcement's first two lines, none opens a picker when several run, and a trailing channel id posts there for a member with Manage Server. TEXT ONLY like prefix; utils/announcementRepost.js reads the words.
+    { name: 'announcement', icon: 'announcements', slash: 'announcement', textOnly: true, policyAs: 'help', textModule: 'announcementRepost', rawArgs: true, words: ['announcement', 'announce', 'repost'] },
     { name: 'help', icon: 'info', slash: 'help', words: ['help', 'h', 'commands', 'cmds', 'info', '?', 'guide'] },
     { name: 'invite', helpWord: 'invite', shown: ['inv', 'add', 'link'], icon: 'shareHeart', slash: 'invite', words: ['invite', 'inv', 'add', 'link'] },
 ];
@@ -136,7 +138,16 @@ function moduleFor(client, textCommand, form = null) {
 
 // help's argument is any command name or alias above, passed as the name /help itself lists (`/gunsmith mp`, `/patch notes`).
 const helpNameOf = c => (c.name === 'help' ? '/help' : `/${c.slash}${c.sub ? ` ${c.sub}` : ''}`);
-TEXT_COMMANDS.find(c => c.name === 'help').options = [{ name: 'cmd', keys: ['command', 'cmd'], values: TEXT_COMMANDS.map(c => ({ value: helpNameOf(c), aliases: c.words })) }];
+// The slash-only pages too (his report, 2026-10-30 22:37 EDT: `d help admin` opened the home page even for a server admin and the owner, because `admin` was no text command's word and so was ignored). commands/help.js resolvePage still decides who may open each; anyone else gets the home page, as from /help.
+const SLASH_ONLY_PAGES = [
+    { value: '/admin', aliases: ['admin'] },
+    { value: '/manage', aliases: ['manage'] },
+    { value: '/manage emojis', aliases: ['manage emojis', 'emojis'] },
+    { value: '/autobuild', aliases: ['autobuild'] },
+    { value: '/bot', aliases: ['bot'] },
+    { value: '/embed', aliases: ['embed'] },
+];
+TEXT_COMMANDS.find(c => c.name === 'help').options = [{ name: 'cmd', keys: ['command', 'cmd'], values: [...TEXT_COMMANDS.filter(c => !c.policyAs).map(c => ({ value: helpNameOf(c), aliases: c.words })), ...SLASH_ONLY_PAGES] }];
 
 // The path a text command's server switch is stored under in /admin (`draw prices`, `gunsmith mp`), the same path its slash command's rules use.
 const textPathOf = c => `${c.slash}${c.sub ? ` ${c.sub}` : ''}`;
