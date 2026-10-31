@@ -123,7 +123,8 @@ function createTextInteraction(message, { textCommand, via, values = {}, targetU
         interaction.__lastBody = body;
         clearTimeout(typingTimer);
         if (!replyId || newMessage) {
-            opts.body = { ...body, message_reference: { message_id: message.id, fail_if_not_exists: false } };
+            // `__plainPost`: a plain message, not a reply (d announcement, his ask 2026-10-30 22:54 EDT: a mod who deletes their command afterwards should not leave "Original message was deleted" above the announcement).
+            opts.body = interaction.__plainPost ? { ...body } : { ...body, message_reference: { message_id: message.id, fail_if_not_exists: false } };
             // Replying to a message needs Read Message History; a channel that denies Dioreo only that refuses the reply with 50013 (think-pass, 2026-10-28 17:58 EDT). Sent once more as a plain message then.
             const created = await rest.post(Routes.channelMessages(channel.id), opts).catch(err => {
                 if (err?.code !== 50013) throw err;

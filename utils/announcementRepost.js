@@ -113,6 +113,8 @@ async function brief(interaction, text) {
 
 // The typed form: `d announcement`, `d announce launch`, `d repost launch 123…`. `args` is everything after the command word.
 async function executeText(interaction, args = '') {
+    // Posted plainly, never as a reply, so the member can delete their command and leave only the announcement (his ask, 2026-10-30 22:54 EDT).
+    interaction.__plainPost = true;
     const split = splitChannel(String(args || '').trim().split(/\s+/).filter(Boolean));
     let target = null;
     if (split.channelId) {
