@@ -138,7 +138,16 @@ function moduleFor(client, textCommand, form = null) {
 
 // help's argument is any command name or alias above, passed as the name /help itself lists (`/gunsmith mp`, `/patch notes`).
 const helpNameOf = c => (c.name === 'help' ? '/help' : `/${c.slash}${c.sub ? ` ${c.sub}` : ''}`);
-TEXT_COMMANDS.find(c => c.name === 'help').options = [{ name: 'cmd', keys: ['command', 'cmd'], values: TEXT_COMMANDS.map(c => ({ value: helpNameOf(c), aliases: c.words })) }];
+// The slash-only pages too (his report, 2026-10-30 22:37 EDT: `d help admin` opened the home page even for a server admin and the owner, because `admin` was no text command's word and so was ignored). commands/help.js resolvePage still decides who may open each; anyone else gets the home page, as from /help.
+const SLASH_ONLY_PAGES = [
+    { value: '/admin', aliases: ['admin'] },
+    { value: '/manage', aliases: ['manage'] },
+    { value: '/manage emojis', aliases: ['manage emojis', 'emojis'] },
+    { value: '/autobuild', aliases: ['autobuild'] },
+    { value: '/bot', aliases: ['bot'] },
+    { value: '/embed', aliases: ['embed'] },
+];
+TEXT_COMMANDS.find(c => c.name === 'help').options = [{ name: 'cmd', keys: ['command', 'cmd'], values: [...TEXT_COMMANDS.filter(c => !c.policyAs).map(c => ({ value: helpNameOf(c), aliases: c.words })), ...SLASH_ONLY_PAGES] }];
 
 // The path a text command's server switch is stored under in /admin (`draw prices`, `gunsmith mp`), the same path its slash command's rules use.
 const textPathOf = c => `${c.slash}${c.sub ? ` ${c.sub}` : ''}`;
