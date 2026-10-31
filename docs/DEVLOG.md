@@ -294,6 +294,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-29 10:00 EDT — Prod /help fixed: the deleted DioreoCombo emoji (v3.2.1)
 - 2026-10-30 17:44 EDT — Text commands ship: typed commands, per-server prefixes and the spam ladder (v3.3.0)
 - 2026-10-30 18:43 EDT — A New announcement button on text replies; b and bd for gunsmith (v3.3.1)
+- 2026-10-30 21:41 EDT — The New announcement button stays on screen; a permanent announcement footer (v3.3.2)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4834,6 +4835,12 @@ The fix is to save a season's dates on its own patch-notes entry at the one mome
 Text commands now get announcements too, without a second message landing in a busy channel. A text reply carries a **New announcement** button while one is due for the person who sent it; pressing it shows the announcement privately and counts as one showing, the same as a slash command's. Text commands themselves never count toward the repeat, so a server full of `d today` cannot use up someone's two showings. Only a reply with 38 components or fewer takes the button, so it never pushes a full panel past Discord's 40.
 
 Also: `b` runs `/gunsmith mp` and `bd` runs `/gunsmith dmz`; both were free, and both are on their /help pages.
+
+## 2026-10-30 21:41 EDT — The New announcement button stays on screen; a permanent announcement footer (v3.3.2)
+
+The New announcement button on text replies showed the announcement and deleted it straight away. Discord turns the first follow-up after a deferred reply into an edit of the "thinking" placeholder, and the button's handler then deleted that placeholder, taking the announcement with it, and still counted it as a showing. The announcement is now sent as the private reply itself.
+
+Every announcement also ends with a permanent footer now: a divider, then "Made with" the DiorswrldHeart "by @dior · Posted" and the live time. A footer typed into the text by hand, like the launch announcement's, is dropped so none shows twice, and a banner sits above the footer.
 
 # Part B — Lessons Ledger (thematic)
 

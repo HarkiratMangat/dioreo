@@ -556,6 +556,36 @@ async function check(name, fn) {
             assert.ok(/noteOwnCommandSafely\(interaction\);\s*addAnnouncementButton\(interaction\)/.test(src), 'runTextCommand adds it after a successful command');
         } finally { if (real) require.cache[f] = real; else delete require.cache[f]; }
     });
+    await check('pressing New announcement shows it AS the private reply and never deletes it (the v3.3.1 bug, 2026-10-30 21:28 EDT)', async () => {
+        const path = require('path');
+        const f = require.resolve(path.join(__dirname, '..', 'utils', 'announcement'));
+        const h = require.resolve(path.join(__dirname, '..', 'handlers', 'announcementControls'));
+        const sv = require.resolve(path.join(__dirname, '..', 'utils', 'sendV2Payload'));
+        const realSv = require.cache[sv];
+        const real = require.cache[f];
+        const realA = require('../utils/announcement');
+        let shown = true;
+        const calls = [];
+        require.cache[f] = { id: f, filename: f, loaded: true, exports: { ...realA, maybeSendAnnouncement: async (i, opts) => { calls.push(opts); return shown; } } };
+        require.cache[sv] = { id: sv, filename: sv, loaded: true, exports: { sendV2Payload: async (i, components) => { await i.client.rest.patch('@original', { body: { components } }); } } };
+        delete require.cache[h];
+        try {
+            const { handleAnnouncementControlsInteraction } = require('../handlers/announcementControls');
+            const log = [];
+            const press = () => ({ customId: 'ann_open', isButton: () => true, user: { id: 'ua' }, applicationId: 'app', token: 't', deferred: false, replied: false,
+                deferReply: async function (o) { this.deferred = true; log.push(['defer', o]); }, deleteReply: async () => { log.push(['delete']); }, followUp: async () => { log.push(['followUp']); },
+                client: { rest: { patch: async (route, o) => { log.push(['patch', o.body]); return { id: 'm1' }; } } } });
+            assert.strictEqual(await handleAnnouncementControlsInteraction(press()), true);
+            assert.deepStrictEqual(calls[0], { asReply: true }, 'the announcement is the reply itself');
+            assert.ok(!log.some(([k]) => k === 'delete'), 'the reply that holds the announcement is never deleted');
+            shown = false; log.length = 0;
+            await handleAnnouncementControlsInteraction(press());
+            const patch = log.find(([k]) => k === 'patch');
+            assert.ok(patch && /No new announcements/.test(JSON.stringify(patch[1])), 'nothing due: says so');
+            const src = require('fs').readFileSync(path.join(__dirname, '..', 'utils', 'announcement.js'), 'utf8');
+            assert.ok(/if \(asReply\) await require\('\.\/sendV2Payload'\)\.sendV2Payload\(/.test(src), 'asReply sends through @original, not a follow-up');
+        } finally { if (real) require.cache[f] = real; else delete require.cache[f]; if (realSv) require.cache[sv] = realSv; else delete require.cache[sv]; delete require.cache[h]; }
+    });
     console.log(failures ? `\n${failures} failing` : '\ntextCommandListener: all passing');
     process.exit(failures ? 1 : 0);
 })();

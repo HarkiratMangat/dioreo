@@ -22,10 +22,10 @@ async function route(interaction) {
         await interaction.deferReply({ flags: 64 });
         return await sendV2Payload(interaction, A.buildWhyPanel('on', interaction.client));
     }
-    // The New announcement button under a text-command reply (2026-10-30 18:20 EDT): whoever presses it gets the announcements due for THEM, privately, and it counts as one showing. The thinking placeholder goes once the follow-up is out.
+    // The New announcement button under a text-command reply (2026-10-30 18:20 EDT): whoever presses it gets the announcements due for THEM, privately, and it counts as one showing. The announcement IS the private reply (`asReply`), never a follow-up: a follow-up straight after deferReply() only edits the thinking placeholder, and deleting that placeholder deleted the announcement (the v3.3.1 bug, fixed 2026-10-30 21:28 EDT).
     if (interaction.isButton() && interaction.customId === 'ann_open') {
         await interaction.deferReply({ flags: 64 });
-        if (await A.maybeSendAnnouncement(interaction)) return await interaction.deleteReply().catch(() => {});
+        if (await A.maybeSendAnnouncement(interaction, { asReply: true })) return;
         return await sendV2Payload(interaction, [{ type: 10, content: '-# No new announcements for you right now.' }], { flags: 32768 | 64 });
     }
     // The switch, redrawn in place.

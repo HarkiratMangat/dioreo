@@ -29,7 +29,14 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.3.1 — 2026-10-30 18:43 EDT (#238) — Text replies carry a New announcement button; `b` and `bd` for /gunsmith
+## v3.3.2 — 2026-10-30 21:41 EDT (#239) — The New announcement button stays on screen; a permanent announcement footer
+**From Harkirat, 2026-10-30:** "the \"new announcement\" button is broken", "the message posted and instantly deleted itself", "the emoji is supposed to be <a:DiorswrldHeart:1564877429544063088> not diorHeart", and "can this part just be a permanent footer on the announcements".
+
+- **New announcement button** (`handlers/announcementControls.js`, `utils/announcement.js`): pressing it showed the announcement and deleted it at once, still counting a showing. A follow-up sent straight after `deferReply()` edits the thinking placeholder, and the handler deleted that placeholder. `maybeSendAnnouncement(interaction, { asReply: true })` now sends the announcement as the private reply itself.
+- **Permanent footer** (`utils/announcement.js` `announcementBody`): every announcement ends with a divider and `Made with <DiorswrldHeart> by @dior · Posted <live time>`, the heart from `utils/emojiMap.js`. A hand-typed footer (a `{posted}` line or a "Made with … by" line at the end, with the mark above it) is dropped; a banner sits above the footer.
+- **Tests:** the listener test presses the button (fails on the old handler); the delivery test covers the footer, a hand-typed footer and the banner order.
+
+## v3.3.1 — 2026-10-30 18:43 EDT (#238 · `14ff834c`) — Text replies carry a New announcement button; `b` and `bd` for /gunsmith
 **From Harkirat, 2026-10-30:** "I just did \"d h\" and I didn't get the announcement", then option C, "Only auto announcements from a slash command trigger a repeat", "It needs 38 or less", and "is \"b\" available as an alias? if yes, add it to the mp gunsmith command. and bd for dmz".
 
 - **New announcement button** (`bot/textCommands.js`, `handlers/announcementControls.js`, `utils/announcement.js`): while an announcement is due for someone, their text reply gets a **New announcement** button. Pressing it shows the announcement privately and counts as one showing; text commands never count toward the repeat. Only a reply of 38 components or fewer (or under 5 rows) takes it.
