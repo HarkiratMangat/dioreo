@@ -354,19 +354,16 @@ async function formTargets(message, form, values) {
     return {};
 }
 
-// Announcements on text commands (Harkirat, 2026-10-30 18:20 EDT: "let's go C"): a typed command never delivers one itself, and never counts as a showing. When one is due for the person, the reply gets a New announcement button under it; pressing it shows it privately (handlers/announcementControls.js `ann_open`), and that press counts as one showing, the same as a slash command's. Added only after a reply went out, with the components the reply was sent with, and never past Discord's 40 components or 5 rows.
-async function addAnnouncementButton(interaction) {
-    const last = interaction?.__lastBody;
-    if (!interaction?.user?.id || !last || !interaction.__firstSentAt) return false;
+// Announcements on text commands (Harkirat, 2026-10-30 18:20 EDT: "let's go C"): a typed command never delivers one itself, and never counts as a showing. When one is due for the person, the reply carries a New announcement button; pressing it shows it privately (handlers/announcementControls.js `ann_open`), and that press counts as one showing, the same as a slash command's. Never past Discord's 40 components or 5 rows. On the reply from its FIRST post (2026-10-30 22:05 EDT, his "yea build it and deploy" after the dev-bot timing): v3.3.1/v3.3.2 posted the reply and then edited the row in, a second Discord request that put the button up ~1.3 s after the reply on the dev bot (median of 8: 446 ms up front against 869 ms reply and 1,699 ms button), showed "(edited)", and once left a prod `d today` edited with no button. runTextCommand starts the "is one due?" check (83 ms on prod) while the command builds its panel, and utils/textCommands/adapter.js runs every write to the reply through this, so a reply sent in stages keeps the row too.
+async function addAnnouncementRow(body, duePromise) {
+    const comps = body?.components;
+    if (!Array.isArray(comps) || !comps.length || !(await duePromise)) return body;
+    if (JSON.stringify(comps).includes('"ann_open"')) return body;
     const A = require('../utils/announcement');
-    if (!(await A.hasDueAnnouncement(interaction.user.id))) return false;
-    const comps = last.components || [];
-    const row = A.openButtonRow();
-    const v2 = typeof last.flags === 'number' && (last.flags & 32768) !== 0;
+    const v2 = typeof body.flags === 'number' && (body.flags & 32768) !== 0;
     // Only a reply of 38 components or fewer takes the button (his rule, 2026-10-30 18:19 EDT: "It needs 38 or less"): the row and its button are 2 more, so it never reaches Discord's 40.
-    if (v2 ? A.measureComponents(comps).count > 38 : comps.length >= 5) return false;
-    await interaction.editReply({ components: [...comps, row] });
-    return true;
+    if (v2 ? A.measureComponents(comps).count > 38 : comps.length >= 5) return body;
+    return { ...body, components: [...comps, A.openButtonRow()] };
 }
 
 async function runTextCommand(message, verdict) {
@@ -387,6 +384,9 @@ async function runTextCommand(message, verdict) {
     // `+typo` when a near-miss word ran, `+args` when options were given (B2).
     const via = `${verdict.via}${verdict.fuzzy ? '+typo' : ''}${verdict.hasArgs ? '+args' : ''}`;
     const interaction = createTextInteraction(message, { textCommand: { ...textCommand, slash: moduleName, sub: verdict.form ? null : textCommand.sub }, via, values: verdict.values || {}, ...targets });
+    // Started now so it runs while the command builds its panel; awaited only when the reply is first written (addAnnouncementRow above).
+    const annDue = require('../utils/announcement').hasDueAnnouncement(message.author.id).catch(() => false);
+    interaction.__decorateReply = body => addAnnouncementRow(body, annDue);
     const { buildInteractionContext } = require('../handlers/router');
     const { runWithContext } = require('../utils/requestContext');
     const { recordInteractionEvent } = require('../utils/eventStore');
@@ -401,7 +401,6 @@ async function runTextCommand(message, verdict) {
             await command.execute(interaction);
             // "Dioreo User Since" and Your Stats count a text command as the person's own command, after it has run and never when it threw, the same as handlers/router.js's slash route (Harkirat, 2026-10-28 22:19 EDT: text commands should count).
             require('../utils/userStats').noteOwnCommandSafely(interaction);
-            addAnnouncementButton(interaction).catch(err => console.error('Could not add the New announcement button:', err?.message || err));
         } catch (err) {
             ctx.outcome = 'error';
             // A command that opens a form first cannot from a message: unreachable today (every such path has a text form), kept as a guard. The crash line is his #12 (B6, 2026-10-29 16:05 EDT): the Warn sign, the command as typed, gone after 10 s.
@@ -558,4 +557,4 @@ function registerTextCommands(client) {
     }, 10 * 60 * 1000).unref();
 }
 
-module.exports = { addAnnouncementButton, mentionReplyEmoji, registerTextCommands, enableMessageContentIfGranted, configuredPrefixes, onMessage, helpCard, didYouMeanCard, pickCard, cantPostCard, needsInputCard, couldntReadCard, noMatchLine, POPUP_TTL_MS };
+module.exports = { addAnnouncementRow, mentionReplyEmoji, registerTextCommands, enableMessageContentIfGranted, configuredPrefixes, onMessage, helpCard, didYouMeanCard, pickCard, cantPostCard, needsInputCard, couldntReadCard, noMatchLine, POPUP_TTL_MS };

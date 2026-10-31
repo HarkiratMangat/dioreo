@@ -234,7 +234,7 @@ async function check(name, fn) {
     // The spec's "When Dioreo answers" limits and guards, each one end to end (B4, 2026-10-29 10:32 EDT: none had a test).
     await check('bots, webhooks, system messages and DMs are ignored', async (before) => {
         for (const patch of [{ author: { id: 'b', bot: true } }, { webhookId: 'w1' }, { system: true }, { guildId: null }]) {
-            const { message, posts } = fakeMessage('d calendar');
+            const { message, posts } = fakeMessage('d calendar', { guildId: 'gann' });
             Object.assign(message, patch);
             await onMessage(message);
             assert.strictEqual(posts.length, 0, JSON.stringify(patch));
@@ -528,7 +528,7 @@ async function check(name, fn) {
         assert.ok(!JSON.stringify(keys).includes('zzqqxx'), 'never what they typed');
         misfires.__pending.clear();
     });
-    await check('a due announcement adds a New announcement button to the text reply, and nothing else (his "go C", 2026-10-30 18:18 EDT)', async () => {
+    await check('a due announcement puts a New announcement button on the text reply from its first post (his "go C", 2026-10-30 18:18 EDT; up front since 2026-10-30 22:05 EDT)', async () => {
         const path = require('path');
         const f = require.resolve(path.join(__dirname, '..', 'utils', 'announcement'));
         const real = require.cache[f];
@@ -536,24 +536,28 @@ async function check(name, fn) {
         const realA = require('../utils/announcement');
         require.cache[f] = { id: f, filename: f, loaded: true, exports: { ...realA, hasDueAnnouncement: async () => due, maybeSendAnnouncement: async () => { throw new Error('a text command must never deliver one itself'); } } };
         try {
-            const { addAnnouncementButton } = require('../bot/textCommands');
-            const edits = [];
+            const { addAnnouncementRow } = require('../bot/textCommands');
             const panel = { type: 17, components: [{ type: 10, content: 'Today' }] };
-            const mk = (extra = {}) => ({ user: { id: 'ua' }, __firstSentAt: Date.now(), __lastBody: { flags: 32768, components: [panel] }, editReply: async o => { edits.push(o); }, ...extra });
-            assert.strictEqual(await addAnnouncementButton(mk()), true);
-            const row = edits[0].components.at(-1);
-            assert.deepStrictEqual(edits[0].components[0], panel, 'the reply keeps what it had');
-            assert.strictEqual(row.components[0].custom_id, 'ann_open');
-            due = false;
-            assert.strictEqual(await addAnnouncementButton(mk()), false, 'nothing due: no button');
-            due = true;
-            assert.strictEqual(await addAnnouncementButton(mk({ __lastBody: null })), false, 'no reply went out: no button');
+            const body = { flags: 32768, components: [panel] };
+            const out = await addAnnouncementRow(body, Promise.resolve(due));
+            assert.deepStrictEqual(out.components[0], panel, 'the reply keeps what it had');
+            assert.strictEqual(out.components.at(-1).components[0].custom_id, 'ann_open');
+            assert.strictEqual((await addAnnouncementRow(out, Promise.resolve(true))).components.length, 2, 'never added twice');
+            assert.strictEqual(await addAnnouncementRow(body, Promise.resolve(false)), body, 'nothing due: no button');
+            assert.strictEqual(await addAnnouncementRow({ content: 'x' }, Promise.resolve(true)).then(b => b.components), undefined, 'a text-only write gets no button');
             const sized = n => ({ type: 17, components: Array.from({ length: n - 1 }, () => ({ type: 10, content: 'x' })) });
-            assert.strictEqual(await addAnnouncementButton(mk({ __lastBody: { flags: 32768, components: [sized(39)] } })), false, 'a 39-component reply gets no button (his rule: 38 or less)');
-            assert.strictEqual(await addAnnouncementButton(mk({ __lastBody: { flags: 32768, components: [sized(38)] } })), true, 'a 38-component reply does');
-            assert.strictEqual(edits.length, 2);
-            const src = require('fs').readFileSync(path.join(__dirname, '..', 'bot', 'textCommands.js'), 'utf8');
-            assert.ok(/noteOwnCommandSafely\(interaction\);\s*addAnnouncementButton\(interaction\)/.test(src), 'runTextCommand adds it after a successful command');
+            assert.strictEqual((await addAnnouncementRow({ flags: 32768, components: [sized(39)] }, Promise.resolve(true))).components.length, 1, 'a 39-component reply gets no button (his rule: 38 or less)');
+            assert.strictEqual((await addAnnouncementRow({ flags: 32768, components: [sized(38)] }, Promise.resolve(true))).components.length, 2, 'a 38-component reply does');
+            // The button rides on the FIRST post: one request, no edit (2026-10-30 22:05 EDT).
+            const { message, posts } = fakeMessage('d calendar', { guildId: 'gann' });
+            const patches = [];
+            message.client.rest.patch = async (r, o) => { patches.push(o.body); return {}; };
+            message.client.commands.set('calendar', { async execute(i) { await i.deferReply(); await require('../utils/sendV2Payload').sendV2Payload(i, [panel]); } });
+            await onMessage(message);
+            message.client.commands.set('calendar', record('calendar'));
+            const first = posts.find(b => Array.isArray(b.components));
+            assert.ok(first && JSON.stringify(first).includes('"ann_open"'), 'the first post carries the button');
+            assert.strictEqual(patches.length, 0, 'no edit to add it');
         } finally { if (real) require.cache[f] = real; else delete require.cache[f]; }
     });
     await check('pressing New announcement shows it AS the private reply and never deletes it (the v3.3.1 bug, 2026-10-30 21:28 EDT)', async () => {
