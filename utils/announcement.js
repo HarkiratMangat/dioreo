@@ -243,7 +243,8 @@ function openButtonRow() {
 }
 
 // Returns TRUE when it delivered (and marked) at least one announcement, FALSE when nothing was due or the send failed; the New announcement button uses it to tell an empty press apart.
-async function maybeSendAnnouncement(interaction) {
+// `asReply` (2026-10-30 21:28 EDT, the New announcement button was broken): send the announcement AS the interaction's own deferred reply instead of a follow-up. A follow-up sent straight after deferReply() does not make a new message: Discord turns it into an edit of the "thinking" placeholder (its documented, deprecated compatibility path), so the old ann_open branch delivered into the placeholder and then deleteReply() deleted the announcement it had just shown, while still counting it as a showing.
+async function maybeSendAnnouncement(interaction, { asReply = false } = {}) {
     const active = await getActiveAnnouncements();
     if (active.length === 0) return false;
 
@@ -263,7 +264,9 @@ async function maybeSendAnnouncement(interaction) {
     // A Components V2 follow-up (32768) that only the user sees (64), the way handlers/manage/* send theirs: one Container per announcement, the Why row under the batch. Only requires the interaction to already be acknowledged, which every caller of this function guarantees by calling it after the command's own reply completed.
     try {
         // No mention pings or highlights: an announcement may name someone (the launch footer names the developer) without lighting up their screen.
-        await interaction.followUp({ flags: 32768 | 64, components: [...containers, ...(whyRowNeeded(toShow, seen) ? [whyButtonRow()] : [])], allowedMentions: { parse: [] } });
+        const components = [...containers, ...(whyRowNeeded(toShow, seen) ? [whyButtonRow()] : [])];
+        if (asReply) await require('./sendV2Payload').sendV2Payload(interaction, components, { flags: 32768 | 64, allowedMentions: { parse: [] }, skipExpiry: true });
+        else await interaction.followUp({ flags: 32768 | 64, components, allowedMentions: { parse: [] } });
     } catch (err) {
         // Interaction likely expired -- don't mark as seen/delivered, so it's retried on their next command instead of silently lost. The real Discord code, so a refusal (50035, invalid form body) reads differently from an expired interaction (10062).
         console.error(`Failed to deliver announcement follow-up (Discord ${err?.code ?? 'no code'}):`, err?.message || err);
