@@ -231,7 +231,7 @@ async function setAnnouncementsOff(userId, off) {
     await UserPreference.updateOne({ discordId: userId }, off ? { $set: { announcementsOff: true } } : { $unset: { announcementsOff: 1 } }, { upsert: off });
 }
 
-// The text-command route (Harkirat, 2026-10-30 18:20 EDT: "let's go C ... Only auto announcements from a slash command trigger a repeat ... the button press will count as 1 of the slash command repeats"): a typed command never delivers an announcement itself. When one is due for the person, its reply gets a New announcement button (bot/textCommands.js addAnnouncementButton); pressing it delivers privately through maybeSendAnnouncement below, which counts as one showing like a slash command's. Read-only: nothing is marked seen here.
+// The text-command route (Harkirat, 2026-10-30 18:20 EDT: "let's go C ... Only auto announcements from a slash command trigger a repeat ... the button press will count as 1 of the slash command repeats"): a typed command never delivers an announcement itself. When one is due for the person, its reply carries a New announcement button from its first post (bot/textCommands.js addAnnouncementRow); pressing it delivers privately through maybeSendAnnouncement below, which counts as one showing like a slash command's. Read-only: nothing is marked seen here.
 async function hasDueAnnouncement(userId) {
     const active = await getActiveAnnouncements();
     if (active.length === 0) return false;

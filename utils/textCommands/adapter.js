@@ -113,12 +113,13 @@ function createTextInteraction(message, { textCommand, via, values = {}, targetU
 
     // The one place a message is written. The first send REPLIES to the member's message (and falls back to a plain send if they deleted it); every later send edits that same reply, the way a slash command edits @original.
     async function send(rawBody, files, { newMessage = false } = {}) {
-        const body = { ...rawBody };
+        // The New announcement row rides on every write to the reply itself, never on a separate follow-up (bot/textCommands.js addAnnouncementRow).
+        const body = !newMessage && interaction.__decorateReply ? { ...(await interaction.__decorateReply(rawBody)) } : { ...rawBody };
         if (typeof body.flags === 'number') body.flags &= ~EPHEMERAL;
         body.allowed_mentions = { ...(body.allowed_mentions || { parse: [] }), replied_user: false };
         const opts = files ? { body, files } : { body };
         if (!interaction.__firstSendAt) interaction.__firstSendAt = Date.now();
-        // What the reply now holds, so a later edit can add to it (bot/textCommands.js addAnnouncementButton) without reading the message back.
+        // What the reply now holds, so a later edit can build on it without reading the message back.
         interaction.__lastBody = body;
         clearTimeout(typingTimer);
         if (!replyId || newMessage) {
