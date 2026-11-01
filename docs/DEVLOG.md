@@ -297,6 +297,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-30 21:41 EDT — The New announcement button stays on screen; a permanent announcement footer (v3.3.2)
 - 2026-10-30 22:09 EDT — The New announcement button rides on the first post (v3.3.3)
 - 2026-10-30 22:57 EDT — Post chosen announcements, by picker, by word, or into a channel (v3.4.0)
+- 2026-11-01 01:05 EDT — The draw image index: 98 images read three ways, and what each way got wrong (v3.4.1)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4857,6 +4858,25 @@ Announcements could only be reposted all at once, through `/help cmd:announcemen
 `d repost <words> <channel id>` posts into another channel, a new exception to the rule that Dioreo only answers where it was asked. It needs Manage Server (or the owner), the member able to post in that channel, and Dioreo able to post there. Deleting the member's command afterwards was proposed and dropped; instead the typed form posts plainly, not as a reply, so a mod can delete their own command and leave only the announcement.
 
 The click-test turned up the rest. A private picker cannot make a public post (Discord kept the follow-up private), so the picker is public and locked to whoever ran it. An announcement shown from a typed command had its `/gunsmith mp` rewritten as `d! gunsmith`; it now always shows as posted. And `d help admin` had been opening the home page, because `admin` was no text command's word.
+
+## 2026-11-01 01:05 EDT — The draw image index: 98 images read three ways, and what each way got wrong (v3.4.1)
+
+Harkirat had 98 draw images in a folder and wanted them filed in Cloudinary so the bot could reuse them, with a proper index behind them. Gemini on Vertex did the reading, so none of it went through Claude's own vision.
+
+**What happened.** Three passes over all 98 images: low thinking with six draw kinds, high thinking with the same six, high thinking with all 14 bot price types. High thinking changed 16 of 98 reads against low (mostly titles and rarity), and the two high runs still disagreed on 9 rows. A Google Search check on the 38 rows the runs disagreed on changed 21 of them. A review page showed each image beside its proposed data; Harkirat confirmed or edited every row, and the page's database was read back. 75 images were cropped, uploaded and tagged, six Season 7 images were added the next hour, and a `drawcatalogs` collection of 93 documents now sits in prod. The account of what exists is `docs/reference/draw-index.md`.
+
+**What each way got wrong.**
+- **Low thinking misread stylised titles.** He said so after the first report, and the diff against the high runs proved it.
+- **The first cost estimate was off by a factor of two.** High thinking spends about 2,200 thinking tokens an image, not the few hundred a two-image test suggested: $1.09 for the run, not $0.50. Test on a dozen before estimating a hundred.
+- **Gemini's search cap is a request, not a limit.** The prompt asked for at most 6 searches; the model averaged 15, and one image hit `TOO_MANY_TOOL_CALLS` and returned nothing. Vertex also returned the queries but no source links, so the claims could not be checked.
+- **I asked him for things he knew, and used a model for them.** Reactive vs Non-Reactive is not visible on a banner and the model defaults to Reactive. Harkirat corrected two of the six Season 7 guesses in one line. He said it plainly: why spend Gemini when he could have told me.
+- **I asked permission for work he had already described.** He told me to stop asking and do it; the kinds, aliases, tags and the Street Fighter fix followed from rules he had stated.
+- **Typing 87 documents into a database invites typos.** The fix that worked: compute the same hash in a MongoDB aggregation and in Node and compare. All 87 matched, and a second pipeline proved the check could fail (87 numeric, 87 distinct hashes).
+- **A verification can fail for the wrong reason.** The first tag check reported 12 of 75 untagged because Cloudinary's tag listing lagged; the second listing showed all 75.
+- **A shell trap.** In zsh `"$f[0]"` is an array subscript, so `magick "$f[0]"` read nothing and printed "no decode delegate" for perfectly good JPEGs.
+- **I wrote "latest v3-pre-release commit" for a checkout that was on v3.4.0 in main.** He caught it in one line. Check the ref, not the memory of which branch the project used.
+
+**Lesson for the next one.** Put the knowledge in the room first: ask for the facts he holds (price types, the aliases, which names are the same draw), let the model read only what the image shows, and give every hand-typed write a checksum.
 
 # Part B — Lessons Ledger (thematic)
 

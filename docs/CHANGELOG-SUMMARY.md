@@ -12,6 +12,9 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.4.1 — November 1, 2026
+- **Draw pictures:** every draw now has its picture and details filed behind the scenes, ready for the bot to use later. Nothing changes in Discord yet.
+
 ## v3.4.0 — October 30, 2026
 - **Repost announcements:** pick one or several from `/help cmd:announcement`, or type `d announce <word>` (`beta|prefix` for several).
 - **Another channel:** `d repost <word> <channel id>` for members with Manage Server.
