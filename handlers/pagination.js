@@ -41,6 +41,13 @@ async function route(interaction) {
             return await drawsCommand.execute(syntheticInteraction, targetPage, targetSubPage, maskMatch ? Number(maskMatch[1]) : 0);
         }
 
+        // DRAWS RESET FILTER (2026-11-01 13:16 EDT, his ask): the button beside Calculate on a filtered /draws (commands/draws.js). Opens the unfiltered view on New Draws' first page.
+        if (interaction.customId === 'subpage_reset') {
+            const drawsCommand = interaction.client.commands.get('draws');
+            const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });
+            return await drawsCommand.execute(syntheticInteraction, 'new', 0, 0);
+        }
+
         // DRAWS FILTER (2026-11-01): the multi-select under the pager (commands/draws.js buildFilterRow). Its picks become the mask, and the panel opens on the first page the filter keeps. Shares the `subpage_` prefix, so it needs no new owner here.
         if (interaction.customId === 'subpage_filter' && interaction.isStringSelectMenu()) {
             const drawsCommand = interaction.client.commands.get('draws');
