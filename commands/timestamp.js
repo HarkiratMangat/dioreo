@@ -15,15 +15,15 @@ const PRESET_ACCENT = 1548962; // Cyber Teal (#17A2A2)
 const STYLE_SELECT_OPTIONS = [
     { label: "All Formats Overview", value: "all_formats", description: "Shows every format together as a summary" },
     { label: "Short List", value: "short_list", description: "The 6 most used formats" },
-    { label: "Full Date, Short Time (F)", value: "fullDateTime", description: "e.g., Tuesday, April 20, 2021 at 16:20" },
-    { label: "Long Date, Short Time (f)", value: "longDateTime", description: "e.g., April 20, 2021 at 16:20" },
+    { label: "Full Date, Short Time (F)", value: "fullDateTime", description: "e.g., Tuesday, April 20, 2021 at 4:20 PM" },
+    { label: "Long Date, Short Time (f)", value: "longDateTime", description: "e.g., April 20, 2021 at 4:20 PM" },
     { label: "Long Date (D)", value: "longDate", description: "e.g., April 20, 2021" },
-    { label: "Short Date (d)", value: "shortDate", description: "e.g., 20/04/2021" },
-    { label: "Medium Time (T)", value: "mediumTime", description: "e.g., 16:20:30" },
-    { label: "Short Time (t)", value: "shortTime", description: "e.g., 16:20" },
-    { label: "Short Date, Short Time (s)", value: "shortDateTimeShort", description: "e.g., 20/04/2021, 16:20" },
-    { label: "Short Date, Medium Time (S)", value: "shortDateTimeMedium", description: "e.g., 20/04/2021, 16:20:30" },
-    { label: "Relative Time (R)", value: "relative", description: "e.g., 4 years ago" }
+    { label: "Short Date (d)", value: "shortDate", description: "e.g., 2021-04-20" },
+    { label: "Medium Time (T)", value: "mediumTime", description: "e.g., 4:20:30 PM" },
+    { label: "Short Time (t)", value: "shortTime", description: "e.g., 4:20 PM" },
+    { label: "Short Date, Short Time (s)", value: "shortDateTimeShort", description: "e.g., 2021-04-20, 4:20 PM" },
+    { label: "Short Date, Medium Time (S)", value: "shortDateTimeMedium", description: "e.g., 2021-04-20, 4:20:30 PM" },
+    { label: "Relative Time (R)", value: "relative", description: "e.g., 5 years ago" }
 ];
 
 // The format each style value stands for, and the label shown above it: Discord's own names, the words the dropdown already uses. The overview shows ALL_CODES; Short List (added 2026-10-20 18:23 EDT, Harkirat) shows the six people paste most, longest first.
@@ -155,15 +155,15 @@ module.exports = {
                 .addChoices(
                     { name: 'Short List — the 6 most used formats', value: 'short_list' },
                     { name: 'All Formats — every format', value: 'all_formats' },
-                    { name: 'Full Date, Short Time (F) — e.g., Tuesday, April 20, 2021 at 16:20', value: 'fullDateTime' },
-                    { name: 'Long Date, Short Time (f) — e.g., April 20, 2021 at 16:20', value: 'longDateTime' },
+                    { name: 'Full Date, Short Time (F) — e.g., Tuesday, April 20, 2021 at 4:20 PM', value: 'fullDateTime' },
+                    { name: 'Long Date, Short Time (f) — e.g., April 20, 2021 at 4:20 PM', value: 'longDateTime' },
                     { name: 'Long Date (D) — e.g., April 20, 2021', value: 'longDate' },
-                    { name: 'Short Date (d) — e.g., 20/04/2021', value: 'shortDate' },
-                    { name: 'Medium Time (T) — e.g., 16:20:30', value: 'mediumTime' },
-                    { name: 'Short Time (t) — e.g., 16:20', value: 'shortTime' },
-                    { name: 'Short Date, Short Time (s) — e.g., 20/04/2021, 16:20', value: 'shortDateTimeShort' },
-                    { name: 'Short Date, Medium Time (S) — e.g., 20/04/2021, 16:20:30', value: 'shortDateTimeMedium' },
-                    { name: 'Relative Time (R) — e.g., 4 years ago', value: 'relative' }
+                    { name: 'Short Date (d) — e.g., 2021-04-20', value: 'shortDate' },
+                    { name: 'Medium Time (T) — e.g., 4:20:30 PM', value: 'mediumTime' },
+                    { name: 'Short Time (t) — e.g., 4:20 PM', value: 'shortTime' },
+                    { name: 'Short Date, Short Time (s) — e.g., 2021-04-20, 4:20 PM', value: 'shortDateTimeShort' },
+                    { name: 'Short Date, Medium Time (S) — e.g., 2021-04-20, 4:20:30 PM', value: 'shortDateTimeMedium' },
+                    { name: 'Relative Time (R) — e.g., 5 years ago', value: 'relative' }
                 ))
         // Slash-command-exclusive (2026-07-14, Harkirat's request) -- deliberately NOT saved to /settings or UserPreference; every invocation defaults to Embed unless explicitly typed. Works identically for the All Formats overview and every individual style view. Renamed 'format' -> 'view' (2026-07-18, v2 quick-wins batch) -- "format" read as if it picked a TIMESTAMP format (fullDateTime/shortDate/etc, already the job of the `style` option above); "view" is what this option actually controls (Embed panel vs plain text).
         .addStringOption(option =>
@@ -253,7 +253,8 @@ module.exports = {
         const dropdownComponent = {
             type: 3,
             custom_id: statelessCustomId,
-            placeholder: "Switch to a singular layout style...",
+            // His hint line's words (2026-10-20 18:30 EDT); a phone shows the placeholder as the menu's title (2026-11-01 15:08 EDT, his "the dropdowns title needs updating"). The examples below are how Discord shows each style in English (US) today, read off his screenshots: a 12-hour clock and a year-first short date.
+            placeholder: "Switch views or pick a format",
             options: STYLE_SELECT_OPTIONS.map(opt => ({ ...opt, default: opt.value === (style || 'all_formats') }))
         };
 

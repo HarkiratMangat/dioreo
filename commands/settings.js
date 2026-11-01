@@ -159,15 +159,15 @@ module.exports = {
         const styleExampleMap = {
             all_formats: 'Shows every format together as a summary',
             short_list: 'The 6 most used formats',
-            fullDateTime: 'e.g. Tuesday, April 20, 2021 at 16:20',
-            longDateTime: 'e.g. April 20, 2021 at 16:20',
+            fullDateTime: 'e.g. Tuesday, April 20, 2021 at 4:20 PM',
+            longDateTime: 'e.g. April 20, 2021 at 4:20 PM',
             longDate: 'e.g. April 20, 2021',
-            shortDate: 'e.g. 20/04/2021',
-            mediumTime: 'e.g. 16:20:30',
-            shortTime: 'e.g. 16:20',
-            shortDateTimeShort: 'e.g. 20/04/2021, 16:20',
-            shortDateTimeMedium: 'e.g. 20/04/2021, 16:20:30',
-            relative: 'e.g. 4 years ago'
+            shortDate: 'e.g. 2021-04-20',
+            mediumTime: 'e.g. 4:20:30 PM',
+            shortTime: 'e.g. 4:20 PM',
+            shortDateTimeShort: 'e.g. 2021-04-20, 4:20 PM',
+            shortDateTimeMedium: 'e.g. 2021-04-20, 4:20:30 PM',
+            relative: 'e.g. 5 years ago'
         };
         const currentStyleLabel = styleDisplayMap[style] || 'All Formats';
 
