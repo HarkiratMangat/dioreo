@@ -27,7 +27,7 @@ let failed = 0;
 function t(name, fn) { try { fn(); console.log(`  ✓ ${name}`); } catch (err) { failed++; console.log(`  ✗ ${name}\n    ${err.message}`); } }
 
 t('each date line is his template: small text, the dot and what happened, then the date that matters', () => {
-    const doc = season();
+    const doc = { ...season(), bpStart: undefined };   // no season start: nothing reads as carried over
     const line = d => draws.drawDateLines(d, { seasonalDoc: doc, nowMs: now });
     const by = title => doc.newDraws.find(d => d.title === title);
     const R = '<t:\\d+:R>', F = '<t:\\d+:f>';
@@ -117,12 +117,16 @@ t('a draw that started before this season says which season it came from, in eit
     assert.strictEqual(draws.carriedFromSeason(doc.newDraws[0], { ...doc, bpStart: undefined }), null, 'no season start set: no tag');
     const held = { ...doc, patchNotes: [{ title: 'Season 7: Old', seasonStart: new Date(now - 60 * D), seasonEnd: new Date(now - 25 * D) }] };
     assert.strictEqual(draws.carriedFromSeason(doc.newDraws[7], held), 'Season 7', 'the past season whose dates hold the start');
-    // His layout (14:45 EDT): inside the quote under the dates, small, italic, "Ongoing" bold, no icon.
+    // His layout (14:48 EDT): the top line says Ongoing since in place of Active, the end moves to the second line, the date to the third. No italic.
+    const R = '<t:\\d+:R>', F = '<t:\\d+:f>';
+    const line = d => draws.drawDateLines(d, { seasonalDoc: doc, nowMs: now });
+    assert.match(line(doc.newDraws[0]), new RegExp(`^> -# ${emojis.greenDotGlow} \\*\\*Ongoing\\*\\* since Season 8\\n> -# ${emojis.blank} \\*\\*Ends\\*\\* ${R}\\n> -# ${emojis.blank} ${F}$`));
+    assert.match(line(doc.returningDraws[1]), new RegExp(`^> -# ${emojis.yellowDotGlow} \\*\\*Ongoing\\*\\* since Season 8\\n> -# ${emojis.blank} \\*\\*Ending\\*\\* ${R}\\n> -# ${emojis.blank} ${F}$`), 'leaving soon: yellow, Ending');
+    assert.match(line(doc.newDraws[3]), new RegExp(`^> -# ${emojis.redDotGlow} \\*\\*Ended\\*\\* ${R}$`), 'an ended one is just Ended');
+    assert.match(line(doc.newDraws[4]), /\*\*Active\*\* · since/, 'started this season: unchanged');
     const page = texts(draws.buildContainer(doc, 'new', 0)).join('\n');
-    assert.ok(new RegExp(`### New Draw 0\\n> -#[^\\n]*\\n> -#[^\\n]*\\n> -# ${emojis.blank} _\\*\\*Ongoing\\*\\* since Season 8_\\n`).test(page), 'New: under the dates, in the quote, padded like the date');
-    assert.ok(!/### New Draw 4\n(> -#[^\n]*\n)*> -# [^\n]*Ongoing/.test(page), 'no tag on a draw from this season');
+    assert.ok(!page.includes('_**Ongoing'), 'no separate line any more');
     const grouped = texts(draws.buildContainer(doc, 'new', 0, undefined, false, mask('live'))).join('\n');
-    assert.ok(/### Ret Draw 0\n(> -#[^\n]*\n)+> -# [^\n]*_\*\*Ongoing\*\* since Season 8_/.test(grouped), 'Returning too');
     assert.ok(grouped.includes('### New Draw 0\n> -#'), 'nothing between the title and the dates');
 });
 
