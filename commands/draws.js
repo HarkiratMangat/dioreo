@@ -16,6 +16,7 @@ const { withShareButton } = require('../utils/shareButton');
 const { buildGlobalNavRow } = require('../utils/globalNav');
 const { resolveEphemeral } = require('../utils/ephemeral');
 const { sendV2Payload } = require('../utils/sendV2Payload');
+const { emptyNote } = require('../utils/emptyNote');
 
 // Repalette (2026-07-12, Section 5 of the batch) -- see calendar.js's matching comment for the full nav-row hue-spread reasoning. A dustier, lighter plum than the "Field Ops" alternative Harkirat considered, to stay in the same refined register as Calendar's blue and Season End's amber rather than mixing in a grittier tone.
 const PRESET_ACCENT = 7032445; // Plum Fortune (#6B4E7D) — 2nd nav button (Draws)
@@ -53,7 +54,18 @@ function drawDateLines(draw, ctx = {}) {
 /**
  * Array Mapper: Converts raw database JSON into Discord V2 UI "Section Item Rows" (Type 9)
  */
-// ctx: { seasonalDoc, nowMs, tagNew } -- the season (for each draw's /calendar end date), the clock, and whether to mark New draws (the filtered list mixes both sections). A caller with no season (/bot analytics' change detail) still gets a labelled start line.
+// The season a draw that started before this one began came from (2026-11-01 14:36 EDT, Harkirat: an "on going" draw like Herrscher's Armory, active since last season; he picked "New Draws, tagged by season", and 14:37 EDT the same for a Returning draw). The test is the draw's start date against this season's start, the Battle Pass start (`bpStart`, "The BP start/end is the season start/end"), so it needs no draw index and works in both sections. The season is the past patch-notes entry whose dates hold the start, else the one before the current season; null when either date is missing or the draw started this season.
+function carriedFromSeason(draw, seasonalDoc) {
+    const start = draw?.date ? new Date(draw.date).getTime() : NaN;
+    const seasonStart = seasonalDoc?.bpStart ? new Date(seasonalDoc.bpStart).getTime() : NaN;
+    if (!Number.isFinite(start) || !Number.isFinite(seasonStart) || start >= seasonStart) return null;
+    const num = t => { const m = /season\s*(\d+)/i.exec(String(t || '')); return m ? Number(m[1]) : null; };
+    const held = (seasonalDoc.patchNotes || []).find(e => e.seasonStart && e.seasonEnd && new Date(e.seasonStart).getTime() <= start && start < new Date(e.seasonEnd).getTime());
+    const n = num(held?.titleOverride || held?.title) ?? (num(seasonalDoc.currentSeasonTitle) > 1 ? num(seasonalDoc.currentSeasonTitle) - 1 : null);
+    return n ? `Season ${n}` : 'last season';
+}
+
+// ctx: { seasonalDoc, nowMs, tagNew } -- the season (for each draw's /calendar end date and its From Season tag), the clock, and whether to mark New draws (the filtered list mixes both sections). A caller with no season (/bot analytics' change detail) still gets a labelled start line.
 function buildDrawSections(drawsArray, ctx = {}) {
     const sections = [];
     drawsArray.forEach(draw => {
@@ -68,7 +80,9 @@ function buildDrawSections(drawsArray, ctx = {}) {
         });
 
         const dateLine = drawDateLines(draw, ctx);
-        const newTag = ctx.tagNew && draw._section === 'new' ? `\n-# ${emojis.newDraws} New draw` : '';
+        const from = carriedFromSeason(draw, ctx.seasonalDoc);
+        const tags = [ctx.tagNew && draw._section === 'new' ? `${emojis.newDraws} New draw` : '', from ? `From ${from}` : ''].filter(Boolean);
+        const newTag = tags.length ? `\n-# ${tags.join(' · ')}` : '';
 
         // Relative timestamp added in brackets alongside the date, per redesign request. `f` (Long Date, Short Time) instead of `F` (Full Date, Short Time) — drops the day-of-week text, which was mostly just extra width for no real benefit here. Layout H (Harkirat, 2026-10-21 11:35 EDT, "yeah lets go H", picked from mock-ups A–H in #testing-spam): a `###` title, the date in a quote right under it, then the items with an em dash before the skin. The title used to be `**__bold underline__**` with the date last, and on a phone the draws ran together. The date keeps its time although it wraps on a phone: "I've actually seen people confused about the exact time something launches". `-#` on the date was tried and does nothing to a timestamp on mobile.
         const compose = (lines, hidden) => `### ${draw.title}${newTag}\n${dateLine}\n${lines.join('\n')}${hidden ? `\n-# …and ${hidden} more` : ''}`;
@@ -127,8 +141,8 @@ const FILTER_OPTIONS = [
     { value: 'new', bit: 1, label: 'New Draws', emojiKey: 'newDraws', description: 'Released for the first time this season' },
     { value: 'returning', bit: 2, label: 'Returning Draws', emojiKey: 'returningDraws', description: 'Back from an earlier season' },
     { value: 'upcoming', bit: 4, label: 'Upcoming', emojiKey: 'lightBlueDotGlow', description: "Hasn't started yet" },
-    { value: 'live', bit: 8, label: 'Live', emojiKey: 'greenDotGlow', description: 'Running right now' },
-    { value: 'leaving', bit: 16, label: 'Leaving soon', emojiKey: 'yellowDotGlow', description: 'Live, and ends within 3 days' },
+    { value: 'live', bit: 8, label: 'Live', emojiKey: 'greenDotGlow', description: 'Active right now' },
+    { value: 'leaving', bit: 16, label: 'Leaving soon', emojiKey: 'yellowDotGlow', description: 'Active, and ends within 3 days' },
     { value: 'ended', bit: 32, label: 'Ended', emojiKey: 'redDotGlow', description: 'Already finished' }
 ];
 const SECTION_BIT = { new: 1, returning: 2 };
@@ -200,15 +214,15 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
     // The sections the filter keeps: the picked ones, or both.
     const picked = ['new', 'returning'].filter(k => !(mask & 3) || (mask & SECTION_BIT[k]));
     const anyShown = picked.some(k => lists[k].length);
-    // A picked section with nothing in it no longer gets a page of its own (2026-11-01 13:16 EDT, Harkirat: "why not just show the returning draws page directly and then have a divided section at the top that states "No New Draws match this filter." instead of a WHOLE empty page?"). Only a section he picked by name, and only while the other one has draws. Worded to his template (13:54 EDT): the warning, then a small line with where that section's draws stand right now, so the reader knows what to pick instead.
-    const standing = (k) => {
+    // A picked section with nothing in it no longer gets a page of its own (2026-11-01 13:16 EDT, Harkirat: "why not just show the returning draws page directly and then have a divided section at the top that states "No New Draws match this filter." instead of a WHOLE empty page?"). Only a section he picked by name, and only while the other one has draws. Worded to his template (13:54 EDT): the warning, then a small line with where that section's draws stand right now, so the reader knows what to pick instead. utils/emptyNote.js, his wording (13:54 and 14:05 EDT): the warning, then where that section's draws stand right now.
+    const SECTION_NAME = { new: 'New Draws', returning: 'Returning Draws' };
+    const sectionNote = (k) => {
         const all = timed(k);
-        if (!all.length) return `-# There are no ${k === 'new' ? 'New' : 'Returning'} Draws this season.`;
-        const counts = STATUS_GROUPS.map(g => [g, all.filter(d => g.holds(d.bits)).length]).filter(([, n]) => n);
-        // His format (14:05 EDT): `-# :NewDraws: **New Draws:** :GreenDot: \`1\` live:blank: :RedDot: \`2\` ended`.
-        return `-# ${emojis[k === 'new' ? 'newDraws' : 'returningDraws']} **${k === 'new' ? 'New' : 'Returning'} Draws:** ${counts.map(([g, n]) => `${emojis[g.emojiKey]} \`${n}\` ${g.label.toLowerCase()}`).join(`${emojis.blank} `)}`;
+        const counts = STATUS_GROUPS.map(g => ({ emojiKey: g.emojiKey, label: g.label.toLowerCase(), n: all.filter(d => g.holds(d.bits)).length }));
+        return emptyNote({ label: SECTION_NAME[k], emoji: emojis[k === 'new' ? 'newDraws' : 'returningDraws'], counts, filtered: Boolean(mask) && all.length > 0 });
     };
-    const notes = anyShown ? picked.filter(k => (mask & SECTION_BIT[k]) && !lists[k].length).map(k => `${emojis.warn} *Zero (0) **${k === 'new' ? 'New' : 'Returning'} Draws** match this filter.*\n${standing(k)}`) : [];
+    // Which empty sections get a line at the top: one picked by name under a filter, and, with no filter, a section with no draws at all (it used to get a whole page saying so, the same empty page he asked to retire, 14:32 EDT: "Work the class!"). With nothing to show anywhere, every kept section's line is the page.
+    const notes = picked.filter(k => !lists[k].length && (!anyShown || !mask || (mask & SECTION_BIT[k]))).map(sectionNote);
 
     let titleEmoji, titleLabel, body, pager;
     if (states) {
@@ -223,7 +237,6 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
         titleEmoji = onlyOne === 'returning' ? emojis.returningDraws : onlyOne === 'new' ? emojis.newDraws : emojis.filter;
         titleLabel = onlyOne === 'new' ? 'New Draws' : onlyOne === 'returning' ? 'Returning Draws' : 'Viewing Filtered Draws';
         body = [];
-        if (!flat.length) body.push({ type: 10, content: `${emojis.warn} *No draws match this filter.*` });
         let group = null;
         for (const d of chunk) {
             if (d._group !== group) { group = d._group; body.push({ type: 10, content: `## ${emojis[group.emojiKey]} ${group.label}` }); }
@@ -237,8 +250,8 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
             indicatorLabel: `${chunk[0]?._group.label || 'Filtered'} · ${at + 1}/${pages.length}`
         });
     } else {
-        // Under a section-only filter a section with nothing in it is skipped, unless every one is empty.
-        const walk = mask && anyShown ? picked.filter(k => lists[k].length) : picked;
+        // A section with nothing in it is skipped (its line sits at the top instead), unless every one is empty.
+        const walk = anyShown ? picked.filter(k => lists[k].length) : picked;
         const categoryKey = walk.includes(page) ? page : walk[0];
         const isNewPage = categoryKey !== 'returning';
         const activeList = lists[categoryKey];
@@ -248,10 +261,8 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
         const safeSubPage = Math.min(Math.max(0, subPage), pages.length - 1);
         titleEmoji = isNewPage ? emojis.newDraws : emojis.returningDraws;
         titleLabel = isNewPage ? 'New Draws' : 'Returning Draws';
-        // EMPTY STATE HANDLING: If DB array is empty, provide a clean text fallback instead of crashing
-        body = activeList.length
-            ? buildDrawSections(pages[safeSubPage], ctx)
-            : [{ type: 10, content: `*There are currently no ${isNewPage ? 'new' : 'returning'} draws scheduled for this season.*` }];
+        // Nothing anywhere: the notes above are the whole page.
+        body = activeList.length ? buildDrawSections(pages[safeSubPage], ctx) : [];
         // SUB-PAGE NAVIGATION: only shown when a category has more draws than fit on one page (buildPaginationRow returns null otherwise). Encodes the category + target chunk index directly in the custom_id (stateless), same pattern used by the DMZ loadout pagination elsewhere in this bot. Shared row builder (utils/paginationRow.js) keeps this visually identical to /calendar's own pagination. ONE PAGER FOR THE WHOLE COMMAND (2026-10-25 14:37-14:39 EDT, Harkirat's review): New's pages, then Returning's, looping, so page 1 is New Draws and 2 and 3 are Returning Draws' two pages. The middle names the section and counts every page ("New · 1/3", "Returning · 2/3", his "keep 1/3"), the way /calendar's "Events · 2/3" does. Each arrow's id still names its section and that section's page (`subpage_<new|returning>_<n>`), so handlers/pagination.js is unchanged. Under a section filter the pager walks only the sections the filter keeps, and its ids carry the mask (`subpage_<section>_<n>_m<mask>`); with no filter the ids are exactly the ones panels posted before it carry.
         const allPages = walk.flatMap(key => paginateDraws(lists[key], ctx, size).map((_, sub) => ({ key, sub })));
         const here = Math.max(0, allPages.findIndex(p => p.key === categoryKey && p.sub === safeSubPage));
@@ -268,7 +279,7 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
         ...require('../utils/reminders').withBell(withCaptionEmoji(buildTitleBlock(seasonTitle, titleEmoji, titleLabel, 2), seasonEmojiFor(seasonalDoc.currentSeasonTitle, seasonalDoc.currentSeasonEmoji))),
         { type: 14, spacing: 2, divider: true }, // Divider separating the title from the draws content
         // The empty picked section's line, in its own block above the draws with a line under it.
-        ...(notes.length ? [{ type: 10, content: notes.join('\n') }, { type: 14, spacing: 1, divider: true }] : []),
+        ...(notes.length ? [{ type: 10, content: notes.join('\n') }, ...(body.length ? [{ type: 14, spacing: 1, divider: true }] : [])] : []),
         ...body
     ];
     if (pager) {
@@ -322,6 +333,7 @@ module.exports = {
     drawStateBits,
     drawTiming,
     drawDateLines,
+    carriedFromSeason,
     FILTER_OPTIONS,
     STATUS_GROUPS,
     // Exported 2026-08-23 10:56 EDT so /bot analytics' change-detail panel can render a draw with the SAME code players see, instead of hand-describing its fields. Copying the body instead would let the two drift, and a panel that quietly stops matching the real card is worse than one that never tried.

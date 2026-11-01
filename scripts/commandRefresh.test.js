@@ -194,11 +194,16 @@ t('/calendar: a looping pager over the pages the filter keeps, and a filter drop
     const mask = calendar.filterMask('events') | calendar.filterMask('modes');
     assert.deepStrictEqual(json(1, mask).match(/calpage_\d_m\d+_[pn]/g), [`calpage_2_m${mask}_p`, `calpage_2_m${mask}_n`]);
     assert.ok(json(0, mask).includes('Live Event'), 'Draws is left out, so it opens on Events');
-    assert.ok(!/calpage_\d_m/.test(json(1, calendar.filterMask('events'))), 'one page kept: no pager');
+    assert.ok(!/calpage_\d_m\d+_[pn]/.test(json(1, calendar.filterMask('events'))), 'one page kept: no pager');
     // An empty filtered page keeps its heading and leads with the warning icon (2026-10-21 15:53 EDT).
     const noMatch = { ...doc, calendar: doc.calendar.filter(e => e.title === 'Over Event') };
     const emptyJson = JSON.stringify(calendar.buildContainer(noMatch, 1, undefined, false, calendar.filterMask('live')));
-    assert.ok(/## [^"]*Special Events.*:Warn:.*Nothing on this page matches the filter/.test(emptyJson), emptyJson.slice(0, 600));
+    // The shared empty note (utils/emptyNote.js, 2026-11-01 14:32 EDT "Work the class!"): what the filter hid, counted, and a Reset filter that keeps the page.
+    assert.ok(/## [^"]*Special Events.*:Warn:.*Zero \(0\) \*\*Special Events\*\* match this filter\..*`1` ended/.test(emptyJson), emptyJson.slice(0, 600));
+    assert.ok(emptyJson.includes('"custom_id":"calpage_1_m0_r"') && emptyJson.includes('Reset filter'), 'a filtered page carries Reset filter back to the same page');
+    assert.ok(!JSON.stringify(calendar.buildContainer(doc, 1, undefined, false, 'all')).includes('Reset filter'), 'no Reset filter without a filter');
+    const bare = JSON.stringify(calendar.buildContainer({ ...doc, calendar: [] }, 1, undefined, false, 'all'));
+    assert.ok(bare.includes('Zero (0) **Special Events** this season.'), 'nothing at all: says so, without a filter line');
     const navCalendar = (mode) => JSON.parse(json(1, mode)).find(c => c.type === 1 && c.components.some(b => b.custom_id === 'nav_calendar')).components.find(b => b.custom_id === 'nav_calendar');
     assert.deepStrictEqual([navCalendar(calendar.filterMask('live')).label, navCalendar(calendar.filterMask('live')).style, !!navCalendar(calendar.filterMask('live')).disabled], ['Full Calendar', 1, false], 'filtered: a live blurple Full Calendar');
     assert.deepStrictEqual([navCalendar(0).label, !!navCalendar(0).disabled], ['Calendar', true], 'unfiltered: the usual disabled Calendar');

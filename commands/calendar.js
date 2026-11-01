@@ -15,6 +15,7 @@ const { withShareButton } = require('../utils/shareButton');
 const { buildGlobalNavRow } = require('../utils/globalNav');
 const { resolveEphemeral } = require('../utils/ephemeral');
 const { sendV2Payload } = require('../utils/sendV2Payload');
+const { emptyNote } = require('../utils/emptyNote');
 const { isSameDrawTitle } = require('../utils/search');
 const { buildPaginationRow } = require('../utils/paginationRow');
 // ⚠️ REVERTED 2026-08-07 21:30 EDT -- the width-cap fix below (2026-07-31 17:20 EDT, "an uncapped banner was making the whole container render unnecessarily wide on desktop") was built on the assumption that a Discord CDN-hosted banner gets a genuine small-preview/full-resolution-on-click pairing via Discord's own resize proxy. Now that every banner is re-hosted to Cloudinary (see utils/calendarBannerCache.js's 2026-08-07 21:25 EDT fix for why -- Discord CDN links expire), that pairing no longer exists: a Cloudinary-transformed derivative is a genuinely separate, smaller file with no path back to the original, so the cap now also shrinks the ZOOMED view, not just the inline preview. Verified live on the dev bot -- confirmed by Harkirat: "it does work but it has that initial issue we discussed where it will remain in that small size even if someone taps on it. So I'd rather not do the resize." Full width now shows both inline and on zoom; the desktop- width nuisance this was fixing is the smaller cost of the two.
@@ -157,7 +158,7 @@ const BANNER_FIELDS_BY_PAGE = ['drawsBannerUrl', 'eventsBannerUrl', 'playlistsBa
 const FILTER_OPTIONS = [
     // Today is a PAGE pick like the three below it (2026-10-23 13:05 EDT, his option C): picked with a type (Lucky Draws, Special Events, Playlists & Modes), the Today page shows only that type; the status picks narrow the three timeline pages only.
     { value: 'today', bit: 64, label: 'Today', emojiKey: 'calendar', description: 'Active now, leaving soon and going live' },
-    { value: 'live', bit: 1, label: 'Live', emojiKey: 'greenDotGlow', description: 'Running right now' },
+    { value: 'live', bit: 1, label: 'Live', emojiKey: 'greenDotGlow', description: 'Active right now' },
     { value: 'over', bit: 2, label: 'Past/Ended', emojiKey: 'redDotGlow', description: 'Already finished this season' },
     { value: 'soon', bit: 4, label: 'Upcoming', emojiKey: 'lightBlueDotGlow', description: "Hasn't started yet" },
     { value: 'draws', bit: 8, label: 'Lucky Draws', emojiKey: 'newDraws', description: 'Draws releasing this season' },
@@ -186,6 +187,11 @@ const ANY_PAGE_BITS = 8 | 16 | 32 | TODAY_BIT;
 
 // The pages the pager walks under a mask, in order: every page when no page is picked.
 const visiblePages = mask => PAGE_ORDER.filter(p => !(mask & ANY_PAGE_BITS) || (mask & pageBit(p)));
+
+// The Reset filter row of a filtered view: the same page with no filter. `_m0` reads as no filter in handlers/pagination.js's calpage_ branch, so it needs no branch of its own; `_r` keeps the id apart from the pager's `_p`/`_n` on the same message.
+function resetFilterRow(page) {
+    return { type: 1, components: [{ type: 2, style: 2, label: 'Reset filter', emoji: emojis.parseEmoji(emojis.returnArrow), custom_id: `calpage_${page}_m0_r` }] };
+}
 
 // The pager above the filter: it walks only the visible pages and loops. Direction rides in the id (`_p`/`_n`), so two pages still give two different ids (Discord rejects a message whose ids repeat).
 function buildCalendarPager(page, mask) {
@@ -256,7 +262,7 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
             ? buildGlobalNavRow('nav_calendar', { nav_calendar: { label: 'Full Calendar', custom_id: 'nav_calendar', style: 1 } })
             : buildGlobalNavRow('nav_calendar');
         // fitMessage steps the body down (one block per entry, then per section, then trimmed) until the whole message fits Discord's caps.
-        return fitMessage(seasonalDoc, { nowMs, withDays: true, types: types.size ? types : null }, body => withShareButton([{ type: 17, accent_color: accentColor, components: [...title, { type: 14, spacing: 2, divider: true }, ...body, { type: 14, spacing: 2, divider: true }, ...(todayPager ? [todayPager] : []), buildFilterRow(safePage, mask)] }, todayNav], isEphemeral));
+        return fitMessage(seasonalDoc, { nowMs, withDays: true, types: types.size ? types : null }, body => withShareButton([{ type: 17, accent_color: accentColor, components: [...title, { type: 14, spacing: 2, divider: true }, ...body, { type: 14, spacing: 2, divider: true }, ...(todayPager ? [todayPager] : []), buildFilterRow(safePage, mask), ...(mask & ~TODAY_BIT ? [resetFilterRow(safePage)] : [])] }, todayNav], isEphemeral));
     }
 
     // Per-page banner -- rendered as a true cover image at the VERY TOP of the container, above even the title (Harkirat's explicit call, 2026-07-31 17:20 EDT -- reads like a real banner/ splash image rather than a mid-card illustration this way). Independently settable per page; omitted entirely (no placeholder) when unset.
@@ -269,11 +275,13 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
     calendarComponents.push(...require('../utils/reminders').withBell(withCaptionEmoji(buildTitleBlock(seasonTitle, emojis.calendar, 'Season Calendar', 2), seasonEmojiFor(seasonalDoc.currentSeasonTitle, seasonalDoc.currentSeasonEmoji))));
     calendarComponents.push({ type: 14, spacing: 2, divider: true });
 
-    // An empty page keeps its own heading, so it is clear which page is empty (2026-10-21 15:53 EDT, Harkirat: "can that include the \":Events: EVENTS\" heading? and add the warning icon infront of the hint"). The Draws page names itself Lucky Draws here, having no New/Returning split to show.
-    const filteredOut = states && totalEntryCount > 0;
-    const emptyPage = (headingLine) => ({ type: 10, content: `${headingLine}\n${filteredOut
-        ? `${emojis.warn} *Nothing on this page matches the filter. Clear it to see the full timeline.*`
-        : `*There are currently no events scheduled for this season.*`}` });
+    // An empty page keeps its own heading, so it is clear which page is empty (2026-10-21 15:53 EDT, Harkirat: "can that include the \":Events: EVENTS\" heading? and add the warning icon infront of the hint"). The Draws page names itself Lucky Draws here, having no New/Returning split to show. Since 2026-11-01 14:32 EDT the empty line is utils/emptyNote.js, the same as /draws (Harkirat: "Improve the warning messages for screens like this too … Work the class!"): "Zero (0) **Special Events** match this filter." and a small line with where that page's entries stand right now, or "… this season." when it has none at all.
+    const CAL_COUNTS = [['live', 'greenDotGlow', 'live'], ['soon', 'lightBlueDotGlow', 'upcoming'], ['over', 'redDotGlow', 'ended']];
+    const noteFor = (label, emoji, allEntries) => {
+        const counts = CAL_COUNTS.map(([state, emojiKey, word]) => ({ emojiKey, label: word, n: allEntries.filter(e => { const st = entryState(e, seasonalDoc, nowMs).state; return (st === 'tba' ? 'soon' : st) === state; }).length }));
+        return emptyNote({ label, emoji, counts, filtered: Boolean(states) && allEntries.length > 0 });
+    };
+    const emptyPage = (headingLine, label, emoji, allEntries) => ({ type: 10, content: `${headingLine}\n${noteFor(label, emoji, allEntries)}` });
 
     if (safePage === 0) {
         // NEW/RETURNING DRAWS soft-split (notes follow-up, 2026-07-31 14:00 EDT) -- replaces the old single "Draws" heading entirely; each sub-heading carries its own matching emoji (emojiMap.js's existing newDraws/returningDraws icons, already used elsewhere in the bot for this exact New/Returning distinction).
@@ -282,19 +290,21 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
         const newSection = buildSectionComponent(sectionHeading(emojis.newDraws, 'New Draws'), newDrawEntries, seasonalDoc, !states);
         const returningSection = buildSectionComponent(sectionHeading(emojis.returningDraws, 'Returning Draws'), returningDrawEntries, seasonalDoc, !states);
         if (!newSection && !returningSection) {
-            calendarComponents.push(emptyPage(sectionHeading(emojis.newDraws, 'Lucky Draws')));
+            calendarComponents.push(emptyPage(sectionHeading(emojis.newDraws, 'Lucky Draws'), 'Lucky Draws', emojis.newDraws, allDrawEntries));
         } else {
-            if (newSection) calendarComponents.push(newSection);
+            // A sub-section left empty keeps its heading with the empty line under it, rather than vanishing (2026-11-01, the /draws class).
+            const allNew = allDrawEntries.filter(e => e.drawType === 'new'), allReturning = allDrawEntries.filter(e => e.drawType === 'returning');
+            calendarComponents.push(newSection || emptyPage(sectionHeading(emojis.newDraws, 'New Draws'), 'New Draws', emojis.newDraws, allNew));
             // Small spacing between sections; large is kept for the title and the footer (2026-10-21 16:15 EDT, Harkirat: "the middle ones can have small spacing").
-            if (newSection && returningSection) calendarComponents.push({ type: 14, spacing: 1, divider: true });
-            if (returningSection) calendarComponents.push(returningSection);
+            calendarComponents.push({ type: 14, spacing: 1, divider: true });
+            calendarComponents.push(returningSection || emptyPage(sectionHeading(emojis.returningDraws, 'Returning Draws'), 'Returning Draws', emojis.returningDraws, allReturning));
         }
     } else if (safePage === 1) {
         const eventSection = buildSectionComponent(sectionHeading(emojis.events, 'Special Events'), eventEntries, seasonalDoc, !states);
-        calendarComponents.push(eventSection || emptyPage(sectionHeading(emojis.events, 'Special Events')));
+        calendarComponents.push(eventSection || emptyPage(sectionHeading(emojis.events, 'Special Events'), 'Special Events', emojis.events, allEventEntries));
     } else {
         const playlistSection = buildSectionComponent(sectionHeading(emojis.modes, 'Playlists & Game Modes'), playlistEntries, seasonalDoc, !states);
-        calendarComponents.push(playlistSection || emptyPage(sectionHeading(emojis.modes, 'Playlists & Game Modes')));
+        calendarComponents.push(playlistSection || emptyPage(sectionHeading(emojis.modes, 'Playlists & Game Modes'), 'Playlists & Game Modes', emojis.modes, allPlaylistEntries));
     }
 
     // PAGE NAV: divider -> hint -> pager -> filter (2026-10-21 15:32 EDT). One divider separates the content from the whole block, and the hint sits directly under the content (2026-07-31 16:55 EDT). The pager is left out when the filter keeps one page.
@@ -303,6 +313,8 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
     const pager = buildCalendarPager(safePage, mask);
     if (pager) calendarComponents.push(pager);
     calendarComponents.push(buildFilterRow(safePage, mask));
+    // Reset filter under the dropdown on a filtered view, the same button /draws has (his 13:16 EDT ask there; 14:32 EDT "Work the class!").
+    if (mask) calendarComponents.push(resetFilterRow(safePage));
 
     const containerPayload = {
         type: 17,

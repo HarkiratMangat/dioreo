@@ -15,7 +15,8 @@ function season({ items = 4, noNew = false } = {}) {
         (sec === 'New' ? newDraws : returningDraws).push(d);
         if (e !== null) calendar.push({ title: d.title, date: d.date, endDate: new Date(now + e * D), category: 'draw', drawType: sec === 'New' ? 'new' : 'returning' });
     }));
-    return { currentSeasonTitle: 'Season 9 — Test', newDraws: noNew ? [] : newDraws, returningDraws, calendar };
+    // bpStart 8 days ago: every draw that started before it carries the From Season tag, so the budget case below counts those lines too.
+    return { currentSeasonTitle: 'Season 9 — Test', bpStart: new Date(now - 8 * D), newDraws: noNew ? [] : newDraws, returningDraws, calendar };
 }
 const count = c => Array.isArray(c) ? c.reduce((n, x) => n + count(x), 0) : 1 + (c.components ? count(c.components) : 0) + (c.accessory ? 1 : 0);
 const texts = c => Array.isArray(c) ? c.flatMap(texts) : [...(c.type === 10 ? [c.content] : []), ...(c.components ? texts(c.components) : [])];
@@ -66,10 +67,10 @@ t('a status filter shows one list under /today\'s headings, each draw once', () 
 
 t('an empty picked section is a line at the top, and the other section shows', () => {
     const out = texts(draws.buildContainer(season({ noNew: true }), 'new', 0, 1, true, mask('new', 'returning', 'ended'))).join('\n');
-    assert.ok(out.includes(`${emojis.warn} *Zero (0) **New Draws** match this filter.*\n-# There are no New Draws this season.`), out.slice(0, 400));
+    assert.ok(out.includes(`${emojis.warn} *Zero (0) **New Draws** this season.*`), out.slice(0, 400));
     assert.ok(/### Ret Draw \d/.test(out), 'the returning draws are shown, not an empty page');
     const sectionOnly = texts(draws.buildContainer(season({ noNew: true }), 'new', 0, 1, true, mask('new', 'returning'))).join('\n');
-    assert.ok(sectionOnly.includes('**New Draws** match this filter.') && sectionOnly.includes('Returning Draws'));
+    assert.ok(sectionOnly.includes('**New Draws** this season.') && sectionOnly.includes('Returning Draws'), 'no New draws at all: says so, not "match this filter"');
     // With New draws that just don't match: where they stand right now.
     const standing = texts(draws.buildContainer(season(), 'new', 0, 1, true, mask('new', 'returning', 'leaving'))).join('\n');
     assert.ok(!standing.includes('Zero (0)'), 'New has leaving-soon draws here');
@@ -80,6 +81,23 @@ t('an empty picked section is a line at the top, and the other section shows', (
     assert.ok(!texts(draws.buildContainer(season({ noNew: true }), 'new', 0, 1, true, mask('ended'))).join('\n').includes('match this filter'));
 });
 
+t('the class (14:32 EDT, "Work the class!"): every empty list says it the same way, with no empty page', () => {
+    // No filter, no New draws: no New page, a line at the top of Returning's.
+    const plain = draws.buildContainer(season({ noNew: true }), 'new', 0, 1, true, 0);
+    const text = texts(plain).join('\n');
+    assert.ok(text.includes('Returning Draws') && text.includes(`${emojis.warn} *Zero (0) **New Draws** this season.*`), text.slice(0, 400));
+    assert.ok(!/currently no|No draws match/.test(text));
+    assert.ok(!JSON.stringify(plain).includes('subpage_new_'), 'the pager never walks into an empty New page');
+    // A filter that leaves nothing at all: each kept section's line, with where it stands now.
+    const doc = season(); doc.calendar = doc.calendar.filter(c => !/ [15]$/.test(c.title));
+    const none = texts(draws.buildContainer(doc, 'new', 0, 1, true, mask('leaving'))).join('\n');
+    for (const name of ['New Draws', 'Returning Draws']) assert.ok(none.includes(`*Zero (0) **${name}** match this filter.*`), name);
+    assert.match(none, /-# <a:ReturningDraws:\d+> \*\*Returning Draws:\*\* /);
+    // The helper itself: an empty season has no count line.
+    const { emptyNote } = require('../utils/emptyNote');
+    assert.strictEqual(emptyNote({ label: 'X', emoji: '', counts: [{ emojiKey: 'greenDotGlow', label: 'live', n: 0 }] }), `${emojis.warn} *Zero (0) **X** this season.*`);
+});
+
 t('Reset filter sits left of Calculate on any filtered view, and only there', () => {
     const row = out => out[0].components.filter(c => c.type === 1).pop().components;
     const filtered = row(draws.buildContainer(season(), 'new', 0, 1, true, mask('live')));
@@ -87,6 +105,23 @@ t('Reset filter sits left of Calculate on any filtered view, and only there', ()
     assert.strictEqual(filtered[0].custom_id, 'subpage_reset');
     assert.strictEqual(filtered[0].emoji.name, emojis.parseEmoji(emojis.returnArrow).name);
     assert.deepStrictEqual(row(draws.buildContainer(season(), 'new', 0, 1, true, 0)).map(b => b.label), ['Calculate']);
+});
+
+t('a draw that started before this season says which season it came from, in either section (2026-11-01 14:36 EDT, his pick)', () => {
+    const doc = season();
+    const from = title => draws.carriedFromSeason([...doc.newDraws, ...doc.returningDraws].find(d => d.title === title), doc);
+    assert.strictEqual(from('New Draw 0'), 'Season 8', 'started 10 days ago, the season began 8 days ago: the one before');
+    assert.strictEqual(from('Ret Draw 0'), 'Season 8', 'a Returning draw too');
+    assert.strictEqual(from('New Draw 4'), null, 'started this season');
+    assert.strictEqual(from('New Draw 2'), null, 'not started yet');
+    assert.strictEqual(draws.carriedFromSeason(doc.newDraws[0], { ...doc, bpStart: undefined }), null, 'no season start set: no tag');
+    const held = { ...doc, patchNotes: [{ title: 'Season 7: Old', seasonStart: new Date(now - 60 * D), seasonEnd: new Date(now - 25 * D) }] };
+    assert.strictEqual(draws.carriedFromSeason(doc.newDraws[7], held), 'Season 7', 'the past season whose dates hold the start');
+    const page = texts(draws.buildContainer(doc, 'new', 0)).join('\n');
+    assert.ok(page.includes('### New Draw 0\n-# From Season 8\n'), 'the tag sits under the title');
+    assert.ok(!page.includes('### New Draw 4\n-# From'), 'no tag on a draw from this season');
+    const grouped = texts(draws.buildContainer(doc, 'new', 0, undefined, false, mask('live'))).join('\n');
+    assert.ok(grouped.includes(`-# ${emojis.newDraws} New draw · From Season 8`), 'with the New draw tag on one line');
 });
 
 t('every filter, section and page fits Discord: 40 components, 4,000 characters, unique ids', () => {
