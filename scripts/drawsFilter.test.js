@@ -74,7 +74,7 @@ t('an empty picked section is a line at the top, and the other section shows', (
     assert.ok(!standing.includes('Zero (0)'), 'New has leaving-soon draws here');
     const doc = season(); doc.newDraws = doc.newDraws.filter(d => !/ [15]$/.test(d.title));
     const now2 = texts(draws.buildContainer(doc, 'new', 0, 1, true, mask('new', 'returning', 'leaving'))).join('\n');
-    assert.match(now2, new RegExp(`\\*Zero \\(0\\) \\*\\*New Draws\\*\\* match this filter\\.\\*\\n-# Right now: ${emojis.greenDotGlow} 2 live · ${emojis.lightBlueDotGlow} 2 upcoming · ${emojis.redDotGlow} 2 ended`), now2.slice(0, 500));
+    assert.match(now2, new RegExp(`\\*Zero \\(0\\) \\*\\*New Draws\\*\\* match this filter\\.\\*\\n-# ${emojis.newDraws} \\*\\*New Draws:\\*\\* ${emojis.greenDotGlow} \`2\` live${emojis.blank} ${emojis.lightBlueDotGlow} \`2\` upcoming${emojis.blank} ${emojis.redDotGlow} \`2\` ended`), now2.slice(0, 500));
     // Not picked by name: no line.
     assert.ok(!texts(draws.buildContainer(season({ noNew: true }), 'new', 0, 1, true, mask('ended'))).join('\n').includes('match this filter'));
 });

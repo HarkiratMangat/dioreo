@@ -205,7 +205,8 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
         const all = timed(k);
         if (!all.length) return `-# There are no ${k === 'new' ? 'New' : 'Returning'} Draws this season.`;
         const counts = STATUS_GROUPS.map(g => [g, all.filter(d => g.holds(d.bits)).length]).filter(([, n]) => n);
-        return `-# Right now: ${counts.map(([g, n]) => `${emojis[g.emojiKey]} ${n} ${g.label.toLowerCase()}`).join(' · ')}`;
+        // His format (14:05 EDT): `-# :NewDraws: **New Draws:** :GreenDot: \`1\` live:blank: :RedDot: \`2\` ended`.
+        return `-# ${emojis[k === 'new' ? 'newDraws' : 'returningDraws']} **${k === 'new' ? 'New' : 'Returning'} Draws:** ${counts.map(([g, n]) => `${emojis[g.emojiKey]} \`${n}\` ${g.label.toLowerCase()}`).join(`${emojis.blank} `)}`;
     };
     const notes = anyShown ? picked.filter(k => (mask & SECTION_BIT[k]) && !lists[k].length).map(k => `${emojis.warn} *Zero (0) **${k === 'new' ? 'New' : 'Returning'} Draws** match this filter.*\n${standing(k)}`) : [];
 
