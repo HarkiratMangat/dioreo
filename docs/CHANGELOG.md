@@ -29,7 +29,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.5.0 — 2026-11-01 11:30 EDT (#PR) — Quick Add, /draws filters, and the bot reads the draw index
+## v3.5.0 — 2026-11-01 11:30 EDT (#243) — Quick Add, /draws filters, and the bot reads the draw index
 **From Harkirat, 2026-11-01 01:05 EDT** (the deferred item): "a proper full index-able list to quickly implement into the bot whenever needed". Built the same day, as a cloud thread, with two asks of his from 11:11 EDT that use it: Quick Add in `/manage` draws, and filters on `/draws`.
 
 ### Quick Add (`/manage` draws)
