@@ -25,18 +25,23 @@ const mask = (...v) => v.reduce((m, x) => m | draws.filterMask(x), 0);
 let failed = 0;
 function t(name, fn) { try { fn(); console.log(`  ✓ ${name}`); } catch (err) { failed++; console.log(`  ✗ ${name}\n    ${err.message}`); } }
 
-t('each date line says what it is, with the state\'s dot first', () => {
+t('each date line is his template: small text, the dot and what happened, then the date that matters', () => {
     const doc = season();
     const line = d => draws.drawDateLines(d, { seasonalDoc: doc, nowMs: now });
     const by = title => doc.newDraws.find(d => d.title === title);
-    assert.match(line(by('New Draw 0')), new RegExp(`^> ${emojis.greenDotGlow} \\*\\*Started\\*\\* <t:\\d+:f> \\(<t:\\d+:R>\\)\\n> ${emojis.blank}\\u2002Ends <t:`));
-    assert.match(line(by('New Draw 1')), new RegExp(`^> ${emojis.yellowDotGlow} \\*\\*Ends\\*\\* .*\\n> ${emojis.blank}\\u2002Started`), 'leaving soon leads with its end');
-    assert.match(line(by('New Draw 2')), new RegExp(`^> ${emojis.lightBlueDotGlow} \\*\\*Starts\\*\\*`));
-    assert.match(line(by('New Draw 3')), new RegExp(`^> ${emojis.redDotGlow} \\*\\*Ended\\*\\* .*\\n> .*Started`));
-    assert.ok(!line(by('New Draw 4')).includes('Ends'), 'no /calendar end date, no end line');
-    assert.strictEqual(draws.drawDateLines({ title: 'X', date: null }, { seasonalDoc: doc }), '> *Date TBA*');
+    const R = '<t:\\d+:R>', F = '<t:\\d+:f>';
+    const date = `\\n> -# ${emojis.blank} ${F}$`;
+    assert.match(line(by('New Draw 0')), new RegExp(`^> -# ${emojis.greenDotGlow} Live ${R} · Ends ${R}${date}`));
+    assert.match(line(by('New Draw 1')), new RegExp(`^> -# ${emojis.yellowDotGlow} Ending ${R}${date}`), 'leaving soon');
+    assert.match(line(by('New Draw 2')), new RegExp(`^> -# ${emojis.lightBlueDotGlow} Releasing ${R}${date}`));
+    assert.match(line(by('New Draw 3')), new RegExp(`^> -# ${emojis.redDotGlow} Ended ${R}$`), 'ended: no date line');
+    assert.match(line(by('New Draw 4')), new RegExp(`^> -# ${emojis.greenDotGlow} Live ${R}${date}`), 'no /calendar end date: live, over its start date');
+    // The end line shows the END date for a live draw with one.
+    const end = Math.floor(new Date(doc.calendar.find(c => c.title === 'New Draw 0').endDate).getTime() / 1000);
+    assert.ok(line(by('New Draw 0')).endsWith(`<t:${end}:f>`));
+    assert.strictEqual(draws.drawDateLines({ title: 'X', date: null }, { seasonalDoc: doc }), '> -# *Date TBA*');
     // /bot analytics renders a draw with no season: a labelled line all the same.
-    assert.match(draws.buildDrawSections([{ title: 'X', date: new Date(now - D), items: [] }])[0].content, /\*\*Started\*\*/);
+    assert.match(draws.buildDrawSections([{ title: 'X', date: new Date(now - D), items: [] }])[0].content, /Live <t:/);
 });
 
 t('a status filter shows one list under /today\'s headings, each draw once', () => {
@@ -60,10 +65,16 @@ t('a status filter shows one list under /today\'s headings, each draw once', () 
 
 t('an empty picked section is a line at the top, and the other section shows', () => {
     const out = texts(draws.buildContainer(season({ noNew: true }), 'new', 0, 1, true, mask('new', 'returning', 'ended'))).join('\n');
-    assert.ok(out.includes(`-# ${emojis.warn} No New Draws match this filter.`));
+    assert.ok(out.includes(`${emojis.warn} *Zero (0) **New Draws** match this filter.*\n-# There are no New Draws this season.`), out.slice(0, 400));
     assert.ok(/### Ret Draw \d/.test(out), 'the returning draws are shown, not an empty page');
     const sectionOnly = texts(draws.buildContainer(season({ noNew: true }), 'new', 0, 1, true, mask('new', 'returning'))).join('\n');
-    assert.ok(sectionOnly.includes('No New Draws match this filter.') && sectionOnly.includes('Returning Draws'));
+    assert.ok(sectionOnly.includes('**New Draws** match this filter.') && sectionOnly.includes('Returning Draws'));
+    // With New draws that just don't match: where they stand right now.
+    const standing = texts(draws.buildContainer(season(), 'new', 0, 1, true, mask('new', 'returning', 'leaving'))).join('\n');
+    assert.ok(!standing.includes('Zero (0)'), 'New has leaving-soon draws here');
+    const doc = season(); doc.newDraws = doc.newDraws.filter(d => !/ [15]$/.test(d.title));
+    const now2 = texts(draws.buildContainer(doc, 'new', 0, 1, true, mask('new', 'returning', 'leaving'))).join('\n');
+    assert.match(now2, new RegExp(`\\*Zero \\(0\\) \\*\\*New Draws\\*\\* match this filter\\.\\*\\n-# Right now: ${emojis.greenDotGlow} 2 live · ${emojis.lightBlueDotGlow} 2 upcoming · ${emojis.redDotGlow} 2 ended`), now2.slice(0, 500));
     // Not picked by name: no line.
     assert.ok(!texts(draws.buildContainer(season({ noNew: true }), 'new', 0, 1, true, mask('ended'))).join('\n').includes('match this filter'));
 });

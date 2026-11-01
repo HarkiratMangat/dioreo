@@ -28,20 +28,26 @@ const CHUNK_SIZE = 5;
 // 🔴 AND A SECOND CAP THE COUNT ABOVE NEVER SAW (2026-10-20, v3 sweep): Discord holds a message's Text Displays to 4,000 characters IN TOTAL (COMPONENT_DISPLAYABLE_TEXT_SIZE_EXCEEDED, probed 2026-10-16 -- .claude/rules/draw-prices.md; the calculator already budgets for it). Six draws fit the component cap at any size, but every item line carries a ~35-character custom emoji, so six draws of about nine items each pass 4,000 and the whole page fails to send. Pages now close at CHUNK_SIZE draws OR at this many characters of draw text, whichever comes first; the rest of the 4,000 is headroom for the title block. One draw that alone runs past it is trimmed with a "…and N more" line (buildDrawSections).
 const DRAW_TEXT_BUDGET = 3400;
 
-// THE DATE LINES (2026-11-01 13:16 EDT, Harkirat: "a user might not understand what that "x days ago" means. Did it end x days ago? did it start x days ago?" and "consider the light blue, green, red, yellow dots infront of the timestamp"). Each line says what its date is, and the first carries the draw's state in /today's colours: light blue upcoming, green live, yellow leaving soon (live, ends within LEAVING_SOON_MS), red ended. The first line is the one that decides the state (an ended draw leads with when it ended); the other date sits under it, padded with the `blank` emoji like /calendar's entry lines so it lines up after the dot. The long `f` date stays: Discord has no "Oct 29" style, and his pick of three (13:18 EDT) was to keep the long one rather than a numeric date or a fixed-zone text date. The end date is the one on the draw's /calendar row; a draw with none shows its start only.
+// THE DATE LINES (2026-11-01 13:16 EDT, Harkirat: "a user might not understand what that "x days ago" means. Did it end x days ago? did it start x days ago?" and "consider the light blue, green, red, yellow dots infront of the timestamp"). Redesigned to his exact template at 13:54 EDT: small text, the state's dot and a relative line on top (/today's colours: light blue upcoming, green live, yellow leaving soon = live and ending within LEAVING_SOON_MS, red ended), and the one date that matters under it, padded with the `blank` emoji so it lines up after the dot:
+//   upcoming      Releasing in 6 hours              / its start date
+//   live          Live 13 days ago · Ends in 16 days / its end date
+//   leaving soon  Ending in 2 days                   / its end date
+//   ended         Ended 5 days ago                   (no date line)
+// A live draw with no end on its /calendar row reads "Live 13 days ago" over its start date (my call; his template only shows one with an end). The long `f` date is his pick of three (13:18 EDT): Discord has no "Oct 29" style.
 function drawDateLines(draw, ctx = {}) {
     const { state, startMs, endMs, bits } = drawTiming(draw, ctx.seasonalDoc || {}, ctx.nowMs ?? Date.now());
     // A draw saved with no date used to print a raw `<t:NaN:f>` (seen on a dev probe draw, 2026-10-20); it reads "Date TBA" instead.
-    if (state === 'tba') return '> *Date TBA*';
-    const at = (ms) => { const u = Math.floor(ms / 1000); return `<t:${u}:f> (<t:${u}:R>)`; };
+    if (state === 'tba') return '> -# *Date TBA*';
+    const u = ms => Math.floor(ms / 1000);
+    const rel = ms => `<t:${u(ms)}:R>`;
+    const date = ms => `${emojis.blank} <t:${u(ms)}:f>`;
     const hasEnd = Number.isFinite(endMs);
-    const pad = `${emojis.blank}\u2002`;
     let lines;
-    if (state === 'over') lines = [`${emojis.redDotGlow} **Ended** ${at(endMs)}`, `${pad}Started ${at(startMs)}`];
-    else if (state === 'soon') lines = [`${emojis.lightBlueDotGlow} **Starts** ${at(startMs)}`, ...(hasEnd ? [`${pad}Ends ${at(endMs)}`] : [])];
-    else if (bits & 16) lines = [`${emojis.yellowDotGlow} **Ends** ${at(endMs)}`, `${pad}Started ${at(startMs)}`];
-    else lines = [`${emojis.greenDotGlow} **Started** ${at(startMs)}`, ...(hasEnd ? [`${pad}Ends ${at(endMs)}`] : [])];
-    return lines.map(l => `> ${l}`).join('\n');
+    if (state === 'over') lines = [`${emojis.redDotGlow} Ended ${rel(endMs)}`];
+    else if (state === 'soon') lines = [`${emojis.lightBlueDotGlow} Releasing ${rel(startMs)}`, date(startMs)];
+    else if (bits & 16) lines = [`${emojis.yellowDotGlow} Ending ${rel(endMs)}`, date(endMs)];
+    else lines = hasEnd ? [`${emojis.greenDotGlow} Live ${rel(startMs)} · Ends ${rel(endMs)}`, date(endMs)] : [`${emojis.greenDotGlow} Live ${rel(startMs)}`, date(startMs)];
+    return lines.map(l => `> -# ${l}`).join('\n');
 }
 
 /**
@@ -194,8 +200,14 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
     // The sections the filter keeps: the picked ones, or both.
     const picked = ['new', 'returning'].filter(k => !(mask & 3) || (mask & SECTION_BIT[k]));
     const anyShown = picked.some(k => lists[k].length);
-    // A picked section with nothing in it no longer gets a page of its own (2026-11-01 13:16 EDT, Harkirat: "why not just show the returning draws page directly and then have a divided section at the top that states "No New Draws match this filter." instead of a WHOLE empty page?"). Only a section he picked by name, and only while the other one has draws.
-    const notes = anyShown ? picked.filter(k => (mask & SECTION_BIT[k]) && !lists[k].length).map(k => `-# ${emojis.warn} No ${k === 'new' ? 'New' : 'Returning'} Draws match this filter.`) : [];
+    // A picked section with nothing in it no longer gets a page of its own (2026-11-01 13:16 EDT, Harkirat: "why not just show the returning draws page directly and then have a divided section at the top that states "No New Draws match this filter." instead of a WHOLE empty page?"). Only a section he picked by name, and only while the other one has draws. Worded to his template (13:54 EDT): the warning, then a small line with where that section's draws stand right now, so the reader knows what to pick instead.
+    const standing = (k) => {
+        const all = timed(k);
+        if (!all.length) return `-# There are no ${k === 'new' ? 'New' : 'Returning'} Draws this season.`;
+        const counts = STATUS_GROUPS.map(g => [g, all.filter(d => g.holds(d.bits)).length]).filter(([, n]) => n);
+        return `-# Right now: ${counts.map(([g, n]) => `${emojis[g.emojiKey]} ${n} ${g.label.toLowerCase()}`).join(' · ')}`;
+    };
+    const notes = anyShown ? picked.filter(k => (mask & SECTION_BIT[k]) && !lists[k].length).map(k => `${emojis.warn} *Zero (0) **${k === 'new' ? 'New' : 'Returning'} Draws** match this filter.*\n${standing(k)}`) : [];
 
     let titleEmoji, titleLabel, body, pager;
     if (states) {
