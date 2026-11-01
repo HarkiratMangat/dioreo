@@ -81,9 +81,9 @@ function buildDrawSections(drawsArray, ctx = {}) {
 
         const dateLine = drawDateLines(draw, ctx);
         const newTag = ctx.tagNew && draw._section === 'new' ? `\n-# ${emojis.newDraws} New draw` : '';
-        // Under the quoted dates, outside the quote, small and italic, behind its section's own icon (14:43 EDT, his layout, over the "From Season 8" line under the title). A draw from /bot analytics has no `_section`; New is the default there, as on /draws' first page.
+        // Inside the quote, under the dates, small, the whole line italic with "Ongoing" bold, no icon (his layout, 14:45 EDT, after trying it outside the quote behind the section's icon). `_` for the italic: `***Ongoing**` would read as bold-italic opening.
         const from = carriedFromSeason(draw, ctx.seasonalDoc);
-        const fromLine = from ? `\n-# ${draw._section === 'returning' ? emojis.returningDraws : emojis.newDraws} *Ongoing since ${from}*` : '';
+        const fromLine = from ? `\n> -# _**Ongoing** since ${from}_` : '';
 
         // Relative timestamp added in brackets alongside the date, per redesign request. `f` (Long Date, Short Time) instead of `F` (Full Date, Short Time) — drops the day-of-week text, which was mostly just extra width for no real benefit here. Layout H (Harkirat, 2026-10-21 11:35 EDT, "yeah lets go H", picked from mock-ups A–H in #testing-spam): a `###` title, the date in a quote right under it, then the items with an em dash before the skin. The title used to be `**__bold underline__**` with the date last, and on a phone the draws ran together. The date keeps its time although it wraps on a phone: "I've actually seen people confused about the exact time something launches". `-#` on the date was tried and does nothing to a timestamp on mobile.
         const compose = (lines, hidden) => `### ${draw.title}${newTag}\n${dateLine}${fromLine}\n${lines.join('\n')}${hidden ? `\n-# …and ${hidden} more` : ''}`;

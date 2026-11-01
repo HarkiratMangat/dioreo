@@ -117,12 +117,12 @@ t('a draw that started before this season says which season it came from, in eit
     assert.strictEqual(draws.carriedFromSeason(doc.newDraws[0], { ...doc, bpStart: undefined }), null, 'no season start set: no tag');
     const held = { ...doc, patchNotes: [{ title: 'Season 7: Old', seasonStart: new Date(now - 60 * D), seasonEnd: new Date(now - 25 * D) }] };
     assert.strictEqual(draws.carriedFromSeason(doc.newDraws[7], held), 'Season 7', 'the past season whose dates hold the start');
-    // His layout (14:43 EDT): under the quoted dates, no quote, small, italic, behind the section's icon.
+    // His layout (14:45 EDT): inside the quote under the dates, small, italic, "Ongoing" bold, no icon.
     const page = texts(draws.buildContainer(doc, 'new', 0)).join('\n');
-    assert.match(page, new RegExp(`### New Draw 0\\n> -#[^\\n]*\\n> -#[^\\n]*\\n-# ${emojis.newDraws} \\*Ongoing since Season 8\\*\\n`), 'New: under the dates');
-    assert.ok(!/### New Draw 4\n(> -#[^\n]*\n)*-# [^\n]*Ongoing/.test(page), 'no tag on a draw from this season');
+    assert.ok(/### New Draw 0\n> -#[^\n]*\n> -#[^\n]*\n> -# _\*\*Ongoing\*\* since Season 8_\n/.test(page), 'New: under the dates, in the quote');
+    assert.ok(!/### New Draw 4\n(> -#[^\n]*\n)*> -# _\*\*Ongoing/.test(page), 'no tag on a draw from this season');
     const grouped = texts(draws.buildContainer(doc, 'new', 0, undefined, false, mask('live'))).join('\n');
-    assert.ok(grouped.includes(`-# ${emojis.returningDraws} *Ongoing since Season 8*`), 'Returning: its own icon');
+    assert.ok(/### Ret Draw 0\n(> -#[^\n]*\n)+> -# _\*\*Ongoing\*\* since Season 8_/.test(grouped), 'Returning too');
     assert.ok(grouped.includes(`### New Draw 0\n-# ${emojis.newDraws} New draw\n> -#`), 'the New draw tag stays under the title');
 });
 
