@@ -154,7 +154,7 @@ Restore: `mongorestore --uri="$MONGODB_URI" --archive=<file> --gzip`. Add `--nsF
 The `vMAJOR.MODERATE.MINOR` convention, and the full Branch→Deploy workflow it belongs to, are defined HERE now (moved from `docs/SESSION-START.md` 2026-09-08, WP3 of the context-carriers plan — that file used to claim it was the canonical source and pointed here for detail on tags, which made the two files circularly dependent; this section is now self-contained).
 
 **The lifecycle:**
-- **Branch** = `git checkout -b feat/x` off `main` for every feature, then `gh pr create --base main`. (The v3 line's `v3-pre-release` base retired at v3.0.0, 2026-10-28.) Free, no approval.
+- **Branch** = `git checkout -b feat/x` off `main` for every feature, then `gh pr create --base main`. (The v3 line's `v3-pre-release` base retired at v3.0.0, 2026-10-27.) Free, no approval.
 - **Commit** = `git commit` on the branch — a free checkpoint. No approval, no version. We never commit directly to `main` (a rare direct-to-`main` hotfix commit is the one exception, still gated like a push).
 - **Test** = running the branch on the local dev bot (`node --watch --env-file=.env.dev index.js`) and exercising it live in Discord. Free, no approval — the default before asking to push/merge anything user-visible, instead of shipping untested.
 - **Push** = `git push -u origin feat/x` (the branch, not `main`). Asked.

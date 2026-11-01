@@ -12,7 +12,7 @@ name: CI
 #
 # 🔴 CI RUNS EVERY ENTRY EXCEPT THE BROWSER WALKS WHEN NOTHING THEY READ CHANGED. Harkirat, 2026-09-14: "Local only, CI runs everything." The runner's input cache exists only on a developer machine and is never read here (CI=true). The one exception, Harkirat 2026-10-28: "why are all these checks running? such as browser walks and stuff when we didn't even touch portal/browser code?" The three walks render the portal harness from static fixtures (no Mongo, no bot code), so a change outside their inputs cannot move their result; `changes` lists those inputs, and any event without a comparable base still runs them.
 #
-# `main` is the only branch since v3.0.0 (2026-10-28): every feature PR targets it. The long-lived `v3-pre-release` integration branch, its sync workflow and the `workflow_call` that tested the sync commit were retired with it (2026-11-01 18:23 EST).
+# `main` is the only branch since v3.0.0 (2026-10-27): every feature PR targets it. The long-lived `v3-pre-release` integration branch, its sync workflow and the `workflow_call` that tested the sync commit were retired with it (2026-11-01 18:23 EST).
 on:
   push:
     branches: [main]
@@ -135,7 +135,7 @@ jobs:
           if [ "$EVENT" = pull_request ]; then base="origin/$BASE_REF"
           elif [ -n "$BEFORE" ] && git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then base="$BEFORE"
           fi
-          # No comparable base (a called run, a new branch, a force-push): run both gated jobs rather than guess.
+          # No comparable base (a new branch, a force-push): run both gated jobs rather than guess.
           if [ -z "$base" ]; then { echo "hooks=true"; echo "browser=true"; } >> "$GITHUB_OUTPUT"; echo "::notice::No comparable base for this event, so hooks-macos and the browser walks run."; exit 0; fi
           changed=$(git diff --name-only "$base"...HEAD)
           # A here-string, never `git diff | grep -q`: under pipefail, grep -q exits at its first match and the writer's SIGPIPE turns a found needle into a failure — the same flake self-check.test.sh had.

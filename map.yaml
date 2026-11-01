@@ -18,7 +18,7 @@ project: dioreo
 job: >-
   Give a CODM player the answer they came for inside Discord in one screenful, and give the
   admin a depth surface where changing that answer is safe, reversible and visible.
-product_status: v3 launched 2026-10-28 (v3.0.0), live
+product_status: v3 launched 2026-10-27 (v3.0.0), live
 audience:
   players: CODM players who ask the bot about draws, prices, loadouts, patch notes and season timing
   admin: Harkirat, sole admin today; the permission model already supports a second
