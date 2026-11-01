@@ -64,7 +64,10 @@ async function addDraw(interaction) {
 
     // The saved draw as a panel, beside its picture (2026-10-26 12:52 EDT, the loadout treatment for every /manage page); a missing picture shows on the panel itself, so only a reused or failed upload is a note.
     const notes = [...(thumbResult.url ? [thumbnailNote(thumbResult)] : []), typeNote].filter(Boolean);
-    return interaction.followUp({ flags: 32768 | 64, components: drawPanel({ draw: { ...newDrawObj, _id: result.results[0].applied.elementId }, category: drawType, changeIds: result.changeIds, notes }) });
+    const sent = await interaction.followUp({ flags: 32768 | 64, components: drawPanel({ draw: { ...newDrawObj, _id: result.results[0].applied.elementId }, category: drawType, changeIds: result.changeIds, notes }) });
+    // Items the draw index has no kind for are asked about, not left blank (handlers/manage/itemKinds.js).
+    await require('./itemKinds').askItemKinds(interaction, [title]);
+    return sent;
 }
 
 // --- SAVE EDITED DRAW --- custom_id: edit_draw_{id}_{new|returning}
@@ -109,7 +112,9 @@ async function editDraw(interaction) {
         const before = typeof stored.toObject === 'function' ? stored.toObject() : stored;
         const draw = { _id: targetId, title: newTitle, date: parsedDrawDate, thumbnailUrl: thumbResult.url, items: parsedItems, priceType: typeChanged ? pickedType : storedType };
         const notes = thumbResult.url ? [thumbnailNote(thumbResult)].filter(Boolean) : [];
-        return interaction.followUp({ flags: 32768 | 64, components: drawPanel({ draw, category: drawType, before, changeIds: result.changeIds, notes }) });
+        const sent = await interaction.followUp({ flags: 32768 | 64, components: drawPanel({ draw, category: drawType, before, changeIds: result.changeIds, notes }) });
+        await require('./itemKinds').askItemKinds(interaction, [newTitle]);
+        return sent;
     }
 }
 

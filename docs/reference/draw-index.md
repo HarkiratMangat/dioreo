@@ -64,7 +64,9 @@ MONGODB_URI=<uri> node scripts/syncDrawCatalog.js            # dry run
 MONGODB_URI=<uri> node scripts/syncDrawCatalog.js --write
 ```
 
-**Quick Add** (`/manage` draws). An admin types draw names with their dates, one per line; `utils/quickAdd.js` finds each in the catalog (its title or another name, then by words scored against titles, item names, rarities and kinds, forgiving typos; words that only describe, like `mythic character`, list every draw that fits for a Pick dropdown) and drafts the draw from the document: title, items with the notes as `-#` lines, picture, type, and New or Returning from `releaseSeason` against the current season. Nothing is written to the catalog. The draft, Edit and Save are `handlers/manage/quickAdd.js`; the matcher's cases are `scripts/quickAdd.test.js`.
+**Quick Add** (`/manage` draws). An admin types draw names with their dates, one per line; `utils/quickAdd.js` finds each in the catalog (its title or another name, then by words scored against titles, item names, rarities and kinds, forgiving typos; words that only describe, like `mythic character`, list every draw that fits for a Pick dropdown) and drafts the draw from the document: title, items with the notes as `-#` lines, picture, type, and Returning unless the line says `new` (his rule while the index is small; `releaseSeason` is not used for it). Nothing is written to the catalog by Quick Add itself.
+
+**Item kinds.** When the bot indexes a picture, a new item takes its kind from the same item in another document, another item with the same base name, or the gunsmith's weapon names (`mergeItems`). Anything still blank is asked about after the save by `handlers/manage/itemKinds.js` (Set item kinds, five at a time), which writes the answer with `setItemKind`. `other` is a kind for an item that is none of weapon, character or vehicle. The draft, Edit and Save are `handlers/manage/quickAdd.js`; the matcher's cases are `scripts/quickAdd.test.js`.
 
 ## Open
 

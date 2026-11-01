@@ -1,5 +1,7 @@
 // utils/quickAdd.js -- /manage draws' Quick Add (2026-11-01, Harkirat: "a large text field form, where I just type the draw name or item name (plus a start and/or end date. One per line"). This file is the PURE half: reading a line, finding the draw in the draw index (models/DrawCatalog.js), and turning both into a draft draw. handlers/manage/quickAdd.js owns the pop-ups, the draft panel and the save. Nothing here touches the database or Discord, so scripts/quickAdd.test.js runs it with no connection.
 //
+// NEW OR RETURNING (Harkirat, 2026-11-01 12:41 EDT: "for now, via quick add, they all go into returning draws since our catalogue is still very new and small. All new draws must state new in the quick add line"): a draw is Returning unless its line has `new` as a part of its own (`new, cx9 mythic` or `cx9 mythic, new, ends Nov 5`). `returning` is accepted too. A draw already on /draws keeps its section.
+//
 // A LINE is a name, then dates, separated by commas: "cx9 mythic draw, starts in 2 days, ends Nov 5" · "Herrscher armory, ends in 28 days" · "Herrscher of reason, ends Nov 12 7pm edt". The words starts/from/releases and ends/until/till say which date is which; an unlabelled date is the start, and a second one the end. "starts ... ends ..." with no comma also works.
 //
 // DATES (Harkirat, 2026-11-01 11:50 EDT): a date with no time is that day at 00:00 UTC, the admin-date rule (utils/adminParser.js parseAdminDate). A time with no zone is Toronto time. A typed zone is read as that region's own clock, so a wrong summer/winter letter still lands right: "Nov 12 7pm edt" is 7pm Toronto, which is EST by then (his words: "use the correct one, even if the wrong one is typed"). Relative words ("in 2 days", "tomorrow") count from Toronto's day.
@@ -13,6 +15,8 @@ const TIME_ZONE = 'America/Toronto';   // a typed time with no zone   // one dra
 // READING A LINE
 // ==========================================
 const START_WORDS = /^(?:starts?|starting|started|from|begins?|beginning|releases?|releasing|released|launch(?:es|ing)?|live|goes live|out)\b\s*(?:on|at|in)?\s*/i;
+// A part that is only a section word: `new` or `returning` (`old` reads as returning).
+const CATEGORY_WORD = /^(new|returning|return|old)$/i;
 const END_WORDS = /^(?:ends?|ending|ended|until|till|til|leaves?|leaving|closes?|closing|expires?|expiring)\b\s*(?:on|at)?\s*/i;
 // Where a date starts inside a segment that has no comma before it ("herrscher armory ends in 28 days"). `from` and `out` are left out on purpose: both turn up in draw names.
 const MID_SPLIT = /\s+(?=(?:starts?|starting|begins?|releases?|ends?|ending|until|till|leaves?|leaving)\b)/i;
@@ -72,11 +76,15 @@ function todayUtc({ zone = TIME_ZONE, now = new Date() } = {}) {
 // "cx9 mythic draw, starts in 2 days, ends Nov 5" -> { query, start, end, problems }. start/end are { date, timed } or null.
 function parseQuickLine(line, opts = {}) {
     const parts = splitLine(line);
-    const out = { line: String(line || '').trim(), query: '', start: null, end: null, problems: [] };
+    const out = { line: String(line || '').trim(), query: '', start: null, end: null, category: null, problems: [] };
+    const sectionOf = part => (/^new$/i.test(part) ? 'new' : 'returning');
+    // `new, cx9 mythic`: a section word before the name.
+    while (parts.length && CATEGORY_WORD.test(parts[0])) out.category = sectionOf(parts.shift());
     if (!parts.length) return out;
     // The name is the first part, unless the line opens with a date word ("ends Nov 5, herrscher armory" is not a shape anyone types).
     out.query = parts.shift();
     for (const part of parts) {
+        if (CATEGORY_WORD.test(part)) { out.category = sectionOf(part); continue; }
         let slot = null, text = part;
         if (START_WORDS.test(part)) { slot = 'start'; text = part.replace(START_WORDS, ''); }
         else if (END_WORDS.test(part)) { slot = 'end'; text = part.replace(END_WORDS, ''); }
@@ -234,9 +242,8 @@ function draftFromLine(parsed, { entries = [], seasonalDoc = {}, isSameTitle = (
     const title = entry ? entry.title : titleCase(parsed.query);
     const listed = [['new', seasonalDoc.newDraws || []], ['returning', seasonalDoc.returningDraws || []]]
         .flatMap(([category, list]) => list.filter(d => isSameTitle(d.title, title)).map(d => ({ category, draw: d })))[0] || null;
-    const current = seasonNumber(seasonalDoc.currentSeasonTitle);
-    // New when the index says the draw was first released this season, or when the index has never seen it; every other draw it knows is coming back.
-    const category = listed ? listed.category : entry ? (entry.releaseSeason && entry.releaseSeason === current ? 'new' : 'returning') : 'new';
+    // Returning unless the line says `new` (his rule, top of file); a draw already on /draws stays in its section.
+    const category = listed ? listed.category : parsed.category || 'returning';
     return {
         line: parsed.line,
         query: parsed.query,
@@ -246,6 +253,7 @@ function draftFromLine(parsed, { entries = [], seasonalDoc = {}, isSameTitle = (
         imageUrl: listed?.draw.thumbnailUrl || entry?.imageUrl || null,
         category,
         // A draw already on /draws keeps its own start unless the line gave one.
+        categoryGiven: Boolean(parsed.category),
         start: parsed.start ? parsed.start.date : listed ? listed.draw.date : todayUtc({ zone, now }),
         startGiven: Boolean(parsed.start),
         startTimed: Boolean(parsed.start?.timed),

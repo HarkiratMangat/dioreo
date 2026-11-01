@@ -233,6 +233,8 @@ async function routeManage(interaction) {
         if (customId.startsWith('mng_editbtn_')) return await handleEditButton(interaction);
         // Quick Add's draft: Edit or Pick one draw, Save, Cancel (handlers/manage/quickAdd.js).
         if (customId.startsWith('mng_qa_')) return await require('./quickAdd').handleButton(interaction);
+        // Set item kinds after a draw save (handlers/manage/itemKinds.js).
+        if (customId.startsWith('mng_kinds_')) return await require('./itemKinds').handleButton(interaction);
         // Set End Date on the returning-draw reminder DM (utils/drawEndReminder.js, 2026-10-21 14:46 EDT): /manage's Add Calendar Event box with the draw's title and release date filled in, or its Edit box once the draw has a calendar row (Change End Date, 14:52 EDT), so a second press never adds a duplicate row. The router's /manage lock already ran on the `mng_` prefix.
         if (customId.startsWith('mng_drawend_')) {
             const SeasonalData = require('../../models/SeasonalData');
@@ -274,6 +276,7 @@ async function routeManage(interaction) {
         if (customId === 'modal_draws_quickadd') return await require('./quickAdd').submitQuickAdd(interaction);
         if (customId.startsWith('modal_qa_edit_')) return await require('./quickAdd').submitEdit(interaction);
         if (customId.startsWith('modal_qa_pick_')) return await require('./quickAdd').submitPick(interaction);
+        if (customId.startsWith('modal_kinds_')) return await require('./itemKinds').submit(interaction);
         if (customId.startsWith('modal_draws_bulk_remove_')) return await draws.bulkDeleteDraws(interaction);
         if (customId.startsWith('edit_draw_')) return await draws.editDraw(interaction);
         if (customId === 'add_draw_new' || customId === 'add_draw_returning') return await draws.addDraw(interaction);

@@ -96,11 +96,19 @@ function splitItemName(name) {
     return at === -1 ? { baseName: s, skinName: '' } : { baseName: s.slice(0, at).trim(), skinName: s.slice(at + 3).trim() };
 }
 
-// An admin's item lines ({ tier, name }, utils/adminParser.js parseItemLine) as catalog items. An item already in the document keeps its hand-written kind, base name and skin name; a new one is split on " - " and takes its kind from any other document that has the same item.
-function mergeItems(existingItems, newItems, otherEntries = []) {
+// An admin's item lines ({ tier, name }, utils/adminParser.js parseItemLine) as catalog items. An item already in the document keeps its hand-written kind, base name and skin name; a new one is split on " - " and takes its kind from what is already known, surest first: the same item in another document, then another item with the same base (another Kestrel skin is a character), then the gunsmith's weapon list (`weaponNames`, normalised). Anything still unknown stays '' and the Set item kinds box asks (handlers/manage/itemKinds.js; his "then ask me...? why leave it blank and unasked?", 2026-11-01 12:41 EDT).
+function mergeItems(existingItems, newItems, otherEntries = [], weaponNames = new Set()) {
     const known = new Map();
-    for (const e of otherEntries) for (const i of e.items || []) if (i.kind) known.set(normaliseName(i.name), { kind: i.kind });
+    const knownBase = new Map();
+    for (const e of otherEntries) {
+        for (const i of e.items || []) {
+            if (!i.kind) continue;
+            known.set(normaliseName(i.name), { kind: i.kind });
+            knownBase.set(normaliseName(i.baseName || splitItemName(i.name).baseName), i.kind);
+        }
+    }
     for (const i of existingItems || []) known.set(normaliseName(i.name), i);
+    const guessKind = base => knownBase.get(normaliseName(base)) || (weaponNames.has(normaliseName(base)) ? 'weapon' : '');
     const out = [];
     for (const item of newItems || []) {
         if (!item || item.tier === 'comment' || !String(item.name || '').trim()) continue;
@@ -108,13 +116,45 @@ function mergeItems(existingItems, newItems, otherEntries = []) {
         const split = splitItemName(item.name);
         out.push({
             tier: item.tier,
-            kind: had?.kind || '',
+            kind: had?.kind || guessKind(had?.baseName || split.baseName),
             name: String(item.name).trim(),
             baseName: had?.baseName || split.baseName,
             skinName: had?.baseName ? (had.skinName || '') : split.skinName
         });
     }
     return out;
+}
+
+// The gunsmith's weapon names, normalised ("CX-9" -> cx9), for guessing a new item's kind. Read from the loadouts at most every CACHE_MS; an empty set on any failure, so a guess is only ever missed, never wrong.
+let weaponCache = null;
+async function knownWeaponNames() {
+    if (weaponCache && Date.now() - weaponCache.at < CACHE_MS) return weaponCache.names;
+    try {
+        const names = await require('../models/Loadout').distinct('weaponName');
+        weaponCache = { at: Date.now(), names: new Set(names.map(normaliseName).filter(Boolean)) };
+    } catch { weaponCache = { at: Date.now(), names: new Set() }; }
+    return weaponCache.names;
+}
+
+// A draw's items the index still has no kind for: [{ slug, title, name }]. `titles` are the draws just saved; each is found by its title or another name. Used by handlers/manage/itemKinds.js to ask.
+function itemsWithoutKind(entries, titles) {
+    const out = [];
+    const seen = new Set();
+    for (const title of titles || []) {
+        const hit = matchByName(entries, title);
+        if (!hit || seen.has(hit.entry.slug)) continue;
+        seen.add(hit.entry.slug);
+        for (const i of hit.entry.items || []) if (!i.kind) out.push({ slug: hit.entry.slug, title: hit.entry.title, name: i.name });
+    }
+    return out;
+}
+
+// One answer from the Set item kinds box, written onto the item it names.
+async function setItemKind(slug, name, kind) {
+    if (!['weapon', 'character', 'vehicle', 'other'].includes(kind)) return false;
+    const res = await DrawCatalog.updateOne({ slug, 'items.name': name }, { $set: { 'items.$.kind': kind } });
+    invalidateCatalog();
+    return res.modifiedCount > 0 || res.matchedCount > 0;
 }
 
 function topTierOf(items) {
@@ -145,7 +185,7 @@ async function recordCatalogImage({ title, publicId, url = null, draw = null, no
         const fp = drawFingerprint(draw);
         if (fp) {
             set.fp = fp;
-            set.items = mergeItems(existing?.items, draw.items, cached?.entries || []);
+            set.items = mergeItems(existing?.items, draw.items, cached?.entries || await loadCatalog(), await knownWeaponNames());
             set.topTier = topTierOf(set.items);
         }
         if (isKnownType(draw?.priceType)) set.priceType = draw.priceType;
@@ -172,5 +212,5 @@ async function recordCatalogImage({ title, publicId, url = null, draw = null, no
 
 module.exports = {
     loadCatalog, invalidateCatalog, matchByName, matchByItems, matchBySimilarTitle, matchCatalog, closestByItems,
-    splitItemName, mergeItems, topTierOf, catalogTags, isKnownType, recordCatalogImage, CACHE_MS
+    splitItemName, mergeItems, topTierOf, knownWeaponNames, itemsWithoutKind, setItemKind, catalogTags, isKnownType, recordCatalogImage, CACHE_MS
 };

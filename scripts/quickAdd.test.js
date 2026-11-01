@@ -162,15 +162,23 @@ t('a guess the words fit two draws about equally is marked unsure', () => {
     assert.ok(r.alternates.length >= 1);
 });
 
-t('the draft: New when the index says this season, Returning otherwise, New when unknown', () => {
+t('the draft: Returning unless the line says new, wherever the word sits', () => {
+    // His rule, 2026-11-01 12:41 EDT: "All new draws must state new in the quick add line ... otherwise just assume returning". Even a draw the index dates to this season.
     const he = draft('hunger eternal, ends Nov 20');
-    assert.strictEqual(he.category, 'new');
+    assert.strictEqual(he.category, 'returning');
+    assert.strictEqual(draft('hunger eternal, new, ends Nov 20').category, 'new');
+    assert.strictEqual(draft('new, hunger eternal, ends Nov 20').category, 'new');
+    assert.strictEqual(draft('NEW, totally unknown thing').title, 'Totally Unknown Thing', 'the section word is never the name');
+    assert.strictEqual(draft('hunger eternal, returning').category, 'returning');
+    // The Edit box's When text carries it the same way.
+    assert.strictEqual(qa.parseQuickLine('x, new, starts Nov 3', opts).category, 'new');
+    assert.strictEqual(iso(qa.parseQuickLine('x, new, starts Nov 3', opts).start.date), '2026-11-03T00:00:00.000Z');
     assert.strictEqual(he.title, 'Hunger Eternal Draw');
     assert.deepStrictEqual(he.items.map(i => i.tier), ['legendary', 'comment'], 'its notes come along as -# lines');
     assert.strictEqual(iso(he.start), '2026-11-01T00:00:00.000Z', 'no start means today');
     assert.strictEqual(draft('Herrscher armory').category, 'returning');
     const unknown = draft('totally unknown thing, starts Nov 3');
-    assert.strictEqual(unknown.category, 'new');
+    assert.strictEqual(unknown.category, 'returning');
     assert.strictEqual(unknown.title, 'Totally Unknown Thing');
     assert.strictEqual(unknown.matchedBy, null);
     assert.deepStrictEqual(unknown.items, []);

@@ -10,8 +10,8 @@ const mongoose = require('mongoose');
 
 const DrawCatalogItemSchema = new mongoose.Schema({
     tier: { type: String, required: true },            // mythic | legendary | epic
-    // weapon | character | vehicle, by the rules in docs/reference/draw-index.md; '' when the bot added the item and nobody has said yet.
-    kind: { type: String, enum: ['weapon', 'character', 'vehicle', ''], default: '' },
+    // weapon | character | vehicle, by the rules in docs/reference/draw-index.md; '' when the bot added the item and nobody has said yet. 'other' (2026-11-01): an item that is none of the three (an emote, a charm), picked in the Set item kinds box (handlers/manage/itemKinds.js). '' means nobody has said yet, which is what that box asks about.
+    kind: { type: String, enum: ['weapon', 'character', 'vehicle', 'other', ''], default: '' },
     name: { type: String, required: true },            // as printed: "HVK-30 - Dantang's Diancui"
     baseName: { type: String, default: '' },           // "HVK-30"
     skinName: { type: String, default: '' }            // "Dantang's Diancui"

@@ -68,7 +68,7 @@ function draftLines(d, i) {
     if (d.duplicateOf !== null && d.duplicateOf !== undefined) notes.push(`${emojis.warn} Same draw as line ${d.duplicateOf + 1}: skipped on Save.`);
     if (d.existing) notes.push(`ℹ️ Already on /draws as **${d.existing.title}**: Save ${[d.end && 'sets its end date', d.startGiven && 'moves its start'].filter(Boolean).join(' and ') || 'changes nothing'}.`);
     if (d.needsPick) notes.push(`${emojis.warn} "${d.query}" fits ${d.candidates.length} draw${d.candidates.length === 1 ? '' : 's'}. Pick one, or it's skipped on Save.`);
-    else if (!d.matchedBy && !d.existing && !d.edited) notes.push(`${emojis.warn} Not in the draw index: saved as typed. Edit to add its items.`);
+    else if (!d.matchedBy && !d.existing && !d.edited) notes.push(`${emojis.warn} Not in the draw index. Add details gives its items and picture, or it's saved as typed.`);
     else if (d.matchedBy === 'words' && !d.edited) notes.push(d.sure ? `ℹ️ Matched from "${d.query}".` : `${emojis.warn} Best guess for "${d.query}". Pick to choose another.`);
     else if (d.matchedBy === 'alias' && !d.edited) notes.push(`ℹ️ "${d.query}" is another name for this draw.`);
     for (const p of d.problems) notes.push(`${emojis.warn} ${p}`);
@@ -78,10 +78,12 @@ function draftLines(d, i) {
 function draftPanel(token, state) {
     const { drafts, extra } = state;
     const writes = drafts.filter(willWrite).length;
-    // Pick while the match is a guess (or there is none yet), Edit once it is settled.
+    // Pick while the match is a guess (or there is none yet), Edit once it is settled. Add details for a draw the index doesn't know: the same Edit box, which asks for items and a picture like Add Draw (his ask, 2026-11-01 12:41 EDT).
     const accessory = (d, i) => d.candidates?.length && !d.edited
         ? { type: 2, style: 1, label: 'Pick', custom_id: `mng_qa_pick_${token}_${i}` }
-        : { type: 2, style: 2, label: 'Edit', emoji: emojis.parseEmoji(emojis.mngEdit), custom_id: `mng_qa_edit_${token}_${i}` };
+        : !d.matchedBy && !d.existing && !d.edited
+            ? { type: 2, style: 1, label: 'Add details', emoji: emojis.parseEmoji(emojis.mngAdd), custom_id: `mng_qa_edit_${token}_${i}` }
+            : { type: 2, style: 2, label: 'Edit', emoji: emojis.parseEmoji(emojis.mngEdit), custom_id: `mng_qa_edit_${token}_${i}` };
     const components = [
         { type: 10, content: [`### ${emojis.mngAdd} Quick Add · ${drafts.length} draw${drafts.length === 1 ? '' : 's'}`,
             `-# Check each one and Edit what's wrong. Nothing is saved until Save.`,
@@ -126,7 +128,7 @@ function whenText(d) {
         const iso = new Date(date).toISOString();
         return timed ? `${iso.slice(0, 10)} ${iso.slice(11, 16)} UTC` : iso.slice(0, 10);
     };
-    return [d.startGiven ? `starts ${fmt(d.start, d.startTimed)}` : null, d.end ? `ends ${fmt(d.end, d.endTimed)}` : null].filter(Boolean).join(', ');
+    return [d.category === 'new' ? 'new' : 'returning', d.startGiven ? `starts ${fmt(d.start, d.startTimed)}` : null, d.end ? `ends ${fmt(d.end, d.endTimed)}` : null].filter(Boolean).join(', ');
 }
 
 // mng_qa_edit_<token>_<i> / mng_qa_save_<token> / mng_qa_cancel_<token>
@@ -179,12 +181,14 @@ async function submitEdit(interaction) {
     const title = interaction.fields.getTextInputValue('title').trim() || before.title;
     const itemsText = interaction.fields.getTextInputValue('items') || '';
     const when = interaction.fields.getTextInputValue('when') || '';
-    let category = before.category, priceType = before.priceType;
-    try { category = interaction.fields.getStringSelectValues('category')[0] || category; } catch { /* an old box */ }
+    let priceType = before.priceType;
+    let imageInput = before.imageInput || '';
+    try { imageInput = interaction.fields.getTextInputValue('url').trim(); } catch { /* an old box */ }
     try { priceType = interaction.fields.getStringSelectValues('price_type')[0] ?? priceType; } catch { /* an old box */ }
 
-    // The dates, read with the same reader as a Quick Add line, so one wording works in both places.
+    // The section and the dates, read with the same reader as a Quick Add line, so one wording works in both places. No section word keeps the row's own.
     const parsed = qa.parseQuickLine(`x, ${when}`, { zone: state.zone });
+    const category = parsed.category || before.category;
     // A new title the index knows brings that draw's items and picture, unless the items were edited too.
     let items = itemsText.split('\n').filter(l => l.trim()).map(parseItemLine);
     let imageUrl = before.imageUrl, matchedBy = before.matchedBy;
@@ -200,7 +204,7 @@ async function submitEdit(interaction) {
         .flatMap(([cat, list]) => list.filter(d => isSameDrawTitle(d.title, title)).map(d => ({ cat, d })))[0] || null;
     state.drafts[i] = {
         ...before,
-        title, items, imageUrl, matchedBy, category: listed ? listed.cat : category, priceType,
+        title, items, imageUrl: imageInput || imageUrl, imageInput, matchedBy, category: listed ? listed.cat : category, priceType,
         start: parsed.start ? parsed.start.date : listed ? listed.d.date : qa.todayUtc({ zone: state.zone }),
         startGiven: Boolean(parsed.start), startTimed: Boolean(parsed.start?.timed),
         end: parsed.end ? parsed.end.date : null, endTimed: Boolean(parsed.end?.timed),
@@ -262,8 +266,8 @@ async function save(interaction, token, state) {
     const seasonalDoc = await loadOrCreateSeasonalDoc();
     const todo = state.drafts.filter(willWrite);
 
-    // Pictures first, outside the transaction, the way Add Draw does it (handlers/manage/draws.js addDraw): a catalog hit is one memory lookup, anything else asks Cloudinary.
-    const thumbs = await Promise.all(todo.map(d => d.existing ? null : resolveThumbnail(d.title, '', { items: d.items, priceType: d.priceType || '' }).catch(() => ({ url: null }))));
+    // Pictures first, outside the transaction, the way Add Draw does it (handlers/manage/draws.js addDraw): a catalog hit is one memory lookup, anything else asks Cloudinary. A picture typed in Add details is uploaded like Add Draw's Thumbnail URL; blank asks the index, then the cache.
+    const thumbs = await Promise.all(todo.map(d => d.existing ? null : resolveThumbnail(d.title, d.imageInput || '', { items: d.items, priceType: d.priceType || '' }).catch(() => ({ url: null }))));
     const ops = [];
     const typesFilled = [];
     todo.forEach((d, n) => {
@@ -305,7 +309,10 @@ async function save(interaction, token, state) {
     const ends = todo.filter(d => d.end).length;
     const panel = resultPanel({ page: 'draws', heading: 'Quick Add saved', summary: ends ? `-# ${ends} end date${ends === 1 ? '' : 's'} on /calendar too.` : null, sections });
     panel[0].components.push({ type: 14, spacing: 1, divider: false }, { type: 1, components: [{ type: 2, style: 4, label: 'Revert all', custom_id: `mng_qa_revert_${token}` }] });
-    return sendV2Payload(interaction, panel);
+    const sent = await sendV2Payload(interaction, panel);
+    // Items the draw index has no kind for are asked about, not left blank (handlers/manage/itemKinds.js).
+    await require('./itemKinds').askItemKinds(interaction, added.map(d => d.title));
+    return sent;
 }
 
 module.exports = { submitQuickAdd, handleButton, submitEdit, submitPick, buildPickModal, draftPanel, whenText, DRAFTS, SAVED, DRAFT_TTL_MS };

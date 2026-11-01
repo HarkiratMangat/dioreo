@@ -499,20 +499,16 @@ function buildQuickAddModal() {
     );
 }
 
-// Quick Add's Edit box for one draft draw. Five fields, Discord's limit: Title, When, Items, New/Returning, Draw Type. `draft` is a utils/quickAdd.js draftFromLine() result; `whenText` and `itemsText` are already formatted by the handler.
+// Quick Add's Edit box for one draft draw. Five fields, Discord's limit: Title, When, Items, Image, Draw Type. New or Returning rides in the When text (`new, starts Nov 3, ends Nov 17`), read by the same reader as a Quick Add line, which freed the fifth field for the picture of a draw the index doesn't know (his ask, 2026-11-01 12:41 EDT: "the regular add form ... to provide the details and image"). `draft` is a utils/quickAdd.js draftFromLine() result; `whenText` and `itemsText` are already formatted by the handler.
 function buildQuickEditModal(token, index, draft, { whenText = '', itemsText = '' } = {}) {
     const text = drawTextLabel;
     const withValue = (input, value) => (value ? input.setValue(value) : input);
     return new ModalBuilder().setCustomId(`modal_qa_edit_${token}_${index}`).setTitle('Edit Draft Draw').addLabelComponents(
         text('title', 'Draw Title', withValue(new TextInputBuilder().setStyle(TextInputStyle.Short).setMaxLength(200), draft.title)),
-        new LabelBuilder().setLabel('When').setDescription('starts …, ends … (blank start = today; a time is Toronto time unless a zone is typed)')
+        new LabelBuilder().setLabel('New or Returning, and When').setDescription('new/returning, starts …, ends … (blank start = today; times are Toronto unless a zone is typed)')
             .setTextInputComponent(withValue(new TextInputBuilder().setCustomId('when').setStyle(TextInputStyle.Short).setRequired(false).setMaxLength(200), whenText)),
         text('items', 'Items (Shorthand)', withValue(new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setRequired(false).setPlaceholder('m Character Name\nl Gun Name\n-# Optional note'), itemsText)),
-        new LabelBuilder().setLabel('New or Returning').setStringSelectMenuComponent(
-            new StringSelectMenuBuilder().setCustomId('category').setRequired(true).setMinValues(1).setMaxValues(1).addOptions(
-                { label: 'New Draw', value: 'new', emoji: emojis.parseEmoji(emojis.newDraws), default: draft.category === 'new' },
-                { label: 'Returning Draw', value: 'returning', emoji: emojis.parseEmoji(emojis.returningDraws), default: draft.category === 'returning' }
-            )),
+        text('url', 'Image URL (blank = the draw index or cache)', withValue(new TextInputBuilder().setStyle(TextInputStyle.Short).setRequired(false), draft.imageInput || '')),
         drawTypeLabel(draft.priceType || '')
     );
 }

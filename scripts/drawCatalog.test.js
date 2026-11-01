@@ -104,6 +104,12 @@ async function t(name, fn) {
         const out = catalog.mergeItems([], [{ tier: 'epic', name: 'Kestrel - Twilight Symphony' }, { tier: 'legendary', name: 'Brand New - Skin' }, { tier: 'comment', name: 'a note' }], ENTRIES);
         assert.deepStrictEqual(out.map(i => [i.kind, i.baseName, i.skinName]), [['character', 'Kestrel', 'Twilight Symphony'], ['', 'Brand New', 'Skin']]);
     });
+    await t('a new item\'s kind is guessed from another skin of the same base, then the weapon list; the rest stay blank for the question', () => {
+        const out = catalog.mergeItems([], [{ tier: 'legendary', name: 'Kestrel - A Brand New Skin' }, { tier: 'legendary', name: 'Kilo 141 - Fresh' }, { tier: 'epic', name: 'Mystery Thing - X' }], ENTRIES, new Set(['kilo141']));
+        assert.deepStrictEqual(out.map(i => i.kind), ['character', 'weapon', '']);
+        const missing = catalog.itemsWithoutKind([{ slug: 'some-draw', title: 'Some Draw', aliases: [], items: [{ name: 'A', kind: '' }, { name: 'B', kind: 'weapon' }] }], ['Some Draw', 'Not Indexed Draw']);
+        assert.deepStrictEqual(missing, [{ slug: 'some-draw', title: 'Some Draw', name: 'A' }]);
+    });
     await t('top tier and tags: bot tags recomputed, a season tag kept', () => {
         assert.strictEqual(catalog.topTierOf([{ tier: 'epic' }, { tier: 'mythic' }, { tier: 'legendary' }]), 'mythic');
         assert.deepStrictEqual(catalog.catalogTags(['dioreo_draw', 'fp_old', 'ptype_x', 'top_epic', 'season_9_2026'], { fp: 'new', priceType: 'mythicWeapon', topTier: 'mythic' }),
