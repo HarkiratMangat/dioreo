@@ -57,7 +57,7 @@ async function check(name, fn) {
         assert.ok(home.includes('**`@Dioreo`**, **`!`** or **`dior`**'), 'home prefix line');
         assert.ok(home.includes('`! help <command>`'), 'home tip');
         const page = texts({ components: await help.buildHelpMessage({ ...own, cmd: '/draws' }) }).join('\n');
-        assert.ok(page.includes('`! draws [new|returning]`') && page.includes('`! draws returning`'), 'typed usage and examples');
+        assert.ok(page.includes('`! draws [new|returning] [filter]`') && page.includes('`! draws returning`'), 'typed usage and examples');
         assert.ok(!/`d draws/.test(page), 'the default prefix is gone');
     });
 
@@ -178,13 +178,13 @@ async function check(name, fn) {
         assert.strictEqual(await help.resolvePage('manage', ALL), '/manage');
         assert.strictEqual(await help.resolvePage('View Colors', {}), '/colors');
         assert.strictEqual(await help.resolvePage('/gunsmith', {}), '/gunsmith mp');
-        const switcher = (await msg(null, 'slash', { perms: {} }))[1].components[0].options.map(o => o.value);
+        const switcher = (await msg(null, 'slash', { perms: {} }))[0].components.find(c => c.type === 1 && c.components[0].custom_id === 'help_command').components[0].options.map(o => o.value);
         assert.ok(!switcher.includes('/manage') && !switcher.includes('/admin') && switcher[0] === 'landing', switcher.join(' '));
-        const full = (await msg(null, 'slash', { perms: ALL }))[1].components[0].options;
+        const full = (await msg(null, 'slash', { perms: ALL }))[0].components.find(c => c.type === 1 && c.components[0].custom_id === 'help_command').components[0].options;
         assert.ok(full.length <= 25 && full.some(o => o.value === '/manage'), `${full.length} options`);
     });
     await check("/bot is one page with a dropdown to its subcommands (his call, 2026-10-30 14:05 EDT), and each viewer sees only theirs", async () => {
-        const full = (await msg(null, 'slash', { perms: ALL }))[1].components[0].options.map(o => o.value);
+        const full = (await msg(null, 'slash', { perms: ALL }))[0].components.find(c => c.type === 1 && c.components[0].custom_id === 'help_command').components[0].options.map(o => o.value);
         assert.ok(full.includes('/bot') && !full.some(v => v.startsWith('/bot ')) && full.includes('/embed'), full.join(' '));
         assert.strictEqual(await help.resolvePage('/bot servers', ALL), '/bot servers', 'a subcommand keeps its name, so the page opens on it');
         const servers = await msg('/bot servers', 'slash', { perms: ALL });
@@ -200,18 +200,29 @@ async function check(name, fn) {
         const home = JSON.stringify((await msg(null, 'slash', { perms: ALL }))[0]);
         assert.ok(home.includes('/bot penalties') && !/`\/bot`/.test(home), "the home page's Admin line names each subcommand, never a bare /bot");
     });
+    await check('the switcher sits inside the card, behind a small divider, and the message is that one card (2026-11-01)', async () => {
+        for (const cmd of [null, '/draws']) {
+            const m = await msg(cmd, 'slash');
+            assert.strictEqual(m.length, 1, 'one top-level component: the card');
+            const body = m[0].components;
+            const at = body.findIndex(c => c.type === 1 && c.components[0].custom_id === 'help_command');
+            assert.ok(at > 0 && body[at - 1].type === 14 && body[at - 1].spacing === 1, 'a small divider right above the switcher');
+            if (!cmd) assert.ok(String(body.at(-1).content).includes('Made with'), 'the home sign-off stays the last line');
+            else assert.strictEqual(at, body.length - 1, 'last on a command page');
+        }
+    });
     await check('the switcher: page name over `d word` on a typed view, the slash command over the name on a slash view', async () => {
-        const typed = (await msg('/season end', 'text'))[1].components[0];
+        const typed = (await msg('/season end', 'text'))[0].components.find(c => c.type === 1 && c.components[0].type === 3).components[0];
         assert.strictEqual(typed.custom_id, 'help_command~text');
         const se = typed.options.find(o => o.value === '/season end');
         assert.ok(se.label === 'Season End' && se.description === 'd end' && se.default, JSON.stringify(se));
-        const slash = (await msg('/season end', 'slash'))[1].components[0];
+        const slash = (await msg('/season end', 'slash'))[0].components.find(c => c.type === 1 && c.components[0].type === 3).components[0];
         const se2 = slash.options.find(o => o.value === '/season end');
         assert.ok(slash.custom_id === 'help_command' && se2.label === '/season end' && se2.description === 'Season End');
     });
     await check('without Message Content every typed form reads @Dioreo', async () => {
         const page = await all('/draws', 'text', { c: client(false) });
-        assert.ok(page.includes('### `@Dioreo draws [new|returning]`') && page.includes('`@Dioreo draws returning`') && !page.includes('`d draws'));
+        assert.ok(page.includes('### `@Dioreo draws [new|returning] [filter]`') && page.includes('`@Dioreo draws returning`') && !page.includes('`d draws'));
     });
     await check('where typed forms do nothing (a DM, a server Dioreo is not in), /help is slash only and still renders', async () => {
         const dmClient = { ...client(true), guilds: { cache: new Map([['900', {}]]) } };

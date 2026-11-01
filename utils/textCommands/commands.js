@@ -52,7 +52,17 @@ const TEXT_COMMANDS = [
     {
         // `draw` shown on the help page (his ask, 2026-10-29 23:01 EDT); singular and plural always matched anyway.
         name: 'draws', helpWord: 'draws', shown: ['draw', 'ld', 'lucky draws'], icon: 'newDraws', slash: 'draws', words: ['draws', 'draw', 'd', 'lucky draws', 'ld'],
-        options: [{ name: 'page', values: [{ value: 'new', aliases: ['new', 'n', 'all'] }, { value: 'returning', aliases: ['returning', 'return', 'r'] }] }],
+        options: [
+            { name: 'page', values: [{ value: 'new', aliases: ['new', 'n', 'all'] }, { value: 'returning', aliases: ['returning', 'return', 'r'] }] },
+            // /draws' status filter (2026-11-01): `d draws live`, `d draws leaving`, `d draws returning ended`.
+            { name: 'filter', values: [
+                // Words that turn up in ordinary chat after a `d` (now, current, old, gone) are left out: `d draws pls now` must stay silent (scripts/textCommandArgs.test.js).
+                { value: 'upcoming', aliases: ['upcoming', 'soon', 'next', 'u'] },
+                { value: 'live', aliases: ['active', 'live', 'l'] },
+                { value: 'leaving', aliases: ['leaving', 'leaving soon', 'ending', 'ending soon', 'last chance'] },
+                { value: 'ended', aliases: ['ended', 'past', 'over', 'finished'] },
+            ] },
+        ],
     },
     {
         // `d events`, `d modes`, `d playlists`, `d gamemode`, `d gm` open that calendar page (his answer 2), so they are calendar's words with the page already picked.
@@ -60,8 +70,8 @@ const TEXT_COMMANDS = [
         presets: { events: { page: 'events' }, ev: { page: 'events' }, playlists: { page: 'playlists' }, modes: { page: 'playlists' }, gamemode: { page: 'playlists' }, gm: { page: 'playlists' } },
         options: [
             { name: 'page', values: [{ value: 'draws', aliases: ['draws', 'd'] }, { value: 'events', aliases: ['events', 'ev', 'e'] }, { value: 'playlists', aliases: ['playlists', 'modes', 'pl', 'm', 'gamemode', 'gm'] }] },
-            // `new` is Live here (answer 2: `d calendar modes new` = Playlists & Modes, Live Right Now); it never works on its own.
-            { name: 'filter', values: [{ value: 'over', aliases: ['past', 'ended', 'end', 'over', 'old'] }, { value: 'live', aliases: ['live', 'l', 'active', 'now', 'current', 'new'] }, { value: 'soon', aliases: ['upcoming', 'u', 'soon', 'next', 'future', 'up', 'pending'] }] },
+            // `new` is Active here (answer 2: `d calendar modes new` = Playlists & Modes, Active Now); it never works on its own.
+            { name: 'filter', values: [{ value: 'over', aliases: ['past', 'ended', 'end', 'over', 'old'] }, { value: 'live', aliases: ['active', 'live', 'l', 'now', 'current', 'new'] }, { value: 'soon', aliases: ['upcoming', 'u', 'soon', 'next', 'future', 'up', 'pending'] }] },
         ],
     },
     {

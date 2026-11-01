@@ -12,6 +12,12 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.5.0 — November 1, 2026
+- **Draw filters:** `/draws` has a filter menu: New, Returning, Upcoming, Live, Leaving soon and Ended. Also `/draws filter:` and `d draws live`.
+- **Quick Add (admins):** type draw names with their dates, one per line, check the draft, and save them to `/draws` and `/calendar` at once.
+- **Draw pictures:** when an admin adds a draw without a picture, Dioreo now finds it faster in its own draw list, including draws that ran under another name.
+- **Draw type:** a draw added with no type picked takes the type Dioreo already knows for it.
+
 ## v3.4.1 — November 1, 2026
 - **Draw pictures:** every draw now has its picture and details filed behind the scenes, ready for the bot to use later. Nothing changes in Discord yet.
 

@@ -41,7 +41,18 @@ async function addDraw(interaction) {
 
     // URL is optional -- blank reuses a Cloudinary cache hit for this exact title if one exists. No URL AND no cache hit used to hard-reject the whole submission -- relaxed 2026-08-22 19:40 EDT (click-test fix): a draw's info is sometimes known before any image exists to link/cache. thumbnailUrl has no `required` on the schema (models/SeasonalData.js) -- this was purely an app-level choice. commands/draws.js's render renders a plain no-image row instead of a broken thumbnail when thumbnailUrl is null. The items go along so a draw that comes back under a new name finds its old image by what it contains (utils/cloudinaryCache.js).
     const parsedItems = rawItems.split('\n').filter(l => l.trim().length > 0).map(parseItemLine);
-    const thumbResult = await resolveThumbnail(title, rawUrl, { items: parsedItems, priceType });
+    // A draw added to New that the draw index has never seen is indexed with this season as its release season (utils/drawCatalog.js insertFields).
+    const releaseSeason = drawType === 'new' ? require('../../utils/quickAdd').seasonNumber((await loadOrCreateSeasonalDoc()).currentSeasonTitle) : null;
+    const thumbResult = await resolveThumbnail(title, rawUrl, { items: parsedItems, priceType, ...(releaseSeason ? { releaseSeason } : {}) });
+
+    // No type picked, or Unsure: the draw index's type when it knows this draw for certain (its title, another name, or its items). Said in a note, so a wrong one is seen and edited.
+    const { isKnownType } = require('../../utils/drawCatalog');
+    const { isPricedDrawType, drawTypeName } = require('../../utils/drawTypes');
+    let typeNote = null;
+    if (!isKnownType(priceType) && isPricedDrawType(thumbResult.catalog?.priceType)) {
+        priceType = thumbResult.catalog.priceType;
+        typeNote = `ℹ️ Draw Type set from the draw index: ${drawTypeName(priceType)}`;
+    }
 
     const newDrawObj = { title, items: parsedItems, date: parsedSingleDate, thumbnailUrl: thumbResult.url, ...(priceType ? { priceType } : {}) };
 
@@ -54,8 +65,11 @@ async function addDraw(interaction) {
     }
 
     // The saved draw as a panel, beside its picture (2026-10-26 12:52 EDT, the loadout treatment for every /manage page); a missing picture shows on the panel itself, so only a reused or failed upload is a note.
-    const notes = thumbResult.url ? [thumbnailNote(thumbResult)].filter(Boolean) : [];
-    return interaction.followUp({ flags: 32768 | 64, components: drawPanel({ draw: { ...newDrawObj, _id: result.results[0].applied.elementId }, category: drawType, changeIds: result.changeIds, notes }) });
+    const notes = [...(thumbResult.url ? [thumbnailNote(thumbResult)] : []), typeNote].filter(Boolean);
+    const sent = await interaction.followUp({ flags: 32768 | 64, components: drawPanel({ draw: { ...newDrawObj, _id: result.results[0].applied.elementId }, category: drawType, changeIds: result.changeIds, notes }) });
+    // Items the draw index has no kind for are asked about, not left blank (handlers/manage/itemKinds.js).
+    await require('./itemKinds').askItemKinds(interaction, [title]);
+    return sent;
 }
 
 // --- SAVE EDITED DRAW --- custom_id: edit_draw_{id}_{new|returning}
@@ -79,7 +93,9 @@ async function editDraw(interaction) {
         const rawUrl = interaction.fields.getTextInputValue('url');
         const rawItems = interaction.fields.getTextInputValue('items');
         const parsedItems = rawItems.split('\n').filter(l => l.trim().length > 0).map(parseItemLine);
-        const thumbResult = await resolveThumbnail(newTitle, rawUrl, { items: parsedItems, priceType: arrayTarget[drawIndex].priceType || '' });
+        // A New draw's first picture can arrive here rather than in Add Draw: the index gets this season then, if it has never seen the draw.
+        const releaseSeason = drawType === 'new' ? require('../../utils/quickAdd').seasonNumber(seasonalDoc.currentSeasonTitle) : null;
+        const thumbResult = await resolveThumbnail(newTitle, rawUrl, { items: parsedItems, priceType: arrayTarget[drawIndex].priceType || '', ...(releaseSeason ? { releaseSeason } : {}) });
 
         // Draw Type (2026-10-18 11:06 EDT): the form's dropdown; nothing picked clears it. Sent only when it CHANGED, so an edit that never touches it leaves the stored type, and the op's conflict check, alone. A modal built before this field existed (an old open form) has no dropdown and is read as unchanged.
         let pickedType = null;
@@ -100,7 +116,9 @@ async function editDraw(interaction) {
         const before = typeof stored.toObject === 'function' ? stored.toObject() : stored;
         const draw = { _id: targetId, title: newTitle, date: parsedDrawDate, thumbnailUrl: thumbResult.url, items: parsedItems, priceType: typeChanged ? pickedType : storedType };
         const notes = thumbResult.url ? [thumbnailNote(thumbResult)].filter(Boolean) : [];
-        return interaction.followUp({ flags: 32768 | 64, components: drawPanel({ draw, category: drawType, before, changeIds: result.changeIds, notes }) });
+        const sent = await interaction.followUp({ flags: 32768 | 64, components: drawPanel({ draw, category: drawType, before, changeIds: result.changeIds, notes }) });
+        await require('./itemKinds').askItemKinds(interaction, [newTitle]);
+        return sent;
     }
 }
 
@@ -138,8 +156,19 @@ async function bulkAddOrReplaceDraws(interaction) {
         } else {
             sections.push({ head: label, lines: [`${r.applied.updatedCount} updated · ${r.applied.insertedCount} added · ${r.applied.total} in total`] });
         }
+        // Types the draw index filled in for draws pasted with none (utils/bulkMerge.js fillTypes).
+        if (r.applied.typesFilled?.length) sections.push({ head: `${label} · draw type from the draw index`, lines: r.applied.typesFilled.map(t => `- ${t}`) });
     }
-    return interaction.followUp({ flags: 32768 | 64, components: resultPanel({ page: 'draws', heading: `Bulk ${mode === 'add' ? 'add' : 'replace'} done`, sections, warnings, changeIds: result.changeIds }) });
+    const sent = await interaction.followUp({ flags: 32768 | 64, components: resultPanel({ page: 'draws', heading: `Bulk ${mode === 'add' ? 'add' : 'replace'} done`, sections, warnings, changeIds: result.changeIds }) });
+    // Every pasted draw is asked about for items the draw index has no kind for, the same as a single add (handlers/manage/itemKinds.js). The titles come from the pasted text, so Replace's updated draws are covered too.
+    await require('./itemKinds').askItemKinds(interaction, pastedTitles(newText, returningText));
+    return sent;
+}
+
+// The draw titles in Bulk Add or Replace text, both fields, as utils/adminParser.js parseBulkDrawList reads them.
+function pastedTitles(...texts) {
+    const { parseBulkDrawList } = require('../../utils/adminParser');
+    return texts.filter(Boolean).flatMap(t => parseBulkDrawList(t).map(d => d.title));
 }
 
 // --- BULK DELETE DRAWS --- custom_id: modal_draws_bulk_remove_{new|returning|either} Dry-run only: computes what WOULD be removed and shows a Confirm/Cancel prompt; the actual save happens from index.js's mng_bulkdelconfirm_ dispatch, via the `apply()` closure stashed here.

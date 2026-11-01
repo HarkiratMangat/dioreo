@@ -34,12 +34,13 @@ function buildPagesTable(client) {
         groups: [
             {
                 blocks: [
-                    `### ${emojis.mngAdd} Add Single Draw\n-# Add one new or returning draw. Additive — doesn't affect existing draws.`,
+                    // Quick Add shares Add Single Draw's Text Display (2026-11-01): a block of its own made this page exactly 40 components, Discord's cap, with none to spare.
+                    `### ${emojis.mngAdd} Quick Add\n-# Type draw names or items with their dates, one per line. The draw index fills in the rest; check the draft, then save.\n### ${emojis.mngAdd} Add Single Draw\n-# Add one new or returning draw. Additive — doesn't affect existing draws.`,
                     `### ${emojis.mngEdit} Edit Single Draw\n-# Update an existing draw's info. Search by title to pick a new or returning draw.`,
                     `### ${emojis.mngDelete} Delete Single Draw\n-# Remove a single draw. Search by title to pick a new or returning draw.`
                 ],
                 // Not shown in Harkirat's mockup (the single-item section there has no button row at all) — added to match the same convention every other page's single-item section uses, since Add/Edit/Delete need to actually be reachable somehow.
-                buttons: ['addnew', 'addreturning', 'edit', 'delete']
+                buttons: ['quickadd', 'addnew', 'addreturning', 'edit', 'delete']
             },
             {
                 // Bulk section grouped together like the single-item section above (2026-07-12, Harkirat's correction) — one shared button row under all 3 bulk blocks, instead of each bulk action being its own group with its own divider. New/Returning/Either buttons were ALSO condensed to ONE button each (same pass) — Either/Both already covers the single-category cases by leaving one field blank, so the 3-way split was pure redundancy. Replace's semantics changed too: was a wholesale wipe-then- replace of the whole array; now upserts by fuzzy-matched title (update in place if found, insert if not) — Purge already covers full wipes, so Replace doesn't need to double as one anymore.
@@ -488,6 +489,30 @@ function buildAddDrawModal(drawType, prefill = {}) {
     return modal;
 }
 
+// QUICK ADD (2026-11-01, Harkirat: "a large text field form, where I just type the draw name or item name (plus a start and/or end date. One per line"). One box; handlers/manage/quickAdd.js reads it with utils/quickAdd.js and answers with a draft to check before anything is saved. A placeholder is capped at 100 characters (buildCalendarBulkModal's 2026-08-07 crash), so it carries one example and the description the rest.
+function buildQuickAddModal() {
+    return new ModalBuilder().setCustomId('modal_draws_quickadd').setTitle('Quick Add Draws').addLabelComponents(
+        new LabelBuilder().setLabel('One draw per line: name, then dates')
+            .setDescription('Returning unless a line says new. e.g. "cx9 mythic, new, ends Nov 5" · "herrscher, ends Nov 12 7pm"')
+            .setTextInputComponent(new TextInputBuilder().setCustomId('lines').setStyle(TextInputStyle.Paragraph).setMaxLength(4000)
+                .setPlaceholder('Herrscher of Reason, ends Nov 12 7pm edt'))
+    );
+}
+
+// Quick Add's Edit box for one draft draw. Five fields, Discord's limit: Title, When, Items, Image, Draw Type. New or Returning rides in the When text (`new, starts Nov 3, ends Nov 17`), read by the same reader as a Quick Add line, which freed the fifth field for the picture of a draw the index doesn't know (his ask, 2026-11-01 12:41 EDT: "the regular add form ... to provide the details and image"). `draft` is a utils/quickAdd.js draftFromLine() result; `whenText` and `itemsText` are already formatted by the handler.
+function buildQuickEditModal(token, index, draft, { whenText = '', itemsText = '' } = {}) {
+    const text = drawTextLabel;
+    const withValue = (input, value) => (value ? input.setValue(value) : input);
+    return new ModalBuilder().setCustomId(`modal_qa_edit_${token}_${index}`).setTitle('Edit Draft Draw').addLabelComponents(
+        text('title', 'Draw Title', withValue(new TextInputBuilder().setStyle(TextInputStyle.Short).setMaxLength(200), draft.title)),
+        new LabelBuilder().setLabel('New or Returning, and When').setDescription('new/returning, starts …, ends … (blank start = today; times are Toronto unless a zone is typed)')
+            .setTextInputComponent(withValue(new TextInputBuilder().setCustomId('when').setStyle(TextInputStyle.Short).setRequired(false).setMaxLength(200), whenText)),
+        text('items', 'Items (Shorthand)', withValue(new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setRequired(false).setPlaceholder('m Character Name\nl Gun Name\n-# Optional note'), itemsText)),
+        text('url', 'Image URL (blank = the draw index or cache)', withValue(new TextInputBuilder().setStyle(TextInputStyle.Short).setRequired(false), draft.imageInput || '')),
+        drawTypeLabel(draft.priceType || '')
+    );
+}
+
 function buildEditDrawModal(targetDraw, targetId, drawType) {
     // 'comment' items (2026-07-30 22:24 EDT, "-# note" lines) reconstruct as "-# text", not their first-letter shorthand -- charAt(0) would produce "c", which round-trips through parseItemLine as an unrecognized tier instead of a comment.
     const itemsText = targetDraw.items.map(i => `${i.tier === 'comment' ? '-#' : i.tier.charAt(0).toLowerCase()} ${i.name}`).join('\n');
@@ -901,6 +926,7 @@ module.exports = {
     buildPastSeasonsOptions, buildDynamicData,
     buildSearchModal,
     buildBulkBothDrawsModal, buildBulkRemoveDrawsModal, buildAddDrawModal, buildEditDrawModal,
+    buildQuickAddModal, buildQuickEditModal,
     buildCalendarBulkModal, buildCalendarBulkRemoveModal, buildCalendarAddModal, buildEditCalendarModal, buildCalendarBannersModal,
     buildLoadoutsBulkAddModal, buildLoadoutsBulkRemoveModal, buildAddLoadoutModal, buildEditLoadoutModal,
     buildLoadoutsExportUpTo5Modal, buildLoadoutsExportCategoryModal,

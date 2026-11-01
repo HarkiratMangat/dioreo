@@ -272,10 +272,14 @@ check('the calendar view uses /calendar own entry line, and never renders <t:NaN
 
 check('a visibility note is present only where the render path can actually answer', () => {
     const { RECORD_VIEWS } = require('../commands/bot').__testables;
-    // 🔴 /draws HAS NO DATE FILTER. Verified by reading the command: no .filter(), no Date.now(). The planned "scheduled until X" line would have been false, so the note says what is true instead.
-    const drawsSrc = require('fs').readFileSync(require('path').join(__dirname, '..', 'commands', 'draws.js'), 'utf8');
-    assert.ok(!/newDraws[\s\S]{0,200}?\.filter\(/.test(drawsSrc), 'if /draws ever gains a visibility filter, this note becomes a lie and must be rewritten from the render path');
+    // 🔴 /draws' DEFAULT VIEW HIDES NOTHING BY DATE. It gained a filter on 2026-11-01 (Upcoming, Live, Leaving soon, Ended), but only one a player picks; this was a source grep for `.filter(` until then. Checked by rendering now: a draw that ended long ago still shows when no filter is picked, and disappears only under one.
+    const { buildContainer } = require('../commands/draws');
+    const old = { _id: 'd', title: 'Long Gone Draw', date: new Date('2020-01-01T00:00:00Z'), items: [], thumbnailUrl: null };
+    const doc = { currentSeasonTitle: 'Season 1', newDraws: [old], returningDraws: [], calendar: [{ title: 'Long Gone Draw', category: 'draw', date: old.date, endDate: new Date('2020-01-08T00:00:00Z') }] };
+    assert.ok(JSON.stringify(buildContainer(doc, 'new', 0, 1, true)).includes('Long Gone Draw'), 'with no filter picked, /draws must still list a draw that ended -- otherwise this note is a lie');
+    assert.ok(!JSON.stringify(buildContainer(doc, 'new', 0, 1, true, 8)).includes('### Long Gone Draw'), 'the Live filter must hide an ended draw, or the filter does nothing');
     assert.ok(/Players can see this now/.test(RECORD_VIEWS.draws.visibility()));
+    assert.ok(/filter a player picks/.test(RECORD_VIEWS.draws.visibility()), 'the note names the filter, so it is not read as "nothing ever hides a draw"');
     assert.ok(!/scheduled|upcoming/i.test(RECORD_VIEWS.draws.visibility()), 'a draw is never "scheduled" -- /draws shows it regardless of date');
     // Pages with no visibility concept must say NOTHING rather than invent one.
     for (const page of ['announcement', 'patchnotes', 'season', 'seasondraft', 'access']) {

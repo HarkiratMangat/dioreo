@@ -30,6 +30,8 @@ function topicDefs() {
         { key: 'calendar', label: 'Calendar', description: 'Bullet-separated event paste format', rawEmoji: emojis.calendar, emoji: emojis.parseEmoji(emojis.calendar) },
         { key: 'loadouts', label: 'Loadouts', description: 'MP/DMZ block paste format', rawEmoji: emojis.newDraws, emoji: emojis.parseEmoji(emojis.newDraws) },
         { key: 'patchnotes', label: 'Patch Notes', description: 'Release date, URLs, Additional Info', rawEmoji: emojis.patchNotes, emoji: emojis.parseEmoji(emojis.patchNotes) },
+        // Quick Add (2026-11-01): the one-line-per-draw box on the Draws page. Its own topic because its rules (new/returning, the date and zone defaults, Pick, Add details) are not the bulk format's.
+        { key: 'quickadd', label: 'Quick Add', description: 'One line per draw: name, then dates', rawEmoji: emojis.mngAdd, emoji: emojis.parseEmoji(emojis.mngAdd) },
         { key: 'seasondraft', label: 'Next Season Draft', description: 'Same formats, staged instead of live', rawEmoji: emojis.calendar, emoji: emojis.parseEmoji(emojis.calendar) },
         // 'admins' topic REMOVED (v3-pre-release review, finding #62) -- it documented a /manage page that no longer exists (retired to the owner-only /bot access 2026-08-16, see utils/adminAccess.js's own 'manageadmins is RETIRED' comment). This guide is reachable by anyone with ANY manage access, so it was walking a scoped admin through a screen they can't actually reach and that isn't owner-gated here.
         { key: 'announcements', label: 'Announcement', description: 'Posting/editing bot-wide announcements', rawEmoji: emojis.dbAnnouncement, emoji: emojis.parseEmoji(emojis.dbAnnouncement) }
@@ -69,6 +71,30 @@ function drawsSections() {
         section('💡 Tips',
             '• Use **Export** above to grab this exact format pre-filled with your real current data — the fastest way to see a live, correct example.\n' +
             '• **Replace Multiple** upserts by title match (updates in place, inserts if new) — anything you don\'t mention is left untouched. Use **Purge** for a full wipe.')
+    ];
+}
+
+// The rules live in utils/quickAdd.js (parsing, matching, zones) and handlers/manage/quickAdd.js (the draft, Pick, Add details, Save); keep this in step with them.
+function quickaddSections() {
+    return [
+        section('📋 One Line Per Draw',
+            '`draw name or an item in it, [new], starts …, ends …`\n' +
+            '-# Up to 10 lines. Only the name is needed; the rest is optional and in any order.'),
+        section('🆕 New or Returning',
+            'Every line goes into **Returning Draws** unless it says `new` (`cx9 mythic, new, ends Nov 5` or `new, cx9 mythic`). A draw already on /draws stays in its own section.\n' +
+            '-# A new draw the draw index has never seen is filed there as this season\'s draw. One it already has keeps its own season.'),
+        section('🕒 Dates and Times',
+            '• `starts …` and `ends …` take a date, a weekday or `in 2 days`. No start means today.\n' +
+            '• A date with no time is **midnight UTC**. A time with no zone is **Toronto** time.\n' +
+            '• A zone you type wins (`7pm pdt`, `7pm gmt`). `est`/`edt` and the like are read as the region, so the right one is used for that date even if the other was typed.'),
+        section('🔎 Finding the Draw',
+            '• The draw index is searched by title, other names, item names and skins, and forgives small typos (`herscher`, `mythic draw` for Mythic Drop).\n' +
+            '• A description like `mythic character` lists every draw that fits: press **Pick** and choose one, or that line is skipped on Save.\n' +
+            '• A best guess says so; **Pick** swaps it for another draw or keeps what you typed.'),
+        section('➕ Not in the Draw Index',
+            'Press **Add details** to give its items, type and a picture, the same as Add Draw. Without them it is saved as typed, with no items.'),
+        section('🏷️ After Save',
+            'If the saved draws carry items the draw index has no kind for, one more message asks: **Set item kinds** gives a dropdown per item (weapon, character, vehicle, other). **Revert all** on the result undoes the save.')
     ];
 }
 
@@ -187,6 +213,7 @@ function announcementsSections() {
 
 const TOPIC_SECTIONS = {
     draws: drawsSections,
+    quickadd: quickaddSections,
     calendar: calendarSections,
     loadouts: loadoutsSections,
     patchnotes: patchnotesSections,
@@ -198,6 +225,7 @@ const TOPIC_SECTIONS = {
 // Per-topic accent -- reuses each subsystem's own live PRESET_ACCENT rather than one flat guide color, so the guide visually matches whichever page opened it (same philosophy as manage.js's own PAGE_ACCENT map -- see .claude/rules/manage-panel.md).
 const TOPIC_ACCENT = {
     draws: 7032445,       // Plum Fortune — draws.js's PRESET_ACCENT
+    quickadd: 7032445,    // the Draws page's accent: Quick Add lives there
     calendar: 3821672,    // Slate Harbor — calendar.js's PRESET_ACCENT
     loadouts: 16725040,   // MP red, sampled from the Rank_7Legendary emoji (manage.js's PAGE_ACCENT.loadouts_mp)
     patchnotes: 15909424, // Patch Gold — patchnotes.js's PRESET_ACCENT

@@ -45,6 +45,11 @@ const rows = [
     [`${M} draws pls`, { kind: 'run', command: 'draws', values: {} }],  // the spec's own row: trailing text ignored
     ['d draws pls', { kind: 'run', command: 'draws', values: {} }],    // B6: one more word is ignored after d (his rule, 2026-10-29 14:29 EDT)
     ['d draws pls now', { kind: null }],
+    // /draws' status filter (2026-11-01), alone and beside a section.
+    ['d draws live', { kind: 'run', command: 'draws', values: { filter: 'live' } }],
+    ['d draws leaving soon', { kind: 'run', command: 'draws', values: { filter: 'leaving' } }],
+    ['d draws returning ended', { kind: 'run', command: 'draws', values: { page: 'returning', filter: 'ended' } }],
+    ['dior draws upcoming', { kind: 'run', command: 'draws', values: { filter: 'upcoming' } }],
     ['d gs ak117', { kind: 'run', command: 'gunsmith', autocomplete: [{ option: 'weapon', text: 'ak117' }] }],
     ['d gunsmith ak 117', { kind: 'run', command: 'gunsmith', autocomplete: [{ option: 'weapon', text: 'ak 117' }] }],
     ['d gs type 19', { kind: 'run', command: 'gunsmith', autocomplete: [{ option: 'weapon', text: 'type 19' }] }],

@@ -72,6 +72,9 @@ async function loadSeasonalDoc() {
 // ── The table ────────────────────────────────────────────────────────────── Every entry: { page, id, label, style, kind, slash, run } (+ optional ownerOnly). `label` and `style` are what the panel button renders with — commands/manage.js reads them from here, so a label change lands in one place.
 
 const DRAWS_ACTIONS = [
+    // Quick Add (2026-11-01): one line per draw, matched in the draw index, checked on a draft before anything saves (handlers/manage/quickAdd.js). Its tier is draw.add's (create), declared in core/ops/draws.js.
+    { id: 'quickadd', label: 'Quick Add', style: 1, kind: 'modal', slash: true,
+      run: async ({ interaction, manageCommand }) => await interaction.showModal(manageCommand.buildQuickAddModal()) },
     { id: 'addnew', label: 'Add New', style: 3, kind: 'modal', slash: true,
       run: async ({ interaction, manageCommand }) => await interaction.showModal(manageCommand.buildAddDrawModal('new')) },
     { id: 'addreturning', label: 'Add Returning', style: 3, kind: 'modal', slash: true,

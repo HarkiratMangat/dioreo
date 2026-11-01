@@ -5,6 +5,13 @@ status: dead
 
 # ✅ Resolved list — closed items from the Dior's Builds deferred list
 
+## ✅ DrawCatalog model, sync script and bot use — closed 2026-11-01 `[DONE · 2026-11-01]`
+
+Built in v3.5.0: `models/DrawCatalog.js`, `utils/drawCatalog.js` (read before Cloudinary in `resolveThumbnail`, kept in step on upload), `scripts/syncDrawCatalog.js`, and the draw type filled from the index. Account: `docs/reference/draw-index.md` § How the bot uses it.
+
+- ✅ **DONE 2026-11-01 (v3.5.0).** `[P2 · M]` DrawCatalog model, sync script and bot use for the draw index — filed 2026-11-01 01:05 EDT
+The prod collection `drawcatalogs` (93 documents, seeded by hand through the Mongo connector, checksum-verified) has no Mongoose model and nothing reads it. Needed: a `DrawCatalog` model under `models/` (the collection name already matches; `slug` unique; declare the indexes there, none were created), a sync script that seeds it from Cloudinary tags and context (the `syncCatalogToMongo.js` pattern), and a use in the bot: find a returning draw's image, items and price type by slug, fingerprint or alias. Fields and how it was built: `docs/reference/draw-index.md`. Harkirat's words: "a proper full index-able list to quickly implement into the bot whenever needed".
+
 ## ✅ The text-commands announcement is posted on prod — closed 2026-10-30 18:24 EDT `[DONE · 2026-10-30 18:24 EDT]`
 
 Posted 2026-10-30 17:51 EDT right after v3.3.0 deployed (Harkirat, 2026-10-30 17:12 EDT: "go ahead and post the announcement after you merge as well ... the announcement is 2x repeat"), through `core/ops/announcements.js` on the VM: id `6ae5115ffdcc1343ce032a48`, accent `#6273EF`, repeat 2, expires 2026-12-29.

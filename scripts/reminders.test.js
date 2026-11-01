@@ -259,7 +259,7 @@ t('Set timezone: a button on the panel, blue until a zone is chosen; no picker i
     assert.ok(normal.includes('remind_tz:1') && normal.includes('Set timezone') && normal.includes('remind_stop:1'), 'Set timezone sits in the foot beside Stop all');
     const btn = (opts) => R.buildPanel(sub, doc(), { ownerId: '1', nowMs: RUN, ...opts })[0].components.flatMap(c => c.components || []).find(c => c.custom_id === 'remind_tz:1');
     assert.deepStrictEqual([btn({}).style, btn({}).label], [1, 'Set timezone'], 'no zone chosen: blue Set timezone');
-    assert.deepStrictEqual([btn({ timeZone: 'Asia/Tokyo' }).style, btn({ timeZone: 'Asia/Tokyo' }).label], [2, 'Adjust timezone'], 'a zone chosen: grey Adjust timezone');
+    assert.deepStrictEqual([btn({ timeZone: 'Asia/Tokyo' }).style, btn({ timeZone: 'Asia/Tokyo' }).label], [2, 'My timezone'], 'a zone chosen: grey Adjust timezone');
     assert.ok(!normal.includes('remind_tzset:') && !normal.includes('remind_tzcancel:'), 'no timezone picker in the panel: several matches answer privately');
 });
 

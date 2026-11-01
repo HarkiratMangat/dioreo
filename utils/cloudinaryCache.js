@@ -10,7 +10,7 @@
 //   1. its title's slug, `draws/<slug>`                               (exact, the original rule)
 //   2. the same fingerprint: same items at the same rarities           (title may differ; price type is a veto only when BOTH sides name one)
 //   3. a title within 0.75 character similarity                        (the 2026-07-31 fuzzy rule, unchanged)
-// Only 1 and 2 are certain; a near-miss on items (60% or more shared, same price type) is never reused, only named in the error so the admin can see which draw it looks like (utils/cloudinaryCache.js closestDrawImage).
+// Each step asks THE DRAW INDEX first (utils/drawCatalog.js, models/DrawCatalog.js, added 2026-11-01), then Cloudinary: one in-memory pass instead of an Admin API call, plus a step Cloudinary cannot do, another name the draw ran under ("Midnight Crescendo Draw" finds the Wisterian Visage image). Cloudinary stays the fallback for anything the catalog does not hold, so a missing or empty catalog changes nothing. Only 1 and 2 are certain; a near-miss on items (60% or more shared, same price type) is never reused, only named in the error so the admin can see which draw it looks like (utils/cloudinaryCache.js closestDrawImage).
 //
 // Distinct from utils/loadoutRender.js's Cloudinary usage -- that file only ever builds URL strings for images an admin already uploaded to Cloudinary by hand (bare key or full URL). This module is the first place in the bot that actually calls Cloudinary's upload API itself.
 const crypto = require('crypto');
@@ -95,8 +95,9 @@ function drawSimilarity(aKeys, bKeys) {
     return { shared, total: Math.max(a.size, b.size), score: union ? shared / union : 0 };
 }
 
-// Two price types disagree only when BOTH name one: a draw added before types existed, or typed later, still matches.
-const priceTypesAgree = (a, b) => !a || !b || a === b;
+// Two price types disagree only when BOTH name one: a draw added before types existed, or typed later, still matches. 'unknown' (utils/drawTypes.js UNKNOWN_TYPE, "someone looked and did not know") names none, so it agrees with any type too (2026-11-01; it used to veto every match, so a draw saved as Unsure never found its image by its items).
+const namesAType = t => Boolean(t) && t !== 'unknown';
+const priceTypesAgree = (a, b) => !namesAType(a) || !namesAType(b) || a === b;
 
 // The tags and context an upload carries. `items` is left off when it would not fit.
 function metadataFor(title, draw) {
@@ -107,6 +108,36 @@ function metadataFor(title, draw) {
     if (fp) context.fp = fp;
     if (keys && keys.length <= CONTEXT_KEYS_MAX) context.items = keys;
     return { fp, tags: fp ? [DRAW_TAG, `${FP_TAG_PREFIX}${fp}`] : [DRAW_TAG], context };
+}
+
+// THE INDEX'S MIRROR ON THE ASSET (think-pass, 2026-11-01). Cloudinary is the record the draw index was built from and that scripts/syncDrawCatalog.js rebuilds from, and the one-off enrich script gave every asset items_full (with each item's KIND), release_season, and the ptype_/top_/season_ tags. The bot wrote none of them, so its own index writes (new items, a kind answered in Set item kinds, a new draw's season) lived only in Mongo and a rebuild lost them. After every index write the bot now puts the same facts back on the asset. PURE: what to write. `doc` is the index document as it now stands; `previousTags` the tags it had (so a changed ptype_/top_ is swapped, not added beside the old one); `inserted` when the document was just created (only then: source, indexed_on, release_season and the season tag, which are never rewritten on an existing asset).
+function catalogMirrorPlan(doc, { previousTags = [], inserted = false, year = new Date().getUTCFullYear() } = {}) {
+    const itemsFull = [...(doc.items || []).map(i => `${i.tier}:${i.kind || ''}:${i.name}`), ...(doc.comments || []).map(c => `comment::${c}`)].join(' ; ');
+    const context = { items_full: itemsFull };
+    const ownTag = t => t.startsWith('ptype_') || t.startsWith('top_');
+    const addTags = (doc.tags || []).filter(ownTag);
+    if (inserted) {
+        context.source = 'bot';
+        if (doc.indexedOn) context.indexed_on = doc.indexedOn;
+        if (doc.releaseSeason) { context.release_season = `Season ${doc.releaseSeason} ${year}`; addTags.push(`season_${doc.releaseSeason}_${year}`); }
+    }
+    const removeTags = (previousTags || []).filter(t => ownTag(t) && !addTags.includes(t));
+    return { context, addTags, removeTags };
+}
+
+// Writes catalogMirrorPlan() to the asset. Never throws (a failure only leaves the asset as it was, for scripts/syncDrawCatalog.js to report), never logs a raw Cloudinary error, and is blocked on the dev bot like every other write to the shared account.
+async function mirrorCatalogToCloudinary(publicId, plan) {
+    if (!publicId || !plan) return false;
+    if (isCloudinaryWriteBlocked('draw index mirror', publicId)) return false;
+    try {
+        if (plan.removeTags.length) await cloudinary.uploader.remove_tag(plan.removeTags.join(','), [publicId]);
+        if (plan.addTags.length) await cloudinary.uploader.add_tag(plan.addTags.join(','), [publicId]);
+        await cloudinary.uploader.add_context(plan.context, [publicId]);
+        return true;
+    } catch (err) {
+        console.error(`Cloudinary draw index mirror failed for ${publicId}: ${safeErrorMessage(err)}`);
+        return false;
+    }
 }
 
 // What an asset from the Admin API says about its draw: { title, priceType, fp, keys[] }. `context.custom` is where Cloudinary puts it.
@@ -170,6 +201,8 @@ async function linkDrawMetadata(publicId, title, draw) {
         await cloudinary.uploader.add_tag(tags.join(','), [publicId]);
         await cloudinary.uploader.add_context(Object.entries(context).map(([k, v]) => `${k}=${v}`).join('|'), [publicId]);
         fingerprintCache.delete(fp);
+        // The draw index follows the image's new items, or it would still send the old items here (utils/drawCatalog.js; never throws).
+        await require('./drawCatalog').recordCatalogImage({ title, publicId, draw });
         return true;
     } catch (err) {
         console.error(`Cloudinary draw metadata failed for "${title}": ${safeErrorMessage(err)}`);
@@ -206,6 +239,8 @@ async function cacheThumbnail(title, sourceUrl, draw = null) {
         // Populate the memo right away -- `overwrite: true` means this may be replacing whatever getCachedUrl had previously memoized under this same public_id, so this write must win.
         memoizeResolved(publicId, url);
         if (meta?.fp) fingerprintCache.set(meta.fp, { publicId, url, title: String(title), priceType: draw.priceType || '' });
+        // A draw's image goes into the draw index too, so the next lookup finds it there (utils/drawCatalog.js; never throws). Only with items: a calendar or patch-note image also passes through here, with no draw, and is not a draw.
+        if (meta?.fp) await require('./drawCatalog').recordCatalogImage({ title, publicId, url, draw });
         return { url, cached: true, error: null };
     } catch (err) {
         const message = safeErrorMessage(err);
@@ -237,42 +272,61 @@ async function getCachedUrl(title) {
 /**
  * Single entry point every draw-save site calls. `providedUrl` is whatever the admin actually typed (already resolved to a full URL by adminParser.js if it was a bare Cloudinary key) -- or null/empty if they left it blank, which means "reuse whatever's already cached for this draw" rather than being rejected as missing input (see adminParser.js's parseBulkDrawList + manage.js's buildAddDrawModal for the blank-means-reuse convention). `draw` is { items, priceType } when the caller has them: it is what lets a renamed draw find its image by its items.
  *
- * Returns { url, cached, error, reused, matchedTitle, matchedBy }:
+ * Returns { url, cached, error, reused, matchedTitle, matchedBy, catalog }. `catalog` is what the draw index knows this draw as, { slug, title, priceType, matchedBy: 'title' | 'alias' | 'items' }, or null; it is set on every path, a provided URL included, so the save can fill in a draw type left blank (utils/bulkMerge.js, handlers/manage/draws.js):
  * - Provided a URL, caching succeeded -> { url: <cloudinary url>, cached: true, error: null, reused: false }
  * - Provided a URL, caching failed -> { url: <original url>, cached: false, error: <message>, reused: false } (falls back to the raw external URL rather than blocking the save -- exactly the failure mode this feature is meant to reduce, but a save must never hard-fail just because Cloudinary hiccuped)
- * - No URL provided, found a match -> { url: <cloudinary url>, cached: true, error: null, reused: true, matchedBy: 'title' | 'items' | 'similar-title' } (matchedTitle names the draw it came from unless the title is the same)
+ * - No URL provided, found a match -> { url: <cloudinary url>, cached: true, error: null, reused: true, matchedBy: 'title' | 'alias' | 'items' | 'similar-title' } (matchedTitle names the draw it came from unless the title is the same)
  * - No URL provided, nothing cached -> { url: null, cached: false, error: 'No URL provided and no cached image found...', reused: false } (caller MUST treat this as a real validation error -- there is nothing to show a thumbnail with; the message names the closest draw by items when one is close)
  */
 async function resolveThumbnail(title, providedUrl, draw = null) {
+    const catalog = require('./drawCatalog');
+    const entries = await catalog.loadCatalog();
+    // What the draw index says this draw IS (its own title, another name, or its items; never a near-miss), returned whatever happens to the image, so the caller can fill in a draw type the admin left blank.
+    const known = catalog.matchCatalog(entries, title, draw);
+    const found = known ? { slug: known.entry.slug, title: known.entry.title, priceType: known.entry.priceType || '', matchedBy: known.matchedBy } : null;
+
     if (providedUrl && providedUrl.trim()) {
         const result = await cacheThumbnail(title, providedUrl.trim(), draw);
-        if (result.cached) return { url: result.url, cached: true, error: null, reused: false };
-        return { url: providedUrl.trim(), cached: false, error: result.error, reused: false };
+        if (result.cached) return { url: result.url, cached: true, error: null, reused: false, catalog: found };
+        return { url: providedUrl.trim(), cached: false, error: result.error, reused: false, catalog: found };
     }
+    const reuse = (url, matchedTitle, matchedBy) => ({ url, cached: true, error: null, reused: true, matchedTitle, matchedBy, catalog: found });
 
-    // 1. The title's own slug.
+    // 1. The title's own slug, or another name it ran under: the draw index, then Cloudinary.
+    const named = catalog.matchByName(entries, title);
+    if (named) {
+        if (named.matchedBy === 'title') {
+            if (draw) await linkDrawMetadata(named.entry.publicId, title, draw);
+            return reuse(withDeliveryDefaults(named.entry.imageUrl), null, 'title');
+        }
+        return reuse(withDeliveryDefaults(named.entry.imageUrl), named.entry.title, 'alias');
+    }
     const exactUrl = await getCachedUrl(title);
     if (exactUrl) {
         if (draw) await linkDrawMetadata(publicIdFor(title), title, draw);
-        return { url: exactUrl, cached: true, error: null, reused: true, matchedTitle: null, matchedBy: 'title' };
+        return reuse(exactUrl, null, 'title');
     }
 
     // 2. The same items at the same rarities, under whatever title it had.
     if (draw) {
+        const byItems = catalog.matchByItems(entries, draw);
+        if (byItems) return reuse(withDeliveryDefaults(byItems.entry.imageUrl), byItems.entry.title, 'items');
         const linked = await findByFingerprint(draw);
-        if (linked) return { url: linked.url, cached: true, error: null, reused: true, matchedTitle: linked.title, matchedBy: 'items' };
+        if (linked) return reuse(linked.url, linked.title, 'items');
     }
 
     // 3. Fuzzy title (added 2026-07-31 17:20 EDT, Harkirat's request) -- an exact-slug miss no longer means "nothing cached", it means "try a near-match first". A typo or a slight rewording of the same draw's title used to silently fail this lookup and force a fresh upload of the exact same image under a second public_id.
+    const similar = catalog.matchBySimilarTitle(entries, title);
+    if (similar) return reuse(withDeliveryDefaults(similar.entry.imageUrl), similar.entry.title, 'similar-title');
     const match = await getCachedUrlFuzzy(title);
-    if (match) return { url: match.url, cached: true, error: null, reused: true, matchedTitle: match.exact ? null : match.matchedTitle, matchedBy: match.exact ? 'title' : 'similar-title' };
+    if (match) return reuse(match.url, match.exact ? null : match.matchedTitle, match.exact ? 'title' : 'similar-title');
 
     let error = 'No URL provided and no cached image found for this draw name.';
     if (draw) {
-        const near = await closestDrawImage(draw);
+        const near = catalog.closestByItems(entries, draw) || await closestDrawImage(draw);
         if (near) error += ` Closest by items: "${near.title}" (${near.shared} of ${near.total} the same), not reused: send its image, or give this draw that title.`;
     }
-    return { url: null, cached: false, error, reused: false };
+    return { url: null, cached: false, error, reused: false, catalog: found };
 }
 
 // Character-level similarity (Levenshtein-based), NOT utils/search.js's word-overlap isSameDrawTitle -- that one is built for reworded/extra-word title variants of the SAME draw (“same content, different wording”), which is the wrong tool for "same title, off by a typo or a small tweak." Plain iterative Levenshtein (no recursion, no external dep) is plenty fast at title-length strings.
@@ -373,7 +427,8 @@ async function closestDrawImage(draw) {
 }
 
 module.exports = {
+    catalogMirrorPlan, mirrorCatalogToCloudinary,
     slugify, publicIdFor, legacyPublicIdFor, slugOf, cacheThumbnail, getCachedUrl, resolveThumbnail, listCachedAssets,
-    itemKeys, drawFingerprint, drawSimilarity, priceTypesAgree, metadataFor, readDrawContext, pickClosest, findByFingerprint, linkDrawMetadata,
-    FOLDER, LEGACY_FOLDER, DRAW_TAG, FP_TAG_PREFIX, SUGGEST_SIMILARITY
+    itemKeys, drawFingerprint, drawSimilarity, priceTypesAgree, metadataFor, readDrawContext, pickClosest, findByFingerprint, linkDrawMetadata, titleSimilarity,
+    FOLDER, LEGACY_FOLDER, DRAW_TAG, FP_TAG_PREFIX, SUGGEST_SIMILARITY, FUZZY_SIMILARITY_THRESHOLD
 };

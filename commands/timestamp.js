@@ -15,15 +15,15 @@ const PRESET_ACCENT = 1548962; // Cyber Teal (#17A2A2)
 const STYLE_SELECT_OPTIONS = [
     { label: "All Formats Overview", value: "all_formats", description: "Shows every format together as a summary" },
     { label: "Short List", value: "short_list", description: "The 6 most used formats" },
-    { label: "Full Date, Short Time (F)", value: "fullDateTime", description: "e.g., Tuesday, April 20, 2021 at 16:20" },
-    { label: "Long Date, Short Time (f)", value: "longDateTime", description: "e.g., April 20, 2021 at 16:20" },
+    { label: "Full Date, Short Time (F)", value: "fullDateTime", description: "e.g., Tuesday, April 20, 2021 at 4:20 PM" },
+    { label: "Long Date, Short Time (f)", value: "longDateTime", description: "e.g., April 20, 2021 at 4:20 PM" },
     { label: "Long Date (D)", value: "longDate", description: "e.g., April 20, 2021" },
-    { label: "Short Date (d)", value: "shortDate", description: "e.g., 20/04/2021" },
-    { label: "Medium Time (T)", value: "mediumTime", description: "e.g., 16:20:30" },
-    { label: "Short Time (t)", value: "shortTime", description: "e.g., 16:20" },
-    { label: "Short Date, Short Time (s)", value: "shortDateTimeShort", description: "e.g., 20/04/2021, 16:20" },
-    { label: "Short Date, Medium Time (S)", value: "shortDateTimeMedium", description: "e.g., 20/04/2021, 16:20:30" },
-    { label: "Relative Time (R)", value: "relative", description: "e.g., 4 years ago" }
+    { label: "Short Date (d)", value: "shortDate", description: "e.g., 2021-04-20" },
+    { label: "Medium Time (T)", value: "mediumTime", description: "e.g., 4:20:30 PM" },
+    { label: "Short Time (t)", value: "shortTime", description: "e.g., 4:20 PM" },
+    { label: "Short Date, Short Time (s)", value: "shortDateTimeShort", description: "e.g., 2021-04-20, 4:20 PM" },
+    { label: "Short Date, Medium Time (S)", value: "shortDateTimeMedium", description: "e.g., 2021-04-20, 4:20:30 PM" },
+    { label: "Relative Time (R)", value: "relative", description: "e.g., 5 years ago" }
 ];
 
 // The format each style value stands for, and the label shown above it: Discord's own names, the words the dropdown already uses. The overview shows ALL_CODES; Short List (added 2026-10-20 18:23 EDT, Harkirat) shows the six people paste most, longest first.
@@ -129,9 +129,24 @@ async function timezoneAutocomplete(interaction) {
     return await interaction.respond(list.slice(0, 25).map(o => ({ name: o.label.slice(0, 100), value: o.value })));
 }
 
+// The typed date and time, read in `tz`: { unix, endUnix } or null when nothing in it reads as a time. Shared by the slash command and Edit timestamp (handlers/timestamp.js).
+function parseQuery(queryInput, tz) {
+    const base = generateTimestamps(expandShorthand(String(queryInput || '')), tz);
+    return base && base.unix ? base : null;
+}
+
+// The row under the panel (2026-11-01 15:19 EDT, Harkirat's panel update): Edit timestamp (grey, the Edit emoji) opens a form with the panel's own date and time, timezone, view and format; the timezone button is blue "Set timezone" until the panel's owner has saved one, then grey "My timezone", and saves the PRESSER's own zone, which /timestamp, /remind and /settings all read. Both ids carry the owner, so a re-render and the form know whose panel it is.
+function panelActionRow(ownerId, ownerHasZone) {
+    const zone = ownerHasZone ? { style: 2, label: 'My timezone' } : { style: 1, label: 'Set timezone' };
+    return { type: 1, components: [
+        { type: 2, style: 2, label: 'Edit timestamp', custom_id: `tsedit|${ownerId}`, emoji: emojis.parseEmoji(emojis.edit) },
+        { type: 2, ...zone, custom_id: `tszone|${ownerId}`, emoji: emojis.parseEmoji(emojis.timezone) },
+    ] };
+}
+
 module.exports = {
     autocomplete: timezoneAutocomplete,
-    resolveStyle, OVERVIEW_STYLES, expandShorthand,
+    resolveStyle, OVERVIEW_STYLES, expandShorthand, parseQuery, STYLE_SELECT_OPTIONS, panelActionRow,
     PRESET_ACCENT, // Exposed so handlers/timestamp.js's tsmenu re-render handler can resolve the same accent
                    // color the initial render would have used (see overrideState.accentColor above).
     data: new SlashCommandBuilder()
@@ -155,15 +170,15 @@ module.exports = {
                 .addChoices(
                     { name: 'Short List — the 6 most used formats', value: 'short_list' },
                     { name: 'All Formats — every format', value: 'all_formats' },
-                    { name: 'Full Date, Short Time (F) — e.g., Tuesday, April 20, 2021 at 16:20', value: 'fullDateTime' },
-                    { name: 'Long Date, Short Time (f) — e.g., April 20, 2021 at 16:20', value: 'longDateTime' },
+                    { name: 'Full Date, Short Time (F) — e.g., Tuesday, April 20, 2021 at 4:20 PM', value: 'fullDateTime' },
+                    { name: 'Long Date, Short Time (f) — e.g., April 20, 2021 at 4:20 PM', value: 'longDateTime' },
                     { name: 'Long Date (D) — e.g., April 20, 2021', value: 'longDate' },
-                    { name: 'Short Date (d) — e.g., 20/04/2021', value: 'shortDate' },
-                    { name: 'Medium Time (T) — e.g., 16:20:30', value: 'mediumTime' },
-                    { name: 'Short Time (t) — e.g., 16:20', value: 'shortTime' },
-                    { name: 'Short Date, Short Time (s) — e.g., 20/04/2021, 16:20', value: 'shortDateTimeShort' },
-                    { name: 'Short Date, Medium Time (S) — e.g., 20/04/2021, 16:20:30', value: 'shortDateTimeMedium' },
-                    { name: 'Relative Time (R) — e.g., 4 years ago', value: 'relative' }
+                    { name: 'Short Date (d) — e.g., 2021-04-20', value: 'shortDate' },
+                    { name: 'Medium Time (T) — e.g., 4:20:30 PM', value: 'mediumTime' },
+                    { name: 'Short Time (t) — e.g., 4:20 PM', value: 'shortTime' },
+                    { name: 'Short Date, Short Time (s) — e.g., 2021-04-20, 4:20 PM', value: 'shortDateTimeShort' },
+                    { name: 'Short Date, Medium Time (S) — e.g., 2021-04-20, 4:20:30 PM', value: 'shortDateTimeMedium' },
+                    { name: 'Relative Time (R) — e.g., 5 years ago', value: 'relative' }
                 ))
         // Slash-command-exclusive (2026-07-14, Harkirat's request) -- deliberately NOT saved to /settings or UserPreference; every invocation defaults to Embed unless explicitly typed. Works identically for the All Formats overview and every individual style view. Renamed 'format' -> 'view' (2026-07-18, v2 quick-wins batch) -- "format" read as if it picked a TIMESTAMP format (fullDateTime/shortDate/etc, already the job of the `style` option above); "view" is what this option actually controls (Embed panel vs plain text).
         .addStringOption(option =>
@@ -184,7 +199,7 @@ module.exports = {
 
     // NOTE (de-duplicated during review): this used to have a full second copy of both view layouts living in handlers/timestamp.js's 'tsmenu|' select handler, because that handler needed to re-render the SAME already-parsed timestamp under a different style without re-running chrono (a relative input like "tomorrow" would resolve to a different date if re-parsed later). The two copies had already drifted out of sync twice across earlier redesigns. Fixed properly now via the same synthetic-interaction pattern every other command uses: `overrideState` lets handlers/timestamp.js pass in the already-known { unix, tz, queryInput, style } instead of re-deriving them from slash command options, while both code paths still share this single render implementation below.
     async execute(interaction, overrideState = null) {
-        let queryInput, tz, style, unix, endUnix = null, ephemeral, accentColor, isTextMode;
+        let queryInput, tz, style, unix, endUnix = null, ephemeral, accentColor, isTextMode, ownerId, ownerHasZone;
 
         if (overrideState) {
             // Invoked from handlers/timestamp.js's tsmenu dropdown handler — reuse the exact original parse instead of re-parsing. Never ephemeral here since the dropdown-driven re-render path never applied the ephemeral flag (matches prior behavior).
@@ -196,10 +211,15 @@ module.exports = {
             accentColor = overrideState.accentColor ?? PRESET_ACCENT;
             // textMode (2026-07-14) -- same "preserve whatever the message already had" logic as ephemeral above, so switching styles via the dropdown doesn't silently bounce a text response back to the embed layout. handlers/timestamp.js derives this from the message's OWN Components V2 flag (32768) before calling in, the same way it derives ephemeral from the 64 bit — there's no `format` option to read here since overrideState skips normal option resolution entirely.
             isTextMode = Boolean(overrideState.isTextMode);
+            // Whose panel it is and whether they have saved a timezone, for the button row (handlers/timestamp.js reads both off the message, or the presser's own for a new panel).
+            ownerId = overrideState.ownerId || interaction.user?.id;
+            ownerHasZone = Boolean(overrideState.ownerHasZone);
         } else {
             queryInput = interaction.options.getString('datetime');
             isTextMode = interaction.options.getString('view') === 'text';
             const prefs = await UserPreference.findOne({ discordId: interaction.user.id });
+            ownerId = interaction.user.id;
+            ownerHasZone = Boolean(prefs?.timezoneSetAt && prefs?.timezone);
             // explicit option > saved /settings timezone > Toronto (UserPreference.timezone's own default). The saved zone was fetched a few lines below and never read for this until 2026-10-20 16:50 EDT, so a user who saved Tokyo got Toronto's 9am while /help said otherwise.
             tz = require('../utils/timezoneData').resolveTimezone(interaction.options.getString('timezone')) || prefs?.timezone || 'America/Toronto';
 
@@ -224,10 +244,8 @@ module.exports = {
                 await interaction.deferReply();
             }
 
-            const processedQuery = expandShorthand(queryInput);
-
-            const timestampsBase = generateTimestamps(processedQuery, tz);
-            if (!timestampsBase || !timestampsBase.unix) {
+            const timestampsBase = parseQuery(queryInput, tz);
+            if (!timestampsBase) {
                 // LIBRARY SERIALIZATION BYPASS PROTOCOL (ON ERROR RENDER):
                 return interaction.client.rest.patch(
                     Routes.webhookMessage(interaction.applicationId, interaction.token, '@original'),
@@ -253,7 +271,8 @@ module.exports = {
         const dropdownComponent = {
             type: 3,
             custom_id: statelessCustomId,
-            placeholder: "Switch to a singular layout style...",
+            // His hint line's words (2026-10-20 18:30 EDT); a phone shows the placeholder as the menu's title (2026-11-01 15:08 EDT, his "the dropdowns title needs updating"). The examples below are how Discord shows each style in English (US) today, read off his screenshots: a 12-hour clock and a year-first short date.
+            placeholder: "Switch views or pick a format",
             options: STYLE_SELECT_OPTIONS.map(opt => ({ ...opt, default: opt.value === (style || 'all_formats') }))
         };
 
@@ -261,20 +280,21 @@ module.exports = {
         const codes = style === 'short_list' ? SHORT_LIST_CODES : (style && STYLE_CHAR[style] ? [STYLE_CHAR[style]] : ALL_CODES);
         const headingLine = `## ${emojis.timestamp} Timestamp Codes\n-# Everyone sees these in their own time zone.\n-# **Tap a \`<code>\` to copy it.**`;
         const { rangeText } = require('../utils/timestampHelper');
-        const rowsBlock = codes.map(c => {
+        // One Text Display per format (2026-11-01 15:05 EDT, Harkirat: "each of those groups should be separate text boxes. remove the large spacing from between them"): the gap Discord puts between components is tighter than the blank line one box needed.
+        const rows = codes.map(c => {
             const text = rangeText(Number(unix), endUnix ? Number(endUnix) : null, c, tz);
             const label = endUnix && c === 'R' ? `${FORMAT_LABELS[c]} (STARTS)` : FORMAT_LABELS[c];
             return `-# **${label}**\n**${text}**\n-# \`${text}\``;
-        }).join('\n\n');
-        const hintLine = `-# Switch views or pick a format`; // Harkirat's wording, 2026-10-20 18:30 EDT
+        });
+        const rowsBlock = rows.join('\n\n');
 
         let componentPayload;
         // Plain message content for text mode (2026-07-14) -- undefined in embed mode, where the container's own Text Display components carry everything instead. See sendV2Payload's `content` param.
         let textContent;
         if (isTextMode) {
             // Text mode: the same strings with no container chrome; a blank line stands in for each divider, and the dropdown becomes a top-level row.
-            textContent = [headingLine, rowsBlock, parsedLine, hintLine].join('\n\n');
-            componentPayload = [{ type: 1, components: [dropdownComponent] }];
+            textContent = [headingLine, rowsBlock, parsedLine].join('\n\n');
+            componentPayload = [panelActionRow(ownerId, ownerHasZone), { type: 1, components: [dropdownComponent] }];
         } else {
             componentPayload = [{
                 type: 17, // Components v2: Container
@@ -282,13 +302,15 @@ module.exports = {
                 components: [
                     { type: 10, content: headingLine },
                     { type: 14, spacing: 2, divider: true },
-                    { type: 10, content: rowsBlock },
-                    { type: 14, spacing: 2, divider: true },
-                    { type: 10, content: parsedLine },
-                    { type: 10, content: hintLine },
-                    { type: 1, components: [dropdownComponent] } // Action Row nested inside the container, not a sibling
+                    ...rows.map(content => ({ type: 10, content })),
+                    // A small divider above Parsed, and nothing under it (2026-11-01 15:19 EDT, Harkirat's panel update: the hint line "Switch views or pick a format" went, and the dropdown moved out of the panel).
+                    { type: 14, spacing: 1, divider: true },
+                    { type: 10, content: parsedLine }
                 ]
-            }];
+            },
+            // Outside the panel: the buttons, then the dropdown under them (his layout, 15:19 EDT).
+            panelActionRow(ownerId, ownerHasZone),
+            { type: 1, components: [dropdownComponent] }];
         }
 
         // --- LIBRARY SERIALIZATION BYPASS --- 32768 (1 << 15) forces Discord's gateway API to open the Components V2 engine route -- OMITTED entirely in text mode (2026-07-14) so the message renders as a classic plain-text response instead (content field + non-V2 action rows, which Discord supports identically in both systems). `flags` explicitly re-ORs in the ephemeral bit (64) rather than relying on sendV2Payload's plain 32768 default -- this render path (via overrideState, see the dropdown-driven re-render at the top of this function) doesn't go through a normal deferReply() that would set ephemeral state on its own, so it has to be preserved here. `flags: 0` (public + text mode) is intentional, not a bug -- sendV2Payload's default param only triggers on `undefined`, not on falsy values, so 0 is never silently overridden.

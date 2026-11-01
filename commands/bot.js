@@ -333,8 +333,8 @@ const RECORD_VIEWS = {
         },
         // The player-facing card, from commands/draws.js itself.
         render: (d) => require('./draws').buildDrawSections([{ ...d, items: d.items || [] }]),
-        // 🔴 MEASURED, AND IT KILLED THE FEATURE THIS WAS PLANNED AS. The phase-2 plan assumed a draw's `date` decides whether players see it, so this panel would say "scheduled until X / already past". It does not: commands/draws.js renders seasonalDoc.newDraws / returningDraws IN FULL -- no .filter(), no Date.now(), no visibility test anywhere in the file. The date is a label it prints, nothing more. "Scheduled" would have been a confident falsehood, and the true statement is the more useful one anyway: every draw edit is live the instant it saves.
-        visibility: () => `🟢 **Players can see this now.** \`/draws\` lists every draw in the season — the date is a label it shows, not a schedule that hides it.`,
+        // 🔴 MEASURED, AND IT KILLED THE FEATURE THIS WAS PLANNED AS. The phase-2 plan assumed a draw's `date` decides whether players see it, so this panel would say "scheduled until X / already past". It does not: commands/draws.js renders seasonalDoc.newDraws / returningDraws IN FULL -- no .filter(), no Date.now(), no visibility test anywhere in the file. The date is a label it prints, nothing more. "Scheduled" would have been a confident falsehood, and the true statement is the more useful one anyway: every draw edit is live the instant it saves. 2026-11-01: /draws gained a filter (Upcoming, Live, Leaving soon, Ended), but a player has to pick it; the panel /draws opens on still lists every draw, so the sentence below stays true with the filter named.
+        visibility: () => `🟢 **Players can see this now.** \`/draws\` lists every draw in the season — the date is a label it shows, not a schedule that hides it. Only a filter a player picks narrows the list.`,
     },
     calendar: {
         noun: 'event', dateOnly: ['date', 'endDate'],
@@ -356,8 +356,8 @@ const RECORD_VIEWS = {
             // Two fields, lean, on an admin-only panel -- an `isOngoing` entry ends when the Battle Pass does, and that lives on the season doc rather than the entry.
             const doc = await SeasonalData.findOne({ docType: 'global' }).select('bpEnd bpEndTBD').lean();
             return isEventEnded(e, doc || {}, Date.now())
-                ? `⚫ **This one has already ended.** It is hidden from \`/calendar\`'s Live Right Now and Upcoming filters, but still listed in the Full Timeline and Past/Ended.`
-                : `🟢 **Players can see this now.** It shows on \`/calendar\` in the Full Timeline and in the Live Right Now or Upcoming filter.`;
+                ? `⚫ **This one has already ended.** It is hidden from \`/calendar\`'s Active Now and Upcoming filters, but still listed in the Full Timeline and Past/Ended.`
+                : `🟢 **Players can see this now.** It shows on \`/calendar\` in the Full Timeline and in the Active Now or Upcoming filter.`;
         },
     },
     loadouts_mp: {

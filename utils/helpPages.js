@@ -1,6 +1,6 @@
 // utils/helpPages.js -- /help's pages since B6: one page per command, each in a typed and a slash view, and the home page (Harkirat's designs, approved in #testing-spam 2026-10-29 19:02-23:52 EDT; the category pages and their dropdown are gone, his "sure" 2026-10-29 17:07 EDT).
 //
-// THE LAYOUT, his (2026-10-29 19:02 EDT, refined through 20:59 EDT): `## icon Name` with a `-#` line, a large divider, the usage (`### \`d draws [new|returning]\`` with the aliases under it, or the slash mention), one text box per option, a button row (Slash Command / Text Command, plus Detailed view or Calc Guide where a page has one), a small divider, the reply / right-click / bell section if any and another small divider, `-# **Examples**`, then the Usage legend. The command switcher sits OUTSIDE the card, above /help's footer row.
+// THE LAYOUT, his (2026-10-29 19:02 EDT, refined through 20:59 EDT): `## icon Name` with a `-#` line, a large divider, the usage (`### \`d draws [new|returning]\`` with the aliases under it, or the slash mention), one text box per option, a button row (Slash Command / Text Command, plus Detailed view or Calc Guide where a page has one), a small divider, the reply / right-click / bell section if any and another small divider, `-# **Examples**`, then the Usage legend. The command switcher sits at the foot of the card behind a small divider (moved inside 2026-11-01), and /help's footer row stays outside, under it.
 //
 // THE RULES (his, 2026-10-29): a typed page names other commands typed (`d settings`), a slash page keeps slash names (20:45 EDT); every word a typed page shows comes from utils/textCommands/commands.js (`helpWord`, `shown`, a value's `shown` / `group` / `label`), so a page cannot promise a word the parser does not accept (scripts/helpTextCommands.test.js parses them); and each page is written from the command's own code, never from the old help prose (21:52 EDT, after the /admin miss). The seven Bot Admin pages other than /manage carry their old help text unchanged, one page each (his "skip bot admin", 22:49 EDT), and /admin's text waits for B7 (his call, 22:00 EDT).
 const emojis = require('./emojiMap');
@@ -108,13 +108,19 @@ const PAGES = {
     '/draws': {
         blurb: "This season's new and returning Lucky Draws, with their items",
         page(x) {
-            const shows = text(`**On the page**\n> -# **New / Returning Draws**  *Jump to the other list*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# ${bell()} **Bell**  *Opens your reminders privately*`);
-            if (x.view !== 'text') return { boxes: [text('`[page]`\n-# Open on New Draws or Returning Draws'), VIS, shows], examples: [['/draws'], ['/draws page:Returning Draws']] };
+            // The Filter menu replaced the New / Returning Draws button on 2026-11-01 (commands/draws.js FILTER_OPTIONS).
+            const shows = text(`**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Active now, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# ${bell()} **Bell**  *Opens your reminders privately*`);
+            if (x.view !== 'text') return { boxes: [text('`[page]`\n-# Open on New Draws or Returning Draws'), text('`[filter]`\n-# Upcoming, Active Now, Leaving Soon or Ended'), VIS, shows], examples: [['/draws'], ['/draws page:Returning Draws'], ['/draws filter:Leaving Soon']] };
             const words = value => valuesOf('/draws', 'page').find(v => v.value === value).aliases.filter(a => a !== 'all');
+            const states = value => valuesOf('/draws', 'filter').find(v => v.value === value).aliases.slice(0, 3);
             return {
-                args: '[new|returning]',
-                boxes: [text(`**Page**\n-# Open on New or Returning. Blank opens on New\n> -# **New** ${dot(words('new'))}\n> -# **Returning** ${dot(words('returning'))}`), shows],
-                examples: [[`${x.p} draws`, "This season's draws"], [`${x.p} draws returning`, 'Straight to Returning'], [`${x.p} ld r`, 'The same, shortest']],
+                args: '[new|returning] [filter]',
+                boxes: [
+                    text(`**Page**\n-# Open on New or Returning. Blank opens on New\n> -# **New** ${dot(words('new'))}\n> -# **Returning** ${dot(words('returning'))}`),
+                    text(`**Filter**\n-# Blank shows every draw\n> -# **Upcoming** ${dot(states('upcoming'))}\n> -# **Active now** ${dot(states('live'))}\n> -# **Leaving soon** ${dot(states('leaving'))}\n> -# **Ended** ${dot(states('ended'))}`),
+                    shows,
+                ],
+                examples: [[`${x.p} draws`, "This season's draws"], [`${x.p} draws returning`, 'Straight to Returning'], [`${x.p} ld r`, 'The same, shortest'], [`${x.p} draws leaving`, 'Draws ending within 3 days']],
             };
         },
     },
@@ -122,7 +128,7 @@ const PAGES = {
         blurb: "This season's draws, events and modes on one timeline",
         page(x) {
             const shows = text(`**On the page**\n> -# **Filter menu**  *Mix statuses and types*\n> -# ${bell()} **Bell**  *Opens your reminders privately*`);
-            if (x.view !== 'text') return { boxes: [text('`[page]`\n-# Today, Draws, Events, or Playlists & Modes. Blank opens on Today'), text('`[filter]`\n-# Full Timeline, Past/Ended, Live Right Now or Upcoming'), VIS, shows], examples: [['/calendar page:Events filter:Live Right Now'], ['/calendar page:Draws filter:Upcoming']] };
+            if (x.view !== 'text') return { boxes: [text('`[page]`\n-# Today, Draws, Events, or Playlists & Modes. Blank opens on Today'), text('`[filter]`\n-# Full Timeline, Past/Ended, Active Now or Upcoming'), VIS, shows], examples: [['/calendar page:Events filter:Active Now'], ['/calendar page:Draws filter:Upcoming']] };
             return {
                 args: '[page] [filter]',
                 boxes: [
@@ -185,9 +191,11 @@ const PAGES = {
         blurb: 'Turn any date or time into a timestamp everyone sees in their own time zone',
         page(x) {
             const rightClick = text('**Right-click or tap and hold a message**\n-# Apps → **Convert Times**: every date and time in it, in your own time zone');
+            // The buttons and menu under the panel (2026-11-01 15:19 EDT, his panel update), in /calendar's "On the page" shape.
+            const shows = text(`**On the page**\n> -# ${emojis.edit} **Edit timestamp**  *Change the time, timezone, view or format*\n> -# ${emojis.timezone} **Set timezone**  *Saved once, used across Dioreo*\n> -# **Format menu**  *Switch views or pick a format*`);
             if (x.view !== 'text') {
                 return {
-                    boxes: [text(`\`<datetime>\`\nType it the way you'd say it.\n-# Such as ${dot(['tomorrow', 'sun 4:30pm', '8pm to 10pm', '8pm utc+5'])}`), text('`[timezone]`\n-# Any short name, city or country (it searches as you type); blank uses your /settings one'), text('`[style]`\n-# Short List, All Formats, or one format'), text('`[view]`\n-# Embed panel or plain text'), VIS],
+                    boxes: [text(`\`<datetime>\`\nType it the way you'd say it.\n-# Such as ${dot(['tomorrow', 'sun 4:30pm', '8pm to 10pm', '8pm utc+5'])}`), text('`[timezone]`\n-# Any short name, city or country (it searches as you type); blank uses your /settings one'), text('`[style]`\n-# Short List, All Formats, or one format'), text('`[view]`\n-# Embed panel or plain text'), VIS, shows],
                     sections: [rightClick], examples: [['/timestamp datetime:tomorrow 8pm'], ['/timestamp datetime:dec 25 view:Text']],
                 };
             }
@@ -197,7 +205,7 @@ const PAGES = {
                     text(`**Date or time**\nType it the way you'd say it, or a range.\n-# Such as ${dot(['tomorrow 8pm', 'in 2 days', '8pm to 10pm', 'dec 24 to dec 26'])}`),
                     text(`**Time zone**\nAt the end, any IANA name, short name, city or country. ${code('tz:')} in front works too.\n> -# **IANA names** ${dot(['asia/tokyo', 'europe/london', 'america/chicago'])} *+ more*\n> -# **Short names** ${dot(['est', 'pst', 'cst', 'gmt', 'cet', 'ist', 'jst'])} *+ more*\n> -# **Cities** ${dot(['nyc', 'london', 'tokyo', 'sydney', 'dubai'])} *+ more*\n> -# **Countries** ${dot(['uk', 'india'])} *+ more*\n> -# **Offsets** ${dot(['utc+5', 'gmt-4', 'utc+5:30'])} *+ more*\n-# Blank uses your ${code(`${x.p} settings`)} time zone default`),
                 ],
-                sections: [text(`**Reply to a message**\n-# Reply with ${code(`${x.p} ts`)} and every time in that message is converted`), rightClick],
+                sections: [shows, text(`**Reply to a message**\n-# Reply with ${code(`${x.p} ts`)} and every time in that message is converted`), rightClick],
                 examples: [[`${x.p} ts tomorrow 8pm`, 'Tomorrow, 8 PM'], [`${x.p} time fri 6pm tokyo`, 'Friday, 6 PM in Tokyo'], [`${x.p} ts 8pm to 10pm tz:pst`, 'A range, Pacific'], [`${x.p} ts`, "As a reply: that message's times"]],
             };
         },
@@ -415,7 +423,7 @@ function buildHome({ client, view, canSwitch, hero, adminNames = [], prefixes = 
     return out;
 }
 
-// The command switcher, outside the card above the footer (his ask, 2026-10-29 18:17 EDT): All commands first; on a typed view each page's name with its typed word under it, on a slash view the slash command with the name under it (18:56 EDT). Commands with no text form show as slash on both. A full admin's list is 19 of Discord's 25 since /bot's subcommands became one page (2026-10-30 14:05 EDT).
+// The command switcher, at the foot of the card (outside it, above the footer, from 2026-10-29 18:17 EDT until his 2026-11-01 15:35 EDT "move /help's dropdown inside the panel"): All commands first; on a typed view each page's name with its typed word under it, on a slash view the slash command with the name under it (18:56 EDT). Commands with no text form show as slash on both. A full admin's list is 19 of Discord's 25 since /bot's subcommands became one page (2026-10-30 14:05 EDT).
 function buildSwitcher({ names, current = null, view, client, seasonEmoji = null, prefixes = null }) {
     const typed = view === 'text';
     const p = firstPrefix(client, prefixes);
