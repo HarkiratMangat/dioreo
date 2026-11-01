@@ -219,8 +219,9 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
         const at = Math.min(Math.max(0, subPage), pages.length - 1);
         const chunk = pages[at];
         const onlyOne = picked.length === 1 ? picked[0] : null;
-        titleEmoji = onlyOne === 'returning' ? emojis.returningDraws : emojis.newDraws;
-        titleLabel = onlyOne === 'new' ? 'New Draws' : onlyOne === 'returning' ? 'Returning Draws' : 'Draws';
+        // Both sections: ":Filter: Viewing Filtered Draws" (his wording, 14:07 EDT); one section keeps its own name and icon.
+        titleEmoji = onlyOne === 'returning' ? emojis.returningDraws : onlyOne === 'new' ? emojis.newDraws : emojis.filter;
+        titleLabel = onlyOne === 'new' ? 'New Draws' : onlyOne === 'returning' ? 'Returning Draws' : 'Viewing Filtered Draws';
         body = [];
         if (!flat.length) body.push({ type: 10, content: `${emojis.warn} *No draws match this filter.*` });
         let group = null;
