@@ -65,7 +65,7 @@ function carriedFromSeason(draw, seasonalDoc) {
     return n ? `Season ${n}` : 'last season';
 }
 
-// ctx: { seasonalDoc, nowMs, tagNew } -- the season (for each draw's /calendar end date and its From Season tag), the clock, and whether to mark New draws (the filtered list mixes both sections). A caller with no season (/bot analytics' change detail) still gets a labelled start line.
+// ctx: { seasonalDoc, nowMs } -- the season (for each draw's /calendar end date and its Ongoing since line) and the clock. A caller with no season (/bot analytics' change detail) still gets a labelled start line.
 function buildDrawSections(drawsArray, ctx = {}) {
     const sections = [];
     drawsArray.forEach(draw => {
@@ -80,13 +80,12 @@ function buildDrawSections(drawsArray, ctx = {}) {
         });
 
         const dateLine = drawDateLines(draw, ctx);
-        const newTag = ctx.tagNew && draw._section === 'new' ? `\n-# ${emojis.newDraws} New draw` : '';
-        // Inside the quote, under the dates, small, the whole line italic with "Ongoing" bold, no icon (his layout, 14:45 EDT, after trying it outside the quote behind the section's icon). `_` for the italic: `***Ongoing**` would read as bold-italic opening.
+        // Inside the quote, under the dates, small, padded with `blank` like the date above it, the whole line italic with "Ongoing" bold (his layout, 14:45 and 14:46 EDT, after trying it outside the quote behind the section's icon). `_` for the italic: `***Ongoing**` would read as bold-italic opening. The "New draw" line the filtered list put under a title went at the same time (14:46 EDT, his "remove the new draw/returning draw from it").
         const from = carriedFromSeason(draw, ctx.seasonalDoc);
-        const fromLine = from ? `\n> -# _**Ongoing** since ${from}_` : '';
+        const fromLine = from ? `\n> -# ${emojis.blank} _**Ongoing** since ${from}_` : '';
 
         // Relative timestamp added in brackets alongside the date, per redesign request. `f` (Long Date, Short Time) instead of `F` (Full Date, Short Time) — drops the day-of-week text, which was mostly just extra width for no real benefit here. Layout H (Harkirat, 2026-10-21 11:35 EDT, "yeah lets go H", picked from mock-ups A–H in #testing-spam): a `###` title, the date in a quote right under it, then the items with an em dash before the skin. The title used to be `**__bold underline__**` with the date last, and on a phone the draws ran together. The date keeps its time although it wraps on a phone: "I've actually seen people confused about the exact time something launches". `-#` on the date was tried and does nothing to a timestamp on mobile.
-        const compose = (lines, hidden) => `### ${draw.title}${newTag}\n${dateLine}${fromLine}\n${lines.join('\n')}${hidden ? `\n-# …and ${hidden} more` : ''}`;
+        const compose = (lines, hidden) => `### ${draw.title}\n${dateLine}${fromLine}\n${lines.join('\n')}${hidden ? `\n-# …and ${hidden} more` : ''}`;
         // A single draw too long for one page on its own drops item lines from the end until it fits (see DRAW_TEXT_BUDGET).
         let shown = itemLines;
         let textContent = compose(shown, 0);
@@ -230,7 +229,7 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
         // One list across the kept sections, grouped by state.
         const all = picked.flatMap(k => lists[k]);
         const flat = STATUS_GROUPS.flatMap(g => all.filter(d => g.holds(d.bits)).sort(g.order).map(d => ({ ...d, _group: g })));
-        const pages = paginateDraws(flat, { ...ctx, tagNew: picked.length > 1 }, FILTERED_CHUNK);
+        const pages = paginateDraws(flat, ctx, FILTERED_CHUNK);
         const at = Math.min(Math.max(0, subPage), pages.length - 1);
         const chunk = pages[at];
         const onlyOne = picked.length === 1 ? picked[0] : null;
@@ -241,7 +240,7 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
         let group = null;
         for (const d of chunk) {
             if (d._group !== group) { group = d._group; body.push({ type: 10, content: `## ${emojis[group.emojiKey]} ${group.label}` }); }
-            body.push(...buildDrawSections([d], { ...ctx, tagNew: picked.length > 1 }));
+            body.push(...buildDrawSections([d], ctx));
         }
         pager = buildPaginationRow({
             totalChunks: pages.length, currentPage: at,

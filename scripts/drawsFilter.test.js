@@ -55,7 +55,7 @@ t('a status filter shows one list under /today\'s headings, each draw once', () 
     assert.strictEqual(new Set(titles).size, 16, 'all 16 draws');
     assert.strictEqual(titles.length, 16, 'none twice');
     assert.ok(all.indexOf('Live') < all.indexOf('Leaving soon') && all.indexOf('Leaving soon') < all.indexOf('## ' + emojis.lightBlueDotGlow), 'Live, Leaving soon, Upcoming, Ended');
-    assert.ok(all.includes(`-# ${emojis.newDraws} New draw`), 'both sections: New draws are marked');
+    assert.ok(!all.includes('New draw\n'), 'no New draw line under a title (14:46 EDT, his call)');
     assert.ok(all.includes(`## ${emojis.filter} Viewing Filtered Draws`), 'both sections: his title');
     // Live alone keeps its Leaving soon draws, under their own heading.
     const live = [0, 1, 2].map(p => texts(draws.buildContainer(doc, 'new', p, 1, true, mask('live'))).join('\n')).join('\n');
@@ -119,11 +119,11 @@ t('a draw that started before this season says which season it came from, in eit
     assert.strictEqual(draws.carriedFromSeason(doc.newDraws[7], held), 'Season 7', 'the past season whose dates hold the start');
     // His layout (14:45 EDT): inside the quote under the dates, small, italic, "Ongoing" bold, no icon.
     const page = texts(draws.buildContainer(doc, 'new', 0)).join('\n');
-    assert.ok(/### New Draw 0\n> -#[^\n]*\n> -#[^\n]*\n> -# _\*\*Ongoing\*\* since Season 8_\n/.test(page), 'New: under the dates, in the quote');
-    assert.ok(!/### New Draw 4\n(> -#[^\n]*\n)*> -# _\*\*Ongoing/.test(page), 'no tag on a draw from this season');
+    assert.ok(new RegExp(`### New Draw 0\\n> -#[^\\n]*\\n> -#[^\\n]*\\n> -# ${emojis.blank} _\\*\\*Ongoing\\*\\* since Season 8_\\n`).test(page), 'New: under the dates, in the quote, padded like the date');
+    assert.ok(!/### New Draw 4\n(> -#[^\n]*\n)*> -# [^\n]*Ongoing/.test(page), 'no tag on a draw from this season');
     const grouped = texts(draws.buildContainer(doc, 'new', 0, undefined, false, mask('live'))).join('\n');
-    assert.ok(/### Ret Draw 0\n(> -#[^\n]*\n)+> -# _\*\*Ongoing\*\* since Season 8_/.test(grouped), 'Returning too');
-    assert.ok(grouped.includes(`### New Draw 0\n-# ${emojis.newDraws} New draw\n> -#`), 'the New draw tag stays under the title');
+    assert.ok(/### Ret Draw 0\n(> -#[^\n]*\n)+> -# [^\n]*_\*\*Ongoing\*\* since Season 8_/.test(grouped), 'Returning too');
+    assert.ok(grouped.includes('### New Draw 0\n> -#'), 'nothing between the title and the dates');
 });
 
 t('every filter, section and page fits Discord: 40 components, 4,000 characters, unique ids', () => {
