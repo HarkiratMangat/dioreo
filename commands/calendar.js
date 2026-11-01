@@ -159,7 +159,7 @@ const FILTER_OPTIONS = [
     // Today is a PAGE pick like the three below it (2026-10-23 13:05 EDT, his option C): picked with a type (Lucky Draws, Special Events, Playlists & Modes), the Today page shows only that type; the status picks narrow the three timeline pages only.
     { value: 'today', bit: 64, label: 'Today', emojiKey: 'calendar', description: 'Active now, leaving soon and going live' },
     // Active now, as /draws and the Today page's heading say (14:54 EDT, his "class not instance!!"); the value stays `live`.
-    { value: 'live', bit: 1, label: 'Active now', emojiKey: 'greenDotGlow', description: 'Started, and not ended yet' },
+    { value: 'live', bit: 1, label: 'Active now', emojiKey: 'greenDotGlow', description: 'Live in the game right now' },
     { value: 'over', bit: 2, label: 'Past/Ended', emojiKey: 'redDotGlow', description: 'Already finished this season' },
     { value: 'soon', bit: 4, label: 'Upcoming', emojiKey: 'lightBlueDotGlow', description: "Hasn't started yet" },
     { value: 'draws', bit: 8, label: 'Lucky Draws', emojiKey: 'newDraws', description: 'Draws releasing this season' },

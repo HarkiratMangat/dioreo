@@ -147,7 +147,7 @@ const FILTER_OPTIONS = [
     { value: 'returning', bit: 2, label: 'Returning Draws', emojiKey: 'returningDraws', description: 'Back from an earlier season' },
     { value: 'upcoming', bit: 4, label: 'Upcoming', emojiKey: 'lightBlueDotGlow', description: "Hasn't started yet" },
     // Active now, not Live (14:54 EDT, his "class not instance!!" after the heading took /calendar's Today word at 14:51): the menu, the slash choice and the help say what the heading says. The value stays `live` so posted panels and `d draws live` keep working.
-    { value: 'live', bit: 8, label: 'Active now', emojiKey: 'greenDotGlow', description: 'Started, and not ended yet' },
+    { value: 'live', bit: 8, label: 'Active now', emojiKey: 'greenDotGlow', description: 'Live in the game right now' },
     { value: 'leaving', bit: 16, label: 'Leaving soon', emojiKey: 'yellowDotGlow', description: 'Live, and ends within 3 days' },
     { value: 'ended', bit: 32, label: 'Ended', emojiKey: 'redDotGlow', description: 'Already finished' }
 ];
