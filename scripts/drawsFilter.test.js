@@ -31,17 +31,17 @@ t('each date line is his template: small text, the dot and what happened, then t
     const by = title => doc.newDraws.find(d => d.title === title);
     const R = '<t:\\d+:R>', F = '<t:\\d+:f>';
     const date = `\\n> -# ${emojis.blank} ${F}$`;
-    assert.match(line(by('New Draw 0')), new RegExp(`^> -# ${emojis.greenDotGlow} Live ${R} · Ends ${R}${date}`));
-    assert.match(line(by('New Draw 1')), new RegExp(`^> -# ${emojis.yellowDotGlow} Ending ${R}${date}`), 'leaving soon');
-    assert.match(line(by('New Draw 2')), new RegExp(`^> -# ${emojis.lightBlueDotGlow} Releasing ${R}${date}`));
-    assert.match(line(by('New Draw 3')), new RegExp(`^> -# ${emojis.redDotGlow} Ended ${R}$`), 'ended: no date line');
-    assert.match(line(by('New Draw 4')), new RegExp(`^> -# ${emojis.greenDotGlow} Live ${R}${date}`), 'no /calendar end date: live, over its start date');
+    assert.match(line(by('New Draw 0')), new RegExp(`^> -# ${emojis.greenDotGlow} \\*\\*Active\\*\\* · \\*\\*Ends\\*\\* ${R}${date}`));
+    assert.match(line(by('New Draw 1')), new RegExp(`^> -# ${emojis.yellowDotGlow} \\*\\*Ending\\*\\* ${R}${date}`), 'leaving soon');
+    assert.match(line(by('New Draw 2')), new RegExp(`^> -# ${emojis.lightBlueDotGlow} \\*\\*Releasing\\*\\* ${R}${date}`));
+    assert.match(line(by('New Draw 3')), new RegExp(`^> -# ${emojis.redDotGlow} \\*\\*Ended\\*\\* ${R}$`), 'ended: no date line');
+    assert.match(line(by('New Draw 4')), new RegExp(`^> -# ${emojis.greenDotGlow} \\*\\*Active\\*\\* · since ${R}${date}`), 'no /calendar end date: live, over its start date');
     // The end line shows the END date for a live draw with one.
     const end = Math.floor(new Date(doc.calendar.find(c => c.title === 'New Draw 0').endDate).getTime() / 1000);
     assert.ok(line(by('New Draw 0')).endsWith(`<t:${end}:f>`));
     assert.strictEqual(draws.drawDateLines({ title: 'X', date: null }, { seasonalDoc: doc }), '> -# *Date TBA*');
     // /bot analytics renders a draw with no season: a labelled line all the same.
-    assert.match(draws.buildDrawSections([{ title: 'X', date: new Date(now - D), items: [] }])[0].content, /Live <t:/);
+    assert.match(draws.buildDrawSections([{ title: 'X', date: new Date(now - D), items: [] }])[0].content, /\*\*Active\*\* · since <t:/);
 });
 
 t('a status filter shows one list under /today\'s headings, each draw once', () => {

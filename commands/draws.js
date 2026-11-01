@@ -30,10 +30,10 @@ const DRAW_TEXT_BUDGET = 3400;
 
 // THE DATE LINES (2026-11-01 13:16 EDT, Harkirat: "a user might not understand what that "x days ago" means. Did it end x days ago? did it start x days ago?" and "consider the light blue, green, red, yellow dots infront of the timestamp"). Redesigned to his exact template at 13:54 EDT: small text, the state's dot and a relative line on top (/today's colours: light blue upcoming, green live, yellow leaving soon = live and ending within LEAVING_SOON_MS, red ended), and the one date that matters under it, padded with the `blank` emoji so it lines up after the dot:
 //   upcoming      Releasing in 6 hours              / its start date
-//   live          Live 13 days ago · Ends in 16 days / its end date
+//   live          Active · Ends in 16 days           / its end date (13:03 EDT: "Live 13 days ago · Ends in 16 days" wrapped on his phone, so the start's relative went)
 //   leaving soon  Ending in 2 days                   / its end date
 //   ended         Ended 5 days ago                   (no date line)
-// A live draw with no end on its /calendar row reads "Live 13 days ago" over its start date (my call; his template only shows one with an end). The long `f` date is his pick of three (13:18 EDT): Discord has no "Oct 29" style.
+// The state words are bold (his ask, 13:03 EDT). A live draw with no end on its /calendar row reads "Active · since 13 days ago" over its start date (my call; his template only shows one with an end). The long `f` date is his pick of three (13:18 EDT): Discord has no "Oct 29" style.
 function drawDateLines(draw, ctx = {}) {
     const { state, startMs, endMs, bits } = drawTiming(draw, ctx.seasonalDoc || {}, ctx.nowMs ?? Date.now());
     // A draw saved with no date used to print a raw `<t:NaN:f>` (seen on a dev probe draw, 2026-10-20); it reads "Date TBA" instead.
@@ -43,10 +43,10 @@ function drawDateLines(draw, ctx = {}) {
     const date = ms => `${emojis.blank} <t:${u(ms)}:f>`;
     const hasEnd = Number.isFinite(endMs);
     let lines;
-    if (state === 'over') lines = [`${emojis.redDotGlow} Ended ${rel(endMs)}`];
-    else if (state === 'soon') lines = [`${emojis.lightBlueDotGlow} Releasing ${rel(startMs)}`, date(startMs)];
-    else if (bits & 16) lines = [`${emojis.yellowDotGlow} Ending ${rel(endMs)}`, date(endMs)];
-    else lines = hasEnd ? [`${emojis.greenDotGlow} Live ${rel(startMs)} · Ends ${rel(endMs)}`, date(endMs)] : [`${emojis.greenDotGlow} Live ${rel(startMs)}`, date(startMs)];
+    if (state === 'over') lines = [`${emojis.redDotGlow} **Ended** ${rel(endMs)}`];
+    else if (state === 'soon') lines = [`${emojis.lightBlueDotGlow} **Releasing** ${rel(startMs)}`, date(startMs)];
+    else if (bits & 16) lines = [`${emojis.yellowDotGlow} **Ending** ${rel(endMs)}`, date(endMs)];
+    else lines = hasEnd ? [`${emojis.greenDotGlow} **Active** · **Ends** ${rel(endMs)}`, date(endMs)] : [`${emojis.greenDotGlow} **Active** · since ${rel(startMs)}`, date(startMs)];
     return lines.map(l => `> -# ${l}`).join('\n');
 }
 
