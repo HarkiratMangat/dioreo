@@ -26,6 +26,13 @@ async function check(name, fn) { try { await fn(); console.log(`  ok   ${name}`)
         assert.ok(t.includes('-# **RELATIVE TIME**'));
         assert.ok(t.startsWith('## ') && t.includes('Timestamp Codes'));
     });
+    await check('each format is its own text box, with no blank line inside (2026-11-01 15:05 EDT, his ask)', async () => {
+        const boxes = (await render(null)).components[0].components.filter(c => c.type === 10 && /`<t:\d+:\w>`/.test(c.content));
+        assert.strictEqual(boxes.length, 9);
+        assert.ok(boxes.every(b => codesIn(b.content).length === 1 && !b.content.includes('\n\n')));
+        const all = (await render(null)).components[0].components;
+        assert.ok([all, ...all.map(c => c.components || [])].flat().length < 40, 'under 40 components');
+    });
     await check('Short List shows its six formats, longest first', async () => {
         assert.deepStrictEqual(codesIn(textOf(await render('short_list'))), ['F', 'f', 'D', 'd', 't', 'R']);
     });

@@ -261,11 +261,13 @@ module.exports = {
         const codes = style === 'short_list' ? SHORT_LIST_CODES : (style && STYLE_CHAR[style] ? [STYLE_CHAR[style]] : ALL_CODES);
         const headingLine = `## ${emojis.timestamp} Timestamp Codes\n-# Everyone sees these in their own time zone.\n-# **Tap a \`<code>\` to copy it.**`;
         const { rangeText } = require('../utils/timestampHelper');
-        const rowsBlock = codes.map(c => {
+        // One Text Display per format (2026-11-01 15:05 EDT, Harkirat: "each of those groups should be separate text boxes. remove the large spacing from between them"): the gap Discord puts between components is tighter than the blank line one box needed.
+        const rows = codes.map(c => {
             const text = rangeText(Number(unix), endUnix ? Number(endUnix) : null, c, tz);
             const label = endUnix && c === 'R' ? `${FORMAT_LABELS[c]} (STARTS)` : FORMAT_LABELS[c];
             return `-# **${label}**\n**${text}**\n-# \`${text}\``;
-        }).join('\n\n');
+        });
+        const rowsBlock = rows.join('\n\n');
         const hintLine = `-# Switch views or pick a format`; // Harkirat's wording, 2026-10-20 18:30 EDT
 
         let componentPayload;
@@ -282,7 +284,7 @@ module.exports = {
                 components: [
                     { type: 10, content: headingLine },
                     { type: 14, spacing: 2, divider: true },
-                    { type: 10, content: rowsBlock },
+                    ...rows.map(content => ({ type: 10, content })),
                     { type: 14, spacing: 2, divider: true },
                     { type: 10, content: parsedLine },
                     { type: 10, content: hintLine },
