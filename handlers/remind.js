@@ -8,6 +8,8 @@
 // ⚠️ THE CRASH NET IS THE ROUTER'S, NOT THIS FILE'S (.claude/rules/interaction-router.md): no try/catch that swallows, no listeners, every error reply awaited. And this module serves buttons, a select and a modal submit, so every branch type-tests the interaction (the set_page_2 bug of 2026-08-13).
 
 const { sendV2Payload } = require('../utils/sendV2Payload');
+// The timezone box, the save and the reader's zone live in utils/timezoneBox.js since 2026-11-01 15:19 EDT, shared with /timestamp's Set timezone button.
+const { userZone, saveZone, zoneModal } = require('../utils/timezoneBox');
 const emojis = require('../utils/emojiMap');
 const R = require('../utils/reminders');
 
@@ -24,12 +26,6 @@ async function loadState(userId) {
     return { sub, doc };
 }
 
-// The reader's chosen zone, for the dropdowns' written-out times (utils/reminders.js optionTime); null (shown as UTC) unless they picked one, since `timezone` alone stores its Toronto default on every new record (models/UserPreference.js timezoneSetAt).
-async function userZone(userId) {
-    const UserPreference = require('../models/UserPreference');
-    const prefs = await UserPreference.findOne({ discordId: userId }, { timezone: 1, timezoneSetAt: 1 }).lean();
-    return prefs?.timezoneSetAt && prefs.timezone ? prefs.timezone : null;
-}
 
 // What the panel shows besides the reminders: the reader's zone (as userZone) and whether they turned announcements off (the bottom row's Announcements button, 2026-10-26 15:20 EDT).
 async function panelPrefs(userId) {
@@ -38,27 +34,8 @@ async function panelPrefs(userId) {
     return { timeZone: prefs?.timezoneSetAt && prefs.timezone ? prefs.timezone : null, announcementsOff: Boolean(prefs?.announcementsOff) };
 }
 
-// Saves a picked zone the way /settings does, with the time it was chosen.
-async function saveZone(userId, tz) {
-    const UserPreference = require('../models/UserPreference');
-    await UserPreference.findOneAndUpdate({ discordId: userId }, { $set: { timezone: tz, timezoneSetAt: new Date() } }, { upsert: true, setDefaultsOnInsert: true });
-}
 
-// The Set timezone picker's one-click zones: /settings' own shortlist (utils/timezoneData.js).
-function quickZones() {
-    return require('../utils/timezoneData').quickZoneOptions(); // west to east by offset
-}
 
-// Set timezone opens one box with both ways in (Harkirat, 2026-10-24 21:12 EDT: "Just do a modal when the button is pressed? That holds 2 fields: a search and a quick pick dropdown menu"): /settings' shortlist as a dropdown, the chosen zone pre-selected, and a search field for anything else. Typed text wins over the dropdown, since the dropdown arrives with the current zone already picked. `idPrefix` is remind_tzsearchdm when the box was opened from the timezone tip DM, whose submit confirms in place instead of drawing the panel.
-function zoneModal(owner, current, idPrefix = 'remind_tzsearch') {
-    return {
-        title: 'Set your timezone', custom_id: `${idPrefix}:${owner}`,
-        components: [
-            { type: 18, label: 'Quick pick', description: 'Common timezones', component: { type: 3, custom_id: 'zone', required: false, placeholder: 'Pick your timezone…', options: quickZones().slice(0, 25).map(o => ({ ...o, default: o.value === current })) } },
-            { type: 18, label: 'Or search', description: 'A city, country or abbreviation', component: { type: 4, custom_id: 'query', style: 1, required: false, max_length: 60, placeholder: 'Toronto, London, Tokyo, PST…' } },
-        ],
-    };
-}
 
 function accent() {
     try { return require('../commands/calendar').PRESET_ACCENT; } catch { return undefined; }

@@ -283,8 +283,8 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
     if (confirmStop) {
         // The Stop all confirmation stands alone: no timezone button, a warning heading above the two choices, as the calculator's Delete All does (Harkirat, 2026-10-24 21:38 EDT).
     } else {
-        // Blue "Set timezone" until a zone is chosen, then grey "Adjust timezone" (Harkirat, 2026-10-24 21:29 EDT).
-        foot.push(timeZone ? { type: 2, style: 2, label: 'Adjust timezone', custom_id: `remind_tz:${ownerId}`, emoji: parseEmoji(emojis.timezone) } : { type: 2, style: 1, label: 'Set timezone', custom_id: `remind_tz:${ownerId}`, emoji: parseEmoji(emojis.timezone) });
+        // Blue "Set timezone" until a zone is chosen, then grey (Harkirat, 2026-10-24 21:29 EDT), worded "My timezone" as /timestamp's button is since 2026-11-01 15:19 EDT (his "change /remind's timezone button wording to match"; it read "Adjust timezone").
+        foot.push(timeZone ? { type: 2, style: 2, label: 'My timezone', custom_id: `remind_tz:${ownerId}`, emoji: parseEmoji(emojis.timezone) } : { type: 2, style: 1, label: 'Set timezone', custom_id: `remind_tz:${ownerId}`, emoji: parseEmoji(emojis.timezone) });
         // Announcements on/off (2026-10-26 15:20 EDT, announcement-controls; his colours 15:30 EDT: green while on, grey while off). Not a reminder: an announcement shows after a command, never by DM. The same setting as /settings and the button under an announcement.
         foot.push({ type: 2, style: announcementsOff ? 2 : 3, label: `Announcements: ${announcementsOff ? 'Off' : 'On'}`, custom_id: `remind_ann:${ownerId}`, emoji: parseEmoji(emojis.announcements) });
     }

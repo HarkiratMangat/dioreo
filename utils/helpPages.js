@@ -191,9 +191,11 @@ const PAGES = {
         blurb: 'Turn any date or time into a timestamp everyone sees in their own time zone',
         page(x) {
             const rightClick = text('**Right-click or tap and hold a message**\n-# Apps → **Convert Times**: every date and time in it, in your own time zone');
+            // The buttons and menu under the panel (2026-11-01 15:19 EDT, his panel update), in /calendar's "On the page" shape.
+            const shows = text(`**On the page**\n> -# ${emojis.edit} **Edit timestamp**  *Change the time, timezone, view or format*\n> -# ${emojis.timezone} **Set timezone**  *Saved once, used across Dioreo*\n> -# **Format menu**  *Switch views or pick a format*`);
             if (x.view !== 'text') {
                 return {
-                    boxes: [text(`\`<datetime>\`\nType it the way you'd say it.\n-# Such as ${dot(['tomorrow', 'sun 4:30pm', '8pm to 10pm', '8pm utc+5'])}`), text('`[timezone]`\n-# Any short name, city or country (it searches as you type); blank uses your /settings one'), text('`[style]`\n-# Short List, All Formats, or one format'), text('`[view]`\n-# Embed panel or plain text'), VIS],
+                    boxes: [text(`\`<datetime>\`\nType it the way you'd say it.\n-# Such as ${dot(['tomorrow', 'sun 4:30pm', '8pm to 10pm', '8pm utc+5'])}`), text('`[timezone]`\n-# Any short name, city or country (it searches as you type); blank uses your /settings one'), text('`[style]`\n-# Short List, All Formats, or one format'), text('`[view]`\n-# Embed panel or plain text'), VIS, shows],
                     sections: [rightClick], examples: [['/timestamp datetime:tomorrow 8pm'], ['/timestamp datetime:dec 25 view:Text']],
                 };
             }
@@ -203,7 +205,7 @@ const PAGES = {
                     text(`**Date or time**\nType it the way you'd say it, or a range.\n-# Such as ${dot(['tomorrow 8pm', 'in 2 days', '8pm to 10pm', 'dec 24 to dec 26'])}`),
                     text(`**Time zone**\nAt the end, any IANA name, short name, city or country. ${code('tz:')} in front works too.\n> -# **IANA names** ${dot(['asia/tokyo', 'europe/london', 'america/chicago'])} *+ more*\n> -# **Short names** ${dot(['est', 'pst', 'cst', 'gmt', 'cet', 'ist', 'jst'])} *+ more*\n> -# **Cities** ${dot(['nyc', 'london', 'tokyo', 'sydney', 'dubai'])} *+ more*\n> -# **Countries** ${dot(['uk', 'india'])} *+ more*\n> -# **Offsets** ${dot(['utc+5', 'gmt-4', 'utc+5:30'])} *+ more*\n-# Blank uses your ${code(`${x.p} settings`)} time zone default`),
                 ],
-                sections: [text(`**Reply to a message**\n-# Reply with ${code(`${x.p} ts`)} and every time in that message is converted`), rightClick],
+                sections: [shows, text(`**Reply to a message**\n-# Reply with ${code(`${x.p} ts`)} and every time in that message is converted`), rightClick],
                 examples: [[`${x.p} ts tomorrow 8pm`, 'Tomorrow, 8 PM'], [`${x.p} time fri 6pm tokyo`, 'Friday, 6 PM in Tokyo'], [`${x.p} ts 8pm to 10pm tz:pst`, 'A range, Pacific'], [`${x.p} ts`, "As a reply: that message's times"]],
             };
         },

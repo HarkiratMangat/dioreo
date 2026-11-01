@@ -129,9 +129,24 @@ async function timezoneAutocomplete(interaction) {
     return await interaction.respond(list.slice(0, 25).map(o => ({ name: o.label.slice(0, 100), value: o.value })));
 }
 
+// The typed date and time, read in `tz`: { unix, endUnix } or null when nothing in it reads as a time. Shared by the slash command and Edit timestamp (handlers/timestamp.js).
+function parseQuery(queryInput, tz) {
+    const base = generateTimestamps(expandShorthand(String(queryInput || '')), tz);
+    return base && base.unix ? base : null;
+}
+
+// The row under the panel (2026-11-01 15:19 EDT, Harkirat's panel update): Edit timestamp (grey, the Edit emoji) opens a form with the panel's own date and time, timezone, view and format; the timezone button is blue "Set timezone" until the panel's owner has saved one, then grey "My timezone", and saves the PRESSER's own zone, which /timestamp, /remind and /settings all read. Both ids carry the owner, so a re-render and the form know whose panel it is.
+function panelActionRow(ownerId, ownerHasZone) {
+    const zone = ownerHasZone ? { style: 2, label: 'My timezone' } : { style: 1, label: 'Set timezone' };
+    return { type: 1, components: [
+        { type: 2, style: 2, label: 'Edit timestamp', custom_id: `tsedit|${ownerId}`, emoji: emojis.parseEmoji(emojis.edit) },
+        { type: 2, ...zone, custom_id: `tszone|${ownerId}`, emoji: emojis.parseEmoji(emojis.timezone) },
+    ] };
+}
+
 module.exports = {
     autocomplete: timezoneAutocomplete,
-    resolveStyle, OVERVIEW_STYLES, expandShorthand,
+    resolveStyle, OVERVIEW_STYLES, expandShorthand, parseQuery, STYLE_SELECT_OPTIONS, panelActionRow,
     PRESET_ACCENT, // Exposed so handlers/timestamp.js's tsmenu re-render handler can resolve the same accent
                    // color the initial render would have used (see overrideState.accentColor above).
     data: new SlashCommandBuilder()
@@ -184,7 +199,7 @@ module.exports = {
 
     // NOTE (de-duplicated during review): this used to have a full second copy of both view layouts living in handlers/timestamp.js's 'tsmenu|' select handler, because that handler needed to re-render the SAME already-parsed timestamp under a different style without re-running chrono (a relative input like "tomorrow" would resolve to a different date if re-parsed later). The two copies had already drifted out of sync twice across earlier redesigns. Fixed properly now via the same synthetic-interaction pattern every other command uses: `overrideState` lets handlers/timestamp.js pass in the already-known { unix, tz, queryInput, style } instead of re-deriving them from slash command options, while both code paths still share this single render implementation below.
     async execute(interaction, overrideState = null) {
-        let queryInput, tz, style, unix, endUnix = null, ephemeral, accentColor, isTextMode;
+        let queryInput, tz, style, unix, endUnix = null, ephemeral, accentColor, isTextMode, ownerId, ownerHasZone;
 
         if (overrideState) {
             // Invoked from handlers/timestamp.js's tsmenu dropdown handler — reuse the exact original parse instead of re-parsing. Never ephemeral here since the dropdown-driven re-render path never applied the ephemeral flag (matches prior behavior).
@@ -196,10 +211,15 @@ module.exports = {
             accentColor = overrideState.accentColor ?? PRESET_ACCENT;
             // textMode (2026-07-14) -- same "preserve whatever the message already had" logic as ephemeral above, so switching styles via the dropdown doesn't silently bounce a text response back to the embed layout. handlers/timestamp.js derives this from the message's OWN Components V2 flag (32768) before calling in, the same way it derives ephemeral from the 64 bit — there's no `format` option to read here since overrideState skips normal option resolution entirely.
             isTextMode = Boolean(overrideState.isTextMode);
+            // Whose panel it is and whether they have saved a timezone, for the button row (handlers/timestamp.js reads both off the message, or the presser's own for a new panel).
+            ownerId = overrideState.ownerId || interaction.user?.id;
+            ownerHasZone = Boolean(overrideState.ownerHasZone);
         } else {
             queryInput = interaction.options.getString('datetime');
             isTextMode = interaction.options.getString('view') === 'text';
             const prefs = await UserPreference.findOne({ discordId: interaction.user.id });
+            ownerId = interaction.user.id;
+            ownerHasZone = Boolean(prefs?.timezoneSetAt && prefs?.timezone);
             // explicit option > saved /settings timezone > Toronto (UserPreference.timezone's own default). The saved zone was fetched a few lines below and never read for this until 2026-10-20 16:50 EDT, so a user who saved Tokyo got Toronto's 9am while /help said otherwise.
             tz = require('../utils/timezoneData').resolveTimezone(interaction.options.getString('timezone')) || prefs?.timezone || 'America/Toronto';
 
@@ -224,10 +244,8 @@ module.exports = {
                 await interaction.deferReply();
             }
 
-            const processedQuery = expandShorthand(queryInput);
-
-            const timestampsBase = generateTimestamps(processedQuery, tz);
-            if (!timestampsBase || !timestampsBase.unix) {
+            const timestampsBase = parseQuery(queryInput, tz);
+            if (!timestampsBase) {
                 // LIBRARY SERIALIZATION BYPASS PROTOCOL (ON ERROR RENDER):
                 return interaction.client.rest.patch(
                     Routes.webhookMessage(interaction.applicationId, interaction.token, '@original'),
@@ -269,15 +287,14 @@ module.exports = {
             return `-# **${label}**\n**${text}**\n-# \`${text}\``;
         });
         const rowsBlock = rows.join('\n\n');
-        const hintLine = `-# Switch views or pick a format`; // Harkirat's wording, 2026-10-20 18:30 EDT
 
         let componentPayload;
         // Plain message content for text mode (2026-07-14) -- undefined in embed mode, where the container's own Text Display components carry everything instead. See sendV2Payload's `content` param.
         let textContent;
         if (isTextMode) {
             // Text mode: the same strings with no container chrome; a blank line stands in for each divider, and the dropdown becomes a top-level row.
-            textContent = [headingLine, rowsBlock, parsedLine, hintLine].join('\n\n');
-            componentPayload = [{ type: 1, components: [dropdownComponent] }];
+            textContent = [headingLine, rowsBlock, parsedLine].join('\n\n');
+            componentPayload = [panelActionRow(ownerId, ownerHasZone), { type: 1, components: [dropdownComponent] }];
         } else {
             componentPayload = [{
                 type: 17, // Components v2: Container
@@ -286,12 +303,14 @@ module.exports = {
                     { type: 10, content: headingLine },
                     { type: 14, spacing: 2, divider: true },
                     ...rows.map(content => ({ type: 10, content })),
-                    { type: 14, spacing: 2, divider: true },
-                    { type: 10, content: parsedLine },
-                    { type: 10, content: hintLine },
-                    { type: 1, components: [dropdownComponent] } // Action Row nested inside the container, not a sibling
+                    // A small divider above Parsed, and nothing under it (2026-11-01 15:19 EDT, Harkirat's panel update: the hint line "Switch views or pick a format" went, and the dropdown moved out of the panel).
+                    { type: 14, spacing: 1, divider: true },
+                    { type: 10, content: parsedLine }
                 ]
-            }];
+            },
+            // Outside the panel: the buttons, then the dropdown under them (his layout, 15:19 EDT).
+            panelActionRow(ownerId, ownerHasZone),
+            { type: 1, components: [dropdownComponent] }];
         }
 
         // --- LIBRARY SERIALIZATION BYPASS --- 32768 (1 << 15) forces Discord's gateway API to open the Components V2 engine route -- OMITTED entirely in text mode (2026-07-14) so the message renders as a classic plain-text response instead (content field + non-V2 action rows, which Discord supports identically in both systems). `flags` explicitly re-ORs in the ephemeral bit (64) rather than relying on sendV2Payload's plain 32768 default -- this render path (via overrideState, see the dropdown-driven re-render at the top of this function) doesn't go through a normal deferReply() that would set ephemeral state on its own, so it has to be preserved here. `flags: 0` (public + text mode) is intentional, not a bug -- sendV2Payload's default param only triggers on `undefined`, not on falsy values, so 0 is never silently overridden.
