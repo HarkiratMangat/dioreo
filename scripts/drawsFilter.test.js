@@ -32,17 +32,17 @@ t('each date line is his template: small text, the dot and what happened, then t
     const by = title => doc.newDraws.find(d => d.title === title);
     const R = '<t:\\d+:R>', F = '<t:\\d+:f>';
     const date = `\\n> -# ${emojis.blank} ${F}$`;
-    assert.match(line(by('New Draw 0')), new RegExp(`^> -# ${emojis.greenDotGlow} \\*\\*Active\\*\\* · \\*\\*Ends\\*\\* ${R}${date}`));
+    assert.match(line(by('New Draw 0')), new RegExp(`^> -# ${emojis.greenDotGlow} \\*\\*Live\\*\\* · \\*\\*Ends\\*\\* ${R}${date}`));
     assert.match(line(by('New Draw 1')), new RegExp(`^> -# ${emojis.yellowDotGlow} \\*\\*Ending\\*\\* ${R}${date}`), 'leaving soon');
     assert.match(line(by('New Draw 2')), new RegExp(`^> -# ${emojis.lightBlueDotGlow} \\*\\*Releasing\\*\\* ${R}${date}`));
     assert.match(line(by('New Draw 3')), new RegExp(`^> -# ${emojis.redDotGlow} \\*\\*Ended\\*\\* ${R}$`), 'ended: no date line');
-    assert.match(line(by('New Draw 4')), new RegExp(`^> -# ${emojis.greenDotGlow} \\*\\*Active\\*\\* · since ${R}${date}`), 'no /calendar end date: live, over its start date');
+    assert.match(line(by('New Draw 4')), new RegExp(`^> -# ${emojis.greenDotGlow} \\*\\*Live\\*\\* · since ${R}${date}`), 'no /calendar end date: live, over its start date');
     // The end line shows the END date for a live draw with one.
     const end = Math.floor(new Date(doc.calendar.find(c => c.title === 'New Draw 0').endDate).getTime() / 1000);
     assert.ok(line(by('New Draw 0')).endsWith(`<t:${end}:f>`));
     assert.strictEqual(draws.drawDateLines({ title: 'X', date: null }, { seasonalDoc: doc }), '> -# *Date TBA*');
     // /bot analytics renders a draw with no season: a labelled line all the same.
-    assert.match(draws.buildDrawSections([{ title: 'X', date: new Date(now - D), items: [] }])[0].content, /\*\*Active\*\* · since <t:/);
+    assert.match(draws.buildDrawSections([{ title: 'X', date: new Date(now - D), items: [] }])[0].content, /\*\*Live\*\* · since <t:/);
 });
 
 t('a status filter shows one list under /today\'s headings, each draw once', () => {
@@ -118,13 +118,13 @@ t('a draw that started before this season says which season it came from, in eit
     assert.strictEqual(draws.carriedFromSeason(doc.newDraws[0], { ...doc, bpStart: undefined }), null, 'no season start set: no tag');
     const held = { ...doc, patchNotes: [{ title: 'Season 7: Old', seasonStart: new Date(now - 60 * D), seasonEnd: new Date(now - 25 * D) }] };
     assert.strictEqual(draws.carriedFromSeason(doc.newDraws[7], held), 'Season 7', 'the past season whose dates hold the start');
-    // His layout (14:48 EDT): the top line says Ongoing since in place of Active, the end moves to the second line, the date to the third. No italic.
+    // His layout (14:48 EDT): the top line says Ongoing since in place of Live, the end moves to the second line, the date to the third. No italic.
     const R = '<t:\\d+:R>', F = '<t:\\d+:f>';
     const line = d => draws.drawDateLines(d, { seasonalDoc: doc, nowMs: now });
     assert.match(line(doc.newDraws[0]), new RegExp(`^> -# ${emojis.greenDotGlow} \\*\\*Ongoing\\*\\* since Season 8\\n> -# ${emojis.blank} \\*\\*Ends\\*\\* ${R}\\n> -# ${emojis.blank} ${F}$`));
     assert.match(line(doc.returningDraws[1]), new RegExp(`^> -# ${emojis.yellowDotGlow} \\*\\*Ongoing\\*\\* since Season 8\\n> -# ${emojis.blank} \\*\\*Ending\\*\\* ${R}\\n> -# ${emojis.blank} ${F}$`), 'leaving soon: yellow, Ending');
     assert.match(line(doc.newDraws[3]), new RegExp(`^> -# ${emojis.redDotGlow} \\*\\*Ended\\*\\* ${R}$`), 'an ended one is just Ended');
-    assert.match(line(doc.newDraws[4]), /\*\*Active\*\* · since/, 'started this season: unchanged');
+    assert.match(line(doc.newDraws[4]), /\*\*Live\*\* · since/, 'started this season: unchanged');
     const page = texts(draws.buildContainer(doc, 'new', 0)).join('\n');
     assert.ok(!page.includes('_**Ongoing'), 'no separate line any more');
     const grouped = texts(draws.buildContainer(doc, 'new', 0, undefined, false, mask('live'))).join('\n');

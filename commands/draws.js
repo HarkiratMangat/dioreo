@@ -31,10 +31,10 @@ const DRAW_TEXT_BUDGET = 3400;
 
 // THE DATE LINES (2026-11-01 13:16 EDT, Harkirat: "a user might not understand what that "x days ago" means. Did it end x days ago? did it start x days ago?" and "consider the light blue, green, red, yellow dots infront of the timestamp"). Redesigned to his exact template at 13:54 EDT: small text, the state's dot and a relative line on top (/today's colours: light blue upcoming, green live, yellow leaving soon = live and ending within LEAVING_SOON_MS, red ended), and the one date that matters under it, padded with the `blank` emoji so it lines up after the dot:
 //   upcoming      Releasing in 6 hours              / its start date
-//   live          Active · Ends in 16 days           / its end date (13:03 EDT: "Live 13 days ago · Ends in 16 days" wrapped on his phone, so the start's relative went)
+//   live          Live · Ends in 16 days             / its end date (13:03 EDT: "Live 13 days ago · Ends in 16 days" wrapped on his phone, so the start's relative went)
 //   leaving soon  Ending in 2 days                   / its end date
 //   ended         Ended 5 days ago                   (no date line)
-// The state words are bold (his ask, 13:03 EDT). A live draw with no end on its /calendar row reads "Active · since 13 days ago" over its start date (my call; his template only shows one with an end). The long `f` date is his pick of three (13:18 EDT): Discord has no "Oct 29" style.
+// The state words are bold (his ask, 13:03 EDT). A live draw with no end on its /calendar row reads "Live · since 13 days ago" over its start date (my call; his template only shows one with an end). The long `f` date is his pick of three (13:18 EDT): Discord has no "Oct 29" style.
 function drawDateLines(draw, ctx = {}) {
     const { state, startMs, endMs, bits } = drawTiming(draw, ctx.seasonalDoc || {}, ctx.nowMs ?? Date.now());
     // A draw saved with no date used to print a raw `<t:NaN:f>` (seen on a dev probe draw, 2026-10-20); it reads "Date TBA" instead.
@@ -47,12 +47,13 @@ function drawDateLines(draw, ctx = {}) {
     if (state === 'over') lines = [`${emojis.redDotGlow} **Ended** ${rel(endMs)}`];
     else if (state === 'soon') lines = [`${emojis.lightBlueDotGlow} **Releasing** ${rel(startMs)}`, date(startMs)];
     else {
-        // A draw on since before this season began says so on the top line, in place of Active, and the end moves down a line (his layout, 14:48 EDT: "move it to the timestamps top line ':dot: ongoing since season 8' and remove the 'active' and then push 'ends in' to the 2nd line. The full timestamp to 3rd line"). Leaving soon keeps its yellow dot and its Ending.
+        // A draw on since before this season began says so on the top line, in place of Live, and the end moves down a line (his layout, 14:48 EDT: "move it to the timestamps top line ':dot: ongoing since season 8' and remove the 'active' and then push 'ends in' to the 2nd line. The full timestamp to 3rd line"). Leaving soon keeps its yellow dot and its Ending.
         const from = carriedFromSeason(draw, ctx.seasonalDoc);
         const dot = bits & 16 ? emojis.yellowDotGlow : emojis.greenDotGlow;
         if (from) lines = [`${dot} **Ongoing** since ${from}`, ...(hasEnd ? [`${emojis.blank} **${bits & 16 ? 'Ending' : 'Ends'}** ${rel(endMs)}`, date(endMs)] : [date(startMs)])];
         else if (bits & 16) lines = [`${emojis.yellowDotGlow} **Ending** ${rel(endMs)}`, date(endMs)];
-        else lines = hasEnd ? [`${emojis.greenDotGlow} **Active** · **Ends** ${rel(endMs)}`, date(endMs)] : [`${emojis.greenDotGlow} **Active** · since ${rel(startMs)}`, date(startMs)];
+        // Live, not Active (14:55 EDT, his: "the main heading is 'active now' and the adjective is 'live'").
+        else lines = hasEnd ? [`${emojis.greenDotGlow} **Live** · **Ends** ${rel(endMs)}`, date(endMs)] : [`${emojis.greenDotGlow} **Live** · since ${rel(startMs)}`, date(startMs)];
     }
     return lines.map(l => `> -# ${l}`).join('\n');
 }
@@ -147,7 +148,7 @@ const FILTER_OPTIONS = [
     { value: 'upcoming', bit: 4, label: 'Upcoming', emojiKey: 'lightBlueDotGlow', description: "Hasn't started yet" },
     // Active now, not Live (14:54 EDT, his "class not instance!!" after the heading took /calendar's Today word at 14:51): the menu, the slash choice and the help say what the heading says. The value stays `live` so posted panels and `d draws live` keep working.
     { value: 'live', bit: 8, label: 'Active now', emojiKey: 'greenDotGlow', description: 'Started, and not ended yet' },
-    { value: 'leaving', bit: 16, label: 'Leaving soon', emojiKey: 'yellowDotGlow', description: 'Active, and ends within 3 days' },
+    { value: 'leaving', bit: 16, label: 'Leaving soon', emojiKey: 'yellowDotGlow', description: 'Live, and ends within 3 days' },
     { value: 'ended', bit: 32, label: 'Ended', emojiKey: 'redDotGlow', description: 'Already finished' }
 ];
 const SECTION_BIT = { new: 1, returning: 2 };
