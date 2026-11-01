@@ -57,7 +57,7 @@ async function check(name, fn) {
         assert.ok(home.includes('**`@Dioreo`**, **`!`** or **`dior`**'), 'home prefix line');
         assert.ok(home.includes('`! help <command>`'), 'home tip');
         const page = texts({ components: await help.buildHelpMessage({ ...own, cmd: '/draws' }) }).join('\n');
-        assert.ok(page.includes('`! draws [new|returning]`') && page.includes('`! draws returning`'), 'typed usage and examples');
+        assert.ok(page.includes('`! draws [new|returning] [filter]`') && page.includes('`! draws returning`'), 'typed usage and examples');
         assert.ok(!/`d draws/.test(page), 'the default prefix is gone');
     });
 
@@ -211,7 +211,7 @@ async function check(name, fn) {
     });
     await check('without Message Content every typed form reads @Dioreo', async () => {
         const page = await all('/draws', 'text', { c: client(false) });
-        assert.ok(page.includes('### `@Dioreo draws [new|returning]`') && page.includes('`@Dioreo draws returning`') && !page.includes('`d draws'));
+        assert.ok(page.includes('### `@Dioreo draws [new|returning] [filter]`') && page.includes('`@Dioreo draws returning`') && !page.includes('`d draws'));
     });
     await check('where typed forms do nothing (a DM, a server Dioreo is not in), /help is slash only and still renders', async () => {
         const dmClient = { ...client(true), guilds: { cache: new Map([['900', {}]]) } };

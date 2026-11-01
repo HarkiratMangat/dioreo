@@ -1731,7 +1731,7 @@
           },
           {
             "type": 10,
-            "content": "### `d draws [new|returning]`\n`draw` · `ld` · `lucky draws`"
+            "content": "### `d draws [new|returning] [filter]`\n`draw` · `ld` · `lucky draws`"
           },
           {
             "type": 10,
@@ -1739,7 +1739,11 @@
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# **New / Returning Draws**  *Jump to the other list*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
+            "content": "**Filter**\n-# Blank shows every draw\n> -# **Upcoming** `upcoming` · `soon` · `next`\n> -# **Live** `live` · `active` · `l`\n> -# **Leaving soon** `leaving` · `leaving soon` · `ending`\n> -# **Ended** `ended` · `past` · `over`"
+          },
+          {
+            "type": 10,
+            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Live, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
           },
           {
             "type": 1,
@@ -1764,7 +1768,7 @@
           },
           {
             "type": 10,
-            "content": "-# **Examples**\n-# `d draws`  This season's draws\n-# `d draws returning`  Straight to Returning\n-# `d ld r`  The same, shortest"
+            "content": "-# **Examples**\n-# `d draws`  This season's draws\n-# `d draws returning`  Straight to Returning\n-# `d ld r`  The same, shortest\n-# `d draws leaving`  Draws ending within 2 days"
           },
           {
             "type": 10,
@@ -1985,11 +1989,15 @@
           },
           {
             "type": 10,
+            "content": "`[filter]`\n-# Upcoming, Live, Leaving Soon or Ended"
+          },
+          {
+            "type": 10,
             "content": "`[visibility]`\n-# Show only to you, or everyone in the chat"
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# **New / Returning Draws**  *Jump to the other list*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
+            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Live, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
           },
           {
             "type": 1,
@@ -2014,7 +2022,7 @@
           },
           {
             "type": 10,
-            "content": "-# **Examples**\n-# `/draws`\n-# `/draws page:Returning Draws`"
+            "content": "-# **Examples**\n-# `/draws`\n-# `/draws page:Returning Draws`\n-# `/draws filter:Leaving Soon`"
           },
           {
             "type": 10,
@@ -10338,7 +10346,7 @@
           },
           {
             "type": 10,
-            "content": "### `d draws [new|returning]`\n`draw` · `ld` · `lucky draws`"
+            "content": "### `d draws [new|returning] [filter]`\n`draw` · `ld` · `lucky draws`"
           },
           {
             "type": 10,
@@ -10346,7 +10354,11 @@
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# **New / Returning Draws**  *Jump to the other list*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
+            "content": "**Filter**\n-# Blank shows every draw\n> -# **Upcoming** `upcoming` · `soon` · `next`\n> -# **Live** `live` · `active` · `l`\n> -# **Leaving soon** `leaving` · `leaving soon` · `ending`\n> -# **Ended** `ended` · `past` · `over`"
+          },
+          {
+            "type": 10,
+            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Live, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
           },
           {
             "type": 1,
@@ -10371,7 +10383,7 @@
           },
           {
             "type": 10,
-            "content": "-# **Examples**\n-# `d draws`  This season's draws\n-# `d draws returning`  Straight to Returning\n-# `d ld r`  The same, shortest"
+            "content": "-# **Examples**\n-# `d draws`  This season's draws\n-# `d draws returning`  Straight to Returning\n-# `d ld r`  The same, shortest\n-# `d draws leaving`  Draws ending within 2 days"
           },
           {
             "type": 10,
@@ -10603,11 +10615,15 @@
           },
           {
             "type": 10,
+            "content": "`[filter]`\n-# Upcoming, Live, Leaving Soon or Ended"
+          },
+          {
+            "type": 10,
             "content": "`[visibility]`\n-# Show only to you, or everyone in the chat"
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# **New / Returning Draws**  *Jump to the other list*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
+            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Live, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
           },
           {
             "type": 1,
@@ -10632,7 +10648,7 @@
           },
           {
             "type": 10,
-            "content": "-# **Examples**\n-# `/draws`\n-# `/draws page:Returning Draws`"
+            "content": "-# **Examples**\n-# `/draws`\n-# `/draws page:Returning Draws`\n-# `/draws filter:Leaving Soon`"
           },
           {
             "type": 10,
@@ -19833,7 +19849,7 @@
           },
           {
             "type": 10,
-            "content": "### `d draws [new|returning]`\n`draw` · `ld` · `lucky draws`"
+            "content": "### `d draws [new|returning] [filter]`\n`draw` · `ld` · `lucky draws`"
           },
           {
             "type": 10,
@@ -19841,7 +19857,11 @@
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# **New / Returning Draws**  *Jump to the other list*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
+            "content": "**Filter**\n-# Blank shows every draw\n> -# **Upcoming** `upcoming` · `soon` · `next`\n> -# **Live** `live` · `active` · `l`\n> -# **Leaving soon** `leaving` · `leaving soon` · `ending`\n> -# **Ended** `ended` · `past` · `over`"
+          },
+          {
+            "type": 10,
+            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Live, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
           },
           {
             "type": 1,
@@ -19866,7 +19886,7 @@
           },
           {
             "type": 10,
-            "content": "-# **Examples**\n-# `d draws`  This season's draws\n-# `d draws returning`  Straight to Returning\n-# `d ld r`  The same, shortest"
+            "content": "-# **Examples**\n-# `d draws`  This season's draws\n-# `d draws returning`  Straight to Returning\n-# `d ld r`  The same, shortest\n-# `d draws leaving`  Draws ending within 2 days"
           },
           {
             "type": 10,
@@ -20153,11 +20173,15 @@
           },
           {
             "type": 10,
+            "content": "`[filter]`\n-# Upcoming, Live, Leaving Soon or Ended"
+          },
+          {
+            "type": 10,
             "content": "`[visibility]`\n-# Show only to you, or everyone in the chat"
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# **New / Returning Draws**  *Jump to the other list*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
+            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Live, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
           },
           {
             "type": 1,
@@ -20182,7 +20206,7 @@
           },
           {
             "type": 10,
-            "content": "-# **Examples**\n-# `/draws`\n-# `/draws page:Returning Draws`"
+            "content": "-# **Examples**\n-# `/draws`\n-# `/draws page:Returning Draws`\n-# `/draws filter:Leaving Soon`"
           },
           {
             "type": 10,
@@ -34077,7 +34101,7 @@
           },
           {
             "type": 10,
-            "content": "### `d draws [new|returning]`\n`draw` · `ld` · `lucky draws`"
+            "content": "### `d draws [new|returning] [filter]`\n`draw` · `ld` · `lucky draws`"
           },
           {
             "type": 10,
@@ -34085,7 +34109,11 @@
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# **New / Returning Draws**  *Jump to the other list*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
+            "content": "**Filter**\n-# Blank shows every draw\n> -# **Upcoming** `upcoming` · `soon` · `next`\n> -# **Live** `live` · `active` · `l`\n> -# **Leaving soon** `leaving` · `leaving soon` · `ending`\n> -# **Ended** `ended` · `past` · `over`"
+          },
+          {
+            "type": 10,
+            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Live, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
           },
           {
             "type": 1,
@@ -34110,7 +34138,7 @@
           },
           {
             "type": 10,
-            "content": "-# **Examples**\n-# `d draws`  This season's draws\n-# `d draws returning`  Straight to Returning\n-# `d ld r`  The same, shortest"
+            "content": "-# **Examples**\n-# `d draws`  This season's draws\n-# `d draws returning`  Straight to Returning\n-# `d ld r`  The same, shortest\n-# `d draws leaving`  Draws ending within 2 days"
           },
           {
             "type": 10,
@@ -34342,11 +34370,15 @@
           },
           {
             "type": 10,
+            "content": "`[filter]`\n-# Upcoming, Live, Leaving Soon or Ended"
+          },
+          {
+            "type": 10,
             "content": "`[visibility]`\n-# Show only to you, or everyone in the chat"
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# **New / Returning Draws**  *Jump to the other list*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
+            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Live, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
           },
           {
             "type": 1,
@@ -34371,7 +34403,7 @@
           },
           {
             "type": 10,
-            "content": "-# **Examples**\n-# `/draws`\n-# `/draws page:Returning Draws`"
+            "content": "-# **Examples**\n-# `/draws`\n-# `/draws page:Returning Draws`\n-# `/draws filter:Leaving Soon`"
           },
           {
             "type": 10,

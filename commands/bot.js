@@ -333,8 +333,8 @@ const RECORD_VIEWS = {
         },
         // The player-facing card, from commands/draws.js itself.
         render: (d) => require('./draws').buildDrawSections([{ ...d, items: d.items || [] }]),
-        // 🔴 MEASURED, AND IT KILLED THE FEATURE THIS WAS PLANNED AS. The phase-2 plan assumed a draw's `date` decides whether players see it, so this panel would say "scheduled until X / already past". It does not: commands/draws.js renders seasonalDoc.newDraws / returningDraws IN FULL -- no .filter(), no Date.now(), no visibility test anywhere in the file. The date is a label it prints, nothing more. "Scheduled" would have been a confident falsehood, and the true statement is the more useful one anyway: every draw edit is live the instant it saves.
-        visibility: () => `🟢 **Players can see this now.** \`/draws\` lists every draw in the season — the date is a label it shows, not a schedule that hides it.`,
+        // 🔴 MEASURED, AND IT KILLED THE FEATURE THIS WAS PLANNED AS. The phase-2 plan assumed a draw's `date` decides whether players see it, so this panel would say "scheduled until X / already past". It does not: commands/draws.js renders seasonalDoc.newDraws / returningDraws IN FULL -- no .filter(), no Date.now(), no visibility test anywhere in the file. The date is a label it prints, nothing more. "Scheduled" would have been a confident falsehood, and the true statement is the more useful one anyway: every draw edit is live the instant it saves. 2026-11-01: /draws gained a filter (Upcoming, Live, Leaving soon, Ended), but a player has to pick it; the panel /draws opens on still lists every draw, so the sentence below stays true with the filter named.
+        visibility: () => `🟢 **Players can see this now.** \`/draws\` lists every draw in the season — the date is a label it shows, not a schedule that hides it. Only a filter a player picks narrows the list.`,
     },
     calendar: {
         noun: 'event', dateOnly: ['date', 'endDate'],

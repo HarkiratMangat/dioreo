@@ -64,6 +64,8 @@ MONGODB_URI=<uri> node scripts/syncDrawCatalog.js            # dry run
 MONGODB_URI=<uri> node scripts/syncDrawCatalog.js --write
 ```
 
+**Quick Add** (`/manage` draws). An admin types draw names with their dates, one per line; `utils/quickAdd.js` finds each in the catalog (its title or another name, then by words scored against titles, item names and rarities) and drafts the draw from the document: title, items with the notes as `-#` lines, picture, type, and New or Returning from `releaseSeason` against the current season. Nothing is written to the catalog. The draft, Edit and Save are `handlers/manage/quickAdd.js`; the matcher's cases are `scripts/quickAdd.test.js`.
+
 ## Open
 
 - The Advanced Character wording in `/draw prices` (`docs/db-deferred-list.md`).

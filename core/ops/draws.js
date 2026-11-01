@@ -40,7 +40,8 @@ function validateOne(payload) {
 
 registerEntity('draws', {
     'draw.add': {
-        action: ['draws:addnew', 'draws:addreturning'],   // one op; payload.category is the difference
+        // One op; payload.category is the difference. Quick Add (handlers/manage/quickAdd.js) saves through it too, beside calendar.add for an end date, so its button needs exactly this op's tier.
+        action: ['draws:addnew', 'draws:addreturning', 'draws:quickadd'],
         tier: 1,
         validate: (op) => validateOne(op.payload),
         preview: (op, live) => ({

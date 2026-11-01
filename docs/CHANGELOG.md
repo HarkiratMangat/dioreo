@@ -29,8 +29,25 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.5.0 — 2026-11-01 11:30 EDT (#PR) — The bot reads the draw index
-**From Harkirat, 2026-11-01 01:05 EDT** (the deferred item): "a proper full index-able list to quickly implement into the bot whenever needed". Built the same day, as a cloud thread.
+## v3.5.0 — 2026-11-01 11:30 EDT (#PR) — Quick Add, /draws filters, and the bot reads the draw index
+**From Harkirat, 2026-11-01 01:05 EDT** (the deferred item): "a proper full index-able list to quickly implement into the bot whenever needed". Built the same day, as a cloud thread, with two asks of his from 11:11 EDT that use it: Quick Add in `/manage` draws, and filters on `/draws`.
+
+### Quick Add (`/manage` draws)
+His words: "a large text field form, where I just type the draw name or item name (plus a start and/or end date. One per line ... drafts a confirmation screen, along with an edit button for each draw in the draft ... upon confirmation it adds it to the draws command pages and the calendar."
+- **The box** (`commands/manage.js` `buildQuickAddModal`): one line per draw, up to ten, e.g. `cx9 mythic draw, starts in 2 days, ends Nov 5` or `Herrscher of reason, ends Nov 12 7pm edt`. starts/from and ends/until say which date is which; an unlabelled date is the start, a second the end; `starts … ends …` without commas works too. A date alone is 00:00 UTC (the admin-date rule); a typed time is kept, in the zone typed or else the admin's `/settings` zone. No start means today.
+- **Finding the draw** (`utils/quickAdd.js`): the draw index by title or other name first, then by words: each word scored against the titles, the items' names and their rarities, a one-letter typo forgiven. `cx9 mythic` finds Hollow Flight Mythic Drop; a rarity alone finds nothing. New or Returning comes from the index's release season against the current season (Returning when the index has no season for it, New when the index has never seen the draw).
+- **The draft** (`handlers/manage/quickAdd.js`): one row per draw with its own Edit button (Title, When, Items, New or Returning, Draw Type), notes for a guess, a draw the index does not know, or two lines naming the same draw. Nothing is saved until Save; a draft lasts 30 minutes in memory.
+- **Save** is one changeset: `draw.add` for each new draw (its picture through `resolveThumbnail`, so the index answers first), and a `/calendar` draw row for each end date (`calendar.add`, or `calendar.edit` when the draw has one). A draw already on `/draws` is never added twice: its line sets its end date, and moves its start only when the line gives one. **Revert all** on the result undoes the whole save: its change ids wait in memory for 30 minutes, because the shared Revert button carries ids in its custom_id and fits three; each change stays revertable from `/bot analytics` after that.
+- **Permissions:** the button is `draws:quickadd`, mapped to `draw.add` (create); an end date also needs create on Calendar, checked by `commitSet`.
+
+### `/draws` filters
+His words: "Upcoming, live, leaving soon, ended filters on the /draws page; likely collapsing those + the new/returning draws toggle into a single multi select dropdown ... And expanding those filters to the slash command and text commands."
+- **One dropdown** (`commands/draws.js` `FILTER_OPTIONS`) replaces the New/Returning Draws button: New Draws, Returning Draws, Upcoming, Live, Leaving soon (live and ending within 2 days, the same window as `/today`), Ended. Several can be picked; the picks ride in the pager's ids as a mask, like `/calendar`'s. A draw's end is the end date on its `/calendar` draw row; a draw with no row never counts as Ended or Leaving soon. Under a filter the footer's Draws button reads All Draws and clears it.
+- **Calculate** moved to its own row; the busiest page measures 37 of 40 components.
+- **Slash:** `/draws filter:` (Upcoming, Live, Leaving Soon, Ended). **Text:** `d draws live`, `d draws leaving`, `d draws returning ended`; chat words like `now` and `old` are left out so `d draws pls now` stays silent. The `/help` page shows both. Panels posted before keep working (`page_new_draws`, `subpage_new_2`).
+- `/bot analytics`' note on a draw names the filter: the default view still lists every draw, checked by rendering instead of a source grep.
+
+### The draw index
 
 - **Model** (`models/DrawCatalog.js`): the prod collection `drawcatalogs` (93 documents, seeded by hand) gets its model. `slug` unique, `fp` and `groupSlug` indexed; Mongoose builds the three indexes on the first boot with this version (prod has 93 distinct slugs, checked).
 - **Reading** (`utils/drawCatalog.js`, `utils/cloudinaryCache.js` `resolveThumbnail`): a draw saved with no image asks the index before Cloudinary at each step (title, items, similar title), from an in-memory copy kept ten minutes. New: a draw's **other name** finds its image ("Midnight Crescendo Draw" finds Wisterian Visage). A catalog miss falls through to Cloudinary unchanged.
@@ -39,7 +56,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 - **Writing:** an upload or a re-tag by the bot updates that draw's document (image, items, fingerprint, tags, type), merging items so a hand-written kind or skin name survives; a new image creates one. Title, comments, aliases and groupSlug are never written on a document that exists.
 - **Script** (`scripts/syncDrawCatalog.js`): compares the index with Cloudinary's tagged `draws/` images; dry run unless `--write`. Run against an empty local database it rebuilt all 93 documents, matching prod except the three hand-curated differences (Street Fighter `groupSlug`, two `*aka*` comments).
 - **Docs:** `docs/reference/draw-index.md` § How the bot uses it, the scripts catalogue, the models and Cloudinary rules; the deferred item moved to the resolved list.
-- **Tests:** `scripts/drawCatalog.test.js` (24 checks: matchers, item merge, resolveThumbnail asking the index first and falling back, the type fill and its Undo guard, the sync plan).
+- **Tests:** `scripts/drawCatalog.test.js` (24 checks: matchers, item merge, resolveThumbnail asking the index first and falling back, the type fill and its Undo guard, the sync plan); `scripts/quickAdd.test.js` (13 checks: his three examples, the zone rules, the matcher, the draft); `/draws` filter rows in `scripts/textCommandArgs.test.js`. Quick Add was also run end to end (box, Edit, Save) on a one-node replica set with a copy of the dev data: four draws added, one end date set on a draw already listed, five `/calendar` rows.
 
 ## v3.4.1 — 2026-11-01 01:05 EDT (#242 · `ea0c16ed`) — Keep the draw image index scripts as a record
 **From Harkirat, 2026-11-01 01:05 EDT:** "yes, go ahead as a v3.4.1 update. approved for merge flow and merge. no deploy needed." This release is the record of the draw image index, which was built and written to Cloudinary and prod the same night; the writes themselves are not part of the release.
