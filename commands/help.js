@@ -3,7 +3,7 @@
 // ==========================================
 // ARCHITECTURE: Redesigned 2026-08-08 20:56 EDT from Harkirat's own JSON mockups (local/landingPageUI.json, local/gunsmithsUI.json), then revised again 21:31 EDT the same day from his direct review feedback. Landing page is a Section+thumbnail "hero" (mascot + tagline), two Link buttons (Website/Install), a flat command DIRECTORY grouped by category, then a category select menu. Picking a category (or using the `cmd:` autocomplete option) swaps to that category's own detail page: a real Usage/Options/ Examples breakdown per command, options split under whichever command actually has them (never merged across commands with different option sets -- `/gunsmith mp` and `/gunsmith dmz` have identical shapes (weapon/build/visibility) but each is its own detailCommands entry with its own options block; the `/gunsmith search` and `list` subcommands this used to document were removed 2026-10-19. Consolidated from `/all` + the eight per-category MP commands 2026-08-15 -- see docs/superpowers/specs/2026-08-15-gunsmiths-command-consolidation-design.md.
 //
-// 🔄 B6 (2026-10-29, Harkirat's designs, approved 19:02-23:52 EDT): the category pages and the category dropdown are GONE. /help is a home page and one page per command, each in a typed and a slash view, built by utils/helpPages.js; the command switcher sits outside the card. CATEGORY_DEFS below stays as data: it still decides who may see which command (`requires`), feeds the `cmd:` search, and is what the dioreo.app /commands page (scripts/lib/commandCatalog.js) and scripts/commandOptions.test.js read.
+// 🔄 B6 (2026-10-29, Harkirat's designs, approved 19:02-23:52 EDT): the category pages and the category dropdown are GONE. /help is a home page and one page per command, each in a typed and a slash view, built by utils/helpPages.js; the command switcher sits at the foot of the card (outside it until 2026-11-01). CATEGORY_DEFS below stays as data: it still decides who may see which command (`requires`), feeds the `cmd:` search, and is what the dioreo.app /commands page (scripts/lib/commandCatalog.js) and scripts/commandOptions.test.js read.
 //
 // Categories: Gunsmith (/gunsmith mp, /gunsmith dmz, /dmz) / Draws / Seasonal Info / Utilities / Preferences (which also carries `/admin` for server admins) / Bot Admin (whitelist-gated, hidden entirely from everyone else).
 //
@@ -338,7 +338,7 @@ function homeHero(client) {
     ];
 }
 
-// One /help message: the card (the home page or one command's page) and the command switcher under it; execute() adds the footer row. `view` is 'text' or 'slash'; a typed view is offered only where typed forms work (typedFormsHere) and for a command that has one, and falls back to slash otherwise. `detail` is Draw Prices' Detailed view.
+// One /help message: the card (the home page or one command's page) with the command switcher at its foot; execute() adds the footer row under it. `view` is 'text' or 'slash'; a typed view is offered only where typed forms work (typedFormsHere) and for a command that has one, and falls back to slash otherwise. `detail` is Draw Prices' Detailed view.
 async function buildHelpMessage({ perms = {}, client, accentColor = PRESET_ACCENT, cmd = null, view = 'slash', detail = false, typedForms = true, prefixes = null } = {}) {
     const H = require('../utils/helpPages');
     const seasonEmoji = await currentSeasonEmoji();
@@ -357,7 +357,10 @@ async function buildHelpMessage({ perms = {}, client, accentColor = PRESET_ACCEN
             { type: 14, spacing: 1, divider: true },
             // The sign-off in the launch announcement's style (2026-10-27 01:23 EDT, Harkirat).
             { type: 10, content: `-# Made with ${emojis.diorHeart} by <@${HARKIRAT_ID}>` }];
-    return [{ type: 17, accent_color: accentColor, components: card }, H.buildSwitcher({ names, current: cmd, view, client, seasonEmoji, prefixes })];
+    // The command switcher sits INSIDE the card, at its foot behind a small divider (2026-11-01 15:35 EDT, Harkirat: "let's move /help's dropdown inside the panel"). The rule it follows: what acts on the card goes in it or right under it, and the footer row that is not about the card (helpFooterRow) stays last, outside. On the home page the sign-off stays the card's last line, under the switcher.
+    const switcher = H.buildSwitcher({ names, current: cmd, view, client, seasonEmoji, prefixes });
+    const signOff = cmd ? [] : card.splice(-2, 2);
+    return [{ type: 17, accent_color: accentColor, components: [...card, { type: 14, spacing: 1, divider: true }, switcher, ...signOff] }];
 }
 
 function helpFooterRow() {

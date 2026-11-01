@@ -1,6 +1,6 @@
 // utils/helpPages.js -- /help's pages since B6: one page per command, each in a typed and a slash view, and the home page (Harkirat's designs, approved in #testing-spam 2026-10-29 19:02-23:52 EDT; the category pages and their dropdown are gone, his "sure" 2026-10-29 17:07 EDT).
 //
-// THE LAYOUT, his (2026-10-29 19:02 EDT, refined through 20:59 EDT): `## icon Name` with a `-#` line, a large divider, the usage (`### \`d draws [new|returning]\`` with the aliases under it, or the slash mention), one text box per option, a button row (Slash Command / Text Command, plus Detailed view or Calc Guide where a page has one), a small divider, the reply / right-click / bell section if any and another small divider, `-# **Examples**`, then the Usage legend. The command switcher sits OUTSIDE the card, above /help's footer row.
+// THE LAYOUT, his (2026-10-29 19:02 EDT, refined through 20:59 EDT): `## icon Name` with a `-#` line, a large divider, the usage (`### \`d draws [new|returning]\`` with the aliases under it, or the slash mention), one text box per option, a button row (Slash Command / Text Command, plus Detailed view or Calc Guide where a page has one), a small divider, the reply / right-click / bell section if any and another small divider, `-# **Examples**`, then the Usage legend. The command switcher sits at the foot of the card behind a small divider (moved inside 2026-11-01), and /help's footer row stays outside, under it.
 //
 // THE RULES (his, 2026-10-29): a typed page names other commands typed (`d settings`), a slash page keeps slash names (20:45 EDT); every word a typed page shows comes from utils/textCommands/commands.js (`helpWord`, `shown`, a value's `shown` / `group` / `label`), so a page cannot promise a word the parser does not accept (scripts/helpTextCommands.test.js parses them); and each page is written from the command's own code, never from the old help prose (21:52 EDT, after the /admin miss). The seven Bot Admin pages other than /manage carry their old help text unchanged, one page each (his "skip bot admin", 22:49 EDT), and /admin's text waits for B7 (his call, 22:00 EDT).
 const emojis = require('./emojiMap');
@@ -423,7 +423,7 @@ function buildHome({ client, view, canSwitch, hero, adminNames = [], prefixes = 
     return out;
 }
 
-// The command switcher, outside the card above the footer (his ask, 2026-10-29 18:17 EDT): All commands first; on a typed view each page's name with its typed word under it, on a slash view the slash command with the name under it (18:56 EDT). Commands with no text form show as slash on both. A full admin's list is 19 of Discord's 25 since /bot's subcommands became one page (2026-10-30 14:05 EDT).
+// The command switcher, at the foot of the card (outside it, above the footer, from 2026-10-29 18:17 EDT until his 2026-11-01 15:35 EDT "move /help's dropdown inside the panel"): All commands first; on a typed view each page's name with its typed word under it, on a slash view the slash command with the name under it (18:56 EDT). Commands with no text form show as slash on both. A full admin's list is 19 of Discord's 25 since /bot's subcommands became one page (2026-10-30 14:05 EDT).
 function buildSwitcher({ names, current = null, view, client, seasonEmoji = null, prefixes = null }) {
     const typed = view === 'text';
     const p = firstPrefix(client, prefixes);

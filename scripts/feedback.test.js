@@ -57,7 +57,10 @@ async function main() {
     const perms = { manage: true, botAdmin: true, serverAdmin: true, owner: true, bot: true, botAccess: true, autobuild: true };
     const client = { application: { commands: { cache: new Map() } }, user: { id: '0' } };
     {
-        const [card, switcher] = await help.buildHelpMessage({ perms, client, cmd: '/colors', view: 'slash' });
+        const [panel] = await help.buildHelpMessage({ perms, client, cmd: '/colors', view: 'slash' });
+        // The switcher is the card's last row since 2026-11-01 (it sat outside the card before).
+        const switcher = panel.components.at(-1);
+        const card = { ...panel, components: panel.components.slice(0, -1) };
         const select = switcher.components[0];
         if (select.custom_id !== 'help_command' || select.options.length > 25 || select.options.find(o => o.default)?.value !== '/colors') { failures++; console.error('  ✗ the switcher is missing, too long, or not set to /colors'); }
         else console.log(`  ✓ the switcher: ${select.options.length} options, /colors selected`);
