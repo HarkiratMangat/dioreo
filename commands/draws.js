@@ -106,13 +106,13 @@ const FILTER_OPTIONS = [
     { value: 'returning', bit: 2, label: 'Returning Draws', emojiKey: 'returningDraws', description: 'Back from an earlier season' },
     { value: 'upcoming', bit: 4, label: 'Upcoming', emojiKey: 'lightBlueDotGlow', description: "Hasn't started yet" },
     { value: 'live', bit: 8, label: 'Live', emojiKey: 'greenDotGlow', description: 'Running right now' },
-    { value: 'leaving', bit: 16, label: 'Leaving soon', emojiKey: 'yellowDotGlow', description: 'Live, and ends within 2 days' },
+    { value: 'leaving', bit: 16, label: 'Leaving soon', emojiKey: 'yellowDotGlow', description: 'Live, and ends within 3 days' },
     { value: 'ended', bit: 32, label: 'Ended', emojiKey: 'redDotGlow', description: 'Already finished' }
 ];
 const SECTION_BIT = { new: 1, returning: 2 };
 const STATE_BITS = 4 | 8 | 16 | 32;
-// /today's "Leaving soon" (commands/today.js ENDING_SOON_MS), so the two never disagree about the same draw.
-const LEAVING_SOON_MS = 2 * 24 * 60 * 60 * 1000;
+// 3 days, Harkirat's call for /draws (2026-11-01 11:50 EDT, "for /draws, we'll consider the last 3"). /today's own "Leaving soon" (commands/today.js ENDING_SOON_MS) stays at 2 days on purpose: it is a daily digest.
+const LEAVING_SOON_MS = 3 * 24 * 60 * 60 * 1000;
 
 // Every way a filter arrives, as a mask: a number from a custom_id, or one slash/text `filter` value.
 function filterMask(filter) {

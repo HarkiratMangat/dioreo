@@ -57,15 +57,26 @@ t('his three examples read the dates he meant', () => {
     assert.strictEqual(b.start, null);
     assert.strictEqual(iso(b.end.date), '2026-11-29T00:00:00.000Z');
     const c = qa.parseQuickLine('Herrscher of reason, ends Nov 12 7pm edt', opts);
-    assert.strictEqual(iso(c.end.date), '2026-11-12T23:00:00.000Z', 'a zone typed with the time is used');
+    // EDT was typed, but Toronto is on EST by Nov 12: his "use the correct one, even if the wrong one is typed". 7pm EST is midnight UTC.
+    assert.strictEqual(iso(c.end.date), '2026-11-13T00:00:00.000Z');
     assert.strictEqual(c.end.timed, true);
 });
 
-t('a time with no zone is read in the admin’s own zone; a date with none is 00:00 UTC', () => {
+t('a time with no zone is Toronto time; a date with none is 00:00 UTC; a typed zone is that region’s clock', () => {
+    assert.strictEqual(qa.TIME_ZONE, 'America/Toronto');
+    const end = (text, o = { now: NOW }) => iso(qa.parseQuickLine(`x, ends ${text}`, o).end.date);
     // 7pm EST (the clocks went back today) is midnight UTC.
-    assert.strictEqual(iso(qa.parseQuickLine('x, ends Nov 12 7pm', opts).end.date), '2026-11-13T00:00:00.000Z');
-    assert.strictEqual(iso(qa.parseQuickLine('x, ends Nov 12 7pm', { zone: 'UTC', now: NOW }).end.date), '2026-11-12T19:00:00.000Z');
-    assert.strictEqual(iso(qa.parseQuickLine('x, until Nov 12', opts).end.date), '2026-11-12T00:00:00.000Z');
+    assert.strictEqual(end('Nov 12 7pm'), '2026-11-13T00:00:00.000Z');
+    assert.strictEqual(end('Nov 12 7pm est'), '2026-11-13T00:00:00.000Z');
+    assert.strictEqual(end('Nov 12 7pm et'), '2026-11-13T00:00:00.000Z');
+    // The other way round: EST typed in summer is still Toronto's own clock (EDT, UTC-4).
+    assert.strictEqual(end('Jul 12 2027 7pm est'), '2027-07-12T23:00:00.000Z');
+    assert.strictEqual(end('Nov 12 7pm pdt'), '2026-11-13T03:00:00.000Z');
+    assert.strictEqual(end('Nov 12 7pm gmt'), '2026-11-12T19:00:00.000Z', 'GMT is UTC, never London summer time');
+    assert.strictEqual(end('Nov 12 7pm tokyo'), '2026-11-12T10:00:00.000Z');
+    assert.strictEqual(end('Nov 12'), '2026-11-12T00:00:00.000Z');
+    const untimed = qa.parseQuickLine('x, until Nov 12', opts).end;
+    assert.strictEqual(untimed.timed, false);
 });
 
 t('an unlabelled date is the start and a second one the end; nonsense is reported, not guessed', () => {
@@ -91,9 +102,52 @@ t('the draw index finds the draw his words name', () => {
     assert.strictEqual(alias.matchedBy, 'alias');
 });
 
-t('a rarity alone, or words the index has never seen, name no draw', () => {
-    assert.strictEqual(qa.findCatalogDraw(ENTRIES, 'mythic'), null);
+t('words the index has never seen name no draw', () => {
     assert.strictEqual(qa.findCatalogDraw(ENTRIES, 'totally unknown thing'), null);
+    assert.strictEqual(qa.findCatalogDraw(ENTRIES, 'legendary vehicle'), null, 'nothing in the index is one');
+});
+
+t('a rarity or kind alone guesses nothing and lists every draw that fits, for Pick', () => {
+    // No draw here has a mythic character (Hollow Flight's character is epic), so nothing fits.
+    assert.strictEqual(qa.findCatalogDraw(ENTRIES, 'mythic character'), null);
+    const m = qa.findCatalogDraw(ENTRIES, 'mythic draw');
+    assert.deepStrictEqual(m.candidates.map(e => e.slug), ['herrscher-s-armory', 'dawnbringer-mythic-drop', 'hollow-flight-mythic-drop'], 'newest season first, then by title');
+    assert.strictEqual(m.entry, null);
+    assert.strictEqual(m.sure, false);
+    const c = qa.findCatalogDraw(ENTRIES, 'legendary character');
+    assert.ok(c.candidates.every(e => e.items.some(i => i.tier === 'legendary' && i.kind === 'character')));
+    assert.ok(c.candidates.length >= 2);
+    const d = draft('legendary characters, ends Nov 20');
+    assert.strictEqual(d.needsPick, true);
+    assert.strictEqual(d.candidates.length, c.candidates.length);
+});
+
+t('typos and split words still find the draw', () => {
+    const slug = q => qa.findCatalogDraw(ENTRIES, q)?.entry?.slug;
+    assert.strictEqual(slug('hersher armory'), 'herrscher-s-armory', 'two slips in a long word');
+    assert.strictEqual(slug('herrscher armroy'), 'herrscher-s-armory', 'a swapped pair is one slip');
+    assert.strictEqual(slug('wisterian visge'), 'wisterian-visage-draw');
+    assert.strictEqual(slug('cx9 mythic drop'), slug('cx9 mythic draw'), 'draw and drop are the same word here');
+    assert.strictEqual(slug('hunger eter nal'), 'hunger-eternal-draw', 'two typed-apart words are tried joined');
+    // A short word must be exact: one slip from a four-letter word is too loose.
+    assert.strictEqual(qa.near('here', 'hero'), false);
+    assert.strictEqual(qa.near('hersher', 'herrscher'), true);
+});
+
+t('Pick: the draw he chooses replaces the guess, with the line’s own dates; keep-as-typed drops the match', () => {
+    const parsed = qa.parseQuickLine('cx9, ends Nov 20', opts);
+    const guess = qa.draftFromLine(parsed, { entries: ENTRIES, seasonalDoc: DOC, isSameTitle: isSameDrawTitle, ...opts });
+    assert.ok(guess.candidates.length >= 2, 'a guess offers Pick');
+    const flat = ENTRIES.find(e => e.slug === 'hollow-flight-mythic-drop');
+    const picked = qa.draftFromLine(parsed, { entries: ENTRIES, seasonalDoc: DOC, isSameTitle: isSameDrawTitle, ...opts, pick: flat });
+    assert.strictEqual(picked.title, 'Hollow Flight Mythic Drop');
+    assert.strictEqual(picked.sure, true);
+    assert.deepStrictEqual(picked.candidates, []);
+    assert.strictEqual(iso(picked.end), '2026-11-20T00:00:00.000Z');
+    const typed = qa.draftFromLine(parsed, { entries: ENTRIES, seasonalDoc: DOC, isSameTitle: isSameDrawTitle, ...opts, pick: qa.TYPED });
+    assert.strictEqual(typed.title, 'Cx9');
+    assert.strictEqual(typed.matchedBy, null);
+    assert.strictEqual(typed.needsPick, false);
 });
 
 t('the Street Fighter pair: the group’s own document, not a coin toss', () => {

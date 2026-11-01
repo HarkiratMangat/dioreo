@@ -4,8 +4,11 @@
 //
 // THE DRAFT lives in memory (DRAFTS below), keyed by a short token in every custom_id, for DRAFT_TTL_MS. A restart or the timeout drops it and its buttons answer "start again"; nothing is written until Save, so losing a draft loses no data.
 //
-// custom_ids: modal_draws_quickadd · mng_qa_edit_<token>_<i> · modal_qa_edit_<token>_<i> · mng_qa_save_<token> · mng_qa_cancel_<token> · mng_qa_revert_<token> (after Save). The router's /manage lock runs on the `mng_` and `modal_` prefixes first; commitSet checks the admin's tiers again on Save (draws create, and calendar create for an end date).
+// PICK (his ask, 2026-11-01 11:50 EDT: "will it ask me for confirmation to pick from a dropdown list"): a draw the words only guess at, or only describe ("mythic character"), gets a Pick button in place of Edit. It opens a dropdown of up to 24 draws from the index plus "keep as typed"; the pick replaces the row and the row's button turns back into Edit. A row still waiting for a pick is skipped on Save.
+//
+// custom_ids: modal_draws_quickadd · mng_qa_edit_<token>_<i> · modal_qa_edit_<token>_<i> · mng_qa_pick_<token>_<i> · modal_qa_pick_<token>_<i> · mng_qa_save_<token> · mng_qa_cancel_<token> · mng_qa_revert_<token> (after Save). The router's /manage lock runs on the `mng_` and `modal_` prefixes first; commitSet checks the admin's tiers again on Save (draws create, and calendar create for an end date).
 const { randomBytes } = require('crypto');
+const { ModalBuilder, LabelBuilder, StringSelectMenuBuilder } = require('discord.js');
 const BOT_EMOJI = require('../../utils/emojiMap');
 const emojis = require('../../utils/emojiMap');
 const { commitSet } = require('../../core/changeset');
@@ -29,12 +32,6 @@ function getDraft(token, userId) {
     return d && d.userId === userId ? d : null;
 }
 
-async function adminZone(userId) {
-    const UserPreference = require('../../models/UserPreference');
-    const prefs = await UserPreference.findOne({ discordId: userId }).select('timezone').lean();
-    return prefs?.timezone || 'America/Toronto';
-}
-
 // Every draft line, matched, with a second line naming the same draw marked so Save writes it once.
 async function buildDrafts(lines, { zone, now = new Date() }) {
     const { loadCatalog } = require('../../utils/drawCatalog');
@@ -44,6 +41,9 @@ async function buildDrafts(lines, { zone, now = new Date() }) {
     markDuplicates(drafts, isSameDrawTitle);
     return drafts;
 }
+
+// What Save writes: not a second line for the same draw, not a row still waiting for a pick, and not an already-listed draw the line changes nothing on.
+const willWrite = d => d.duplicateOf === null && !d.needsPick && (!d.existing || d.end || d.startGiven);
 
 function markDuplicates(drafts, isSameTitle) {
     drafts.forEach((d, i) => {
@@ -60,15 +60,16 @@ const stamp = date => `<t:${Math.floor(new Date(date).getTime() / 1000)}:f>`;
 function draftLines(d, i) {
     const { drawTypeName } = require('../../utils/drawTypes');
     const kind = drawTypeName(d.priceType || '');
-    const head = `**${i + 1}. ${d.title}**\n-# ${d.category === 'new' ? 'New' : 'Returning'} draw${kind ? ` · ${kind}` : ''}`;
+    const head = d.needsPick ? `**${i + 1}. Pick a draw**` : `**${i + 1}. ${d.title}**\n-# ${d.category === 'new' ? 'New' : 'Returning'} draw${kind ? ` · ${kind}` : ''}`;
     const when = `> ${d.existing && !d.startGiven ? 'Started' : 'Starts'} ${stamp(d.start)} · ${d.end ? `ends ${stamp(d.end)}` : 'no end date'}`;
     const shown = (d.items || []).filter(it => it.tier !== 'comment');
     const items = shown.length ? `-# ${shown.length} item${shown.length === 1 ? '' : 's'}: ${shown.slice(0, 2).map(it => it.name).join(', ')}${shown.length > 2 ? ', …' : ''}` : '-# No items';
     const notes = [];
     if (d.duplicateOf !== null && d.duplicateOf !== undefined) notes.push(`${emojis.warn} Same draw as line ${d.duplicateOf + 1}: skipped on Save.`);
     if (d.existing) notes.push(`ℹ️ Already on /draws as **${d.existing.title}**: Save ${[d.end && 'sets its end date', d.startGiven && 'moves its start'].filter(Boolean).join(' and ') || 'changes nothing'}.`);
-    if (!d.matchedBy && !d.existing && !d.edited) notes.push(`${emojis.warn} Not in the draw index: saved as typed. Edit to add its items.`);
-    else if (d.matchedBy === 'words' && !d.edited) notes.push(`${d.sure ? 'ℹ️' : emojis.warn} Matched from "${d.query}"${d.alternates.length ? `; also fits ${d.alternates.join(', ')}` : ''}.`);
+    if (d.needsPick) notes.push(`${emojis.warn} "${d.query}" fits ${d.candidates.length} draw${d.candidates.length === 1 ? '' : 's'}. Pick one, or it's skipped on Save.`);
+    else if (!d.matchedBy && !d.existing && !d.edited) notes.push(`${emojis.warn} Not in the draw index: saved as typed. Edit to add its items.`);
+    else if (d.matchedBy === 'words' && !d.edited) notes.push(d.sure ? `ℹ️ Matched from "${d.query}".` : `${emojis.warn} Best guess for "${d.query}". Pick to choose another.`);
     else if (d.matchedBy === 'alias' && !d.edited) notes.push(`ℹ️ "${d.query}" is another name for this draw.`);
     for (const p of d.problems) notes.push(`${emojis.warn} ${p}`);
     return [head, when, items, ...notes.map(n => `-# ${n}`)].join('\n').slice(0, 900);
@@ -76,7 +77,11 @@ function draftLines(d, i) {
 
 function draftPanel(token, state) {
     const { drafts, extra } = state;
-    const writes = drafts.filter(d => d.duplicateOf === null && (!d.existing || d.end || d.startGiven)).length;
+    const writes = drafts.filter(willWrite).length;
+    // Pick while the match is a guess (or there is none yet), Edit once it is settled.
+    const accessory = (d, i) => d.candidates?.length && !d.edited
+        ? { type: 2, style: 1, label: 'Pick', custom_id: `mng_qa_pick_${token}_${i}` }
+        : { type: 2, style: 2, label: 'Edit', emoji: emojis.parseEmoji(emojis.mngEdit), custom_id: `mng_qa_edit_${token}_${i}` };
     const components = [
         { type: 10, content: [`### ${emojis.mngAdd} Quick Add · ${drafts.length} draw${drafts.length === 1 ? '' : 's'}`,
             `-# Check each one and Edit what's wrong. Nothing is saved until Save.`,
@@ -85,7 +90,7 @@ function draftPanel(token, state) {
         ...drafts.map((d, i) => ({
             type: 9,
             components: [{ type: 10, content: draftLines(d, i) }],
-            accessory: { type: 2, style: 2, label: 'Edit', emoji: emojis.parseEmoji(emojis.mngEdit), custom_id: `mng_qa_edit_${token}_${i}` }
+            accessory: accessory(d, i)
         })),
         { type: 14, spacing: 1, divider: true },
         { type: 1, components: [
@@ -106,7 +111,7 @@ async function submitQuickAdd(interaction) {
     await interaction.deferReply({ ephemeral: true });
     const { lines, extra } = qa.parseQuickText(interaction.fields.getTextInputValue('lines'));
     if (!lines.length) return interaction.followUp({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} The box was empty. Nothing to add.`, FAIL_ACCENT) });
-    const zone = await adminZone(interaction.user.id);
+    const zone = qa.TIME_ZONE;
     const drafts = await buildDrafts(lines, { zone });
     sweep();
     const token = randomBytes(4).toString('hex');
@@ -148,6 +153,14 @@ async function handleButton(interaction) {
         if (!d) return sendV2Payload(interaction, expiredPanel());
         const manage = interaction.client.commands.get('manage');
         return interaction.showModal(manage.buildQuickEditModal(token, i, d, { whenText: whenText(d), itemsText: qa.itemsToText(d.items) }));
+    }
+    if (verb === 'pick') {
+        const i = Number(index);
+        const d = state.drafts[i];
+        if (!d || !d.candidates?.length) return sendV2Payload(interaction, expiredPanel());
+        const { loadCatalog } = require('../../utils/drawCatalog');
+        const entries = await loadCatalog();
+        return interaction.showModal(buildPickModal(token, i, d, d.candidates.map(slug => entries.find(e => e.slug === slug)).filter(Boolean)));
     }
     if (verb === 'save') return save(interaction, token, state);
     return false;
@@ -192,8 +205,48 @@ async function submitEdit(interaction) {
         startGiven: Boolean(parsed.start), startTimed: Boolean(parsed.start?.timed),
         end: parsed.end ? parsed.end.date : null, endTimed: Boolean(parsed.end?.timed),
         existing: listed ? { category: listed.cat, elementId: String(listed.d._id), title: listed.d.title } : null,
-        problems: parsed.problems, edited: true, sure: true, alternates: []
+        problems: parsed.problems, edited: true, sure: true, alternates: [], candidates: [], needsPick: false
     };
+    markDuplicates(state.drafts, isSameDrawTitle);
+    state.at = Date.now();
+    return sendV2Payload(interaction, draftPanel(token, state));
+}
+
+// The Pick box: one dropdown of the draws the line's words fit, the current guess picked, and "keep as typed" last. Discord's limits: 45 characters for a label, 100 for an option's label and description, 25 options.
+function buildPickModal(token, index, draft, candidates) {
+    const tiers = e => (e.items || []).filter(it => it.tier !== 'comment').slice(0, 2).map(it => it.name).join(', ');
+    const options = candidates.slice(0, qa.MAX_CANDIDATES).map(e => ({
+        label: e.title.slice(0, 100),
+        value: e.slug,
+        description: `${e.releaseSeason ? `Season ${e.releaseSeason} · ` : ''}${tiers(e)}`.slice(0, 100) || undefined,
+        default: !draft.needsPick && e.title === draft.title
+    }));
+    options.push({ label: `None of these: keep "${draft.query}" as typed`.slice(0, 100), value: '__typed__' });
+    return new ModalBuilder().setCustomId(`modal_qa_pick_${token}_${index}`).setTitle('Pick the Draw').addLabelComponents(
+        new LabelBuilder().setLabel(`Which draw is "${draft.query}"?`.slice(0, 45)).setDescription('Newest season first when only a rarity or kind was typed')
+            .setStringSelectMenuComponent(new StringSelectMenuBuilder().setCustomId('pick').setRequired(true).setMinValues(1).setMaxValues(1).addOptions(options))
+    );
+}
+
+// modal_qa_pick_<token>_<i>: the picked draw replaces its row, with the line's own dates, and the draft panel is drawn again in place.
+async function submitPick(interaction) {
+    const [, , , token, index] = interaction.customId.split('_');
+    const state = getDraft(token, interaction.user.id);
+    const i = Number(index);
+    const before = state?.drafts[i];
+    if (!before) return sendV2Payload(interaction, expiredPanel());
+    const { loadCatalog } = require('../../utils/drawCatalog');
+    const { isSameDrawTitle } = require('../../utils/search');
+    const value = interaction.fields.getStringSelectValues('pick')[0];
+    const [entries, seasonalDoc] = await Promise.all([loadCatalog(), loadOrCreateSeasonalDoc()]);
+    const entry = value === '__typed__' ? null : entries.find(e => e.slug === value);
+    if (value !== '__typed__' && !entry) return sendV2Payload(interaction, expiredPanel());
+    const parsed = {
+        line: before.line, query: before.query, problems: before.problems,
+        start: before.startGiven ? { date: before.start, timed: before.startTimed } : null,
+        end: before.end ? { date: before.end, timed: before.endTimed } : null
+    };
+    state.drafts[i] = qa.draftFromLine(parsed, { entries, seasonalDoc, isSameTitle: isSameDrawTitle, zone: state.zone, pick: entry || qa.TYPED });
     markDuplicates(state.drafts, isSameDrawTitle);
     state.at = Date.now();
     return sendV2Payload(interaction, draftPanel(token, state));
@@ -207,7 +260,7 @@ async function save(interaction, token, state) {
     const { isKnownType } = require('../../utils/drawCatalog');
     const { isPricedDrawType, drawTypeName } = require('../../utils/drawTypes');
     const seasonalDoc = await loadOrCreateSeasonalDoc();
-    const todo = state.drafts.filter(d => d.duplicateOf === null && (!d.existing || d.end || d.startGiven));
+    const todo = state.drafts.filter(willWrite);
 
     // Pictures first, outside the transaction, the way Add Draw does it (handlers/manage/draws.js addDraw): a catalog hit is one memory lookup, anything else asks Cloudinary.
     const thumbs = await Promise.all(todo.map(d => d.existing ? null : resolveThumbnail(d.title, '', { items: d.items, priceType: d.priceType || '' }).catch(() => ({ url: null }))));
@@ -255,4 +308,4 @@ async function save(interaction, token, state) {
     return sendV2Payload(interaction, panel);
 }
 
-module.exports = { submitQuickAdd, handleButton, submitEdit, draftPanel, whenText, DRAFTS, SAVED, DRAFT_TTL_MS };
+module.exports = { submitQuickAdd, handleButton, submitEdit, submitPick, buildPickModal, draftPanel, whenText, DRAFTS, SAVED, DRAFT_TTL_MS };

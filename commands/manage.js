@@ -505,7 +505,7 @@ function buildQuickEditModal(token, index, draft, { whenText = '', itemsText = '
     const withValue = (input, value) => (value ? input.setValue(value) : input);
     return new ModalBuilder().setCustomId(`modal_qa_edit_${token}_${index}`).setTitle('Edit Draft Draw').addLabelComponents(
         text('title', 'Draw Title', withValue(new TextInputBuilder().setStyle(TextInputStyle.Short).setMaxLength(200), draft.title)),
-        new LabelBuilder().setLabel('When').setDescription('starts …, ends … (blank start = today; a time keeps its zone)')
+        new LabelBuilder().setLabel('When').setDescription('starts …, ends … (blank start = today; a time is Toronto time unless a zone is typed)')
             .setTextInputComponent(withValue(new TextInputBuilder().setCustomId('when').setStyle(TextInputStyle.Short).setRequired(false).setMaxLength(200), whenText)),
         text('items', 'Items (Shorthand)', withValue(new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setRequired(false).setPlaceholder('m Character Name\nl Gun Name\n-# Optional note'), itemsText)),
         new LabelBuilder().setLabel('New or Returning').setStringSelectMenuComponent(

@@ -120,7 +120,7 @@ const PAGES = {
                     text(`**Filter**\n-# Blank shows every draw\n> -# **Upcoming** ${dot(states('upcoming'))}\n> -# **Live** ${dot(states('live'))}\n> -# **Leaving soon** ${dot(states('leaving'))}\n> -# **Ended** ${dot(states('ended'))}`),
                     shows,
                 ],
-                examples: [[`${x.p} draws`, "This season's draws"], [`${x.p} draws returning`, 'Straight to Returning'], [`${x.p} ld r`, 'The same, shortest'], [`${x.p} draws leaving`, 'Draws ending within 2 days']],
+                examples: [[`${x.p} draws`, "This season's draws"], [`${x.p} draws returning`, 'Straight to Returning'], [`${x.p} ld r`, 'The same, shortest'], [`${x.p} draws leaving`, 'Draws ending within 3 days']],
             };
         },
     },

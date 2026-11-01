@@ -1768,7 +1768,7 @@
           },
           {
             "type": 10,
-            "content": "-# **Examples**\n-# `d draws`  This season's draws\n-# `d draws returning`  Straight to Returning\n-# `d ld r`  The same, shortest\n-# `d draws leaving`  Draws ending within 2 days"
+            "content": "-# **Examples**\n-# `d draws`  This season's draws\n-# `d draws returning`  Straight to Returning\n-# `d ld r`  The same, shortest\n-# `d draws leaving`  Draws ending within 3 days"
           },
           {
             "type": 10,
@@ -10383,7 +10383,7 @@
           },
           {
             "type": 10,
-            "content": "-# **Examples**\n-# `d draws`  This season's draws\n-# `d draws returning`  Straight to Returning\n-# `d ld r`  The same, shortest\n-# `d draws leaving`  Draws ending within 2 days"
+            "content": "-# **Examples**\n-# `d draws`  This season's draws\n-# `d draws returning`  Straight to Returning\n-# `d ld r`  The same, shortest\n-# `d draws leaving`  Draws ending within 3 days"
           },
           {
             "type": 10,
@@ -19886,7 +19886,7 @@
           },
           {
             "type": 10,
-            "content": "-# **Examples**\n-# `d draws`  This season's draws\n-# `d draws returning`  Straight to Returning\n-# `d ld r`  The same, shortest\n-# `d draws leaving`  Draws ending within 2 days"
+            "content": "-# **Examples**\n-# `d draws`  This season's draws\n-# `d draws returning`  Straight to Returning\n-# `d ld r`  The same, shortest\n-# `d draws leaving`  Draws ending within 3 days"
           },
           {
             "type": 10,
@@ -34138,7 +34138,7 @@
           },
           {
             "type": 10,
-            "content": "-# **Examples**\n-# `d draws`  This season's draws\n-# `d draws returning`  Straight to Returning\n-# `d ld r`  The same, shortest\n-# `d draws leaving`  Draws ending within 2 days"
+            "content": "-# **Examples**\n-# `d draws`  This season's draws\n-# `d draws returning`  Straight to Returning\n-# `d ld r`  The same, shortest\n-# `d draws leaving`  Draws ending within 3 days"
           },
           {
             "type": 10,
