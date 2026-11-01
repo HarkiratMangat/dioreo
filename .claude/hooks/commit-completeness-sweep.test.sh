@@ -118,23 +118,6 @@ printf '{"type":"assistant","message":{"content":[{"type":"text","text":"All don
 out_real=$(run "$POISON2" "$tr_real" stop)
 a "detector in a Bash COMMAND does count"   "external-trees" no  "$out_real"
 
-# ---- two bases: a v3 branch must not be diffed against main ---- The Stop wiring passes a literal `main` because it fires long before any --base flag is typed. A branch cut from v3-pre-release diffed against main reports the entire v3 delta as "changed".
-V3="$TMP/v3"
-mkdir -p "$V3/docs"; git -C "$V3" init --quiet -b main
-# ⚠️ Must clear the hook's 45-char sampling floor. A 4-char "base" line meant ZERO lines were sampled, so the conservation check correctly found nothing and this assertion failed against a fixture that could never have triggered it — a test that cannot fail for the right reason.
-printf 'a base-branch content line comfortably past the forty-five character sampling floor\n' > "$V3/docs/a.md"
-git -C "$V3" add -A; git -C "$V3" -c user.email=t@t -c user.name=t commit --quiet -m init
-git -C "$V3" checkout --quiet -b v3-pre-release
-printf 'a v3 line long enough to clear the forty-five character sampling floor here\n' > "$V3/docs/v3only.md"
-git -C "$V3" add -A; git -C "$V3" -c user.email=t@t -c user.name=t commit --quiet -m v3
-git -C "$V3" checkout --quiet -b feat/on-v3
-git -C "$V3" rm -q docs/a.md
-git -C "$V3" add -A; git -C "$V3" -c user.email=t@t -c user.name=t commit --quiet -m change
-out_v3=$(run "$V3" "" pr)
-# docs/v3only.md belongs to v3-pre-release, not to this branch. With the base wrongly resolved to main it would appear in the diff; with it correctly resolved to v3-pre-release it must not.
-a "v3 branch is diffed against v3-pre-release" "v3only" no "$out_v3"
-a "v3 branch still reports its OWN deletion"   "docs/a.md" yes "$out_v3"
-
 # ---- 🔴 UNCOMMITTED WORK: the highest-likelihood miss in the whole design ---- `$BASE...HEAD` sees committed history only, so a session that edits files and claims "done" WITHOUT COMMITTING produced an empty diff and total silence. That is the default state mid-session and precisely when a premature "done" is most likely. Found 2026-08-06 09:44 EDT by asking what the gate's PRECONDITIONS are, an angle neither earlier pass took.
 UNC="$TMP/uncommitted"
 mkdir -p "$UNC/docs"; git -C "$UNC" init --quiet -b main

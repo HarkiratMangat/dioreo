@@ -100,7 +100,7 @@ The repo has detailed, path-scoped conventions in `.claude/rules/*.md` and archi
 
 ## Pull requests
 
-1. Branch off `main` (or off `v3-pre-release` for v3 work).
+1. Branch off `main`.
 2. Keep the PR focused on one thing.
 3. Describe what you changed and how you tested it.
 4. Confirm the CLA (see below).

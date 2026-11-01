@@ -35,16 +35,6 @@ HOOKDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$REPO" 2>/dev/null || exit 0
 git rev-parse --git-dir >/dev/null 2>&1 || exit 0
 
-# ⚠️ TWO BASES EXIST IN THIS REPO and the `git commit`/`merge`/`tag` wiring cannot know which one applies — no `--base` flag has been typed yet, so it passes the default `main` (the `gh pr create` wiring passes `--base` when it is given). A v3 branch is cut from `v3-pre-release`, and diffing it against `main` yields the whole v3 delta: every v3 file reads as "changed", conservation scans hundreds of irrelevant lines, and the report is noise on the branch type that most needs it. Detected 2026-08-06 09:32 EDT while adversarially testing this hook rather than by hitting it in production. Three cheap git calls: if the merge-base with v3-pre-release is a DESCENDANT of the merge-base with main, the branch was cut from v3 and v3 is the truer base.
-if [ "$BASE" = main ] && git rev-parse --verify -q v3-pre-release >/dev/null 2>&1; then
-  mb_main=$(git merge-base main HEAD 2>/dev/null)
-  mb_v3=$(git merge-base v3-pre-release HEAD 2>/dev/null)
-  if [ -n "$mb_main" ] && [ -n "$mb_v3" ] && [ "$mb_main" != "$mb_v3" ] \
-     && git merge-base --is-ancestor "$mb_main" "$mb_v3" 2>/dev/null; then
-    BASE=v3-pre-release
-  fi
-fi
-
 emit() {
   # ⚠️ COMMIT MODE NEVER DENIES, and the shape is the reason. Harkirat's standing constraint on every gate in this directory: "a gate is better than advisory but i dont want it denying things." additionalContext with hookEventName is the only output that reaches Claude without blocking the call or putting a prompt in front of him — friction on the model is free, friction on him is disqualifying, so permissionDecision "ask" is wrong here even though it would be stricter.
   if [ "$MODE" = commit ]; then

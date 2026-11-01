@@ -37,12 +37,10 @@ echo "$changed" | grep -qx 'docs/CHANGELOG.md' \
   · docs/CHANGELOG.md has no entry on this branch. Every merge gets a version (corrected
     2026-08-02 16:02 EDT — the newest untagged commit is 2026-07-28; the last 14 are all tagged)."
 
-# During v3 pre-release the records rule is CHANGELOG-only: docs/CHANGELOG.md carries `Pre-Release v3.MAJOR.MINOR`, package.json carries a matching `-pre` suffix, and no CHANGELOG-SUMMARY line or tag is minted until v3.0.0 (2026-07-27 v3 development-structure spec). Demanding a SUMMARY line on a v3 branch would be the gate enforcing a rule that does not apply — which teaches you to merge past it, and then it is not a gate on main either.
-if [ "$base" != "v3-pre-release" ]; then
-  echo "$changed" | grep -qx 'docs/CHANGELOG-SUMMARY.md' \
-    || miss="$miss
+# CHANGELOG-SUMMARY is demanded on every base. The pre-release line's CHANGELOG-only exemption (keyed on a `v3-pre-release` base) retired with that branch at v3.0.0 (2026-11-01 18:23 EST).
+echo "$changed" | grep -qx 'docs/CHANGELOG-SUMMARY.md' \
+  || miss="$miss
   · docs/CHANGELOG-SUMMARY.md has no line. Every version number needs one, even ops/docs-only."
-fi
 echo "$changed" | grep -qx 'package.json' \
   || miss="$miss
   · package.json was not bumped. (package-lock.json carries the version twice — both fields move.)"

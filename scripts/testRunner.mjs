@@ -116,7 +116,7 @@ let gitSigValue = null;
 function gitSig() {
     if (gitSigValue) return gitSigValue;
     const g = (a) => { try { return execFileSync('git', a, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 64 * 1024 * 1024 }).trim(); } catch { return '?'; } };
-    gitSigValue = createHash('sha1').update([g(['rev-parse', 'HEAD']), g(['rev-parse', '--verify', '-q', 'origin/main']), g(['rev-parse', '--verify', '-q', 'origin/v3-pre-release']), g(['tag', '--list']), g(['diff', '--cached', '--name-only'])].join('\0')).digest('hex');
+    gitSigValue = createHash('sha1').update([g(['rev-parse', 'HEAD']), g(['rev-parse', '--verify', '-q', 'origin/main']), g(['tag', '--list']), g(['diff', '--cached', '--name-only'])].join('\0')).digest('hex');
     return gitSigValue;
 }
 
