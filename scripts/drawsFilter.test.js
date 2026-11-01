@@ -54,9 +54,10 @@ t('a status filter shows one list under /today\'s headings, each draw once', () 
     const titles = all.match(/### (New|Ret) Draw \d+/g);
     assert.strictEqual(new Set(titles).size, 16, 'all 16 draws');
     assert.strictEqual(titles.length, 16, 'none twice');
-    assert.ok(all.indexOf('Live') < all.indexOf('Leaving soon') && all.indexOf('Leaving soon') < all.indexOf('## ' + emojis.lightBlueDotGlow), 'Live, Leaving soon, Upcoming, Ended');
+    assert.ok(all.includes(`## ${emojis.greenDotGlow} Active now`) && !all.includes(`## ${emojis.greenDotGlow} Live`), "/calendar's heading, Active now (14:51 EDT)");
+    assert.ok(all.indexOf('Active now') < all.indexOf('Leaving soon') && all.indexOf('Leaving soon') < all.indexOf('## ' + emojis.lightBlueDotGlow), 'Active now, Leaving soon, Upcoming, Ended');
     assert.ok(!all.includes('New draw\n'), 'no New draw line under a title (14:46 EDT, his call)');
-    assert.ok(all.includes(`## ${emojis.filter} Viewing Filtered Draws`), 'both sections: his title');
+    assert.ok(all.includes(`## ${emojis.filter} Filtered Draws`), 'both sections: his title');
     // Live alone keeps its Leaving soon draws, under their own heading.
     const live = [0, 1, 2].map(p => texts(draws.buildContainer(doc, 'new', p, 1, true, mask('live'))).join('\n')).join('\n');
     assert.ok(live.includes('Leaving soon') && !live.includes('Upcoming') && !live.includes(`${emojis.redDotGlow} Ended`));

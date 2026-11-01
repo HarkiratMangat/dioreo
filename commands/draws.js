@@ -194,9 +194,9 @@ function buildFilterRow(mask) {
     };
 }
 
-// THE FILTERED LIST (2026-11-01 13:16 EDT, Harkirat: "when a view is filtered along with a live, leaving, upcoming, or ended filter, why don't we present it as a collective list with heads for "live", etc similar to /today?"). With a status picked, the draws of the sections the filter keeps are one list under /today's headings and colours, in this order. Leaving soon is the part of Live that ends within LEAVING_SOON_MS, so a draw sits under one heading only, and Live picked alone still shows its Leaving soon draws (Live includes them, FILTER_OPTIONS).
+// THE FILTERED LIST (2026-11-01 13:16 EDT, Harkirat: "when a view is filtered along with a live, leaving, upcoming, or ended filter, why don't we present it as a collective list with heads for "live", etc similar to /today?"). With a status picked, the draws of the sections the filter keeps are one list under /today's headings and colours, in this order. Leaving soon is the part of Live that ends within LEAVING_SOON_MS, so a draw sits under one heading only, and Live picked alone still shows its Leaving soon draws (Live includes them, FILTER_OPTIONS). The headings are /calendar's Today page's (14:51 EDT, his "the headings should match /calendar and /today"): Active now, not Live. `word` keeps the count line's "live" from his 13:54 EDT template.
 const STATUS_GROUPS = [
-    { key: 'live', label: 'Live', emojiKey: 'greenDotGlow', holds: b => (b & 8) && !(b & 16), order: (a, b) => a.startMs - b.startMs },
+    { key: 'live', label: 'Active now', word: 'live', emojiKey: 'greenDotGlow', holds: b => (b & 8) && !(b & 16), order: (a, b) => a.startMs - b.startMs },
     { key: 'leaving', label: 'Leaving soon', emojiKey: 'yellowDotGlow', holds: b => b & 16, order: (a, b) => a.endMs - b.endMs },
     { key: 'upcoming', label: 'Upcoming', emojiKey: 'lightBlueDotGlow', holds: b => b & 4, order: (a, b) => (a.startMs || Infinity) - (b.startMs || Infinity) },
     { key: 'ended', label: 'Ended', emojiKey: 'redDotGlow', holds: b => b & 32, order: (a, b) => b.endMs - a.endMs }
@@ -222,7 +222,7 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
     const SECTION_NAME = { new: 'New Draws', returning: 'Returning Draws' };
     const sectionNote = (k) => {
         const all = timed(k);
-        const counts = STATUS_GROUPS.map(g => ({ emojiKey: g.emojiKey, label: g.label.toLowerCase(), n: all.filter(d => g.holds(d.bits)).length }));
+        const counts = STATUS_GROUPS.map(g => ({ emojiKey: g.emojiKey, label: g.word || g.label.toLowerCase(), n: all.filter(d => g.holds(d.bits)).length }));
         return emptyNote({ label: SECTION_NAME[k], emoji: emojis[k === 'new' ? 'newDraws' : 'returningDraws'], counts, filtered: Boolean(mask) && all.length > 0 });
     };
     // Which empty sections get a line at the top: one picked by name under a filter, and, with no filter, a section with no draws at all (it used to get a whole page saying so, the same empty page he asked to retire, 14:32 EDT: "Work the class!"). With nothing to show anywhere, every kept section's line is the page.
@@ -237,9 +237,9 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
         const at = Math.min(Math.max(0, subPage), pages.length - 1);
         const chunk = pages[at];
         const onlyOne = picked.length === 1 ? picked[0] : null;
-        // Both sections: ":Filter: Viewing Filtered Draws" (his wording, 14:07 EDT); one section keeps its own name and icon.
+        // Both sections: ":Filter: Filtered Draws" (his wording, 14:07 EDT, "Viewing Filtered Draws"; shortened 14:51 EDT so it fits one line on his phone beside the bell, his ask); one section keeps its own name and icon.
         titleEmoji = onlyOne === 'returning' ? emojis.returningDraws : onlyOne === 'new' ? emojis.newDraws : emojis.filter;
-        titleLabel = onlyOne === 'new' ? 'New Draws' : onlyOne === 'returning' ? 'Returning Draws' : 'Viewing Filtered Draws';
+        titleLabel = onlyOne === 'new' ? 'New Draws' : onlyOne === 'returning' ? 'Returning Draws' : 'Filtered Draws';
         body = [];
         let group = null;
         for (const d of chunk) {
