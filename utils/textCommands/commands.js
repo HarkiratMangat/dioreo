@@ -58,7 +58,7 @@ const TEXT_COMMANDS = [
             { name: 'filter', values: [
                 // Words that turn up in ordinary chat after a `d` (now, current, old, gone) are left out: `d draws pls now` must stay silent (scripts/textCommandArgs.test.js).
                 { value: 'upcoming', aliases: ['upcoming', 'soon', 'next', 'u'] },
-                { value: 'live', aliases: ['live', 'active', 'l'] },
+                { value: 'live', aliases: ['active', 'live', 'l'] },
                 { value: 'leaving', aliases: ['leaving', 'leaving soon', 'ending', 'ending soon', 'last chance'] },
                 { value: 'ended', aliases: ['ended', 'past', 'over', 'finished'] },
             ] },
@@ -70,8 +70,8 @@ const TEXT_COMMANDS = [
         presets: { events: { page: 'events' }, ev: { page: 'events' }, playlists: { page: 'playlists' }, modes: { page: 'playlists' }, gamemode: { page: 'playlists' }, gm: { page: 'playlists' } },
         options: [
             { name: 'page', values: [{ value: 'draws', aliases: ['draws', 'd'] }, { value: 'events', aliases: ['events', 'ev', 'e'] }, { value: 'playlists', aliases: ['playlists', 'modes', 'pl', 'm', 'gamemode', 'gm'] }] },
-            // `new` is Live here (answer 2: `d calendar modes new` = Playlists & Modes, Live Right Now); it never works on its own.
-            { name: 'filter', values: [{ value: 'over', aliases: ['past', 'ended', 'end', 'over', 'old'] }, { value: 'live', aliases: ['live', 'l', 'active', 'now', 'current', 'new'] }, { value: 'soon', aliases: ['upcoming', 'u', 'soon', 'next', 'future', 'up', 'pending'] }] },
+            // `new` is Active here (answer 2: `d calendar modes new` = Playlists & Modes, Active Now); it never works on its own.
+            { name: 'filter', values: [{ value: 'over', aliases: ['past', 'ended', 'end', 'over', 'old'] }, { value: 'live', aliases: ['active', 'live', 'l', 'now', 'current', 'new'] }, { value: 'soon', aliases: ['upcoming', 'u', 'soon', 'next', 'future', 'up', 'pending'] }] },
         ],
     },
     {

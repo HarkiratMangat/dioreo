@@ -109,15 +109,15 @@ const PAGES = {
         blurb: "This season's new and returning Lucky Draws, with their items",
         page(x) {
             // The Filter menu replaced the New / Returning Draws button on 2026-11-01 (commands/draws.js FILTER_OPTIONS).
-            const shows = text(`**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Live, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# ${bell()} **Bell**  *Opens your reminders privately*`);
-            if (x.view !== 'text') return { boxes: [text('`[page]`\n-# Open on New Draws or Returning Draws'), text('`[filter]`\n-# Upcoming, Live, Leaving Soon or Ended'), VIS, shows], examples: [['/draws'], ['/draws page:Returning Draws'], ['/draws filter:Leaving Soon']] };
+            const shows = text(`**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Active now, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# ${bell()} **Bell**  *Opens your reminders privately*`);
+            if (x.view !== 'text') return { boxes: [text('`[page]`\n-# Open on New Draws or Returning Draws'), text('`[filter]`\n-# Upcoming, Active Now, Leaving Soon or Ended'), VIS, shows], examples: [['/draws'], ['/draws page:Returning Draws'], ['/draws filter:Leaving Soon']] };
             const words = value => valuesOf('/draws', 'page').find(v => v.value === value).aliases.filter(a => a !== 'all');
             const states = value => valuesOf('/draws', 'filter').find(v => v.value === value).aliases.slice(0, 3);
             return {
                 args: '[new|returning] [filter]',
                 boxes: [
                     text(`**Page**\n-# Open on New or Returning. Blank opens on New\n> -# **New** ${dot(words('new'))}\n> -# **Returning** ${dot(words('returning'))}`),
-                    text(`**Filter**\n-# Blank shows every draw\n> -# **Upcoming** ${dot(states('upcoming'))}\n> -# **Live** ${dot(states('live'))}\n> -# **Leaving soon** ${dot(states('leaving'))}\n> -# **Ended** ${dot(states('ended'))}`),
+                    text(`**Filter**\n-# Blank shows every draw\n> -# **Upcoming** ${dot(states('upcoming'))}\n> -# **Active now** ${dot(states('live'))}\n> -# **Leaving soon** ${dot(states('leaving'))}\n> -# **Ended** ${dot(states('ended'))}`),
                     shows,
                 ],
                 examples: [[`${x.p} draws`, "This season's draws"], [`${x.p} draws returning`, 'Straight to Returning'], [`${x.p} ld r`, 'The same, shortest'], [`${x.p} draws leaving`, 'Draws ending within 3 days']],
@@ -128,7 +128,7 @@ const PAGES = {
         blurb: "This season's draws, events and modes on one timeline",
         page(x) {
             const shows = text(`**On the page**\n> -# **Filter menu**  *Mix statuses and types*\n> -# ${bell()} **Bell**  *Opens your reminders privately*`);
-            if (x.view !== 'text') return { boxes: [text('`[page]`\n-# Today, Draws, Events, or Playlists & Modes. Blank opens on Today'), text('`[filter]`\n-# Full Timeline, Past/Ended, Live Right Now or Upcoming'), VIS, shows], examples: [['/calendar page:Events filter:Live Right Now'], ['/calendar page:Draws filter:Upcoming']] };
+            if (x.view !== 'text') return { boxes: [text('`[page]`\n-# Today, Draws, Events, or Playlists & Modes. Blank opens on Today'), text('`[filter]`\n-# Full Timeline, Past/Ended, Active Now or Upcoming'), VIS, shows], examples: [['/calendar page:Events filter:Active Now'], ['/calendar page:Draws filter:Upcoming']] };
             return {
                 args: '[page] [filter]',
                 boxes: [

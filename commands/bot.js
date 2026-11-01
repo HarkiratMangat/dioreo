@@ -356,8 +356,8 @@ const RECORD_VIEWS = {
             // Two fields, lean, on an admin-only panel -- an `isOngoing` entry ends when the Battle Pass does, and that lives on the season doc rather than the entry.
             const doc = await SeasonalData.findOne({ docType: 'global' }).select('bpEnd bpEndTBD').lean();
             return isEventEnded(e, doc || {}, Date.now())
-                ? `⚫ **This one has already ended.** It is hidden from \`/calendar\`'s Live Right Now and Upcoming filters, but still listed in the Full Timeline and Past/Ended.`
-                : `🟢 **Players can see this now.** It shows on \`/calendar\` in the Full Timeline and in the Live Right Now or Upcoming filter.`;
+                ? `⚫ **This one has already ended.** It is hidden from \`/calendar\`'s Active Now and Upcoming filters, but still listed in the Full Timeline and Past/Ended.`
+                : `🟢 **Players can see this now.** It shows on \`/calendar\` in the Full Timeline and in the Active Now or Upcoming filter.`;
         },
     },
     loadouts_mp: {

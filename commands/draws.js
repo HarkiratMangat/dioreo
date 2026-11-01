@@ -145,7 +145,8 @@ const FILTER_OPTIONS = [
     { value: 'new', bit: 1, label: 'New Draws', emojiKey: 'newDraws', description: 'Released for the first time this season' },
     { value: 'returning', bit: 2, label: 'Returning Draws', emojiKey: 'returningDraws', description: 'Back from an earlier season' },
     { value: 'upcoming', bit: 4, label: 'Upcoming', emojiKey: 'lightBlueDotGlow', description: "Hasn't started yet" },
-    { value: 'live', bit: 8, label: 'Live', emojiKey: 'greenDotGlow', description: 'Active right now' },
+    // Active now, not Live (14:54 EDT, his "class not instance!!" after the heading took /calendar's Today word at 14:51): the menu, the slash choice and the help say what the heading says. The value stays `live` so posted panels and `d draws live` keep working.
+    { value: 'live', bit: 8, label: 'Active now', emojiKey: 'greenDotGlow', description: 'Started, and not ended yet' },
     { value: 'leaving', bit: 16, label: 'Leaving soon', emojiKey: 'yellowDotGlow', description: 'Active, and ends within 3 days' },
     { value: 'ended', bit: 32, label: 'Ended', emojiKey: 'redDotGlow', description: 'Already finished' }
 ];
@@ -326,8 +327,8 @@ module.exports = {
         .setDescription('View new and returning draws this season')
         .addStringOption(option => option.setName('page').setDescription('Jump directly to New Draws or Returning Draws').addChoices({ name: 'New Draws', value: 'new' }, { name: 'Returning Draws', value: 'returning' }))
         // One status to start with (2026-11-01); the dropdown on the panel picks several.
-        .addStringOption(option => option.setName('filter').setDescription('Show only upcoming, live, leaving soon or ended draws').addChoices(
-            { name: 'Upcoming', value: 'upcoming' }, { name: 'Live', value: 'live' }, { name: 'Leaving Soon', value: 'leaving' }, { name: 'Ended', value: 'ended' }
+        .addStringOption(option => option.setName('filter').setDescription('Show only upcoming, active, leaving soon or ended draws').addChoices(
+            { name: 'Upcoming', value: 'upcoming' }, { name: 'Active Now', value: 'live' }, { name: 'Leaving Soon', value: 'leaving' }, { name: 'Ended', value: 'ended' }
         ))
         .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]), // Guild + user install, all contexts (v3: usable in a server without a user install)

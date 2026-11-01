@@ -158,7 +158,8 @@ const BANNER_FIELDS_BY_PAGE = ['drawsBannerUrl', 'eventsBannerUrl', 'playlistsBa
 const FILTER_OPTIONS = [
     // Today is a PAGE pick like the three below it (2026-10-23 13:05 EDT, his option C): picked with a type (Lucky Draws, Special Events, Playlists & Modes), the Today page shows only that type; the status picks narrow the three timeline pages only.
     { value: 'today', bit: 64, label: 'Today', emojiKey: 'calendar', description: 'Active now, leaving soon and going live' },
-    { value: 'live', bit: 1, label: 'Live', emojiKey: 'greenDotGlow', description: 'Active right now' },
+    // Active now, as /draws and the Today page's heading say (14:54 EDT, his "class not instance!!"); the value stays `live`.
+    { value: 'live', bit: 1, label: 'Active now', emojiKey: 'greenDotGlow', description: 'Started, and not ended yet' },
     { value: 'over', bit: 2, label: 'Past/Ended', emojiKey: 'redDotGlow', description: 'Already finished this season' },
     { value: 'soon', bit: 4, label: 'Upcoming', emojiKey: 'lightBlueDotGlow', description: "Hasn't started yet" },
     { value: 'draws', bit: 8, label: 'Lucky Draws', emojiKey: 'newDraws', description: 'Draws releasing this season' },
@@ -340,7 +341,7 @@ module.exports = {
             { name: 'Today', value: 'today' }, { name: 'Draws', value: 'draws' }, { name: 'Events', value: 'events' }, { name: 'Playlists & Modes', value: 'playlists' }
         ))
         .addStringOption(option => option.setName('filter').setDescription('Show the full timeline, or only past, live or upcoming entries').addChoices(
-            { name: 'Full Timeline', value: 'all' }, { name: 'Past/Ended', value: 'over' }, { name: 'Live Right Now', value: 'live' }, { name: 'Upcoming', value: 'soon' }
+            { name: 'Full Timeline', value: 'all' }, { name: 'Past/Ended', value: 'over' }, { name: 'Active Now', value: 'live' }, { name: 'Upcoming', value: 'soon' }
         ))
         .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]), // Guild + user install, all contexts (v3: usable in a server without a user install)

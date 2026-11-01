@@ -1739,11 +1739,11 @@
           },
           {
             "type": 10,
-            "content": "**Filter**\n-# Blank shows every draw\n> -# **Upcoming** `upcoming` · `soon` · `next`\n> -# **Live** `live` · `active` · `l`\n> -# **Leaving soon** `leaving` · `leaving soon` · `ending`\n> -# **Ended** `ended` · `past` · `over`"
+            "content": "**Filter**\n-# Blank shows every draw\n> -# **Upcoming** `upcoming` · `soon` · `next`\n> -# **Active now** `active` · `live` · `l`\n> -# **Leaving soon** `leaving` · `leaving soon` · `ending`\n> -# **Ended** `ended` · `past` · `over`"
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Live, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
+            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Active now, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
           },
           {
             "type": 1,
@@ -1989,7 +1989,7 @@
           },
           {
             "type": 10,
-            "content": "`[filter]`\n-# Upcoming, Live, Leaving Soon or Ended"
+            "content": "`[filter]`\n-# Upcoming, Active Now, Leaving Soon or Ended"
           },
           {
             "type": 10,
@@ -1997,7 +1997,7 @@
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Live, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
+            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Active now, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
           },
           {
             "type": 1,
@@ -4016,7 +4016,7 @@
           },
           {
             "type": 10,
-            "content": "`[filter]`\n-# Full Timeline, Past/Ended, Live Right Now or Upcoming"
+            "content": "`[filter]`\n-# Full Timeline, Past/Ended, Active Now or Upcoming"
           },
           {
             "type": 10,
@@ -4049,7 +4049,7 @@
           },
           {
             "type": 10,
-            "content": "-# **Examples**\n-# `/calendar page:Events filter:Live Right Now`\n-# `/calendar page:Draws filter:Upcoming`"
+            "content": "-# **Examples**\n-# `/calendar page:Events filter:Active Now`\n-# `/calendar page:Draws filter:Upcoming`"
           },
           {
             "type": 10,
@@ -10354,11 +10354,11 @@
           },
           {
             "type": 10,
-            "content": "**Filter**\n-# Blank shows every draw\n> -# **Upcoming** `upcoming` · `soon` · `next`\n> -# **Live** `live` · `active` · `l`\n> -# **Leaving soon** `leaving` · `leaving soon` · `ending`\n> -# **Ended** `ended` · `past` · `over`"
+            "content": "**Filter**\n-# Blank shows every draw\n> -# **Upcoming** `upcoming` · `soon` · `next`\n> -# **Active now** `active` · `live` · `l`\n> -# **Leaving soon** `leaving` · `leaving soon` · `ending`\n> -# **Ended** `ended` · `past` · `over`"
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Live, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
+            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Active now, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
           },
           {
             "type": 1,
@@ -10615,7 +10615,7 @@
           },
           {
             "type": 10,
-            "content": "`[filter]`\n-# Upcoming, Live, Leaving Soon or Ended"
+            "content": "`[filter]`\n-# Upcoming, Active Now, Leaving Soon or Ended"
           },
           {
             "type": 10,
@@ -10623,7 +10623,7 @@
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Live, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
+            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Active now, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
           },
           {
             "type": 1,
@@ -12730,7 +12730,7 @@
           },
           {
             "type": 10,
-            "content": "`[filter]`\n-# Full Timeline, Past/Ended, Live Right Now or Upcoming"
+            "content": "`[filter]`\n-# Full Timeline, Past/Ended, Active Now or Upcoming"
           },
           {
             "type": 10,
@@ -12763,7 +12763,7 @@
           },
           {
             "type": 10,
-            "content": "-# **Examples**\n-# `/calendar page:Events filter:Live Right Now`\n-# `/calendar page:Draws filter:Upcoming`"
+            "content": "-# **Examples**\n-# `/calendar page:Events filter:Active Now`\n-# `/calendar page:Draws filter:Upcoming`"
           },
           {
             "type": 10,
@@ -19857,11 +19857,11 @@
           },
           {
             "type": 10,
-            "content": "**Filter**\n-# Blank shows every draw\n> -# **Upcoming** `upcoming` · `soon` · `next`\n> -# **Live** `live` · `active` · `l`\n> -# **Leaving soon** `leaving` · `leaving soon` · `ending`\n> -# **Ended** `ended` · `past` · `over`"
+            "content": "**Filter**\n-# Blank shows every draw\n> -# **Upcoming** `upcoming` · `soon` · `next`\n> -# **Active now** `active` · `live` · `l`\n> -# **Leaving soon** `leaving` · `leaving soon` · `ending`\n> -# **Ended** `ended` · `past` · `over`"
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Live, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
+            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Active now, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
           },
           {
             "type": 1,
@@ -20173,7 +20173,7 @@
           },
           {
             "type": 10,
-            "content": "`[filter]`\n-# Upcoming, Live, Leaving Soon or Ended"
+            "content": "`[filter]`\n-# Upcoming, Active Now, Leaving Soon or Ended"
           },
           {
             "type": 10,
@@ -20181,7 +20181,7 @@
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Live, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
+            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Active now, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
           },
           {
             "type": 1,
@@ -22728,7 +22728,7 @@
           },
           {
             "type": 10,
-            "content": "`[filter]`\n-# Full Timeline, Past/Ended, Live Right Now or Upcoming"
+            "content": "`[filter]`\n-# Full Timeline, Past/Ended, Active Now or Upcoming"
           },
           {
             "type": 10,
@@ -22761,7 +22761,7 @@
           },
           {
             "type": 10,
-            "content": "-# **Examples**\n-# `/calendar page:Events filter:Live Right Now`\n-# `/calendar page:Draws filter:Upcoming`"
+            "content": "-# **Examples**\n-# `/calendar page:Events filter:Active Now`\n-# `/calendar page:Draws filter:Upcoming`"
           },
           {
             "type": 10,
@@ -34119,11 +34119,11 @@
           },
           {
             "type": 10,
-            "content": "**Filter**\n-# Blank shows every draw\n> -# **Upcoming** `upcoming` · `soon` · `next`\n> -# **Live** `live` · `active` · `l`\n> -# **Leaving soon** `leaving` · `leaving soon` · `ending`\n> -# **Ended** `ended` · `past` · `over`"
+            "content": "**Filter**\n-# Blank shows every draw\n> -# **Upcoming** `upcoming` · `soon` · `next`\n> -# **Active now** `active` · `live` · `l`\n> -# **Leaving soon** `leaving` · `leaving soon` · `ending`\n> -# **Ended** `ended` · `past` · `over`"
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Live, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
+            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Active now, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
           },
           {
             "type": 1,
@@ -34380,7 +34380,7 @@
           },
           {
             "type": 10,
-            "content": "`[filter]`\n-# Upcoming, Live, Leaving Soon or Ended"
+            "content": "`[filter]`\n-# Upcoming, Active Now, Leaving Soon or Ended"
           },
           {
             "type": 10,
@@ -34388,7 +34388,7 @@
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Live, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
+            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Active now, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
           },
           {
             "type": 1,
@@ -36495,7 +36495,7 @@
           },
           {
             "type": 10,
-            "content": "`[filter]`\n-# Full Timeline, Past/Ended, Live Right Now or Upcoming"
+            "content": "`[filter]`\n-# Full Timeline, Past/Ended, Active Now or Upcoming"
           },
           {
             "type": 10,
@@ -36528,7 +36528,7 @@
           },
           {
             "type": 10,
-            "content": "-# **Examples**\n-# `/calendar page:Events filter:Live Right Now`\n-# `/calendar page:Draws filter:Upcoming`"
+            "content": "-# **Examples**\n-# `/calendar page:Events filter:Active Now`\n-# `/calendar page:Draws filter:Upcoming`"
           },
           {
             "type": 10,
