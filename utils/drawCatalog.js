@@ -172,6 +172,19 @@ const isKnownType = t => Boolean(t) && t !== 'unknown';
 // ==========================================
 // WRITING
 // ==========================================
+// What a NEW catalog document starts with, beside the image fields. `draw.releaseSeason` is set by a caller saving the draw into New (Add Draw's New box, Quick Add's `new` line) as the current season's number: a draw the index has never seen, saved as New, is new this season (his question, 2026-11-01 12:55 EDT: "would it actually detect that as a brand new draw and set the current season as its release season?"). It is written ONLY here, on insert, so a draw the index already knows keeps the season it has, and a returning draw is never given one.
+function insertFields(title, slug, draw, now = new Date()) {
+    return {
+        title: String(title),
+        groupSlug: slug,
+        comments: (draw?.items || []).filter(i => i?.tier === 'comment' && i.name).map(i => String(i.name)),
+        aliases: [],
+        source: 'bot',
+        indexedOn: now.toISOString().slice(0, 10),
+        ...(Number.isInteger(draw?.releaseSeason) && draw.releaseSeason > 0 ? { releaseSeason: draw.releaseSeason } : {})
+    };
+}
+
 // After the bot uploads an image (`url` given) or re-tags one it reused by title (no `url`). `draw` is { items, priceType }. Returns true when it wrote. Only images in draws/ are catalogued; a re-link of an image the catalog has never seen is left for scripts/syncDrawCatalog.js, since there is no URL to store.
 async function recordCatalogImage({ title, publicId, url = null, draw = null, now = new Date() }) {
     if (mongoose.connection.readyState !== 1) return false;
@@ -191,16 +204,7 @@ async function recordCatalogImage({ title, publicId, url = null, draw = null, no
         if (isKnownType(draw?.priceType)) set.priceType = draw.priceType;
         set.tags = catalogTags(existing?.tags, { fp: set.fp ?? existing?.fp, priceType: set.priceType ?? existing?.priceType, topTier: set.topTier ?? existing?.topTier });
         const update = { $set: set };
-        if (!existing) {
-            update.$setOnInsert = {
-                title: String(title),
-                groupSlug: slug,
-                comments: (draw?.items || []).filter(i => i?.tier === 'comment' && i.name).map(i => String(i.name)),
-                aliases: [],
-                source: 'bot',
-                indexedOn: now.toISOString().slice(0, 10)
-            };
-        }
+        if (!existing) update.$setOnInsert = insertFields(title, slug, draw, now);
         await DrawCatalog.updateOne({ slug }, update, { upsert: true });
         invalidateCatalog();
         return true;
@@ -212,5 +216,5 @@ async function recordCatalogImage({ title, publicId, url = null, draw = null, no
 
 module.exports = {
     loadCatalog, invalidateCatalog, matchByName, matchByItems, matchBySimilarTitle, matchCatalog, closestByItems,
-    splitItemName, mergeItems, topTierOf, knownWeaponNames, itemsWithoutKind, setItemKind, catalogTags, isKnownType, recordCatalogImage, CACHE_MS
+    splitItemName, mergeItems, topTierOf, insertFields, knownWeaponNames, itemsWithoutKind, setItemKind, catalogTags, isKnownType, recordCatalogImage, CACHE_MS
 };

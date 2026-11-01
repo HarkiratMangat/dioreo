@@ -110,6 +110,14 @@ async function t(name, fn) {
         const missing = catalog.itemsWithoutKind([{ slug: 'some-draw', title: 'Some Draw', aliases: [], items: [{ name: 'A', kind: '' }, { name: 'B', kind: 'weapon' }] }], ['Some Draw', 'Not Indexed Draw']);
         assert.deepStrictEqual(missing, [{ slug: 'some-draw', title: 'Some Draw', name: 'A' }]);
     });
+    await t('a new document gets the release season only when the save says New, and only on insert', () => {
+        const now = new Date('2026-11-01T16:00:00Z');
+        assert.strictEqual(catalog.insertFields('Starfall Echo Draw', 'starfall-echo-draw', { items: [], releaseSeason: 9 }, now).releaseSeason, 9);
+        assert.ok(!('releaseSeason' in catalog.insertFields('Old Draw', 'old-draw', { items: [] }, now)), 'a returning draw is never given one');
+        assert.ok(!('releaseSeason' in catalog.insertFields('X', 'x', { items: [], releaseSeason: null }, now)));
+        // recordCatalogImage uses insertFields only under `$setOnInsert`, so an existing document keeps its season.
+        assert.match(require('fs').readFileSync(require('path').join(__dirname, '../utils/drawCatalog.js'), 'utf8'), /if \(!existing\) update\.\$setOnInsert = insertFields\(/);
+    });
     await t('top tier and tags: bot tags recomputed, a season tag kept', () => {
         assert.strictEqual(catalog.topTierOf([{ tier: 'epic' }, { tier: 'mythic' }, { tier: 'legendary' }]), 'mythic');
         assert.deepStrictEqual(catalog.catalogTags(['dioreo_draw', 'fp_old', 'ptype_x', 'top_epic', 'season_9_2026'], { fp: 'new', priceType: 'mythicWeapon', topTier: 'mythic' }),

@@ -41,7 +41,9 @@ async function addDraw(interaction) {
 
     // URL is optional -- blank reuses a Cloudinary cache hit for this exact title if one exists. No URL AND no cache hit used to hard-reject the whole submission -- relaxed 2026-08-22 19:40 EDT (click-test fix): a draw's info is sometimes known before any image exists to link/cache. thumbnailUrl has no `required` on the schema (models/SeasonalData.js) -- this was purely an app-level choice. commands/draws.js's render renders a plain no-image row instead of a broken thumbnail when thumbnailUrl is null. The items go along so a draw that comes back under a new name finds its old image by what it contains (utils/cloudinaryCache.js).
     const parsedItems = rawItems.split('\n').filter(l => l.trim().length > 0).map(parseItemLine);
-    const thumbResult = await resolveThumbnail(title, rawUrl, { items: parsedItems, priceType });
+    // A draw added to New that the draw index has never seen is indexed with this season as its release season (utils/drawCatalog.js insertFields).
+    const releaseSeason = drawType === 'new' ? require('../../utils/quickAdd').seasonNumber((await loadOrCreateSeasonalDoc()).currentSeasonTitle) : null;
+    const thumbResult = await resolveThumbnail(title, rawUrl, { items: parsedItems, priceType, ...(releaseSeason ? { releaseSeason } : {}) });
 
     // No type picked, or Unsure: the draw index's type when it knows this draw for certain (its title, another name, or its items). Said in a note, so a wrong one is seen and edited.
     const { isKnownType } = require('../../utils/drawCatalog');
