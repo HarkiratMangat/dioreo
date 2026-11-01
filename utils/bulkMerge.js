@@ -3,16 +3,25 @@
 // The two pieces of bulk-paste merge logic shared across every "Add Multiple"/"Replace Multiple" surface. Moved out of handlers/manage/shared.js (2026-08-20 23:42 EDT, portal core Task 6) so core/ops/draws.js can use the SAME real semantics `/manage` has always used, rather than a simplified copy that silently diverges — see [[project_web_admin_portal]] and this file's own commit for the story: a first draft of core/ops/draws.js's bulkReplace did a wholesale array $set, which would have deleted every draw not mentioned in the pasted text. "Replace Multiple" has never meant that.
 const { resolveThumbnail } = require('./cloudinaryCache');
 const { fuzzyMatch } = require('./search');
+const { isKnownType } = require('./drawCatalog');
+const { drawTypeName, isPricedDrawType } = require('./drawTypes');
 
 // Resolves (and Cloudinary-caches) a thumbnail for every parsed item, dropping anything that has neither a provided URL nor a cache hit. Named "ForDraws" for historical reasons — it is shape- agnostic (title + thumbnailUrl) and used identically for calendar/patch-note assets too.
-async function resolveThumbnailsForDraws(draws) {
+//
+// `fillTypes` (2026-11-01, the draw index): a draw with no type, or Unsure, takes the type the draw index has for it, when the index knows the draw for certain (its title, another name, or its items; never a near-miss). Only a FRESH paste asks for it: an Undo replays the old draws through here too, and must put back exactly what was there. The titles filled are returned as `typesFilled` so the reply can say so.
+async function resolveThumbnailsForDraws(draws, { fillTypes = false } = {}) {
     // items + price type let a renamed draw find its image by what it contains (utils/cloudinaryCache.js); a calendar or patch-note item has neither and matches by title as before.
     const results = await Promise.all(draws.map(d => resolveThumbnail(d.title, d.thumbnailUrl, d.items ? { items: d.items, priceType: d.priceType || '' } : null)));
     const validDraws = [];
     const skipped = [];
     const warnings = [];
+    const typesFilled = [];
     draws.forEach((draw, i) => {
         const result = results[i];
+        if (fillTypes && draw.items && !isKnownType(draw.priceType) && isPricedDrawType(result.catalog?.priceType)) {
+            draw.priceType = result.catalog.priceType;
+            typesFilled.push(`${draw.title}: ${drawTypeName(draw.priceType)}`);
+        }
         if (!result.url) {
             skipped.push(draw.title);
             return;
@@ -20,9 +29,9 @@ async function resolveThumbnailsForDraws(draws) {
         draw.thumbnailUrl = result.url;
         validDraws.push(draw);
         if (result.error) warnings.push(`${draw.title} (${result.error})`);
-        else if (result.reused && result.matchedTitle) warnings.push(`${draw.title} (thumbnail reused from ${result.matchedBy === 'items' ? 'the cached draw with the same items' : 'a similarly-named cached draw'}: "${result.matchedTitle}")`);
+        else if (result.reused && result.matchedTitle) warnings.push(`${draw.title} (thumbnail reused from ${result.matchedBy === 'items' ? 'the cached draw with the same items' : result.matchedBy === 'alias' ? 'the same draw under another name' : 'a similarly-named cached draw'}: "${result.matchedTitle}")`);
     });
-    return { validDraws, skipped, warnings };
+    return { validDraws, skipped, warnings, typesFilled };
 }
 
 // "Replace Multiple" fuzzy-matches each pasted title against the array being replaced: updates the existing item in place (same _id) on a match, inserts as new otherwise, and never touches anything not mentioned in the paste (Purge already covers a full wipe). Returns a NEW array (finalArray) — core/ops/draws.js runs inside a transaction and must not rely on in-place mutation of a lean() read.

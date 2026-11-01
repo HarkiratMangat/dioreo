@@ -29,7 +29,19 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.4.1 — 2026-11-01 01:05 EDT (#242) — Keep the draw image index scripts as a record
+## v3.5.0 — 2026-11-01 11:30 EDT (#PR) — The bot reads the draw index
+**From Harkirat, 2026-11-01 01:05 EDT** (the deferred item): "a proper full index-able list to quickly implement into the bot whenever needed". Built the same day, as a cloud thread.
+
+- **Model** (`models/DrawCatalog.js`): the prod collection `drawcatalogs` (93 documents, seeded by hand) gets its model. `slug` unique, `fp` and `groupSlug` indexed; Mongoose builds the three indexes on the first boot with this version (prod has 93 distinct slugs, checked).
+- **Reading** (`utils/drawCatalog.js`, `utils/cloudinaryCache.js` `resolveThumbnail`): a draw saved with no image asks the index before Cloudinary at each step (title, items, similar title), from an in-memory copy kept ten minutes. New: a draw's **other name** finds its image ("Midnight Crescendo Draw" finds Wisterian Visage). A catalog miss falls through to Cloudinary unchanged.
+- **Draw type from the index:** a draw saved with Draw Type blank or Unsure takes the index's type when the index knows the draw for certain (title, other name or items), and the reply says so. Single add, Add Multiple and Replace Multiple; never on Undo or Edit.
+- **Unsure no longer vetoes an items match** (`priceTypesAgree`): a draw saved as Unsure used to never find its image by its items.
+- **Writing:** an upload or a re-tag by the bot updates that draw's document (image, items, fingerprint, tags, type), merging items so a hand-written kind or skin name survives; a new image creates one. Title, comments, aliases and groupSlug are never written on a document that exists.
+- **Script** (`scripts/syncDrawCatalog.js`): compares the index with Cloudinary's tagged `draws/` images; dry run unless `--write`. Run against an empty local database it rebuilt all 93 documents, matching prod except the three hand-curated differences (Street Fighter `groupSlug`, two `*aka*` comments).
+- **Docs:** `docs/reference/draw-index.md` § How the bot uses it, the scripts catalogue, the models and Cloudinary rules; the deferred item moved to the resolved list.
+- **Tests:** `scripts/drawCatalog.test.js` (24 checks: matchers, item merge, resolveThumbnail asking the index first and falling back, the type fill and its Undo guard, the sync plan).
+
+## v3.4.1 — 2026-11-01 01:05 EDT (#242 · `ea0c16ed`) — Keep the draw image index scripts as a record
 **From Harkirat, 2026-11-01 01:05 EDT:** "yes, go ahead as a v3.4.1 update. approved for merge flow and merge. no deploy needed." This release is the record of the draw image index, which was built and written to Cloudinary and prod the same night; the writes themselves are not part of the release.
 
 - **Scripts** (`scripts/indexDrawImages.js`, `uploadDrawImages.js`, `enrichDrawMetadata.js`): one-offs kept as a record. The first reads a folder of draw images with Gemini on Vertex and writes a review report (a dry run only; `--verify` adds a Google Search check, `--check-index` lists what Cloudinary holds); the second uploads reviewed images to `draws/<slug>` without overwriting; the third adds tags and context. They read local files under `local/project/features/draw-image-index/`, which is not in the repo, so they will not run on a fresh clone.

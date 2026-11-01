@@ -43,6 +43,15 @@ async function addDraw(interaction) {
     const parsedItems = rawItems.split('\n').filter(l => l.trim().length > 0).map(parseItemLine);
     const thumbResult = await resolveThumbnail(title, rawUrl, { items: parsedItems, priceType });
 
+    // No type picked, or Unsure: the draw index's type when it knows this draw for certain (its title, another name, or its items). Said in a note, so a wrong one is seen and edited.
+    const { isKnownType } = require('../../utils/drawCatalog');
+    const { isPricedDrawType, drawTypeName } = require('../../utils/drawTypes');
+    let typeNote = null;
+    if (!isKnownType(priceType) && isPricedDrawType(thumbResult.catalog?.priceType)) {
+        priceType = thumbResult.catalog.priceType;
+        typeNote = `ℹ️ Draw Type set from the draw index: ${drawTypeName(priceType)}`;
+    }
+
     const newDrawObj = { title, items: parsedItems, date: parsedSingleDate, thumbnailUrl: thumbResult.url, ...(priceType ? { priceType } : {}) };
 
     const result = await commitSet(
@@ -54,7 +63,7 @@ async function addDraw(interaction) {
     }
 
     // The saved draw as a panel, beside its picture (2026-10-26 12:52 EDT, the loadout treatment for every /manage page); a missing picture shows on the panel itself, so only a reused or failed upload is a note.
-    const notes = thumbResult.url ? [thumbnailNote(thumbResult)].filter(Boolean) : [];
+    const notes = [...(thumbResult.url ? [thumbnailNote(thumbResult)] : []), typeNote].filter(Boolean);
     return interaction.followUp({ flags: 32768 | 64, components: drawPanel({ draw: { ...newDrawObj, _id: result.results[0].applied.elementId }, category: drawType, changeIds: result.changeIds, notes }) });
 }
 
@@ -138,6 +147,8 @@ async function bulkAddOrReplaceDraws(interaction) {
         } else {
             sections.push({ head: label, lines: [`${r.applied.updatedCount} updated · ${r.applied.insertedCount} added · ${r.applied.total} in total`] });
         }
+        // Types the draw index filled in for draws pasted with none (utils/bulkMerge.js fillTypes).
+        if (r.applied.typesFilled?.length) sections.push({ head: `${label} · draw type from the draw index`, lines: r.applied.typesFilled.map(t => `- ${t}`) });
     }
     return interaction.followUp({ flags: 32768 | 64, components: resultPanel({ page: 'draws', heading: `Bulk ${mode === 'add' ? 'add' : 'replace'} done`, sections, warnings, changeIds: result.changeIds }) });
 }

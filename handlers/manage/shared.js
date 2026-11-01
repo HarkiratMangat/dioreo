@@ -56,9 +56,13 @@ function registerBulkDelete(interaction, { description, summary, apply }) {
 // DRAW THUMBNAIL RESOLUTION (2026-07-12)
 // ==========================================
 // Shared by every bulk draw-save route (single add/edit uses resolveThumbnail directly, since there's only ever one draw to resolve). Runs every parsed draw's thumbnailUrl through resolveThumbnail() concurrently -- a draw with no provided URL AND no existing cache hit has nothing to show and is dropped from the batch entirely (reported back as "skipped", not silently discarded) rather than saved with a broken/undefined image field.
+
+// How each kind of match reads in a note. 'alias' came with the draw index (utils/drawCatalog.js, 2026-11-01): the title is another name the same draw ran under.
+const REUSED_FROM = { items: 'the cached draw with the same items', alias: 'the same draw under another name', 'similar-title': 'a similarly-named cached draw' };
+
 function thumbnailNote(thumbResult) {
     if (thumbResult.error) return `${BOT_EMOJI.warn} Cloudinary caching failed, kept the original URL instead: ${thumbResult.error}`;
-    if (thumbResult.reused && thumbResult.matchedTitle) return `ℹ️ Thumbnail reused from ${thumbResult.matchedBy === 'items' ? 'the cached draw with the same items' : 'a similarly-named cached draw'}: "${thumbResult.matchedTitle}"`;
+    if (thumbResult.reused && thumbResult.matchedTitle) return `ℹ️ Thumbnail reused from ${REUSED_FROM[thumbResult.matchedBy] || REUSED_FROM['similar-title']}: "${thumbResult.matchedTitle}"`;
     return null;
 }
 
