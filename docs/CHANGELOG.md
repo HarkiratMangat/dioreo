@@ -29,7 +29,15 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.4.0 — 2026-10-30 22:57 EDT (#241) — Post chosen announcements, by picker, by word, or into a channel
+## v3.4.1 — 2026-11-01 01:05 EDT (#242) — Keep the draw image index scripts as a record
+**From Harkirat, 2026-11-01 01:05 EDT:** "yes, go ahead as a v3.4.1 update. approved for merge flow and merge. no deploy needed." This release is the record of the draw image index, which was built and written to Cloudinary and prod the same night; the writes themselves are not part of the release.
+
+- **Scripts** (`scripts/indexDrawImages.js`, `uploadDrawImages.js`, `enrichDrawMetadata.js`): one-offs kept as a record. The first reads a folder of draw images with Gemini on Vertex and writes a review report (a dry run only; `--verify` adds a Google Search check, `--check-index` lists what Cloudinary holds); the second uploads reviewed images to `draws/<slug>` without overwriting; the third adds tags and context. They read local files under `local/project/features/draw-image-index/`, which is not in the repo, so they will not run on a fresh clone.
+- **Outside the repo that night:** 93 draw images in Cloudinary `draws/`, all tagged and verified; a new prod collection `drawcatalogs` (93 documents, no model yet); Alchemy Stars renamed in Cloudinary and prod; the Street Fighter Champion's record given its real skin names. The full account is `docs/reference/draw-index.md`.
+- **Docs:** `docs/reference/draw-index.md`, the scripts catalogue, and two queued items in `docs/db-deferred-list.md` (the `DrawCatalog` model and sync, and the Advanced Character wording in `/draw prices`).
+- **Tests:** none; no runtime code changed.
+
+## v3.4.0 — 2026-10-30 22:57 EDT (#241 · `c5deffde`) — Post chosen announcements, by picker, by word, or into a channel
 **From Harkirat, 2026-10-30:** his option 3 (a multi-select, a text form matched on the first two lines, `d repost <name> <channel id>`), then "for channel posting, yes the suggestion and exception make sense. for the delete message, leave that out then", "what about me? the owner?", "can't i just do `d! announce beta|prefix`", "show the announcement as it was originally posted", and "make it where d announcement doesn't direct reply".
 
 - **Picker** (`utils/announcementRepost.js`, `commands/help.js`, `handlers/announcementControls.js`): `/help cmd:announcement visibility:public` with several running posts a multi-select in the channel, usable only by whoever ran it (`ann_pick~<user>~<where>`); the pick replaces it. A private picker was tried first: Discord kept its follow-up private.
