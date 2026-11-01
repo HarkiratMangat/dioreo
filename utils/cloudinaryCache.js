@@ -110,6 +110,36 @@ function metadataFor(title, draw) {
     return { fp, tags: fp ? [DRAW_TAG, `${FP_TAG_PREFIX}${fp}`] : [DRAW_TAG], context };
 }
 
+// THE INDEX'S MIRROR ON THE ASSET (think-pass, 2026-11-01). Cloudinary is the record the draw index was built from and that scripts/syncDrawCatalog.js rebuilds from, and the one-off enrich script gave every asset items_full (with each item's KIND), release_season, and the ptype_/top_/season_ tags. The bot wrote none of them, so its own index writes (new items, a kind answered in Set item kinds, a new draw's season) lived only in Mongo and a rebuild lost them. After every index write the bot now puts the same facts back on the asset. PURE: what to write. `doc` is the index document as it now stands; `previousTags` the tags it had (so a changed ptype_/top_ is swapped, not added beside the old one); `inserted` when the document was just created (only then: source, indexed_on, release_season and the season tag, which are never rewritten on an existing asset).
+function catalogMirrorPlan(doc, { previousTags = [], inserted = false, year = new Date().getUTCFullYear() } = {}) {
+    const itemsFull = [...(doc.items || []).map(i => `${i.tier}:${i.kind || ''}:${i.name}`), ...(doc.comments || []).map(c => `comment::${c}`)].join(' ; ');
+    const context = { items_full: itemsFull };
+    const ownTag = t => t.startsWith('ptype_') || t.startsWith('top_');
+    const addTags = (doc.tags || []).filter(ownTag);
+    if (inserted) {
+        context.source = 'bot';
+        if (doc.indexedOn) context.indexed_on = doc.indexedOn;
+        if (doc.releaseSeason) { context.release_season = `Season ${doc.releaseSeason} ${year}`; addTags.push(`season_${doc.releaseSeason}_${year}`); }
+    }
+    const removeTags = (previousTags || []).filter(t => ownTag(t) && !addTags.includes(t));
+    return { context, addTags, removeTags };
+}
+
+// Writes catalogMirrorPlan() to the asset. Never throws (a failure only leaves the asset as it was, for scripts/syncDrawCatalog.js to report), never logs a raw Cloudinary error, and is blocked on the dev bot like every other write to the shared account.
+async function mirrorCatalogToCloudinary(publicId, plan) {
+    if (!publicId || !plan) return false;
+    if (isCloudinaryWriteBlocked('draw index mirror', publicId)) return false;
+    try {
+        if (plan.removeTags.length) await cloudinary.uploader.remove_tag(plan.removeTags.join(','), [publicId]);
+        if (plan.addTags.length) await cloudinary.uploader.add_tag(plan.addTags.join(','), [publicId]);
+        await cloudinary.uploader.add_context(plan.context, [publicId]);
+        return true;
+    } catch (err) {
+        console.error(`Cloudinary draw index mirror failed for ${publicId}: ${safeErrorMessage(err)}`);
+        return false;
+    }
+}
+
 // What an asset from the Admin API says about its draw: { title, priceType, fp, keys[] }. `context.custom` is where Cloudinary puts it.
 function readDrawContext(asset) {
     const custom = asset?.context?.custom || asset?.context || {};
@@ -397,6 +427,7 @@ async function closestDrawImage(draw) {
 }
 
 module.exports = {
+    catalogMirrorPlan, mirrorCatalogToCloudinary,
     slugify, publicIdFor, legacyPublicIdFor, slugOf, cacheThumbnail, getCachedUrl, resolveThumbnail, listCachedAssets,
     itemKeys, drawFingerprint, drawSimilarity, priceTypesAgree, metadataFor, readDrawContext, pickClosest, findByFingerprint, linkDrawMetadata, titleSimilarity,
     FOLDER, LEGACY_FOLDER, DRAW_TAG, FP_TAG_PREFIX, SUGGEST_SIMILARITY, FUZZY_SIMILARITY_THRESHOLD

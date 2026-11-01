@@ -206,6 +206,16 @@ t('the Edit box’s items read back as the same items', () => {
     assert.deepStrictEqual(back, items);
 });
 
+t('a draft knows the live season and the season the index already keeps', () => {
+    const known = draft('herrscher armory, new, ends Nov 12');
+    assert.strictEqual(known.category, 'new');
+    assert.strictEqual(known.seasonNow, 9);
+    assert.strictEqual(known.indexSeason, 8, '`new` never moves a draw the index already has');
+    const unknown = draft('starfall echo draw, new');
+    assert.strictEqual(unknown.matchedBy, null);
+    assert.strictEqual(unknown.indexSeason, null);
+    assert.strictEqual(unknown.seasonNow, 9);
+});
 t('a box of lines keeps the first ten', () => {
     const r = qa.parseQuickText(Array.from({ length: 13 }, (_, i) => `draw ${i}`).join('\n') + '\n\n');
     assert.strictEqual(r.lines.length, 10);

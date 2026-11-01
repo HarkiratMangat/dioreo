@@ -93,7 +93,9 @@ async function editDraw(interaction) {
         const rawUrl = interaction.fields.getTextInputValue('url');
         const rawItems = interaction.fields.getTextInputValue('items');
         const parsedItems = rawItems.split('\n').filter(l => l.trim().length > 0).map(parseItemLine);
-        const thumbResult = await resolveThumbnail(newTitle, rawUrl, { items: parsedItems, priceType: arrayTarget[drawIndex].priceType || '' });
+        // A New draw's first picture can arrive here rather than in Add Draw: the index gets this season then, if it has never seen the draw.
+        const releaseSeason = drawType === 'new' ? require('../../utils/quickAdd').seasonNumber(seasonalDoc.currentSeasonTitle) : null;
+        const thumbResult = await resolveThumbnail(newTitle, rawUrl, { items: parsedItems, priceType: arrayTarget[drawIndex].priceType || '', ...(releaseSeason ? { releaseSeason } : {}) });
 
         // Draw Type (2026-10-18 11:06 EDT): the form's dropdown; nothing picked clears it. Sent only when it CHANGED, so an edit that never touches it leaves the stored type, and the op's conflict check, alone. A modal built before this field existed (an old open form) has no dropdown and is read as unchanged.
         let pickedType = null;
@@ -157,7 +159,16 @@ async function bulkAddOrReplaceDraws(interaction) {
         // Types the draw index filled in for draws pasted with none (utils/bulkMerge.js fillTypes).
         if (r.applied.typesFilled?.length) sections.push({ head: `${label} · draw type from the draw index`, lines: r.applied.typesFilled.map(t => `- ${t}`) });
     }
-    return interaction.followUp({ flags: 32768 | 64, components: resultPanel({ page: 'draws', heading: `Bulk ${mode === 'add' ? 'add' : 'replace'} done`, sections, warnings, changeIds: result.changeIds }) });
+    const sent = await interaction.followUp({ flags: 32768 | 64, components: resultPanel({ page: 'draws', heading: `Bulk ${mode === 'add' ? 'add' : 'replace'} done`, sections, warnings, changeIds: result.changeIds }) });
+    // Every pasted draw is asked about for items the draw index has no kind for, the same as a single add (handlers/manage/itemKinds.js). The titles come from the pasted text, so Replace's updated draws are covered too.
+    await require('./itemKinds').askItemKinds(interaction, pastedTitles(newText, returningText));
+    return sent;
+}
+
+// The draw titles in Bulk Add or Replace text, both fields, as utils/adminParser.js parseBulkDrawList reads them.
+function pastedTitles(...texts) {
+    const { parseBulkDrawList } = require('../../utils/adminParser');
+    return texts.filter(Boolean).flatMap(t => parseBulkDrawList(t).map(d => d.title));
 }
 
 // --- BULK DELETE DRAWS --- custom_id: modal_draws_bulk_remove_{new|returning|either} Dry-run only: computes what WOULD be removed and shows a Confirm/Cancel prompt; the actual save happens from index.js's mng_bulkdelconfirm_ dispatch, via the `apply()` closure stashed here.

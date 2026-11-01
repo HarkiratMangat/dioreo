@@ -188,7 +188,12 @@ async function bulkDraftDraws(interaction) {
         return await interaction.followUp({ content: `${BOT_EMOJI.cross} ${why}` });
     }
     const { summary } = result.results[0].applied;
-    return interaction.followUp({ content: `${BOT_EMOJI.checkmark} **Draft Draws Staged!**\n${summary.join('\n')}\nNothing is live yet — use Promote to Live when ready.` });
+    const sent = await interaction.followUp({ content: `${BOT_EMOJI.checkmark} **Draft Draws Staged!**\n${summary.join('\n')}\nNothing is live yet — use Promote to Live when ready.` });
+    // A staged draw's images and items reach the draw index now, at staging (core/ops/season.js), so its item kinds are asked about now too (handlers/manage/itemKinds.js).
+    const { parseBulkDrawList } = require('../../utils/adminParser');
+    const titles = [newText, returningText].filter(Boolean).flatMap(t => parseBulkDrawList(t).map(d => d.title));
+    await require('./itemKinds').askItemKinds(interaction, titles);
+    return sent;
 }
 
 // custom_id: modal_draft_bulk_calendar

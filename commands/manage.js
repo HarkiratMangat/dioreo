@@ -493,7 +493,7 @@ function buildAddDrawModal(drawType, prefill = {}) {
 function buildQuickAddModal() {
     return new ModalBuilder().setCustomId('modal_draws_quickadd').setTitle('Quick Add Draws').addLabelComponents(
         new LabelBuilder().setLabel('One draw per line: name, then dates')
-            .setDescription('e.g. "cx9 mythic, starts in 2 days, ends Nov 5" · "Herrscher armory, ends Nov 12 7pm edt"')
+            .setDescription('Returning unless a line says new. e.g. "cx9 mythic, new, ends Nov 5" · "herrscher, ends Nov 12 7pm"')
             .setTextInputComponent(new TextInputBuilder().setCustomId('lines').setStyle(TextInputStyle.Paragraph).setMaxLength(4000)
                 .setPlaceholder('Herrscher of Reason, ends Nov 12 7pm edt'))
     );

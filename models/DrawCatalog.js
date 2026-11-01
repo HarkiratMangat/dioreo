@@ -10,7 +10,7 @@ const mongoose = require('mongoose');
 
 const DrawCatalogItemSchema = new mongoose.Schema({
     tier: { type: String, required: true },            // mythic | legendary | epic
-    // weapon | character | vehicle, by the rules in docs/reference/draw-index.md; '' when the bot added the item and nobody has said yet. 'other' (2026-11-01): an item that is none of the three (an emote, a charm), picked in the Set item kinds box (handlers/manage/itemKinds.js). '' means nobody has said yet, which is what that box asks about.
+    // weapon | character | vehicle, by the rules in docs/reference/draw-index.md; '' when the bot added the item and nobody has said yet. 'other' (2026-11-01): an item that is none of the three (an emote, a charm), picked in the Set item kinds box (handlers/manage/itemKinds.js), which asks about every ''.
     kind: { type: String, enum: ['weapon', 'character', 'vehicle', 'other', ''], default: '' },
     name: { type: String, required: true },            // as printed: "HVK-30 - Dantang's Diancui"
     baseName: { type: String, default: '' },           // "HVK-30"
@@ -31,7 +31,8 @@ const DrawCatalogSchema = new mongoose.Schema({
     tags: { type: [String], default: [] },                  // a copy of the asset's Cloudinary tags
     // Draws that are the same draw shown on two images share one: the two Street Fighter Champion's documents. Equals `slug` otherwise.
     groupSlug: { type: String, default: '' },
-    releaseSeason: { type: Number },                        // only for new draws whose season Harkirat named; never guessed for a returning draw
+    // Seeded only for the new draws whose season Harkirat named. Since 2026-11-01 the bot also sets it, ONCE, when it creates a document for a draw saved into New (utils/drawCatalog.js insertFields): the current season, or the draft's season for a staged draw. Never guessed for a returning draw, never rewritten.
+    releaseSeason: { type: Number },
     source: { type: String, default: '' },
     indexedOn: { type: String, default: '' }                // YYYY-MM-DD
 }, { collection: 'drawcatalogs' });

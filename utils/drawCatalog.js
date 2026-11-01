@@ -149,12 +149,18 @@ function itemsWithoutKind(entries, titles) {
     return out;
 }
 
-// One answer from the Set item kinds box, written onto the item it names.
+// One answer from the Set item kinds box, written onto the item it names AND onto the same item, still blank, in every other draw (the Street Fighter pair, an item that ran in two draws), so the question is never asked twice. Each changed document's items_full is mirrored to its asset.
 async function setItemKind(slug, name, kind) {
     if (!['weapon', 'character', 'vehicle', 'other'].includes(kind)) return false;
-    const res = await DrawCatalog.updateOne({ slug, 'items.name': name }, { $set: { 'items.$.kind': kind } });
+    const own = await DrawCatalog.updateOne({ slug, 'items.name': name }, { $set: { 'items.$.kind': kind } });
+    const twins = await DrawCatalog.find({ items: { $elemMatch: { name, kind: '' } } }).select('slug').lean();
+    if (twins.length) await DrawCatalog.updateMany({ items: { $elemMatch: { name, kind: '' } } }, { $set: { 'items.$[i].kind': kind } }, { arrayFilters: [{ 'i.name': name, 'i.kind': '' }] });
     invalidateCatalog();
-    return res.modifiedCount > 0 || res.matchedCount > 0;
+    const { catalogMirrorPlan, mirrorCatalogToCloudinary } = require('./cloudinaryCache');
+    for (const doc of await DrawCatalog.find({ slug: { $in: [slug, ...twins.map(t => t.slug)] } }).lean()) {
+        await mirrorCatalogToCloudinary(doc.publicId, catalogMirrorPlan(doc, { previousTags: doc.tags }));
+    }
+    return own.matchedCount > 0;
 }
 
 function topTierOf(items) {
@@ -207,6 +213,10 @@ async function recordCatalogImage({ title, publicId, url = null, draw = null, no
         if (!existing) update.$setOnInsert = insertFields(title, slug, draw, now);
         await DrawCatalog.updateOne({ slug }, update, { upsert: true });
         invalidateCatalog();
+        // The same facts on the asset, so Cloudinary stays the full record (utils/cloudinaryCache.js catalogMirrorPlan).
+        const { catalogMirrorPlan, mirrorCatalogToCloudinary } = require('./cloudinaryCache');
+        const doc = { ...(existing || {}), ...(update.$setOnInsert || {}), ...set };
+        await mirrorCatalogToCloudinary(publicId, catalogMirrorPlan(doc, { previousTags: existing?.tags || [], inserted: !existing, year: now.getUTCFullYear() }));
         return true;
     } catch (err) {
         console.error(`Draw catalog write failed for "${title}": ${err?.message || err}`);

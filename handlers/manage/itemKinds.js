@@ -2,7 +2,7 @@
 //
 // WHAT IS ASKED: a draw is in the index once the bot has its picture (utils/drawCatalog.js recordCatalogImage). Its new items take a kind on their own when it is known (utils/drawCatalog.js mergeItems: the same item elsewhere, another skin of the same base, or the gunsmith's weapon list); only the rest reach this box. A draw with no picture has no index document yet, so there is nothing to ask about until it gets one.
 //
-// THE FLOW: a draw save (single Add/Edit Draw, Quick Add) calls askItemKinds() after its own result. If anything is unknown, one more private message lists those items with a Set item kinds button -> a box of up to five dropdowns (Discord's limit) -> the answers are written and the message shows what is left, if anything. The list lives in memory for 30 minutes under a short token; after that, or a restart, the button says so and nothing is lost but the question.
+// THE FLOW: every draw save (Add/Edit Draw, Add or Replace Multiple, Quick Add, and staging a draft's draws) calls askItemKinds() after its own result. If anything is unknown, one more private message lists those items with a Set item kinds button -> a box of up to five dropdowns (Discord's limit) -> the answers are written and the message shows what is left, if anything. The list lives in memory for 30 minutes under a short token; after that, or a restart, the button says so and nothing is lost but the question.
 //
 // custom_ids: mng_kinds_<token> · modal_kinds_<token>. The router's /manage lock runs on both prefixes first.
 const { randomBytes } = require('crypto');

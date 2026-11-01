@@ -15,7 +15,7 @@ const { slugify, slugOf, drawFingerprint, DRAW_TAG, FOLDER } = require('../utils
 const { withDeliveryDefaults } = require('../utils/cloudinaryDeliveryUrl');
 const { mergeItems, topTierOf, splitItemName, isKnownType } = require('../utils/drawCatalog');
 
-const KINDS = new Set(['weapon', 'character', 'vehicle']);
+const KINDS = new Set(['weapon', 'character', 'vehicle', 'other']);   // 'other' since 2026-11-01 (handlers/manage/itemKinds.js)
 
 // "legendary:weapon:ICR-1 - Wisterian Visage ; epic:character:Kestrel - Twilight Symphony" -> catalog items. The name is everything after the second colon, so a colon inside a name survives. A `comment::<text>` entry is a note, not an item: it goes to `comments`, as the hand-seeded documents have it (Judgment Day's two crate notes, found by comparing a sync-built catalog with prod on 2026-11-01).
 function parseItemsFull(text) {
@@ -38,6 +38,8 @@ function docFromAsset(asset, liveDraw = null, today = new Date().toISOString().s
     const ctx = contextOf(asset);
     const slug = slugOf(asset.public_id);
     let { items, comments } = parseItemsFull(ctx.items_full);
+    // A STALE items_full is ignored (think-pass, 2026-11-01): the bot keeps `fp` and `items` current on every relink, and items_full only since this date (utils/cloudinaryCache.js mirrorCatalogToCloudinary). An older asset whose items an admin edited carries the new fp beside the OLD items_full, and trusting it would write the old items back into the index. Its fingerprint must match the asset's own fp.
+    if (items.length && ctx.fp && drawFingerprint({ items }) !== ctx.fp) { items = []; comments = []; }
     if (!items.length && liveDraw?.items?.length) {
         items = mergeItems([], liveDraw.items);
         comments = liveDraw.items.filter(i => i?.tier === 'comment' && i.name).map(i => String(i.name));

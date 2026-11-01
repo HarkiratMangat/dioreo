@@ -118,6 +118,34 @@ async function t(name, fn) {
         // recordCatalogImage uses insertFields only under `$setOnInsert`, so an existing document keeps its season.
         assert.match(require('fs').readFileSync(require('path').join(__dirname, '../utils/drawCatalog.js'), 'utf8'), /if \(!existing\) update\.\$setOnInsert = insertFields\(/);
     });
+    await t('the Cloudinary mirror writes items_full, the bot tags, and the season only on insert', () => {
+        const doc = { ...ENTRIES[3], tags: ['dioreo_draw', 'ptype_sevenSpinLegendaryWeapon', 'top_legendary'], indexedOn: '2026-11-01' };
+        const plan = cache.catalogMirrorPlan(doc, { previousTags: ['dioreo_draw', 'ptype_mythicWeapon', 'top_legendary', 'season_9_2026'], inserted: false, year: 2026 });
+        assert.strictEqual(plan.context.items_full, 'legendary:weapon:Grav - Vitae Devourer ; epic:character:Samael - The Soul Eater');
+        assert.deepStrictEqual(plan.addTags, ['ptype_sevenSpinLegendaryWeapon', 'top_legendary']);
+        assert.deepStrictEqual(plan.removeTags, ['ptype_mythicWeapon'], 'only a stale bot tag goes; dioreo_draw and the season tag stay');
+        assert.ok(!('release_season' in plan.context) && !('source' in plan.context), 'an existing asset keeps its own season and source');
+        const ins = cache.catalogMirrorPlan({ ...doc, releaseSeason: 9 }, { inserted: true, year: 2026 });
+        assert.strictEqual(ins.context.release_season, 'Season 9 2026');
+        assert.ok(ins.addTags.includes('season_9_2026'));
+        assert.strictEqual(ins.context.source, 'bot');
+        // What the mirror writes, sync reads back unchanged.
+        assert.deepStrictEqual(parseItemsFull(plan.context.items_full).items.map(i => i.kind), ['weapon', 'character']);
+    });
+    await t('sync ignores an items_full older than the asset fp, and falls back to the live draw', () => {
+        const asset = { public_id: 'draws/hunger-eternal-draw', secure_url: url('hunger-eternal-draw'), tags: [], context: { custom: {
+            title: 'Hunger Eternal Draw', items_full: 'legendary:weapon:Old Gun - Old Skin', fp: ENTRIES[3].fp } } };
+        assert.strictEqual(docFromAsset(asset), null, 'the stale items are not written back');
+        const live = { title: 'Hunger Eternal Draw', items: typed(ENTRIES[3].items) };
+        assert.strictEqual(docFromAsset(asset, live).fp, ENTRIES[3].fp);
+        const fresh = { ...asset, context: { custom: { ...asset.context.custom, items_full: cache.catalogMirrorPlan(ENTRIES[3]).context.items_full } } };
+        assert.strictEqual(docFromAsset(fresh).items[1].kind, 'character', 'a current items_full is read, kinds included');
+    });
+    await t('Add or Replace Multiple pass the live season only for New text', () => {
+        const src = require('fs').readFileSync(require('path').join(__dirname, '../core/ops/draws.js'), 'utf8');
+        assert.match(src, /if \(op\.target\?\.category !== 'new' \|\| !op\.payload\.text\) return null;/);
+        assert.ok((src.match(/releaseSeason: await newSeasonFor\(op, session\)|newSeasonFor\(op, session\)/g) || []).length >= 2, 'both bulk ops ask for it');
+    });
     await t('top tier and tags: bot tags recomputed, a season tag kept', () => {
         assert.strictEqual(catalog.topTierOf([{ tier: 'epic' }, { tier: 'mythic' }, { tier: 'legendary' }]), 'mythic');
         assert.deepStrictEqual(catalog.catalogTags(['dioreo_draw', 'fp_old', 'ptype_x', 'top_epic', 'season_9_2026'], { fp: 'new', priceType: 'mythicWeapon', topTier: 'mythic' }),

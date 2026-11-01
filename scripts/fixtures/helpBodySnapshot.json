@@ -28508,6 +28508,16 @@
                     }
                   },
                   {
+                    "label": "Quick Add",
+                    "value": "quickadd",
+                    "description": "One line per draw: name, then dates",
+                    "emoji": {
+                      "animated": true,
+                      "name": "DB_Add",
+                      "id": "1525262938288558200"
+                    }
+                  },
+                  {
                     "label": "Next Season Draft",
                     "value": "seasondraft",
                     "description": "Same formats, staged instead of live",

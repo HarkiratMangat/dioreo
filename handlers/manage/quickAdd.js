@@ -69,6 +69,9 @@ function draftLines(d, i) {
     if (d.existing) notes.push(`ℹ️ Already on /draws as **${d.existing.title}**: Save ${[d.end && 'sets its end date', d.startGiven && 'moves its start'].filter(Boolean).join(' and ') || 'changes nothing'}.`);
     if (d.needsPick) notes.push(`${emojis.warn} "${d.query}" fits ${d.candidates.length} draw${d.candidates.length === 1 ? '' : 's'}. Pick one, or it's skipped on Save.`);
     else if (!d.matchedBy && !d.existing && !d.edited) notes.push(`${emojis.warn} Not in the draw index. Add details gives its items and picture, or it's saved as typed.`);
+    // Which season the draw index files it under (his question, 2026-11-01 12:55 EDT): a draw new to the index and saved as New gets this season; one the index already has keeps its own, whatever the line says.
+    if (d.category === 'new' && !d.existing && !d.matchedBy && d.seasonNow) notes.push(`ℹ️ Goes into the draw index as a Season ${d.seasonNow} draw once it has a picture.`);
+    else if (d.category === 'new' && d.indexSeason && d.seasonNow && d.indexSeason !== d.seasonNow) notes.push(`ℹ️ The draw index keeps it as a Season ${d.indexSeason} draw.`);
     else if (d.matchedBy === 'words' && !d.edited) notes.push(d.sure ? `ℹ️ Matched from "${d.query}".` : `${emojis.warn} Best guess for "${d.query}". Pick to choose another.`);
     else if (d.matchedBy === 'alias' && !d.edited) notes.push(`ℹ️ "${d.query}" is another name for this draw.`);
     for (const p of d.problems) notes.push(`${emojis.warn} ${p}`);
@@ -191,11 +194,12 @@ async function submitEdit(interaction) {
     const category = parsed.category || before.category;
     // A new title the index knows brings that draw's items and picture, unless the items were edited too.
     let items = itemsText.split('\n').filter(l => l.trim()).map(parseItemLine);
-    let imageUrl = before.imageUrl, matchedBy = before.matchedBy;
+    let imageUrl = before.imageUrl, matchedBy = before.matchedBy, indexSeason = before.indexSeason;
     if (title !== before.title) {
         const hit = matchByName(await loadCatalog(), title);
         imageUrl = hit ? hit.entry.imageUrl : null;
         matchedBy = hit ? hit.matchedBy : null;
+        indexSeason = hit?.entry.releaseSeason || null;
         if (hit && itemsText.trim() === qa.itemsToText(before.items).trim()) items = qa.drawItemsFromEntry(hit.entry);
         if (hit && priceType === before.priceType && hit.entry.priceType) priceType = hit.entry.priceType;
     }
@@ -204,7 +208,7 @@ async function submitEdit(interaction) {
         .flatMap(([cat, list]) => list.filter(d => isSameDrawTitle(d.title, title)).map(d => ({ cat, d })))[0] || null;
     state.drafts[i] = {
         ...before,
-        title, items, imageUrl: imageInput || imageUrl, imageInput, matchedBy, category: listed ? listed.cat : category, priceType,
+        title, items, imageUrl: imageInput || imageUrl, imageInput, matchedBy, indexSeason, category: listed ? listed.cat : category, priceType,
         start: parsed.start ? parsed.start.date : listed ? listed.d.date : qa.todayUtc({ zone: state.zone }),
         startGiven: Boolean(parsed.start), startTimed: Boolean(parsed.start?.timed),
         end: parsed.end ? parsed.end.date : null, endTimed: Boolean(parsed.end?.timed),

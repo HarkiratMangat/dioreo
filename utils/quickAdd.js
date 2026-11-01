@@ -266,6 +266,9 @@ function draftFromLine(parsed, { entries = [], seasonalDoc = {}, isSameTitle = (
         candidates: found && !found.sure ? found.candidates.map(e => e.slug) : [],
         needsPick: Boolean(found && !found.entry),
         existing: listed ? { category: listed.category, elementId: String(listed.draw._id), title: listed.draw.title } : null,
+        // For the draft's notes: the season a draw saved as New is recorded under when the index first gets it (utils/drawCatalog.js insertFields), and the season the index already keeps (never rewritten by `new`).
+        seasonNow: seasonNumber(seasonalDoc.currentSeasonTitle),
+        indexSeason: entry?.releaseSeason || null,
         problems: [...parsed.problems]
     };
 }

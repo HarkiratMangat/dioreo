@@ -349,7 +349,8 @@ registerEntity('season', {
                 if (op.payload.parsed.returningDraws) $set['draft.returningDraws'] = op.payload.parsed.returningDraws;
             } else {
                 if (op.payload.newText) {
-                    const { validDraws } = await resolveThumbnailsForDraws(parseBulkDrawList(op.payload.newText));
+                    // A staged New draw belongs to the DRAFT's season, never the live one (utils/drawCatalog.js insertFields).
+                    const { validDraws } = await resolveThumbnailsForDraws(parseBulkDrawList(op.payload.newText), { releaseSeason: require('../../utils/quickAdd').seasonNumber(draft.currentSeasonTitle) });
                     validDraws.sort((a, b) => new Date(a.date) - new Date(b.date));
                     $set['draft.newDraws'] = validDraws;
                     summary.push(`New Draws: staged ${validDraws.length}`);
