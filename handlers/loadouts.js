@@ -134,7 +134,7 @@ async function route(interaction) {
 
         // /gunsmith browse-row SCOPE PAGING + COPY + META SWITCH + OPEN -- a BUTTON. `open` is the missing-weapon card's "Browse all <class> builds". `action` outside {next,prev,copy,copyatt,meta,open} guards the disabled `gsb~ind~` page-count label, which is not clickable but shares the `gsb~` prefix.
         if (interaction.isButton() && interaction.customId.startsWith('gsb~')) {
-            const [, action, scopeToken, flatIndexRaw] = interaction.customId.split('~');
+            const [, action, scopeToken, flatIndexRaw, variantRaw] = interaction.customId.split('~');
             // The card's bottom-row Search... (2026-10-25 16:25 EDT): `gsb~search~<mode>` opens the same one-box search as the dropdown's option.
             if (action === 'search') return await interaction.showModal(searchModal(scopeToken === 'DMZ' ? 'DMZ' : 'MP'));
             // The no-build pager's arrows: `gsb~nb~<CLASS>~<n>`.
@@ -155,8 +155,10 @@ async function route(interaction) {
                 }
                 const { weaponBuilds, indexWithinWeapon } = flatIndexToPosition(builds, flatIndexRaw);
                 const build = weaponBuilds[indexWithinWeapon];
-                const { orderedAttachments } = require('../utils/loadoutRender');
-                const replyContent = action === 'copy' ? (build.shareCode || build.buildName) : orderedAttachments(build).join('\n');
+                const { orderedAttachments, variantView } = require('../utils/loadoutRender');
+                // The swap option the card showed (a 5th id part since 2026-11-02 18:05 EST; older cards have none and copy option 1).
+                const shown = variantView(build, variantRaw);
+                const replyContent = action === 'copy' ? (shown.shareCode || build.buildName) : orderedAttachments(shown).join('\n');
                 try {
                     // A build saved with no attachments has nothing to copy, and Discord rejects an empty `content` (2026-10-20, v3 sweep) -- say so rather than fail as "likely expired".
                     await interaction.reply({ content: replyContent || (BOT_EMOJI.cross + ' This build has nothing to copy yet.'), ephemeral: true });
@@ -170,6 +172,11 @@ async function route(interaction) {
             if (action === 'meta' || action === 'open') {
                 const { renderScopeBrowse } = require('../commands/gunsmith');
                 return await renderScopeBrowse(interaction, scope, 0, { isUpdate: true });
+            }
+            // A swap option's button: `gsb~var~<scope>~<flat index>~<option>` redraws the same build showing that option.
+            if (action === 'var') {
+                const { renderScopeBrowse } = require('../commands/gunsmith');
+                return await renderScopeBrowse(interaction, scope, flatIndexRaw, { isUpdate: true, variant: Number(variantRaw) || 0 });
             }
             // The build row's numbers: `gsb~at~<scope>~<flat index of that build>`.
             if (action === 'at') {

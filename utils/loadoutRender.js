@@ -166,9 +166,34 @@ function toSentenceCase(str) {
     return str.replace(/^(\s*)([a-z])/, (_, lead, first) => lead + first.toUpperCase());
 }
 
-// Discord blockquote syntax ("> " per line) -- handles a multi-line description, not just a single line, even though every description seen so far has been one line.
+// A build's comment: a quote in small text, `> -# ` per line (Harkirat, 2026-11-02 17:56 EST: "all the comments go as quote subtext (> -#)", the Locus builds as his reference). Handles a multi-line description.
 function toBlockquote(str) {
-    return str.split('\n').map(line => `> ${line}`).join('\n');
+    return str.split('\n').map(line => `> -# ${line}`).join('\n');
+}
+
+// Swap options (models/Loadout.js `variants`): option 0 is the build itself, option i its (i-1)th variant, as a build-shaped view so every reader (attachments, code, picture, copy) treats it like a build.
+function variantCount(build) { return 1 + ((build && build.variants) || []).length; }
+function variantView(build, v = 0) {
+    const i = Math.min(Math.max(Number(v) || 0, 0), variantCount(build) - 1);
+    if (!i) return build;
+    const x = build.variants[i - 1];
+    return { ...build, attachments: x.attachments || [], attachmentSlots: x.attachmentSlots || [], shareCode: x.shareCode || '', imageKey: x.imageKey || build.imageKey, variantLabel: x.label || '' };
+}
+// The slots whose attachment is not the same in every option (a slot one option leaves empty counts). Keyed by slot name, or by position for a build with no slot names.
+function slotMap(b) { const m = {}; (b.attachments || []).forEach((a, i) => { m[(b.attachmentSlots || [])[i] || `#${i}`] = a; }); return m; }
+function swapSlots(build) {
+    const views = Array.from({ length: variantCount(build) }, (_, i) => slotMap(variantView(build, i)));
+    const keys = new Set(views.flatMap(m => Object.keys(m)));
+    return new Set([...keys].filter(k => views.some(m => m[k] !== views[0][k])));
+}
+// One option's button label: its own label, else what it puts in the swapped slots ("Monolithic Suppressor", "No Stock + Fast Extended Mag").
+function variantLabel(build, i) {
+    const view = variantView(build, i);
+    if (i && build.variants[i - 1].label) return build.variants[i - 1].label.slice(0, 80);
+    if (!i && build.variantLabel) return build.variantLabel.slice(0, 80);
+    const swap = swapSlots(build), m = slotMap(view);
+    const names = [...swap].map(k => m[k]).filter(Boolean);
+    return (names.join(' + ') || `Option ${i + 1}`).slice(0, 80);
 }
 
 // "Browse other builds in this category" dropdown (added 2026-07-12, per Harkirat's request) -- lets a user jump straight to a different weapon's card without re-running the slash command, instead of just paging within the current weapon's own builds. `categoryBuilds` is every Loadout doc sharing the current card's scope (same `category`+mode for MP, or every `mode: 'DMZ'` doc for DMZ, since /dmz has no per-category commands the way MP does).
@@ -269,10 +294,16 @@ function weaponSummary(builds, { metaList = false } = {}) {
     return parts.join(' · ').slice(0, 100);
 }
 
-function buildLoadoutCardBody(activeBuild, { index = 0, total = 1, hideBadges = false, copyIds = null, footerBuild = true, footerClass = true } = {}) {
+function buildLoadoutCardBody(build, { index = 0, total = 1, hideBadges = false, copyIds = null, footerBuild = true, footerClass = true, variant = 0 } = {}) {
     // Numbered, his format (2026-10-25 15:38 EDT). `copyIds` is no longer drawn (the Copy buttons moved to the card's bottom row, 16:25 EDT) and is kept only so old callers still pass.
     void copyIds;
-    const attachmentLines = orderedAttachments(activeBuild).map((att, i) => `${i + 1}. \`${att}\``).join('\n');
+    // A build with swap options shows the one picked (`variant`); the attachments that change between options carry 🔁 (his merged-build mock-up B, 2026-11-02 11:43 EST).
+    const activeBuild = variantView(build, variant);
+    const swap = variantCount(build) > 1 ? swapSlots(build) : new Set();
+    const shownSlots = slotMap(activeBuild);
+    const swapped = new Set(Object.keys(shownSlots).filter(k => swap.has(k)).map(k => shownSlots[k]));
+    const attachmentLines = orderedAttachments(activeBuild).map((att, i) => `${i + 1}. \`${att}\`${swapped.has(att) ? ' 🔁' : ''}`).join('\n')
+        + (swap.size ? `\n-# 🔁 ${variantCount(build)} options, switch below` : '');
     const lastUpdatedUnix = Math.floor(new Date(activeBuild.lastUpdated).getTime() / 1000);
 
     // `##`, not `#` (Harkirat, 2026-10-20 22:23 EDT): every other panel's title is `##`, and on a phone `#` wraps the longer command titles onto two lines.
@@ -365,11 +396,13 @@ function dmzBrowseRow(dmzBuilds, selectId, activeKey) {
 // Shared Components V2 card builder for /dmz and /gunsmith (mp + dmz, and their scoped browse) -- same layout for both, differing only in accent color and the button custom_id prefix ('dmz' vs 'mp') so handlers/loadouts.js can tell a click apart and query the right mode. The card's CONTENT comes from buildLoadoutCardBody above; everything this function adds is chrome (pager, the bottom row, the switch rows, share). `missing` is the open class's weapons with no build (utils/loadoutLookup.js missingWeapons), for the weapon dropdown's last option.
 //
 // HIS LAYOUT (2026-10-25 18:43-19:02 EDT, mock-ups C to E in #testing-spam; it replaced the 16:40 EDT order): the body ends with the footer under the image; then a row of the weapon's builds, a LARGE divider, and the arrows, which walk WEAPONS. Search... and Copy Code (DMZ: Copy Attachments) sit outside the card, above the dropdowns. The old `copyatt` ids still answer cards posted before.
-function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false, categoryBuilds = null, hideBadges = false, browse = null, missing = [] }) {
+function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false, categoryBuilds = null, hideBadges = false, browse = null, missing = [], variant = 0 }) {
     const activeBuild = builds[index];
+    variant = browse ? Math.min(Math.max(Number(variant) || 0, 0), variantCount(activeBuild) - 1) : 0;
     const mode = activeBuild.mode === 'DMZ' ? 'DMZ' : 'MP';
-    const copyAttCustomId = browse ? `gsb~copyatt~${browse.scopeToken}~${browse.flatIndex}` : `${idPrefix}copyatt_${activeBuild.weaponKey}_${index}`;
-    const copyCustomId = browse ? `gsb~copy~${browse.scopeToken}~${browse.flatIndex}` : `${idPrefix}copy_${activeBuild.weaponKey}_${index}`;
+    // The swap option on screen rides in the copy ids (a 5th `~` part), so Copy copies what the card shows.
+    const copyAttCustomId = browse ? `gsb~copyatt~${browse.scopeToken}~${browse.flatIndex}~${variant}` : `${idPrefix}copyatt_${activeBuild.weaponKey}_${index}`;
+    const copyCustomId = browse ? `gsb~copy~${browse.scopeToken}~${browse.flatIndex}~${variant}` : `${idPrefix}copy_${activeBuild.weaponKey}_${index}`;
     // The arrows walk WEAPONS and a row of numbers walks the open weapon's builds (Harkirat, 2026-10-25 18:48 EDT: "arrow switch weapons, build row switches builds"). The open build is green and named, "Build 3"; the others are plain numbers so five fit on one phone row (18:51 EDT). The middle of the pager names the class and the weapon's place in it, "AR · 3/17" (his 18:49 EDT pick over the weapon's name, whose width would move the arrows). A card with no class to walk (the hidden /dmz, /autobuild's saved card, the portal preview) keeps the build row and has no arrows. Every card /gunsmith opens is a browse: a weapon opened by name, Search... or the weapon dropdown is drawn inside its class (commands/gunsmith.js renderScopeBrowse's `weaponKey`).
     let weaponPager = null;
     if (browse && categoryBuilds && categoryBuilds.length) {
@@ -384,7 +417,13 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false,
         });
     }
     // The footer drops the class when the pager names it, and the build count always: the build row shows it (his 18:49 and 19:02 EDT calls).
-    const containerComponents = buildLoadoutCardBody(activeBuild, { index, total: builds.length, hideBadges, footerBuild: false, footerClass: !weaponPager });
+    const containerComponents = buildLoadoutCardBody(activeBuild, { index, total: builds.length, hideBadges, footerBuild: false, footerClass: !weaponPager, variant });
+    // The swap options' buttons, under the footer: the open one green and disabled, as the build row. Browse cards only; a card with no browse (the hidden /dmz, /autobuild's saved card, the portal preview) shows option 1.
+    if (browse && variantCount(activeBuild) > 1) {
+        const opts = Array.from({ length: variantCount(activeBuild) }, (_, i) => ({ type: 2, style: i === variant ? 3 : 2, disabled: i === variant, label: variantLabel(activeBuild, i), custom_id: `gsb~var~${browse.scopeToken}~${browse.flatIndex}~${i}` }));
+        containerComponents.push({ type: 14, spacing: 1, divider: false });
+        for (let i = 0; i < opts.length; i += 5) containerComponents.push({ type: 1, components: opts.slice(i, i + 5) });
+    }
     // A browse card's build sits at a flat index in the scope, and a weapon's builds are next to each other there (utils/loadoutScopes.js sorts by class, then weapon), so build i is `flatIndex - index + i`. Five per row is Discord's cap; no weapon has more than five today.
     if (builds.length > 1) {
         const firstFlat = browse ? (Number(browse.flatIndex) || 0) - index : 0;
@@ -455,4 +494,4 @@ function buildMissingWeaponCard({ weaponName, category, mode = 'MP', isEphemeral
     return { components, flags: 32768 };
 }
 
-module.exports = { classPlural, buildImageUrl, checkImageExists, buildLoadoutCard, buildLoadoutCardBody, buildMissingWeaponCard, getMpCategoryAccent, displayCategoryLabel, computeWeaponKeyAndBuild, findDuplicateLoadouts, isPlaceholderBuild, hasRealImage, orderedAttachments };
+module.exports = { classPlural, buildImageUrl, checkImageExists, buildLoadoutCard, buildLoadoutCardBody, buildMissingWeaponCard, getMpCategoryAccent, displayCategoryLabel, computeWeaponKeyAndBuild, findDuplicateLoadouts, isPlaceholderBuild, hasRealImage, orderedAttachments, variantView, variantCount, swapSlots, variantLabel };
