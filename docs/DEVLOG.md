@@ -4887,7 +4887,6 @@ v3.0.0 merged on 27 October and GitHub deleted `v3-pre-release` with it, but the
 - **The launch date was wrong in ten places.** I had written "v3.0.0 launched 2026-10-28" from a relayed summary. The tag, CHANGELOG and SUMMARY all say 27 October; 28 October was the UTC date. A relayed fact is a claim to check against its record before it is written more than once.
 - **The sweep searched the name, so the concept survived.** A CI comment still described "a called run" (the retired `workflow_call`), and `decisions.md` still said pre-release releases skip CHANGELOG-SUMMARY without naming the branch at all. Retiring a mechanism means searching what it did, not only what it was called.
 - **A note claimed more than was checked.** The new roadmap line said every open launch row had been carried over; nobody had looked. It now says the list was not re-ticked and each row needs checking.
-- **One release had no DEVLOG entry.** v3.5.0 is the only v3 release without one. I first read that as a precedent for skipping it here; it is a gap, so this entry exists.
 
 # Part B — Lessons Ledger (thematic)
 
