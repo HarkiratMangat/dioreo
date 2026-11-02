@@ -214,7 +214,7 @@ const makeFixture = () => {
   write(
     root,
     ".github/workflows/ci.yml",
-    "name: CI\non:\n  push:\n    branches: [main, v3-pre-release]\n  pull_request:\n    branches: [main, v3-pre-release]\njobs:\n  x:\n    steps:\n      - uses: actions/checkout@v4\n        with:\n          fetch-depth: 0\n      - run: npm run docs:audit:test\n      - run: npm run docs:audit\n  syntax-check:\n    needs: [x]\n    if: always()\n    steps:\n      - run: echo ok\n"
+    "name: CI\non:\n  push:\n    branches: [main]\n  pull_request:\n    branches: [main]\njobs:\n  x:\n    steps:\n      - uses: actions/checkout@v4\n        with:\n          fetch-depth: 0\n      - run: npm run docs:audit:test\n      - run: npm run docs:audit\n  syntax-check:\n    needs: [x]\n    if: always()\n    steps:\n      - run: echo ok\n"
   );
   // rule-globs: a path-scoped rule whose glob matches a real tracked file.
   write(root, ".claude/rules/example.md", "---\npaths:\n  - docs/*.md\n---\n\nA rule.\n");
@@ -656,8 +656,8 @@ proves("CI no longer running the audit", "ci-wiring", (root) => {
   write(root, ".github/workflows/ci.yml", ci);
 });
 
-proves("a CI trigger list that omits v3-pre-release", "ci-wiring", (root) => {
-  const ci = readFileSync(join(root, ".github/workflows/ci.yml"), "utf8").replace(/branches: \[main, v3-pre-release\]/, "branches: [main]");
+proves("a CI trigger list that omits main", "ci-wiring", (root) => {
+  const ci = readFileSync(join(root, ".github/workflows/ci.yml"), "utf8").replace(/branches: \[main\]/, "branches: [develop]");
   write(root, ".github/workflows/ci.yml", ci);
 });
 

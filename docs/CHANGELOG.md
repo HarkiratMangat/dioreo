@@ -29,7 +29,21 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.5.0 — 2026-11-01 11:30 EDT (#243) — Quick Add, /draws filters, and the bot reads the draw index
+## v3.5.1 — 2026-11-01 19:01 EST (#244) — v3-pre-release retired, and the Advanced draws name their rewards
+**From Harkirat, 2026-11-01 00:02 EST:** "do a repo sweep tomorrow for stale v3 pre release mentions and behaviors that need updating and correcting now that v3 has released." And, from his notes: the Advanced Double Legendary Character page "never says the 2 legendary weapons are the secondary reward."
+
+### `/draw prices`
+- **Both Advanced Double Legendary pages gain a rewards line** under the price (`commands/drawprices.js`): the Character draw's main reward is 2 Legendary Characters and its secondary 2 Legendary Weapons; the Weapon draw's main reward is 2 Legendary Weapons and its secondary 2 Epics. Both pairs on the Character draw are Legendary, so nothing on the page said which one Regular spend works toward. No other surface describes the pairs in prose (the calculator's Goal pop-up already names what each goal yields).
+
+### `v3-pre-release` retired
+v3.0.0 merged on 2026-10-27 (#223) and GitHub deleted the branch; the tag `archive/v3-pre-release` keeps it.
+- **CI:** `.github/workflows/sync-v3-pre-release.yml` is deleted, `ci.yml` runs on `main` only, and its `workflow_call` (which only the sync used) is gone.
+- **Gates:** `docs-audit`'s `ci-wiring` requires `main` in the CI triggers; `commit-completeness-sweep.sh` drops its two-bases block; `release-ready-check.sh` demands a CHANGELOG-SUMMARY line on every base. Each test is updated, and the `ci-wiring` proof still fails on a trigger list without `main`.
+- **Scripts:** `handoffCheck.mjs` counts commits ahead of `origin/main`; `testRunner.mjs`'s cache signature no longer reads `origin/v3-pre-release`; `main-push-guard.sh` and `map.yaml` say `main`.
+- **Docs:** CLAUDE.md's "Two bases" paragraph is now "One base again" with the live release rules (three-part versions, a SUMMARY line, a tag); the guild-install paragraph no longer says prod waits for the launch. CONTRIBUTING (`public/contributing.html` rebuilt), `docs/reference/deployment-and-ops.md`, the ROADMAP (a launched note over the launch checklist), the portal and nameplate reference docs and `commands-overview.md` follow.
+- **Deferred list:** closed the stale-base item, the sync-commit test item (moot) and the Privacy launch blocker (Terms 1.6, Privacy 1.11, LICENSE 1.2 and NOTICE all landed in v3.0.0); filed two proposals he asked to keep for later: news-channel triage and the `/autobuild` vision-provider A/B.
+
+## v3.5.0 — 2026-11-01 11:30 EDT (#243 · `beeb8dc5`) — Quick Add, /draws filters, and the bot reads the draw index
 **From Harkirat, 2026-11-01 01:05 EDT** (the deferred item): "a proper full index-able list to quickly implement into the bot whenever needed". Built the same day, as a cloud thread, with two asks of his from 11:11 EDT that use it: Quick Add in `/manage` draws, and filters on `/draws`.
 
 ### Quick Add (`/manage` draws)

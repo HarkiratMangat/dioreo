@@ -50,15 +50,12 @@ d "an unmet release DENIES the merge"    deny "$(dec "$NODEVLOG" 'gh pr merge 88
 # ...and the escape must exist, or a judgement-call gate with no way through gets edited out of the way — the "how a guard becomes decorative" failure named in the filed --delete item.
 d "a NAMED skip is allowed through"      none "$(dec "$NODEVLOG" 'RELEASE_SKIP="purely mechanical" gh pr merge 88 --squash')"
 d "a complete release needs no decision" none "$(dec "$FULL" 'gh pr merge 88 --squash')"
-# --- v3 pre-release: CHANGELOG-only. Demanding a SUMMARY line there would be the gate enforcing a
-#     rule that does not apply, which teaches you to merge past it. Added 2026-08-02 16:49 EDT with
-#     the base-branch fix; before it, every v3 PR was diffed against origin/main.
-V3OK='docs/CHANGELOG.md
+# --- A SUMMARY line is demanded on every base: the v3-pre-release exemption retired at v3.0.0 (2026-11-01 18:23 EST).
+NOSUMMARY='docs/CHANGELOG.md
 package.json
 src/x.js'
-a "v3 base: no SUMMARY demanded"      "CHANGELOG-SUMMARY.md has no line" no  "$V3OK" v3-pre-release
-a "v3 base: CHANGELOG still demanded" "docs/CHANGELOG.md has no entry"   yes "$NOCHANGELOG" v3-pre-release
-a "main base: SUMMARY still demanded" "CHANGELOG-SUMMARY.md has no line" yes "$V3OK" main
+a "main base: SUMMARY demanded"        "CHANGELOG-SUMMARY.md has no line" yes "$NOSUMMARY" main
+a "any other base: SUMMARY demanded"   "CHANGELOG-SUMMARY.md has no line" yes "$NOSUMMARY" feat/x
 
 # 🔴 MOVED HERE 2026-08-07 22:26 EDT from a PostToolUse hook that checked `origin/main` AFTER the merge landed -- too late to ever prevent what it reported (cost v2.61.0 a follow-up v2.61.1 to fix). Same diff-based shape, now checked at the only moment it can still be fixed for free.
 CODE_NO_NOTE='docs/CHANGELOG.md

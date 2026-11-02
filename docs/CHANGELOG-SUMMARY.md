@@ -12,6 +12,9 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.5.1 — November 1, 2026
+- **Draw prices:** both Advanced Double Legendary pages now say which pair is the main reward and which is the secondary one.
+
 ## v3.5.0 — November 1, 2026
 - **Draw filters:** `/draws` has a filter menu: New, Returning, Upcoming, Live, Leaving soon and Ended. Also `/draws filter:` and `d draws live`.
 - **Quick Add (admins):** type draw names with their dates, one per line, check the draft, and save them to `/draws` and `/calendar` at once.

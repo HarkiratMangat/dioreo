@@ -256,7 +256,7 @@ if (dirty.length) fail(`${dirty.length} uncommitted change(s)`, 'commit them —
 else ok('working tree clean');
 
 // ── 5. VERIFICATION IS A CLAIM ABOUT A COMMIT. Say when it was last true, never that it IS true.
-console.log(`\n  ℹ️  HEAD is ${sh('git rev-parse --short HEAD')} · ${sh('git rev-list --count origin/v3-pre-release..HEAD 2>/dev/null') || '?'} commit(s) ahead of v3-pre-release`);
+console.log(`\n  ℹ️  HEAD is ${sh('git rev-parse --short HEAD')} · ${sh('git rev-list --count origin/main..HEAD 2>/dev/null') || '?'} commit(s) ahead of main`);
 console.log('     ⚠️  This script does NOT run the suites. State when they last passed and on WHICH commit —');
 console.log('        a green remembered from three commits ago is a claim about a tree that no longer exists.');
 

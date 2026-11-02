@@ -67,7 +67,7 @@ that belongs to no release.
 Do this instead:
   git switch -c <type>/<kebab-description>
   git push -u origin <that branch>
-  gh pr create --base main      # or --base v3-pre-release for v3 work
+  gh pr create --base main
 
 If the commits are already on main, move them:
   git branch <type>/<name> && git reset --hard origin/main && git switch <type>/<name>

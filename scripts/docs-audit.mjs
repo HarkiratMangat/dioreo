@@ -1017,10 +1017,10 @@ check(
     if (!/npm run docs:audit(?!:)/.test(ci)) out.push({ msg: "ci.yml no longer runs `npm run docs:audit` — the documentation gate is not enforced on PRs." });
     if (!/npm run docs:audit:test/.test(ci)) out.push({ msg: "ci.yml no longer runs `npm run docs:audit:test` — an audit whose checks have quietly died would pass everything, indistinguishable from a clean tree." });
     if (!/fetch-depth:\s*0/.test(ci)) out.push({ msg: "ci.yml checkout lost `fetch-depth: 0`. Measured: a depth-1 clone yields 42 false hash-chain errors and sees 1 tag instead of 100+." });
-    // The v3 spec calls this failure out explicitly: with `main` alone, no v3 work runs CI at all, and a repo with no runs looks exactly like a repo whose runs all pass.
+    // Every PR targets `main` since v3.0.0 (the `v3-pre-release` requirement here retired with that branch, 2026-11-01 18:23 EST). A trigger list without it runs no CI on PRs at all, and a repo with no runs looks exactly like a repo whose runs all pass.
     const triggers = [...ci.matchAll(/branches:\s*\[([^\]]*)\]/g)].map((m) => m[1]);
-    if (triggers.length && !triggers.every((t) => t.includes("v3-pre-release"))) {
-      out.push({ msg: "a CI trigger branch list omits `v3-pre-release`. Every v3 feature PR targets that branch, so it would run no CI at all — and the failure is silent." });
+    if (triggers.length && !triggers.every((t) => /\bmain\b/.test(t))) {
+      out.push({ msg: "a CI trigger branch list omits `main`. Every PR targets that branch, so it would run no CI at all — and the failure is silent." });
     }
     // The aggregate: `syntax-check` is the one required status check, so every other job must be in its `needs` or it can fail while the PR stays green, and a `name:` on it would rename the check branch protection knows. Added 2026-10-01 with the CI rebuild (#192), because nothing else stops a seventh job from being added and forgotten.
     const jobsAt = ci.indexOf("\njobs:\n");

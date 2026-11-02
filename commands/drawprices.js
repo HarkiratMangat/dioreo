@@ -252,8 +252,8 @@ function buildAdvancedDoubleLegendaryEntry(regionKey) {
 
     // Layout matches Harkirat's own hand-drawn mockup (local/advanced leggy_format.json, 2026-07-21): FULL-CAPS heading, three quote-styled purchase modes, THE TRAP callout (the NOTE callout was removed 2026-07-25 per Harkirat's request), then the Strategy split into THREE separate Text Displays (its own `### ` heading on the first) so each strategy option reads as its own line with an inline cp2 icon on its cost. Every number is still DERIVED above -- only the wording/structure changed from the earlier version, not the math.
     const blocks = [
-        // 0: FULL-CAPS heading + both headline totals (quote-blocked, cp2 icon -- matches the mockup)
-        `**${emojis.legendary} ADVANCED DOUBLE LEGENDARY WEAPON DRAW**\n> ${emojis.cp2} **\`Reg: ${formatCP(regTotal)} CP\`** / **\`Adv: ${formatCP(advTotal)} CP\`** (See **The Strategy** below)`,
+        // 0: FULL-CAPS heading + both headline totals (quote-blocked, cp2 icon -- matches the mockup), then the rewards line, the same as the Character page's (2026-11-01 18:23 EST): this page never named its pairs either. The second pair is "Epics", never "Characters" (see the Strategy comment below).
+        `**${emojis.legendary} ADVANCED DOUBLE LEGENDARY WEAPON DRAW**\n> ${emojis.cp2} **\`Reg: ${formatCP(regTotal)} CP\`** / **\`Adv: ${formatCP(advTotal)} CP\`** (See **The Strategy** below)\n-# **Main Reward:** 2 Legendary Weapons · **Secondary Reward:** 2 Epics`,
         // 1-3: the three purchase modes (the 3rd is the "trap" pricing -- Regular spin then buying the remaining item separately, i.e. 2x Regular per pull)
         `**'Regular Purchase' Only**\n${seqTotal(reg, regTotal)}`,
         `**'Advanced Purchase' Only**\n${seqTotal(adv, advTotal)}`,
@@ -298,8 +298,8 @@ function buildAdvancedDoubleLegendaryCharacterEntry(regionKey) {
 
     // Same flat run of Text Displays, NO internal dividers, as the Weapon page -- matching its style exactly per Harkirat's request.
     const blocks = [
-        // 0: FULL-CAPS heading + both headline totals (quote-blocked, cp2 icon)
-        `**${emojis.legendary} ADVANCED DOUBLE LEGENDARY CHARACTER DRAW**\n> ${emojis.cp2} **\`Reg: ${formatCP(regTotal)} CP\`** / **\`Adv: ${formatCP(advTotal)} CP\`** (See **The Strategy** below)`,
+        // 0: FULL-CAPS heading + both headline totals (quote-blocked, cp2 icon), then the rewards line (2026-11-01 18:23 EST, his note: the page "never says the 2 legendary weapons are the secondary reward"). Both pairs are Legendary here, so without it nothing on the page says which pair Regular spend works toward.
+        `**${emojis.legendary} ADVANCED DOUBLE LEGENDARY CHARACTER DRAW**\n> ${emojis.cp2} **\`Reg: ${formatCP(regTotal)} CP\`** / **\`Adv: ${formatCP(advTotal)} CP\`** (See **The Strategy** below)\n-# **Main Reward:** 2 Legendary Characters · **Secondary Reward:** 2 Legendary Weapons`,
         // 1-3: the three purchase modes
         `**'Regular Purchase' Only**\n${seqTotal(reg, regTotal)}`,
         `**'Advanced Purchase' Only**\n${seqTotal(adv, advTotal)}`,

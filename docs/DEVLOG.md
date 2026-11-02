@@ -298,6 +298,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-30 22:09 EDT — The New announcement button rides on the first post (v3.3.3)
 - 2026-10-30 22:57 EDT — Post chosen announcements, by picker, by word, or into a channel (v3.4.0)
 - 2026-11-01 01:05 EDT — The draw image index: 98 images read three ways, and what each way got wrong (v3.4.1)
+- 2026-11-01 19:05 EST — Retiring v3-pre-release, and a launch date taken on trust (v3.5.1)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4877,6 +4878,15 @@ Harkirat had 98 draw images in a folder and wanted them filed in Cloudinary so t
 - **I wrote "latest v3-pre-release commit" for a checkout that was on v3.4.0 in main.** He caught it in one line. Check the ref, not the memory of which branch the project used.
 
 **Lesson for the next one.** Put the knowledge in the room first: ask for the facts he holds (price types, the aliases, which names are the same draw), let the model read only what the image shows, and give every hand-typed write a checksum.
+
+## 2026-11-01 19:05 EST — Retiring v3-pre-release, and a launch date taken on trust (v3.5.1)
+
+v3.0.0 merged on 27 October and GitHub deleted `v3-pre-release` with it, but the repo kept describing a two-branch world: a sync workflow that merged `main` into a branch that no longer existed, CI triggers and an audit check that required the old branch, a hook that diffed against it, CLAUDE.md telling every session to open PRs into it, and a project rule that releases skip CHANGELOG-SUMMARY. Harkirat asked for a sweep of the class, not the instance. The same branch fixed a `/draw prices` gap from his notes: the Advanced Double Legendary Character page never said its 2 Legendary Weapons are the secondary reward, so both Advanced pages now carry a rewards line.
+
+**What a think-pass caught after the sweep looked done.**
+- **The launch date was wrong in ten places.** I had written "v3.0.0 launched 2026-10-28" from a relayed summary. The tag, CHANGELOG and SUMMARY all say 27 October; 28 October was the UTC date. A relayed fact is a claim to check against its record before it is written more than once.
+- **The sweep searched the name, so the concept survived.** A CI comment still described "a called run" (the retired `workflow_call`), and `decisions.md` still said pre-release releases skip CHANGELOG-SUMMARY without naming the branch at all. Retiring a mechanism means searching what it did, not only what it was called.
+- **A note claimed more than was checked.** The new roadmap line said every open launch row had been carried over; nobody had looked. It now says the list was not re-ticked and each row needs checking.
 
 # Part B — Lessons Ledger (thematic)
 

@@ -12,28 +12,20 @@ name: CI
 #
 # 🔴 CI RUNS EVERY ENTRY EXCEPT THE BROWSER WALKS WHEN NOTHING THEY READ CHANGED. Harkirat, 2026-09-14: "Local only, CI runs everything." The runner's input cache exists only on a developer machine and is never read here (CI=true). The one exception, Harkirat 2026-10-28: "why are all these checks running? such as browser walks and stuff when we didn't even touch portal/browser code?" The three walks render the portal harness from static fixtures (no Mongo, no bot code), so a change outside their inputs cannot move their result; `changes` lists those inputs, and any event without a comparable base still runs them.
 #
-# `v3-pre-release` is listed alongside `main` deliberately: under the v3 development structure (docs/superpowers/specs/2026-07-27-v3-development-structure-design.md) every v3 feature PR targets `v3-pre-release`, not `main`. With `main` alone here, none of that work would run CI at all — and the failure is silent, since a repo with no runs looks the same as a repo whose runs all pass. Any future long-lived integration branch needs adding to BOTH lists for the same reason.
+# `main` is the only branch since v3.0.0 (2026-10-27): every feature PR targets it. The long-lived `v3-pre-release` integration branch, its sync workflow and the `workflow_call` that tested the sync commit were retired with it (2026-11-01 18:23 EST).
 on:
   push:
-    branches: [main, v3-pre-release]
+    branches: [main]
   pull_request:
-    branches: [main, v3-pre-release]
-  # Called by sync-v3-pre-release.yml with the merge commit it just pushed. That push is made with GITHUB_TOKEN, which never triggers a workflow, so until 2026-09-14 19:03 EDT the commit that brings `main` into `v3-pre-release` was the one commit on the branch CI never tested. ⚠️ **It does not run yet.** A push to `main` runs `main`'s copy of `sync-v3-pre-release.yml`, and this change reaches only `v3-pre-release`, so `test-synced` takes effect once `main` carries these workflow files, and the sync retires with `v3-pre-release` at the v3.0.0 launch merge. Do not copy the sync workflow to `main` alone: its `uses: ./.github/workflows/ci.yml` would call `main`'s old ci.yml, which has no `workflow_call`, and the sync would stop. Found in the pre-merge pass of PR #192, 2026-10-01 20:16 EDT.
-  workflow_call:
-    inputs:
-      ref:
-        description: The commit to test. Empty means the event's own commit.
-        type: string
-        required: false
-        default: ''
+    branches: [main]
 
 # No step here pushes, comments, or otherwise writes with GITHUB_TOKEN — checkout, npm ci, and local checks only — so the default (broad, write-capable) token permissions are strictly more than this workflow needs. Scoped down per CodeQL's actions/missing-workflow-permissions finding.
 permissions:
   contents: read
 
-# A newer push to the same pull request cancels the run it replaces. A push to `main` or `v3-pre-release` is never cancelled: each of those commits keeps its own result. A called run is grouped by the commit it tests, so it can never queue behind or cancel a push run.
+# A newer push to the same pull request cancels the run it replaces. A push to `main` is never cancelled: each of its commits keeps its own result.
 concurrency:
-  group: ci-${{ inputs.ref || github.event.pull_request.number || github.ref }}
+  group: ci-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # CLAUDE_PROJECT_DIR is normally set by the Claude Code harness itself, so every hook script's fallback (`${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}`) exists purely for a bare `bash <hook>` on Harkirat's own Mac — it was never meant to be load-bearing here. CI has no harness, and without this every one of those fallbacks resolved to a path that does not exist on a runner: self-check.test.sh's marker test and its settings.json-registration check both failed outright the first time CI reached them. Set once, for every job.
@@ -50,7 +42,6 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-          ref: ${{ inputs.ref }}
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
@@ -69,8 +60,6 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
-        with:
-          ref: ${{ inputs.ref }}
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
@@ -87,7 +76,6 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-          ref: ${{ inputs.ref }}
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
@@ -136,21 +124,18 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-          ref: ${{ inputs.ref }}
       - id: diff
         env:
           EVENT: ${{ github.event_name }}
           BASE_REF: ${{ github.base_ref }}
           BEFORE: ${{ github.event.before }}
-          CALLED_REF: ${{ inputs.ref }}
         run: |
           set -euo pipefail
           base=""
-          if [ -n "$CALLED_REF" ]; then base=""
-          elif [ "$EVENT" = pull_request ]; then base="origin/$BASE_REF"
+          if [ "$EVENT" = pull_request ]; then base="origin/$BASE_REF"
           elif [ -n "$BEFORE" ] && git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then base="$BEFORE"
           fi
-          # No comparable base (a called run, a new branch, a force-push): run both gated jobs rather than guess.
+          # No comparable base (a new branch, a force-push): run both gated jobs rather than guess.
           if [ -z "$base" ]; then { echo "hooks=true"; echo "browser=true"; } >> "$GITHUB_OUTPUT"; echo "::notice::No comparable base for this event, so hooks-macos and the browser walks run."; exit 0; fi
           changed=$(git diff --name-only "$base"...HEAD)
           # A here-string, never `git diff | grep -q`: under pipefail, grep -q exits at its first match and the writer's SIGPIPE turns a found needle into a failure — the same flake self-check.test.sh had.
@@ -176,7 +161,6 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-          ref: ${{ inputs.ref }}
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
