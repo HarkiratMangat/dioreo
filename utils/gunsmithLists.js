@@ -69,7 +69,8 @@ function weaponNames(lineBuilds, { codes = false } = {}) {
         const labels = [...new Set(list.filter(b => b.showLabelOnLists).map(b => String(b.label || '').trim()).filter(Boolean))];
         const named = labels.length ? `${realName(name)} (${labels.join(' / ')})` : realName(name);
         const code = codes && list.find(b => b.shareCode)?.shareCode;
-        return code ? `${named}  \`${code}\`` : named;
+        // On the META page each weapon is a list item: the WhiteDotGlow dot, the name in bold, its code (his 2026-11-03 14:02 EST "make it a list? using our whitedotglow emoji with the weapon name in bold").
+        return codes ? `${emojis.whiteDotGlow || '•'} **${named}**${code ? `  \`${code}\`` : ''}` : named;
     });
 }
 // His notation, the announcements' (2026-11-03 12:00 EST: "==== is divider:true large. -- means divider:false small"): `--` between classes is a small gap with no line; `====` under the title and above the hint is a large divider.
