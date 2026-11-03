@@ -29686,11 +29686,15 @@
           },
           {
             "type": 10,
-            "content": "`[submitted_by]`\n-# Credit a Discord user on the card"
+            "content": "`[credit_user]`\n-# Credit a Discord user, as a clickable @"
           },
           {
             "type": 10,
-            "content": "`[credit]`\n-# Or credit a plain name, not clickable; never both"
+            "content": "`[credit_name]`\n-# Or a plain name, not clickable; never both"
+          },
+          {
+            "type": 10,
+            "content": "`[credit_prefix]`\n-# `Submitted by` (default) · `Credit:` · `Build by`"
           },
           {
             "type": 10,

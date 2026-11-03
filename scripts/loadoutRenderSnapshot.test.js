@@ -104,6 +104,6 @@ assert.ok(missing.includes('No build yet') && missing.includes('gsb~open~MP.AR.s
     assert.ok(nb.includes('No build yet · 1/2') && nb.includes('gsb~nb~AR~1') && nb.includes('"Submit a Build"') && nb.includes('gsb~submit~MP~ak47'), 'the no-build card pages and offers Submit a Build');
     const credited = JSON.stringify(R.buildLoadoutCard([{ ...slotted, submittedBy: { discordId: '42', credited: true } }], 0, { color: 1, idPrefix: 'mp' }));
     const anon = JSON.stringify(R.buildLoadoutCard([{ ...slotted, submittedBy: { discordId: '42', credited: false } }], 0, { color: 1, idPrefix: 'mp' }));
-    assert.ok(credited.includes('• Submitted by <@42>') && anon.includes('• Submitted by *anonymous*') && !anon.includes('<@42>'), 'the footer credits the submitter, or says anonymous');
+    assert.ok(credited.includes('• Submitted by <@42>') && anon.includes('• By *anonymous*') && !anon.includes('<@42>'), 'the footer credits the submitter, or says anonymous');
 }
 console.log('✓ loadoutRender snapshot');

@@ -1,27 +1,71 @@
 // utils/loadoutCredit.js
 //
-// Who a build is credited to, in one place (Harkirat, 2026-11-02 10:44 EST: a manual "submitted by @user" on a build, plus a credit that is a plain name, not clickable). Two stored fields, never both at once:
-//   - `submittedBy {discordId, credited}`: a Discord user. Submit a Build sets it (utils/buildSubmissions.js), and so do /manage's Credit button and /autobuild's `submitted_by:`. `credited: false` keeps them anonymous to players.
-//   - `credit`: a plain name for someone with no Discord link, set by the same Credit button or /autobuild's `credit:`.
-// The card's footer reads them through creditLine(); the op that changes them is core/ops/loadouts.js `loadout.credit`, so Revert works.
+// Who a build is credited to, in one place. His design (Harkirat, 2026-11-03 04:10 UTC, 2026-11-02 23:10 EST):
+//   - how it shows (`show`): `user` an @mention (clickable) · `name` a **username** in plain text · `link` a hyperlink · `anonymous`, always "By *anonymous*" · `none`, no credit line at all
+//   - its prefix: "Submitted by", "Credit:" or "Build by"
+//   - Submit a Build only ever gives "Submitted by" @user or username, or "By *anonymous*"; the hyperlink and the other two prefixes are set by hand in /manage (the hyperlink only there, so a player can never put a URL on a build). /autobuild can set a user or a name and any prefix.
+// Stored as `Loadout.credit {show, prefix, discordId, name, url}`. The private `submittedBy {discordId, credited}` record stays as it was (Submit a Build keeps the submitter's ID for disputes); a build with no `credit` yet (one approved before this existed) falls back to it.
 const { escapeMarkdown } = require('discord.js');
 
 const CREDIT_MAX = 32;
+const URL_MAX = 200;
+const PREFIXES = { submitted: 'Submitted by', credit: 'Credit:', buildby: 'Build by' };
+const SHOWS = ['user', 'name', 'link', 'anonymous', 'none'];
 
-// A typed name, tidied, or null when it can't be shown: empty, too long, a new line, or < > (which would let `<@id>` or `<t:…>` markup through).
+// A typed name, tidied, or null when it can't be shown: empty, too long, a new line, < > (which would let `<@id>` or `<t:…>` markup through), or [ ] (which would break a hyperlink's text).
 function cleanCreditName(raw) {
     const s = String(raw ?? '');
-    if (/[<>\r\n]/.test(s)) return null;
+    if (/[<>[\]\r\n]/.test(s)) return null;
     const t = s.replace(/\s+/g, ' ').trim();
     return t && t.length <= CREDIT_MAX ? t : null;
 }
 
-// The footer's credit, or null. A plain name wins if both were ever stored; the mention never pings (every send goes out with no allowed mentions).
+// An https link a hyperlink credit can carry, or null. Only https, one piece, nothing that would close the markdown link early.
+function cleanCreditUrl(raw) {
+    const s = String(raw ?? '').trim();
+    if (!s || s.length > URL_MAX || /[\s<>()[\]]/.test(s)) return null;
+    try { const u = new URL(s); return u.protocol === 'https:' && u.hostname.includes('.') ? u.href : null; } catch { return null; }
+}
+
+// What a form or an op hands in, to what is stored: `{ credit }`, or `{ error }` worded for the admin. `null` is "no credit field", which falls back to submittedBy.
+function normalizeCredit(c) {
+    if (c == null) return { credit: null };
+    const show = c.show;
+    if (!SHOWS.includes(show)) return { error: 'Pick how the credit shows.' };
+    if (show === 'none' || show === 'anonymous') return { credit: { show } };
+    const prefix = PREFIXES[c.prefix] ? c.prefix : 'submitted';
+    if (show === 'user') {
+        return /^\d{15,22}$/.test(String(c.discordId || '')) ? { credit: { show, prefix, discordId: String(c.discordId) } } : { error: '@user needs a Discord user.' };
+    }
+    const name = cleanCreditName(c.name);
+    if (!name) return { error: `${show === 'link' ? 'A hyperlink needs its text: a' : 'A'} name of 1 to ${CREDIT_MAX} characters, on one line, with no < > [ or ].` };
+    if (show === 'name') return { credit: { show, prefix, name } };
+    const url = cleanCreditUrl(c.url);
+    return url ? { credit: { show, prefix, name, url } } : { error: 'A hyperlink needs a link starting with https://.' };
+}
+
+// The credit a Submit a Build approval writes: "Submitted by" @user or username, or anonymous. `creditAs` is the form's pick; a submission sent before it existed has only `credited`.
+function submissionCredit(sub) {
+    const as = sub.creditAs || (sub.credited ? 'user' : 'anonymous');
+    if (as === 'name' && cleanCreditName(sub.username)) return { show: 'name', prefix: 'submitted', name: cleanCreditName(sub.username) };
+    if (as === 'anonymous' || !sub.discordId) return { show: 'anonymous' };
+    return { show: 'user', prefix: 'submitted', discordId: String(sub.discordId) };
+}
+
+// The footer's credit, or null. The mention never pings (every send goes out with no allowed mentions).
 function creditLine(build) {
-    if (build?.credit) return `Credit: ${escapeMarkdown(build.credit)}`;
+    const c = build?.credit;
+    if (c?.show) {
+        const p = PREFIXES[c.prefix] || PREFIXES.submitted;
+        if (c.show === 'anonymous') return 'By *anonymous*';
+        if (c.show === 'user' && c.discordId) return `${p} <@${c.discordId}>`;
+        if (c.show === 'name' && c.name) return `${p} **${escapeMarkdown(c.name)}**`;
+        if (c.show === 'link' && c.name && c.url) return `${p} [${escapeMarkdown(c.name)}](${c.url})`;
+        return null;
+    }
     const sub = build?.submittedBy;
-    if (sub?.discordId) return sub.credited ? `Submitted by <@${sub.discordId}>` : 'Submitted by *anonymous*';
+    if (sub?.discordId) return sub.credited ? `${PREFIXES.submitted} <@${sub.discordId}>` : 'By *anonymous*';
     return null;
 }
 
-module.exports = { CREDIT_MAX, cleanCreditName, creditLine };
+module.exports = { CREDIT_MAX, URL_MAX, PREFIXES, SHOWS, cleanCreditName, cleanCreditUrl, normalizeCredit, submissionCredit, creditLine };

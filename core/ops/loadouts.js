@@ -21,16 +21,10 @@ const { syncLoadoutMetadata, uploadLoadoutImage } = require('../../utils/loadout
 const { RANK_MODES } = require('../../utils/rankModes');
 const { slotsFor } = require('../../utils/catalogue');
 const Loadout = require('../../models/Loadout');
-const { cleanCreditName, CREDIT_MAX } = require('../../utils/loadoutCredit');
+const { normalizeCredit } = require('../../utils/loadoutCredit');
 
 const MODES = ['MP', 'DMZ'];
 const deriveWeaponKey = (weaponName) => (weaponName || '').toLowerCase().replace(/\s+/g, '');
-
-// The stored shape of a credit: a user, a plain name, or neither (both null clears it).
-function creditFields(p = {}) {
-    const sub = p.submittedBy?.discordId ? { discordId: String(p.submittedBy.discordId), credited: p.submittedBy.credited !== false } : null;
-    return { submittedBy: sub, credit: sub ? null : (cleanCreditName(p.credit) || null) };
-}
 
 function validateBuild(payload) {
     const errors = [];
@@ -303,30 +297,28 @@ registerEntity('loadouts', {
             : { type: 'loadout.edit', target: { id: c.applied.id }, payload: c.applied.prior }
     },
 
-    // Who the build is credited to (utils/loadoutCredit.js): a Discord user, a plain name, or nothing. Its own op, not loadout.edit, because an edit re-numbers, re-checks the code and stamps lastUpdated, and a credit is none of those. No /manage action id of its own (the Credit button sits on a build, not on the page), so it declares its pages, one per mode (core/ops/index.js OP_TO_PAGE); target.mode picks which.
+    // Who the build is credited to (utils/loadoutCredit.js): payload `{ credit }`, the stored shape, or null for no credit field (the footer then falls back to submittedBy). Its own op, not loadout.edit, because an edit re-numbers, re-checks the code and stamps lastUpdated, and a credit is none of those. No /manage action id of its own (the Credit button sits on a build, not on the page), so it declares its pages, one per mode (core/ops/index.js OP_TO_PAGE); core/changeset.js LOADOUT_OPS_BY_ID checks the permission against the STORED build's mode, never target.mode.
     'loadout.credit': {
         page: ['loadouts_mp', 'loadouts_dmz'], tier: 1,
         validate: (op) => {
             if (!op.target?.id) return { ok: false, errors: ['No build was selected.'] };
-            const p = op.payload || {};
-            const errors = [];
-            if (p.submittedBy && !/^\d{15,22}$/.test(String(p.submittedBy.discordId || ''))) errors.push("That isn't a Discord user.");
-            const typed = p.credit != null && String(p.credit).trim() !== '';
-            if (typed && !cleanCreditName(p.credit)) errors.push(`A name is 1 to ${CREDIT_MAX} characters, on one line, with no < or >.`);
-            if (p.submittedBy && typed) errors.push('Pick a Discord user or type a name, not both.');
-            return errors.length ? { ok: false, errors } : { ok: true, errors: [], normalized: { payload: creditFields(p) } };
+            const { credit, error } = normalizeCredit(op.payload?.credit ?? null);
+            return error ? { ok: false, errors: [error] } : { ok: true, errors: [], normalized: { payload: { credit } } };
         },
         preview: async (op) => {
             const cur = await Loadout.findById(op.target.id).lean();
-            return { before: cur && { submittedBy: cur.submittedBy || null, credit: cur.credit || null }, after: creditFields(op.payload) };
+            return { before: { credit: cur?.credit ?? null }, after: { credit: normalizeCredit(op.payload?.credit ?? null).credit ?? null } };
         },
         apply: async (op, { session }) => {
             const cur = await Loadout.findById(op.target.id).session(session).lean();
             if (!cur) return { ok: false, reason: 'missing' };
-            const set = creditFields(op.payload);
+            // The ChangeLog row's page comes from target.mode, so a mode that is not the build's own is refused rather than recorded under the wrong page.
+            if (op.target.mode && op.target.mode !== cur.mode) return { ok: false, reason: `That build is ${cur.mode}, not ${op.target.mode}.` };
+            const { credit, error } = normalizeCredit(op.payload?.credit ?? null);
+            if (error) return { ok: false, reason: error };
             // null, never undefined: a ChangeLog row is JSON, and an undefined key vanishes from it, so the inverse could not clear a credit the build did not have.
-            const prior = creditFields({ submittedBy: cur.submittedBy?.discordId ? cur.submittedBy : null, credit: cur.credit });
-            const res = await updateDocument({ Model: Loadout, id: op.target.id, expectVersion: cur.__v, set, session });
+            const prior = { credit: cur.credit ?? null };
+            const res = await updateDocument({ Model: Loadout, id: op.target.id, expectVersion: cur.__v, set: { credit }, session });
             if (!res.ok) return res;
             return {
                 ok: true,

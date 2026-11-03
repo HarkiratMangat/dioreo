@@ -60,7 +60,7 @@ async function previewSet(ops, live) {
 // ── Authorization (the permission restructure, 2026-10-19 19:40 EDT) ───────── checkOps lives HERE rather than in utils/adminAccess.js because it needs pageForOp, and this file's require closure reaches discord.js. adminAccess must stay requireable without it (scripts/ownerModule.test.js), so the gate that needs both sits with the op machinery and asks adminAccess only for the tiers.
 
 // The /manage page(s) an op writes to. pageForOp answers from the op itself, which is right for every op whose page is fixed by its type -- and wrong for a loadout op that names an EXISTING build only by id. MP and DMZ share one op set, so `loadout.delete { target: { id } }` carries no mode and pageForOp falls back to MP: a DMZ-only admin would be refused their own delete, and an MP-only admin let through on a DMZ build. So for the three ops that act on existing builds, the mode is read from the builds themselves, never from the op (a portal client could send any mode it likes). An edit that would MOVE a build to the other mode needs the tier on both pages. A build that no longer exists falls back to pageForOp; apply() then fails it as 'missing'.
-const LOADOUT_OPS_BY_ID = new Set(['loadout.edit', 'loadout.delete', 'loadout.bulkDelete']);
+const LOADOUT_OPS_BY_ID = new Set(['loadout.edit', 'loadout.credit', 'loadout.delete', 'loadout.bulkDelete']);
 const pageForLoadoutMode = (mode) => (mode === 'MP' ? 'loadouts_mp' : mode === 'DMZ' ? 'loadouts_dmz' : null);
 async function pagesForOp(op) {
     if (!LOADOUT_OPS_BY_ID.has(op?.type)) return [pageForOp(op)];

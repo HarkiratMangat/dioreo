@@ -110,13 +110,20 @@ function submitModal({ mode = 'MP', weaponName = '', category = '' }) {
             label('Screenshot', 'Preferred: a Gunsmith screenshot of the build', { type: 19, custom_id: 'shot', min_values: 0, max_values: 1, required: false }),
             ...(mode === 'DMZ' ? [] : [label('Gunsmith Code', 'Optional', { type: 4, custom_id: 'code', style: 1, required: false, max_length: 30 })]),
             label('Attachments and notes', 'Attachments one per line; anything else after a blank line', { type: 4, custom_id: 'details', style: 2, required: false, max_length: 1500 }),
+            // Shown as "Submitted by" @user or username, or "By anonymous" (utils/loadoutCredit.js submissionCredit, Harkirat 2026-11-02 23:10 EST). A link is never offered here: only /manage can put one on a build.
             label('Credit', 'Your Discord ID is kept privately so disputes can be checked, even if you stay anonymous', { type: 3, custom_id: 'credit', required: true, min_values: 1, max_values: 1,
-                options: [{ label: 'Show my name on the build', value: 'yes' }, { label: 'Stay anonymous', value: 'no' }] }),
+                options: [{ label: 'Show my @ (clickable)', value: 'user' }, { label: 'Show my username (plain text)', value: 'name' }, { label: 'Stay anonymous', value: 'no' }] }),
         ],
     };
 }
 
-// "Attachments one per line; anything else after a blank line". Pure.
+// "Attachments one per line; anything else after a blank line". Pure. The form's Credit pick, as stored on the submission. The username is kept only when they chose to be credited by it.
+function creditPick(value, user) {
+    if (value === 'no') return { credited: false, creditAs: 'anonymous' };
+    if (value === 'name') return { credited: true, creditAs: 'name', username: user.username };
+    return { credited: true, creditAs: 'user' };
+}
+
 function parseDetails(raw) {
     const blocks = String(raw || '').replace(/\r/g, '').split(/\n\s*\n/);
     const attachments = (blocks.shift() || '').split('\n').map(l => l.replace(/^\s*(?:\d+[.)]|[-•*])\s*/, '').trim()).filter(Boolean).slice(0, 9);
@@ -125,7 +132,8 @@ function parseDetails(raw) {
 
 function submissionCard(sub, { imageUrl = null, state = sub.status, note = null } = {}) {
     const { getMpCategoryAccent } = require('./loadoutRender');
-    const head = `## Build submitted: ${sub.weaponName || 'weapon not named'}\n-# ${[sub.mode, sub.category].filter(Boolean).join(' · ')} · from <@${sub.discordId}> · ${sub.credited ? 'wants their name shown' : 'anonymous'}`;
+    const wants = !sub.credited ? 'anonymous' : sub.creditAs === 'name' ? `credit as ${sub.username ? `**${sub.username}**` : 'their username'}` : 'credit as their @';
+    const head = `## Build submitted: ${sub.weaponName || 'weapon not named'}\n-# ${[sub.mode, sub.category].filter(Boolean).join(' · ')} · from <@${sub.discordId}> · ${wants}`;
     const body = [];
     body.push(sub.attachments.length ? `### Attachments\n${sub.attachments.map((a, i) => `${i + 1}. \`${a}\``).join('\n')}` : '*No attachments typed.*');
     if (sub.gunsmithCode) body.push(`### Gunsmith Code: \`${sub.gunsmithCode}\``);
@@ -158,7 +166,8 @@ async function sendSubmission(interaction) {
     const sub = await BuildSubmission.create({
         discordId: interaction.user.id, mode: mode === 'DMZ' ? 'DMZ' : 'MP', category: category || null,
         weaponName: text(interaction, 'weapon').toUpperCase().slice(0, 60), gunsmithCode: mode === 'DMZ' ? '' : text(interaction, 'code').toUpperCase().replace(/\s+/g, ''),
-        attachments, notes, credited: pick(interaction, 'credit')[0] === 'yes', hasScreenshot: Boolean(shot),
+        // 'yes' is the old form's value, from a pop-up opened before 2026-11-02 23:10 EST.
+        attachments, notes, hasScreenshot: Boolean(shot), ...creditPick(pick(interaction, 'credit')[0], interaction.user),
     });
     try {
         const files = shot ? [shot] : [];
@@ -220,7 +229,7 @@ async function handleSubmissionButton(interaction) {
             return interaction.editReply({ content: `${emojis.cross} Couldn't read that screenshot: ${err.message}` });
         }
         if (!data.gunsmithCode && sub.gunsmithCode) data.gunsmithCode = sub.gunsmithCode;
-        data.submission = { id: idOf(sub), discordId: sub.discordId, credited: sub.credited };
+        data.submission = { id: idOf(sub), discordId: sub.discordId, credited: sub.credited, creditAs: sub.creditAs, username: sub.username };
         const token = require('crypto').randomBytes(8).toString('hex');
         pipeline.pendingAutobuilds.set(token, data);
         setTimeout(() => pipeline.pendingAutobuilds.delete(token), 60 * 60 * 1000).unref();
@@ -260,7 +269,7 @@ async function handleApproveSave(interaction) {
         weaponName: normalizeWeaponName(weaponRaw || sub.weaponName), category: String(categoryRaw || sub.category || '').toUpperCase() || null, mode: sub.mode,
         gunsmithCode: sub.mode === 'DMZ' ? '' : correctGunsmithCode(codeRaw || ''), attachments, attachmentSlots: slots.length === attachments.length ? slots : attachments.map(() => ''),
         badgesRaw: text(interaction, 'badges'), buildLabel: labelRaw || '', sourceImageUrl: cardImageUrl(interaction), adminId: interaction.user.id,
-        submission: { id: idOf(sub), discordId: sub.discordId, credited: sub.credited },
+        submission: { id: idOf(sub), discordId: sub.discordId, credited: sub.credited, creditAs: sub.creditAs, username: sub.username },
     };
     const pipeline = require('./autobuildPipeline');
     const token = require('crypto').randomBytes(8).toString('hex');
@@ -404,8 +413,8 @@ async function handleDisputeButton(interaction) {
         dis.status = 'removed';
         await dmPlayer(dis.discordId, () => `${emojis.checkmark} Your dispute about ${what} was upheld: the build was removed from Dioreo.`);
     } else if (action === 'credit' && build) {
-        // A plain-name credit goes with it: a build is credited to one person (utils/loadoutCredit.js).
-        await Loadout.updateOne({ _id: build._id }, { $set: { submittedBy: { discordId: dis.discordId, credited: true } }, $unset: { credit: '' } });
+        // The footer's credit moves with it, whatever it showed before (utils/loadoutCredit.js).
+        await Loadout.updateOne({ _id: build._id }, { $set: { submittedBy: { discordId: dis.discordId, credited: true }, credit: { show: 'user', prefix: 'submitted', discordId: dis.discordId } } });
         dis.status = 'credited';
         await dmPlayer(dis.discordId, () => `${emojis.checkmark} Your dispute about ${what} was upheld: the build now credits you.`);
     } else if (action === 'no') {
