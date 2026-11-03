@@ -75,7 +75,7 @@ assert.ok(missing.includes('No build yet') && missing.includes('gsb~open~MP.AR.s
     const box = parsed.components[0].components;
     const text = box.filter(c => c.type === 10).map(c => c.content).join('\n');
     assert.ok(text.includes('1. `Muzzle`') && text.includes('3. `Ammo`'), 'attachments are numbered');
-    assert.ok(text.includes('### Gunsmith Code: `CODE`'), 'the code sits on its heading line');
+    assert.ok(text.includes(`### Gunsmith Code: \`${slotted.weaponName}-CODE\``), 'the code sits on its heading line, as Weapon-CODE (2026-11-02 21:49 EST)');
     assert.ok(box[1].type === 14 && box[1].divider, 'the divider under the title stays');
     const img = box.findIndex(c => c.type === 12);
     assert.ok(box[img - 1].type === 14 && !box[img - 1].divider, 'a small space, no line, above the image');

@@ -175,6 +175,12 @@ function toBlockquote(str) {
     return str.split('\n').map(line => `> -# ${line}`).join('\n');
 }
 
+// What the gunsmith code reads and copies as, his format (Harkirat, 2026-11-02 10:44 EST: "change the gunsmith code copy output to `WeaponName-Code`, such as `AK117-1C2B4A8B9A`"; 21:49 EST: a name with a space keeps it, and "it can't be all caps, spell it as the real name"): the weapon's catalogue name, a hyphen, the code. A build with no real code keeps its bare build name.
+function gunsmithCodeText(build, code = build.shareCode) {
+    if (!code) return build.buildName;
+    return `${require('./catalogue').catalogueWeaponName(build.weaponName)}-${code}`;
+}
+
 // Swap options (models/Loadout.js `variants`): option 0 is the build itself, option i its (i-1)th variant, as a build-shaped view so every reader (attachments, code, picture, copy) treats it like a build.
 function variantCount(build) { return 1 + ((build && build.variants) || []).length; }
 function variantView(build, v = 0) {
@@ -201,7 +207,7 @@ function variantLabel(build, i) {
 }
 // What Copy Code / Copy Attachments reply with. A build with options gives every option, each under its own name, so each code or list can be copied on its own.
 function copyText(build, what) {
-    const one = v => (what === 'code' ? (v.shareCode || build.buildName) : orderedAttachments(v).join('\n'));
+    const one = v => (what === 'code' ? gunsmithCodeText(build, v.shareCode) : orderedAttachments(v).join('\n'));
     if (variantCount(build) < 2) return one(build);
     return Array.from({ length: variantCount(build) }, (_, i) => `**Option ${String.fromCharCode(65 + i)}**\n${one(variantView(build, i))}`).join('\n\n');
 }
@@ -209,7 +215,7 @@ function copyText(build, what) {
 function optionCards(build) {
     return Array.from({ length: variantCount(build) }, (_, i) => {
         const v = variantView(build, i);
-        const code = v.mode !== 'DMZ' && v.shareCode ? ` · ${emojis.gunsmithCode} \`${v.shareCode}\`` : '';
+        const code = v.mode !== 'DMZ' && v.shareCode ? ` · ${emojis.gunsmithCode} \`${gunsmithCodeText(build, v.shareCode)}\`` : '';
         const text = { type: 10, content: `**Option ${String.fromCharCode(65 + i)}**${code}\n${orderedAttachments(v).map((att, n) => `-# ${n + 1}. ${att}`).join('\n')}` };
         return hasRealImage(v) ? { type: 9, components: [text], accessory: { type: 11, media: { url: buildImageUrl(v.imageKey) } } } : text;
     });
@@ -348,7 +354,7 @@ function buildLoadoutCardBody(build, { index = 0, total = 1, hideBadges = false,
     else containerComponents.push({ type: 10, content: `### Attachments\n${attachmentLines}` });
 
     // Prefers the real in-game Gunsmith code (shareCode) when present, falling back to buildName — see models/Loadout.js for why these are two separate fields. DMZ builds never have a real code (confirmed by Harkirat — the DMZ Gunsmith screen doesn't expose one the way MP's does), so this whole section (and the Copy Code button below) is skipped entirely for DMZ rather than showing the buildName as if it were a real copyable code.
-    const codeText = activeBuild.mode !== 'DMZ' && (activeBuild.shareCode || activeBuild.buildName);
+    const codeText = activeBuild.mode !== 'DMZ' && gunsmithCodeText(activeBuild);
     // The code on its heading's line, his format (2026-10-25 15:38 EDT): "### Gunsmith Code: `1C2B4A8B9A`".
     if (codeText && !cards) containerComponents.push({ type: 10, content: `### Gunsmith Code: \`${codeText}\`` });
 
@@ -508,4 +514,4 @@ function buildMissingWeaponCard({ weaponName, category, mode = 'MP', isEphemeral
     return { components, flags: 32768 };
 }
 
-module.exports = { classPlural, buildImageUrl, checkImageExists, buildLoadoutCard, buildLoadoutCardBody, buildMissingWeaponCard, getMpCategoryAccent, displayCategoryLabel, computeWeaponKeyAndBuild, findDuplicateLoadouts, isPlaceholderBuild, hasRealImage, orderedAttachments, variantView, variantCount, swapSlots, variantLabel, optionCards, copyText };
+module.exports = { classPlural, buildImageUrl, checkImageExists, buildLoadoutCard, buildLoadoutCardBody, buildMissingWeaponCard, getMpCategoryAccent, displayCategoryLabel, computeWeaponKeyAndBuild, findDuplicateLoadouts, isPlaceholderBuild, hasRealImage, orderedAttachments, variantView, variantCount, swapSlots, variantLabel, optionCards, copyText, gunsmithCodeText };

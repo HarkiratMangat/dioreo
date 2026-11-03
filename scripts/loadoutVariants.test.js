@@ -40,9 +40,15 @@ console.log('  ✓ every merged build: compact option cards');
 // No option buttons, and Copy gives every option under its letter.
 const card = text(buildLoadoutCard([build], 0, { color: 1, idPrefix: 'mp', categoryBuilds: [build], browse: { scopeToken: 'mp~SMG', flatIndex: 0, flatTotal: 1 } }).components);
 assert.ok(!card.includes('gsb~var~') && card.includes('gsb~copy~mp~SMG~0"'));
-assert.strictEqual(copyText(build, 'code'), '**Option A**\n2D5H7B8D9B\n\n**Option B**\n2D4D5H7B9B');
+assert.strictEqual(copyText(build, 'code'), '**Option A**\nVMP-2D5H7B8D9B\n\n**Option B**\nVMP-2D4D5H7B9B');
 const plain = { ...build, variants: undefined };
-assert.strictEqual(copyText(plain, 'code'), '2D5H7B8D9B');
-assert.ok(text(buildLoadoutCardBody(plain)).includes('### Gunsmith Code: `2D5H7B8D9B`'), 'a build with no options is unchanged');
+assert.strictEqual(copyText(plain, 'code'), 'VMP-2D5H7B8D9B');
+// The code copies as `Weapon-CODE` with the weapon's real name (Harkirat, 2026-11-02 21:49 EST), the space kept; a build with no code keeps its bare build name.
+const { catalogueWeaponName, buildIndex } = require('../utils/catalogue');
+const idx = buildIndex([{ kind: 'weapon', name: 'ISO Hemlock' }, { kind: 'weapon', name: 'AK117' }]);
+assert.strictEqual(catalogueWeaponName('ISO HEMLOCK', idx), 'ISO Hemlock');
+assert.strictEqual(catalogueWeaponName('UNKNOWN GUN', idx), 'UNKNOWN GUN');
+assert.strictEqual(copyText({ ...plain, shareCode: '' }, 'code'), 'Build 1');
+assert.ok(text(buildLoadoutCardBody(plain)).includes('### Gunsmith Code: `VMP-2D5H7B8D9B`'), 'a build with no options is unchanged');
 console.log('  ✓ copy gives every option; plain builds untouched');
 console.log('\nloadoutVariants: all checks passed.');

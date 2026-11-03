@@ -56,6 +56,7 @@ async function renderScopeBrowse(interaction, scope, flatIndex, { isUpdate = fal
         scope = { ...scope, category: one ? one.category : null };
     }
     const builds = await resolveScopeBuilds(scope);
+    await require('../utils/catalogue').getCatalogueIndex(); // the code line reads the weapon's real name from it (utils/loadoutRender.js gunsmithCodeText)
     const firstOfWeapon = weaponKey ? builds.findIndex(b => b.weaponKey === weaponKey) : 0;
     // An empty META list gets its own card, not an error (his ask and wording, B6, 2026-10-29 20:06-20:13 EDT): `d meta` and the All META row land here between a season's start and the first META build.
     if (!builds.length && scope.metaOnly && !weaponKey) return sendV2Payload(interaction, emptyMetaCard(scope.mode), { flags: 32768 });

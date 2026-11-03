@@ -155,7 +155,8 @@ async function route(interaction) {
                 }
                 const { weaponBuilds, indexWithinWeapon } = flatIndexToPosition(builds, flatIndexRaw);
                 const build = weaponBuilds[indexWithinWeapon];
-                // A build with options copies every option, each under its name (utils/loadoutRender.js copyText).
+                // A build with options copies every option, each under its name (utils/loadoutRender.js copyText). The code copies as `Weapon-CODE` with the weapon's real name, read from the catalogue.
+                await require('../utils/catalogue').getCatalogueIndex();
                 const replyContent = require('../utils/loadoutRender').copyText(build, action === 'copy' ? 'code' : 'attachments');
                 try {
                     // A build saved with no attachments has nothing to copy, and Discord rejects an empty `content` (2026-10-20, v3 sweep) -- say so rather than fail as "likely expired".
@@ -220,6 +221,7 @@ async function route(interaction) {
                 // Awaited + wrapped in its own try/catch -- see the matching note above. No further fallback reply attempt on failure here (unlike the error-fallback sites): this IS the terminal action, and if the interaction token already failed once, a second reply attempt on the same token would fail too.
                 const build = matchingBuilds[newIndex];
                 // A card older than the list it indexes (a build deleted after render) points past the end, and a build saved with no attachments has nothing to copy -- Discord rejects an empty `content`. Both used to throw or fail as "likely expired" with no word to the user (2026-10-20, v3 sweep).
+                await require('../utils/catalogue').getCatalogueIndex();
                 const copyText = !build ? '' : require('../utils/loadoutRender').copyText(build, action === 'copy' ? 'code' : 'attachments');
                 if (!copyText) {
                     try {

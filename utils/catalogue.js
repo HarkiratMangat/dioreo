@@ -133,7 +133,9 @@ async function getCatalogueIndex() {
     return cache;
 }
 function invalidateCatalogue() { cache = null; }
+// A weapon's real name from the catalogue ("ISO Hemlock" for the stored "ISO HEMLOCK"), read from the last loaded index so a render can call it without waiting; the stored name when the catalogue is cold or lacks the weapon. Callers that must be right await getCatalogueIndex() first.
+function catalogueWeaponName(name, index = cache) { return index?.weapons.get(normKey(name))?.name || name; }
 async function findUnknownNames(build) { return unknownNames(await getCatalogueIndex(), build); }
 async function slotsFor(attachments) { return slotsFromIndex(await getCatalogueIndex(), attachments); }
 
-module.exports = { normKey, CATEGORY_KEYS, NAME_FIXES, RULED_SLOTS, buildIndex, unknownNames, slotsFromIndex, learnItems, describeUnknown, seedItems, getCatalogueIndex, invalidateCatalogue, findUnknownNames, slotsFor };
+module.exports = { catalogueWeaponName, normKey, CATEGORY_KEYS, NAME_FIXES, RULED_SLOTS, buildIndex, unknownNames, slotsFromIndex, learnItems, describeUnknown, seedItems, getCatalogueIndex, invalidateCatalogue, findUnknownNames, slotsFor };
