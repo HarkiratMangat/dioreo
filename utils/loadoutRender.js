@@ -414,7 +414,7 @@ function metaJumpRow(metaBuilds, selectId, activeKey, listLabel = 'META') {
 // Under a list's card (utils/gunsmithLists.js): move to the lists page or another list. `gsb~lists~MP`; the open list is preselected.
 function listSwitchRow(currentToken) {
     const { LISTS } = require('./gunsmithLists');
-    const options = [{ label: 'All lists', value: 'all', description: 'Every list on one page' }, ...LISTS.map(l => ({ label: l.label, value: l.token, default: l.token === currentToken, ...(emojis[l.emoji] ? { emoji: emojis.parseEmoji(emojis[l.emoji]) } : {}) }))];
+    const options = [{ label: 'All lists', value: 'all', description: 'Every list on one page', ...(emojis.gunsmithList ? { emoji: emojis.parseEmoji(emojis.gunsmithList) } : {}) }, ...LISTS.map(l => ({ label: l.label, value: l.token, default: l.token === currentToken, ...(emojis[l.emoji] ? { emoji: emojis.parseEmoji(emojis[l.emoji]) } : {}) }))];
     return { type: 1, components: [{ type: 3, custom_id: 'gsb~lists~MP', placeholder: 'View other lists...', options }] };
 }
 function dmzBrowseRow(dmzBuilds, selectId, activeKey) {

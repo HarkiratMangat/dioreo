@@ -104,6 +104,8 @@ const emojis = {
     // Ass and HM (the tier stored as `capable`): his art, replaced with the new set 2026-11-02 20:30 EST. utils/loadoutRender.js's optionalEmoji reads them by name, so a bot missing one shows the word alone.
     ass: '<a:Ass:1566994034675810384>',
     hm: '<a:HM:1566988544486932542>',
+    // The All lists icon (utils/gunsmithLists.js), his art (Harkirat, 2026-11-03 00:23 EST: "name it GunsmithList, use it for the all list icon"). Original in Cloudinary emoji-originals/GunsmithList.
+    gunsmithList: '<a:GunsmithList:1567046674122014830>',
     blank: '<:blank:1524243739206352906>',
     // "View Colors" button in /settings (utils/colorPaletteView.js, handlers/colors.js's colors_view/ colors_page_ handlers) -- blurple-recolored, background-removed eyedropper icon, per Harkirat's own design pass (2026-07-13). Uploaded by Harkirat directly, not via this bot.
     eyedropper: '<a:Eyedropper:1526293991166054541>',
