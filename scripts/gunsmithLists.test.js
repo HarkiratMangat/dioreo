@@ -20,7 +20,7 @@ const builds = [
     b('AK117', 'AR'), // no badge: never on the page
 ];
 const season = { title: 'Season 9 — Test', emoji: null };
-const page = L.buildListsPage(builds, { season });
+const page = L.buildListsPage(builds, { season, page: 'main' });
 const text = JSON.stringify(page.components);
 const container = page.components[0];
 
@@ -41,7 +41,7 @@ assert.ok(!text.includes('Long range'), 'an unbadged build never lends its label
 assert.ok(!text.includes('Flex'), 'a label shows only when switched on (his 12:13 EST)');
 const pagerRow = container.components.at(-4).components;
 assert.deepStrictEqual(pagerRow.map(x => x.custom_id), ['gsb~lpage~0', 'gsb~lpage~at', 'gsb~lpage~1']);
-assert.deepStrictEqual([pagerRow[0].disabled, pagerRow[1].label, pagerRow[2].disabled], [true, 'Tiers · 1/2', false]);
+assert.deepStrictEqual([pagerRow[0].disabled, pagerRow[1].label, pagerRow[2].disabled], [false, 'Tiers · 2/2', true], 'the tiers are page 2');
 assert.strictEqual(container.components.at(-2).content, '-# View all builds for…');
 assert.ok(!text.includes('1A2B3C4D5E'), 'no codes on the page');
 assert.ok(!text.includes('AK117'), 'a weapon with no badge is not on the page');
@@ -62,11 +62,11 @@ const count = comps => comps.reduce((n, c) => n + 1 + count(c.components || []) 
 assert.ok(count(page.components) <= 40, `under 40 components (${count(page.components)})`);
 console.log('  ✓ list buttons, the two-page pager, labels in brackets, two class-split dropdowns in the in-game order, under 40 components');
 
-// Page 2: META weapons only, by class, under the same title, the pager on 2/2, only the META list button.
-const meta = L.buildListsPage(builds, { season, page: 'meta' });
+// Page 1 (the default, his 14:13 EST): META weapons only, by class, under the same title, the pager on 1/2, every list button.
+const meta = L.buildListsPage(builds, { season });
 const mc = meta.components[0];
 assert.strictEqual(mc.components[0].content, container.components[0].content, 'the same title on both pages');
-assert.deepStrictEqual(mc.components.at(-4).components.map(x => [x.custom_id, x.disabled, x.label || null]), [['gsb~lpage~0', false, null], ['gsb~lpage~at', true, 'META · 2/2'], ['gsb~lpage~1', true, null]]);
+assert.deepStrictEqual(mc.components.at(-4).components.map(x => [x.custom_id, x.disabled, x.label || null]), [['gsb~lpage~0', true, null], ['gsb~lpage~at', true, 'META · 1/2'], ['gsb~lpage~1', false, null]]);
 assert.deepStrictEqual(mc.components.filter(c => c.type === 10 && c.content.startsWith('**')).map(c => c.content.split('\n')[1]), [`${require('../utils/emojiMap').whiteDotGlow} **BAL-27**  \`1A2B3C4D5E\``, `${require('../utils/emojiMap').whiteDotGlow} **STATIC-HV**  \`1A2B3C4D5E\``], 'a list: WhiteDotGlow, the bold name, its first META build\'s bare code (his 13:27 and 14:02 EST)');
 assert.ok(!JSON.stringify(mc.components).includes('BAL-27-1A2B3C4D5E'), 'no weapon prefix on the code');
 assert.strictEqual(mc.components.find(c => c.type === 10 && c.content.startsWith('**')).content.split('\n').length, 3, 'BAL-27 and ISO HEMLOCK on their own lines, one code each');
@@ -74,7 +74,7 @@ const ordered = L.classBlocks([b('FSS HURRICANE', 'SMG', { isMeta: true, categor
 assert.deepStrictEqual(ordered[0].content.split('\n').slice(1).map(l => l.match(/\*\*(.+?)\*\*/)[1]), ['STATIC-HV', 'FSS HURRICANE', 'VMP'], 'META names strongest first (his 12:17 EST)');
 assert.deepStrictEqual(mc.components.at(-1).components.map(x => x.custom_id), ['gsb~open~MP.*.meta', 'gsb~open~MP.*.best', 'gsb~open~MP.*.top', 'gsb~open~MP.*.hm'], 'every list button on page 2 too');
 assert.ok(!JSON.stringify(meta.components).includes('KOSHKA'), 'no unbadged-for-META weapon in its dropdowns');
-console.log('  ✓ page 2: META weapons by class, the same title, the pager, the META list button');
+console.log('  ✓ page 1 by default: META weapons by class, the same title, the pager, every list button');
 
 // The in-game class order, everywhere a class list sorts (his 2026-11-03 11:44 EST).
 assert.deepStrictEqual(CLASS_ORDER, ['AR', 'SNIPER', 'LMG', 'SMG', 'SHOTGUN', 'MARKSMAN', 'SECONDARIES']);

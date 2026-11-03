@@ -93,11 +93,11 @@ function jumpRows(builds) {
 }
 
 const listButton = l => ({ type: 2, style: 2, label: l.label, custom_id: `gsb~open~${l.token}`, ...(emojis[l.emoji] ? { emoji: emojis.parseEmoji(emojis[l.emoji]) } : {}) });
-// The two pages: 1 the tiers, 2 META. The pager's ids carry the target page (`gsb~lpage~0|1`, handlers/loadouts.js).
-const pager = meta => require('./paginationRow').buildPaginationRow({ totalChunks: 2, currentPage: meta ? 1 : 0, makeCustomId: p => `gsb~lpage~${p}`, indicatorCustomId: 'gsb~lpage~at', indicatorLabel: meta ? 'META · 2/2' : 'Tiers · 1/2' });
+// The two pages: 1 META, 2 the tiers (his 2026-11-03 14:13 EST "meta is supposed to be page #1 in the order"). The pager's ids carry the target page (`gsb~lpage~0|1`, handlers/loadouts.js); page 1 is what `d meta`, `/gunsmith list` and All lists open.
+const pager = meta => require('./paginationRow').buildPaginationRow({ totalChunks: 2, currentPage: meta ? 0 : 1, makeCustomId: p => `gsb~lpage~${p}`, indicatorCustomId: 'gsb~lpage~at', indicatorLabel: meta ? 'META · 1/2' : 'Tiers · 2/2' });
 
-// `page`: 'main' (page 1: Best, Top 3, Top 5, HM) or 'meta' (page 2: META), both under the Current META Weapons title. `season`: { title, emoji } for the line under the title, as /today shows it.
-function buildListsPage(builds, { isEphemeral = false, season = null, page = 'main' } = {}) {
+// `page`: 'meta' (page 1, the default: META) or 'main' (page 2: Best, Top 3, Top 5, HM), both under the Current META Weapons title. `season`: { title, emoji } for the line under the title, as /today shows it.
+function buildListsPage(builds, { isEphemeral = false, season = null, page = 'meta' } = {}) {
     const { withShareButton } = require('./shareButton');
     const { toBoldItalicUnicode } = require('./titleBlock');
     const meta = page === 'meta';
@@ -126,7 +126,7 @@ async function currentSeason() {
 }
 
 // Sends the page: a fresh reply (slash or text command), or in place of the card a dropdown or button sat under.
-async function renderListsPage(interaction, { isUpdate = false, deferred = false, isEphemeral: givenEphemeral = false, visibilityChoice = null, page = 'main' } = {}) {
+async function renderListsPage(interaction, { isUpdate = false, deferred = false, isEphemeral: givenEphemeral = false, visibilityChoice = null, page = 'meta' } = {}) {
     const { sendV2Payload } = require('./sendV2Payload');
     let isEphemeral = givenEphemeral;
     if (isUpdate) {

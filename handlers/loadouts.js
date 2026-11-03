@@ -89,9 +89,9 @@ async function route(interaction) {
             const { parseScopeToken } = require('../utils/loadoutScopes');
             return await require('../commands/gunsmith').renderScopeBrowse(interaction, parseScopeToken(picked), 0, { isUpdate: true });
         }
-        // The lists page's pager (2026-11-03, his "just do pages"): `gsb~lpage~1` is page 2, META; `gsb~lpage~0` page 1, the tiers. In place.
+        // The lists page's pager (2026-11-03, his "just do pages"; META first since 14:13 EST): `gsb~lpage~0` is page 1, META; `gsb~lpage~1` page 2, the tiers. In place.
         if (interaction.isButton() && interaction.customId.startsWith('gsb~lpage~')) {
-            return await require('../utils/gunsmithLists').renderListsPage(interaction, { isUpdate: true, page: interaction.customId.slice(10) === '1' ? 'meta' : 'main' });
+            return await require('../utils/gunsmithLists').renderListsPage(interaction, { isUpdate: true, page: interaction.customId.slice(10) === '1' ? 'main' : 'meta' });
         }
         if (interaction.isStringSelectMenu() && interaction.customId.startsWith('gsb~ljump~')) {
             const [token, weaponKey] = String(interaction.values[0]).split('|');
