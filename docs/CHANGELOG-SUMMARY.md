@@ -12,6 +12,9 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.7.2 — November 3, 2026
+- **Season End:** the progress bar under each season is six animated emoji, orange to red as the season runs out.
+
 ## v3.7.1 — November 3, 2026
 - **Gunsmith lists:** `d meta` and `/gunsmith list` open Current META Weapons: the META weapons by class with a code to copy, and a second page with Best, Top 3, Top 5 and Honorable Mention.
 - **Weapon classes:** shown in the game's order everywhere, Assault, Sniper, LMG, SMG, Shotgun, Marksman.

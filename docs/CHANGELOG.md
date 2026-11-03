@@ -29,7 +29,24 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.7.1 — 2026-11-03 14:19 EST (#247) — The lists page on his template, and the in-game class order
+## v3.7.2 — 2026-11-03 15:21 EST (#248) — The season progress bar is six of his emoji
+**From Harkirat, 2026-11-03 14:59 EST:** "implement the progress bar emoji icons ... in the /season end command": his 29-emoji set (`season-progress-icon`), drawn and settled with him earlier that day. Shown on the dev bot in #testing-spam; "seems fine" at 15:12 EST.
+
+### /season end
+- **The bar** under each season's dates is six of his emoji in place of ten ▰▱ characters, still in the `> -#` quote with **%** · Day N of M after it.
+- **Which emoji** (`commands/seasonend.js` `progressPieces`): his mapping, thirds of an emoji (q = floor((day - 1) / total * 18)); a sliver instead of an empty bar on a running season's first days; nearly full only on the last day, which also covers a day past a rounded total.
+- **One blend** for every season, orange #FF9A3C to red #C8102E; 24 of the 29 are animated (a faint wash crosses the empty part on one 4 s loop) and 5 full pieces are still.
+
+### Emoji
+- **29 new emoji** `sbar1_hint` … `sbar6_last` in `utils/emojiMap.js` (prod ids). Originals in Cloudinary `emoji-originals/` and `Diors-Builds/Logos-&-Emojis/emoji-originals/`; on prod Dioreo and both dev apps, prod Dioreo Admin through the VM's hourly sync.
+
+### Tests
+- `scripts/commandRefresh.test.js`: his mapping rows, every day of seven season lengths (never empty while running, never full before the last day), all 29 reachable and in the map.
+
+### Found
+- A Components V2 message holds 4000 characters of text across ALL its components, not per Text Display; six emoji mentions cost ~200. /season end's three bars fit; the dev-bot sample of every state needed two messages (`.claude/rules/design-decisions.md`).
+
+## v3.7.1 — 2026-11-03 14:19 EST (#247 · `5b31e998`) — The lists page on his template, and the in-game class order
 **From Harkirat, 2026-11-03 11:44 EST:** a template for the `d meta` list (Current META Weapons, the season under it, bold class labels, Best / Top 3 / Top 5 / HM lines), the classes in the in-game order everywhere, "Switchblade X9", META on its own page, the MP accent and a "View all builds for…" hint. Refined with him on the dev bot until 14:13 EST.
 
 ### Lists page

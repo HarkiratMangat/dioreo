@@ -302,6 +302,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-11-02 22:36 EST — Gunsmith lists, and a report that named no database (v3.6.0)
 - 2026-11-03 00:28 EST — Build credit, in his four styles (v3.7.0)
 - 2026-11-03 14:19 EST — The lists page on his template, and the class order the game uses (v3.7.1)
+- 2026-11-03 15:21 EST — Six emoji for a season's progress (v3.7.2)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4912,6 +4913,15 @@ Credit on gunsmith builds went its own way from v3.6.0, in one evening's thread.
 ## 2026-11-03 14:19 EST — The lists page on his template, and the class order the game uses (v3.7.1)
 
 He gave a template for the `d meta` page at 11:44 and then spent two and a half hours shaping it on the dev bot, one message at a time: the separators read as the announcements' notation, the build names only where he asked for them (a label I had picked up automatically put "Aggressive / Alt Aggressive / Flex" on the list), pages instead of a button, META first, a code per weapon, the WhiteDotGlow list. The one rule that reached past the page was the class order: the game lists Assault, Sniper, LMG, SMG, Shotgun, Marksman, and seven places in the bot each kept their own class order, four of them alphabetical. They now share one constant.
+
+## 2026-11-03 15:21 EST — Six emoji for a season's progress (v3.7.2)
+
+The text bar under each season in `/season end` (ten ▰▱ characters since October) became six emoji from a set he designed the same day in a separate thread: 29 pieces, thirds of an emoji each, one orange-to-red blend, and a faint wash that crosses the empty part on a shared 4 s loop. The bot's half was small: pick six names from his mapping table and keep the line's `> -#` quote and its % and day.
+
+**What went wrong, and what it teaches.**
+- **A message's 4000 characters are counted across the whole message.** The sample of every bar state was one container with two Text Displays and still failed: Discord counts displayable text over all components, and six emoji mentions are ~200 characters. The real panel's three bars fit; a page listing many bars must split.
+- **Uploading originals spreads on its own.** Cloudinary `emoji-originals/` plus a dev app holding a name is enough for the prod VM's hourly sync to add it to prod, deploy or not. That is his design ("one upload, four bots"), and the emoji are inert until code names them, but it is worth saying out loud when it happens.
+- **The edge cases sat outside his table.** `total` is a rounded day count, so `day` can be one past it on a season whose end is not on a day boundary; that day reads as the last. The test walks every day of seven season lengths so neither an empty running bar nor an early full one can come back.
 
 # Part B — Lessons Ledger (thematic)
 
