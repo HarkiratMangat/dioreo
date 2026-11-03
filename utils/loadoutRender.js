@@ -405,11 +405,17 @@ function mpSwitchRows(category, classBuilds, weaponSelectId, activeKey, missing 
     const weaponRow = { type: 1, components: [{ type: 3, custom_id: weaponSelectId, placeholder: `Browse other ${classPlural(category)}...`, options: [...weapons, ...more] }] };
     return [classRow, weaponRow];
 }
-function metaJumpRow(metaBuilds, selectId, activeKey) {
+function metaJumpRow(metaBuilds, selectId, activeKey, listLabel = 'META') {
     const groups = weaponGroups(metaBuilds).sort((a, b) => a[0].category.localeCompare(b[0].category) || a[0].weaponName.localeCompare(b[0].weaponName));
     if (groups.length < 2) return null;
     const options = windowAround(groups.map(list => ({ label: list[0].weaponName, value: list[0].weaponKey, description: weaponSummary(list, { metaList: true }) })), activeKey, 25);
-    return { type: 1, components: [{ type: 3, custom_id: selectId, placeholder: 'Jump to another META weapon...', options }] }; // names the META list (his 2026-10-25 23:32 EDT ask; META in capitals, 23:35 EDT)
+    return { type: 1, components: [{ type: 3, custom_id: selectId, placeholder: `Jump to another ${listLabel} weapon...`, options }] }; // names the list (his 2026-10-25 23:32 EDT ask; META in capitals, 23:35 EDT)
+}
+// Under a list's card (utils/gunsmithLists.js): move to the lists page or another list. `gsb~lists~MP`; the open list is preselected.
+function listSwitchRow(currentToken) {
+    const { LISTS } = require('./gunsmithLists');
+    const options = [{ label: 'All lists', value: 'all', description: 'Every list on one page' }, ...LISTS.map(l => ({ label: l.label, value: l.token, default: l.token === currentToken, ...(emojis[l.emoji] ? { emoji: emojis.parseEmoji(emojis[l.emoji]) } : {}) }))];
+    return { type: 1, components: [{ type: 3, custom_id: 'gsb~lists~MP', placeholder: 'View other lists...', options }] };
 }
 function dmzBrowseRow(dmzBuilds, selectId, activeKey) {
     // Ordered by class, then by name (his catch, 2026-10-25 23:47 EDT: "it should be organized by class alphabetically, and then weapon name alphabetically"); it was by name only until 2026-10-25 23:45 EDT (his catch: "organize the dmz dropdown").
@@ -470,8 +476,11 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false,
     if (mode === 'DMZ') {
         const row = dmzBrowseRow(categoryBuilds, weaponSelectId, activeBuild.weaponKey);
         if (row) outerComponents.push(row);
-    } else if (scope && scope.metaOnly) {
-        const row = metaJumpRow(categoryBuilds, weaponSelectId, activeBuild.weaponKey);
+    } else if (scope && (scope.metaOnly || scope.list)) {
+        // A list's card (META, Best, Top 3 & 5, HM; 2026-11-02 21:44 EST): View other lists…, then the list's own weapons.
+        const label = scope.list ? require('./gunsmithLists').LISTS.find(l => l.token === browse.scopeToken)?.label || 'listed' : 'META';
+        outerComponents.push(listSwitchRow(browse.scopeToken));
+        const row = metaJumpRow(categoryBuilds, weaponSelectId, activeBuild.weaponKey, label);
         if (row) outerComponents.push(row);
     } else {
         outerComponents.push(...mpSwitchRows(activeBuild.category, categoryBuilds, weaponSelectId, activeBuild.weaponKey, missing));

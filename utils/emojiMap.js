@@ -95,8 +95,7 @@ const emojis = {
     shareHeart: '<a:ShareHeart:1539021725784739891>',
     left: '<:Left:1523864238836154449>',
     right: '<:Right:1523864237972127775>',
-    // Loadout "badges" (utils/loadoutRender.js) — Meta, Best, Top 3, Top 5, HM, Toxic and Ass each have their own emoji (see buildBadgesLine()); never reuse one for another tier.
-    // His new badge set (Harkirat, 2026-11-02 20:30 EST: "New emojis for the badges. Remove the old ones. Name them Meta, Toxic, HM, Top3, Top5, Best, Ass"): Top 3 and Top 5 each have their own emoji now (the single Top emoji is retired), and HM replaces Capable. Originals in Cloudinary emoji-originals/.
+    // Loadout "badges" (utils/loadoutRender.js) — Meta, Best, Top 3, Top 5, HM, Toxic and Ass each have their own emoji (see buildBadgesLine()); never reuse one for another tier. His new badge set (Harkirat, 2026-11-02 20:30 EST: "New emojis for the badges. Remove the old ones. Name them Meta, Toxic, HM, Top3, Top5, Best, Ass"): Top 3 and Top 5 each have their own emoji now (the single Top emoji is retired), and HM replaces Capable. Originals in Cloudinary emoji-originals/.
     meta: '<a:Meta:1566988540754268160>',
     best: '<a:Best:1566988549566234836>',
     top3: '<a:Top3:1566988546395349046>',

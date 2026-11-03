@@ -56,9 +56,14 @@ const rows = [
     ['d gunsmith', { kind: 'run', command: 'gunsmith', values: { weapon: '~first~' } }],
     ['d gs smg', { kind: 'run', values: { weapon: '~first~SMG' } }],
     ['d gs assault rifles', { kind: 'run', values: { weapon: '~first~AR' } }],
-    ['d meta pistols', { kind: 'run', command: 'gunsmith', values: { weapon: '~scope~MP.*.meta' } }], // B6: `d meta` is the META browse; one more word is ignored after d
-    ['d meta', { kind: 'run', command: 'gunsmith', values: { weapon: '~scope~MP.*.meta' } }],
-    ['d gs meta', { kind: 'run', command: 'gunsmith', values: { weapon: '~scope~MP.*.meta' } }],
+    // `d meta` opened the META browse (B6); since 2026-11-02 21:44 EST it and its siblings open the gunsmith lists page. One more word is still ignored after d.
+    ['d meta pistols', { kind: 'run', command: 'gunsmith', values: { weapon: '~lists~' } }],
+    ['d meta', { kind: 'run', command: 'gunsmith', values: { weapon: '~lists~' } }],
+    ['d gs meta', { kind: 'run', command: 'gunsmith', values: { weapon: '~lists~' } }],
+    ['d lists', { kind: 'run', command: 'gunsmith', values: { weapon: '~lists~' } }],
+    ['d best', { kind: 'run', command: 'gunsmith', values: { weapon: '~lists~' } }],
+    ['d top', { kind: 'run', command: 'gunsmith', values: { weapon: '~lists~' } }],
+    ['d hm', { kind: 'run', command: 'gunsmith', values: { weapon: '~lists~' } }],
     ['d dmz meta', { kind: 'run', command: 'gunsmith dmz', values: { weapon: '~scope~DMZ.*.meta' } }],
     ['d smg', { kind: 'run', command: 'gunsmith', values: { weapon: '~first~SMG' } }], // B6: a bare main class word
     ['d snipers', { kind: 'run', command: 'gunsmith', values: { weapon: '~first~SNIPER' } }],

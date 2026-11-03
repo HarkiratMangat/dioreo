@@ -103,6 +103,7 @@ export const TESTS = [
     {"cmd": "node scripts/loadoutBulkFormat.test.js", "lane": "unit"},
     {"cmd": "node scripts/loadoutBadges.test.js", "lane": "unit"},
     {"cmd": "node scripts/loadoutVariants.test.js", "lane": "unit"},
+    {"cmd": "node scripts/gunsmithLists.test.js", "lane": "unit"},
     {"cmd": "node scripts/announcementBudget.test.js", "lane": "unit"},
     {"cmd": "node scripts/catalogue.test.js", "lane": "unit"},
     {"cmd": "node scripts/weaponSearch.test.js", "lane": "unit"},

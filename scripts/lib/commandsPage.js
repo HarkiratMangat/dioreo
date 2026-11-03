@@ -71,10 +71,10 @@ const ACCENT_SOURCE = {
 /**
  * The commands whose REPLY colour is chosen per render, so no single PRESET_ACCENT describes them. Three of them still have an identity on this page (see modeAccents): /gunsmith mp and /dmz/gunsmith dmz wear their mode's colour, the one the bot's own /manage pages already use. Only /settings and /colors, which answer in the reader's own profile colour, fall back to DERIVED_NEUTRAL. /draw calculator left this set 2026-10-20: it answers in /draw prices' fixed accent.
  */
-const DERIVED = new Set(['/settings', '/colors', '/dmz', '/gunsmith mp', '/gunsmith dmz']);
+const DERIVED = new Set(['/settings', '/colors', '/dmz', '/gunsmith mp', '/gunsmith dmz', '/gunsmith list']);
 
 /** The page colour for the mode-scoped commands, read from the same per-mode accents loadScopeAccents takes from commands/manage.js (Harkirat, 2026-10-20 17:40 EDT: "give Gunsmith DMZ and DMZ its respective color... same thing for the MP"). */
-const modeAccents = scopes => ({ '/gunsmith mp': scopes['ALL MP BUILDS'], '/gunsmith dmz': scopes.DMZ, '/dmz': scopes.DMZ });
+const modeAccents = scopes => ({ '/gunsmith mp': scopes['ALL MP BUILDS'], '/gunsmith dmz': scopes.DMZ, '/dmz': scopes.DMZ, '/gunsmith list': scopes['ALL MP BUILDS'] });
 
 const REPO = path.resolve(__dirname, '..', '..');
 const intToHex = n => '#' + Number(n).toString(16).toUpperCase().padStart(6, '0');

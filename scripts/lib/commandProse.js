@@ -42,6 +42,13 @@ const COMMANDS = {
         sample: { weapon: 'Fennec' },
         keywords: 'loadout loadouts build builds attachment gunsmith dmz meta weapon gun browse',
     },
+    '/gunsmith list': {
+        purpose: 'Every gunsmith list on one page: META, Best, Top 3, Top 5 and Honorable Mention, by class.',
+        facts: ['Pick a list or a weapon in view, or leave it empty for the page with every list.',
+                'The buttons under the page open each list in full, and the dropdowns jump to a weapon.'],
+        sample: { view: 'META' },
+        keywords: 'list lists meta best top top3 top5 hm honorable mention tier tierlist ranking rankings strongest gunsmith mp class',
+    },
     // '/dmz' prose removed while /dmz is hidden (2026-10-21 22:42 EDT); restore it with the command (docs/db-deferred-list.md, Queued).
 
     '/draws': {

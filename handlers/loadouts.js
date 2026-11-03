@@ -82,6 +82,19 @@ async function route(interaction) {
             return await renderScopeBrowse(interaction, { mode, category: isDmz ? null : undefined, metaOnly: false }, 0, { isUpdate: true, weaponKey: gunKey });
         }
 
+        // The gunsmith lists (2026-11-02 21:44 EST), both SELECTS: `gsb~lists~MP` (View other lists… under a list's card: the page, or another list) and `gsb~ljump~<A|B>` (the page's weapon dropdowns, value `<list scope token>|<weaponKey>`).
+        if (interaction.isStringSelectMenu() && interaction.customId === 'gsb~lists~MP') {
+            const picked = interaction.values[0];
+            if (picked === 'all') return await require('../utils/gunsmithLists').renderListsPage(interaction, { isUpdate: true });
+            const { parseScopeToken } = require('../utils/loadoutScopes');
+            return await require('../commands/gunsmith').renderScopeBrowse(interaction, parseScopeToken(picked), 0, { isUpdate: true });
+        }
+        if (interaction.isStringSelectMenu() && interaction.customId.startsWith('gsb~ljump~')) {
+            const [token, weaponKey] = String(interaction.values[0]).split('|');
+            const { parseScopeToken } = require('../utils/loadoutScopes');
+            return await require('../commands/gunsmith').renderScopeBrowse(interaction, parseScopeToken(token), 0, { isUpdate: true, weaponKey });
+        }
+
         // /gunsmith browse-row SCOPE JUMP dropdown -- a SELECT. Type-tested because `gsb~jump~...` would otherwise fall through to the button branch below if this file ever lost the explicit isStringSelectMenu() test -- the exact dead-branch bug this file's header documents (a select handler written under isButton() becomes dead code with no error).
         if (interaction.isStringSelectMenu() && interaction.customId.startsWith('gsb~jump~')) {
             const scopeToken = interaction.customId.split('~')[2];

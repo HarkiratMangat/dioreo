@@ -158,8 +158,9 @@ function parseArgs(tokens, textCommand, commandJson = null, { allowTypos = false
         } else if (!filled && restOpt.rest === 'weapon') {
             // No weapon, or only a class word: the first weapon alphabetically with a build (commands/gunsmith.js reads `~first~`, which no weaponKey can be).
             const category = classOf(text, restOpt.classes);
-            // `d gs meta` / `d dmz meta`: that mode's META browse (his ask, B6, 2026-10-29 20:06 EDT); commands/gunsmith.js opens `~scope~` as the dropdown's All META row.
-            if (sameWord(squash(text), 'meta')) values[restOpt.name] = `~scope~${textCommand.sub === 'dmz' ? 'DMZ' : 'MP'}.*.meta`;
+            // `d gs meta` / `d dmz meta`: that mode's META browse (his ask, B6, 2026-10-29 20:06 EDT); commands/gunsmith.js opens `~scope~` as the dropdown's All META row. `d gs meta` (and best, top, hm, lists) opens the gunsmith lists page since 2026-11-02 21:44 EST; `d dmz meta` keeps DMZ's META browse.
+            if (textCommand.sub !== 'dmz' && ['meta', 'best', 'top', 'hm', 'lists'].some(w => sameWord(squash(text), w))) values[restOpt.name] = '~lists~';
+            else if (sameWord(squash(text), 'meta')) values[restOpt.name] = `~scope~${textCommand.sub === 'dmz' ? 'DMZ' : 'MP'}.*.meta`;
             else if (!text || category) values[restOpt.name] = `~first~${category || ''}`;
             else autocomplete.push({ option: restOpt.name, text });
         } else if (!filled && restOpt.rest === 'autocomplete' && text) {
