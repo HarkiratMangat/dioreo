@@ -5,8 +5,7 @@ const { isPlaceholderBuild, CLASS_ORDER, byClassOrder, displayCategoryLabel } = 
 // [category, class icon key, the class word on the page]. "Assault" for AR on this page only, from his template; every dropdown keeps AR (utils/loadoutRender.js displayCategoryLabel).
 const CLASS_WORD = { AR: ['wcAR', 'Assault'], SNIPER: ['wcSniper', 'Sniper'], LMG: ['wcLMG', 'LMG'], SMG: ['wcSMG', 'SMG'], SHOTGUN: ['wcShotgun', 'Shotgun'], MARKSMAN: ['wcMarksman', 'Marksman'], SECONDARIES: ['wcPistol', 'Secondary'] };
 const CLASSES = CLASS_ORDER.map(c => [c, ...CLASS_WORD[c]]);
-// A page's lines, in order: [key, emoji key, label, does a build carry it]. The main page carries the tiers; META sits on its own sub-page.
-// The META page has no badge line: the class label, then its names (mock B, his 2026-11-03 12:24 EST "mockup 2 doesnt wrap on phone, the others wrap"). A null label is a names-only row.
+// A page's lines, in order: [key, emoji key, label, does a build carry it]. The main page carries the tiers; META sits on its own sub-page. The META page has no badge line: the class label, then its names (mock B, his 2026-11-03 12:24 EST "mockup 2 doesnt wrap on phone, the others wrap"). A null label is a names-only row.
 const META_LINES = [['meta', null, null, b => b.isMeta]];
 const TIER_LINES = [
     ['best', 'best', 'Best', b => b.categoryRank === 'best'],
@@ -61,8 +60,7 @@ function classBlocks(builds, lines = TIER_LINES) {
         return rows.length ? { type: 10, content: `**${emojis[icon] || ''} ${word}**\n${rows.join('\n')}` } : null;
     }).filter(Boolean);
 }
-// The weapons on one line, each named once, in build order. A build's label shows in brackets (his template, 2026-11-03 11:44 EST: "CX-9 (Burst) · QQ9 (10mm)") only when he switched it on for that build (`showLabelOnLists`): his 12:13 EST "don't auto pick/use the build names. only if i want them", after the first version showed STATIC-HV (Aggressive / Alt Aggressive / Flex) on its own.
-// Strongest first, then A-Z (his 2026-11-03 12:17 EST "move static hv in front of fss": on the META line STATIC-HV, Best, now leads FSS Hurricane, Top 3). A tier line is one tier, so it stays A-Z.
+// The weapons on one line, each named once, in build order. A build's label shows in brackets (his template, 2026-11-03 11:44 EST: "CX-9 (Burst) · QQ9 (10mm)") only when he switched it on for that build (`showLabelOnLists`): his 12:13 EST "don't auto pick/use the build names. only if i want them", after the first version showed STATIC-HV (Aggressive / Alt Aggressive / Flex) on its own. Strongest first, then A-Z (his 2026-11-03 12:17 EST "move static hv in front of fss": on the META line STATIC-HV, Best, now leads FSS Hurricane, Top 3). A tier line is one tier, so it stays A-Z.
 const tierRank = list => { const i = RANK_ORDER.findIndex(r => list.some(b => b.categoryRank === r)); return i === -1 ? RANK_ORDER.length : i; };
 function weaponNames(lineBuilds) {
     const byWeapon = new Map();
