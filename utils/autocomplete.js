@@ -120,7 +120,7 @@ async function runAutocomplete(interaction) {
     if (commandName === 'gunsmith') {
         const { browseRows } = require('../utils/loadoutScopes');
         const mode = queryFilter.mode;
-        const cats = mode === 'MP' ? [...new Set(distinctChoices.map(w => w.category))].sort() : [];
+        const cats = mode === 'MP' ? [...new Set(distinctChoices.map(w => w.category))].sort(require('./loadoutRender').byClassOrder) : [];
         // A row shows when its own words match, or when the query names its class ("assault" shows All AR builds, as findWeaponMatches shows the AR weapons beside it).
         const { resolveCategorySynonyms, isGenericWeaponQuery, typoDistance } = require('../utils/search');
         const synonyms = resolveCategorySynonyms(focusedValue);

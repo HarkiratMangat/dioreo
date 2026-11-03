@@ -29,7 +29,29 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.7.0 — 2026-11-03 00:28 EST (#246) — Build credit in four styles, and the GunsmithList emoji
+## v3.7.1 — 2026-11-03 14:19 EST (#247) — The lists page on his template, and the in-game class order
+**From Harkirat, 2026-11-03 11:44 EST:** a template for the `d meta` list (Current META Weapons, the season under it, bold class labels, Best / Top 3 / Top 5 / HM lines), the classes in the in-game order everywhere, "Switchblade X9", META on its own page, the MP accent and a "View all builds for…" hint. Refined with him on the dev bot until 14:13 EST.
+
+### Lists page
+- **Two pages** (`utils/gunsmithLists.js`) under **Current META Weapons** with the season line, the MP accent (`utils/loadoutPanels.js` ACCENT.MP; the old fallback was Discord's own background colour), a ◀ ▶ pager (`gsb~lpage~0|1`) under the lists, then `-# View all builds for…` and all four list buttons on both pages.
+- **Page 1, META**, what `d meta`, `/gunsmith list` and All lists open: per class, a WhiteDotGlow list of each bold weapon name and its first META build's bare code, strongest tier first.
+- **Page 2, the tiers:** per class, Best / Top 3 / Top 5 / HM, names joined by " · ".
+- **His notation:** `====` is a large divider, `--` a small gap with no line, as in the announcements.
+- **A build's name in brackets** (`CX-9 (Burst)`) only where it is switched on: new `Loadout.showLabelOnLists`, off by default ("don't auto pick/use the build names. only if i want them").
+
+### Class order
+- **`CLASS_ORDER`** in `utils/loadoutRender.js` (AR, Sniper, LMG, SMG, Shotgun, Marksman, then Secondaries) and `byClassOrder` sort every class list: the lists page and its jump dropdowns, Switch class…, the suggestions' browse rows and featured weapons, /autobuild's category choices, /help, the site's commands page (`public/commands.html` rebuilt).
+
+### Catalogue
+- **Switchblade X9** spelled his way (`utils/catalogue.js` NAME_FIXES).
+
+### Data, after deploy
+- Prod: CX-9 / QQ9 Build 1 labelled Burst / 10mm with the switch on, HVK-30 off META, the catalogue's SwitchBlade X9 renamed. Done on dev through the op core (changes #355–#359).
+
+### Not in this release
+- The portal Armory's class chips keep their own order (proposal for pins2).
+
+## v3.7.0 — 2026-11-03 00:28 EST (#246 · `cbbedf91`) — Build credit in four styles, and the GunsmithList emoji
 **From Harkirat, 2026-11-02 10:44 EST:** a manual "submitted by @user" on a build, plus a credit that is a plain name. **His design, 23:10 EST:** @user (clickable), **username** (plain text), a hyperlink, or always "By *anonymous*"; prefixed "Credit:", "Build by" or "Submitted by"; the form only offers @user, username or anonymous; a hyperlink only through /manage. **23:27 EST:** "No credit" on a submitted build still reads "By *anonymous*". **2026-11-03 00:23 EST:** the GunsmithList emoji for All lists.
 
 ### Build credit

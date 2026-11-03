@@ -154,7 +154,7 @@ const EXTRA_ORDER = ['AR', 'SMG', 'SNIPER', 'SHOTGUN', 'MARKSMAN', 'SECONDARIES'
 function featuredWeapons(weapons, slots) {
     const byClass = new Map();
     for (const w of weapons) (byClass.get(w.category) || byClass.set(w.category, []).get(w.category)).push(w);
-    const classes = [...byClass.keys()].sort();
+    const classes = [...byClass.keys()].sort(require('./loadoutRender').byClassOrder); // the in-game order (2026-11-03); EXTRA_ORDER below is who gets spare slots, not the display order
     for (const c of classes) byClass.get(c).sort((a, b) => featuredScore(a) - featuredScore(b) || a.weaponName.localeCompare(b.weaponName));
     const picked = new Set();
     // Two from every class first; any slots left go to the classes in EXTRA_ORDER, in that order (Harkirat, 2026-10-25 23:28 EDT: "reduce LMGs to just 2 and increase SMGs to 3", so with 16 slots AR and SMG get three).

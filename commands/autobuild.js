@@ -4,7 +4,7 @@ const { SlashCommandBuilder } = require('discord.js');
 const { hasCommandAccess } = require('../utils/adminAccess'); // owner OR Mongo-allowlisted admin scoped to 'autobuild'
 const { mentionCommand } = require('../utils/commandMentions');
 
-const CATEGORY_CHOICES = ['AR', 'SMG', 'LMG', 'MARKSMAN', 'SNIPER', 'SHOTGUN', 'SECONDARIES'];
+const CATEGORY_CHOICES = ['AR', 'SNIPER', 'LMG', 'SMG', 'SHOTGUN', 'MARKSMAN', 'SECONDARIES']; // utils/loadoutRender.js CLASS_ORDER, the in-game order
 
 module.exports = {
     data: new SlashCommandBuilder()

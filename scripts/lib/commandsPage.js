@@ -1578,7 +1578,7 @@ function commandsShell({ page, catalog, C }) {
             tint: cats[(w.category || '').toUpperCase()] || DERIVED_NEUTRAL })),
         DMZ: weapons.DMZ.map(w => ({ name: w.name, key: w.key, builds: w.builds })),
         // The browse rows the bot's own suggestions open with (handlers/router.js). The weapon slot's description promises "All META / All MP builds", and before these were here the page answered that with "No weapon matches" (critique 2026-10-21). Each row carries its class (the middle of its scope value, `MP.AR.std`), so a class word like "assault" can surface "All AR builds".
-        ROWS: Object.fromEntries(['MP', 'DMZ'].map(mode => [mode, browseRows(mode, [...new Set(weapons[mode].map(w => w.category).filter(Boolean))].sort())
+        ROWS: Object.fromEntries(['MP', 'DMZ'].map(mode => [mode, browseRows(mode, [...new Set(weapons[mode].map(w => w.category).filter(Boolean))].sort(require('../../utils/loadoutRender').byClassOrder))
             .map(r => { const cat = r.value.split('.')[1]; return { label: r.label, cat: cat === '*' ? null : cat }; })])),
         // The bot's own class-word table, shipped rather than copied, so the page cannot drift from what the bot answers.
         SYN: Object.fromEntries(Object.entries(CATEGORY_SEARCH_SYNONYMS).map(([k, v]) => [k, [].concat(v)])),
