@@ -12,6 +12,10 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.7.1 — November 3, 2026
+- **Gunsmith lists:** `d meta` and `/gunsmith list` open Current META Weapons: the META weapons by class with a code to copy, and a second page with Best, Top 3, Top 5 and Honorable Mention.
+- **Weapon classes:** shown in the game's order everywhere, Assault, Sniper, LMG, SMG, Shotgun, Marksman.
+
 ## v3.7.0 — November 3, 2026
 - **Build credit:** a build can credit who made it, as their @, their username, a link, or "By *anonymous*", under "Submitted by", "Credit:" or "Build by".
 - **Submit a Build:** choose to be credited by your @, your username, or not at all.

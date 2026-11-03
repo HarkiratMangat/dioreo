@@ -301,6 +301,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-11-01 19:05 EST — Retiring v3-pre-release, and a launch date taken on trust (v3.5.1)
 - 2026-11-02 22:36 EST — Gunsmith lists, and a report that named no database (v3.6.0)
 - 2026-11-03 00:28 EST — Build credit, in his four styles (v3.7.0)
+- 2026-11-03 14:19 EST — The lists page on his template, and the class order the game uses (v3.7.1)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4907,6 +4908,10 @@ Credit on gunsmith builds went its own way from v3.6.0, in one evening's thread.
 - **The first design was built from the last lead's proposal, not from him.** It was quick to change because the credit sat behind one module (`utils/loadoutCredit.js`) and one op, so the rework touched the model, the pop-up and the footer line and nothing else. A proposal he hasn't confirmed is worth building only that thin.
 - **A review caught a permission seam.** The new op took its page from the mode the caller sent, so an admin with only one mode's page could have recorded a credit change under the other. It now checks the stored build's mode, as the other loadout ops do (`LOADOUT_OPS_BY_ID`).
 - **"No credit" meant two things.** Hiding the line on a submitted build hid that a player had sent it; his call kept "By *anonymous*" there.
+
+## 2026-11-03 14:19 EST — The lists page on his template, and the class order the game uses (v3.7.1)
+
+He gave a template for the `d meta` page at 11:44 and then spent two and a half hours shaping it on the dev bot, one message at a time: the separators read as the announcements' notation, the build names only where he asked for them (a label I had picked up automatically put "Aggressive / Alt Aggressive / Flex" on the list), pages instead of a button, META first, a code per weapon, the WhiteDotGlow list. The one rule that reached past the page was the class order: the game lists Assault, Sniper, LMG, SMG, Shotgun, Marksman, and seven places in the bot each kept their own class order, four of them alphabetical. They now share one constant.
 
 # Part B — Lessons Ledger (thematic)
 
