@@ -1,4 +1,4 @@
-// The gunsmith lists page (Harkirat, 2026-11-02 21:01-21:44 EST): one page with every list by class. His idea at 21:01 EST ("a single page that has all meta best top hm"), his template at 21:11 EST, then 21:19 ("put the label infront in bold"), 21:24 ("state in each weapon dropdowns desc, the class and the badge"); approved 21:44 EST ("alright seems good"). Redesigned on his template of 2026-11-03 11:44 EST: titled "Current META Weapons" with the season under it, the MP accent, each class a bold `<icon> Class` label in the in-game order (utils/loadoutRender.js CLASS_ORDER), its Best / Top 3 / Top 5 / HM lines with names joined by " · ", a divider between classes, "-# View all builds for…" above the list buttons. META moved to its own sub-page ("let's separate the meta list to a sub-page"), opened from the title's button. Each list's full view is the ordinary /gunsmith card on a list scope (utils/loadoutScopes.js `list`). MP only.
+// The gunsmith lists page (Harkirat, 2026-11-02 21:01-21:44 EST): one page with every list by class. His idea at 21:01 EST ("a single page that has all meta best top hm"), his template at 21:11 EST, then 21:19 ("put the label infront in bold"), 21:24 ("state in each weapon dropdowns desc, the class and the badge"); approved 21:44 EST ("alright seems good"). Redesigned on his template of 2026-11-03 11:44 EST: titled "Current META Weapons" with the season under it, the MP accent, each class a bold `<icon> Class` label in the in-game order (utils/loadoutRender.js CLASS_ORDER), its Best / Top 3 / Top 5 / HM lines with names joined by " · ", a divider between classes, "-# View all builds for…" above the list buttons. META moved to its own page ("let's separate the meta list to a sub-page"), page 2 of a two-page pager under the same title (his 12:00 EST "no, just do pages", over a button on the title). A build's label shows in brackets after its weapon, `CX-9 (Burst)`. Each list's full view is the ordinary /gunsmith card on a list scope (utils/loadoutScopes.js `list`). MP only.
 const emojis = require('./emojiMap');
 const { isPlaceholderBuild, CLASS_ORDER, byClassOrder, displayCategoryLabel } = require('./loadoutRender');
 
@@ -53,11 +53,20 @@ function weaponLine(weaponBuilds) {
 function classBlocks(builds, lines = TIER_LINES) {
     return CLASSES.map(([cat, icon, word]) => {
         const rows = lines.map(([, emo, label, has]) => {
-            const names = [...new Set(builds.filter(b => b.category === cat && has(b)).map(b => b.weaponName))].map(realName);
+            const names = weaponNames(builds.filter(b => b.category === cat && has(b)));
             return names.length ? `${emojis[emo] || ''} **${label}**  ${names.join(' · ')}` : null;
         }).filter(Boolean);
         return rows.length ? { type: 10, content: `**${emojis[icon] || ''} ${word}**\n${rows.join('\n')}` } : null;
     }).filter(Boolean);
+}
+// The weapons on one line, each named once, in build order, with the label of the build that carries the line in brackets (his template, 2026-11-03 11:44 EST: "CX-9 (Burst) · QQ9 (10mm)"; the label is what /manage and the op core store when a build is given a name, `buildName` staying `Build N`). A tag shows only when every build of that weapon on the line has a label, so a line never names one build of several as if it were the weapon.
+function weaponNames(lineBuilds) {
+    const byWeapon = new Map();
+    for (const b of lineBuilds) { if (!byWeapon.has(b.weaponName)) byWeapon.set(b.weaponName, []); byWeapon.get(b.weaponName).push(b); }
+    return [...byWeapon.entries()].map(([name, list]) => {
+        const labels = [...new Set(list.map(b => String(b.label || '').trim()))];
+        return labels.every(Boolean) ? `${realName(name)} (${labels.join(' / ')})` : realName(name);
+    });
 }
 // His notation, the announcements' (2026-11-03 12:00 EST: "==== is divider:true large. -- means divider:false small"): `--` between classes is a small gap with no line; `====` under the title and above the hint is a large divider.
 const withDividers = blocks => blocks.flatMap((b, i) => (i ? [{ type: 14, spacing: 1, divider: false }, b] : [b]));
@@ -79,9 +88,10 @@ function jumpRows(builds) {
 }
 
 const listButton = l => ({ type: 2, style: 2, label: l.label, custom_id: `gsb~open~${l.token}`, ...(emojis[l.emoji] ? { emoji: emojis.parseEmoji(emojis[l.emoji]) } : {}) });
-const pageButton = (to, label, emojiKey) => ({ type: 2, style: 2, label, custom_id: `gsb~lpage~${to}`, ...(emojis[emojiKey] ? { emoji: emojis.parseEmoji(emojis[emojiKey]) } : {}) });
+// The two pages: 1 the tiers, 2 META. The pager's ids carry the target page (`gsb~lpage~0|1`, handlers/loadouts.js).
+const pager = meta => require('./paginationRow').buildPaginationRow({ totalChunks: 2, currentPage: meta ? 1 : 0, makeCustomId: p => `gsb~lpage~${p}`, indicatorCustomId: 'gsb~lpage~at', indicatorLabel: meta ? 'META · 2/2' : 'Tiers · 1/2' });
 
-// `page`: 'main' (Current META Weapons: Best, Top 3, Top 5, HM) or 'meta' (the META weapons sub-page). `season`: { title, emoji } for the line under the title, as /today shows it.
+// `page`: 'main' (page 1: Best, Top 3, Top 5, HM) or 'meta' (page 2: META), both under the Current META Weapons title. `season`: { title, emoji } for the line under the title, as /today shows it.
 function buildListsPage(builds, { isEphemeral = false, season = null, page = 'main' } = {}) {
     const { withShareButton } = require('./shareButton');
     const { toBoldItalicUnicode } = require('./titleBlock');
@@ -89,14 +99,14 @@ function buildListsPage(builds, { isEphemeral = false, season = null, page = 'ma
     const shown = meta ? builds.filter(b => b.isMeta) : builds;
     const blocks = classBlocks(shown, meta ? META_LINES : TIER_LINES);
     const seasonLine = season?.title ? `\n${season.emoji ? `${season.emoji} ` : ''}${toBoldItalicUnicode(season.title)}` : '';
-    const title = meta ? `## ${emojis.meta || ''} META Weapons` : `## ${emojis.gunsmithList || ''} Current META Weapons`;
     const container = { type: 17, accent_color: mpAccent(), components: [
-        { type: 9, components: [{ type: 10, content: `${title}${seasonLine}` }], accessory: meta ? pageButton('main', 'Back', 'gunsmithList') : pageButton('meta', 'META weapons', 'meta') },
+        { type: 10, content: `## ${emojis.gunsmithList || ''} Current META Weapons${seasonLine}` },
         { type: 14, spacing: 2, divider: true },
         ...(blocks.length ? withDividers(blocks) : [{ type: 10, content: '*The lists are pending an update. Check back soon.*' }]),
         { type: 14, spacing: 2, divider: true },
         { type: 10, content: '-# View all builds for…' },
         { type: 1, components: (meta ? LISTS.slice(0, 1) : LISTS).map(listButton) },
+        pager(meta),
     ] };
     return { components: withShareButton([container, ...jumpRows(shown)], isEphemeral), flags: 32768 };
 }
