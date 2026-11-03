@@ -175,10 +175,10 @@ function toBlockquote(str) {
     return str.split('\n').map(line => `> -# ${line}`).join('\n');
 }
 
-// What the gunsmith code reads and copies as, his format (Harkirat, 2026-11-02 10:44 EST: "change the gunsmith code copy output to `WeaponName-Code`, such as `AK117-1C2B4A8B9A`"; 21:49 EST: a name with a space keeps it, and "it can't be all caps, spell it as the real name"): the weapon's catalogue name, a hyphen, the code. A build with no real code keeps its bare build name.
+// What the gunsmith code reads and copies as, his format (Harkirat, 2026-11-02 10:44 EST: "change the gunsmith code copy output to `WeaponName-Code`, such as `AK117-1C2B4A8B9A`"; 21:49 EST: a name with a space keeps it; 22:11 EST, reversing that day's "it can't be all caps": "you can do all caps for the code. and spaces/dashes as per the weapon's name"): the weapon's catalogue name in capitals, keeping its own spaces and dashes, a hyphen, the code, so ISO Hemlock reads ISO HEMLOCK-1C2E4E8A9C. A build with no real code keeps its bare build name.
 function gunsmithCodeText(build, code = build.shareCode) {
     if (!code) return build.buildName;
-    return `${require('./catalogue').catalogueWeaponName(build.weaponName)}-${code}`;
+    return `${require('./catalogue').catalogueWeaponName(build.weaponName).toUpperCase()}-${code}`;
 }
 
 // Swap options (models/Loadout.js `variants`): option 0 is the build itself, option i its (i-1)th variant, as a build-shaped view so every reader (attachments, code, picture, copy) treats it like a build.

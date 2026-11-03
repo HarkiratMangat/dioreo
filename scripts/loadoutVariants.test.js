@@ -43,12 +43,15 @@ assert.ok(!card.includes('gsb~var~') && card.includes('gsb~copy~mp~SMG~0"'));
 assert.strictEqual(copyText(build, 'code'), '**Option A**\nVMP-2D5H7B8D9B\n\n**Option B**\nVMP-2D4D5H7B9B');
 const plain = { ...build, variants: undefined };
 assert.strictEqual(copyText(plain, 'code'), 'VMP-2D5H7B8D9B');
-// The code copies as `Weapon-CODE` with the weapon's real name (Harkirat, 2026-11-02 21:49 EST), the space kept; a build with no code keeps its bare build name.
+// The code copies as `WEAPON-CODE` with the weapon's real name in capitals (Harkirat, 2026-11-02 21:49 EST, capitals 22:11 EST), the space kept; a build with no code keeps its bare build name.
 const { catalogueWeaponName, buildIndex } = require('../utils/catalogue');
 const idx = buildIndex([{ kind: 'weapon', name: 'ISO Hemlock' }, { kind: 'weapon', name: 'AK117' }]);
 assert.strictEqual(catalogueWeaponName('ISO HEMLOCK', idx), 'ISO Hemlock');
 assert.strictEqual(catalogueWeaponName('UNKNOWN GUN', idx), 'UNKNOWN GUN');
 assert.strictEqual(copyText({ ...plain, shareCode: '' }, 'code'), 'Build 1');
+// All caps, the name's own space and dash kept (Harkirat, 2026-11-02 22:11 EST).
+assert.strictEqual(copyText({ ...plain, weaponName: 'Iso Hemlock' }, 'code'), 'ISO HEMLOCK-2D5H7B8D9B');
+assert.strictEqual(copyText({ ...plain, weaponName: 'Static-HV' }, 'code'), 'STATIC-HV-2D5H7B8D9B');
 assert.ok(text(buildLoadoutCardBody(plain)).includes('### Gunsmith Code: `VMP-2D5H7B8D9B`'), 'a build with no options is unchanged');
 console.log('  ✓ copy gives every option; plain builds untouched');
 console.log('\nloadoutVariants: all checks passed.');
