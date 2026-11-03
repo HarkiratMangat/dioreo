@@ -60,10 +60,12 @@ function classBlocks(builds, lines = TIER_LINES) {
     }).filter(Boolean);
 }
 // The weapons on one line, each named once, in build order. A build's label shows in brackets (his template, 2026-11-03 11:44 EST: "CX-9 (Burst) · QQ9 (10mm)") only when he switched it on for that build (`showLabelOnLists`): his 12:13 EST "don't auto pick/use the build names. only if i want them", after the first version showed STATIC-HV (Aggressive / Alt Aggressive / Flex) on its own.
+// Strongest first, then A-Z (his 2026-11-03 12:17 EST "move static hv in front of fss": on the META line STATIC-HV, Best, now leads FSS Hurricane, Top 3). A tier line is one tier, so it stays A-Z.
+const tierRank = list => { const i = RANK_ORDER.findIndex(r => list.some(b => b.categoryRank === r)); return i === -1 ? RANK_ORDER.length : i; };
 function weaponNames(lineBuilds) {
     const byWeapon = new Map();
     for (const b of lineBuilds) { if (!byWeapon.has(b.weaponName)) byWeapon.set(b.weaponName, []); byWeapon.get(b.weaponName).push(b); }
-    return [...byWeapon.entries()].map(([name, list]) => {
+    return [...byWeapon.entries()].sort(([, a], [, b]) => tierRank(a) - tierRank(b)).map(([name, list]) => {
         const labels = [...new Set(list.filter(b => b.showLabelOnLists).map(b => String(b.label || '').trim()).filter(Boolean))];
         return labels.length ? `${realName(name)} (${labels.join(' / ')})` : realName(name);
     });

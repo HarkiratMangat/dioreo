@@ -69,6 +69,8 @@ assert.strictEqual(mc.components[0].content, container.components[0].content, 't
 assert.deepStrictEqual(mc.components.at(-1).components.map(x => [x.custom_id, x.disabled, x.label || null]), [['gsb~lpage~0', false, null], ['gsb~lpage~at', true, 'META · 2/2'], ['gsb~lpage~1', true, null]]);
 const metaBlocks = mc.components.filter(c => c.type === 10 && c.content.startsWith('**')).map(c => c.content.split('\n').slice(1).map(l => l.replace(/^.*?\*\*/, '**')));
 assert.deepStrictEqual(metaBlocks, [['**META**  BAL-27 · ISO HEMLOCK'], ['**META**  STATIC-HV']]);
+const ordered = L.classBlocks([b('FSS HURRICANE', 'SMG', { isMeta: true, categoryRank: 'top3' }), b('STATIC-HV', 'SMG', { isMeta: true, categoryRank: 'best' }), b('VMP', 'SMG', { isMeta: true })], [['meta', 'meta', 'META', x => x.isMeta]]);
+assert.ok(ordered[0].content.endsWith('STATIC-HV · FSS HURRICANE · VMP'), 'META names strongest first (his 12:17 EST)');
 assert.deepStrictEqual(mc.components.at(-2).components.map(x => x.custom_id), ['gsb~open~MP.*.meta']);
 assert.ok(!JSON.stringify(meta.components).includes('KOSHKA'), 'no unbadged-for-META weapon in its dropdowns');
 console.log('  ✓ page 2: META weapons by class, the same title, the pager, the META list button');
