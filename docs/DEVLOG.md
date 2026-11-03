@@ -299,6 +299,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-30 22:57 EDT — Post chosen announcements, by picker, by word, or into a channel (v3.4.0)
 - 2026-11-01 01:05 EDT — The draw image index: 98 images read three ways, and what each way got wrong (v3.4.1)
 - 2026-11-01 19:05 EST — Retiring v3-pre-release, and a launch date taken on trust (v3.5.1)
+- 2026-11-02 22:36 EST — Gunsmith lists, and a report that named no database (v3.6.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4887,6 +4888,15 @@ v3.0.0 merged on 27 October and GitHub deleted `v3-pre-release` with it, but the
 - **The launch date was wrong in ten places.** I had written "v3.0.0 launched 2026-10-28" from a relayed summary. The tag, CHANGELOG and SUMMARY all say 27 October; 28 October was the UTC date. A relayed fact is a claim to check against its record before it is written more than once.
 - **The sweep searched the name, so the concept survived.** A CI comment still described "a called run" (the retired `workflow_call`), and `decisions.md` still said pre-release releases skip CHANGELOG-SUMMARY without naming the branch at all. Retiring a mechanism means searching what it did, not only what it was called.
 - **A note claimed more than was checked.** The new roadmap line said every open launch row had been carried over; nobody had looked. It now says the list was not re-ticked and each row needs checking.
+
+## 2026-11-02 22:36 EST — Gunsmith lists, and a report that named no database (v3.6.0)
+
+Harkirat's gunsmith update ran a full day in one thread: his badge list applied through a picker artifact, merged builds settled on option cards after three layout rounds, new badge emojis and his badge words, a one-page lists view built from his own template, and the code copied as the weapon's name and the code.
+
+**What went wrong, and what it teaches.**
+- **A report that named no database.** The morning's report said BAL-27 had no build. That was true of prod, where his own bulk delete on 28 October had removed all five, and false of the dev bot he was looking at, which still had them. A claim about data is a claim about one host and one database; say which, and read the change log before calling something missing.
+- **"The shared dev database" was an assumption too.** The worktree's `.env.dev` names `diors-builds-dev` on the Atlas `dioreo-dev` cluster; the main checkout's names no database, so it reads the empty `test`. The repo still said local Mongo. Two checkouts can disagree about the same word.
+- **A pass found what the tests could not.** The end-of-session think-pass found four badge emoji ids already stale on the branch (the hourly sync had re-added them on prod) and a prod apply that depended on screenshots in ~/Downloads. Neither breaks a test; both would have surfaced on deploy day.
 
 # Part B — Lessons Ledger (thematic)
 

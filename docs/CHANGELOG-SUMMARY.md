@@ -12,6 +12,12 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.6.0 — November 2, 2026
+- **Gunsmith lists:** one page shows every META, Best, Top 3, Top 5 and Honorable Mention weapon by class. Open it with `/gunsmith list`, `d meta`, `d best`, `d top` or `d hm`; `d meta ak117` jumps to that weapon in the list.
+- **Builds with options:** a build with swap options shows each one with its own attachments, code and screenshot.
+- **New badges:** new badge icons, and badges read META, Best in class, Top 3 in class, Honorable Mention (formerly Capable).
+- **Gunsmith codes:** codes now copy as the weapon's name and the code, like `ISO HEMLOCK-1C2E4E8A9C`.
+
 ## v3.5.1 — November 1, 2026
 - **Draw prices:** both Advanced Double Legendary pages now say which pair is the main reward and which is the secondary one.
 

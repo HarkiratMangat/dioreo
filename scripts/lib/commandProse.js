@@ -136,6 +136,7 @@ const ASKS = [
     { q: "What's in the draws this season", to: '/draws' },
     { q: 'The build for one weapon', to: '/gunsmith mp' },
     { q: 'Builds for a category, or the meta', to: '/gunsmith mp' },
+    { q: 'Every Meta, Best, Top and Honorable Mention weapon on one page', to: '/gunsmith list' },
     { q: 'DMZ builds, or the DMZ meta', to: '/gunsmith dmz' },
     // /dmz is hidden until the DMZ info update (Harkirat, 2026-10-21); its ask was { q: 'A DMZ build, straight to a weapon', to: '/dmz' }.
     { q: 'When the season ends', to: '/season end' },
@@ -173,6 +174,7 @@ const SEARCH_CASES = [
 const TOP_CASES = [
     { q: 'when does the season end', top: '/season end' },
     { q: 'best ak117 build', top: '/gunsmith mp' },
+    { q: 'gunsmith tier list', top: '/gunsmith list' },
     { q: 'what got nerfed', top: '/patch notes' },
     { q: 'add the bot to my server', top: '/invite' },
     { q: 'my pfp colours', top: '/colors' },

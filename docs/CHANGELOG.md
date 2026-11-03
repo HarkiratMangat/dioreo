@@ -29,7 +29,27 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.5.1 — 2026-11-01 19:01 EST (#244) — v3-pre-release retired, and the Advanced draws name their rewards
+## v3.6.0 — 2026-11-02 22:36 EST (#245) — Gunsmith lists, merged builds as options, new badges, codes as WEAPON-CODE
+**From Harkirat, 2026-11-02 10:44 EST:** his Meta / Best / Top 3 / Top 5 / HM list by class, Capable renamed "Honorable Mention (aka HM)", a lists command (`/gunsmith list view:`, `d meta|best|top`), and "change the gunsmith code copy output to `WeaponName-Code`". Through the day: merged builds ("merged builds = options layout. simple"), new badge emojis and his badge words, the one-page lists ("alright seems good", 21:44 EST), and the code in capitals with the weapon's own spaces and dashes (22:11 EST).
+
+### Gunsmith lists
+- **One page with every list** (`utils/gunsmithLists.js`): per class, `<META> **META**`, Best, Top 3, Top 5 and HM lines naming each weapon by its real catalogue name, no codes. Buttons open each list's full view; two jump dropdowns (AR/SMG/LMG, then the rest) describe each weapon as `Class · META · <tier>`.
+- **Ways in:** `/gunsmith list view:` (autocomplete: All lists, each list, then every listed weapon), and typed `d meta`, `d best`, `d top`, `d hm`, `d lists`, `d gs <list>`. `d meta <weapon>` opens that weapon inside the list, or the list's first weapon when it isn't on it; `d lists <weapon>` its strongest list.
+- **A list's full view** is the ordinary card on a new list scope (`MP.*.best|top|hm`, `utils/loadoutScopes.js`), with a View other lists switch and a jump dropdown of that list's weapons.
+
+### Builds and badges
+- **Merged builds** (`Loadout.variants`): each option is its own card, with its attachments, its code and its screenshot; Copy gives every option.
+- **New badge emojis** Meta, Best, Top3, Top5, HM, Toxic and Ass on every app (the old Top and Capable retired), and **his badge words**: META, Best in class, Top 3 / Top 5 in class, Honorable Mention, Straight ASS. Capable is now Honorable Mention; `hm`, `honorable` and `capable` all set it. DMZ keeps its range words.
+- **The gunsmith code** reads and copies as `WEAPON NAME-CODE` (`ISO HEMLOCK-1C2E4E8A9C`), in capitals with the weapon's own spaces and dashes; a build with no code keeps its build name.
+
+### Site
+- The commands page lists `/gunsmith list` with its own search words (`public/commands.html` rebuilt).
+
+### Not in this release
+- His picks reach prod through `local/` `apply.js` after the deploy, on his word: the old code ignores `variants`, and the apply deletes merged builds.
+- Credit / "submitted by" moves to its own thread (his call, 2026-11-02 22:25 EST).
+
+## v3.5.1 — 2026-11-01 19:01 EST (#244 · `7cda91e3`) — v3-pre-release retired, and the Advanced draws name their rewards
 **From Harkirat, 2026-11-01 00:02 EST:** "do a repo sweep tomorrow for stale v3 pre release mentions and behaviors that need updating and correcting now that v3 has released." And, from his notes: the Advanced Double Legendary Character page "never says the 2 legendary weapons are the secondary reward."
 
 ### `/draw prices`
