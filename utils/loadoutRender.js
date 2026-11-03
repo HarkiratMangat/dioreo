@@ -366,8 +366,8 @@ function buildLoadoutCardBody(build, { index = 0, total = 1, hideBadges = false,
         if (hasRealImage(activeBuild)) containerComponents.push({ type: 12, items: [{ media: { url: buildImageUrl(activeBuild.imageKey) } }] });
         else containerComponents.push({ type: 10, content: '-# *No screenshot of this build yet.*' });
     }
-    // `footerBuild` is false on a single weapon's card with a pager, which already reads "Build 2 of 5"; a browse card's pager counts the class instead, and a one-build card has no pager, so both keep the build in the footer (Harkirat, 2026-10-24 18:25 EDT: with one build "it doesn't mention build one of one for this anymore"). A submitted build names its submitter at the end, or "anonymous" (Harkirat, 2026-10-25 16:53-16:59 EDT); the mention never pings (every send here goes out with no allowed mentions).
-    const sub = activeBuild.submittedBy && activeBuild.submittedBy.discordId ? (activeBuild.submittedBy.credited ? `Submitted by <@${activeBuild.submittedBy.discordId}>` : 'Submitted by *anonymous*') : null;
+    // `footerBuild` is false on a single weapon's card with a pager, which already reads "Build 2 of 5"; a browse card's pager counts the class instead, and a one-build card has no pager, so both keep the build in the footer (Harkirat, 2026-10-24 18:25 EDT: with one build "it doesn't mention build one of one for this anymore"). A submitted build names its submitter at the end, or "anonymous" (Harkirat, 2026-10-25 16:53-16:59 EDT); the mention never pings (every send here goes out with no allowed mentions). Or a plain-name credit, "Credit: name" (2026-11-02 23:01 EST, utils/loadoutCredit.js).
+    const sub = require('./loadoutCredit').creditLine(activeBuild);
     containerComponents.push({ type: 10, content: `-# ${[footerClass ? displayCategoryLabel(activeBuild.category) : null, footerBuild ? `Build ${index + 1} of ${total}` : null, `Updated <t:${lastUpdatedUnix}:D>`, sub].filter(Boolean).join(' • ')}` });
 
     return containerComponents;

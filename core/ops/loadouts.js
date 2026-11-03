@@ -21,9 +21,16 @@ const { syncLoadoutMetadata, uploadLoadoutImage } = require('../../utils/loadout
 const { RANK_MODES } = require('../../utils/rankModes');
 const { slotsFor } = require('../../utils/catalogue');
 const Loadout = require('../../models/Loadout');
+const { cleanCreditName, CREDIT_MAX } = require('../../utils/loadoutCredit');
 
 const MODES = ['MP', 'DMZ'];
 const deriveWeaponKey = (weaponName) => (weaponName || '').toLowerCase().replace(/\s+/g, '');
+
+// The stored shape of a credit: a user, a plain name, or neither (both null clears it).
+function creditFields(p = {}) {
+    const sub = p.submittedBy?.discordId ? { discordId: String(p.submittedBy.discordId), credited: p.submittedBy.credited !== false } : null;
+    return { submittedBy: sub, credit: sub ? null : (cleanCreditName(p.credit) || null) };
+}
 
 function validateBuild(payload) {
     const errors = [];
@@ -294,6 +301,41 @@ registerEntity('loadouts', {
         invert: (c) => c.applied.moved?.length
             ? [{ type: 'loadout.edit', target: { id: c.applied.id }, payload: c.applied.prior }, ...movedBack(c.applied.moved)]
             : { type: 'loadout.edit', target: { id: c.applied.id }, payload: c.applied.prior }
+    },
+
+    // Who the build is credited to (utils/loadoutCredit.js): a Discord user, a plain name, or nothing. Its own op, not loadout.edit, because an edit re-numbers, re-checks the code and stamps lastUpdated, and a credit is none of those. No /manage action id of its own (the Credit button sits on a build, not on the page), so it declares its pages, one per mode (core/ops/index.js OP_TO_PAGE); target.mode picks which.
+    'loadout.credit': {
+        page: ['loadouts_mp', 'loadouts_dmz'], tier: 1,
+        validate: (op) => {
+            if (!op.target?.id) return { ok: false, errors: ['No build was selected.'] };
+            const p = op.payload || {};
+            const errors = [];
+            if (p.submittedBy && !/^\d{15,22}$/.test(String(p.submittedBy.discordId || ''))) errors.push("That isn't a Discord user.");
+            const typed = p.credit != null && String(p.credit).trim() !== '';
+            if (typed && !cleanCreditName(p.credit)) errors.push(`A name is 1 to ${CREDIT_MAX} characters, on one line, with no < or >.`);
+            if (p.submittedBy && typed) errors.push('Pick a Discord user or type a name, not both.');
+            return errors.length ? { ok: false, errors } : { ok: true, errors: [], normalized: { payload: creditFields(p) } };
+        },
+        preview: async (op) => {
+            const cur = await Loadout.findById(op.target.id).lean();
+            return { before: cur && { submittedBy: cur.submittedBy || null, credit: cur.credit || null }, after: creditFields(op.payload) };
+        },
+        apply: async (op, { session }) => {
+            const cur = await Loadout.findById(op.target.id).session(session).lean();
+            if (!cur) return { ok: false, reason: 'missing' };
+            const set = creditFields(op.payload);
+            // null, never undefined: a ChangeLog row is JSON, and an undefined key vanishes from it, so the inverse could not clear a credit the build did not have.
+            const prior = creditFields({ submittedBy: cur.submittedBy?.discordId ? cur.submittedBy : null, credit: cur.credit });
+            const res = await updateDocument({ Model: Loadout, id: op.target.id, expectVersion: cur.__v, set, session });
+            if (!res.ok) return res;
+            return {
+                ok: true,
+                change: { action: 'edit', model: 'Loadout', target: `${cur.weaponName} (${cur.buildName})`,
+                          summary: `Changed the credit on loadout "${cur.weaponName} (${cur.buildName})"` },
+                applied: { id: op.target.id, mode: cur.mode, prior, version: res.version }
+            };
+        },
+        invert: (c) => ({ type: 'loadout.credit', target: { id: c.applied.id, mode: c.applied.mode }, payload: c.applied.prior })
     },
 
     'loadout.delete': {

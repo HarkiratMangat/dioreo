@@ -17,6 +17,9 @@ module.exports = {
         // Optional override for the mode the screenshot's UI chrome would decide. Left blank, a screenshot whose chrome is ambiguous gets a review card that asks, never a guess.
         .addStringOption(option => option.setName('mode').setDescription('MP or DMZ (optional -- read from the screenshot if omitted)').addChoices({ name: 'MP', value: 'MP' }, { name: 'DMZ', value: 'DMZ' }))
                 .addStringOption(option => option.setName('badges').setDescription('meta, best, top5, hm, toxic, ass, hp, s&d... (optional, this build only)'))
+        // Who to credit (Harkirat, 2026-11-02 10:44 EST): a Discord user, or a plain name that isn't clickable. One or the other; utils/loadoutCredit.js.
+        .addUserOption(option => option.setName('submitted_by').setDescription('Credit a Discord user on the card (optional)'))
+        .addStringOption(option => option.setName('credit').setDescription('Or credit a plain name, not clickable (optional)').setMaxLength(32))
         .addStringOption(option => option.setName('retry_token').setDescription('Only used when re-submitting an image after a Cloudinary upload failure'))
         // Renamed `private` (boolean) -> `visibility` (Hidden/Public string) 2026-08-10 19:28 EDT. The bot-wide rename landed in v3.1.0 for every other command and missed this one, so this was the last `private` left in the bot -- see .claude/rules/commands-overview.md.
         .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat. (Defaults to only you.)').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
@@ -59,13 +62,22 @@ module.exports = {
             return interaction.reply({ content: require('../utils/emojiMap').glyphs(`${BOT_EMOJI.cross} Use \`screenshot\` or \`url\`, not both. To read several, run ${mentionCommand(interaction.client, '/autobuild')} on its own.`), ephemeral: true });
         }
 
+        // The credit is checked before the read starts, so a bad name never costs a vision read.
+        const submittedBy = interaction.options.getUser('submitted_by');
+        const creditRaw = interaction.options.getString('credit');
+        const { cleanCreditName, CREDIT_MAX } = require('../utils/loadoutCredit');
+        if (submittedBy && creditRaw) return interaction.reply({ content: `${BOT_EMOJI.cross} Use \`submitted_by\` or \`credit\`, not both.`, ephemeral: true });
+        if (creditRaw && !cleanCreditName(creditRaw)) return interaction.reply({ content: `${BOT_EMOJI.cross} A credit name is 1 to ${CREDIT_MAX} characters, on one line, with no < or >.`, ephemeral: true });
+        if (submittedBy?.bot) return interaction.reply({ content: `${BOT_EMOJI.cross} \`submitted_by\` is a bot, not a player.`, ephemeral: true });
+        const credit = submittedBy ? { submittedBy: { discordId: submittedBy.id, credited: true } } : creditRaw ? { credit: cleanCreditName(creditRaw) } : null;
+
         await interaction.deferReply({ ephemeral: isEphemeral });
         const category = interaction.options.getString('category');
         const badges = interaction.options.getString('badges');
         const mode = interaction.options.getString('mode');
         // One screenshot is a batch of one (2026-10-20 12:43 EDT), so a single review and a bulk review are the same surface and cannot drift apart: Save and Discard stay on the page, Discard can be undone. A batch of one has no pager or Save All.
         const { runBulk } = require('../utils/autobuildBulk');
-        return runBulk(interaction, [imageUrl], { explicitCategory: category, badgesOption: badges, explicitMode: mode, ephemeral: isEphemeral });
+        return runBulk(interaction, [imageUrl], { explicitCategory: category, badgesOption: badges, explicitMode: mode, ephemeral: isEphemeral, credit });
     }
 };
 

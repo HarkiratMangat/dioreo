@@ -64,7 +64,7 @@ async function routeManage(interaction) {
         // CATALOGUE, CODE AND PICTURE WARNINGS -- Save anyway / Back to edit under a loadout save that met names the catalogue does not know or a code that looks cut off, and Keep / Upload new / Save without under an edit whose picture shows the old build (handlers/manage/loadouts.js).
         if (['mng_catok|', 'mng_catedit|', 'mng_codeok|', 'mng_codeedit|', 'mng_picok|', 'mng_picnew|', 'mng_picnone|'].some(p => customId.startsWith(p))) return await loadouts.handleCatalogueWarning(interaction);
         // A saved loadout's own buttons: Open in /gunsmith, Edit again, Revert (handlers/manage/loadouts.js handleSavedAction).
-        if (['mng_ldopen_', 'mng_ldedit_', 'mng_ldrevert|'].some(p => customId.startsWith(p))) return await loadouts.handleSavedAction(interaction);
+        if (['mng_ldopen_', 'mng_ldedit_', 'mng_ldcredit_', 'mng_ldrevert|'].some(p => customId.startsWith(p))) return await loadouts.handleSavedAction(interaction);
         // The same buttons under a saved draw, event or season: Open, Edit again, Revert (handlers/manage/results.js).
         if (['mng_rsopen|', 'mng_rsedit|', 'mng_rsrevert|'].some(p => customId.startsWith(p))) return await results.handleResultAction(interaction);
 
@@ -296,6 +296,7 @@ async function routeManage(interaction) {
 
         // LOADOUTS (MP + DMZ)
         if (customId.startsWith('edit_loadout_')) return await loadouts.editLoadout(interaction);
+        if (customId.startsWith('mng_ldcreditm_')) return await loadouts.saveCredit(interaction);
         if (customId.startsWith('add_loadout_')) return await loadouts.addLoadout(interaction);
         if (customId.startsWith('modal_loadouts_bulk_add_')) return await loadouts.bulkAddLoadouts(interaction);
         if (customId.startsWith('modal_loadouts_bulk_remove_')) return await loadouts.bulkDeleteLoadouts(interaction);

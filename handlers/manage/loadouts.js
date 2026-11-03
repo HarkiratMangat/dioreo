@@ -321,12 +321,57 @@ async function handleSavedAction(interaction) {
         if (!doc) return await interaction.reply({ content: `${BOT_EMOJI.cross} That build no longer exists.`, ephemeral: true });
         return await interaction.showModal(await editLoadoutModal(doc));
     }
+    if (id.startsWith('mng_ldcredit_')) {
+        const doc = await Loadout.findById(id.replace('mng_ldcredit_', '')).lean();
+        if (!doc) return await interaction.reply({ content: `${BOT_EMOJI.cross} That build no longer exists.`, ephemeral: true });
+        return await interaction.showModal(creditModal(doc));
+    }
     // Revert is shared with the draw, event and season panels (handlers/manage/results.js).
     const changeIds = id.replace('mng_ldrevert|', '').split(',').filter(Boolean);
     return await require('./results').revertChanges(interaction, changeIds, 'the build is back as it was.\n-# The picture keys the save made stay on Cloudinary');
 }
 
-// Declarations, not arrow consts: handleCatalogueWarning above names them, and a const read before its line is a temporal dead zone (scripts/tdzRatchet.mjs).
+// Declarations, not arrow consts: handleCatalogueWarning above names them, and a const read before its line is a temporal dead zone (scripts/tdzRatchet.mjs). --- CREDIT (Harkirat, 2026-11-02 10:44 EST: a manual "submitted by @user", or a plain name that isn't clickable) --- The pop-up behind a build's Credit button: a Discord user, whether players see their name, or a plain name. Both empty clears the credit. Saved through core's loadout.credit, so the answer carries Revert. Raw API JSON, as the Edit pop-up is (a select inside a Label).
+function creditModal(doc) {
+    const sub = doc.submittedBy?.discordId ? doc.submittedBy : null;
+    const { CREDIT_MAX } = require('../../utils/loadoutCredit');
+    return {
+        custom_id: `mng_ldcreditm_${doc._id}`, title: `Credit: ${doc.weaponName} ${doc.buildName}`.slice(0, 45),
+        components: [
+            { type: 18, label: 'Submitted by', description: 'A Discord user. Leave it empty for a plain name, or to clear the credit',
+              component: { type: 5, custom_id: 'user', required: false, min_values: 0, max_values: 1, ...(sub ? { default_values: [{ id: sub.discordId, type: 'user' }] } : {}) } },
+            // Kept from Submit a Build: a player who chose to stay anonymous stays anonymous unless this is changed on purpose.
+            { type: 18, label: 'Show their name on the card', description: 'No keeps them anonymous to players',
+              component: { type: 3, custom_id: 'shown', required: false, min_values: 0, max_values: 1, options: [
+                  { label: 'Yes, show it', value: 'yes', default: !sub || Boolean(sub.credited) },
+                  { label: 'No, anonymous', value: 'no', default: Boolean(sub && !sub.credited) }] } },
+            { type: 18, label: 'Or a plain name', description: 'Shown as "Credit: name", not clickable',
+              component: { type: 4, custom_id: 'name', style: 1, required: false, max_length: CREDIT_MAX, ...(doc.credit ? { value: doc.credit } : {}) } },
+        ],
+    };
+}
+
+async function saveCredit(interaction) {
+    await interaction.deferReply({ ephemeral: true });
+    const Loadout = require('../../models/Loadout');
+    const id = interaction.customId.replace('mng_ldcreditm_', '');
+    const before = await Loadout.findById(id).lean();
+    if (!before) return await interaction.followUp({ content: `${BOT_EMOJI.cross} That build no longer exists.` });
+    const get = (fn) => { try { return fn(); } catch { return null; } };
+    const user = get(() => interaction.fields.getSelectedUsers('user')?.first()) || null;
+    const shown = (get(() => interaction.fields.getStringSelectValues('shown')) || [])[0] || 'yes';
+    const name = (get(() => interaction.fields.getTextInputValue('name')) || '').trim();
+    const fail = (msg) => interaction.followUp({ content: `${BOT_EMOJI.cross} ${msg} Nothing was changed.` });
+    if (user && name) return await fail('Pick a Discord user or type a name, not both.');
+    if (user?.bot) return await fail('That is a bot, not a player.');
+    const payload = { submittedBy: user ? { discordId: user.id, credited: shown !== 'no' } : null, credit: name || null };
+    const result = await commitSet([{ type: 'loadout.credit', target: { id, mode: before.mode }, payload }], { actorId: interaction.user.id });
+    if (!result.ok) return await fail(extractCommitError(result));
+    const saved = await Loadout.findById(id).lean();
+    const { savedPanel } = require('../../utils/loadoutPanels');
+    return interaction.followUp({ flags: 32768 | 64, components: savedPanel({ doc: saved, before, changeIds: result.changeIds }) });
+}
+
 function editLoadout(interaction, preset = null) { return saveLoadout(interaction, preset, true); }
 function addLoadout(interaction, preset = null) { return saveLoadout(interaction, preset, false); }
 
@@ -495,4 +540,4 @@ async function deleteItem(match, actorId) {
     return result.changeIds;   // for the Revert button under "Deleted" (handlers/manage/index.js)
 }
 
-module.exports = { editLoadout, addLoadout, editLoadoutModal, pictureWarningPanel, handleSavedAction, bulkAddLoadouts, handleCatalogueWarning, bulkDeleteLoadouts, exportUpTo5, exportCategory, deleteItem };
+module.exports = { editLoadout, addLoadout, editLoadoutModal, creditModal, saveCredit, pictureWarningPanel, handleSavedAction, bulkAddLoadouts, handleCatalogueWarning, bulkDeleteLoadouts, exportUpTo5, exportCategory, deleteItem };

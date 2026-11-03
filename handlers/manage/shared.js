@@ -301,6 +301,8 @@ async function handleSearchSubmit(interaction) {
             components: [
                 { type: 1, components: [
                     { type: 2, style: 1, label: 'Edit', custom_id: `mng_editbtn_${token}` },
+                    // A build's credit can be set without opening the Edit pop-up (2026-11-02 23:01 EST, handlers/manage/loadouts.js creditModal).
+                    ...((group === 'loadouts_mp' || group === 'loadouts_dmz') ? [{ type: 2, style: 2, label: 'Credit', custom_id: `mng_ldcredit_${matches[0].id}` }] : []),
                     ...searchAgainRow.components
                 ] }
             ],

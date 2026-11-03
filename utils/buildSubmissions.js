@@ -404,7 +404,8 @@ async function handleDisputeButton(interaction) {
         dis.status = 'removed';
         await dmPlayer(dis.discordId, () => `${emojis.checkmark} Your dispute about ${what} was upheld: the build was removed from Dioreo.`);
     } else if (action === 'credit' && build) {
-        await Loadout.updateOne({ _id: build._id }, { $set: { submittedBy: { discordId: dis.discordId, credited: true } } });
+        // A plain-name credit goes with it: a build is credited to one person (utils/loadoutCredit.js).
+        await Loadout.updateOne({ _id: build._id }, { $set: { submittedBy: { discordId: dis.discordId, credited: true } }, $unset: { credit: '' } });
         dis.status = 'credited';
         await dmPlayer(dis.discordId, () => `${emojis.checkmark} Your dispute about ${what} was upheld: the build now credits you.`);
     } else if (action === 'no') {

@@ -410,7 +410,7 @@ function readingCard(done, total) {
 }
 
 // Reads screenshots three at a time into new batch items, stashing each as an ordinary review under its own token. Shared by a new batch and by Add more. An item's own preset (the start form, 2026-10-25 12:49 EDT) wins over the batch-wide options for what it names, and leaves the rest to them.
-async function readInto(interaction, newItems, { explicitCategory = null, badgesOption = null, explicitMode = null } = {}) {
+async function readInto(interaction, newItems, { explicitCategory = null, badgesOption = null, explicitMode = null, credit = null } = {}) {
     const Loadout = require('../models/Loadout');
     const allBuilds = await Loadout.find({}).select('weaponKey weaponName category buildName shareCode attachments mode').lean();
     let done = 0;
@@ -431,6 +431,8 @@ async function readInto(interaction, newItems, { explicitCategory = null, badges
                 const presetNote = require('./autobuildStart').presetWarning(p);
                 if (presetNote) item.data.presetWarning = presetNote;
                 if (item.formNotes?.length) item.data.formNotes = item.formNotes;
+                // /autobuild's submitted_by: / credit: (2026-11-02 23:01 EST), saved with the build by writeLoadoutDoc.
+                if (credit) item.data.credit = credit;
                 item.token = crypto.randomBytes(8).toString('hex');
                 pendingAutobuilds.set(item.token, item.data); // dropped by the batch's own timer (touch), with the batch
             } catch (err) {
@@ -446,11 +448,11 @@ async function readInto(interaction, newItems, { explicitCategory = null, badges
 }
 
 // Starts a batch. The caller has already deferred (deferReply for /autobuild, deferUpdate for the right-click's picker), exactly like runExtraction. `source` ({ key, indices }) is the right-click's held message and which of its images these are. `images` (the start form, 2026-10-25 12:49 EDT): `{ url, label, preset }` per entry, aligned with `urls`; `notes` ride on the first build's page.
-async function runBulk(interaction, urls, { explicitCategory = null, badgesOption = null, explicitMode = null, skipped = 0, source = null, ephemeral = true, images = null, notes = [] } = {}) {
+async function runBulk(interaction, urls, { explicitCategory = null, badgesOption = null, explicitMode = null, skipped = 0, source = null, ephemeral = true, images = null, notes = [], credit = null } = {}) {
     const list = urls.slice(0, MAX_SCREENSHOTS);
     skipped += urls.length - list.length;
     const items = list.map((url, i) => ({ url, status: 'pending', sourceIndex: source ? source.indices[i] : null, preset: images?.[i]?.preset || null, sourceLabel: images?.[i]?.label || null, formNotes: i === 0 ? notes : null }));
-    await readInto(interaction, items, { explicitCategory, badgesOption, explicitMode });
+    await readInto(interaction, items, { explicitCategory, badgesOption, explicitMode, credit });
     // Preset and form notes are written into each build's data; the item copies are not needed once read.
     for (const it of items) { delete it.preset; delete it.formNotes; }
 

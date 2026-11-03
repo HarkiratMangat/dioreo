@@ -29686,6 +29686,14 @@
           },
           {
             "type": 10,
+            "content": "`[submitted_by]`\n-# Credit a Discord user on the card"
+          },
+          {
+            "type": 10,
+            "content": "`[credit]`\n-# Or credit a plain name, not clickable; never both"
+          },
+          {
+            "type": 10,
             "content": "`[retry_token]`\n-# Only to retry an image after a failed upload"
           },
           {
