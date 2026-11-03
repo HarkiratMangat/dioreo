@@ -99,6 +99,13 @@ const CATEGORY_DEFS = [
                 options: [
                     { name: 'weapon', required: true, desc: 'Pick a weapon, or an "All … builds" row at the top to browse' }
                 ]
+            }),
+            // The gunsmith lists (2026-11-02 21:44 EST): every list on one page; `d meta`, `d best`, `d top`, `d hm` and `d lists` open it too.
+            cmd('/gunsmith list', {
+                description: 'META, Best, Top 3, Top 5 and Honorable Mention, by class',
+                options: [
+                    { name: 'view', required: false, desc: 'All lists, one list, or a listed weapon' }
+                ]
             })
         ]
     },

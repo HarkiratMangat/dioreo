@@ -32,6 +32,8 @@ const LoadoutSchema = new mongoose.Schema({
     submittedBy: { type: new mongoose.Schema({ discordId: { type: String, required: true }, credited: { type: Boolean, default: false } }, { _id: false }), default: undefined },
     // SHA-256 of the screenshot this build's picture was made from (/autobuild or an Edit upload), so a picture traces back to its exact file and its VisionRead, and one screenshot on two builds can be listed (2026-10-26 01:19 EDT). Absent on a build whose picture came from a URL or a hand upload.
     sourceHash: { type: String, default: undefined },
+    // Swap options (Harkirat, 2026-11-02 11:41 EST: "what if we merged them as a singular build, provided both screenshots on the same loadout panel, and provided both gunsmith codes?"). The build's own attachments, code and picture are option 1; each entry here is another option of the SAME build, a whole set of attachments with its own code and picture, since two of his merged pairs differ in more than one slot or in a slot one of them leaves empty (VMP: Ammunition vs Stock). /gunsmith shows one option at a time with a button per option (utils/loadoutRender.js variantView). Absent on a build with no options.
+    variants: { type: [new mongoose.Schema({ label: { type: String, default: '' }, attachments: [{ type: String }], attachmentSlots: [{ type: String }], shareCode: { type: String, default: '' }, imageKey: { type: String, default: '' } }, { _id: false })], default: undefined },
     lastUpdated: { type: Date, default: Date.now }
 });
 

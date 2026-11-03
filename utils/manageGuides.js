@@ -131,7 +131,7 @@ function loadoutsSections() {
             '```\nWeapon | Category\nBuild: Build 2\nLabel: Ranked\nCode: Gunsmith Code\nImage: Cloudinary Key\nBadges: meta, best\n- Attachment 1\n- Attachment 2\n```\n' +
             '-# One build per BLOCK (blank line between blocks). **First line is the weapon\'s identity, every optional field is its own labelled line, everything else is an attachment.** The labelled lines can be in any order and any of them can be left out.'),
         section('🏷️ Badges (comma-separated, optional)',
-            '`meta` · `toxic` · `ass` · `best` · `top3` · `top5` · `capable` · `bestclose` · `top3midlong` · `capableclose` (rank + range combos for DMZ)\n' +
+            '`meta` · `toxic` · `ass` · `best` · `top3` · `top5` · `hm` · `bestclose` · `top3midlong` · `hmclose` (rank + range combos for DMZ)\n' +
             '**Rank modes (MP only, any number):** `hp` · `s&d` · `dom` · `tdm` · `ftl` · `control`\n' +
             '-# Badges belong to the one build they are typed on. `ass` can\'t sit with `meta` or a tier; `top4` is retired and reads as `top5`.'),
         section('✨ What Gets Auto-Formatted',

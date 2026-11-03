@@ -1,19 +1,23 @@
-// Scope descriptor: {mode:'MP'|'DMZ', category:string|null, metaOnly:boolean}. Token form `<mode>.<category|*>.<meta|std>` is what travels in a gsb~ custom_id.
+// Scope descriptor: {mode:'MP'|'DMZ', category:string|null, metaOnly:boolean, list?:'best'|'top'|'hm'}. Token form `<mode>.<category|*>.<meta|std|best|top|hm>` is what travels in a gsb~ custom_id.
 const Loadout = require('../models/Loadout');
 
-function formatScopeToken({ mode, category, metaOnly }) {
-    return `${mode}.${category || '*'}.${metaOnly ? 'meta' : 'std'}`;
+// The gunsmith lists (utils/gunsmithLists.js, 2026-11-02 21:44 EST): a list scope holds the builds carrying that tier; META stays the `meta` kind. An old top4 counts as Top 5.
+const LIST_RANKS = { best: ['best'], top: ['top3', 'top5', 'top4'], hm: ['capable'] };
+
+function formatScopeToken({ mode, category, metaOnly, list }) {
+    return `${mode}.${category || '*'}.${LIST_RANKS[list] ? list : metaOnly ? 'meta' : 'std'}`;
 }
 function parseScopeToken(token) {
     const [mode, category, kind] = String(token).split('.');
-    return { mode, category: category === '*' ? null : category, metaOnly: kind === 'meta' };
+    return { mode, category: category === '*' ? null : category, metaOnly: kind === 'meta', ...(LIST_RANKS[kind] ? { list: kind } : {}) };
 }
 
 // Deterministic ordering is REQUIRED: nothing is stored server-side, so every click re-derives this list and must get the same order or the flat index points somewhere else.
-async function resolveScopeBuilds({ mode, category, metaOnly }) {
+async function resolveScopeBuilds({ mode, category, metaOnly, list }) {
     const filter = { mode };
     if (category) filter.category = category;
     if (metaOnly) filter.isMeta = true;
+    if (LIST_RANKS[list]) filter.categoryRank = { $in: LIST_RANKS[list] };
     // A "Coming Soon" placeholder is never part of a browse (Harkirat, 2026-10-24 09:45 EDT: "in lists, if a weapon is missing, do not show it in the list").
     const { isPlaceholderBuild } = require('./loadoutRender');
     const builds = (await Loadout.find(filter).lean()).filter(b => !isPlaceholderBuild(b));
@@ -61,4 +65,4 @@ function browseRows(mode, categories = [], { hasMeta = true } = {}) {
     ];
 }
 
-module.exports = { formatScopeToken, parseScopeToken, resolveScopeBuilds, flatIndexToPosition, FIXED_SCOPES, browseRows };
+module.exports = { LIST_RANKS, formatScopeToken, parseScopeToken, resolveScopeBuilds, flatIndexToPosition, FIXED_SCOPES, browseRows };

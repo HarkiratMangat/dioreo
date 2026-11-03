@@ -64,11 +64,20 @@ check('every badge round-trips through the bulk export and back', () => {
     assert.deepStrictEqual(loadoutBadgeTokens({ ...build, mode: 'DMZ' }).includes('hp'), false, 'a DMZ build never writes a rank mode back');
 });
 
-check('the card names the Capable tier with its category, and Ass', () => {
-    const line = buildBadgesLine({ mode: 'MP', category: 'AR', categoryRank: 'capable', isToxic: true });
-    assert.ok(/Capable AR/.test(line), line);
-    assert.ok(/Ass/.test(buildBadgesLine({ mode: 'MP', category: 'AR', isAss: true })));
-    assert.ok(/Capable Close Range/.test(buildBadgesLine({ mode: 'DMZ', dmzRangeRank: 'capable-close' })));
+// His badge words (2026-11-02 20:35 EST): META, Best in class, Top N in class, Toxic, Straight ASS, Honorable Mention, no class name; DMZ keeps its range words.
+check('the card uses his badge words, with no class name', () => {
+    const line = buildBadgesLine({ mode: 'MP', category: 'AR', categoryRank: 'capable', isToxic: true, isMeta: true });
+    assert.ok(/META/.test(line) && /Honorable Mention/.test(line) && /Toxic/.test(line) && !/ AR\b/.test(line), line);
+    assert.ok(/Best in class/.test(buildBadgesLine({ mode: 'MP', category: 'SMG', categoryRank: 'best' })));
+    assert.ok(/Top 3 in class/.test(buildBadgesLine({ mode: 'MP', category: 'SMG', categoryRank: 'top3' })));
+    assert.ok(/Top 5 in class/.test(buildBadgesLine({ mode: 'MP', category: 'SMG', categoryRank: 'top5' })));
+    assert.ok(/Straight ASS/.test(buildBadgesLine({ mode: 'MP', category: 'AR', isAss: true })));
+    assert.ok(/Honorable Mention Close Range/.test(buildBadgesLine({ mode: 'DMZ', dmzRangeRank: 'capable-close' })));
+});
+check('hm and its spellings read as the HM tier', () => {
+    const { parseLoadoutBadges } = require('../utils/adminParser');
+    for (const t of ['hm', 'HM', 'honorable', 'capable']) assert.strictEqual(parseLoadoutBadges(t).categoryRank, 'capable', t);
+    assert.strictEqual(parseLoadoutBadges('hmclose', 'DMZ').dmzRangeRank, 'capable-close');
 });
 
 check('the Recommended Rank Mode line renders for MP, bare words when the emoji is not on the app, and never for DMZ', () => {

@@ -110,6 +110,15 @@ async function check(name, fn) {
         assert.strictEqual(i.options.getSubcommand(), 'mp');
         assert.strictEqual(i.options.getString('weapon'), 'ak117');
     });
+    // Its own server, so these three replies do not count toward g1's 30-per-10-s limit the later checks measure.
+    await check('a weapon after a list word opens inside that list; an unknown one opens the page', async () => {
+        await onMessage(fakeMessage('d meta ak117', { guildId: 'gLists' }).message);
+        assert.strictEqual(lastRun().interaction.options.getString('weapon'), '~lists~meta~ak117');
+        await onMessage(fakeMessage('d lists ak117', { guildId: 'gLists' }).message);
+        assert.strictEqual(lastRun().interaction.options.getString('weapon'), '~lists~~ak117', 'no list named: the weapon in its strongest list');
+        await onMessage(fakeMessage('d best zzzq', { guildId: 'gLists' }).message);
+        assert.strictEqual(lastRun().interaction.options.getString('weapon'), '~lists~best', 'no weapon found: the page, as `d best` alone');
+    });
     await check('an ambiguous weapon after @Dioreo gets Did you mean, each button carrying its value', async (before) => {
         const { message, posts } = fakeMessage(`<@${BOT}> gs ak`);
         await onMessage(message);

@@ -59,7 +59,7 @@ assert.ok(card.indexOf('Muzzle') < card.indexOf('Grip') && card.indexOf('Grip') 
 const opts = JSON.parse(card).components.find(c => c.type === 1 && c.components[0].custom_id === 'mpbrowse').components[0].options;
 assert.ok(!opts.some(o => o.value === '~search~'), 'no search option: the Search button does that (2026-10-25 23:19 EDT)');
 assert.ok(!opts.some(o => o.value === 'pharo'), 'a Coming Soon placeholder is never listed');
-assert.ok(opts.some(o => o.value === 'bp50' && o.description === 'Meta · Best AR · 1 build'), 'an option carries its badges and build count');
+assert.ok(opts.some(o => o.value === 'bp50' && o.description === 'META · Best in class · 1 build'), 'an option carries its badges and build count');
 assert.ok(!opts.some(o => o.default), 'nothing is pre-selected');
 const browseAll = JSON.stringify(R.buildLoadoutCard(two, 0, { color: 1, idPrefix: 'mp', categoryBuilds: ar.slice(0, 3),
     browse: { scopeToken: 'MP.*.std', flatIndex: 2, flatTotal: 3, scopeLabel: 'All MP builds' } }));
@@ -75,7 +75,7 @@ assert.ok(missing.includes('No build yet') && missing.includes('gsb~open~MP.AR.s
     const box = parsed.components[0].components;
     const text = box.filter(c => c.type === 10).map(c => c.content).join('\n');
     assert.ok(text.includes('1. `Muzzle`') && text.includes('3. `Ammo`'), 'attachments are numbered');
-    assert.ok(text.includes('### Gunsmith Code: `CODE`'), 'the code sits on its heading line');
+    assert.ok(text.includes(`### Gunsmith Code: \`${slotted.weaponName}-CODE\``), 'the code sits on its heading line, as Weapon-CODE (2026-11-02 21:49 EST)');
     assert.ok(box[1].type === 14 && box[1].divider, 'the divider under the title stays');
     const img = box.findIndex(c => c.type === 12);
     assert.ok(box[img - 1].type === 14 && !box[img - 1].divider, 'a small space, no line, above the image');
@@ -98,7 +98,8 @@ assert.ok(missing.includes('No build yet') && missing.includes('gsb~open~MP.AR.s
     // Ordered by class, then name (2026-10-25 23:46 EDT, his catch).
     assert.deepStrictEqual(dmzSel[0].options.map(o => [o.label, o.description]), [['AS VAL', 'AR · Meta'], ['FENNEC', 'SMG']]);
     const metaSel = JSON.parse(metaCard).components.filter(c => c.type === 1 && c.components[0].type === 3);
-    assert.ok(metaSel.length === 1 && metaSel[0].components[0].placeholder === 'Jump to another META weapon...', 'META: one jump dropdown, naming the Meta list');
+    // Since 2026-11-02 21:44 EST a list's card (META included) has View other lists… above its jump dropdown.
+    assert.ok(metaSel.length === 2 && metaSel[0].components[0].placeholder === 'View other lists...' && metaSel[1].components[0].placeholder === 'Jump to another META weapon...', 'META: View other lists, then the jump dropdown naming the Meta list');
     const nb = JSON.stringify(R.buildMissingWeaponCard({ weaponName: 'AK-47', category: 'AR', categoryBuilds: ar, missing: [{ name: 'AK-47' }, { name: 'ASM10' }], nb: { index: 0, total: 2 } }));
     assert.ok(nb.includes('No build yet · 1/2') && nb.includes('gsb~nb~AR~1') && nb.includes('"Submit a Build"') && nb.includes('gsb~submit~MP~ak47'), 'the no-build card pages and offers Submit a Build');
     const credited = JSON.stringify(R.buildLoadoutCard([{ ...slotted, submittedBy: { discordId: '42', credited: true } }], 0, { color: 1, idPrefix: 'mp' }));

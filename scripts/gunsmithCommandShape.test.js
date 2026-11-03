@@ -5,15 +5,18 @@ const json = data.toJSON();
 // The constraint that forced this whole design: a command with subcommands may have NO top-level options.
 assert.deepStrictEqual([...new Set(json.options.map(o => o.type))], [1],
     'top-level options must be subcommands (type 1) ONLY — Discord rejects a mix');
-assert.strictEqual(json.options.length, 2, 'expected exactly 2 subcommands');
+assert.strictEqual(json.options.length, 3, 'expected exactly 3 subcommands');
 // mp and dmz since 2026-10-19 19:43 EDT (Harkirat: search became MP, a new DMZ, list removed). Discord names are lower case.
-assert.deepStrictEqual(json.options.map(o => o.name), ['mp', 'dmz']);
+assert.deepStrictEqual(json.options.map(o => o.name), ['mp', 'dmz', 'list']);
+// list (2026-11-02 21:44 EST): an optional autocomplete view, and visibility.
+const listSub = json.options.find(o => o.name === 'list');
+assert.deepStrictEqual(listSub.options.map(o => [o.name, !!o.required, !!o.autocomplete]), [['view', false, true], ['visibility', false, false]]);
 assert.deepStrictEqual(json.integration_types, [0, 1], 'must be guild + user installable (v3)');
 
 // Discord's own limits, asserted here so a violation is a TEST failure rather than a registration rejection at boot: descriptions cap at 100 chars.
 const allDescs = [json.description, ...json.options.flatMap(o => [o.description, ...(o.options || []).map(x => x.description)])];
 allDescs.forEach(dsc => assert.ok(dsc.length <= 100, `description over 100 chars: "${dsc}"`));
-for (const sub of json.options) {
+for (const sub of json.options.filter(o => o.name !== 'list')) {
     const weapon = sub.options.find(o => o.name === 'weapon');
     assert.ok(weapon && weapon.autocomplete && weapon.required, `${sub.name} takes a required, autocompleted weapon`);
 }

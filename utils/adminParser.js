@@ -349,7 +349,8 @@ function parseLoadoutBadges(badgesStr, mode = null) {
     for (const token of tokens) {
         if (token === 'meta') { isMeta = true; continue; }
         if (token === 'best') { categoryRank = 'best'; continue; }
-        if (token === 'capable') { categoryRank = 'capable'; continue; }
+        // HM is the tier stored as `capable` (renamed Honorable Mention, 2026-11-02 20:35 EST); every spelling reads the same.
+        if (['capable', 'hm', 'honorable', 'honorablemention', 'honorable mention'].includes(token)) { categoryRank = 'capable'; continue; }
         if (token === 'toxic') { isToxic = true; continue; }
         if (token === 'ass') { isAss = true; continue; }
         // The Rank Mode family is MP only. With the mode known (single add/edit), a DMZ build drops it here; the bulk paste does not know its page's mode yet, so core/ops/loadouts.js drops it there.
@@ -359,9 +360,9 @@ function parseLoadoutBadges(badgesStr, mode = null) {
             continue;
         }
         // The hyphen is optional so a Board 4 export (`best-close`) reads the same as the bot's own `bestclose`.
-        const rangeMatch = token.match(/^(best|top\s*\d+|capable)-?(close|midlong)$/);
+        const rangeMatch = token.match(/^(best|top\s*\d+|capable|hm)-?(close|midlong)$/);
         if (rangeMatch) {
-            dmzRangeRank = `${tier(rangeMatch[1])}-${rangeMatch[2]}`;
+            dmzRangeRank = `${rangeMatch[1] === 'hm' ? 'capable' : tier(rangeMatch[1])}-${rangeMatch[2]}`;
             continue;
         }
         const topMatch = token.match(/^top\s*\d+$/);

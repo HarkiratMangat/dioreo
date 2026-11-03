@@ -67,6 +67,17 @@ async function runAutocomplete(interaction) {
 
     if (commandName === 'dmz') {
         queryFilter.mode = 'DMZ';
+    } else if (commandName === 'gunsmith' && interaction.options.getSubcommand() === 'list') {
+        // /gunsmith list view: (2026-11-02 21:44 EST): All lists and each list first, then every listed weapon, filtered like the weapon search.
+        const lists = require('../utils/gunsmithLists');
+        await require('../utils/catalogue').getCatalogueIndex();
+        const { catalogueWeaponName } = require('../utils/catalogue');
+        const rows = [{ name: '▸ All lists', value: '~lists~' }, ...lists.LISTS.map(l => ({ name: `▸ ${l.label}`, value: `~scope~${l.token}` }))].filter(r => !focusedValue || fuzzyMatch(focusedValue, r.name.slice(2)));
+        const byWeapon = new Map();
+        for (const b of await lists.listedBuilds()) { if (!byWeapon.has(b.weaponKey)) byWeapon.set(b.weaponKey, []); byWeapon.get(b.weaponKey).push(b); }
+        const weapons = [...byWeapon.values()].map(g => ({ weaponName: catalogueWeaponName(g[0].weaponName), weaponKey: g[0].weaponKey, category: g[0].category, line: lists.weaponLine(g) }));
+        const matched = focusedValue ? findWeaponMatches(focusedValue, weapons) : weapons;
+        return await interaction.respond([...rows, ...matched.slice(0, 25 - rows.length).map(w => ({ name: `${w.weaponName} · ${w.line}`.slice(0, 100), value: w.weaponKey }))]);
     } else if (commandName === 'gunsmith') {
         const sub = interaction.options.getSubcommand();
         if (sub !== 'mp' && sub !== 'dmz') return await interaction.respond([]);

@@ -320,11 +320,14 @@ async function resolveRun(message, verdict) {
     for (const ac of verdict.autocomplete || []) {
         if (ac.option === 'weapon') {
             const found = await weaponFor(message, textCommand, ac.text);
-            if (!found) return null;
-            if (found.hit) { values.weapon = found.hit.value; continue; }
+            // A weapon asked for inside a list (`d meta ak117`, utils/textCommands/args.js) is wrapped as `~lists~<list>~<weaponKey>`; with no weapon found the list's page still opens, as `d meta` alone does.
+            const wrap = v => (ac.wrap ? `${ac.wrap}~${v}` : v);
+            if (!found) { if (ac.wrap) { values.weapon = ac.wrap; continue; } return null; }
+            if (found.hit) { values.weapon = wrap(found.hit.value); continue; }
+            if (ac.wrap && !found.several.length) { values.weapon = ac.wrap; continue; }
             // Every typed word named a weapon, but more than one fits (`d build kilo`: KILO 141 and KILO BOLT-ACTION). That is a weapon request whichever prefix it came with, so it gets Did you mean after `d` too (Harkirat, 2026-10-29 11:05 EDT: "how do we handle when multiple weapons fit the search? such as if someone typed 'd build kilo'"). A LOOSE match (no typed word is a weapon word: `d gs lol`) is offered only after @Dioreo, and never run.
             const list = found.several.length ? found.several : (verdict.addressed ? found.loose : []);
-            if (list.length) return { kind: 'pick', textCommand, choices: list.slice(0, 5).map(c => ({ label: c.label, values: { ...values, weapon: c.value } })) };
+            if (list.length) return { kind: 'pick', textCommand, choices: list.slice(0, 5).map(c => ({ label: c.label, values: { ...values, weapon: wrap(c.value) } })) };
             if (!verdict.addressed) return null;
             return { kind: 'noMatch', text: ac.text };
         }

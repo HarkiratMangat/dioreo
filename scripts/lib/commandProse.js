@@ -42,6 +42,13 @@ const COMMANDS = {
         sample: { weapon: 'Fennec' },
         keywords: 'loadout loadouts build builds attachment gunsmith dmz meta weapon gun browse',
     },
+    '/gunsmith list': {
+        purpose: 'Every gunsmith list on one page: META, Best, Top 3, Top 5 and Honorable Mention, by class.',
+        facts: ['Pick a list or a weapon in view, or leave it empty for the page with every list.',
+                'The buttons under the page open each list in full, and the dropdowns jump to a weapon.'],
+        sample: { view: 'META' },
+        keywords: 'list lists meta best top top3 top5 hm honorable mention tier tierlist ranking rankings strongest gunsmith mp class',
+    },
     // '/dmz' prose removed while /dmz is hidden (2026-10-21 22:42 EDT); restore it with the command (docs/db-deferred-list.md, Queued).
 
     '/draws': {
@@ -129,6 +136,7 @@ const ASKS = [
     { q: "What's in the draws this season", to: '/draws' },
     { q: 'The build for one weapon', to: '/gunsmith mp' },
     { q: 'Builds for a category, or the meta', to: '/gunsmith mp' },
+    { q: 'Every Meta, Best, Top and Honorable Mention weapon on one page', to: '/gunsmith list' },
     { q: 'DMZ builds, or the DMZ meta', to: '/gunsmith dmz' },
     // /dmz is hidden until the DMZ info update (Harkirat, 2026-10-21); its ask was { q: 'A DMZ build, straight to a weapon', to: '/dmz' }.
     { q: 'When the season ends', to: '/season end' },
@@ -166,6 +174,7 @@ const SEARCH_CASES = [
 const TOP_CASES = [
     { q: 'when does the season end', top: '/season end' },
     { q: 'best ak117 build', top: '/gunsmith mp' },
+    { q: 'gunsmith tier list', top: '/gunsmith list' },
     { q: 'what got nerfed', top: '/patch notes' },
     { q: 'add the bot to my server', top: '/invite' },
     { q: 'my pfp colours', top: '/colors' },

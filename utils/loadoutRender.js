@@ -112,6 +112,9 @@ async function checkImageExists(imageKey) {
     }
 }
 
+// Top 3 and Top 5 each have their own emoji (2026-11-02 20:30 EST); any other N (an old top4 reads as top5) takes Top 5's.
+function topEmoji(n) { return String(n) === '3' ? emojis.top3 : emojis.top5; }
+
 // An emoji that may not be on the app yet (Ass, Capable, the Rank Mode marks): the live one by name, else the placeholder given, else nothing, so the word still renders alone.
 function optionalEmoji(name, placeholder = null) {
     const e = (emojis.byName ? emojis.byName(name) : null) || placeholder;
@@ -121,7 +124,8 @@ function optionalEmoji(name, placeholder = null) {
 // "Badges" shown under the weapon name (Meta / Best-in-category / Top-N-in-category / Capable, Toxic, Ass) -- only rendered when actually granted (see models/Loadout.js), joined by the `blank` spacer emoji rather than a visible separator character when both are present. `categoryRank` is free-form ('best' or 'top{N}', not a fixed "top3" enum) since not every category tops out at exactly 3 -- see adminParser.js's parseLoadoutBadges(). Returns null (render nothing) if the build has no badges at all.
 function buildBadgesLine(build) {
     const badges = [];
-    if (build.isMeta) badges.push(`${emojis.meta} Meta`);
+    // The badge words are his wording, 2026-11-02 20:35 EST: META, Best in class, Top 3 / Top 5 in class, Toxic, Straight ASS, Honorable Mention, with no class name after them ("no \"ar\", smg, etc"). DMZ keeps its range words (Close Range, Mid-Long Range, DMZ), since a DMZ build has no class tier.
+    if (build.isMeta) badges.push(`${emojis.meta} META`);
     // DMZ builds NEVER use the per-category Best/TopN system (categoryRank) -- /dmz has no per-category commands the way MP does, so a category-name badge ("Best AR") doesn't read as meaningfully there. `dmzRangeRank` covers every DMZ rank badge instead: a bare 'best'/'top{N}' (no range specified) renders as "... DMZ", and a '-close'/'-midlong' suffixed value renders with a combat-range-role label instead. Reuses the same Best/Top emojis either way.
     if (build.mode === 'DMZ') {
         if (build.dmzRangeRank) {
@@ -131,24 +135,24 @@ function buildBadgesLine(build) {
             if (build.dmzRangeRank.startsWith('best')) {
                 badges.push(`${emojis.best} Best ${rangeLabel}`);
             } else if (build.dmzRangeRank.startsWith('capable')) {
-                badges.push(`${optionalEmoji('Capable', emojis.capable)}Capable ${rangeLabel}`);
+                badges.push(`${optionalEmoji('HM', emojis.hm)}Honorable Mention ${rangeLabel}`);
             } else {
                 const topMatch = build.dmzRangeRank.match(/^top(\d+)/);
-                if (topMatch) badges.push(`${emojis.top} Top ${topMatch[1]} ${rangeLabel}`);
+                if (topMatch) badges.push(`${topEmoji(topMatch[1])} Top ${topMatch[1]} ${rangeLabel}`);
             }
         }
     } else if (build.categoryRank === 'best') {
-        badges.push(`${emojis.best} Best ${displayCategoryLabel(build.category)}`);
+        badges.push(`${emojis.best} Best in class`);
     } else if (build.categoryRank === 'capable') {
         // The tier always names its category in the bot ("Capable AR"); the portal may leave the word off (his ruling, 2026-09-24).
-        badges.push(`${optionalEmoji('Capable', emojis.capable)}Capable ${displayCategoryLabel(build.category)}`);
+        badges.push(`${optionalEmoji('HM', emojis.hm)}Honorable Mention`);
     } else if (build.categoryRank) {
         const topMatch = build.categoryRank.match(/^top(\d+)$/);
-        if (topMatch) badges.push(`${emojis.top} Top ${topMatch[1]} ${displayCategoryLabel(build.category)}`);
+        if (topMatch) badges.push(`${topEmoji(topMatch[1])} Top ${topMatch[1]} in class`);
     }
     // "Toxic" is independent of Meta/Best/TopN (a build can be unbalanced/cheese without being the objectively best in its category, or vice versa) -- see models/Loadout.js's isToxic field.
     if (build.isToxic) badges.push(`${emojis.toxic} Toxic`);
-    if (build.isAss) badges.push(`${optionalEmoji('Ass', emojis.ass)}Ass`);
+    if (build.isAss) badges.push(`${optionalEmoji('Ass', emojis.ass)}Straight ASS`);
     if (badges.length === 0) return null;
     return `**${badges.join(`${emojis.blank} `)}**`;
 }
@@ -166,9 +170,55 @@ function toSentenceCase(str) {
     return str.replace(/^(\s*)([a-z])/, (_, lead, first) => lead + first.toUpperCase());
 }
 
-// Discord blockquote syntax ("> " per line) -- handles a multi-line description, not just a single line, even though every description seen so far has been one line.
+// A build's comment: a quote in small text, `> -# ` per line (Harkirat, 2026-11-02 17:56 EST: "all the comments go as quote subtext (> -#)", the Locus builds as his reference). Handles a multi-line description.
 function toBlockquote(str) {
-    return str.split('\n').map(line => `> ${line}`).join('\n');
+    return str.split('\n').map(line => `> -# ${line}`).join('\n');
+}
+
+// What the gunsmith code reads and copies as, his format (Harkirat, 2026-11-02 10:44 EST: "change the gunsmith code copy output to `WeaponName-Code`, such as `AK117-1C2B4A8B9A`"; 21:49 EST: a name with a space keeps it; 22:11 EST, reversing that day's "it can't be all caps": "you can do all caps for the code. and spaces/dashes as per the weapon's name"): the weapon's catalogue name in capitals, keeping its own spaces and dashes, a hyphen, the code, so ISO Hemlock reads ISO HEMLOCK-1C2E4E8A9C. A build with no real code keeps its bare build name.
+function gunsmithCodeText(build, code = build.shareCode) {
+    if (!code) return build.buildName;
+    return `${require('./catalogue').catalogueWeaponName(build.weaponName).toUpperCase()}-${code}`;
+}
+
+// Swap options (models/Loadout.js `variants`): option 0 is the build itself, option i its (i-1)th variant, as a build-shaped view so every reader (attachments, code, picture, copy) treats it like a build.
+function variantCount(build) { return 1 + ((build && build.variants) || []).length; }
+function variantView(build, v = 0) {
+    const i = Math.min(Math.max(Number(v) || 0, 0), variantCount(build) - 1);
+    if (!i) return build;
+    const x = build.variants[i - 1];
+    return { ...build, attachments: x.attachments || [], attachmentSlots: x.attachmentSlots || [], shareCode: x.shareCode || '', imageKey: x.imageKey || build.imageKey, variantLabel: x.label || '' };
+}
+// The slots whose attachment is not the same in every option (a slot one option leaves empty counts). Keyed by slot name, or by position for a build with no slot names.
+function slotMap(b) { const m = {}; (b.attachments || []).forEach((a, i) => { m[(b.attachmentSlots || [])[i] || `#${i}`] = a; }); return m; }
+function swapSlots(build) {
+    const views = Array.from({ length: variantCount(build) }, (_, i) => slotMap(variantView(build, i)));
+    const keys = new Set(views.flatMap(m => Object.keys(m)));
+    return new Set([...keys].filter(k => views.some(m => m[k] !== views[0][k])));
+}
+// One option's button label: its own label, else what it puts in the swapped slots ("Monolithic Suppressor", "No Stock + Fast Extended Mag").
+function variantLabel(build, i) {
+    const view = variantView(build, i);
+    if (i && build.variants[i - 1].label) return build.variants[i - 1].label.slice(0, 80);
+    if (!i && build.variantLabel) return build.variantLabel.slice(0, 80);
+    const swap = swapSlots(build), m = slotMap(view);
+    const names = [...swap].map(k => m[k]).filter(Boolean);
+    return (names.join(' + ') || `Option ${i + 1}`).slice(0, 80);
+}
+// What Copy Code / Copy Attachments reply with. A build with options gives every option, each under its own name, so each code or list can be copied on its own.
+function copyText(build, what) {
+    const one = v => (what === 'code' ? gunsmithCodeText(build, v.shareCode) : orderedAttachments(v).join('\n'));
+    if (variantCount(build) < 2) return one(build);
+    return Array.from({ length: variantCount(build) }, (_, i) => `**Option ${String.fromCharCode(65 + i)}**\n${one(variantView(build, i))}`).join('\n\n');
+}
+// Every build with options shows as one compact card per option (Harkirat, 2026-11-02 20:18 EST: "merged builds = options layout. simple"; the layout is his pick "3" at 20:13 EST, over the 20:06 EST full-size cards; a regular panel with "or" lines for same-slot options was tried at 20:13 EST and dropped): the option and its code on the title line, its full attachment list numbered in small text, its screenshot beside it, no dividers.
+function optionCards(build) {
+    return Array.from({ length: variantCount(build) }, (_, i) => {
+        const v = variantView(build, i);
+        const code = v.mode !== 'DMZ' && v.shareCode ? ` · ${emojis.gunsmithCode} \`${gunsmithCodeText(build, v.shareCode)}\`` : '';
+        const text = { type: 10, content: `**Option ${String.fromCharCode(65 + i)}**${code}\n${orderedAttachments(v).map((att, n) => `-# ${n + 1}. ${att}`).join('\n')}` };
+        return hasRealImage(v) ? { type: 9, components: [text], accessory: { type: 11, media: { url: buildImageUrl(v.imageKey) } } } : text;
+    });
 }
 
 // "Browse other builds in this category" dropdown (added 2026-07-12, per Harkirat's request) -- lets a user jump straight to a different weapon's card without re-running the slash command, instead of just paging within the current weapon's own builds. `categoryBuilds` is every Loadout doc sharing the current card's scope (same `category`+mode for MP, or every `mode: 'DMZ'` doc for DMZ, since /dmz has no per-category commands the way MP does).
@@ -252,7 +302,8 @@ function bestRankLabel(builds, { short = false } = {}) {
     }
     if (!best) return null;
     const raw = best.mode === 'DMZ' ? best.dmzRangeRank : '';
-    const label = best.mode === 'DMZ' ? (raw.includes('-close') ? 'Close Range' : raw.includes('-midlong') ? 'Mid-Long Range' : 'DMZ') : (short ? '' : displayCategoryLabel(best.category));
+    // MP reads "Best in class" / "Top 3 in class", the card's own words (2026-11-02 20:35 EST); `short` (the META list, whose line already names the class) drops "in class".
+    const label = best.mode === 'DMZ' ? (raw.includes('-close') ? 'Close Range' : raw.includes('-midlong') ? 'Mid-Long Range' : 'DMZ') : (short ? '' : 'in class');
     return (score === 0 ? `Best ${label}` : `Top ${score} ${label}`).trim();
 }
 
@@ -260,7 +311,7 @@ function bestRankLabel(builds, { short = false } = {}) {
 function weaponSummary(builds, { metaList = false } = {}) {
     const parts = [];
     if (metaList) parts.push(displayCategoryLabel(builds[0].category));
-    else if (builds.some(b => b.isMeta)) parts.push('Meta');
+    else if (builds.some(b => b.isMeta)) parts.push('META');
     const rank = bestRankLabel(builds, { short: metaList });
     if (rank) parts.push(rank);
     // Toxic too (Harkirat, 2026-10-25 23:33 EDT: MAN-O-WAR sat in the Meta list with no reason shown; "it's meta because of its toxic ability").
@@ -269,9 +320,13 @@ function weaponSummary(builds, { metaList = false } = {}) {
     return parts.join(' · ').slice(0, 100);
 }
 
-function buildLoadoutCardBody(activeBuild, { index = 0, total = 1, hideBadges = false, copyIds = null, footerBuild = true, footerClass = true } = {}) {
+function buildLoadoutCardBody(build, { index = 0, total = 1, hideBadges = false, copyIds = null, footerBuild = true, footerClass = true, variant = 0 } = {}) {
     // Numbered, his format (2026-10-25 15:38 EDT). `copyIds` is no longer drawn (the Copy buttons moved to the card's bottom row, 16:25 EDT) and is kept only so old callers still pass.
     void copyIds;
+    // A build with swap options shows the one picked (`variant`); the attachments that change between options carry 🔁 (his merged-build mock-up B, 2026-11-02 11:43 EST).
+    const activeBuild = variantView(build, variant);
+    const options = variantCount(build);
+    const cards = options > 1;
     const attachmentLines = orderedAttachments(activeBuild).map((att, i) => `${i + 1}. \`${att}\``).join('\n');
     const lastUpdatedUnix = Math.floor(new Date(activeBuild.lastUpdated).getTime() / 1000);
 
@@ -294,15 +349,17 @@ function buildLoadoutCardBody(activeBuild, { index = 0, total = 1, hideBadges = 
         containerComponents.push({ type: 10, content: toBlockquote(toSentenceCase(activeBuild.description)) });
     }
 
-    containerComponents.push({ type: 10, content: `### Attachments\n${attachmentLines}` });
+    // A build with options shows each option in full (optionCards); the attachments, code and picture below are a single build's.
+    if (cards) containerComponents.push(...optionCards(build));
+    else containerComponents.push({ type: 10, content: `### Attachments\n${attachmentLines}` });
 
     // Prefers the real in-game Gunsmith code (shareCode) when present, falling back to buildName — see models/Loadout.js for why these are two separate fields. DMZ builds never have a real code (confirmed by Harkirat — the DMZ Gunsmith screen doesn't expose one the way MP's does), so this whole section (and the Copy Code button below) is skipped entirely for DMZ rather than showing the buildName as if it were a real copyable code.
-    const codeText = activeBuild.mode !== 'DMZ' && (activeBuild.shareCode || activeBuild.buildName);
+    const codeText = activeBuild.mode !== 'DMZ' && gunsmithCodeText(activeBuild);
     // The code on its heading's line, his format (2026-10-25 15:38 EDT): "### Gunsmith Code: `1C2B4A8B9A`".
-    if (codeText) containerComponents.push({ type: 10, content: `### Gunsmith Code: \`${codeText}\`` });
+    if (codeText && !cards) containerComponents.push({ type: 10, content: `### Gunsmith Code: \`${codeText}\`` });
 
     // NOTE (removed during review, per Harkirat's request): there used to be a divider here between Gunsmith Code and the image -- dropped so the image sits directly under the text above it. 🔴 GUARDED, and NOT defensively -- found live 2026-08-23 12:58 EDT while wiring the change-detail panel. buildImageUrl() calls imageKey.startsWith(), which THROWS on a build with no imageKey. Every stored Loadout has one, so /gunsmith never hit it; a change panel does, because it reconstructs a BEFORE state as {...current, ...inversePayload} and renders delete payloads that may carry only the fields the op touched. renderRecord()'s try/catch would have swallowed the throw and quietly fallen back to a field list -- the budget fallback firing for the wrong reason, which is the "a guard that never fires is decoration" failure inverted. Omitting the gallery is the honest render of a build with no image.
-    if (activeBuild.imageKey) {
+    if (activeBuild.imageKey && !cards) {
         // A small space over the screenshot, no line (Harkirat, 2026-10-25 15:38-16:40 EDT: the line moved below the image, where it sets off the footer and the controls; it was a divider:true small since 2026-10-24 09:45 EDT).
         containerComponents.push({ type: 14, spacing: 1, divider: false });
         // A build with only the placeholder image says so in one quiet line instead of showing a grey "Coming Soon" rectangle; it stays in every list (his call, same message).
@@ -348,11 +405,17 @@ function mpSwitchRows(category, classBuilds, weaponSelectId, activeKey, missing 
     const weaponRow = { type: 1, components: [{ type: 3, custom_id: weaponSelectId, placeholder: `Browse other ${classPlural(category)}...`, options: [...weapons, ...more] }] };
     return [classRow, weaponRow];
 }
-function metaJumpRow(metaBuilds, selectId, activeKey) {
+function metaJumpRow(metaBuilds, selectId, activeKey, listLabel = 'META') {
     const groups = weaponGroups(metaBuilds).sort((a, b) => a[0].category.localeCompare(b[0].category) || a[0].weaponName.localeCompare(b[0].weaponName));
     if (groups.length < 2) return null;
     const options = windowAround(groups.map(list => ({ label: list[0].weaponName, value: list[0].weaponKey, description: weaponSummary(list, { metaList: true }) })), activeKey, 25);
-    return { type: 1, components: [{ type: 3, custom_id: selectId, placeholder: 'Jump to another META weapon...', options }] }; // names the META list (his 2026-10-25 23:32 EDT ask; META in capitals, 23:35 EDT)
+    return { type: 1, components: [{ type: 3, custom_id: selectId, placeholder: `Jump to another ${listLabel} weapon...`, options }] }; // names the list (his 2026-10-25 23:32 EDT ask; META in capitals, 23:35 EDT)
+}
+// Under a list's card (utils/gunsmithLists.js): move to the lists page or another list. `gsb~lists~MP`; the open list is preselected.
+function listSwitchRow(currentToken) {
+    const { LISTS } = require('./gunsmithLists');
+    const options = [{ label: 'All lists', value: 'all', description: 'Every list on one page' }, ...LISTS.map(l => ({ label: l.label, value: l.token, default: l.token === currentToken, ...(emojis[l.emoji] ? { emoji: emojis.parseEmoji(emojis[l.emoji]) } : {}) }))];
+    return { type: 1, components: [{ type: 3, custom_id: 'gsb~lists~MP', placeholder: 'View other lists...', options }] };
 }
 function dmzBrowseRow(dmzBuilds, selectId, activeKey) {
     // Ordered by class, then by name (his catch, 2026-10-25 23:47 EDT: "it should be organized by class alphabetically, and then weapon name alphabetically"); it was by name only until 2026-10-25 23:45 EDT (his catch: "organize the dmz dropdown").
@@ -365,8 +428,9 @@ function dmzBrowseRow(dmzBuilds, selectId, activeKey) {
 // Shared Components V2 card builder for /dmz and /gunsmith (mp + dmz, and their scoped browse) -- same layout for both, differing only in accent color and the button custom_id prefix ('dmz' vs 'mp') so handlers/loadouts.js can tell a click apart and query the right mode. The card's CONTENT comes from buildLoadoutCardBody above; everything this function adds is chrome (pager, the bottom row, the switch rows, share). `missing` is the open class's weapons with no build (utils/loadoutLookup.js missingWeapons), for the weapon dropdown's last option.
 //
 // HIS LAYOUT (2026-10-25 18:43-19:02 EDT, mock-ups C to E in #testing-spam; it replaced the 16:40 EDT order): the body ends with the footer under the image; then a row of the weapon's builds, a LARGE divider, and the arrows, which walk WEAPONS. Search... and Copy Code (DMZ: Copy Attachments) sit outside the card, above the dropdowns. The old `copyatt` ids still answer cards posted before.
-function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false, categoryBuilds = null, hideBadges = false, browse = null, missing = [] }) {
+function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false, categoryBuilds = null, hideBadges = false, browse = null, missing = [], variant = 0 }) {
     const activeBuild = builds[index];
+    variant = browse ? Math.min(Math.max(Number(variant) || 0, 0), variantCount(activeBuild) - 1) : 0;
     const mode = activeBuild.mode === 'DMZ' ? 'DMZ' : 'MP';
     const copyAttCustomId = browse ? `gsb~copyatt~${browse.scopeToken}~${browse.flatIndex}` : `${idPrefix}copyatt_${activeBuild.weaponKey}_${index}`;
     const copyCustomId = browse ? `gsb~copy~${browse.scopeToken}~${browse.flatIndex}` : `${idPrefix}copy_${activeBuild.weaponKey}_${index}`;
@@ -384,7 +448,8 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false,
         });
     }
     // The footer drops the class when the pager names it, and the build count always: the build row shows it (his 18:49 and 19:02 EDT calls).
-    const containerComponents = buildLoadoutCardBody(activeBuild, { index, total: builds.length, hideBadges, footerBuild: false, footerClass: !weaponPager });
+    const containerComponents = buildLoadoutCardBody(activeBuild, { index, total: builds.length, hideBadges, footerBuild: false, footerClass: !weaponPager, variant });
+
     // A browse card's build sits at a flat index in the scope, and a weapon's builds are next to each other there (utils/loadoutScopes.js sorts by class, then weapon), so build i is `flatIndex - index + i`. Five per row is Discord's cap; no weapon has more than five today.
     if (builds.length > 1) {
         const firstFlat = browse ? (Number(browse.flatIndex) || 0) - index : 0;
@@ -411,8 +476,11 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false,
     if (mode === 'DMZ') {
         const row = dmzBrowseRow(categoryBuilds, weaponSelectId, activeBuild.weaponKey);
         if (row) outerComponents.push(row);
-    } else if (scope && scope.metaOnly) {
-        const row = metaJumpRow(categoryBuilds, weaponSelectId, activeBuild.weaponKey);
+    } else if (scope && (scope.metaOnly || scope.list)) {
+        // A list's card (META, Best, Top 3 & 5, HM; 2026-11-02 21:44 EST): View other lists…, then the list's own weapons.
+        const label = scope.list ? require('./gunsmithLists').LISTS.find(l => l.token === browse.scopeToken)?.label || 'listed' : 'META';
+        outerComponents.push(listSwitchRow(browse.scopeToken));
+        const row = metaJumpRow(categoryBuilds, weaponSelectId, activeBuild.weaponKey, label);
         if (row) outerComponents.push(row);
     } else {
         outerComponents.push(...mpSwitchRows(activeBuild.category, categoryBuilds, weaponSelectId, activeBuild.weaponKey, missing));
@@ -455,4 +523,4 @@ function buildMissingWeaponCard({ weaponName, category, mode = 'MP', isEphemeral
     return { components, flags: 32768 };
 }
 
-module.exports = { classPlural, buildImageUrl, checkImageExists, buildLoadoutCard, buildLoadoutCardBody, buildMissingWeaponCard, getMpCategoryAccent, displayCategoryLabel, computeWeaponKeyAndBuild, findDuplicateLoadouts, isPlaceholderBuild, hasRealImage, orderedAttachments };
+module.exports = { classPlural, buildImageUrl, checkImageExists, buildLoadoutCard, buildLoadoutCardBody, buildMissingWeaponCard, getMpCategoryAccent, displayCategoryLabel, computeWeaponKeyAndBuild, findDuplicateLoadouts, isPlaceholderBuild, hasRealImage, orderedAttachments, variantView, variantCount, swapSlots, variantLabel, optionCards, copyText, gunsmithCodeText };

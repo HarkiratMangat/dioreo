@@ -200,7 +200,7 @@ async function handleCatalogueWarning(interaction) {
 function badgeNotes(unrecognized, warnings) {
     let out = '';
     if (unrecognized.length > 0) {
-        out += `\n${BOT_EMOJI.warn} Badge input not recognized and ignored: \`${unrecognized.join(', ')}\`. Valid options: \`meta\`, \`toxic\`, \`ass\`, \`best\`, \`top3\`, \`top5\`, \`capable\`, a rank mode (\`hp\`, \`s&d\`, \`dom\`, \`tdm\`, \`ftl\`, \`control\`; MP only), or a DMZ range badge (\`bestclose\`, \`top3midlong\`, \`capableclose\`).`;
+        out += `\n${BOT_EMOJI.warn} Badge input not recognized and ignored: \`${unrecognized.join(', ')}\`. Valid options: \`meta\`, \`toxic\`, \`ass\`, \`best\`, \`top3\`, \`top5\`, \`hm\`, a rank mode (\`hp\`, \`s&d\`, \`dom\`, \`tdm\`, \`ftl\`, \`control\`; MP only), or a DMZ range badge (\`bestclose\`, \`top3midlong\`, \`capableclose\`).`;
     }
     for (const w of warnings) out += `\n${BOT_EMOJI.warn} ${w}`;
     return out;

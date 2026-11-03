@@ -82,6 +82,19 @@ async function route(interaction) {
             return await renderScopeBrowse(interaction, { mode, category: isDmz ? null : undefined, metaOnly: false }, 0, { isUpdate: true, weaponKey: gunKey });
         }
 
+        // The gunsmith lists (2026-11-02 21:44 EST), both SELECTS: `gsb~lists~MP` (View other lists… under a list's card: the page, or another list) and `gsb~ljump~<A|B>` (the page's weapon dropdowns, value `<list scope token>|<weaponKey>`).
+        if (interaction.isStringSelectMenu() && interaction.customId === 'gsb~lists~MP') {
+            const picked = interaction.values[0];
+            if (picked === 'all') return await require('../utils/gunsmithLists').renderListsPage(interaction, { isUpdate: true });
+            const { parseScopeToken } = require('../utils/loadoutScopes');
+            return await require('../commands/gunsmith').renderScopeBrowse(interaction, parseScopeToken(picked), 0, { isUpdate: true });
+        }
+        if (interaction.isStringSelectMenu() && interaction.customId.startsWith('gsb~ljump~')) {
+            const [token, weaponKey] = String(interaction.values[0]).split('|');
+            const { parseScopeToken } = require('../utils/loadoutScopes');
+            return await require('../commands/gunsmith').renderScopeBrowse(interaction, parseScopeToken(token), 0, { isUpdate: true, weaponKey });
+        }
+
         // /gunsmith browse-row SCOPE JUMP dropdown -- a SELECT. Type-tested because `gsb~jump~...` would otherwise fall through to the button branch below if this file ever lost the explicit isStringSelectMenu() test -- the exact dead-branch bug this file's header documents (a select handler written under isButton() becomes dead code with no error).
         if (interaction.isStringSelectMenu() && interaction.customId.startsWith('gsb~jump~')) {
             const scopeToken = interaction.customId.split('~')[2];
@@ -155,8 +168,9 @@ async function route(interaction) {
                 }
                 const { weaponBuilds, indexWithinWeapon } = flatIndexToPosition(builds, flatIndexRaw);
                 const build = weaponBuilds[indexWithinWeapon];
-                const { orderedAttachments } = require('../utils/loadoutRender');
-                const replyContent = action === 'copy' ? (build.shareCode || build.buildName) : orderedAttachments(build).join('\n');
+                // A build with options copies every option, each under its name (utils/loadoutRender.js copyText). The code copies as `Weapon-CODE` with the weapon's real name, read from the catalogue.
+                await require('../utils/catalogue').getCatalogueIndex();
+                const replyContent = require('../utils/loadoutRender').copyText(build, action === 'copy' ? 'code' : 'attachments');
                 try {
                     // A build saved with no attachments has nothing to copy, and Discord rejects an empty `content` (2026-10-20, v3 sweep) -- say so rather than fail as "likely expired".
                     await interaction.reply({ content: replyContent || (BOT_EMOJI.cross + ' This build has nothing to copy yet.'), ephemeral: true });
@@ -220,7 +234,8 @@ async function route(interaction) {
                 // Awaited + wrapped in its own try/catch -- see the matching note above. No further fallback reply attempt on failure here (unlike the error-fallback sites): this IS the terminal action, and if the interaction token already failed once, a second reply attempt on the same token would fail too.
                 const build = matchingBuilds[newIndex];
                 // A card older than the list it indexes (a build deleted after render) points past the end, and a build saved with no attachments has nothing to copy -- Discord rejects an empty `content`. Both used to throw or fail as "likely expired" with no word to the user (2026-10-20, v3 sweep).
-                const copyText = !build ? '' : action === 'copy' ? (build.shareCode || build.buildName) : orderedAttachments(build).join('\n');
+                await require('../utils/catalogue').getCatalogueIndex();
+                const copyText = !build ? '' : require('../utils/loadoutRender').copyText(build, action === 'copy' ? 'code' : 'attachments');
                 if (!copyText) {
                     try {
                         await interaction.reply({ content: BOT_EMOJI.cross + (build ? ' This build has nothing to copy yet.' : ' That build no longer exists.'), ephemeral: true });
