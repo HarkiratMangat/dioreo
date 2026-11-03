@@ -59,7 +59,7 @@ assert.ok(card.indexOf('Muzzle') < card.indexOf('Grip') && card.indexOf('Grip') 
 const opts = JSON.parse(card).components.find(c => c.type === 1 && c.components[0].custom_id === 'mpbrowse').components[0].options;
 assert.ok(!opts.some(o => o.value === '~search~'), 'no search option: the Search button does that (2026-10-25 23:19 EDT)');
 assert.ok(!opts.some(o => o.value === 'pharo'), 'a Coming Soon placeholder is never listed');
-assert.ok(opts.some(o => o.value === 'bp50' && o.description === 'Meta · Best AR · 1 build'), 'an option carries its badges and build count');
+assert.ok(opts.some(o => o.value === 'bp50' && o.description === 'META · Best in class · 1 build'), 'an option carries its badges and build count');
 assert.ok(!opts.some(o => o.default), 'nothing is pre-selected');
 const browseAll = JSON.stringify(R.buildLoadoutCard(two, 0, { color: 1, idPrefix: 'mp', categoryBuilds: ar.slice(0, 3),
     browse: { scopeToken: 'MP.*.std', flatIndex: 2, flatTotal: 3, scopeLabel: 'All MP builds' } }));

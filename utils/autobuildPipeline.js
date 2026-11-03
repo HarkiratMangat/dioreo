@@ -591,7 +591,7 @@ async function cancelReview(interaction, token) {
 function badgeChoices(mode) {
     const e = require('./emojiMap');
     const icon = (mention) => (mention ? e.parseEmoji(mention) || { name: mention } : undefined);
-    const tiers = [['best', 'Best', e.best], ['top3', 'Top 3', e.top3], ['top5', 'Top 5', e.top5], ['capable', 'Capable', e.hm]];
+    const tiers = [['best', 'Best', e.best], ['top3', 'Top 3', e.top3], ['top5', 'Top 5', e.top5], ['capable', 'Honorable Mention', e.hm]];
     const out = [
         { label: 'Meta', value: 'meta', emoji: icon(e.meta) },
         { label: 'Toxic', value: 'toxic', emoji: icon(e.toxic) },

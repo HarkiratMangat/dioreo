@@ -124,7 +124,8 @@ function optionalEmoji(name, placeholder = null) {
 // "Badges" shown under the weapon name (Meta / Best-in-category / Top-N-in-category / Capable, Toxic, Ass) -- only rendered when actually granted (see models/Loadout.js), joined by the `blank` spacer emoji rather than a visible separator character when both are present. `categoryRank` is free-form ('best' or 'top{N}', not a fixed "top3" enum) since not every category tops out at exactly 3 -- see adminParser.js's parseLoadoutBadges(). Returns null (render nothing) if the build has no badges at all.
 function buildBadgesLine(build) {
     const badges = [];
-    if (build.isMeta) badges.push(`${emojis.meta} Meta`);
+    // The badge words are his wording, 2026-11-02 20:35 EST: META, Best in class, Top 3 / Top 5 in class, Toxic, Straight ASS, Honorable Mention, with no class name after them ("no \"ar\", smg, etc"). DMZ keeps its range words (Close Range, Mid-Long Range, DMZ), since a DMZ build has no class tier.
+    if (build.isMeta) badges.push(`${emojis.meta} META`);
     // DMZ builds NEVER use the per-category Best/TopN system (categoryRank) -- /dmz has no per-category commands the way MP does, so a category-name badge ("Best AR") doesn't read as meaningfully there. `dmzRangeRank` covers every DMZ rank badge instead: a bare 'best'/'top{N}' (no range specified) renders as "... DMZ", and a '-close'/'-midlong' suffixed value renders with a combat-range-role label instead. Reuses the same Best/Top emojis either way.
     if (build.mode === 'DMZ') {
         if (build.dmzRangeRank) {
@@ -134,24 +135,24 @@ function buildBadgesLine(build) {
             if (build.dmzRangeRank.startsWith('best')) {
                 badges.push(`${emojis.best} Best ${rangeLabel}`);
             } else if (build.dmzRangeRank.startsWith('capable')) {
-                badges.push(`${optionalEmoji('HM', emojis.hm)}Capable ${rangeLabel}`);
+                badges.push(`${optionalEmoji('HM', emojis.hm)}Honorable Mention ${rangeLabel}`);
             } else {
                 const topMatch = build.dmzRangeRank.match(/^top(\d+)/);
                 if (topMatch) badges.push(`${topEmoji(topMatch[1])} Top ${topMatch[1]} ${rangeLabel}`);
             }
         }
     } else if (build.categoryRank === 'best') {
-        badges.push(`${emojis.best} Best ${displayCategoryLabel(build.category)}`);
+        badges.push(`${emojis.best} Best in class`);
     } else if (build.categoryRank === 'capable') {
         // The tier always names its category in the bot ("Capable AR"); the portal may leave the word off (his ruling, 2026-09-24).
-        badges.push(`${optionalEmoji('HM', emojis.hm)}Capable ${displayCategoryLabel(build.category)}`);
+        badges.push(`${optionalEmoji('HM', emojis.hm)}Honorable Mention`);
     } else if (build.categoryRank) {
         const topMatch = build.categoryRank.match(/^top(\d+)$/);
-        if (topMatch) badges.push(`${topEmoji(topMatch[1])} Top ${topMatch[1]} ${displayCategoryLabel(build.category)}`);
+        if (topMatch) badges.push(`${topEmoji(topMatch[1])} Top ${topMatch[1]} in class`);
     }
     // "Toxic" is independent of Meta/Best/TopN (a build can be unbalanced/cheese without being the objectively best in its category, or vice versa) -- see models/Loadout.js's isToxic field.
     if (build.isToxic) badges.push(`${emojis.toxic} Toxic`);
-    if (build.isAss) badges.push(`${optionalEmoji('Ass', emojis.ass)}Ass`);
+    if (build.isAss) badges.push(`${optionalEmoji('Ass', emojis.ass)}Straight ASS`);
     if (badges.length === 0) return null;
     return `**${badges.join(`${emojis.blank} `)}**`;
 }
@@ -295,7 +296,8 @@ function bestRankLabel(builds, { short = false } = {}) {
     }
     if (!best) return null;
     const raw = best.mode === 'DMZ' ? best.dmzRangeRank : '';
-    const label = best.mode === 'DMZ' ? (raw.includes('-close') ? 'Close Range' : raw.includes('-midlong') ? 'Mid-Long Range' : 'DMZ') : (short ? '' : displayCategoryLabel(best.category));
+    // MP reads "Best in class" / "Top 3 in class", the card's own words (2026-11-02 20:35 EST); `short` (the META list, whose line already names the class) drops "in class".
+    const label = best.mode === 'DMZ' ? (raw.includes('-close') ? 'Close Range' : raw.includes('-midlong') ? 'Mid-Long Range' : 'DMZ') : (short ? '' : 'in class');
     return (score === 0 ? `Best ${label}` : `Top ${score} ${label}`).trim();
 }
 
@@ -303,7 +305,7 @@ function bestRankLabel(builds, { short = false } = {}) {
 function weaponSummary(builds, { metaList = false } = {}) {
     const parts = [];
     if (metaList) parts.push(displayCategoryLabel(builds[0].category));
-    else if (builds.some(b => b.isMeta)) parts.push('Meta');
+    else if (builds.some(b => b.isMeta)) parts.push('META');
     const rank = bestRankLabel(builds, { short: metaList });
     if (rank) parts.push(rank);
     // Toxic too (Harkirat, 2026-10-25 23:33 EDT: MAN-O-WAR sat in the Meta list with no reason shown; "it's meta because of its toxic ability").
