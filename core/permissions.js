@@ -74,6 +74,7 @@ const OP_TIERS = {
     // MP + DMZ Loadouts (one op set; the page comes from the op's mode)
     'loadout.add': 'create',
     'loadout.edit': 'create',
+    'loadout.credit': 'create',   // who a build is credited to (utils/loadoutCredit.js): the same tier as an edit
     'loadout.delete': 'destructive',
     'loadout.bulkAdd': 'create',
     'loadout.bulkReplace': 'create',

@@ -300,6 +300,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-11-01 01:05 EDT — The draw image index: 98 images read three ways, and what each way got wrong (v3.4.1)
 - 2026-11-01 19:05 EST — Retiring v3-pre-release, and a launch date taken on trust (v3.5.1)
 - 2026-11-02 22:36 EST — Gunsmith lists, and a report that named no database (v3.6.0)
+- 2026-11-03 00:28 EST — Build credit, in his four styles (v3.7.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4897,6 +4898,15 @@ Harkirat's gunsmith update ran a full day in one thread: his badge list applied 
 - **A report that named no database.** The morning's report said BAL-27 had no build. That was true of prod, where his own bulk delete on 28 October had removed all five, and false of the dev bot he was looking at, which still had them. A claim about data is a claim about one host and one database; say which, and read the change log before calling something missing.
 - **"The shared dev database" was an assumption too.** The worktree's `.env.dev` names `diors-builds-dev` on the Atlas `dioreo-dev` cluster; the main checkout's names no database, so it reads the empty `test`. The repo still said local Mongo. Two checkouts can disagree about the same word.
 - **A pass found what the tests could not.** The end-of-session think-pass found four badge emoji ids already stale on the branch (the hourly sync had re-added them on prod) and a prod apply that depended on screenshots in ~/Downloads. Neither breaks a test; both would have surfaced on deploy day.
+
+## 2026-11-03 00:28 EST — Build credit, in his four styles (v3.7.0)
+
+Credit on gunsmith builds went its own way from v3.6.0, in one evening's thread. The first build followed the earlier proposal (a Discord user or a plain name) and was on the dev bot within the hour; his reply was a fuller design: an @user, a username in plain text, a hyperlink, or "By *anonymous*", each under one of three prefixes, with the link held back from players.
+
+**What went wrong, and what it teaches.**
+- **The first design was built from the last lead's proposal, not from him.** It was quick to change because the credit sat behind one module (`utils/loadoutCredit.js`) and one op, so the rework touched the model, the pop-up and the footer line and nothing else. A proposal he hasn't confirmed is worth building only that thin.
+- **A review caught a permission seam.** The new op took its page from the mode the caller sent, so an admin with only one mode's page could have recorded a credit change under the other. It now checks the stored build's mode, as the other loadout ops do (`LOADOUT_OPS_BY_ID`).
+- **"No credit" meant two things.** Hiding the line on a submitted build hid that a player had sent it; his call kept "By *anonymous*" there.
 
 # Part B — Lessons Ledger (thematic)
 

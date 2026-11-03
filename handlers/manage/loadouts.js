@@ -321,9 +321,67 @@ async function handleSavedAction(interaction) {
         if (!doc) return await interaction.reply({ content: `${BOT_EMOJI.cross} That build no longer exists.`, ephemeral: true });
         return await interaction.showModal(await editLoadoutModal(doc));
     }
+    if (id.startsWith('mng_ldcredit_')) {
+        const doc = await Loadout.findById(id.replace('mng_ldcredit_', '')).lean();
+        if (!doc) return await interaction.reply({ content: `${BOT_EMOJI.cross} That build no longer exists.`, ephemeral: true });
+        return await interaction.showModal(creditModal(doc));
+    }
     // Revert is shared with the draw, event and season panels (handlers/manage/results.js).
     const changeIds = id.replace('mng_ldrevert|', '').split(',').filter(Boolean);
     return await require('./results').revertChanges(interaction, changeIds, 'the build is back as it was.\n-# The picture keys the save made stay on Cloudinary');
+}
+
+// --- CREDIT (Harkirat, 2026-11-02 23:10 EST: @user, a plain username, a hyperlink or anonymous, prefixed "Submitted by", "Credit:" or "Build by") --- The pop-up behind a build's Credit button. Five boxes, Discord's limit: how it shows, the prefix, a Discord user, a name, a link. Only this pop-up can set a hyperlink (utils/loadoutCredit.js). Saved through core's loadout.credit, so the answer carries Revert. Raw API JSON, as the Edit pop-up is (a select inside a Label).
+function creditModal(doc) {
+    const { CREDIT_MAX, URL_MAX, submissionCredit } = require('../../utils/loadoutCredit');
+    // A build with no credit field yet shows what its footer shows now: the submitter it falls back to.
+    const c = doc.credit?.show ? doc.credit : doc.submittedBy?.discordId ? submissionCredit(doc.submittedBy) : null;
+    const userId = c?.discordId || doc.submittedBy?.discordId || null;
+    const opt = (label, value, on) => ({ label, value, default: Boolean(on) });
+    return {
+        custom_id: `mng_ldcreditm_${doc._id}`, title: `Credit: ${doc.weaponName} ${doc.buildName}`.slice(0, 45),
+        components: [
+            { type: 18, label: 'Show as', description: 'No credit hides the line; a submitted build still reads By anonymous',
+              component: { type: 3, custom_id: 'show', required: true, min_values: 1, max_values: 1, options: [
+                  opt('@user (clickable)', 'user', c?.show === 'user'), opt('Username (plain text)', 'name', c?.show === 'name'),
+                  opt('Hyperlink', 'link', c?.show === 'link'), opt('By anonymous', 'anonymous', c?.show === 'anonymous'), opt('No credit', 'none', !c || c.show === 'none')] } },
+            { type: 18, label: 'Prefix', description: 'Not used for anonymous',
+              component: { type: 3, custom_id: 'prefix', required: false, min_values: 0, max_values: 1, options: [
+                  opt('Submitted by', 'submitted', !c?.prefix || c.prefix === 'submitted'), opt('Credit:', 'credit', c?.prefix === 'credit'), opt('Build by', 'buildby', c?.prefix === 'buildby')] } },
+            { type: 18, label: 'Discord user', description: 'For @user; for Username, their username is used when Name is empty',
+              component: { type: 5, custom_id: 'user', required: false, min_values: 0, max_values: 1, ...(userId ? { default_values: [{ id: userId, type: 'user' }] } : {}) } },
+            { type: 18, label: 'Name', description: 'The plain-text name, or the hyperlink\'s text',
+              component: { type: 4, custom_id: 'name', style: 1, required: false, max_length: CREDIT_MAX, ...(c?.name ? { value: c.name } : {}) } },
+            { type: 18, label: 'Link', description: 'For Hyperlink only: https://…',
+              component: { type: 4, custom_id: 'url', style: 1, required: false, max_length: URL_MAX, ...(c?.url ? { value: c.url } : {}) } },
+        ],
+    };
+}
+
+async function saveCredit(interaction) {
+    await interaction.deferReply({ ephemeral: true });
+    const Loadout = require('../../models/Loadout');
+    const { normalizeCredit } = require('../../utils/loadoutCredit');
+    const id = interaction.customId.replace('mng_ldcreditm_', '');
+    const before = await Loadout.findById(id).lean();
+    if (!before) return await interaction.followUp({ content: `${BOT_EMOJI.cross} That build no longer exists.` });
+    const get = (fn) => { try { return fn(); } catch { return null; } };
+    const show = (get(() => interaction.fields.getStringSelectValues('show')) || [])[0] || 'none';
+    const prefix = (get(() => interaction.fields.getStringSelectValues('prefix')) || [])[0] || 'submitted';
+    const user = get(() => interaction.fields.getSelectedUsers('user')?.first()) || null;
+    const typed = (get(() => interaction.fields.getTextInputValue('name')) || '').trim();
+    const url = (get(() => interaction.fields.getTextInputValue('url')) || '').trim();
+    const fail = (msg) => interaction.followUp({ content: `${BOT_EMOJI.cross} ${msg} Nothing was changed.` });
+    if (user?.bot) return await fail('That is a bot, not a player.');
+    if (show === 'user' && !user) return await fail('Pick the Discord user for @user.');
+    if (url && show !== 'link') return await fail('A link only shows with **Hyperlink**. Pick Hyperlink, or empty the Link box.');
+    const { credit, error } = normalizeCredit({ show, prefix, discordId: user?.id, name: typed || (show === 'name' && user ? user.username : ''), url });
+    if (error) return await fail(error);
+    const result = await commitSet([{ type: 'loadout.credit', target: { id, mode: before.mode }, payload: { credit } }], { actorId: interaction.user.id });
+    if (!result.ok) return await fail(extractCommitError(result));
+    const saved = await Loadout.findById(id).lean();
+    const { savedPanel } = require('../../utils/loadoutPanels');
+    return interaction.followUp({ flags: 32768 | 64, components: savedPanel({ doc: saved, before, changeIds: result.changeIds }) });
 }
 
 // Declarations, not arrow consts: handleCatalogueWarning above names them, and a const read before its line is a temporal dead zone (scripts/tdzRatchet.mjs).
@@ -495,4 +553,4 @@ async function deleteItem(match, actorId) {
     return result.changeIds;   // for the Revert button under "Deleted" (handlers/manage/index.js)
 }
 
-module.exports = { editLoadout, addLoadout, editLoadoutModal, pictureWarningPanel, handleSavedAction, bulkAddLoadouts, handleCatalogueWarning, bulkDeleteLoadouts, exportUpTo5, exportCategory, deleteItem };
+module.exports = { editLoadout, addLoadout, editLoadoutModal, creditModal, saveCredit, pictureWarningPanel, handleSavedAction, bulkAddLoadouts, handleCatalogueWarning, bulkDeleteLoadouts, exportUpTo5, exportCategory, deleteItem };

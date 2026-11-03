@@ -48,6 +48,8 @@ function changeLines(before, after) {
     if (added.length || removed.length) out.push(`**Attachments:** ${[...added.map(a => `+ ${a}`), ...removed.map(a => `− ~~${a}~~`)].join(' · ')}`);
     else if (oldA.join('|') !== newA.join('|')) out.push('**Attachments:** reordered');
     was(loadoutBadgeTokens(before).join(', '), loadoutBadgeTokens(after).join(', '), 'Badges');
+    const { creditLine } = require('./loadoutCredit');
+    was(creditLine(before), creditLine(after), 'Credit');
     if ((before.imageKey || '') !== (after.imageKey || '')) out.push(`**Picture:** ${isRealPicture(after.imageKey) ? code(after.imageKey) : '*none*'}`);
     return out;
 }
@@ -59,6 +61,8 @@ function actionRow(doc, changeIds = []) {
     return { type: 1, components: [
         { type: 2, style: 2, label: 'Open in /gunsmith', custom_id: `mng_ldopen_${id}`, emoji: emojis.parseEmoji(emojis.search) },
         { type: 2, style: 1, label: 'Edit again', custom_id: `mng_ldedit_${id}`, emoji: emojis.parseEmoji(emojis.edit) },
+        // Who the build is credited to (handlers/manage/loadouts.js creditModal, 2026-11-02 23:01 EST).
+        { type: 2, style: 2, label: 'Credit', custom_id: `mng_ldcredit_${id}` },
         ...(changeIds.length && revertId.length <= 100 ? [{ type: 2, style: 4, label: 'Revert', custom_id: revertId }] : []),
     ] };
 }

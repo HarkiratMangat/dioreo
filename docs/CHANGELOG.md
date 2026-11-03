@@ -29,7 +29,24 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.6.0 — 2026-11-02 22:36 EST (#245) — Gunsmith lists, merged builds as options, new badges, codes as WEAPON-CODE
+## v3.7.0 — 2026-11-03 00:28 EST (#246) — Build credit in four styles, and the GunsmithList emoji
+**From Harkirat, 2026-11-02 10:44 EST:** a manual "submitted by @user" on a build, plus a credit that is a plain name. **His design, 23:10 EST:** @user (clickable), **username** (plain text), a hyperlink, or always "By *anonymous*"; prefixed "Credit:", "Build by" or "Submitted by"; the form only offers @user, username or anonymous; a hyperlink only through /manage. **23:27 EST:** "No credit" on a submitted build still reads "By *anonymous*". **2026-11-03 00:23 EST:** the GunsmithList emoji for All lists.
+
+### Build credit
+- **The footer credit** (`utils/loadoutCredit.js`, `Loadout.credit {show, prefix, discordId, name, url}`): `Submitted by <@user>`, `Credit: **name**`, "Build by" with the name as a hyperlink, or `By *anonymous*`. A build approved before this falls back to its `submittedBy`, now reading "By *anonymous*" where it read "Submitted by *anonymous*".
+- **Submit a Build** asks Show my @ / Show my username / Stay anonymous (`BuildSubmission.creditAs`, `username`), always under "Submitted by". No link on the form, so no player can put a URL on a build.
+- **/manage**: a **Credit** button on a saved build and on the Edit search's one-match reply opens a five-box pop-up (show as, prefix, user, name, link). Saved through core's new `loadout.credit` op, so Revert works; its permission is checked against the stored build's mode.
+- **/autobuild**: `credit_user`, `credit_name` and `credit_prefix`. No thank-you DM: that user never sent the build.
+- **Dispute a Build**'s Change credit moves the footer credit too.
+- **PRIVACY.md 1.13** names the new fields (§2.1g, Appendix A); `public/privacy.html` rebuilt.
+
+### Lists
+- **GunsmithList**, his emoji, on the lists page title and the All lists option. Uploaded to Cloudinary `emoji-originals` and to Dioreo (Dev), Dioreo Admin (Dev) and prod Dioreo; prod Dioreo Admin gets it from the VM's hourly sync.
+
+### Not in this release
+- The portal's Armory has no credit field yet (`scripts/portalOpsReach.test.js` NO_SURFACE).
+
+## v3.6.0 — 2026-11-02 22:36 EST (#245 · `af2a59e3`) — Gunsmith lists, merged builds as options, new badges, codes as WEAPON-CODE
 **From Harkirat, 2026-11-02 10:44 EST:** his Meta / Best / Top 3 / Top 5 / HM list by class, Capable renamed "Honorable Mention (aka HM)", a lists command (`/gunsmith list view:`, `d meta|best|top`), and "change the gunsmith code copy output to `WeaponName-Code`". Through the day: merged builds ("merged builds = options layout. simple"), new badge emojis and his badge words, the one-page lists ("alright seems good", 21:44 EST), and the code in capitals with the weapon's own spaces and dashes (22:11 EST).
 
 ### Gunsmith lists

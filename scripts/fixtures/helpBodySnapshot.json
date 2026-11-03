@@ -29686,6 +29686,18 @@
           },
           {
             "type": 10,
+            "content": "`[credit_user]`\n-# Credit a Discord user, as a clickable @"
+          },
+          {
+            "type": 10,
+            "content": "`[credit_name]`\n-# Or a plain name, not clickable; never both"
+          },
+          {
+            "type": 10,
+            "content": "`[credit_prefix]`\n-# `Submitted by` (default) · `Credit:` · `Build by`"
+          },
+          {
+            "type": 10,
             "content": "`[retry_token]`\n-# Only to retry an image after a failed upload"
           },
           {

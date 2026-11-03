@@ -145,6 +145,9 @@ function buildReviewCard(token, data, opts = {}) {
         data.presetWarning ? `${BOT_EMOJI.warn} ${data.presetWarning}` : null, ...(data.formNotes || []).map(n => `${BOT_EMOJI.warn} ${n}`),
         ...(opts.notes || []),
     ].filter(Boolean);
+    // The credit /autobuild was given, so it is seen before Save (2026-11-02 23:01 EST).
+    const creditNote = data.credit ? require('./loadoutCredit').creditLine({ credit: data.credit }) : null;
+    if (creditNote) warnings.push(`-# ${creditNote}`);
 
     // His text layout, verbatim where he gave it (2026-10-20 13:19 EDT); the DMZ code line, a set label and the mode hints other than "detected" follow its pattern.
     const label = String(data.buildLabel || '').trim();
@@ -371,7 +374,9 @@ async function writeLoadoutDoc(data, imageKeyOverride) {
         ...(data.sourceHash ? { sourceHash: data.sourceHash } : {}),
         ...badges,
         // A build from Submit a Build keeps its submitter, shown only if they chose credit (utils/buildSubmissions.js, Harkirat 2026-10-25 17:06 EDT).
-        ...(data.submission ? { submittedBy: { discordId: data.submission.discordId, credited: Boolean(data.submission.credited) } } : {})
+        ...(data.submission ? { submittedBy: { discordId: data.submission.discordId, credited: Boolean(data.submission.credited) } } : {}),
+        // The footer's credit (utils/loadoutCredit.js, 2026-11-02 23:10 EST): a submission's own pick, or /autobuild's credit_user / credit_name. No thank-you DM for the latter: that user never sent the build, so the DM exception for submitters does not reach them.
+        ...(data.submission ? { credit: require('./loadoutCredit').submissionCredit(data.submission) } : data.credit ? { credit: data.credit } : {})
     });
     await doc.save();
 

@@ -77,7 +77,7 @@ function buildListsPage(builds, { isEphemeral = false } = {}) {
     const { withShareButton } = require('./shareButton');
     const blocks = classBlocks(builds);
     const container = { type: 17, accent_color: getMpCategoryAccent(null), components: [
-        { type: 10, content: `## ${emojis.meta} Gunsmith Lists\n-# MP · META, Best, Top 3, Top 5 and Honorable Mention, by class` },
+        { type: 10, content: `## ${emojis.gunsmithList} Gunsmith Lists\n-# MP · META, Best, Top 3, Top 5 and Honorable Mention, by class` },
         { type: 14, spacing: 1, divider: true },
         ...(blocks.length ? blocks : [{ type: 10, content: '*The lists are pending an update. Check back soon.*' }]),
         { type: 14, spacing: 2, divider: true },

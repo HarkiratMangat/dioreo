@@ -15,6 +15,10 @@ const BuildSubmissionSchema = new mongoose.Schema({
     attachments: { type: [String], default: [] },
     notes: { type: String, default: '' },
     credited: { type: Boolean, default: false },
+    // How they asked to be credited (2026-11-02 23:10 EST): `user` their @, `name` their username in plain text, `anonymous`. `credited` stays true for the first two, so older code and the dispute card read it as before.
+    creditAs: { type: String, enum: ['user', 'name', 'anonymous'], default: undefined },
+    // Their Discord username when they sent it, kept only when they chose to be credited by it.
+    username: { type: String, default: undefined },
     hasScreenshot: { type: Boolean, default: false },
     status: { type: String, enum: ['pending', 'approved', 'denied'], default: 'pending' },
     dmChannelId: { type: String, default: null },

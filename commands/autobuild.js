@@ -17,6 +17,10 @@ module.exports = {
         // Optional override for the mode the screenshot's UI chrome would decide. Left blank, a screenshot whose chrome is ambiguous gets a review card that asks, never a guess.
         .addStringOption(option => option.setName('mode').setDescription('MP or DMZ (optional -- read from the screenshot if omitted)').addChoices({ name: 'MP', value: 'MP' }, { name: 'DMZ', value: 'DMZ' }))
                 .addStringOption(option => option.setName('badges').setDescription('meta, best, top5, hm, toxic, ass, hp, s&d... (optional, this build only)'))
+        // Who to credit (utils/loadoutCredit.js, Harkirat 2026-11-02 23:10 EST): a Discord user (@, clickable) or a plain name, and the prefix. A hyperlink or anonymous is set from /manage's Credit button.
+        .addUserOption(option => option.setName('credit_user').setDescription('Credit a Discord user on the card, as a clickable @ (optional)'))
+        .addStringOption(option => option.setName('credit_name').setDescription('Or credit a plain name, not clickable (optional)').setMaxLength(32))
+        .addStringOption(option => option.setName('credit_prefix').setDescription('Submitted by (default), Credit: or Build by').addChoices({ name: 'Submitted by', value: 'submitted' }, { name: 'Credit:', value: 'credit' }, { name: 'Build by', value: 'buildby' }))
         .addStringOption(option => option.setName('retry_token').setDescription('Only used when re-submitting an image after a Cloudinary upload failure'))
         // Renamed `private` (boolean) -> `visibility` (Hidden/Public string) 2026-08-10 19:28 EDT. The bot-wide rename landed in v3.1.0 for every other command and missed this one, so this was the last `private` left in the bot -- see .claude/rules/commands-overview.md.
         .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat. (Defaults to only you.)').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
@@ -59,13 +63,26 @@ module.exports = {
             return interaction.reply({ content: require('../utils/emojiMap').glyphs(`${BOT_EMOJI.cross} Use \`screenshot\` or \`url\`, not both. To read several, run ${mentionCommand(interaction.client, '/autobuild')} on its own.`), ephemeral: true });
         }
 
+        // The credit is checked before the read starts, so a bad name never costs a vision read.
+        const creditUser = interaction.options.getUser('credit_user');
+        const creditName = interaction.options.getString('credit_name');
+        const creditPrefix = interaction.options.getString('credit_prefix') || 'submitted';
+        if (creditUser && creditName) return interaction.reply({ content: `${BOT_EMOJI.cross} Use \`credit_user\` or \`credit_name\`, not both.`, ephemeral: true });
+        if (creditUser?.bot) return interaction.reply({ content: `${BOT_EMOJI.cross} \`credit_user\` is a bot, not a player.`, ephemeral: true });
+        let credit = null;
+        if (creditUser || creditName) {
+            const out = require('../utils/loadoutCredit').normalizeCredit(creditUser ? { show: 'user', prefix: creditPrefix, discordId: creditUser.id } : { show: 'name', prefix: creditPrefix, name: creditName });
+            if (out.error) return interaction.reply({ content: `${BOT_EMOJI.cross} ${out.error}`, ephemeral: true });
+            credit = out.credit;
+        }
+
         await interaction.deferReply({ ephemeral: isEphemeral });
         const category = interaction.options.getString('category');
         const badges = interaction.options.getString('badges');
         const mode = interaction.options.getString('mode');
         // One screenshot is a batch of one (2026-10-20 12:43 EDT), so a single review and a bulk review are the same surface and cannot drift apart: Save and Discard stay on the page, Discard can be undone. A batch of one has no pager or Save All.
         const { runBulk } = require('../utils/autobuildBulk');
-        return runBulk(interaction, [imageUrl], { explicitCategory: category, badgesOption: badges, explicitMode: mode, ephemeral: isEphemeral });
+        return runBulk(interaction, [imageUrl], { explicitCategory: category, badgesOption: badges, explicitMode: mode, ephemeral: isEphemeral, credit });
     }
 };
 

@@ -298,7 +298,7 @@ const PAGES = {
     '/autobuild': adminPage('Read an MP or DMZ loadout out of a Gunsmith screenshot and stage it for review — nothing is saved until you press Save', [
         text('`[screenshot]`\n-# The Gunsmith screenshot to read; or `url`, never both'), text('`[url]`\n-# A link to the screenshot, if it is already hosted'),
         text('`[category]`\n-# `AR` · `SMG` · `LMG` · `Marksman` · `Sniper` · `Shotgun` · `Secondary`; blank: from the weapon, or asked'), text('`[mode]`\n-# `MP` · `DMZ`; blank: read from the screenshot, or asked'),
-        text('`[badges]`\n-# e.g. `meta,top5`: meta, toxic, ass, best, top3, top5, hm or a rank mode; blank means none'), text('`[retry_token]`\n-# Only to retry an image after a failed upload'), VIS,
+        text('`[badges]`\n-# e.g. `meta,top5`: meta, toxic, ass, best, top3, top5, hm or a rank mode; blank means none'), text('`[credit_user]`\n-# Credit a Discord user, as a clickable @'), text('`[credit_name]`\n-# Or a plain name, not clickable; never both'), text('`[credit_prefix]`\n-# `Submitted by` (default) · `Credit:` · `Build by`'), text('`[retry_token]`\n-# Only to retry an image after a failed upload'), VIS,
     ], [['/autobuild screenshot:[upload] category:SMG badges:meta,top5']], {
         usageNote: '-# On its own: a form for up to 10 screenshots or links, each with its own mode, category and badges',
         sections: [text('**Right-click or tap and hold a message**\n-# Apps → **Autobuild Gunsmith** on a message with a Gunsmith screenshot: the same review as /autobuild')],
