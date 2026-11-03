@@ -112,6 +112,9 @@ async function checkImageExists(imageKey) {
     }
 }
 
+// Top 3 and Top 5 each have their own emoji (2026-11-02 20:30 EST); any other N (an old top4 reads as top5) takes Top 5's.
+function topEmoji(n) { return String(n) === '3' ? emojis.top3 : emojis.top5; }
+
 // An emoji that may not be on the app yet (Ass, Capable, the Rank Mode marks): the live one by name, else the placeholder given, else nothing, so the word still renders alone.
 function optionalEmoji(name, placeholder = null) {
     const e = (emojis.byName ? emojis.byName(name) : null) || placeholder;
@@ -131,20 +134,20 @@ function buildBadgesLine(build) {
             if (build.dmzRangeRank.startsWith('best')) {
                 badges.push(`${emojis.best} Best ${rangeLabel}`);
             } else if (build.dmzRangeRank.startsWith('capable')) {
-                badges.push(`${optionalEmoji('Capable', emojis.capable)}Capable ${rangeLabel}`);
+                badges.push(`${optionalEmoji('HM', emojis.hm)}Capable ${rangeLabel}`);
             } else {
                 const topMatch = build.dmzRangeRank.match(/^top(\d+)/);
-                if (topMatch) badges.push(`${emojis.top} Top ${topMatch[1]} ${rangeLabel}`);
+                if (topMatch) badges.push(`${topEmoji(topMatch[1])} Top ${topMatch[1]} ${rangeLabel}`);
             }
         }
     } else if (build.categoryRank === 'best') {
         badges.push(`${emojis.best} Best ${displayCategoryLabel(build.category)}`);
     } else if (build.categoryRank === 'capable') {
         // The tier always names its category in the bot ("Capable AR"); the portal may leave the word off (his ruling, 2026-09-24).
-        badges.push(`${optionalEmoji('Capable', emojis.capable)}Capable ${displayCategoryLabel(build.category)}`);
+        badges.push(`${optionalEmoji('HM', emojis.hm)}Capable ${displayCategoryLabel(build.category)}`);
     } else if (build.categoryRank) {
         const topMatch = build.categoryRank.match(/^top(\d+)$/);
-        if (topMatch) badges.push(`${emojis.top} Top ${topMatch[1]} ${displayCategoryLabel(build.category)}`);
+        if (topMatch) badges.push(`${topEmoji(topMatch[1])} Top ${topMatch[1]} ${displayCategoryLabel(build.category)}`);
     }
     // "Toxic" is independent of Meta/Best/TopN (a build can be unbalanced/cheese without being the objectively best in its category, or vice versa) -- see models/Loadout.js's isToxic field.
     if (build.isToxic) badges.push(`${emojis.toxic} Toxic`);
