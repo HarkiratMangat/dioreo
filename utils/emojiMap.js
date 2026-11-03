@@ -96,13 +96,13 @@ const emojis = {
     left: '<:Left:1523864238836154449>',
     right: '<:Right:1523864237972127775>',
     // Loadout "badges" (utils/loadoutRender.js) — Meta, Best, Top 3, Top 5, HM, Toxic and Ass each have their own emoji (see buildBadgesLine()); never reuse one for another tier. His new badge set (Harkirat, 2026-11-02 20:30 EST: "New emojis for the badges. Remove the old ones. Name them Meta, Toxic, HM, Top3, Top5, Best, Ass"): Top 3 and Top 5 each have their own emoji now (the single Top emoji is retired), and HM replaces Capable. Originals in Cloudinary emoji-originals/.
-    meta: '<a:Meta:1566988540754268160>',
-    best: '<a:Best:1566988549566234836>',
+    meta: '<a:Meta:1566994038974976050>',
+    best: '<a:Best:1566994036919640064>',
     top3: '<a:Top3:1566988546395349046>',
     top5: '<a:Top5:1566988547951689870>',
-    toxic: '<a:Toxic:1566988543488823356>',
+    toxic: '<a:Toxic:1566994040749170779>',
     // Ass and HM (the tier stored as `capable`): his art, replaced with the new set 2026-11-02 20:30 EST. utils/loadoutRender.js's optionalEmoji reads them by name, so a bot missing one shows the word alone.
-    ass: '<a:Ass:1566988552024096840>',
+    ass: '<a:Ass:1566994034675810384>',
     hm: '<a:HM:1566988544486932542>',
     blank: '<:blank:1524243739206352906>',
     // "View Colors" button in /settings (utils/colorPaletteView.js, handlers/colors.js's colors_view/ colors_page_ handlers) -- blurple-recolored, background-removed eyedropper icon, per Harkirat's own design pass (2026-07-13). Uploaded by Harkirat directly, not via this bot.
