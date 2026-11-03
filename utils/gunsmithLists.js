@@ -107,10 +107,12 @@ function buildListsPage(builds, { isEphemeral = false, season = null, page = 'ma
         { type: 10, content: `## ${emojis.gunsmithList || ''} Current META Weapons${seasonLine}` },
         { type: 14, spacing: 2, divider: true },
         ...(blocks.length ? withDividers(blocks) : [{ type: 10, content: '*The lists are pending an update. Check back soon.*' }]),
+        // The /draws order (his pick A, 2026-11-03 13:23 EST): a small gap, the pager under the lists, a large divider, then the hint and every list's button, on both pages.
+        { type: 14, spacing: 1, divider: false },
+        pager(meta),
         { type: 14, spacing: 2, divider: true },
         { type: 10, content: '-# View all builds for…' },
-        { type: 1, components: (meta ? LISTS.slice(0, 1) : LISTS).map(listButton) },
-        pager(meta),
+        { type: 1, components: LISTS.map(listButton) },
     ] };
     return { components: withShareButton([container, ...jumpRows(shown)], isEphemeral), flags: 32768 };
 }
