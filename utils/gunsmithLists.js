@@ -5,7 +5,7 @@ const { isPlaceholderBuild, CLASS_ORDER, byClassOrder, displayCategoryLabel } = 
 // [category, class icon key, the class word on the page]. "Assault" for AR on this page only, from his template; every dropdown keeps AR (utils/loadoutRender.js displayCategoryLabel).
 const CLASS_WORD = { AR: ['wcAR', 'Assault'], SNIPER: ['wcSniper', 'Sniper'], LMG: ['wcLMG', 'LMG'], SMG: ['wcSMG', 'SMG'], SHOTGUN: ['wcShotgun', 'Shotgun'], MARKSMAN: ['wcMarksman', 'Marksman'], SECONDARIES: ['wcPistol', 'Secondary'] };
 const CLASSES = CLASS_ORDER.map(c => [c, ...CLASS_WORD[c]]);
-// A page's lines, in order: [key, emoji key, label, does a build carry it]. The main page carries the tiers; META sits on its own sub-page. The META page has no badge line: the class label, then its names (mock B, his 2026-11-03 12:24 EST "mockup 2 doesnt wrap on phone, the others wrap"). A null label is a names-only row.
+// A page's lines, in order: [key, emoji key, label, does a build carry it]. The main page carries the tiers; META sits on its own sub-page. The META page has no badge line: the class label, then one line per weapon with one gunsmith code, the bare code without the weapon prefix (his 2026-11-03 13:24-13:27 EST: "list the gunsmith codes as well", "only 1 code per weapon", "just do the code only, remove the prefix"; the weapon's first META build's own code in build order, never an option's). The names-only shape came first (mock B, his 2026-11-03 12:24 EST "mockup 2 doesnt wrap on phone, the others wrap"). A null label is a names-only row.
 const META_LINES = [['meta', null, null, b => b.isMeta]];
 const TIER_LINES = [
     ['best', 'best', 'Best', b => b.categoryRank === 'best'],
@@ -53,21 +53,23 @@ function weaponLine(weaponBuilds) {
 function classBlocks(builds, lines = TIER_LINES) {
     return CLASSES.map(([cat, icon, word]) => {
         const rows = lines.map(([, emo, label, has]) => {
-            const names = weaponNames(builds.filter(b => b.category === cat && has(b)));
+            const names = weaponNames(builds.filter(b => b.category === cat && has(b)), { codes: !label });
             if (!names.length) return null;
-            return label ? `${emojis[emo] || ''} **${label}**  ${names.join(' · ')}` : names.join(' · ');
+            return label ? `${emojis[emo] || ''} **${label}**  ${names.join(' · ')}` : names.join('\n');
         }).filter(Boolean);
         return rows.length ? { type: 10, content: `**${emojis[icon] || ''} ${word}**\n${rows.join('\n')}` } : null;
     }).filter(Boolean);
 }
 // The weapons on one line, each named once, in build order. A build's label shows in brackets (his template, 2026-11-03 11:44 EST: "CX-9 (Burst) · QQ9 (10mm)") only when he switched it on for that build (`showLabelOnLists`): his 12:13 EST "don't auto pick/use the build names. only if i want them", after the first version showed STATIC-HV (Aggressive / Alt Aggressive / Flex) on its own. Strongest first, then A-Z (his 2026-11-03 12:17 EST "move static hv in front of fss": on the META line STATIC-HV, Best, now leads FSS Hurricane, Top 3). A tier line is one tier, so it stays A-Z.
 const tierRank = list => { const i = RANK_ORDER.findIndex(r => list.some(b => b.categoryRank === r)); return i === -1 ? RANK_ORDER.length : i; };
-function weaponNames(lineBuilds) {
+function weaponNames(lineBuilds, { codes = false } = {}) {
     const byWeapon = new Map();
     for (const b of lineBuilds) { if (!byWeapon.has(b.weaponName)) byWeapon.set(b.weaponName, []); byWeapon.get(b.weaponName).push(b); }
     return [...byWeapon.entries()].sort(([, a], [, b]) => tierRank(a) - tierRank(b)).map(([name, list]) => {
         const labels = [...new Set(list.filter(b => b.showLabelOnLists).map(b => String(b.label || '').trim()).filter(Boolean))];
-        return labels.length ? `${realName(name)} (${labels.join(' / ')})` : realName(name);
+        const named = labels.length ? `${realName(name)} (${labels.join(' / ')})` : realName(name);
+        const code = codes && list.find(b => b.shareCode)?.shareCode;
+        return code ? `${named}  \`${code}\`` : named;
     });
 }
 // His notation, the announcements' (2026-11-03 12:00 EST: "==== is divider:true large. -- means divider:false small"): `--` between classes is a small gap with no line; `====` under the title and above the hint is a large divider.
