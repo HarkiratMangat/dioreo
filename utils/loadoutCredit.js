@@ -1,7 +1,7 @@
 // utils/loadoutCredit.js
 //
 // Who a build is credited to, in one place. His design (Harkirat, 2026-11-03 04:10 UTC, 2026-11-02 23:10 EST):
-//   - how it shows (`show`): `user` an @mention (clickable) · `name` a **username** in plain text · `link` a hyperlink · `anonymous`, always "By *anonymous*" · `none`, no credit line at all
+//   - how it shows (`show`): `user` an @mention (clickable) · `name` a **username** in plain text · `link` a hyperlink · `anonymous`, always "By *anonymous*" · `none`, no credit line, except that a build someone submitted still reads "By *anonymous*" (his call, 2026-11-02 23:27 EST: "if its submitted then save the by anonymous line at least")
 //   - its prefix: "Submitted by", "Credit:" or "Build by"
 //   - Submit a Build only ever gives "Submitted by" @user or username, or "By *anonymous*"; the hyperlink and the other two prefixes are set by hand in /manage (the hyperlink only there, so a player can never put a URL on a build). /autobuild can set a user or a name and any prefix.
 // Stored as `Loadout.credit {show, prefix, discordId, name, url}`. The private `submittedBy {discordId, credited}` record stays as it was (Submit a Build keeps the submitter's ID for disputes); a build with no `credit` yet (one approved before this existed) falls back to it.
@@ -61,7 +61,8 @@ function creditLine(build) {
         if (c.show === 'user' && c.discordId) return `${p} <@${c.discordId}>`;
         if (c.show === 'name' && c.name) return `${p} **${escapeMarkdown(c.name)}**`;
         if (c.show === 'link' && c.name && c.url) return `${p} [${escapeMarkdown(c.name)}](${c.url})`;
-        return null;
+        // No credit hides the line, but a submitted build always says someone sent it.
+        return build.submittedBy?.discordId ? 'By *anonymous*' : null;
     }
     const sub = build?.submittedBy;
     if (sub?.discordId) return sub.credited ? `${PREFIXES.submitted} <@${sub.discordId}>` : 'By *anonymous*';

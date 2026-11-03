@@ -341,7 +341,7 @@ function creditModal(doc) {
     return {
         custom_id: `mng_ldcreditm_${doc._id}`, title: `Credit: ${doc.weaponName} ${doc.buildName}`.slice(0, 45),
         components: [
-            { type: 18, label: 'Show as', description: 'No credit hides the line',
+            { type: 18, label: 'Show as', description: 'No credit hides the line; a submitted build still reads By anonymous',
               component: { type: 3, custom_id: 'show', required: true, min_values: 1, max_values: 1, options: [
                   opt('@user (clickable)', 'user', c?.show === 'user'), opt('Username (plain text)', 'name', c?.show === 'name'),
                   opt('Hyperlink', 'link', c?.show === 'link'), opt('By anonymous', 'anonymous', c?.show === 'anonymous'), opt('No credit', 'none', !c || c.show === 'none')] } },

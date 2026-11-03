@@ -31,7 +31,7 @@ test('the four styles and three prefixes render as he wrote them', () => {
 test('an older submitted build with no credit field falls back to submittedBy', () => {
     assert.strictEqual(C.creditLine({ submittedBy: { discordId: USER, credited: true } }), `Submitted by <@${USER}>`);
     assert.strictEqual(C.creditLine({ submittedBy: { discordId: USER, credited: false } }), 'By *anonymous*');
-    assert.strictEqual(C.creditLine({ submittedBy: { discordId: USER, credited: true }, credit: { show: 'none' } }), null, 'No credit hides the fallback too');
+    assert.strictEqual(C.creditLine({ submittedBy: { discordId: USER, credited: true }, credit: { show: 'none' } }), 'By *anonymous*', 'No credit on a submitted build still says By anonymous');
     assert.strictEqual(C.creditLine({}), null);
 });
 
