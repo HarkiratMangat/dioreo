@@ -31,8 +31,8 @@ assert.deepStrictEqual(blocks.map(c => c.split('\n')[0].replace(/<a?:\w+:\d+>\s?
 const ar = blocks[0].split('\n').slice(1).map(l => l.replace(/^.*?\*\*/, '**'));
 assert.deepStrictEqual(ar, ['**Best**  BAL-27', '**Top 3**  ISO HEMLOCK · HVK-30', '**Top 5**  ODEN', '**HM**  GRAV']);
 assert.ok(!blocks.join('\n').includes('**META**'), 'META is on its own sub-page');
-const kinds = container.components.map(c => c.type === 14 ? `sep${c.spacing}` : c.type);
-assert.deepStrictEqual(kinds, [9, 'sep2', 10, 'sep1', 10, 'sep1', 10, 'sep2', 10, 1], 'title, divider, classes split by small dividers, divider, hint, buttons');
+const kinds = container.components.map(c => c.type === 14 ? `${c.divider ? 'line' : 'gap'}${c.spacing}` : c.type);
+assert.deepStrictEqual(kinds, [9, 'line2', 10, 'gap1', 10, 'gap1', 10, 'line2', 10, 1], 'his notation: ==== a large divider, -- a small gap with no line');
 assert.strictEqual(container.components[8].content, '-# View all builds for…');
 assert.ok(!text.includes('1A2B3C4D5E'), 'no codes on the page');
 assert.ok(!text.includes('AK117'), 'a weapon with no badge is not on the page');

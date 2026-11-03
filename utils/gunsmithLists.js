@@ -59,8 +59,8 @@ function classBlocks(builds, lines = TIER_LINES) {
         return rows.length ? { type: 10, content: `**${emojis[icon] || ''} ${word}**\n${rows.join('\n')}` } : null;
     }).filter(Boolean);
 }
-// His `--` between classes: a small divider.
-const withDividers = blocks => blocks.flatMap((b, i) => (i ? [{ type: 14, spacing: 1, divider: true }, b] : [b]));
+// His notation, the announcements' (2026-11-03 12:00 EST: "==== is divider:true large. -- means divider:false small"): `--` between classes is a small gap with no line; `====` under the title and above the hint is a large divider.
+const withDividers = blocks => blocks.flatMap((b, i) => (i ? [{ type: 14, spacing: 1, divider: false }, b] : [b]));
 
 // The two jump dropdowns (Discord caps one at 25; the lists name ~34 weapons): AR, Sniper and LMG, then the rest, in the in-game order. Each option opens the weapon in its strongest list.
 const FIRST_GROUP = new Set(CLASS_ORDER.slice(0, 3));
