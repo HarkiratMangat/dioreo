@@ -9,6 +9,8 @@ const LoadoutSchema = new mongoose.Schema({
     buildName: { type: String, default: 'Standard Build' }, // Allows multiple builds per gun. Always `Build N` since 2026-10-26 01:19 EDT: the number decides the build's place in /gunsmith (utils/loadoutForm.js compareBuilds), and its label has its own field below.
     // The build's label, back end only (Harkirat, 2026-10-25 22:15 EDT): shown after the weapon name in /manage's Edit pop-up (`BAL-27, Ranked`) and nowhere a player sees it. Until 2026-10-26 01:19 EDT a label was stored AS buildName, which left a labelled build with no number.
     label: { type: String, default: '' },
+    // The gunsmith lists page shows this build's label in brackets after the weapon (`CX-9 (Burst)`) only when this is on, never on its own (Harkirat, 2026-11-03 12:13 EST: "don't auto pick/use the build names. only if i want them").
+    showLabelOnLists: { type: Boolean, default: false },
     attachments: [{ type: String }], // Array handles varied attachment limits natively
     // Parallel array to `attachments` (same index alignment) holding each slot's Gunsmith label (e.g. "Muzzle", "Barrel") -- ONLY ever populated by /autobuild's vision extraction, since a manual /manage add/edit has no slot data to offer. Persisting this on the doc (added 2026-07-24 18:07 EDT, closing the "accepted gap" in loadout-images-and-metadata.md) is what lets a later /manage attachment edit re-sync per-slot Cloudinary metadata for the common case -- editing an existing build WITHOUT changing which attachments are equipped -- instead of always leaving it stale. See handlers/manage/loadouts.js's editLoadout() for the actual re-sync/invalidation logic.
     attachmentSlots: [{ type: String }],

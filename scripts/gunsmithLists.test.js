@@ -13,7 +13,8 @@ const builds = [
     b('HVK-30', 'AR', { categoryRank: 'top3' }),
     b('ODEN', 'AR', { categoryRank: 'top5' }),
     b('GRAV', 'AR', { categoryRank: 'capable' }),
-    b('CX-9', 'SMG', { categoryRank: 'capable', label: 'Burst' }),
+    b('CX-9', 'SMG', { categoryRank: 'capable', label: 'Burst', showLabelOnLists: true }),
+    b('STATIC-HV', 'SMG', { buildName: 'Build 2', isMeta: true, categoryRank: 'best', label: 'Flex' }), // a label he never switched on
     b('CX-9', 'SMG', { buildName: 'Build 2', label: 'Long range' }), // no badge: its label never shows
     b('KOSHKA', 'SNIPER', { categoryRank: 'capable' }),
     b('AK117', 'AR'), // no badge: never on the page
@@ -37,6 +38,7 @@ const kinds = container.components.map(c => c.type === 14 ? `${c.divider ? 'line
 assert.deepStrictEqual(kinds, [10, 'line2', 10, 'gap1', 10, 'gap1', 10, 'line2', 10, 1, 1], 'his notation: ==== a large divider, -- a small gap with no line; the pager last');
 assert.strictEqual(blocks[2].split('\n').at(-1).replace(/^.*?\*\*/, '**'), '**HM**  CX-9 (Burst)', 'a labelled build shows its label in brackets');
 assert.ok(!text.includes('Long range'), 'an unbadged build never lends its label');
+assert.ok(!text.includes('Flex'), 'a label shows only when switched on (his 12:13 EST)');
 const pagerRow = container.components.at(-1).components;
 assert.deepStrictEqual(pagerRow.map(x => x.custom_id), ['gsb~lpage~0', 'gsb~lpage~at', 'gsb~lpage~1']);
 assert.deepStrictEqual([pagerRow[0].disabled, pagerRow[1].label, pagerRow[2].disabled], [true, 'Tiers · 1/2', false]);

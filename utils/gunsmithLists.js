@@ -59,13 +59,13 @@ function classBlocks(builds, lines = TIER_LINES) {
         return rows.length ? { type: 10, content: `**${emojis[icon] || ''} ${word}**\n${rows.join('\n')}` } : null;
     }).filter(Boolean);
 }
-// The weapons on one line, each named once, in build order, with the label of the build that carries the line in brackets (his template, 2026-11-03 11:44 EST: "CX-9 (Burst) · QQ9 (10mm)"; the label is what /manage and the op core store when a build is given a name, `buildName` staying `Build N`). A tag shows only when every build of that weapon on the line has a label, so a line never names one build of several as if it were the weapon.
+// The weapons on one line, each named once, in build order. A build's label shows in brackets (his template, 2026-11-03 11:44 EST: "CX-9 (Burst) · QQ9 (10mm)") only when he switched it on for that build (`showLabelOnLists`): his 12:13 EST "don't auto pick/use the build names. only if i want them", after the first version showed STATIC-HV (Aggressive / Alt Aggressive / Flex) on its own.
 function weaponNames(lineBuilds) {
     const byWeapon = new Map();
     for (const b of lineBuilds) { if (!byWeapon.has(b.weaponName)) byWeapon.set(b.weaponName, []); byWeapon.get(b.weaponName).push(b); }
     return [...byWeapon.entries()].map(([name, list]) => {
-        const labels = [...new Set(list.map(b => String(b.label || '').trim()))];
-        return labels.every(Boolean) ? `${realName(name)} (${labels.join(' / ')})` : realName(name);
+        const labels = [...new Set(list.filter(b => b.showLabelOnLists).map(b => String(b.label || '').trim()).filter(Boolean))];
+        return labels.length ? `${realName(name)} (${labels.join(' / ')})` : realName(name);
     });
 }
 // His notation, the announcements' (2026-11-03 12:00 EST: "==== is divider:true large. -- means divider:false small"): `--` between classes is a small gap with no line; `====` under the title and above the hint is a large divider.
