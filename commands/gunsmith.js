@@ -124,8 +124,12 @@ async function execute(interaction) {
     // /gunsmith list: no view (or All lists) = the page; a list = its card; a weapon = its card in its strongest list.
     if (subName === 'list') return openListView(interaction, interaction.options.getString('view'), interaction.options.getString('visibility'));
     const raw = interaction.options.getString('weapon');
-    // `d meta`, `d lists`, `d best`, `d top`, `d hm` and `d gs meta` arrive here as `~lists~` (utils/textCommands): the lists page.
-    if (raw.startsWith('~lists~')) return openListView(interaction, null, interaction.options.getString('visibility'));
+    // `d meta`, `d lists`, `d best`, `d top`, `d hm` and `d gs meta` arrive here as `~lists~<list?>` (utils/textCommands): the lists page. With a weapon, `~lists~<list?>~<weaponKey>` (`d meta ak117`): that weapon inside that list, or in its strongest list for `d lists ak117`.
+    if (raw.startsWith('~lists~')) {
+        const [list, weaponKey] = raw.slice(7).split('~');
+        if (weaponKey) return openListWeapon(interaction, list || null, weaponKey);
+        return openListView(interaction, null, interaction.options.getString('visibility'));
+    }
     // A browse row from the suggestions carries `~scope~<token>`; `~` can never appear in a weaponKey. `build:` is ignored on one: it means "build N of this weapon", and a browse has no single weapon.
     if (raw.startsWith('~scope~')) {
         const scope = parseScopeToken(raw.slice(7));
@@ -159,6 +163,14 @@ async function openListView(interaction, view, visibilityChoice) {
     const builds = (await lists.listedBuilds()).filter(b => b.weaponKey === view);
     if (!builds.length) return lists.renderListsPage(interaction, { visibilityChoice });
     return renderScopeBrowse(interaction, parseScopeToken(lists.strongestList(builds)), 0, { weaponKey: view });
+}
+
+// A weapon asked for inside a list: its card in that list when one of its builds is on it, else the list's first weapon (the lists spec, approved 2026-11-02 21:44 EST). No list named: the weapon's strongest list, as /gunsmith list view:<weapon> does. A weapon on no list opens the lists page.
+async function openListWeapon(interaction, list, weaponKey) {
+    if (!list) return openListView(interaction, weaponKey, interaction.options.getString('visibility'));
+    const scope = parseScopeToken(`MP.*.${list}`);
+    const inList = (await resolveScopeBuilds(scope)).some(b => b.weaponKey === weaponKey);
+    return renderScopeBrowse(interaction, scope, 0, inList ? { weaponKey } : {});
 }
 
 // What a text command's weapon words mean (2026-10-29 11:05 EDT): bot/textCommands.js reaches this through client.commands, never a require(), since bot/ is structural to the hotpatch planner. { hit, several, loose }, each weapon as { value, label }: value is what the weapon option takes (its weaponKey, or a no-build catalogue weapon's name, exactly as the dropdown sends them), so a weapon with no build opens the same No build yet card picking it in the dropdown does; label is its name, marked when it has no build.
