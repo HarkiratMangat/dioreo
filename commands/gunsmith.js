@@ -33,7 +33,7 @@ function labelForScope(scope) {
 }
 
 // Shared by execute()'s browse-row branch (`~scope~`), the legacy `~cat~` row, and every gsb~ next/prev/jump click in handlers/loadouts.js -- the single render path for every scoped browse view. `weaponKey` (2026-10-25 19:02 EDT, Harkirat: single-weapon cards "get the class pager too"): a weapon opened by name, Search... or the weapon dropdown is drawn inside its class's browse, at `buildIndex` among its builds, so its arrows walk the class like any browse. An MP scope given with `category: undefined` takes the weapon's own class. `deferred` is for a caller that has already acknowledged the interaction (the slash command and the Search box), with the visibility it resolved.
-async function renderScopeBrowse(interaction, scope, flatIndex, { isUpdate = false, deferred = false, isEphemeral: givenEphemeral = false, weaponKey = null, buildIndex = 0, variant = 0 } = {}) {
+async function renderScopeBrowse(interaction, scope, flatIndex, { isUpdate = false, deferred = false, isEphemeral: givenEphemeral = false, weaponKey = null, buildIndex = 0 } = {}) {
     let isEphemeral;
     if (deferred) {
         isEphemeral = givenEphemeral;
@@ -85,7 +85,6 @@ async function renderScopeBrowse(interaction, scope, flatIndex, { isUpdate = fal
         isEphemeral,
         categoryBuilds: builds,
         browse: { scopeToken, flatIndex, flatTotal: builds.length, scopeLabel },
-        variant,
     });
     await sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
 }

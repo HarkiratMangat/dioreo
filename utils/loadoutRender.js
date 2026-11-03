@@ -195,6 +195,25 @@ function variantLabel(build, i) {
     const names = [...swap].map(k => m[k]).filter(Boolean);
     return (names.join(' + ') || `Option ${i + 1}`).slice(0, 80);
 }
+// What Copy Code / Copy Attachments reply with. A build with options gives every option, each under its own name, so each code or list can be copied on its own.
+function copyText(build, what) {
+    const one = v => (what === 'code' ? (v.shareCode || build.buildName) : orderedAttachments(v).join('\n'));
+    if (variantCount(build) < 2) return one(build);
+    return Array.from({ length: variantCount(build) }, (_, i) => `**${variantLabel(build, i)}**\n${one(variantView(build, i))}`).join('\n\n');
+}
+// A build with options on ONE panel (Harkirat, 2026-11-02 19:48 EST: "condense it to a single page, even for multiple options"): the attachments every option shares, then what differs. When every option uses the same slots, each slot is one line and a slot that differs reads "`A` or `B`"; otherwise the shared ones come first and the last line lists each option's own attachments ("`X` or `Y + Z`").
+function mergedAttachmentLines(build) {
+    const { orderAttachmentsBySlot } = require('./adminParser');
+    const maps = Array.from({ length: variantCount(build) }, (_, i) => slotMap(variantView(build, i)));
+    const order = keys => orderAttachmentsBySlot(keys, keys.map(k => (k.startsWith('#') ? '' : k))).attachments;
+    const tick = x => `\`${x}\``;
+    const sameSlots = maps.every(m => Object.keys(m).sort().join('|') === Object.keys(maps[0]).sort().join('|'));
+    if (sameSlots) return order(Object.keys(maps[0])).map(k => [...new Set(maps.map(m => m[k]))].map(tick).join(' or '));
+    const allKeys = order([...new Set(maps.flatMap(m => Object.keys(m)))]);
+    const shared = allKeys.filter(k => maps.every(m => m[k] !== undefined && m[k] === maps[0][k]));
+    const own = maps.map(m => order(Object.keys(m).filter(k => !shared.includes(k))).map(k => m[k]).map(tick).join(' + '));
+    return [...shared.map(k => tick(maps[0][k])), own.join(' or ')];
+}
 
 // "Browse other builds in this category" dropdown (added 2026-07-12, per Harkirat's request) -- lets a user jump straight to a different weapon's card without re-running the slash command, instead of just paging within the current weapon's own builds. `categoryBuilds` is every Loadout doc sharing the current card's scope (same `category`+mode for MP, or every `mode: 'DMZ'` doc for DMZ, since /dmz has no per-category commands the way MP does).
 //
@@ -299,11 +318,8 @@ function buildLoadoutCardBody(build, { index = 0, total = 1, hideBadges = false,
     void copyIds;
     // A build with swap options shows the one picked (`variant`); the attachments that change between options carry 🔁 (his merged-build mock-up B, 2026-11-02 11:43 EST).
     const activeBuild = variantView(build, variant);
-    const swap = variantCount(build) > 1 ? swapSlots(build) : new Set();
-    const shownSlots = slotMap(activeBuild);
-    const swapped = new Set(Object.keys(shownSlots).filter(k => swap.has(k)).map(k => shownSlots[k]));
-    const attachmentLines = orderedAttachments(activeBuild).map((att, i) => `${i + 1}. \`${att}\`${swapped.has(att) ? ' 🔁' : ''}`).join('\n')
-        + (swap.size ? `\n-# 🔁 ${variantCount(build)} options, switch below` : '');
+    const options = variantCount(build);
+    const attachmentLines = (options > 1 ? mergedAttachmentLines(build) : orderedAttachments(activeBuild).map(att => `\`${att}\``)).map((line, i) => `${i + 1}. ${line}`).join('\n');
     const lastUpdatedUnix = Math.floor(new Date(activeBuild.lastUpdated).getTime() / 1000);
 
     // `##`, not `#` (Harkirat, 2026-10-20 22:23 EDT): every other panel's title is `##`, and on a phone `#` wraps the longer command titles onto two lines.
@@ -329,15 +345,20 @@ function buildLoadoutCardBody(build, { index = 0, total = 1, hideBadges = false,
 
     // Prefers the real in-game Gunsmith code (shareCode) when present, falling back to buildName — see models/Loadout.js for why these are two separate fields. DMZ builds never have a real code (confirmed by Harkirat — the DMZ Gunsmith screen doesn't expose one the way MP's does), so this whole section (and the Copy Code button below) is skipped entirely for DMZ rather than showing the buildName as if it were a real copyable code.
     const codeText = activeBuild.mode !== 'DMZ' && (activeBuild.shareCode || activeBuild.buildName);
-    // The code on its heading's line, his format (2026-10-25 15:38 EDT): "### Gunsmith Code: `1C2B4A8B9A`".
-    if (codeText) containerComponents.push({ type: 10, content: `### Gunsmith Code: \`${codeText}\`` });
+    // The code on its heading's line, his format (2026-10-25 15:38 EDT): "### Gunsmith Code: `1C2B4A8B9A`". A build with options lists every option's code, each with what sets it apart.
+    if (codeText && options > 1) containerComponents.push({ type: 10, content: `### Gunsmith Codes\n${Array.from({ length: options }, (_, i) => `\`${variantView(build, i).shareCode || build.buildName}\` · ${variantLabel(build, i)}`).join('\n')}` });
+    else if (codeText) containerComponents.push({ type: 10, content: `### Gunsmith Code: \`${codeText}\`` });
 
     // NOTE (removed during review, per Harkirat's request): there used to be a divider here between Gunsmith Code and the image -- dropped so the image sits directly under the text above it. 🔴 GUARDED, and NOT defensively -- found live 2026-08-23 12:58 EDT while wiring the change-detail panel. buildImageUrl() calls imageKey.startsWith(), which THROWS on a build with no imageKey. Every stored Loadout has one, so /gunsmith never hit it; a change panel does, because it reconstructs a BEFORE state as {...current, ...inversePayload} and renders delete payloads that may carry only the fields the op touched. renderRecord()'s try/catch would have swallowed the throw and quietly fallen back to a field list -- the budget fallback firing for the wrong reason, which is the "a guard that never fires is decoration" failure inverted. Omitting the gallery is the honest render of a build with no image.
     if (activeBuild.imageKey) {
         // A small space over the screenshot, no line (Harkirat, 2026-10-25 15:38-16:40 EDT: the line moved below the image, where it sets off the footer and the controls; it was a divider:true small since 2026-10-24 09:45 EDT).
         containerComponents.push({ type: 14, spacing: 1, divider: false });
         // A build with only the placeholder image says so in one quiet line instead of showing a grey "Coming Soon" rectangle; it stays in every list (his call, same message).
-        if (hasRealImage(activeBuild)) containerComponents.push({ type: 12, items: [{ media: { url: buildImageUrl(activeBuild.imageKey) } }] });
+        // Every option's screenshot in one gallery, each captioned with what sets it apart.
+        const shots = options > 1
+            ? Array.from({ length: options }, (_, i) => variantView(build, i)).map((v, i) => hasRealImage(v) ? { media: { url: buildImageUrl(v.imageKey) }, description: variantLabel(build, i) } : null).filter(Boolean)
+            : hasRealImage(activeBuild) ? [{ media: { url: buildImageUrl(activeBuild.imageKey) } }] : [];
+        if (shots.length) containerComponents.push({ type: 12, items: shots.slice(0, 10) });
         else containerComponents.push({ type: 10, content: '-# *No screenshot of this build yet.*' });
     }
     // `footerBuild` is false on a single weapon's card with a pager, which already reads "Build 2 of 5"; a browse card's pager counts the class instead, and a one-build card has no pager, so both keep the build in the footer (Harkirat, 2026-10-24 18:25 EDT: with one build "it doesn't mention build one of one for this anymore"). A submitted build names its submitter at the end, or "anonymous" (Harkirat, 2026-10-25 16:53-16:59 EDT); the mention never pings (every send here goes out with no allowed mentions).
@@ -400,9 +421,8 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false,
     const activeBuild = builds[index];
     variant = browse ? Math.min(Math.max(Number(variant) || 0, 0), variantCount(activeBuild) - 1) : 0;
     const mode = activeBuild.mode === 'DMZ' ? 'DMZ' : 'MP';
-    // The swap option on screen rides in the copy ids (a 5th `~` part), so Copy copies what the card shows.
-    const copyAttCustomId = browse ? `gsb~copyatt~${browse.scopeToken}~${browse.flatIndex}~${variant}` : `${idPrefix}copyatt_${activeBuild.weaponKey}_${index}`;
-    const copyCustomId = browse ? `gsb~copy~${browse.scopeToken}~${browse.flatIndex}~${variant}` : `${idPrefix}copy_${activeBuild.weaponKey}_${index}`;
+    const copyAttCustomId = browse ? `gsb~copyatt~${browse.scopeToken}~${browse.flatIndex}` : `${idPrefix}copyatt_${activeBuild.weaponKey}_${index}`;
+    const copyCustomId = browse ? `gsb~copy~${browse.scopeToken}~${browse.flatIndex}` : `${idPrefix}copy_${activeBuild.weaponKey}_${index}`;
     // The arrows walk WEAPONS and a row of numbers walks the open weapon's builds (Harkirat, 2026-10-25 18:48 EDT: "arrow switch weapons, build row switches builds"). The open build is green and named, "Build 3"; the others are plain numbers so five fit on one phone row (18:51 EDT). The middle of the pager names the class and the weapon's place in it, "AR · 3/17" (his 18:49 EDT pick over the weapon's name, whose width would move the arrows). A card with no class to walk (the hidden /dmz, /autobuild's saved card, the portal preview) keeps the build row and has no arrows. Every card /gunsmith opens is a browse: a weapon opened by name, Search... or the weapon dropdown is drawn inside its class (commands/gunsmith.js renderScopeBrowse's `weaponKey`).
     let weaponPager = null;
     if (browse && categoryBuilds && categoryBuilds.length) {
@@ -418,12 +438,7 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false,
     }
     // The footer drops the class when the pager names it, and the build count always: the build row shows it (his 18:49 and 19:02 EDT calls).
     const containerComponents = buildLoadoutCardBody(activeBuild, { index, total: builds.length, hideBadges, footerBuild: false, footerClass: !weaponPager, variant });
-    // The swap options' buttons, under the footer: the open one green and disabled, as the build row. Browse cards only; a card with no browse (the hidden /dmz, /autobuild's saved card, the portal preview) shows option 1.
-    if (browse && variantCount(activeBuild) > 1) {
-        const opts = Array.from({ length: variantCount(activeBuild) }, (_, i) => ({ type: 2, style: i === variant ? 3 : 2, disabled: i === variant, label: variantLabel(activeBuild, i), custom_id: `gsb~var~${browse.scopeToken}~${browse.flatIndex}~${i}` }));
-        containerComponents.push({ type: 14, spacing: 1, divider: false });
-        for (let i = 0; i < opts.length; i += 5) containerComponents.push({ type: 1, components: opts.slice(i, i + 5) });
-    }
+
     // A browse card's build sits at a flat index in the scope, and a weapon's builds are next to each other there (utils/loadoutScopes.js sorts by class, then weapon), so build i is `flatIndex - index + i`. Five per row is Discord's cap; no weapon has more than five today.
     if (builds.length > 1) {
         const firstFlat = browse ? (Number(browse.flatIndex) || 0) - index : 0;
@@ -494,4 +509,4 @@ function buildMissingWeaponCard({ weaponName, category, mode = 'MP', isEphemeral
     return { components, flags: 32768 };
 }
 
-module.exports = { classPlural, buildImageUrl, checkImageExists, buildLoadoutCard, buildLoadoutCardBody, buildMissingWeaponCard, getMpCategoryAccent, displayCategoryLabel, computeWeaponKeyAndBuild, findDuplicateLoadouts, isPlaceholderBuild, hasRealImage, orderedAttachments, variantView, variantCount, swapSlots, variantLabel };
+module.exports = { classPlural, buildImageUrl, checkImageExists, buildLoadoutCard, buildLoadoutCardBody, buildMissingWeaponCard, getMpCategoryAccent, displayCategoryLabel, computeWeaponKeyAndBuild, findDuplicateLoadouts, isPlaceholderBuild, hasRealImage, orderedAttachments, variantView, variantCount, swapSlots, variantLabel, mergedAttachmentLines, copyText };
