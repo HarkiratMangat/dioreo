@@ -4,7 +4,7 @@
 const assert = require('assert');
 const { splitTitleDate, parseAdminDateRange, formatAdminDate } = require('../utils/adminParser');
 const { applyFields } = require('../core/ops/season');
-const { progressLine } = require('../commands/seasonend');
+const { progressLine, progressPieces } = require('../commands/seasonend');
 const { buildPriceDrawsModal } = require('../commands/drawCalculator');
 const { buildContainer } = require('../commands/draws');
 
@@ -71,14 +71,38 @@ t('a form sending its own start field (the portal\'s shape) sets it, and an unre
     assert.deepStrictEqual(skipped, ['Battle Pass start']);
 });
 
-t('the bar: 10 blocks, the percentage and the day, only while the season runs', () => {
+t('the bar: six emoji, the percentage and the day, only while the season runs', () => {
     const start = day(2026, 8, 6), end = day(2026, 11, 17).getTime();
-    assert.strictEqual(progressLine(start, end, day(2026, 10, 21).getTime() + 14 * 3600e3), '-# ▰▰▰▰▰▰▰▱▱▱ **74%** · Day 77 of 103');
-    assert.strictEqual(progressLine(start, end, start.getTime()), '-# ▱▱▱▱▱▱▱▱▱▱ **0%** · Day 1 of 103');
+    const names = line => line && line.replace(/<a?:(\w+):\d+>/g, '[$1]');
+    assert.strictEqual(names(progressLine(start, end, day(2026, 10, 21).getTime() + 14 * 3600e3)), '-# [sbar1_full][sbar2_full][sbar3_full][sbar4_full][sbar5_t1][sbar6_empty] **74%** · Day 77 of 103');
+    assert.strictEqual(names(progressLine(start, end, start.getTime())), '-# [sbar1_hint][sbar2_empty][sbar3_empty][sbar4_empty][sbar5_empty][sbar6_empty] **0%** · Day 1 of 103');
     assert.strictEqual(progressLine(null, end, Date.now()), null, 'no start, no bar');
     assert.strictEqual(progressLine(start, null, Date.now()), null, 'no end, no bar');
     assert.strictEqual(progressLine(start, end, start.getTime() - 1), null, 'before the start, no bar');
     assert.strictEqual(progressLine(start, end, end), null, 'ended, no bar');
+});
+
+t('the bar\'s emoji follow his mapping table, every one exists, a running bar is never empty and never full before the last day', () => {
+    const emojis = require('../utils/emojiMap');
+    // Rows straight from mapping.md (q = floor((day - 1) / length * 18)).
+    assert.deepStrictEqual(progressPieces(20, 28), ['sbar1_full', 'sbar2_full', 'sbar3_full', 'sbar4_end', 'sbar5_empty', 'sbar6_empty'], 'BP day 20 of 28 is q 12');
+    assert.deepStrictEqual(progressPieces(55, 63), ['sbar1_full', 'sbar2_full', 'sbar3_full', 'sbar4_full', 'sbar5_end', 'sbar6_empty'], 'Ranked day 55 of 63 is q 15');
+    assert.deepStrictEqual(progressPieces(195, 202), ['sbar1_full', 'sbar2_full', 'sbar3_full', 'sbar4_full', 'sbar5_full', 'sbar6_t2'], 'DMZ day 195 of 202 is q 17');
+    assert.deepStrictEqual(progressPieces(2, 28), progressPieces(1, 28), 'q 0 on day 2 is still the hint');
+    assert.deepStrictEqual(progressPieces(28, 28), ['sbar1_full', 'sbar2_full', 'sbar3_full', 'sbar4_full', 'sbar5_full', 'sbar6_last']);
+    assert.deepStrictEqual(progressPieces(29, 28), progressPieces(28, 28), 'a rounded total one day short still reads as the last day');
+    assert.deepStrictEqual(progressPieces(8, 28), ['sbar1_full', 'sbar2_t1', 'sbar3_empty', 'sbar4_empty', 'sbar5_empty', 'sbar6_empty'], 'day 8 of 28 is q 4');
+    const used = new Set();
+    for (const total of [1, 2, 17, 28, 63, 103, 202]) {
+        for (let d = 1; d <= total; d++) {
+            const p = progressPieces(d, total);
+            p.forEach(n => used.add(n));
+            assert.ok(p.some(n => !n.endsWith('_empty')), `day ${d} of ${total} shows an empty bar`);
+            if (d < total) assert.ok(!p.includes('sbar6_last'), `day ${d} of ${total} reads full early`);
+        }
+    }
+    assert.strictEqual(used.size, 29, 'every one of the 29 is reachable');
+    for (const n of used) assert.match(emojis[n.replace(/_(\w)/, (m, c) => c.toUpperCase())] || '', new RegExp(`^<a?:${n}:\\d+>$`), `${n} is in utils/emojiMap.js`);
 });
 
 const draws = [

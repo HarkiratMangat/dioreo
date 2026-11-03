@@ -16,20 +16,34 @@ const { sendV2Payload } = require('../utils/sendV2Payload');
 // Repalette (2026-07-12, Section 5 of the batch) -- see calendar.js's matching comment for the full nav-row hue-spread reasoning. A warm sunset amber -- fitting for "a season ending" -- that also pairs as an analogous warm neighbor to Patch Notes' gold one slot over, closing out the nav row's cool-to-warm progression.
 const PRESET_ACCENT = 15898954; // Neon Amber (#F2994A) — 5th nav button (Season End)
 
-// A season's progress as a subtext line, "▰▰▰▰▰▰▱▱▱▱ **62%** · Day 64 of 103" (2026-10-21 10:14 EDT). Null with no start or end, before the start, or once the season has ended, so the panel reads as it did without one.
+// Which of the 29 bar emoji sit in each of the six places (his set and its mapping, 2026-11-03 15:08 EST; the art and mapping.md are in his "season-progress-icon" folder). q counts thirds of an emoji, 0-17, from the day: a place before the fill's end is full, the one it ends in shows t1 / t2 / end, the rest are empty. A running season never shows an empty bar (`sbar1_hint`, a sliver) and only its last day reads nearly full (`sbar6_last`); day can pass total by one because total is rounded, so that counts as the last day too.
+function progressPieces(day, total) {
+    if (day >= total) return [1, 2, 3, 4, 5, 6].map(n => (n === 6 ? 'sbar6_last' : `sbar${n}_full`));
+    const q = Math.min(17, Math.floor((day - 1) / total * 18));
+    if (q === 0) return [1, 2, 3, 4, 5, 6].map(n => (n === 1 ? 'sbar1_hint' : `sbar${n}_empty`));
+    return [1, 2, 3, 4, 5, 6].map(n => {
+        const before = (n - 1) * 3; // thirds that come before this place
+        if (q <= before) return `sbar${n}_empty`;
+        if (q > before + 3) return `sbar${n}_full`;
+        return `sbar${n}_${['t1', 't2', 'end'][q - before - 1]}`;
+    });
+}
+const pieceEmoji = name => emojis[name.replace(/_(\w)/, (m, c) => c.toUpperCase())];
+
+// A season's progress as a subtext line, six bar emoji then "**62%** · Day 64 of 103" (the bar was ▰▱ text from 2026-10-21 10:14 EDT until his emoji set replaced it, 2026-11-03 15:08 EST). Null with no start or end, before the start, or once the season has ended, so the panel reads as it did without one.
 function progressLine(start, endMs, nowMs) {
     const startMs = start ? new Date(start).getTime() : NaN;
     if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs || nowMs < startMs || nowMs >= endMs) return null;
     const DAY = 86400000;
     const share = (nowMs - startMs) / (endMs - startMs);
-    const filled = Math.min(10, Math.max(0, Math.round(share * 10)));
     const day = Math.floor((nowMs - startMs) / DAY) + 1;
     const total = Math.round((endMs - startMs) / DAY);
-    return `-# ${'▰'.repeat(filled)}${'▱'.repeat(10 - filled)} **${Math.round(share * 100)}%** · Day ${day} of ${total}`;
+    return `-# ${progressPieces(day, total).map(pieceEmoji).join('')} **${Math.round(share * 100)}%** · Day ${day} of ${total}`;
 }
 
 module.exports = {
     progressLine,
+    progressPieces,
     // COMMAND DEFINITION: Base command 'season' with subcommand 'end'
     data: new SlashCommandBuilder()
         .setName('season')
