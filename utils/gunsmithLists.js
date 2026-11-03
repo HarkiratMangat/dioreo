@@ -6,7 +6,8 @@ const { isPlaceholderBuild, CLASS_ORDER, byClassOrder, displayCategoryLabel } = 
 const CLASS_WORD = { AR: ['wcAR', 'Assault'], SNIPER: ['wcSniper', 'Sniper'], LMG: ['wcLMG', 'LMG'], SMG: ['wcSMG', 'SMG'], SHOTGUN: ['wcShotgun', 'Shotgun'], MARKSMAN: ['wcMarksman', 'Marksman'], SECONDARIES: ['wcPistol', 'Secondary'] };
 const CLASSES = CLASS_ORDER.map(c => [c, ...CLASS_WORD[c]]);
 // A page's lines, in order: [key, emoji key, label, does a build carry it]. The main page carries the tiers; META sits on its own sub-page.
-const META_LINES = [['meta', 'meta', 'META', b => b.isMeta]];
+// The META page has no badge line: the class label, then its names (mock B, his 2026-11-03 12:24 EST "mockup 2 doesnt wrap on phone, the others wrap"). A null label is a names-only row.
+const META_LINES = [['meta', null, null, b => b.isMeta]];
 const TIER_LINES = [
     ['best', 'best', 'Best', b => b.categoryRank === 'best'],
     ['top3', 'top3', 'Top 3', b => b.categoryRank === 'top3'],
@@ -54,7 +55,8 @@ function classBlocks(builds, lines = TIER_LINES) {
     return CLASSES.map(([cat, icon, word]) => {
         const rows = lines.map(([, emo, label, has]) => {
             const names = weaponNames(builds.filter(b => b.category === cat && has(b)));
-            return names.length ? `${emojis[emo] || ''} **${label}**  ${names.join(' · ')}` : null;
+            if (!names.length) return null;
+            return label ? `${emojis[emo] || ''} **${label}**  ${names.join(' · ')}` : names.join(' · ');
         }).filter(Boolean);
         return rows.length ? { type: 10, content: `**${emojis[icon] || ''} ${word}**\n${rows.join('\n')}` } : null;
     }).filter(Boolean);
