@@ -12,6 +12,11 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.7.0 — November 3, 2026
+- **Build credit:** a build can credit who made it, as their @, their username, a link, or "By *anonymous*", under "Submitted by", "Credit:" or "Build by".
+- **Submit a Build:** choose to be credited by your @, your username, or not at all.
+- **Gunsmith lists:** a new icon for All lists.
+
 ## v3.6.0 — November 2, 2026
 - **Gunsmith lists:** one page shows every META, Best, Top 3, Top 5 and Honorable Mention weapon by class. Open it with `/gunsmith list`, `d meta`, `d best`, `d top` or `d hm`; `d meta ak117` jumps to that weapon in the list.
 - **Builds with options:** a build with swap options shows each one with its own attachments, code and screenshot.
