@@ -21,17 +21,28 @@ assert.strictEqual(variantLabel(build, 0), 'Fast Extended Mag');
 assert.strictEqual(variantLabel(build, 1), 'Removed Pad');
 console.log('  ✓ options, swapped slots and labels');
 
-// Option cards (Harkirat, 2026-11-02 20:06 EST: "option cards but each has its own full set of attachments").
-const { copyText } = require('../utils/loadoutRender');
+// Different slots (VMP: Ammunition vs Stock) -> compact cards, his pick "3" (2026-11-02 20:13 EST).
+const { copyText, sameSlots } = require('../utils/loadoutRender');
+assert.strictEqual(sameSlots(build), false);
 const comps = buildLoadoutCardBody(build);
 const sections = comps.filter(c => c.type === 9);
-assert.strictEqual(sections.length, 2, 'one card per option, each with its screenshot beside it');
-assert.ok(sections.every(c => c.accessory && c.accessory.type === 11));
+assert.strictEqual(sections.length, 2, 'one card per option, its screenshot beside it');
 const optB = sections[1].components[0].content;
-assert.ok(optB.startsWith('### Option B') && optB.includes('5. `Rapid Fire`') && optB.includes('`Removed Pad`') && optB.includes('2D4D5H7B9B'), 'option B lists its full set and its own code');
-assert.ok(!text(comps).includes('### Gunsmith Code:') && !comps.some(c => c.type === 12), 'no single-build code line or gallery');
-assert.ok(text(comps).includes('> -# Swap per preference.'), 'a comment is quote subtext');
-console.log('  ✓ one card per option, full attachment list, its code and screenshot');
+assert.ok(optB.startsWith('**Option B**') && optB.includes('2D4D5H7B9B') && optB.includes('-# 2. Removed Pad') && optB.includes('-# 5. Rapid Fire'), 'title line with its code, full list in small text');
+assert.ok(!comps.some(c => c.type === 14 && c.divider && comps.indexOf(c) > 2), 'no dividers between the cards');
+assert.ok(!text(comps).includes('### Gunsmith Code:') && !comps.some(c => c.type === 12));
+console.log('  ✓ different slots: compact option cards');
+
+// Same slots (ISO Hemlock's lasers) -> the regular panel, "`A` or `B`", both codes, both screenshots.
+const laser = { ...build, attachments: ['Polarfire-S', 'SZ 1MW PEQ'], attachmentSlots: ['Muzzle', 'Laser'], shareCode: 'A1A', imageKey: 'ISO-A1A', variants: [{ attachments: ['Polarfire-S', 'Schlager PEQ Box IV'], attachmentSlots: ['Muzzle', 'Laser'], shareCode: 'B2B', imageKey: 'ISO-B2B' }] };
+assert.strictEqual(sameSlots(laser), true);
+const reg = buildLoadoutCardBody(laser);
+assert.ok(text(reg).includes('2. `SZ 1MW PEQ` or `Schlager PEQ Box IV`') && text(reg).includes('1. `Polarfire-S`'));
+assert.ok(text(reg).includes('### Gunsmith Code: `A1A` or `B2B`'));
+assert.strictEqual(reg.find(c => c.type === 12).items.length, 2);
+assert.ok(!reg.some(c => c.type === 9));
+assert.ok(text(reg).includes('> -# Swap per preference.'), 'a comment is quote subtext');
+console.log('  ✓ same slots: the regular panel with "or" and both codes');
 
 // No option buttons, and Copy gives every option under its letter.
 const card = text(buildLoadoutCard([build], 0, { color: 1, idPrefix: 'mp', categoryBuilds: [build], browse: { scopeToken: 'mp~SMG', flatIndex: 0, flatTotal: 1 } }).components);
