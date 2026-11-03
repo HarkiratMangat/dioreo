@@ -1,11 +1,13 @@
-// The gunsmith lists page (Harkirat, 2026-11-02 21:01-21:44 EST): one page with every list, META, Best, Top 3, Top 5 and HM, by class. His idea at 21:01 EST ("a single page that has all meta best top hm"), his template at 21:11 EST, then 21:19 ("put the label infront in bold"), 21:21 ("make the class label ### and remove the empty lines, make each class in it's own text") and 21:24 ("state in each weapon dropdowns desc, the class and the badge"); approved 21:44 EST ("alright seems good"). Each list's full view is the ordinary /gunsmith card on a list scope (utils/loadoutScopes.js `list`). MP only.
+// The gunsmith lists page (Harkirat, 2026-11-02 21:01-21:44 EST): one page with every list by class. His idea at 21:01 EST ("a single page that has all meta best top hm"), his template at 21:11 EST, then 21:19 ("put the label infront in bold"), 21:24 ("state in each weapon dropdowns desc, the class and the badge"); approved 21:44 EST ("alright seems good"). Redesigned on his template of 2026-11-03 11:44 EST: titled "Current META Weapons" with the season under it, the MP accent, each class a bold `<icon> Class` label in the in-game order (utils/loadoutRender.js CLASS_ORDER), its Best / Top 3 / Top 5 / HM lines with names joined by " · ", a divider between classes, "-# View all builds for…" above the list buttons. META moved to its own sub-page ("let's separate the meta list to a sub-page"), opened from the title's button. Each list's full view is the ordinary /gunsmith card on a list scope (utils/loadoutScopes.js `list`). MP only.
 const emojis = require('./emojiMap');
-const { isPlaceholderBuild } = require('./loadoutRender');
+const { isPlaceholderBuild, CLASS_ORDER, byClassOrder, displayCategoryLabel } = require('./loadoutRender');
 
-const CLASSES = [['AR', 'wcAR', 'AR'], ['SMG', 'wcSMG', 'SMG'], ['LMG', 'wcLMG', 'LMG'], ['MARKSMAN', 'wcMarksman', 'Marksman'], ['SHOTGUN', 'wcShotgun', 'Shotgun'], ['SNIPER', 'wcSniper', 'Sniper'], ['SECONDARIES', 'wcPistol', 'Secondary']];
-// The page's lines, in order: [key, emoji key, label, does a build carry it].
-const LINES = [
-    ['meta', 'meta', 'META', b => b.isMeta],
+// [category, class icon key, the class word on the page]. "Assault" for AR on this page only, from his template; every dropdown keeps AR (utils/loadoutRender.js displayCategoryLabel).
+const CLASS_WORD = { AR: ['wcAR', 'Assault'], SNIPER: ['wcSniper', 'Sniper'], LMG: ['wcLMG', 'LMG'], SMG: ['wcSMG', 'SMG'], SHOTGUN: ['wcShotgun', 'Shotgun'], MARKSMAN: ['wcMarksman', 'Marksman'], SECONDARIES: ['wcPistol', 'Secondary'] };
+const CLASSES = CLASS_ORDER.map(c => [c, ...CLASS_WORD[c]]);
+// A page's lines, in order: [key, emoji key, label, does a build carry it]. The main page carries the tiers; META sits on its own sub-page.
+const META_LINES = [['meta', 'meta', 'META', b => b.isMeta]];
+const TIER_LINES = [
     ['best', 'best', 'Best', b => b.categoryRank === 'best'],
     ['top3', 'top3', 'Top 3', b => b.categoryRank === 'top3'],
     ['top5', 'top5', 'Top 5', b => b.categoryRank === 'top5' || b.categoryRank === 'top4'],
@@ -21,6 +23,8 @@ const LISTS = [
     { token: 'MP.*.top', label: 'Top 3 & 5', emoji: 'top3' },
     { token: 'MP.*.hm', label: 'HM', emoji: 'hm' },
 ];
+// The MP colour, /manage's MP Loadouts page accent (utils/loadoutPanels.js ACCENT.MP, #FF3430): his "utilize the \"mp\" color", 2026-11-03 11:44 EST. The old getMpCategoryAccent(null) fallback was #2b2d31, the colour of Discord's own background, so the page showed none.
+const mpAccent = () => require('./loadoutPanels').ACCENT.MP;
 
 const realName = name => require('./catalogue').catalogueWeaponName(name);
 const classOf = c => CLASSES.find(x => x[0] === c) || [c, null, c];
@@ -42,52 +46,70 @@ function strongestList(weaponBuilds) {
 }
 function weaponLine(weaponBuilds) {
     const rank = RANK_ORDER.find(r => weaponBuilds.some(b => b.categoryRank === r));
-    return [classOf(weaponBuilds[0].category)[2], weaponBuilds.some(b => b.isMeta) ? 'META' : null, rank ? TIER_WORD[rank] : null].filter(Boolean).join(' · ');
+    return [displayCategoryLabel(weaponBuilds[0].category), weaponBuilds.some(b => b.isMeta) ? 'META' : null, rank ? TIER_WORD[rank] : null].filter(Boolean).join(' · ');
 }
 
-// One Text Display per class: `### <icon> Class`, then `<emoji> **LABEL** names, …` for each list with a weapon in that class. A weapon is named once per line.
-function classBlocks(builds) {
+// One Text Display per class: `**<icon> Class**`, then `<emoji> **LABEL**  names · …` for each line with a weapon in that class. A weapon is named once per line.
+function classBlocks(builds, lines = TIER_LINES) {
     return CLASSES.map(([cat, icon, word]) => {
-        const lines = LINES.map(([, emo, label, has]) => {
+        const rows = lines.map(([, emo, label, has]) => {
             const names = [...new Set(builds.filter(b => b.category === cat && has(b)).map(b => b.weaponName))].map(realName);
-            return names.length ? `${emojis[emo] || ''} **${label}** ${names.join(', ')}` : null;
+            return names.length ? `${emojis[emo] || ''} **${label}**  ${names.join(' · ')}` : null;
         }).filter(Boolean);
-        return lines.length ? { type: 10, content: `### ${emojis[icon] || ''} ${word}\n${lines.join('\n')}` } : null;
+        return rows.length ? { type: 10, content: `**${emojis[icon] || ''} ${word}**\n${rows.join('\n')}` } : null;
     }).filter(Boolean);
 }
+// His `--` between classes: a small divider.
+const withDividers = blocks => blocks.flatMap((b, i) => (i ? [{ type: 14, spacing: 1, divider: true }, b] : [b]));
 
-// The two jump dropdowns (Discord caps one at 25; the lists name ~34 weapons): AR, SMG and LMG, then the rest. Each option opens the weapon in its strongest list.
+// The two jump dropdowns (Discord caps one at 25; the lists name ~34 weapons): AR, Sniper and LMG, then the rest, in the in-game order. Each option opens the weapon in its strongest list.
+const FIRST_GROUP = new Set(CLASS_ORDER.slice(0, 3));
 function jumpRows(builds) {
     const byWeapon = new Map();
     for (const b of builds.filter(x => x.isMeta || x.categoryRank)) { if (!byWeapon.has(b.weaponKey)) byWeapon.set(b.weaponKey, []); byWeapon.get(b.weaponKey).push(b); }
-    const groups = [...byWeapon.values()].sort((a, b) => CLASSES.findIndex(c => c[0] === a[0].category) - CLASSES.findIndex(c => c[0] === b[0].category) || realName(a[0].weaponName).localeCompare(realName(b[0].weaponName)));
-    const first = new Set(['AR', 'SMG', 'LMG']);
+    const groups = [...byWeapon.values()].sort((a, b) => byClassOrder(a[0].category, b[0].category) || realName(a[0].weaponName).localeCompare(realName(b[0].weaponName)));
     const option = list => {
         const icon = emojis[classOf(list[0].category)[1]];
         return { label: realName(list[0].weaponName).slice(0, 100), value: `${strongestList(list)}|${list[0].weaponKey}`, description: weaponLine(list).slice(0, 100), ...(icon ? { emoji: emojis.parseEmoji(icon) } : {}) };
     };
     return [
-        ['A', 'Jump to an AR, SMG or LMG…', groups.filter(g => first.has(g[0].category))],
-        ['B', 'Jump to a Marksman, Shotgun, Sniper or Secondary…', groups.filter(g => !first.has(g[0].category))],
+        ['A', 'Jump to an AR, Sniper or LMG…', groups.filter(g => FIRST_GROUP.has(g[0].category))],
+        ['B', 'Jump to an SMG, Shotgun, Marksman or Secondary…', groups.filter(g => !FIRST_GROUP.has(g[0].category))],
     ].filter(([, , g]) => g.length).map(([id, placeholder, g]) => ({ type: 1, components: [{ type: 3, custom_id: `gsb~ljump~${id}`, placeholder, options: g.slice(0, 25).map(option) }] }));
 }
 
-function buildListsPage(builds, { isEphemeral = false } = {}) {
-    const { getMpCategoryAccent } = require('./loadoutRender');
+const listButton = l => ({ type: 2, style: 2, label: l.label, custom_id: `gsb~open~${l.token}`, ...(emojis[l.emoji] ? { emoji: emojis.parseEmoji(emojis[l.emoji]) } : {}) });
+const pageButton = (to, label, emojiKey) => ({ type: 2, style: 2, label, custom_id: `gsb~lpage~${to}`, ...(emojis[emojiKey] ? { emoji: emojis.parseEmoji(emojis[emojiKey]) } : {}) });
+
+// `page`: 'main' (Current META Weapons: Best, Top 3, Top 5, HM) or 'meta' (the META weapons sub-page). `season`: { title, emoji } for the line under the title, as /today shows it.
+function buildListsPage(builds, { isEphemeral = false, season = null, page = 'main' } = {}) {
     const { withShareButton } = require('./shareButton');
-    const blocks = classBlocks(builds);
-    const container = { type: 17, accent_color: getMpCategoryAccent(null), components: [
-        { type: 10, content: `## ${emojis.gunsmithList} Gunsmith Lists\n-# MP · META, Best, Top 3, Top 5 and Honorable Mention, by class` },
-        { type: 14, spacing: 1, divider: true },
-        ...(blocks.length ? blocks : [{ type: 10, content: '*The lists are pending an update. Check back soon.*' }]),
+    const { toBoldItalicUnicode } = require('./titleBlock');
+    const meta = page === 'meta';
+    const shown = meta ? builds.filter(b => b.isMeta) : builds;
+    const blocks = classBlocks(shown, meta ? META_LINES : TIER_LINES);
+    const seasonLine = season?.title ? `\n${season.emoji ? `${season.emoji} ` : ''}${toBoldItalicUnicode(season.title)}` : '';
+    const title = meta ? `## ${emojis.meta || ''} META Weapons` : `## ${emojis.gunsmithList || ''} Current META Weapons`;
+    const container = { type: 17, accent_color: mpAccent(), components: [
+        { type: 9, components: [{ type: 10, content: `${title}${seasonLine}` }], accessory: meta ? pageButton('main', 'Back', 'gunsmithList') : pageButton('meta', 'META weapons', 'meta') },
         { type: 14, spacing: 2, divider: true },
-        { type: 1, components: LISTS.map(l => ({ type: 2, style: 2, label: l.label, custom_id: `gsb~open~${l.token}`, ...(emojis[l.emoji] ? { emoji: emojis.parseEmoji(emojis[l.emoji]) } : {}) })) },
+        ...(blocks.length ? withDividers(blocks) : [{ type: 10, content: '*The lists are pending an update. Check back soon.*' }]),
+        { type: 14, spacing: 2, divider: true },
+        { type: 10, content: '-# View all builds for…' },
+        { type: 1, components: (meta ? LISTS.slice(0, 1) : LISTS).map(listButton) },
     ] };
-    return { components: withShareButton([container, ...jumpRows(builds)], isEphemeral), flags: 32768 };
+    return { components: withShareButton([container, ...jumpRows(shown)], isEphemeral), flags: 32768 };
+}
+
+// The season line under the title: the current season, with its emoji, as /today and /calendar show it.
+async function currentSeason() {
+    const doc = await require('../models/SeasonalData').findOne({ docType: 'global' }).select('currentSeasonTitle currentSeasonEmoji').lean();
+    if (!doc?.currentSeasonTitle) return null;
+    return { title: doc.currentSeasonTitle, emoji: require('./seasonEmoji').seasonEmojiFor(doc.currentSeasonTitle, doc.currentSeasonEmoji) };
 }
 
 // Sends the page: a fresh reply (slash or text command), or in place of the card a dropdown or button sat under.
-async function renderListsPage(interaction, { isUpdate = false, deferred = false, isEphemeral: givenEphemeral = false, visibilityChoice = null } = {}) {
+async function renderListsPage(interaction, { isUpdate = false, deferred = false, isEphemeral: givenEphemeral = false, visibilityChoice = null, page = 'main' } = {}) {
     const { sendV2Payload } = require('./sendV2Payload');
     let isEphemeral = givenEphemeral;
     if (isUpdate) {
@@ -100,8 +122,9 @@ async function renderListsPage(interaction, { isUpdate = false, deferred = false
         await interaction.deferReply({ ephemeral: isEphemeral });
     }
     await require('./catalogue').getCatalogueIndex(); // real weapon names
-    const page = buildListsPage(await listedBuilds(), { isEphemeral });
-    return sendV2Payload(interaction, page.components, { flags: page.flags });
+    const [builds, season] = await Promise.all([listedBuilds(), currentSeason()]);
+    const out = buildListsPage(builds, { isEphemeral, season, page });
+    return sendV2Payload(interaction, out.components, { flags: out.flags });
 }
 
 module.exports = { LISTS, CLASSES, listedBuilds, strongestList, weaponLine, classBlocks, jumpRows, buildListsPage, renderListsPage };

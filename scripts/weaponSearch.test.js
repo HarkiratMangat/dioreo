@@ -72,7 +72,7 @@ check('nothing typed: a few of every class, each class\'s Meta and best-ranked f
     const w = (weaponName, category, extra = {}) => ({ weaponName, weaponKey: weaponName.toLowerCase(), category, ...extra });
     const pool = [w('A1', 'AR'), w('A2', 'AR', { isMeta: true }), w('A3', 'AR', { categoryRank: 'best' }), w('L1', 'LMG'), w('L2', 'LMG', { categoryRank: 'top3' }), w('S1', 'SNIPER', { isMeta: true }), w('S2', 'SNIPER')];
     const four = featuredWeapons(pool, 4).map(x => x.weaponName);
-    assert.deepStrictEqual(four, ['A2', 'A3', 'L2', 'S1'], 'one per class first, then the best second; grouped by class');
+    assert.deepStrictEqual(four, ['A2', 'A3', 'S1', 'L2'], 'one per class first, then the best second; grouped by class, in the in-game order (AR, Sniper, LMG: his 2026-11-03 11:44 EST)');
     assert.strictEqual(featuredWeapons(pool, 99).length, pool.length);
     // A third pick goes to AR, then SMG, never LMG first (his 2026-10-25 23:27 EDT call).
     const seven = ['AR', 'LMG', 'MARKSMAN', 'SECONDARIES', 'SHOTGUN', 'SMG', 'SNIPER'].flatMap(c => [1, 2, 3].map(n => w(`${c}${n}`, c)));

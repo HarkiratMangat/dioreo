@@ -89,6 +89,10 @@ async function route(interaction) {
             const { parseScopeToken } = require('../utils/loadoutScopes');
             return await require('../commands/gunsmith').renderScopeBrowse(interaction, parseScopeToken(picked), 0, { isUpdate: true });
         }
+        // The page's two halves (2026-11-03): `gsb~lpage~meta` opens the META weapons sub-page, `gsb~lpage~main` goes back to Current META Weapons, in place.
+        if (interaction.isButton() && interaction.customId.startsWith('gsb~lpage~')) {
+            return await require('../utils/gunsmithLists').renderListsPage(interaction, { isUpdate: true, page: interaction.customId.slice(10) === 'meta' ? 'meta' : 'main' });
+        }
         if (interaction.isStringSelectMenu() && interaction.customId.startsWith('gsb~ljump~')) {
             const [token, weaponKey] = String(interaction.values[0]).split('|');
             const { parseScopeToken } = require('../utils/loadoutScopes');
