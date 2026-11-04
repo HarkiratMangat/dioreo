@@ -216,6 +216,24 @@
                 "animated": false
               },
               "default": false
+            },
+            {
+              "label": "Secret Cache",
+              "value": "secretCache",
+              "description": "Free, not priced. Bulk tag: type: sc",
+              "emoji": {
+                "name": "🎁"
+              },
+              "default": false
+            },
+            {
+              "label": "Event",
+              "value": "event",
+              "description": "Free, not priced. Bulk tag: type: ev",
+              "emoji": {
+                "name": "🎟️"
+              },
+              "default": false
             }
           ]
         }
@@ -437,6 +455,24 @@
                 "id": "1523190105152688158",
                 "name": "5Legendary_CODM",
                 "animated": false
+              },
+              "default": false
+            },
+            {
+              "label": "Secret Cache",
+              "value": "secretCache",
+              "description": "Free, not priced. Bulk tag: type: sc",
+              "emoji": {
+                "name": "🎁"
+              },
+              "default": false
+            },
+            {
+              "label": "Event",
+              "value": "event",
+              "description": "Free, not priced. Bulk tag: type: ev",
+              "emoji": {
+                "name": "🎟️"
               },
               "default": false
             }

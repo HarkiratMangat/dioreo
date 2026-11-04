@@ -53,13 +53,14 @@ async function addDraw(interaction) {
     // A draw added to New that the draw index has never seen is indexed with this season as its release season (utils/drawCatalog.js insertFields).
     const seasonalDoc = await loadOrCreateSeasonalDoc();
     const releaseSeason = drawType === 'new' ? require('../../utils/quickAdd').seasonNumber(seasonalDoc.currentSeasonTitle) : null;
-    const thumbResult = await resolveThumbnail(title, rawUrl, { items: parsedItems, priceType, ...(releaseSeason ? { releaseSeason } : {}) });
+    const releaseYear = require('../../utils/quickAdd').seasonYear(seasonalDoc);
+    const thumbResult = await resolveThumbnail(title, rawUrl, { items: parsedItems, priceType, ...(releaseSeason ? { releaseSeason, ...(releaseYear ? { releaseYear } : {}) } : {}) });
 
     // No type picked, or Unsure: the draw index's type when it knows this draw for certain (its title, another name, or its items). Said in a note, so a wrong one is seen and edited.
     const { isKnownType } = require('../../utils/drawCatalog');
-    const { isPricedDrawType, drawTypeName } = require('../../utils/drawTypes');
+    const { namesDrawType, drawTypeName } = require('../../utils/drawTypes');
     let typeNote = null;
-    if (!isKnownType(priceType) && isPricedDrawType(thumbResult.catalog?.priceType)) {
+    if (!isKnownType(priceType) && namesDrawType(thumbResult.catalog?.priceType)) {
         priceType = thumbResult.catalog.priceType;
         typeNote = `ℹ️ Draw Type set from the draw index: ${drawTypeName(priceType)}`;
     }
@@ -111,7 +112,8 @@ async function editDraw(interaction) {
         const parsedItems = rawItems.split('\n').filter(l => l.trim().length > 0).map(parseItemLine);
         // A New draw's first picture can arrive here rather than in Add Draw: the index gets this season then, if it has never seen the draw.
         const releaseSeason = drawType === 'new' ? require('../../utils/quickAdd').seasonNumber(seasonalDoc.currentSeasonTitle) : null;
-        const thumbResult = await resolveThumbnail(newTitle, rawUrl, { items: parsedItems, priceType: arrayTarget[drawIndex].priceType || '', ...(releaseSeason ? { releaseSeason } : {}) });
+        const releaseYear = require('../../utils/quickAdd').seasonYear(seasonalDoc);
+        const thumbResult = await resolveThumbnail(newTitle, rawUrl, { items: parsedItems, priceType: arrayTarget[drawIndex].priceType || '', ...(releaseSeason ? { releaseSeason, ...(releaseYear ? { releaseYear } : {}) } : {}) });
 
         // Draw Type (2026-10-18 11:06 EDT): the form's dropdown; nothing picked clears it. Sent only when it CHANGED, so an edit that never touches it leaves the stored type, and the op's conflict check, alone. A modal built before this field existed (an old open form) has no dropdown and is read as unchanged.
         let pickedType = null;

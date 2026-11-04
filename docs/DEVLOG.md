@@ -304,6 +304,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-11-03 14:19 EST — The lists page on his template, and the class order the game uses (v3.7.1)
 - 2026-11-03 15:21 EST — Six emoji for a season's progress (v3.7.2)
 - 2026-11-04 01:38 EST — A conflict check that could never catch a real conflict failed on a draw with id-less items (v3.8.0)
+- 2026-11-04 10:13 EST — A season number that repeats every year, and an announcement that came without its year (v3.8.1)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4937,6 +4938,16 @@ What he asked for grew from the fix: a deeper `/manage` audit, then the draw end
 - **Authorization is not a convenience to route around.** The end date is a calendar write, so a Draws-only admin keeps the Calendar-tier check; the draws save and the end is reported as not saved. Widening who may write calendar rows is the owner's decision.
 - **The sweep must use the operation's own inputs.** The prod check of "no draw would falsely conflict" first used each element's stored keys; the real edit sends a different key set. Re-run with each op's own fields (it held).
 - **A new write inherits every assumption of the path it rides on.** The end-date row write was built for an admin with the Calendar tier, typing an end, on a draw that owns the row. The review before merge found one defect per broken assumption: an Add with no end cleared the row, a sibling's row was taken when the draw had none, and a Draws-only admin lost renames because the row write shared the commit. List a new write's inputs and break each one.
+
+## 2026-11-04 10:13 EST — A season number that repeats every year, and an announcement that came without its year (v3.8.1)
+
+Harkirat sent the next season's mythic draw and a past armory to be added to the draw index, not to the live bot. The first answer was that nothing needed to be hidden: `/draws`, `/calendar` and `/today` read `seasonaldatas`, and the index is read only to find an image and a type and by Quick Add. Then I wrote the release season as `10` and he asked where the year was: "the season 1-12 naming repeats each year". The tag on the image had carried `season_10_2026` all along and the model had dropped it.
+
+**What it teaches.**
+- **A field copied from one store into another loses whatever the second store has no column for.** The Cloudinary tag and context held the year; the document held only the number. Compare the two stores' fields when a fact is mirrored, not just their values.
+- **He caught my own wrong word.** I called the November 19 release date an "end date" because the draw's other date in this codebase is an end. Say what the date is for in his words before filing it.
+- **Say what a conversion costs before doing it.** His PNGs were 8 to 9 MB; the existing draw images are 1080 px JPEGs. Converting to quality-92 JPEGs kept the full 2160 px, and a PSNR of 42 to 44 dB against the PNG is the number that backs "no visual loss", not a look.
+- **A prod write by script needs a read-back against the other store.** Mongo and Cloudinary were compared field by field afterwards (fingerprint, price type, tags, `items_full`); every one agreed.
 
 # Part B — Lessons Ledger (thematic)
 

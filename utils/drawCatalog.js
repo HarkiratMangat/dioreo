@@ -187,7 +187,7 @@ function insertFields(title, slug, draw, now = new Date()) {
         aliases: [],
         source: 'bot',
         indexedOn: now.toISOString().slice(0, 10),
-        ...(Number.isInteger(draw?.releaseSeason) && draw.releaseSeason > 0 ? { releaseSeason: draw.releaseSeason } : {})
+        ...(Number.isInteger(draw?.releaseSeason) && draw.releaseSeason > 0 ? { releaseSeason: draw.releaseSeason, releaseYear: Number.isInteger(draw?.releaseYear) && draw.releaseYear > 2000 ? draw.releaseYear : now.getUTCFullYear() } : {})
     };
 }
 
@@ -216,7 +216,7 @@ async function recordCatalogImage({ title, publicId, url = null, draw = null, no
         // The same facts on the asset, so Cloudinary stays the full record (utils/cloudinaryCache.js catalogMirrorPlan).
         const { catalogMirrorPlan, mirrorCatalogToCloudinary } = require('./cloudinaryCache');
         const doc = { ...(existing || {}), ...(update.$setOnInsert || {}), ...set };
-        await mirrorCatalogToCloudinary(publicId, catalogMirrorPlan(doc, { previousTags: existing?.tags || [], inserted: !existing, year: now.getUTCFullYear() }));
+        await mirrorCatalogToCloudinary(publicId, catalogMirrorPlan(doc, { previousTags: existing?.tags || [], inserted: !existing, year: doc.releaseYear || now.getUTCFullYear() }));
         return true;
     } catch (err) {
         console.error(`Draw catalog write failed for "${title}": ${err?.message || err}`);

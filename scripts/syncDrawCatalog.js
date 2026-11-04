@@ -45,7 +45,7 @@ function docFromAsset(asset, liveDraw = null, today = new Date().toISOString().s
         comments = liveDraw.items.filter(i => i?.tier === 'comment' && i.name).map(i => String(i.name));
     }
     if (!items.length) return null;
-    const releaseSeason = /(\d+)/.exec(ctx.release_season || '')?.[1];
+    const [, releaseSeason, releaseYear] = /(\d+)(?:\D+(\d{4}))?/.exec(ctx.release_season || '') || [];
     return {
         slug,
         title: ctx.title || liveDraw?.title || slug.replace(/-/g, ' '),
@@ -60,6 +60,7 @@ function docFromAsset(asset, liveDraw = null, today = new Date().toISOString().s
         tags: [...(asset.tags || [])],
         groupSlug: slug,
         ...(releaseSeason ? { releaseSeason: Number(releaseSeason) } : {}),
+        ...(releaseSeason && releaseYear ? { releaseYear: Number(releaseYear) } : {}),
         source: ctx.source || 'sync',
         indexedOn: ctx.indexed_on || today
     };

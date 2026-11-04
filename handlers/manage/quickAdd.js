@@ -227,7 +227,7 @@ function buildPickModal(token, index, draft, candidates) {
     const options = candidates.slice(0, qa.MAX_CANDIDATES).map(e => ({
         label: e.title.slice(0, 100),
         value: e.slug,
-        description: `${e.releaseSeason ? `Season ${e.releaseSeason} · ` : ''}${tiers(e)}`.slice(0, 100) || undefined,
+        description: `${e.releaseSeason ? `Season ${e.releaseSeason}${e.releaseYear ? ` ${e.releaseYear}` : ''} · ` : ''}${tiers(e)}`.slice(0, 100) || undefined,
         default: !draft.needsPick && e.title === draft.title
     }));
     options.push({ label: `None of these: keep "${draft.query}" as typed`.slice(0, 100), value: '__typed__' });
@@ -267,13 +267,14 @@ async function save(interaction, token, state) {
     const { resolveThumbnail } = require('../../utils/cloudinaryCache');
     const { calendarRowFor } = require('../../utils/drawEndReminder');
     const { isKnownType } = require('../../utils/drawCatalog');
-    const { isPricedDrawType, drawTypeName } = require('../../utils/drawTypes');
+    const { namesDrawType, drawTypeName } = require('../../utils/drawTypes');
     const seasonalDoc = await loadOrCreateSeasonalDoc();
     const todo = state.drafts.filter(willWrite);
 
     // Pictures first, outside the transaction, the way Add Draw does it (handlers/manage/draws.js addDraw): a catalog hit is one memory lookup, anything else asks Cloudinary. A picture typed in Add details is uploaded like Add Draw's Thumbnail URL; blank asks the index, then the cache. A `new` line that the index has never seen is indexed with this season as its release season (utils/drawCatalog.js insertFields); a draw the index knows keeps its own.
     const releaseSeason = qa.seasonNumber(seasonalDoc.currentSeasonTitle);
-    const thumbs = await Promise.all(todo.map(d => d.existing ? null : resolveThumbnail(d.title, d.imageInput || '', { items: d.items, priceType: d.priceType || '', ...(d.category === 'new' && releaseSeason ? { releaseSeason } : {}) }).catch(() => ({ url: null }))));
+    const releaseYear = qa.seasonYear(seasonalDoc);
+    const thumbs = await Promise.all(todo.map(d => d.existing ? null : resolveThumbnail(d.title, d.imageInput || '', { items: d.items, priceType: d.priceType || '', ...(d.category === 'new' && releaseSeason ? { releaseSeason, ...(releaseYear ? { releaseYear } : {}) } : {}) }).catch(() => ({ url: null }))));
     const ops = [];
     const typesFilled = [];
     todo.forEach((d, n) => {
@@ -281,7 +282,7 @@ async function save(interaction, token, state) {
         const live = d.existing ? all.find(([, x]) => String(x._id) === d.existing.elementId) : null;
         if (!d.existing) {
             let priceType = d.priceType || '';
-            if (!isKnownType(priceType) && isPricedDrawType(thumbs[n]?.catalog?.priceType)) { priceType = thumbs[n].catalog.priceType; typesFilled.push(`${d.title}: ${drawTypeName(priceType)}`); }
+            if (!isKnownType(priceType) && namesDrawType(thumbs[n]?.catalog?.priceType)) { priceType = thumbs[n].catalog.priceType; typesFilled.push(`${d.title}: ${drawTypeName(priceType)}`); }
             ops.push({ type: 'draw.add', payload: { title: d.title, items: d.items || [], date: d.start, thumbnailUrl: thumbs[n]?.url || d.imageUrl || null, ...(priceType ? { priceType } : {}), category: d.category } });
         } else if (d.startGiven && live && new Date(live[1].date).getTime() !== new Date(d.start).getTime()) {
             // draw.edit sets every field it is given and validate() fills a missing `items` with [], so the draw's own title and items ride along unchanged.
