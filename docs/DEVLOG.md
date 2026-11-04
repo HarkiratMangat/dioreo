@@ -306,6 +306,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-11-04 01:38 EST — A conflict check that could never catch a real conflict failed on a draw with id-less items (v3.8.0)
 - 2026-11-04 10:13 EST — A season number that repeats every year, and an announcement that came without its year (v3.8.1)
 - 2026-11-04 10:44 EST — 24 new nameplates and decorations from the shop, and a pinned count that had to move (v3.8.2)
+- 2026-11-04 10:57 EST — The VM's image tool was older than the Mac's (v3.8.3)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4957,6 +4958,14 @@ Harkirat asked for the Discord shop catalogue sync while another thread finished
 **What it teaches.**
 - **A data refresh is not done when its own file changes.** The catalogue doc quoted the old totals, and `scripts/collectibleCacheKey.test.js` pins the snapshot's exact count, so the first suite run failed on 986. Both are recounted from the file in the same change, and the rule for the script now says so.
 - **Read a gate's exit before publishing.** One push went out with that failing test because the push was chained with `;` instead of `&&`. Nothing merged; the next push carried the fix.
+
+## 2026-11-04 10:57 EST — The VM's image tool was older than the Mac's (v3.8.3)
+
+Rendering the 24 SKUs the shop sync had just added was the first prod bulk render in weeks, and it failed every one with `Unknown option [-exact]`. The VM's `img2webp` is Debian 12's libwebp 1.2.4; the Mac's is 1.6.0. The flag the encoder had passed since August exists only in the newer one.
+
+**What it teaches.**
+- **A system binary is a dependency with a version, and the Mac's is not the VM's.** Every test of this encoder ran on the Mac, so none could fail for this. The fix asks the binary itself (its help text) rather than assuming a version, and the ops doc now names both.
+- **A dry run that counts work proves nothing about doing it.** The dry run reported 24 SKUs to render and 0 failures, because it never ran the encoder.
 
 # Part B — Lessons Ledger (thematic)
 

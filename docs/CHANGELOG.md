@@ -29,7 +29,20 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.8.2 — 2026-11-04 10:36 EST (#251) — 24 new nameplates and decorations from the Discord shop
+## v3.8.3 — 2026-11-04 10:57 EST (#252) — Nameplate and decoration renders work on the VM's older image tool
+**From Harkirat, 2026-11-04 10:56 EST:** "sure go ahead", to shipping the fix after the v3.8.2 render of the 24 new SKUs failed on prod.
+
+### The failure
+- The first prod bulk render after the shop sync failed **all 24** new SKUs: `img2webp exited 1: Unknown option [-exact]`. The VM runs Debian 12's libwebp **1.2.4**, whose `img2webp` has no `-exact`; the Mac's **1.6.0** has it, so every render tested here passed. The live bot's lazy render of an uncached nameplate or decoration uses the same encoder (none was attempted on prod in the 30 days of journal checked).
+
+### The fix
+- `utils/animatedMediaPipeline.js` asks `img2webp -h` once per process (`img2webpOffersExact`) and passes `-exact` only where the binary lists it (`img2webpFrameArgs`). The flag keeps RGB values under fully transparent pixels, which no viewer shows.
+- Recorded in `docs/reference/deployment-and-ops.md` (the VM's version beside the Mac's) and `.claude/rules/loadout-images-and-metadata.md`.
+
+### Tests
+- `scripts/animatedMediaPipeline.test.js`: both versions' real help lines, and the argument list with and without the flag. Encoded through `encodeWebpFromFrames` with a shim behaving like 1.2.4 and with the real 1.6.0: both give a valid WebP.
+
+## v3.8.2 — 2026-11-04 10:36 EST (#251 · `d4afade5`) — 24 new nameplates and decorations from the Discord shop
 **From Harkirat, 2026-11-04 10:10 EST:** "while you wait, can you run the discord shop catalogue sync".
 
 ### The catalogue

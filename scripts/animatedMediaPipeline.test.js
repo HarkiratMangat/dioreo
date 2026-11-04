@@ -3,7 +3,7 @@
 // ⚠️ WHY THIS EXISTS, and it is the more useful half of the story. Both invariants were first handled by describing them in a comment and a rules file, on the reasoning that "no automated check in this repo can see them". That reasoning was wrong in the way that matters: they could not be OBSERVED by an existing check, but each could be MADE checkable by changing the code so the invariant is enforced rather than assumed. Documenting a gap is not closing it — the note goes stale, the reader skims it, and the failure it warned about ships anyway. See `feedback_not_checkable_is_usually_unexamined`.
 const assert = require('assert');
 const { Jimp } = require('jimp');
-const { poolFramesIntoMontage, FRAME_FILE_RE } = require('../utils/animatedMediaPipeline');
+const { poolFramesIntoMontage, FRAME_FILE_RE, helpOffersExact, img2webpFrameArgs } = require('../utils/animatedMediaPipeline');
 
 let failed = 0, passed = 0;
 async function t(name, fn) {
@@ -21,6 +21,17 @@ const png = (w, h) => new Jimp({ width: w, height: h, color: 0xff0000ff }).getBu
 
 (async () => {
     console.log('\nanimated media pipeline — invariants that used to be comments\n');
+
+    // --- img2webp's -exact exists in libwebp 1.6.0 (the Mac) and not in 1.2.4 (the prod VM, Debian 12). Passing it there failed every prod render (2026-11-04).
+    await t('-exact is passed only where img2webp offers it', () => {
+        assert.strictEqual(helpOffersExact(' -lossless  ........... use lossless mode (default)\n -exact ............... preserve RGB values in transparent area'), true);
+        assert.strictEqual(helpOffersExact(' -mixed ............... use mixed lossy/lossless automatic mode\n -lossless  ........... use lossless mode (default)'), false, 'libwebp 1.2.4 help has no -exact');
+        assert.strictEqual(helpOffersExact(''), false);
+        assert.strictEqual(helpOffersExact(' -exact, -noexact ..... preserve or alter RGB values in transparent area'), true, 'libwebp 1.6.0 help, as printed on the Mac');
+        assert.ok(img2webpFrameArgs(['a.png', 'b.png'], 40, true).filter(a => a === '-exact').length === 2);
+        assert.ok(!img2webpFrameArgs(['a.png', 'b.png'], 40, false).includes('-exact'));
+        assert.deepStrictEqual(img2webpFrameArgs(['a.png'], 40, false), ['-loop', '0', '-d', '40', '-lossless', '-m', '0', 'a.png']);
+    });
 
     // --- The frames directory is shared with the encoder's output now, so "which files are frames" has to be exact rather than a prefix that happens not to collide.
     await t('the frame pattern matches ffmpeg\'s numbered output', () => {
