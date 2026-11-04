@@ -4,6 +4,8 @@
 //
 // So conflicts are detected at ELEMENT identity: pin the subdocument by _id AND assert its prior values in the same filter. A mismatch matches zero documents, which IS the conflict signal.
 //
+// ⚠️ WHAT THIS CHECK CAN AND CANNOT CATCH (2026-11-04 00:45 EST, found by the /manage audit). Every caller in core/ops builds `expect` from a `cur` it read INSIDE the same apply(), in the same transaction, so the assertion compares a document with its own snapshot: it can only fail when a value does not survive the Mongoose cast (which is how it failed Harkirat, on draws whose items had no _id), never because another editor got there first. Real concurrent writers are stopped by MongoDB's own write-conflict abort and withTransaction's retry, which re-reads. An edit made AFTER a pop-up opened is not detected at all: see the deferred list, 'Edit pop-ups carry no version'. A caller that wants a real check must pass an `expect` captured BEFORE the write began.
+//
 // 🔴 Nothing in core/ may call .save() on a SeasonalData document. This module is the only writer.
 
 const { isDeepStrictEqual } = require('util');

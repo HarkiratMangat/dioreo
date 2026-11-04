@@ -21,7 +21,7 @@ const { seasonEmojiFor } = require('../utils/seasonEmoji');
 const { withShareButton } = require('../utils/shareButton');
 const { resolveEphemeral } = require('../utils/ephemeral');
 const { sendV2Payload } = require('../utils/sendV2Payload');
-const { isSameDrawTitle } = require('../utils/search');
+const { isSameDrawTitle, bestDrawMatch } = require('../utils/search');
 
 const DAY_MS = 86400000;
 // His windows: Ending soon looks 2 days ahead (2026-10-23 11:24 EDT); /calendar's Today page shows the next 2 days with something, looking 7 days ahead ("next 2 dates only then, since the entire panel will likely be long", 13:02 EDT).
@@ -41,7 +41,7 @@ function gameDay(nowMs) {
 
 // The best tier among a draw's items, as an emojiMap key, or null.
 function drawTier(seasonalDoc, title) {
-    const draw = [...(seasonalDoc.newDraws || []), ...(seasonalDoc.returningDraws || [])].find(d => isSameDrawTitle(title, d.title));
+    const draw = bestDrawMatch([...(seasonalDoc.newDraws || []), ...(seasonalDoc.returningDraws || [])], title);
     const tiers = new Set((draw?.items || []).map(i => i.tier));
     return TIER_ORDER.find(t => tiers.has(t)) || null;
 }
@@ -173,7 +173,7 @@ function buildBriefBody(seasonalDoc, { nowMs = Date.now(), mode = 'spaced' } = {
     // One draw: its title and items, beside its image when it has one. "Weapon - Skin" reads as **Weapon** — Skin, as /draws writes it.
     const itemLine = i => { const [w, ...skin] = i.name.split(' - '); return `${emojis[i.tier] || ''} **${w}**${skin.length ? ` — ${skin.join(' - ')}` : ''}`.trim(); };
     const drawBlock = e => {
-        const d = allDraws.find(x => isSameDrawTitle(e.title, x.title));
+        const d = bestDrawMatch(allDraws, e.title);
         const text = [`### ${e.title}`, ...(d?.items || []).filter(i => i.tier !== 'comment').map(itemLine)].join('\n');
         return d?.thumbnailUrl ? { type: 9, components: [block(text)], accessory: { type: 11, media: { url: d.thumbnailUrl } } } : block(text);
     };

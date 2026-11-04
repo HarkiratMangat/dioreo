@@ -89,6 +89,7 @@ export const TESTS = [
     {"cmd": "node scripts/drawOps.test.js", "lane": "unit"},
     {"cmd": "node scripts/searchDrawMatch.test.js", "lane": "unit"},
     {"cmd": "node scripts/manageErrorText.test.js", "lane": "unit"},
+    {"cmd": "node scripts/manageEditModals.test.js", "lane": "unit"},
     {"cmd": "node scripts/coreOps.test.js", "lane": "unit"},
     {"cmd": "node scripts/changeset.test.js", "lane": "unit"},
     {"cmd": "node scripts/drawsHandlerSnapshot.test.js", "lane": "unit"},

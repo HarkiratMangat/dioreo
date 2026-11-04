@@ -11,7 +11,8 @@ function check(name, fn) {
 check('a positional conflict reads as a sentence that says nothing was saved', () => {
     const t = humanCommitError('op 0 failed: conflict');
     assert.ok(!/op 0|failed:/.test(t), t);
-    assert.ok(/nothing was saved/.test(t) && /try again/i.test(t), t);
+    assert.ok(/nothing was saved/i.test(t) && /try again/i.test(t), t);
+    assert.ok(!/someone else|another (admin|panel)|by a person/i.test(t), 'a conflict here is a bug, not another editor: the text must not blame a person');
 });
 
 check('a missing element reads as a sentence, whatever the op index', () => {
@@ -26,7 +27,7 @@ check('any other failure text passes through untouched', () => {
 });
 
 check('extractCommitError applies it to both result shapes', () => {
-    assert.ok(/nothing was saved/.test(extractCommitError({ error: 'op 0 failed: conflict' })));
+    assert.ok(/nothing was saved/i.test(extractCommitError({ error: 'op 0 failed: conflict' })));
     assert.strictEqual(extractCommitError({ failures: [{ errors: ['A draw needs a title.'] }] }), 'A draw needs a title.');
 });
 
