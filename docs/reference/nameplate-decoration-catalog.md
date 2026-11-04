@@ -17,15 +17,15 @@ It was renamed from its original filename `all-nameplates-decorations.json` to `
 
 ## Verified structure
 
-Re-checked by parsing the file programmatically on 2026-10-22 (first checked 2026-08-15 01:00 EDT, when it held 88 collections and 925 SKUs), not sampled by eye:
+Re-checked by parsing the file programmatically on 2026-11-04 10:12 EST, after the shop sync that added 24 SKUs (earlier: 2026-10-22 at 986 SKUs; first checked 2026-08-15 01:00 EDT, when it held 88 collections and 925 SKUs), not sampled by eye:
 
-- **95 top-level collections** (e.g. `"Underworld"`, `"Solar Eclipse"`, `"Sunkissed"`, `"Palworld"`, `"Toy Story"`), each holding a `nameplates` array and a `decorations` array of design groups.
-- **260 nameplate design groups → 289 total SKUs (variants).**
-- **521 decoration design groups → 697 total SKUs (variants).**
-- **986 SKUs total, 0 duplicate `sku_id` values anywhere in the file.**
-- Every nameplate variant carries `palette` + `palette_hex` — 0 of 289 missing either field.
+- **98 top-level collections** (e.g. `"Underworld"`, `"Solar Eclipse"`, `"Sunkissed"`, `"Palworld"`, `"Toy Story"`), each holding a `nameplates` array and a `decorations` array of design groups.
+- **267 nameplate design groups → 301 total SKUs (variants).**
+- **530 decoration design groups → 709 total SKUs (variants).**
+- **1,010 SKUs total, 0 duplicate `sku_id` values anywhere in the file.**
+- Every nameplate variant carries `palette` + `palette_hex` — 0 of 301 missing either field.
 - No decoration variant carries `palette`/`palette_hex` — decorations have no bed/palette concept, confirmed 0 exceptions.
-- The `name` vs. `variant_label`/`variant_value` split is 100% consistent across all 986 entries: a single-variant group's one variant carries `name` (the plain design name); a multi-variant group's variants each carry `variant_label` + `variant_value` instead, never both — 0 exceptions found.
+- The `name` vs. `variant_label`/`variant_value` split is 100% consistent across all 1,010 entries: a single-variant group's one variant carries `name` (the plain design name); a multi-variant group's variants each carry `variant_label` + `variant_value` instead, never both — 0 exceptions found.
 
 ### Shape
 

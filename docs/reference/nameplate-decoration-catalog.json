@@ -1,4 +1,300 @@
 {
+    "The Nightmare Before Christmas": {
+        "decorations": [
+            {
+                "group_name": "Oogie Boogie",
+                "base_sku_id": "1559631474259398756",
+                "variants": [
+                    {
+                        "sku_id": "1559631474259398756",
+                        "asset": "a_f8677689e87f66cdad68b9696fbd3ece",
+                        "label": "Bats exploding out of orange moonlight with Oogie Boogie's face appearing in the center",
+                        "variant_label": "Base",
+                        "variant_value": "#ffd484"
+                    },
+                    {
+                        "sku_id": "1559632048791097385",
+                        "asset": "a_716898b73bcc334d0df92eafe1b84f40",
+                        "label": "Bats exploding out of orange moonlight",
+                        "variant_label": "Bats",
+                        "variant_value": "#ff961e"
+                    }
+                ]
+            },
+            {
+                "group_name": "Zero",
+                "base_sku_id": "1559631197070426122",
+                "variants": [
+                    {
+                        "sku_id": "1559631197070426122",
+                        "name": "Zero",
+                        "asset": "a_7a21b35a01e3474c922f4055d8a32727",
+                        "label": "Zero emerging from his graveyard house and doing a flying loop"
+                    }
+                ]
+            },
+            {
+                "group_name": "Sally's Potion",
+                "base_sku_id": "1559629977685860432",
+                "variants": [
+                    {
+                        "sku_id": "1559629977685860432",
+                        "name": "Sally's Potion",
+                        "asset": "a_7e81fa0417592ce61ca12ec98d085da4",
+                        "label": "A ghoulish butterfly emerging from one of Sally's potion bottles"
+                    }
+                ]
+            },
+            {
+                "group_name": "Jack Skellington",
+                "base_sku_id": "1559627983088783492",
+                "variants": [
+                    {
+                        "sku_id": "1559627983088783492",
+                        "asset": "a_94ca6f57c538c0e8c76b415a69cb79f4",
+                        "label": "A ring of bones with Jack Skellington's face appearing in the middle",
+                        "variant_label": "Base",
+                        "variant_value": "#d1d3e0"
+                    },
+                    {
+                        "sku_id": "1559628807718051933",
+                        "asset": "a_bd4f2ec24aef14f147779f1490340ffc",
+                        "label": "A ring of bones with a bat collar",
+                        "variant_label": "Bones",
+                        "variant_value": "#545b68"
+                    }
+                ]
+            }
+        ],
+        "nameplates": [
+            {
+                "group_name": "Zero Lights the Night",
+                "base_sku_id": "1559633219555557497",
+                "variants": [
+                    {
+                        "sku_id": "1559633219555557497",
+                        "name": "Zero Lights the Night",
+                        "asset": "nameplates/zero_lights_the_night/1559633219555557497/",
+                        "label": "Zero flies with a glowing nose over a spooky town",
+                        "palette": "cobalt",
+                        "palette_hex": "#0131c2"
+                    }
+                ]
+            },
+            {
+                "group_name": "Sally",
+                "base_sku_id": "1559632988885618788",
+                "variants": [
+                    {
+                        "sku_id": "1559632988885618788",
+                        "name": "Sally",
+                        "asset": "nameplates/sally/1559632988885618788/",
+                        "label": "Sally contentedly plucks petals from a dead flower against a patchwork fabric backdrop",
+                        "palette": "bubble_gum",
+                        "palette_hex": "#dc3e97"
+                    }
+                ]
+            },
+            {
+                "group_name": "Jack Skellington",
+                "base_sku_id": "1559632434109091910",
+                "variants": [
+                    {
+                        "sku_id": "1559632434109091910",
+                        "name": "Jack Skellington",
+                        "asset": "nameplates/jack_skellington/1559632434109091910/",
+                        "label": "Jack Skellington waves and grins, and then changes into a devilish expression",
+                        "palette": "violet",
+                        "palette_hex": "#730bc8"
+                    }
+                ]
+            }
+        ]
+    },
+    "D\u00eda de Muertos": {
+        "decorations": [
+            {
+                "group_name": "Ofrenda",
+                "base_sku_id": "1561803284287717447",
+                "variants": [
+                    {
+                        "sku_id": "1561803284287717447",
+                        "name": "Ofrenda",
+                        "asset": "a_3026bd6951300ce1a4962c18efabd967",
+                        "label": "Marigolds and candles arch around a sugar skull, swaying lightly."
+                    }
+                ]
+            }
+        ],
+        "nameplates": [
+            {
+                "group_name": "Calavera",
+                "base_sku_id": "1561803485622575244",
+                "variants": [
+                    {
+                        "sku_id": "1561803485622575244",
+                        "asset": "nameplates/calavera/1561803485622575244/",
+                        "label": "A blueish purple sugar skull rests on an altar beside a candle.",
+                        "palette": "berry",
+                        "palette_hex": "#893a99",
+                        "variant_label": "Purple",
+                        "variant_value": "#B635F6"
+                    },
+                    {
+                        "sku_id": "1561803720419967158",
+                        "asset": "nameplates/calavera/1561803720419967158/",
+                        "label": "A purplish red sugar skull rests on an altar beside a candle.",
+                        "palette": "crimson",
+                        "palette_hex": "#900007",
+                        "variant_label": "Red",
+                        "variant_value": "#CA2F52"
+                    },
+                    {
+                        "sku_id": "1561804071151730749",
+                        "asset": "nameplates/calavera/1561804071151730749/",
+                        "label": "A blue sugar skull rests on an altar beside a candle.",
+                        "palette": "cobalt",
+                        "palette_hex": "#0131c2",
+                        "variant_label": "Blue",
+                        "variant_value": "#1BAACE"
+                    }
+                ]
+            }
+        ]
+    },
+    "Dead by Daylight": {
+        "decorations": [
+            {
+                "group_name": "Void Pumpkins",
+                "base_sku_id": "1556807542322106429",
+                "variants": [
+                    {
+                        "sku_id": "1556807542322106429",
+                        "name": "Void Pumpkins",
+                        "asset": "a_8680dc0edb6204316cc50141ba60fb7b",
+                        "label": "Two skeletal pumpkins rotate around each other with trails of fire."
+                    }
+                ]
+            },
+            {
+                "group_name": "Bloodweb",
+                "base_sku_id": "1556807371660206281",
+                "variants": [
+                    {
+                        "sku_id": "1556807371660206281",
+                        "name": "Bloodweb",
+                        "asset": "a_bb1e17c1e14d8bd73cbe06d948bbf9bd",
+                        "label": "A ring of pulsing red veins webbed together with dark pods."
+                    }
+                ]
+            },
+            {
+                "group_name": "Dark Moon",
+                "base_sku_id": "1556801499403657236",
+                "variants": [
+                    {
+                        "sku_id": "1556801499403657236",
+                        "asset": "a_ad38a7dd006e5700ba9595e5e463a2a9",
+                        "label": "Crows fly out of a dark, jagged crescent moon with smoke-like edges.",
+                        "variant_label": "Base",
+                        "variant_value": "#A2C4C9"
+                    },
+                    {
+                        "sku_id": "1556801850206978138",
+                        "asset": "a_6cc06011b9ef1ffe3b39517ae00a0100",
+                        "label": "Crows fly out of a dark, jagged crescent moon in red with smoke-like edges.",
+                        "variant_label": "Blood Moon",
+                        "variant_value": "#FD0609"
+                    }
+                ]
+            },
+            {
+                "group_name": "The Entity",
+                "base_sku_id": "1556799118427553842",
+                "variants": [
+                    {
+                        "sku_id": "1556799118427553842",
+                        "name": "The Entity",
+                        "asset": "a_2a8858b084e3ad989b46472107427d97",
+                        "label": "A ring of jagged, claw-like blades."
+                    }
+                ]
+            }
+        ],
+        "nameplates": [
+            {
+                "group_name": "Bloodweb",
+                "base_sku_id": "1556803113887989800",
+                "variants": [
+                    {
+                        "sku_id": "1556803113887989800",
+                        "name": "Bloodweb",
+                        "asset": "nameplates/bloodweb/1556803113887989800/",
+                        "label": "Red veins web together, glowing with dark pods.",
+                        "palette": "crimson",
+                        "palette_hex": "#900007"
+                    }
+                ]
+            },
+            {
+                "group_name": "Dark Moon",
+                "base_sku_id": "1556808246776434708",
+                "variants": [
+                    {
+                        "sku_id": "1556808246776434708",
+                        "asset": "nameplates/dark_moon/1556808246776434708/",
+                        "label": "A crow's head looms in the foreground beneath a full moon.",
+                        "palette": "black",
+                        "palette_hex": "#000000",
+                        "variant_label": "Base",
+                        "variant_value": "#A2C4C9"
+                    },
+                    {
+                        "sku_id": "1556808521750945913",
+                        "asset": "nameplates/dark_moon/1556808521750945913/",
+                        "label": "A crow's head looms in the foreground beneath a red full moon.",
+                        "palette": "crimson",
+                        "palette_hex": "#900007",
+                        "variant_label": "Blood Moon",
+                        "variant_value": "#FD0609"
+                    }
+                ]
+            },
+            {
+                "group_name": "Scratch Marks",
+                "base_sku_id": "1556807670403702794",
+                "variants": [
+                    {
+                        "sku_id": "1556807670403702794",
+                        "asset": "nameplates/scratch_marks/1556807670403702794/",
+                        "label": "Jagged red scratch marks streak across a dark haze.",
+                        "palette": "crimson",
+                        "palette_hex": "#900007",
+                        "variant_label": "Red",
+                        "variant_value": "#FD0609"
+                    },
+                    {
+                        "sku_id": "1556807932140851240",
+                        "asset": "nameplates/scratch_marks/1556807932140851240/",
+                        "label": "Jagged teal scratch marks streak across a dark haze.",
+                        "palette": "sky",
+                        "palette_hex": "#0080b7",
+                        "variant_label": "Teal",
+                        "variant_value": "#11D8E3"
+                    },
+                    {
+                        "sku_id": "1556808071609712640",
+                        "asset": "nameplates/scratch_marks/1556808071609712640/",
+                        "label": "Jagged purple scratch marks streak across a dark haze.",
+                        "palette": "berry",
+                        "palette_hex": "#893a99",
+                        "variant_label": "Purple",
+                        "variant_value": "#D611B5"
+                    }
+                ]
+            }
+        ]
+    },
     "Fall Foragers": {
         "decorations": [
             {
