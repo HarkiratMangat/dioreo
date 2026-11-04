@@ -178,10 +178,10 @@ registerEntity('season', {
             if (draft.bpTitle) $set.bpTitle = draft.bpTitle;
             if (draft.rankTitle) $set.rankTitle = draft.rankTitle;
             if (draft.dmzTitle) $set.dmzTitle = draft.dmzTitle;
-            // The TBD flag is checked BEFORE the date -- a plain truthy check on bpEnd would silently skip promoting a TBD deadline, since TBD leaves draft.bpEnd explicitly null.
-            if (draft.bpEndTBD) { $set.bpEnd = null; $set.bpEndTBD = true; } else if (draft.bpEnd) { $set.bpEnd = draft.bpEnd; $set.bpEndTBD = false; }
-            if (draft.rankEndTBD) { $set.rankEnd = null; $set.rankEndTBD = true; } else if (draft.rankEnd) { $set.rankEnd = draft.rankEnd; $set.rankEndTBD = false; }
-            if (draft.dmzEndTBD) { $set.dmzEnd = null; $set.dmzEndTBD = true; } else if (draft.dmzEnd) { $set.dmzEnd = draft.dmzEnd; $set.dmzEndTBD = false; }
+            // A blank end goes live blank, like a blank start below (Harkirat, 2026-11-04 12:25 EST: "go" on clearing them): before, the new season kept the old season's end, already past, so a Battle Pass could start after it ended. The TBD flag is checked BEFORE the date -- a plain truthy check on bpEnd would silently skip promoting a TBD deadline, since TBD leaves draft.bpEnd explicitly null.
+            if (draft.bpEndTBD) { $set.bpEnd = null; $set.bpEndTBD = true; } else if (draft.bpEnd) { $set.bpEnd = draft.bpEnd; $set.bpEndTBD = false; } else { $set.bpEnd = null; $set.bpEndTBD = false; }
+            if (draft.rankEndTBD) { $set.rankEnd = null; $set.rankEndTBD = true; } else if (draft.rankEnd) { $set.rankEnd = draft.rankEnd; $set.rankEndTBD = false; } else { $set.rankEnd = null; $set.rankEndTBD = false; }
+            if (draft.dmzEndTBD) { $set.dmzEnd = null; $set.dmzEndTBD = true; } else if (draft.dmzEnd) { $set.dmzEnd = draft.dmzEnd; $set.dmzEndTBD = false; } else { $set.dmzEnd = null; $set.dmzEndTBD = false; }
             // The starts go live with the draft, blank included: a new season never keeps the old one's start, or its bar would count from the wrong day.
             $set.bpStart = draft.bpStart || null; $set.rankStart = draft.rankStart || null; $set.dmzStart = draft.dmzStart || null;
             $set.newDraws = draft.newDraws || [];

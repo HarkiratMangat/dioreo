@@ -44,6 +44,15 @@ const button = (customId) => Object.assign(h.modal(customId), { isButton: () => 
         assert.ok(!h.state.doc.draft?.active && !(h.state.doc.draft?.newDraws || []).length, JSON.stringify(h.state.doc.draft));
     });
 
+    await check('Promote with an end left blank clears the old season\'s end instead of keeping it', async () => {
+        h.reset({ bpEnd: '2026-12-17T00:00:00.000Z', rankEnd: '2026-12-17T00:00:00.000Z', bpEndTBD: false,
+                  draft: { active: true, currentSeasonTitle: 'Season 11: Next', bpStart: '2026-12-18T00:00:00.000Z', rankEnd: '2027-02-01T00:00:00.000Z', newDraws: [], returningDraws: [], calendar: [] } });
+        await season.handleDraftButton(button('mng_draftpromoteconfirm'));
+        assert.strictEqual(h.state.doc.bpEnd, null, 'the old Battle Pass end is gone');
+        assert.strictEqual(h.state.doc.bpEndTBD, false);
+        assert.strictEqual(h.state.doc.rankEnd, '2027-02-01T00:00:00.000Z', 'an end the draft gives still goes live');
+    });
+
     await check('Start New Season asks first, then clears the season on Confirm', async () => {
         h.reset({ currentSeasonTitle: 'Season 9: Old', newDraws: [{ _id: 'e'.repeat(24), title: 'Old Draw', date: '2026-11-01T12:00:00.000Z' }], calendar: [{ _id: 'f'.repeat(24), title: 'Old Event', date: '2026-11-01T12:00:00.000Z' }] });
         const ask = h.modal('modal_season_wipe', { season_title: 'Season 10: New' });
