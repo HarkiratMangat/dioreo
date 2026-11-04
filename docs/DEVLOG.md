@@ -305,6 +305,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-11-03 15:21 EST — Six emoji for a season's progress (v3.7.2)
 - 2026-11-04 01:38 EST — A conflict check that could never catch a real conflict failed on a draw with id-less items (v3.8.0)
 - 2026-11-04 10:13 EST — A season number that repeats every year, and an announcement that came without its year (v3.8.1)
+- 2026-11-04 10:44 EST — 24 new nameplates and decorations from the shop, and a pinned count that had to move (v3.8.2)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4948,6 +4949,14 @@ Harkirat sent the next season's mythic draw and a past armory to be added to the
 - **He caught my own wrong word.** I called the November 19 release date an "end date" because the draw's other date in this codebase is an end. Say what the date is for in his words before filing it.
 - **Say what a conversion costs before doing it.** His PNGs were 8 to 9 MB; the existing draw images are 1080 px JPEGs. Converting to quality-92 JPEGs kept the full 2160 px, and a PSNR of 42 to 44 dB against the PNG is the number that backs "no visual loss", not a look.
 - **A prod write by script needs a read-back against the other store.** Mongo and Cloudinary were compared field by field afterwards (fingerprint, price type, tags, `items_full`); every one agreed.
+
+## 2026-11-04 10:44 EST — 24 new nameplates and decorations from the shop, and a pinned count that had to move (v3.8.2)
+
+Harkirat asked for the Discord shop catalogue sync while another thread finished the draw index. The script found 24 new SKUs across three new collections and wrote them additively; nothing was renamed, so no Cloudinary cache key moved.
+
+**What it teaches.**
+- **A data refresh is not done when its own file changes.** The catalogue doc quoted the old totals, and `scripts/collectibleCacheKey.test.js` pins the snapshot's exact count, so the first suite run failed on 986. Both are recounted from the file in the same change, and the rule for the script now says so.
+- **Read a gate's exit before publishing.** One push went out with that failing test because the push was chained with `;` instead of `&&`. Nothing merged; the next push carried the fix.
 
 # Part B — Lessons Ledger (thematic)
 

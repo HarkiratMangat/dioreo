@@ -29,7 +29,20 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.8.1 — 2026-11-04 10:13 EST (#250) — The draw index keeps the release year, and next season's draw is in it
+## v3.8.2 — 2026-11-04 10:36 EST (#251) — 24 new nameplates and decorations from the Discord shop
+**From Harkirat, 2026-11-04 10:10 EST:** "while you wait, can you run the discord shop catalogue sync".
+
+### The catalogue
+- `scripts/syncNameplateCatalog.py`, run by hand as always, added **24 SKUs** to `docs/reference/nameplate-decoration-catalog.json`: The Nightmare Before Christmas (3 nameplates, 6 decorations), Día de Muertos (3, 1) and Dead by Daylight (6, 5). Additive: 986 → 1,010, nothing removed or renamed, so no Cloudinary cache key changes (`group_name` + `variant_label` are the key).
+- `docs/reference/nameplate-decoration-catalog.md`'s figures are recounted from the file: 98 collections, 267 nameplate groups → 301 SKUs, 530 decoration groups → 709 SKUs, 0 duplicate `sku_id`, 0 exceptions to its palette and name/variant rules.
+
+### Tests
+- `scripts/collectibleCacheKey.test.js` pins the snapshot's size: 986 → 1,010, after its own collision check passed at the new count.
+
+### Data
+- Dev database loaded through `scripts/syncCatalogToMongo.js` (24 inserted, 986 updated). The prod load and the render of the 24 new SKUs follow the deploy, on his word (2026-11-04 10:34 EST).
+
+## v3.8.1 — 2026-11-04 10:13 EST (#250 · `546834cd`) — The draw index keeps the release year, and next season's draw is in it
 **From Harkirat, 2026-11-04 10:00 EST:** "i want to add a draw to the catalogue which will be releasing next season. So i dont want it on the live bot but i want to implement it into the catalogue for easy creation when needed for next season". Then, on the release season: "only '10' in the catalogue? no year? because the season 1-12 naming repeats each year" and "if you're capable of correcting it, then fix it."
 
 ### The year
