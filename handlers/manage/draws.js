@@ -11,15 +11,23 @@ const BOT_EMOJI = require('../../utils/emojiMap'); // the bot's own status glyph
 const { resolveThumbnail } = require('../../utils/cloudinaryCache');
 const { commitSet } = require('../../core/changeset');
 const {
-    thumbnailNote, loadOrCreateSeasonalDoc, registerBulkDelete, extractCommitError
+    thumbnailNote, loadOrCreateSeasonalDoc, registerBulkDelete, extractCommitError, humanCommitError
 } = require('./shared');
 const { failWithRetry } = require('./retry');
 const { drawPanel, resultPanel, notePanel, FAIL_ACCENT } = require('../../utils/managePanels');
 
+// The draw's /calendar row write rides in the draw's own commit, so a draws-only admin (no Calendar tier) had the WHOLE commit refused: they could no longer rename a draw or move its date once it had a row, which they could before #249 (lead review, 2026-11-04 09:26 EST). The row write is checked first and, when refused, dropped with a warning, the way Add and Replace Multiple already treat it. Typing an end still needs the Calendar tier (the lead's call, kept).
+async function gateEndOp(actorId, endOp) {
+    if (!endOp) return { endOp: null, warnings: [] };
+    const gate = await require('../../core/changeset').checkOps(actorId, [endOp]);
+    if (gate.ok) return { endOp, warnings: [] };
+    return { endOp: null, warnings: ['The draw was saved, but its /calendar row (its end date, and its title or start when those changed) was not: that needs the Calendar permission.'] };
+}
+
 // --- SAVE NEW SINGLE DRAW --- custom_id: add_draw_{new|returning}
 async function addDraw(interaction) {
     await interaction.deferReply({ ephemeral: true });
-    const { toTitleCase, parseItemLine, parseAdminDate } = require('../../utils/adminParser');
+    const { toTitleCase, parseItemLine } = require('../../utils/adminParser');
     const customId = interaction.customId;
     const drawType = customId.replace('add_draw_', '');
 
@@ -34,15 +42,17 @@ async function addDraw(interaction) {
     if (!title || !dateStr || !rawItems) {
         return await failWithRetry(interaction, 'Fill in Title, Items, and Release Date.');
     }
-    const parsedSingleDate = parseAdminDate(dateStr);
-    if (!parsedSingleDate) {
-        return await failWithRetry(interaction, `Date "${dateStr}" wasn't understood -- nothing was saved.`);
-    }
+    // "Start - End" like the season titles box (utils/drawDates.js): the start is the release date, an end also goes onto the draw's /calendar row, in the same commit.
+    const { parseDrawDates, planEndRow } = require('../../utils/drawDates');
+    const dates = parseDrawDates(dateStr);
+    if (!dates.ok) return await failWithRetry(interaction, dates.error);
+    const parsedSingleDate = dates.start;
 
     // URL is optional -- blank reuses a Cloudinary cache hit for this exact title if one exists. No URL AND no cache hit used to hard-reject the whole submission -- relaxed 2026-08-22 19:40 EDT (click-test fix): a draw's info is sometimes known before any image exists to link/cache. thumbnailUrl has no `required` on the schema (models/SeasonalData.js) -- this was purely an app-level choice. commands/draws.js's render renders a plain no-image row instead of a broken thumbnail when thumbnailUrl is null. The items go along so a draw that comes back under a new name finds its old image by what it contains (utils/cloudinaryCache.js).
     const parsedItems = rawItems.split('\n').filter(l => l.trim().length > 0).map(parseItemLine);
     // A draw added to New that the draw index has never seen is indexed with this season as its release season (utils/drawCatalog.js insertFields).
-    const releaseSeason = drawType === 'new' ? require('../../utils/quickAdd').seasonNumber((await loadOrCreateSeasonalDoc()).currentSeasonTitle) : null;
+    const seasonalDoc = await loadOrCreateSeasonalDoc();
+    const releaseSeason = drawType === 'new' ? require('../../utils/quickAdd').seasonNumber(seasonalDoc.currentSeasonTitle) : null;
     const thumbResult = await resolveThumbnail(title, rawUrl, { items: parsedItems, priceType, ...(releaseSeason ? { releaseSeason } : {}) });
 
     // No type picked, or Unsure: the draw index's type when it knows this draw for certain (its title, another name, or its items). Said in a note, so a wrong one is seen and edited.
@@ -56,8 +66,11 @@ async function addDraw(interaction) {
 
     const newDrawObj = { title, items: parsedItems, date: parsedSingleDate, thumbnailUrl: thumbResult.url, ...(priceType ? { priceType } : {}) };
 
+    // A calendar row for this title may already exist (an event added ahead of the draw): it is edited, never duplicated, and only when an end is typed.
+    const row = require('../../utils/drawEndReminder').calendarRowFor(seasonalDoc, title);
+    const { endOp, warnings } = await gateEndOp(interaction.user.id, planEndRow({ row, title, start: parsedSingleDate, end: dates.end }));
     const result = await commitSet(
-        [{ type: 'draw.add', payload: { ...newDrawObj, category: drawType } }],
+        [{ type: 'draw.add', payload: { ...newDrawObj, category: drawType } }, ...(endOp ? [endOp] : [])],
         { actorId: interaction.user.id }
     );
     if (!result.ok) {
@@ -66,7 +79,7 @@ async function addDraw(interaction) {
 
     // The saved draw as a panel, beside its picture (2026-10-26 12:52 EDT, the loadout treatment for every /manage page); a missing picture shows on the panel itself, so only a reused or failed upload is a note.
     const notes = [...(thumbResult.url ? [thumbnailNote(thumbResult)] : []), typeNote].filter(Boolean);
-    const sent = await interaction.followUp({ flags: 32768 | 64, components: drawPanel({ draw: { ...newDrawObj, _id: result.results[0].applied.elementId }, category: drawType, changeIds: result.changeIds, notes }) });
+    const sent = await interaction.followUp({ flags: 32768 | 64, components: drawPanel({ draw: { ...newDrawObj, _id: result.results[0].applied.elementId }, category: drawType, changeIds: result.changeIds, notes, warnings, endDate: endOp ? dates.end : (row?.endDate || null) }) });
     // Items the draw index has no kind for are asked about, not left blank (handlers/manage/itemKinds.js).
     await require('./itemKinds').askItemKinds(interaction, [title]);
     return sent;
@@ -75,7 +88,7 @@ async function addDraw(interaction) {
 // --- SAVE EDITED DRAW --- custom_id: edit_draw_{id}_{new|returning}
 async function editDraw(interaction) {
     await interaction.deferReply({ ephemeral: true });
-    const { toTitleCase, parseItemLine, parseAdminDate } = require('../../utils/adminParser');
+    const { toTitleCase, parseItemLine } = require('../../utils/adminParser');
     const [, , targetId, drawType] = interaction.customId.split('_');
 
     // Existence pre-check kept exactly as before the refactor -- draw.edit's op would also report this as `reason: 'missing'`, but the pre-core handler simply returned with no reply at all when the id wasn't found (a stale search result), and this preserves that exact silent behaviour rather than introducing a new error reply where none existed.
@@ -85,8 +98,11 @@ async function editDraw(interaction) {
 
     if (drawIndex > -1) {
         const drawDateStr = interaction.fields.getTextInputValue('date');
-        const parsedDrawDate = parseAdminDate(drawDateStr);
-        if (!parsedDrawDate) return await failWithRetry(interaction, `Date "${drawDateStr}" wasn't understood -- nothing was saved.`);
+        // "Start - End" like the season titles box (utils/drawDates.js): the start is the release date, the end lives on the draw's /calendar row and is written in the same commit.
+        const { parseDrawDates, planEndRow } = require('../../utils/drawDates');
+        const dates = parseDrawDates(drawDateStr);
+        if (!dates.ok) return await failWithRetry(interaction, dates.error);
+        const parsedDrawDate = dates.start;
         const newTitle = toTitleCase(interaction.fields.getTextInputValue('title'));
 
         // URL field is optional -- blank reuses whatever's cached in Cloudinary for this draw's (possibly just-renamed) title. No URL AND no cache hit used to be a hard rejection; relaxed 2026-08-22 19:40 EDT (click-test fix) to save without an image instead (matches addDraw's same-day fix) rather than blocking an otherwise-valid edit.
@@ -103,9 +119,15 @@ async function editDraw(interaction) {
         const storedType = arrayTarget[drawIndex].priceType || '';
         const typeChanged = pickedType !== null && pickedType !== storedType;
 
+        // The row follows a rename and a new start, and gets the typed end; nothing is written to it when none of those changed (utils/drawDates.js planEndRow).
+        const row = require('../../utils/drawEndReminder').calendarRowFor(seasonalDoc, arrayTarget[drawIndex].title);
+        const { endOp, warnings } = await gateEndOp(interaction.user.id, planEndRow({
+            row, prev: { title: arrayTarget[drawIndex].title, start: arrayTarget[drawIndex].date }, title: newTitle, start: parsedDrawDate, end: dates.end
+        }));
         const result = await commitSet(
             [{ type: 'draw.edit', target: { elementId: targetId, category: drawType },
-               payload: { title: newTitle, date: parsedDrawDate, thumbnailUrl: thumbResult.url, items: parsedItems, ...(typeChanged ? { priceType: pickedType } : {}) } }],
+               payload: { title: newTitle, date: parsedDrawDate, thumbnailUrl: thumbResult.url, items: parsedItems, ...(typeChanged ? { priceType: pickedType } : {}) } },
+             ...(endOp ? [endOp] : [])],
             { actorId: interaction.user.id }
         );
         if (!result.ok) {
@@ -116,10 +138,12 @@ async function editDraw(interaction) {
         const before = typeof stored.toObject === 'function' ? stored.toObject() : stored;
         const draw = { _id: targetId, title: newTitle, date: parsedDrawDate, thumbnailUrl: thumbResult.url, items: parsedItems, priceType: typeChanged ? pickedType : storedType };
         const notes = thumbResult.url ? [thumbnailNote(thumbResult)].filter(Boolean) : [];
-        const sent = await interaction.followUp({ flags: 32768 | 64, components: drawPanel({ draw, category: drawType, before, changeIds: result.changeIds, notes }) });
+        const sent = await interaction.followUp({ flags: 32768 | 64, components: drawPanel({ draw, category: drawType, before, changeIds: result.changeIds, notes, warnings, endDate: endOp ? dates.end : (row?.endDate || null) }) });
         await require('./itemKinds').askItemKinds(interaction, [newTitle]);
         return sent;
     }
+    // The reply was deferred above, so a draw that is gone by now (deleted or replaced since the search) must still be answered, or the admin sits on "thinking..." until Discord gives up (found 2026-11-04 00:33 EST, /manage audit; the pre-core handler returned silently here and this kept that).
+    return await interaction.followUp({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} That draw no longer exists (it may have been deleted or replaced since you opened it), so nothing was saved.`, FAIL_ACCENT) });
 }
 
 // --- BULK ADD/REPLACE BOTH DRAW CATEGORIES AT ONCE --- custom_id: modal_draws_bulk_{add|replace}_both One modal, two independently-optional fields -- only whichever field was actually filled in gets touched. Replace upserts by fuzzy-matched title (update in place, keep _id) rather than wholesale- overwriting the array; Add just appends everything parsed. Both categories commit in ONE changeset (matching the pre-core handler's single seasonalDoc.save() for both).
@@ -145,8 +169,29 @@ async function bulkAddOrReplaceDraws(interaction) {
         return await interaction.followUp({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} ${why}`, FAIL_ACCENT) });
     }
 
+    // A typed end ("July 15 - August 20") goes onto the draw's /calendar row, as in the Add and Edit forms. It is a second commit, gated by the Calendar tier like any calendar write (the draws are already saved and have their own Revert); only draws that were actually saved get one, and if the commit is refused the draws stay and the panel says why.
     const sections = [];
     const warnings = [];
+    const changeIds = [...result.changeIds];
+    {
+        const { planEndRow } = require('../../utils/drawDates');
+        const { calendarRowFor } = require('../../utils/drawEndReminder');
+        const doc = await loadOrCreateSeasonalDoc();
+        const endOps = [];
+        for (const r of result.results) {
+            for (const draw of (r.applied.added || [])) {
+                if (!draw.endDate) continue;
+                const op = planEndRow({ row: calendarRowFor(doc, draw.title), title: draw.title, start: draw.date, end: draw.endDate });
+                if (op) endOps.push(op);
+            }
+        }
+        if (endOps.length) {
+            const endResult = await commitSet(endOps, { actorId: interaction.user.id });
+            if (endResult.ok) { changeIds.push(...endResult.changeIds); sections.push({ head: 'End dates', lines: [`Set on ${endOps.length} draw${endOps.length === 1 ? '' : 's'} (their /calendar rows)`] }); }
+            else warnings.push(`End dates were NOT saved (the draws were): ${extractCommitError(endResult)}`);
+        }
+    }
+
     for (const r of result.results) {
         const label = r.applied.category === 'new' ? 'New Draws' : 'Returning Draws';
         if (mode === 'add') {
@@ -159,7 +204,7 @@ async function bulkAddOrReplaceDraws(interaction) {
         // Types the draw index filled in for draws pasted with none (utils/bulkMerge.js fillTypes).
         if (r.applied.typesFilled?.length) sections.push({ head: `${label} · draw type from the draw index`, lines: r.applied.typesFilled.map(t => `- ${t}`) });
     }
-    const sent = await interaction.followUp({ flags: 32768 | 64, components: resultPanel({ page: 'draws', heading: `Bulk ${mode === 'add' ? 'add' : 'replace'} done`, sections, warnings, changeIds: result.changeIds }) });
+    const sent = await interaction.followUp({ flags: 32768 | 64, components: resultPanel({ page: 'draws', heading: `Bulk ${mode === 'add' ? 'add' : 'replace'} done`, sections, warnings, changeIds }) });
     // Every pasted draw is asked about for items the draw index has no kind for, the same as a single add (handlers/manage/itemKinds.js). The titles come from the pasted text, so Replace's updated draws are covered too.
     await require('./itemKinds').askItemKinds(interaction, pastedTitles(newText, returningText));
     return sent;

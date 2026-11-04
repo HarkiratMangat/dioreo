@@ -10,7 +10,7 @@
 // Pure functions first (what is due, what one person gets, the panel), so scripts/reminders.test.js can check them with no Discord and no database; the runner and the note hook last.
 
 const emojis = require('./emojiMap');
-const { isSameDrawTitle } = require('./search');
+const { isSameDrawTitle, bestDrawMatch } = require('./search');
 
 const DAY_MS = 86400000;
 // The categories, in the panel's order. `emoji` is an emojiMap key, read at render time (scripts/checkEmojiCaptures.js).
@@ -52,7 +52,15 @@ const SEASON_ENDS = [['bpEnding', 'bpEnd', 'bpTitle', 'Battle Pass', 'bp1'], ['r
 
 const dayKey = ms => new Date(ms).toISOString().slice(0, 10);
 const rel = ms => `<t:${Math.floor(ms / 1000)}:R>`;
-const sameTitle = (a, b) => a === b || isSameDrawTitle(a, b);
+// "Is this follow THIS thing?" (2026-11-04 01:02 EST, Harkirat: "fix the /remind thing too"). A follow keeps the title it was made under and the same thing can be retitled a little, so the match is fuzzy (isSameDrawTitle); but two DIFFERENT things that share a series name ("Street Fighter: Champion's Collection ..." and "Street Fighter: Hero's Collection ...") also match, so following one pre-picked the other in /remind and could send the other's release DM. `known` is every entry title that exists right now: each side is resolved to its closest known title (the same words first), and two titles are the same thing only when they resolve to the same one. Without `known` it is the old yes/no.
+function sameTitle(a, b, known = null) {
+    if (a === b) return true;
+    if (!isSameDrawTitle(a, b)) return false;
+    if (!known || !known.length) return true;
+    const entries = known.map(title => ({ title }));
+    const resolve = (t) => (bestDrawMatch(entries, t) || { title: t }).title;
+    return resolve(a) === resolve(b);
+}
 
 // Everything that fires on the game day around `nowMs`, for everyone; personalise() then picks each person's share. The run is at 00:01 UTC, so "time left" windows give his two leaving-soon reminders: 47h59m left ("Heads up, leaving soon") and 23h59m left ("Heads up, last chance"), his round-2 answer at 20:35 EDT. Entries end at 00:00 UTC, so both fall on the run.
 function computeDue(seasonalDoc, nowMs = Date.now()) {
@@ -84,14 +92,15 @@ function computeDue(seasonalDoc, nowMs = Date.now()) {
         return Number.isFinite(t) && t > nowMs - DAY_MS && t <= nowMs;
     }).map(p => p.titleOverride || p.title || 'New patch notes');
 
-    return { day: dayKey(start), start, next, released, leavingSoon, lastChance, newSeason, seasonEnds, patchNotes };
+    // `known`: every entry title today, so a follow can be told apart from a sibling that shares its series name (sameTitle).
+    return { day: dayKey(start), start, next, released, leavingSoon, lastChance, newSeason, seasonEnds, patchNotes, known: entries.map(e => e.title) };
 }
 
 // One person's share of what is due, or null when nothing applies. `fired` lists the one-thing follows used up today: a release follow once its thing released, a leaving follow once its last-chance reminder has gone.
 function personalise(sub, due) {
     const cats = new Set(sub.categories || []);
     const follows = sub.follows || [];
-    const followed = (kind, title) => follows.some(f => f.kind === kind && sameTitle(f.title, title));
+    const followed = (kind, title) => follows.some(f => f.kind === kind && sameTitle(f.title, title, due.known));
     const released = due.released.filter(e => cats.has(e.category) || followed('release', e.title)).map(e => ({ ...e, followed: followed('release', e.title) }));
     const leavingPick = e => !!coveringCategory(cats, 'leaving', e) || followed('leaving', e.title);
     const lastChance = due.lastChance.filter(leavingPick).map(e => ({ ...e, followed: followed('leaving', e.title) }));
@@ -100,8 +109,8 @@ function personalise(sub, due) {
     const seasonEnds = due.seasonEnds.filter(s => cats.has(s.category));
     const patchNotes = cats.has('patchNotes') ? due.patchNotes : [];
     const digest = cats.has('digest');
-    const fired = follows.filter(f => (f.kind === 'release' && due.released.some(e => sameTitle(f.title, e.title)))
-        || (f.kind === 'leaving' && due.lastChance.some(e => sameTitle(f.title, e.title))));
+    const fired = follows.filter(f => (f.kind === 'release' && due.released.some(e => sameTitle(f.title, e.title, due.known)))
+        || (f.kind === 'leaving' && due.lastChance.some(e => sameTitle(f.title, e.title, due.known))));
     const any = digest || released.length || lastChance.length || leavingSoon.length || newSeason || seasonEnds.length || patchNotes.length;
     return any ? { digest, released, lastChance, leavingSoon, newSeason, seasonEnds, patchNotes, fired } : null;
 }
@@ -230,6 +239,7 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
     const cats = new Set(sub?.categories || []);
     const follows = sub?.follows || [];
     const { releases, leaving } = followable(seasonalDoc, nowMs);
+    const known = require('../commands/today').collectEntries(seasonalDoc, nowMs).map(e => e.title);
     // His layout (Harkirat's layout, 2026-10-25 00:55 EDT: "let's try this?", with "the dropdowns using discord's own multi-select system rather than our workaround trick"): a short header, three labelled groups, then Pick only with each dropdown under its own label. The "On: … · next DM" status and the list of picks are gone: Discord's own multi-select shows what is picked in each closed dropdown.
     const { mentionCommand } = require('./commandMentions');
     // A delivery problem is a warning line under the hint (Harkirat, 2026-10-25 01:01 EDT: "instead of doing that… a note with the warning icon… your reminders were turned off… they basically just have to set their reminders again… by paused, I basically just meant that Dioreo doesn't keep attempting"), not a separate block and button.
@@ -257,7 +267,7 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
     const select = (kind, list, placeholder, describe) => {
         const shown = list.slice(0, MAX_OPTIONS);
         if (!shown.length) return null;
-        const isOn = e => follows.some(f => f.kind === kind && sameTitle(f.title, e.title));
+        const isOn = e => follows.some(f => f.kind === kind && sameTitle(f.title, e.title, known));
         const coveredBy = e => coveringCategory(cats, kind, e);
         return { type: 1, components: [{
             type: 3, custom_id: `remind_${kind === 'release' ? 'rel' : 'lv'}:${ownerId}`, placeholder, min_values: 0, max_values: shown.length,
@@ -489,6 +499,7 @@ function withBell(textComponent) {
 }
 
 module.exports = {
+    sameTitle,
     CATEGORIES, CATEGORY_KEYS, PANEL_GROUPS, MAX_OPTIONS,
     computeDue, personalise, buildReminderDM, buildTestDM, markFollowed,
     buildTimezoneNote, leavingKeys, clearTurnedOff, followable, buildPanel, mergeFollows, coveringCategory, resolveSetValue, autocompleteChoices, sideOf,

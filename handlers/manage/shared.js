@@ -92,7 +92,18 @@ function removeByTitle(array, titlesRaw) {
 
 // The `result.failures?.[0]?.errors?.join(' ') || result.error` shape was duplicated ~31x across every entity handler in this directory -- one place to read a commitSet failure's human-readable reason.
 function extractCommitError(result) {
-    return result.failures?.[0]?.errors?.join(' ') || result.error;
+    return humanCommitError(result.failures?.[0]?.errors?.join(' ') || result.error);
+}
+
+// commitSet's own failure text for a positional write is `op <n> failed: <reason>` (core/changeset.js), and that reached the admin verbatim: "op 0 failed: conflict" says nothing a person can act on (Harkirat, 2026-11-04 00:05 EST, editing the Herrscher of Thunder draw: "im confused why"). Two reasons are written by core/mongo/positional.js; any other text passes through untouched.
+const COMMIT_REASON_TEXT = {
+    // Says only what the code knows. In every /manage flow the prior values are read inside the same transaction as the write, so a conflict here means the stored copy would not compare equal to itself (a bug), never that a person edited it meanwhile; blaming a person sends the admin after a ghost.
+    conflict: 'Nothing was saved: the stored copy did not match what this edit started from. Reopen it and try again. If it keeps happening, tell the bot owner; it is a bug, not something you did.',
+    missing: 'It no longer exists (it was deleted or replaced while you were editing), so nothing was saved.'
+};
+function humanCommitError(text) {
+    const m = /^op \d+ failed: (conflict|missing)$/.exec(String(text || '').trim());
+    return m ? COMMIT_REASON_TEXT[m[1]] : text;
 }
 
 // ==========================================
@@ -165,7 +176,11 @@ async function resolveManagePanelAction(interaction, group, action, match) {
     const manageCommand = interaction.client.commands.get('manage');
 
     if (action === 'edit') {
-        if (group === 'draws') return interaction.showModal(manageCommand.buildEditDrawModal(match.doc, match.id, match.type));
+        if (group === 'draws') {
+            // One read of the season document, well inside showModal's 3 seconds: the draw's end date is its /calendar row's (utils/drawDates.js).
+            const row = require('../../utils/drawEndReminder').calendarRowFor(await require('../../utils/manageActions').loadSeasonalDoc(), match.doc.title);
+            return interaction.showModal(manageCommand.buildEditDrawModal(match.doc, match.id, match.type, row));
+        }
         if (group === 'calendar') return interaction.showModal(manageCommand.buildEditCalendarModal(match.doc, match.id));
         // The weapon's builds are read first, so a legacy build (its label stored as its name) still shows a build #. One quick query, well inside showModal's 3 seconds.
         if (group === 'loadouts_mp' || group === 'loadouts_dmz') return interaction.showModal(await require('./loadouts').editLoadoutModal(match.doc));
@@ -340,7 +355,7 @@ async function handleEditButton(interaction) {
     return await resolveManagePanelAction(interaction, pending.group, 'edit', pending.match);
 }
 
-module.exports = {
+module.exports = { humanCommitError,
     parseMngId,
     prompt,
     pendingSeasonWipes,

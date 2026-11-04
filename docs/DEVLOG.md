@@ -303,6 +303,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-11-03 00:28 EST — Build credit, in his four styles (v3.7.0)
 - 2026-11-03 14:19 EST — The lists page on his template, and the class order the game uses (v3.7.1)
 - 2026-11-03 15:21 EST — Six emoji for a season's progress (v3.7.2)
+- 2026-11-04 01:38 EST — A conflict check that could never catch a real conflict failed on a draw with id-less items (v3.8.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4922,6 +4923,20 @@ The text bar under each season in `/season end` (ten ▰▱ characters since Oct
 - **A message's 4000 characters are counted across the whole message.** The sample of every bar state was one container with two Text Displays and still failed: Discord counts displayable text over all components, and six emoji mentions are ~200 characters. The real panel's three bars fit; a page listing many bars must split.
 - **Uploading originals spreads on its own.** Cloudinary `emoji-originals/` plus a dev app holding a name is enough for the prod VM's hourly sync to add it to prod, deploy or not. That is his design ("one upload, four bots"), and the emoji are inert until code names them, but it is worth saying out loud when it happens.
 - **The edge cases sat outside his table.** `total` is a rounded day count, so `day` can be one past it on a season whose end is not on a day boundary; that day reads as the last. The test walks every day of seven season lengths so neither an empty running bar nor an early full one can come back.
+
+## 2026-11-04 01:38 EST — A conflict check that could never catch a real conflict failed on a draw with id-less items (v3.8.0)
+
+Harkirat could not add "Base Melee - Domain Of Sanction" to the prod Herrscher of Thunder draw: every edit said "op 0 failed: conflict". The cause was in the check, not the entry. Eight prod draws store their items with no `_id`; the edit's prior-value assertion goes through a Mongoose-cast filter, and the cast mints a fresh `_id` for each item that lacks one, so the filter could never match. The fix compares object arrays in code. The deeper finding came later, from a think-pass he asked for: every `expect` in `core/ops` is read inside the same transaction as the write, so that check has never been able to detect a real conflict. It could only fail falsely, which is the one way it ever fired.
+
+What he asked for grew from the fix: a deeper `/manage` audit, then the draw end date in the forms ("like the season title command"), then Add Multiple and `/remind`. Two Street Fighter draws that share a series name matched each other's calendar row and each other's follows; the same first-match lookup sat in six places (the calendar-row lookup, Quick Add twice, `/today` twice, `/remind`).
+
+**What went wrong, and what it teaches.**
+- **A check that is dead in every real flow looks like a check.** The first report said real conflicts were still caught, because the helper rejected a stale value I handed it by hand. No real caller hands it one. Prove a guard through the real entry point and its undo, and run the same script on the old code to watch it fail.
+- **Fix the class, then list its call sites with a search, not from memory.** `bestDrawMatch` first reached the write paths; `/today` and `/remind` still took the first match until a later pass found them. "Each draw now finds its own row" was true for three of six sites.
+- **An inference printed as a result is the worst kind of wrong.** The ids' creation time and the thumbnails' were reported as the same minute; decoding the second timestamp showed 23 hours. The writer of the id-less items is still unknown, and no code path in the bot can produce them.
+- **Authorization is not a convenience to route around.** The end date is a calendar write, so a Draws-only admin keeps the Calendar-tier check; the draws save and the end is reported as not saved. Widening who may write calendar rows is the owner's decision.
+- **The sweep must use the operation's own inputs.** The prod check of "no draw would falsely conflict" first used each element's stored keys; the real edit sends a different key set. Re-run with each op's own fields (it held).
+- **A new write inherits every assumption of the path it rides on.** The end-date row write was built for an admin with the Calendar tier, typing an end, on a draw that owns the row. The review before merge found one defect per broken assumption: an Add with no end cleared the row, a sibling's row was taken when the draw had none, and a Draws-only admin lost renames because the row write shared the commit. List a new write's inputs and break each one.
 
 # Part B — Lessons Ledger (thematic)
 

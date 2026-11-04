@@ -334,6 +334,12 @@ registerEntity('season', {
             if (!op.payload?.newText && !op.payload?.returningText && !op.payload?.parsed) {
                 return { ok: false, errors: ['Both fields were left blank -- nothing was changed.'] };
             }
+            // A filled box replaces that half of the staged draws wholesale, so text that parses to nothing used to empty it (found 2026-11-04 00:33 EST, /manage audit).
+            if (!op.payload.parsed) {
+                for (const [label, text] of [['New Draws', op.payload.newText], ['Returning Draws', op.payload.returningText]]) {
+                    if (text && !parseBulkDrawList(text)?.length) return { ok: false, errors: [`${label}: nothing in that text parsed as a draw. Check the Bulk Format Guide. The staged draws were not changed.`] };
+                }
+            }
             return { ok: true, errors: [], normalized: op };
         },
         preview: (op, live) => ({ before: { new: live.draft?.newDraws?.length || 0, returning: live.draft?.returningDraws?.length || 0 }, after: {} }),
@@ -350,16 +356,19 @@ registerEntity('season', {
             } else {
                 if (op.payload.newText) {
                     // A staged New draw belongs to the DRAFT's season, never the live one (utils/drawCatalog.js insertFields).
-                    const { validDraws } = await resolveThumbnailsForDraws(parseBulkDrawList(op.payload.newText), { releaseSeason: require('../../utils/quickAdd').seasonNumber(draft.currentSeasonTitle) });
+                    const { validDraws, skipped } = await resolveThumbnailsForDraws(parseBulkDrawList(op.payload.newText), { releaseSeason: require('../../utils/quickAdd').seasonNumber(draft.currentSeasonTitle) });
                     validDraws.sort((a, b) => new Date(a.date) - new Date(b.date));
                     $set['draft.newDraws'] = validDraws;
                     summary.push(`New Draws: staged ${validDraws.length}`);
+                    // A draw with no image link and nothing cached is left out, as the live bulk add leaves it out; the live add says so, and the draft stayed silent (found 2026-11-04 00:33 EST).
+                    if (skipped.length) summary.push(`New Draws skipped (no image link given and nothing cached yet): ${skipped.join(', ')}`);
                 }
                 if (op.payload.returningText) {
-                    const { validDraws } = await resolveThumbnailsForDraws(parseBulkDrawList(op.payload.returningText));
+                    const { validDraws, skipped } = await resolveThumbnailsForDraws(parseBulkDrawList(op.payload.returningText));
                     validDraws.sort((a, b) => new Date(a.date) - new Date(b.date));
                     $set['draft.returningDraws'] = validDraws;
                     summary.push(`Returning Draws: staged ${validDraws.length}`);
+                    if (skipped.length) summary.push(`Returning Draws skipped (no image link given and nothing cached yet): ${skipped.join(', ')}`);
                 }
             }
             await SeasonalData.updateOne(DOC, { $set }, { session });
@@ -378,6 +387,8 @@ registerEntity('season', {
         validate: (op) => {
             if (op.payload?.parsed) return { ok: true, errors: [], normalized: op };
             const parsed = parseBulkEvents(op.payload.text || '');
+            // This op REPLACES the whole staged calendar, so text that parses to nothing used to stage an empty list and wipe what was staged, reporting "Staged 0 event(s)" (found 2026-11-04 00:33 EST, /manage audit). Same refusal as calendar.bulkAdd.
+            if (!parsed?.length) return { ok: false, errors: ['Nothing in that text parsed as an event. Check the Bulk Format Guide. The staged calendar was not changed.'] };
             return { ok: true, errors: [], normalized: { ...op, payload: { ...op.payload, parsed: mapParsedEvents(parsed) } } };
         },
         preview: (op, live) => ({ before: { count: live.draft?.calendar?.length || 0 }, after: { count: op.payload.parsed.length } }),

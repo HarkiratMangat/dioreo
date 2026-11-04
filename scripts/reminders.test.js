@@ -313,5 +313,35 @@ t('the leaving dropdown lists live things first, then upcoming ones (2026-10-28 
     assert.ok(/releases .* · ends /.test(lv.options.find(o => o.label === 'Call of the Dead').description));
 });
 
+// Two different Street Fighter draws share a series name, and isSameDrawTitle says yes to the pair (prod, 2026-11-04 01:02 EST). Following one used to follow both.
+const SF_C = "Street Fighter: Champion's Collection Series Armory (Weapons)", SF_H = "Street Fighter: Hero's Collection Series Armory (Operators)";
+const sfDoc = () => doc({ newDraws: [], returningDraws: [{ title: SF_C, date: d(DAY0), items: [] }, { title: SF_H, date: d(DAY0), items: [] }], calendar: [] });
+
+t('following one Street Fighter draw does not follow the other: the release DM and the used-up follow', () => {
+    const due = R.computeDue(sfDoc(), RUN);
+    assert.deepStrictEqual(due.released.map(e => e.title).sort(), [SF_C, SF_H].sort(), 'both release today');
+    const p = R.personalise(sub({ follows: [{ kind: 'release', title: SF_C }] }), due);
+    assert.deepStrictEqual(p.released.map(e => [e.title, e.followed]), [[SF_C, true]], 'only the draw that was followed is sent, and only it is marked followed');
+    assert.deepStrictEqual(p.fired.map(f => f.title), [SF_C]);
+    assert.strictEqual(R.personalise(sub({ follows: [{ kind: 'release', title: SF_H }] }), due).released.map(e => e.title).join(), SF_H);
+});
+
+t('/remind pre-picks only the draw that is followed', () => {
+    const later = doc({ newDraws: [], returningDraws: [{ title: SF_C, date: d(DAY0 + 2 * DAY), items: [] }, { title: SF_H, date: d(DAY0 + 2 * DAY), items: [] }], calendar: [] });
+    const panel = R.buildPanel(sub({ follows: [{ kind: 'release', title: SF_C }] }), later, { ownerId: 'u1', nowMs: RUN });
+    const options = []; const walk = c => { if (c.options) options.push(...c.options); (c.components || []).forEach(walk); }; panel.forEach(walk);
+    const releaseMenu = options.filter(o => /Street Fighter/.test(o.label));
+    const picked = releaseMenu.filter(o => o.default).map(o => o.label);
+    assert.deepStrictEqual([...new Set(picked)], [SF_C], 'Champion is picked');
+    assert.ok(!releaseMenu.some(o => o.default && /Hero/.test(o.label)), 'Hero is not');
+});
+
+t('a reworded title still counts as the same thing (the fuzzy match is kept)', () => {
+    assert.ok(R.sameTitle('Halloween Series Armory', 'Halloween Armory Series', ['Halloween Series Armory', SF_C]));
+    assert.ok(R.sameTitle('Black Hole Draw', 'Black Hole Draw', []));
+    assert.ok(!R.sameTitle(SF_C, SF_H, [SF_C, SF_H]));
+    assert.ok(R.sameTitle(SF_C, SF_H), 'without a list of known titles it is still the old yes/no');
+});
+
 console.log(`\n${failed ? 'FAILED' : 'all passed'}: ${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

@@ -12,6 +12,10 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.8.0 — November 4, 2026
+- **Draws:** type an end date in the Add and Edit forms and in Add and Replace Multiple (`July 15 - August 20`); Export writes it back, and the draw shows when it ends.
+- **Fixed:** editing a draw in /manage no longer fails with "conflict"; `/today` and `/remind` tell the two Street Fighter draws apart; /manage errors read as sentences.
+
 ## v3.7.2 — November 3, 2026
 - **Season End:** the progress bar under each season is six animated emoji, orange to red as the season runs out.
 

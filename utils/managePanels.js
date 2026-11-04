@@ -75,12 +75,12 @@ const warnBlock = (warnings) => (warnings.length ? [{ type: 10, content: warning
 const whatChanged = (before, changes) => (before ? [{ type: 10, content: changes.length ? `**What changed**\n${changes.map(c => `- ${c}`).join('\n')}` : '-# Nothing changed.' }] : []);
 
 // A saved draw. `before` is null for an add; `category` is 'new' or 'returning'.
-function drawPanel({ draw, category, before = null, changeIds = [], notes = [], warnings = [] }) {
+function drawPanel({ draw, category, before = null, changeIds = [], notes = [], warnings = [], endDate = null }) {
     const { drawTypeName } = require('./drawTypes');
     const kind = drawTypeName(draw.priceType || '');
     const components = [
         headerBlock(`### ${emojis.checkmark} ${before ? 'Updated' : 'Added'} · ${draw.title}`, [
-            `-# ${category === 'new' ? 'New' : 'Returning'} draw${kind ? ` · ${kind}` : ''} · releases ${stamp(draw.date)}`,
+            `-# ${category === 'new' ? 'New' : 'Returning'} draw${kind ? ` · ${kind}` : ''} · releases ${stamp(draw.date)}${endDate ? ` · ends ${stamp(endDate)}` : ''}`,
             isUrl(draw.thumbnailUrl) ? null : '-# No picture',
         ], draw.thumbnailUrl),
         divider(),

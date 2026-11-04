@@ -63,7 +63,7 @@ async function handleResultAction(interaction) {
         const [category, drawId] = rest;
         const draw = (category === 'new' ? doc?.newDraws : doc?.returningDraws)?.find(d => String(d._id) === drawId);
         if (!draw) return await gone('draw');
-        return await interaction.showModal(manageCommand.buildEditDrawModal(draw, drawId, category));
+        return await interaction.showModal(manageCommand.buildEditDrawModal(draw, drawId, category, require('../../utils/drawEndReminder').calendarRowFor(doc, draw.title)));
     }
     if (page === 'calendar') {
         const event = doc?.calendar?.find(e => String(e._id) === rest[0]);

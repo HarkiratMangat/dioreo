@@ -204,8 +204,9 @@ async function submitEdit(interaction) {
         if (hit && priceType === before.priceType && hit.entry.priceType) priceType = hit.entry.priceType;
     }
     const seasonalDoc = await loadOrCreateSeasonalDoc();
-    const listed = [['new', seasonalDoc.newDraws || []], ['returning', seasonalDoc.returningDraws || []]]
-        .flatMap(([cat, list]) => list.filter(d => isSameDrawTitle(d.title, title)).map(d => ({ cat, d })))[0] || null;
+    const listed = require('../../utils/search').bestDrawMatch(
+        [['new', seasonalDoc.newDraws || []], ['returning', seasonalDoc.returningDraws || []]].flatMap(([cat, list]) => list.map(d => ({ cat, d }))),
+        title, x => x.d.title);
     state.drafts[i] = {
         ...before,
         title, items, imageUrl: imageInput || imageUrl, imageInput, matchedBy, indexSeason, category: listed ? listed.cat : category, priceType,
@@ -288,10 +289,10 @@ async function save(interaction, token, state) {
         }
         const row = calendarRowFor(seasonalDoc, d.existing?.title || d.title);
         if (d.end) {
-            const event = { title: row?.title || d.title, date: d.startGiven || !row ? d.start : new Date(row.date), endDate: d.end, isOngoing: false, category: 'draw' };
+            const event = { title: row?.title || d.title, date: d.startGiven || !row ? d.start : new Date(row.date), endDate: d.end, isOngoing: false, category: 'draw', isDoubleCP: Boolean(row?.isDoubleCP) };
             ops.push(row ? { type: 'calendar.edit', target: { elementId: String(row._id) }, payload: event } : { type: 'calendar.add', payload: event });
         } else if (row && d.startGiven) {
-            ops.push({ type: 'calendar.edit', target: { elementId: String(row._id) }, payload: { title: row.title, date: d.start, endDate: row.endDate || null, isOngoing: Boolean(row.isOngoing), category: 'draw' } });
+            ops.push({ type: 'calendar.edit', target: { elementId: String(row._id) }, payload: { title: row.title, date: d.start, endDate: row.endDate || null, isOngoing: Boolean(row.isOngoing), category: 'draw', isDoubleCP: Boolean(row.isDoubleCP) } });
         }
     });
     if (!ops.length) return sendV2Payload(interaction, notePanel('Nothing in this draft changes anything.', ACCENT.draws));
