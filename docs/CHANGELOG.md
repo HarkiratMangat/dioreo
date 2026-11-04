@@ -29,7 +29,19 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.8.0 — 2026-11-04 01:38 EST (#249) — A draw's end date in the forms, and the /manage conflict fix
+## v3.8.1 — 2026-11-04 10:13 EST (#250) — The draw index keeps the release year, and next season's draw is in it
+**From Harkirat, 2026-11-04 10:00 EST:** "i want to add a draw to the catalogue which will be releasing next season. So i dont want it on the live bot but i want to implement it into the catalogue for easy creation when needed for next season". Then, on the release season: "only '10' in the catalogue? no year? because the season 1-12 naming repeats each year" and "if you're capable of correcting it, then fix it."
+
+### The year
+- **`releaseYear`** (`models/DrawCatalog.js`) sits beside `releaseSeason`: the season numbers 1 to 12 repeat every year, so the number alone was ambiguous. The Cloudinary tag has always been `season_<n>_<year>`; the catalog now says the same. Set once, on insert, with the season (`insertFields`): this year for a draw saved into New, or the year of the staged draft's Battle Pass start for a draw staged for next season (`resolveThumbnailsForDraws` takes `releaseYear`; `core/ops/season.js` passes it). The Cloudinary mirror writes the same year on the asset.
+- **`scripts/syncDrawCatalog.js`** reads the year back from `release_season` ("Season 10 2026"). **Quick Add's Pick box** shows "Season 10 2026" and lists the newest year first. Tests: `scripts/drawCatalog.test.js`.
+
+### Prod data (written by Harkirat's word, 2026-11-04 10:12 EST, read back after)
+- **Two new catalog documents and their images** (Cloudinary `draws/`, 2160 px JPEGs converted from his PNGs at quality 92, 42 to 44 dB against the originals): `means-to-an-end-mythic-drop` (Mythic Character + Legendary Weapon, Alias - Shattered Effigy and ICR-1 - Effigy, `releaseSeason: 10`, `releaseYear: 2026`, tag `season_10_2026`; it releases November 19, 4 PM PT) and `cold-claws-series-armory` (Legendary Weapon Series Armory, five legendary weapons, a past draw so no season; alias "Cold Claw Series Armory"). Neither is on `/draws`, `/calendar` or `/today`: those read `seasonaldatas`, not the index, so they appear only in Quick Add, which is how the draw is created when its season starts. Delivered through `f_auto,q_auto` they are about 540 KB and 500 KB.
+- **`releaseYear: 2026`** set on the ten existing documents with a season (Seasons 7, 8 and 9), each confirmed by its own `season_N_2026` tag. The collection now holds 95 documents.
+- Written with a one-off script and the Mongo connector, not the bot, so each field was compared with Cloudinary's context and tags afterwards: fingerprint, price type, tags and `items_full` all agree.
+
+## v3.8.0 — 2026-11-04 01:38 EST (#249 · `4ed9b12a`) — A draw's end date in the forms, and the /manage conflict fix
 **From Harkirat, 2026-11-04 00:08 EST:** editing the prod "Herrscher of Thunder Draw" in /manage to add "Base Melee - Domain Of Sanction" failed with "op 0 failed: conflict". Then, 00:14 EST: "look into this further and deeper … such as the edit form missing a draw end field, and anything else like this in the /manage commands"; 00:55 EST: "do it like how the season title command does start/end dates … and fix the /remind thing too"; 01:11 EST: "fix the multiple thing".
 
 ### The conflict
