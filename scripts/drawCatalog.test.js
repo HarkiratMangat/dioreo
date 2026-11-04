@@ -119,6 +119,11 @@ async function t(name, fn) {
         assert.strictEqual(catalog.insertFields('Starfall Echo Draw', 'starfall-echo-draw', { items: [], releaseSeason: 9 }, now).releaseYear, 2026);
         assert.strictEqual(catalog.insertFields('January Draw', 'january-draw', { items: [], releaseSeason: 1, releaseYear: 2027 }, now).releaseYear, 2027);
         assert.ok(!('releaseYear' in catalog.insertFields('Old Draw', 'old-draw', { items: [] }, now)));
+        // The year is the SEASON's, from its Battle Pass start, never today's: a December season still running in January (lead review of #250).
+        const { seasonYear } = require('../utils/quickAdd');
+        assert.strictEqual(seasonYear({ bpStart: '2026-12-20T00:00:00.000Z' }), 2026);
+        assert.strictEqual(seasonYear({}), null);
+        assert.strictEqual(seasonYear(null), null);
         // recordCatalogImage uses insertFields only under `$setOnInsert`, so an existing document keeps its season.
         assert.match(require('fs').readFileSync(require('path').join(__dirname, '../utils/drawCatalog.js'), 'utf8'), /if \(!existing\) update\.\$setOnInsert = insertFields\(/);
     });

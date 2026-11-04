@@ -273,7 +273,8 @@ async function save(interaction, token, state) {
 
     // Pictures first, outside the transaction, the way Add Draw does it (handlers/manage/draws.js addDraw): a catalog hit is one memory lookup, anything else asks Cloudinary. A picture typed in Add details is uploaded like Add Draw's Thumbnail URL; blank asks the index, then the cache. A `new` line that the index has never seen is indexed with this season as its release season (utils/drawCatalog.js insertFields); a draw the index knows keeps its own.
     const releaseSeason = qa.seasonNumber(seasonalDoc.currentSeasonTitle);
-    const thumbs = await Promise.all(todo.map(d => d.existing ? null : resolveThumbnail(d.title, d.imageInput || '', { items: d.items, priceType: d.priceType || '', ...(d.category === 'new' && releaseSeason ? { releaseSeason } : {}) }).catch(() => ({ url: null }))));
+    const releaseYear = qa.seasonYear(seasonalDoc);
+    const thumbs = await Promise.all(todo.map(d => d.existing ? null : resolveThumbnail(d.title, d.imageInput || '', { items: d.items, priceType: d.priceType || '', ...(d.category === 'new' && releaseSeason ? { releaseSeason, ...(releaseYear ? { releaseYear } : {}) } : {}) }).catch(() => ({ url: null }))));
     const ops = [];
     const typesFilled = [];
     todo.forEach((d, n) => {
