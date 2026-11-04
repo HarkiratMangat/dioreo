@@ -4,7 +4,7 @@
 const { resolveThumbnail } = require('./cloudinaryCache');
 const { fuzzyMatch } = require('./search');
 const { isKnownType } = require('./drawCatalog');
-const { drawTypeName, isPricedDrawType } = require('./drawTypes');
+const { drawTypeName, namesDrawType } = require('./drawTypes');
 
 // Resolves (and Cloudinary-caches) a thumbnail for every parsed item, dropping anything that has neither a provided URL nor a cache hit. Named "ForDraws" for historical reasons — it is shape- agnostic (title + thumbnailUrl) and used identically for calendar/patch-note assets too.
 //
@@ -18,7 +18,7 @@ async function resolveThumbnailsForDraws(draws, { fillTypes = false, releaseSeas
     const typesFilled = [];
     draws.forEach((draw, i) => {
         const result = results[i];
-        if (fillTypes && draw.items && !isKnownType(draw.priceType) && isPricedDrawType(result.catalog?.priceType)) {
+        if (fillTypes && draw.items && !isKnownType(draw.priceType) && namesDrawType(result.catalog?.priceType)) {
             draw.priceType = result.catalog.priceType;
             typesFilled.push(`${draw.title}: ${drawTypeName(draw.priceType)}`);
         }

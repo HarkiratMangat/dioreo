@@ -14,6 +14,7 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ## v3.8.1 — November 4, 2026
 - **Draws:** the draw index now records the year a season released in, since season numbers repeat every year; Quick Add shows it.
+- **Draws:** two new free draw types, Secret Cache and Event, for weapons earned in events or by grinding; they are never priced.
 - **Next season:** two draws are ready in Quick Add for when they start: Means To An End Mythic Drop (Season 10) and the past Cold Claws Series Armory.
 
 ## v3.8.0 — November 4, 2026

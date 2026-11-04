@@ -58,9 +58,9 @@ async function addDraw(interaction) {
 
     // No type picked, or Unsure: the draw index's type when it knows this draw for certain (its title, another name, or its items). Said in a note, so a wrong one is seen and edited.
     const { isKnownType } = require('../../utils/drawCatalog');
-    const { isPricedDrawType, drawTypeName } = require('../../utils/drawTypes');
+    const { namesDrawType, drawTypeName } = require('../../utils/drawTypes');
     let typeNote = null;
-    if (!isKnownType(priceType) && isPricedDrawType(thumbResult.catalog?.priceType)) {
+    if (!isKnownType(priceType) && namesDrawType(thumbResult.catalog?.priceType)) {
         priceType = thumbResult.catalog.priceType;
         typeNote = `ℹ️ Draw Type set from the draw index: ${drawTypeName(priceType)}`;
     }

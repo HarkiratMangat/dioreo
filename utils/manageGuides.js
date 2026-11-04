@@ -57,7 +57,8 @@ function drawsSections() {
         // Draw Type tag (2026-10-18 11:06 EDT): the codes are read from utils/drawTypes.js, so a new draw type shows here without editing this guide.
         section('🎟️ Draw Type (optional)',
             'Add `type: <code>` anywhere after the title to say how **/draw prices** and the calculator price the draw. An armory\'s item count comes from its own item list.\n' +
-            `-# ${require('./drawTypes').drawTypeOptions().map(o => `\`${o.code}\` ${o.name}`).join(' · ')}`),
+            `-# ${require('./drawTypes').drawTypeOptions().map(o => `\`${o.code}\` ${o.name}`).join(' · ')}\n` +
+            `-# Free, never priced: ${require('./drawTypes').FREE_TYPES.map(o => `\`${o.code}\` ${o.name}`).join(' · ')}`),
         section('✨ What Gets Auto-Formatted',
             '• **Title** and every **item name** → auto Title Case (acronyms like `FSS`/`AK`/`MP`/`BR` are preserved, hyphens/slashes capitalize each side independently).\n' +
             '• A `-# note` line is the one exception — kept **exactly as typed**, never title-cased (it\'s free text, not an item name).\n' +

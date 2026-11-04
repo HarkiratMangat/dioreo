@@ -43,11 +43,18 @@ const DRAW_TYPES = [
     { key: 'advancedWeapon', name: 'Advanced Double Legendary Weapon Draw', tier: 'legendary' },
     { key: 'advancedCharacter', name: 'Advanced Double Legendary Character Draw', tier: 'legendary' }
 ];
+// FREE TYPES (2026-11-04 10:18 EST, Harkirat: "add "Secret Cache" and "Event" as a price type ... free legendary or mythic weapons obtainable via in-game events or grinding. So they don't go on the /draw prices or /draw calculator pages but they can be implemented into the /draws page"). Storable and taggable like any type, never priced: isPricedDrawType stays false for them, which is what keeps them out of the calculator, and /draw prices reads its own list. A draw of either still sits in New or Returning; a page of their own may come later. No tier: the reward can be legendary or mythic.
+const FREE_TYPES = [
+    { key: 'secretCache', code: 'sc', name: 'Secret Cache', tier: null, free: true, emoji: '🎁' },
+    { key: 'event', code: 'ev', name: 'Event', tier: null, free: true, emoji: '🎟️' }
+];
+const freeByKey = key => FREE_TYPES.find(t => t.key === key) || null;
+
 function drawTypeOptions() { return DRAW_TYPES.map(t => ({ key: t.key, code: DRAW_TYPE_CODES[t.key] || null, name: t.name, tier: t.tier })); }
 const byKey = key => DRAW_TYPES.find(t => t.key === key) || null;
 
 // What a /manage form or the bulk format may store: Unsure / Unknown first, then every priced type.
-function drawTypeChoices() { return [UNKNOWN_TYPE, ...drawTypeOptions()]; }
+function drawTypeChoices() { return [UNKNOWN_TYPE, ...drawTypeOptions(), ...FREE_TYPES]; }
 
 const norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 // A typed tag to its key: the code, the key itself, or the full name, ignoring case, spaces and punctuation. Exact after that, never fuzzy: "Legendary Weapon Draw (Reactive)" and "(Non-Reactive)" are one word apart and must never be confused.
@@ -55,18 +62,21 @@ function resolveDrawType(raw) {
     const n = norm(raw);
     if (!n) return null;
     if (['unknown', 'unsure', 'unk'].includes(n)) return UNKNOWN_TYPE.key;
-    const hit = drawTypeOptions().find(o => norm(o.code) === n || norm(o.key) === n || norm(o.name) === n);
+    const hit = [...drawTypeOptions(), ...FREE_TYPES].find(o => norm(o.code) === n || norm(o.key) === n || norm(o.name) === n);
     return hit ? hit.key : null;
 }
 
 // A storable value (Unsure / Unknown included). isPricedDrawType is the narrower question the calculator asks.
 function isPricedDrawType(key) { return Boolean(byKey(key)); }
-function isDrawType(key) { return key === UNKNOWN_TYPE.key || isPricedDrawType(key); }
-function drawTypeCode(key) { return key === UNKNOWN_TYPE.key ? UNKNOWN_TYPE.code : DRAW_TYPE_CODES[key] || null; }
-function drawTypeName(key) { return key === UNKNOWN_TYPE.key ? UNKNOWN_TYPE.name : byKey(key) ? byKey(key).name : null; }
+function isFreeDrawType(key) { return Boolean(freeByKey(key)); }
+// A type that says what the draw IS (priced or free), so the draw index may fill it into a draw saved without one. Unsure / Unknown says nothing.
+function namesDrawType(key) { return isPricedDrawType(key) || isFreeDrawType(key); }
+function isDrawType(key) { return key === UNKNOWN_TYPE.key || namesDrawType(key); }
+function drawTypeCode(key) { return key === UNKNOWN_TYPE.key ? UNKNOWN_TYPE.code : DRAW_TYPE_CODES[key] || freeByKey(key)?.code || null; }
+function drawTypeName(key) { return key === UNKNOWN_TYPE.key ? UNKNOWN_TYPE.name : byKey(key) ? byKey(key).name : freeByKey(key)?.name || null; }
 // An armory's item count is its own item list, "-#" note lines excluded (they are free text, never an item).
 function armoryItemCount(draw) { return ((draw && draw.items) || []).filter(i => i && i.tier !== 'comment').length; }
 // The refusal the op validators show for a tag that names no draw type. utils/adminParser.js marks an unresolved tag with a leading "?" so it reaches the validator instead of being dropped silently. Each code beside its full name (2026-10-18 11:21 EDT, Harkirat: "full form stated beside the list of codes? so its understood what each code belongs to?").
 function unknownDrawTypeError(raw) { return `Unknown draw type "${String(raw).replace(/^\?/, '')}". Use one of:\n${drawTypeChoices().map(o => `\`${o.code}\` ${o.name}`).join('\n')}`; }
 
-module.exports = { DRAW_TYPES, DRAW_TYPE_CODES, UNKNOWN_TYPE, drawTypeOptions, drawTypeChoices, resolveDrawType, isDrawType, isPricedDrawType, drawTypeCode, drawTypeName, armoryItemCount, unknownDrawTypeError };
+module.exports = { DRAW_TYPES, DRAW_TYPE_CODES, UNKNOWN_TYPE, FREE_TYPES, drawTypeOptions, drawTypeChoices, resolveDrawType, isDrawType, isPricedDrawType, isFreeDrawType, namesDrawType, drawTypeCode, drawTypeName, armoryItemCount, unknownDrawTypeError };

@@ -467,7 +467,8 @@ function drawTypeLabel(current = '') {
     const { drawTypeChoices } = require('../utils/drawTypes');
     return new LabelBuilder().setLabel('Draw Type').setDescription('How /draw prices and the calculator price this draw').setStringSelectMenuComponent(
         new StringSelectMenuBuilder().setCustomId('price_type').setPlaceholder('Pick its Draw Type').setRequired(true).setMinValues(1).setMaxValues(1)
-            .addOptions(drawTypeChoices().map(o => ({ label: o.name, value: o.key, description: o.tier ? `Bulk tag: type: ${o.code}` : 'Flags it to set later. Bulk tag: type: unknown', emoji: o.tier ? emojis.parseEmoji(emojis[o.tier]) : { name: '❓' }, default: o.key === current })))
+            // A free type (Secret Cache, Event) has no tier and is never priced; it says so, so it is not read as "set later" (2026-11-04).
+            .addOptions(drawTypeChoices().map(o => ({ label: o.name, value: o.key, description: o.free ? `Free, not priced. Bulk tag: type: ${o.code}` : o.tier ? `Bulk tag: type: ${o.code}` : 'Flags it to set later. Bulk tag: type: unknown', emoji: o.free ? { name: o.emoji } : o.tier ? emojis.parseEmoji(emojis[o.tier]) : { name: '❓' }, default: o.key === current })))
     );
 }
 // A Label holding a text input. interaction.fields.getTextInputValue() reads it exactly as it read an action row's.

@@ -267,7 +267,7 @@ async function save(interaction, token, state) {
     const { resolveThumbnail } = require('../../utils/cloudinaryCache');
     const { calendarRowFor } = require('../../utils/drawEndReminder');
     const { isKnownType } = require('../../utils/drawCatalog');
-    const { isPricedDrawType, drawTypeName } = require('../../utils/drawTypes');
+    const { namesDrawType, drawTypeName } = require('../../utils/drawTypes');
     const seasonalDoc = await loadOrCreateSeasonalDoc();
     const todo = state.drafts.filter(willWrite);
 
@@ -282,7 +282,7 @@ async function save(interaction, token, state) {
         const live = d.existing ? all.find(([, x]) => String(x._id) === d.existing.elementId) : null;
         if (!d.existing) {
             let priceType = d.priceType || '';
-            if (!isKnownType(priceType) && isPricedDrawType(thumbs[n]?.catalog?.priceType)) { priceType = thumbs[n].catalog.priceType; typesFilled.push(`${d.title}: ${drawTypeName(priceType)}`); }
+            if (!isKnownType(priceType) && namesDrawType(thumbs[n]?.catalog?.priceType)) { priceType = thumbs[n].catalog.priceType; typesFilled.push(`${d.title}: ${drawTypeName(priceType)}`); }
             ops.push({ type: 'draw.add', payload: { title: d.title, items: d.items || [], date: d.start, thumbnailUrl: thumbs[n]?.url || d.imageUrl || null, ...(priceType ? { priceType } : {}), category: d.category } });
         } else if (d.startGiven && live && new Date(live[1].date).getTime() !== new Date(d.start).getTime()) {
             // draw.edit sets every field it is given and validate() fills a missing `items` with [], so the draw's own title and items ride along unchanged.
