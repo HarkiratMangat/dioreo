@@ -12,6 +12,9 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.8.3 — November 4, 2026
+- **Fixed:** new nameplates and decorations render on the live bot again (the server's image tool was older than the one they were tested with).
+
 ## v3.8.2 — November 4, 2026
 - **Nameplates and decorations:** 24 new ones from the Discord shop: The Nightmare Before Christmas, Día de Muertos and Dead by Daylight.
 
