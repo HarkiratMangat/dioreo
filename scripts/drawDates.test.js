@@ -48,10 +48,14 @@ check('the box writes back what it reads, and a draw with no end shows the start
     assert.ok(back.ok && iso(back.start) === '2026-09-10' && iso(back.end) === '2026-11-12', 'round trip');
 });
 
-check('the copyable retry line uses ISO dates, which Add Multiple can split on commas', () => {
-    assert.strictEqual(formatDrawDatesForBulk(day('2026-09-10'), day('2026-11-12')), '2026-09-10 - 2026-11-12');
-    assert.strictEqual(formatDrawDatesForBulk(day('2026-09-10'), null), '2026-09-10');
-    assert.ok(!formatDrawDatesForBulk(day('2026-09-10'), day('2026-11-12')).includes(','));
+check('the copyable retry line has no comma and reads back, with and without an end', () => {
+    const both = formatDrawDatesForBulk(day('2026-09-10'), day('2026-11-12'));
+    assert.strictEqual(both, 'September 10 2026 - November 12 2026');
+    assert.strictEqual(formatDrawDatesForBulk(day('2026-09-10'), null), 'September 10 2026');
+    assert.ok(!both.includes(','));
+    const back = parseDrawDates(both);
+    assert.ok(back.ok && iso(back.start) === '2026-09-10' && iso(back.end) === '2026-11-12', JSON.stringify(back));
+    assert.ok(parseDrawDates('September 10 2026').ok);
 });
 
 const row = (over = {}) => ({ _id: 'row1', title: 'Row Title', date: day('2026-09-10'), endDate: null, isOngoing: true, category: 'draw', isDoubleCP: false, ...over });
@@ -93,6 +97,46 @@ check('the row follows a rename and a new start', () => {
     assert.strictEqual(renamed.payload.title, 'New');
     const moved = planEndRow({ row: r, prev: { title: 'T', start: day('2026-09-10') }, title: 'T', start: day('2026-09-12'), end: day('2026-11-12') });
     assert.strictEqual(iso(moved.payload.date), '2026-09-12');
+});
+
+const { parseBulkDrawList, formatDrawsAsBulkText } = require('../utils/adminParser');
+const first = (line) => parseBulkDrawList(line)[0];
+
+check('Add Multiple reads a Start - End date in every shape the season box takes, and still reads a single date', () => {
+    for (const line of [
+        'X Draw, type: lcw, l A - B, l C - D, 2026-09-10 - 2026-11-12, https://x.test/y.jpg',
+        'X Draw, l A - B, September 10, 2026 - November 12, 2026',
+        'X Draw, l A - B, September 10, 2026 - November 12, 2026, https://x.test/y.jpg',
+        'X Draw, l A - B, September 10 2026 - November 12 2026',
+    ]) {
+        const d = first(line);
+        assert.ok(d, `skipped: ${line}`);
+        assert.deepStrictEqual([iso(d.date), iso(d.endDate)], ['2026-09-10', '2026-11-12'], line);
+        assert.ok(d.items.length >= 1 && d.items.every(i => i.name), `items kept: ${line}`);
+    }
+    const one = first('X Draw, l A - B, July 15, 2026');
+    assert.deepStrictEqual([iso(one.date), one.endDate], ['2026-07-15', undefined], 'a single date has no endDate key at all');
+    const withLink = first('X Draw, l M4 - Void Implosion, e Dusk - Otherworld, July 15, https://x.test/y.jpg');
+    assert.strictEqual(withLink.items.length, 2, 'an item with " - " in its name is not read as a range');
+    assert.strictEqual(withLink.endDate, undefined);
+});
+
+check('a range never swallows the title or an item', () => {
+    const d = first('Void Draw, l M4 - Void, August 5 - August 20');
+    assert.strictEqual(d.title, 'Void Draw');
+    assert.deepStrictEqual(d.items.map(i => i.name), ['M4 - Void']);
+    assert.ok(!first('Void Draw, August 5 - August 20'), 'a line with no item is still malformed');
+});
+
+check('Export writes a draw\'s end beside its date, and the line reads back to the same dates', () => {
+    const draw = { title: 'Row Draw', date: day('2026-09-10'), items: [{ tier: 'legendary', name: 'A - B' }], thumbnailUrl: 'https://x.test/y.jpg', priceType: '' };
+    const withEnd = formatDrawsAsBulkText([draw], () => ({ endDate: day('2026-11-12') }));
+    assert.ok(withEnd.includes('September 10, 2026 - November 12, 2026'), withEnd);
+    const back = first(withEnd);
+    assert.deepStrictEqual([iso(back.date), iso(back.endDate)], ['2026-09-10', '2026-11-12']);
+    const without = formatDrawsAsBulkText([draw], () => null);
+    assert.ok(!without.includes(' - November'), 'no row, no end');
+    assert.strictEqual(formatDrawsAsBulkText([draw]), without, 'callers that pass no lookup are unchanged');
 });
 
 process.exit(failures ? 1 : 0);

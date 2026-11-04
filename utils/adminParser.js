@@ -141,13 +141,21 @@ function parseBulkDrawList(bulkText) {
             url = parts.pop();
         }
 
+        // A "Start - End" range as the date (2026-11-04 01:12 EST, Harkirat: the draw forms and Add Multiple read dates like the season titles box): `July 15 - August 20`, `2026-09-10 - 2026-11-12`, or the long form `September 10, 2026 - November 12, 2026`, whose own commas the split above cut into pieces. The last one to four fields are joined back until they read as a whole range; the draw's end then rides as `endDate`, which the handler writes to the draw's /calendar row (the draw itself has no end field). A date with no range falls through to the single-date reading below, unchanged.
+        let endDate = null;
+        let parsedDate = null;
+        for (let k = 1; k <= 4 && !parsedDate; k++) {
+            if (parts.length - k < 1) break; // keep the title
+            const range = parseAdminDateRange(parts.slice(-k).join(', '));
+            if (range && range.end) { parsedDate = range.start; endDate = range.end; parts.splice(parts.length - k, k); }
+        }
         // Extract Date (now the last remaining part)
-        let dateStr = parts.pop();
+        let dateStr = parsedDate ? null : parts.pop();
         // Bulk entries are comma-delimited overall, so a date written as "July 16, 2026" itself gets sliced into two fields by the same split(',') above ("July 16" and "2026") -- without this, the bare year was silently dropped and misread as a leftover "item" instead of part of the date. If what we just popped is nothing but a 4-digit year, it's actually the tail of the previous field's date; merge them back into one string before parsing. (Requires `parts.length > 1` so we never eat into index 0, which is always the title.)
-        if (/^\d{4}$/.test(dateStr) && parts.length > 1) {
+        if (dateStr !== null && /^\d{4}$/.test(dateStr) && parts.length > 1) {
             dateStr = `${parts.pop()}, ${dateStr}`;
         }
-        const parsedDate = parseAdminDate(dateStr);
+        if (!parsedDate) parsedDate = parseAdminDate(dateStr);
         if (!parsedDate) continue; // Unparseable date -- skip this line rather than import a wrong one
 
         // Draw Type tag (2026-10-18 11:06 EDT): a `type: <code or name>` segment anywhere after the title says which /draw prices type the draw is (utils/drawTypes.js). It is never an item. An unresolved tag is kept as "?<text>" so the op validator refuses it by name rather than the draw saving with no type.
@@ -168,6 +176,7 @@ function parseBulkDrawList(bulkText) {
             // Null means "no URL given, resolve via Cloudinary cache lookup at save time" -- a bare Cloudinary key still gets expanded to a full URL here same as before; a real HTTP URL passes through untouched either way (resolveThumbnail re-uploads it into draws/).
             thumbnailUrl: url ? (url.startsWith('http') ? url : `https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_auto/v1/${url}`) : null,
             items: items,
+            ...(endDate ? { endDate } : {}),
             // Only when tagged: Replace Multiple merges a parsed draw over the stored one (utils/bulkMerge.js's Object.assign), so an untagged line must not carry an empty type that would wipe a stored one.
             ...(priceType ? { priceType } : {})
         });
@@ -296,10 +305,12 @@ const TIER_SHORTHAND = { mythic: 'm', legendary: 'l', legacy: 'lg', epic: 'e', c
 /**
  * Reconstructs the bulk-add text format (see parseBulkDrawList) from Draw documents already in the database -- lets Harkirat re-export the current New/Returning Draws list as re-importable text (e.g. after losing his original notes-app source file), fix a typo in the resulting text, and paste it right back into the matching Bulk Add modal.
  */
-function formatDrawsAsBulkText(draws) {
+function formatDrawsAsBulkText(draws, rowFor = null) {
     return draws.map(draw => {
         const itemsStr = draw.items.map(item => `${TIER_SHORTHAND[item.tier] || item.tier} ${item.name}`).join(', ');
-        const dateStr = dayjs.utc(draw.date).format('MMMM D, YYYY');
+        // A draw's end date is its /calendar row's; when the caller can look the row up, the export carries it as "Start - End" so it pastes back with its end (Add Multiple reads the range).
+        const endRow = typeof rowFor === 'function' ? rowFor(draw) : null;
+        const dateStr = dayjs.utc(draw.date).format('MMMM D, YYYY') + (endRow && endRow.endDate ? ` - ${dayjs.utc(endRow.endDate).format('MMMM D, YYYY')}` : '');
         // The Draw Type tag rides right after the title, so an export pastes straight back with its type (2026-10-18 11:06 EDT).
         const typeStr = drawTypeCode(draw.priceType) ? `, type: ${drawTypeCode(draw.priceType)}` : '';
         return `${draw.title}${typeStr}, ${itemsStr}, ${dateStr}, ${draw.thumbnailUrl}`;

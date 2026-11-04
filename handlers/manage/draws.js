@@ -160,8 +160,29 @@ async function bulkAddOrReplaceDraws(interaction) {
         return await interaction.followUp({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} ${why}`, FAIL_ACCENT) });
     }
 
+    // A typed end ("July 15 - August 20") goes onto the draw's /calendar row, as in the Add and Edit forms. It is a second commit, gated by the Calendar tier like any calendar write (the draws are already saved and have their own Revert); only draws that were actually saved get one, and if the commit is refused the draws stay and the panel says why.
     const sections = [];
     const warnings = [];
+    const changeIds = [...result.changeIds];
+    {
+        const { planEndRow } = require('../../utils/drawDates');
+        const { calendarRowFor } = require('../../utils/drawEndReminder');
+        const doc = await loadOrCreateSeasonalDoc();
+        const endOps = [];
+        for (const r of result.results) {
+            for (const draw of (r.applied.added || [])) {
+                if (!draw.endDate) continue;
+                const op = planEndRow({ row: calendarRowFor(doc, draw.title), title: draw.title, start: draw.date, end: draw.endDate });
+                if (op) endOps.push(op);
+            }
+        }
+        if (endOps.length) {
+            const endResult = await commitSet(endOps, { actorId: interaction.user.id });
+            if (endResult.ok) { changeIds.push(...endResult.changeIds); sections.push({ head: 'End dates', lines: [`Set on ${endOps.length} draw${endOps.length === 1 ? '' : 's'} (their /calendar rows)`] }); }
+            else warnings.push(`End dates were NOT saved (the draws were): ${extractCommitError(endResult)}`);
+        }
+    }
+
     for (const r of result.results) {
         const label = r.applied.category === 'new' ? 'New Draws' : 'Returning Draws';
         if (mode === 'add') {
@@ -174,7 +195,7 @@ async function bulkAddOrReplaceDraws(interaction) {
         // Types the draw index filled in for draws pasted with none (utils/bulkMerge.js fillTypes).
         if (r.applied.typesFilled?.length) sections.push({ head: `${label} · draw type from the draw index`, lines: r.applied.typesFilled.map(t => `- ${t}`) });
     }
-    const sent = await interaction.followUp({ flags: 32768 | 64, components: resultPanel({ page: 'draws', heading: `Bulk ${mode === 'add' ? 'add' : 'replace'} done`, sections, warnings, changeIds: result.changeIds }) });
+    const sent = await interaction.followUp({ flags: 32768 | 64, components: resultPanel({ page: 'draws', heading: `Bulk ${mode === 'add' ? 'add' : 'replace'} done`, sections, warnings, changeIds }) });
     // Every pasted draw is asked about for items the draw index has no kind for, the same as a single add (handlers/manage/itemKinds.js). The titles come from the pasted text, so Replace's updated draws are covered too.
     await require('./itemKinds').askItemKinds(interaction, pastedTitles(newText, returningText));
     return sent;

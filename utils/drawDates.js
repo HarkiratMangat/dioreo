@@ -13,11 +13,12 @@ function formatDrawDates(start, end) {
     return s && e ? `${s} - ${e}` : s;
 }
 
-// The same dates in the ISO form Add Multiple's one-line format can read (its fields are split on commas, which the long form contains).
+// The same dates in a form Add Multiple's one-line format can read (its fields are split on commas, which the long form contains).
 function formatDrawDatesForBulk(start, end) {
-    const iso = (d) => new Date(d).toISOString().slice(0, 10);
+    // "September 10 2026": no comma to split on, and it has a space, so Add Multiple does not mistake it for an image link when no link follows (an ISO date with no link after it is read as the link).
+    const plain = (d) => new Date(d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' }).replace(',', '');
     if (!valid(start)) return '';
-    return valid(end) ? `${iso(start)} - ${iso(end)}` : iso(start);
+    return valid(end) ? `${plain(start)} - ${plain(end)}` : plain(start);
 }
 
 // The box's text -> { ok, start, end } or { ok: false, error }. An end of TBD, or none, is "no end". An end that cannot be read is REPORTED, never dropped: the season box's own rule ("an unparseable date is reported, never silently kept").

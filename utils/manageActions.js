@@ -97,7 +97,7 @@ const DRAWS_ACTIONS = [
           return {
               content: '📤 **Exported New Draws** in Bulk Add format. Paste this back into the matching Bulk action.',
               name: 'new_draws_bulk.txt',
-              text: formatDrawsAsBulkText(doc?.newDraws || []) || '(no New Draws currently saved)'
+              text: formatDrawsAsBulkText(doc?.newDraws || [], d => require('./drawEndReminder').calendarRowFor(doc, d.title)) || '(no New Draws currently saved)'
           };
       }) },
     { id: 'exportreturning', label: 'Export Returning Draws', style: 2, kind: 'file', slash: true,
@@ -107,7 +107,7 @@ const DRAWS_ACTIONS = [
           return {
               content: '📤 **Exported Returning Draws** in Bulk Add format. Paste this back into the matching Bulk action.',
               name: 'returning_draws_bulk.txt',
-              text: formatDrawsAsBulkText(doc?.returningDraws || []) || '(no Returning Draws currently saved)'
+              text: formatDrawsAsBulkText(doc?.returningDraws || [], d => require('./drawEndReminder').calendarRowFor(doc, d.title)) || '(no Returning Draws currently saved)'
           };
       }) },
     { id: 'formatguide', label: 'Guide', style: 2, kind: 'view', slash: true, run: openFormatGuide }
