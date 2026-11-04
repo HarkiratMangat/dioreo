@@ -36,6 +36,9 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 - `scripts/syncNameplateCatalog.py`, run by hand as always, added **24 SKUs** to `docs/reference/nameplate-decoration-catalog.json`: The Nightmare Before Christmas (3 nameplates, 6 decorations), Día de Muertos (3, 1) and Dead by Daylight (6, 5). Additive: 986 → 1,010, nothing removed or renamed, so no Cloudinary cache key changes (`group_name` + `variant_label` are the key).
 - `docs/reference/nameplate-decoration-catalog.md`'s figures are recounted from the file: 98 collections, 267 nameplate groups → 301 SKUs, 530 decoration groups → 709 SKUs, 0 duplicate `sku_id`, 0 exceptions to its palette and name/variant rules.
 
+### Tests
+- `scripts/collectibleCacheKey.test.js` pins the snapshot's size: 986 → 1,010, after its own collision check passed at the new count.
+
 ### Data
 - Dev database loaded through `scripts/syncCatalogToMongo.js` (24 inserted, 986 updated). The prod load and the render of the 24 new SKUs follow the deploy, on his word (2026-11-04 10:34 EST).
 
