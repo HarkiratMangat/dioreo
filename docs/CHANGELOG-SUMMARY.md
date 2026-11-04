@@ -12,6 +12,9 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.8.4 — November 4, 2026
+- **Fixed:** undoing a bulk change in /manage now puts back exactly what was there, Set End Date always opens the right draw, and a new season no longer keeps the old season's end dates.
+
 ## v3.8.3 — November 4, 2026
 - **Fixed:** new nameplates and decorations render on the live bot again (the server's image tool was older than the one they were tested with).
 

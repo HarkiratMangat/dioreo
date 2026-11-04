@@ -307,6 +307,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-11-04 10:13 EST — A season number that repeats every year, and an announcement that came without its year (v3.8.1)
 - 2026-11-04 10:44 EST — 24 new nameplates and decorations from the shop, and a pinned count that had to move (v3.8.2)
 - 2026-11-04 10:57 EST — The VM's image tool was older than the Mac's (v3.8.3)
+- 2026-11-04 14:55 EST — Undo that replays the forward path, and a harness that drives /manage with no database (v3.8.4)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4966,6 +4967,14 @@ Rendering the 24 SKUs the shop sync had just added was the first prod bulk rende
 **What it teaches.**
 - **A system binary is a dependency with a version, and the Mac's is not the VM's.** Every test of this encoder ran on the Mac, so none could fail for this. The fix asks the binary itself (its help text) rather than assuming a version, and the ops doc now names both.
 - **A dry run that counts work proves nothing about doing it.** The dry run reported 24 SKUs to render and 0 failures, because it never ran the encoder.
+
+## 2026-11-04 14:55 EST — Undo that replays the forward path, and a harness that drives /manage with no database (v3.8.4)
+
+A whole-bot housekeeping pass found its sharpest bugs in one place: undo. Replace Multiple's undo was another Replace Multiple with the old list, an upsert that updates and inserts but never removes, so a paste's additions survived the Undo. Purge's undo ran the stored draws back through the Cloudinary pass meant for fresh pastes, which drops a draw with no image. Both are the same mistake: an inverse built by replaying the forward path instead of restoring what was there. The fix records what a change added and restores by id; the rule is in `.claude/rules/operation-core.md`.
+
+None of this was visible to the test suite because the `/manage` handlers ran 12–18% of their lines under it: every path ends in `commitSet`, which needs a Mongo session. `scripts/lib/manageHarness.cjs` stands in for exactly what that path touches (the one SeasonalData document, a few collections, a session that rolls back, the ChangeLog writer, Cloudinary), so a modal submit now runs through the real op, permission check and panel. Each bug fix came with a test shown to fail on the old code first.
+
+A 10-day read of prod's log added two cheap wins: Mongoose's `new: true` deprecation was 52 of 73 warnings, and panel expiry logged an expected "Unknown Message" as an error.
 
 # Part B — Lessons Ledger (thematic)
 

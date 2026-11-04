@@ -29,7 +29,25 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.8.3 — 2026-11-04 10:57 EST (#252) — Nameplate and decoration renders work on the VM's older image tool
+## v3.8.4 — 2026-11-04 14:55 EST (#253) — Undo puts bulk changes back exactly, and /manage is tested end to end
+**From Harkirat, 2026-11-04:** asked for a code review, refinement and housekeeping pass over the bot (11:39 EST), "go" on the fixes (12:24 EST), and "merge flow approved. no deploy" (14:53 EST).
+
+### Fixed
+- **Undo of Replace Multiple** (draws and /calendar) left whatever the paste had added. A set change now records the ids it added, and its undo takes them out and restores everything else by id (`utils/bulkMerge.js` `restoreSet`, `core/ops/draws.js`, `core/ops/calendar.js`). The rule is written in `.claude/rules/operation-core.md`.
+- **Undo of draw Purge and Delete Multiple** ran the stored draws back through the Cloudinary pass, which dropped a draw saved with no image and could hand a draw another draw's image. An undo now restores the stored draws as they were.
+- **Undo of /calendar Purge and Delete Multiple** gave every event a new id, so a later Undo naming one could not find it.
+- **Set End Date** matched any title that started with the button's key, so "Hero" could open "Hero's Collection"; the exact id wins now (`utils/drawEndReminder.js`).
+- **Promote to Live** kept the old season's Battle Pass, Rank and DMZ end when the draft left one blank; a blank end now goes live blank, like a blank start (`core/ops/season.js`).
+- From prod's log: the six Mongoose calls that passed the deprecated `new: true` (52 warnings in 10 days) pass `returnDocument: 'after'`; panel expiry's expected Unknown Message logs as info, not as an error.
+
+### Tests
+- `scripts/lib/manageHarness.cjs`: an in-memory SeasonalData document, Loadout, catalogue, reminder, preference and basket collections, a Mongo session that rolls back, and stand-ins for the ChangeLog writer and Cloudinary. On it: `manageDrawHandlers`, `manageCalendarHandlers`, `manageSeasonHandlers`, `manageLoadoutHandlers`, `manageQuickAdd`, `remindHandler`, `drawCalcHandler` and `autocompleteRoute`, plus `bulkRestore` and `mongooseOptions`. The `/manage` handlers went from 19% to over 51% of their lines run under `npm test`, `core/` from 56% to over 78%.
+
+### Cleanup
+- Removed dead code: `/help`'s category icon and description fields (their dropdown went with B6), `buildCategoryBrowseRow`, and four unused exports. `utils/search.js` reuses `utils/textCommands/parse.js`'s typo distance.
+- The JAK-12 / .50 GS code-pair mismatch is settled from their screenshots: JAK-12 is right (its blueprint ammo is outside the code), .50 GS was missing Lightweight Trigger and was fixed on prod as change #107. Filed: discord.js's `ephemeral` deprecation (172 calls), bulk saves uploading to Cloudinary inside the transaction, and the draw calculator split.
+
+## v3.8.3 — 2026-11-04 10:57 EST (#252 · `c5d0f570`) — Nameplate and decoration renders work on the VM's older image tool
 **From Harkirat, 2026-11-04 10:56 EST:** "sure go ahead", to shipping the fix after the v3.8.2 render of the 24 new SKUs failed on prod.
 
 ### The failure
