@@ -107,10 +107,13 @@ async function refreshReminderMessage(interaction) {
     return true;
 }
 
-// The returning draw a Set End Date button points at, by its title key, or null if it has since been removed.
+// The returning draw a Set End Date button points at, by its title key, or null if it has since been removed. The exact id wins. A prefix match is only for an id cut at Discord's 100 characters (a title key over 88): before 2026-11-04 12:02 EST any prefix counted, so the button for "Hero" could open "Hero's Collection" when that draw came first.
 function drawForEndCustomId(seasonalDoc, customId) {
+    const draws = seasonalDoc.returningDraws || [];
+    const exact = draws.find(d => drawEndCustomId(d.title) === customId);
+    if (exact || customId.length < 100) return exact || null;
     const wanted = customId.slice('mng_drawend_'.length);
-    return (seasonalDoc.returningDraws || []).find(d => drawEndCustomId(d.title) === customId || key(d.title).startsWith(wanted)) || null;
+    return draws.find(d => key(d.title).startsWith(wanted)) || null;
 }
 
 // Never throws: a failed DM is logged and retried on the next run, since nothing is marked reminded until the DM has gone.

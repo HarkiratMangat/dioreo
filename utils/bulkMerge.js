@@ -1,6 +1,7 @@
 // utils/bulkMerge.js
 //
 // The two pieces of bulk-paste merge logic shared across every "Add Multiple"/"Replace Multiple" surface. Moved out of handlers/manage/shared.js (2026-08-20 23:42 EDT, portal core Task 6) so core/ops/draws.js can use the SAME real semantics `/manage` has always used, rather than a simplified copy that silently diverges — see [[project_web_admin_portal]] and this file's own commit for the story: a first draft of core/ops/draws.js's bulkReplace did a wholesale array $set, which would have deleted every draw not mentioned in the pasted text. "Replace Multiple" has never meant that.
+const mongoose = require('mongoose');
 const { resolveThumbnail } = require('./cloudinaryCache');
 const { fuzzyMatch } = require('./search');
 const { isKnownType } = require('./drawCatalog');
@@ -53,4 +54,20 @@ function upsertByTitle(existingArray, parsedItems) {
 
     return { finalArray, updatedCount, insertedCount };
 }
-module.exports = { resolveThumbnailsForDraws, upsertByTitle };
+// UNDO OF A SET CHANGE PUTS BACK THE SET (code-housekeeping, 2026-11-04 12:01 EST). Replace Multiple's and Purge's undo used to re-run upsertByTitle with the prior list, which updates and inserts but never removes, so draws or events the forward paste ADDED stayed after Undo; and every draw undo re-ran resolveThumbnailsForDraws, which drops a draw with no image and can hand a draw another draw's image. This restores by _id, touches no outside service, and keeps anything added since that the change did not add. current: the array now · prior: the array before the change · insertedIds: the _ids the change itself added (empty for a Purge, and for a change recorded before 2026-11-04, which did not keep them).
+function restoreSet(current, prior, insertedIds = []) {
+    const drop = new Set((insertedIds || []).map(String));
+    const priorById = new Map(prior.filter(p => p && p._id).map(p => [String(p._id), p]));
+    const kept = current.filter(x => !drop.has(String(x._id))).map(x => priorById.get(String(x._id)) || x);
+    const have = new Set(kept.map(x => String(x._id)));
+    const back = prior.filter(p => !p._id || !have.has(String(p._id)));
+    return [...kept, ...back].sort((a, b) => new Date(a.date) - new Date(b.date));
+}
+
+// The _ids in `after` that `before` did not have: what a set change added, recorded so its undo can take exactly those out. Gives any new element its _id first, so the id recorded is the id saved.
+function addedIds(before, after) {
+    const had = new Set(before.map(x => String(x._id)));
+    for (const x of after) if (!x._id) x._id = new mongoose.Types.ObjectId();
+    return after.filter(x => !had.has(String(x._id))).map(x => String(x._id));
+}
+module.exports = { resolveThumbnailsForDraws, upsertByTitle, restoreSet, addedIds };

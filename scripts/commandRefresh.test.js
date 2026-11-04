@@ -278,6 +278,8 @@ t('the owner is DM\'d once about a returning draw that went live in the last wee
     assert.ok(isReminderMessage({ components: card }) && !isReminderMessage({ components: [] }) && !isReminderMessage(undefined));
     assert.ok(button.custom_id.startsWith('mng_drawend_') && button.custom_id.length <= 100, button.custom_id);
     assert.strictEqual(drawForEndCustomId(doc, button.custom_id).title, 'Thermal Core Draw', 'the button finds its draw again');
+    // A title that starts another title's key finds its own draw, whichever comes first (2026-11-04 12:02 EST).
+    { const { drawEndCustomId } = require('../utils/drawEndReminder'); const twins = { returningDraws: [{ title: "Hero's Collection Draw" }, { title: 'Hero' }] }; assert.strictEqual(drawForEndCustomId(twins, drawEndCustomId('Hero')).title, 'Hero'); assert.strictEqual(drawForEndCustomId(twins, drawEndCustomId("Hero's Collection Draw")).title, "Hero's Collection Draw"); const long = 'A'.repeat(120); assert.strictEqual(drawForEndCustomId({ returningDraws: [{ title: long }] }, drawEndCustomId(long)).title, long); }
     const { msUntilNextDailyRun } = require('../utils/drawEndReminder');
     assert.strictEqual(msUntilNextDailyRun(Date.UTC(2026, 9, 21, 18, 50)), (5 * 60 + 15) * 60 * 1000, 'from 14:50 EDT it waits until 00:05 UTC (20:05 EDT)');
     assert.strictEqual(msUntilNextDailyRun(Date.UTC(2026, 9, 22, 0, 5)), 24 * 60 * 60 * 1000, 'right at 00:05 UTC it waits a full day');
