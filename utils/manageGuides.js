@@ -70,7 +70,8 @@ function drawsSections() {
             `**__Void Implosion Draw__**\n${emojis.legendary} **M4 - Void Implosion**\n${emojis.epic} **Dusk - Otherworld Ensemble**\n-# Girls Frontline Collab\n<t:0:f> (<t:0:R>)\n-# ^ timestamp shown is a placeholder — yours renders with the real date you typed.`),
         section('💡 Tips',
             '• Use **Export** above to grab this exact format pre-filled with your real current data — the fastest way to see a live, correct example.\n' +
-            '• **Replace Multiple** upserts by title match (updates in place, inserts if new) — anything you don\'t mention is left untouched. Use **Purge** for a full wipe.')
+            '• **Replace Multiple** upserts by title match (updates in place, inserts if new) — anything you don\'t mention is left untouched. Use **Purge** for a full wipe.\n' +
+            '• The **Add** and **Edit** forms take **Start - End** in the date box (`September 10, 2026 - November 12, 2026`), like the season titles box. The end goes on the draw\'s /calendar row, so `/draws` shows when it ends. This paste format has no end date: use the forms, **Quick Add** or Calendar.')
     ];
 }
 

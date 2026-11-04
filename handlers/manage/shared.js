@@ -176,7 +176,11 @@ async function resolveManagePanelAction(interaction, group, action, match) {
     const manageCommand = interaction.client.commands.get('manage');
 
     if (action === 'edit') {
-        if (group === 'draws') return interaction.showModal(manageCommand.buildEditDrawModal(match.doc, match.id, match.type));
+        if (group === 'draws') {
+            // One read of the season document, well inside showModal's 3 seconds: the draw's end date is its /calendar row's (utils/drawDates.js).
+            const row = require('../../utils/drawEndReminder').calendarRowFor(await require('../../utils/manageActions').loadSeasonalDoc(), match.doc.title);
+            return interaction.showModal(manageCommand.buildEditDrawModal(match.doc, match.id, match.type, row));
+        }
         if (group === 'calendar') return interaction.showModal(manageCommand.buildEditCalendarModal(match.doc, match.id));
         // The weapon's builds are read first, so a legacy build (its label stored as its name) still shows a build #. One quick query, well inside showModal's 3 seconds.
         if (group === 'loadouts_mp' || group === 'loadouts_dmz') return interaction.showModal(await require('./loadouts').editLoadoutModal(match.doc));

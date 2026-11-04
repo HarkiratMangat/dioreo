@@ -24,11 +24,11 @@
       },
       {
         "type": 18,
-        "label": "Release Date",
+        "label": "Dates: Start - End (end is optional)",
         "component": {
           "type": 4,
           "style": 1,
-          "placeholder": "e.g. July 15",
+          "placeholder": "e.g. July 15 - August 20",
           "custom_id": "date"
         }
       },
@@ -247,11 +247,11 @@
       },
       {
         "type": 18,
-        "label": "Release Date",
+        "label": "Dates: Start - End (end is optional)",
         "component": {
           "type": 4,
           "style": 1,
-          "placeholder": "e.g. July 15",
+          "placeholder": "e.g. July 15 - August 20",
           "custom_id": "date"
         }
       },

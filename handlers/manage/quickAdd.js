@@ -289,10 +289,10 @@ async function save(interaction, token, state) {
         }
         const row = calendarRowFor(seasonalDoc, d.existing?.title || d.title);
         if (d.end) {
-            const event = { title: row?.title || d.title, date: d.startGiven || !row ? d.start : new Date(row.date), endDate: d.end, isOngoing: false, category: 'draw' };
+            const event = { title: row?.title || d.title, date: d.startGiven || !row ? d.start : new Date(row.date), endDate: d.end, isOngoing: false, category: 'draw', isDoubleCP: Boolean(row?.isDoubleCP) };
             ops.push(row ? { type: 'calendar.edit', target: { elementId: String(row._id) }, payload: event } : { type: 'calendar.add', payload: event });
         } else if (row && d.startGiven) {
-            ops.push({ type: 'calendar.edit', target: { elementId: String(row._id) }, payload: { title: row.title, date: d.start, endDate: row.endDate || null, isOngoing: Boolean(row.isOngoing), category: 'draw' } });
+            ops.push({ type: 'calendar.edit', target: { elementId: String(row._id) }, payload: { title: row.title, date: d.start, endDate: row.endDate || null, isOngoing: Boolean(row.isOngoing), category: 'draw', isDoubleCP: Boolean(row.isDoubleCP) } });
         }
     });
     if (!ops.length) return sendV2Payload(interaction, notePanel('Nothing in this draft changes anything.', ACCENT.draws));
