@@ -115,6 +115,10 @@ async function t(name, fn) {
         assert.strictEqual(catalog.insertFields('Starfall Echo Draw', 'starfall-echo-draw', { items: [], releaseSeason: 9 }, now).releaseSeason, 9);
         assert.ok(!('releaseSeason' in catalog.insertFields('Old Draw', 'old-draw', { items: [] }, now)), 'a returning draw is never given one');
         assert.ok(!('releaseSeason' in catalog.insertFields('X', 'x', { items: [], releaseSeason: null }, now)));
+        // The year travels with the season (2026-11-04: seasons 1-12 repeat each year). A staged draw may name its own year; a live one is this year; no season means no year.
+        assert.strictEqual(catalog.insertFields('Starfall Echo Draw', 'starfall-echo-draw', { items: [], releaseSeason: 9 }, now).releaseYear, 2026);
+        assert.strictEqual(catalog.insertFields('January Draw', 'january-draw', { items: [], releaseSeason: 1, releaseYear: 2027 }, now).releaseYear, 2027);
+        assert.ok(!('releaseYear' in catalog.insertFields('Old Draw', 'old-draw', { items: [] }, now)));
         // recordCatalogImage uses insertFields only under `$setOnInsert`, so an existing document keeps its season.
         assert.match(require('fs').readFileSync(require('path').join(__dirname, '../utils/drawCatalog.js'), 'utf8'), /if \(!existing\) update\.\$setOnInsert = insertFields\(/);
     });
@@ -140,6 +144,9 @@ async function t(name, fn) {
         assert.strictEqual(docFromAsset(asset, live).fp, ENTRIES[3].fp);
         const fresh = { ...asset, context: { custom: { ...asset.context.custom, items_full: cache.catalogMirrorPlan(ENTRIES[3]).context.items_full } } };
         assert.strictEqual(docFromAsset(fresh).items[1].kind, 'character', 'a current items_full is read, kinds included');
+        const seasoned = { ...fresh, context: { custom: { ...fresh.context.custom, release_season: 'Season 10 2026' } } };
+        assert.strictEqual(docFromAsset(seasoned).releaseSeason, 10);
+        assert.strictEqual(docFromAsset(seasoned).releaseYear, 2026, 'the year is read back from release_season');
     });
     await t('Add or Replace Multiple pass the live season only for New text', () => {
         const src = require('fs').readFileSync(require('path').join(__dirname, '../core/ops/draws.js'), 'utf8');

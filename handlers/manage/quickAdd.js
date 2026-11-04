@@ -227,7 +227,7 @@ function buildPickModal(token, index, draft, candidates) {
     const options = candidates.slice(0, qa.MAX_CANDIDATES).map(e => ({
         label: e.title.slice(0, 100),
         value: e.slug,
-        description: `${e.releaseSeason ? `Season ${e.releaseSeason} · ` : ''}${tiers(e)}`.slice(0, 100) || undefined,
+        description: `${e.releaseSeason ? `Season ${e.releaseSeason}${e.releaseYear ? ` ${e.releaseYear}` : ''} · ` : ''}${tiers(e)}`.slice(0, 100) || undefined,
         default: !draft.needsPick && e.title === draft.title
     }));
     options.push({ label: `None of these: keep "${draft.query}" as typed`.slice(0, 100), value: '__typed__' });

@@ -33,6 +33,8 @@ const DrawCatalogSchema = new mongoose.Schema({
     groupSlug: { type: String, default: '' },
     // Seeded only for the new draws whose season Harkirat named. Since 2026-11-01 the bot also sets it, ONCE, when it creates a document for a draw saved into New (utils/drawCatalog.js insertFields): the current season, or the draft's season for a staged draw. Never guessed for a returning draw, never rewritten.
     releaseSeason: { type: Number },
+    // The calendar year that season ran in (2026-11-04, Harkirat: "the season 1-12 naming repeats each year"). A season number alone is ambiguous across years. Set together with releaseSeason, once, on insert (utils/drawCatalog.js insertFields), and read back from Cloudinary's release_season context by scripts/syncDrawCatalog.js; the Cloudinary tag is season_<n>_<year>.
+    releaseYear: { type: Number },
     source: { type: String, default: '' },
     indexedOn: { type: String, default: '' }                // YYYY-MM-DD
 }, { collection: 'drawcatalogs' });

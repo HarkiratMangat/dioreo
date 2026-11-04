@@ -182,7 +182,7 @@ function describedDraws(entries, queryWords) {
     const fits = entries.filter(e => (e.items || []).some(i => (!tiers.length || tiers.includes(i.tier)) && (!kinds.length || kinds.includes(i.kind))));
     const groups = new Set();
     return fits
-        .sort((a, b) => (b.releaseSeason || 0) - (a.releaseSeason || 0) || Number(b.slug === b.groupSlug) - Number(a.slug === a.groupSlug) || a.title.localeCompare(b.title))
+        .sort((a, b) => (b.releaseYear || 0) - (a.releaseYear || 0) || (b.releaseSeason || 0) - (a.releaseSeason || 0) || Number(b.slug === b.groupSlug) - Number(a.slug === a.groupSlug) || a.title.localeCompare(b.title))
         .filter(e => !groups.has(e.groupSlug || e.slug) && groups.add(e.groupSlug || e.slug));
 }
 
