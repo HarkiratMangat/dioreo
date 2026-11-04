@@ -159,4 +159,17 @@ check('every season op type declares a tier', () => {
     }
 });
 
+check('a staged draft calendar or draws list refuses text that parses to nothing, and an inverse still passes (found 2026-11-04 00:33 EST)', () => {
+    const cal = ops.resolveOp('season.bulkDraftCalendar');
+    const r = cal.validate({ type: 'season.bulkDraftCalendar', payload: { text: 'hello world\nnothing here' } });
+    assert.strictEqual(r.ok, false, 'junk text must not replace the staged calendar with an empty list');
+    assert.ok(/not changed/.test(r.errors[0]), r.errors[0]);
+    assert.strictEqual(cal.validate({ type: 'season.bulkDraftCalendar', payload: { parsed: [] } }).ok, true, 'reverting to an empty staged calendar is a real inverse');
+    const draws = ops.resolveOp('season.bulkDraftDraws');
+    assert.strictEqual(draws.validate({ type: 'season.bulkDraftDraws', payload: { newText: 'hello world' } }).ok, false);
+    assert.strictEqual(draws.validate({ type: 'season.bulkDraftDraws', payload: { returningText: 'hello world' } }).ok, false);
+    assert.strictEqual(draws.validate({ type: 'season.bulkDraftDraws', payload: { parsed: { newDraws: [], returningDraws: [] } } }).ok, true, 'an inverse is not re-parsed');
+    assert.strictEqual(draws.validate({ type: 'season.bulkDraftDraws', payload: {} }).ok, false, 'both boxes blank is still refused');
+});
+
 process.exit(failures ? 1 : 0);

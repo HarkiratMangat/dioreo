@@ -84,6 +84,8 @@ async function editCalendarEvent(interaction) {
         const before = typeof targetEvent.toObject === 'function' ? targetEvent.toObject() : targetEvent;
         return interaction.followUp({ flags: 32768 | 64, components: calendarPanel({ event: { _id: targetId, title, date: parsedStart, endDate: parsedEnd, isOngoing, category, isDoubleCP }, before, changeIds: result.changeIds }) });
     }
+    // Deferred above, so a vanished event must still be answered (see handlers/manage/draws.js editDraw, same find, same fix; found 2026-11-04 00:33 EST).
+    return await interaction.followUp({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} That event no longer exists (it may have been deleted or replaced since you opened it), so nothing was saved.`, FAIL_ACCENT) });
 }
 
 // --- BULK ADD/REPLACE CALENDAR EVENTS --- custom_id: modal_calendar_bulk_{add|replace} Replace upserts by fuzzy-matched title (update in place if found, insert if not) -- Purge already covers a full wipe, so Replace doesn't need to double as one. Parsing now happens INSIDE the op (core/ops/calendar.js), which is the only file that knows a calendar event's shape -- this handler just relays the raw pasted text and re-derives the same per-category breakdown from the op's own result.

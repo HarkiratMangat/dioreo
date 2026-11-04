@@ -11,7 +11,7 @@ function check(name, fn) {
 const champion = { title: "Street Fighter: Champion's Collection Series Armory (Weapons)" };
 const hero = { title: "Street Fighter: Hero's Collection Series Armory (Operators)" };
 
-check("the premise: two different Street Fighter draws DO match each other (prod 2026-11-04)", () => {
+check("the premise: two different Street Fighter draws DO match each other (prod 2026-11-04 00:33 EST)", () => {
     assert.ok(isSameDrawTitle(champion.title, hero.title), 'if this stops being true the helper is no longer needed for this pair');
 });
 

@@ -120,6 +120,8 @@ async function editDraw(interaction) {
         await require('./itemKinds').askItemKinds(interaction, [newTitle]);
         return sent;
     }
+    // The reply was deferred above, so a draw that is gone by now (deleted or replaced since the search) must still be answered, or the admin sits on "thinking..." until Discord gives up (found 2026-11-04 00:33 EST, /manage audit; the pre-core handler returned silently here and this kept that).
+    return await interaction.followUp({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} That draw no longer exists (it may have been deleted or replaced since you opened it), so nothing was saved.`, FAIL_ACCENT) });
 }
 
 // --- BULK ADD/REPLACE BOTH DRAW CATEGORIES AT ONCE --- custom_id: modal_draws_bulk_{add|replace}_both One modal, two independently-optional fields -- only whichever field was actually filled in gets touched. Replace upserts by fuzzy-matched title (update in place, keep _id) rather than wholesale- overwriting the array; Add just appends everything parsed. Both categories commit in ONE changeset (matching the pre-core handler's single seasonalDoc.save() for both).
