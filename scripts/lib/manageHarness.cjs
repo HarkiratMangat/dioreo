@@ -55,7 +55,8 @@ SeasonalData.updateOne = async (filter = {}, update = {}) => {
     return { matchedCount: 1, modifiedCount: modified };
 };
 
-mongoose.startSession = async () => ({ withTransaction: async fn => fn(), endSession: async () => {} });
+// A failed op rolls back, as a real transaction would: the document is put back as it was before the set began.
+mongoose.startSession = async () => ({ withTransaction: async fn => { const saved = clone(state.doc); const savedChanges = state.changes.length; try { return await fn(); } catch (e) { state.doc = saved; state.changes.length = savedChanges; throw e; } }, endSession: async () => {} });
 const changeStore = req('utils/changeStore');
 changeStore.recordChangeIn = async (session, fields) => { const changeId = `T${state.changes.length + 1}`; state.changes.push({ changeId, ...clone(fields) }); return { changeId }; };
 const adminAccess = req('utils/adminAccess');
@@ -94,7 +95,7 @@ function modal(customId, fields = {}, { selects = {}, values = [], user = OWNER 
 }
 
 function reset(doc = {}) {
-    state.doc = { docType: 'global', currentSeasonTitle: 'Season 9: Test', newDraws: [], returningDraws: [], calendar: [], ...clone(doc) };
+    state.doc = { docType: 'global', currentSeasonTitle: 'Season 9: Test', newDraws: [], returningDraws: [], calendar: [], patchNotes: [], ...clone(doc) };   // the arrays Mongoose stores as [] by default
     state.changes = [];
 }
 
