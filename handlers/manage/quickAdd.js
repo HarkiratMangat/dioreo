@@ -204,8 +204,9 @@ async function submitEdit(interaction) {
         if (hit && priceType === before.priceType && hit.entry.priceType) priceType = hit.entry.priceType;
     }
     const seasonalDoc = await loadOrCreateSeasonalDoc();
-    const listed = [['new', seasonalDoc.newDraws || []], ['returning', seasonalDoc.returningDraws || []]]
-        .flatMap(([cat, list]) => list.filter(d => isSameDrawTitle(d.title, title)).map(d => ({ cat, d })))[0] || null;
+    const listed = require('../../utils/search').bestDrawMatch(
+        [['new', seasonalDoc.newDraws || []], ['returning', seasonalDoc.returningDraws || []]].flatMap(([cat, list]) => list.map(d => ({ cat, d }))),
+        title, x => x.d.title);
     state.drafts[i] = {
         ...before,
         title, items, imageUrl: imageInput || imageUrl, imageInput, matchedBy, indexSeason, category: listed ? listed.cat : category, priceType,

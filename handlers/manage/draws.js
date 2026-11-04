@@ -11,7 +11,7 @@ const BOT_EMOJI = require('../../utils/emojiMap'); // the bot's own status glyph
 const { resolveThumbnail } = require('../../utils/cloudinaryCache');
 const { commitSet } = require('../../core/changeset');
 const {
-    thumbnailNote, loadOrCreateSeasonalDoc, registerBulkDelete, extractCommitError
+    thumbnailNote, loadOrCreateSeasonalDoc, registerBulkDelete, extractCommitError, humanCommitError
 } = require('./shared');
 const { failWithRetry } = require('./retry');
 const { drawPanel, resultPanel, notePanel, FAIL_ACCENT } = require('../../utils/managePanels');

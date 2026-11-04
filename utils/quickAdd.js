@@ -240,8 +240,9 @@ function draftFromLine(parsed, { entries = [], seasonalDoc = {}, isSameTitle = (
     const found = !pick && parsed.query ? findCatalogDraw(entries, parsed.query) : null;
     const entry = pick ? (pick === TYPED ? null : pick) : found?.entry || null;
     const title = entry ? entry.title : titleCase(parsed.query);
-    const listed = [['new', seasonalDoc.newDraws || []], ['returning', seasonalDoc.returningDraws || []]]
-        .flatMap(([category, list]) => list.filter(d => isSameTitle(d.title, title)).map(d => ({ category, draw: d })))[0] || null;
+    const listed = require('./search').bestDrawMatch(
+        [['new', seasonalDoc.newDraws || []], ['returning', seasonalDoc.returningDraws || []]].flatMap(([category, list]) => list.map(draw => ({ category, draw }))),
+        title, x => x.draw.title, isSameTitle);
     // Returning unless the line says `new` (his rule, top of file); a draw already on /draws stays in its section.
     const category = listed ? listed.category : parsed.category || 'returning';
     return {

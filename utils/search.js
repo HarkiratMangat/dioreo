@@ -35,6 +35,18 @@ function isSameDrawTitle(a, b) {
     return shared >= 2;
 }
 
+// WHICH ONE, when several match (found 2026-11-04 00:20 EST, Harkirat's /manage audit): isSameDrawTitle() is a yes/no, and every caller took the FIRST yes. Two different Street Fighter draws ("Champion's Collection ... (Weapons)" and "Hero's Collection ... (Operators)") share three distinctive words, so each matched the other's /calendar row, and a lookup for Hero returned Champion's row: an end date set for one draw would be written to the other's row. The same words in any order win outright; otherwise the candidate sharing the most distinctive words wins; a tie keeps the first, as before.
+function bestDrawMatch(items, title, titleOf = x => x.title, same = isSameDrawTitle) {
+    const wanted = allDrawWords(title);
+    const hits = (items || []).filter(x => same(titleOf(x), title));
+    if (hits.length < 2) return hits[0] || null;
+    const exact = hits.find(x => wanted && allDrawWords(titleOf(x)) === wanted);
+    if (exact) return exact;
+    const mine = distinctiveDrawTokens(title);
+    const score = x => { let n = 0; for (const w of distinctiveDrawTokens(titleOf(x))) if (mine.has(w)) n++; return n; };
+    return hits.reduce((best, x) => (score(x) > score(best) ? x : best), hits[0]);
+}
+
 // Category-level search synonyms (2026-07-18, v2 quick-wins follow-up) -- a plain name/category substring match can never surface anything for a query like "pistol", since no stored weapon NAME contains that word for most Secondaries weapons (Combat Knife, J358, Crossbow, ...), and the category itself was never being matched against at all before this -- typing the bot's own category keyword ("smg", "lmg", ...) into /all silently returned nothing unless a weapon's name happened to contain those letters by coincidence. Working assumption behind adding this (Harkirat's own framing): meet the player where they actually are/type, don't require them to already know this bot's exact internal category label. Deliberately limited to REAL, unambiguous weapon-class terminology (the game's own category names + their standard full-word/plural forms, plus the common firearm-class words for Secondaries) -- NOT guessed community slang/nicknames, which risks a confidently wrong mapping worse than no mapping at all. 🔁 WIDENED 2026-10-19 20:30 EDT (Harkirat: "please expand the list for more aliases, such as MR for marksman, etc. or rifle, or pistol"). A value may be a LIST: a word that names several classes ("rifle" covers assault, marksman and sniper rifles) shows every one of them. Two-letter aliases (mr, sr, sg, mg) match only when typed in full; the prefix rule below needs three letters.
 const RAW_CATEGORY_SYNONYMS = {
     'ar': 'AR', 'ars': 'AR', 'assault': 'AR', 'assault rifle': 'AR', 'assault rifles': 'AR',
@@ -217,4 +229,4 @@ function pickWeapon(query, candidates) {
     return { ...none, loose: findWeaponMatches(query, candidates) };
 }
 
-module.exports = { pickWeapon, featuredWeapons, fuzzyMatch, normalizeForSearch, foldLookalikes, findWeaponMatches, resolveCategorySynonyms, categoryByExactAlias, isGenericWeaponQuery, typoDistance, isSameDrawTitle, CATEGORY_SEARCH_SYNONYMS, GENERIC_WEAPON_WORDS };
+module.exports = { pickWeapon, featuredWeapons, fuzzyMatch, normalizeForSearch, foldLookalikes, findWeaponMatches, resolveCategorySynonyms, categoryByExactAlias, isGenericWeaponQuery, typoDistance, isSameDrawTitle, bestDrawMatch, CATEGORY_SEARCH_SYNONYMS, GENERIC_WEAPON_WORDS };

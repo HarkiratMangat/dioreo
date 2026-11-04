@@ -8,7 +8,7 @@
 //
 // Runs once a day from bot/lifecycle.js, five minutes after the game's 00:00 UTC update. Each draw is reminded about once: its title goes into SeasonalData.drawEndReminders, trimmed to the titles still in returningDraws so a new season starts clean. Only draws released in the last REMIND_WINDOW_DAYS count, so the first run after a deploy cannot send a backlog of last season's draws.
 const { ALLOWED_ADMIN_ID } = require('./owner');
-const { isSameDrawTitle } = require('./search');
+const { isSameDrawTitle, bestDrawMatch } = require('./search');
 
 const REMIND_WINDOW_DAYS = 7;
 // The game's daily update is 00:00 UTC (8 PM Toronto in summer, 7 PM in winter); a draw dated that day is stored at that instant, so five minutes after it is the first moment it reads as released.
@@ -38,7 +38,7 @@ function drawsNeedingEndDate(seasonalDoc, nowMs = Date.now()) {
 const drawEndCustomId = title => `mng_drawend_${key(title)}`.slice(0, 100);
 
 // The calendar row that gives a returning draw its end date, if one exists yet.
-const calendarRowFor = (seasonalDoc, title) => (seasonalDoc?.calendar || []).find(e => e.category === 'draw' && isSameDrawTitle(e.title, title)) || null;
+const calendarRowFor = (seasonalDoc, title) => bestDrawMatch((seasonalDoc?.calendar || []).filter(e => e.category === 'draw'), title);
 
 // /draws' own accent (commands/draws.js's PRESET_ACCENT, Plum Fortune), so the card reads as a Draws message (2026-10-21 14:50 EDT, Harkirat: "Add the draws accent color to it").
 const DRAWS_ACCENT = 7032445;
