@@ -7,7 +7,6 @@
 // A draw's items are attached to a moved image when a current draw's title makes the same slug, which is how an archived image of a draw that is back again picks them up.
 const { drawFingerprint, slugify, FOLDER, LEGACY_FOLDER } = require('./cloudinaryCache');
 
-const ARCHIVE_PREFIX = 'archive/draws/';
 // archive/draws/molten-fusion-draw-20261021-154012 -> { slug, stamp }
 const ARCHIVE_ID = /^archive\/draws\/(.+)-(\d{8}-\d{6})$/;
 
@@ -113,4 +112,4 @@ function rewriteDeep(value, renamed) {
     return { value: out, changed };
 }
 
-module.exports = { planDrawBackfill, parseStoredUrl, toDrawsUrl, rewriteDeep, ARCHIVE_PREFIX, ARCHIVE_ID };
+module.exports = { planDrawBackfill, parseStoredUrl, toDrawsUrl, rewriteDeep, ARCHIVE_ID };

@@ -186,7 +186,7 @@ function __reset(doc = null) {
 }
 
 module.exports = {
-    load, isLoaded: () => loaded,
+    load,
     freezeState, isFrozen, setFreeze, clearFreeze, pausedLine,
     isExempt, isBlockedUser, isBlockedGuild, counts, setFlag, markLeaving, wasLeaving,
     spam, parseSpam, setSpam,

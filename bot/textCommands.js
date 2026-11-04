@@ -20,7 +20,6 @@ const CHANNEL_WINDOW_MS = 10_000;
 const HELP_ACCENT = 16743772;      // /help and /invite's coral, #FF7D5C
 const TIMESTAMP_ACCENT = 1548962;  // /timestamp's Cyber Teal, #17A2A2
 const CARD_TTL_MS = 10_000;
-const POPUP_TTL_MS = 5 * 60_000;
 const EDIT_WINDOW_MS = 60_000;
 // Where Dioreo can't post, the member gets one DM per SERVER per day, and three a day in all (B6, his layout and limits 2026-10-29 15:45-15:49 EDT; it was one per channel per day, his 2026-10-28 17:18 EDT call). Held in memory only: a restart forgets it, and nothing is stored.
 const CANT_POST_DM_MS = 24 * 60 * 60 * 1000;
@@ -562,4 +561,4 @@ function registerTextCommands(client) {
     }, 10 * 60 * 1000).unref();
 }
 
-module.exports = { addAnnouncementRow, mentionReplyEmoji, registerTextCommands, enableMessageContentIfGranted, configuredPrefixes, onMessage, helpCard, didYouMeanCard, pickCard, cantPostCard, needsInputCard, couldntReadCard, noMatchLine, POPUP_TTL_MS };
+module.exports = { addAnnouncementRow, mentionReplyEmoji, registerTextCommands, enableMessageContentIfGranted, configuredPrefixes, onMessage, helpCard, didYouMeanCard, pickCard, cantPostCard, needsInputCard, couldntReadCard, noMatchLine };

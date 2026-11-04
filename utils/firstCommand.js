@@ -10,9 +10,4 @@ async function noteFirstCommand(userId, at = new Date(), model = UserPreference)
     return true;
 }
 
-// Never lets a database hiccup reach the command that already replied.
-function noteFirstCommandSafely(userId) {
-    noteFirstCommand(userId).catch((error) => console.error('Failed to record firstCommandAt:', error));
-}
-
-module.exports = { noteFirstCommand, noteFirstCommandSafely, _recorded: recorded };
+module.exports = { noteFirstCommand, _recorded: recorded };

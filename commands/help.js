@@ -63,19 +63,16 @@ const { MASCOT_URL } = require('../utils/brandAssets');
 const VISIBILITY_DESCRIPTION = 'Show this response only to you, or publicly to everyone in the chat.';
 
 
-// `staticCommands` is used for `/help cmd:` matching and autocomplete. `dropdownDescription`s are written to be genuinely useful at a glance, not filler -- what you'll actually find in there. ⚠️ This USED to be the user-facing command list only, with manage/alerts/autobuild deliberately excluded. That changed 2026-08-10 18:57 EDT: they are listed now, in a Bot Admin category gated on the whitelist, because a command Harkirat cannot look up in his own help panel is a gap rather than a security measure. Restricted entries are HIDDEN from everyone else, not absent. Two INDEPENDENT permission levels, and they are not a hierarchy -- a server owner is not a bot admin, and Harkirat is a bot admin in servers where he holds no Manage Server. So visibility is a `requires` string naming which one a thing needs, checked against a `{ serverAdmin, botAdmin }` object, rather than a single boolean that would silently conflate them.
+// `staticCommands` is used for `/help cmd:` matching and autocomplete. ⚠️ This USED to be the user-facing command list only, with manage/alerts/autobuild deliberately excluded. That changed 2026-08-10 18:57 EDT: they are listed now, in a Bot Admin category gated on the whitelist, because a command Harkirat cannot look up in his own help panel is a gap rather than a security measure. Restricted entries are HIDDEN from everyone else, not absent. Two INDEPENDENT permission levels, and they are not a hierarchy -- a server owner is not a bot admin, and Harkirat is a bot admin in servers where he holds no Manage Server. So visibility is a `requires` string naming which one a thing needs, checked against a `{ serverAdmin, botAdmin }` object, rather than a single boolean that would silently conflate them.
 //   · `requires` on a CATEGORY hides the whole section (Bot Admin).
 //   · `requires` on a COMMAND hides just that line, leaving its category visible (`/admin` inside
 //     Preferences), which is the shape Harkirat asked for on 2026-08-10 18:57 EDT.
-// Every surface -- dropdown, landing directory, `cmd:` autocomplete, and the detail pages -- reads these same fields, so a new restricted command is one entry and cannot be half-added. `description`/`options` (v3-pre-release review finding #49) carry a command's DETAIL-PAGE body as data instead of hand-concatenated markdown -- only the four categories whose commands render a per-command "-# **Options**" block inline (gunsmith/draws/seasonal/utilities) use them; the two admin categories keep bespoke prose (see buildPreferencesBody/buildBotAdminBody below) since their shape genuinely isn't "one command, one options list". An option's `desc` (or a command's `description`) may be a plain string or a `(client) => string` function, for the one case (/timestamp's `[timezone]`) that needs a live mentionCommand() call -- see resolveText() below.
+// Every surface -- the landing directory, `cmd:` autocomplete, and the detail pages -- reads these same fields (the category dropdown and its per-category icon and description went with B6, 2026-10-29), so a new restricted command is one entry and cannot be half-added. `description`/`options` (v3-pre-release review finding #49) carry a command's DETAIL-PAGE body as data instead of hand-concatenated markdown -- only the four categories whose commands render a per-command "-# **Options**" block inline (gunsmith/draws/seasonal/utilities) use them; the two admin categories keep bespoke prose (see buildPreferencesBody/buildBotAdminBody below) since their shape genuinely isn't "one command, one options list". An option's `desc` (or a command's `description`) may be a plain string or a `(client) => string` function, for the one case (/timestamp's `[timezone]`) that needs a live mentionCommand() call -- see resolveText() below.
 const cmd = (name, { requires = null, suffix = null, description = null, jumpDescription = null, options = [] } = {}) => ({ name, requires, suffix, description, jumpDescription, options });
 
 const permitted = (item, perms) => !item.requires || perms[item.requires] === true;
 const visibleCategories = perms => CATEGORY_DEFS.filter(c => permitted(c, perms));
 const visibleCommands = (category, perms) => category.staticCommands.filter(c => permitted(c, perms));
-// A category whose fields change with permissions. Falls back to the plain field, so a category that has no admin variant needs no extra keys.
-const categoryEmojiKey = (c, perms) => (perms.serverAdmin && c.emojiKeyServerAdmin) || c.emojiKey;
-const categoryDescription = (c, perms) => (perms.serverAdmin && c.dropdownDescriptionServerAdmin) || c.dropdownDescription;
 
 const resolveText = (value, client) => typeof value === 'function' ? value(client) : value;
 
@@ -84,7 +81,7 @@ const typedFormsHere = interaction => Boolean(interaction?.guildId && interactio
 
 const CATEGORY_DEFS = [
     {
-        key: 'gunsmith', label: 'Gunsmith', emojiKey: 'gunsmithSearch', dropdownDescription: 'The best MP & DMZ builds and Gunsmith Codes',
+        key: 'gunsmith', label: 'Gunsmith',
         // staticCommands is [/gunsmith] only (/dmz is hidden for now) -- the directory/dropdown/autocomplete mention `/gunsmith` as one entry (Discord resolves that base mention regardless of which subcommand someone picks), but the detail page below documents its two REAL subcommands separately. detailCommands is the finer-grained list that divergence needs -- unlike draws/seasonal/utilities, where staticCommands already matches 1:1 and no second list is needed. Neither list carries a `requires`, so there is no permission-filtering concern for this category either way. ⚠️ CORRECTED 2026-10-17 23:51 EDT: the landing directory used to mention bare `/gunsmith`, and Discord renders a mention of a command that has subcommands as plain text, never a link (Harkirat: "the /gunsmith command link seems to be broken in the /help command landing"). The landing now lists detailCommands when a category has them, so it reads `/gunsmith mp` · `/gunsmith dmz` · `/dmz`, each a real link (it read `/gunsmith search` · `/gunsmith list` · `/dmz` until 2026-10-19 19:43 EDT). staticCommands keeps `/gunsmith` for `cmd:` lookup and its aliases. /dmz left out while it is hidden (2026-10-21 21:05 EDT, commands/dmz.js's devOnly note); add cmd('/dmz') back here and its detail entry below when it returns.
         staticCommands: [cmd('/gunsmith')],
         detailCommands: [
@@ -110,7 +107,7 @@ const CATEGORY_DEFS = [
         ]
     },
     {
-        key: 'draws', label: 'Draws', emojiKey: 'newDraws', dropdownDescription: 'Lucky Draws, CP prices and the calculator',
+        key: 'draws', label: 'Draws',
         staticCommands: [
             cmd('/draws', {
                 description: "Browse this season's New and Returning lucky draws",
@@ -130,7 +127,7 @@ const CATEGORY_DEFS = [
         ]
     },
     {
-        key: 'seasonal', label: 'Seasonal Info', emojiKey: 'calendar', dropdownDescription: 'Today, the calendar, reminders and patch notes',
+        key: 'seasonal', label: 'Seasonal Info',
         staticCommands: [
             cmd('/calendar', {
                 description: "Today's screen, then this season's timeline: Draws, Events, and Playlists & Modes",
@@ -156,7 +153,7 @@ const CATEGORY_DEFS = [
         ]
     },
     {
-        key: 'utilities', label: 'Utilities', emojiKey: 'eyedropper', dropdownDescription: 'Profile colors, timestamps and adding Dioreo',
+        key: 'utilities', label: 'Utilities',
         staticCommands: [
             cmd('/colors', {
                 description: 'View the colors extracted from your Discord profile and pick which one accents your panels',
@@ -182,15 +179,11 @@ const CATEGORY_DEFS = [
     // `/admin` lives HERE rather than in a heading of its own (Harkirat, 2026-08-10 18:57 EDT). It is still hidden from non-admins -- the gating is per-COMMAND now, not per-category -- but a whole section for one command made the directory look top-heavy for the two people in a server who can see it. The suffix is what tells an admin why it is sitting next to `/settings`, and the emoji and description swap so the category reads as covering both.
     {
         key: 'preferences', label: 'Preferences',
-        emojiKey: 'settings', emojiKeyServerAdmin: 'serverSettings',
-        dropdownDescription: 'Your saved preferences',
-        dropdownDescriptionServerAdmin: "Your preferences and your server's rules",
         staticCommands: [cmd('/settings', { jumpDescription: 'Your timezone, reply visibility, CP region and colors' }), cmd('/admin', { requires: 'serverAdmin', suffix: '(server)', jumpDescription: "Choose where Dioreo's replies stay private in your server" })],
     },
     // Whole-category gating, unlike `/admin` above: these are useless to anyone who is not on the bot's own admin whitelist, and unlike Manage Server there is no per-guild version of that permission. `botAccess` is the emoji (2026-08-22, Harkirat's call) -- the SAME icon /bot access's own panel heading uses, so the category and the surface it leads to read as one thing. It replaced `database`, which was borrowed from the `mng*` data-entry family and described only one of the five commands listed here.
     {
-        key: 'botadmin', label: 'Bot Admin', emojiKey: 'botAccess',
-        dropdownDescription: 'Data entry, analytics and admin tools',
+        key: 'botadmin', label: 'Bot Admin',
         // Alphabetical, and it must MATCH buildBotAdminBody's order below -- the first draft listed these one way in the directory and another in the body, which reads as the page having lost track of itself. Harkirat asked for alphabetical here on 2026-08-10 19:34 EDT. ⚠️ Per-command `requires` (added 2026-08-13, per-command admin permissions) -- an admin granted only /bot analytics must not see /manage or /autobuild listed here even though the whole category is visible to them. Category-level `requires: 'botAdmin'` still gates the SECTION (shows if the user has ANY admin access at all, per utils/adminAccess.js's isAdmin()); each command's own key gates that ONE line, same pattern `/admin` already uses inside Preferences. `/bot access` is gated on `botAccess` (isOwner(), not a permission token -- see utils/adminAccess.js's header on why it can never have one).
         staticCommands: [cmd('/bot analytics', { requires: 'bot', jumpDescription: 'Usage, timing, health, alerts and recent changes' }), cmd('/bot access', { requires: 'botAccess', jumpDescription: 'Grant or revoke admin access' }), cmd('/bot hotpatch', { requires: 'botAccess', jumpDescription: 'Reload changed files into the running bot' }), cmd('/bot servers', { requires: 'botAccess', jumpDescription: 'The servers Dioreo is in, and their settings' }), cmd('/bot penalties', { requires: 'botAccess', jumpDescription: 'Spam penalties: lift, extend, exempt, block' }), cmd('/bot freeze', { requires: 'botAccess', jumpDescription: 'Pause Dioreo or some commands, no deploy' }), cmd('/embed', { requires: 'botAccess', jumpDescription: 'Render pasted message JSON to check a design' }), cmd('/manage emojis', { requires: 'botAccess', jumpDescription: 'Every emoji on each bot, with one-tap sync' }), cmd('/autobuild', { requires: 'autobuild', jumpDescription: 'Turn Gunsmith screenshots into builds' }), cmd('/manage', { requires: 'manage', jumpDescription: 'Add and edit draws, calendar, patch notes, loadouts and more' })],
         requires: 'botAdmin',
