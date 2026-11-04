@@ -27,6 +27,29 @@ const fs = require('fs/promises');
 const crypto = require('crypto');
 const { fingerprint } = require('./algoFingerprint');
 
+// 🔴 `-exact` IS NOT IN EVERY img2webp (found 2026-11-04 10:52 EST, the first prod bulk render of the shop sync's 24 new SKUs: all 24 failed with "Unknown option [-exact]"). The prod VM runs Debian 12's libwebp 1.2.4, whose img2webp has no such flag; the Mac has 1.6.0, which does, so every render here passed. The flag only keeps the RGB under fully transparent pixels, which no viewer shows, so the encode drops it where the binary does not offer it, and asks the binary once (its own help text) rather than trusting a version number.
+function helpOffersExact(helpText) { return /(^|\s)-exact\b/m.test(String(helpText || '')); }
+let exactProbe = null;
+function img2webpOffersExact() {
+    if (!exactProbe) {
+        exactProbe = new Promise(resolve => {
+            let out = '';
+            const proc = spawn('img2webp', ['-h']);
+            proc.stdout.on('data', d => { out += d; });
+            proc.stderr.on('data', d => { out += d; });
+            proc.on('close', () => resolve(helpOffersExact(out)));
+            proc.on('error', () => resolve(false));
+        });
+    }
+    return exactProbe;
+}
+// The per-frame arguments: lossless, fastest method, and `-exact` only where the binary has it.
+function img2webpFrameArgs(framePaths, frameDelayMs, exact) {
+    const args = ['-loop', '0'];
+    for (const p of framePaths) args.push('-d', String(frameDelayMs), '-lossless', '-m', '0', ...(exact ? ['-exact'] : []), p);
+    return args;
+}
+
 function runCommand(cmd, args) {
     return new Promise((resolve, reject) => {
         const proc = spawn(cmd, args);
@@ -96,10 +119,7 @@ async function encodeWebpFromFrames(frameBuffers, { fps }) {
             return p;
         }));
 
-        const args = ['-loop', '0'];
-        for (const p of framePaths) {
-            args.push('-d', String(frameDelayMs), '-lossless', '-m', '0', '-exact', p);
-        }
+        const args = img2webpFrameArgs(framePaths, frameDelayMs, await img2webpOffersExact());
         args.push('-o', outPath);
         await runCommand('img2webp', args);
 
@@ -194,5 +214,5 @@ const MONTAGE_FINGERPRINT = fingerprint(
 
 module.exports = {
     extractAlphaFrames, encodeWebpFromFrames, poolFramesIntoMontage, readImageSize,
-    MONTAGE_FINGERPRINT, FRAME_FILE_RE
+    MONTAGE_FINGERPRINT, FRAME_FILE_RE, helpOffersExact, img2webpFrameArgs, img2webpOffersExact
 };
