@@ -29,7 +29,37 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.7.2 — 2026-11-03 15:21 EST (#248) — The season progress bar is six of his emoji
+## v3.8.0 — 2026-11-04 01:38 EST (#249) — A draw's end date in the forms, and the /manage conflict fix
+**From Harkirat, 2026-11-04 00:08 EST:** editing the prod "Herrscher of Thunder Draw" in /manage to add "Base Melee - Domain Of Sanction" failed with "op 0 failed: conflict". Then, 00:14 EST: "look into this further and deeper … such as the edit form missing a draw end field, and anything else like this in the /manage commands"; 00:55 EST: "do it like how the season title command does start/end dates … and fix the /remind thing too"; 01:11 EST: "fix the multiple thing".
+
+### The conflict
+- **Cause** (read-only prod check): 8 prod draws store their items with no `_id`. The edit's conflict check put the items in a Mongoose-cast filter, and the cast mints a new `_id` for each item that lacks one, so the filter matched nothing. Proved through the real `commitSet(draw.edit)` and `revertChange` on a throwaway draw in the dev database; the same script on the old code fails with the exact prod text.
+- **Fix** (`core/mongo/positional.js`): arrays of objects are compared in code against a fresh read in the same session; scalars, dates and primitive arrays keep the Mongo-side check. An edit now also stores the items with ids.
+- **What the check can and cannot catch:** every `expect` in `core/ops` is read inside the same transaction as the write, so it can only fail falsely, never because someone else edited. The message no longer blames another editor (`humanCommitError`, `handlers/manage/shared.js`: "Nothing was saved: the stored copy did not match what this edit started from…"). An edit made after a pop-up opened is still not detected (deferred list, item 5).
+
+### Draw end dates
+- **`utils/drawDates.js`:** Add and Edit Draw take `September 10, 2026 - November 12, 2026` in one box, like the season titles box. The end is the draw's `/calendar` draw row's, written in the same commit; an end that cannot be read is refused, a deleted end clears back to ongoing, the row follows a rename and a new start, and an edit that changes none of those never touches it. Edit pre-fills the current end; the saved-draw panel shows "ends …".
+- **Add Multiple and Replace Multiple** read the same range in the one-line format (`July 15 - August 20`, `2026-09-10 - 2026-11-12`, or the long form with its commas); **Export** writes each draw's end back. The row write there is a second commit gated by the Calendar tier: an admin with Draws but not Calendar keeps the saved draws and is told the end was not saved.
+- Quick Add no longer resets a draw row's Double CP flag.
+
+### /manage audit
+- **Two Street Fighter draws shared one calendar row** (`isSameDrawTitle` is true for the pair, every lookup took the first match). `bestDrawMatch` (`utils/search.js`) picks the same words first; used by `calendarRowFor`, Quick Add and `/today` (which showed the wrong draw's items and picture).
+- **Edit Draw and Edit Event** on an id that has gone now answer instead of leaving the deferred reply spinning. The **Edit Draw pop-up** opens on a draw with no date or no items (it threw).
+- **Next Season draft:** Bulk Draws and Bulk Calendar refuse text that parses to nothing (it emptied the staged list), and the draws it skips for having no image are named.
+
+### /remind
+- Following one Street Fighter draw followed the other (the picker pre-picked both; the release DM and the used-up follow matched both). Each title now resolves to its closest known entry before it is compared (`sameTitle`, `utils/reminders.js`).
+
+### Tests
+- New: `drawDates.test.js`, `searchDrawMatch.test.js`, `manageErrorText.test.js`, `manageEditModals.test.js`; extended: `positionalWrite`, `seasonOps`, `reminders`. `scripts/fixtures/draws-modals.json` regenerated on purpose (the date box's label and placeholder). Dev-database runs through the real handlers are recorded in the PR.
+
+### Found, not fixed (filed in `docs/db-deferred-list.md`, "The /manage audit's open half")
+- Edit pop-ups carry no version; a deleted draw leaves its calendar row; the writer of the id-less items is unknown; bulk delete takes the first fuzzy match; patch-note image slots; loadout undo; no duplicate-title warning on Add Draw.
+
+### Data, after deploy
+- The first edit of each of the 8 draws heals its items (ids) and re-cases item names the way the form always has ("Of" becomes "of").
+
+## v3.7.2 — 2026-11-03 15:21 EST (#248 · `fac1c2fb`) — The season progress bar is six of his emoji
 **From Harkirat, 2026-11-03 14:59 EST:** "implement the progress bar emoji icons ... in the /season end command": his 29-emoji set (`season-progress-icon`), drawn and settled with him earlier that day. Shown on the dev bot in #testing-spam; "seems fine" at 15:12 EST.
 
 ### /season end
