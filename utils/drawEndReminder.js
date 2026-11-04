@@ -37,8 +37,13 @@ function drawsNeedingEndDate(seasonalDoc, nowMs = Date.now()) {
 // The button on each draw (`mng_drawend_<title key>`) opens /manage's own Add Calendar Event box with the title and release date filled in, so the end date is the one thing left to type (2026-10-21 14:46 EDT, Harkirat: "No not as prose, as an actual embed where i can just interact with it directly, edit that particular draw and set the end date"). The `mng_` prefix puts it behind the router's /manage admin lock and handlers/manage/index.js answers it; the box's own submit is /manage's.
 const drawEndCustomId = title => `mng_drawend_${key(title)}`.slice(0, 100);
 
-// The calendar row that gives a returning draw its end date, if one exists yet.
-const calendarRowFor = (seasonalDoc, title) => bestDrawMatch((seasonalDoc?.calendar || []).filter(e => e.category === 'draw'), title);
+// The calendar row that gives a returning draw its end date, if one exists yet. 🔴 The row must also be THIS draw's, not a sibling's (lead review of #249, 2026-11-04 09:26 EST). bestDrawMatch picks the best of several rows, but with ONE row it returns it however loosely it matched, so "Street Fighter: Hero's Collection ..." took "Champion's Collection ..."'s row when Hero had none, and an Add or Edit of Hero wrote Hero's dates onto Champion's row. So the row is checked the other way too: of every draw (the asker first, so a tie keeps it, and present even while it is still being added), the asker must be the row's best match.
+const calendarRowFor = (seasonalDoc, title) => {
+    const row = bestDrawMatch((seasonalDoc?.calendar || []).filter(e => e.category === 'draw'), title);
+    if (!row) return null;
+    const owner = bestDrawMatch([{ title }, ...(seasonalDoc?.newDraws || []), ...(seasonalDoc?.returningDraws || [])], row.title);
+    return !owner || owner.title === title ? row : null;
+};
 
 // /draws' own accent (commands/draws.js's PRESET_ACCENT, Plum Fortune), so the card reads as a Draws message (2026-10-21 14:50 EDT, Harkirat: "Add the draws accent color to it").
 const DRAWS_ACCENT = 7032445;

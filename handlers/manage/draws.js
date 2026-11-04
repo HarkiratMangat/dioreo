@@ -16,6 +16,14 @@ const {
 const { failWithRetry } = require('./retry');
 const { drawPanel, resultPanel, notePanel, FAIL_ACCENT } = require('../../utils/managePanels');
 
+// The draw's /calendar row write rides in the draw's own commit, so a draws-only admin (no Calendar tier) had the WHOLE commit refused: they could no longer rename a draw or move its date once it had a row, which they could before #249 (lead review, 2026-11-04 09:26 EST). The row write is checked first and, when refused, dropped with a warning, the way Add and Replace Multiple already treat it. Typing an end still needs the Calendar tier (the lead's call, kept).
+async function gateEndOp(actorId, endOp) {
+    if (!endOp) return { endOp: null, warnings: [] };
+    const gate = await require('../../core/changeset').checkOps(actorId, [endOp]);
+    if (gate.ok) return { endOp, warnings: [] };
+    return { endOp: null, warnings: ['The draw was saved, but its /calendar row (its end date, and its title or start when those changed) was not: that needs the Calendar permission.'] };
+}
+
 // --- SAVE NEW SINGLE DRAW --- custom_id: add_draw_{new|returning}
 async function addDraw(interaction) {
     await interaction.deferReply({ ephemeral: true });
@@ -58,8 +66,9 @@ async function addDraw(interaction) {
 
     const newDrawObj = { title, items: parsedItems, date: parsedSingleDate, thumbnailUrl: thumbResult.url, ...(priceType ? { priceType } : {}) };
 
-    // A calendar row for this title may already exist (an event added ahead of the draw): it is edited, never duplicated. Needs the Calendar tier only when an end date is typed.
-    const endOp = planEndRow({ row: require('../../utils/drawEndReminder').calendarRowFor(seasonalDoc, title), title, start: parsedSingleDate, end: dates.end });
+    // A calendar row for this title may already exist (an event added ahead of the draw): it is edited, never duplicated, and only when an end is typed.
+    const row = require('../../utils/drawEndReminder').calendarRowFor(seasonalDoc, title);
+    const { endOp, warnings } = await gateEndOp(interaction.user.id, planEndRow({ row, title, start: parsedSingleDate, end: dates.end }));
     const result = await commitSet(
         [{ type: 'draw.add', payload: { ...newDrawObj, category: drawType } }, ...(endOp ? [endOp] : [])],
         { actorId: interaction.user.id }
@@ -70,7 +79,7 @@ async function addDraw(interaction) {
 
     // The saved draw as a panel, beside its picture (2026-10-26 12:52 EDT, the loadout treatment for every /manage page); a missing picture shows on the panel itself, so only a reused or failed upload is a note.
     const notes = [...(thumbResult.url ? [thumbnailNote(thumbResult)] : []), typeNote].filter(Boolean);
-    const sent = await interaction.followUp({ flags: 32768 | 64, components: drawPanel({ draw: { ...newDrawObj, _id: result.results[0].applied.elementId }, category: drawType, changeIds: result.changeIds, notes, endDate: dates.end }) });
+    const sent = await interaction.followUp({ flags: 32768 | 64, components: drawPanel({ draw: { ...newDrawObj, _id: result.results[0].applied.elementId }, category: drawType, changeIds: result.changeIds, notes, warnings, endDate: endOp ? dates.end : (row?.endDate || null) }) });
     // Items the draw index has no kind for are asked about, not left blank (handlers/manage/itemKinds.js).
     await require('./itemKinds').askItemKinds(interaction, [title]);
     return sent;
@@ -111,10 +120,10 @@ async function editDraw(interaction) {
         const typeChanged = pickedType !== null && pickedType !== storedType;
 
         // The row follows a rename and a new start, and gets the typed end; nothing is written to it when none of those changed (utils/drawDates.js planEndRow).
-        const endOp = planEndRow({
-            row: require('../../utils/drawEndReminder').calendarRowFor(seasonalDoc, arrayTarget[drawIndex].title),
-            prev: { title: arrayTarget[drawIndex].title, start: arrayTarget[drawIndex].date }, title: newTitle, start: parsedDrawDate, end: dates.end
-        });
+        const row = require('../../utils/drawEndReminder').calendarRowFor(seasonalDoc, arrayTarget[drawIndex].title);
+        const { endOp, warnings } = await gateEndOp(interaction.user.id, planEndRow({
+            row, prev: { title: arrayTarget[drawIndex].title, start: arrayTarget[drawIndex].date }, title: newTitle, start: parsedDrawDate, end: dates.end
+        }));
         const result = await commitSet(
             [{ type: 'draw.edit', target: { elementId: targetId, category: drawType },
                payload: { title: newTitle, date: parsedDrawDate, thumbnailUrl: thumbResult.url, items: parsedItems, ...(typeChanged ? { priceType: pickedType } : {}) } },
@@ -129,7 +138,7 @@ async function editDraw(interaction) {
         const before = typeof stored.toObject === 'function' ? stored.toObject() : stored;
         const draw = { _id: targetId, title: newTitle, date: parsedDrawDate, thumbnailUrl: thumbResult.url, items: parsedItems, priceType: typeChanged ? pickedType : storedType };
         const notes = thumbResult.url ? [thumbnailNote(thumbResult)].filter(Boolean) : [];
-        const sent = await interaction.followUp({ flags: 32768 | 64, components: drawPanel({ draw, category: drawType, before, changeIds: result.changeIds, notes, endDate: dates.end }) });
+        const sent = await interaction.followUp({ flags: 32768 | 64, components: drawPanel({ draw, category: drawType, before, changeIds: result.changeIds, notes, warnings, endDate: endOp ? dates.end : (row?.endDate || null) }) });
         await require('./itemKinds').askItemKinds(interaction, [newTitle]);
         return sent;
     }

@@ -53,6 +53,13 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ### Tests
 - New: `drawDates.test.js`, `searchDrawMatch.test.js`, `manageErrorText.test.js`, `manageEditModals.test.js`; extended: `positionalWrite`, `seasonOps`, `reminders`. `scripts/fixtures/draws-modals.json` regenerated on purpose (the date box's label and placeholder). Dev-database runs through the real handlers are recorded in the PR.
 
+### Lead review, before merge (2026-11-04 09:27 EST)
+Four defects in the end-date writes and the date box, each with a test that failed on the branch as it stood:
+- **An Add with one date cleared an existing row's end** and made it All Season (a row added ahead of the draw). It now leaves the row alone unless an end is typed (`planEndRow`).
+- **A draw took a sibling's row when it had none of its own:** with one candidate row, `bestDrawMatch` returned it however loosely it matched, so an Add or Edit of Street Fighter Hero's draw wrote onto Champion's row. `calendarRowFor` now also checks that the row's best draw is the asker.
+- **A Draws-only admin could no longer rename a draw or move its date** once it had a row: the row write rode in the same commit and the Calendar check refused all of it. The row write is now checked first and dropped with a warning, as Add and Replace Multiple already did.
+- **`July 15-August 20` (no spaces) saved August 15, 2020** with no end; `7/15-8/20` saved July 15. `parseAdminDateRange` spaces such a dash before reading (the season box gains it too), and the draw box refuses text it only half read.
+
 ### Found, not fixed (filed in `docs/db-deferred-list.md`, "The /manage audit's open half")
 - Edit pop-ups carry no version; a deleted draw leaves its calendar row; the writer of the id-less items is unknown; bulk delete takes the first fuzzy match; patch-note image slots; loadout undo; no duplicate-title warning on Add Draw.
 

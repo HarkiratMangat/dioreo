@@ -4936,6 +4936,7 @@ What he asked for grew from the fix: a deeper `/manage` audit, then the draw end
 - **An inference printed as a result is the worst kind of wrong.** The ids' creation time and the thumbnails' were reported as the same minute; decoding the second timestamp showed 23 hours. The writer of the id-less items is still unknown, and no code path in the bot can produce them.
 - **Authorization is not a convenience to route around.** The end date is a calendar write, so a Draws-only admin keeps the Calendar-tier check; the draws save and the end is reported as not saved. Widening who may write calendar rows is the owner's decision.
 - **The sweep must use the operation's own inputs.** The prod check of "no draw would falsely conflict" first used each element's stored keys; the real edit sends a different key set. Re-run with each op's own fields (it held).
+- **A new write inherits every assumption of the path it rides on.** The end-date row write was built for an admin with the Calendar tier, typing an end, on a draw that owns the row. The review before merge found one defect per broken assumption: an Add with no end cleared the row, a sibling's row was taken when the draw had none, and a Draws-only admin lost renames because the row write shared the commit. List a new write's inputs and break each one.
 
 # Part B — Lessons Ledger (thematic)
 

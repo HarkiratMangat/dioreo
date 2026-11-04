@@ -50,7 +50,8 @@ async function updateElement({ Model, docFilter, arrayPath, elementId, expect, s
     const { guard, deep } = splitExpect(expect);
     if (Object.keys(deep).length) {
         const fresh = await Model.findOne({ ...docFilter, [`${arrayPath}._id`]: elementId }).select(arrayPath).lean().session(session);
-        const el = fresh?.[arrayPath]?.find(e => String(e._id) === String(elementId));
+        // A dotted path ('draft.newDraws') is walked, so a future draft caller is not read as 'missing'.
+        const el = arrayPath.split('.').reduce((o, k) => o?.[k], fresh)?.find(e => String(e._id) === String(elementId));
         if (!el) return { ok: false, reason: 'missing' };
         if (!Object.entries(deep).every(([k, v]) => sameStored(el[k], v))) return { ok: false, reason: 'conflict' };
     }

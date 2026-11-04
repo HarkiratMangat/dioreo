@@ -67,10 +67,19 @@ function parseAdminDate(dateStr) {
     return new Date(Date.UTC(parsedResult.getUTCFullYear(), parsedResult.getUTCMonth(), parsedResult.getUTCDate(), 0, 0, 0, 0));
 }
 
-// A season line's date part as a RANGE ("Aug 6 - Nov 17", "August 6, 2026 to November 17, 2026"), each end normalised like parseAdminDate. A start with "TBD" as its end ("Aug 6 - TBD") gives endTBD. Null when the text is not a range that covers the whole string (2026-10-21 10:17 EDT, the season progress bar's start dates).
+// A season line's date part as a RANGE ("Aug 6 - Nov 17", "August 6, 2026 to November 17, 2026"), each end normalised like parseAdminDate. A start with "TBD" as its end ("Aug 6 - TBD") gives endTBD. Null when the text is not a range that covers the whole string (2026-10-21 10:17 EDT, the season progress bar's start dates). "July 15-August 20", "Aug 6-Nov 17", "7/15-8/20": a range typed with no spaces round its dash. chrono reads "15-August 20" as ONE date (2020-08-15) and drops the start, so the range was lost and a wrong date saved without a word (found 2026-11-04 09:25 EST, lead review of #249; the draw forms' "Start - End" label invites exactly this). The dash is spaced when a letter touches it or it sits between two slash dates; an ISO date's own dashes (2026-09-10) touch only digits and are left alone.
+const spaceRangeDash = (s) => s.replace(/\s*[–—]\s*/g, ' - ').replace(/\s*-\s*(?=[A-Za-z])|(?<=[A-Za-z.])\s*-\s*/g, ' - ').replace(/(?<=\d\/\d{1,2})-(?=\d{1,2}\/)/g, ' - ');
+
 function parseAdminDateRange(dateStr) {
     const cleanStr = String(dateStr || '').trim();
     if (!cleanStr) return null;
+    const asTyped = readAdminDateRange(cleanStr);
+    if (asTyped) return asTyped;
+    const spaced = spaceRangeDash(cleanStr);
+    return spaced !== cleanStr ? readAdminDateRange(spaced) : null;
+}
+
+function readAdminDateRange(cleanStr) {
     const utcDay = d => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0, 0));
     const tbd = cleanStr.match(/^(.*?)\s*(?:-|–|—|to)\s*tbd$/i);
     if (tbd) {

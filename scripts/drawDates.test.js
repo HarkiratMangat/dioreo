@@ -139,4 +139,43 @@ check('Export writes a draw\'s end beside its date, and the line reads back to t
     assert.strictEqual(formatDrawsAsBulkText([draw]), without, 'callers that pass no lookup are unchanged');
 });
 
+// Lead review of #249 (2026-11-04 09:26 EST). Each of these failed on the branch as the first thread left it.
+check('an Add with one date leaves an existing /calendar row alone (it used to clear the row\'s end and make it All Season)', () => {
+    const r = row({ endDate: day('2026-11-12'), isOngoing: false });
+    assert.strictEqual(planEndRow({ row: r, title: 'Row Title', start: day('2026-09-10'), end: null }), null);
+    const typed = planEndRow({ row: r, title: 'Row Title', start: day('2026-09-10'), end: day('2026-11-20') });
+    assert.ok(typed && typed.type === 'calendar.edit' && iso(typed.payload.endDate) === '2026-11-20', 'an Add that types an end still writes it');
+});
+
+check('a dash typed with no spaces is still a range, never a wrong single date', () => {
+    for (const [text, start, end] of [['July 15-August 20', '-07-15', '-08-20'], ['Aug 6-Nov 17', '-08-06', '-11-17'], ['7/15-8/20', '-07-15', '-08-20'], ['September 10, 2026-November 12, 2026', '2026-09-10', '2026-11-12'], ['July 15–August 20', '-07-15', '-08-20']]) {
+        const r = parseDrawDates(text);
+        assert.ok(r.ok && iso(r.start).endsWith(start) && r.end && iso(r.end).endsWith(end), `${text}: ${JSON.stringify(r)}`);
+    }
+    assert.strictEqual(iso(parseDrawDates('2026-09-10').start), '2026-09-10', 'an ISO date\'s own dashes are not a range');
+    const d = first('X Draw, l A - B, July 15-August 20');
+    assert.ok(d && iso(d.date).endsWith('-07-15') && iso(d.endDate).endsWith('-08-20'), 'Add Multiple reads it too');
+});
+
+check('text the date reader only half understood is refused, not saved as its first date', () => {
+    const r = parseDrawDates('July 15 maybe 20');
+    assert.ok(!r.ok, JSON.stringify(r));
+    assert.ok(parseDrawDates('September 10, 2026').ok && parseDrawDates('today').ok, 'plain dates still read');
+});
+
+const { calendarRowFor } = require('../utils/drawEndReminder');
+check('a draw never takes a sibling draw\'s /calendar row', () => {
+    const champ = "Street Fighter: Champion's Collection Series Armory (Weapons)";
+    const hero = "Street Fighter: Hero's Collection Series Armory (Operators)";
+    const champRow = { _id: 'c', title: champ, category: 'draw', date: day('2026-10-16') };
+    const doc = { newDraws: [], returningDraws: [{ title: champ }, { title: hero }], calendar: [champRow] };
+    assert.strictEqual(calendarRowFor(doc, champ), champRow);
+    assert.strictEqual(calendarRowFor(doc, hero), null, 'Hero has no row of its own');
+    assert.strictEqual(calendarRowFor({ ...doc, returningDraws: [{ title: champ }] }, hero), null, 'nor while Hero is still being added');
+    const heroRow = { _id: 'h', title: hero, category: 'draw', date: day('2026-10-17') };
+    assert.strictEqual(calendarRowFor({ ...doc, calendar: [champRow, heroRow] }, hero), heroRow);
+    const loose = { newDraws: [{ title: 'Hunger Eternal Draw' }], returningDraws: [], calendar: [{ _id: 'x', title: 'Hunger Eternal', category: 'draw' }] };
+    assert.ok(calendarRowFor(loose, 'Hunger Eternal Draw'), 'a row titled a little differently is still its draw\'s');
+});
+
 process.exit(failures ? 1 : 0);
