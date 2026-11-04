@@ -475,7 +475,7 @@ async function route(interaction) {
         await interaction.deferReply({ ephemeral: true });
         const AdminUser = require('../models/AdminUser');
         const { recordChange } = require('../utils/changeStore');
-        const updated = await AdminUser.findOneAndUpdate({ discordId }, { $set: { grants, permissions: [] } }, { new: true });
+        const updated = await AdminUser.findOneAndUpdate({ discordId }, { $set: { grants, permissions: [] } }, { returnDocument: 'after' });
         if (!updated) {
             return interaction.editReply({ content: BOT_EMOJI.cross + ' That admin no longer exists (they may have just been revoked).' });
         }

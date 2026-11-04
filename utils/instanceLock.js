@@ -45,7 +45,7 @@ async function acquireInstanceLock(token = process.env.BOT_TOKEN) {
         claimed = await BotInstance.findOneAndUpdate(
             claimFilter,
             { hostname: os.hostname(), pid: process.pid, startedAt: new Date(), lastHeartbeat: new Date() },
-            { upsert: !existing, new: true }
+            { upsert: !existing, returnDocument: 'after' }
         );
     } catch (err) {
         // upsert:true + a concurrent FIRST-EVER insert of the SAME _id from two processes at once is a real race too -- Mongo surfaces the loser's attempt as a duplicate-key error (E11000) rather than a plain null.

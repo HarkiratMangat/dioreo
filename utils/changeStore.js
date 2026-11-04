@@ -87,7 +87,7 @@ async function pruneChanges() {
 // Claims a change for reverting, ATOMICALLY (2026-10-20, v3 sweep). revertChange used to read the row, check `undone`, apply the inverse, and only THEN flag it -- two concurrent Undo clicks (a double click, or two admins) both passed the check and applied the inverse twice, so undoing a delete re-created the item twice. The filter on `undone` makes exactly one caller win. Returns the claimed row, or null when it was already claimed or does not exist. releaseUndo() hands it back when the revert then fails.
 async function claimUndo(changeId) {
     if (!changeId) return null;
-    return await ChangeLog.findOneAndUpdate({ changeId, undone: { $ne: true } }, { $set: { undone: true } }, { new: true }).lean();
+    return await ChangeLog.findOneAndUpdate({ changeId, undone: { $ne: true } }, { $set: { undone: true } }, { returnDocument: 'after' }).lean();
 }
 async function releaseUndo(changeId) {
     if (!changeId) return;

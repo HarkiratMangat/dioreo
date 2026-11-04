@@ -315,7 +315,7 @@ async function getAccentColorForCommand(interaction, prefs, presetHex) {
             prefs = await UserPreference.findOneAndUpdate(
                 { discordId: interaction.user.id },
                 { $setOnInsert: { discordId: interaction.user.id } },
-                { upsert: true, new: true, setDefaultsOnInsert: true }
+                { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
             );
         } catch (err) {
             if (err?.code !== 11000) throw err;
