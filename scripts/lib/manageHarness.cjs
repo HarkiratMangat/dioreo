@@ -139,7 +139,7 @@ function memoryCollection(Model) {
     Object.assign(Model, api);
     return api;
 }
-const collections = { Loadout: memoryCollection(req('models/Loadout')), CatalogueItem: memoryCollection(req('models/CatalogueItem')), VisionRead: memoryCollection(req('models/VisionRead')) };
+const collections = Object.fromEntries(['Loadout', 'CatalogueItem', 'VisionRead', 'ReminderSubscription', 'UserPreference'].map(n => [n, memoryCollection(req(`models/${n}`))]));
 // Loadout pictures: uploads and copies succeed without Cloudinary, and every key "exists".
 const loadoutImageCache = req('utils/loadoutImageCache');
 loadoutImageCache.uploadLoadoutImage = async () => ({ success: true });
