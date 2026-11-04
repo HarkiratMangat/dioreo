@@ -151,7 +151,7 @@ function modal(customId, fields = {}, { selects = {}, values = [], user = OWNER 
     const sent = [];
     const interaction = {
         customId, values, user: { id: user, username: 'tester' }, applicationId: 'APP', token: 'TOKEN', replied: false, deferred: false,
-        client: { commands: new Map(), user: { id: 'BOT' }, rest: { patch: async () => ({}), post: async () => ({}) } },
+        client: { commands: new Map(), user: { id: 'BOT' }, rest: { patch: async (route, { body } = {}) => { sent.push(body); return {}; }, post: async (route, { body } = {}) => { sent.push(body); return {}; } } },   // sendV2Payload edits @original through rest.patch
         fields: {
             getTextInputValue: k => (k in fields ? fields[k] : ''),
             getStringSelectValues: k => { if (!(k in selects)) throw new Error(`no select ${k}`); return selects[k]; },
