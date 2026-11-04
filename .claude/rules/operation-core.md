@@ -38,3 +38,13 @@ Every mutating entity file (`draws.js`, `calendar.js`, `patchnotes.js`, `announc
 For a **bulk** op (parses a whole textarea into an array), the equivalent guard is checking `op.payload?.parsed` first and skipping straight to normalized output if it's present — every bulk op in `draws.js`/`calendar.js`/`loadouts.js`/`season.js` already does this (`alreadyParsed(op)` in draws.js, an inline `if (op.payload?.parsed) return ...` everywhere else). **A validator that unconditionally re-parses `payload.text || ''` on an inverse would parse an empty string and silently restore nothing** — this is the same hazard class, just for structured data instead of a single typed value.
 
 **Swept 2026-08-22 15:35 EDT:** every other date field across all six entities already has this guard. `draws.js` was the only gap. If you add a new date or structured-parse field to any entity, add the same `instanceof`/`already-parsed` check in the same change — don't rely on this file being read retroactively.
+
+## 🔴 The undo of a SET change restores the set by id — it never replays the forward path
+
+*Added 2026-11-04 12:23 EST (code-housekeeping bug pass).* Replace Multiple's undo used to be another Replace Multiple with the prior list: an upsert, which updates and inserts but never removes, so whatever the paste had added survived the Undo. Purge's and Delete Multiple's undo ran the stored draws back through `resolveThumbnailsForDraws`, which drops a draw with no image and can hand a draw another draw's image.
+
+- A forward set change records the `_id`s it added (`utils/bulkMerge.js` `addedIds`) in `applied.insertedIds`, and its `invert()` carries them.
+- `apply()` with `restoring: true` (core/changeset.js passes it on every Revert) calls `restoreSet(current, prior, insertedIds)`: takes the added ids out, puts every prior element back by `_id`, keeps anything added since that the change did not add, and touches no outside service.
+- A change recorded before this has no `insertedIds`; its undo still restores by id, and only leaves behind what that paste added.
+- `scripts/bulkRestore.test.js` and the Replace Multiple checks in `scripts/manageDrawHandlers.test.js` / `manageCalendarHandlers.test.js` fail if this regresses.
+

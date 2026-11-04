@@ -224,51 +224,6 @@ function optionCards(build) {
     });
 }
 
-// "Browse other builds in this category" dropdown (added 2026-07-12, per Harkirat's request) -- lets a user jump straight to a different weapon's card without re-running the slash command, instead of just paging within the current weapon's own builds. `categoryBuilds` is every Loadout doc sharing the current card's scope (same `category`+mode for MP, or every `mode: 'DMZ'` doc for DMZ, since /dmz has no per-category commands the way MP does).
-//
-// NOTE (simplified during review, per Harkirat's follow-up request): originally listed every INDIVIDUAL build with a "[Build N of M]" suffix on multi-build weapons -- dropped in favor of one entry per WEAPON, since browsing to a specific build variant is already what Prev/Next is for. Selecting a weapon here always opens it at build index 0. `weaponKey` is deduped via a Map (first doc encountered per key wins, which is fine -- every doc for a given weaponKey shares the same weaponName/category), then sorted alphabetically by weapon name.
-//
-// RESTRUCTURED 2026-10-24 09:45 EDT (Harkirat: "the dropdown menu can be better, and organize/restructure it as well"; "can we make the flow of searching for another weapon or build much more fluid?"). A string select cannot autocomplete, so the first option is **Search all weapons…**, which opens a one-box search (handlers/loadouts.js, `gsb~find~`) that resolves exactly like the slash command. Then one option per weapon with its badges and build count as the second line, and, in the whole-mode browse (`classJumps`), only the current class's weapons followed by a jump to each other class -- 68 MP weapons never fit in 25, and the old "25 of 68" window hid most of them. No option is pre-selected, so the placeholder says what the menu does. Placeholder weapons are never listed.
-function buildCategoryBrowseRow(categoryBuilds, activeWeaponKey, idPrefix, scopeLabel, customIdOverride = null, { mode = 'MP', classJumps = false, metaList = false } = {}) {
-    if (!categoryBuilds || categoryBuilds.length === 0) return null;
-    const real = categoryBuilds.filter(b => !isPlaceholderBuild(b));
-    const activeCategory = (real.find(b => b.weaponKey === activeWeaponKey) || real[0] || {}).category;
-    const listed = classJumps ? real.filter(b => b.category === activeCategory) : real;
-
-    const weapons = new Map();
-    for (const doc of listed) {
-        if (!weapons.has(doc.weaponKey)) weapons.set(doc.weaponKey, []);
-        weapons.get(doc.weaponKey).push(doc);
-    }
-    let weaponOptions = Array.from(weapons.entries())
-        // By class, then name (Harkirat, 2026-10-24 18:41 EDT: "Correctly organize the dropdown menus as well via category alphabetical"), the same order the browse pager steps through (utils/loadoutScopes.js resolveScopeBuilds).
-        .sort((a, b) => a[1][0].category.localeCompare(b[1][0].category) || a[1][0].weaponName.localeCompare(b[1][0].weaponName))
-        .map(([weaponKey, builds]) => ({ label: builds[0].weaponName, value: weaponKey, description: weaponSummary(builds, { metaList }) }));
-    const jumpOptions = classJumps
-        ? [...new Set(real.map(b => b.category))].filter(c => c !== activeCategory).sort()
-            .map(c => ({ label: `All ${displayCategoryLabel(c)} builds`, value: `~class~${c}`, description: countLabel(real.filter(b => b.category === c).length) }))
-        : [];
-    const search = { label: 'Search all weapons…', value: '~search~', description: `Type a name to find any ${mode === 'DMZ' ? 'DMZ' : 'MP'} weapon` };
-
-    // Discord caps a select at 25 options. Never drop weapons silently (commands/admin.js's SELECT_OPTION_CAP sets the house rule): window around the open weapon, and Search still reaches the rest.
-    const room = 25 - 1 - jumpOptions.length;
-    if (weaponOptions.length > room) {
-        const active = Math.max(0, weaponOptions.findIndex(o => o.value === activeWeaponKey));
-        const start = Math.min(Math.max(0, active - Math.floor(room / 2)), weaponOptions.length - room);
-        weaponOptions = weaponOptions.slice(start, start + room);
-    }
-
-    return {
-        type: 1,
-        components: [{
-            type: 3,
-            custom_id: customIdOverride || `${idPrefix}browse`,
-            placeholder: classJumps ? `Switch weapon or class, or search` : `Switch weapon, or search`,
-            options: [search, ...weaponOptions, ...jumpOptions]
-        }]
-    };
-}
-
 // Shared Components V2 card builder for /dmz and /gunsmith (mp + dmz, and their scoped browse) -- same layout for both, differing only in accent color and the button custom_id prefix ('dmz' vs 'mp') so handlers/loadouts.js can tell a click apart and query the right mode.
 //
 // NOTE (redesigned during review, per Harkirat's loadouts_ui.json reference): weapon name is now the top heading with optional Meta/Best/Top-3 badges directly below it (see buildBadgesLine above), rather than a small category overline -- the category moved down into the footer line instead ("{category} • Build N of M • Last updated..."). The divider between Gunsmith Code and the image was removed. "Attachments"/"Gunsmith Code" are now real H3 headings (### ) rather than bold text, and each attachment line is backtick-wrapped to match the Gunsmith Code code-block styling. V2 still has no equivalent to an embed's *inline fields*, so those two sections stack vertically rather than sitting side-by-side. THE CONTENT HALF, WITHOUT THE CHROME. Split out 2026-08-23 12:55 EDT so a build can be drawn somewhere that is not /gunsmith -- /bot analytics' change-detail panel renders a loadout's before/after through this, per the record-view contract (docs/superpowers/specs/2026-08-23-bot-analytics-live-review-design.md §2 rule D: never RE-DESCRIBE a record, draw it with its own renderer).

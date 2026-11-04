@@ -10,7 +10,7 @@ const mongoose = require('mongoose');
 const { registerEntity } = require('./index');
 const { updateElement, appendElement, removeElement, resortByDate } = require('../mongo/positional');
 const { toTitleCase, parseBulkDrawList, parseAdminDate } = require('../../utils/adminParser');
-const { resolveThumbnailsForDraws, upsertByTitle } = require('../../utils/bulkMerge');
+const { resolveThumbnailsForDraws, upsertByTitle, restoreSet, addedIds } = require('../../utils/bulkMerge');
 const { fuzzyMatch } = require('../../utils/search');
 const SeasonalData = require('../../models/SeasonalData');
 const { isDrawType, unknownDrawTypeError } = require('../../utils/drawTypes');
@@ -169,10 +169,12 @@ registerEntity('draws', {
             before: { count: live[pathFor(op.target.category)].length },
             after: { count: live[pathFor(op.target.category)].length + op.payload.parsed.length }
         }),
-        apply: async (op, { session }) => {
+        apply: async (op, { session, restoring = false }) => {
             const path = pathFor(op.target.category);
-            // ⚠️ The pre-core handler always ran every parsed draw through resolveThumbnailsForDraws() (Cloudinary resolve/cache, dropping anything with neither a provided URL nor a cache hit) before saving. Found during Task 6 integration: a first draft of this op skipped that entirely and would have saved draws with an undefined thumbnailUrl. fillTypes only on a fresh paste (it has `text`): an inverse replays stored draws and must not change them (utils/bulkMerge.js).
-            const { validDraws, skipped, warnings, typesFilled } = await resolveThumbnailsForDraws(op.payload.parsed, { fillTypes: Boolean(op.payload.text), ...(await newSeasonFor(op, session)) });
+            // An UNDO (Delete Multiple's) puts the stored draws back as they were: no Cloudinary pass, which would drop a draw saved without an image or give it another draw's (utils/bulkMerge.js restoreSet's note, 2026-11-04 12:01 EST). ⚠️ The pre-core handler always ran every parsed draw through resolveThumbnailsForDraws() (Cloudinary resolve/cache, dropping anything with neither a provided URL nor a cache hit) before saving. Found during Task 6 integration: a first draft of this op skipped that entirely and would have saved draws with an undefined thumbnailUrl. fillTypes only on a fresh paste (it has `text`): an inverse replays stored draws and must not change them (utils/bulkMerge.js).
+            const { validDraws, skipped, warnings, typesFilled } = restoring
+                ? { validDraws: op.payload.parsed, skipped: [], warnings: [], typesFilled: [] }
+                : await resolveThumbnailsForDraws(op.payload.parsed, { fillTypes: Boolean(op.payload.text), ...(await newSeasonFor(op, session)) });
             // 🔴 IDs captured via a BEFORE-snapshot diff, not a post-resort tail-slice. resortByDate re-sorts the WHOLE array by date -- a newly-added draw whose date sorts earlier than an existing one lands mid-array, not at the tail, so slice(-N) after the sort would silently pick up unrelated pre-existing draws' ids instead. Those ids feed straight into this op's own invert() (bulkDelete) -- a wrong id here means reverting a bulk-add deletes the WRONG draws. Found by the plan-1-range code review.
             const before = await SeasonalData.findOne(DOC).select(path).session(session).lean();
             const beforeIds = new Set(before[path].map(d => String(d._id)));
@@ -213,26 +215,37 @@ registerEntity('draws', {
             before: { draws: live[pathFor(op.target.category)] },
             after: { draws: op.payload.parsed }
         }),
-        apply: async (op, { session }) => {
+        apply: async (op, { session, restoring = false }) => {
             const path = pathFor(op.target.category);
             const before = await SeasonalData.findOne(DOC).select(path).lean().session(session);
             const replaced = before[path];                       // the full prior set — this IS the inverse
+            if (restoring) {
+                // An UNDO of Replace Multiple or Purge: back to the stored set, the draws the change added taken out (utils/bulkMerge.js restoreSet).
+                const finalArray = restoreSet(replaced, op.payload.parsed, op.payload.insertedIds);
+                await SeasonalData.updateOne(DOC, { $set: { [path]: finalArray } }, { session });
+                return {
+                    ok: true,
+                    change: { action: 'bulkReplace', model: 'SeasonalData', target: `${path}`, summary: `Restored draws (now ${finalArray.length} total)` },
+                    applied: { category: op.target.category, replaced, insertedIds: addedIds(replaced, finalArray), total: finalArray.length }
+                };
+            }
             // 🔴 NOT a wholesale $set of the parsed text. "Replace Multiple" has ALWAYS been an upsert-by-fuzzy-title merge (handlers/manage/shared.js's original upsertByTitle, relocated to utils/bulkMerge.js): update the matching item in place, insert anything new, and NEVER touch an existing entry the pasted text didn't mention — Purge already covers a full wipe. A wholesale overwrite here would silently delete every draw not in the paste. Found during Task 6 integration, before any handler was wired to this op.
             const { validDraws, typesFilled } = await resolveThumbnailsForDraws(op.payload.parsed, { fillTypes: Boolean(op.payload.text), ...(await newSeasonFor(op, session)) });
             const { finalArray, updatedCount, insertedCount } = upsertByTitle(before[path], validDraws);
             finalArray.sort((a, b) => new Date(a.date) - new Date(b.date));
+            const insertedIds = addedIds(replaced, finalArray);
             await SeasonalData.updateOne(DOC, { $set: { [path]: finalArray } }, { session });
             return {
                 ok: true,
                 change: { action: 'bulkReplace', model: 'SeasonalData', target: `${path}`,
                           summary: `Replaced draws — updated ${updatedCount}, added ${insertedCount} (now ${finalArray.length} total)` },
-                applied: { category: op.target.category, replaced, added: validDraws, updatedCount, insertedCount, typesFilled, total: finalArray.length }
+                applied: { category: op.target.category, replaced, insertedIds, added: validDraws, updatedCount, insertedCount, typesFilled, total: finalArray.length }
             };
         },
         invert: (change) => ({
             type: 'draw.bulkReplace',
             target: { category: change.applied.category },
-            payload: { parsed: change.applied.replaced }
+            payload: { parsed: change.applied.replaced, insertedIds: change.applied.insertedIds || [] }
         })
     },
 

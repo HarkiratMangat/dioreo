@@ -36,7 +36,8 @@
       "Bash(gh api *)",
       "Bash(git checkout *)",
       "Bash(rtk read *)",
-      "Bash(rm .claude/.headroom_wrap_settings.lock)"
+      "Bash(rm .claude/.headroom_wrap_settings.lock)",
+      "Bash(bash scripts/vmstatus.sh logs:*)"
     ]
   }
 }

@@ -12,7 +12,7 @@ const mongoose = require('mongoose');
 const { registerEntity } = require('./index');
 const { updateElement, appendElement, removeElement, resortByDate } = require('../mongo/positional');
 const { parseBulkEvents, normalizeCalendarCategory, parseAdminDate } = require('../../utils/adminParser');
-const { upsertByTitle } = require('../../utils/bulkMerge');
+const { upsertByTitle, restoreSet, addedIds } = require('../../utils/bulkMerge');
 const { fuzzyMatch } = require('../../utils/search');
 const { cacheBannerImage, clearBannerImage } = require('../../utils/calendarBannerCache');
 const SeasonalData = require('../../models/SeasonalData');
@@ -130,8 +130,9 @@ registerEntity('calendar', {
             return { ok: true, errors: [], normalized: { ...op, payload: { ...op.payload, parsed: mapParsedEvents(parsed) } } };
         },
         preview: (op, live) => ({ before: { count: live.calendar.length }, after: { count: live.calendar.length + op.payload.parsed.length } }),
-        apply: async (op, { session }) => {
-            const withIds = op.payload.parsed.map(e => ({ ...e, _id: new mongoose.Types.ObjectId() }));
+        apply: async (op, { session, restoring = false }) => {
+            // An UNDO (Delete Multiple's) keeps each event's own _id, so a later Undo that names it still finds it (2026-11-04 12:01 EST).
+            const withIds = op.payload.parsed.map(e => ({ ...e, _id: (restoring && e._id) || new mongoose.Types.ObjectId() }));
             for (const e of withIds) {
                 await appendElement({ Model: SeasonalData, docFilter: DOC, arrayPath: PATH, element: e, session });
             }
@@ -155,20 +156,31 @@ registerEntity('calendar', {
             return { ok: true, errors: [], normalized: { ...op, payload: { ...op.payload, parsed: mapParsedEvents(parsed) } } };
         },
         preview: (op, live) => ({ before: { events: live.calendar }, after: { events: op.payload.parsed } }),
-        apply: async (op, { session }) => {
+        apply: async (op, { session, restoring = false }) => {
             const before = await SeasonalData.findOne(DOC).select(PATH).lean().session(session);
             const replaced = before[PATH];
+            if (restoring) {
+                // An UNDO of Replace Multiple or Purge: back to the stored set, the events the change added taken out (utils/bulkMerge.js restoreSet, 2026-11-04 12:01 EST).
+                const restored = restoreSet(replaced, op.payload.parsed, op.payload.insertedIds);
+                await SeasonalData.updateOne(DOC, { $set: { [PATH]: restored } }, { session });
+                return {
+                    ok: true,
+                    change: { action: 'bulkReplace', model: 'SeasonalData', target: 'calendar', summary: `Restored calendar events (now ${restored.length} total)` },
+                    applied: { replaced, insertedIds: addedIds(replaced, restored), total: restored.length }
+                };
+            }
             const { finalArray, updatedCount, insertedCount } = upsertByTitle(replaced, op.payload.parsed);
             finalArray.sort((a, b) => new Date(a.date) - new Date(b.date));
+            const insertedIds = addedIds(replaced, finalArray);
             await SeasonalData.updateOne(DOC, { $set: { [PATH]: finalArray } }, { session });
             return {
                 ok: true,
                 change: { action: 'bulkReplace', model: 'SeasonalData', target: 'calendar',
                           summary: `Replaced calendar events -- updated ${updatedCount}, added ${insertedCount} (now ${finalArray.length} total)` },
-                applied: { replaced, added: op.payload.parsed, updatedCount, insertedCount, total: finalArray.length }
+                applied: { replaced, insertedIds, added: op.payload.parsed, updatedCount, insertedCount, total: finalArray.length }
             };
         },
-        invert: (c) => ({ type: 'calendar.bulkReplace', payload: { parsed: c.applied.replaced } })
+        invert: (c) => ({ type: 'calendar.bulkReplace', payload: { parsed: c.applied.replaced, insertedIds: c.applied.insertedIds || [] } })
     },
 
     'calendar.bulkDelete': {

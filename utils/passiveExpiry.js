@@ -44,8 +44,9 @@ function schedulePanelExpiry(interaction, messageId, components, timeoutMs = IDL
                 body: { components: disableAllComponents(components), allowed_mentions: { parse: [] } }
             });
         } catch (err) {
-            // Best-effort UX nicety, not a critical path -- the token may already be dead (bot restarted since this render, or the message was deleted), and there's no user to notify either way. Log and move on rather than let this throw into an unhandled rejection from inside a bare setTimeout callback.
-            console.error('Passive panel expiry: failed to disable components (token likely expired or message gone):', err?.message || err);
+            // Best-effort UX nicety, not a critical path -- the token may already be dead (bot restarted since this render, or the message was deleted), and there's no user to notify either way. Log and move on rather than let this throw into an unhandled rejection from inside a bare setTimeout callback. The two expected outcomes are logged as info, not errors (code-housekeeping, 2026-11-04 13:40 EST): prod's log counted 5 of these as errors in 10 days, every one Unknown Message, which inflates vmstatus.sh's ERRORS line for nothing. 10008 = the message was deleted, 50027 = the interaction token expired.
+            const expected = err?.code === 10008 || err?.code === 50027;
+            (expected ? console.log : console.error)('Passive panel expiry: failed to disable components (token likely expired or message gone):', err?.message || err);
         }
     }, timeoutMs);
 
