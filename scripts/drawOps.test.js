@@ -102,6 +102,15 @@ check('draw types: a bulk line carries its type tag, the export writes it back, 
     assert.strictEqual(resolveDrawType('Legendary Weapon Draw (Reactive)'), 'legendaryGunReactive');
     assert.strictEqual(resolveDrawType('legendary weapon draw (non-reactive)'), 'legendaryGunNonReactive');
     assert.strictEqual(resolveDrawType('Mythic Character Series Armory'), null, 'there is no Mythic Character armory');
+    // Secret Cache and Event (2026-11-04): storable, taggable, never priced, so the calculator never lists them.
+    const T = require('../utils/drawTypes');
+    for (const [raw, key] of [['sc', 'secretCache'], ['Secret Cache', 'secretCache'], ['ev', 'event'], ['event', 'event']]) assert.strictEqual(resolveDrawType(raw), key, raw);
+    assert.ok(T.isDrawType('secretCache') && T.isDrawType('event'), 'a draw may store them');
+    assert.ok(!T.isPricedDrawType('secretCache') && !T.isPricedDrawType('event'), 'never priced');
+    assert.ok(T.namesDrawType('event') && !T.namesDrawType('unknown'), 'the index may fill a free type, never Unsure');
+    assert.deepStrictEqual([T.drawTypeName('event'), T.drawTypeCode('secretCache')], ['Event', 'sc']);
+    assert.ok(T.drawTypeChoices().length <= 25, 'the Draw Type dropdown holds at most 25 options');
+    assert.strictEqual(new Set(T.drawTypeChoices().map(o => o.code)).size, T.drawTypeChoices().length, 'every bulk code is unique');
     const [unk] = parseBulkDrawList('Mystery Draw, type: unknown, l AK, July 15');
     assert.strictEqual(unk.priceType, 'unknown', 'Unsure / Unknown is a storable flag');
     assert.ok(formatDrawsAsBulkText([unk]).includes('type: unknown'));
@@ -126,7 +135,7 @@ check('Edit Draw: five Labels, and the Draw Type dropdown preselects the stored 
     assert.ok(m.components.every(c => c.type === 18), 'every field is a Label');
     const sel = m.components[4].component;
     assert.strictEqual(sel.custom_id, 'price_type');
-    assert.strictEqual(sel.options.length, 15, 'Unsure / Unknown plus the 14 types');
+    assert.strictEqual(sel.options.length, 17, 'Unsure / Unknown, the 14 priced types, and the two free ones (Secret Cache, Event)');
     assert.strictEqual(sel.options[0].value, 'unknown', 'Unsure / Unknown sits first');
     assert.strictEqual(sel.required, true, 'a required field (his call, 2026-10-18 11:36 EDT)');
     assert.strictEqual(sel.min_values, 1);

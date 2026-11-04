@@ -182,7 +182,7 @@ function describedDraws(entries, queryWords) {
     const fits = entries.filter(e => (e.items || []).some(i => (!tiers.length || tiers.includes(i.tier)) && (!kinds.length || kinds.includes(i.kind))));
     const groups = new Set();
     return fits
-        .sort((a, b) => (b.releaseSeason || 0) - (a.releaseSeason || 0) || Number(b.slug === b.groupSlug) - Number(a.slug === a.groupSlug) || a.title.localeCompare(b.title))
+        .sort((a, b) => (b.releaseYear || 0) - (a.releaseYear || 0) || (b.releaseSeason || 0) - (a.releaseSeason || 0) || Number(b.slug === b.groupSlug) - Number(a.slug === a.groupSlug) || a.title.localeCompare(b.title))
         .filter(e => !groups.has(e.groupSlug || e.slug) && groups.add(e.groupSlug || e.slug));
 }
 
@@ -223,6 +223,12 @@ function findCatalogDraw(entries, query) {
 function seasonNumber(title) {
     const m = /season\s*(\d+)/i.exec(String(title || ''));
     return m ? Number(m[1]) : null;
+}
+
+// The calendar year a season runs in, from its own Battle Pass start (the live document or the draft), or null when none is set. Read from the season, never from today: a season that starts in December is still running in January, and a draw added then belongs to the year it started (lead review of #250, 2026-11-04 10:16 EST).
+function seasonYear(doc) {
+    const t = doc?.bpStart ? new Date(doc.bpStart) : null;
+    return t && Number.isFinite(t.getTime()) ? t.getUTCFullYear() : null;
 }
 
 // A catalog document's items as /draws stores them: { tier, name } plus its notes as `-#` comment lines.
@@ -291,6 +297,7 @@ function itemsToText(items) {
 }
 
 module.exports = {
+    seasonYear,
     TIME_ZONE, TYPED, typedZone, near, MAX_CANDIDATES,
     MAX_LINES, splitLine, readWhen, todayUtc, parseQuickLine, parseQuickText, stem, words, scoreEntry, findCatalogDraw,
     seasonNumber, drawItemsFromEntry, draftFromLine, itemsToText, titleCase

@@ -21,8 +21,12 @@ const pathFor = (category) => (category === 'returning' ? 'returningDraws' : 'ne
 // The live season's number for a fresh paste into New (think-pass, 2026-11-01: a genuinely new draw pasted into New was indexed with no release season). Null for Returning, and for an inverse replay (no `text`), which must not touch the index.
 async function newSeasonFor(op, session) {
     if (op.target?.category !== 'new' || !op.payload.text) return null;
-    const doc = await SeasonalData.findOne(DOC).select('currentSeasonTitle').lean().session(session);
-    return require('../../utils/quickAdd').seasonNumber(doc?.currentSeasonTitle);
+    // The season's own year rides with its number (utils/quickAdd.js seasonYear): seasons 1 to 12 repeat every year.
+    const doc = await SeasonalData.findOne(DOC).select('currentSeasonTitle bpStart').lean().session(session);
+    const qa = require('../../utils/quickAdd');
+    const releaseSeason = qa.seasonNumber(doc?.currentSeasonTitle);
+    const releaseYear = qa.seasonYear(doc);
+    return releaseSeason ? { releaseSeason, ...(releaseYear ? { releaseYear } : {}) } : null;
 }
 
 // ⚠️ FOUND DURING TASK 6 INTEGRATION (2026-08-20), not caught by plan 1's falsification pass: nothing on the READ side sorts newDraws/returningDraws by date -- commands/draws.js trusts the stored array order. The pre-core handler always re-sorted the whole array after every mutation that could change it (add/edit/bulk). An op that only appendElement()s or updateElement()s without re-sorting would silently degrade `/draws` display order the first time an edit changed a date or an add landed out of chronological order -- a real regression Task 6's own goal ("nothing changes for the user") exists to prevent. Every op below that can disturb order re-sorts in the same transaction before returning. (resortByDate itself moved to core/mongo/positional.js 2026-08-21 -- calendar.js had a byte-for-byte duplicate.)
@@ -168,7 +172,7 @@ registerEntity('draws', {
         apply: async (op, { session }) => {
             const path = pathFor(op.target.category);
             // ⚠️ The pre-core handler always ran every parsed draw through resolveThumbnailsForDraws() (Cloudinary resolve/cache, dropping anything with neither a provided URL nor a cache hit) before saving. Found during Task 6 integration: a first draft of this op skipped that entirely and would have saved draws with an undefined thumbnailUrl. fillTypes only on a fresh paste (it has `text`): an inverse replays stored draws and must not change them (utils/bulkMerge.js).
-            const { validDraws, skipped, warnings, typesFilled } = await resolveThumbnailsForDraws(op.payload.parsed, { fillTypes: Boolean(op.payload.text), releaseSeason: await newSeasonFor(op, session) });
+            const { validDraws, skipped, warnings, typesFilled } = await resolveThumbnailsForDraws(op.payload.parsed, { fillTypes: Boolean(op.payload.text), ...(await newSeasonFor(op, session)) });
             // 🔴 IDs captured via a BEFORE-snapshot diff, not a post-resort tail-slice. resortByDate re-sorts the WHOLE array by date -- a newly-added draw whose date sorts earlier than an existing one lands mid-array, not at the tail, so slice(-N) after the sort would silently pick up unrelated pre-existing draws' ids instead. Those ids feed straight into this op's own invert() (bulkDelete) -- a wrong id here means reverting a bulk-add deletes the WRONG draws. Found by the plan-1-range code review.
             const before = await SeasonalData.findOne(DOC).select(path).session(session).lean();
             const beforeIds = new Set(before[path].map(d => String(d._id)));
@@ -214,7 +218,7 @@ registerEntity('draws', {
             const before = await SeasonalData.findOne(DOC).select(path).lean().session(session);
             const replaced = before[path];                       // the full prior set — this IS the inverse
             // 🔴 NOT a wholesale $set of the parsed text. "Replace Multiple" has ALWAYS been an upsert-by-fuzzy-title merge (handlers/manage/shared.js's original upsertByTitle, relocated to utils/bulkMerge.js): update the matching item in place, insert anything new, and NEVER touch an existing entry the pasted text didn't mention — Purge already covers a full wipe. A wholesale overwrite here would silently delete every draw not in the paste. Found during Task 6 integration, before any handler was wired to this op.
-            const { validDraws, typesFilled } = await resolveThumbnailsForDraws(op.payload.parsed, { fillTypes: Boolean(op.payload.text), releaseSeason: await newSeasonFor(op, session) });
+            const { validDraws, typesFilled } = await resolveThumbnailsForDraws(op.payload.parsed, { fillTypes: Boolean(op.payload.text), ...(await newSeasonFor(op, session)) });
             const { finalArray, updatedCount, insertedCount } = upsertByTitle(before[path], validDraws);
             finalArray.sort((a, b) => new Date(a.date) - new Date(b.date));
             await SeasonalData.updateOne(DOC, { $set: { [path]: finalArray } }, { session });
