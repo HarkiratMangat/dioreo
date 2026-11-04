@@ -94,6 +94,7 @@ export const TESTS = [
     {"cmd": "node scripts/manageLoadoutHandlers.test.js", "lane": "unit"},
     {"cmd": "node scripts/manageQuickAdd.test.js", "lane": "unit"},
     {"cmd": "node scripts/remindHandler.test.js", "lane": "unit"},
+    {"cmd": "node scripts/drawCalcHandler.test.js", "lane": "unit"},
     {"cmd": "node scripts/searchDrawMatch.test.js", "lane": "unit"},
     {"cmd": "node scripts/manageErrorText.test.js", "lane": "unit"},
     {"cmd": "node scripts/manageEditModals.test.js", "lane": "unit"},

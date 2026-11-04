@@ -122,7 +122,7 @@ function memoryCollection(Model) {
         exists: async (filter) => (list(filter)[0] ? { _id: list(filter)[0]._id } : null),
         distinct: async (field, filter) => [...new Set(list(filter).map(r => fieldOf(r, field)))],
         aggregate: async () => [],
-        create: async (docs) => { const many = Array.isArray(docs); const made = (many ? docs : [docs]).map(toRow); rows.push(...made); const out = made.map(clone); return many ? out : out[0]; },
+        create: async (docs) => { const many = Array.isArray(docs); const made = (many ? docs : [docs]).map(toRow); rows.push(...made); const out = made.map(r => Object.defineProperty(clone(r), 'toObject', { value() { return clone(this); } })); return many ? out : out[0]; },   // a created document is hydrated in Mongoose, so callers may call toObject()
         insertMany: async (docs) => api.create(docs),
         updateOne: async (filter, update, opts = {}) => {
             const row = list(filter)[0];
@@ -139,7 +139,7 @@ function memoryCollection(Model) {
     Object.assign(Model, api);
     return api;
 }
-const collections = Object.fromEntries(['Loadout', 'CatalogueItem', 'VisionRead', 'ReminderSubscription', 'UserPreference'].map(n => [n, memoryCollection(req(`models/${n}`))]));
+const collections = Object.fromEntries(['Loadout', 'CatalogueItem', 'VisionRead', 'ReminderSubscription', 'UserPreference', 'DrawBasket'].map(n => [n, memoryCollection(req(`models/${n}`))]));
 // Loadout pictures: uploads and copies succeed without Cloudinary, and every key "exists".
 const loadoutImageCache = req('utils/loadoutImageCache');
 loadoutImageCache.uploadLoadoutImage = async () => ({ success: true });
