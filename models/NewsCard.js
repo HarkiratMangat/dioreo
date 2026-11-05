@@ -47,6 +47,9 @@ const newsCardSchema = new mongoose.Schema({
     draftLines: [{ type: String }],
     draftNotes: [{ type: String }],
     draftUndone: { type: Boolean, default: false },
+    // Who the draft write ran as (the watcher's own reads: '' = the owner; Make a card: the admin who picked it), so a re-read after an edit writes as the same person; and how many times an edit was re-read (at most 2), so a post edited over and over cannot spend reads (2026-11-05 15:42 EST, commit security review).
+    draftActorId: { type: String, default: '' },
+    rereads: { type: Number, default: 0 },
     expireAt: { type: Date, required: true, expires: 0 },
 }, { timestamps: true });
 newsCardSchema.index({ sourceChannelId: 1, sourceMessageId: 1 }, { unique: true });

@@ -443,6 +443,13 @@ check('the handler owns news| and nothing else', async () => {
         assert.strictEqual(pipe.promoteDue(start, D('2026-11-11T00:05:00Z')), true, '23.9 h out');
         assert.strictEqual(pipe.promoteDue(start, D('2026-11-12T00:05:00Z')), false, 'already started');
     });
+    check('every AI read goes through the one cap-and-pause gate, the edit re-read included', () => {
+        const src = require('fs').readFileSync(require.resolve('../utils/newsTriage/pipeline.js'), 'utf8');
+        const reads = (src.match(/require\('\.\/model'\)\.readPost\(/g) || []).length + (src.match(/\(readPost \|\| require\('\.\/model'\)\.readPost\)\(/g) || []).length;
+        const gates = (src.match(/takeReadSlot\(cfg/g) || []).length;
+        assert.ok(reads >= 2 && gates >= reads, `${reads} reads, ${gates} gate calls`);
+        assert.ok(/rereads \|\| 0\) >= 2/.test(src), 'a post is re-read at most twice');
+    });
     check('a live fix is listed while the bot still disagrees, whatever was clicked', () => {
         const live = { returningDraws: [{ _id: 'bh', title: 'Black Hole Draw', date: D('2026-10-25') }], calendar: [{ _id: 'c', title: 'Black Hole Draw', category: 'draw', date: D('2026-10-25'), endDate: D('2026-11-07') }] };
         const item = { fixList: 'returningDraws', fixId: 'bh', start: D('2026-10-25'), end: D('2026-11-17'), state: 'opened' };

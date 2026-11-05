@@ -43,6 +43,15 @@ function toPost(m, { guildId, channelName } = {}) {
     };
 }
 
+// Every AI read takes a slot here, whoever starts it (2026-11-05 15:42 EST, commit security review: the edit re-read skipped the cap and the pause): the day's cap, the pause after three failures, and the count.
+function takeReadSlot(cfg, { force = false } = {}) {
+    rollDay();
+    if (Date.now() < state.pausedUntil) return 'paused';
+    if (!force && state.calls >= cfg.cap) return 'capped';
+    state.calls += 1;
+    return null;
+}
+
 function rollDay(now = new Date()) {
     const day = now.toISOString().slice(0, 10);
     if (state.day !== day) { state.day = day; state.calls = 0; }
@@ -214,13 +223,11 @@ async function processPost(post, { rest, selfId, appId, force = false, env = pro
             const pre = prefilter(post.text, { hasImage: Boolean(post.image) });
             if (!pre.read) { noteSkipped(post, pre.reason); return { status: 'skipped', reason: pre.reason }; }
         }
-        rollDay();
-        if (Date.now() < state.pausedUntil) { noteSkipped(post, 'AI reads paused after errors'); return { status: 'paused' }; }
-        if (!force && state.calls >= cfg.cap) { noteSkipped(post, 'daily AI limit reached'); return { status: 'capped' }; }
+        const blocked = takeReadSlot(cfg, { force });
+        if (blocked) { noteSkipped(post, blocked === 'paused' ? 'AI reads paused after errors' : 'daily AI limit reached'); return { status: blocked }; }
 
         const ctx = await loadContext(post.createdAt);
         let raw;
-        state.calls += 1;
         try {
             // onUsage counts each read's cost for the briefing (estimateVisionCostUsd knows the flex and cached-token prices).
             const onUsage = (u, loc) => { try { state.stats.costUsd += require('../visionExtract').estimateVisionCostUsd(loc, u).estimatedCostUsd; } catch { /* never breaks a read */ } };
@@ -256,7 +263,7 @@ async function processPost(post, { rest, selfId, appId, force = false, env = pro
             sourceChannelId: post.channelId, sourceMessageId: post.id, sourceName: post.channelName, jumpUrl: post.jumpUrl,
             postedAt: post.createdAt, cardChannelId: cfg.channel, items: fresh.slice(0, MAX_ITEMS),
             notes: fresh.length > MAX_ITEMS ? [`${fresh.length - MAX_ITEMS} more items in the post are not shown.`] : [],
-            draftChangeId: drafted?.changeId || '', draftLines: drafted?.lines || [], draftNotes: drafted?.notes || [],
+            draftChangeId: drafted?.changeId || '', draftLines: drafted?.lines || [], draftNotes: drafted?.notes || [], draftActorId: actorId || '',
             expireAt: new Date(Date.now() + CARD_DAYS * DAY_MS),
         });
         await postCardOrUndo(rest, cfg, doc, appId);
@@ -282,7 +289,8 @@ async function noteSourceChange(rest, channelId, messageId, what, appId) {
         card.notes = [...(card.notes || []).filter(n => !/source post was (edited|deleted)/.test(n)), note];
         await card.save();
         await redrawCard(rest, card.toObject(), appId);
-        if (what === 'edited' && wrote) await rereadEdited(rest, channelId, messageId, appId).catch(err => console.error('News triage: re-reading an edited post failed:', err?.message || err));
+        // Through the same queue as every other read, so it waits its turn and never runs two at once.
+        if (what === 'edited' && wrote) enqueue(() => rereadEdited(rest, channelId, messageId, appId)).catch(err => console.error('News triage: re-reading an edited post failed:', err?.message || err));
         return true;
     } catch (err) { console.error('News triage: could not mark a source change:', err?.message || err); return false; }
 }
@@ -290,18 +298,26 @@ async function noteSourceChange(rest, channelId, messageId, what, appId) {
 // An edited post that wrote draft rows is read again once per edit, and only its draft side is merged (the same source, so its rows update rather than add). Any change goes on a follow-up card with its own Undo.
 async function rereadEdited(rest, channelId, messageId, appId, { env = process.env } = {}) {
     const cfg = config(env);
+    if (!cfg.autoDraft) return null;
     const raw = await rest.get(Routes.channelMessage(channelId, messageId));
     const key = `${messageId}:edit:${raw.edited_timestamp || Date.now()}`;
     const NewsCard = require('../../models/NewsCard');
     if (await NewsCard.exists({ sourceChannelId: channelId, sourceMessageId: key })) return null;
     const first = await NewsCard.findOne({ sourceChannelId: channelId, sourceMessageId: messageId }).lean();
+    if (!first || (first.rereads || 0) >= 2) return null;
+    if (takeReadSlot(cfg)) return null;
+    await NewsCard.updateOne({ _id: first._id }, { $inc: { rereads: 1 } });
+    state.stats.reads += 1;
     const post = toPost(raw, { guildId: raw.guild_id || '', channelName: first?.sourceName || '' });
     const ctx = await loadContext(post.createdAt);
-    const items = await require('./model').readPost({ text: post.text, imageUrl: post.image, postedAt: post.createdAt, liveSeason: ctx.liveSeason, source: /official/i.test(post.channelName || '') ? 'official' : 'leaks' });
+    const onUsage = (u, loc) => { try { state.stats.costUsd += require('../visionExtract').estimateVisionCostUsd(loc, u).estimatedCostUsd; } catch { /* never breaks a read */ } };
+    let items;
+    try { items = await require('./model').readPost({ text: post.text, imageUrl: post.image, postedAt: post.createdAt, liveSeason: ctx.liveSeason, source: /official/i.test(post.channelName || '') ? 'official' : 'leaks' }, { onUsage }); }
+    catch (err) { state.failures += 1; state.stats.failures += 1; throw err; }
     const { card } = resolveItems(items, { ...ctx, namesRegion: namesRegion(post.text), namesTestServer: namesTestServer(post.text), autoDraft: true });
-    const { drafted } = await autoDraft(post, card, ctx);
+    const { drafted } = await autoDraft(post, card, ctx, first.draftActorId || null);
     if (!drafted?.lines?.length) return null;
-    const doc = await NewsCard.create({ sourceChannelId: channelId, sourceMessageId: key, sourceName: post.channelName, jumpUrl: post.jumpUrl, postedAt: post.createdAt, cardChannelId: cfg.channel, items: [], notes: ['From the edited version of the post.'], draftChangeId: drafted.changeId, draftLines: drafted.lines, draftNotes: drafted.notes, expireAt: new Date(Date.now() + CARD_DAYS * DAY_MS) });
+    const doc = await NewsCard.create({ sourceChannelId: channelId, sourceMessageId: key, sourceName: post.channelName, jumpUrl: post.jumpUrl, postedAt: post.createdAt, cardChannelId: cfg.channel, items: [], notes: ['From the edited version of the post.'], draftChangeId: drafted.changeId, draftActorId: first.draftActorId || '', draftLines: drafted.lines, draftNotes: drafted.notes, expireAt: new Date(Date.now() + CARD_DAYS * DAY_MS) });
     await postCardOrUndo(rest, cfg, doc, appId);
     return drafted.lines.length;
 }
