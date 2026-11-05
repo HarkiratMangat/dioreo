@@ -12,6 +12,9 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.8.6 — November 5, 2026
+- **Fixed:** typing part of a weapon name after `d gs` works now, digits and O/0 mix-ups included (`d gs hs0` opens the HS0405), and a name nothing matches says so instead of staying silent.
+
 ## v3.8.5 — November 5, 2026
 - **Fixed:** a new picture for a /gunsmith build shows straight away, where before Discord could keep showing the old one for weeks.
 
