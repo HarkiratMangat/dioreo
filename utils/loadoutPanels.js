@@ -55,41 +55,74 @@ function changeLines(before, after, { pictureReplaced = false } = {}) {
     return out;
 }
 
-// The buttons under a saved build. `changeIds` are every ChangeLog row the save wrote; they ride in the Revert id, which stays inside Discord's 100 characters for any real save (ids are like `#147`).
-function actionRow(doc, changeIds = []) {
+// The buttons under a saved build. `changeIds` are every ChangeLog row the save wrote; they ride in the Revert id, which stays inside Discord's 100 characters for any real save (ids are like `#147`). `option` is the option on show (merged builds, 2026-11-05): Edit again opens that one, and Add option starts the next (handlers/manage/loadouts.js handleSavedAction).
+function actionRow(doc, changeIds = [], option = 0) {
     const id = String(doc._id);
+    const target = option ? `${id}~${option}` : id;
     const revertId = `mng_ldrevert|${changeIds.join(',')}`;
+    const { MAX_OPTIONS } = require('./loadoutOptions');
+    const room = 1 + (doc.variants || []).length < MAX_OPTIONS;
     return { type: 1, components: [
         { type: 2, style: 2, label: 'Open in /gunsmith', custom_id: `mng_ldopen_${id}`, emoji: emojis.parseEmoji(emojis.search) },
-        { type: 2, style: 1, label: 'Edit again', custom_id: `mng_ldedit_${id}`, emoji: emojis.parseEmoji(emojis.edit) },
+        { type: 2, style: 1, label: 'Edit again', custom_id: `mng_ldedit_${target}`, emoji: emojis.parseEmoji(emojis.edit) },
+        ...(room ? [{ type: 2, style: 3, label: 'Add option', custom_id: `mng_ldaddopt_${target}`, emoji: emojis.parseEmoji(emojis.plus) }] : []),
         // Who the build is credited to (handlers/manage/loadouts.js creditModal, 2026-11-02 23:01 EST).
         { type: 2, style: 2, label: 'Credit', custom_id: `mng_ldcredit_${id}` },
         ...(changeIds.length && revertId.length <= 100 ? [{ type: 2, style: 4, label: 'Revert', custom_id: revertId }] : []),
     ] };
 }
 
-// A saved build: `before` is null for an add. `notes` are side effects (a swap, a moved picture, names learned); `warnings` need a look.
-function savedPanel({ doc, before = null, changeIds = [], notes = [], warnings = [], pictureReplaced = false }) {
+// A merged build's options, one line each with its tag and code (utils/loadoutOptions.js), the one on show in bold, and how to move one. Null for a build with one option.
+function optionsBlock(doc, shown) {
+    const { optionsOf, optionTag, optionLetter } = require('./loadoutOptions');
+    const options = optionsOf(doc);
+    if (options.length < 2) return null;
+    const n = require('./loadoutForm').buildNumberOf(doc.buildName);
+    const tag = (i) => (n === null ? optionLetter(i) : optionTag(n, i));
+    const rows = options.map((o, i) => {
+        const line = `${optionLetter(i)} · ${code(tag(i))}${o.shareCode ? ` · ${code(o.shareCode)}` : ''}`;
+        return `-# ${i === shown ? `**${line}** ← this one` : line}`;
+    });
+    const hint = n === null ? '' : `\n-# To move one, edit it and change its number: ${code(tag(options.length - 1))} → ${code(tag(0))} makes it Option A.`;
+    return { type: 10, content: `**Options**\n${rows.join('\n')}${hint}` };
+}
+
+// A saved build: `before` is null for an add. `notes` are side effects (a swap, a moved picture, names learned); `warnings` need a look. `option` is the option of a merged build this save was about, drawn in place of the build's own (its attachments, code and picture), and `moveLine` names where it moved (`2c` → `2`).
+function savedPanel({ doc, before = null, changeIds = [], notes = [], warnings = [], pictureReplaced = false, option = 0, moveLine = null }) {
+    const { variantView, variantCount } = require('./loadoutRender');
+    const view = variantView(doc, option);
+    const merged = variantCount(doc) > 1;
     const verb = before ? 'Updated' : 'Added';
-    const changes = changeLines(before, doc, { pictureReplaced });
+    const changes = changeLines(before, view, { pictureReplaced });
+    if (moveLine) changes.unshift(`**Option:** ${moveLine}`);
+    const which = merged ? ` · Option ${require('./loadoutOptions').optionLetter(option)}` : '';
     const components = [
-        headerBlock(`### ${emojis.checkmark} ${verb} · ${doc.weaponName} ${doc.buildName}`, identityLines(doc), doc.imageKey, doc),
+        headerBlock(`### ${emojis.checkmark} ${verb} · ${doc.weaponName} ${doc.buildName}${which}`, identityLines(view), view.imageKey, view),
         { type: 14, divider: true, spacing: 1 },
     ];
     if (before) components.push({ type: 10, content: changes.length ? `**What changed**\n${changes.map(c => `- ${c}`).join('\n')}` : '-# Nothing changed.' });
-    components.push({ type: 10, content: `**Attachments**\n${attachmentList(doc)}` });
+    components.push({ type: 10, content: `**Attachments**\n${attachmentList(view)}` });
+    const optionsList = optionsBlock(doc, option);
+    if (optionsList) components.push(optionsList);
     // Side notes carry his Info mark (2026-10-26 12:46 EDT).
     if (notes.length) components.push({ type: 10, content: notes.map(n => `-# ${emojis.info} ${n}`).join('\n') });
     if (warnings.length) components.push({ type: 10, content: warnings.map(w => `${emojis.warn} ${w}`).join('\n') });
-    components.push({ type: 14, divider: false, spacing: 1 }, actionRow(doc, changeIds));
+    components.push({ type: 14, divider: false, spacing: 1 }, actionRow(doc, changeIds, option));
     return [{ type: 17, accent_color: ACCENT[doc.mode] || ACCENT.MP, components }];
 }
 
-// The delete confirmation for one build: the build itself, so the right one goes.
-function deletePanel({ doc, token }) {
+// The delete confirmation for one build: the build itself, so the right one goes. `option` (a number) is one option of a merged build, the search's `2b`: only that one goes. A whole merged build says how many options go with it.
+function deletePanel({ doc, token, option = null }) {
+    const { variantView, variantCount } = require('./loadoutRender');
+    const count = variantCount(doc);
+    const one = option != null && count > 1;
+    const view = one ? variantView(doc, option) : doc;
+    const L = require('./loadoutOptions').optionLetter;
+    const title = one ? `Delete Option ${L(option)} of ${doc.weaponName} ${doc.buildName}?` : `Delete ${doc.weaponName} ${doc.buildName}${count > 1 ? `, all ${count} options` : ''}?`;
+    const note = one ? `-# Only this option goes; the ones after it move up a letter. Every change is recorded and can be reverted.` : '-# Every change is recorded and can be reverted.';
     return [{ type: 17, accent_color: FAIL_ACCENT, components: [
-        headerBlock(`### ${emojis.warn} Delete ${doc.weaponName} ${doc.buildName}?`, [...identityLines(doc), '-# Every change is recorded and can be reverted.'], doc.imageKey, doc),
-        { type: 10, content: `**Attachments**\n${attachmentList(doc)}` },
+        headerBlock(`### ${emojis.warn} ${title}`, [...identityLines(view), note], view.imageKey, view),
+        { type: 10, content: `**Attachments**\n${attachmentList(view)}` },
         { type: 1, components: [
             { type: 2, style: 2, label: 'Cancel', custom_id: `mng_delcancel_${token}` },
             { type: 2, style: 4, label: 'Yes, delete', custom_id: `mng_delconfirm_${token}`, emoji: emojis.parseEmoji(emojis.deleteBin) },

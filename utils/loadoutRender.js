@@ -201,7 +201,7 @@ function variantView(build, v = 0) {
     const i = Math.min(Math.max(Number(v) || 0, 0), variantCount(build) - 1);
     if (!i) return build;
     const x = build.variants[i - 1];
-    return { ...build, attachments: x.attachments || [], attachmentSlots: x.attachmentSlots || [], shareCode: x.shareCode || '', imageKey: x.imageKey || build.imageKey, variantLabel: x.label || '' };
+    return { ...build, attachments: x.attachments || [], attachmentSlots: x.attachmentSlots || [], shareCode: x.shareCode || '', imageKey: x.imageKey || build.imageKey, imageVersion: x.imageVersion ?? null, sourceHash: x.sourceHash ?? null, variantLabel: x.label || '' };
 }
 // The slots whose attachment is not the same in every option (a slot one option leaves empty counts). Keyed by slot name, or by position for a build with no slot names.
 function slotMap(b) { const m = {}; (b.attachments || []).forEach((a, i) => { m[(b.attachmentSlots || [])[i] || `#${i}`] = a; }); return m; }

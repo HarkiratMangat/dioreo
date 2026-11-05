@@ -19,7 +19,7 @@
       {
         "type": 18,
         "label": "Category, build #, gunsmith code",
-        "description": "The code is required; a build # another build has swaps the two",
+        "description": "Code required. A taken build # swaps the two; 2b is Build 2's Option B",
         "component": {
           "type": 4,
           "custom_id": "build",
@@ -89,7 +89,7 @@
       {
         "type": 18,
         "label": "Category, build #",
-        "description": "A build # another build has swaps the two; blank is the next number",
+        "description": "A taken build # swaps the two; 2b is Build 2's Option B; blank is the next",
         "component": {
           "type": 4,
           "custom_id": "build",
@@ -160,7 +160,7 @@
       {
         "type": 18,
         "label": "Category, build #, gunsmith code",
-        "description": "The code is required; a build # another build has swaps the two",
+        "description": "Code required. A taken build # swaps the two; 2b is Build 2's Option B",
         "component": {
           "type": 4,
           "custom_id": "build",
@@ -233,7 +233,7 @@
       {
         "type": 18,
         "label": "Category, build #, gunsmith code",
-        "description": "The code is required; a build # another build has swaps the two",
+        "description": "Code required. A taken build # swaps the two; 2b is Build 2's Option B",
         "component": {
           "type": 4,
           "custom_id": "build",
@@ -306,7 +306,7 @@
       {
         "type": 18,
         "label": "Category, build #",
-        "description": "A build # another build has swaps the two; blank is the next number",
+        "description": "A taken build # swaps the two; 2b is Build 2's Option B; blank is the next",
         "component": {
           "type": 4,
           "custom_id": "build",
@@ -408,7 +408,7 @@
             "custom_id": "lines",
             "label": "Weapon | [Build Name]",
             "style": 2,
-            "placeholder": "BAL-27  (removes ALL builds of this weapon)\nBAL-27 | Build 2  (removes just this one build)",
+            "placeholder": "BAL-27  (every build)\nBAL-27 | Build 2  (one build)\nBAL-27 | 2b  (Option B of Build 2)",
             "required": true
           }
         ]
@@ -427,7 +427,7 @@
             "custom_id": "lines",
             "label": "Weapon | [Build Name]",
             "style": 2,
-            "placeholder": "BAL-27  (removes ALL builds of this weapon)\nBAL-27 | Build 2  (removes just this one build)",
+            "placeholder": "BAL-27  (every build)\nBAL-27 | Build 2  (one build)\nBAL-27 | 2b  (Option B of Build 2)",
             "required": true
           }
         ]

@@ -67,7 +67,8 @@ function loadoutSnippet(values) {
     const ident = form.parseIdentity(v(values, 'build'), 'MP');
     const { attachments, badgesRaw } = form.parseAttachmentsBadges(v(values, 'attachments'));
     const lines = [`${weaponName} | ${ident.category || 'AR'}`];
-    if (ident.number) lines.push(`Build: Build ${ident.number}`);
+    // `2b` stays `Build 2b`, an option of Build 2 (merged builds, 2026-11-05).
+    if (ident.number) lines.push(`Build: Build ${require('../../utils/loadoutOptions').optionTag(ident.number, ident.option || 0)}`);
     if (label) lines.push(`Label: ${label}`);
     if (ident.code) lines.push(`Code: ${ident.code}`);
     if (badgesRaw) lines.push(`Badges: ${badgesRaw}`);

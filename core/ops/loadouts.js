@@ -136,9 +136,22 @@ async function upsertBulkBlocks(parsed, mode, session) {
     // 🔴 Every doc UPDATED in place (not created) needs its PRE-update state captured here, or a bulk invert can only delete the newly-created docs and silently leaves every in-place overwrite un-reverted -- the same class of bug draws/calendar's bulk ops already solved by replaying the whole prior array.
     const updatedPriors = [];
     const touchedBuilds = [];
+    // Blocks for an option of a merged build that could not be saved, each with why (utils/loadoutOptions.js; shown as Skipped).
+    const optionSkips = [];
+    const createdKeys = new Set();
     for (let rawEntry of parsed) {
         const { weaponKey } = rawEntry;
         let { buildName } = rawEntry;
+        // `Build: 2`, `Build: 2b` (merged builds, 2026-11-05): a bare number is `Build 2`, and a letter past a names an option of that build, which is written into the build rather than saved as a build of its own. Before this `Build: 2` saved a new build literally named "2".
+        const tag = /^(?:build\s*)?(\d+)([a-z])?$/i.exec(String(buildName || '').trim());
+        if (tag) { buildName = `Build ${Number(tag[1])}`; rawEntry = { ...rawEntry, buildName }; }
+        const optionIndex = tag?.[2] ? tag[2].toLowerCase().charCodeAt(0) - 97 : 0;
+        if (optionIndex > 0) {
+            const skip = await upsertOptionBlock({ rawEntry, optionIndex, mode, session, updatedPriors, createdKeys });
+            if (skip) optionSkips.push(skip);
+            else { touchedKeys.add(weaponKey); touchedBuilds.push({ weaponKey, buildName }); updated++; }
+            continue;
+        }
         let existing = await Loadout.findOne({ weaponKey, mode, buildName }).session(session);
         // A block with no Build: line is a NEW build, numbered after the weapon's others (2026-10-26 01:19 EDT: buildName is always `Build N`, the number that orders /gunsmith). It used to be saved as "Standard Build", which numbered nothing.
         if (!existing && buildName === 'Standard Build') {
@@ -164,16 +177,57 @@ async function upsertBulkBlocks(parsed, mode, session) {
             updated++;
         } else {
             await Loadout.create([entry], { session });
+            createdKeys.add(`${weaponKey}|${buildName}`);
             created++;
         }
         if (!(await checkImageExists(imageKey))) missingImages.push({ label: `${entry.weaponName} (${buildName})`, imageKey });
     }
     // Metadata for exactly the builds this paste wrote, once, after the loop. Read WITH the session: outside it a transaction's own uncommitted writes are invisible, so the sync would publish the pre-paste data. Promise.all is safe because syncLoadoutMetadata is a Cloudinary HTTP call that never touches the session.
     if (touchedBuilds.length) {
-        const docs = await Loadout.find({ mode, $or: touchedBuilds }).session(session);
-        await Promise.all(docs.map(d => syncLoadoutMetadata(d, d.attachmentSlots)));
+        const docs = await Loadout.find({ mode, $or: touchedBuilds }).session(session).lean();
+        const { variantView, variantCount } = require('../../utils/loadoutRender');
+        await Promise.all(docs.flatMap(d => Array.from({ length: variantCount(d) }, (_, i) => { const v = variantView(d, i); return syncLoadoutMetadata(v, v.attachmentSlots); })));
     }
-    return { created, updated, touchedKeys, missingImages, updatedPriors };
+    // A Revert restores each overwritten build through loadout.edit with its prior record. A build that had no options has no `variants` key there, so an option this paste added would survive the Revert: [] clears it.
+    for (const p of updatedPriors) if (!p.prior.variants) p.prior.variants = [];
+    return { created, updated, touchedKeys, missingImages, updatedPriors, optionSkips };
+}
+
+// One `Build: 2b` block: Build 2's Option B, replaced if it exists, added if it is the next letter. The build must already exist, in the database or earlier in the same paste (an export lists a build before its options). A field the block left out keeps the option's stored value, as a build's does. Returns why it was skipped, or null.
+async function upsertOptionBlock({ rawEntry, optionIndex, mode, session, updatedPriors, createdKeys }) {
+    const lo = require('../../utils/loadoutOptions');
+    const { PLACEHOLDER_IMAGE } = require('../../utils/adminParser');
+    const { weaponName, weaponKey, buildName } = rawEntry;
+    const number = buildName.replace(/^Build /, '');
+    const tag = lo.optionTag(number, optionIndex);
+    const parent = await Loadout.findOne({ weaponKey, mode, buildName }).session(session).lean();
+    if (!parent) return `${weaponName} ${tag} -- there is no ${weaponName} ${buildName} to add it to, so it was skipped.`;
+    const options = lo.optionsOf(parent);
+    if (optionIndex > options.length) return `${weaponName} ${tag} -- ${buildName} has ${options.length === 1 ? 'one option' : `options up to ${lo.optionTag(number, options.length - 1)}`}, so the next one is ${lo.optionTag(number, options.length)}; it was skipped.`;
+    const old = options[optionIndex] || null;
+    const { defaulted = [] } = rawEntry;
+    const keep = (k) => old && defaulted.includes(k);
+    const sameList = old && old.attachments.length === rawEntry.attachments.length && old.attachments.every((a, i) => a === rawEntry.attachments[i]);
+    const imageKey = keep('imageKey') ? old.imageKey : (defaulted.includes('imageKey') ? PLACEHOLDER_IMAGE : rawEntry.imageKey);
+    const option = lo.cleanOption({
+        attachments: rawEntry.attachments,
+        attachmentSlots: sameList && old.attachmentSlots.length ? old.attachmentSlots : await slotsFor(rawEntry.attachments),
+        shareCode: keep('shareCode') ? old.shareCode : (rawEntry.shareCode || ''),
+        imageKey,
+        imageVersion: old && old.imageKey === imageKey ? old.imageVersion : null,
+        sourceHash: old && old.imageKey === imageKey ? old.sourceHash : null,
+        label: old?.label || '',
+    });
+    const next = optionIndex < options.length ? options.map((o, i) => (i === optionIndex ? option : o)) : [...options, option];
+    const problem = lo.listProblem(next);
+    if (problem) return `${weaponName} ${tag} -- ${problem} It was skipped.`;
+    // The build's record before this paste, once, unless this paste created it (its Revert deletes it).
+    if (!createdKeys.has(`${weaponKey}|${buildName}`) && !updatedPriors.some(p => p.id === String(parent._id))) {
+        const { _id, __v, ...prior } = parent;
+        updatedPriors.push({ id: String(parent._id), prior });
+    }
+    await Loadout.updateOne({ _id: parent._id }, { variants: lo.optionsToFields(next).variants, lastUpdated: new Date() }, { session });
+    return null;
 }
 
 registerEntity('loadouts', {
@@ -334,6 +388,68 @@ registerEntity('loadouts', {
         invert: (c) => ({ type: 'loadout.credit', target: { id: c.applied.id, mode: c.applied.mode }, payload: c.applied.prior })
     },
 
+    // A merged build's options (utils/loadoutOptions.js, Harkirat 2026-11-05: "1, 1b, 1c"): add, edit, reorder or remove options, written as the fields that store them, Option A's on the build itself and the rest as `variants`, with any of the whole build's category, label and badges the same save changed. One op for all four, because each is "this build's options are now this list", and its inverse is the list it replaced. Its own op, not loadout.edit: an edit re-numbers the build and fills defaults for every field it is not sent, and an option save renames nothing. A move between builds (an option leaving to become its own build, or a build joining another as an option) is this op plus a loadout.add or loadout.delete in the same changeset, so one Revert puts both back. No /manage action id of its own (it rides on Edit, Add and Delete), so it declares its pages, as loadout.credit does; core/changeset.js LOADOUT_OPS_BY_ID checks the permission against the stored build's mode.
+    'loadout.options': {
+        page: ['loadouts_mp', 'loadouts_dmz'], tier: 1,
+        validate: (op) => {
+            if (!op.target?.id) return { ok: false, errors: ['No build was selected.'] };
+            const { OPTION_FIELDS, BUILD_FIELDS } = require('../../utils/loadoutOptions');
+            // lastUpdated only ever arrives in an inverse, which restores the date the save replaced.
+            const allowed = new Set([...OPTION_FIELDS, ...BUILD_FIELDS, 'variants', 'lastUpdated']);
+            const extra = Object.keys(op.payload || {}).filter(k => !allowed.has(k));
+            if (extra.length) return { ok: false, errors: [`An options save can't change ${extra.join(', ')}.`] };
+            if (op.payload.variants !== undefined && !Array.isArray(op.payload.variants)) return { ok: false, errors: ['The options must be a list.'] };
+            return { ok: true, errors: [], normalized: { payload: { ...op.payload } } };
+        },
+        preview: async (op) => {
+            const cur = await Loadout.findById(op.target.id).lean();
+            return { before: cur, after: { ...cur, ...op.payload } };
+        },
+        apply: async (op, { session, restoring = false }) => {
+            const lo = require('../../utils/loadoutOptions');
+            const cur = await Loadout.findById(op.target.id).session(session).lean();
+            if (!cur) return { ok: false, reason: 'missing' };
+            if (op.target.mode && op.target.mode !== cur.mode) return { ok: false, reason: `That build is ${cur.mode}, not ${op.target.mode}.` };
+            const set = { ...op.payload };
+            if (!restoring) {
+                const options = lo.optionsOf({ ...cur, ...set });
+                const problem = lo.listProblem(options);
+                if (problem) return { ok: false, reason: problem };
+                for (const [i, o] of options.entries()) {
+                    const codeError = codeRule({ ...cur, attachments: o.attachments, shareCode: o.shareCode });
+                    if (codeError) return { ok: false, reason: `Option ${lo.optionLetter(i)}: ${codeError}` };
+                }
+                // A code is one build: no option here may carry a code another build of this weapon (or one of its options) has.
+                const { sameCode } = require('../../utils/loadoutForm');
+                const others = await Loadout.find({ weaponKey: cur.weaponKey, mode: cur.mode, _id: { $ne: cur._id } }).session(session).lean();
+                for (const [i, o] of options.entries()) {
+                    const clash = o.shareCode && others.find(b => lo.codesOf(b).some(c => sameCode(c, o.shareCode)));
+                    if (clash) return { ok: false, reason: `Option ${lo.optionLetter(i)}'s code \`${o.shareCode}\` is already ${clash.weaponName} ${clash.buildName}'s, and the same code is the same build.` };
+                }
+                // Slot names for any option whose list has none that line up, from the catalogue, the same as loadout.edit.
+                const filled = await Promise.all(options.map(async o => (o.attachmentSlots.length === o.attachments.length ? o : { ...o, attachmentSlots: await slotsFor(o.attachments) })));
+                const fields = lo.optionsToFields(filled);
+                for (const k of [...lo.OPTION_FIELDS, 'variants']) set[k] = fields[k];
+                set.lastUpdated = new Date();
+            }
+            // null and [], never undefined, so the inverse (a JSON ChangeLog row) can clear a field the build did not have.
+            const prior = Object.fromEntries(Object.keys(set).map(k => [k, k === 'variants' ? (cur.variants || []) : (cur[k] ?? null)]));
+            const res = await updateDocument({ Model: Loadout, id: op.target.id, expectVersion: cur.__v, set, session });
+            if (!res.ok) return res;
+            // Each option's picture carries its own structured metadata. Read WITH the session, as loadout.edit does.
+            const saved = await Loadout.findById(op.target.id).session(session).lean();
+            const { variantView, variantCount } = require('../../utils/loadoutRender');
+            if (saved) await Promise.all(Array.from({ length: variantCount(saved) }, (_, i) => { const v = variantView(saved, i); return syncLoadoutMetadata(v, v.attachmentSlots); }));
+            return {
+                ok: true,
+                change: { action: 'edit', model: 'Loadout', target: `${cur.weaponName} (${cur.buildName})`,
+                          summary: `Changed the options of loadout "${cur.weaponName} (${cur.buildName})"` },
+                applied: { id: op.target.id, mode: cur.mode, prior, version: res.version }
+            };
+        },
+        invert: (c) => ({ type: 'loadout.options', target: { id: c.applied.id, mode: c.applied.mode }, payload: c.applied.prior })
+    },
+
     'loadout.delete': {
         action: ['loadouts_mp:delete', 'loadouts_dmz:delete'], tier: 1,
         validate: (op) => op.target?.id ? { ok: true, errors: [], normalized: op } : { ok: false, errors: ['No build was selected.'] },
@@ -368,7 +484,7 @@ registerEntity('loadouts', {
         apply: async (op, { session }) => {
             const before = await Loadout.find({ mode: op.target.mode }).session(session).lean();
             const ids = before.map(b => String(b._id));
-            const { created, updated, touchedKeys, missingImages, updatedPriors } = await upsertBulkBlocks(op.payload.parsed, op.target.mode, session);
+            const { created, updated, touchedKeys, missingImages, updatedPriors, optionSkips } = await upsertBulkBlocks(op.payload.parsed, op.target.mode, session);
             const after = await Loadout.find({ mode: op.target.mode }).session(session).lean();
             const newIds = after.map(b => String(b._id)).filter(id => !ids.includes(id));
             return {
@@ -376,7 +492,7 @@ registerEntity('loadouts', {
                 change: { action: 'bulkAdd', model: 'Loadout', target: `${op.target.mode} Loadouts`,
                           summary: `Bulk import ${op.target.mode} loadouts`, detail: `${created} created, ${updated} updated` },
                 applied: { mode: op.target.mode, newIds, touchedKeys: [...touchedKeys], created, updated,
-                           missingImages, parseErrors: op.payload.parseErrors || [], updatedPriors }
+                           missingImages, parseErrors: [...(op.payload.parseErrors || []), ...optionSkips], updatedPriors }
             };
         },
         // 🔴 Deleting only the newly-created ids is HALF an inverse -- any build this bulk paste overwrote IN PLACE (matched an existing {weaponKey,mode,buildName}) is left un-reverted with no error. A compound changeset restores both halves: delete what was created, and restore every overwritten doc to its captured prior state.
@@ -403,7 +519,7 @@ registerEntity('loadouts', {
         apply: async (op, { session }) => {
             const before = await Loadout.find({ mode: op.target.mode }).session(session).lean();
             const ids = before.map(b => String(b._id));
-            const { created, updated, touchedKeys, missingImages, updatedPriors } = await upsertBulkBlocks(op.payload.parsed, op.target.mode, session);
+            const { created, updated, touchedKeys, missingImages, updatedPriors, optionSkips } = await upsertBulkBlocks(op.payload.parsed, op.target.mode, session);
             const after = await Loadout.find({ mode: op.target.mode }).session(session).lean();
             const newIds = after.map(b => String(b._id)).filter(id => !ids.includes(id));
             return {
@@ -411,7 +527,7 @@ registerEntity('loadouts', {
                 change: { action: 'bulkReplace', model: 'Loadout', target: `${op.target.mode} Loadouts`,
                           summary: `Bulk replace ${op.target.mode} loadouts`, detail: `${created} created, ${updated} updated` },
                 applied: { mode: op.target.mode, newIds, touchedKeys: [...touchedKeys], created, updated,
-                           missingImages, parseErrors: op.payload.parseErrors || [], updatedPriors }
+                           missingImages, parseErrors: [...(op.payload.parseErrors || []), ...optionSkips], updatedPriors }
             };
         },
         // 🔴 Deleting only the newly-created ids is HALF an inverse -- any build this bulk paste overwrote IN PLACE (matched an existing {weaponKey,mode,buildName}) is left un-reverted with no error. A compound changeset restores both halves: delete what was created, and restore every overwritten doc to its captured prior state.

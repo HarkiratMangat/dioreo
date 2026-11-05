@@ -201,7 +201,9 @@ function codeImageKey(weaponName, code) {
 // The Mongo query for another build already pointing at `key`, with or without a file extension: a key is one picture, and two builds must never share it.
 function keyHolderQuery(key, exceptId = null) {
     const k = String(key || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    return { imageKey: new RegExp(`^${k}(\\.(png|jpe?g|webp|gif|avif))?$`, 'i'), ...(exceptId ? { _id: { $ne: exceptId } } : {}) };
+    const re = new RegExp(`^${k}(\\.(png|jpe?g|webp|gif|avif))?$`, 'i');
+    // An option of a merged build holds its own picture (models/Loadout.js variants, 2026-11-05), so a key is taken there too.
+    return { $or: [{ imageKey: re }, { 'variants.imageKey': re }], ...(exceptId ? { _id: { $ne: exceptId } } : {}) };
 }
 
 // A picture moved to a new key (the code or the weapon name changed, the attachments did not): uploaded again from the asset's own delivery URL, read off the Admin API so the copy is today's version rather than a cached one. The old key stays, because Revert restores it. Same contract as uploadLoadoutImage.
