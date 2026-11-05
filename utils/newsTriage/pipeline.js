@@ -28,7 +28,7 @@ function toPost(m, { guildId, channelName } = {}) {
     const src = snap || m;
     const attachments = isRaw ? (src.attachments || []) : [...(src.attachments?.values?.() || [])];
     const images = attachments.filter(a => /^image\//i.test(a.content_type || a.contentType || '') || /\.(png|jpe?g|webp|gif)(\?|$)/i.test(a.url || '')).map(a => a.url);
-    const embeds = (src.embeds || []).map(e => ({ title: e.title || '', description: e.description || '', image: e.image?.url || e.thumbnail?.url || '' }));
+    const embeds = (src.embeds || []).map(e => ({ title: e.title || '', description: e.description || '', image: e.image?.proxy_url || e.image?.proxyURL || e.thumbnail?.proxy_url || e.thumbnail?.proxyURL || e.image?.url || e.thumbnail?.url || '' }));
     for (const e of embeds) if (e.image) images.push(e.image);
     const text = cleanText([src.content || '', ...embeds.flatMap(e => [e.title, e.description])].filter(Boolean).join('\n'));
     const channelId = isRaw ? m.channel_id : m.channelId;

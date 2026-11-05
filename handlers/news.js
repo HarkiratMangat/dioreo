@@ -11,6 +11,23 @@ async function allowed(interaction) {
     return false;
 }
 
+async function mayOpen(interaction, item) {
+    if (item.action === 'patch') return true; // the Add to Patch Notes command checks its own tier (canDo 'rightclick.addToPatchNotes')
+    let ok = false; let message = null;
+    if (item.where === 'draft') {
+        const res = await require('../utils/manageActions').resolveAction('seasondraft', item.action === 'draw' ? 'bulkdraws' : 'bulkcalendar', interaction.user.id);
+        ok = res.ok; message = res.message || null;
+    } else {
+        const { canDo, denyDo } = require('../utils/adminAccess');
+        const key = item.action === 'draw' ? 'rightclick.addToDraws' : 'rightclick.addToCalendar';
+        ok = await canDo(interaction.user.id, key);
+        if (!ok) message = denyDo(key);
+    }
+    if (ok) return true;
+    try { await interaction.reply({ content: message || 'You do not have access to that box.', flags: MessageFlags.Ephemeral }); } catch (e) { console.error('News card: could not refuse a click:', e); }
+    return false;
+}
+
 async function fetchSource(client, card) {
     try {
         const channel = await client.channels.fetch(card.sourceChannelId);
@@ -33,6 +50,8 @@ async function openItem(interaction, cardId, index) {
         try { await interaction.reply({ content: 'That card is no longer stored (cards are kept 30 days).', flags: MessageFlags.Ephemeral }); } catch (e) { console.error(e); }
         return;
     }
+    // The box's page tier, checked here as /manage checks it per click (security review, 2026-11-04 20:27 EST): /manage access alone let an admin without the Draws, Calendar or Next Season Draft create tier open that page's box. The submit is checked again by the op itself.
+    if (!(await mayOpen(interaction, item))) return;
     const r = require('../utils/newsTriage/resolve');
     const manage = interaction.client.commands.get('manage');
 

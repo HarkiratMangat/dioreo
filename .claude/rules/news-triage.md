@@ -32,6 +32,7 @@ A post in a followed news channel (`NEWS_WATCH`: #leaks from Leakers on Duty, #o
 - **Markdown and the "final patch notes are subject to change" line are stripped before anything reads the text**: chrono cannot read `November 27th__**`, and the disclaimer reads as a rumour.
 - **The model gets dates as words and never computes one**, so a catch-up after downtime reads "tomorrow" against the post, not against the bot's clock.
 - **Dev and prod never card into one channel**: each env sets its own `NEWS_CHANNEL`. The dev bot reads the real #leaks, which is the whole test.
+- 🔒 **The AI is shown only images from Discord's own hosts** (`model.js` `allowedImageUrl`: cdn.discordapp.com, media.discordapp.net, images-ext-N.discordapp.net; an embed's picture through its `proxy_url`), with no redirects and a size cap read while streaming. A post's links are third-party data. And **each button checks the tier of the page its box writes** (`handlers/news.js` `mayOpen`: the right-click Add-to keys for live, `resolveAction('seasondraft', …)` for the draft), as /manage does per click. Both from the commit security review, 2026-11-04 20:27 EST.
 - **A Discord image link expires** (signed, about a day), so a draw box re-reads the source post for its image at click time; /manage re-hosts it to Cloudinary on save. A trailer post's attachment is a video, so its box has no image.
 
 ## Limits, on purpose

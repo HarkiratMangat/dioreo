@@ -52,16 +52,25 @@ function shapeItems(parsed) {
     })).filter(it => it.name);
 }
 
+// Only Discord's own image hosts are fetched (an embed's picture is read through Discord's proxy_url, pipeline.js toPost), with no redirects and a size cap checked before and while reading: a post's links are third-party data, and an open fetch of any URL a post carried would let a post point the bot at any host (security review, 2026-11-04 20:27 EST).
+const IMAGE_HOSTS = new Set(['cdn.discordapp.com', 'media.discordapp.net']);
+const allowedImageUrl = (url) => { try { const u = new URL(url); return u.protocol === 'https:' && (IMAGE_HOSTS.has(u.hostname) || /^images-ext-\d+\.discordapp\.net$/.test(u.hostname)); } catch { return false; } };
+
 async function imagePart(imageUrl) {
-    if (!imageUrl) return null;
+    if (!imageUrl || !allowedImageUrl(imageUrl)) return null;
     try {
-        const res = await fetch(imageUrl, { signal: AbortSignal.timeout(IMAGE_TIMEOUT_MS) });
+        const res = await fetch(imageUrl, { signal: AbortSignal.timeout(IMAGE_TIMEOUT_MS), redirect: 'error' });
         if (!res.ok) return null;
         const type = (res.headers.get('content-type') || '').split(';')[0];
         if (!/^image\//i.test(type)) return null;
-        const buf = Buffer.from(await res.arrayBuffer());
-        if (buf.length > MAX_IMAGE_BYTES) return null;
-        return { inline_data: { mime_type: type, data: buf.toString('base64') } };
+        if (Number(res.headers.get('content-length') || 0) > MAX_IMAGE_BYTES) return null;
+        const chunks = []; let size = 0;
+        for await (const chunk of res.body) {
+            size += chunk.length;
+            if (size > MAX_IMAGE_BYTES) return null;
+            chunks.push(chunk);
+        }
+        return { inline_data: { mime_type: type, data: Buffer.concat(chunks).toString('base64') } };
     } catch { return null; }
 }
 
@@ -75,4 +84,4 @@ async function readPost({ text, imageUrl, postedAt, liveSeason }) {
     return shapeItems(parsed);
 }
 
-module.exports = { buildPrompt, shapeItems, readPost };
+module.exports = { buildPrompt, shapeItems, readPost, allowedImageUrl };
