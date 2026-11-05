@@ -54,7 +54,19 @@ function planDraftChanges(draftIn, items, post, { newId, skipKinds = DEFAULT_SKI
     const draft = JSON.parse(JSON.stringify(draftIn || {}));
     const makeId = newId || (() => new (require('mongoose').Types.ObjectId)());
     const source = rank => ({ channelId: post.channelId || '', messageId: post.id || '', rank });
+    // One post naming the same item twice (a calendar image and its caption, with two dates) is one item: the first mention wins and the later ones only fill what it left out. Planned one after the other, the second flipped the first's date and a re-read of the same post flipped it back, writing changes every time (the scenario grid, 2026-11-05 17:13 EST).
+    const merged = [];
+    // A post that cancels an item and also announces it is moving it: the announcement stands, and the cancellation is dropped (else every re-read removed the row and added it back).
+    const announced = (items || []).filter(i => i.change !== 'cancelled');
     for (const item of items || []) {
+        if (item.change === 'cancelled' && announced.some(a => a.where === item.where && a.kind === item.kind && same(a.name, item.name))) continue;
+        const twin = merged.find(m => m.where === item.where && m.kind === item.kind && m.change !== 'cancelled' && item.change !== 'cancelled' && same(m.name, item.name));
+        if (!twin) { merged.push({ ...item }); continue; }
+        for (const k of ['startText', 'start', 'end', 'thumbnailUrl']) if (!twin[k] && item[k]) twin[k] = item[k];
+        if (!(twin.rewards || []).length && (item.rewards || []).length) twin.rewards = item.rewards;
+        if (item.doubleCP) twin.doubleCP = true;
+    }
+    for (const item of merged) {
         const mark = changes.length;
         planItem(item);
         applyDraftChanges(draft, changes.slice(mark));
@@ -119,12 +131,12 @@ function planDraftChanges(draftIn, items, post, { newId, skipKinds = DEFAULT_SKI
             if (!cur.newsSource) { notes.push({ name: cur.title, why: 'already in the draft (you added it)' }); continue; }
             if (sig(cur) !== cur.newsSource.sig) { notes.push({ name: cur.title, why: 'you edited it, so it was left alone' }); continue; }
             const better = rank > (cur.newsSource.rank || 0); const asGood = rank >= (cur.newsSource.rank || 0);
-            const changed = item.change === 'changed';
             const set = {};
             if (better && w.row.title !== cur.title) set.title = w.row.title;
             const placeholder = cur.newsSource.dated === false;
-            if (item.startText && w.row.date && (!cur.date || placeholder || ((asGood || changed) && day(w.row.date) !== day(cur.date)))) set.date = w.row.date;
-            if (w.list === 'calendar' && w.row.endDate && (!cur.endDate || ((asGood || changed) && day(w.row.endDate) !== day(cur.endDate)))) set.endDate = w.row.endDate;
+            // A lower source never moves a higher one's date, even when it says the date changed (the scenario grid, 2026-11-05 17:13 EST: the rule above said so and `|| changed` let a leak's "changed" move an official date). The same or a better source does.
+            if (item.startText && w.row.date && (!cur.date || placeholder || (asGood && day(w.row.date) !== day(cur.date)))) set.date = w.row.date;
+            if (w.list === 'calendar' && w.row.endDate && (!cur.endDate || (asGood && day(w.row.endDate) !== day(cur.endDate)))) set.endDate = w.row.endDate;
             if (w.list !== 'calendar' && !cur.thumbnailUrl && w.row.thumbnailUrl) set.thumbnailUrl = w.row.thumbnailUrl;
             if (w.list !== 'calendar' && !(cur.items || []).length && w.row.items.length) set.items = w.row.items;
             if (!Object.keys(set).length) continue;
