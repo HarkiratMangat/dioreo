@@ -34,8 +34,12 @@ function displayCategoryLabel(category) {
 }
 
 // `Loadout.imageKey` supports EITHER a bare Cloudinary key (prefixed with the Cloudinary base URL below, the original design used by admin-added loadouts) OR a full external URL -- added for builds.xlsx's 2 originally-imgur-hosted LOCUS rows (since re-uploaded to Cloudinary directly, see models/Loadout.js), kept supported in case a future import ever needs it again.
-function buildImageUrl(imageKey) {
-    return imageKey.startsWith('http') ? imageKey : `https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_auto/v1/${imageKey}`;
+//
+// 🔴 `stamp` is the build's `lastUpdated`, and it goes in the URL as the version (BAL-27, 2026-11-05 10:00 EST). A picture replaced at the SAME key (an MP picture is keyed by weapon + code, so a new screenshot of the same build always lands on the old key) used to keep the very same URL, `.../v1/BAL-27-1C2C4A8A9D`. Cloudinary had the new picture within the minute, but it sends `immutable, max-age=2592000`, so Discord's media proxy (and a browser) kept showing the old one for up to 30 days: /manage said the save worked and /gunsmith still showed the old screenshot. Cloudinary ignores the version number when it finds the asset (any number serves the current picture, measured), so a stamp that changes on every save gives a fresh URL exactly when the picture may have changed. Every writer of a build stamps lastUpdated (core/ops/loadouts.js edit + bulk upsert, a new doc's default), so no writer has to remember a separate field. No stamp keeps the old `v1`.
+function buildImageUrl(imageKey, stamp) {
+    if (imageKey.startsWith('http')) return imageKey;
+    const t = stamp ? Math.floor(new Date(stamp).getTime() / 1000) : NaN;
+    return `https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_auto/v${t > 0 ? t : 1}/${imageKey}`;
 }
 
 // Deterministic weaponKey + next-build-number + Cloudinary-key computation for /autobuild -- no AI involved (per the design spec). weaponKey matches the exact convention every other write site in this codebase already uses (handlers/manage/loadouts.js's add_loadout_/edit_loadout_ handlers: lowercase, spaces stripped). buildName follows a plain "Build N" convention specific to auto-created loadouts (there's no human-typed variant label like "Aggressive Flex" available from a screenshot) -- N is computed from the HIGHEST existing "Build N" number among this weapon's current builds, not a count, so a deleted build in the middle can't produce a colliding buildName. Non-"Build N"-shaped existing names are simply ignored for this max-finding purpose, not treated as errors. imageKey follows the documented convention (.claude/rules/loadout-images-and-metadata.md, "Recommended naming convention"): WeaponKey-BuildNum, all-caps, hyphens preserved from the weapon name's own word breaks (a multi-word name like "Holger 26" becomes "HOLGER-26", a single-word name stays single-word with no hyphen invented that wasn't already implied by a space).
@@ -220,7 +224,7 @@ function optionCards(build) {
         const v = variantView(build, i);
         const code = v.mode !== 'DMZ' && v.shareCode ? ` · ${emojis.gunsmithCode} \`${gunsmithCodeText(build, v.shareCode)}\`` : '';
         const text = { type: 10, content: `**Option ${String.fromCharCode(65 + i)}**${code}\n${orderedAttachments(v).map((att, n) => `-# ${n + 1}. ${att}`).join('\n')}` };
-        return hasRealImage(v) ? { type: 9, components: [text], accessory: { type: 11, media: { url: buildImageUrl(v.imageKey) } } } : text;
+        return hasRealImage(v) ? { type: 9, components: [text], accessory: { type: 11, media: { url: buildImageUrl(v.imageKey, v.lastUpdated) } } } : text;
     });
 }
 
@@ -321,7 +325,7 @@ function buildLoadoutCardBody(build, { index = 0, total = 1, hideBadges = false,
         // A small space over the screenshot, no line (Harkirat, 2026-10-25 15:38-16:40 EDT: the line moved below the image, where it sets off the footer and the controls; it was a divider:true small since 2026-10-24 09:45 EDT).
         containerComponents.push({ type: 14, spacing: 1, divider: false });
         // A build with only the placeholder image says so in one quiet line instead of showing a grey "Coming Soon" rectangle; it stays in every list (his call, same message).
-        if (hasRealImage(activeBuild)) containerComponents.push({ type: 12, items: [{ media: { url: buildImageUrl(activeBuild.imageKey) } }] });
+        if (hasRealImage(activeBuild)) containerComponents.push({ type: 12, items: [{ media: { url: buildImageUrl(activeBuild.imageKey, activeBuild.lastUpdated) } }] });
         else containerComponents.push({ type: 10, content: '-# *No screenshot of this build yet.*' });
     }
     // `footerBuild` is false on a single weapon's card with a pager, which already reads "Build 2 of 5"; a browse card's pager counts the class instead, and a one-build card has no pager, so both keep the build in the footer (Harkirat, 2026-10-24 18:25 EDT: with one build "it doesn't mention build one of one for this anymore"). A submitted build names its submitter at the end, or "anonymous" (Harkirat, 2026-10-25 16:53-16:59 EDT); the mention never pings (every send here goes out with no allowed mentions). Or a plain-name credit, "Credit: name" (2026-11-02 23:01 EST, utils/loadoutCredit.js).
