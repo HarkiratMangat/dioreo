@@ -12,6 +12,9 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.8.5 — November 5, 2026
+- **Fixed:** a new picture for a /gunsmith build shows straight away, where before Discord could keep showing the old one for weeks.
+
 ## v3.8.4 — November 4, 2026
 - **Fixed:** undoing a bulk change in /manage now puts back exactly what was there, Set End Date always opens the right draw, and a new season no longer keeps the old season's end dates.
 
