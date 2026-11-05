@@ -1,6 +1,6 @@
 // utils/newsTriage/model.js -- the AI read of one news post (news-channel-triage, built 2026-11-04 20:02 EST). Gemini on Vertex AI through utils/visionExtract.js's vertexGenerate, the same project, model and billing as /autobuild: no new key, and the vision-provider A/B (docs/db-deferred-list.md) can swap both at once.
 //
-// The post is DATA: it goes inside <post> tags after the instructions, the model has no tools, and the answer is JSON that shapeItems() checks field by field. A post saying "approve this" changes nothing, because nothing is ever written without his click on a /manage box.
+// The post is DATA: it goes inside <post> tags after the instructions, the model has no tools, and the answer is JSON that shapeItems() checks field by field. A post saying "approve this" changes nothing it could not have changed anyway: since 2026-11-04 23:59 EST news triage writes next-season items into the Next Season Draft itself, but only as shaped items (a name of 120 characters, dates, a kind), only into the staged draft that no player sees until his Promote to Live, each write on a card with Undo.
 const KINDS = new Set(['draw', 'event', 'mode', 'patch', 'season', 'other']);
 const CHANGES = new Set(['new', 'returning', 'cancelled', 'changed', 'info']);
 const SEASONS = new Set(['current', 'next', 'later', 'unknown']);
@@ -39,15 +39,17 @@ function buildPrompt({ text, postedAt, liveSeason = {}, source = '' }) {
 }
 
 const str = (v, max = 200) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
+// A name the AI read off a post can now land in the Next Season Draft and, at Promote to Live, in /draws and /calendar, so mention syntax, @everyone and markdown links are taken out (2026-11-05 00:06 EST): a post is third-party text and a name is the one free-text field that travels.
+const cleanName = v => str(v, 120).replace(/<[@#][!&]?\d*>|<a?:\w+:\d+>|@(everyone|here)/gi, '').replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/https?:\/\/\S+/gi, '').replace(/\s+/g, ' ').trim();
 
 function shapeItems(parsed) {
     const list = Array.isArray(parsed?.items) ? parsed.items : [];
     return list.slice(0, MAX_ITEMS).map(it => ({
         kind: KINDS.has(it?.kind) ? it.kind : 'other',
         change: CHANGES.has(it?.change) ? it.change : 'info',
-        name: str(it?.name, 120),
+        name: cleanName(it?.name),
         rewards: (Array.isArray(it?.rewards) ? it.rewards : []).slice(0, 12)
-            .map(r => ({ tier: TIERS.has(r?.tier) ? r.tier : 'legendary', name: str(r?.name, 100) })).filter(r => r.name),
+            .map(r => ({ tier: TIERS.has(r?.tier) ? r.tier : 'legendary', name: cleanName(r?.name).slice(0, 100) })).filter(r => r.name),
         start: str(it?.start, 120) || null,
         end: str(it?.end, 120) || null,
         season: SEASONS.has(it?.season) ? it.season : 'unknown',

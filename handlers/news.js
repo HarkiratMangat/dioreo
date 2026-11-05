@@ -108,6 +108,21 @@ async function dismiss(interaction, cardId) {
     if (card) await require('../utils/newsTriage/pipeline').redrawCard(interaction.client.rest, card, interaction.applicationId);
 }
 
+// Undo draft changes: reverts the ChangeLog row news triage wrote for this card, through core/revert.js, whose own check needs the Undo tier on the Next Season Draft page.
+async function undoDraft(interaction, cardId) {
+    const NewsCard = require('../models/NewsCard');
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    const card = await NewsCard.findById(cardId).lean().catch(() => null);
+    if (!card?.draftChangeId) return interaction.editReply({ content: 'Nothing on this card was written to the draft.' });
+    if (card.draftUndone) return interaction.editReply({ content: 'Already undone.' });
+    const res = await require('../core/revert').revertChange(card.draftChangeId, { actorId: interaction.user.id, source: 'discord' });
+    if (!res.ok) return interaction.editReply({ content: res.reason || 'The undo could not be applied.' });
+    await NewsCard.updateOne({ _id: cardId }, { $set: { draftUndone: true } }).catch(() => {});
+    const fresh = await NewsCard.findById(cardId).lean().catch(() => null);
+    if (fresh) await require('../utils/newsTriage/pipeline').redrawCard(interaction.client.rest, fresh, interaction.applicationId);
+    return interaction.editReply({ content: 'Undone: the Next Season Draft is back to how it was before this card, apart from anything changed since.' });
+}
+
 // "Make a card from one of these…" on the skipped list: read the post again and card it whatever the filter said.
 async function makeCard(interaction) {
     const [channelId, messageId] = String(interaction.values?.[0] || '').split(':');
@@ -118,7 +133,7 @@ async function makeCard(interaction) {
     if (!message) return interaction.editReply({ content: 'That post could not be read: it may have been deleted.' });
     const result = await pipeline.processPost(pipeline.toPost(message), { rest: interaction.client.rest, selfId: interaction.client.user?.id, appId: interaction.applicationId, force: true });
     const say = {
-        carded: 'Card posted.',
+        carded: result.drafted ? `Card posted; ${result.drafted} item(s) written to the Next Season Draft.` : 'Card posted.',
         'already carded': 'That post already has a card.',
         'no card': `The AI found nothing to add (${result.reason || 'no items'}).`,
         error: `The AI read failed: ${result.error || 'unknown error'}.`,
@@ -133,6 +148,7 @@ async function handleNewsInteraction(interaction) {
     const [, action, cardId, index] = interaction.customId.split('|');
     if (interaction.isButton() && action === 'go') { await openItem(interaction, cardId, Number(index)); return true; }
     if (interaction.isButton() && action === 'dismiss') { await dismiss(interaction, cardId); return true; }
+    if (interaction.isButton() && action === 'undo') { await undoDraft(interaction, cardId); return true; }
     if (interaction.isStringSelectMenu() && action === 'make') { await makeCard(interaction); return true; }
     return false;
 }

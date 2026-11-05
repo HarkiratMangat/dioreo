@@ -53,6 +53,7 @@ check('every op type maps back to a registry action, except the documented inter
     const exempt = new Set([
         'season.restoreSnapshot',  // internal -- promoteDraft/startNew's inverse target only
         'season.restoreDraft',     // internal -- discardDraft's inverse target only
+        'season.newsDraft',        // internal -- written by news triage (utils/newsTriage/pipeline.js), and its own inverse; no /manage button
         'patchnote.removeSeason',  // internal -- addSeason's inverse target only
         'patchnote.restoreSeason', // internal -- removeSeason's inverse target only
         'patchnote.restore',       // internal -- purge's inverse target only

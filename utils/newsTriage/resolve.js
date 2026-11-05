@@ -45,8 +45,9 @@ function readSlashDate(text, postedAt, dmy) {
     if (dmy) return readDate(swapSlash(text), postedAt);
     const asIs = readDate(text, postedAt); const swapped = readDate(swapSlash(text), postedAt);
     const away = d => (d ? Math.abs(d - new Date(postedAt)) : Infinity);
-    const FAR = 60 * 24 * 60 * 60 * 1000;
-    return away(asIs) > FAR && away(swapped) <= FAR ? swapped : asIs;
+    // Swapped only when the written order is over 100 days out and the swap within 45: "12/10" posted 10-07 is Dec 10 (64 days), not Oct 12, and a 60-day cut-off flipped it in the backtest, which drafted the Street Fighter armory ending before it began.
+    const DAY = 24 * 60 * 60 * 1000;
+    return away(asIs) > 100 * DAY && away(swapped) <= 45 * DAY ? swapped : asIs;
 }
 
 function catalogueMatch(name, catalogue) {
@@ -60,7 +61,13 @@ const seasonTitle = name => String(name || '').replace(/^(Season\s+\d+)\s*[:\-â€
 function resolveItem(raw, ctx) {
     const warnings = [];
     const start = readSlashDate(raw.start, ctx.postedAt, ctx.dayFirst);
-    const end = readSlashDate(raw.end, ctx.postedAt, ctx.dayFirst);
+    let end = readSlashDate(raw.end, ctx.postedAt, ctx.dayFirst);
+    // An end before its start was read in the wrong order (or a year short): try the other order, then a year on.
+    if (start && end && end < start) {
+        const swapped = readDate(swapSlash(raw.end), ctx.postedAt);
+        if (swapped && swapped >= start) end = swapped;
+        else if (end.getUTCMonth() < start.getUTCMonth()) end = new Date(Date.UTC(end.getUTCFullYear() + 1, end.getUTCMonth(), end.getUTCDate()));
+    }
     let action = ACTION_OF_KIND[raw.kind] || 'info';
     // Another region is dropped only when the post's own words say so (ctx.namesRegion, from filter.js); a region the AI read off the picture alone is shown with a warning instead, because a wrong drop is silent.
     if (raw.region === 'other' && ctx.namesRegion !== false) return { skip: 'another region' };
@@ -98,13 +105,15 @@ function resolveItem(raw, ctx) {
     if (cat && drawType === 'new') { drawType = 'returning'; warnings.push(`"${cat.title}" is in the draw index, so this is read as a returning draw.`); }
 
     const pool = (where === 'draft' ? ctx.draft : ctx.live) || {};
+    // When the draft is filled automatically (draftMerge.js), an item already in the draft is not dropped here: the merge decides whether it updates the row (a later post with its end date, an official post over a leak). Dropping it lost Leader's Kill Confirmed's end date in the backtest.
+    const merging = ctx.autoDraft && where === 'draft';
     if (action === 'draw') {
         const have = [...(pool.newDraws || []), ...(pool.returningDraws || [])].find(d => sameName(d.title, raw.name) && (!start || !d.date || sameDay(d.date, start)));
-        if (have) return { skip: where === 'draft' ? 'already in the Next Season Draft' : 'already on /draws' };
+        if (have && !merging) return { skip: where === 'draft' ? 'already in the Next Season Draft' : 'already on /draws' };
     }
     if (action === 'calendar') {
         const have = (pool.calendar || []).find(e => sameName(e.title, raw.name) && (!start || !e.date || sameDay(e.date, start)));
-        if (have) return { skip: where === 'draft' ? 'already in the draft calendar' : 'already on /calendar' };
+        if (have && !merging) return { skip: where === 'draft' ? 'already in the draft calendar' : 'already on /calendar' };
     }
 
     let startUsed = start;

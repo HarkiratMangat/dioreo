@@ -84,7 +84,7 @@ paths:
 | `ptn_` | `addToPatchNotes.js` (right-click Add to Patch Notes) |
 | `vc_` | `viewColors.js` (View Colors panel pages) |
 | `calc~` | `drawCalc.js` (`/draw calculator`) |
-| `news\|` | `news.js` (news-channel triage's card buttons and the skipped list's Make a card; `.claude/rules/news-triage.md`) |
+| `news\|` | `news.js` (news-channel triage's card buttons, its Undo draft changes, and the skipped list's Make a card; `.claude/rules/news-triage.md`) |
 | `txtpriv_` `txtrun_` | `textCommands.js` (the help card's /help icon, `txtpriv_help`, and a text command's Did you mean picks; the Open privately card was retired in B7, 2026-10-30; `.claude/rules/text-commands.md`) |
 | `admin_` | dispatched straight to `commands/admin.js`, above the chain |
 

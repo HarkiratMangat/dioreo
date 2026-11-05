@@ -44,6 +44,15 @@ function buildCard(card) {
     const id = String(card._id);
     const head = `### ${emojis.mngInfo} From #${card.sourceName || 'news'}\n-# Posted <t:${ts(card.postedAt)}:R>`;
     const parts = [{ type: 10, content: head }, { type: 14, spacing: 1, divider: true }];
+    // What news triage wrote into the Next Season Draft for this post, with Undo below (2026-11-04 23:59 EST).
+    if ((card.draftLines || []).length || (card.draftNotes || []).length) {
+        const lines = (card.draftLines || []).slice(0, 15).map(l => `- ${l}`);
+        if ((card.draftLines || []).length > 15) lines.push(`-# +${card.draftLines.length - 15} more`);
+        const notes = (card.draftNotes || []).slice(0, 6).map(n => `-# ${n}`);
+        const head2 = (card.draftLines || []).length ? `**${card.draftUndone ? `${emojis.cross} Undone:` : `${emojis.checkmark} In the Next Season Draft:`}**` : '';
+        parts.push({ type: 10, content: [head2, ...lines, ...notes].filter(Boolean).join('\n').slice(0, 1800) });
+        if ((card.items || []).length) parts.push({ type: 14, spacing: 1, divider: true });
+    }
     const items = (card.items || []).slice(0, MAX_ITEMS);
     items.forEach((item, i) => {
         const lines = [`${kindEmoji(item)} **${item.name}** · ${kindLabel(item)}`, dateLine(item)];
@@ -60,7 +69,8 @@ function buildCard(card) {
     for (const note of card.notes || []) parts.push({ type: 10, content: `-# ${note}` });
     parts.push({ type: 14, spacing: 2, divider: true });
     if (card.dismissed) parts.push({ type: 10, content: `-# ${emojis.cross} **Dismissed**` });
-    const row = [{ type: 2, style: 5, label: 'Open post', url: card.jumpUrl }];
+    const row = card.jumpUrl ? [{ type: 2, style: 5, label: 'Open post', url: card.jumpUrl }] : [];
+    if (card.draftChangeId && !card.draftUndone) row.push({ type: 2, style: 4, label: 'Undo draft changes', custom_id: `news|undo|${id}` });
     if (!card.dismissed) row.push({ type: 2, style: 2, label: 'Dismiss', custom_id: `news|dismiss|${id}` });
     parts.push({ type: 1, components: row });
     return [{ type: 17, accent_color: ACCENT, components: parts }];

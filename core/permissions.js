@@ -98,6 +98,7 @@ const OP_TIERS = {
     'season.setDraftTitlesDeadlines': 'create',
     'season.bulkDraftDraws': 'create',        // replaces the STAGED list only; nothing live changes
     'season.bulkDraftCalendar': 'create',
+    'season.newsDraft': 'create',             // news triage's automatic Next Season Draft writes; staged only, nothing live changes
     'season.promoteDraft': 'destructive',
     'season.discardDraft': 'destructive',
     'season.restoreDraft': 'destructive',     // inverse-only

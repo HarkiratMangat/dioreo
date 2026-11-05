@@ -81,8 +81,9 @@ function registerNewsWatch(client) {
     client.once(Events.ClientReady, () => {
         catchUp(client).catch(err => console.error('News triage catch-up failed:', err));
         setTimeout(() => {
-            pipeline.postSkippedList(client.rest, { appId: appIdOf(client) }).catch(() => {});
-            setInterval(() => pipeline.postSkippedList(client.rest, { appId: appIdOf(client) }).catch(() => {}), 24 * 60 * 60 * 1000).unref();
+            const daily = () => { pipeline.postSkippedList(client.rest, { appId: appIdOf(client) }).catch(() => {}); pipeline.carryOver(client.rest, { appId: appIdOf(client) }).catch(() => {}); };
+            daily();
+            setInterval(daily, 24 * 60 * 60 * 1000).unref();
         }, pipeline.msUntilNextDigest()).unref();
         console.log(`📰 News triage watching ${watch.size} channel(s), cards to ${pipeline.config().channel}`);
     });

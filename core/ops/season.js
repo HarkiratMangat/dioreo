@@ -293,6 +293,40 @@ registerEntity('season', {
         invert: (c) => ({ type: 'season.restoreDraft', payload: { draft: c.applied.draft } })
     },
 
+    // News triage's automatic Next Season Draft writes (utils/newsTriage/draftMerge.js, Harkirat's "yeah" to auto-filling the draft, 2026-11-04 23:59 EST). Not a /manage action, so it declares page:. The changes are planned outside the transaction and re-checked row by row inside it (applyDraftChanges skips a row edited since), and the op is its own inverse: forward applies the changes, reverse undoes them by id.
+    'season.newsDraft': {
+        page: 'seasondraft', tier: 1,
+        validate: (op) => (Array.isArray(op.payload?.changes) && (op.payload.changes.length || op.payload.reverse))
+            ? { ok: true, errors: [], normalized: op }
+            : { ok: false, errors: ['Nothing to draft.'] },
+        preview: (op, live) => ({ before: { active: !!live.draft?.active }, after: { active: true } }),
+        apply: async (op, { session }) => {
+            const M = require('../../utils/newsTriage/draftMerge');
+            const before = await SeasonalData.findOne(DOC).select('draft').lean().session(session);
+            const draft = JSON.parse(JSON.stringify(before?.draft || {}));
+            let applied; let names;
+            if (op.payload.reverse) {
+                M.undoDraftChanges(draft, op.payload.undo || {});
+                applied = { reversed: true, changes: op.payload.changes };
+                names = 'Undid news triage\'s draft changes';
+            } else {
+                const r = M.applyDraftChanges(draft, op.payload.changes);
+                applied = { undo: r.undo, changes: r.applied };
+                names = `News triage drafted ${[...new Set(r.applied.map(c => c.name))].slice(0, 6).join(', ')}${r.applied.length > 6 ? '…' : ''}`;
+            }
+            const $set = {
+                'draft.newDraws': draft.newDraws || [], 'draft.returningDraws': draft.returningDraws || [], 'draft.calendar': draft.calendar || [],
+                'draft.active': draft.active === undefined ? true : Boolean(draft.active),
+                'draft.currentSeasonTitle': draft.currentSeasonTitle || '', 'draft.bpStart': draft.bpStart || null,
+            };
+            await SeasonalData.updateOne(DOC, { $set }, { session });
+            return { ok: true, change: { action: 'edit', model: 'SeasonalData', target: 'draft (news)', summary: names }, applied };
+        },
+        invert: (c) => (c.applied.reversed
+            ? { type: 'season.newsDraft', payload: { changes: c.applied.changes } }
+            : { type: 'season.newsDraft', payload: { reverse: true, undo: c.applied.undo, changes: c.applied.changes } })
+    },
+
     // ⚠️ MISSING FROM THE PLAN ENTIRELY -- see the header note. Stages titles/deadlines into seasonalDoc.draft.* rather than the live top-level fields; never touches patch notes.
     'season.setDraftTitlesDeadlines': {
         action: 'seasondraft:settitles', tier: 1,

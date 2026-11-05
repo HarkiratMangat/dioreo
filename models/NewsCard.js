@@ -34,6 +34,11 @@ const newsCardSchema = new mongoose.Schema({
     items: { type: [newsItemSchema], default: [] },
     dismissed: { type: Boolean, default: false },
     notes: [{ type: String }],
+    // What news triage wrote into the Next Season Draft for this post (2026-11-04 23:59 EST): the ChangeLog id its Undo button reverts, one line per item, and why the rest were not drafted. Game data only.
+    draftChangeId: { type: String, default: '' },
+    draftLines: [{ type: String }],
+    draftNotes: [{ type: String }],
+    draftUndone: { type: Boolean, default: false },
     expireAt: { type: Date, required: true, expires: 0 },
 }, { timestamps: true });
 newsCardSchema.index({ sourceChannelId: 1, sourceMessageId: 1 }, { unique: true });

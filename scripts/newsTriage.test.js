@@ -80,6 +80,11 @@ check('day-first slash dates are read as day/month', () => {
     assert.strictEqual(iso(h.start), '2026-11-03T00:00:00.000Z', 'read as March 11 before the fix');
     assert.strictEqual(h.where, 'live');
     assert.strictEqual(iso(r.readSlashDate('11/20', new Date('2026-11-05T00:00:00Z'), false)), '2026-11-20T00:00:00.000Z', 'month-first stays month-first');
+    assert.strictEqual(iso(r.readSlashDate('12/10', new Date('2026-10-07T20:00:00Z'), false)), '2026-12-10T00:00:00.000Z', '64 days out is still month-first');
+    const sf = r.resolveItem(raw({ name: 'Street Fighter Champion\'s Collection Series Armory', start: '10/16', end: '12/10', season: 'next' }), { ...ctx, postedAt: new Date('2026-10-07T20:00:00Z'), liveEnd: new Date('2026-10-15T00:00:00Z') });
+    assert.ok(sf.end > sf.start, 'an end never lands before its start');
+    const wrap = r.resolveItem(raw({ name: 'X Draw', start: 'December 20', end: 'January 5', season: 'next' }), { ...ctx, postedAt: new Date('2026-12-01T00:00:00Z'), liveEnd: new Date('2026-12-10T00:00:00Z') });
+    assert.strictEqual(iso(wrap.end), '2027-01-05T00:00:00.000Z', 'an end in January after a December start is next year');
 });
 check('a season post becomes a Next Season Draft title-and-start row', () => {
     const it = r.resolveItem(raw({ kind: 'season', change: 'new', name: 'Season 10: 7th Anniversary', start: 'Wednesday, November 11th at 4 PM PT', season: 'next' }), { ...ctx, postedAt: new Date('2026-11-05T02:13:00Z') });
@@ -227,5 +232,80 @@ check('the handler owns news| and nothing else', async () => {
     const h = require('../handlers/news');
     assert.strictEqual(await h.handleNewsInteraction({ customId: 'mng_act_draws_add' }), false);
     assert.strictEqual(await h.handleNewsInteraction({}), false);
+
+// ---- Auto-draft into the Next Season Draft (utils/newsTriage/draftMerge.js) ----
+{
+    const M = require('../utils/newsTriage/draftMerge');
+    let n = 0; const newId = () => `r${++n}`;
+    const D = x => new Date(x);
+    const leak = { id: 'p1', channelId: 'c', official: false };
+    const drop = { where: 'draft', kind: 'draw', change: 'new', name: 'Means to an End Mythic Drop', start: D('2026-11-20'), startText: 'November 20', end: null, certainty: 'expected', drawType: 'new', rewards: [], thumbnailUrl: 'img' };
+    check('a name read off a post loses mentions, @everyone and links before it can reach the draft', () => {
+        const [it] = shapeItems({ items: [{ kind: 'draw', name: 'Free <@&123> Draw @everyone [click](https://x.y) https://evil.example/a', rewards: [{ tier: 'mythic', name: '<@1> Gun' }] }] });
+        assert.strictEqual(it.name, 'Free Draw click');
+        assert.strictEqual(it.rewards[0].name, 'Gun');
+    });
+    check('auto-draft: one row per item, his own rows untouched, unlisted kinds and dateless leaks held back', () => {
+        const draft = { newDraws: [], returningDraws: [], calendar: [{ _id: 'mine', title: 'Brain Rot MP Playlist', date: D('2026-11-12'), category: 'playlist' }], currentSeasonTitle: '', bpStart: null };
+        const items = [drop, drop,
+            { where: 'draft', kind: 'mode', change: 'new', name: 'Brain Rot MP Playlist', start: D('2026-11-12'), startText: '11/12', end: D('2026-11-18'), certainty: 'confirmed' },
+            { where: 'draft', kind: 'draw', change: 'new', name: 'Ghost Lucky Box', start: D('2026-11-12'), startText: '11/12', certainty: 'confirmed', drawType: 'new', rewards: [], thumbnailUrl: 'img' },
+            { where: 'draft', kind: 'event', change: 'new', name: 'Red Moon Themed Event', start: D('2026-11-12'), startText: '', certainty: 'expected' },
+            { where: 'draft', kind: 'season', change: 'new', name: 'Season 10: 7th Anniversary', start: D('2026-11-12'), startText: 'Nov 11 4pm PT' },
+            { where: 'live', kind: 'event', change: 'new', name: 'Live Thing', start: D('2026-11-06'), startText: 'tomorrow', certainty: 'confirmed' }];
+        const plan = M.planDraftChanges(draft, items, leak, { newId });
+        M.applyDraftChanges(draft, plan.changes);
+        assert.strictEqual(draft.newDraws.length, 1, 'the same drop twice in one post is one row');
+        assert.strictEqual(draft.calendar.length, 2, 'his row, plus the drop');
+        assert.strictEqual(draft.currentSeasonTitle, 'Season 10 — 7th Anniversary');
+        assert.ok(plan.notes.some(x => /you added it/.test(x.why)), 'his row is left alone');
+        assert.ok(plan.notes.some(x => /kind you don't list/.test(x.why)), 'a lucky box is not drafted');
+        assert.ok(plan.notes.some(x => /held/.test(x.why)), 'a dateless leak is held');
+        assert.ok(!draft.calendar.some(r => r.title === 'Live Thing'), 'a live item is never drafted');
+    });
+    check('auto-draft: an official post updates the leak\'s row; a later leak never overwrites it; an edited row is left alone; undo is exact', () => {
+        const draft = { newDraws: [], returningDraws: [], calendar: [] };
+        M.applyDraftChanges(draft, M.planDraftChanges(draft, [drop], leak, { newId }).changes);
+        const official = M.planDraftChanges(draft, [{ ...drop, name: 'Means To An End Mythic Drop', end: D('2027-02-17'), endText: '2/17', certainty: 'confirmed' }], { id: 'p2', channelId: 'o', official: true }, { newId });
+        M.applyDraftChanges(draft, official.changes);
+        assert.strictEqual(draft.calendar.length, 1, 'updated, not added');
+        assert.strictEqual(new Date(draft.calendar[0].endDate).toISOString().slice(0, 10), '2027-02-17');
+        assert.strictEqual(M.planDraftChanges(draft, [{ ...drop, start: D('2026-11-25'), startText: 'Nov 25' }], leak, { newId }).changes.length, 0, 'a leak never overwrites an official date');
+        draft.calendar[0].title = 'Means to an End (his own wording)';
+        const cancel = M.planDraftChanges(draft, [{ ...drop, change: 'cancelled' }], { id: 'p3', channelId: 'o', official: true }, { newId });
+        assert.ok(!cancel.changes.some(c => c.list === 'calendar'), 'his edited calendar row is not removed');
+        const before = JSON.stringify(draft);
+        const { undo } = M.applyDraftChanges(draft, cancel.changes);
+        assert.strictEqual(draft.newDraws.length, 0, 'the untouched draw row is removed on cancel');
+        M.undoDraftChanges(draft, undo);
+        assert.strictEqual(JSON.stringify(draft), before, 'undo restores the draft exactly');
+    });
+    check('auto-draft: a draw with no image keeps a card button; a dateless confirmed item takes a later real date', () => {
+        const draft = { newDraws: [], returningDraws: [], calendar: [] };
+        const noImg = { ...drop, thumbnailUrl: '', certainty: 'confirmed' };
+        const plan = M.planDraftChanges(draft, [noImg], leak, { newId });
+        assert.strictEqual(plan.needsBox.length, 1);
+        assert.ok(!plan.changes.some(c => c.list === 'newDraws'), 'no image, no draw row');
+        const placeholder = { ...drop, certainty: 'confirmed', startText: '', start: D('2026-11-12') };
+        const d2 = { newDraws: [], returningDraws: [], calendar: [] };
+        M.applyDraftChanges(d2, M.planDraftChanges(d2, [placeholder], leak, { newId }).changes);
+        M.applyDraftChanges(d2, M.planDraftChanges(d2, [{ ...drop, certainty: 'expected' }], leak, { newId }).changes);
+        assert.strictEqual(new Date(d2.calendar[0].date).toISOString().slice(0, 10), '2026-11-20', 'the placeholder start gave way to a real one');
+    });
+    check('carry-over: a live row still running at the next season\'s start is copied into the draft', () => {
+        const live = { calendar: [{ _id: 'a', title: 'Herrscher of Flamescion Draw', date: D('2026-09-10'), endDate: D('2026-11-10'), category: 'draw' }, { _id: 'b', title: 'Brain Rot MP Playlist', date: D('2026-10-01'), endDate: D('2026-10-14'), category: 'playlist' }], newDraws: [{ _id: 'c', title: 'Herrscher of Flamescion Draw', date: D('2026-09-10'), thumbnailUrl: 'x' }], returningDraws: [] };
+        const plan = M.planCarryOver({ calendar: [], newDraws: [], returningDraws: [], bpStart: D('2026-10-15') }, live, { newId });
+        assert.deepStrictEqual(plan.changes.map(c => `${c.list}:${c.name}`), ['calendar:Herrscher of Flamescion Draw', 'newDraws:Herrscher of Flamescion Draw']);
+    });
+    check('auto-draft: the card shows what was drafted, with Undo, and stays under Discord\'s limits', () => {
+        const lines = Array.from({ length: 20 }, (_, i) => `Added: **Item ${i}** (Nov 12 – Nov 18)`);
+        const c = buildCard({ _id: 'x', sourceName: 'leaks', jumpUrl: 'https://discord.com/channels/1/2/3', postedAt: new Date(), items: [], notes: [], draftChangeId: '#9', draftLines: lines, draftNotes: ['A: held'] });
+        const flat = JSON.stringify(c);
+        assert.ok(flat.includes('news|undo|x'), 'an Undo button');
+        assert.ok(flat.includes('+5 more'), 'a long list is cut with a count');
+        assert.ok(countComponents(c) <= 40);
+    });
+}
+
     console.log(`✅ newsTriage: ${n + 1} checks passed`);
 })().catch(err => { console.error(err); process.exit(1); });

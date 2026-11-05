@@ -3,6 +3,7 @@ kind: rule
 status: live
 paths:
   - "utils/newsTriage/**"
+  - "core/ops/season.js"
   - "bot/newsWatch.js"
   - "handlers/news.js"
   - "models/NewsCard.js"
@@ -17,13 +18,29 @@ paths:
 
 ## What it does
 
-A post in a followed news channel (`NEWS_WATCH`: #leaks from Leakers on Duty, #official-codm-news from CODM) → at most one card from **Dioreo Admin** in `NEWS_CHANNEL` (#news-distill on prod, #testing-spam on the dev bot). Each item on the card has a button that opens the **/manage box** it needs, filled in: Add New/Returning Draw, Add Event/Mode, the **Next Season Draft**'s draws or calendar box with the line added, or the Add to Patch Notes panel for that post. **Nothing on a card writes**: /manage's own submit does, behind the router's /manage lock, with its own validation and undo. At 00:05 UTC a skipped list posts the day's uncarded posts with a **Make a card** dropdown.
+A post in a followed news channel (`NEWS_WATCH`: #leaks from Leakers on Duty, #official-codm-news from CODM) → at most one card from **Dioreo Admin** in `NEWS_CHANNEL` (#news-distill on prod, #testing-spam on the dev bot). Each item on the card has a button that opens the **/manage box** it needs, filled in: Add New/Returning Draw, Add Event/Mode, the **Next Season Draft**'s draws or calendar box with the line added, or the Add to Patch Notes panel for that post. **This season's items: nothing on a card writes**; /manage's own submit does, behind the router's /manage lock, with its own validation and undo. **Next season's items are written straight into the Next Season Draft** (below). At 00:05 UTC a skipped list posts the day's uncarded posts with a **Make a card** dropdown.
 
 ## The three steps, and why each is where it is
 
 1. **Code first, free** (`filter.js` `prefilter`): no draw/event/mode/patch word, a link only, a shop deal, or a region word with no "Global" → no AI call. Measured on 602 #leaks posts: about two-thirds skip here.
 2. **The AI** (`model.js`, Gemini on Vertex through `utils/visionExtract.js` `vertexGenerate`, the same project and billing as /autobuild): per item kind, new/returning/cancelled/changed, name, rewards, start/end **as written**, which season the post means, region, confirmed/expected. Harkirat's call (2026-11-04 19:28 EST): judging next season vs this one is "exactly where the ai model's judgement comes into play". Two-thirds of Global draw posts needed that judgement in the dry run.
 3. **Code again** (`resolve.js`): dates read with chrono against the **post's** time in UTC; **a date beats words** for live vs draft (on or after the live season's `bpEnd` → draft); DrawCatalog makes a known draw returning; a draw or event already on the live season or in the draft, **with the same start day**, is dropped. A season post for next season becomes a **Set Next Season Title & Start** row, which opens the draft's Titles & Dates box and fills only what the draft is missing.
+
+## Auto-drafting the Next Season Draft (2026-11-05 00:08 EST, Harkirat's "yeah")
+
+Next-season items skip the buttons: `utils/newsTriage/draftMerge.js` plans the change against the current draft and `core/ops/season.js`'s `season.newsDraft` writes it through `commitSet` (as the owner, `source: 'news'`), so it is in History and the card's **Undo draft changes** reverts it by id. The draft is staged: nothing reaches players until his Promote to Live. This season's items keep their buttons; `NEWS_AUTODRAFT=0` puts every item back on buttons.
+
+What the merge does, each rule from the 60-day Season 9 backtest (draft rows matching his: 38 of 53, 22 of 23 calendar rows with his exact dates, 4 extra rows, no duplicates; `local/project/features/news-channel-triage/season9-backtest.md`):
+- **One item, one row.** A later post about the same item updates its row (dates, end date, a better name); typos count as the same name (two edits apart). Name matching is stricter than `resolve.js`'s `sameName`: containment counts only when the shorter name is 80% of the longer, because "Halloween Sale" updated the Halloween Series Armory under the loose rule.
+- **A better source wins.** Official channel 3, a confirmed leak 2, an expected leak 1; a lower rank never overwrites a higher one's date.
+- **An expected leak with no date is held** (listed under the card, not drafted): dateless early leaks drafted "Hunger Draw"-style half names and events that never ran.
+- **A dateless confirmed item sits on the season start as a placeholder** (`newsSource.dated: false`), replaced by the first post that gives a real date.
+- **His rows are never touched**: a row with no `newsSource`, or one whose `newsSource.sig` no longer matches (he edited it), is left alone, even by a cancellation. A /manage bulk draft edit re-parses the box and so takes ownership of every row in it.
+- **A cancellation removes** the row news triage wrote.
+- **Kinds he never lists are not drafted**: crates, lucky boxes, strongboxes, caches, boosts, livestreams, tournaments, festivals, stores, supply (`SKIP_KIND`, from his Season 9 list, which has none of them and does have a sale). Patch notes keep their Add to Patch Notes button.
+- **A draw row needs an image**, as /manage's bulk draft add requires. The post's picture is used only when the post names one draw, else an image already cached under the name; with none, the calendar row is drafted and the card keeps an Add button for the draw.
+- **Carry-over**, daily in the ten days before the next season starts (`pipeline.carryOver`): live rows still running at its start are copied into the draft, because Promote to Live replaces the live lists with the draft's (the Herrscher draws were re-added by hand in Season 9). Live rows with no end date that started in the last month are listed to check. One card per season.
+- **Names are cleaned in `model.js`** (mentions, @everyone, links): a name is the one free-text field that can travel from a post to /draws.
 
 ## Traps already paid for
 
