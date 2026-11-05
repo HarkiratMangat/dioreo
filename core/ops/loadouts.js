@@ -216,6 +216,8 @@ registerEntity('loadouts', {
                 ok: true,
                 afterCommit: (imageSourceUrl && imageKey) ? async () => {
                     const up = await uploadLoadoutImage(imageSourceUrl, imageKey);
+                    // The upload's version goes on the build so its URL is new (utils/loadoutRender.js pictureVersion). After the commit, as the upload is.
+                    if (up.success && up.version) await Loadout.updateOne({ _id: res.id }, { imageVersion: up.version });
                     return up.success ? null : `Image upload failed: ${up.error}. Fix the key later via Edit.`;
                 } : undefined,
                 change: { action: 'add', model: 'Loadout', target: `${doc.weaponName} (${doc.buildName})`,
@@ -284,6 +286,8 @@ registerEntity('loadouts', {
                 // 🔴 AFTER THE COMMIT: this key already has a live image, and overwrite:true would replace it even if this changeset later rolls back.
                 afterCommit: (imageSourceUrl && set.imageKey) ? async () => {
                     const up = await uploadLoadoutImage(imageSourceUrl, set.imageKey);
+                    // Same as loadout.add: the new picture's version, so the card's URL changes with it.
+                    if (up.success && up.version) await Loadout.updateOne({ _id: op.target.id }, { imageVersion: up.version });
                     return up.success ? null : `Image upload failed: ${up.error}.`;
                 } : undefined,
                 change: { action: 'edit', model: 'Loadout', target: `${cur.weaponName} (${cur.buildName})`,

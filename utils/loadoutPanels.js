@@ -12,12 +12,12 @@ const FAIL_ACCENT = 0xED4245;
 const isRealPicture = (key) => Boolean(key) && !/^(https?:|PENDING-UPLOAD-)/i.test(String(key));
 const code = (s) => `\`${String(s).replace(/`/g, 'ˋ')}\``;
 
-// One header block: the title and summary lines, with the build's picture as the accessory when it has one.
-function headerBlock(title, lines, imageKey) {
+// One header block: the title and summary lines, with the build's picture as the accessory when it has one. `build` gives the picture's version, so a picture replaced at the same key shows the new one (utils/loadoutRender.js pictureVersion).
+function headerBlock(title, lines, imageKey, build) {
     const content = [title, ...lines.filter(Boolean)].join('\n');
     if (!isRealPicture(imageKey)) return { type: 10, content };
-    const { buildImageUrl } = require('./loadoutRender');
-    return { type: 9, components: [{ type: 10, content }], accessory: { type: 11, media: { url: buildImageUrl(imageKey) } } };
+    const { buildImageUrl, pictureVersion } = require('./loadoutRender');
+    return { type: 9, components: [{ type: 10, content }], accessory: { type: 11, media: { url: buildImageUrl(imageKey, pictureVersion(build)) } } };
 }
 
 // "AR · Build 2 · Ranked · `1C2B4A8B9A`" and the badges, the same facts the Edit pop-up holds.
@@ -32,8 +32,8 @@ function identityLines(doc) {
 
 const attachmentList = (doc) => (doc.attachments || []).map((a, i) => `${i + 1}. ${a}`).join('\n');
 
-// What an edit changed, field by field. `before` is the stored build, `after` what was saved.
-function changeLines(before, after) {
+// What an edit changed, field by field. `before` is the stored build, `after` what was saved. `pictureReplaced`: a new picture went up at the SAME key, which no field shows, so it used to read "Nothing changed." beside a save that had replaced the picture (BAL-27, 2026-11-05).
+function changeLines(before, after, { pictureReplaced = false } = {}) {
     if (!before) return [];
     const { loadoutBadgeTokens } = require('./adminParser');
     const out = [];
@@ -51,6 +51,7 @@ function changeLines(before, after) {
     const { creditLine } = require('./loadoutCredit');
     was(creditLine(before), creditLine(after), 'Credit');
     if ((before.imageKey || '') !== (after.imageKey || '')) out.push(`**Picture:** ${isRealPicture(after.imageKey) ? code(after.imageKey) : '*none*'}`);
+    else if (pictureReplaced) out.push(`**Picture:** replaced at ${code(after.imageKey)}`);
     return out;
 }
 
@@ -68,11 +69,11 @@ function actionRow(doc, changeIds = []) {
 }
 
 // A saved build: `before` is null for an add. `notes` are side effects (a swap, a moved picture, names learned); `warnings` need a look.
-function savedPanel({ doc, before = null, changeIds = [], notes = [], warnings = [] }) {
+function savedPanel({ doc, before = null, changeIds = [], notes = [], warnings = [], pictureReplaced = false }) {
     const verb = before ? 'Updated' : 'Added';
-    const changes = changeLines(before, doc);
+    const changes = changeLines(before, doc, { pictureReplaced });
     const components = [
-        headerBlock(`### ${emojis.checkmark} ${verb} · ${doc.weaponName} ${doc.buildName}`, identityLines(doc), doc.imageKey),
+        headerBlock(`### ${emojis.checkmark} ${verb} · ${doc.weaponName} ${doc.buildName}`, identityLines(doc), doc.imageKey, doc),
         { type: 14, divider: true, spacing: 1 },
     ];
     if (before) components.push({ type: 10, content: changes.length ? `**What changed**\n${changes.map(c => `- ${c}`).join('\n')}` : '-# Nothing changed.' });
@@ -87,7 +88,7 @@ function savedPanel({ doc, before = null, changeIds = [], notes = [], warnings =
 // The delete confirmation for one build: the build itself, so the right one goes.
 function deletePanel({ doc, token }) {
     return [{ type: 17, accent_color: FAIL_ACCENT, components: [
-        headerBlock(`### ${emojis.warn} Delete ${doc.weaponName} ${doc.buildName}?`, [...identityLines(doc), '-# Every change is recorded and can be reverted.'], doc.imageKey),
+        headerBlock(`### ${emojis.warn} Delete ${doc.weaponName} ${doc.buildName}?`, [...identityLines(doc), '-# Every change is recorded and can be reverted.'], doc.imageKey, doc),
         { type: 10, content: `**Attachments**\n${attachmentList(doc)}` },
         { type: 1, components: [
             { type: 2, style: 2, label: 'Cancel', custom_id: `mng_delcancel_${token}` },

@@ -29,7 +29,17 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.8.4 — 2026-11-04 14:55 EST (#253) — Undo puts bulk changes back exactly, and /manage is tested end to end
+## v3.8.5 — 2026-11-05 10:55 EST (#254) — A replaced loadout picture shows the new one
+**From Harkirat, 2026-11-05:** a new image link for BAL-27 Build 1 through /manage did not show (10:03 EST), "Wouldn't that change when a new image is uploaded?" about Cloudinary's version number (10:2x EST), and "yes merge flow but no deploy yet." (10:49 EST).
+
+### Fixed
+- **A loadout picture replaced at the same key kept showing the old one.** An MP picture lives under weapon + code, so a new screenshot of the same build overwrites the same Cloudinary key, and the card URL (`…/v1/<key>`) never changed. Cloudinary had the new picture within two minutes (its own cache is cleared on upload), but it serves `immutable, max-age=2592000`, so Discord's media proxy kept the old copy. Each upload's Cloudinary version is now saved on the build (`Loadout.imageVersion`) by /manage add and edit, the portal's commit and /autobuild, and the URL uses it (`utils/loadoutRender.js` `pictureVersion`). A build with no saved version uses its `lastUpdated`, so BAL-27 shows its new picture once deployed, with no re-upload.
+- **"Nothing changed."** on a save that replaced the picture: /manage's result now lists **Picture: replaced at `key`**.
+
+### Not in this release
+- `portal/api/armory.js` needs the same version in its picture URL. That file belongs to pins2, so the change was written up as a proposal for him to pass on.
+
+## v3.8.4 — 2026-11-04 14:55 EST (#253 · `9aa548fd`) — Undo puts bulk changes back exactly, and /manage is tested end to end
 **From Harkirat, 2026-11-04:** asked for a code review, refinement and housekeeping pass over the bot (11:39 EST), "go" on the fixes (12:24 EST), and "merge flow approved. no deploy" (14:53 EST).
 
 ### Fixed

@@ -38,7 +38,9 @@ const LoadoutSchema = new mongoose.Schema({
     sourceHash: { type: String, default: undefined },
     // Swap options (Harkirat, 2026-11-02 11:41 EST: "what if we merged them as a singular build, provided both screenshots on the same loadout panel, and provided both gunsmith codes?"). The build's own attachments, code and picture are option 1; each entry here is another option of the SAME build, a whole set of attachments with its own code and picture, since two of his merged pairs differ in more than one slot or in a slot one of them leaves empty (VMP: Ammunition vs Stock). /gunsmith shows one option at a time with a button per option (utils/loadoutRender.js variantView). Absent on a build with no options.
     variants: { type: [new mongoose.Schema({ label: { type: String, default: '' }, attachments: [{ type: String }], attachmentSlots: [{ type: String }], shareCode: { type: String, default: '' }, imageKey: { type: String, default: '' } }, { _id: false })], default: undefined },
-    lastUpdated: { type: Date, default: Date.now }
+    lastUpdated: { type: Date, default: Date.now },
+    // Cloudinary's version number from the last upload to imageKey (BAL-27, 2026-11-05). A new picture for an MP build overwrites the same key, so the URL needs this to change, or Discord keeps showing the old picture for up to 30 days. utils/loadoutRender.js pictureVersion.
+    imageVersion: { type: Number, default: undefined }
 });
 
 // Compound index on category+mode -- every autocomplete keystroke (weapon dictionary, /manage loadouts search) and every category-scoped /gunsmith query filters on this pair together (Loadout.find({category, mode})/Loadout.distinct('category', {mode})). Harmless at the current collection size (~100-200 docs), but cheap to add now rather than needing a migration later once it actually matters.

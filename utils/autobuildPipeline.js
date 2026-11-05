@@ -370,6 +370,8 @@ async function writeLoadoutDoc(data, imageKeyOverride) {
         attachments,
         attachmentSlots,
         imageKey: imageKeyOverride || data.imageKey,
+        // Cloudinary's version of the uploaded picture, for the card's URL (utils/loadoutRender.js pictureVersion). None with a placeholder key.
+        ...(!imageKeyOverride && data.imageVersion ? { imageVersion: data.imageVersion } : {}),
         shareCode: data.gunsmithCode || '',
         ...(data.sourceHash ? { sourceHash: data.sourceHash } : {}),
         ...badges,
@@ -487,7 +489,7 @@ async function confirmCoreNow(token) {
 
         if (uploadResult.success) {
             // Delete AFTER the write succeeds, not before -- if doc.save() throws (a real possibility: Mongoose validation, a dropped connection), the token must still be sitting in pendingAutobuilds so the confirmed data isn't silently lost with nothing written anywhere. (Found in review: this used to delete first, which meant a save() failure here lost the data permanently -- no Loadout doc, no recoverable token.)
-            const doc = await writeLoadoutDoc({ ...data, weaponKey, buildName, imageKey });
+            const doc = await writeLoadoutDoc({ ...data, weaponKey, buildName, imageKey, imageVersion: uploadResult.version });
             // The read and its build point at each other (2026-10-26 01:19 EDT): the build carries the read's fileHash, the read the build's id.
             require('./visionReads').noteOutcome(data.readId, 'saved', doc._id);
             pendingAutobuilds.delete(token);
@@ -564,7 +566,7 @@ async function retryImageUpload(interaction, token, newImageUrl) {
     try {
         const uploadResult = await uploadLoadoutImage(newImageUrl, data.imageKey); // image only; metadata via writeLoadoutDoc -> syncLoadoutMetadata
         if (uploadResult.success) {
-            const doc = await writeLoadoutDoc(data);
+            const doc = await writeLoadoutDoc({ ...data, imageVersion: uploadResult.version });
             pendingImageRetries.delete(token);
             releaseCache(data);
             const card = buildPostCreationCard(doc, null);

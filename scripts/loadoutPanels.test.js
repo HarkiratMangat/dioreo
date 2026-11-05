@@ -68,6 +68,26 @@ check('the catalogue panel keeps its two ids', () => {
     assert.deepStrictEqual(buttons(p.cataloguePanel({ described: '`X`', token: 't' })).map(b => b.custom_id), ['mng_catedit|t', 'mng_catok|t']);
 });
 
+// BAL-27, 2026-11-05: a new picture at the SAME key read "Nothing changed." and kept the old URL, so Discord kept showing the old screenshot.
+check('a picture replaced at the same key is listed, and its URL changes with the save', () => {
+    const lines = p.changeLines(before, { ...before }, { pictureReplaced: true });
+    assert.deepStrictEqual(lines, ['**Picture:** replaced at `BAL-27-1I2C6B8A9D`']);
+    const was = new Date('2026-11-03T05:35:48Z'), now = new Date('2026-11-05T14:58:21Z');
+    const panel = p.savedPanel({ doc: { ...before, lastUpdated: now }, before: { ...before, lastUpdated: was }, pictureReplaced: true });
+    assert.ok(!text(panel).includes('Nothing changed'), 'a replaced picture is a change');
+    assert.ok(text(panel).includes(`/v${Math.floor(now / 1000)}/BAL-27-1I2C6B8A9D`), 'a build with no imageVersion uses its lastUpdated');
+    const { buildImageUrl, pictureVersion } = require('../utils/loadoutRender');
+    // Cloudinary's own upload version wins, so the URL changes only with a new picture; a build without one falls back to its lastUpdated.
+    assert.strictEqual(pictureVersion({ imageVersion: 1793890701, lastUpdated: now }), 1793890701);
+    assert.strictEqual(pictureVersion({ lastUpdated: now }), Math.floor(now / 1000));
+    assert.strictEqual(pictureVersion({}), null);
+    const withVersion = p.savedPanel({ doc: { ...before, imageVersion: 1793890701, lastUpdated: now }, before });
+    assert.ok(text(withVersion).includes('/v1793890701/BAL-27-1I2C6B8A9D'), 'the picture URL carries Cloudinary\'s version');
+    assert.ok(buildImageUrl('BAL-27-1I2C6B8A9D').endsWith('/v1/BAL-27-1I2C6B8A9D'), 'no version keeps v1');
+    assert.ok(buildImageUrl('BAL-27-1I2C6B8A9D', 'x').endsWith('/v1/BAL-27-1I2C6B8A9D'), 'a bad version keeps v1');
+    assert.strictEqual(buildImageUrl('https://example.com/x.png', 5), 'https://example.com/x.png');
+});
+
 if (failures) { console.error(`\n${failures} loadout panel check(s) failed.`); process.exit(1); }
 console.log('\nloadoutPanels: all checks passed.');
 process.exit(0);
