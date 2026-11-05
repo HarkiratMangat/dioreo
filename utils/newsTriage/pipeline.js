@@ -303,10 +303,10 @@ async function rereadEdited(rest, channelId, messageId, appId, { env = process.e
     const key = `${messageId}:edit:${raw.edited_timestamp || Date.now()}`;
     const NewsCard = require('../../models/NewsCard');
     if (await NewsCard.exists({ sourceChannelId: channelId, sourceMessageId: key })) return null;
-    const first = await NewsCard.findOne({ sourceChannelId: channelId, sourceMessageId: messageId }).lean();
-    if (!first || (first.rereads || 0) >= 2) return null;
-    if (takeReadSlot(cfg)) return null;
-    await NewsCard.updateOne({ _id: first._id }, { $inc: { rereads: 1 } });
+    // One atomic claim, checked when the queued job RUNS, not when it was queued (2026-11-05 15:45 EST, commit security review): an Undo pressed in between must stop the re-read, and two edits must not both pass the limit of two.
+    const first = await NewsCard.findOneAndUpdate({ sourceChannelId: channelId, sourceMessageId: messageId, draftUndone: { $ne: true }, draftChangeId: { $nin: ['', null] }, rereads: { $lt: 2 } }, { $inc: { rereads: 1 } }, { returnDocument: 'after' }).lean();
+    if (!first) return null;
+    if (takeReadSlot(cfg)) { await NewsCard.updateOne({ _id: first._id }, { $inc: { rereads: -1 } }).catch(() => {}); return null; }
     state.stats.reads += 1;
     const post = toPost(raw, { guildId: raw.guild_id || '', channelName: first?.sourceName || '' });
     const ctx = await loadContext(post.createdAt);

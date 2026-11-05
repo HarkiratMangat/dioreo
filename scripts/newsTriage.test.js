@@ -448,7 +448,7 @@ check('the handler owns news| and nothing else', async () => {
         const reads = (src.match(/require\('\.\/model'\)\.readPost\(/g) || []).length + (src.match(/\(readPost \|\| require\('\.\/model'\)\.readPost\)\(/g) || []).length;
         const gates = (src.match(/takeReadSlot\(cfg/g) || []).length;
         assert.ok(reads >= 2 && gates >= reads, `${reads} reads, ${gates} gate calls`);
-        assert.ok(/rereads \|\| 0\) >= 2/.test(src), 'a post is re-read at most twice');
+        assert.ok(/findOneAndUpdate\(\{ sourceChannelId: channelId, sourceMessageId: messageId, draftUndone: \{ \$ne: true \}[^\n]*rereads: \{ \$lt: 2 \}/.test(src), 'the re-read claims its slot atomically, refusing an undone card and a third re-read');
     });
     check('a live fix is listed while the bot still disagrees, whatever was clicked', () => {
         const live = { returningDraws: [{ _id: 'bh', title: 'Black Hole Draw', date: D('2026-10-25') }], calendar: [{ _id: 'c', title: 'Black Hole Draw', category: 'draw', date: D('2026-10-25'), endDate: D('2026-11-07') }] };
