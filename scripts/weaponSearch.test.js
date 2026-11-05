@@ -94,6 +94,19 @@ check('pickWeapon opens a weapon only when the typed words name it', () => {
     assert.deepStrictEqual(pickWeapon('lol', pool).several, []);
 });
 
+// The start of a name typed as one run of characters, digits and look-alikes included (Harkirat, 2026-11-05 14:06 EST: `d gs hs0`, `d gs hso` and `d build hs0` got nothing on prod). Before, wordsOf split `hs0` into `hs` + `0`, so the one-word start rule never saw it, and no look-alike was folded on this path.
+check('pickWeapon opens the one weapon a typed start names, look-alikes folded', () => {
+    const { pickWeapon } = require('../utils/search');
+    const w = (weaponName, category) => ({ weaponName, weaponKey: weaponName.toLowerCase().replace(/[^a-z0-9]/g, ''), category });
+    const pool = [w('HS0405', 'SHOTGUN'), w('HS2126', 'SHOTGUN'), w('AK117', 'AR'), w('AK-47', 'AR'), w('KILO 141', 'AR'), w('KILO BOLT-ACTION', 'MARKSMAN'), w('M21 EBR', 'SNIPER'), w('J358', 'SECONDARIES'), w('GRAU 5.56', 'AR'), w('GRAV', 'AR'), w('CROSSBOW', 'SECONDARIES'), w('Cronen Squall', 'AR'), w('ISO', 'SMG'), w('ISO Hemlock', 'AR'), w('SHORTY', 'SECONDARIES'), w('STRIKER', 'SHOTGUN')];
+    const hit = q => pickWeapon(q, pool).hit?.weaponName || null;
+    for (const [q, want] of [['hs0', 'HS0405'], ['hso', 'HS0405'], ['HS0', 'HS0405'], ['hs04', 'HS0405'], ['hso4', 'HS0405'], ['hs2', 'HS2126'], ['hs2l', 'HS2126'], ['ak1', 'AK117'], ['ak-1', 'AK117'], ['m21e', 'M21 EBR'], ['j35', 'J358'], ['5hort', 'SHORTY'], ['5tr', 'STRIKER'], ['iso', 'ISO'], ['is0', 'ISO'], ['grav', 'GRAV'], ['grau', 'GRAU 5.56']]) assert.strictEqual(hit(q), want, q);
+    // A start of two names, as typed or folded, is a weapon request with no one answer: Did you mean, never a guess. `gra` and `cro` used to open GRAV and CROSSBOW because the tie-break counted words instead of matching them.
+    for (const [q, want] of [['k1lo', ['KILO 141', 'KILO BOLT-ACTION']], ['gra', ['GRAU 5.56', 'GRAV']], ['cro', ['CROSSBOW', 'Cronen Squall']], ['hs', ['HS0405', 'HS2126']]]) assert.deepStrictEqual(pickWeapon(q, pool).several.map(x => x.weaponName).sort(), want, q);
+    // Spaces still mean words: `hs 0` is not `hs0`, and chat stays chat.
+    for (const q of ['lol', 'the', 'real', 'hs 0', 'is broken']) assert.strictEqual(hit(q), null, q);
+});
+
 if (failures) { console.error(`\n${failures} check(s) failed.`); process.exit(1); }
 console.log('\nweaponSearch: all checks passed.');
 process.exit(0);

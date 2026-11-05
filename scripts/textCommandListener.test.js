@@ -41,7 +41,7 @@ const BOT = '111';
 const ran = [];
 const record = name => ({ async execute(interaction) { ran.push({ name, interaction }); } });
 // /gunsmith's textWeapon over a small weapon list, with the real pickWeapon (2026-10-29 11:05 EDT): a no-build catalogue weapon's value is its name, as the dropdown sends it.
-const WEAPON_POOL = [['AK117', 'ak117', 'AR'], ['AK-47', 'ak47', 'AR'], ['Fennec', 'fennec', 'SMG'], ['KILO 141', 'kilo141', 'AR'], ['KILO BOLT-ACTION', 'kiloboltaction', 'SNIPER'], ['PPSh-41', 'PPSh-41', 'SMG', true]]
+const WEAPON_POOL = [['AK117', 'ak117', 'AR'], ['AK-47', 'ak47', 'AR'], ['Fennec', 'fennec', 'SMG'], ['KILO 141', 'kilo141', 'AR'], ['KILO BOLT-ACTION', 'kiloboltaction', 'SNIPER'], ['PPSh-41', 'PPSh-41', 'SMG', true], ['HS0405', 'hs0405', 'SHOTGUN'], ['HS2126', 'HS2126', 'SHOTGUN', true]]
     .map(([weaponName, weaponKey, category, noBuild]) => ({ weaponName, weaponKey, category, noBuild: Boolean(noBuild) }));
 async function textWeapon(mode, text) {
     const picked = require('../utils/search').pickWeapon(text, WEAPON_POOL);
@@ -146,6 +146,17 @@ async function check(name, fn) {
         assert.strictEqual(ran.length, after, 'a loose match never runs');
         assert.deepStrictEqual(buttons(asked.posts[0]), ['"custom_id":"txtrun_gunsmith~weapon=kilo141"']);
         assert.strictEqual(after, before + 1);
+    });
+    // His three messages on prod, 2026-11-05 14:06 EST, each answered with nothing: a typed start with a digit or a look-alike in it now opens the one weapon it starts, after `d` and through every gunsmith word.
+    await check('d gs hs0, d gs hso and d build hs0 open the HS0405', async () => {
+        for (const text of ['d gs hs0', 'd gs hso', 'd build hs0', 'd b hso', 'dior gunsmith hs04']) {
+            const { message, posts } = fakeMessage(text, { guildId: 'ghs' }); // its own server, so these five replies stay out of g1's 30-per-10-s budget the later checks count on
+            const before = ran.length;
+            await onMessage(message);
+            assert.strictEqual(ran.length, before + 1, `${text}: ran`);
+            assert.strictEqual(lastRun().interaction.options.getString('weapon'), 'hs0405', text);
+            assert.strictEqual(posts.length, 0, `${text}: no extra card`);
+        }
     });
     await check('a weapon with no build opens through its name, as the dropdown sends it', async () => {
         await onMessage(fakeMessage('d gs ppsh').message);
