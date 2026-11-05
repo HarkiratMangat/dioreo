@@ -29,7 +29,25 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.8.6 — 2026-11-05 14:28 EST (#255) — A short or look-alike weapon name works after d gs, and d top opens Top
+## v3.9.0 — 2026-11-05 17:05 EST (#256) — Merged builds are edited by number in /manage: 1, 1b, 1c
+**From Harkirat, 2026-11-05:** "can i currently rearrange the option a, option b, option c merged builds' order? and how do i even edit/add merged builds?"; "the bot for now, portal as proposal for the other project"; "lowkey thinking we just number the build as "1, 1b, 1c" etc and if it has b c d e etc then it means its a merge build and should be added to the same page?" (14:41 EST); he picked the mock-up "Build it as shown" (14:50 EST); "merge flow" (17:00 EST).
+
+### Added
+- **A build # in /manage can name an option.** `2` or `2a` is Build 2's Option A, `2b` its Option B. Typing another tag moves the option: `2c` → `2` swaps it to A, `3` → `2b` joins Build 3 to Build 2 as Option B, `2b` → `4` makes it its own Build 4, and Create New with `2d` adds an option. The card players see still says Option A / B / C. Rules in `utils/loadoutOptions.js`: up to 6 options, attachments on each, no code twice in a build or across the weapon.
+- **Edit and Delete search list each option** (`STATIC-HV 2b` opens Option B straight away); Delete can remove one option or the whole build.
+- **The saved panel lists every option** with the one just saved marked, and an **Add option** button opens Create New filled in with the next letter.
+- **Bulk:** a `Build: Build 2b` block adds or updates Option B of Build 2, an export writes merged builds that way so it re-imports, and bulk remove takes `BAL-27 | 2b`.
+- **Core:** a `loadout.options` op writes a build's whole option list; a move between two builds is one changeset, so one Revert puts both back. Each option now keeps its own picture version and source hash (`models/Loadout.js`), and the picture checks look inside options too.
+
+### Changed
+- **A bare `Build: 2` in a bulk paste means Build 2.** It used to save a build literally named "2".
+- **Deleting a build moves the weapon's later builds up one**, in /manage Delete, bulk remove, a merge that empties a build, and the portal. Before, deleting Build 3 of 4 left Build 4, which /manage then refused to save with its own number ("builds 1 to 3") and whose card read "Build 3 of 3". Revert puts every number back. Prod had no gap yet.
+- **Option A of a merged build with another plain number moves the whole build there**, options included, as renumbering did before options had tags.
+
+### Fixed
+- **A build moved to another number kept its old Build Number on its Cloudinary picture.** Swaps and the new move-up both rewrite it now, every option's picture included.
+
+## v3.8.6 — 2026-11-05 14:28 EST (#255 · `b3e0092a`) — A short or look-alike weapon name works after d gs, and d top opens Top
 **From Harkirat, 2026-11-05:** `d gs hs0`, `d gs hso` and `d build hs0` got no reply on prod while /gunsmith mp opened the HS0405 (14:06 EST); his pick on whether a miss after `d gs` stays silent, "Show the 10 s No match line" (14:26 EST); "okay merge flow approved. no deploy yet" (14:27 EST); `d list top` and `d gs top` opening META (14:34 EST).
 
 ### Fixed

@@ -63,6 +63,7 @@ check('every op type maps back to a registry action, except the documented inter
         'catalogue.learn',         // rides in the same changeset as a loadout save (Save anyway,
                                     // /autobuild Confirm); no page button of its own
         'catalogue.forget',        // internal -- catalogue.learn's inverse target only
+        'loadout.options',         // a merged build's options (utils/loadoutOptions.js): rides on Add, Edit and Delete by a build # with a letter, never a page action of its own; declares page: per mode
         'loadout.credit'           // a per-build button (mng_ldcredit_<_id>, handlers/manage/loadouts.js creditModal), not a page action: its custom_id carries a Mongo _id, like patchnote.editSeason; declares page: per mode
     ]);
     for (const type of ops.listOpTypes()) {

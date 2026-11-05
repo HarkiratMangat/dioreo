@@ -671,7 +671,16 @@ function formatLoadoutsAsBulkText(loadouts) {
         if (l.label) lines.push(`Label: ${l.label}`);
         if (badges) lines.push(`Badges: ${badges}`);
         lines.push(...(l.attachments || []).map(a => `- ${a}`));
-        return lines.join('\n');
+        // A merged build's options follow it as `Build: Build 2b` blocks (utils/loadoutOptions.js, 2026-11-05), so a re-import writes them back into the same build; the badges and label are the build's and ride on its own block.
+        const n = /^Build (\d+)$/.exec(l.buildName || '');
+        const options = n ? (l.variants || []).map((v, i) => {
+            const opt = [`${l.weaponName} | ${l.category}`, `Build: Build ${n[1]}${String.fromCharCode(98 + i)}`];
+            if (v.imageKey && !String(v.imageKey).startsWith('http')) opt.push(`Image: ${v.imageKey}`);
+            if (v.shareCode) opt.push(`Code: ${v.shareCode}`);
+            opt.push(...(v.attachments || []).map(a => `- ${a}`));
+            return opt.join('\n');
+        }) : [];
+        return [lines.join('\n'), ...options].join('\n\n');
     }).join('\n\n');
 }
 

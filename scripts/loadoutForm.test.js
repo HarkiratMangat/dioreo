@@ -18,9 +18,13 @@ check('the first box splits the weapon from its label at the first comma or pipe
 });
 
 check('the second box reads category, build # and code on MP, and refuses a code on DMZ', () => {
-    assert.deepStrictEqual(form.parseIdentity('ar, 2, 1c2b 4a8b9a', 'MP'), { category: 'AR', number: 2, code: '1C2B4A8B9A' });
-    assert.deepStrictEqual(form.parseIdentity('AR | | 1C2B4A8B9A', 'MP'), { category: 'AR', number: null, code: '1C2B4A8B9A' });
-    assert.deepStrictEqual(form.parseIdentity('SMG, 3', 'DMZ'), { category: 'SMG', number: 3, code: '' });
+    assert.deepStrictEqual(form.parseIdentity('ar, 2, 1c2b 4a8b9a', 'MP'), { category: 'AR', number: 2, option: 0, lettered: false, code: '1C2B4A8B9A' });
+    assert.deepStrictEqual(form.parseIdentity('AR | | 1C2B4A8B9A', 'MP'), { category: 'AR', number: null, option: 0, lettered: false, code: '1C2B4A8B9A' });
+    assert.deepStrictEqual(form.parseIdentity('SMG, 3', 'DMZ'), { category: 'SMG', number: 3, option: 0, lettered: false, code: '' });
+    // A letter names an option of the build (utils/loadoutOptions.js, 2026-11-05): 2b is Build 2's Option B, 2a its Option A.
+    assert.deepStrictEqual(form.parseIdentity('SMG, 2B, 1A2B3C', 'MP'), { category: 'SMG', number: 2, option: 1, lettered: true, code: '1A2B3C' });
+    assert.deepStrictEqual(form.parseIdentity('SMG, 2a', 'DMZ'), { category: 'SMG', number: 2, option: 0, lettered: true, code: '' });
+    assert.ok(form.parseIdentity('SMG, 2bb, 1A2B', 'MP').error);
     assert.ok(form.parseIdentity('SMG, 3, 1A2B', 'DMZ').error, 'DMZ has no code, so a third part is a mistake');
     assert.ok(form.parseIdentity('AR, two, 1A2B', 'MP').error);
     assert.ok(form.parseIdentity('AR, 0, 1A2B', 'MP').error);
@@ -67,7 +71,7 @@ check('the Edit boxes read back to the same build, so saving unchanged changes n
     const doc = b('a', 'Build 2', { weaponName: 'BAL-27', label: 'Ranked', mode: 'MP', category: 'AR', shareCode: '1C2B4A8B9A', attachments: ['A', 'B'] });
     const v = form.editValues(doc, [b('z', 'Build 1'), doc], ['meta', 'top3']);
     assert.deepStrictEqual(form.parseWeaponLabel(v.weapon), { weaponName: 'BAL-27', label: 'Ranked' });
-    assert.deepStrictEqual(form.parseIdentity(v.build, 'MP'), { category: 'AR', number: 2, code: '1C2B4A8B9A' });
+    assert.deepStrictEqual(form.parseIdentity(v.build, 'MP'), { category: 'AR', number: 2, option: 0, lettered: false, code: '1C2B4A8B9A' });
     assert.deepStrictEqual(form.parseAttachmentsBadges(v.attachments), { attachments: ['A', 'B'], badgesRaw: 'meta, top3' });
     const dmz = form.editValues({ ...doc, mode: 'DMZ', shareCode: '' }, [doc], []);
     assert.strictEqual(dmz.build, 'AR, 2', 'a DMZ box has no code part');
@@ -91,7 +95,10 @@ check('an MP picture key is WEAPON-CODE, never a number', () => {
         assert.strictEqual(cache.codeImageKey('AK', '1A/2B3C'), null);
         assert.ok(form.parseIdentity('AR, 1, 117-X1', 'MP').error);
         const q = cache.keyHolderQuery('BAL-27-1A2B', 'me');
-        assert.ok(q.imageKey.test('BAL-27-1A2B.png') && q.imageKey.test('bal-27-1a2b') && !q.imageKey.test('BAL-27-1A2BX'));
+        const re = q.$or[0].imageKey;
+        assert.ok(re.test('BAL-27-1A2B.png') && re.test('bal-27-1a2b') && !re.test('BAL-27-1A2BX'));
+        // An option's picture holds its key too (merged builds, 2026-11-05).
+        assert.strictEqual(q.$or[1]['variants.imageKey'], re);
         assert.deepStrictEqual(q._id, { $ne: 'me' });
     });
 });

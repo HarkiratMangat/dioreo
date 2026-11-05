@@ -34,7 +34,7 @@ check('the saved panel shows the build, its picture, the changes and three butto
     for (const s of ['Updated · BAL-27 Build 2', 'What changed', 'OWC Skeleton Stock', 'Swapped', 'look', 'BAL-27-1I2C6B8A9E']) assert.ok(t.includes(s), s);
     assert.ok(panel[0].components[0].accessory?.media?.url.includes('BAL-27-1I2C6B8A9E'), 'the picture is beside the title');
     const ids = buttons(panel).map(b => b.custom_id);
-    assert.deepStrictEqual(ids, ['mng_ldopen_abc', 'mng_ldedit_abc', 'mng_ldcredit_abc', 'mng_ldrevert|#147,#148']);
+    assert.deepStrictEqual(ids, ['mng_ldopen_abc', 'mng_ldedit_abc', 'mng_ldaddopt_abc', 'mng_ldcredit_abc', 'mng_ldrevert|#147,#148']);
     assert.ok(count(panel[0]) < 40);
 });
 

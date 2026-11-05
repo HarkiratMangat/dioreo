@@ -112,6 +112,7 @@ export const TESTS = [
     {"cmd": "node scripts/loadoutOps.test.js", "lane": "unit"},
     {"cmd": "node scripts/loadoutForm.test.js", "lane": "unit"},
     {"cmd": "node scripts/loadoutPanels.test.js", "lane": "unit"},
+    {"cmd": "node scripts/loadoutOptions.test.js", "lane": "unit"},
     {"cmd": "node scripts/loadoutCredit.test.js", "lane": "unit"},
     {"cmd": "node scripts/gunsmithCodeShape.test.js", "lane": "unit"},
     {"cmd": "node scripts/managePanels.test.js", "lane": "unit"},

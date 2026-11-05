@@ -45,15 +45,17 @@ async function resolvePicture({ existing, mode, weaponName, code, attachments, u
     if (source) {
         if (!key && mode === 'MP') return { error: 'An MP build needs its gunsmith code before it can have a picture.' };
         if (!key) {
-            const taken = await Loadout.find({ imageKey: cache.takenKeyPattern(weaponName) }).select('imageKey').lean();
-            key = cache.deriveImageKey(weaponName, 'DMZ', taken.map(t => t.imageKey));
+            // An option's picture takes a number too (merged builds, 2026-11-05).
+            const pattern = cache.takenKeyPattern(weaponName);
+            const taken = await Loadout.find({ $or: [{ imageKey: pattern }, { 'variants.imageKey': pattern }] }).select('imageKey variants.imageKey').lean();
+            key = cache.deriveImageKey(weaponName, 'DMZ', taken.flatMap(t => [t.imageKey, ...(t.variants || []).map(v => v.imageKey)]).filter(Boolean));
         }
         let sourceHash;
         if (shot) {
             const bytes = await screenshotBytes(shot.url);
             if (!bytes) return { error: "Couldn't read that screenshot. Attach it again." };
             sourceHash = require('crypto').createHash('sha256').update(bytes).digest('hex');
-            const other = await Loadout.findOne({ sourceHash, ...(targetId ? { _id: { $ne: targetId } } : {}) }).lean();
+            const other = await Loadout.findOne({ $or: [{ sourceHash }, { 'variants.sourceHash': sourceHash }], ...(targetId ? { _id: { $ne: targetId } } : {}) }).lean();
             if (other) return { error: `That screenshot is already the picture of ${other.weaponName} ${other.buildName}. Use this build's own screenshot.` };
             if (mode === 'MP') {
                 const VisionRead = require('../../models/VisionRead');
@@ -98,11 +100,18 @@ function shotOf(interaction, preset) {
     try { return [...(interaction.fields.getUploadedFiles('image_file')?.values() || [])][0] || null; } catch { return null; }
 }
 
-// The Edit pop-up for one build, with its weapon's builds so a legacy build gets its build #.
-async function editLoadoutModal(doc) {
+// The Edit pop-up for one build, with its weapon's builds so a legacy build gets its build #. `option` opens one option of a merged build (utils/loadoutOptions.js); its id is `{id}~{option}`, read back by splitTarget.
+async function editLoadoutModal(doc, option = 0) {
     const Loadout = require('../../models/Loadout');
     const siblings = await Loadout.find({ weaponKey: doc.weaponKey, mode: doc.mode }).lean();
-    return require('../../commands/manage').buildEditLoadoutModal(doc, String(doc._id), siblings);
+    return require('../../commands/manage').buildEditLoadoutModal(doc, String(doc._id), siblings, option);
+}
+
+// `{id}` or `{id}~{option}`, the target an edit_loadout_ / mng_ldedit_ id names. A bad or missing option is 0 (Option A).
+function splitTarget(raw) {
+    const [id, opt] = String(raw || '').split('~');
+    const option = Number(opt);
+    return { id, option: Number.isInteger(option) && option > 0 ? option : 0 };
 }
 
 // --- CATALOGUE WARNING (Harkirat, 2026-10-19 16:13 EDT: "warn. but if warn, allow a confirm overwrite or a go back to edit") --- A save that meets a weapon or attachment name the catalogue does not know stops before anything is written and says so, privately, with two buttons: Save anyway (saves it as typed AND adds the names to the catalogue in the same changeset, so they never warn again) and Back to edit (reopens the same box with everything typed). What was typed waits here for 30 minutes; nothing stores it anywhere else.
@@ -176,10 +185,10 @@ async function handleCatalogueWarning(interaction) {
         else if (customId.startsWith('modal_loadouts_bulk_add_')) modal = manage.buildLoadoutsBulkAddModal(customId.replace('modal_loadouts_bulk_add_', ''));
         else {
             const Loadout = require('../../models/Loadout');
-            const id = customId.replace('edit_loadout_', '');
+            const { id, option } = splitTarget(customId.replace('edit_loadout_', ''));
             const current = await Loadout.findById(id).lean();
             if (!current) return await interaction.reply({ content: BOT_EMOJI.cross + ' That build no longer exists -- it may have been deleted or edited elsewhere. Search again.', ephemeral: true });
-            modal = await editLoadoutModal(current);
+            modal = await editLoadoutModal(current, option);
         }
         return await interaction.showModal(manage.prefillModal(modal, pending.values));
     }
@@ -207,6 +216,138 @@ function badgeNotes(unrecognized, warnings) {
     return out;
 }
 
+// --- A MERGED BUILD'S OPTIONS (Harkirat, 2026-11-05 14:41 EST: "we just number the build as '1, 1b, 1c' etc and if it has b c d e etc then it means its a merge build and should be added to the same page"; his pick, "Build it as shown", 14:50 EST) --- The same Add and Edit pop-up, the build # with a letter: `2b` is Build 2's Option B (utils/loadoutOptions.js). What a save does depends only on where the option is and where the number sends it:
+//   self  · the option stays on its build: edited in place, and a different letter SWAPS it with the option there (the build-number rule, so `2c` -> `2` makes it Option A and the old A takes `2c`)
+//   join  · a letter on ANOTHER build: it is inserted there, and the build it left loses it (a build with no other option is deleted, so it has merged)
+//   add   · Create New with a letter: inserted into that build
+//   split · a plain number on another build: it becomes its own build there, the add rule for numbers (the build holding it moves to the end)
+// Only `self` writes the whole build's category, label and badges; an option that joins or is added takes its new build's, which the saved panel says. Weapon name: a build with options keeps it (a rename moves a build into another weapon's numbers, and an option save renumbers nothing). Returns the plan, or { error }.
+function planOptionSave({ existing, targetId, targetOption, ident, weaponKey, siblings }) {
+    const lo = require('../../utils/loadoutOptions');
+    const form = require('../../utils/loadoutForm');
+    const { variantView, variantCount } = require('../../utils/loadoutRender');
+    const src = existing || null;
+    const srcCount = src ? variantCount(src) : 0;
+    if (src && targetOption >= srcCount) return { error: 'That option no longer exists. Search again.' };
+    if (src && srcCount > 1 && weaponKey !== src.weaponKey) return { error: `A build with options keeps its weapon name (\`${src.weaponName}\`). Move an option to another build with its build #, or rename the build once it has one option.` };
+    const before = src ? variantView(src, targetOption) : null;
+    const inPool = src && siblings.some(b => String(b._id) === String(targetId));
+    const srcNumber = src ? form.numberFor(src, inPool ? siblings : [src]) : null;
+    const number = ident.number ?? srcNumber;
+    if (number == null) return { error: 'Give the build # this option belongs to, e.g. `SMG, 2b, 1C2B4A8B9A`.' };
+    const range = (n, count) => (count === 1 ? `only \`${n}\`` : `options \`${n}\` to \`${lo.optionTag(n, count - 1)}\``);
+    const dest = siblings.find(b => form.numberFor(b, siblings) === number) || null;
+    if (src && dest && String(dest._id) === String(src._id)) {
+        const to = ident.number == null ? targetOption : ident.option;
+        if (to >= srcCount) return { error: `Build ${number} has ${range(number, srcCount)}, so \`${lo.optionTag(number, to)}\` isn't one of them. To add an option, use Create New with \`${lo.optionTag(number, srcCount)}\`.` };
+        return { kind: 'self', src, from: targetOption, to, before, number };
+    }
+    if (ident.lettered) {
+        if (!dest) return { error: `There is no Build ${number} of this weapon, so it has no \`${lo.optionTag(number, ident.option)}\`. A plain build # makes a new build.` };
+        const count = variantCount(dest);
+        if (count >= lo.MAX_OPTIONS) return { error: `Build ${number} already has ${lo.MAX_OPTIONS} options, the most a build can have.` };
+        if (ident.option > count) return { error: `Build ${number} has ${range(number, count)}, so the next one is \`${lo.optionTag(number, count)}\`.` };
+        return { kind: src ? 'join' : 'add', src, from: targetOption, dest, to: ident.option, before, number, srcNumber };
+    }
+    // Option A with a plain number is the build's own number, so the whole build moves there with its options, an ordinary renumber (loadout.edit). Before options had tags that was the only meaning of changing a merged build's number, and taking it away would leave a merged build no way to be renumbered. To make Option A its own build, swap it to a letter first.
+    if (src && targetOption === 0 && weaponKey === src.weaponKey) return { kind: 'renumber', src, number };
+    // A plain number on another build: this option (B onward) becomes its own build there. Only an option of a merged build gets here (a plain build with a plain number is an ordinary edit).
+    const free = form.planNumbering({ siblings, targetId: null, wanted: number });
+    if (free.error) return { error: free.error };
+    return { kind: 'split', src, from: targetOption, before, number, srcNumber };
+}
+
+// Commits an option save planned above, and answers with the build as it now stands, the option on show.
+async function saveOption(interaction, { plan, picture, fail, unknown, mode, weaponName, label, code, attachments, ident, badges, alerts }) {
+    const lo = require('../../utils/loadoutOptions');
+    const { variantView } = require('../../utils/loadoutRender');
+    const { isRealImageKey } = require('../../utils/loadoutImageCache');
+    const Loadout = require('../../models/Loadout');
+    const { before, src, from } = plan;
+    const sameKey = Boolean(before) && picture.imageKey === before.imageKey;
+    const sameList = Boolean(before) && (before.attachments || []).length === attachments.length && before.attachments.every((a, i) => a === attachments[i]);
+    const option = lo.cleanOption({
+        attachments,
+        // Slot names stay only with the same list; core reads new ones off the catalogue.
+        attachmentSlots: sameList ? before.attachmentSlots : [],
+        shareCode: mode === 'MP' ? code : '',
+        imageKey: picture.imageKey,
+        imageVersion: picture.imageVersion ?? (sameKey ? before.imageVersion : null),
+        sourceHash: picture.sourceHash ?? (sameKey ? before.sourceHash : null),
+        label: src && from > 0 ? (src.variants[from - 1].label || '') : '',
+    });
+    const target = (doc) => ({ id: String(doc._id), mode: doc.mode });
+    const removeFrom = (doc, i) => (lo.optionsOf(doc).length > 1
+        ? { type: 'loadout.options', target: target(doc), payload: lo.optionsToFields(lo.removeAt(lo.optionsOf(doc), i)) }
+        : { type: 'loadout.delete', target: target(doc) });
+
+    const ops = [];
+    if (plan.kind === 'self') {
+        let options = lo.optionsOf(src);
+        options[from] = option;
+        if (plan.to !== from) options = lo.move(options, from, plan.to);
+        ops.push({ type: 'loadout.options', target: target(src), payload: { ...lo.optionsToFields(options), category: ident.category, label, ...badges } });
+    } else if (plan.kind === 'join' || plan.kind === 'add') {
+        // Removed from its build first, so the build it joins never holds the same code twice inside the transaction.
+        if (src) ops.push(removeFrom(src, from));
+        ops.push({ type: 'loadout.options', target: target(plan.dest), payload: lo.optionsToFields(lo.insertAt(lo.optionsOf(plan.dest), option, plan.to)) });
+    } else {
+        ops.push(removeFrom(src, from));
+        ops.push({ type: 'loadout.add', payload: {
+            weaponName, label, buildNumber: plan.number, mode, attachments, imageKey: option.imageKey, category: ident.category, ...badges,
+            ...(option.attachmentSlots.length ? { attachmentSlots: option.attachmentSlots } : {}),
+            ...(mode === 'MP' ? { shareCode: code } : {}),
+            ...(option.sourceHash ? { sourceHash: option.sourceHash } : {}),
+            ...(option.imageVersion ? { imageVersion: option.imageVersion } : {}),
+        } });
+    }
+    const result = await commitSet([...ops, ...learnOps(unknown, { category: ident.category, mode })], { actorId: interaction.user.id });
+    if (!result.ok) return await fail(extractCommitError(result));
+
+    const L = lo.optionLetter;
+    const tagOf = (n, i) => `\`${lo.optionTag(n, i)}\``;
+    const notes = [];
+    let savedId, shown, moveLine = null;
+    if (plan.kind === 'self') {
+        savedId = String(src._id); shown = plan.to;
+        if (plan.to !== from) {
+            moveLine = `${tagOf(plan.number, from)} → ${tagOf(plan.number, plan.to)}`;
+            notes.push(`Option ${L(from)} is now Option ${L(plan.to)}, and the old Option ${L(plan.to)} is now Option ${L(from)}.`);
+        }
+    } else if (plan.kind === 'join' || plan.kind === 'add') {
+        savedId = String(plan.dest._id); shown = plan.to;
+        // A build this emptied is deleted, and the builds after it move up one (core/ops/loadouts.js closeNumberGap), so the build it joined may have a new number: read it back.
+        const destNow = await Loadout.findById(savedId).select('buildName').lean();
+        const destNumber = require('../../utils/loadoutForm').buildNumberOf(destNow?.buildName) ?? plan.number;
+        if (src) {
+            moveLine = `${tagOf(plan.srcNumber, from)} → ${tagOf(destNumber, plan.to)}`;
+            notes.push(lo.optionsOf(src).length > 1 ? `It left Build ${plan.srcNumber}, whose later options moved up a letter.` : `Build ${plan.srcNumber} is now this option, so it is gone from the list, and the builds after it moved up one.`);
+        }
+        if (destNumber !== plan.number) notes.push(`Build ${plan.number} is now Build ${destNumber}.`);
+        notes.push(`The weapon box, label and badges stay Build ${destNumber}'s.`);
+    } else {
+        savedId = String(result.results[1].applied.id); shown = 0;
+        moveLine = `${tagOf(plan.srcNumber, from)} → ${tagOf(plan.number, 0)}`;
+        notes.push(`It left Build ${plan.srcNumber} and is now its own build. Build ${plan.srcNumber}'s later options moved up a letter.`);
+        for (const m of result.results[1].applied.moved || []) {
+            const other = await Loadout.findById(m.id).select('buildName').lean();
+            notes.push(`Swapped: the build that was Build ${plan.number} is now ${other?.buildName || 'moved'}.`);
+        }
+    }
+    if (picture.note) notes.push(picture.note);
+    if (unknown.count) notes.push(`Added to the catalogue: ${describeUnknown(unknown)}.`);
+    const saved = await Loadout.findById(savedId).lean();
+    const warns = alerts.split('\n').filter(Boolean).map(l => l.replace(`${BOT_EMOJI.warn} `, ''));
+    const view = saved && variantView(saved, shown);
+    if (view && !picture.uploaded && isRealImageKey(view.imageKey) && !(await require('../../utils/loadoutRender').checkImageExists(view.imageKey))) {
+        warns.push(`**No picture on Cloudinary** at \`${view.imageKey}\`: the card shows broken until one is added with Edit again.`);
+    }
+    if (!saved) return await interaction.followUp({ content: `${BOT_EMOJI.checkmark} Saved.` });
+    const { savedPanel } = require('../../utils/loadoutPanels');
+    // `before` is the option as it was (an added option had none), so What changed reads like a build's.
+    return interaction.followUp({ flags: 32768 | 64, components: savedPanel({ doc: saved, option: shown, before: before ? { ...before, buildName: src.buildName } : null, moveLine, changeIds: result.changeIds, notes, warnings: warns, pictureReplaced: Boolean(picture.replaced) }) });
+}
+
 // --- SAVE A LOADOUT (Add or Edit) --- custom_ids: add_loadout_{MP|DMZ} · edit_loadout_{id}. One body for both since the five-field pop-up (2026-10-26 01:19 EDT): the two had drifted into near copies. `preset` is a Save anyway replay (handleCatalogueWarning above): the typed values come from the warning's pending store instead of a pop-up, and the catalogue check is skipped because the admin already saw it.
 async function saveLoadout(interaction, preset, isEdit) {
     if (!interaction.deferred && !interaction.replied) await interaction.deferReply({ ephemeral: true });
@@ -220,9 +361,9 @@ async function saveLoadout(interaction, preset, isEdit) {
     const fail = failer(interaction, preset);
 
     // Mode is not editable here (MP and DMZ are separate panel pages): an edit reads it off the build, an add off the page's custom_id.
-    let existing = null, targetId = null, mode;
+    let existing = null, targetId = null, targetOption = 0, mode;
     if (isEdit) {
-        targetId = customId.replace('edit_loadout_', '');
+        ({ id: targetId, option: targetOption } = splitTarget(customId.replace('edit_loadout_', '')));
         existing = await Loadout.findById(targetId).lean();
         // deferReply() already ran, so a stale search result still needs an answer, or it sits "thinking..." until the token expires.
         if (!existing) return await interaction.followUp({ content: BOT_EMOJI.cross + ' That build no longer exists -- it may have been deleted or edited elsewhere. Search again.' });
@@ -249,12 +390,24 @@ async function saveLoadout(interaction, preset, isEdit) {
     }
     const weaponKey = weaponName.toLowerCase().replace(/\s+/g, '');
     const siblings = await Loadout.find({ weaponKey, mode }).lean();
-    // The same code twice on one weapon is the same attachments twice, so the same build.
-    const clash = code && siblings.find(b => String(b._id) !== targetId && form.sameCode(b.shareCode, code));
+    // A merged build, or a build # with a letter (`2b`), is saved option by option (planOptionSave below). A plain build saves as it always has.
+    let optionPath = isEdit ? (targetOption > 0 || (existing.variants || []).length > 0 || ident.lettered) : ident.lettered;
+    // Saving one option of a merged build: only that option is not its own clash, even when the save goes the ordinary way (a renumber of the whole build).
+    const oneOption = optionPath;
+    let plan = null;
+    if (optionPath) {
+        plan = planOptionSave({ existing, targetId, targetOption, ident, weaponKey, siblings });
+        if (plan.error) return await fail(plan.error);
+        // Option A with another plain number moves the whole build: the ordinary edit below, which leaves the options as they are.
+        if (plan.kind === 'renumber') { optionPath = false; plan = null; }
+    }
+    // The same code twice on one weapon is the same attachments twice, so the same build. Every option's code counts; the option being saved is not its own clash.
+    const lo = require('../../utils/loadoutOptions');
+    const clash = code && siblings.find(b => lo.optionsOf(b).some((o, i) => form.sameCode(o.shareCode, code) && !(String(b._id) === targetId && (!oneOption || i === targetOption))));
     if (clash) return await fail(`${clash.weaponName} ${clash.buildName} already has the code \`${code}\`, and the same code is the same build. Edit that one instead.`);
     // An edit that renames the weapon joins the other weapon's builds as a new one would.
     const inPool = isEdit && siblings.some(b => String(b._id) === targetId);
-    const numbering = form.planNumbering({ siblings, targetId: inPool ? targetId : null, wanted: ident.number });
+    const numbering = optionPath ? { number: ident.number } : form.planNumbering({ siblings, targetId: inPool ? targetId : null, wanted: ident.number });
     if (numbering.error) return await fail(numbering.error);
 
     // A code that looks cut off asks first (Harkirat, 2026-10-28 01:06 EDT), so a lost last O is caught before it saves.
@@ -274,9 +427,15 @@ async function saveLoadout(interaction, preset, isEdit) {
     const url = field('image_url').trim();
     if (url && shot) return await fail('Use the image URL or the screenshot, not both.');
     if (url && !isHttpImageSource(url)) return await fail('The image box takes a link starting with https://. Picture keys come from the gunsmith code now, so a key is never typed.');
-    const picture = await resolvePicture({ existing, mode, weaponName, code, attachments, url, shot, targetId, choice: preset?.pictureChoice || null });
+    // An option's picture is that option's: an edit compares against the option, and an added option has none yet.
+    const pictureOf = optionPath ? plan.before : existing;
+    const picture = await resolvePicture({ existing: pictureOf, mode, weaponName, code, attachments, url, shot, targetId, choice: preset?.pictureChoice || null });
     if (picture.error) return await fail(picture.error);
-    if (picture.ask) return await warnOldPicture(interaction, { customId, acks: [...acks, 'catalogue'], values: readValues(field, LOADOUT_FIELDS) }, existing.imageKey, existing);
+    if (picture.ask) return await warnOldPicture(interaction, { customId, acks: [...acks, 'catalogue'], values: readValues(field, LOADOUT_FIELDS) }, pictureOf.imageKey, pictureOf);
+    if (optionPath) {
+        return await saveOption(interaction, { plan, picture, fail, unknown, mode, weaponName, label, code, attachments, ident,
+            badges: { isMeta, categoryRank, dmzRangeRank, isToxic, isAss, rankModes }, alerts: badgeNotes(unrecognized, warnings) });
+    }
 
     // The number goes to core as `buildNumber`, and core names the build and swaps the one holding it (core/ops/loadouts.js numberBuild, 2026-10-26 12:17 EDT), the same rule the portal gets. The check above only answers early with a clear message.
     const payload = {
@@ -320,9 +479,29 @@ async function handleSavedAction(interaction) {
     const Loadout = require('../../models/Loadout');
     if (id.startsWith('mng_ldopen_')) return await require('../../utils/openLoadoutCard').openLoadout(interaction, id.replace('mng_ldopen_', ''), { ephemeral: true });
     if (id.startsWith('mng_ldedit_')) {
-        const doc = await Loadout.findById(id.replace('mng_ldedit_', '')).lean();
+        const t = splitTarget(id.replace('mng_ldedit_', ''));
+        const doc = await Loadout.findById(t.id).lean();
         if (!doc) return await interaction.reply({ content: `${BOT_EMOJI.cross} That build no longer exists.`, ephemeral: true });
-        return await interaction.showModal(await editLoadoutModal(doc));
+        return await interaction.showModal(await editLoadoutModal(doc, Math.min(t.option, (doc.variants || []).length)));
+    }
+    // Add option: the Create New pop-up, filled with this build's weapon and its next option's tag (`2d`) and the attachments of the option on show, so a variation is a few edits away. The code and the picture are left for the new option's own.
+    if (id.startsWith('mng_ldaddopt_')) {
+        const t = splitTarget(id.replace('mng_ldaddopt_', ''));
+        const doc = await Loadout.findById(t.id).lean();
+        if (!doc) return await interaction.reply({ content: `${BOT_EMOJI.cross} That build no longer exists.`, ephemeral: true });
+        const form = require('../../utils/loadoutForm');
+        const lo = require('../../utils/loadoutOptions');
+        const siblings = await Loadout.find({ weaponKey: doc.weaponKey, mode: doc.mode }).lean();
+        const count = 1 + (doc.variants || []).length;
+        if (count >= lo.MAX_OPTIONS) return await interaction.reply({ content: `${BOT_EMOJI.cross} ${doc.weaponName} ${doc.buildName} already has ${lo.MAX_OPTIONS} options, the most a build can have.`, ephemeral: true });
+        const tag = lo.optionTag(form.numberFor(doc, siblings) ?? 1, count);
+        const view = require('../../utils/loadoutRender').variantView(doc, t.option);
+        const manage = require('../../commands/manage');
+        return await interaction.showModal(manage.prefillModal(manage.buildAddLoadoutModal(doc.mode || 'MP'), {
+            weapon: doc.label ? `${doc.weaponName}, ${doc.label}` : doc.weaponName,
+            build: doc.mode === 'DMZ' ? `${doc.category}, ${tag}` : `${doc.category}, ${tag}, `,
+            attachments: (view.attachments || []).join('\n'),
+        }));
     }
     if (id.startsWith('mng_ldcredit_')) {
         const doc = await Loadout.findById(id.replace('mng_ldcredit_', '')).lean();
@@ -450,6 +629,7 @@ async function bulkDeleteLoadouts(interaction) {
     const lines = interaction.fields.getTextInputValue('lines').split('\n').map(l => l.trim()).filter(Boolean);
 
     const toDelete = []; // { label, ids }
+    const optionCuts = new Map(); // build id -> { doc, indexes:Set } (one option of a merged build, `Weapon | 2b`)
     const notFound = [];
     const candidates = await Loadout.find({ mode }).lean();
     for (const line of lines) {
@@ -465,13 +645,36 @@ async function bulkDeleteLoadouts(interaction) {
         }
 
         if (buildPart) {
-            const buildDoc = candidates.find(l => l.weaponKey === match.weaponKey && l.mode === mode && l.buildName === buildPart);
-            if (buildDoc) toDelete.push({ label: `${match.weaponName} (${buildPart})`, ids: [String(buildDoc._id)] });
+            // `2` is Build 2, and `2b` only Build 2's Option B (merged builds, 2026-11-05).
+            const tag = /^(?:build\s*)?(\d+)([a-z])?$/i.exec(buildPart);
+            const name = tag ? `Build ${Number(tag[1])}` : buildPart;
+            const option = tag?.[2] ? tag[2].toLowerCase().charCodeAt(0) - 97 : null;
+            const buildDoc = candidates.find(l => l.weaponKey === match.weaponKey && l.mode === mode && l.buildName === name);
+            const count = buildDoc ? 1 + (buildDoc.variants || []).length : 0;
+            if (buildDoc && option !== null && count > 1) {
+                if (option >= count) { notFound.push(`${weaponPart} | ${buildPart} (${name} has ${count} options)`); continue; }
+                const cut = optionCuts.get(String(buildDoc._id)) || { doc: buildDoc, indexes: new Set() };
+                cut.indexes.add(option);
+                optionCuts.set(String(buildDoc._id), cut);
+            } else if (buildDoc) toDelete.push({ label: `${match.weaponName} (${buildPart})`, ids: [String(buildDoc._id)] });
             else notFound.push(`${weaponPart} | ${mode} | ${buildPart}`);
         } else {
             const docs = candidates.filter(l => l.weaponKey === match.weaponKey && l.mode === mode);
             toDelete.push({ label: `${match.weaponName} (all ${docs.length} build(s))`, ids: docs.map(d => String(d._id)) });
         }
+    }
+
+    // Options of a build that is going anyway need no cut; a build losing every option is deleted.
+    const lo = require('../../utils/loadoutOptions');
+    const optionOps = [];
+    const going = new Set(toDelete.flatMap(t => t.ids));
+    for (const [id, { doc, indexes }] of optionCuts) {
+        if (going.has(id)) continue;
+        const left = lo.optionsOf(doc).filter((_, i) => !indexes.has(i));
+        const tags = [...indexes].sort().map(i => lo.optionLetter(i)).join(', ');
+        if (!left.length) { toDelete.push({ label: `${doc.weaponName} (${doc.buildName}, every option)`, ids: [id] }); continue; }
+        optionOps.push({ type: 'loadout.options', target: { id, mode: doc.mode }, payload: lo.optionsToFields(left) });
+        toDelete.push({ label: `${doc.weaponName} (${doc.buildName}, Option ${tags})`, ids: [] });
     }
 
     if (toDelete.length === 0) {
@@ -487,7 +690,7 @@ async function bulkDeleteLoadouts(interaction) {
         summary,
         apply: async () => {
             const result = await commitSet(
-                [{ type: 'loadout.bulkDelete', target: { mode }, payload: { ids } }],
+                [...optionOps, ...(ids.length ? [{ type: 'loadout.bulkDelete', target: { mode }, payload: { ids } }] : [])],
                 { actorId: interaction.user.id }
             );
             if (!result.ok) throw new Error(extractCommitError(result));
@@ -550,10 +753,24 @@ async function exportCategory(interaction) {
 
 // --- DELETE (loadouts) --- called from index.js's mng_delconfirm_ dispatch with the resolved match.
 async function deleteItem(match, actorId) {
+    // One option of a merged build (the search's `2b`, utils/loadoutForm.js pickBuildOption): only that option goes and the later ones move up a letter. The build's last option is the build, so it deletes the build.
+    const { id, option } = splitTarget(match.id);
+    if (match.option != null || option) {
+        const Loadout = require('../../models/Loadout');
+        const lo = require('../../utils/loadoutOptions');
+        const doc = await Loadout.findById(id).lean();
+        const options = lo.optionsOf(doc);
+        const i = match.option ?? option;
+        if (doc && options.length > 1 && i < options.length) {
+            const result = await commitSet([{ type: 'loadout.options', target: { id, mode: doc.mode }, payload: lo.optionsToFields(lo.removeAt(options, i)) }], { actorId });
+            if (!result.ok) throw new Error(extractCommitError(result));
+            return result.changeIds;
+        }
+    }
     // `mode` rides on the target so core/changeset.js's pageForOp stamps the ChangeLog row with the RIGHT page: MP and DMZ share this op, and without it every DMZ delete was recorded as MP, which then gated its Revert on the wrong page.
-    const result = await commitSet([{ type: 'loadout.delete', target: { id: match.id, ...(match.doc?.mode ? { mode: match.doc.mode } : {}) } }], { actorId });
+    const result = await commitSet([{ type: 'loadout.delete', target: { id, ...(match.doc?.mode ? { mode: match.doc.mode } : {}) } }], { actorId });
     if (!result.ok) throw new Error(extractCommitError(result));
     return result.changeIds;   // for the Revert button under "Deleted" (handlers/manage/index.js)
 }
 
-module.exports = { editLoadout, addLoadout, editLoadoutModal, creditModal, saveCredit, pictureWarningPanel, handleSavedAction, bulkAddLoadouts, handleCatalogueWarning, bulkDeleteLoadouts, exportUpTo5, exportCategory, deleteItem };
+module.exports = { editLoadout, addLoadout, editLoadoutModal, splitTarget, planOptionSave, creditModal, saveCredit, pictureWarningPanel, handleSavedAction, bulkAddLoadouts, handleCatalogueWarning, bulkDeleteLoadouts, exportUpTo5, exportCategory, deleteItem };
