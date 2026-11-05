@@ -5,10 +5,13 @@
 // Leakers on Duty end posts with this line; /patch notes shows its own (utils/patchNoteSource.js drops it for the same reason). Left in, it reads as a rumour.
 const DISCLAIMER = /(?:note that\s+)?(?:the\s+)?final\s+patch\s*notes?\s+(?:are|is)\s+subject\s+to\s+change\.?/gi;
 // Words that tie a post to one regional version. "Global" or "all versions" anywhere in the post overrides them: "Global version will also get the … event" names CN too.
-const REGION = /\b(CN|Garena|VNG|Korea|KR|Chinese|LATAM|MENA|Indian?|Japan(?:ese)?|Vietnam(?:ese)?)\b/i;
-const GLOBAL = /\b(global|all (?:game )?versions|every version)\b/i;
-// Something Dioreo tracks. A post with none of these is not read.
-const SUBJECT = /\b(draws?|mythic drops?|series armou?ry|armou?ry|lucky draws?|crates?|events?|limited[- ]time modes?|playlists?|game ?modes?|modes?|tournaments?|buffs?|nerfs?|balance changes|adjustments?|patch ?notes?|seasons? \d+|next season|battle ?pass|returning|reset)\b/i;
+const REGION = /\b(CN|China|Garena|VNG|Korea|KR|Chinese|LATAM|MENA|Indian?|Japan(?:ese)?|Vietnam(?:ese)?)\b/i;
+// A test server, public test build or beta: not live content in any version, and "Global Public Test Server" says Global, so this is checked before the Global override can let it through (2026-11-04 22:55 EST, the Season 9 backtest: 25 of 552 #leaks posts in 60 days were test-server finds).
+const TEST = /\b(test ?server|public test (?:server|build)|PTS|beta (?:test|server|build)|trial server)\b/i;
+// "for all version except CN version" is a Global post: the Season 9 backtest (2026-11-04 23:08 EST) found Samurai's Soul Series Armory's only announcement dropped as another region because it named CN to exclude it.
+const GLOBAL = /\b(global|all (?:game )?versions?|every version|except (?:the )?(?:CN|China|Chinese|Garena|VNG|Korea|KR)(?: version)?)\b/i;
+// Something Dioreo tracks. A post with none of these is not read. "sales?" since 2026-11-04 23:08 EST: the Halloween Sale is a calendar event he lists, and its only dated post ("Halloween sale discount coming in S9 from 10/28 - 11/3") was skipped without it.
+const SUBJECT = /\b(sales?|draws?|mythic drops?|series armou?ry|armou?ry|lucky draws?|crates?|events?|limited[- ]time modes?|playlists?|game ?modes?|modes?|tournaments?|buffs?|nerfs?|balance changes|adjustments?|patch ?notes?|seasons? \d+|next season|battle ?pass|returning|reset)\b/i;
 // Shop deals and codes: Dioreo has no record for them.
 const SHOP = /\b(bundles?|webstore|redemption codes?|store deals?|giveaways?|discount codes?)\b/i;
 const DRAWISH = /\b(draws?|mythic drops?|armou?ry)\b/i;
@@ -52,10 +55,13 @@ function prefilter(text, { hasImage = false } = {}) {
     if (!SUBJECT.test(t)) return { read: false, reason: 'not a draw, event, mode or patch' };
     if (SHOP.test(t) && !DRAWISH.test(t)) return { read: false, reason: 'a shop deal' };
     if (REGION.test(t) && !GLOBAL.test(t)) return { read: false, reason: 'another region' };
+    if (TEST.test(t)) return { read: false, reason: 'a test server' };
     return { read: true };
 }
 
 // Whether the post's own words tie it to a regional version. resolve.js trusts the AI's "another region" only when they do: on 2026-11-04 the AI read "Grim Duo Draw will be coming tomorrow", whose text names no region, as another region's from its picture alone, and that would have dropped a Global draw in silence.
 const namesRegion = text => REGION.test(String(text || '')) && !GLOBAL.test(String(text || ''));
 
-module.exports = { cleanText, sourceOf, postText, titleOf, prefilter, namesRegion };
+const namesTestServer = text => TEST.test(String(text || ''));
+
+module.exports = { cleanText, sourceOf, postText, titleOf, prefilter, namesRegion, namesTestServer };

@@ -4,7 +4,7 @@
 //
 // ⚠️ A CHANNEL POST OUTSIDE AN INTERACTION, a named exception to CLAUDE.md's "answers only through interactions" (Harkirat, 2026-11-04 19:15 EST: "I'd rather do a new private channel in the server"). It posts only into NEWS_CHANNEL, a private channel of his own server.
 const { Routes } = require('discord.js');
-const { titleOf, prefilter, cleanText, namesRegion } = require('./filter');
+const { titleOf, prefilter, cleanText, namesRegion, namesTestServer } = require('./filter');
 const { resolveItems, sameName } = require('./resolve');
 const { buildCard, buildSkippedList, MAX_ITEMS } = require('./card');
 
@@ -114,7 +114,7 @@ async function processPost(post, { rest, selfId, appId, force = false, env = pro
         let raw;
         state.calls += 1;
         try {
-            raw = await (readPost || require('./model').readPost)({ text: post.text, imageUrl: post.image, postedAt: post.createdAt, liveSeason: ctx.liveSeason });
+            raw = await (readPost || require('./model').readPost)({ text: post.text, imageUrl: post.image, postedAt: post.createdAt, liveSeason: ctx.liveSeason, source: /official/i.test(post.channelName || '') ? 'official' : 'leaks' });
             state.failures = 0; state.alerted = false;
         } catch (err) {
             state.failures += 1;
@@ -127,7 +127,7 @@ async function processPost(post, { rest, selfId, appId, force = false, env = pro
             return { status: 'error', error: err?.message || String(err) };
         }
 
-        const { card, skipped } = resolveItems(raw, { ...ctx, namesRegion: namesRegion(post.text) });
+        const { card, skipped } = resolveItems(raw, { ...ctx, namesRegion: namesRegion(post.text), namesTestServer: namesTestServer(post.text) });
         // The same draw from #official-codm-news and #leaks gets one card: an item another card from the last two weeks already holds is left off.
         const recent = await NewsCard.find({ createdAt: { $gte: new Date(Date.now() - 14 * DAY_MS) } }, { items: 1 }).lean();
         // A duplicate is the same thing on the same day: a later post that moves the date or confirms a leak gets its own card, because the earlier card holds the old date (think-pass, 2026-11-04 22:09 EST).

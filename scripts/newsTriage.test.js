@@ -32,6 +32,10 @@ check('prefilter skips links, other regions, shop deals and posts about nothing 
     assert.strictEqual(prefilter('POIs location in Verdansk Map').reason, 'not a draw, event, mode or patch');
     assert.strictEqual(prefilter('').reason, 'no text');
     assert.strictEqual(prefilter('', { hasImage: true }).read, true, 'a picture-only post is read');
+    assert.strictEqual(prefilter('Global Public Test Server (S10-11) is now available: new event and mode').reason, 'a test server');
+    assert.strictEqual(prefilter('Returning Lucky Draws coming next week in China').reason, 'another region');
+    assert.strictEqual(prefilter("Samurai's Soul Series Armory will be returning tomorrow for all version except CN version.").read, true, 'except CN is Global');
+    assert.strictEqual(prefilter('Halloween sale discount coming in S9 from 10/28 - 11/3').read, true, 'a sale is an event he lists');
 });
 
 // ---- dates, read against the post's time in UTC ----
@@ -67,9 +71,22 @@ check('something starting ON the live season\'s end is next season, with no fals
     assert.strictEqual(it.where, 'draft', 'the live run sent this to the live season');
     assert.ok(!it.warnings.some(w => /before this season ends/.test(w)));
 });
+check('day-first slash dates are read as day/month', () => {
+    const posted = new Date('2026-10-28T10:00:00Z');
+    const items = [raw({ name: 'Promised Widow Lucky Box', start: '28/10', end: '17/11' }), raw({ name: 'Halloween Series Armory', start: '03/11', end: '12/12' })];
+    assert.strictEqual(r.dayFirst(items), true);
+    const { card } = r.resolveItems(items, { ...ctx, postedAt: posted, liveEnd: new Date('2026-11-12T00:00:00Z') });
+    const h = card.find(i => /Halloween/.test(i.name));
+    assert.strictEqual(iso(h.start), '2026-11-03T00:00:00.000Z', 'read as March 11 before the fix');
+    assert.strictEqual(h.where, 'live');
+    assert.strictEqual(iso(r.readSlashDate('11/20', new Date('2026-11-05T00:00:00Z'), false)), '2026-11-20T00:00:00.000Z', 'month-first stays month-first');
+});
 check('a season post becomes a Next Season Draft title-and-start row', () => {
     const it = r.resolveItem(raw({ kind: 'season', change: 'new', name: 'Season 10: 7th Anniversary', start: 'Wednesday, November 11th at 4 PM PT', season: 'next' }), { ...ctx, postedAt: new Date('2026-11-05T02:13:00Z') });
     assert.strictEqual(it.action, 'season'); assert.strictEqual(it.where, 'draft');
+    assert.strictEqual(it.name, 'Season 10 — 7th Anniversary', 'a season title takes an em dash');
+    assert.strictEqual(r.seasonTitle('Honkai: Gleaming Front'), 'Honkai: Gleaming Front', 'only a season title is changed');
+    assert.strictEqual(r.resolveItem(raw({ kind: 'event', name: 'X Themed Event', start: 'November 20', region: 'test' }), { ...ctx, namesTestServer: true }).skip, 'a test server');
     assert.strictEqual(iso(it.start), '2026-11-12T00:00:00.000Z');
     assert.strictEqual(r.resolveItem(raw({ kind: 'season', name: 'Season 9', season: 'current' }), ctx).skip, 'the live season\'s own title or dates');
     assert.strictEqual(r.resolveItem(raw({ kind: 'season', name: 'Season 10: 7th Anniversary', season: 'next' }), { ...ctx, draftTitle: 'Season 10 — 7th Anniversary' }).skip, 'already in the Next Season Draft');

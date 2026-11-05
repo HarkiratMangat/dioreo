@@ -176,8 +176,8 @@ function vertexTarget() {
     return { endpoint, gcpLocation, gcpModel };
 }
 
-// A text-and-image generateContent call that must answer JSON: parts in, the parsed object out. Timed as the 'vertex' dependency, its cost logged as vision_call_cost under `taskName`; throws on an HTTP error or a non-JSON answer. News-channel triage uses it (2026-11-04 20:06 EST); extractLoadoutFromImage keeps its own body, which also records the read.
-async function vertexGenerate(parts, { taskName } = {}) {
+// A text-and-image generateContent call that must answer JSON: parts in, the parsed object out. Timed as the 'vertex' dependency, its cost logged as vision_call_cost under `taskName`; throws on an HTTP error or a non-JSON answer. News-channel triage uses it (2026-11-04 20:06 EST); extractLoadoutFromImage keeps its own body, which also records the read. `timeoutMs` (2026-11-04 23:23 EST): a season calendar image is one read with twenty-odd rows, and the Season 9 calendar timed out at the 90 s default in the news backtest, losing the season's most important post.
+async function vertexGenerate(parts, { taskName, timeoutMs = VERTEX_TIMEOUT_MS } = {}) {
     const accessToken = await getGcpAccessToken();
     const { endpoint, gcpLocation, gcpModel } = vertexTarget();
     const { timeDependency, noteDep } = require('./eventStore');
@@ -185,7 +185,7 @@ async function vertexGenerate(parts, { taskName } = {}) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken}` },
         body: JSON.stringify({ contents: [{ role: 'user', parts }], generationConfig: { responseMimeType: 'application/json' } }),
-        signal: AbortSignal.timeout(VERTEX_TIMEOUT_MS),
+        signal: AbortSignal.timeout(timeoutMs),
     }));
     if (!res.ok) {
         const errText = await res.text().catch(() => '');

@@ -33,19 +33,40 @@ function readDate(text, postedAt) {
     return new Date(Date.UTC(c.get('year'), c.get('month') - 1, c.get('day')));
 }
 
+// Day-first slash dates (2026-11-04 23:06 EST, the Season 9 backtest). A Halloween sales image listed its offers as "28/10 - 17/11", "03/11 - 12/12"; chrono reads 03/11 as March 11, which sent four live draws into the Season 10 draft months off, with nothing to flag it. A post is day-first when any of its slash dates has a first number over 12; failing that, a slash date that reads months away is swapped when the swap lands near the post.
+const SLASH = /\b(\d{1,2})\/(\d{1,2})(\/\d{2,4})?\b/g;
+const swapSlash = text => String(text || '').replace(SLASH, (_, a, b, y) => `${b}/${a}${y || ''}`);
+function dayFirst(rawItems) {
+    return (rawItems || []).some(r => [r.start, r.end].some(t => [...String(t || '').matchAll(SLASH)].some(m => Number(m[1]) > 12 && Number(m[2]) <= 12)));
+}
+function readSlashDate(text, postedAt, dmy) {
+    if (!text || !SLASH.test(String(text))) return readDate(text, postedAt);
+    SLASH.lastIndex = 0;
+    if (dmy) return readDate(swapSlash(text), postedAt);
+    const asIs = readDate(text, postedAt); const swapped = readDate(swapSlash(text), postedAt);
+    const away = d => (d ? Math.abs(d - new Date(postedAt)) : Infinity);
+    const FAR = 60 * 24 * 60 * 60 * 1000;
+    return away(asIs) > FAR && away(swapped) <= FAR ? swapped : asIs;
+}
+
 function catalogueMatch(name, catalogue) {
     return (catalogue || []).find(d => [d.title, ...(d.aliases || [])].some(t => sameName(t, name))) || null;
 }
 
+// A season title is "Season 10 — 7th Anniversary": an em dash, never a colon or a hyphen (Harkirat, 2026-11-04 22:55 EST: "i dont use : in my titles"). Only the season title: draw and event names keep the game's own colons ("Honkai: Gleaming Front").
+const seasonTitle = name => String(name || '').replace(/^(Season\s+\d+)\s*[:\-–—]\s*/i, '$1 — ').trim();
+
 // One raw item from utils/newsTriage/model.js → a card item, or `{ skip: reason }`. ctx: { postedAt, liveEnd, draftStart, namesRegion, catalogue: [{ title, aliases }], live: { newDraws, returningDraws, calendar }, draft: { same } }
 function resolveItem(raw, ctx) {
     const warnings = [];
-    const start = readDate(raw.start, ctx.postedAt);
-    const end = readDate(raw.end, ctx.postedAt);
+    const start = readSlashDate(raw.start, ctx.postedAt, ctx.dayFirst);
+    const end = readSlashDate(raw.end, ctx.postedAt, ctx.dayFirst);
     let action = ACTION_OF_KIND[raw.kind] || 'info';
     // Another region is dropped only when the post's own words say so (ctx.namesRegion, from filter.js); a region the AI read off the picture alone is shown with a warning instead, because a wrong drop is silent.
     if (raw.region === 'other' && ctx.namesRegion !== false) return { skip: 'another region' };
     if (raw.region === 'other') warnings.push('The AI thinks this may be for another region; the post\'s words do not say so.');
+    if (raw.region === 'test' && ctx.namesTestServer !== false) return { skip: 'a test server' };
+    if (raw.region === 'test') warnings.push('The AI thinks this was only seen on a test server; the post\'s words do not say so.');
     if (action === 'info') return { skip: 'nothing Dioreo tracks' };
 
     // Where it goes. A date beats words: a draw dated after this season ends goes to the draft whatever the post calls it.
@@ -64,7 +85,7 @@ function resolveItem(raw, ctx) {
         if (where !== 'draft') return { skip: 'the live season\'s own title or dates' };
         if (ctx.draftTitle && sameName(ctx.draftTitle, raw.name) && (!start || (ctx.draftStart && sameDay(ctx.draftStart, start)))) return { skip: 'already in the Next Season Draft' };
         if (raw.certainty === 'expected') warnings.push('Expected, not confirmed.');
-        return { kind: 'season', change: raw.change, name: raw.name, rewards: [], startText: raw.start || '', endText: raw.end || '', start, end, where, action: 'season', drawType: 'new', certainty: raw.certainty, catalogueTitle: '', warnings };
+        return { kind: 'season', change: raw.change, name: seasonTitle(raw.name), rewards: [], startText: raw.start || '', endText: raw.end || '', start, end, where, action: 'season', drawType: 'new', certainty: raw.certainty, catalogueTitle: '', warnings };
     }
 
     if (raw.change === 'cancelled' || raw.change === 'changed') {
@@ -96,7 +117,7 @@ function resolveItem(raw, ctx) {
     if (raw.certainty === 'expected') warnings.push('Expected, not confirmed.');
 
     return {
-        kind: raw.kind, change: raw.change, name: raw.name, rewards: raw.rewards || [],
+        kind: raw.kind, change: raw.change, name: cat ? cat.title : raw.name, rewards: raw.rewards || [],
         startText: raw.start || '', endText: raw.end || '', start: startUsed, end,
         where, action, drawType, certainty: raw.certainty, catalogueTitle: cat ? cat.title : '', warnings,
     };
@@ -105,8 +126,9 @@ function resolveItem(raw, ctx) {
 // All of a post's items: the ones worth a card, and why the rest are not.
 function resolveItems(rawItems, ctx) {
     const card = []; const skipped = [];
+    const postCtx = { ...ctx, dayFirst: dayFirst(rawItems) };
     for (const raw of rawItems || []) {
-        const r = resolveItem(raw, ctx);
+        const r = resolveItem(raw, postCtx);
         if (r.skip) skipped.push({ name: raw.name, reason: r.skip });
         else card.push(r);
     }
@@ -146,4 +168,4 @@ function draftCalendarLine(item) {
     return `${item.kind === 'mode' ? 'p' : 'e'} ${start} - ${end} | ${cleanItemName(item.name)}`;
 }
 
-module.exports = { norm, sameName, readDate, resolveItem, resolveItems, catalogueMatch, drawPrefill, calendarPrefill, draftDrawLine, draftCalendarLine };
+module.exports = { dayFirst, readSlashDate, seasonTitle, norm, sameName, readDate, resolveItem, resolveItems, catalogueMatch, drawPrefill, calendarPrefill, draftDrawLine, draftCalendarLine };
