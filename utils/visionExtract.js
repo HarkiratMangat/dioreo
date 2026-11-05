@@ -150,9 +150,8 @@ function classifyMode(screen) {
 const IMAGE_TIMEOUT_MS = 20 * 1000;
 const VERTEX_TIMEOUT_MS = 90 * 1000;
 
-// `record` writes a VisionRead for the read (models/VisionRead.js); `reuse` returns an earlier read of these exact bytes instead of calling the model (Harkirat, 2026-10-25 13:31-13:50 EDT). Both are opt-in, so the checking scripts always read fresh and write nothing.
-async function extractLoadoutFromImage(imageUrl, { maxAttachments = MAX_ATTACHMENTS, taskName, knownWeapons = [], record = false, reuse = false } = {}) {
-    const accessToken = await getGcpAccessToken();
+// `record` writes a VisionRead for the read (models/VisionRead.js); `reuse` returns an earlier read of these exact bytes instead of calling the model (Harkirat, 2026-10-25 13:31-13:50 EDT). Both are opt-in, so the checking scripts always read fresh and write nothing. Where a generateContent call goes: project, location and model from .env (GCP_PROJECT_ID / GCP_LOCATION / GCP_MODEL) or the defaults above. Shared by /autobuild's screenshot read and news-channel triage's post read (utils/newsTriage/model.js, 2026-11-04 20:06 EST), so both always call the same model on the same billing. Moved out of extractLoadoutFromImage unchanged.
+function vertexTarget() {
     const gcpProjectId = process.env.GCP_PROJECT_ID || DEFAULT_PROJECT_ID;
     const gcpLocation = process.env.GCP_LOCATION || DEFAULT_LOCATION;
     const gcpModel = process.env.GCP_MODEL || MODEL;
@@ -174,6 +173,35 @@ async function extractLoadoutFromImage(imageUrl, { maxAttachments = MAX_ATTACHME
     }
 
     const endpoint = `${host}/v1/projects/${gcpProjectId}/locations/${gcpLocation}/${modelPath}:generateContent`;
+    return { endpoint, gcpLocation, gcpModel };
+}
+
+// A text-and-image generateContent call that must answer JSON: parts in, the parsed object out. Timed as the 'vertex' dependency, its cost logged as vision_call_cost under `taskName`; throws on an HTTP error or a non-JSON answer. News-channel triage uses it (2026-11-04 20:06 EST); extractLoadoutFromImage keeps its own body, which also records the read.
+async function vertexGenerate(parts, { taskName } = {}) {
+    const accessToken = await getGcpAccessToken();
+    const { endpoint, gcpLocation, gcpModel } = vertexTarget();
+    const { timeDependency, noteDep } = require('./eventStore');
+    const res = await timeDependency('vertex', () => fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken}` },
+        body: JSON.stringify({ contents: [{ role: 'user', parts }], generationConfig: { responseMimeType: 'application/json' } }),
+        signal: AbortSignal.timeout(VERTEX_TIMEOUT_MS),
+    }));
+    if (!res.ok) {
+        const errText = await res.text().catch(() => '');
+        throw new Error(`Gemini API returned HTTP ${res.status}: ${errText.slice(0, 300)}`);
+    }
+    const data = await res.json();
+    logVisionCallCost(taskName, gcpLocation, gcpModel, data?.usageMetadata);
+    if (data?.usageMetadata?.totalTokenCount) noteDep('vertex', 0, true, { tokens: data.usageMetadata.totalTokenCount, countsAsCall: false });
+    const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!rawText) throw new Error('Gemini response had no extractable text content');
+    try { return JSON.parse(rawText); } catch { throw new Error(`Gemini response was not valid JSON: ${rawText.slice(0, 300)}`); }
+}
+
+async function extractLoadoutFromImage(imageUrl, { maxAttachments = MAX_ATTACHMENTS, taskName, knownWeapons = [], record = false, reuse = false } = {}) {
+    const accessToken = await getGcpAccessToken();
+    const { endpoint, gcpLocation, gcpModel } = vertexTarget();
 
     // Gemini's generateContent accepts an image as inline base64 bytes, not an arbitrary URL it fetches itself -- download the source image ourselves first, same "resolve the image locally before doing anything else with it" shape this repo's other image-processing utils already use (e.g. utils/stillFrame.js, utils/colorExtract.js). Both calls are timed out (2026-10-25 13:12 EDT): a /autobuild batch sat on "2 of 3 done" for minutes because one read never returned and neither fetch had a limit, so nothing ever failed it. A timeout throws, and the batch shows that screenshot as unreadable and carries on.
     const imageRes = await fetch(imageUrl, { signal: AbortSignal.timeout(IMAGE_TIMEOUT_MS) });
@@ -292,4 +320,4 @@ function shapeExtraction(parsed, maxAttachments = MAX_ATTACHMENTS) {
     return { weaponName: parsed.weaponName, gunsmithCode: parsed.gunsmithCode, attachments, attachmentSlots, mode: classifyMode(parsed.screen), modeSignals, confidence, observations };
 }
 
-module.exports = { extractLoadoutFromImage, shapeExtraction, classifyMode, buildPrompt, estimateVisionCostUsd, MAX_ATTACHMENTS, MODEL };
+module.exports = { extractLoadoutFromImage, shapeExtraction, classifyMode, buildPrompt, estimateVisionCostUsd, vertexGenerate, vertexTarget, MAX_ATTACHMENTS, MODEL };

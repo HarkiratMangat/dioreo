@@ -92,10 +92,15 @@ registerTextCommands(client);
 
 let adminClient = null;
 if (ADMIN_TOKEN) {
-    adminClient = new Client({ intents: [GatewayIntentBits.Guilds] });
+    // NEWS-CHANNEL TRIAGE (2026-11-04 20:06 EST): with NEWS_WATCH and NEWS_CHANNEL set, Dioreo Admin also hears the followed news channels in dioreoland and cards their posts into a private channel there (bot/newsWatch.js). Messages are never cached, as on the public client.
+    const newsOn = require("./utils/newsTriage/pipeline").enabled();
+    adminClient = new Client(newsOn
+        ? { intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages], partials: [Partials.Message], makeCache: Options.cacheWithLimits({ ...Options.DefaultMakeCacheSettings, MessageManager: 0 }) }
+        : { intents: [GatewayIntentBits.Guilds] });
     adminClient.commands = client.commands;
     registerAdminLifecycle(adminClient, adminCommands, ADMIN_TOKEN);
     adminClient.on("interactionCreate", handleInteraction);
+    if (newsOn) require("./bot/newsWatch").registerNewsWatch(adminClient);
 }
 setClients({ public: client, admin: adminClient });
 
@@ -128,6 +133,8 @@ client.once('clientReady', () => bootFailures.clear());
     }
     // The admin app's login is NOT fatal: a wrong or revoked ADMIN_BOT_TOKEN must not take the public bot down with it. It alerts and the public bot keeps serving, which is how an un-awaited admin login behaved before the boot fix above.
     if (adminClient) {
+        // News triage needs Message Content on the admin app before login; enableNewsMessageContent never throws, so it cannot take the admin login down with it.
+        if (require("./utils/newsTriage/pipeline").enabled()) await require("./bot/newsWatch").enableNewsMessageContent(adminClient, ADMIN_TOKEN);
         try { await adminClient.login(ADMIN_TOKEN); }
         catch (err) { console.error('❌ Dioreo Admin failed to log in; the public bot keeps running:', err); sendAlert('Dioreo Admin login failed', err, 'error'); }
     }

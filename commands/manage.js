@@ -481,7 +481,7 @@ function buildAddDrawModal(drawType, prefill = {}) {
     // The 5th field was "Or Paste As One Line" (2026-07-12) until 2026-10-18 11:09 EDT: Discord caps a modal at five, and the Draw Type dropdown took its place at Harkirat's pick ("B sounds fine"). A whole draw pasted as one line still goes in through Add Multiple, whose format carries the same `type:` tag. With it gone, Title, Items and Release Date are required again: they were optional only so a one-line paste could submit alone.
     modal.addLabelComponents(
         drawTextLabel('title', 'Draw Title', withValue(new TextInputBuilder().setStyle(TextInputStyle.Short), prefill.title)),
-        drawTextLabel('items', 'Items (Shorthand)', new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setPlaceholder("m Character Name\nl Gun Name\ne Emote Name\n-# Optional note")),
+        drawTextLabel('items', 'Items (Shorthand)', withValue(new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setPlaceholder("m Character Name\nl Gun Name\ne Emote Name\n-# Optional note"), prefill.items)),
         // "Start - End" like the season titles box (utils/drawDates.js): one date is the release, a range also sets the end date on the draw's /calendar row.
         drawTextLabel('date', 'Dates: Start - End (end is optional)', withValue(new TextInputBuilder().setStyle(TextInputStyle.Short).setPlaceholder("e.g. July 15 - August 20"), prefill.date)),
         // Optional (2026-07-12, Cloudinary-cache feature): blank reuses whatever's already cached for this exact draw title (utils/cloudinaryCache.js).
@@ -562,7 +562,7 @@ function buildCalendarAddModal(prefill = {}) {
         new ActionRowBuilder().addComponents(withValue(new TextInputBuilder().setCustomId('start_date').setLabel('Start Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 2'), prefill.startDate).setRequired(true)),
         new ActionRowBuilder().addComponents(withValue(new TextInputBuilder().setCustomId('end_date').setLabel('End Date (blank = All Season)').setStyle(TextInputStyle.Short).setPlaceholder('e.g. August 5'), prefill.endDate).setRequired(false)),
         // Added for the 3-section calendar redesign (2026-07-31 12:10 EDT) -- blank auto-detects from the title's own wording (adminParser.js's guessCalendarCategory), same as an un-prefixed bulk-import line.
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('category').setLabel('Section (draw / event / playlist)').setStyle(TextInputStyle.Short).setPlaceholder('blank = auto-detect from title').setRequired(false)),
+        new ActionRowBuilder().addComponents(withValue(new TextInputBuilder().setCustomId('category').setLabel('Section (draw / event / playlist)').setStyle(TextInputStyle.Short).setPlaceholder('blank = auto-detect from title'), prefill.category).setRequired(false)),
         // Double CP event flag (added 2026-08-15 for /draw calculator) -- a plain Y/N text field rather than a real checkbox (Discord modals have none). Blank/anything not starting with Y is treated as No, matching the lenient parsing handlers/manage/calendar.js already uses.
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('double_cp').setLabel('Double CP Event? (Y/N)').setStyle(TextInputStyle.Short).setPlaceholder('blank = No').setRequired(false))
     );
@@ -800,26 +800,28 @@ function buildDraftTitlesDatesModal(seasonalDoc) {
     return modal;
 }
 
-function buildDraftBulkDrawsModal(seasonalDoc) {
+// `append` (2026-11-04 20:06 EST, news-channel triage): a card's "Add to Next Season Draft" opens this box with its line added under what is staged, as `newLine` or `returningLine`. A line that would push the box past Discord's 4,000 characters is left off rather than cutting what is staged.
+const withLine = (text, line) => (line && (text ? text.length + 1 : 0) + line.length <= 4000 ? (text ? `${text}\n${line}` : line) : text);
+function buildDraftBulkDrawsModal(seasonalDoc, append = {}) {
     const draft = seasonalDoc?.draft || {};
     const { formatDrawsAsBulkText } = require('../utils/adminParser');
     const modal = new ModalBuilder().setCustomId('modal_draft_bulk_draws').setTitle('Draft: New + Returning Draws');
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('new_text').setLabel('New Draws (leave blank to skip)').setStyle(TextInputStyle.Paragraph)
-            .setPlaceholder("Title, m Item 1, july 10, url.jpg").setValue(formatDrawsAsBulkText(draft.newDraws || [])).setRequired(false)),
+            .setPlaceholder("Title, m Item 1, july 10, url.jpg").setValue(withLine(formatDrawsAsBulkText(draft.newDraws || []), append.newLine)).setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('returning_text').setLabel('Returning Draws (leave blank to skip)').setStyle(TextInputStyle.Paragraph)
-            .setPlaceholder("Title, l Item, aug 5, url.jpg").setValue(formatDrawsAsBulkText(draft.returningDraws || [])).setRequired(false))
+            .setPlaceholder("Title, l Item, aug 5, url.jpg").setValue(withLine(formatDrawsAsBulkText(draft.returningDraws || []), append.returningLine)).setRequired(false))
     );
     return modal;
 }
 
-function buildDraftBulkCalendarModal(seasonalDoc) {
+function buildDraftBulkCalendarModal(seasonalDoc, append = {}) {
     const draft = seasonalDoc?.draft || {};
     const { formatCalendarAsBulkText } = require('../utils/adminParser');
     const modal = new ModalBuilder().setCustomId('modal_draft_bulk_calendar').setTitle('Draft: Calendar');
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('bulk_text').setLabel('Events (replaces the whole staged list)').setStyle(TextInputStyle.Paragraph)
-            .setPlaceholder("7/15 - 8/1 | Event Title\n7/20 - All Season | Other Event").setValue(formatCalendarAsBulkText(draft.calendar || [])).setRequired(true))
+            .setPlaceholder("7/15 - 8/1 | Event Title\n7/20 - All Season | Other Event").setValue(withLine(formatCalendarAsBulkText(draft.calendar || []), append.line)).setRequired(true))
     );
     return modal;
 }
