@@ -486,6 +486,16 @@ check('the handler owns news| and nothing else', async () => {
         assert.ok(HB.setKinds.indexOf('resolveAction(') > -1 && HB.setKinds.indexOf('resolveAction(') < HB.setKinds.indexOf('updateOne('), 'the draft tier before the kinds are saved');
         assert.ok(/actorId: interaction\.user\.id/.test(HB.makeCard) && /actorId: interaction\.user\.id/.test(HB.undoDraft), 'a card made, or an Undo pressed, is checked as the clicker');
     });
+    check('the briefing and the promote check name undated rows and a /manage box near its 4,000 characters', () => {
+        const url = 'https://res.cloudinary.com/dioreo/image/upload/f_auto,q_auto/draws/a-long-draw-image-name-for-the-test.png';
+        const draws = Array.from({ length: 18 }, (_, i) => ({ title: `Returning Draw Number ${String.fromCharCode(65 + i)}`, date: D('2026-11-12'), thumbnailUrl: url, items: [{ tier: 'mythic', name: 'A Mythic Weapon Blueprint' }, { tier: 'legendary', name: 'A Legendary Operator Skin' }] }));
+        const d = { bpEnd: D('2026-11-12'), draft: { active: true, bpStart: D('2026-11-12'), currentSeasonTitle: 'Season 10 — Test', returningDraws: draws, calendar: [{ title: 'Grim Duo Draw', category: 'draw', date: D('2026-11-12'), newsSource: { rank: 2, dated: false } }] } };
+        const rd = pipe.draftReadiness(d);
+        assert.deepStrictEqual(rd.undated, ['Grim Duo Draw']);
+        assert.ok(rd.fullBoxes.length === 1 && /^returning draws \(/.test(rd.fullBoxes[0]), JSON.stringify(rd.fullBoxes));
+        const text = JSON.stringify(require('../utils/newsTriage/card').buildPromoteCheck(rd));
+        assert.ok(/No post ever dated these/.test(text) && /Nearly full in \/manage/.test(text));
+    });
     check('rule: the draft holds the next season only, never one past it', () => {
         const base = { postedAt: D('2026-10-08T12:00:00Z'), liveEnd: D('2026-10-15T00:00:00Z'), liveTitle: 'Season 8 — Haunted', live: {}, draft: {}, catalogue: [] };
         const s10 = r.resolveItem({ kind: 'season', change: 'new', name: 'Season 10', start: 'November 12th UTC', season: 'later', region: 'global', certainty: 'confirmed' }, base);

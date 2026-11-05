@@ -128,6 +128,8 @@ function buildBriefing(b, { dayLabel } = {}) {
         if (r.noImage.length) lines.push(`- ${warn} No draw image yet: ${listNames(r.noImage)}`);
         if (r.noEnd.length) lines.push(`- ${warn} No end date: ${listNames(r.noEnd)}`);
         if (r.leakOnly.length) lines.push(`- Expected, not confirmed yet: ${listNames(r.leakOnly)}`);
+        if ((r.undated || []).length) lines.push(`- ${warn} No post has dated these yet (they sit on the season start): ${listNames(r.undated)}`);
+        if ((r.fullBoxes || []).length) lines.push(`- ${warn} Nearly full in /manage, whose box holds 4,000 characters: ${r.fullBoxes.join(' · ')}`);
         if ((r.stillRunning || []).length) lines.push(`- ${warn} Live with no end date, may run into next season: ${listNames(r.stillRunning)}`);
         parts.push({ type: 14, spacing: 1, divider: true }, { type: 10, content: lines.join('\n').slice(0, 1400) });
     }
@@ -175,6 +177,8 @@ function buildPromoteCheck(r) {
     if (r.twice) bad.push(`${r.twice} title${r.twice === 1 ? '' : 's'} listed twice`);
     if (r.seamGap) bad.push(`The seasons do not meet: ${r.seamGap}`);
     if (r.leakOnly.length) bad.push(`Expected, not confirmed yet: ${listNames(r.leakOnly)}`);
+    if ((r.undated || []).length) bad.push(`No post ever dated these; they will show as starting on day one: ${listNames(r.undated)}`);
+    if ((r.fullBoxes || []).length) bad.push(`Nearly full in /manage (its box holds 4,000 characters): ${r.fullBoxes.join(' · ')}`);
     if ((r.stillRunning || []).length) bad.push(`Live with no end date, may run into this season: ${listNames(r.stillRunning)}`);
     const when = r.startsAt ? `<t:${Math.floor(new Date(r.startsAt).getTime() / 1000)}:R>` : 'soon';
     const lines = [`### ${emojis.mngInfo} Next season starts ${when}`, `-# Check, then Promote to Live from /manage → Next Season Draft once it starts.`, '',
