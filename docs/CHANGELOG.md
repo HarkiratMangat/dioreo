@@ -29,12 +29,13 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.8.6 — 2026-11-05 14:28 EST (#255) — A short or look-alike weapon name works after d gs
-**From Harkirat, 2026-11-05:** `d gs hs0`, `d gs hso` and `d build hs0` got no reply on prod while /gunsmith mp opened the HS0405 (14:06 EST); his pick on whether a miss after `d gs` stays silent, "Show the 10 s No match line" (14:26 EST); "okay merge flow approved. no deploy yet" (14:27 EST).
+## v3.8.6 — 2026-11-05 14:28 EST (#255) — A short or look-alike weapon name works after d gs, and d top opens Top
+**From Harkirat, 2026-11-05:** `d gs hs0`, `d gs hso` and `d build hs0` got no reply on prod while /gunsmith mp opened the HS0405 (14:06 EST); his pick on whether a miss after `d gs` stays silent, "Show the 10 s No match line" (14:26 EST); "okay merge flow approved. no deploy yet" (14:27 EST); `d list top` and `d gs top` opening META (14:34 EST).
 
 ### Fixed
 - **A weapon name typed partly, with a digit or a look-alike in it, got no reply after `d`.** `utils/search.js` `pickWeapon` opened the weapon a typed start names only when the text was one word after its letter/digit split, and that split turns `hs0` into `hs` + `0`; look-alikes (`hso`) were never folded on this path. The dropdown's looser search still found the weapon, and after `d` a loose match is silence. On prod's 129 MP + 7 DMZ weapons, 567 of 1,188 starts and one-look-alike starts went silent. Text typed as one run of characters now opens the one weapon it starts, as typed and then with 0/o, 1/i/l and 5/s folded; a start of two names gets Did you mean. All 1,188 resolve; among the 7,340 commonest English words only `sol` (SO-14) newly opens a weapon. A name typed into /gunsmith without picking uses the same lookup.
 - **`gra` opened GRAV and `cro` opened CROSSBOW.** The tie-break between names counted words instead of matching them; both now offer the two weapons.
+- **`d gs top`, `d list top`, `d best`, `d hm` and `d meta` showed the lists page's META weapons** (his screenshot, 14:34 EST: "shouldn't this have openned the builds in the top category?"). `commands/gunsmith.js` dropped the list from `~lists~<list>` and always opened the page. A named list now opens that list's card, the same view as its button under the page; `d list`, `d lists`, `d gs list` still open the page, and a list named right after `list(s)` is that list.
 
 ### Changed
 - **One unknown word after `d` plus a gunsmith word** (`d gs zzz`, `d build va`) gets Did you mean or the 10-second No match line instead of silence. Several words with no weapon in them (`dior gunsmith skins are cool`) stay silent.
