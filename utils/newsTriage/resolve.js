@@ -6,7 +6,7 @@ const dayjs = require('dayjs');
 const utc = require('dayjs/plugin/utc');
 dayjs.extend(utc);
 
-const ACTION_OF_KIND = { draw: 'draw', event: 'calendar', mode: 'calendar', patch: 'patch' };
+const ACTION_OF_KIND = { draw: 'draw', event: 'calendar', mode: 'calendar', patch: 'patch', season: 'season' };
 
 // Names compare without case, punctuation or the words every draw name carries, so "The Hunger Eternal Draw" matches the index's "Hunger Eternal".
 function norm(s) {
@@ -46,17 +46,26 @@ function resolveItem(raw, ctx) {
     // Another region is dropped only when the post's own words say so (ctx.namesRegion, from filter.js); a region the AI read off the picture alone is shown with a warning instead, because a wrong drop is silent.
     if (raw.region === 'other' && ctx.namesRegion !== false) return { skip: 'another region' };
     if (raw.region === 'other') warnings.push('The AI thinks this may be for another region; the post\'s words do not say so.');
-    if (action === 'info') return { skip: raw.kind === 'season' ? 'season dates or titles' : 'nothing Dioreo tracks' };
+    if (action === 'info') return { skip: 'nothing Dioreo tracks' };
 
     // Where it goes. A date beats words: a draw dated after this season ends goes to the draft whatever the post calls it.
     let where;
     if (raw.season === 'later') where = 'later';
     else if (start && ctx.liveEnd) {
-        where = start > new Date(ctx.liveEnd) ? 'draft' : 'live';
+        // ON or after the live season's end is next season (2026-11-04 22:09 EST, from the live dev run): CODM's own Season 10 post listed eight playlists starting 11/12, Season 9's bpEnd is 2026-11-12 00:00 UTC, and a strict `>` sent all eight to the LIVE season with a false "the date is before this season ends" warning. Launch-day items start exactly on the boundary, so this is every season's busiest post.
+        where = start >= new Date(ctx.liveEnd) ? 'draft' : 'live';
         if (raw.season === 'next' && where === 'live') warnings.push('The post says next season, but the date is before this season ends.');
     } else if (raw.season === 'next') where = 'draft';
     else where = 'live';
     if (where === 'later') return { skip: 'a later season' };
+
+    // A season post (its title and start) goes only to the Next Season Draft's Titles & Deadlines box; the live season's own title is not news triage's to change. The post that announces a season is the one that sets the draft's start, so dropping it lost the season's most important post (the live run, CODM's "Greetings" post, 2026-11-04 22:09 EST).
+    if (action === 'season') {
+        if (where !== 'draft') return { skip: 'the live season\'s own title or dates' };
+        if (ctx.draftTitle && sameName(ctx.draftTitle, raw.name) && (!start || (ctx.draftStart && sameDay(ctx.draftStart, start)))) return { skip: 'already in the Next Season Draft' };
+        if (raw.certainty === 'expected') warnings.push('Expected, not confirmed.');
+        return { kind: 'season', change: raw.change, name: raw.name, rewards: [], startText: raw.start || '', endText: raw.end || '', start, end, where, action: 'season', drawType: 'new', certainty: raw.certainty, catalogueTitle: '', warnings };
+    }
 
     if (raw.change === 'cancelled' || raw.change === 'changed') {
         action = 'info';

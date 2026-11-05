@@ -44,10 +44,10 @@ function titleOf(text) {
     return line.trim().slice(0, 120);
 }
 
-// { read: true } when the post is worth a model call; otherwise { read: false, reason }.
-function prefilter(text) {
+// { read: true } when the post is worth a model call; otherwise { read: false, reason }. `hasImage`: a post with no words but a picture is read, because on #official-codm-news the picture can be the whole post (2026-11-04 22:09 EST). A banner strip costs one cheap read and returns nothing.
+function prefilter(text, { hasImage = false } = {}) {
     const t = String(text || '').trim();
-    if (!t) return { read: false, reason: 'no text' };
+    if (!t) return hasImage ? { read: true } : { read: false, reason: 'no text' };
     if (/^\S+$/.test(t) && /^https?:\/\//i.test(t)) return { read: false, reason: 'a link only' };
     if (!SUBJECT.test(t)) return { read: false, reason: 'not a draw, event, mode or patch' };
     if (SHOP.test(t) && !DRAWISH.test(t)) return { read: false, reason: 'a shop deal' };

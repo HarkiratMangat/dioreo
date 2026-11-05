@@ -33,7 +33,8 @@ async function handle(client, message) {
     const post = pipeline.toPost(message);
     const result = await pipeline.processPost(post, { rest: client.rest, selfId: client.user?.id, appId: appIdOf(client) });
     await updateCursor(post.channelId, post.id).catch(err => console.error('News triage: cursor update failed:', err?.message || err));
-    if (result.status === 'carded' || result.status === 'error') console.log(`📰 News triage: ${post.channelName} ${post.id} → ${result.status}${result.error ? ` (${result.error})` : ''}`);
+    // Every outcome is logged, one line each (2026-11-04 22:10 EST): a read that ended in no card used to leave no trace but an in-memory list, which is how CODM's own season post went missing unnoticed.
+    if (result.status !== 'not watched' && result.status !== 'own post') console.log(`📰 News triage: #${post.channelName} ${post.id} → ${result.status}${result.reason ? ` (${result.reason})` : ''}${result.error ? ` (${result.error})` : ''}`);
 }
 
 // Reads what arrived while the bot was down, oldest first. A channel seen for the first time starts at its newest post, so the first boot never cards a backlog.
@@ -68,7 +69,10 @@ function registerNewsWatch(client) {
     });
     client.on('messageUpdate', (_old, message) => {
         if (!watch.has(message?.channelId)) return;
-        pipeline.noteSourceChange(client.rest, message.channelId, message.id, 'edited', appIdOf(client)).catch(() => {});
+        // Discord also sends an update when a link's embed loads a moment after posting, and when a crosspost's source is deleted (flag 1 << 3). Only a real edit (editedTimestamp) is an edit, and a deleted source is a deletion.
+        const sourceGone = Boolean(Number(message.flags?.bitfield ?? message.flags ?? 0) & (1 << 3));
+        if (!sourceGone && !message.editedTimestamp) return;
+        pipeline.noteSourceChange(client.rest, message.channelId, message.id, sourceGone ? 'deleted' : 'edited', appIdOf(client)).catch(() => {});
     });
     client.on('messageDelete', message => {
         if (!watch.has(message?.channelId)) return;

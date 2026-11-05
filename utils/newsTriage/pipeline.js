@@ -49,6 +49,11 @@ function noteSkipped(post, reason) {
     if (state.skipped.some(s => s.messageId === post.id)) return;
     state.skipped.push({ title: post.title, reason, jumpUrl: post.jumpUrl, channelId: post.channelId, messageId: post.id });
     if (state.skipped.length > 200) state.skipped.shift();
+    // Also stored (ids and reason only), so a restart before 00:05 UTC does not lose the day's list. Never awaited and never throws: a failed write leaves the in-memory entry.
+    try {
+        const NewsSkip = require('../../models/NewsSkip');
+        NewsSkip.updateOne({ channelId: post.channelId, messageId: post.id }, { $set: { guildId: post.guildId || '', reason, expireAt: new Date(Date.now() + 3 * DAY_MS) } }, { upsert: true }).catch(() => {});
+    } catch { /* no database: memory only */ }
 }
 // Posts are handled one at a time, so a burst of fifty on a season's launch day never becomes fifty AI calls at once.
 function enqueue(fn) {
@@ -66,7 +71,7 @@ async function loadContext(postedAt) {
     ]);
     const d = doc || {}; const draft = d.draft || {};
     return {
-        postedAt, liveEnd: d.bpEnd || null, draftStart: draft.bpStart || null, catalogue,
+        postedAt, liveEnd: d.bpEnd || null, draftStart: draft.bpStart || null, draftTitle: draft.currentSeasonTitle || '', catalogue,
         live: { newDraws: d.newDraws || [], returningDraws: d.returningDraws || [], calendar: d.calendar || [] },
         draft: { newDraws: draft.newDraws || [], returningDraws: draft.returningDraws || [], calendar: draft.calendar || [] },
         liveSeason: { title: d.currentSeasonTitle || '', end: d.bpEnd || null, nextTitle: draft.currentSeasonTitle || '' },
@@ -98,7 +103,7 @@ async function processPost(post, { rest, selfId, appId, force = false, env = pro
         if (await NewsCard.exists({ sourceChannelId: post.channelId, sourceMessageId: post.id })) return { status: 'already carded' };
 
         if (!force) {
-            const pre = prefilter(post.text);
+            const pre = prefilter(post.text, { hasImage: Boolean(post.image) });
             if (!pre.read) { noteSkipped(post, pre.reason); return { status: 'skipped', reason: pre.reason }; }
         }
         rollDay();
@@ -125,9 +130,11 @@ async function processPost(post, { rest, selfId, appId, force = false, env = pro
         const { card, skipped } = resolveItems(raw, { ...ctx, namesRegion: namesRegion(post.text) });
         // The same draw from #official-codm-news and #leaks gets one card: an item another card from the last two weeks already holds is left off.
         const recent = await NewsCard.find({ createdAt: { $gte: new Date(Date.now() - 14 * DAY_MS) } }, { items: 1 }).lean();
-        const fresh = card.filter(it => !recent.some(c => (c.items || []).some(o => o.action === it.action && o.where === it.where && sameName(o.name, it.name))));
+        // A duplicate is the same thing on the same day: a later post that moves the date or confirms a leak gets its own card, because the earlier card holds the old date (think-pass, 2026-11-04 22:09 EST).
+        const sameStart = (a, b) => (!a && !b) || (a && b && new Date(a).toISOString().slice(0, 10) === new Date(b).toISOString().slice(0, 10));
+        const fresh = card.filter(it => !recent.some(c => (c.items || []).some(o => o.action === it.action && o.where === it.where && sameName(o.name, it.name) && sameStart(o.start, it.start))));
         if (!fresh.length) {
-            const reason = card.length ? 'already on another card' : (skipped[0]?.reason || 'nothing to add');
+            const reason = card.length ? 'already on another card' : (skipped.length ? [...new Set(skipped.map(s => s.reason))].join('; ') : 'nothing to add');
             noteSkipped(post, reason);
             return { status: 'no card', reason, skipped };
         }
@@ -163,11 +170,26 @@ async function noteSourceChange(rest, channelId, messageId, what, appId) {
 // The once-a-day skipped list. Empty days post nothing. Returns how many it listed.
 async function postSkippedList(rest, { env = process.env, appId } = {}) {
     const cfg = config(env);
-    const entries = state.skipped.splice(0);
-    if (!entries.length || !cfg.channel) return 0;
+    if (!cfg.channel) return 0;
+    // The stored list, titles re-read from the channel now (nothing stored holds a post's words); the in-memory list only when there is no database.
+    let entries = []; let rows = [];
+    try {
+        const NewsSkip = require('../../models/NewsSkip');
+        rows = await NewsSkip.find({}).sort({ createdAt: 1 }).limit(200).lean();
+        for (const [i, r] of rows.entries()) {
+            let title = '';
+            if (i < 25) { try { title = toPost(await rest.get(Routes.channelMessage(r.channelId, r.messageId)), { guildId: r.guildId }).title; } catch { /* deleted or unreadable */ } }
+            entries.push({ title: title || 'A post (could not be re-read)', reason: r.reason, jumpUrl: `https://discord.com/channels/${r.guildId}/${r.channelId}/${r.messageId}`, channelId: r.channelId, messageId: r.messageId });
+        }
+        state.skipped.splice(0);
+    } catch {
+        entries = state.skipped.splice(0); rows = [];
+    }
+    if (!entries.length) return 0;
     try {
         await rest.post(Routes.channelMessages(cfg.channel), { body: { flags: 32768, components: asApp(appId, () => buildSkippedList(entries)), allowed_mentions: { parse: [] } } });
-    } catch (err) { console.error('News triage: the skipped list could not be posted:', err?.message || err); }
+    } catch (err) { console.error('News triage: the skipped list could not be posted:', err?.message || err); return 0; }
+    if (rows.length) { try { await require('../../models/NewsSkip').deleteMany({ _id: { $in: rows.map(r => r._id) } }); } catch { /* the TTL removes them */ } }
     return entries.length;
 }
 

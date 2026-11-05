@@ -783,16 +783,17 @@ function buildAnnouncementModal(announcementDoc) {
     return modal;
 }
 
-// --- NEXT SEASON DRAFT modal builders (2026-07-30 22:24 EDT) --- Same field shapes/parsers as their live equivalents above (splitTitleDate/parseAdminDate for titles+dates, parseBulkDrawList/parseBulkEvents for the bulk pastes) so handlers/manage/season.js's submit handlers can reuse the exact same parsing logic, just writing into `seasonalDoc.draft.*` instead of the top-level fields.
-function buildDraftTitlesDatesModal(seasonalDoc) {
+// --- NEXT SEASON DRAFT modal builders (2026-07-30 22:24 EDT) --- Same field shapes/parsers as their live equivalents above (splitTitleDate/parseAdminDate for titles+dates, parseBulkDrawList/parseBulkEvents for the bulk pastes) so handlers/manage/season.js's submit handlers can reuse the exact same parsing logic, just writing into `seasonalDoc.draft.*` instead of the top-level fields. `override` (2026-11-04 22:10 EST, news-channel triage): a season post's title and start fill only what the draft does not have yet, never a title or date he typed. A start with no end reads "start - TBD", because a single date in this box is the END (.claude/rules/design-decisions.md, the season-dates bullet).
+function buildDraftTitlesDatesModal(seasonalDoc, override = {}) {
     const draft = seasonalDoc?.draft || {};
-    const bpLine = [draft.bpTitle || 'Battle Pass', seasonDates(draft.bpStart, draft.bpEnd, draft.bpEndTBD)].filter(Boolean).join(', ');
+    const bpStart = draft.bpStart || override.bpStart || null;
+    const bpLine = [draft.bpTitle || 'Battle Pass', seasonDates(bpStart, draft.bpEnd, draft.bpEnd ? draft.bpEndTBD : (Boolean(bpStart && !draft.bpStart) || draft.bpEndTBD))].filter(Boolean).join(', ');
     const rankLine = [draft.rankTitle || 'Ranked Series', seasonDates(draft.rankStart, draft.rankEnd, draft.rankEndTBD)].filter(Boolean).join(', ');
     const dmzLine = [draft.dmzTitle || 'DMZ Season', seasonDates(draft.dmzStart, draft.dmzEnd, draft.dmzEndTBD)].filter(Boolean).join(', ');
 
     const modal = new ModalBuilder().setCustomId('modal_draft_titles_dates').setTitle('Draft: Season Titles & Deadlines');
     modal.addComponents(
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('main_title').setLabel('Main Season Title').setStyle(TextInputStyle.Short).setValue(withEmoji(draft.currentSeasonEmoji, draft.currentSeasonTitle)).setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('main_title').setLabel('Main Season Title').setStyle(TextInputStyle.Short).setValue(withEmoji(draft.currentSeasonEmoji, draft.currentSeasonTitle || override.mainTitle || '')).setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('bp_line').setLabel('Battle Pass: Title, Start - End').setStyle(TextInputStyle.Short).setValue(bpLine).setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('rank_line').setLabel('Ranked Series: Title, Start - End').setStyle(TextInputStyle.Short).setValue(rankLine).setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('dmz_line').setLabel('DMZ Season: Title, Start - End').setStyle(TextInputStyle.Short).setValue(dmzLine).setRequired(false))

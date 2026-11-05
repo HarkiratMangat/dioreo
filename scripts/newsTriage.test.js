@@ -31,6 +31,7 @@ check('prefilter skips links, other regions, shop deals and posts about nothing 
     assert.strictEqual(prefilter('Halloween Bundle event available in the Webstore').reason, 'a shop deal');
     assert.strictEqual(prefilter('POIs location in Verdansk Map').reason, 'not a draw, event, mode or patch');
     assert.strictEqual(prefilter('').reason, 'no text');
+    assert.strictEqual(prefilter('', { hasImage: true }).read, true, 'a picture-only post is read');
 });
 
 // ---- dates, read against the post's time in UTC ----
@@ -61,6 +62,18 @@ check('a draw dated after the live season ends goes to the Next Season Draft', (
     const it = r.resolveItem(raw({ name: 'Means To An End Mythic Drop', start: 'November 19th at 4pm PT' }), ctx);
     assert.strictEqual(it.where, 'draft'); assert.strictEqual(it.action, 'draw');
 });
+check('something starting ON the live season\'s end is next season, with no false warning', () => {
+    const it = r.resolveItem(raw({ kind: 'mode', name: 'Super Attack of the Undead 3.0 MP Playlist', start: '11/12', end: '12/9', season: 'next' }), { ...ctx, postedAt: new Date('2026-11-05T02:13:00Z') });
+    assert.strictEqual(it.where, 'draft', 'the live run sent this to the live season');
+    assert.ok(!it.warnings.some(w => /before this season ends/.test(w)));
+});
+check('a season post becomes a Next Season Draft title-and-start row', () => {
+    const it = r.resolveItem(raw({ kind: 'season', change: 'new', name: 'Season 10: 7th Anniversary', start: 'Wednesday, November 11th at 4 PM PT', season: 'next' }), { ...ctx, postedAt: new Date('2026-11-05T02:13:00Z') });
+    assert.strictEqual(it.action, 'season'); assert.strictEqual(it.where, 'draft');
+    assert.strictEqual(iso(it.start), '2026-11-12T00:00:00.000Z');
+    assert.strictEqual(r.resolveItem(raw({ kind: 'season', name: 'Season 9', season: 'current' }), ctx).skip, 'the live season\'s own title or dates');
+    assert.strictEqual(r.resolveItem(raw({ kind: 'season', name: 'Season 10: 7th Anniversary', season: 'next' }), { ...ctx, draftTitle: 'Season 10 — 7th Anniversary' }).skip, 'already in the Next Season Draft');
+});
 check('a draw dated inside the live season goes to the live season', () => {
     const it = r.resolveItem(raw({ name: 'Grim Duo Draw', start: 'tomorrow', change: 'returning' }), { ...ctx, postedAt: new Date('2026-11-01T15:18:00Z') });
     assert.strictEqual(it.where, 'live'); assert.strictEqual(it.drawType, 'returning');
@@ -84,7 +97,6 @@ check('another region, a later season, and a draw already on /draws get no card'
     assert.ok(!unsure.skip && unsure.warnings.some(w => /another region/.test(w)), 'a region read off the picture alone is a warning, not a drop');
     assert.strictEqual(r.resolveItem(raw({ season: 'later' }), ctx).skip, 'a later season');
     assert.strictEqual(r.resolveItem(raw({ name: 'Weresoldier Unleashed Draw', start: 'October 31' }), { ...ctx, postedAt: new Date('2026-10-30T13:09:00Z') }).skip, 'already on /draws');
-    assert.strictEqual(r.resolveItem(raw({ kind: 'season' }), ctx).skip, 'season dates or titles');
 });
 check('a cancellation is shown with no box to open', () => {
     const it = r.resolveItem(raw({ name: 'Dark Ritual Series Armory', change: 'cancelled' }), ctx);
@@ -126,7 +138,10 @@ const bigCard = {
 };
 check('a full card stays under 40 components and every id under 100 characters', () => {
     const c = buildCard(bigCard);
+    assert.strictEqual(MAX_ITEMS, 8);
     assert.ok(countComponents(c) <= 40, `components ${countComponents(c)}`);
+    const textOf = list => (list || []).reduce((sum, x) => sum + (x.type === 10 ? x.content.length : 0) + textOf(x.components), 0);
+    assert.ok(textOf(c) <= 4000, `text ${textOf(c)}`);
     for (const id of allIds(c)) assert.ok(id.length <= 100 && id.startsWith('news|'), id);
 });
 check('a dismissed card has no Dismiss and its boxes are disabled', () => {
