@@ -249,7 +249,9 @@ function planOptionSave({ existing, targetId, targetOption, ident, weaponKey, si
         if (ident.option > count) return { error: `Build ${number} has ${range(number, count)}, so the next one is \`${lo.optionTag(number, count)}\`.` };
         return { kind: src ? 'join' : 'add', src, from: targetOption, dest, to: ident.option, before, number, srcNumber };
     }
-    // A plain number on another build: this option becomes its own build there. Only an option of a merged build gets here (a plain build with a plain number is an ordinary edit).
+    // Option A with a plain number is the build's own number, so the whole build moves there with its options, an ordinary renumber (loadout.edit). Before options had tags that was the only meaning of changing a merged build's number, and taking it away would leave a merged build no way to be renumbered. To make Option A its own build, swap it to a letter first.
+    if (src && targetOption === 0 && weaponKey === src.weaponKey) return { kind: 'renumber', src, number };
+    // A plain number on another build: this option (B onward) becomes its own build there. Only an option of a merged build gets here (a plain build with a plain number is an ordinary edit).
     const free = form.planNumbering({ siblings, targetId: null, wanted: number });
     if (free.error) return { error: free.error };
     return { kind: 'split', src, from: targetOption, before, number, srcNumber };
@@ -314,11 +316,15 @@ async function saveOption(interaction, { plan, picture, fail, unknown, mode, wea
         }
     } else if (plan.kind === 'join' || plan.kind === 'add') {
         savedId = String(plan.dest._id); shown = plan.to;
+        // A build this emptied is deleted, and the builds after it move up one (core/ops/loadouts.js closeNumberGap), so the build it joined may have a new number: read it back.
+        const destNow = await Loadout.findById(savedId).select('buildName').lean();
+        const destNumber = require('../../utils/loadoutForm').buildNumberOf(destNow?.buildName) ?? plan.number;
         if (src) {
-            moveLine = `${tagOf(plan.srcNumber, from)} → ${tagOf(plan.number, plan.to)}`;
-            notes.push(lo.optionsOf(src).length > 1 ? `It left Build ${plan.srcNumber}, whose later options moved up a letter.` : `Build ${plan.srcNumber} is now this option, so it is gone from the list.`);
+            moveLine = `${tagOf(plan.srcNumber, from)} → ${tagOf(destNumber, plan.to)}`;
+            notes.push(lo.optionsOf(src).length > 1 ? `It left Build ${plan.srcNumber}, whose later options moved up a letter.` : `Build ${plan.srcNumber} is now this option, so it is gone from the list, and the builds after it moved up one.`);
         }
-        notes.push(`The weapon box, label and badges stay Build ${plan.number}'s.`);
+        if (destNumber !== plan.number) notes.push(`Build ${plan.number} is now Build ${destNumber}.`);
+        notes.push(`The weapon box, label and badges stay Build ${destNumber}'s.`);
     } else {
         savedId = String(result.results[1].applied.id); shown = 0;
         moveLine = `${tagOf(plan.srcNumber, from)} → ${tagOf(plan.number, 0)}`;
@@ -385,15 +391,19 @@ async function saveLoadout(interaction, preset, isEdit) {
     const weaponKey = weaponName.toLowerCase().replace(/\s+/g, '');
     const siblings = await Loadout.find({ weaponKey, mode }).lean();
     // A merged build, or a build # with a letter (`2b`), is saved option by option (planOptionSave below). A plain build saves as it always has.
-    const optionPath = isEdit ? (targetOption > 0 || (existing.variants || []).length > 0 || ident.lettered) : ident.lettered;
+    let optionPath = isEdit ? (targetOption > 0 || (existing.variants || []).length > 0 || ident.lettered) : ident.lettered;
+    // Saving one option of a merged build: only that option is not its own clash, even when the save goes the ordinary way (a renumber of the whole build).
+    const oneOption = optionPath;
     let plan = null;
     if (optionPath) {
         plan = planOptionSave({ existing, targetId, targetOption, ident, weaponKey, siblings });
         if (plan.error) return await fail(plan.error);
+        // Option A with another plain number moves the whole build: the ordinary edit below, which leaves the options as they are.
+        if (plan.kind === 'renumber') { optionPath = false; plan = null; }
     }
     // The same code twice on one weapon is the same attachments twice, so the same build. Every option's code counts; the option being saved is not its own clash.
     const lo = require('../../utils/loadoutOptions');
-    const clash = code && siblings.find(b => lo.optionsOf(b).some((o, i) => form.sameCode(o.shareCode, code) && !(String(b._id) === targetId && (!optionPath || i === targetOption))));
+    const clash = code && siblings.find(b => lo.optionsOf(b).some((o, i) => form.sameCode(o.shareCode, code) && !(String(b._id) === targetId && (!oneOption || i === targetOption))));
     if (clash) return await fail(`${clash.weaponName} ${clash.buildName} already has the code \`${code}\`, and the same code is the same build. Edit that one instead.`);
     // An edit that renames the weapon joins the other weapon's builds as a new one would.
     const inPool = isEdit && siblings.some(b => String(b._id) === targetId);

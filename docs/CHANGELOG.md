@@ -41,6 +41,11 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 
 ### Changed
 - **A bare `Build: 2` in a bulk paste means Build 2.** It used to save a build literally named "2".
+- **Deleting a build moves the weapon's later builds up one**, in /manage Delete, bulk remove, a merge that empties a build, and the portal. Before, deleting Build 3 of 4 left Build 4, which /manage then refused to save with its own number ("builds 1 to 3") and whose card read "Build 3 of 3". Revert puts every number back. Prod had no gap yet.
+- **Option A of a merged build with another plain number moves the whole build there**, options included, as renumbering did before options had tags.
+
+### Fixed
+- **A build moved to another number kept its old Build Number on its Cloudinary picture.** Swaps and the new move-up both rewrite it now, every option's picture included.
 
 ## v3.8.6 — 2026-11-05 14:28 EST (#255 · `b3e0092a`) — A short or look-alike weapon name works after d gs, and d top opens Top
 **From Harkirat, 2026-11-05:** `d gs hs0`, `d gs hso` and `d build hs0` got no reply on prod while /gunsmith mp opened the HS0405 (14:06 EST); his pick on whether a miss after `d gs` stays silent, "Show the 10 s No match line" (14:26 EST); "okay merge flow approved. no deploy yet" (14:27 EST); `d list top` and `d gs top` opening META (14:34 EST).

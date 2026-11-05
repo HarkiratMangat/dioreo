@@ -69,7 +69,7 @@ check('the Edit pop-up for one option shows its attachments, its code and its ta
     assert.strictEqual(manage.buildEditLoadoutModal(b1, 'b1', siblings).custom_id, 'edit_loadout_b1', 'a plain build keeps its plain id');
 });
 
-check('where a save sends an option: self, join, add or split', () => {
+check('where a save sends an option: self, join, add, split, or a renumber of the whole build', () => {
     const { planOptionSave, splitTarget } = require('../handlers/manage/loadouts');
     assert.deepStrictEqual(splitTarget('b2~2'), { id: 'b2', option: 2 });
     assert.deepStrictEqual(splitTarget('b2'), { id: 'b2', option: 0 });
@@ -87,6 +87,9 @@ check('where a save sends an option: self, join, add or split', () => {
     assert.ok(/next one is `2d`/.test(plan(null, 0, 'SMG, 2e, 4D4D').error));
     assert.ok(/no Build 7/.test(plan(null, 0, 'SMG, 7b, 4D4D').error));
     assert.strictEqual(plan(b2, 1, 'SMG, 4, 2B2B').kind, 'split', 'a plain number on another build makes it its own build');
+    // Option A's plain number is the build's own: changing it moves the whole build with its options, as a renumber did before options had tags.
+    assert.strictEqual(plan(b2, 0, 'SMG, 4, 2A2A').kind, 'renumber', 'Option A with another plain number renumbers the build');
+    assert.strictEqual(plan(b2, 0, 'SMG, 3b, 2A2A').kind, 'join', 'Option A with a letter still joins another build');
     assert.ok(plan(b2, 1, 'SMG, 9, 2B2B').error, 'only a number the weapon can take');
     // A build with options keeps its weapon: a rename would move it into another weapon's numbers.
     assert.ok(/keeps its weapon name/.test(planOptionSave({ existing: b2, targetId: 'b2', targetOption: 0, ident: ident('SMG, 1, 2A2A'), weaponKey: 'other', siblings: [] }).error));

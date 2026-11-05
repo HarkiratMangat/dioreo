@@ -89,8 +89,33 @@ async function numberBuild({ weaponKey, mode, targetId = null, wanted = null, se
         const { _id, __v, ...prior } = holder;
         await Loadout.updateOne({ _id: holder._id }, { $set: { buildName: m.buildName } }, { session });
         moved.push({ id: m.id, prior });
+        await syncRenamed(holder._id, session);
     }
     return { buildName: `Build ${plan.number}`, ...(legacyLabel ? { label: legacyLabel } : {}), moved };
+}
+
+// Builds are numbered 1 to N with no gap: planNumbering's range is the build count, and a card's footer counts by position ("Build 3 of 3"). So a deleted build's later builds move up one, as numberBuild's moves do (a plain rename, no new lastUpdated), recorded for the inverse. Found 2026-11-05 by the merged-builds think-pass: merging Build 3 into Build 2 as 2b deletes Build 3, and the Build 4 left behind could not be saved with its own number (4 is past "builds 1 to 3"). A plain Delete had the same gap; prod had none yet. A renamed build's pictures carry its Build_Number in Cloudinary's metadata (utils/loadoutImageCache.js buildLoadoutMetadata), every option's picture included, so a move rewrites them. Best-effort, as every metadata sync here is.
+async function syncRenamed(id, session) {
+    const saved = await Loadout.findById(id).session(session).lean();
+    if (!saved) return;
+    const { variantView, variantCount } = require('../../utils/loadoutRender');
+    await Promise.all(Array.from({ length: variantCount(saved) }, (_, i) => { const v = variantView(saved, i); return syncLoadoutMetadata(v, v.attachmentSlots); }));
+}
+
+async function closeNumberGap({ weaponKey, mode }, session) {
+    const form = require('../../utils/loadoutForm');
+    const numbered = (await Loadout.find({ weaponKey, mode }).session(session).lean())
+        .filter(b => form.buildNumberOf(b.buildName) !== null)
+        .sort(form.compareBuilds);
+    const moved = [];
+    for (const [i, b] of numbered.entries()) {
+        if (form.buildNumberOf(b.buildName) === i + 1) continue;
+        const { _id, __v, ...prior } = b;
+        await Loadout.updateOne({ _id }, { $set: { buildName: `Build ${i + 1}` } }, { session });
+        moved.push({ id: String(_id), prior });
+        await syncRenamed(_id, session);
+    }
+    return moved;
 }
 
 // Puts a swapped build back: its whole stored record, since loadout.edit's validate fills defaults for anything left out (a buildName-only payload would reset its category and badges).
@@ -454,20 +479,25 @@ registerEntity('loadouts', {
         action: ['loadouts_mp:delete', 'loadouts_dmz:delete'], tier: 1,
         validate: (op) => op.target?.id ? { ok: true, errors: [], normalized: op } : { ok: false, errors: ['No build was selected.'] },
         preview: async (op) => ({ before: { build: await Loadout.findById(op.target.id).lean() }, after: { build: null } }),
-        apply: async (op, { session }) => {
+        apply: async (op, { session, restoring = false }) => {
             const cur = await Loadout.findById(op.target.id).session(session).lean();
             if (!cur) return { ok: false, reason: 'missing' };
             const res = await deleteDocument({ Model: Loadout, id: op.target.id, expectVersion: cur.__v, session });
             if (!res.ok) return res;
+            // Not on a Revert: an add's inverse is this op, and that add's own moves are put back by the same inverse.
+            const moved = restoring ? [] : await closeNumberGap(cur, session);
             const { _id, __v, ...rest } = cur;
             return {
                 ok: true,
                 change: { action: 'delete', model: 'Loadout', target: `${cur.weaponName} (${cur.buildName})`,
                           summary: `Deleted loadout "${cur.weaponName} (${cur.buildName})"` },
-                applied: { removed: rest }
+                applied: { removed: rest, moved }
             };
         },
-        invert: (c) => ({ type: 'loadout.add', payload: c.applied.removed })
+        // The builds that moved up go back to their numbers, then the build returns at its own.
+        invert: (c) => c.applied.moved?.length
+            ? [...movedBack(c.applied.moved), { type: 'loadout.add', payload: c.applied.removed }]
+            : { type: 'loadout.add', payload: c.applied.removed }
     },
 
     'loadout.bulkAdd': {
@@ -560,7 +590,7 @@ registerEntity('loadouts', {
             }
             return { before: { count: candidates.length }, after: { removing: count } };
         },
-        apply: async (op, { session }) => {
+        apply: async (op, { session, restoring = false }) => {
             const removed = []; const notFound = [];
             if (op.payload.ids?.length) {
                 for (const id of op.payload.ids) {
@@ -586,15 +616,24 @@ registerEntity('loadouts', {
             }
             if (!removed.length) return { ok: false, reason: 'missing' };
             await Loadout.deleteMany({ _id: { $in: removed.map(r => r._id) } }, { session });
+            // The builds left on each weapon close up to 1..N, as loadout.delete does (the portal deletes one build through here too).
+            const moved = [];
+            if (!restoring) {
+                const weapons = new Map(removed.map(r => [`${r.weaponKey}|${r.mode}`, { weaponKey: r.weaponKey, mode: r.mode }]));
+                for (const w of weapons.values()) moved.push(...await closeNumberGap(w, session));
+            }
             return {
                 ok: true,
                 change: { action: 'bulkDelete', model: 'Loadout', target: `${removed.length} builds`,
                           summary: `Deleted ${removed.length} loadouts in bulk`,
                           detail: notFound.length ? `Not found: ${notFound.join(', ')}` : undefined },
-                applied: { removed: removed.map(({ _id, __v, ...r }) => r), mode: removed[0]?.mode }
+                applied: { removed: removed.map(({ _id, __v, ...r }) => r), mode: removed[0]?.mode, moved }
             };
         },
-        invert: (c) => ({ type: 'loadout.bulkAdd', target: { mode: c.applied.mode }, payload: { parsed: c.applied.removed } })
+        // The builds that closed up go back first, so the re-added ones find their numbers free.
+        invert: (c) => c.applied.moved?.length
+            ? [...movedBack(c.applied.moved), { type: 'loadout.bulkAdd', target: { mode: c.applied.mode }, payload: { parsed: c.applied.removed } }]
+            : { type: 'loadout.bulkAdd', target: { mode: c.applied.mode }, payload: { parsed: c.applied.removed } }
     }
 });
 
