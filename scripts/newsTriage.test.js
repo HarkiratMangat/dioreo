@@ -314,5 +314,52 @@ check('the handler owns news| and nothing else', async () => {
     });
 }
 
+
+// ---- From his side: live fixes, season parts, the briefing (2026-11-05) ----
+{
+    const D = x => new Date(x);
+    const live = { newDraws: [], returningDraws: [{ _id: 'bh', title: 'Black Hole Draw', date: D('2026-10-25') }], calendar: [{ _id: 'bhc', title: 'Black Hole Draw', date: D('2026-10-25'), endDate: D('2026-11-07'), category: 'draw' }] };
+    const lctx = { postedAt: D('2026-10-20'), liveEnd: D('2026-11-12'), draftStart: D('2026-11-12'), catalogue: [], live, draft: { newDraws: [], returningDraws: [], calendar: [] } };
+    const bh = o => ({ kind: 'draw', change: 'returning', name: 'Black Hole Draw', rewards: [], start: null, end: null, season: 'current', region: 'global', certainty: 'confirmed', ...o });
+    check('a live item whose dates the post moves or completes becomes a fix, never a second Add', () => {
+        const endNew = r.resolveItem(bh({ start: '10/25', end: '11/17' }), lctx);
+        assert.strictEqual(endNew.action, 'fix', 'a new end date was dropped as "already on /draws"');
+        assert.strictEqual(endNew.fixList, 'returningDraws'); assert.strictEqual(endNew.fixId, 'bh');
+        assert.ok(endNew.warnings.some(w => /On the bot: Oct 25 – Nov 7\. The post says: Oct 25 – Nov 17/.test(w)));
+        assert.strictEqual(r.resolveItem(bh({ start: '10/27' }), lctx).action, 'fix', 'a moved start was an Add button: a duplicate');
+        assert.strictEqual(r.resolveItem(bh({ start: '10/25', end: '11/7' }), lctx).skip, 'already on /draws');
+        assert.strictEqual(require('../utils/newsTriage/card').buttonLabel(endNew), 'Fix the dates on the bot');
+    });
+    check('a season post\'s ranked and DMZ parts fill only the draft fields still empty', () => {
+        const M = require('../utils/newsTriage/draftMerge');
+        const draft = { newDraws: [], returningDraws: [], calendar: [], rankTitle: 'Ranked Series', dmzTitle: 'My DMZ Name' };
+        const items = [
+            { where: 'draft', kind: 'season', part: 'ranked', name: 'Ranked Series 10', start: D('2026-11-12'), startText: 'Nov 12', end: D('2027-01-14'), endText: 'Jan 14', certainty: 'confirmed' },
+            { where: 'draft', kind: 'season', part: 'dmz', name: 'DMZ: Recon', start: D('2026-11-13'), startText: 'Nov 13', end: D('2026-12-09'), endText: 'Dec 9', certainty: 'confirmed' },
+        ];
+        const plan = M.planDraftChanges(draft, items, { id: 'p', channelId: 'o', official: true });
+        const { undo } = M.applyDraftChanges(draft, plan.changes);
+        assert.strictEqual(draft.rankTitle, 'Ranked Series 10', 'a default title counts as unset');
+        assert.strictEqual(draft.dmzTitle, 'My DMZ Name', 'his own DMZ title is kept');
+        assert.strictEqual(new Date(draft.dmzEnd).toISOString().slice(0, 10), '2026-12-09');
+        M.undoDraftChanges(draft, undo);
+        assert.strictEqual(draft.rankTitle, 'Ranked Series'); assert.ok(!draft.dmzEnd);
+    });
+    check('the daily briefing answers his questions and stays under Discord\'s limits', () => {
+        const { buildBriefing } = require('../utils/newsTriage/card');
+        const { draftReadiness } = require('../utils/newsTriage/pipeline');
+        const readiness = draftReadiness({ draft: { active: true, currentSeasonTitle: 'Season 10 — 7th Anniversary', bpStart: D('2026-11-12'), calendar: [{ title: 'Ford Raptor Draw', category: 'draw', date: D('2026-11-13'), newsSource: { rank: 2 } }, { title: 'Chase MP Playlist', category: 'playlist', date: D('2026-11-19'), endDate: D('2026-11-25'), newsSource: { rank: 3 } }], newDraws: [], returningDraws: [] } });
+        assert.deepStrictEqual(readiness.noImage, ['Ford Raptor Draw']); assert.deepStrictEqual(readiness.noEnd, ['Ford Raptor Draw']); assert.deepStrictEqual(readiness.leakOnly, ['Ford Raptor Draw']);
+        assert.strictEqual(readiness.bpEnd, '', 'no end date shows as missing');
+        const skipped = Array.from({ length: 30 }, (_, i) => ({ title: `Post ${i}`, reason: 'not a draw', jumpUrl: 'https://discord.com/channels/1/2/3', channelId: '2', messageId: String(i) }));
+        const c = buildBriefing({ stats: { reads: 12, costUsd: 0.031, carded: 3, drafted: 9 }, readiness, fixes: [{ name: 'Black Hole Draw', text: 'On the bot: Oct 25 – Nov 7. The post says: Oct 25 – Nov 17.' }], channels: [{ name: 'leaks', lastAt: new Date(), stale: false }, { name: 'official-codm-news', lastAt: null, stale: true }], skipped });
+        const flat = JSON.stringify(c);
+        for (const want of ['News briefing', '$0.031', 'Next Season Draft', 'No end date', 'may be wrong', 'Black Hole Draw', 'Watching', 'Skipped', 'news|make']) assert.ok(flat.includes(want), want);
+        assert.ok(countComponents(c) <= 40);
+        const textOf = list => (list || []).reduce((sum, x) => sum + (x.type === 10 ? x.content.length : 0) + textOf(x.components), 0);
+        assert.ok(textOf(c) <= 4000, `text ${textOf(c)}`);
+    });
+}
+
     console.log(`✅ newsTriage: ${n + 1} checks passed`);
 })().catch(err => { console.error(err); process.exit(1); });

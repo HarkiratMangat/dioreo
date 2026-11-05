@@ -9,7 +9,8 @@ const MAX_ITEMS = 8;
 const SPACERS_UP_TO = 5;
 
 function kindLabel(item) {
-    if (item.kind === 'season') return 'Next season';
+    if (item.action === 'fix') return 'Dates changed';
+    if (item.kind === 'season') return item.part && item.part !== 'main' ? `Next season · ${item.part}` : 'Next season';
     if (item.change === 'cancelled') return 'Cancelled';
     if (item.change === 'changed') return 'Changed';
     if (item.kind === 'draw') return item.drawType === 'returning' ? 'Returning draw' : 'New draw';
@@ -24,6 +25,7 @@ function buttonLabel(item) {
     if (item.action === 'calendar') return item.where === 'draft' ? 'Add to Draft Calendar' : (item.kind === 'mode' ? 'Add Mode' : 'Add Event');
     if (item.action === 'patch') return 'Open Add to Patch Notes';
     if (item.action === 'season') return 'Set Next Season Title & Start';
+    if (item.action === 'fix') return 'Fix the dates on the bot';
     return null;
 }
 const ts = d => Math.floor(new Date(d).getTime() / 1000);
@@ -55,7 +57,7 @@ function buildCard(card) {
     }
     const items = (card.items || []).slice(0, MAX_ITEMS);
     items.forEach((item, i) => {
-        const lines = [`${kindEmoji(item)} **${item.name}** · ${kindLabel(item)}`, dateLine(item)];
+        const lines = [`${kindEmoji(item)} **${item.name}** · ${kindLabel(item)}${item.doubleCP ? ' · 2X CP' : ''}`, dateLine(item)];
         for (const w of item.warnings || []) lines.push(`-# ${emojis.warn} ${w}`);
         if (item.rewards?.length) lines.push(`-# Rewards: ${item.rewards.slice(0, 4).map(r => r.name).join(' · ')}${item.rewards.length > 4 ? ` +${item.rewards.length - 4}` : ''}`);
         parts.push({ type: 10, content: lines.join('\n').slice(0, 1800) });
@@ -91,4 +93,42 @@ function buildSkippedList(entries, { dayLabel = 'the last day' } = {}) {
     return [{ type: 17, accent_color: ACCENT, components: parts }];
 }
 
-module.exports = { buildCard, buildSkippedList, buttonLabel, kindLabel, MAX_ITEMS };
+// The daily briefing (2026-11-05 11:07 EST, Harkirat: "put yourself in my eyes… what info do I NEED and want to KNOW?"). One message at 00:05 UTC answering, in order: did it work and what did it cost; is the Next Season Draft ready, and what is missing; what on the live bot does the news say is wrong; is each followed channel still delivering; and what it skipped (with Make a card). Pure, so the test counts its components and characters.
+const listNames = (rows, n = 5) => rows.slice(0, n).join(', ') + (rows.length > n ? ` +${rows.length - n}` : '');
+function buildBriefing(b, { dayLabel = 'Last 24 hours' } = {}) {
+    const ok = emojis.checkmark; const warn = emojis.warn;
+    const s = b.stats || {};
+    const parts = [{ type: 10, content: `### ${emojis.mngInfo} News briefing\n-# ${dayLabel}: ${s.reads || 0} post${s.reads === 1 ? '' : 's'} read by the AI ($${(s.costUsd || 0).toFixed(3)}) · ${s.carded || 0} card${s.carded === 1 ? '' : 's'} · ${s.drafted || 0} draft row${s.drafted === 1 ? '' : 's'} written${s.failures ? ` · ${warn} ${s.failures} failed read${s.failures === 1 ? '' : 's'}` : ''}` }];
+    const r = b.readiness;
+    if (r) {
+        const mark = (v, label) => `${v ? ok : warn} ${label}`;
+        const lines = [`**Next Season Draft**${r.title ? `: ${r.title}` : ''}`,
+            `- ${mark(r.title, r.title ? 'Title' : 'No title yet')} · ${mark(r.bpStart, r.bpStart ? `Starts ${r.bpStart}` : 'No start date')} · ${mark(r.bpEnd, r.bpEnd ? `Ends ${r.bpEnd}` : 'No end date')}`,
+            `- Ranked: ${r.ranked || `${warn} not set`} · DMZ: ${r.dmz || `${warn} not set`}`,
+            `- ${r.calendar} calendar row${r.calendar === 1 ? '' : 's'} · ${r.draws} draw${r.draws === 1 ? '' : 's'} (${r.fromNews} written by news triage)`];
+        if (r.noImage.length) lines.push(`- ${warn} No draw image yet: ${listNames(r.noImage)}`);
+        if (r.noEnd.length) lines.push(`- ${warn} No end date: ${listNames(r.noEnd)}`);
+        if (r.leakOnly.length) lines.push(`- Only from a leak so far: ${listNames(r.leakOnly)}`);
+        parts.push({ type: 14, spacing: 1, divider: true }, { type: 10, content: lines.join('\n').slice(0, 1400) });
+    }
+    if ((b.fixes || []).length) {
+        const lines = [`**The bot may be wrong about** (${b.fixes.length})`, ...b.fixes.slice(0, 6).map(f => `- ${f.name}: ${f.text}`)];
+        if (b.fixes.length > 6) lines.push(`-# +${b.fixes.length - 6} more on their cards`);
+        parts.push({ type: 14, spacing: 1, divider: true }, { type: 10, content: lines.join('\n').slice(0, 1000) });
+    }
+    if ((b.channels || []).length) {
+        const lines = ['**Watching**', ...b.channels.map(c => `- ${c.stale ? `${warn} ` : ''}#${c.name}: last post ${c.lastAt ? `<t:${Math.floor(new Date(c.lastAt).getTime() / 1000)}:R>` : 'unknown'}`)];
+        parts.push({ type: 14, spacing: 1, divider: true }, { type: 10, content: lines.join('\n').slice(0, 500) });
+    }
+    const entries = b.skipped || [];
+    if (entries.length) {
+        const lines = entries.slice(0, 12).map(e => `- [${(e.title || 'Untitled post').replace(/[[\]]/g, '').slice(0, 70)}](${e.jumpUrl}) · ${e.reason}`);
+        if (entries.length > 12) lines.push(`-# +${entries.length - 12} more`);
+        parts.push({ type: 14, spacing: 1, divider: true }, { type: 10, content: (`**Skipped** (${entries.length})\n` + lines.join('\n')).slice(0, 1500) });
+        const options = entries.slice(0, 25).map(e => ({ label: (e.title || 'Untitled post').slice(0, 100), value: `${e.channelId}:${e.messageId}`, description: String(e.reason).slice(0, 100) }));
+        parts.push({ type: 1, components: [{ type: 3, custom_id: 'news|make', placeholder: 'Make a card from one of these…', options }] });
+    }
+    return [{ type: 17, accent_color: ACCENT, components: parts }];
+}
+
+module.exports = { buildCard, buildSkippedList, buildBriefing, buttonLabel, kindLabel, MAX_ITEMS };

@@ -38,9 +38,31 @@ What the merge does, each rule from the 60-day Season 9 backtest (draft rows mat
 - **His rows are never touched**: a row with no `newsSource`, or one whose `newsSource.sig` no longer matches (he edited it), is left alone, even by a cancellation. A /manage bulk draft edit re-parses the box and so takes ownership of every row in it.
 - **A cancellation removes** the row news triage wrote.
 - **Kinds he never lists are not drafted**: crates, lucky boxes, strongboxes, caches, boosts, livestreams, tournaments, festivals, stores, supply (`SKIP_KIND`, from his Season 9 list, which has none of them and does have a sale). Patch notes keep their Add to Patch Notes button.
-- **A draw row needs an image**, as /manage's bulk draft add requires. The post's picture is used only when the post names one draw, else an image already cached under the name; with none, the calendar row is drafted and the card keeps an Add button for the draw.
+- **A draw row needs an image**, as /manage's bulk draft add requires. The post's picture is used only when the post is official and names one draw, else an image already cached under the name; with none, the calendar row is drafted and the card keeps an Add button for the draw.
 - **Carry-over**, daily in the ten days before the next season starts (`pipeline.carryOver`): live rows still running at its start are copied into the draft, because Promote to Live replaces the live lists with the draft's (the Herrscher draws were re-added by hand in Season 9). Live rows with no end date that started in the last month are listed to check. One card per season.
 - **Names are cleaned in `model.js`** (mentions, @everyone, links): a name is the one free-text field that can travel from a post to /draws.
+
+## What he sees, and why (2026-11-05 11:10 EST, Harkirat: "put yourself in my eyes… what info do I NEED and want to KNOW?")
+
+- **The daily briefing** (00:05 UTC, every day, `card.js` `buildBriefing`, `pipeline.js` `gatherBriefing`): the last 24 hours (posts read by the AI, their cost, cards, draft rows written, failed reads) · the **Next Season Draft's readiness** (title, BP start and end, Ranked and DMZ, row counts, draws with no image, rows with no end date, rows only a leak has named) · **what the bot may be wrong about** (open live fixes) · **is each channel still delivering** (last post per followed channel, flagged after three days) · the skipped list with Make a card. A quiet day still posts, so silence never reads as health.
+- **Live fixes** (`resolve.js` `liveFix`): a post that moves or completes the dates of something already on the live bot is a **Fix the dates on the bot** item, showing the bot's dates beside the post's and opening /manage's Edit box (draw or calendar) with the post's dates filled in. Before, a new end date was dropped as "already on /draws" (Black Hole's end moved Nov 7 → Nov 17 in Season 9 and nothing said so), and a moved start got an Add button that would have made a second row. Wrong live dates also reach players through /remind DMs.
+- **Season parts**: a season post's battle pass, Ranked and DMZ parts (`part`) fill the draft's own titles and dates, each only when still empty (a default title like "Ranked Series" counts as empty). CODM's Season 10 post had filed the DMZ season as an event.
+- **Double CP** (`doubleCP`) is read and set on the calendar row, because it changes /draw prices and the calculator.
+- **A leak's picture never becomes a draw thumbnail**: only an official post's picture is used, since a #leaks image carries the leaker's watermark.
+
+## The AI's cost (2026-11-05 11:10 EST, Harkirat: "are you utilizing capabilities of the model to save money/tokens such as caching")
+
+Measured live on the Season 9 calendar image (22 rows) and a one-draw text post, `utils/visionExtract.js` `vertexGenerate` options, set per read by `model.js` `readOptions` (env `NEWS_FLEX`, `NEWS_THINKING`, `NEWS_IMAGE_RES`, `NEWS_SCHEMA`):
+
+| Read | Calendar image | One-draw text post |
+|---|---|---|
+| Before: standard tier, medium thinking | $0.080 (16,985 thinking tokens), 132 s | $0.0037 |
+| **Now: Flex PayGo + low thinking** | **$0.0045**, 26 s, same 22 rows and dates | **$0.0010** |
+
+- **Flex PayGo**: half price for a request that can wait (minutes); global endpoint only, one header. News can wait.
+- **Thinking `low`**: thinking tokens bill as output (5x input) and were most of the bill; low read the same rows.
+- **Not used, and why**: implicit caching needs a 6,144-token shared prefix on 3.8 Flash and a news prompt is ~1,900, so it never hits; explicit caching has the same floor plus storage. `responseSchema` made answers worse (dates and stray text inside fields, one row of 22), and a medium image resolution read the calendar as one row.
+- The free prefilter still keeps about two-thirds of posts away from the AI. The cost log (`vision_call_cost`) now records cached tokens and the traffic type, and prices both.
 
 ## Traps already paid for
 
@@ -71,10 +93,10 @@ What the merge does, each rule from the 60-day Season 9 backtest (draft rows mat
 - One card per post, at most 8 items shown (`card.js` `MAX_ITEMS`, pinned under 40 components and 4,000 characters by the test), the rest counted in a note. Five hid three playlists of CODM's own season post.
 - `NEWS_DAILY_MODEL_CAP` (default 60) AI calls a day; three failures in a row pause reads for an hour with one alert.
 - The skipped list is stored (`models/NewsSkip.js`: ids and a reason, never the text) and its titles re-read from the channel at 00:05 UTC, so a restart keeps it. Every post's outcome is also one log line.
-- Cancellations and changes show as info with no box: change those in /manage.
-- **The AI's read of a long post varies between runs**, and gemini-3.8-flash no longer takes a `temperature` to pin it. CODM's Season 10 post (8 items) came back with 6 live and 8 on a replay, the two events missing the first time. Open post on the card is the check; raising `thinking_level` for this task is the lever if it keeps happening.
+- A cancellation of a live item shows as info with no box: delete it in /manage. A date change to a live item is a Fix the dates item (above).
+- **The AI's read of a long post varies between runs**, and gemini-3.8-flash no longer takes a `temperature` to pin it. CODM's Season 10 post (8 items) came back with 6 live and 8 on a replay, the two events missing the first time. Open post on the card is the check; `NEWS_THINKING=medium` is the lever if it keeps happening (it costs up to 18x more on a calendar image).
 - #stats-n-loadouts is not watched (his F1 answer).
 
 ## Tests and the dev run
 
-`scripts/newsTriage.test.js` (in `npm test`) pins the filter, the dates in three time zones' worth of cases, live-vs-draft routing, that every box line parses back through /manage's own parsers, the card's 40-component and 100-character-id limits, and the AI answer's shaping. `node --env-file=.env.dev scripts/newsTriageReplay.js <channel> --find "words" [--dry]` runs one real post through the whole pipeline on the dev bot (one Vertex call: $0.003 to $0.02 measured on the dev bot, more for a long post with pictures).
+`scripts/newsTriage.test.js` (in `npm test`) pins the filter, the dates in three time zones' worth of cases, live-vs-draft routing, that every box line parses back through /manage's own parsers, the card's 40-component and 100-character-id limits, and the AI answer's shaping. `node --env-file=.env.dev scripts/newsTriageReplay.js <channel> --find "words" [--dry]` runs one real post through the whole pipeline on the dev bot (one Vertex call: about $0.001 for a short post and $0.005 for a season calendar image on Flex + low thinking).

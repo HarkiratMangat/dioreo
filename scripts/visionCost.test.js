@@ -36,7 +36,16 @@ check('thinking tokens are billed as output', () => {
 });
 check('missing usageMetadata costs zero instead of throwing', () => {
     const out = estimateVisionCostUsd('us', undefined);
-    assert.deepStrictEqual(out, { inputTokens: 0, outputTokens: 0, estimatedCostUsd: 0 });
+    assert.deepStrictEqual(out, { inputTokens: 0, outputTokens: 0, cachedTokens: 0, estimatedCostUsd: 0 });
+});
+
+check('cached input bills at 10% and a Flex PayGo read at half', () => {
+    const at = new Date('2026-11-05T00:00:00Z');
+    const full = estimateVisionCostUsd('global', { promptTokenCount: 10000, candidatesTokenCount: 1000 }, at).estimatedCostUsd;
+    const cached = estimateVisionCostUsd('global', { promptTokenCount: 10000, cachedContentTokenCount: 10000, candidatesTokenCount: 1000 }, at).estimatedCostUsd;
+    const flex = estimateVisionCostUsd('global', { promptTokenCount: 10000, candidatesTokenCount: 1000, trafficType: 'ON_DEMAND_FLEX' }, at).estimatedCostUsd;
+    assert.ok(cached < full, 'cached is cheaper');
+    assert.ok(Math.abs(flex - full / 2) < 1e-12, 'flex is half');
 });
 
 if (failed) { console.log(`\n${failed} failed`); process.exit(1); }

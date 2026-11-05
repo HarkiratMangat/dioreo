@@ -319,6 +319,8 @@ registerEntity('season', {
                 'draft.active': draft.active === undefined ? true : Boolean(draft.active),
                 'draft.currentSeasonTitle': draft.currentSeasonTitle || '', 'draft.bpStart': draft.bpStart || null,
             };
+            // The battle pass, ranked and DMZ parts a season post can name (draftMerge.js); written only when present, so an op from before them leaves the fields alone.
+            for (const k of ['bpTitle', 'rankTitle', 'dmzTitle', 'bpEnd', 'rankEnd', 'dmzEnd', 'rankStart', 'dmzStart', 'bpEndTBD', 'rankEndTBD', 'dmzEndTBD']) if (k in draft) $set[`draft.${k}`] = draft[k];
             await SeasonalData.updateOne(DOC, { $set }, { session });
             return { ok: true, change: { action: 'edit', model: 'SeasonalData', target: 'draft (news)', summary: names }, applied };
         },

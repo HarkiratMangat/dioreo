@@ -21,6 +21,14 @@ const newsItemSchema = new mongoose.Schema({
     catalogueTitle: { type: String, default: '' },
     warnings: [{ type: String }],
     state: { type: String, default: 'open' },     // open | opened
+    // A live item whose dates the post moves or completes (2026-11-05 11:06 EST): which live row, and the bot's own dates beside the post's.
+    fixList: { type: String, default: '' },      // newDraws | returningDraws | calendar
+    fixId: { type: String, default: '' },
+    fixDrawType: { type: String, default: '' },
+    curStart: { type: Date, default: null },
+    curEnd: { type: Date, default: null },
+    doubleCP: { type: Boolean, default: false },
+    part: { type: String, default: '' },
 }, { _id: false });
 
 const newsCardSchema = new mongoose.Schema({

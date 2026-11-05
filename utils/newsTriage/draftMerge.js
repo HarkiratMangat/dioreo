@@ -73,10 +73,19 @@ function planDraftChanges(draftIn, items, post, { newId } = {}) {
         if (item.where !== 'draft') return;
         const rank = rankOf(item, post);
         if (item.kind === 'season') {
-            const title = seasonTitle(item.name);
+            // The main season sets its title and start; the battle pass, ranked and DMZ parts set their own title and dates (2026-11-05 11:06 EST: CODM's Season 10 post named the DMZ season, and it had been filed as an event). Each field only when the draft does not have it, so nothing he typed is replaced; a default title ('Ranked Series') counts as not set.
+            const part = item.part || 'main';
+            const title = part === 'main' ? seasonTitle(item.name) : String(item.name || '').trim();
             const set = {};
-            if (!draft.currentSeasonTitle && title) set.currentSeasonTitle = title;
-            if (!draft.bpStart && item.start) set.bpStart = new Date(item.start);
+            const empty = (k, def) => !draft[k] || draft[k] === def;
+            if (part === 'main') { if (!draft.currentSeasonTitle && title) set.currentSeasonTitle = title; if (!draft.bpStart && item.start) set.bpStart = new Date(item.start); }
+            const P = { 'battle pass': ['bp', 'Battle Pass'], ranked: ['rank', 'Ranked Series'], dmz: ['dmz', 'DMZ Season'] }[part];
+            if (P) {
+                const [k, def] = P;
+                if (title && empty(`${k}Title`, def)) set[`${k}Title`] = title;
+                if (item.start && !draft[`${k}Start`]) set[`${k}Start`] = new Date(item.start);
+                if (item.end && !draft[`${k}End`]) { set[`${k}End`] = new Date(item.end); set[`${k}EndTBD`] = false; }
+            }
             if (Object.keys(set).length) changes.push({ type: 'season', set, name: title });
             else notes.push({ name: title, why: 'the draft already has its title and start' });
             return;
@@ -102,7 +111,7 @@ function planDraftChanges(draftIn, items, post, { newId } = {}) {
         const hasDrawRow = found.some(f => f.list !== 'calendar');
         if (item.kind === 'draw' && !item.thumbnailUrl && !hasDrawRow) { needsBox.push(item); notes.push({ name: item.name, why: 'no image found, so only its calendar row is drafted: add the draw with its Add to Next Season Draft button' }); }
         if (item.kind === 'draw' && (item.thumbnailUrl || hasDrawRow)) wanted.push({ list: item.drawType === 'returning' ? 'returningDraws' : 'newDraws', row: { title: item.name, date: item.start || null, items: (item.rewards || []).map(r => ({ tier: r.tier, name: r.name })), thumbnailUrl: item.thumbnailUrl || '', priceType: '' } });
-        wanted.push({ list: 'calendar', row: { title: item.name, date: item.start || null, endDate: item.end || null, category: CATEGORY[item.kind], isOngoing: false, isDoubleCP: false } });
+        wanted.push({ list: 'calendar', row: { title: item.name, date: item.start || null, endDate: item.end || null, category: CATEGORY[item.kind], isOngoing: false, isDoubleCP: Boolean(item.doubleCP) } });
 
         for (const w of wanted) {
             const hit = found.find(f => (w.list === 'calendar') === (f.list === 'calendar'));
@@ -158,11 +167,11 @@ function planCarryOver(draft, live, { newId } = {}) {
 
 // Applies changes to a plain draft object (mutated) and returns what undoes them. Each update and remove re-checks the row is still what news triage wrote, so a change planned a moment ago cannot overwrite an edit he made since.
 function applyDraftChanges(draft, changes) {
-    const undo = { added: [], updated: [], removed: [], season: null };
+    const undo = { added: [], updated: [], removed: [], seasons: [] };
     const applied = [];
     for (const c of changes || []) {
         if (c.type === 'season') {
-            undo.season = { currentSeasonTitle: draft.currentSeasonTitle || '', bpStart: draft.bpStart || null, active: Boolean(draft.active) };
+            undo.seasons.push({ ...Object.fromEntries(Object.keys(c.set).map(k => [k, draft[k] ?? null])), active: Boolean(draft.active) });
             Object.assign(draft, c.set, { active: true });
             applied.push(c); continue;
         }
@@ -184,6 +193,7 @@ function undoDraftChanges(draft, undo) {
     for (const u of undo.updated || []) { const list = draft[u.list] || []; const i = list.findIndex(r => String(r._id) === u.id); if (i >= 0) list[i] = u.before; }
     for (const r of [...(undo.removed || [])].reverse()) { const list = (draft[r.list] = draft[r.list] || []); list.splice(Math.min(r.index, list.length), 0, r.row); }
     if (undo.season) Object.assign(draft, undo.season);
+    for (const s of [...(undo.seasons || [])].reverse()) Object.assign(draft, s);
     return draft;
 }
 

@@ -19,12 +19,16 @@ function estimateVisionCostUsd(gcpLocation, usageMetadata, at = new Date()) {
     const inputTokens = usageMetadata?.promptTokenCount || 0;
     // thoughtsTokenCount is reported separately from candidatesTokenCount and billed at the output rate. Before 2026-10-19 the log counted candidates only, so every earlier vision_call_cost line under-reports a thinking model's real cost.
     const outputTokens = (usageMetadata?.candidatesTokenCount || 0) + (usageMetadata?.thoughtsTokenCount || 0);
-    return { inputTokens, outputTokens, estimatedCostUsd: (inputTokens / 1_000_000) * rates.input + (outputTokens / 1_000_000) * rates.output };
+    // Cached input tokens (implicit or explicit caching) bill at 10% of the input rate, and a Flex PayGo request (trafficType ON_DEMAND_FLEX) at half of everything (2026-11-05 10:56 EST, Google's context-cache and Flex PayGo pages). Before this, a cached or flex read was logged at the full price.
+    const cachedTokens = Math.min(usageMetadata?.cachedContentTokenCount || 0, inputTokens);
+    const flex = usageMetadata?.trafficType === 'ON_DEMAND_FLEX' ? 0.5 : 1;
+    const cost = (((inputTokens - cachedTokens) + cachedTokens * 0.1) / 1_000_000) * rates.input + (outputTokens / 1_000_000) * rates.output;
+    return { inputTokens, outputTokens, cachedTokens, estimatedCostUsd: cost * flex };
 }
 
 function logVisionCallCost(taskName, gcpLocation, gcpModel, usageMetadata) {
     try {
-        const { inputTokens, outputTokens, estimatedCostUsd } = estimateVisionCostUsd(gcpLocation, usageMetadata);
+        const { inputTokens, outputTokens, cachedTokens, estimatedCostUsd } = estimateVisionCostUsd(gcpLocation, usageMetadata);
         const thinkingTokens = usageMetadata?.thoughtsTokenCount || 0;
         console.log(JSON.stringify({
             log: 'vision_call_cost',
@@ -34,6 +38,8 @@ function logVisionCallCost(taskName, gcpLocation, gcpModel, usageMetadata) {
             inputTokens,
             outputTokens,
             thinkingTokens,
+            cachedTokens,
+            trafficType: usageMetadata?.trafficType || '',
             estimatedCostUsd: Number(estimatedCostUsd.toFixed(6)),
             timestamp: new Date().toISOString(),
         }));
@@ -151,9 +157,9 @@ const IMAGE_TIMEOUT_MS = 20 * 1000;
 const VERTEX_TIMEOUT_MS = 90 * 1000;
 
 // `record` writes a VisionRead for the read (models/VisionRead.js); `reuse` returns an earlier read of these exact bytes instead of calling the model (Harkirat, 2026-10-25 13:31-13:50 EDT). Both are opt-in, so the checking scripts always read fresh and write nothing. Where a generateContent call goes: project, location and model from .env (GCP_PROJECT_ID / GCP_LOCATION / GCP_MODEL) or the defaults above. Shared by /autobuild's screenshot read and news-channel triage's post read (utils/newsTriage/model.js, 2026-11-04 20:06 EST), so both always call the same model on the same billing. Moved out of extractLoadoutFromImage unchanged.
-function vertexTarget() {
+function vertexTarget(locationOverride) {
     const gcpProjectId = process.env.GCP_PROJECT_ID || DEFAULT_PROJECT_ID;
-    const gcpLocation = process.env.GCP_LOCATION || DEFAULT_LOCATION;
+    const gcpLocation = locationOverride || process.env.GCP_LOCATION || DEFAULT_LOCATION;
     const gcpModel = process.env.GCP_MODEL || MODEL;
 
     let modelPath = gcpModel;
@@ -176,15 +182,19 @@ function vertexTarget() {
     return { endpoint, gcpLocation, gcpModel };
 }
 
-// A text-and-image generateContent call that must answer JSON: parts in, the parsed object out. Timed as the 'vertex' dependency, its cost logged as vision_call_cost under `taskName`; throws on an HTTP error or a non-JSON answer. News-channel triage uses it (2026-11-04 20:06 EST); extractLoadoutFromImage keeps its own body, which also records the read. `timeoutMs` (2026-11-04 23:23 EST): a season calendar image is one read with twenty-odd rows, and the Season 9 calendar timed out at the 90 s default in the news backtest, losing the season's most important post.
-async function vertexGenerate(parts, { taskName, timeoutMs = VERTEX_TIMEOUT_MS } = {}) {
+// A text-and-image generateContent call that must answer JSON: parts in, the parsed object out. Timed as the 'vertex' dependency, its cost logged as vision_call_cost under `taskName`; throws on an HTTP error or a non-JSON answer. News-channel triage uses it (2026-11-04 20:06 EST); extractLoadoutFromImage keeps its own body, which also records the read. `timeoutMs` (2026-11-04 23:23 EST): a season calendar image is one read with twenty-odd rows, and the Season 9 calendar timed out at the 90 s default in the news backtest, losing the season's most important post. The cost options (2026-11-05 10:56 EST, Harkirat: "are you utilizing capabilities of the model to save money/tokens"): `flex` sends the request on Flex PayGo, half price for a request that can wait minutes, which needs the global endpoint; `thinkingLevel` ('low'|'medium'|'high', 3.8 Flash's default is medium) caps the thinking tokens that were 60-87% of a news read's output; `mediaResolution` ('low'|'medium'|'high') sets an image's tokens (280/560/1,120); `responseSchema` makes the answer schema-shaped. `withUsage` returns { parsed, usage }. Implicit caching needs a 6,144-token shared prefix on 3.8 Flash, which no news prompt reaches.
+async function vertexGenerate(parts, { taskName, timeoutMs = VERTEX_TIMEOUT_MS, flex = false, thinkingLevel, mediaResolution, responseSchema, withUsage = false } = {}) {
     const accessToken = await getGcpAccessToken();
-    const { endpoint, gcpLocation, gcpModel } = vertexTarget();
+    const { endpoint, gcpLocation, gcpModel } = vertexTarget(flex ? 'global' : undefined);
+    const generationConfig = { responseMimeType: 'application/json' };
+    if (responseSchema) generationConfig.responseSchema = responseSchema;
+    if (thinkingLevel) generationConfig.thinkingConfig = { thinkingLevel: String(thinkingLevel).toUpperCase() };
+    if (mediaResolution) generationConfig.mediaResolution = `MEDIA_RESOLUTION_${String(mediaResolution).toUpperCase()}`;
     const { timeDependency, noteDep } = require('./eventStore');
     const res = await timeDependency('vertex', () => fetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken}` },
-        body: JSON.stringify({ contents: [{ role: 'user', parts }], generationConfig: { responseMimeType: 'application/json' } }),
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken}`, ...(flex ? { 'X-Vertex-AI-LLM-Shared-Request-Type': 'flex' } : {}) },
+        body: JSON.stringify({ contents: [{ role: 'user', parts }], generationConfig }),
         signal: AbortSignal.timeout(timeoutMs),
     }));
     if (!res.ok) {
@@ -196,7 +206,9 @@ async function vertexGenerate(parts, { taskName, timeoutMs = VERTEX_TIMEOUT_MS }
     if (data?.usageMetadata?.totalTokenCount) noteDep('vertex', 0, true, { tokens: data.usageMetadata.totalTokenCount, countsAsCall: false });
     const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!rawText) throw new Error('Gemini response had no extractable text content');
-    try { return JSON.parse(rawText); } catch { throw new Error(`Gemini response was not valid JSON: ${rawText.slice(0, 300)}`); }
+    let parsed;
+    try { parsed = JSON.parse(rawText); } catch { throw new Error(`Gemini response was not valid JSON: ${rawText.slice(0, 300)}`); }
+    return withUsage ? { parsed, usage: data?.usageMetadata || {}, location: gcpLocation } : parsed;
 }
 
 async function extractLoadoutFromImage(imageUrl, { maxAttachments = MAX_ATTACHMENTS, taskName, knownWeapons = [], record = false, reuse = false } = {}) {

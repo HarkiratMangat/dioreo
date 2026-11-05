@@ -92,10 +92,17 @@ function resolveItem(raw, ctx) {
         if (where !== 'draft') return { skip: 'the live season\'s own title or dates' };
         if (ctx.draftTitle && sameName(ctx.draftTitle, raw.name) && (!start || (ctx.draftStart && sameDay(ctx.draftStart, start)))) return { skip: 'already in the Next Season Draft' };
         if (raw.certainty === 'expected') warnings.push('Expected, not confirmed.');
-        return { kind: 'season', change: raw.change, name: seasonTitle(raw.name), rewards: [], startText: raw.start || '', endText: raw.end || '', start, end, where, action: 'season', drawType: 'new', certainty: raw.certainty, catalogueTitle: '', warnings };
+        return { kind: 'season', part: raw.part || 'main', change: raw.change, name: raw.part && raw.part !== 'main' ? String(raw.name || '') : seasonTitle(raw.name), rewards: [], startText: raw.start || '', endText: raw.end || '', start, end, where, action: 'season', drawType: 'new', certainty: raw.certainty, catalogueTitle: '', warnings };
     }
 
-    if (raw.change === 'cancelled' || raw.change === 'changed') {
+    // A live item the bot already has, whose dates the post moves or completes (2026-11-05 11:06 EST, from his side: "what is the bot WRONG about"). Before, a new end date for a live row was dropped as "already on /draws", and a moved start looked new, so its Add button would have made a second row. Now it is a fix: the card shows the bot's dates beside the post's and opens /manage's Edit box with the post's dates filled in.
+    let fix = null;
+    if (where === 'live' && raw.change !== 'cancelled' && (action === 'draw' || action === 'calendar')) {
+        fix = liveFix(raw, start, end, action, ctx.live || {});
+        if (fix && fix.skip) return fix;
+        if (fix) warnings.push(`On the bot: ${span(fix.curStart, fix.curEnd)}. The post says: ${span(start || fix.curStart, end || fix.curEnd)}.`);
+    }
+    if (raw.change === 'cancelled' || (raw.change === 'changed' && !fix)) {
         action = 'info';
         warnings.push(raw.change === 'cancelled' ? 'Cancelled: remove or edit it in /manage.' : 'A change to something already listed: edit it in /manage.');
     }
@@ -109,11 +116,11 @@ function resolveItem(raw, ctx) {
     const merging = ctx.autoDraft && where === 'draft';
     if (action === 'draw') {
         const have = [...(pool.newDraws || []), ...(pool.returningDraws || [])].find(d => sameName(d.title, raw.name) && (!start || !d.date || sameDay(d.date, start)));
-        if (have && !merging) return { skip: where === 'draft' ? 'already in the Next Season Draft' : 'already on /draws' };
+        if (have && !merging && !fix) return { skip: where === 'draft' ? 'already in the Next Season Draft' : 'already on /draws' };
     }
     if (action === 'calendar') {
         const have = (pool.calendar || []).find(e => sameName(e.title, raw.name) && (!start || !e.date || sameDay(e.date, start)));
-        if (have && !merging) return { skip: where === 'draft' ? 'already in the draft calendar' : 'already on /calendar' };
+        if (have && !merging && !fix) return { skip: where === 'draft' ? 'already in the draft calendar' : 'already on /calendar' };
     }
 
     let startUsed = start;
@@ -128,8 +135,29 @@ function resolveItem(raw, ctx) {
     return {
         kind: raw.kind, change: raw.change, name: cat ? cat.title : raw.name, rewards: raw.rewards || [],
         startText: raw.start || '', endText: raw.end || '', start: startUsed, end,
-        where, action, drawType, certainty: raw.certainty, catalogueTitle: cat ? cat.title : '', warnings,
+        where, action: fix ? 'fix' : action, drawType, certainty: raw.certainty, catalogueTitle: cat ? cat.title : '', warnings, doubleCP: Boolean(raw.doubleCP),
+        ...(fix ? { fixList: fix.fixList, fixId: fix.fixId, fixDrawType: fix.fixDrawType, curStart: fix.curStart, curEnd: fix.curEnd } : {}),
     };
+}
+
+const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const short = d => { if (!d) return '?'; const x = new Date(d); return `${MON[x.getUTCMonth()]} ${x.getUTCDate()}`; };
+const span = (a, b) => `${short(a)}${b ? ` – ${short(b)}` : ''}`;
+
+// The live row(s) an item names, and whether the post moves or completes their dates. null when the bot does not have it; { skip } when it has it with the same dates.
+function liveFix(raw, start, end, action, live) {
+    const drawLists = action === 'draw' ? [['newDraws', 'new'], ['returningDraws', 'returning']] : [];
+    let drawRow = null; let drawType = '';
+    for (const [list, type] of drawLists) { const r = (live[list] || []).find(d => sameName(d.title, raw.name)); if (r) { drawRow = r; drawType = type; break; } }
+    const category = action === 'draw' ? 'draw' : (raw.kind === 'mode' ? 'playlist' : 'event');
+    const calRow = (live.calendar || []).find(e => sameName(e.title, raw.name) && (e.category || 'event') === category);
+    if (!drawRow && !calRow) return null;
+    const curStart = (drawRow && drawRow.date) || (calRow && calRow.date) || null;
+    const curEnd = calRow && !calRow.isOngoing ? (calRow.endDate || null) : null;
+    const startMoved = start && curStart && !sameDay(start, curStart);
+    const endNew = end && (!curEnd || !sameDay(end, curEnd));
+    if (!startMoved && !endNew) return { skip: action === 'draw' ? 'already on /draws' : 'already on /calendar' };
+    return { fixList: drawRow ? (drawType === 'new' ? 'newDraws' : 'returningDraws') : 'calendar', fixId: String((drawRow || calRow)._id || ''), fixDrawType: drawType, curStart, curEnd };
 }
 
 // All of a post's items: the ones worth a card, and why the rest are not.

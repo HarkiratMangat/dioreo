@@ -14,7 +14,10 @@ async function allowed(interaction) {
 async function mayOpen(interaction, item) {
     if (item.action === 'patch') return true; // the Add to Patch Notes command checks its own tier (canDo 'rightclick.addToPatchNotes')
     let ok = false; let message = null;
-    if (item.where === 'draft') {
+    if (item.action === 'fix') {
+        const res = await require('../utils/manageActions').resolveAction(item.fixList === 'calendar' ? 'calendar' : 'draws', 'edit', interaction.user.id);
+        ok = res.ok; message = res.message || null;
+    } else if (item.where === 'draft') {
         const res = await require('../utils/manageActions').resolveAction('seasondraft', item.action === 'season' ? 'settitles' : item.action === 'draw' ? 'bulkdraws' : 'bulkcalendar', interaction.user.id);
         ok = res.ok; message = res.message || null;
     } else {
@@ -71,6 +74,23 @@ async function openItem(interaction, cardId, index) {
     const source = item.action === 'draw' && !item.catalogueTitle ? await fetchSource(interaction.client, card) : null;
     const image = source ? require('../utils/newsTriage/pipeline').toPost(source).image : '';
     let modal;
+    if (item.action === 'fix') {
+        const { loadSeasonalDoc } = require('../utils/manageActions');
+        const doc = await loadSeasonalDoc();
+        const row = (doc?.[item.fixList] || []).find(r => String(r._id) === item.fixId);
+        if (!row) {
+            try { await interaction.reply({ content: 'That row is no longer on the bot (deleted or replaced since the card was posted).', flags: MessageFlags.Ephemeral }); } catch (e) { console.error(e); }
+            return;
+        }
+        if (item.fixList === 'calendar') modal = manage.buildEditCalendarModal({ ...row, date: item.start || row.date, endDate: item.end || row.endDate, isOngoing: item.end ? false : row.isOngoing }, item.fixId);
+        else {
+            // The draw's end lives on its /calendar draw row; the Edit Draw box takes it as `row` and its save moves both (handlers/manage/draws.js editDraw).
+            const calRow = require('../utils/drawEndReminder').calendarRowFor(doc, row.title);
+            modal = manage.buildEditDrawModal({ ...row, date: item.start || row.date }, item.fixId, item.fixDrawType || 'new', { ...(calRow || {}), endDate: item.end || calRow?.endDate || null });
+        }
+        await interaction.showModal(modal);
+        return markOpened(interaction, card, index);
+    }
     if (item.action === 'draw' && item.where === 'live') modal = manage.buildAddDrawModal(item.drawType === 'returning' ? 'returning' : 'new', r.drawPrefill(item, image));
     else if (item.action === 'calendar' && item.where === 'live') modal = manage.buildCalendarAddModal(r.calendarPrefill(item));
     else if (item.where === 'draft') {

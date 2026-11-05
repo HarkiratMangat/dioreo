@@ -6,14 +6,14 @@
 const { Routes } = require('discord.js');
 const { titleOf, prefilter, cleanText, namesRegion, namesTestServer } = require('./filter');
 const { resolveItems, sameName } = require('./resolve');
-const { buildCard, buildSkippedList, MAX_ITEMS } = require('./card');
+const { buildCard, buildSkippedList, MAX_ITEMS, buildBriefing } = require('./card');
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const CARD_DAYS = 30;
 const PAUSE_MS = 60 * 60 * 1000;
 
 // Live state, in memory only: the day's skipped posts (titles, never stored), the AI-call count for the cap, and the failure pause.
-const state = { skipped: [], day: '', calls: 0, failures: 0, pausedUntil: 0, alerted: false, queue: Promise.resolve() };
+const state = { skipped: [], day: '', calls: 0, failures: 0, pausedUntil: 0, alerted: false, queue: Promise.resolve(), stats: { reads: 0, costUsd: 0, carded: 0, drafted: 0, failures: 0 } };
 
 function config(env = process.env) {
     const watch = new Set(String(env.NEWS_WATCH || '').split(',').map(s => s.trim()).filter(Boolean));
@@ -117,9 +117,11 @@ function draftLines(changes) {
 
 // A draft draw row needs an image (see draftMerge.js). The post's own picture is used only when the post names one draw; otherwise only an image already cached under the draw's name (a returning draw's index image).
 async function draftImages(items, post) {
+    const official = /official/i.test(post.channelName || '');
     const draws = items.filter(it => it.kind === 'draw' && it.change !== 'cancelled');
     for (const it of draws) {
-        const own = draws.length === 1 && post.image && !it.catalogueTitle ? post.image : '';
+        // Only an OFFICIAL post's picture (2026-11-05 11:06 EST): a #leaks picture carries the leaker's watermark and would sit on /draws for a season.
+        const own = official && draws.length === 1 && post.image && !it.catalogueTitle ? post.image : '';
         try {
             const { validDraws } = await require('../bulkMerge').resolveThumbnailsForDraws([{ title: it.catalogueTitle || it.name, thumbnailUrl: own, items: it.rewards || [] }]);
             it.thumbnailUrl = validDraws[0]?.thumbnailUrl || '';
@@ -202,10 +204,13 @@ async function processPost(post, { rest, selfId, appId, force = false, env = pro
         let raw;
         state.calls += 1;
         try {
-            raw = await (readPost || require('./model').readPost)({ text: post.text, imageUrl: post.image, postedAt: post.createdAt, liveSeason: ctx.liveSeason, source: /official/i.test(post.channelName || '') ? 'official' : 'leaks' });
+            // onUsage counts each read's cost for the briefing (estimateVisionCostUsd knows the flex and cached-token prices).
+            const onUsage = (u, loc) => { try { state.stats.costUsd += require('../visionExtract').estimateVisionCostUsd(loc, u).estimatedCostUsd; } catch { /* never breaks a read */ } };
+            state.stats.reads += 1;
+            raw = await (readPost || require('./model').readPost)({ text: post.text, imageUrl: post.image, postedAt: post.createdAt, liveSeason: ctx.liveSeason, source: /official/i.test(post.channelName || '') ? 'official' : 'leaks' }, { onUsage });
             state.failures = 0; state.alerted = false;
         } catch (err) {
-            state.failures += 1;
+            state.failures += 1; state.stats.failures += 1;
             console.error(`News triage: the AI read failed (${state.failures} in a row):`, err?.message || err);
             if (state.failures >= 3) {
                 state.pausedUntil = Date.now() + PAUSE_MS;
@@ -238,6 +243,7 @@ async function processPost(post, { rest, selfId, appId, force = false, env = pro
         });
         const sent = await sendCard(rest, cfg.channel, doc.toObject(), appId);
         await NewsCard.updateOne({ _id: doc._id }, { $set: { cardMessageId: sent.id } });
+        state.stats.carded += 1; state.stats.drafted += drafted?.lines?.length || 0;
         return { status: 'carded', id: String(doc._id), items: fresh.length, drafted: drafted?.lines?.length || 0 };
     } catch (err) {
         console.error('News triage failed on a post:', err?.message || err);
@@ -259,7 +265,44 @@ async function noteSourceChange(rest, channelId, messageId, what, appId) {
     } catch (err) { console.error('News triage: could not mark a source change:', err?.message || err); return false; }
 }
 
-// The once-a-day skipped list. Empty days post nothing. Returns how many it listed.
+// The once-a-day skipped list. Empty days post nothing. Returns how many it listed. What the briefing reports (see card.js buildBriefing). Every part is best-effort: a failed lookup drops that part, never the briefing.
+const snowflakeTime = id => { try { return new Date(Number((BigInt(id) >> 22n) + 1420070400000n)); } catch { return null; } };
+function draftReadiness(d) {
+    const draft = d?.draft || {};
+    const calendar = draft.calendar || []; const draws = [...(draft.newDraws || []), ...(draft.returningDraws || [])];
+    if (!draft.active && !draft.bpStart && !calendar.length && !draws.length) return null;
+    const day = x => (x ? `${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][new Date(x).getUTCMonth()]} ${new Date(x).getUTCDate()}` : '');
+    const sq = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const part = (title, def, end, tbd) => (title && title !== def ? `${title}${end ? `, ends ${day(end)}` : tbd ? ', end TBD' : ''}` : (end ? `ends ${day(end)}` : ''));
+    return {
+        title: draft.currentSeasonTitle || '', bpStart: day(draft.bpStart), bpEnd: draft.bpEndTBD ? 'TBD' : day(draft.bpEnd),
+        ranked: part(draft.rankTitle, 'Ranked Series', draft.rankEnd, draft.rankEndTBD), dmz: part(draft.dmzTitle, 'DMZ Season', draft.dmzEnd, draft.dmzEndTBD),
+        calendar: calendar.length, draws: draws.length, fromNews: [...calendar, ...draws].filter(r => r.newsSource).length,
+        noImage: calendar.filter(r => r.category === 'draw' && !draws.some(x => sq(x.title) === sq(r.title))).map(r => r.title),
+        noEnd: calendar.filter(r => !r.endDate && !r.isOngoing).map(r => r.title),
+        leakOnly: [...calendar].filter(r => r.newsSource && r.newsSource.rank < 3).map(r => r.title),
+    };
+}
+async function gatherBriefing(rest, cfg, now = new Date()) {
+    const out = { stats: { ...state.stats }, readiness: null, fixes: [], channels: [] };
+    try { out.readiness = draftReadiness(await require('../../models/SeasonalData').findOne({ docType: 'global' }).lean()); } catch { /* no database */ }
+    try {
+        const NewsCard = require('../../models/NewsCard');
+        const recent = await NewsCard.find({ createdAt: { $gte: new Date(now - 7 * DAY_MS) }, 'items.action': 'fix' }, { items: 1 }).lean();
+        for (const c of recent) for (const it of c.items) if (it.action === 'fix' && it.state !== 'opened') out.fixes.push({ name: it.name, text: (it.warnings || []).find(w => /^On the bot/.test(w)) || 'dates changed' });
+    } catch { /* no database */ }
+    try {
+        const cursors = await require('../../models/NewsCursor').find({}).lean();
+        for (const id of cfg.watch) {
+            const cur = cursors.find(c => c.channelId === id);
+            let name = id; try { name = (await rest.get(Routes.channel(id))).name || id; } catch { /* unreadable */ }
+            const lastAt = cur ? snowflakeTime(cur.lastMessageId) : null;
+            out.channels.push({ name, lastAt, stale: !lastAt || now - lastAt > 3 * DAY_MS });
+        }
+    } catch { /* no database */ }
+    return out;
+}
+
 async function postSkippedList(rest, { env = process.env, appId } = {}) {
     const cfg = config(env);
     if (!cfg.channel) return 0;
@@ -277,10 +320,13 @@ async function postSkippedList(rest, { env = process.env, appId } = {}) {
     } catch {
         entries = state.skipped.splice(0); rows = [];
     }
-    if (!entries.length) return 0;
+    // The skipped list now rides in the daily briefing (2026-11-05 11:07 EST), which posts every day, so a quiet day still says the watcher is alive.
+    const brief = await gatherBriefing(rest, cfg);
+    brief.skipped = entries;
     try {
-        await rest.post(Routes.channelMessages(cfg.channel), { body: { flags: 32768, components: asApp(appId, () => buildSkippedList(entries)), allowed_mentions: { parse: [] } } });
-    } catch (err) { console.error('News triage: the skipped list could not be posted:', err?.message || err); return 0; }
+        await rest.post(Routes.channelMessages(cfg.channel), { body: { flags: 32768, components: asApp(appId, () => buildBriefing(brief)), allowed_mentions: { parse: [] } } });
+        state.stats = { reads: 0, costUsd: 0, carded: 0, drafted: 0, failures: 0 };
+    } catch (err) { console.error('News triage: the briefing could not be posted:', err?.message || err); return 0; }
     if (rows.length) { try { await require('../../models/NewsSkip').deleteMany({ _id: { $in: rows.map(r => r._id) } }); } catch { /* the TTL removes them */ } }
     return entries.length;
 }
@@ -292,4 +338,4 @@ function msUntilNextDigest(now = new Date()) {
     return next - now;
 }
 
-module.exports = { config, enabled, toPost, processPost, enqueue, noteSourceChange, postSkippedList, msUntilNextDigest, redrawCard, loadContext, state, carryOver, draftLines, autoDraft };
+module.exports = { config, enabled, toPost, processPost, enqueue, noteSourceChange, postSkippedList, msUntilNextDigest, redrawCard, loadContext, state, carryOver, draftLines, autoDraft, draftReadiness, gatherBriefing };
