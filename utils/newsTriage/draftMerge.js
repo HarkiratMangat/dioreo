@@ -100,7 +100,7 @@ function planDraftChanges(draftIn, items, post, { newId } = {}) {
         const wanted = [];
         // A draft draw row needs an image, as /manage's bulk draft add requires (core/ops/season.js bulkDraftDraws drops one without). With none found, its calendar row is still drafted and the card keeps an Add button for the draw.
         const hasDrawRow = found.some(f => f.list !== 'calendar');
-        if (item.kind === 'draw' && !item.thumbnailUrl && !hasDrawRow) { needsBox.push(item); notes.push({ name: item.name, why: 'no image found: add the draw from the card' }); }
+        if (item.kind === 'draw' && !item.thumbnailUrl && !hasDrawRow) { needsBox.push(item); notes.push({ name: item.name, why: 'no image found, so only its calendar row is drafted: add the draw with its Add to Next Season Draft button' }); }
         if (item.kind === 'draw' && (item.thumbnailUrl || hasDrawRow)) wanted.push({ list: item.drawType === 'returning' ? 'returningDraws' : 'newDraws', row: { title: item.name, date: item.start || null, items: (item.rewards || []).map(r => ({ tier: r.tier, name: r.name })), thumbnailUrl: item.thumbnailUrl || '', priceType: '' } });
         wanted.push({ list: 'calendar', row: { title: item.name, date: item.start || null, endDate: item.end || null, category: CATEGORY[item.kind], isOngoing: false, isDoubleCP: false } });
 

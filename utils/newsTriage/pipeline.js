@@ -97,7 +97,9 @@ async function redrawCard(rest, card, appId) {
 }
 
 // ---- Auto-draft (2026-11-04 23:59 EST) ----
-const dayLabel = d => (d ? new Date(d).toUTCString().slice(5, 11).trim() : '');
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+// "Nov 12", as the card's own dates and /calendar write them.
+const dayLabel = d => { if (!d) return ''; const x = new Date(d); return `${MONTH_NAMES[x.getUTCMonth()]} ${x.getUTCDate()}`; };
 // One line per item, not per row: a draw is a draw-list row and a calendar row.
 function draftLines(changes) {
     const seen = new Map();
