@@ -330,6 +330,10 @@ check('the handler owns news| and nothing else', async () => {
         assert.strictEqual(r.resolveItem(bh({ start: '10/25', end: '11/7' }), lctx).skip, 'already on /draws');
         assert.strictEqual(require('../utils/newsTriage/card').buttonLabel(endNew), 'Fix the dates on the bot');
     });
+    check('a dated item the AI calls a later season is placed by its date', () => {
+        const it = r.resolveItem({ kind: 'draw', change: 'new', name: 'Sapphire Winter Draw', rewards: [], start: '8 November UTC', end: null, season: 'later', region: 'global', certainty: 'expected' }, { ...lctx, postedAt: D('2026-10-07'), liveEnd: D('2026-10-15') });
+        assert.strictEqual(it.where, 'draft');
+    });
     check('a season post\'s ranked and DMZ parts fill only the draft fields still empty', () => {
         const M = require('../utils/newsTriage/draftMerge');
         const draft = { newDraws: [], returningDraws: [], calendar: [], rankTitle: 'Ranked Series', dmzTitle: 'My DMZ Name' };

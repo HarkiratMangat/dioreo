@@ -62,6 +62,7 @@ Measured live on the Season 9 calendar image (22 rows) and a one-draw text post,
 - **Flex PayGo**: half price for a request that can wait (minutes); global endpoint only, one header. News can wait.
 - **Thinking `low`**: thinking tokens bill as output (5x input) and were most of the bill; low read the same rows.
 - **Not used, and why**: implicit caching needs a 6,144-token shared prefix on 3.8 Flash and a news prompt is ~1,900, so it never hits; explicit caching has the same floor plus storage. `responseSchema` made answers worse (dates and stray text inside fields, one row of 22), and a medium image resolution read the calendar as one row.
+- **Over the whole Season 9 backtest** (2026-11-05 11:43 EST): 218 reads cost $0.22 on Flex + low thinking against $1.47 before, and the auto-draft still matched 38 of 53 Season 9 rows. Two draws (Grim Duo, the Halloween armory) got a different start date than the medium-thinking read gave. A network drop now gets the same one retry as a timeout (7 of 218 reads failed without it).
 - The free prefilter still keeps about two-thirds of posts away from the AI. The cost log (`vision_call_cost`) now records cached tokens and the traffic type, and prices both.
 
 ## Traps already paid for

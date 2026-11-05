@@ -78,7 +78,8 @@ function resolveItem(raw, ctx) {
 
     // Where it goes. A date beats words: a draw dated after this season ends goes to the draft whatever the post calls it.
     let where;
-    if (raw.season === 'later') where = 'later';
+    // "later" decides only when the post gives no date: a date beats words here too (2026-11-05 11:42 EST, the Flex backtest: the AI called Sapphire Winter Draw, dated 8 November, a later season's, and it was dropped).
+    if (raw.season === 'later' && !start) where = 'later';
     else if (start && ctx.liveEnd) {
         // ON or after the live season's end is next season (2026-11-04 22:09 EST, from the live dev run): CODM's own Season 10 post listed eight playlists starting 11/12, Season 9's bpEnd is 2026-11-12 00:00 UTC, and a strict `>` sent all eight to the LIVE season with a false "the date is before this season ends" warning. Launch-day items start exactly on the boundary, so this is every season's busiest post.
         where = start >= new Date(ctx.liveEnd) ? 'draft' : 'live';
