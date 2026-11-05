@@ -22,6 +22,16 @@ const OFFSET = /^(utc|gmt)\s*[+-]\s*\d{1,2}(:?\d{2})?$/i;
 const mentionId = token => (/^<@!?(\d+)>$/.exec(token) || [])[1] || null;
 const squash = s => String(s || '').toLowerCase().replace(/[\s\-_.]/g, '');
 
+// The gunsmith list words. `lists` is the page; the other four are a list. A list named right after `lists` (`d list top`, `d gs lists hm`) is that list: Harkirat, 2026-11-05 14:34 EST, `d list top` and `d gs top` both showed the page's META weapons instead of the Top builds.
+const LIST_WORDS = ['meta', 'best', 'top', 'hm', 'lists'];
+const listWordOf = word => LIST_WORDS.find(w => sameWord(squash(word), w)) || null;
+function narrowList(listWord, text) {
+    const [first, ...more] = String(text || '').split(/\s+/);
+    const named = listWord === 'lists' ? listWordOf(first) : null;
+    return named && named !== 'lists' ? { listWord: named, text: more.join(' ') } : { listWord, text };
+}
+const listValue = listWord => (listWord === 'lists' ? '~lists~' : `~lists~${listWord}`);
+
 // Without a checker from the caller, chrono alone (utils/timestampHelper.js), with no shorthand expansion. Deliberately NOT a require of commands/timestamp.js: this file is required by bot/textCommands.js, which is structural to the hotpatch planner (utils/hotpatch.js), so any require edge from here into commands/ would make that command un-hot-patchable. bot/textCommands.js reaches /timestamp's expansion through client.commands instead, the router's own late-bound door.
 function defaultCheckDatetime(text) {
     return Boolean(require('../timestampHelper').generateTimestamps(text)?.unix);
@@ -140,10 +150,16 @@ function parseArgs(tokens, textCommand, commandJson = null, { allowTypos = false
         const filled = values[restOpt.name] !== undefined;
         const words = restFromKey !== null ? [restFromKey, ...restWords] : restWords;
         let text = words.join(' ').trim();
+        // `d list top`: the preset holds `~lists~` and `top` names the list.
+        let narrowed = false;
+        if (filled && restOpt.rest === 'weapon' && textCommand.sub !== 'dmz' && values[restOpt.name] === '~lists~' && text) {
+            const n = narrowList('lists', text);
+            if (n.listWord !== 'lists') { values[restOpt.name] = listValue(n.listWord); text = n.text; narrowed = true; }
+        }
         const wantsListWeapon = restOpt.rest === 'weapon' && textCommand.sub !== 'dmz' && text && !classOf(text, restOpt.classes);
         // `d meta ak117` (and best, top, hm, lists): that weapon inside that list (the lists spec, approved 2026-11-02 21:44 EST). The preset already holds `~lists~<list>`; the weapon words are looked up like any weapon, and bot/textCommands.js wraps the hit as `~lists~<list>~<weaponKey>`. A bare class word after it (`d meta pistols`) stays ignored, so the page opens.
         if (filled && wantsListWeapon && String(values[restOpt.name]).startsWith('~lists~')) autocomplete.push({ option: restOpt.name, text, wrap: values[restOpt.name] });
-        else if (filled && words.length) leftover.push(...words);
+        else if (filled && words.length && !narrowed) leftover.push(...words);
         else if (!filled && restOpt.rest === 'datetime' && text) {
             // B6, his calls 2026-10-29 20:49-20:53 EDT: an offset given with tz: (`tz:utc+5`) joins the date text, where /timestamp's parser already reads it; a zone named at the END of the date (`fri 6pm tokyo`, `8pm new york`) is the zone, exact names only, when what is left still reads as a date.
             if (values.timezone && OFFSET.test(values.timezone)) { text = `${text} ${values.timezone}`; delete values.timezone; }
@@ -162,11 +178,10 @@ function parseArgs(tokens, textCommand, commandJson = null, { allowTypos = false
             // No weapon, or only a class word: the first weapon alphabetically with a build (commands/gunsmith.js reads `~first~`, which no weaponKey can be).
             const category = classOf(text, restOpt.classes);
             // `d gs meta` / `d dmz meta`: that mode's META browse (his ask, B6, 2026-10-29 20:06 EDT); commands/gunsmith.js opens `~scope~` as the dropdown's All META row. `d gs meta` (and best, top, hm, lists) opens the gunsmith lists page since 2026-11-02 21:44 EST; `d dmz meta` keeps DMZ's META browse.
-            const listWord = ['meta', 'best', 'top', 'hm', 'lists'].find(w => sameWord(squash(text.split(/\s+/)[0]), w));
-            const afterList = text.split(/\s+/).slice(1).join(' ');
-            if (textCommand.sub !== 'dmz' && listWord && !afterList) values[restOpt.name] = listWord === 'lists' ? '~lists~' : `~lists~${listWord}`;
+            const { listWord, text: afterList } = narrowList(listWordOf(text.split(/\s+/)[0]), text.split(/\s+/).slice(1).join(' '));
+            if (textCommand.sub !== 'dmz' && listWord && !afterList) values[restOpt.name] = listValue(listWord);
             // `d gs meta ak117`: the weapon inside that list, as above.
-            else if (textCommand.sub !== 'dmz' && listWord && !classOf(afterList, restOpt.classes)) autocomplete.push({ option: restOpt.name, text: afterList, wrap: listWord === 'lists' ? '~lists~' : `~lists~${listWord}` });
+            else if (textCommand.sub !== 'dmz' && listWord && !classOf(afterList, restOpt.classes)) autocomplete.push({ option: restOpt.name, text: afterList, wrap: listValue(listWord) });
             else if (sameWord(squash(text), 'meta')) values[restOpt.name] = `~scope~${textCommand.sub === 'dmz' ? 'DMZ' : 'MP'}.*.meta`;
             else if (!text || category) values[restOpt.name] = `~first~${category || ''}`;
             else autocomplete.push({ option: restOpt.name, text });
