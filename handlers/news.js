@@ -131,7 +131,8 @@ async function makeCard(interaction) {
     let message;
     try { message = await (await interaction.client.channels.fetch(channelId)).messages.fetch(messageId); } catch { message = null; }
     if (!message) return interaction.editReply({ content: 'That post could not be read: it may have been deleted.' });
-    const result = await pipeline.processPost(pipeline.toPost(message), { rest: interaction.client.rest, selfId: interaction.client.user?.id, appId: interaction.applicationId, force: true });
+    // actorId: the draft write is checked against this admin's own tier, never the owner's.
+    const result = await pipeline.processPost(pipeline.toPost(message), { rest: interaction.client.rest, selfId: interaction.client.user?.id, appId: interaction.applicationId, force: true, actorId: interaction.user.id });
     const say = {
         carded: result.drafted ? `Card posted; ${result.drafted} item(s) written to the Next Season Draft.` : 'Card posted.',
         'already carded': 'That post already has a card.',

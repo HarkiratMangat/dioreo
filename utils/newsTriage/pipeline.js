@@ -128,14 +128,14 @@ async function draftImages(items, post) {
     return items;
 }
 
-async function commitDraft(changes) {
+async function commitDraft(changes, actorId) {
     const { commitSet } = require('../../core/changeset');
     const { ALLOWED_ADMIN_ID } = require('../owner');
-    // Committed as the owner, because core/changeset.js checks a person's tier on every write, with source 'news' so History tells it apart from his own edits.
-    return commitSet([{ type: 'season.newsDraft', payload: { changes } }], { actorId: ALLOWED_ADMIN_ID, source: 'news' });
+    // The watcher's own reads commit as the owner (core/changeset.js checks a person's tier on every write), with source 'news' so History tells them apart from his edits. A read an admin started (the skipped list's Make a card) commits as THAT admin, so their own Next Season Draft tier is checked and a denial falls back to buttons (commit security review, 2026-11-05 00:13 EST: committing it as the owner let any /manage admin write the draft).
+    return commitSet([{ type: 'season.newsDraft', payload: { changes } }], { actorId: actorId || ALLOWED_ADMIN_ID, source: 'news' });
 }
 
-async function autoDraft(post, card, ctx) {
+async function autoDraft(post, card, ctx, actorId) {
     const { planDraftChanges } = require('./draftMerge');
     const draftItems = card.filter(it => it.where === 'draft' && it.action !== 'patch');
     if (!draftItems.length) return { drafted: null, cardItems: card };
@@ -145,7 +145,7 @@ async function autoDraft(post, card, ctx) {
     const keep = new Set(plan.needsBox);
     const others = card.filter(it => it.where !== 'draft' || it.action === 'patch' || keep.has(it));
     if (!plan.changes.length) return { drafted: notes.length ? { changeId: '', lines: [], notes } : null, cardItems: others };
-    const res = await commitDraft(plan.changes);
+    const res = await commitDraft(plan.changes, actorId);
     // A failed write falls back to the buttons, so nothing is lost: every item stays on the card.
     if (!res.ok) { console.error('News triage: the draft write failed:', res.error || JSON.stringify(res.failures || res.denied || [])); return { drafted: { changeId: '', lines: [], notes: ['The Next Season Draft could not be written, so every item has a button instead.'] }, cardItems: card }; }
     return { drafted: { changeId: res.changeIds[0], lines: draftLines(plan.changes), notes }, cardItems: others };
@@ -182,7 +182,7 @@ async function carryOver(rest, { env = process.env, appId, now = new Date() } = 
 }
 
 // ctx: { rest, selfId, readPost (for tests), env }. Returns { status, ... } and never throws.
-async function processPost(post, { rest, selfId, appId, force = false, env = process.env, readPost } = {}) {
+async function processPost(post, { rest, selfId, appId, force = false, env = process.env, readPost, actorId = null } = {}) {
     try {
         const cfg = config(env);
         if (!force && !cfg.watch.has(post.channelId)) return { status: 'not watched' };
@@ -218,7 +218,7 @@ async function processPost(post, { rest, selfId, appId, force = false, env = pro
         const { card, skipped } = resolveItems(raw, { ...ctx, namesRegion: namesRegion(post.text), namesTestServer: namesTestServer(post.text), autoDraft: cfg.autoDraft });
         // Next-season items go straight into the Next Season Draft (draftMerge.js); the card then shows what was drafted, with Undo, and keeps a button only for this season's items, patch notes, and a draft draw with no image.
         let drafted = null; let cardItems = card;
-        if (cfg.autoDraft) ({ drafted, cardItems } = await autoDraft(post, card, ctx));
+        if (cfg.autoDraft) ({ drafted, cardItems } = await autoDraft(post, card, ctx, actorId));
         // The same draw from #official-codm-news and #leaks gets one card: an item another card from the last two weeks already holds is left off.
         const recent = await NewsCard.find({ createdAt: { $gte: new Date(Date.now() - 14 * DAY_MS) } }, { items: 1 }).lean();
         // A duplicate is the same thing on the same day: a later post that moves the date or confirms a leak gets its own card, because the earlier card holds the old date (think-pass, 2026-11-04 22:09 EST).

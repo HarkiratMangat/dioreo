@@ -292,6 +292,13 @@ check('the handler owns news| and nothing else', async () => {
         M.applyDraftChanges(d2, M.planDraftChanges(d2, [{ ...drop, certainty: 'expected' }], leak, { newId }).changes);
         assert.strictEqual(new Date(d2.calendar[0].date).toISOString().slice(0, 10), '2026-11-20', 'the placeholder start gave way to a real one');
     });
+    check('Make a card writes the draft as the admin who clicked, never as the owner', () => {
+        const fs = require('fs');
+        const h = fs.readFileSync(require.resolve('../handlers/news.js'), 'utf8');
+        assert.ok(/processPost\([^;]*actorId: interaction\.user\.id/.test(h), 'makeCard passes the clicking admin');
+        const p = fs.readFileSync(require.resolve('../utils/newsTriage/pipeline.js'), 'utf8');
+        assert.ok(/autoDraft\(post, card, ctx, actorId\)/.test(p) && /commitDraft\(plan\.changes, actorId\)/.test(p), 'the actor reaches the commit');
+    });
     check('carry-over: a live row still running at the next season\'s start is copied into the draft', () => {
         const live = { calendar: [{ _id: 'a', title: 'Herrscher of Flamescion Draw', date: D('2026-09-10'), endDate: D('2026-11-10'), category: 'draw' }, { _id: 'b', title: 'Brain Rot MP Playlist', date: D('2026-10-01'), endDate: D('2026-10-14'), category: 'playlist' }], newDraws: [{ _id: 'c', title: 'Herrscher of Flamescion Draw', date: D('2026-09-10'), thumbnailUrl: 'x' }], returningDraws: [] };
         const plan = M.planCarryOver({ calendar: [], newDraws: [], returningDraws: [], bpStart: D('2026-10-15') }, live, { newId });
