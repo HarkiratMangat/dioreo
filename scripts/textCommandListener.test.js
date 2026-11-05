@@ -134,13 +134,16 @@ async function check(name, fn) {
         assert.strictEqual(ran.length, before);
         assert.deepStrictEqual(buttons(posts[0]), ['"custom_id":"txtrun_gunsmith~weapon=kilo141"', '"custom_id":"txtrun_gunsmith~weapon=kiloboltaction"']);
     });
-    await check('kilo ar opens the AR Kilo; lol after d is silent, after @Dioreo only offered', async (before) => {
+    await check('kilo ar opens the AR Kilo; one loose word after d or @Dioreo is offered, never run', async (before) => {
         await onMessage(fakeMessage('d gs kilo ar').message);
         assert.strictEqual(lastRun().interaction.options.getString('weapon'), 'kilo141');
         const after = ran.length;
-        const quiet = fakeMessage('d gs lol');
+        const offered = fakeMessage('d gs lol', { guildId: 'gloose' }); // outside g1's 30-per-10-s budget
+        await onMessage(offered.message);
+        assert.deepStrictEqual(buttons(offered.posts[0]), ['"custom_id":"txtrun_gunsmith~weapon=kilo141"'], 'one word after a gunsmith word is a weapon request (2026-11-05)');
+        const quiet = fakeMessage('d gs kilo lol', { guildId: 'gloose' });
         await onMessage(quiet.message);
-        assert.strictEqual(quiet.posts.length, 0);
+        assert.strictEqual(quiet.posts.length, 0, 'two words with no weapon in them stay chat');
         const asked = fakeMessage(`<@${BOT}> gs lol`);
         await onMessage(asked.message);
         assert.strictEqual(ran.length, after, 'a loose match never runs');
@@ -170,6 +173,11 @@ async function check(name, fn) {
         await onMessage(message);
         assert.strictEqual(ran.length, before);
         assert.strictEqual(posts.length, 0);
+    });
+    await check('no match after d plus a gunsmith word says so in one line', async () => {
+        const { message, posts } = fakeMessage('d build zzz', { guildId: 'ghs' });
+        await onMessage(message);
+        assert.ok(/No match for “zzz”\.$/.test(posts[0]?.content || ''), posts[0]?.content);
     });
     await check('no match after @Dioreo says so in one line', async () => {
         const { message, posts } = fakeMessage(`<@${BOT}> gs zzz`);

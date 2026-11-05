@@ -325,9 +325,11 @@ async function resolveRun(message, verdict) {
             if (found.hit) { values.weapon = wrap(found.hit.value); continue; }
             if (ac.wrap && !found.several.length) { values.weapon = ac.wrap; continue; }
             // Every typed word named a weapon, but more than one fits (`d build kilo`: KILO 141 and KILO BOLT-ACTION). That is a weapon request whichever prefix it came with, so it gets Did you mean after `d` too (Harkirat, 2026-10-29 11:05 EDT: "how do we handle when multiple weapons fit the search? such as if someone typed 'd build kilo'"). A LOOSE match (no typed word is a weapon word: `d gs lol`) is offered only after @Dioreo, and never run.
-            const list = found.several.length ? found.several : (verdict.addressed ? found.loose : []);
+            // ONE word after a gunsmith word (`d gs zzz`, `d build hs9`) is a weapon request too, so after `d` it gets the near matches or the 10-second No match line instead of silence (2026-11-05, after `d gs hs0` got nothing on prod and read as the bot being down). Two or more words with no weapon in them (`dior gunsmith skins are cool`) are still chat and stay silent.
+            const askedForWeapon = verdict.addressed || !/\s/.test(String(ac.text).trim());
+            const list = found.several.length ? found.several : (askedForWeapon ? found.loose : []);
             if (list.length) return { kind: 'pick', textCommand, choices: list.slice(0, 5).map(c => ({ label: c.label, values: { ...values, weapon: wrap(c.value) } })) };
-            if (!verdict.addressed) return null;
+            if (!askedForWeapon) return null;
             return { kind: 'noMatch', text: ac.text };
         }
         const { hit, several } = pickChoice(await suggest(message, textCommand, ac.option, ac.text), ac.text, ac.first);
