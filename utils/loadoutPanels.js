@@ -12,8 +12,7 @@ const FAIL_ACCENT = 0xED4245;
 const isRealPicture = (key) => Boolean(key) && !/^(https?:|PENDING-UPLOAD-)/i.test(String(key));
 const code = (s) => `\`${String(s).replace(/`/g, 'ˋ')}\``;
 
-// One header block: the title and summary lines, with the build's picture as the accessory when it has one.
-// `build` gives the picture's version, so a picture replaced at the same key shows the new one (utils/loadoutRender.js pictureVersion).
+// One header block: the title and summary lines, with the build's picture as the accessory when it has one. `build` gives the picture's version, so a picture replaced at the same key shows the new one (utils/loadoutRender.js pictureVersion).
 function headerBlock(title, lines, imageKey, build) {
     const content = [title, ...lines.filter(Boolean)].join('\n');
     if (!isRealPicture(imageKey)) return { type: 10, content };
