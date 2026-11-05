@@ -29,8 +29,8 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.9.0 — 2026-11-05 15:10 EST (#PR) — Merged builds are edited by number in /manage: 1, 1b, 1c
-**From Harkirat, 2026-11-05:** "can i currently rearrange the option a, option b, option c merged builds' order? and how do i even edit/add merged builds?"; "the bot for now, portal as proposal for the other project"; "lowkey thinking we just number the build as "1, 1b, 1c" etc and if it has b c d e etc then it means its a merge build and should be added to the same page?" (14:41 EST); he picked the mock-up "Build it as shown" (14:50 EST).
+## v3.9.0 — 2026-11-05 17:05 EST (#256) — Merged builds are edited by number in /manage: 1, 1b, 1c
+**From Harkirat, 2026-11-05:** "can i currently rearrange the option a, option b, option c merged builds' order? and how do i even edit/add merged builds?"; "the bot for now, portal as proposal for the other project"; "lowkey thinking we just number the build as "1, 1b, 1c" etc and if it has b c d e etc then it means its a merge build and should be added to the same page?" (14:41 EST); he picked the mock-up "Build it as shown" (14:50 EST); "merge flow" (17:00 EST).
 
 ### Added
 - **A build # in /manage can name an option.** `2` or `2a` is Build 2's Option A, `2b` its Option B. Typing another tag moves the option: `2c` → `2` swaps it to A, `3` → `2b` joins Build 3 to Build 2 as Option B, `2b` → `4` makes it its own Build 4, and Create New with `2d` adds an option. The card players see still says Option A / B / C. Rules in `utils/loadoutOptions.js`: up to 6 options, attachments on each, no code twice in a build or across the weapon.
