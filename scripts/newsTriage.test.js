@@ -443,12 +443,67 @@ check('the handler owns news| and nothing else', async () => {
         assert.strictEqual(pipe.promoteDue(start, D('2026-11-11T00:05:00Z')), true, '23.9 h out');
         assert.strictEqual(pipe.promoteDue(start, D('2026-11-12T00:05:00Z')), false, 'already started');
     });
-    check('every AI read goes through the one cap-and-pause gate, the edit re-read included', () => {
-        const src = require('fs').readFileSync(require.resolve('../utils/newsTriage/pipeline.js'), 'utf8');
-        const reads = (src.match(/require\('\.\/model'\)\.readPost\(/g) || []).length + (src.match(/\(readPost \|\| require\('\.\/model'\)\.readPost\)\(/g) || []).length;
-        const gates = (src.match(/takeReadSlot\(cfg/g) || []).length;
-        assert.ok(reads >= 2 && gates >= reads, `${reads} reads, ${gates} gate calls`);
-        assert.ok(/findOneAndUpdate\(\{ sourceChannelId: channelId, sourceMessageId: messageId, draftUndone: \{ \$ne: true \}[^\n]*rereads: \{ \$lt: 2 \}/.test(src), 'the re-read claims its slot atomically, refusing an undone card and a third re-read');
+    // ---- the rules every code path keeps (invariants pass, 2026-11-05 17:07 EST): checked over the code itself, so a new path that skips one fails here instead of in a review ----
+    const fs = require('fs');
+    const srcOf = p => fs.readFileSync(require.resolve(p), 'utf8');
+    // Each top-level function's source, by name.
+    const bodies = src => { const idx = [...src.matchAll(/^(?:async )?function (\w+)\(/gm)].map(m => [m.index, m[1]]); return Object.fromEntries(idx.map(([at, name], k) => [name, src.slice(at, k + 1 < idx.length ? idx[k + 1][0] : src.length)])); };
+    const P = srcOf('../utils/newsTriage/pipeline.js'); const PB = bodies(P);
+    const H = srcOf('../handlers/news.js'); const HB = bodies(H);
+    check('rule: every AI read is the one in aiRead, and every caller takes a read slot first', () => {
+        assert.deepStrictEqual(Object.entries(PB).filter(([, b]) => /\.readPost\)?\(/.test(b)).map(([n]) => n), ['aiRead']);
+        const callers = Object.entries(PB).filter(([n, b]) => n !== 'aiRead' && /\baiRead\(/.test(b));
+        assert.deepStrictEqual(callers.map(([n]) => n).sort(), ['processPost', 'rereadEdited']);
+        for (const [n, b] of callers) assert.ok(b.includes('takeReadSlot(') && b.indexOf('takeReadSlot(') < b.indexOf('aiRead('), `${n} reads before taking a slot`);
+        assert.ok(/state\.pausedUntil = /.test(PB.aiRead) && /sendAlert/.test(PB.aiRead), 'a failed read pauses and alerts, whoever started it');
+        for (const p of ['../handlers/news.js', '../bot/newsWatch.js', '../utils/newsTriage/draftMerge.js', '../utils/newsTriage/resolve.js', '../utils/newsTriage/card.js']) assert.ok(!/readPost\(|vertexGenerate\(/.test(srcOf(p)), `${p} reads the AI itself`);
+        assert.ok(/findOneAndUpdate\(\{ sourceChannelId: channelId, sourceMessageId: messageId, draftUndone: \{ \$ne: true \}[^\n]*rereads: \{ \$lt: 2 \}/.test(P), 'the re-read claims its slot atomically, refusing an undone card and a third re-read');
+    });
+    check('rule: every Next Season Draft write is the season.newsDraft op, with an author and a source', () => {
+        for (const p of ['../utils/newsTriage/pipeline.js', '../utils/newsTriage/draftMerge.js', '../utils/newsTriage/resolve.js', '../handlers/news.js', '../bot/newsWatch.js']) assert.ok(!/SeasonalData[^;\n]*\.(updateOne|updateMany|findOneAndUpdate|replaceOne|bulkWrite|save)\(/.test(srcOf(p)), `${p} writes SeasonalData directly`);
+        assert.deepStrictEqual(Object.entries(PB).filter(([, b]) => /commitSet\(/.test(b)).map(([n]) => n), ['commitDraft']);
+        assert.ok(/type: 'season\.newsDraft'/.test(PB.commitDraft) && /actorId: actorId \|\| ALLOWED_ADMIN_ID, source: 'news'/.test(PB.commitDraft));
+        assert.ok(!/commitSet\(|revertChange\(/.test(srcOf('../bot/newsWatch.js')));
+        assert.deepStrictEqual(Object.entries(HB).filter(([, b]) => /revertChange\(|commitSet\(/.test(b)).map(([n]) => n), ['undoDraft'], 'the handler writes only an Undo');
+    });
+    check('rule: every draft write leaves a card with Undo, or an alert naming the change', () => {
+        for (const n of ['processPost', 'carryOver', 'rereadEdited']) assert.ok(/storeCard\(/.test(PB[n]) && /postCardOrUndo\(/.test(PB[n]), n);
+        assert.strictEqual((P.match(/NewsCard'?\)?\.create\(/g) || []).length, 2, 'storeCard and the promote claim only');
+        assert.ok(/sendAlert/.test(PB.storeCard) && /draftChangeId/.test(PB.storeCard) && /sendAlert/.test(PB.postCardOrUndo));
+    });
+    check('rule: every message goes to the private channel, with no mentions', () => {
+        const targets = [...P.matchAll(/rest\.(?:post|patch)\(Routes\.channelMessages?\(([^)]*)\)/g)].map(m => m[1]);
+        assert.ok(targets.length >= 4, targets.length);
+        for (const a of targets) assert.ok(['channelId', 'cfg.channel', 'card.cardChannelId, card.cardMessageId'].includes(a), `a send to ${a}`);
+        assert.ok([...P.matchAll(/await sendCard\([^,]+, ([^,]+),/g)].every(m => m[1] === 'cfg.channel'), 'a card to another channel');
+        assert.strictEqual((P.match(/allowed_mentions: \{ parse: \[\] \}/g) || []).length, (P.match(/rest\.(post|patch)\(/g) || []).length, 'a send without allowed_mentions');
+        for (const p of ['../handlers/news.js', '../bot/newsWatch.js']) assert.ok(!/Routes\.channelMessages\(/.test(srcOf(p)), `${p} posts a message itself`);
+    });
+    check('rule: every button and dropdown checks access before it acts', () => {
+        const h = HB.handleNewsInteraction;
+        assert.ok(h.includes('allowed(interaction)') && h.indexOf('allowed(interaction)') < h.indexOf('openItem('), '/manage access first');
+        assert.ok(HB.openItem.indexOf('mayOpen(') > -1 && HB.openItem.indexOf('mayOpen(') < HB.openItem.indexOf('showModal('), 'the page tier before a box opens');
+        assert.ok(HB.setKinds.indexOf('resolveAction(') > -1 && HB.setKinds.indexOf('resolveAction(') < HB.setKinds.indexOf('updateOne('), 'the draft tier before the kinds are saved');
+        assert.ok(/actorId: interaction\.user\.id/.test(HB.makeCard) && /actorId: interaction\.user\.id/.test(HB.undoDraft), 'a card made, or an Undo pressed, is checked as the clicker');
+    });
+    check('rule: the draft holds the next season only, never one past it', () => {
+        const base = { postedAt: D('2026-10-08T12:00:00Z'), liveEnd: D('2026-10-15T00:00:00Z'), liveTitle: 'Season 8 — Haunted', live: {}, draft: {}, catalogue: [] };
+        const s10 = r.resolveItem({ kind: 'season', change: 'new', name: 'Season 10', start: 'November 12th UTC', season: 'later', region: 'global', certainty: 'confirmed' }, base);
+        assert.strictEqual(s10.skip, 'a later season', 'Season 10 while Season 8 is live');
+        const s9 = r.resolveItem({ kind: 'season', change: 'new', name: 'Season 9 — Vampires vs. Werewolves', start: 'October 14th at 5 PM PT', season: 'next', region: 'global', certainty: 'confirmed' }, base);
+        assert.strictEqual(s9.where, 'draft', 'Season 9 is the draft');
+        const late = r.resolveItem({ kind: 'draw', change: 'new', name: 'Frost Draw', start: 'November 20', season: 'next', region: 'global', certainty: 'confirmed' }, { ...base, draftEnd: D('2026-11-12T00:00:00Z') });
+        assert.strictEqual(late.skip, 'a later season', 'a draw dated after the draft season ends');
+        const sapphire = r.resolveItem({ kind: 'draw', change: 'new', name: 'Sapphire Winter Draw', start: 'November 8', season: 'later', region: 'global', certainty: 'confirmed' }, base);
+        assert.strictEqual(sapphire.where, 'draft', 'a date inside the next season still beats the AI calling it later');
+    });
+    check('rule: a name decides a skip, a fix or a merge only when it is the same item', () => {
+        const RB = bodies(srcOf('../utils/newsTriage/resolve.js'));
+        assert.deepStrictEqual(Object.entries(RB).filter(([n, b]) => n !== 'sameName' && /\bsameName\(/.test(b)).map(([n]) => n), ['catalogueMatch'], 'only the draw index lookup matches loosely');
+        assert.ok(!/\bsameName\(/.test(P) && /const same = strictName/.test(srcOf('../utils/newsTriage/draftMerge.js')));
+        for (const [a, b] of [['Nuketown Halloween', 'Nuketown'], ['Halloween Sale', 'Halloween Series Armory'], ['Street Fighter Series Armory II', 'Street Fighter Series Armory'], ['Gunsmith Challenge 2', 'Gunsmith Challenge'], ['Battle Royale: Blackout', 'Blackout']]) assert.strictEqual(r.strictName(a, b), false, `${a} ~ ${b}`);
+        for (const [a, b] of [['The Hunger Eternal Draw', 'Hunger Eternal'], ['Fangs Wars', 'Fang Wars'], ['Winter Festival', 'Winter Festival Event'], ['Halloween', 'Halloween Event']]) assert.strictEqual(r.strictName(a, b), true, `${a} ~ ${b}`);
+        assert.strictEqual(r.sameName('Street Fighter Series Armory II', 'Street Fighter Series Armory'), false, 'a numeral is another draw in the index too');
     });
     check('a live fix is listed while the bot still disagrees, whatever was clicked', () => {
         const live = { returningDraws: [{ _id: 'bh', title: 'Black Hole Draw', date: D('2026-10-25') }], calendar: [{ _id: 'c', title: 'Black Hole Draw', category: 'draw', date: D('2026-10-25'), endDate: D('2026-11-07') }] };

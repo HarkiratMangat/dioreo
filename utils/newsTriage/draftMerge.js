@@ -9,7 +9,7 @@
 //   - kinds he never lists (crates, boosts, livestreams, tournaments, stores, patch notes) are not drafted
 // The draft stays staged: nothing a player sees changes until his Promote to Live.
 
-const { norm, seasonTitle } = require('./resolve');
+const { seasonTitle, strictName } = require('./resolve');
 
 const RANK = { expected: 1, confirmed: 2, official: 3 };
 // Kinds absent from every row of his Season 9 (35 items): crates, lucky boxes, strongboxes, boosts, livestreams, tournaments, ranked festivals, store pages. A sale IS listed (Halloween Sale), so it is not here. The kinds he can switch off from the daily briefing (2026-11-05 15:23 EST, his pick 3: "Let you pick from the briefing which kinds to skip"). The default set is the old fixed list, so nothing changes until he picks; sales and offers are drafted by default because his Season 9 list has a sale.
@@ -29,29 +29,10 @@ const CATEGORY = { draw: 'draw', mode: 'playlist', event: 'event' };
 const DRAW_LISTS = ['newDraws', 'returningDraws'];
 
 const day = d => (d ? new Date(d).toISOString().slice(0, 10) : '');
-const squash = s => norm(s).replace(/\s+/g, '');
 // What news triage wrote, so a later run can tell a row he edited from one it may still update.
 const sig = row => [row.title || '', day(row.date), day(row.endDate)].join('|');
-// Typos count as the same name: "Fangs Wars" and "Fang Wars" came in as two rows on the backtest. Two edits apart, on names of eight letters or more.
-function edits(a, b) {
-    if (Math.abs(a.length - b.length) > 2) return 3;
-    let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
-    for (let i = 1; i <= a.length; i++) {
-        const cur = [i];
-        for (let j = 1; j <= b.length; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
-        prev = cur;
-    }
-    return prev[b.length];
-}
-// Not resolve.js's sameName: its "one name contains the other" is right for finding a draw in the index and wrong for merging, where "Halloween Sale" updated the Halloween Series Armory and "Street Fighter" both armories (backtest, 2026-11-04 23:54 EST). Containment counts here only when the shorter name is most of the longer one.
-const same = (a, b) => {
-    const x = squash(a); const y = squash(b);
-    if (!x || !y) return false;
-    if (x === y) return true;
-    const [short, long] = x.length <= y.length ? [x, y] : [y, x];
-    if (long.includes(short) && short.length >= 0.8 * long.length) return true;
-    return short.length >= 8 && edits(x, y) <= 2;
-};
+// The strict name match is resolve.js's strictName, so the merge and resolve's own skips and fixes agree on what counts as the same item (invariants pass, 2026-11-05 17:06 EST).
+const same = strictName;
 
 function rankOf(item, post) {
     if (post?.official) return RANK.official;

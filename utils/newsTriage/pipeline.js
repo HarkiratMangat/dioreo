@@ -5,7 +5,7 @@
 // ⚠️ A CHANNEL POST OUTSIDE AN INTERACTION, a named exception to CLAUDE.md's "answers only through interactions" (Harkirat, 2026-11-04 19:15 EST: "I'd rather do a new private channel in the server"). It posts only into NEWS_CHANNEL, a private channel of his own server.
 const { Routes } = require('discord.js');
 const { titleOf, prefilter, cleanText, namesRegion, namesTestServer } = require('./filter');
-const { resolveItems, sameName } = require('./resolve');
+const { resolveItems, strictName } = require('./resolve');
 const { buildCard, buildSkippedList, MAX_ITEMS, buildBriefing, buildPromoteCheck } = require('./card');
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -82,7 +82,7 @@ async function loadContext(postedAt) {
     ]);
     const d = doc || {}; const draft = d.draft || {};
     return {
-        postedAt, liveEnd: d.bpEnd || null, draftStart: draft.bpStart || null, draftTitle: draft.currentSeasonTitle || '', catalogue,
+        postedAt, liveEnd: d.bpEnd || null, liveTitle: d.currentSeasonTitle || '', draftStart: draft.bpStart || null, draftTitle: draft.currentSeasonTitle || '', draftEnd: (!draft.bpEndTBD && draft.bpEnd) || null, catalogue,
         live: { newDraws: d.newDraws || [], returningDraws: d.returningDraws || [], calendar: d.calendar || [] },
         draft: { newDraws: draft.newDraws || [], returningDraws: draft.returningDraws || [], calendar: draft.calendar || [] },
         draftDoc: draft, liveDoc: d,
@@ -176,7 +176,6 @@ async function carryOver(rest, { env = process.env, appId, now = new Date() } = 
     const cfg = config(env);
     if (!cfg.channel || !cfg.autoDraft) return null;
     try {
-        const NewsCard = require('../../models/NewsCard');
         const d = await require('../../models/SeasonalData').findOne({ docType: 'global' }).lean();
         const draft = d?.draft || {};
         if (!draft.bpStart) return null;
@@ -188,10 +187,22 @@ async function carryOver(rest, { env = process.env, appId, now = new Date() } = 
         const applied = res.results?.[0]?.applied || {};
         if (!(applied.changes || []).length) return { carried: 0 };
         const key = `carry-${now.toISOString().slice(0, 10)}`;
-        const doc = await NewsCard.create({ sourceChannelId: 'carry-over', sourceMessageId: key, sourceName: 'Next Season Draft', jumpUrl: '', postedAt: now, cardChannelId: cfg.channel, items: [], draftChangeId: res.changeIds[0], draftLines: draftLines(applied.changes), draftNotes: [], expireAt: new Date(now.getTime() + CARD_DAYS * DAY_MS) });
+        const doc = await storeCard({ sourceChannelId: 'carry-over', sourceMessageId: key, sourceName: 'Next Season Draft', jumpUrl: '', postedAt: now, cardChannelId: cfg.channel, items: [], draftChangeId: res.changeIds[0], draftLines: draftLines(applied.changes), draftNotes: [], expireAt: new Date(now.getTime() + CARD_DAYS * DAY_MS) });
         await postCardOrUndo(rest, cfg, doc, appId);
         return { carried: applied.changes.length };
     } catch (err) { console.error('News triage: carry-over failed:', err?.message || err); return null; }
+}
+
+// Stores a card record. One that cannot be stored after the draft was written would leave the change with no Undo in sight, so it alerts with the change id, as a refused send does (invariants pass, 2026-11-05 17:07 EST).
+async function storeCard(fields) {
+    try { return await require('../../models/NewsCard').create(fields); } catch (err) {
+        if (fields.draftChangeId) {
+            const msg = `A news card could not be stored (${err?.message || err}). It had written draft change ${fields.draftChangeId}: undo it from /bot History if it is wrong.`;
+            console.error('News triage:', msg);
+            try { require('../alertWebhook').sendAlert('News card not stored', msg, 'warn'); } catch { /* alerting never breaks the read */ }
+        }
+        throw err;
+    }
 }
 
 // Sends a card; if Discord refuses it, the card record goes and an alert names the draft change, so a draft write is never left with no Undo in sight (2026-11-05 15:34 EST: a full card measured 6,073 characters, over Discord's 4,000, and the draft had already been written).
@@ -206,6 +217,25 @@ async function postCardOrUndo(rest, cfg, doc, appId) {
         const msg = `A news card could not be posted (${err?.message || err}).${doc.draftChangeId ? ` It had written draft change ${doc.draftChangeId}: undo it from /bot History if it is wrong.` : ''}`;
         console.error('News triage:', msg);
         try { require('../alertWebhook').sendAlert('News card not posted', msg, 'warn'); } catch { /* alerting never breaks the read */ }
+        throw err;
+    }
+}
+
+// The one AI read, for a new post and an edited one alike (invariants pass, 2026-11-05 17:07 EST: the edit re-read counted a failure but never paused or alerted, because it had its own copy). The caller has already taken its read slot. onUsage counts each read's cost for the briefing (estimateVisionCostUsd knows the flex and cached-token prices).
+async function aiRead(post, ctx, readPost) {
+    const onUsage = (u, loc) => { try { state.stats.costUsd += require('../visionExtract').estimateVisionCostUsd(loc, u).estimatedCostUsd; } catch { /* never breaks a read */ } };
+    state.stats.reads += 1;
+    try {
+        const raw = await (readPost || require('./model').readPost)({ text: post.text, imageUrl: post.image, postedAt: post.createdAt, liveSeason: ctx.liveSeason, source: /official/i.test(post.channelName || '') ? 'official' : 'leaks' }, { onUsage });
+        state.failures = 0; state.alerted = false;
+        return raw;
+    } catch (err) {
+        state.failures += 1; state.stats.failures += 1;
+        console.error(`News triage: the AI read failed (${state.failures} in a row):`, err?.message || err);
+        if (state.failures >= 3) {
+            state.pausedUntil = Date.now() + PAUSE_MS;
+            if (!state.alerted) { state.alerted = true; try { require('../alertWebhook').sendAlert('News triage paused', `Three AI reads failed in a row; paused for an hour. Last error: ${err?.message || err}`, 'warn'); } catch { /* alerting never breaks the read */ } }
+        }
         throw err;
     }
 }
@@ -228,22 +258,7 @@ async function processPost(post, { rest, selfId, appId, force = false, env = pro
 
         const ctx = await loadContext(post.createdAt);
         let raw;
-        try {
-            // onUsage counts each read's cost for the briefing (estimateVisionCostUsd knows the flex and cached-token prices).
-            const onUsage = (u, loc) => { try { state.stats.costUsd += require('../visionExtract').estimateVisionCostUsd(loc, u).estimatedCostUsd; } catch { /* never breaks a read */ } };
-            state.stats.reads += 1;
-            raw = await (readPost || require('./model').readPost)({ text: post.text, imageUrl: post.image, postedAt: post.createdAt, liveSeason: ctx.liveSeason, source: /official/i.test(post.channelName || '') ? 'official' : 'leaks' }, { onUsage });
-            state.failures = 0; state.alerted = false;
-        } catch (err) {
-            state.failures += 1; state.stats.failures += 1;
-            console.error(`News triage: the AI read failed (${state.failures} in a row):`, err?.message || err);
-            if (state.failures >= 3) {
-                state.pausedUntil = Date.now() + PAUSE_MS;
-                if (!state.alerted) { state.alerted = true; try { require('../alertWebhook').sendAlert('News triage paused', `Three AI reads failed in a row; paused for an hour. Last error: ${err?.message || err}`, 'warn'); } catch { /* alerting never breaks the read */ } }
-            }
-            noteSkipped(post, 'the AI read failed');
-            return { status: 'error', error: err?.message || String(err) };
-        }
+        try { raw = await aiRead(post, ctx, readPost); } catch (err) { noteSkipped(post, 'the AI read failed'); return { status: 'error', error: err?.message || String(err) }; }
 
         const { card, skipped } = resolveItems(raw, { ...ctx, namesRegion: namesRegion(post.text), namesTestServer: namesTestServer(post.text), autoDraft: cfg.autoDraft });
         // Next-season items go straight into the Next Season Draft (draftMerge.js); the card then shows what was drafted, with Undo, and keeps a button only for this season's items, patch notes, and a draft draw with no image.
@@ -253,13 +268,13 @@ async function processPost(post, { rest, selfId, appId, force = false, env = pro
         const recent = await NewsCard.find({ createdAt: { $gte: new Date(Date.now() - 14 * DAY_MS) } }, { items: 1 }).lean();
         // A duplicate is the same thing on the same day: a later post that moves the date or confirms a leak gets its own card, because the earlier card holds the old date (think-pass, 2026-11-04 22:09 EST).
         const sameStart = (a, b) => (!a && !b) || (a && b && new Date(a).toISOString().slice(0, 10) === new Date(b).toISOString().slice(0, 10));
-        const fresh = cardItems.filter(it => !recent.some(c => (c.items || []).some(o => o.action === it.action && o.where === it.where && sameName(o.name, it.name) && sameStart(o.start, it.start))));
+        const fresh = cardItems.filter(it => !recent.some(c => (c.items || []).some(o => o.action === it.action && o.where === it.where && strictName(o.name, it.name) && sameStart(o.start, it.start))));
         if (!fresh.length && !drafted?.lines?.length) {
             const reason = drafted?.notes?.length ? drafted.notes.slice(0, 3).join('; ') : cardItems.length ? 'already on another card' : (skipped.length ? [...new Set(skipped.map(s => s.reason))].join('; ') : 'nothing to add');
             noteSkipped(post, reason);
             return { status: 'no card', reason, skipped };
         }
-        const doc = await NewsCard.create({
+        const doc = await storeCard({
             sourceChannelId: post.channelId, sourceMessageId: post.id, sourceName: post.channelName, jumpUrl: post.jumpUrl,
             postedAt: post.createdAt, cardChannelId: cfg.channel, items: fresh.slice(0, MAX_ITEMS),
             notes: fresh.length > MAX_ITEMS ? [`${fresh.length - MAX_ITEMS} more items in the post are not shown.`] : [],
@@ -285,7 +300,7 @@ async function noteSourceChange(rest, channelId, messageId, what, appId) {
         // A post whose rows are in the draft says so when it goes away or changes (2026-11-05 15:34 EST): before, the rows outlived their source with nothing pointing at them.
         const note = what === 'deleted'
             ? (wrote ? 'The source post was deleted. Its rows are still in the Next Season Draft: Undo below if it was wrong.' : 'The source post was deleted.')
-            : `The source post was edited <t:${Math.floor(Date.now() / 1000)}:R>.${wrote ? ' The edited version was read again; any draft changes are on a new card.' : ' Open it before using a box.'}`;
+            : `The source post was edited <t:${Math.floor(Date.now() / 1000)}:R>.${wrote ? ' It will be read again, and any draft changes will be on a new card.' : ' Open it before using a box.'}`;
         card.notes = [...(card.notes || []).filter(n => !/source post was (edited|deleted)/.test(n)), note];
         await card.save();
         await redrawCard(rest, card.toObject(), appId);
@@ -307,17 +322,13 @@ async function rereadEdited(rest, channelId, messageId, appId, { env = process.e
     const first = await NewsCard.findOneAndUpdate({ sourceChannelId: channelId, sourceMessageId: messageId, draftUndone: { $ne: true }, draftChangeId: { $nin: ['', null] }, rereads: { $lt: 2 } }, { $inc: { rereads: 1 } }, { returnDocument: 'after' }).lean();
     if (!first) return null;
     if (takeReadSlot(cfg)) { await NewsCard.updateOne({ _id: first._id }, { $inc: { rereads: -1 } }).catch(() => {}); return null; }
-    state.stats.reads += 1;
     const post = toPost(raw, { guildId: raw.guild_id || '', channelName: first?.sourceName || '' });
     const ctx = await loadContext(post.createdAt);
-    const onUsage = (u, loc) => { try { state.stats.costUsd += require('../visionExtract').estimateVisionCostUsd(loc, u).estimatedCostUsd; } catch { /* never breaks a read */ } };
-    let items;
-    try { items = await require('./model').readPost({ text: post.text, imageUrl: post.image, postedAt: post.createdAt, liveSeason: ctx.liveSeason, source: /official/i.test(post.channelName || '') ? 'official' : 'leaks' }, { onUsage }); }
-    catch (err) { state.failures += 1; state.stats.failures += 1; throw err; }
+    const items = await aiRead(post, ctx);
     const { card } = resolveItems(items, { ...ctx, namesRegion: namesRegion(post.text), namesTestServer: namesTestServer(post.text), autoDraft: true });
     const { drafted } = await autoDraft(post, card, ctx, first.draftActorId || null);
     if (!drafted?.lines?.length) return null;
-    const doc = await NewsCard.create({ sourceChannelId: channelId, sourceMessageId: key, sourceName: post.channelName, jumpUrl: post.jumpUrl, postedAt: post.createdAt, cardChannelId: cfg.channel, items: [], notes: ['From the edited version of the post.'], draftChangeId: drafted.changeId, draftActorId: first.draftActorId || '', draftLines: drafted.lines, draftNotes: drafted.notes, expireAt: new Date(Date.now() + CARD_DAYS * DAY_MS) });
+    const doc = await storeCard({ sourceChannelId: channelId, sourceMessageId: key, sourceName: post.channelName, jumpUrl: post.jumpUrl, postedAt: post.createdAt, cardChannelId: cfg.channel, items: [], notes: ['From the edited version of the post.'], draftChangeId: drafted.changeId, draftActorId: first.draftActorId || '', draftLines: drafted.lines, draftNotes: drafted.notes, expireAt: new Date(Date.now() + CARD_DAYS * DAY_MS) });
     await postCardOrUndo(rest, cfg, doc, appId);
     return drafted.lines.length;
 }
@@ -378,8 +389,10 @@ async function promoteCheck(rest, { env = process.env, appId, now = new Date() }
         const NewsCard = require('../../models/NewsCard');
         const key = `promote-${new Date(r.startsAt).toISOString().slice(0, 10)}`;
         if (await NewsCard.exists({ sourceChannelId: 'promote-check', sourceMessageId: key })) return null;
-        await rest.post(Routes.channelMessages(cfg.channel), { body: { flags: 32768, components: asApp(appId, () => buildPromoteCheck(r)), allowed_mentions: { parse: [] } } });
-        await NewsCard.create({ sourceChannelId: 'promote-check', sourceMessageId: key, sourceName: 'Next Season Draft', jumpUrl: '', postedAt: now, cardChannelId: cfg.channel, items: [], expireAt: new Date(now.getTime() + CARD_DAYS * DAY_MS) });
+        // Claimed before it posts (invariants pass, 2026-11-05 17:07 EST): the start-up check and the 00:05 UTC one could both pass the exists test and post twice; the unique index lets one claim, and a failed post gives the claim back.
+        try { await NewsCard.create({ sourceChannelId: 'promote-check', sourceMessageId: key, sourceName: 'Next Season Draft', jumpUrl: '', postedAt: now, cardChannelId: cfg.channel, items: [], expireAt: new Date(now.getTime() + CARD_DAYS * DAY_MS) }); } catch { return null; }
+        try { await rest.post(Routes.channelMessages(cfg.channel), { body: { flags: 32768, components: asApp(appId, () => buildPromoteCheck(r)), allowed_mentions: { parse: [] } } }); }
+        catch (err) { await NewsCard.deleteOne({ sourceChannelId: 'promote-check', sourceMessageId: key }).catch(() => {}); throw err; }
         return r;
     } catch (err) { console.error('News triage: the promote check failed:', err?.message || err); return null; }
 }

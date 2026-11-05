@@ -14,10 +14,33 @@ function norm(s) {
         .replace(/\b(the|draws?|lucky|mythic drop|series armou?ry|armou?ry|event|mode|playlist)\b/g, ' ')
         .replace(/\s+/g, ' ').trim();
 }
+// A number or numeral names a different item: "Street Fighter Series Armory II" is not the first armory, "Gunsmith Challenge 2" not the first challenge (invariants pass, 2026-11-05 17:06 EST).
+const numbersOf = s => (norm(s).match(/\b(\d+|ii|iii|iv|vi|vii|viii|ix)\b/g) || []).sort().join(',');
+// The loose match, for finding a draw in the draw index only (catalogueMatch).
 function sameName(a, b) {
     const na = norm(a); const nb = norm(b);
-    if (!na || !nb) return false;
+    if (!na || !nb || numbersOf(a) !== numbersOf(b)) return false;
     return na === nb || (na.length >= 6 && nb.includes(na)) || (nb.length >= 6 && na.includes(nb));
+}
+// The strict match, for every decision that skips, fixes or merges a row (moved here from draftMerge.js, 2026-11-05 17:06 EST): the loose one above told "Nuketown Halloween" it was the live Nuketown playlist and "Halloween Sale" the Halloween armory, which skipped the new item or offered to change the wrong row's dates. Containment counts only when the shorter name is most of the longer one; typos count when two edits apart on names of eight letters or more ("Fangs Wars" and "Fang Wars" came in as two rows on the backtest).
+function edits(a, b) {
+    if (Math.abs(a.length - b.length) > 2) return 3;
+    let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+    for (let i = 1; i <= a.length; i++) {
+        const cur = [i];
+        for (let j = 1; j <= b.length; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+        prev = cur;
+    }
+    return prev[b.length];
+}
+function strictName(a, b) {
+    if (numbersOf(a) !== numbersOf(b)) return false;
+    const x = norm(a).replace(/\s+/g, ''); const y = norm(b).replace(/\s+/g, '');
+    if (!x || !y) return false;
+    if (x === y) return true;
+    const [short, long] = x.length <= y.length ? [x, y] : [y, x];
+    if (long.includes(short) && short.length >= 0.8 * long.length) return true;
+    return short.length >= 8 && edits(x, y) <= 2;
 }
 const sameDay = (a, b) => dayjs.utc(a).format('YYYY-MM-DD') === dayjs.utc(b).format('YYYY-MM-DD');
 
@@ -57,7 +80,7 @@ function catalogueMatch(name, catalogue) {
 // A season title is "Season 10 — 7th Anniversary": an em dash, never a colon or a hyphen (Harkirat, 2026-11-04 22:55 EST: "i dont use : in my titles"). Only the season title: draw and event names keep the game's own colons ("Honkai: Gleaming Front").
 const seasonTitle = name => String(name || '').replace(/^(Season\s+\d+)\s*[:\-–—]\s*/i, '$1 — ').trim();
 
-// One raw item from utils/newsTriage/model.js → a card item, or `{ skip: reason }`. ctx: { postedAt, liveEnd, draftStart, namesRegion, catalogue: [{ title, aliases }], live: { newDraws, returningDraws, calendar }, draft: { same } }
+// One raw item from utils/newsTriage/model.js → a card item, or `{ skip: reason }`. ctx: { postedAt, liveEnd, liveTitle, draftStart, draftTitle, draftEnd, namesRegion, catalogue: [{ title, aliases }], live: { newDraws, returningDraws, calendar }, draft: { same } }
 function resolveItem(raw, ctx) {
     const warnings = [];
     const start = readSlashDate(raw.start, ctx.postedAt, ctx.dayFirst);
@@ -78,8 +101,13 @@ function resolveItem(raw, ctx) {
 
     // Where it goes. A date beats words: a draw dated after this season ends goes to the draft whatever the post calls it.
     let where;
+    // Past the Next Season Draft's own season is later, whatever the date rule below says (invariants pass, 2026-11-05 17:11 EST): the 10-08 leak of Season 10, dated November 12, is after Season 8's end, so the date rule sent it to the draft and the Season 9 draft came out titled "Season 10" (the backtest, re-run after the 11:42 change below). The draft holds the next season only: a season numbered past it, or a date on or after the draft season's own end.
+    const seasonNo = s => { const m = String(s || '').match(/\bseason\s*(\d+)\b/i); return m ? Number(m[1]) : null; };
+    const nextNo = seasonNo(ctx.liveTitle) ? seasonNo(ctx.liveTitle) + 1 : seasonNo(ctx.draftTitle);
+    const itemNo = raw.kind === 'season' ? seasonNo(raw.name) : null;
+    if ((nextNo && itemNo && itemNo > nextNo) || (start && ctx.draftEnd && start >= new Date(ctx.draftEnd))) where = 'later';
     // "later" decides only when the post gives no date: a date beats words here too (2026-11-05 11:42 EST, the Flex backtest: the AI called Sapphire Winter Draw, dated 8 November, a later season's, and it was dropped).
-    if (raw.season === 'later' && !start) where = 'later';
+    if (where === 'later') { /* decided above */ } else if (raw.season === 'later' && !start) where = 'later';
     else if (start && ctx.liveEnd) {
         // ON or after the live season's end is next season (2026-11-04 22:09 EST, from the live dev run): CODM's own Season 10 post listed eight playlists starting 11/12, Season 9's bpEnd is 2026-11-12 00:00 UTC, and a strict `>` sent all eight to the LIVE season with a false "the date is before this season ends" warning. Launch-day items start exactly on the boundary, so this is every season's busiest post.
         where = start >= new Date(ctx.liveEnd) ? 'draft' : 'live';
@@ -91,7 +119,7 @@ function resolveItem(raw, ctx) {
     // A season post (its title and start) goes only to the Next Season Draft's Titles & Deadlines box; the live season's own title is not news triage's to change. The post that announces a season is the one that sets the draft's start, so dropping it lost the season's most important post (the live run, CODM's "Greetings" post, 2026-11-04 22:09 EST).
     if (action === 'season') {
         if (where !== 'draft') return { skip: 'the live season\'s own title or dates' };
-        if (ctx.draftTitle && sameName(ctx.draftTitle, raw.name) && (!start || (ctx.draftStart && sameDay(ctx.draftStart, start)))) return { skip: 'already in the Next Season Draft' };
+        if (ctx.draftTitle && strictName(ctx.draftTitle, raw.name) && (!start || (ctx.draftStart && sameDay(ctx.draftStart, start)))) return { skip: 'already in the Next Season Draft' };
         if (raw.certainty === 'expected') warnings.push('Expected, not confirmed.');
         return { kind: 'season', part: raw.part || 'main', change: raw.change, name: raw.part && raw.part !== 'main' ? String(raw.name || '') : seasonTitle(raw.name), rewards: [], startText: raw.start || '', endText: raw.end || '', start, end, where, action: 'season', drawType: 'new', certainty: raw.certainty, catalogueTitle: '', warnings };
     }
@@ -116,11 +144,11 @@ function resolveItem(raw, ctx) {
     // When the draft is filled automatically (draftMerge.js), an item already in the draft is not dropped here: the merge decides whether it updates the row (a later post with its end date, an official post over a leak). Dropping it lost Leader's Kill Confirmed's end date in the backtest.
     const merging = ctx.autoDraft && where === 'draft';
     if (action === 'draw') {
-        const have = [...(pool.newDraws || []), ...(pool.returningDraws || [])].find(d => sameName(d.title, raw.name) && (!start || !d.date || sameDay(d.date, start)));
+        const have = [...(pool.newDraws || []), ...(pool.returningDraws || [])].find(d => strictName(d.title, raw.name) && (!start || !d.date || sameDay(d.date, start)));
         if (have && !merging && !fix) return { skip: where === 'draft' ? 'already in the Next Season Draft' : 'already on /draws' };
     }
     if (action === 'calendar') {
-        const have = (pool.calendar || []).find(e => sameName(e.title, raw.name) && (!start || !e.date || sameDay(e.date, start)));
+        const have = (pool.calendar || []).find(e => strictName(e.title, raw.name) && (!start || !e.date || sameDay(e.date, start)));
         if (have && !merging && !fix) return { skip: where === 'draft' ? 'already in the draft calendar' : 'already on /calendar' };
     }
 
@@ -149,9 +177,9 @@ const span = (a, b) => `${short(a)}${b ? ` – ${short(b)}` : ''}`;
 function liveFix(raw, start, end, action, live) {
     const drawLists = action === 'draw' ? [['newDraws', 'new'], ['returningDraws', 'returning']] : [];
     let drawRow = null; let drawType = '';
-    for (const [list, type] of drawLists) { const r = (live[list] || []).find(d => sameName(d.title, raw.name)); if (r) { drawRow = r; drawType = type; break; } }
+    for (const [list, type] of drawLists) { const r = (live[list] || []).find(d => strictName(d.title, raw.name)); if (r) { drawRow = r; drawType = type; break; } }
     const category = action === 'draw' ? 'draw' : (raw.kind === 'mode' ? 'playlist' : 'event');
-    const calRow = (live.calendar || []).find(e => sameName(e.title, raw.name) && (e.category || 'event') === category);
+    const calRow = (live.calendar || []).find(e => strictName(e.title, raw.name) && (e.category || 'event') === category);
     if (!drawRow && !calRow) return null;
     const curStart = (drawRow && drawRow.date) || (calRow && calRow.date) || null;
     const curEnd = calRow && !calRow.isOngoing ? (calRow.endDate || null) : null;
@@ -206,4 +234,4 @@ function draftCalendarLine(item) {
     return `${item.kind === 'mode' ? 'p' : 'e'} ${start} - ${end} | ${cleanItemName(item.name)}`;
 }
 
-module.exports = { dayFirst, readSlashDate, seasonTitle, norm, sameName, readDate, resolveItem, resolveItems, catalogueMatch, drawPrefill, calendarPrefill, draftDrawLine, draftCalendarLine };
+module.exports = { dayFirst, readSlashDate, seasonTitle, norm, sameName, strictName, readDate, resolveItem, resolveItems, catalogueMatch, drawPrefill, calendarPrefill, draftDrawLine, draftCalendarLine };
