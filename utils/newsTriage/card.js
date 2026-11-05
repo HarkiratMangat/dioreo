@@ -29,6 +29,24 @@ function buttonLabel(item) {
     return null;
 }
 const ts = d => Math.floor(new Date(d).getTime() / 1000);
+// Discord refuses a whole message over 4,000 characters of text (2026-11-05 15:35 EST: a card with eight live items and twenty draft lines measured 6,073). Every builder ends here: the longest text block is cut at a line boundary, with a note, until the total fits.
+const TEXT_BUDGET = 3900;
+function fitText(components, budget = TEXT_BUDGET) {
+    const texts = []; const walk = list => (list || []).forEach(c => { if (c.type === 10) texts.push(c); walk(c.components); });
+    walk(components);
+    let total = texts.reduce((n, t) => n + t.content.length, 0);
+    let guard = 50;
+    while (total > budget && guard-- > 0) {
+        const t = texts.reduce((a, b) => (b.content.length > a.content.length ? b : a));
+        const keep = Math.max(120, t.content.length - (total - budget) - 40);
+        const cut = t.content.slice(0, keep); const nl = cut.lastIndexOf('\n');
+        const next = `${nl > 60 ? cut.slice(0, nl) : cut}\n-# …cut to fit Discord`;
+        total -= t.content.length - next.length; t.content = next;
+        if (next.length >= keep + 40) break;
+    }
+    return components;
+}
+
 // A day-only date is written out in UTC, not as a Discord timestamp: every admin date is 00:00 UTC (.claude/rules/design-decisions.md), and <t:…:D> showed Nov 17 as Nov 16 to a viewer west of UTC (seen on the dev bot, 2026-11-04 20:14 EST).
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const day = d => { const x = new Date(d); return `${MONTHS[x.getUTCMonth()]} ${x.getUTCDate()}, ${x.getUTCFullYear()}`; };
@@ -74,8 +92,8 @@ function buildCard(card) {
     const row = card.jumpUrl ? [{ type: 2, style: 5, label: 'Open post', url: card.jumpUrl }] : [];
     if (card.draftChangeId && !card.draftUndone) row.push({ type: 2, style: 4, label: 'Undo draft changes', custom_id: `news|undo|${id}` });
     if (!card.dismissed) row.push({ type: 2, style: 2, label: 'Dismiss', custom_id: `news|dismiss|${id}` });
-    parts.push({ type: 1, components: row });
-    return [{ type: 17, accent_color: ACCENT, components: parts }];
+    if (row.length) parts.push({ type: 1, components: row });
+    return fitText([{ type: 17, accent_color: ACCENT, components: parts }]);
 }
 
 // The once-a-day list of posts that got no card. entries: [{ title, reason, jumpUrl, channelId, messageId }]
@@ -95,10 +113,11 @@ function buildSkippedList(entries, { dayLabel = 'the last day' } = {}) {
 
 // The daily briefing (2026-11-05 11:07 EST, Harkirat: "put yourself in my eyes… what info do I NEED and want to KNOW?"). One message at 00:05 UTC answering, in order: did it work and what did it cost; is the Next Season Draft ready, and what is missing; what on the live bot does the news say is wrong; is each followed channel still delivering; and what it skipped (with Make a card). Pure, so the test counts its components and characters.
 const listNames = (rows, n = 5) => rows.slice(0, n).join(', ') + (rows.length > n ? ` +${rows.length - n}` : '');
-function buildBriefing(b, { dayLabel = 'Last 24 hours' } = {}) {
+function buildBriefing(b, { dayLabel } = {}) {
     const ok = emojis.checkmark; const warn = emojis.warn;
     const s = b.stats || {};
-    const parts = [{ type: 10, content: `### ${emojis.mngInfo} News briefing\n-# ${dayLabel}: ${s.reads || 0} post${s.reads === 1 ? '' : 's'} read by the AI ($${(s.costUsd || 0).toFixed(3)}) · ${s.carded || 0} card${s.carded === 1 ? '' : 's'} · ${s.drafted || 0} draft row${s.drafted === 1 ? '' : 's'} written${s.failures ? ` · ${warn} ${s.failures} failed read${s.failures === 1 ? '' : 's'}` : ''}` }];
+    const label = dayLabel || (b.since ? `Since <t:${Math.floor(new Date(b.since).getTime() / 1000)}:R>` : 'Since the last briefing');
+    const parts = [{ type: 10, content: `### ${emojis.mngInfo} News briefing\n-# ${label}: ${s.reads || 0} post${s.reads === 1 ? '' : 's'} read by the AI ($${(s.costUsd || 0).toFixed(3)}) · ${s.carded || 0} card${s.carded === 1 ? '' : 's'} · ${s.drafted || 0} draft row${s.drafted === 1 ? '' : 's'} written${s.failures ? ` · ${warn} ${s.failures} failed read${s.failures === 1 ? '' : 's'}` : ''}` }];
     const r = b.readiness;
     if (r) {
         const mark = (v, label) => `${v ? ok : warn} ${label}`;
@@ -108,7 +127,8 @@ function buildBriefing(b, { dayLabel = 'Last 24 hours' } = {}) {
             `- ${r.calendar} calendar row${r.calendar === 1 ? '' : 's'} · ${r.draws} draw${r.draws === 1 ? '' : 's'} (${r.fromNews} written by news triage)`];
         if (r.noImage.length) lines.push(`- ${warn} No draw image yet: ${listNames(r.noImage)}`);
         if (r.noEnd.length) lines.push(`- ${warn} No end date: ${listNames(r.noEnd)}`);
-        if (r.leakOnly.length) lines.push(`- Only from a leak so far: ${listNames(r.leakOnly)}`);
+        if (r.leakOnly.length) lines.push(`- Expected, not confirmed yet: ${listNames(r.leakOnly)}`);
+        if ((r.stillRunning || []).length) lines.push(`- ${warn} Live with no end date, may run into next season: ${listNames(r.stillRunning)}`);
         parts.push({ type: 14, spacing: 1, divider: true }, { type: 10, content: lines.join('\n').slice(0, 1400) });
     }
     if ((b.fixes || []).length) {
@@ -136,7 +156,7 @@ function buildBriefing(b, { dayLabel = 'Last 24 hours' } = {}) {
         const options = entries.slice(0, 25).map(e => ({ label: (e.title || 'Untitled post').slice(0, 100), value: `${e.channelId}:${e.messageId}`, description: String(e.reason).slice(0, 100) }));
         parts.push({ type: 1, components: [{ type: 3, custom_id: 'news|make', placeholder: 'Make a card from one of these…', options }] });
     }
-    return [{ type: 17, accent_color: ACCENT, components: parts }];
+    return fitText([{ type: 17, accent_color: ACCENT, components: parts }]);
 }
 
 // The promote check (his pick 4). r: pipeline.draftReadiness. A tick for what is set, a warning for what is missing, and the step that remains.
@@ -154,11 +174,12 @@ function buildPromoteCheck(r) {
     if (r.early.length) bad.push(`Dated before the season starts: ${listNames(r.early)}`);
     if (r.twice) bad.push(`${r.twice} title${r.twice === 1 ? '' : 's'} listed twice`);
     if (r.seamGap) bad.push(`The seasons do not meet: ${r.seamGap}`);
-    if (r.leakOnly.length) bad.push(`Only a leak has named: ${listNames(r.leakOnly)}`);
+    if (r.leakOnly.length) bad.push(`Expected, not confirmed yet: ${listNames(r.leakOnly)}`);
+    if ((r.stillRunning || []).length) bad.push(`Live with no end date, may run into this season: ${listNames(r.stillRunning)}`);
     const when = r.startsAt ? `<t:${Math.floor(new Date(r.startsAt).getTime() / 1000)}:R>` : 'soon';
     const lines = [`### ${emojis.mngInfo} Next season starts ${when}`, `-# Check, then Promote to Live from /manage → Next Season Draft once it starts.`, '',
         ...good.map(g => `${ok} ${g}`), ...bad.map(x => `${warn} ${x}`), '', bad.length ? `**${bad.length} thing${bad.length === 1 ? '' : 's'} to look at before promoting.**` : '**Everything checked is ready.**'];
-    return [{ type: 17, accent_color: ACCENT, components: [{ type: 10, content: lines.join('\n').slice(0, 3800) }] }];
+    return fitText([{ type: 17, accent_color: ACCENT, components: [{ type: 10, content: lines.join('\n') }] }]);
 }
 
-module.exports = { buildCard, buildSkippedList, buildBriefing, buildPromoteCheck, buttonLabel, kindLabel, MAX_ITEMS };
+module.exports = { buildCard, buildSkippedList, buildBriefing, buildPromoteCheck, buttonLabel, kindLabel, fitText, MAX_ITEMS };

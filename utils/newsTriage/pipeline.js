@@ -12,8 +12,8 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const CARD_DAYS = 30;
 const PAUSE_MS = 60 * 60 * 1000;
 
-// Live state, in memory only: the day's skipped posts (titles, never stored), the AI-call count for the cap, and the failure pause.
-const state = { skipped: [], day: '', calls: 0, failures: 0, pausedUntil: 0, alerted: false, queue: Promise.resolve(), stats: { reads: 0, costUsd: 0, carded: 0, drafted: 0, failures: 0 } };
+// Live state, in memory only: the day's skipped posts (titles, never stored), the AI-call count for the cap, and the failure pause. statsSince: the briefing's counts start at the last briefing or at start-up, whichever is later; a deploy restarts them, so the briefing says "since" rather than claiming the last 24 hours (2026-11-05 15:34 EST).
+const state = { skipped: [], day: '', calls: 0, failures: 0, pausedUntil: 0, alerted: false, queue: Promise.resolve(), stats: { reads: 0, costUsd: 0, carded: 0, drafted: 0, failures: 0 }, statsSince: new Date() };
 
 function config(env = process.env) {
     const watch = new Set(String(env.NEWS_WATCH || '').split(',').map(s => s.trim()).filter(Boolean));
@@ -135,11 +135,11 @@ async function skipKinds() {
     try { const c = await require('../../models/BotControls').findById('global', { newsSkipKinds: 1 }).lean(); return Array.isArray(c?.newsSkipKinds) ? c.newsSkipKinds : require('./draftMerge').DEFAULT_SKIP; } catch { return require('./draftMerge').DEFAULT_SKIP; }
 }
 
-async function commitDraft(changes, actorId) {
+async function commitDraft(payload, actorId) {
     const { commitSet } = require('../../core/changeset');
     const { ALLOWED_ADMIN_ID } = require('../owner');
     // The watcher's own reads commit as the owner (core/changeset.js checks a person's tier on every write), with source 'news' so History tells them apart from his edits. A read an admin started (the skipped list's Make a card) commits as THAT admin, so their own Next Season Draft tier is checked and a denial falls back to buttons (commit security review, 2026-11-05 00:13 EST: committing it as the owner let any /manage admin write the draft).
-    return commitSet([{ type: 'season.newsDraft', payload: { changes } }], { actorId: actorId || ALLOWED_ADMIN_ID, source: 'news' });
+    return commitSet([{ type: 'season.newsDraft', payload }], { actorId: actorId || ALLOWED_ADMIN_ID, source: 'news' });
 }
 
 async function autoDraft(post, card, ctx, actorId) {
@@ -147,45 +147,58 @@ async function autoDraft(post, card, ctx, actorId) {
     const draftItems = card.filter(it => it.where === 'draft' && it.action !== 'patch');
     if (!draftItems.length) return { drafted: null, cardItems: card };
     await draftImages(draftItems, post);
-    const plan = planDraftChanges(ctx.draftDoc || {}, draftItems, { id: post.id, channelId: post.channelId, official: /official/i.test(post.channelName || '') }, { skipKinds: await skipKinds() });
-    const notes = plan.notes.map(n => `${n.name}: ${n.why}`);
-    const keep = new Set(plan.needsBox);
-    const others = card.filter(it => it.where !== 'draft' || it.action === 'patch' || keep.has(it));
-    if (!plan.changes.length) return { drafted: notes.length ? { changeId: '', lines: [], notes } : null, cardItems: others };
-    const res = await commitDraft(plan.changes, actorId);
+    const src = { id: post.id, channelId: post.channelId, official: /official/i.test(post.channelName || '') };
+    const kinds = await skipKinds();
+    // This first plan only decides whether there is anything to write. The op plans again inside its transaction against the draft as it is THEN (2026-11-05 15:34 EST): the AI read can take minutes on Flex, and a plan made before it could add a row he typed in the meantime.
+    const pre = planDraftChanges(ctx.draftDoc || {}, draftItems, src, { skipKinds: kinds });
+    const keepNames = new Set(pre.needsBox.map(i => i.name));
+    const notesOf = list => list.map(n => `${n.name}: ${n.why}`);
+    if (!pre.changes.length) return { drafted: pre.notes.length ? { changeId: '', lines: [], notes: notesOf(pre.notes) } : null, cardItems: card.filter(it => it.where !== 'draft' || it.action === 'patch' || keepNames.has(it.name)) };
+    const res = await commitDraft({ plan: { items: draftItems, post: src, skipKinds: kinds } }, actorId);
     // A failed write falls back to the buttons, so nothing is lost: every item stays on the card.
     if (!res.ok) { console.error('News triage: the draft write failed:', res.error || JSON.stringify(res.failures || res.denied || [])); return { drafted: { changeId: '', lines: [], notes: ['The Next Season Draft could not be written, so every item has a button instead.'] }, cardItems: card }; }
-    return { drafted: { changeId: res.changeIds[0], lines: draftLines(plan.changes), notes }, cardItems: others };
+    const applied = res.results?.[0]?.applied || {};
+    const boxed = new Set(applied.needsBox || []);
+    return { drafted: { changeId: res.changeIds[0], lines: draftLines(applied.changes || []), notes: notesOf(applied.notes || []) }, cardItems: card.filter(it => it.where !== 'draft' || it.action === 'patch' || boxed.has(it.name)) };
 }
 
-// Carry-over, once a day: in the ten days before the next season starts, live rows still running at its start are copied into the draft (draftMerge.js planCarryOver), and live rows with no end date that started in the last month are listed for him to check. Posts one card, once per season.
+// Carry-over, every day of the ten before the next season starts (2026-11-05 15:34 EST: it ran once, on the first day, so a live draw added later in the window was never carried). Planned inside the op against the live lists, so a row already carried is skipped; a card posts only on a day that added rows. Live rows with no end date are listed in the briefing's readiness instead of a daily card.
 async function carryOver(rest, { env = process.env, appId, now = new Date() } = {}) {
     const cfg = config(env);
     if (!cfg.channel || !cfg.autoDraft) return null;
     try {
-        const SeasonalData = require('../../models/SeasonalData');
         const NewsCard = require('../../models/NewsCard');
-        const d = await SeasonalData.findOne({ docType: 'global' }).lean();
+        const d = await require('../../models/SeasonalData').findOne({ docType: 'global' }).lean();
         const draft = d?.draft || {};
         if (!draft.bpStart) return null;
         const start = new Date(draft.bpStart);
         if (now < new Date(start - 10 * DAY_MS) || now > start) return null;
-        const key = `carry-${start.toISOString().slice(0, 10)}`;
-        if (await NewsCard.exists({ sourceChannelId: 'carry-over', sourceMessageId: key })) return null;
-        const plan = require('./draftMerge').planCarryOver(draft, d);
-        const open = (d.calendar || []).filter(r => !r.endDate && !r.isOngoing && r.date && new Date(r.date) > new Date(start - 30 * DAY_MS)).map(r => `Still running? No end date: ${r.title}`);
-        if (!plan.changes.length && !open.length) return null;
-        let changeId = '';
-        if (plan.changes.length) {
-            const res = await commitDraft(plan.changes);
-            if (!res.ok) { console.error('News triage: carry-over failed:', res.error); return null; }
-            changeId = res.changeIds[0];
-        }
-        const doc = await NewsCard.create({ sourceChannelId: 'carry-over', sourceMessageId: key, sourceName: 'Next Season Draft', jumpUrl: '', postedAt: now, cardChannelId: cfg.channel, items: [], draftChangeId: changeId, draftLines: draftLines(plan.changes), draftNotes: open, expireAt: new Date(now.getTime() + CARD_DAYS * DAY_MS) });
+        if (!require('./draftMerge').planCarryOver(draft, d).changes.length) return { carried: 0 };
+        const res = await commitDraft({ carry: true });
+        if (!res.ok) { console.error('News triage: carry-over failed:', res.error); return null; }
+        const applied = res.results?.[0]?.applied || {};
+        if (!(applied.changes || []).length) return { carried: 0 };
+        const key = `carry-${now.toISOString().slice(0, 10)}`;
+        const doc = await NewsCard.create({ sourceChannelId: 'carry-over', sourceMessageId: key, sourceName: 'Next Season Draft', jumpUrl: '', postedAt: now, cardChannelId: cfg.channel, items: [], draftChangeId: res.changeIds[0], draftLines: draftLines(applied.changes), draftNotes: [], expireAt: new Date(now.getTime() + CARD_DAYS * DAY_MS) });
+        await postCardOrUndo(rest, cfg, doc, appId);
+        return { carried: applied.changes.length };
+    } catch (err) { console.error('News triage: carry-over failed:', err?.message || err); return null; }
+}
+
+// Sends a card; if Discord refuses it, the card record goes and an alert names the draft change, so a draft write is never left with no Undo in sight (2026-11-05 15:34 EST: a full card measured 6,073 characters, over Discord's 4,000, and the draft had already been written).
+async function postCardOrUndo(rest, cfg, doc, appId) {
+    const NewsCard = require('../../models/NewsCard');
+    try {
         const sent = await sendCard(rest, cfg.channel, doc.toObject(), appId);
         await NewsCard.updateOne({ _id: doc._id }, { $set: { cardMessageId: sent.id } });
-        return { carried: plan.changes.length, open: open.length };
-    } catch (err) { console.error('News triage: carry-over failed:', err?.message || err); return null; }
+        return sent;
+    } catch (err) {
+        await NewsCard.deleteOne({ _id: doc._id }).catch(() => {});
+        const msg = `A news card could not be posted (${err?.message || err}).${doc.draftChangeId ? ` It had written draft change ${doc.draftChangeId}: undo it from /bot History if it is wrong.` : ''}`;
+        console.error('News triage:', msg);
+        try { require('../alertWebhook').sendAlert('News card not posted', msg, 'warn'); } catch { /* alerting never breaks the read */ }
+        throw err;
+    }
 }
 
 // ctx: { rest, selfId, readPost (for tests), env }. Returns { status, ... } and never throws.
@@ -246,8 +259,7 @@ async function processPost(post, { rest, selfId, appId, force = false, env = pro
             draftChangeId: drafted?.changeId || '', draftLines: drafted?.lines || [], draftNotes: drafted?.notes || [],
             expireAt: new Date(Date.now() + CARD_DAYS * DAY_MS),
         });
-        const sent = await sendCard(rest, cfg.channel, doc.toObject(), appId);
-        await NewsCard.updateOne({ _id: doc._id }, { $set: { cardMessageId: sent.id } });
+        await postCardOrUndo(rest, cfg, doc, appId);
         state.stats.carded += 1; state.stats.drafted += drafted?.lines?.length || 0;
         return { status: 'carded', id: String(doc._id), items: fresh.length, drafted: drafted?.lines?.length || 0 };
     } catch (err) {
@@ -262,16 +274,53 @@ async function noteSourceChange(rest, channelId, messageId, what, appId) {
         const NewsCard = require('../../models/NewsCard');
         const card = await NewsCard.findOne({ sourceChannelId: channelId, sourceMessageId: messageId });
         if (!card) return false;
-        const note = what === 'deleted' ? 'The source post was deleted.' : `The source post was edited <t:${Math.floor(Date.now() / 1000)}:R>. Open it before using a box.`;
+        const wrote = card.draftChangeId && !card.draftUndone;
+        // A post whose rows are in the draft says so when it goes away or changes (2026-11-05 15:34 EST): before, the rows outlived their source with nothing pointing at them.
+        const note = what === 'deleted'
+            ? (wrote ? 'The source post was deleted. Its rows are still in the Next Season Draft: Undo below if it was wrong.' : 'The source post was deleted.')
+            : `The source post was edited <t:${Math.floor(Date.now() / 1000)}:R>.${wrote ? ' The edited version was read again; any draft changes are on a new card.' : ' Open it before using a box.'}`;
         card.notes = [...(card.notes || []).filter(n => !/source post was (edited|deleted)/.test(n)), note];
         await card.save();
         await redrawCard(rest, card.toObject(), appId);
+        if (what === 'edited' && wrote) await rereadEdited(rest, channelId, messageId, appId).catch(err => console.error('News triage: re-reading an edited post failed:', err?.message || err));
         return true;
     } catch (err) { console.error('News triage: could not mark a source change:', err?.message || err); return false; }
 }
 
+// An edited post that wrote draft rows is read again once per edit, and only its draft side is merged (the same source, so its rows update rather than add). Any change goes on a follow-up card with its own Undo.
+async function rereadEdited(rest, channelId, messageId, appId, { env = process.env } = {}) {
+    const cfg = config(env);
+    const raw = await rest.get(Routes.channelMessage(channelId, messageId));
+    const key = `${messageId}:edit:${raw.edited_timestamp || Date.now()}`;
+    const NewsCard = require('../../models/NewsCard');
+    if (await NewsCard.exists({ sourceChannelId: channelId, sourceMessageId: key })) return null;
+    const first = await NewsCard.findOne({ sourceChannelId: channelId, sourceMessageId: messageId }).lean();
+    const post = toPost(raw, { guildId: raw.guild_id || '', channelName: first?.sourceName || '' });
+    const ctx = await loadContext(post.createdAt);
+    const items = await require('./model').readPost({ text: post.text, imageUrl: post.image, postedAt: post.createdAt, liveSeason: ctx.liveSeason, source: /official/i.test(post.channelName || '') ? 'official' : 'leaks' });
+    const { card } = resolveItems(items, { ...ctx, namesRegion: namesRegion(post.text), namesTestServer: namesTestServer(post.text), autoDraft: true });
+    const { drafted } = await autoDraft(post, card, ctx);
+    if (!drafted?.lines?.length) return null;
+    const doc = await NewsCard.create({ sourceChannelId: channelId, sourceMessageId: key, sourceName: post.channelName, jumpUrl: post.jumpUrl, postedAt: post.createdAt, cardChannelId: cfg.channel, items: [], notes: ['From the edited version of the post.'], draftChangeId: drafted.changeId, draftLines: drafted.lines, draftNotes: drafted.notes, expireAt: new Date(Date.now() + CARD_DAYS * DAY_MS) });
+    await postCardOrUndo(rest, cfg, doc, appId);
+    return drafted.lines.length;
+}
+
 // The once-a-day skipped list. Empty days post nothing. Returns how many it listed. What the briefing reports (see card.js buildBriefing). Every part is best-effort: a failed lookup drops that part, never the briefing.
 const snowflakeTime = id => { try { return new Date(Number((BigInt(id) >> 22n) + 1420070400000n)); } catch { return null; } };
+// Whether the live bot still disagrees with a fix item: the row is still there and its start or end still differs from the post's. A draw's end lives on its /calendar draw row.
+function fixStillWrong(item, d) {
+    if (!d) return true;
+    const row = (d[item.fixList] || []).find(r => String(r._id) === String(item.fixId));
+    if (!row) return false;
+    const sameDay = (a, b) => a && b && new Date(a).toISOString().slice(0, 10) === new Date(b).toISOString().slice(0, 10);
+    const sq = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const endRow = item.fixList === 'calendar' ? row : (d.calendar || []).find(r => r.category === 'draw' && sq(r.title) === sq(row.title));
+    const startOff = item.start && !sameDay(row.date, item.start);
+    const endOff = item.end && !sameDay(endRow?.endDate, item.end);
+    return Boolean(startOff || endOff);
+}
+
 function draftReadiness(d) {
     const draft = d?.draft || {};
     const calendar = draft.calendar || []; const draws = [...(draft.newDraws || []), ...(draft.returningDraws || [])];
@@ -285,7 +334,9 @@ function draftReadiness(d) {
         calendar: calendar.length, draws: draws.length, fromNews: [...calendar, ...draws].filter(r => r.newsSource).length,
         noImage: calendar.filter(r => r.category === 'draw' && !draws.some(x => sq(x.title) === sq(r.title))).map(r => r.title),
         noEnd: calendar.filter(r => !r.endDate && !r.isOngoing).map(r => r.title),
-        leakOnly: [...calendar].filter(r => r.newsSource && r.newsSource.rank < 3).map(r => r.title),
+        // Only rows the AI judged EXPECTED (rank 1). Rank 2 is a confirmed read from #leaks, which reposts CODM's own calendar: 35 of Season 9's 42 drafted rows, so listing it warned about nearly everything (2026-11-05 15:34 EST).
+        leakOnly: [...calendar, ...draws].filter(r => r.newsSource && r.newsSource.rank === 1).map(r => r.title),
+        stillRunning: draft.bpStart ? (d?.calendar || []).filter(r => !r.endDate && !r.isOngoing && r.date && new Date(r.date) > new Date(new Date(draft.bpStart) - 30 * DAY_MS) && !calendar.some(x => sq(x.title) === sq(r.title))).map(r => r.title) : [],
         // For the promote check (2026-11-05 15:23 EST): rows dated before the season starts that were not carried over (left from an earlier plan), draw rows with no calendar row (no dates on /calendar), the same title twice in one list, and a live season that does not end when this one starts.
         early: draft.bpStart ? calendar.filter(r => r.date && new Date(r.date) < new Date(new Date(draft.bpStart) - DAY_MS) && !(r.newsSource && r.newsSource.carried) && !(r.endDate && new Date(r.endDate) > new Date(draft.bpStart))).map(r => r.title) : [],
         noCalendar: draws.filter(x => !calendar.some(r => r.category === 'draw' && sq(r.title) === sq(x.title))).map(x => x.title),
@@ -294,6 +345,8 @@ function draftReadiness(d) {
         startsAt: draft.bpStart || null,
     };
 }
+
+const promoteDue = (startsAt, now = new Date()) => { const until = new Date(startsAt) - now; return until > 0 && until <= 30 * 60 * 60 * 1000; };
 
 // The promote check (2026-11-05 15:23 EST, his pick 4): once, when the next season starts within two days, a card listing what is ready and what is missing in the Next Season Draft, so a missing end date or image is fixed before Promote to Live puts it in front of players.
 async function promoteCheck(rest, { env = process.env, appId, now = new Date() } = {}) {
@@ -304,7 +357,8 @@ async function promoteCheck(rest, { env = process.env, appId, now = new Date() }
         const r = draftReadiness(d);
         if (!r || !r.startsAt) return null;
         const until = new Date(r.startsAt) - now;
-        if (until <= 0 || until > 2 * DAY_MS) return null;
+        // 30 hours, not two days (2026-11-05 15:34 EST): at the 00:05 UTC run that is the day before a 00:00 UTC start (23.9 h), where two days fired on the day before that.
+        if (!promoteDue(r.startsAt, now)) return null;
         const NewsCard = require('../../models/NewsCard');
         const key = `promote-${new Date(r.startsAt).toISOString().slice(0, 10)}`;
         if (await NewsCard.exists({ sourceChannelId: 'promote-check', sourceMessageId: key })) return null;
@@ -314,12 +368,14 @@ async function promoteCheck(rest, { env = process.env, appId, now = new Date() }
     } catch (err) { console.error('News triage: the promote check failed:', err?.message || err); return null; }
 }
 async function gatherBriefing(rest, cfg, now = new Date()) {
-    const out = { stats: { ...state.stats }, readiness: null, fixes: [], channels: [] };
-    try { out.readiness = draftReadiness(await require('../../models/SeasonalData').findOne({ docType: 'global' }).lean()); } catch { /* no database */ }
+    const out = { stats: { ...state.stats }, since: state.statsSince, readiness: null, fixes: [], channels: [] };
+    let liveDoc = null;
+    try { liveDoc = await require('../../models/SeasonalData').findOne({ docType: 'global' }).lean(); out.readiness = draftReadiness(liveDoc); } catch { /* no database */ }
     try {
         const NewsCard = require('../../models/NewsCard');
         const recent = await NewsCard.find({ createdAt: { $gte: new Date(now - 7 * DAY_MS) }, 'items.action': 'fix' }, { items: 1 }).lean();
-        for (const c of recent) for (const it of c.items) if (it.action === 'fix' && it.state !== 'opened') out.fixes.push({ name: it.name, text: (it.warnings || []).find(w => /^On the bot/.test(w)) || 'dates changed' });
+        // Each fix is checked against the live row as it is NOW, not against whether its button was clicked (2026-11-05 15:34 EST): opening the box and cancelling used to hide it, and a fix made by hand in /manage stayed listed.
+        for (const c of recent) for (const it of c.items) if (it.action === 'fix' && fixStillWrong(it, liveDoc)) out.fixes.push({ name: it.name, text: (it.warnings || []).find(w => /^On the bot/.test(w)) || 'dates changed' });
     } catch { /* no database */ }
     try {
         const cursors = await require('../../models/NewsCursor').find({}).lean();
@@ -356,7 +412,7 @@ async function postSkippedList(rest, { env = process.env, appId } = {}) {
     brief.skipKinds = await skipKinds();
     try {
         await rest.post(Routes.channelMessages(cfg.channel), { body: { flags: 32768, components: asApp(appId, () => buildBriefing(brief)), allowed_mentions: { parse: [] } } });
-        state.stats = { reads: 0, costUsd: 0, carded: 0, drafted: 0, failures: 0 };
+        state.stats = { reads: 0, costUsd: 0, carded: 0, drafted: 0, failures: 0 }; state.statsSince = new Date();
     } catch (err) { console.error('News triage: the briefing could not be posted:', err?.message || err); return 0; }
     if (rows.length) { try { await require('../../models/NewsSkip').deleteMany({ _id: { $in: rows.map(r => r._id) } }); } catch { /* the TTL removes them */ } }
     return entries.length;
@@ -369,4 +425,4 @@ function msUntilNextDigest(now = new Date()) {
     return next - now;
 }
 
-module.exports = { config, enabled, toPost, processPost, enqueue, noteSourceChange, postSkippedList, msUntilNextDigest, redrawCard, loadContext, state, carryOver, draftLines, autoDraft, draftReadiness, gatherBriefing, promoteCheck, skipKinds };
+module.exports = { config, enabled, toPost, processPost, enqueue, noteSourceChange, postSkippedList, msUntilNextDigest, redrawCard, loadContext, state, carryOver, draftLines, autoDraft, draftReadiness, gatherBriefing, promoteCheck, skipKinds, promoteDue, fixStillWrong, rereadEdited };

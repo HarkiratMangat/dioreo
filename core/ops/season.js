@@ -296,23 +296,32 @@ registerEntity('season', {
     // News triage's automatic Next Season Draft writes (utils/newsTriage/draftMerge.js, Harkirat's "yeah" to auto-filling the draft, 2026-11-04 23:59 EST). Not a /manage action, so it declares page:. The changes are planned outside the transaction and re-checked row by row inside it (applyDraftChanges skips a row edited since), and the op is its own inverse: forward applies the changes, reverse undoes them by id.
     'season.newsDraft': {
         page: 'seasondraft', tier: 1,
-        validate: (op) => (Array.isArray(op.payload?.changes) && (op.payload.changes.length || op.payload.reverse))
+        // Three forward shapes: `plan` (a post's items, planned HERE against the draft read in this transaction, so a read that took minutes cannot plan against a stale copy; 2026-11-05 15:33 EST), `carry` (carry-over, planned here against the live lists), or `changes` (a replayed redo). `reverse` undoes by id, and is refused when the draft has moved to another season since (draftMerge.js undoAllowed).
+        validate: (op) => (op.payload?.plan || op.payload?.carry || (Array.isArray(op.payload?.changes) && (op.payload.changes.length || op.payload.reverse)))
             ? { ok: true, errors: [], normalized: op }
             : { ok: false, errors: ['Nothing to draft.'] },
         preview: (op, live) => ({ before: { active: !!live.draft?.active }, after: { active: true } }),
         apply: async (op, { session }) => {
             const M = require('../../utils/newsTriage/draftMerge');
-            const before = await SeasonalData.findOne(DOC).select('draft').lean().session(session);
+            const before = await SeasonalData.findOne(DOC).select('draft calendar newDraws returningDraws').lean().session(session);
             const draft = JSON.parse(JSON.stringify(before?.draft || {}));
             let applied; let names;
             if (op.payload.reverse) {
+                if (!M.undoAllowed(draft, op.payload.after)) return { ok: false, reason: 'the Next Season Draft has moved to another season since this change, so undoing it would write last season into it. Change the rows in /manage instead' };
                 M.undoDraftChanges(draft, op.payload.undo || {});
                 applied = { reversed: true, changes: op.payload.changes };
                 names = 'Undid news triage\'s draft changes';
             } else {
-                const r = M.applyDraftChanges(draft, op.payload.changes);
-                applied = { undo: r.undo, changes: r.applied };
-                names = `News triage drafted ${[...new Set(r.applied.map(c => c.name))].slice(0, 6).join(', ')}${r.applied.length > 6 ? '…' : ''}`;
+                let changes = op.payload.changes || []; let notes = []; let needsBox = [];
+                if (op.payload.plan) {
+                    const P = op.payload.plan;
+                    const plan = M.planDraftChanges(draft, P.items || [], P.post || {}, { skipKinds: P.skipKinds });
+                    changes = plan.changes; notes = plan.notes; needsBox = plan.needsBox.map(i => i.name);
+                }
+                if (op.payload.carry) changes = M.planCarryOver(draft, before || {}).changes;
+                const r = M.applyDraftChanges(draft, changes);
+                applied = { undo: r.undo, changes: r.applied, after: M.afterOf(draft), notes, needsBox };
+                names = r.applied.length ? `News triage drafted ${[...new Set(r.applied.map(c => c.name))].slice(0, 6).join(', ')}${r.applied.length > 6 ? '…' : ''}` : 'News triage: nothing new to draft';
             }
             const $set = {
                 'draft.newDraws': draft.newDraws || [], 'draft.returningDraws': draft.returningDraws || [], 'draft.calendar': draft.calendar || [],
@@ -326,7 +335,7 @@ registerEntity('season', {
         },
         invert: (c) => (c.applied.reversed
             ? { type: 'season.newsDraft', payload: { changes: c.applied.changes } }
-            : { type: 'season.newsDraft', payload: { reverse: true, undo: c.applied.undo, changes: c.applied.changes } })
+            : { type: 'season.newsDraft', payload: { reverse: true, undo: c.applied.undo, changes: c.applied.changes, after: c.applied.after } })
     },
 
     // ⚠️ MISSING FROM THE PLAN ENTIRELY -- see the header note. Stages titles/deadlines into seasonalDoc.draft.* rather than the live top-level fields; never touches patch notes.

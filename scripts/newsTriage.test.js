@@ -297,7 +297,7 @@ check('the handler owns news| and nothing else', async () => {
         const h = fs.readFileSync(require.resolve('../handlers/news.js'), 'utf8');
         assert.ok(/processPost\([^;]*actorId: interaction\.user\.id/.test(h), 'makeCard passes the clicking admin');
         const p = fs.readFileSync(require.resolve('../utils/newsTriage/pipeline.js'), 'utf8');
-        assert.ok(/autoDraft\(post, card, ctx, actorId\)/.test(p) && /commitDraft\(plan\.changes, actorId\)/.test(p), 'the actor reaches the commit');
+        assert.ok(/autoDraft\(post, card, ctx, actorId\)/.test(p) && /commitDraft\(\{ plan: [^\n]*\}, actorId\)/.test(p), 'the actor reaches the commit');
     });
     check('carry-over: a live row still running at the next season\'s start is copied into the draft', () => {
         const live = { calendar: [{ _id: 'a', title: 'Herrscher of Flamescion Draw', date: D('2026-09-10'), endDate: D('2026-11-10'), category: 'draw' }, { _id: 'b', title: 'Brain Rot MP Playlist', date: D('2026-10-01'), endDate: D('2026-10-14'), category: 'playlist' }], newDraws: [{ _id: 'c', title: 'Herrscher of Flamescion Draw', date: D('2026-09-10'), thumbnailUrl: 'x' }], returningDraws: [] };
@@ -352,7 +352,7 @@ check('the handler owns news| and nothing else', async () => {
     check('the daily briefing answers his questions and stays under Discord\'s limits', () => {
         const { buildBriefing } = require('../utils/newsTriage/card');
         const { draftReadiness } = require('../utils/newsTriage/pipeline');
-        const readiness = draftReadiness({ draft: { active: true, currentSeasonTitle: 'Season 10 — 7th Anniversary', bpStart: D('2026-11-12'), calendar: [{ title: 'Ford Raptor Draw', category: 'draw', date: D('2026-11-13'), newsSource: { rank: 2 } }, { title: 'Chase MP Playlist', category: 'playlist', date: D('2026-11-19'), endDate: D('2026-11-25'), newsSource: { rank: 3 } }], newDraws: [], returningDraws: [] } });
+        const readiness = draftReadiness({ draft: { active: true, currentSeasonTitle: 'Season 10 — 7th Anniversary', bpStart: D('2026-11-12'), calendar: [{ title: 'Ford Raptor Draw', category: 'draw', date: D('2026-11-13'), newsSource: { rank: 1 } }, { title: 'Chase MP Playlist', category: 'playlist', date: D('2026-11-19'), endDate: D('2026-11-25'), newsSource: { rank: 3 } }], newDraws: [], returningDraws: [] } });
         assert.deepStrictEqual(readiness.noImage, ['Ford Raptor Draw']); assert.deepStrictEqual(readiness.noEnd, ['Ford Raptor Draw']); assert.deepStrictEqual(readiness.leakOnly, ['Ford Raptor Draw']);
         assert.strictEqual(readiness.bpEnd, '', 'no end date shows as missing');
         const skipped = Array.from({ length: 30 }, (_, i) => ({ title: `Post ${i}`, reason: 'not a draw', jumpUrl: 'https://discord.com/channels/1/2/3', channelId: '2', messageId: String(i) }));
@@ -402,6 +402,54 @@ check('the handler owns news| and nothing else', async () => {
         for (const want of ['No battle pass end date', 'Ranked not set', 'No draw image: Ford Raptor Draw', 'no dates on /calendar', 'Dated before the season starts', 'to look at before promoting']) assert.ok(text.includes(want), want);
         const gap = draftReadiness({ ...d, bpEnd: D('2026-11-10') });
         assert.ok(/do not meet|ends Nov 10/.test(gap.seamGap), 'a gap between seasons is named');
+    });
+}
+
+
+// ---- The pre-PR pass: time boundaries and limits (2026-11-05) ----
+{
+    const D = x => new Date(x);
+    const M = require('../utils/newsTriage/draftMerge');
+    const card = require('../utils/newsTriage/card');
+    const pipe = require('../utils/newsTriage/pipeline');
+    check('an Undo pressed after the draft moved to another season is refused, and never wipes a newer title', () => {
+        let n = 0; const newId = () => `u${++n}`;
+        const draft = { newDraws: [], returningDraws: [], calendar: [], currentSeasonTitle: '', bpStart: null };
+        const items = [{ where: 'draft', kind: 'season', part: 'main', name: 'Season 10: 7th Anniversary', start: D('2026-11-12'), startText: 'Nov 12' }];
+        const { undo } = M.applyDraftChanges(draft, M.planDraftChanges(draft, items, { id: 'p', channelId: 'o', official: true }, { newId }).changes);
+        const after = M.afterOf(draft);
+        assert.strictEqual(M.undoAllowed(draft, after), true, 'same season: allowed');
+        const next = { calendar: [], currentSeasonTitle: 'Season 11 — Next', bpStart: D('2027-01-14') };
+        assert.strictEqual(M.undoAllowed(next, after), false, 'promoted and refilled: refused');
+        draft.currentSeasonTitle = 'Season 10 — His Own Name';
+        M.undoDraftChanges(draft, JSON.parse(JSON.stringify(undo)));
+        assert.strictEqual(draft.currentSeasonTitle, 'Season 10 — His Own Name', 'a title he typed since is kept');
+        assert.strictEqual(draft.bpStart, null, 'the start this change set is undone');
+    });
+    check('a full card and a full briefing are cut to fit Discord, never refused', () => {
+        const long = k => Array.from({ length: k }, (_, i) => `A Rather Long Event Name Number ${i} Themed Event`);
+        const items = Array.from({ length: 8 }, (_, i) => ({ name: `Item ${i} with a long name Mythic Drop`, kind: 'draw', change: 'new', action: 'draw', where: 'live', drawType: 'new', start: new Date(), end: new Date(), startText: 'November 20th at 4pm PT', warnings: ['On the bot: Oct 25 – Nov 7. The post says: Oct 25 – Nov 17.', 'Expected, not confirmed.', "The AI thinks this may be for another region; the post's words do not say so."], rewards: Array.from({ length: 6 }, (_, k) => ({ tier: 'legendary', name: `Weapon - Skin ${k}` })) }));
+        const c = card.buildCard({ _id: 'x', sourceName: 'official-codm-news', jumpUrl: 'https://discord.com/channels/1/2/3', postedAt: new Date(), items, notes: ['3 more'], draftChangeId: '#1', draftLines: long(20).map(x => `Added: **${x}** (Nov 12 – Dec 9)`), draftNotes: long(6) });
+        const textOf = list => (list || []).reduce((sum, x) => sum + (x.type === 10 ? x.content.length : 0) + textOf(x.components), 0);
+        assert.ok(textOf(c) <= 4000, `card text ${textOf(c)} (was 6,073 before the fit)`);
+        assert.ok(JSON.stringify(c).includes('cut to fit'));
+        const b = card.buildBriefing({ stats: {}, since: new Date(), readiness: { title: 'S', bpStart: 'Nov 12', bpEnd: '', ranked: '', dmz: '', calendar: 40, draws: 12, fromNews: 50, noImage: long(30), noEnd: long(30), leakOnly: long(30), stillRunning: long(30) }, fixes: Array.from({ length: 20 }, (_, i) => ({ name: `Draw ${i}`, text: 'On the bot: Oct 25 – Nov 7. The post says: Oct 25 – Nov 17.' })), channels: [{ name: 'leaks', lastAt: new Date() }], skipped: Array.from({ length: 40 }, (_, i) => ({ title: `A long skipped post title ${i} that goes on and on`, reason: 'not a draw, event, mode or patch', jumpUrl: 'https://discord.com/channels/1325917838996668426/1325918070203617361/1567723516248195093', channelId: '1', messageId: String(i) })), skipKinds: ['crates'] });
+        assert.ok(textOf(b) <= 4000, `briefing text ${textOf(b)}`);
+        assert.ok(JSON.stringify(b).includes('Since <t:'), 'counts say since when, not "last 24 hours"');
+    });
+    check('the promote check fires the day before, not two days early', () => {
+        const start = D('2026-11-12T00:00:00Z');
+        assert.strictEqual(pipe.promoteDue(start, D('2026-11-10T00:05:00Z')), false, '47.9 h out');
+        assert.strictEqual(pipe.promoteDue(start, D('2026-11-11T00:05:00Z')), true, '23.9 h out');
+        assert.strictEqual(pipe.promoteDue(start, D('2026-11-12T00:05:00Z')), false, 'already started');
+    });
+    check('a live fix is listed while the bot still disagrees, whatever was clicked', () => {
+        const live = { returningDraws: [{ _id: 'bh', title: 'Black Hole Draw', date: D('2026-10-25') }], calendar: [{ _id: 'c', title: 'Black Hole Draw', category: 'draw', date: D('2026-10-25'), endDate: D('2026-11-07') }] };
+        const item = { fixList: 'returningDraws', fixId: 'bh', start: D('2026-10-25'), end: D('2026-11-17'), state: 'opened' };
+        assert.strictEqual(pipe.fixStillWrong(item, live), true, 'opened but not saved: still wrong');
+        live.calendar[0].endDate = D('2026-11-17');
+        assert.strictEqual(pipe.fixStillWrong(item, live), false, 'fixed in /manage by hand: resolved');
+        assert.strictEqual(pipe.fixStillWrong(item, { returningDraws: [], calendar: [] }), false, 'row gone: dropped');
     });
 }
 

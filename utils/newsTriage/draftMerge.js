@@ -183,7 +183,8 @@ function applyDraftChanges(draft, changes) {
     const applied = [];
     for (const c of changes || []) {
         if (c.type === 'season') {
-            undo.seasons.push({ ...Object.fromEntries(Object.keys(c.set).map(k => [k, draft[k] ?? null])), active: Boolean(draft.active) });
+            // `_after` is what this change set: undo puts a field back only while it still holds that value, so a title he typed since is never wiped.
+            undo.seasons.push({ _before: { ...Object.fromEntries(Object.keys(c.set).map(k => [k, draft[k] ?? null])), active: Boolean(draft.active) }, _after: JSON.parse(JSON.stringify(c.set)) });
             Object.assign(draft, c.set, { active: true });
             applied.push(c); continue;
         }
@@ -205,8 +206,21 @@ function undoDraftChanges(draft, undo) {
     for (const u of undo.updated || []) { const list = draft[u.list] || []; const i = list.findIndex(r => String(r._id) === u.id); if (i >= 0) list[i] = u.before; }
     for (const r of [...(undo.removed || [])].reverse()) { const list = (draft[r.list] = draft[r.list] || []); list.splice(Math.min(r.index, list.length), 0, r.row); }
     if (undo.season) Object.assign(draft, undo.season);
-    for (const s of [...(undo.seasons || [])].reverse()) Object.assign(draft, s);
+    const same = (a, b) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null) || (a && b && !isNaN(new Date(a)) && !isNaN(new Date(b)) && new Date(a).getTime() === new Date(b).getTime());
+    for (const s of [...(undo.seasons || [])].reverse()) {
+        if (!s._before) { Object.assign(draft, s); continue; }
+        for (const [k, v] of Object.entries(s._before)) if (k === 'active' || same(draft[k], s._after?.[k])) draft[k] = v;
+    }
     return draft;
 }
 
-module.exports = { planDraftChanges, planCarryOver, applyDraftChanges, undoDraftChanges, sig, SKIP_KIND, KIND_GROUPS, DEFAULT_SKIP, skippedKind, RANK };
+// Undo after the draft moved on (2026-11-05 15:33 EST, the pre-PR pass): a card stays 30 days and a season is about four, so an Undo can be pressed after Promote to Live emptied the draft and the next season's posts refilled it. Undo is allowed only while the draft still has the title and start this change left; otherwise the reverse is refused, because it would put last season's rows and title into the next season's draft (simulated: it wiped "Season 11 — Next" to "").
+function undoAllowed(draft, after) {
+    if (!after) return true;
+    const t = (draft?.currentSeasonTitle || '') === (after.title || '');
+    const s = (!draft?.bpStart && !after.bpStart) || (draft?.bpStart && after.bpStart && new Date(draft.bpStart).getTime() === new Date(after.bpStart).getTime());
+    return Boolean(t && s);
+}
+const afterOf = draft => ({ title: draft?.currentSeasonTitle || '', bpStart: draft?.bpStart || null });
+
+module.exports = { undoAllowed, afterOf, planDraftChanges, planCarryOver, applyDraftChanges, undoDraftChanges, sig, SKIP_KIND, KIND_GROUPS, DEFAULT_SKIP, skippedKind, RANK };

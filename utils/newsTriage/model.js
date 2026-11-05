@@ -129,7 +129,8 @@ async function readPost({ text, imageUrl, postedAt, liveSeason, source }, opts =
         // 'fetch failed' too: the network drop that lost 7 of 218 reads in the Flex backtest (2026-11-05 11:36 EST).
         if (!/timeout|aborted|fetch failed|ECONNRESET|HTTP 429|HTTP 5\d\d/i.test(String(err?.message || err))) throw err;
         await new Promise(r => setTimeout(r, 5000));
-        res = await call();
+        // The retry goes to the standard tier (2026-11-05 15:35 EST): Flex is best-effort, so on the busiest CODM days (when its capacity is shortest) a second Flex try fails the same way and counts toward the hour's pause. One read at full price beats a lost one.
+        res = await vertexGenerate(parts, { taskName: 'news_triage', timeoutMs: 3 * 60 * 1000, flex: false, thinkingLevel: o.thinkingLevel || undefined, mediaResolution: image && o.mediaResolution ? o.mediaResolution : undefined, responseSchema: o.schema ? SCHEMA : undefined, withUsage: true });
     }
     if (typeof o.onUsage === 'function') { try { o.onUsage(res.usage, res.location); } catch { /* never breaks the read */ } }
     const parsed = res.parsed;

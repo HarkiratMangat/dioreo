@@ -50,8 +50,16 @@ async function catchUp(client) {
                 if (first) await updateCursor(channelId, first.id);
                 continue;
             }
-            const batch = await channel.messages.fetch({ after: cur.lastMessageId, limit: 100 });
-            const ordered = [...batch.values()].sort((a, b) => (BigInt(a.id) < BigInt(b.id) ? -1 : 1));
+            // Pages forward until a short page, up to 500 posts (2026-11-05 15:37 EST): one page of 100 meant an outage of more than ~10 days of #leaks silently skipped everything older than the newest 100.
+            const ordered = [];
+            let after = cur.lastMessageId;
+            for (let page = 0; page < 5; page++) {
+                const batch = await channel.messages.fetch({ after, limit: 100 });
+                const sorted = [...batch.values()].sort((a, b) => (BigInt(a.id) < BigInt(b.id) ? -1 : 1));
+                ordered.push(...sorted);
+                if (sorted.length < 100) break;
+                after = sorted[sorted.length - 1].id;
+            }
             for (const m of ordered) await pipeline.enqueue(() => handle(client, m));
             if (ordered.length) console.log(`📰 News triage: caught up ${ordered.length} post(s) in #${channel.name}`);
         } catch (err) {
@@ -80,6 +88,8 @@ function registerNewsWatch(client) {
     });
     client.once(Events.ClientReady, () => {
         catchUp(client).catch(err => console.error('News triage catch-up failed:', err));
+        // Also at start-up: a bot that was down at 00:05 UTC the day before a season would otherwise never post its promote check (it posts once per season).
+        pipeline.promoteCheck(client.rest, { appId: appIdOf(client) }).catch(() => {});
         setTimeout(() => {
             const daily = () => { pipeline.postSkippedList(client.rest, { appId: appIdOf(client) }).catch(() => {}); pipeline.carryOver(client.rest, { appId: appIdOf(client) }).catch(() => {}); pipeline.promoteCheck(client.rest, { appId: appIdOf(client) }).catch(() => {}); };
             daily();
