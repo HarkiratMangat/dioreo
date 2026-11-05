@@ -64,6 +64,12 @@ const rows = [
     ['d best', { kind: 'run', command: 'gunsmith', values: { weapon: '~lists~best' } }],
     ['d top', { kind: 'run', command: 'gunsmith', values: { weapon: '~lists~top' } }],
     ['d hm', { kind: 'run', command: 'gunsmith', values: { weapon: '~lists~hm' } }],
+    // A list named right after `lists` is that list (2026-11-05 14:34 EST: `d list top` showed the page).
+    ['d list top', { kind: 'run', command: 'gunsmith', values: { weapon: '~lists~top' } }],
+    ['d lists best', { kind: 'run', command: 'gunsmith', values: { weapon: '~lists~best' } }],
+    ['d gs lists hm', { kind: 'run', command: 'gunsmith', values: { weapon: '~lists~hm' } }],
+    ['d gs top', { kind: 'run', command: 'gunsmith', values: { weapon: '~lists~top' } }],
+    ['d list top static', { kind: 'run', command: 'gunsmith', values: { weapon: '~lists~top' }, autocomplete: [{ option: 'weapon', text: 'static', wrap: '~lists~top' }] }],
     // A weapon after a list word opens it inside that list (2026-11-02 22:23 EST): the words are looked up like any weapon and the listener wraps the hit as `~lists~<list>~<weaponKey>`.
     ['d meta ak117', { kind: 'run', command: 'gunsmith', values: { weapon: '~lists~meta' }, autocomplete: [{ option: 'weapon', text: 'ak117', wrap: '~lists~meta' }] }],
     ['d best iso hemlock', { kind: 'run', command: 'gunsmith', autocomplete: [{ option: 'weapon', text: 'iso hemlock', wrap: '~lists~best' }] }],

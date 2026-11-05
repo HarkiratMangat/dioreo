@@ -189,9 +189,16 @@ function pickWeapon(query, candidates) {
     if (whole.length === 1) return { ...none, hit: whole[0] };
     if (whole.length > 1) return { ...none, several: whole };
     let words = wordsOf(query);
-    if (words.length === 1 && sq.length >= 3) {
+    // Typed as ONE run of characters (no space): the start of exactly one name, first as typed, then with look-alikes folded. Harkirat, 2026-11-05 14:06 EST: `d gs hs0`, `d gs hso` and `d build hs0` got nothing on prod while /gunsmith opened the HS0405. This used to require one WORD after wordsOf's letter/digit split, so any start with a digit in it (hs0, ak1, m21e, j35: `hs` + `0`) skipped it, and no look-alike was ever folded here (the dropdown's findWeaponMatches has folded them since 2026-10-25, his "hso"). Measured on prod's 129 MP + 7 DMZ weapons: 567 of 1,188 starts and one-look-alike starts fell through to `loose`, which is silence after `d`. Several look-alike starts (`k1lo`) are several weapons, so Did you mean. A start of two or more names falls through to the word rules below, which settle `cro` and `kilo`.
+    if (!/\s/.test(String(query).trim()) && sq.length >= 3) {
         const starts = candidates.filter(c => squashAll(c.weaponName).startsWith(sq));
         if (starts.length === 1) return { ...none, hit: starts[0] };
+        if (!starts.length) {
+            const folded = foldLookalikes(query);
+            const lookalikeStarts = candidates.filter(c => foldLookalikes(c.weaponName).startsWith(folded));
+            if (lookalikeStarts.length === 1) return { ...none, hit: lookalikeStarts[0] };
+            if (lookalikeStarts.length > 1) return { ...none, several: lookalikeStarts };
+        }
     }
     let pool = candidates;
     const classWord = words.length > 1 ? words.find(w => categoryByExactAlias(w) && !candidates.some(c => wordsOf(c.weaponName).includes(w))) : null;
@@ -211,8 +218,8 @@ function pickWeapon(query, candidates) {
     });
     if (fits.length === 1) return { ...none, hit: fits[0] };
     if (fits.length > 1) {
-        // `m4` fits M4 and not XM4 already; this settles a name every typed word covers exactly (`type 19` beside a longer name with both words).
-        const exact = fits.filter(c => wordsOf(c.weaponName).length === words.length);
+        // `m4` fits M4 and not XM4 already; this settles a name every typed word IS, word for word (`type 19` beside a longer name with both words, `iso` beside ISO HEMLOCK). Word for word, not by count alone: counting let a half-typed word pick the one-word name, so `gra` opened GRAV over GRAU 5.56 and `cro` CROSSBOW over Cronen Squall (measured 2026-11-05).
+        const exact = fits.filter(c => { const names = wordsOf(c.weaponName); return names.length === words.length && words.every(w => names.includes(w)); });
         return exact.length === 1 ? { ...none, hit: exact[0] } : { ...none, several: fits };
     }
     return { ...none, loose: findWeaponMatches(query, candidates) };

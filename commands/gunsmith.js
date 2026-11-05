@@ -124,10 +124,11 @@ async function execute(interaction) {
     // /gunsmith list: no view (or All lists) = the page; a list = its card; a weapon = its card in its strongest list.
     if (subName === 'list') return openListView(interaction, interaction.options.getString('view'), interaction.options.getString('visibility'));
     const raw = interaction.options.getString('weapon');
-    // `d meta`, `d lists`, `d best`, `d top`, `d hm` and `d gs meta` arrive here as `~lists~<list?>` (utils/textCommands): the lists page. With a weapon, `~lists~<list?>~<weaponKey>` (`d meta ak117`): that weapon inside that list, or in its strongest list for `d lists ak117`.
+    // `d meta`, `d lists`, `d best`, `d top`, `d hm` and `d gs meta` arrive here as `~lists~<list?>` (utils/textCommands). `d lists` (no list) is the lists page; a named list opens that list's card, the same view as its button under the page (`gsb~open~MP.*.top`): Harkirat, 2026-11-05 14:34 EST, `d gs top` showed the page's META weapons where he expected the Top builds. With a weapon, `~lists~<list?>~<weaponKey>` (`d meta ak117`): that weapon inside that list, or in its strongest list for `d lists ak117`.
     if (raw.startsWith('~lists~')) {
         const [list, weaponKey] = raw.slice(7).split('~');
         if (weaponKey) return openListWeapon(interaction, list || null, weaponKey);
+        if (list) return renderScopeBrowse(interaction, parseScopeToken(`MP.*.${list}`), 0);
         return openListView(interaction, null, interaction.options.getString('visibility'));
     }
     // A browse row from the suggestions carries `~scope~<token>`; `~` can never appear in a weaponKey. `build:` is ignored on one: it means "build N of this weapon", and a browse has no single weapon.
