@@ -13,12 +13,12 @@ const isRealPicture = (key) => Boolean(key) && !/^(https?:|PENDING-UPLOAD-)/i.te
 const code = (s) => `\`${String(s).replace(/`/g, 'ˋ')}\``;
 
 // One header block: the title and summary lines, with the build's picture as the accessory when it has one.
-// `stamp` is the build's lastUpdated, so a picture replaced at the same key shows the new one (utils/loadoutRender.js buildImageUrl).
-function headerBlock(title, lines, imageKey, stamp) {
+// `build` gives the picture's version, so a picture replaced at the same key shows the new one (utils/loadoutRender.js pictureVersion).
+function headerBlock(title, lines, imageKey, build) {
     const content = [title, ...lines.filter(Boolean)].join('\n');
     if (!isRealPicture(imageKey)) return { type: 10, content };
-    const { buildImageUrl } = require('./loadoutRender');
-    return { type: 9, components: [{ type: 10, content }], accessory: { type: 11, media: { url: buildImageUrl(imageKey, stamp) } } };
+    const { buildImageUrl, pictureVersion } = require('./loadoutRender');
+    return { type: 9, components: [{ type: 10, content }], accessory: { type: 11, media: { url: buildImageUrl(imageKey, pictureVersion(build)) } } };
 }
 
 // "AR · Build 2 · Ranked · `1C2B4A8B9A`" and the badges, the same facts the Edit pop-up holds.
@@ -74,7 +74,7 @@ function savedPanel({ doc, before = null, changeIds = [], notes = [], warnings =
     const verb = before ? 'Updated' : 'Added';
     const changes = changeLines(before, doc, { pictureReplaced });
     const components = [
-        headerBlock(`### ${emojis.checkmark} ${verb} · ${doc.weaponName} ${doc.buildName}`, identityLines(doc), doc.imageKey, doc.lastUpdated),
+        headerBlock(`### ${emojis.checkmark} ${verb} · ${doc.weaponName} ${doc.buildName}`, identityLines(doc), doc.imageKey, doc),
         { type: 14, divider: true, spacing: 1 },
     ];
     if (before) components.push({ type: 10, content: changes.length ? `**What changed**\n${changes.map(c => `- ${c}`).join('\n')}` : '-# Nothing changed.' });
@@ -89,7 +89,7 @@ function savedPanel({ doc, before = null, changeIds = [], notes = [], warnings =
 // The delete confirmation for one build: the build itself, so the right one goes.
 function deletePanel({ doc, token }) {
     return [{ type: 17, accent_color: FAIL_ACCENT, components: [
-        headerBlock(`### ${emojis.warn} Delete ${doc.weaponName} ${doc.buildName}?`, [...identityLines(doc), '-# Every change is recorded and can be reverted.'], doc.imageKey, doc.lastUpdated),
+        headerBlock(`### ${emojis.warn} Delete ${doc.weaponName} ${doc.buildName}?`, [...identityLines(doc), '-# Every change is recorded and can be reverted.'], doc.imageKey, doc),
         { type: 10, content: `**Attachments**\n${attachmentList(doc)}` },
         { type: 1, components: [
             { type: 2, style: 2, label: 'Cancel', custom_id: `mng_delcancel_${token}` },

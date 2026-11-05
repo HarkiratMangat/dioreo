@@ -66,7 +66,7 @@ async function resolvePicture({ existing, mode, weaponName, code, attachments, u
         const up = await cache.uploadLoadoutImage(source, key);
         if (!up.success) return { error: `Couldn't upload that image to Cloudinary (${up.error}), so nothing was saved.` };
         // A replace at the same key is listed under What changed (savedPanel's pictureReplaced), so it needs no note as well.
-        return { imageKey: key, sourceHash, uploaded: true, replaced: oldKey === key, note: oldKey === key ? null : `Picture uploaded as \`${key}\`.` };
+        return { imageKey: key, imageVersion: up.version, sourceHash, uploaded: true, replaced: oldKey === key, note: oldKey === key ? null : `Picture uploaded as \`${key}\`.` };
     }
 
     // No new picture: a new build without one, or a build that has none, keeps the placeholder.
@@ -78,7 +78,7 @@ async function resolvePicture({ existing, mode, weaponName, code, attachments, u
     if (!same && choice !== 'keep') return { ask: true };
     const moved = await cache.copyLoadoutImage(oldKey, key);
     if (!moved.success) return { error: `Couldn't move the picture to \`${key}\` (${moved.error}), so nothing was saved.` };
-    return { imageKey: key, uploaded: true, note: same
+    return { imageKey: key, imageVersion: moved.version, uploaded: true, note: same
         ? `Picture moved to \`${key}\`; \`${oldKey}\` is kept for Revert.`
         : `Kept the old picture, now at \`${key}\`. It still shows the old attachments; \`${oldKey}\` is kept for Revert.` };
 }
@@ -140,13 +140,13 @@ async function warnUnknownNames(interaction, pending, unknown) {
 }
 
 // The picture warning (his three options, see resolvePicture): an MP edit whose attachments AND code changed, with no new picture. Nothing is saved until he picks one; what was typed waits in the same store as the catalogue warning's. A panel rather than a text line, with the current picture beside it, and the buttons in his order: Keep · Save without · Upload a new one on the right (Harkirat, 2026-10-26 11:46 EDT). Save without a picture uses the Collapse (minus) icon, his pick over DeleteBin, Cross and DB_Delete (2026-10-26 12:00 EDT: "use the minus emoji").
-function pictureWarningPanel(imageKey, token, { noneEmoji = BOT_EMOJI.collapse, stamp = null } = {}) {
-    const { buildImageUrl } = require('../../utils/loadoutRender');
+function pictureWarningPanel(imageKey, token, { noneEmoji = BOT_EMOJI.collapse, build = null } = {}) {
+    const { buildImageUrl, pictureVersion } = require('../../utils/loadoutRender');
     const icon = (e) => BOT_EMOJI.parseEmoji(e);
     return [{ type: 17, accent_color: 0xF0B232, components: [
         { type: 9,
           components: [{ type: 10, content: `### ${BOT_EMOJI.warn} Attachments changed, so the picture might not match\n-# **Picture:** \`${imageKey}\`\n-# Nothing is saved until you pick.` }],
-          accessory: { type: 11, media: { url: buildImageUrl(imageKey, stamp) } } },
+          accessory: { type: 11, media: { url: buildImageUrl(imageKey, pictureVersion(build)) } } },
         { type: 1, components: [
             { type: 2, style: 2, label: 'Keep the picture', custom_id: `mng_picok|${token}`, emoji: icon(BOT_EMOJI.keep) },
             { type: 2, style: 2, label: 'Save without a picture', custom_id: `mng_picnone|${token}`, emoji: icon(noneEmoji) },
@@ -155,9 +155,9 @@ function pictureWarningPanel(imageKey, token, { noneEmoji = BOT_EMOJI.collapse, 
     ] }];
 }
 
-async function warnOldPicture(interaction, pending, imageKey, stamp) {
+async function warnOldPicture(interaction, pending, imageKey, build) {
     const token = holdPending(interaction, pending);
-    return interaction.followUp({ flags: 32768 | 64, components: pictureWarningPanel(imageKey, token, { stamp }) });
+    return interaction.followUp({ flags: 32768 | 64, components: pictureWarningPanel(imageKey, token, { build }) });
 }
 
 // custom_ids: mng_catok|{token} · mng_catedit|{token} (the catalogue warning) · mng_codeok|{token} · mng_codeedit|{token} (the code warning) · mng_picok|{token} · mng_picnew|{token} · mng_picnone|{token} (the picture warning). Only the admin who submitted may press them; the router's /manage admin lock has already run.
@@ -276,7 +276,7 @@ async function saveLoadout(interaction, preset, isEdit) {
     if (url && !isHttpImageSource(url)) return await fail('The image box takes a link starting with https://. Picture keys come from the gunsmith code now, so a key is never typed.');
     const picture = await resolvePicture({ existing, mode, weaponName, code, attachments, url, shot, targetId, choice: preset?.pictureChoice || null });
     if (picture.error) return await fail(picture.error);
-    if (picture.ask) return await warnOldPicture(interaction, { customId, acks: [...acks, 'catalogue'], values: readValues(field, LOADOUT_FIELDS) }, existing.imageKey, existing.lastUpdated);
+    if (picture.ask) return await warnOldPicture(interaction, { customId, acks: [...acks, 'catalogue'], values: readValues(field, LOADOUT_FIELDS) }, existing.imageKey, existing);
 
     // The number goes to core as `buildNumber`, and core names the build and swaps the one holding it (core/ops/loadouts.js numberBuild, 2026-10-26 12:17 EDT), the same rule the portal gets. The check above only answers early with a clear message.
     const payload = {
@@ -284,6 +284,8 @@ async function saveLoadout(interaction, preset, isEdit) {
         category: ident.category, isMeta, categoryRank, dmzRangeRank, isToxic, isAss, rankModes,
         ...(mode === 'MP' ? { shareCode: code } : {}),
         ...(picture.sourceHash ? { sourceHash: picture.sourceHash } : {}),
+        // Cloudinary's version of the picture just uploaded, so the card's URL changes with it (utils/loadoutRender.js pictureVersion).
+        ...(picture.imageVersion ? { imageVersion: picture.imageVersion } : {}),
     };
     const result = await commitSet(
         [isEdit ? { type: 'loadout.edit', target: { id: targetId }, payload } : { type: 'loadout.add', payload },

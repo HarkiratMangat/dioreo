@@ -226,7 +226,7 @@ async function uploadLoadoutImage(sourceUrl, imageKey) {
     // The loadout image this overwrites is copied to archive/loadouts/ first (Harkirat, 2026-10-21 11:39 EDT); a first upload under a new key has nothing to archive. utils/cloudinaryArchive.js.
     await archiveBeforeReplace(imageKey, sourceUrl, 'loadouts');
     try {
-        await cloudinary.uploader.upload(sourceUrl, {
+        const result = await cloudinary.uploader.upload(sourceUrl, {
             public_id: imageKey, // bare key, NOT folder-prefixed -- gun-builds is dynamic-folder mode,
                                   // decoupled from public_id (see .claude/rules/loadout-images-and-metadata.md)
             asset_folder: FOLDER,
@@ -234,7 +234,8 @@ async function uploadLoadoutImage(sourceUrl, imageKey) {
             invalidate: true,
             resource_type: 'image'
         });
-        return { success: true, error: null };
+        // Cloudinary's own version number for this upload, new on every overwrite: it goes in the build's picture URL (Loadout.imageVersion), because `invalidate` clears only Cloudinary's cache and Discord keeps its copy of a URL for up to 30 days.
+        return { success: true, error: null, version: result?.version || null };
     } catch (err) {
         const message = safeErrorMessage(err);
         console.error(`Loadout image upload failed for key "${imageKey}": ${message}`);
