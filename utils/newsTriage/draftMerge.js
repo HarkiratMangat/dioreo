@@ -12,8 +12,19 @@
 const { norm, seasonTitle } = require('./resolve');
 
 const RANK = { expected: 1, confirmed: 2, official: 3 };
-// Kinds absent from every row of his Season 9 (35 items): crates, lucky boxes, strongboxes, boosts, livestreams, tournaments, ranked festivals, store pages. A sale IS listed (Halloween Sale), so it is not here.
-const SKIP_KIND = /\b(lucky ?box(es)?|strong ?box(es)?|crates?|secret cache|caches?|boosts?|livestreams?|tournaments?|invitationals?|creator|festival|store|supply drops?|supply)\b/i;
+// Kinds absent from every row of his Season 9 (35 items): crates, lucky boxes, strongboxes, boosts, livestreams, tournaments, ranked festivals, store pages. A sale IS listed (Halloween Sale), so it is not here. The kinds he can switch off from the daily briefing (2026-11-05 15:23 EST, his pick 3: "Let you pick from the briefing which kinds to skip"). The default set is the old fixed list, so nothing changes until he picks; sales and offers are drafted by default because his Season 9 list has a sale.
+const KIND_GROUPS = {
+    crates: { label: 'Crates & lucky boxes', re: /\b(lucky ?box(es)?|strong ?box(es)?|crates?|secret cache|caches?)\b/i },
+    boosts: { label: 'Boosts & supply drops', re: /\b(boosts?|supply drops?|supply)\b/i },
+    streams: { label: 'Streams & tournaments', re: /\b(livestreams?|tournaments?|invitationals?|creator)\b/i },
+    festivals: { label: 'Festivals', re: /\bfestival\b/i },
+    stores: { label: 'Stores', re: /\bstores?\b/i },
+    offers: { label: 'Offers & sales', re: /\b(offers?|sales?)\b/i },
+    logins: { label: 'Login events', re: /\blog-?in\b/i },
+};
+const DEFAULT_SKIP = ['crates', 'boosts', 'streams', 'festivals', 'stores'];
+const skippedKind = (name, keys = DEFAULT_SKIP) => (keys || []).find(k => KIND_GROUPS[k] && KIND_GROUPS[k].re.test(String(name || ''))) || null;
+const SKIP_KIND = new RegExp(DEFAULT_SKIP.map(k => KIND_GROUPS[k].re.source).join('|'), 'i');
 const CATEGORY = { draw: 'draw', mode: 'playlist', event: 'event' };
 const DRAW_LISTS = ['newDraws', 'returningDraws'];
 
@@ -56,7 +67,7 @@ function findRows(draft, name, kind) {
 }
 
 // draft: the SeasonalData `draft` sub-document (plain). items: resolve.js card items. post: { id, channelId, official }. newId: makes an _id for a new row.
-function planDraftChanges(draftIn, items, post, { newId } = {}) {
+function planDraftChanges(draftIn, items, post, { newId, skipKinds = DEFAULT_SKIP } = {}) {
     const changes = []; const notes = []; const needsBox = [];
     // Planned against a working copy that takes each item's changes as it goes, so two items in one post (a calendar image and its caption naming the same armory) become one row, not two.
     const draft = JSON.parse(JSON.stringify(draftIn || {}));
@@ -92,7 +103,8 @@ function planDraftChanges(draftIn, items, post, { newId } = {}) {
         }
         if (item.kind === 'patch') { notes.push({ name: item.name, why: 'patch notes go through Add to Patch Notes' }); return; }
         if (!CATEGORY[item.kind]) return;
-        if (SKIP_KIND.test(item.name)) { notes.push({ name: item.name, why: 'a kind you don\'t list' }); return; }
+        const skipKind = skippedKind(item.name, skipKinds);
+        if (skipKind) { notes.push({ name: item.name, why: `a kind you don't list (${KIND_GROUPS[skipKind].label.toLowerCase()})` }); return; }
 
         const found = findRows(draft, item.name, item.kind);
         if (item.change === 'cancelled') {
@@ -197,4 +209,4 @@ function undoDraftChanges(draft, undo) {
     return draft;
 }
 
-module.exports = { planDraftChanges, planCarryOver, applyDraftChanges, undoDraftChanges, sig, SKIP_KIND, RANK };
+module.exports = { planDraftChanges, planCarryOver, applyDraftChanges, undoDraftChanges, sig, SKIP_KIND, KIND_GROUPS, DEFAULT_SKIP, skippedKind, RANK };

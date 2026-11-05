@@ -143,6 +143,16 @@ async function undoDraft(interaction, cardId) {
     return interaction.editReply({ content: 'Undone: the Next Season Draft is back to how it was before this card, apart from anything changed since.' });
 }
 
+// The briefing's "Kinds never drafted" dropdown (2026-11-05 15:23 EST, his pick 3): saved for anyone who can write the Next Season Draft, since it decides what news triage writes there.
+async function setKinds(interaction) {
+    const res = await require('../utils/manageActions').resolveAction('seasondraft', 'bulkcalendar', interaction.user.id);
+    if (!res.ok) { try { await interaction.reply({ content: res.message || 'You do not have access to the Next Season Draft.', flags: MessageFlags.Ephemeral }); } catch (e) { console.error(e); } return; }
+    const { KIND_GROUPS } = require('../utils/newsTriage/draftMerge');
+    const keys = (interaction.values || []).filter(k => KIND_GROUPS[k]);
+    await require('../models/BotControls').updateOne({ _id: 'global' }, { $set: { newsSkipKinds: keys } }, { upsert: true });
+    try { await interaction.reply({ content: keys.length ? `Saved. Never drafted: ${keys.map(k => KIND_GROUPS[k].label).join(' · ')}.` : 'Saved. Every kind is drafted now.', flags: MessageFlags.Ephemeral }); } catch (e) { console.error(e); }
+}
+
 // "Make a card from one of these…" on the skipped list: read the post again and card it whatever the filter said.
 async function makeCard(interaction) {
     const [channelId, messageId] = String(interaction.values?.[0] || '').split(':');
@@ -171,6 +181,7 @@ async function handleNewsInteraction(interaction) {
     if (interaction.isButton() && action === 'dismiss') { await dismiss(interaction, cardId); return true; }
     if (interaction.isButton() && action === 'undo') { await undoDraft(interaction, cardId); return true; }
     if (interaction.isStringSelectMenu() && action === 'make') { await makeCard(interaction); return true; }
+    if (interaction.isStringSelectMenu() && action === 'kinds') { await setKinds(interaction); return true; }
     return false;
 }
 

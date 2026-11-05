@@ -6,7 +6,7 @@
 const { Routes } = require('discord.js');
 const { titleOf, prefilter, cleanText, namesRegion, namesTestServer } = require('./filter');
 const { resolveItems, sameName } = require('./resolve');
-const { buildCard, buildSkippedList, MAX_ITEMS, buildBriefing } = require('./card');
+const { buildCard, buildSkippedList, MAX_ITEMS, buildBriefing, buildPromoteCheck } = require('./card');
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const CARD_DAYS = 30;
@@ -130,6 +130,11 @@ async function draftImages(items, post) {
     return items;
 }
 
+// The kinds he chose never to draft (models/BotControls.js newsSkipKinds), or the defaults.
+async function skipKinds() {
+    try { const c = await require('../../models/BotControls').findById('global', { newsSkipKinds: 1 }).lean(); return Array.isArray(c?.newsSkipKinds) ? c.newsSkipKinds : require('./draftMerge').DEFAULT_SKIP; } catch { return require('./draftMerge').DEFAULT_SKIP; }
+}
+
 async function commitDraft(changes, actorId) {
     const { commitSet } = require('../../core/changeset');
     const { ALLOWED_ADMIN_ID } = require('../owner');
@@ -142,7 +147,7 @@ async function autoDraft(post, card, ctx, actorId) {
     const draftItems = card.filter(it => it.where === 'draft' && it.action !== 'patch');
     if (!draftItems.length) return { drafted: null, cardItems: card };
     await draftImages(draftItems, post);
-    const plan = planDraftChanges(ctx.draftDoc || {}, draftItems, { id: post.id, channelId: post.channelId, official: /official/i.test(post.channelName || '') });
+    const plan = planDraftChanges(ctx.draftDoc || {}, draftItems, { id: post.id, channelId: post.channelId, official: /official/i.test(post.channelName || '') }, { skipKinds: await skipKinds() });
     const notes = plan.notes.map(n => `${n.name}: ${n.why}`);
     const keep = new Set(plan.needsBox);
     const others = card.filter(it => it.where !== 'draft' || it.action === 'patch' || keep.has(it));
@@ -281,7 +286,32 @@ function draftReadiness(d) {
         noImage: calendar.filter(r => r.category === 'draw' && !draws.some(x => sq(x.title) === sq(r.title))).map(r => r.title),
         noEnd: calendar.filter(r => !r.endDate && !r.isOngoing).map(r => r.title),
         leakOnly: [...calendar].filter(r => r.newsSource && r.newsSource.rank < 3).map(r => r.title),
+        // For the promote check (2026-11-05 15:23 EST): rows dated before the season starts that were not carried over (left from an earlier plan), draw rows with no calendar row (no dates on /calendar), the same title twice in one list, and a live season that does not end when this one starts.
+        early: draft.bpStart ? calendar.filter(r => r.date && new Date(r.date) < new Date(new Date(draft.bpStart) - DAY_MS) && !(r.newsSource && r.newsSource.carried) && !(r.endDate && new Date(r.endDate) > new Date(draft.bpStart))).map(r => r.title) : [],
+        noCalendar: draws.filter(x => !calendar.some(r => r.category === 'draw' && sq(r.title) === sq(x.title))).map(x => x.title),
+        twice: [...new Set([...calendar.map(r => `${r.category}|${sq(r.title)}`), ...draws.map(x => `d|${sq(x.title)}`)].filter((k, i, a) => a.indexOf(k) !== i))].length,
+        seamGap: draft.bpStart && d?.bpEnd && !d?.bpEndTBD && Math.abs(new Date(draft.bpStart) - new Date(d.bpEnd)) > DAY_MS / 2 ? `this season ends ${day(d.bpEnd)}, next starts ${day(draft.bpStart)}` : '',
+        startsAt: draft.bpStart || null,
     };
+}
+
+// The promote check (2026-11-05 15:23 EST, his pick 4): once, when the next season starts within two days, a card listing what is ready and what is missing in the Next Season Draft, so a missing end date or image is fixed before Promote to Live puts it in front of players.
+async function promoteCheck(rest, { env = process.env, appId, now = new Date() } = {}) {
+    const cfg = config(env);
+    if (!cfg.channel) return null;
+    try {
+        const d = await require('../../models/SeasonalData').findOne({ docType: 'global' }).lean();
+        const r = draftReadiness(d);
+        if (!r || !r.startsAt) return null;
+        const until = new Date(r.startsAt) - now;
+        if (until <= 0 || until > 2 * DAY_MS) return null;
+        const NewsCard = require('../../models/NewsCard');
+        const key = `promote-${new Date(r.startsAt).toISOString().slice(0, 10)}`;
+        if (await NewsCard.exists({ sourceChannelId: 'promote-check', sourceMessageId: key })) return null;
+        await rest.post(Routes.channelMessages(cfg.channel), { body: { flags: 32768, components: asApp(appId, () => buildPromoteCheck(r)), allowed_mentions: { parse: [] } } });
+        await NewsCard.create({ sourceChannelId: 'promote-check', sourceMessageId: key, sourceName: 'Next Season Draft', jumpUrl: '', postedAt: now, cardChannelId: cfg.channel, items: [], expireAt: new Date(now.getTime() + CARD_DAYS * DAY_MS) });
+        return r;
+    } catch (err) { console.error('News triage: the promote check failed:', err?.message || err); return null; }
 }
 async function gatherBriefing(rest, cfg, now = new Date()) {
     const out = { stats: { ...state.stats }, readiness: null, fixes: [], channels: [] };
@@ -323,6 +353,7 @@ async function postSkippedList(rest, { env = process.env, appId } = {}) {
     // The skipped list now rides in the daily briefing (2026-11-05 11:07 EST), which posts every day, so a quiet day still says the watcher is alive.
     const brief = await gatherBriefing(rest, cfg);
     brief.skipped = entries;
+    brief.skipKinds = await skipKinds();
     try {
         await rest.post(Routes.channelMessages(cfg.channel), { body: { flags: 32768, components: asApp(appId, () => buildBriefing(brief)), allowed_mentions: { parse: [] } } });
         state.stats = { reads: 0, costUsd: 0, carded: 0, drafted: 0, failures: 0 };
@@ -338,4 +369,4 @@ function msUntilNextDigest(now = new Date()) {
     return next - now;
 }
 
-module.exports = { config, enabled, toPost, processPost, enqueue, noteSourceChange, postSkippedList, msUntilNextDigest, redrawCard, loadContext, state, carryOver, draftLines, autoDraft, draftReadiness, gatherBriefing };
+module.exports = { config, enabled, toPost, processPost, enqueue, noteSourceChange, postSkippedList, msUntilNextDigest, redrawCard, loadContext, state, carryOver, draftLines, autoDraft, draftReadiness, gatherBriefing, promoteCheck, skipKinds };

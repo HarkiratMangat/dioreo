@@ -365,5 +365,45 @@ check('the handler owns news| and nothing else', async () => {
     });
 }
 
+
+// ---- His picks 3 and 4: kinds he never drafts, and the promote check (2026-11-05) ----
+{
+    const D = x => new Date(x);
+    const M = require('../utils/newsTriage/draftMerge');
+    const { buildBriefing, buildPromoteCheck } = require('../utils/newsTriage/card');
+    const { draftReadiness } = require('../utils/newsTriage/pipeline');
+    check('the kinds never drafted follow his pick, and the defaults match the old fixed list', () => {
+        const item = name => ({ where: 'draft', kind: 'event', change: 'new', name, start: D('2026-11-14'), startText: '11/14', certainty: 'confirmed' });
+        const plain = M.planDraftChanges({ calendar: [] }, [item('Ford Table Tactics Offer'), item('Ghost Lucky Box')], { id: 'p', channelId: 'o', official: true });
+        assert.strictEqual(plain.changes.length, 1, 'by default an offer is drafted and a lucky box is not');
+        const picked = M.planDraftChanges({ calendar: [] }, [item('Ford Table Tactics Offer'), item('Ghost Lucky Box')], { id: 'p', channelId: 'o', official: true }, { skipKinds: ['offers'] });
+        assert.strictEqual(picked.changes.length, 1, 'with only offers off, the lucky box is drafted');
+        assert.strictEqual(picked.changes[0].name, 'Ghost Lucky Box');
+        for (const n of ['MG42 Lucky Box', 'Live Laugh Boba Strongbox', 'Mythic Boost', 'Livestream Tournament', 'Ranked Festival', 'Challenge Store']) assert.ok(M.skippedKind(n), `default still skips ${n}`);
+    });
+    check('the briefing offers the never-drafted dropdown with his picks pre-selected', () => {
+        const c = buildBriefing({ stats: {}, skipKinds: ['crates', 'offers'] });
+        const sel = JSON.stringify(c);
+        assert.ok(sel.includes('news|kinds'));
+        const opts = c[0].components.find(x => x.type === 1 && x.components[0].custom_id === 'news|kinds').components[0].options;
+        assert.deepStrictEqual(opts.filter(o => o.default).map(o => o.value), ['crates', 'offers']);
+        assert.ok(sel.includes('Never drafted into the Next Season Draft'));
+        assert.ok(c[0].components.find(x => x.type === 1 && x.components[0].custom_id === 'news|kinds').components[0].options.every(o => o.label.length <= 30), 'a picked chip shows about 30 characters');
+    });
+    check('the promote check names what is missing before Promote to Live', () => {
+        const d = { bpEnd: D('2026-11-12'), draft: { active: true, currentSeasonTitle: 'Season 10 — 7th Anniversary', bpStart: D('2026-11-12'), rankTitle: 'Ranked Series',
+            calendar: [{ title: 'Ford Raptor Draw', category: 'draw', date: D('2026-11-13') }, { title: 'Old Thing Themed Event', category: 'event', date: D('2026-10-20'), endDate: D('2026-11-01') }, { title: 'Chase MP Playlist', category: 'playlist', date: D('2026-11-19'), endDate: D('2026-11-25') }],
+            newDraws: [{ title: 'Means to an End Mythic Drop', date: D('2026-11-20'), thumbnailUrl: 'x' }], returningDraws: [] } };
+        const r = draftReadiness(d);
+        assert.deepStrictEqual(r.early, ['Old Thing Themed Event']);
+        assert.deepStrictEqual(r.noCalendar, ['Means to an End Mythic Drop']);
+        assert.strictEqual(r.seamGap, '', 'the seasons meet');
+        const text = JSON.stringify(buildPromoteCheck(r));
+        for (const want of ['No battle pass end date', 'Ranked not set', 'No draw image: Ford Raptor Draw', 'no dates on /calendar', 'Dated before the season starts', 'to look at before promoting']) assert.ok(text.includes(want), want);
+        const gap = draftReadiness({ ...d, bpEnd: D('2026-11-10') });
+        assert.ok(/do not meet|ends Nov 10/.test(gap.seamGap), 'a gap between seasons is named');
+    });
+}
+
     console.log(`✅ newsTriage: ${n + 1} checks passed`);
 })().catch(err => { console.error(err); process.exit(1); });

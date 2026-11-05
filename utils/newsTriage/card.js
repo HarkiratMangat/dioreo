@@ -120,6 +120,14 @@ function buildBriefing(b, { dayLabel = 'Last 24 hours' } = {}) {
         const lines = ['**Watching**', ...b.channels.map(c => `- ${c.stale ? `${warn} ` : ''}#${c.name}: last post ${c.lastAt ? `<t:${Math.floor(new Date(c.lastAt).getTime() / 1000)}:R>` : 'unknown'}`)];
         parts.push({ type: 14, spacing: 1, divider: true }, { type: 10, content: lines.join('\n').slice(0, 500) });
     }
+    // Which kinds are never drafted, and the dropdown to change it (his pick 3). Every kind is an option; the picked ones are pre-selected.
+    if (Array.isArray(b.skipKinds)) {
+        const { KIND_GROUPS } = require('./draftMerge');
+        const off = b.skipKinds.filter(k => KIND_GROUPS[k]).map(k => KIND_GROUPS[k].label);
+        // The dropdown's own chips show the picks, so the line above it only names the control (a list of the same kinds read twice in the first preview).
+        parts.push({ type: 14, spacing: 1, divider: true }, { type: 10, content: off.length ? '**Never drafted into the Next Season Draft**' : '**Never drafted:** nothing, every kind is drafted' });
+        parts.push({ type: 1, components: [{ type: 3, custom_id: 'news|kinds', placeholder: 'Kinds never drafted…', min_values: 0, max_values: Object.keys(KIND_GROUPS).length, options: Object.entries(KIND_GROUPS).map(([k, g]) => ({ label: g.label, value: k, default: b.skipKinds.includes(k) })) }] });
+    }
     const entries = b.skipped || [];
     if (entries.length) {
         const lines = entries.slice(0, 12).map(e => `- [${(e.title || 'Untitled post').replace(/[[\]]/g, '').slice(0, 70)}](${e.jumpUrl}) · ${e.reason}`);
@@ -131,4 +139,26 @@ function buildBriefing(b, { dayLabel = 'Last 24 hours' } = {}) {
     return [{ type: 17, accent_color: ACCENT, components: parts }];
 }
 
-module.exports = { buildCard, buildSkippedList, buildBriefing, buttonLabel, kindLabel, MAX_ITEMS };
+// The promote check (his pick 4). r: pipeline.draftReadiness. A tick for what is set, a warning for what is missing, and the step that remains.
+function buildPromoteCheck(r) {
+    const ok = emojis.checkmark; const warn = emojis.warn;
+    const good = []; const bad = [];
+    (r.title ? good : bad).push(r.title ? `Title: ${r.title}` : 'No season title');
+    (r.bpEnd ? good : bad).push(r.bpEnd ? `Battle pass ends ${r.bpEnd}` : 'No battle pass end date (or TBD)');
+    (r.ranked ? good : bad).push(r.ranked ? `Ranked: ${r.ranked}` : 'Ranked not set');
+    (r.dmz ? good : bad).push(r.dmz ? `DMZ: ${r.dmz}` : 'DMZ not set');
+    good.push(`${r.calendar} calendar row${r.calendar === 1 ? '' : 's'}, ${r.draws} draw${r.draws === 1 ? '' : 's'}`);
+    if (r.noImage.length) bad.push(`No draw image: ${listNames(r.noImage)}`);
+    if (r.noCalendar.length) bad.push(`A draw with no calendar row (no dates on /calendar): ${listNames(r.noCalendar)}`);
+    if (r.noEnd.length) bad.push(`No end date: ${listNames(r.noEnd)}`);
+    if (r.early.length) bad.push(`Dated before the season starts: ${listNames(r.early)}`);
+    if (r.twice) bad.push(`${r.twice} title${r.twice === 1 ? '' : 's'} listed twice`);
+    if (r.seamGap) bad.push(`The seasons do not meet: ${r.seamGap}`);
+    if (r.leakOnly.length) bad.push(`Only a leak has named: ${listNames(r.leakOnly)}`);
+    const when = r.startsAt ? `<t:${Math.floor(new Date(r.startsAt).getTime() / 1000)}:R>` : 'soon';
+    const lines = [`### ${emojis.mngInfo} Next season starts ${when}`, `-# Check, then Promote to Live from /manage → Next Season Draft once it starts.`, '',
+        ...good.map(g => `${ok} ${g}`), ...bad.map(x => `${warn} ${x}`), '', bad.length ? `**${bad.length} thing${bad.length === 1 ? '' : 's'} to look at before promoting.**` : '**Everything checked is ready.**'];
+    return [{ type: 17, accent_color: ACCENT, components: [{ type: 10, content: lines.join('\n').slice(0, 3800) }] }];
+}
+
+module.exports = { buildCard, buildSkippedList, buildBriefing, buildPromoteCheck, buttonLabel, kindLabel, MAX_ITEMS };
