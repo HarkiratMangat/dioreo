@@ -60,7 +60,7 @@ check('the Edit search: STATIC-HV 2b is Build 2 Option B, a plain number names n
 check('the Edit pop-up for one option shows its attachments, its code and its tag', () => {
     const v = form.editValues(b2, siblings, ['meta'], 2);
     assert.strictEqual(v.build, 'SMG, 2c, 2C2C');
-    assert.strictEqual(v.attachments, 'C2\nBadges: meta');
+    assert.strictEqual(v.attachments, 'C2\nBadges: meta\nComment: ');
     assert.strictEqual(v.weapon, 'STATIC-HV, Alt');
     const manage = require('../commands/manage');
     const modal = manage.buildEditLoadoutModal(b2, 'b2', siblings, 1);

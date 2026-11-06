@@ -31,15 +31,15 @@
       },
       {
         "type": 18,
-        "label": "Attachments and badges",
-        "description": "One attachment per line, then a Badges: line",
+        "label": "Attachments, badges and comment",
+        "description": "One attachment per line, then a Badges: line and a Comment: line",
         "component": {
           "type": 4,
           "custom_id": "attachments",
           "style": 2,
           "required": true,
-          "max_length": 1000,
-          "placeholder": "Gauge-9 Mono\nCrown-H3 Barrel\nBadges: meta, top3"
+          "max_length": 4000,
+          "placeholder": "Gauge-9 Mono\nCrown-H3 Barrel\nBadges: meta, top3\nComment: Best for close range"
         }
       },
       {
@@ -101,15 +101,15 @@
       },
       {
         "type": 18,
-        "label": "Attachments and badges",
-        "description": "One attachment per line, then a Badges: line",
+        "label": "Attachments, badges and comment",
+        "description": "One attachment per line, then a Badges: line and a Comment: line",
         "component": {
           "type": 4,
           "custom_id": "attachments",
           "style": 2,
           "required": true,
-          "max_length": 1000,
-          "placeholder": "Gauge-9 Mono\nCrown-H3 Barrel\nBadges: meta, top3"
+          "max_length": 4000,
+          "placeholder": "Gauge-9 Mono\nCrown-H3 Barrel\nBadges: meta, top3\nComment: Best for close range"
         }
       },
       {
@@ -173,16 +173,16 @@
       },
       {
         "type": 18,
-        "label": "Attachments and badges",
-        "description": "One attachment per line, then a Badges: line",
+        "label": "Attachments, badges and comment",
+        "description": "One attachment per line, then a Badges: line and a Comment: line",
         "component": {
           "type": 4,
           "custom_id": "attachments",
           "style": 2,
           "required": true,
-          "max_length": 1000,
-          "placeholder": "Gauge-9 Mono\nCrown-H3 Barrel\nBadges: meta, top3",
-          "value": "Gauge-9 Mono\nCrown-H3 Barrel\nBadges: meta, best"
+          "max_length": 4000,
+          "placeholder": "Gauge-9 Mono\nCrown-H3 Barrel\nBadges: meta, top3\nComment: Best for close range",
+          "value": "Gauge-9 Mono\nCrown-H3 Barrel\nBadges: meta, best\nComment: "
         }
       },
       {
@@ -246,16 +246,16 @@
       },
       {
         "type": 18,
-        "label": "Attachments and badges",
-        "description": "One attachment per line, then a Badges: line",
+        "label": "Attachments, badges and comment",
+        "description": "One attachment per line, then a Badges: line and a Comment: line",
         "component": {
           "type": 4,
           "custom_id": "attachments",
           "style": 2,
           "required": true,
-          "max_length": 1000,
-          "placeholder": "Gauge-9 Mono\nCrown-H3 Barrel\nBadges: meta, top3",
-          "value": "Gauge-9 Mono\nCrown-H3 Barrel\nBadges: meta, best"
+          "max_length": 4000,
+          "placeholder": "Gauge-9 Mono\nCrown-H3 Barrel\nBadges: meta, top3\nComment: Best for close range",
+          "value": "Gauge-9 Mono\nCrown-H3 Barrel\nBadges: meta, best\nComment: "
         }
       },
       {
@@ -319,16 +319,16 @@
       },
       {
         "type": 18,
-        "label": "Attachments and badges",
-        "description": "One attachment per line, then a Badges: line",
+        "label": "Attachments, badges and comment",
+        "description": "One attachment per line, then a Badges: line and a Comment: line",
         "component": {
           "type": 4,
           "custom_id": "attachments",
           "style": 2,
           "required": true,
-          "max_length": 1000,
-          "placeholder": "Gauge-9 Mono\nCrown-H3 Barrel\nBadges: meta, top3",
-          "value": "Gauge-9 Mono\nCrown-H3 Barrel\nBadges: meta, bestclose"
+          "max_length": 4000,
+          "placeholder": "Gauge-9 Mono\nCrown-H3 Barrel\nBadges: meta, top3\nComment: Best for close range",
+          "value": "Gauge-9 Mono\nCrown-H3 Barrel\nBadges: meta, bestclose\nComment: "
         }
       },
       {
@@ -370,7 +370,7 @@
             "custom_id": "bulk_text",
             "label": "Weapon | Category, then one field per line",
             "style": 2,
-            "placeholder": "BAL-27 | AR\nBuild: Flex\nImage: BAL-27-1\nCode: 1I2C6B8A9D\nBadges: meta\n- Gauge-9 Mono",
+            "placeholder": "BAL-27 | AR\nBuild: 2\nCode: 1I2C6B8A9D\nBadges: meta\nComment: Best for close range\n- Gauge-9 Mono",
             "required": true
           }
         ]
@@ -389,7 +389,26 @@
             "custom_id": "bulk_text",
             "label": "Weapon | Category, then one field per line",
             "style": 2,
-            "placeholder": "BAL-27 | AR\nBuild: Flex\nImage: BAL-27-1\nCode: 1I2C6B8A9D\nBadges: meta\n- Gauge-9 Mono",
+            "placeholder": "M13B | AR\nBuild: Build 1\nBadges: bestclose\nComment: Quiet close range\n- Monolithic Suppressor",
+            "required": true
+          }
+        ]
+      }
+    ]
+  },
+  "bulkReplaceMP": {
+    "custom_id": "modal_loadouts_bulk_add_MP",
+    "title": "Replace MP Loadouts",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "bulk_text",
+            "label": "Weapon | Category, then one field per line",
+            "style": 2,
+            "placeholder": "BAL-27 | AR\nBuild: 2\nCode: 1I2C6B8A9D\nBadges: meta\nComment: Best for close range\n- Gauge-9 Mono",
             "required": true
           }
         ]

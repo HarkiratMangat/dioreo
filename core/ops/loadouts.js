@@ -241,7 +241,8 @@ async function upsertOptionBlock({ rawEntry, optionIndex, mode, session, updated
         imageKey,
         imageVersion: old && old.imageKey === imageKey ? old.imageVersion : null,
         sourceHash: old && old.imageKey === imageKey ? old.sourceHash : null,
-        label: old?.label || '',
+        // The option's own label: the block's Label line, or what it had when the block left the line out (an Export writes it since 2026-11-06 10:58 EST).
+        label: rawEntry.defaulted?.includes('label') ? (old?.label || '') : (rawEntry.label || ''),
     });
     const next = optionIndex < options.length ? options.map((o, i) => (i === optionIndex ? option : o)) : [...options, option];
     const problem = lo.listProblem(next);

@@ -258,7 +258,7 @@ function planOptionSave({ existing, targetId, targetOption, ident, weaponKey, si
 }
 
 // Commits an option save planned above, and answers with the build as it now stands, the option on show.
-async function saveOption(interaction, { plan, picture, fail, unknown, mode, weaponName, label, code, attachments, ident, badges, alerts }) {
+async function saveOption(interaction, { plan, picture, fail, unknown, mode, weaponName, label, code, attachments, ident, badges, alerts, commentField = {} }) {
     const lo = require('../../utils/loadoutOptions');
     const { variantView } = require('../../utils/loadoutRender');
     const { isRealImageKey } = require('../../utils/loadoutImageCache');
@@ -286,7 +286,7 @@ async function saveOption(interaction, { plan, picture, fail, unknown, mode, wea
         let options = lo.optionsOf(src);
         options[from] = option;
         if (plan.to !== from) options = lo.move(options, from, plan.to);
-        ops.push({ type: 'loadout.options', target: target(src), payload: { ...lo.optionsToFields(options), category: ident.category, label, ...badges } });
+        ops.push({ type: 'loadout.options', target: target(src), payload: { ...lo.optionsToFields(options), category: ident.category, label, ...badges, ...commentField } });
     } else if (plan.kind === 'join' || plan.kind === 'add') {
         // Removed from its build first, so the build it joins never holds the same code twice inside the transaction.
         if (src) ops.push(removeFrom(src, from));
@@ -294,7 +294,7 @@ async function saveOption(interaction, { plan, picture, fail, unknown, mode, wea
     } else {
         ops.push(removeFrom(src, from));
         ops.push({ type: 'loadout.add', payload: {
-            weaponName, label, buildNumber: plan.number, mode, attachments, imageKey: option.imageKey, category: ident.category, ...badges,
+            weaponName, label, buildNumber: plan.number, mode, attachments, imageKey: option.imageKey, category: ident.category, ...badges, ...commentField,
             ...(option.attachmentSlots.length ? { attachmentSlots: option.attachmentSlots } : {}),
             ...(mode === 'MP' ? { shareCode: code } : {}),
             ...(option.sourceHash ? { sourceHash: option.sourceHash } : {}),
@@ -324,7 +324,7 @@ async function saveOption(interaction, { plan, picture, fail, unknown, mode, wea
             notes.push(lo.optionsOf(src).length > 1 ? `It left Build ${plan.srcNumber}, whose later options moved up a letter.` : `Build ${plan.srcNumber} is now this option, so it is gone from the list, and the builds after it moved up one.`);
         }
         if (destNumber !== plan.number) notes.push(`Build ${plan.number} is now Build ${destNumber}.`);
-        notes.push(`The weapon box, label and badges stay Build ${destNumber}'s.`);
+        notes.push(`The weapon box, label, badges and comment stay Build ${destNumber}'s.`);
     } else {
         savedId = String(result.results[1].applied.id); shown = 0;
         moveLine = `${tagOf(plan.srcNumber, from)} → ${tagOf(plan.number, 0)}`;
@@ -350,6 +350,12 @@ async function saveOption(interaction, { plan, picture, fail, unknown, mode, wea
 
 // --- SAVE A LOADOUT (Add or Edit) --- custom_ids: add_loadout_{MP|DMZ} · edit_loadout_{id}. One body for both since the five-field pop-up (2026-10-26 01:19 EDT): the two had drifted into near copies. `preset` is a Save anyway replay (handleCatalogueWarning above): the typed values come from the warning's pending store instead of a pop-up, and the catalogue check is skipped because the admin already saw it.
 async function saveLoadout(interaction, preset, isEdit) {
+    // A pop-up opened from Edit's search picker (mng_pick_): acknowledge by updating the picker and draw it again with nothing picked. Discord sends no event when the option already picked is picked again, so without this the same build could not be reopened from the list (click-test 2026-11-06 11:00 EST). Every answer below is a follow-up either way.
+    const fromPicker = !preset && interaction.message?.components?.some(row => row.components?.some(c => String(c.customId || '').startsWith('mng_pick_')));
+    if (fromPicker && !interaction.deferred && !interaction.replied) {
+        await interaction.deferUpdate();
+        await interaction.editReply({ components: interaction.message.components.map(r => r.toJSON()) }).catch(() => {});
+    }
     if (!interaction.deferred && !interaction.replied) await interaction.deferReply({ ephemeral: true });
     const { parseLoadoutBadges, correctGunsmithCode, gunsmithCodeProblem } = require('../../utils/adminParser');
     const { checkImageExists, isPlaceholderBuild } = require('../../utils/loadoutRender');
@@ -377,7 +383,9 @@ async function saveLoadout(interaction, preset, isEdit) {
     if (label.length > BUILD_NAME_MAX) return await fail(`A label can be at most ${BUILD_NAME_MAX} characters — this one is ${label.length}. Shorten it and submit again.`);
     const ident = form.parseIdentity(field('build'), mode);
     if (ident.error) return await fail(ident.error);
-    const { attachments, badgesRaw } = form.parseAttachmentsBadges(field('attachments'));
+    const { attachments, badgesRaw, comment } = form.parseAttachmentsBadges(field('attachments'));
+    // Undefined (no Comment: line) leaves the stored comment alone; '' clears it.
+    const commentField = comment !== undefined ? { description: comment } : {};
     if (!attachments.length) return await fail('The attachments box needs at least one attachment, one per line.');
     let { isMeta, categoryRank, dmzRangeRank, isToxic, isAss, rankModes, unrecognized, warnings } = parseLoadoutBadges(badgesRaw, mode);
     // DMZ never uses the per-category Best/TopN system: a bare "best"/"topN" parses into categoryRank since the parser reads it the same way, so it moves to dmzRangeRank.
@@ -420,7 +428,11 @@ async function saveLoadout(interaction, preset, isEdit) {
 
     // Checked BEFORE the picture, so Back to edit never leaves an uploaded image behind a build that was not saved.
     const shot = shotOf(interaction, preset);
-    const unknown = await findUnknownNames({ weaponName, attachments });
+    // Only names this save ADDS are checked (Harkirat, 2026-11-06 11:00 EST: names already saved on the build, often from before the catalogue existed, warned on every edit, even a label-only one). A new name still warns once, so a typo is caught, and Save anyway still teaches the catalogue.
+    const prior = optionPath ? plan?.before : existing;
+    const had = new Set((prior?.attachments || []).map(normKey));
+    const sameWeapon = Boolean(prior) && normKey(prior.weaponName) === normKey(weaponName);
+    const unknown = await findUnknownNames({ weaponName: sameWeapon ? '' : weaponName, attachments: attachments.filter(a => !had.has(normKey(a))) });
     if (unknown.count && !acks.includes('catalogue')) {
         return await warnUnknownNames(interaction, { customId, acks, values: { ...readValues(field, LOADOUT_FIELDS), ...(shot ? { [SHOT_KEY]: shot.url } : {}) } }, unknown);
     }
@@ -433,14 +445,14 @@ async function saveLoadout(interaction, preset, isEdit) {
     if (picture.error) return await fail(picture.error);
     if (picture.ask) return await warnOldPicture(interaction, { customId, acks: [...acks, 'catalogue'], values: readValues(field, LOADOUT_FIELDS) }, pictureOf.imageKey, pictureOf);
     if (optionPath) {
-        return await saveOption(interaction, { plan, picture, fail, unknown, mode, weaponName, label, code, attachments, ident,
+        return await saveOption(interaction, { plan, picture, fail, unknown, mode, weaponName, label, code, attachments, ident, commentField,
             badges: { isMeta, categoryRank, dmzRangeRank, isToxic, isAss, rankModes }, alerts: badgeNotes(unrecognized, warnings) });
     }
 
     // The number goes to core as `buildNumber`, and core names the build and swaps the one holding it (core/ops/loadouts.js numberBuild, 2026-10-26 12:17 EDT), the same rule the portal gets. The check above only answers early with a clear message.
     const payload = {
         weaponName, label, buildNumber: numbering.number, mode, attachments, imageKey: picture.imageKey,
-        category: ident.category, isMeta, categoryRank, dmzRangeRank, isToxic, isAss, rankModes,
+        category: ident.category, isMeta, categoryRank, dmzRangeRank, isToxic, isAss, rankModes, ...commentField,
         ...(mode === 'MP' ? { shareCode: code } : {}),
         ...(picture.sourceHash ? { sourceHash: picture.sourceHash } : {}),
         // Cloudinary's version of the picture just uploaded, so the card's URL changes with it (utils/loadoutRender.js pictureVersion).
@@ -478,6 +490,13 @@ async function handleSavedAction(interaction) {
     const id = interaction.customId;
     const Loadout = require('../../models/Loadout');
     if (id.startsWith('mng_ldopen_')) return await require('../../utils/openLoadoutCard').openLoadout(interaction, id.replace('mng_ldopen_', ''), { ephemeral: true });
+    // Edit another option of a merged build, straight from its saved panel (Harkirat, 2026-11-06 11:00 EST: going 1 → 1b took a new search). The value is the option's index.
+    if (id.startsWith('mng_ldeditopt_') && interaction.isStringSelectMenu()) {
+        const doc = await Loadout.findById(id.replace('mng_ldeditopt_', '')).lean();
+        if (!doc) return await interaction.reply({ content: `${BOT_EMOJI.cross} That build no longer exists.`, ephemeral: true });
+        const option = Math.min(Math.max(Number(interaction.values[0]) || 0, 0), (doc.variants || []).length);
+        return await interaction.showModal(await editLoadoutModal(doc, option));
+    }
     if (id.startsWith('mng_ldedit_')) {
         const t = splitTarget(id.replace('mng_ldedit_', ''));
         const doc = await Loadout.findById(t.id).lean();
@@ -590,8 +609,18 @@ async function bulkAddLoadouts(interaction, preset = null) {
     }
     const unknown = { weapon: null, attachments: [], count: 0, weapons: [] };
     const seen = new Set();
+    // Names already saved on a build of the same weapon in this mode are not new, so they do not warn (the single save's rule above, 2026-11-06 11:00 EST).
+    const Loadout = require('../../models/Loadout');
+    const stored = await Loadout.find({ mode: pageMode, weaponKey: { $in: [...new Set(parsed.map(p => p.weaponKey))] } }).select('weaponKey attachments variants.attachments').lean();
+    const known = new Map();
+    for (const b of stored) {
+        const set = known.get(b.weaponKey) || new Set();
+        for (const a of [...(b.attachments || []), ...(b.variants || []).flatMap(v => v.attachments || [])]) set.add(normKey(a));
+        known.set(b.weaponKey, set);
+    }
     for (const p of parsed) {
-        const u = await findUnknownNames({ weaponName: p.weaponName, attachments: p.attachments });
+        const had = known.get(p.weaponKey);
+        const u = await findUnknownNames({ weaponName: had ? '' : p.weaponName, attachments: p.attachments.filter(a => !had?.has(normKey(a))) });
         if (u.weapon && !seen.has(`w|${normKey(u.weapon)}`)) { seen.add(`w|${normKey(u.weapon)}`); unknown.weapons.push({ name: u.weapon, category: p.category }); }
         for (const a of u.attachments) if (!seen.has(`a|${normKey(a)}`)) { seen.add(`a|${normKey(a)}`); unknown.attachments.push(a); }
     }

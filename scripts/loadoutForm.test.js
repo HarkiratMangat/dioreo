@@ -64,7 +64,17 @@ check('a new build takes the next number, or a taken one and moves its holder to
 check('a legacy build with its label as its name gets the label and its place as its number', () => {
     const doc = b('b', 'Ranked', { weaponName: 'BAL-27', mode: 'MP', category: 'AR', shareCode: '1A2B', attachments: ['X'] });
     const values = form.editValues(doc, [b('a', 'Build 1'), doc], ['meta']);
-    assert.deepStrictEqual(values, { weapon: 'BAL-27, Ranked', build: 'AR, 2, 1A2B', attachments: 'X\nBadges: meta' });
+    assert.deepStrictEqual(values, { weapon: 'BAL-27, Ranked', build: 'AR, 2, 1A2B', attachments: 'X\nBadges: meta\nComment: ' });
+});
+
+check('the Comment line: everything after it is the comment, a missing line keeps it, an empty one clears it', () => {
+    assert.deepStrictEqual(form.parseAttachmentsBadges('A\nB\nBadges: meta\nComment: Close range\nno suppressor'), { attachments: ['A', 'B'], badgesRaw: 'meta', comment: 'Close range\nno suppressor' });
+    assert.strictEqual(form.parseAttachmentsBadges('A\nBadges: meta').comment, undefined, 'no Comment line leaves the stored comment');
+    assert.strictEqual(form.parseAttachmentsBadges('A\nComment:').comment, '', 'an empty Comment line clears it');
+    assert.deepStrictEqual(form.parseAttachmentsBadges('A\nComment: x\nBadges: meta').attachments, ['A'], 'a Badges line after Comment is part of the comment, never an attachment');
+    const doc = b('a', 'Build 1', { weaponName: 'LOCUS', mode: 'MP', category: 'SNIPER', shareCode: '2A4B', attachments: ['FMJ'], description: 'One shot\nto the chest' });
+    const v = form.editValues(doc, [doc], ['top3']);
+    assert.strictEqual(form.parseAttachmentsBadges(v.attachments).comment, 'One shot\nto the chest', 'the box shows the stored comment and reads it back unchanged');
 });
 
 check('the Edit boxes read back to the same build, so saving unchanged changes nothing', () => {
@@ -72,7 +82,7 @@ check('the Edit boxes read back to the same build, so saving unchanged changes n
     const v = form.editValues(doc, [b('z', 'Build 1'), doc], ['meta', 'top3']);
     assert.deepStrictEqual(form.parseWeaponLabel(v.weapon), { weaponName: 'BAL-27', label: 'Ranked' });
     assert.deepStrictEqual(form.parseIdentity(v.build, 'MP'), { category: 'AR', number: 2, option: 0, lettered: false, code: '1C2B4A8B9A' });
-    assert.deepStrictEqual(form.parseAttachmentsBadges(v.attachments), { attachments: ['A', 'B'], badgesRaw: 'meta, top3' });
+    assert.deepStrictEqual(form.parseAttachmentsBadges(v.attachments), { attachments: ['A', 'B'], badgesRaw: 'meta, top3', comment: '' });
     const dmz = form.editValues({ ...doc, mode: 'DMZ', shareCode: '' }, [doc], []);
     assert.strictEqual(dmz.build, 'AR, 2', 'a DMZ box has no code part');
 });

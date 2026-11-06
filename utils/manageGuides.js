@@ -130,7 +130,7 @@ function calendarSections() {
 function loadoutsSections() {
     return [
         section('📋 Paste Skeleton',
-            '```\nWeapon | Category\nBuild: Build 2\nLabel: Ranked\nCode: Gunsmith Code\nImage: Cloudinary Key\nBadges: meta, best\n- Attachment 1\n- Attachment 2\n```\n' +
+            '```\nWeapon | Category\nBuild: Build 2\nLabel: Ranked\nCode: Gunsmith Code\nImage: Cloudinary Key\nBadges: meta, best\nComment: Best for close range\n- Attachment 1\n- Attachment 2\n```\n' +
             '-# One build per BLOCK (blank line between blocks). **First line is the weapon\'s identity, every optional field is its own labelled line, everything else is an attachment.** The labelled lines can be in any order and any of them can be left out.'),
         section('🏷️ Badges (comma-separated, optional)',
             '`meta` · `toxic` · `ass` · `best` · `top3` · `top5` · `hm` · `bestclose` · `top3midlong` · `hmclose` (rank + range combos for DMZ)\n' +
@@ -140,11 +140,12 @@ function loadoutsSections() {
             '• **Mode** is not a field: the MP or DMZ page you paste on decides it.\n' +
             '• **Code** is required on the MP page (a block without one is skipped and named); DMZ has no code.\n' +
             '• **Options of a merged build:** `Build: Build 2b` is Build 2\'s Option B (`2c` Option C, and so on). It replaces that option, or adds it if it is the next letter; Build 2 must exist, or come earlier in the paste. Badges and Label go on Build 2\'s own block. An Export writes every option this way.\n' +
+            '• **Comment** is the line players see quoted under the attachments, one per build (every option shares it). Several Comment lines make one comment over several lines; `Comment:` with nothing after it clears it, and leaving the line out keeps the stored one. The single Add/Edit pop-up takes it as a `Comment:` line at the end of the attachments box.\n' +
             '• **Build**, **Label**, **Image** and **Badges** are optional — omit the whole line if it doesn\'t apply. With no Build line the block is a new build, numbered after the weapon\'s others. **Label** is back end only. Re-pasting a build that already exists keeps its stored Image, Code and Label when you leave those lines out.\n' +
             '• **Image** takes a Cloudinary key, as an Export writes it; the single Add/Edit pop-up takes a URL or a screenshot and files it under the build\'s code for you.\n' +
             '• Attachment names are kept **exactly as typed** — no auto-casing, since these must match the real in-game names precisely. A `-` bullet is optional, and is how you force a line containing a colon to be read as an attachment.'),
         section('🖼️ Example',
-            '```\nBAL-27 | AR\nBuild: Build 2\nLabel: Aggro\nCode: 1I2C6B8A9D\nBadges: meta, top3\n- Monolithic Suppressor\n- FTAC Champion\n```'),
+            '```\nBAL-27 | AR\nBuild: Build 2\nLabel: Aggro\nCode: 1I2C6B8A9D\nBadges: meta, top3\nComment: Best for close range\n- Monolithic Suppressor\n- FTAC Champion\n```'),
         section('💡 Tips',
             '• Use one of **/manage**\'s **Export** options to get this format filled in with your real data.\n' +
             '• The old one-line pipe format (`Weapon | Category | Mode | Build | ...`) is refused with an error naming this format; re-export anything saved in it.\n' +
@@ -208,7 +209,7 @@ function announcementsSections() {
         section('📝 Post New Announcement',
             'Write the message, then optionally set an expiry — defaults to **60 days**, or type your own number of days, or `never`.'),
         section('✏️ Edit / Delete',
-            'Live directly on each announcement\'s own card, same as Manage Admins\' per-row buttons above — **Edit** re-opens that announcement\'s text/expiry for changes, **Delete** removes it immediately, no second confirm.'),
+            'Live directly on each announcement\'s own card, same as Manage Admins\' per-row buttons above — **Edit** re-opens that announcement\'s text/expiry for changes, **Delete** asks you to confirm (Yes, Delete / Cancel) before it removes it.'),
         section('💡 Tip',
             'Only ACTIVE (non-expired) announcements are listed here — an expired one has already stopped showing to users and drops off this list on its own.')
     ];

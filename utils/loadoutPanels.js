@@ -72,6 +72,19 @@ function actionRow(doc, changeIds = [], option = 0) {
     ] };
 }
 
+// A merged build's other options as a dropdown, so 1 → 1b is one pick (Harkirat, 2026-11-06 11:00 EST). The option on show is left out: it has Edit again. Null for a build with one option.
+function editOptionRow(doc, shown = 0) {
+    const { optionsOf, optionTag, optionLetter } = require('./loadoutOptions');
+    const options = optionsOf(doc);
+    if (options.length < 2) return null;
+    const n = require('./loadoutForm').buildNumberOf(doc.buildName);
+    const choices = options.map((o, i) => ({ o, i })).filter(({ i }) => i !== shown).map(({ o, i }) => ({
+        label: `Option ${optionLetter(i)} · ${n === null ? optionLetter(i) : optionTag(n, i)}`, value: String(i),
+        ...(o.shareCode ? { description: o.shareCode } : {}),
+    }));
+    return { type: 1, components: [{ type: 3, custom_id: `mng_ldeditopt_${doc._id}`, placeholder: 'Edit another option…', options: choices }] };
+}
+
 // A merged build's options, one line each with its tag and code (utils/loadoutOptions.js), the one on show in bold, and how to move one. Null for a build with one option.
 function optionsBlock(doc, shown) {
     const { optionsOf, optionTag, optionLetter } = require('./loadoutOptions');
@@ -108,6 +121,8 @@ function savedPanel({ doc, before = null, changeIds = [], notes = [], warnings =
     if (notes.length) components.push({ type: 10, content: notes.map(n => `-# ${emojis.info} ${n}`).join('\n') });
     if (warnings.length) components.push({ type: 10, content: warnings.map(w => `${emojis.warn} ${w}`).join('\n') });
     components.push({ type: 14, divider: false, spacing: 1 }, actionRow(doc, changeIds, option));
+    const editOther = editOptionRow(doc, option);
+    if (editOther) components.push(editOther);
     return [{ type: 17, accent_color: ACCENT[doc.mode] || ACCENT.MP, components }];
 }
 

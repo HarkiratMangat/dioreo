@@ -10,7 +10,8 @@ const MAX_OPTIONS = 6;
 // What one option holds: the fields that differ between options. Everything else on a build (weapon, category, label, badges, credit, description) belongs to the whole build, so to every option.
 const OPTION_FIELDS = ['attachments', 'attachmentSlots', 'shareCode', 'imageKey', 'imageVersion', 'sourceHash'];
 // The whole build's fields an option save may also change (the pop-up's weapon box and Badges line). Weapon name and mode are not here: a rename moves a build to another weapon's numbers, which an option save does not do.
-const BUILD_FIELDS = ['category', 'label', 'isMeta', 'categoryRank', 'dmzRangeRank', 'isToxic', 'isAss', 'rankModes'];
+// `description` (the build's comment) since 2026-11-06 10:58 EST: an option save of Option A or B carries the whole build's comment, and loadout.options refuses any field not listed here.
+const BUILD_FIELDS = ['category', 'label', 'isMeta', 'categoryRank', 'dmzRangeRank', 'isToxic', 'isAss', 'rankModes', 'description'];
 
 const letterOf = (i) => String.fromCharCode(97 + i);
 const optionLetter = (i) => String.fromCharCode(65 + i);

@@ -151,7 +151,7 @@ const loadoutsActions = () => [
       run: async ({ interaction, page, manageCommand }) => await interaction.showModal(manageCommand.buildLoadoutsBulkAddModal(loadoutModeFor(page))) },
     // "Replace Multiple" deliberately reuses Add Multiple's modal: the upsert-by-name behaviour behind it (update in place if that build exists, insert if not) already covers replace semantics for anything pasted back in. The real search-then-pick interaction is deferred work.
     { id: 'bulkreplace', label: 'Replace', style: 1, kind: 'modal', slash: true,
-      run: async ({ interaction, page, manageCommand }) => await interaction.showModal(manageCommand.buildLoadoutsBulkAddModal(loadoutModeFor(page))) },
+      run: async ({ interaction, page, manageCommand }) => await interaction.showModal(manageCommand.buildLoadoutsBulkAddModal(loadoutModeFor(page), true)) },
     { id: 'bulkdelete', label: 'Delete', style: 4, kind: 'modal', slash: true,
       run: async ({ interaction, page, manageCommand }) => await interaction.showModal(manageCommand.buildLoadoutsBulkRemoveModal(loadoutModeFor(page))) },
     { id: 'exportupto5', label: 'Up To 5', style: 2, kind: 'modal', slash: true,
