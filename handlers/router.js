@@ -22,6 +22,7 @@ const { OWNED_PREFIXES: MANAGE_OWNED_PREFIXES } = require("./manage");
 // ⚠️ The list below IS the contract utils/hotpatch.js validates a reloaded handler against. Add a handler here and in the dispatch chain together; scripts/handlerRouting.test.js fails if the bindings and the files on disk disagree.
 const HANDLER_BINDINGS = [
     ['colors', 'handleColorsButton'],
+    ['news', 'handleNewsInteraction'],
     ['manage', 'handleManageInteraction'],
     ['timestamp', 'handleTimestampInteraction'],
     ['help', 'handleHelpInteraction'],
@@ -72,6 +73,7 @@ const handleNavigationInteraction = late('navigation', 'handleNavigationInteract
 const handleRemindInteraction = late('remind', 'handleRemindInteraction');
 const handleAnnouncementControlsInteraction = late('announcementControls', 'handleAnnouncementControlsInteraction');
 const handleTextCommandsInteraction = late('textCommands', 'handleTextCommandsInteraction');
+const handleNewsInteraction = late('news', 'handleNewsInteraction');
 
 // ==========================================
 // ROUTER-PRIVATE STATE
@@ -259,6 +261,8 @@ async function handleInteractionInner(interaction) {
         if (await handleTextCommandsInteraction(interaction)) return;
         markHandler('addToPatchNotes');
         if (await handleAddToPatchNotesInteraction(interaction)) return;
+        markHandler('news');
+        if (await handleNewsInteraction(interaction)) return;
         markHandler('viewColors');
         if (await handleViewColorsInteraction(interaction)) return;
         markHandler('patchnotes');

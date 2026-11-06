@@ -2,6 +2,7 @@
 # hyphenated prefix — mis-described, mis-filed, mis-indexed. Measured 2026-08-02 15:25 EDT: it was the
 # single largest false-positive source, and a linter that is usually wrong is one you learn to ignore.
 [default.extend-words]
+MENA = "MENA"        # utils/newsTriage/filter.js — the Middle East and North Africa regional version of CODM (2026-11-04 20:18 EST)
 inh = "inh"          # portal/ui/access.css's `.cel.inh` — an INHERITED permission cell
 mis = "mis"
 unparseable = "unparseable"

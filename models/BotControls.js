@@ -28,6 +28,11 @@ const botControlsSchema = new mongoose.Schema({
     blockedGuilds: { type: [String], default: [] },
     // Text replies Dioreo posts per 10 s, for one server; a server not listed uses 5 per channel and 30 per server.
     replyLimits: { type: [{ _id: false, guildId: String, perChannel: Number, perServer: Number }], default: [] },
+    // The kinds of item news triage never writes into the Next Season Draft (2026-11-05 15:23 EST, Harkirat's pick 3): keys of utils/newsTriage/draftMerge.js KIND_GROUPS. Missing means its defaults. Set from the daily briefing's dropdown by anyone who can write the draft (handlers/news.js), so unlike the fields above it is not owner-only.
+    newsSkipKinds: { type: [String], default: undefined },
+    // News triage's AI reads today (UTC day and count), so a restart keeps the daily cap (the fresh review R1, 2026-11-05 20:15 EST).
+    newsReadDay: { type: String, default: '' },
+    newsReadCalls: { type: Number, default: 0 },
 }, { timestamps: true });
 
 module.exports = mongoose.model('BotControls', botControlsSchema);

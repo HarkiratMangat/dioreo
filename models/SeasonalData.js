@@ -96,6 +96,7 @@ const SeasonalDataSchema = new mongoose.Schema({
         rankStart: { type: Date },
         dmzStart: { type: Date },
         bpEndTBD: { type: Boolean, default: false },
+        newsSeasonSet: { type: mongoose.Schema.Types.Mixed, default: undefined }, // the season fields news triage set itself, with each one's source rank and value, so a better source may replace them and one he changed is left alone (the fresh review R1, 2026-11-05 20:14 EST). Draft only: Promote to Live does not copy it.
         rankEndTBD: { type: Boolean, default: false },
         dmzEndTBD: { type: Boolean, default: false },
         newDraws: [{
@@ -103,14 +104,16 @@ const SeasonalDataSchema = new mongoose.Schema({
             date: { type: Date },
             thumbnailUrl: { type: String },
             priceType: { type: String, default: '' }, // The /draw prices type this draw is priced as (2026-10-18 11:06 EDT, utils/drawTypes.js): a quick-jump key, '' when not set
-            items: [{ tier: { type: String }, name: { type: String } }]
+            items: [{ tier: { type: String }, name: { type: String } }],
+            newsSource: { type: new mongoose.Schema({ channelId: String, messageId: String, rank: Number, dated: Boolean, carried: Boolean, noEnd: Boolean, sig: String }, { _id: false }), default: undefined }, // news triage's own rows (2026-11-04 23:59 EST, utils/newsTriage/draftMerge.js): which post wrote it, how good a source, and what it wrote, so a later post may update it and a row he edited is left alone. Draft only: Promote to Live copies into the live lists, whose schema has no such field, so it is dropped there.
         }],
         returningDraws: [{
             title: { type: String },
             date: { type: Date },
             thumbnailUrl: { type: String },
             priceType: { type: String, default: '' }, // The /draw prices type this draw is priced as (2026-10-18 11:06 EDT, utils/drawTypes.js): a quick-jump key, '' when not set
-            items: [{ tier: { type: String }, name: { type: String } }]
+            items: [{ tier: { type: String }, name: { type: String } }],
+            newsSource: { type: new mongoose.Schema({ channelId: String, messageId: String, rank: Number, dated: Boolean, carried: Boolean, noEnd: Boolean, sig: String }, { _id: false }), default: undefined }, // news triage's own rows (2026-11-04 23:59 EST, utils/newsTriage/draftMerge.js): which post wrote it, how good a source, and what it wrote, so a later post may update it and a row he edited is left alone. Draft only: Promote to Live copies into the live lists, whose schema has no such field, so it is dropped there.
         }],
         calendar: [{
             title: { type: String },
@@ -119,7 +122,8 @@ const SeasonalDataSchema = new mongoose.Schema({
             isOngoing: { type: Boolean, default: false },
             category: { type: String, enum: ['draw', 'event', 'playlist'], default: 'event' },
             // Was missing (v3-pre-release review, finding #2): draft.calendar is a hand-copied duplicate of the LIVE calendar sub-schema above, and never received this field when it was added -- Mongoose silently dropped it, so Promote to Live flattened every staged 2X CP event and /draw calculator quoted normal pricing during a live double-CP window. Keep this in sync with the live calendar sub-schema by hand until the two are extracted into one shared sub-schema (filed as follow-up cleanup).
-            isDoubleCP: { type: Boolean, default: false }
+            isDoubleCP: { type: Boolean, default: false },
+            newsSource: { type: new mongoose.Schema({ channelId: String, messageId: String, rank: Number, dated: Boolean, carried: Boolean, noEnd: Boolean, sig: String }, { _id: false }), default: undefined }, // news triage's own rows (2026-11-04 23:59 EST, utils/newsTriage/draftMerge.js): which post wrote it, how good a source, and what it wrote, so a later post may update it and a row he edited is left alone. Draft only: Promote to Live copies into the live lists, whose schema has no such field, so it is dropped there.
         }],
         drawsBannerUrl: { type: String, default: '' },
         eventsBannerUrl: { type: String, default: '' },

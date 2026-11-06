@@ -30,6 +30,7 @@ const NO_SURFACE = {
     'patchnote.restore': { why: 'inverse-only — patchnote.purge inverts to it', inverseOnly: true },
     'season.restoreSnapshot': { why: 'inverse-only — season.promoteDraft inverts to it', inverseOnly: true },
     'season.restoreDraft': { why: 'inverse-only — season.discardDraft inverts to it', inverseOnly: true },
+    'season.newsDraft': { why: 'written only by news triage (utils/newsTriage/pipeline.js), never staged by the portal; its own inverse', inverseOnly: true },
     'catalogue.forget': { why: 'inverse-only — catalogue.learn inverts to it', inverseOnly: true },
     // ── Bot-side for now: the CODM catalogue learns a name only alongside a loadout save that met it (/manage Save anyway, /autobuild Confirm), in the same changeset. The portal sends it once pins2 ports the catalogue warning to the Armory (local/project/proposals in the bot project).
     'patchnote.setSeasonDates': { why: 'a past season\'s own dates, set once by scripts/setSeasonDates.js for seasons that rotated before Promote to Live saved them (2026-10-28); no editor anywhere yet' },

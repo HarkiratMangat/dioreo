@@ -12,6 +12,10 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.10.0 — November 5, 2026
+- **New (admins):** posts in the followed CODM news channels now become cards for Dioreo's admins, with a button that opens the right /manage box, and next season's draws, events and dates are drafted into the Next Season Draft for review before they go live.
+- **Fixed:** a calendar event with no end date is no longer dropped when the season draft is saved.
+
 ## v3.9.0 — November 5, 2026
 - **New:** merged builds can be edited and reordered in /manage by number: `2` is Build 2's Option A, `2b` its Option B, and changing the number moves the option.
 - **Changed:** when a build is removed, the builds after it move up a number, so a weapon's builds always run 1, 2, 3 with no gap.
