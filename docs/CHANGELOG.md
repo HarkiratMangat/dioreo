@@ -29,7 +29,25 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.9.0 — 2026-11-05 17:05 EST (#256) — Merged builds are edited by number in /manage: 1, 1b, 1c
+## v3.10.0 — 2026-11-05 22:36 EST (#257) — Followed news posts become /manage drafts and a Next Season Draft
+
+### Added
+- **News-channel triage.** Dioreo Admin reads the followed news channels in dioreoland (#leaks, #official-codm-news). A free filter keeps about two thirds of posts from the AI; Gemini 3.8 Flash on Flex PayGo with low thinking reads the rest, capped at 60 reads a day. Each post that announces a Global draw, event, mode, season or patch becomes one card in a private channel (`NEWS_CHANNEL`).
+- **This season's items** get a button that opens the matching /manage box, filled in, and checked against that page's tier. Nothing on a card writes live data. A post that moves or completes the dates of something already on the bot is a **Fix the dates on the bot** item.
+- **Next season's items are written into the Next Season Draft** (`season.newsDraft`, as the owner with source `news`), each write listed on its card with **Undo draft changes**. One item is one row, and a better source wins: official 3, a confirmed leak 2, an expected leak 1. His rows and rows he edited are never touched. Kinds he never lists are not drafted, and he picks them in the briefing. Carry-over copies live rows still running at the next season's start.
+- **A daily briefing** at 00:05 UTC: what was read and its cost, the draft's readiness, what the live bot may be wrong about, whether each channel still delivers, and the skipped posts with Make a card.
+- **A promote check** the day before a season starts, listing what is still missing.
+- `scripts/newsTriage.test.js` and `scripts/newsTriageGrid.test.js` (a seeded scenario grid over the draft merge).
+
+### Changed
+- /manage's calendar box writes a row with no end as All Season, and keeps a 2X CP row's marker, so a save reads back what it showed: a null end used to write "Invalid Date" and the save dropped the row.
+- A /manage draft box save keeps the id and source of every row it did not change.
+- PRIVACY v1.14: what news triage reads, and that it stores ids and reasons, never a post's text.
+
+### Fixed
+- Found before release, by the Season 9 backtest, the scenario grid and a fresh review, each pinned by a test. A month and day already reached read as next year. A loose name match skipped or "fixed" the wrong row. A leak's "changed" could move an official date. Undo could put a row back over his edit, or hide a draft that still held rows.
+
+## v3.9.0 — 2026-11-05 17:05 EST (#256 · `cf966365`) — Merged builds are edited by number in /manage: 1, 1b, 1c
 **From Harkirat, 2026-11-05:** "can i currently rearrange the option a, option b, option c merged builds' order? and how do i even edit/add merged builds?"; "the bot for now, portal as proposal for the other project"; "lowkey thinking we just number the build as "1, 1b, 1c" etc and if it has b c d e etc then it means its a merge build and should be added to the same page?" (14:41 EST); he picked the mock-up "Build it as shown" (14:50 EST); "merge flow" (17:00 EST).
 
 ### Added

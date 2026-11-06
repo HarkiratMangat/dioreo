@@ -308,6 +308,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-11-04 10:44 EST — 24 new nameplates and decorations from the shop, and a pinned count that had to move (v3.8.2)
 - 2026-11-04 10:57 EST — The VM's image tool was older than the Mac's (v3.8.3)
 - 2026-11-04 14:55 EST — Undo that replays the forward path, and a harness that drives /manage with no database (v3.8.4)
+- 2026-11-05 22:36 EST — news posts become drafts, and what kept finding new problems (v3.10.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4975,6 +4976,20 @@ A whole-bot housekeeping pass found its sharpest bugs in one place: undo. Replac
 None of this was visible to the test suite because the `/manage` handlers ran 12–18% of their lines under it: every path ends in `commitSet`, which needs a Mongo session. `scripts/lib/manageHarness.cjs` stands in for exactly what that path touches (the one SeasonalData document, a few collections, a session that rolls back, the ChangeLog writer, Cloudinary), so a modal submit now runs through the real op, permission check and panel. Each bug fix came with a test shown to fail on the old code first.
 
 A 10-day read of prod's log added two cheap wins: Mongoose's `new: true` deprecation was 52 of 73 warnings, and panel expiry logged an expected "Unknown Message" as an error.
+
+## 2026-11-05 22:36 EST — news posts become drafts, and what kept finding new problems (v3.10.0)
+
+Harkirat asked for the bot to read the followed news channels and turn what they announce into /manage work. It grew from cards with buttons into auto-drafting the Next Season Draft, at his "instead of making me approve/deny everything, why not draft a proper calendar".
+
+The build was right early; its correctness was not. Every review pass found more problems, so he asked the real question: "what are you still not considering or checking that these problems keep being discovered?" The answer was that each pass picked angles from memory and tested a sample. The fix was to make the list finite:
+- the rules every code path keeps, written down and checked against the code itself, each broken once to prove the check fails
+- a seeded grid of generated posts through the draft merge
+- an audit of every feature that reads what news triage writes
+- a reviewer that had not seen the work
+
+The grid found two defects on its first run. The rules found five. The fresh reviewer found fifteen real ones, three of which could lose data: a date earlier the same day read as next year, a draft row with no end dropped by a /manage save, and every /manage draft save silently breaking Undo. Re-running the 60-day Season 9 backtest after a change, which had been skipped once, caught a draft titled "Season 10".
+
+The lesson: a pass that samples risks will always find one more. A finite list of rules, a generated grid and a cold reader are how it stops.
 
 # Part B — Lessons Ledger (thematic)
 
