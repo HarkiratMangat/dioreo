@@ -37,7 +37,9 @@
       "Bash(git checkout *)",
       "Bash(rtk read *)",
       "Bash(rm .claude/.headroom_wrap_settings.lock)",
-      "Bash(bash scripts/vmstatus.sh logs:*)"
+      "Bash(bash scripts/vmstatus.sh logs:*)",
+      "Bash(node --env-file=\"/Applications/Claude Code/Diors-Builds/.env\" local/project/:*)",
+      "Bash(node --env-file=\"/Applications/Claude Code/Diors-Builds/.env\" local/project/*)"
     ]
   }
 }
