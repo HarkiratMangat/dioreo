@@ -51,7 +51,8 @@ function parseAttachmentsBadges(raw) {
     for (const line of lines.map(l => l.trim()).filter(Boolean)) {
         const badge = BADGES_LINE.exec(line);
         if (badge) { badgesRaw = [badgesRaw, badge[1].trim()].filter(Boolean).join(', '); continue; }
-        attachments.push(line.replace(/^[-•*]\s+/, '').trim());
+        // A short name (soh, mono) becomes its catalogue name (utils/attachmentAliases.js).
+        attachments.push(require('./attachmentAliases').expandAttachmentAlias(line.replace(/^[-•*]\s+/, '').trim()));
     }
     return { attachments: attachments.filter(Boolean), badgesRaw, comment };
 }

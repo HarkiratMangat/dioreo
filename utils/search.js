@@ -120,7 +120,7 @@ function foldLookalikes(str) {
 }
 
 // The names players actually type for a weapon whose letters never spell it (Harkirat, 2026-11-06 11:41 EST: "does 'shv' work if someone typed that as 'd gs shv' or '/gunsmith mp shv'? If not, then it needs to be added as an alias, along with other common aliases such as sx9 for switchblade x9"). Squashed alias -> the catalogue's weapon name, squashed. Only shorthands no letter, word or typo rule below reaches (measured against the 129 catalogue weapons the same day: shv, sx9, t19, t25 and t63 found nothing); a fragment that already works needs no entry. An alias whose weapon is not among the candidates matches nothing.
-const WEAPON_ALIASES = { '3lr': '3linerifle', shv: 'statichv', sx9: 'switchbladex9', sbx9: 'switchbladex9', t19: 'type19', t25: 'type25', t63: 'type63', deagle: '50gs', mow: 'manowar' };
+const WEAPON_ALIASES = { '3lr': '3linerifle', kba: 'kiloboltaction', k141: 'kilo141', mkg: 'mxguardian', mxg: 'mxguardian', xbow: 'crossbow', mac: 'mac10', shv: 'statichv', sx9: 'switchbladex9', sbx9: 'switchbladex9', t19: 'type19', t25: 'type25', t63: 'type63', deagle: '50gs', mow: 'manowar' };
 function aliasMatches(query, candidates) {
     const target = WEAPON_ALIASES[String(query || '').toLowerCase().replace(/[^a-z0-9]/g, '')];
     return target ? candidates.filter(c => String(c.weaponName || '').toLowerCase().replace(/[^a-z0-9]/g, '') === target) : [];

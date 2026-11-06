@@ -67,6 +67,10 @@ check('a legacy build with its label as its name gets the label and its place as
     assert.deepStrictEqual(values, { weapon: 'BAL-27, Ranked', build: 'AR, 2, 1A2B', attachments: 'X\nBadges: meta\nComment: ' });
 });
 
+check('a short attachment name becomes its full name: soh, SoH, mono', () => {
+    assert.deepStrictEqual(form.parseAttachmentsBadges('soh\nSoH\n- mono\nTac Sup\nFMJ\nSleight').attachments, ['Sleight of Hand', 'Sleight of Hand', 'Monolithic Suppressor', 'Tactical Suppressor', 'FMJ', 'Sleight'], 'only a whole-line alias expands');
+});
+
 check('the Comment line: everything after it is the comment, a missing line keeps it, an empty one clears it', () => {
     assert.deepStrictEqual(form.parseAttachmentsBadges('A\nB\nBadges: meta\nComment: Close range\nno suppressor'), { attachments: ['A', 'B'], badgesRaw: 'meta', comment: 'Close range\nno suppressor' });
     assert.strictEqual(form.parseAttachmentsBadges('A\nBadges: meta').comment, undefined, 'no Comment line leaves the stored comment');

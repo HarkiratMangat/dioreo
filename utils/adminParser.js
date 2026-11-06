@@ -454,6 +454,7 @@ function gunsmithCodeProblem(code) {
 // Fuzzy-corrects one vision-extracted attachment name against the set of attachment strings already used somewhere in the Loadout collection -- a vision model reading a small in-game label can get spacing/punctuation/capitalization slightly wrong ("Gauge-9 Mo" for "Gauge-9 Mono") even when it got the actual attachment right. Checks for an exact normalized match first (cheapest, most common case once the model gets it basically right), then falls back to a two-directional fuzzyMatch scan (either string could be the "noisier" one depending on what the model added or dropped) so a real but imperfect read still resolves to the canonical stored spelling. No match at all -- likely a genuinely new attachment CODM just added -- passes the extracted text through untouched rather than forcing it onto something wrong.
 function correctAttachmentName(extracted, knownAttachments) {
     if (!extracted) return extracted;
+    extracted = require('./attachmentAliases').expandAttachmentAlias(extracted);
     const normalizedExtracted = normalizeForSearch(extracted);
 
     const exact = knownAttachments.find(known => normalizeForSearch(known) === normalizedExtracted);
@@ -573,7 +574,8 @@ function parseBulkLoadoutList(bulkText) {
             continue;
         }
 
-        const cleanAttachments = attachments.filter(Boolean);
+        // A short name (soh, mono) becomes its catalogue name, as in the single pop-up (utils/attachmentAliases.js).
+        const cleanAttachments = attachments.filter(Boolean).map(a => require('./attachmentAliases').expandAttachmentAlias(a));
         if (cleanAttachments.length === 0) {
             errors.push(`"${snippet}" -- no attachment lines found under the header`);
             continue;

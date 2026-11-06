@@ -110,8 +110,8 @@ check('pickWeapon opens the one weapon a typed start names, look-alikes folded',
 check('a player shorthand names its weapon: shv, sx9, t63 (Harkirat, 2026-11-06 11:41 EST)', () => {
     const { pickWeapon } = require('../utils/search');
     const w = (weaponName, category) => ({ weaponName, weaponKey: weaponName.toLowerCase(), category });
-    const pool = [w('3-Line Rifle', 'SNIPER'), w('Static-HV', 'SMG'), w('Switchblade X9', 'SMG'), w('Type 63', 'MARKSMAN'), w('Type 25', 'AR'), w('Type 19', 'AR'), w('.50 GS', 'SECONDARIES'), w('Man-O-War', 'AR'), w('Striker', 'SHOTGUN')];
-    for (const [q, want] of [['3lr', '3-Line Rifle'], ['shv', 'Static-HV'], ['SHV', 'Static-HV'], ['sx9', 'Switchblade X9'], ['t63', 'Type 63'], ['t25', 'Type 25'], ['t19', 'Type 19'], ['deagle', '.50 GS'], ['mow', 'Man-O-War']]) {
+    const pool = [w('3-Line Rifle', 'SNIPER'), w('Kilo Bolt-Action', 'MARKSMAN'), w('Kilo 141', 'AR'), w('MX Guardian', 'SHOTGUN'), w('Crossbow', 'SECONDARIES'), w('MAC-10', 'SMG'), w('Machine Pistol', 'SECONDARIES'), w('Static-HV', 'SMG'), w('Switchblade X9', 'SMG'), w('Type 63', 'MARKSMAN'), w('Type 25', 'AR'), w('Type 19', 'AR'), w('.50 GS', 'SECONDARIES'), w('Man-O-War', 'AR'), w('Striker', 'SHOTGUN')];
+    for (const [q, want] of [['3lr', '3-Line Rifle'], ['kba', 'Kilo Bolt-Action'], ['k141', 'Kilo 141'], ['mkg', 'MX Guardian'], ['mxg', 'MX Guardian'], ['xbow', 'Crossbow'], ['mac', 'MAC-10'], ['shv', 'Static-HV'], ['SHV', 'Static-HV'], ['sx9', 'Switchblade X9'], ['t63', 'Type 63'], ['t25', 'Type 25'], ['t19', 'Type 19'], ['deagle', '.50 GS'], ['mow', 'Man-O-War']]) {
         assert.strictEqual(pickWeapon(q, pool).hit?.weaponName, want, `pick ${q}`);
         assert.strictEqual(findWeaponMatches(q, pool)[0]?.weaponName, want, `list ${q}`);
     }
