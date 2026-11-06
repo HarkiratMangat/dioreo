@@ -593,8 +593,7 @@ function buildEditCalendarModal(targetEvent, targetId) {
     return modal;
 }
 
-// --- LOADOUTS modal builders --- (shared by MP + DMZ, `mode` param picks which)
-// `replace`: the Replace Multiple button opens the same upsert (core/ops/loadouts.js has no wholesale replace for loadouts), titled Replace so the two buttons no longer look alike (click-test 2026-11-06 10:58 EST). The custom_id is the same, so the save, the retry and Back to edit need nothing new.
+// --- LOADOUTS modal builders --- (shared by MP + DMZ, `mode` param picks which) `replace`: the Replace Multiple button opens the same upsert (core/ops/loadouts.js has no wholesale replace for loadouts), titled Replace so the two buttons no longer look alike (click-test 2026-11-06 10:58 EST). The custom_id is the same, so the save, the retry and Back to edit need nothing new.
 function buildLoadoutsBulkAddModal(mode, replace = false) {
     // FORMAT REDESIGNED 2026-08-22 -- see utils/adminParser.js's parseBulkLoadoutList docblock for the shape and the reasoning. The label states the whole principle in one line, because the complaint that drove this was that the old format had no statable principle at all: identity on line one, one optional field per line, everything else is an attachment. NO Mode field any more, and it is not an omission: the old format REQUIRED Mode as pipe-segment 3 while the save path overwrote it with this page's `mode` regardless -- so a DMZ block pasted here saved as MP with no warning. The page has always been what decides; the format now matches.
     const modal = new ModalBuilder().setCustomId(`modal_loadouts_bulk_add_${mode}`).setTitle(`${replace ? 'Replace' : 'Bulk Add'} ${mode} Loadouts`);

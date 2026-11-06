@@ -526,8 +526,7 @@ const PLACEHOLDER_IMAGE = 'https://placehold.co/1024x576/1a1a1a/e5e5e5?text=Comi
  *
  * A block missing its Weapon/Category header, carrying an unrecognized `Key:`, or with no attachment lines at all doesn't silently vanish -- it's collected in `errors` (with a snippet of the offending block) so the admin is told exactly what didn't parse, same as parseLoadoutBadges()'s `unrecognized` reporting.
  */
-// `Label:` since 2026-10-26 01:19 EDT: a build's back-end label (models/Loadout.js), which used to be its Build: name.
-// `Comment:` since 2026-11-06 10:58 EST: the build's comment (`description`); several Comment lines join into one comment over several lines.
+// `Label:` since 2026-10-26 01:19 EDT: a build's back-end label (models/Loadout.js), which used to be its Build: name. `Comment:` since 2026-11-06 10:58 EST: the build's comment (`description`); several Comment lines join into one comment over several lines.
 const LOADOUT_BLOCK_KEYS = { build: 'buildName', image: 'imageKey', code: 'shareCode', badges: 'badges', label: 'label', comment: 'description' };
 // A `Key: value` line. Deliberately NARROW (a letter, then at most 13 more letters/spaces, then the colon) so a real attachment name can't be swallowed as a mistyped field -- and the bullet test below runs first regardless, so `- Ammo: 40 Round` is always an attachment no matter what precedes the colon.
 const LOADOUT_KEYED_LINE = /^([A-Za-z][A-Za-z ]{0,13})\s*:\s*(.*)$/;
@@ -597,8 +596,7 @@ function parseBulkLoadoutList(bulkText) {
             shareCode: fields.shareCode || '',
             label: fields.label || '',
             description: (fields.description || '').trim(),
-            // Which of these the block left out, so a paste over an EXISTING build keeps its stored value instead of writing the default (2026-10-20, Harkirat's call in the v3 sweep). A new build still gets the default. core/ops/loadouts.js's bulkEntryWrite reads this and never stores it.
-            // A block with no Comment line keeps the stored comment; `Comment:` with nothing after it clears it.
+            // Which of these the block left out, so a paste over an EXISTING build keeps its stored value instead of writing the default (2026-10-20, Harkirat's call in the v3 sweep). A new build still gets the default. core/ops/loadouts.js's bulkEntryWrite reads this and never stores it. A block with no Comment line keeps the stored comment; `Comment:` with nothing after it clears it.
             defaulted: [!fields.imageKey && 'imageKey', !fields.shareCode && 'shareCode', !fields.label && 'label', fields.description === undefined && 'description'].filter(Boolean),
             isMeta,
             categoryRank,

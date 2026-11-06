@@ -131,8 +131,8 @@ const { bulkEntryWrite } = require('../core/ops/loadouts');
 
 check('a bulk paste over an existing build keeps its image and share code when the block omits them', () => {
     const { parsed } = parseBulkLoadoutList('BAL-27 | AR\nBuild: Stealth\n- Gauge-9 Mono');
-    // `label` joined the list 2026-10-26 01:20 EDT (the bulk format's Label: line).
-    assert.deepStrictEqual(parsed[0].defaulted, ['imageKey', 'shareCode', 'label']);
+    // `label` joined the list 2026-10-26 01:20 EDT (the bulk format's Label: line). `description` since 2026-11-06 11:10 EST: a block with no Comment line keeps the stored comment too.
+    assert.deepStrictEqual(parsed[0].defaulted, ['imageKey', 'shareCode', 'label', 'description']);
     const update = bulkEntryWrite(parsed[0], 'MP', { imageKey: 'BAL-27-1.png', shareCode: 'ABC123' });
     assert.ok(!('imageKey' in update) && !('shareCode' in update), JSON.stringify(update));
     assert.ok(!('defaulted' in update), 'the marker must never reach Mongo');
@@ -145,7 +145,7 @@ check('a new build still gets the defaults, and a block that gives the lines sti
     assert.strictEqual(create.shareCode, '');
     assert.ok(create.imageKey, 'a new build needs its placeholder image');
     const given = parseBulkLoadoutList('BAL-27 | AR\nBuild: Stealth\nImage: BAL-27-2.png\nCode: XYZ\nLabel: Ranked\n- Gauge-9 Mono').parsed[0];
-    assert.deepStrictEqual(given.defaulted, []);
+    assert.deepStrictEqual(given.defaulted, ['description'], 'only the Comment line it left out');
     const update = bulkEntryWrite(given, 'MP', { imageKey: 'old.png', shareCode: 'OLD' });
     assert.strictEqual(update.imageKey, 'BAL-27-2.png');
     assert.strictEqual(update.shareCode, 'XYZ');

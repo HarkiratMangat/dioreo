@@ -35,8 +35,7 @@ function parseIdentity(raw, mode) {
     return { category: category.toUpperCase(), number, option, lettered, code };
 }
 
-// The attachments box: one attachment per line, a `Badges:` line for the badges, and a `Comment:` line for the build's comment (the pop-up has no sixth slot, Discord's cap). A leading bullet is dropped, as the bulk format allows.
-// The comment (Harkirat, 2026-11-06 00:19 EST: "yes" to a `Comment:` line under `Badges:`): everything from `Comment:` to the end of the box, so it may run over several lines. `comment` is undefined when the box has no `Comment:` line, so a save leaves the stored comment alone (Share Code's omit/clear/set rule), and '' when the line is there but empty, which clears it. It is the BUILD's comment (models/Loadout.js `description`), shared by every option of a merged build.
+// The attachments box: one attachment per line, a `Badges:` line for the badges, and a `Comment:` line for the build's comment (the pop-up has no sixth slot, Discord's cap). A leading bullet is dropped, as the bulk format allows. The comment (Harkirat, 2026-11-06 00:19 EST: "yes" to a `Comment:` line under `Badges:`): everything from `Comment:` to the end of the box, so it may run over several lines. `comment` is undefined when the box has no `Comment:` line, so a save leaves the stored comment alone (Share Code's omit/clear/set rule), and '' when the line is there but empty, which clears it. It is the BUILD's comment (models/Loadout.js `description`), shared by every option of a merged build.
 const BADGES_LINE = /^badges\s*:\s*(.*)$/i;
 const COMMENT_LINE = /^comment\s*:\s*(.*)$/i;
 function parseAttachmentsBadges(raw) {
