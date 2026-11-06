@@ -40,6 +40,9 @@
       "Bash(bash scripts/vmstatus.sh logs:*)",
       "Bash(node --env-file=\"/Applications/Claude Code/Diors-Builds/.env\" local/project/:*)",
       "Bash(node --env-file=\"/Applications/Claude Code/Diors-Builds/.env\" local/project/*)"
+    ],
+    "deny": [
+      "Bash(node --env-file=\"/Applications/Claude Code/Diors-Builds/.env\" local/project/*..*)"
     ]
   }
 }
