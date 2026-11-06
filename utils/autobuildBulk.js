@@ -532,7 +532,7 @@ async function handleBatchComponent(interaction) {
                 pendingAutobuilds.delete(item.token);
                 item.status = 'cancelled';
             } else {
-                const result = await confirmCore(item.token);
+                const result = await confirmCore(item.token, interaction.user?.id);
                 if (applyResult(item, result) === 'stop') {
                     await interaction.followUp(confirmReply(interaction.client, result)).catch(() => {});
                 }

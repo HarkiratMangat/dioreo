@@ -274,7 +274,7 @@ async function handleApproveSave(interaction) {
     const pipeline = require('./autobuildPipeline');
     const token = require('crypto').randomBytes(8).toString('hex');
     pipeline.pendingAutobuilds.set(token, data);
-    const result = await pipeline.confirmCore(token);
+    const result = await pipeline.confirmCore(token, interaction.user.id);
     if (result.status === 'saved') return interaction.editReply({ content: `${emojis.checkmark} Saved **${result.doc.weaponName}** (${result.doc.buildName}). The submitter was thanked by DM.` });
     pipeline.pendingAutobuilds.delete(token);
     return interaction.editReply({ content: pipeline.confirmMessage(interaction.client, result) });

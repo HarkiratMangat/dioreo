@@ -440,7 +440,7 @@ function buildPostCreationCard(doc, imageWarning, savedAs = null) {
 }
 
 // Puts a just-saved build where Adjust's build # asked (2026-11-06 17:31 EST), through the op core so it is one Revert like any /manage move: a plain number another build holds swaps the two (loadout.edit's numberBuild, so that build takes the new one's place at the end, /manage's add rule); a letter moves it into that build as an option (/manage's join: the new build is removed and its option inserted). Never throws: a failed move leaves the build saved as the next build and says so.
-async function placeBuild(doc, data, siblingDocs) {
+async function placeBuild(doc, data, siblingDocs, actorId) {
     if (!data.buildTag) return { doc, savedAs: doc.buildName };
     const form = require('./loadoutForm');
     const lo = require('./loadoutOptions');
@@ -454,7 +454,7 @@ async function placeBuild(doc, data, siblingDocs) {
             const cur = doc.toObject ? doc.toObject() : doc;
             const payload = { weaponName: cur.weaponName, mode: cur.mode, category: cur.category, label: cur.label || '', attachments: cur.attachments, attachmentSlots: cur.attachmentSlots, shareCode: cur.shareCode, description: cur.description || '',
                 isMeta: !!cur.isMeta, isToxic: !!cur.isToxic, isAss: !!cur.isAss, categoryRank: cur.categoryRank ?? null, dmzRangeRank: cur.dmzRangeRank ?? null, rankModes: cur.rankModes || [], buildNumber: tag.number };
-            const r = await commitSet([{ type: 'loadout.edit', target: target(doc), payload }], { actorId: data.adminId });
+            const r = await commitSet([{ type: 'loadout.edit', target: target(doc), payload }], { actorId });
             if (!r.ok) throw new Error(JSON.stringify(r.errors || r.reason || r).slice(0, 200));
             const fresh = await Loadout.findById(doc._id);
             return { doc: fresh || doc, savedAs: fresh?.buildName || doc.buildName };
@@ -467,7 +467,7 @@ async function placeBuild(doc, data, siblingDocs) {
         const r = await commitSet([
             { type: 'loadout.delete', target: target(doc) },
             { type: 'loadout.options', target: target(destDoc), payload: lo.optionsToFields(lo.insertAt(lo.optionsOf(destDoc), option, tag.option)) },
-        ], { actorId: data.adminId });
+        ], { actorId });
         if (!r.ok) throw new Error(JSON.stringify(r.errors || r.reason || r).slice(0, 200));
         const fresh = await Loadout.findById(destDoc._id);
         return { doc: fresh, savedAs: `Build ${lo.optionTag(tag.number, tag.option)}` };
@@ -498,13 +498,14 @@ function withWeaponQueue(key, fn) {
     return run;
 }
 
-async function confirmCore(token) {
+// `actorId` is the admin who pressed Save: the build # move after the save (placeBuild) is committed as them, so the op core checks THEIR tiers, not the review's starter's (security review, 2026-11-06 17:42 EST).
+async function confirmCore(token, actorId = null) {
     const queued = pendingAutobuilds.get(token);
     if (!queued) return { status: 'expired' };
-    return withWeaponQueue(`${(queued.weaponName || '').toLowerCase().replace(/\s+/g, '')}|${queued.mode || 'MP'}`, () => confirmCoreNow(token));
+    return withWeaponQueue(`${(queued.weaponName || '').toLowerCase().replace(/\s+/g, '')}|${queued.mode || 'MP'}`, () => confirmCoreNow(token, actorId));
 }
 
-async function confirmCoreNow(token) {
+async function confirmCoreNow(token, actorId = null) {
     const data = pendingAutobuilds.get(token);
     if (!data) return { status: 'expired' };
     if (!data.category) return { status: 'nocategory' };
@@ -557,7 +558,7 @@ async function confirmCoreNow(token) {
         if (uploadResult.success) {
             // Delete AFTER the write succeeds, not before -- if doc.save() throws (a real possibility: Mongoose validation, a dropped connection), the token must still be sitting in pendingAutobuilds so the confirmed data isn't silently lost with nothing written anywhere. (Found in review: this used to delete first, which meant a save() failure here lost the data permanently -- no Loadout doc, no recoverable token.)
             let doc = await writeLoadoutDoc({ ...data, weaponKey, buildName, imageKey, imageVersion: uploadResult.version });
-            const placed = await placeBuild(doc, data, siblingDocs);
+            const placed = await placeBuild(doc, data, siblingDocs, actorId || data.adminId);
             doc = placed.doc;
             // The read and its build point at each other (2026-10-26 01:19 EDT): the build carries the read's fileHash, the read the build's id.
             require('./visionReads').noteOutcome(data.readId, 'saved', doc._id);
@@ -612,7 +613,7 @@ function confirmReply(client, result) {
 
 // Confirm click -- `interaction` is the BUTTON interaction. Caller (handlers/autobuild.js) must call interaction.deferUpdate() before calling this, since the review card is being replaced.
 async function confirmAndWrite(interaction, token) {
-    const result = await confirmCore(token);
+    const result = await confirmCore(token, interaction.user?.id);
     if (result.status === 'saved') return await replaceWithV2Card(interaction, buildPostCreationCard(result.doc, result.placeError || null, result.savedAs));
     return interaction.followUp(confirmReply(interaction.client, result));
 }
