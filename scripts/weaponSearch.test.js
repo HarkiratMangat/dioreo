@@ -107,6 +107,17 @@ check('pickWeapon opens the one weapon a typed start names, look-alikes folded',
     for (const q of ['lol', 'the', 'real', 'hs 0', 'is broken']) assert.strictEqual(hit(q), null, q);
 });
 
+check('a player shorthand names its weapon: shv, sx9, t63 (Harkirat, 2026-11-06 11:41 EST)', () => {
+    const { pickWeapon } = require('../utils/search');
+    const w = (weaponName, category) => ({ weaponName, weaponKey: weaponName.toLowerCase(), category });
+    const pool = [w('Static-HV', 'SMG'), w('Switchblade X9', 'SMG'), w('Type 63', 'MARKSMAN'), w('Type 25', 'AR'), w('Type 19', 'AR'), w('.50 GS', 'SECONDARIES'), w('Man-O-War', 'AR'), w('Striker', 'SHOTGUN')];
+    for (const [q, want] of [['shv', 'Static-HV'], ['SHV', 'Static-HV'], ['sx9', 'Switchblade X9'], ['t63', 'Type 63'], ['t25', 'Type 25'], ['t19', 'Type 19'], ['deagle', '.50 GS'], ['mow', 'Man-O-War']]) {
+        assert.strictEqual(pickWeapon(q, pool).hit?.weaponName, want, `pick ${q}`);
+        assert.strictEqual(findWeaponMatches(q, pool)[0]?.weaponName, want, `list ${q}`);
+    }
+    assert.deepStrictEqual(findWeaponMatches('shv', [w('Striker', 'SHOTGUN')]), [], 'an alias whose weapon is missing matches nothing');
+});
+
 if (failures) { console.error(`\n${failures} check(s) failed.`); process.exit(1); }
 console.log('\nweaponSearch: all checks passed.');
 process.exit(0);

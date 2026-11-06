@@ -119,10 +119,19 @@ function foldLookalikes(str) {
     return normalizeForSearch(String(str || '')).replace(/[015i]/g, ch => LOOKALIKE[ch]);
 }
 
+// The names players actually type for a weapon whose letters never spell it (Harkirat, 2026-11-06 11:41 EST: "does 'shv' work if someone typed that as 'd gs shv' or '/gunsmith mp shv'? If not, then it needs to be added as an alias, along with other common aliases such as sx9 for switchblade x9"). Squashed alias -> the catalogue's weapon name, squashed. Only shorthands no letter, word or typo rule below reaches (measured against the 129 catalogue weapons the same day: shv, sx9, t19, t25 and t63 found nothing); a fragment that already works needs no entry. An alias whose weapon is not among the candidates matches nothing.
+const WEAPON_ALIASES = { shv: 'statichv', sx9: 'switchbladex9', sbx9: 'switchbladex9', t19: 'type19', t25: 'type25', t63: 'type63', deagle: '50gs', mow: 'manowar' };
+function aliasMatches(query, candidates) {
+    const target = WEAPON_ALIASES[String(query || '').toLowerCase().replace(/[^a-z0-9]/g, '')];
+    return target ? candidates.filter(c => String(c.weaponName || '').toLowerCase().replace(/[^a-z0-9]/g, '') === target) : [];
+}
+
 function findWeaponMatches(query, candidates) {
     const synonymCategories = resolveCategorySynonyms(query);
     const seen = new Set();
     const results = [];
+    // An alias first (shv -> STATIC-HV), then the letter rules for anything else the query also reaches.
+    for (const c of aliasMatches(query, candidates)) { seen.add(c.weaponKey); results.push(c); }
     for (const c of candidates) {
         const isMatch = isGenericWeaponQuery(query) || fuzzyMatch(query, c.weaponName) || synonymCategories.includes(c.category);
         if (isMatch && !seen.has(c.weaponKey)) {
@@ -185,6 +194,9 @@ function pickWeapon(query, candidates) {
     const none = { hit: null, several: [], loose: [] };
     const sq = squashAll(query);
     if (sq.length < 2) return none;
+    // A known shorthand names its weapon outright (WEAPON_ALIASES above).
+    const aliased = aliasMatches(query, candidates);
+    if (aliased.length === 1) return { ...none, hit: aliased[0] };
     const whole = candidates.filter(c => squashAll(c.weaponName) === sq || squashAll(c.weaponKey) === sq || foldLookalikes(c.weaponName) === foldLookalikes(query));
     if (whole.length === 1) return { ...none, hit: whole[0] };
     if (whole.length > 1) return { ...none, several: whole };
@@ -225,4 +237,4 @@ function pickWeapon(query, candidates) {
     return { ...none, loose: findWeaponMatches(query, candidates) };
 }
 
-module.exports = { pickWeapon, featuredWeapons, fuzzyMatch, normalizeForSearch, foldLookalikes, findWeaponMatches, resolveCategorySynonyms, categoryByExactAlias, isGenericWeaponQuery, typoDistance, isSameDrawTitle, bestDrawMatch, CATEGORY_SEARCH_SYNONYMS, GENERIC_WEAPON_WORDS };
+module.exports = { WEAPON_ALIASES, pickWeapon, featuredWeapons, fuzzyMatch, normalizeForSearch, foldLookalikes, findWeaponMatches, resolveCategorySynonyms, categoryByExactAlias, isGenericWeaponQuery, typoDistance, isSameDrawTitle, bestDrawMatch, CATEGORY_SEARCH_SYNONYMS, GENERIC_WEAPON_WORDS };
