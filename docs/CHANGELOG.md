@@ -29,7 +29,46 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.8.4 — 2026-11-04 14:55 EST (#253) — Undo puts bulk changes back exactly, and /manage is tested end to end
+## v3.9.0 — 2026-11-05 17:05 EST (#256) — Merged builds are edited by number in /manage: 1, 1b, 1c
+**From Harkirat, 2026-11-05:** "can i currently rearrange the option a, option b, option c merged builds' order? and how do i even edit/add merged builds?"; "the bot for now, portal as proposal for the other project"; "lowkey thinking we just number the build as "1, 1b, 1c" etc and if it has b c d e etc then it means its a merge build and should be added to the same page?" (14:41 EST); he picked the mock-up "Build it as shown" (14:50 EST); "merge flow" (17:00 EST).
+
+### Added
+- **A build # in /manage can name an option.** `2` or `2a` is Build 2's Option A, `2b` its Option B. Typing another tag moves the option: `2c` → `2` swaps it to A, `3` → `2b` joins Build 3 to Build 2 as Option B, `2b` → `4` makes it its own Build 4, and Create New with `2d` adds an option. The card players see still says Option A / B / C. Rules in `utils/loadoutOptions.js`: up to 6 options, attachments on each, no code twice in a build or across the weapon.
+- **Edit and Delete search list each option** (`STATIC-HV 2b` opens Option B straight away); Delete can remove one option or the whole build.
+- **The saved panel lists every option** with the one just saved marked, and an **Add option** button opens Create New filled in with the next letter.
+- **Bulk:** a `Build: Build 2b` block adds or updates Option B of Build 2, an export writes merged builds that way so it re-imports, and bulk remove takes `BAL-27 | 2b`.
+- **Core:** a `loadout.options` op writes a build's whole option list; a move between two builds is one changeset, so one Revert puts both back. Each option now keeps its own picture version and source hash (`models/Loadout.js`), and the picture checks look inside options too.
+
+### Changed
+- **A bare `Build: 2` in a bulk paste means Build 2.** It used to save a build literally named "2".
+- **Deleting a build moves the weapon's later builds up one**, in /manage Delete, bulk remove, a merge that empties a build, and the portal. Before, deleting Build 3 of 4 left Build 4, which /manage then refused to save with its own number ("builds 1 to 3") and whose card read "Build 3 of 3". Revert puts every number back. Prod had no gap yet.
+- **Option A of a merged build with another plain number moves the whole build there**, options included, as renumbering did before options had tags.
+
+### Fixed
+- **A build moved to another number kept its old Build Number on its Cloudinary picture.** Swaps and the new move-up both rewrite it now, every option's picture included.
+
+## v3.8.6 — 2026-11-05 14:28 EST (#255 · `b3e0092a`) — A short or look-alike weapon name works after d gs, and d top opens Top
+**From Harkirat, 2026-11-05:** `d gs hs0`, `d gs hso` and `d build hs0` got no reply on prod while /gunsmith mp opened the HS0405 (14:06 EST); his pick on whether a miss after `d gs` stays silent, "Show the 10 s No match line" (14:26 EST); "okay merge flow approved. no deploy yet" (14:27 EST); `d list top` and `d gs top` opening META (14:34 EST).
+
+### Fixed
+- **A weapon name typed partly, with a digit or a look-alike in it, got no reply after `d`.** `utils/search.js` `pickWeapon` opened the weapon a typed start names only when the text was one word after its letter/digit split, and that split turns `hs0` into `hs` + `0`; look-alikes (`hso`) were never folded on this path. The dropdown's looser search still found the weapon, and after `d` a loose match is silence. On prod's 129 MP + 7 DMZ weapons, 567 of 1,188 starts and one-look-alike starts went silent. Text typed as one run of characters now opens the one weapon it starts, as typed and then with 0/o, 1/i/l and 5/s folded; a start of two names gets Did you mean. All 1,188 resolve; among the 7,340 commonest English words only `sol` (SO-14) newly opens a weapon. A name typed into /gunsmith without picking uses the same lookup.
+- **`gra` opened GRAV and `cro` opened CROSSBOW.** The tie-break between names counted words instead of matching them; both now offer the two weapons.
+- **`d gs top`, `d list top`, `d best`, `d hm` and `d meta` showed the lists page's META weapons** (his screenshot, 14:34 EST: "shouldn't this have openned the builds in the top category?"). `commands/gunsmith.js` dropped the list from `~lists~<list>` and always opened the page. A named list now opens that list's card, the same view as its button under the page; `d list`, `d lists`, `d gs list` still open the page, and a list named right after `list(s)` is that list.
+
+### Changed
+- **One unknown word after `d` plus a gunsmith word** (`d gs zzz`, `d build va`) gets Did you mean or the 10-second No match line instead of silence. Several words with no weapon in them (`dior gunsmith skins are cool`) stay silent.
+
+## v3.8.5 — 2026-11-05 10:55 EST (#254 · `7ab93784`) — A replaced loadout picture shows the new one
+**From Harkirat, 2026-11-05:** a new image link for BAL-27 Build 1 through /manage did not show (10:03 EST), "Wouldn't that change when a new image is uploaded?" about Cloudinary's version number (10:2x EST), and "yes merge flow but no deploy yet." (10:49 EST).
+
+### Fixed
+- **A loadout picture replaced at the same key kept showing the old one.** An MP picture lives under weapon + code, so a new screenshot of the same build overwrites the same Cloudinary key, and the card URL (`…/v1/<key>`) never changed. Cloudinary had the new picture within two minutes (its own cache is cleared on upload), but it serves `immutable, max-age=2592000`, so Discord's media proxy kept the old copy. Each upload's Cloudinary version is now saved on the build (`Loadout.imageVersion`) by /manage add and edit, the portal's commit and /autobuild, and the URL uses it (`utils/loadoutRender.js` `pictureVersion`). A build with no saved version uses its `lastUpdated`, so BAL-27 shows its new picture once deployed, with no re-upload.
+- **"Nothing changed."** on a save that replaced the picture: /manage's result now lists **Picture: replaced at `key`**.
+
+### Not in this release
+- `portal/api/armory.js` needs the same version in its picture URL. That file belongs to pins2, so the change was written up as a proposal for him to pass on.
+
+## v3.8.4 — 2026-11-04 14:55 EST (#253 · `9aa548fd`) — Undo puts bulk changes back exactly, and /manage is tested end to end
 **From Harkirat, 2026-11-04:** asked for a code review, refinement and housekeeping pass over the bot (11:39 EST), "go" on the fixes (12:24 EST), and "merge flow approved. no deploy" (14:53 EST).
 
 ### Fixed

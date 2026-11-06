@@ -35,6 +35,7 @@ const NO_SURFACE = {
     // ── Bot-side for now: the CODM catalogue learns a name only alongside a loadout save that met it (/manage Save anyway, /autobuild Confirm), in the same changeset. The portal sends it once pins2 ports the catalogue warning to the Armory (local/project/proposals in the bot project).
     'patchnote.setSeasonDates': { why: 'a past season\'s own dates, set once by scripts/setSeasonDates.js for seasons that rotated before Promote to Live saved them (2026-10-28); no editor anywhere yet' },
     'loadout.credit': { why: 'a build\'s credit is set from Discord (/manage\'s Credit button, /autobuild); the portal Armory has no credit field yet (a pins2 proposal)' },
+    'loadout.options': { why: 'a merged build\'s options (1, 1b, 1c) are edited from Discord (/manage Edit, Add option, Delete); the portal Armory does not read variants yet (a pins2 proposal, merged-builds-editor/proposals/pins2-portal-armory-options.md)' },
     'catalogue.learn': { why: 'rides in a loadout save\'s changeset from Discord; the portal Armory has no catalogue warning yet (pins2 Session 5)' },
 
     // ── Reached through an EQUIVALENT op, deliberately. The capability is offered; this particular type is not the one the surface sends. `equivalent` names the type that IS sent, and the check below asserts that one really is reachable — otherwise this list would excuse an absence by pointing at a second absence.

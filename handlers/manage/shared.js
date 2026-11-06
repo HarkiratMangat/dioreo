@@ -121,7 +121,7 @@ async function loadOrCreateSeasonalDoc() {
 // SEARCH RESOLUTION (Edit/Delete) -- 2026-07-09 button/modal redesign
 // ==========================================
 // Edit/Delete on the /manage panel can't autocomplete like a slash-command option could (they're plain buttons), so they collect a search query through a one-field modal instead and resolve it here via the same fuzzyMatch() convention every other admin-search route in the bot uses. Returns up to 25 `{ id, label, doc, type? }` matches -- `type` ('new'/'returning') only applies to draws, since those live in two separate arrays on one document.
-async function resolveManagePanelMatches(group, rawQuery) {
+async function resolveManagePanelMatches(group, rawQuery, action = 'edit') {
     const { fuzzyMatch } = require('../../utils/search');
     const query = rawQuery.trim();
 
@@ -157,14 +157,34 @@ async function resolveManagePanelMatches(group, rawQuery) {
         const Loadout = require('../../models/Loadout');
         const modeLoadouts = await Loadout.find({ mode }).lean();
         // By weapon, then build number (2026-10-26 11:39 EDT: the click-test showed BAL-27's five builds listed 2, 3, 4, 5, 1), and the label after the number, as the Edit pop-up shows it.
-        const { compareBuilds, pickBuild } = require('../../utils/loadoutForm');
+        const { compareBuilds } = require('../../utils/loadoutForm');
         const asLabel = (l) => `${l.weaponName} - ${l.buildName}${l.label ? ` · ${l.label}` : ''}`;
-        // `BAL-27 2` or `BAL-27 Ranked` is one build: straight to it, no picker (utils/loadoutForm.js pickBuild).
-        const one = pickBuild(query, modeLoadouts);
-        if (one) return [{ id: one._id.toString(), doc: one, label: asLabel(one) }];
+        // `BAL-27 2` or `BAL-27 Ranked` is one build: straight to it, no picker (utils/loadoutForm.js pickBuild). A merged build is one pick per option (utils/loadoutOptions.js, Harkirat's mock-up, 2026-11-05): Edit lists Option A, `2b`, `2c`; Delete adds the whole build first, and Option A reads "only" there so the two cannot be mistaken. An option's id is `{id}~{option}` (handlers/manage/loadouts.js splitTarget).
+        const lo = require('../../utils/loadoutOptions');
+        const { buildNumberOf, pickBuildOption } = require('../../utils/loadoutForm');
+        const count = (l) => 1 + (l.variants || []).length;
+        const whole = (l) => ({ id: l._id.toString(), doc: l, label: `${asLabel(l)}${count(l) > 1 ? ` · all ${count(l)} options` : ''}` });
+        const optionEntry = (l, i) => {
+            const n = buildNumberOf(l.buildName);
+            const name = i ? (n === null ? `${l.buildName} ${lo.optionLetter(i)}` : lo.optionTag(n, i)) : `${l.buildName}${l.label ? ` · ${l.label}` : ''}`;
+            return { id: `${l._id}~${i}`, option: i, doc: l, label: `${l.weaponName} - ${name} · Option ${lo.optionLetter(i)}${action === 'delete' && !i ? ' only' : ''}` };
+        };
+        const expand = (l) => {
+            if (count(l) < 2) return [whole(l)];
+            const options = Array.from({ length: count(l) }, (_, i) => optionEntry(l, i));
+            return action === 'delete' ? [whole(l), ...options] : options;
+        };
+        // `BAL-27 2` or `BAL-27 Ranked` is one build, `STATIC-HV 2b` one option: straight to it, no picker. A plain number on a merged build is its Option A for an edit and the whole build for a delete.
+        const one = pickBuildOption(query, modeLoadouts);
+        if (one) {
+            const b = one.build;
+            if (count(b) < 2) return [whole(b)];
+            if (one.option === null) return [action === 'delete' ? whole(b) : optionEntry(b, 0)];
+            return [optionEntry(b, one.option)];
+        }
         return modeLoadouts.filter(l => fuzzyMatch(query, l.weaponName) || fuzzyMatch(query, l.buildName) || (l.label && fuzzyMatch(query, l.label)))
-            .sort((a, b) => a.weaponName.localeCompare(b.weaponName) || compareBuilds(a, b)).slice(0, 25)
-            .map(l => ({ id: l._id.toString(), doc: l, label: `${l.weaponName} - ${l.buildName}${l.label ? ` · ${l.label}` : ''}` }));
+            .sort((a, b) => a.weaponName.localeCompare(b.weaponName) || compareBuilds(a, b))
+            .flatMap(expand).slice(0, 25);
     }
 
     // Patch Notes has no search-based edit/delete flow -- it operates on a single "current entry" instead (see patchnotes.js), so this group is intentionally absent here.
@@ -183,7 +203,7 @@ async function resolveManagePanelAction(interaction, group, action, match) {
         }
         if (group === 'calendar') return interaction.showModal(manageCommand.buildEditCalendarModal(match.doc, match.id));
         // The weapon's builds are read first, so a legacy build (its label stored as its name) still shows a build #. One quick query, well inside showModal's 3 seconds.
-        if (group === 'loadouts_mp' || group === 'loadouts_dmz') return interaction.showModal(await require('./loadouts').editLoadoutModal(match.doc));
+        if (group === 'loadouts_mp' || group === 'loadouts_dmz') return interaction.showModal(await require('./loadouts').editLoadoutModal(match.doc, match.option || 0));
     }
 
     if (action === 'delete') {
@@ -194,7 +214,7 @@ async function resolveManagePanelAction(interaction, group, action, match) {
 
         // A loadout shows the build itself, picture and all, so the right one is deleted (Harkirat, 2026-10-26 11:54 EDT: "so things aren't being second guessed").
         if (group === 'loadouts_mp' || group === 'loadouts_dmz') {
-            return interaction.reply({ flags: 32768 | 64, components: require('../../utils/loadoutPanels').deletePanel({ doc: match.doc, token }) });
+            return interaction.reply({ flags: 32768 | 64, components: require('../../utils/loadoutPanels').deletePanel({ doc: match.doc, token, option: match.option ?? null }) });
         }
         // A draw or event shows itself too: its dates, and a draw its picture and items (utils/managePanels.js, 2026-10-26 13:01 EDT). The old text prompt promised "an Undo button right after", which was retired with the inline Undo (plan 2 Task 7); the result now carries its own Revert.
         return interaction.reply({ flags: 32768 | 64, components: require('../../utils/managePanels').deleteItemPanel({ group, match, token }) });
@@ -270,9 +290,14 @@ async function handlePick(interaction) {
         const doc = seasonalDoc.calendar.find(e => e._id.toString() === id);
         if (doc) match = { id, doc, label: doc.title };
     } else if (group === 'loadouts_mp' || group === 'loadouts_dmz') {
+        // An option's pick is `{id}~{option}` (resolveManagePanelMatches above).
         const Loadout = require('../../models/Loadout');
-        const doc = await Loadout.findById(id).lean();
-        if (doc) match = { id, doc, label: `${doc.weaponName} - ${doc.buildName}` };
+        const t = require('./loadouts').splitTarget(id);
+        const doc = await Loadout.findById(t.id).lean();
+        const hasOption = id.includes('~') && t.option < 1 + (doc?.variants || []).length;
+        if (doc) match = hasOption
+            ? { id, option: t.option, doc, label: `${doc.weaponName} - ${doc.buildName} · Option ${require('../../utils/loadoutOptions').optionLetter(t.option)}` }
+            : { id: t.id, doc, label: `${doc.weaponName} - ${doc.buildName}` };
     }
 
     if (!match) {
@@ -293,7 +318,7 @@ async function handlePick(interaction) {
 async function handleSearchSubmit(interaction) {
     const [group, action] = parseMngId(interaction.customId.replace('mng_search_', ''));
     const query = interaction.fields.getTextInputValue('query');
-    const matches = await resolveManagePanelMatches(group, query);
+    const matches = await resolveManagePanelMatches(group, query, action);
 
     // "Search Again" button -- re-opens the same search modal from THIS reply, so a second search doesn't require scrolling back up to the original panel message.
     const searchAgainRow = { type: 1, components: [{ type: 2, style: 2, label: 'Search Again', custom_id: `mng_act_${group}_${action}` }] };
@@ -317,7 +342,7 @@ async function handleSearchSubmit(interaction) {
                 { type: 1, components: [
                     { type: 2, style: 1, label: 'Edit', custom_id: `mng_editbtn_${token}` },
                     // A build's credit can be set without opening the Edit pop-up (2026-11-02 23:01 EST, handlers/manage/loadouts.js creditModal).
-                    ...((group === 'loadouts_mp' || group === 'loadouts_dmz') ? [{ type: 2, style: 2, label: 'Credit', custom_id: `mng_ldcredit_${matches[0].id}` }] : []),
+                    ...((group === 'loadouts_mp' || group === 'loadouts_dmz') ? [{ type: 2, style: 2, label: 'Credit', custom_id: `mng_ldcredit_${matches[0].doc?._id || matches[0].id}` }] : []),
                     ...searchAgainRow.components
                 ] }
             ],

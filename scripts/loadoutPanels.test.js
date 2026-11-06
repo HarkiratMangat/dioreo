@@ -34,7 +34,7 @@ check('the saved panel shows the build, its picture, the changes and three butto
     for (const s of ['Updated · BAL-27 Build 2', 'What changed', 'OWC Skeleton Stock', 'Swapped', 'look', 'BAL-27-1I2C6B8A9E']) assert.ok(t.includes(s), s);
     assert.ok(panel[0].components[0].accessory?.media?.url.includes('BAL-27-1I2C6B8A9E'), 'the picture is beside the title');
     const ids = buttons(panel).map(b => b.custom_id);
-    assert.deepStrictEqual(ids, ['mng_ldopen_abc', 'mng_ldedit_abc', 'mng_ldcredit_abc', 'mng_ldrevert|#147,#148']);
+    assert.deepStrictEqual(ids, ['mng_ldopen_abc', 'mng_ldedit_abc', 'mng_ldaddopt_abc', 'mng_ldcredit_abc', 'mng_ldrevert|#147,#148']);
     assert.ok(count(panel[0]) < 40);
 });
 
@@ -66,6 +66,26 @@ check('the bulk panel leads with its counts and lists what was skipped', () => {
 
 check('the catalogue panel keeps its two ids', () => {
     assert.deepStrictEqual(buttons(p.cataloguePanel({ described: '`X`', token: 't' })).map(b => b.custom_id), ['mng_catedit|t', 'mng_catok|t']);
+});
+
+// BAL-27, 2026-11-05: a new picture at the SAME key read "Nothing changed." and kept the old URL, so Discord kept showing the old screenshot.
+check('a picture replaced at the same key is listed, and its URL changes with the save', () => {
+    const lines = p.changeLines(before, { ...before }, { pictureReplaced: true });
+    assert.deepStrictEqual(lines, ['**Picture:** replaced at `BAL-27-1I2C6B8A9D`']);
+    const was = new Date('2026-11-03T05:35:48Z'), now = new Date('2026-11-05T14:58:21Z');
+    const panel = p.savedPanel({ doc: { ...before, lastUpdated: now }, before: { ...before, lastUpdated: was }, pictureReplaced: true });
+    assert.ok(!text(panel).includes('Nothing changed'), 'a replaced picture is a change');
+    assert.ok(text(panel).includes(`/v${Math.floor(now / 1000)}/BAL-27-1I2C6B8A9D`), 'a build with no imageVersion uses its lastUpdated');
+    const { buildImageUrl, pictureVersion } = require('../utils/loadoutRender');
+    // Cloudinary's own upload version wins, so the URL changes only with a new picture; a build without one falls back to its lastUpdated.
+    assert.strictEqual(pictureVersion({ imageVersion: 1793890701, lastUpdated: now }), 1793890701);
+    assert.strictEqual(pictureVersion({ lastUpdated: now }), Math.floor(now / 1000));
+    assert.strictEqual(pictureVersion({}), null);
+    const withVersion = p.savedPanel({ doc: { ...before, imageVersion: 1793890701, lastUpdated: now }, before });
+    assert.ok(text(withVersion).includes('/v1793890701/BAL-27-1I2C6B8A9D'), 'the picture URL carries Cloudinary\'s version');
+    assert.ok(buildImageUrl('BAL-27-1I2C6B8A9D').endsWith('/v1/BAL-27-1I2C6B8A9D'), 'no version keeps v1');
+    assert.ok(buildImageUrl('BAL-27-1I2C6B8A9D', 'x').endsWith('/v1/BAL-27-1I2C6B8A9D'), 'a bad version keeps v1');
+    assert.strictEqual(buildImageUrl('https://example.com/x.png', 5), 'https://example.com/x.png');
 });
 
 if (failures) { console.error(`\n${failures} loadout panel check(s) failed.`); process.exit(1); }

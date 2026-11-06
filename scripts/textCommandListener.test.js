@@ -41,7 +41,7 @@ const BOT = '111';
 const ran = [];
 const record = name => ({ async execute(interaction) { ran.push({ name, interaction }); } });
 // /gunsmith's textWeapon over a small weapon list, with the real pickWeapon (2026-10-29 11:05 EDT): a no-build catalogue weapon's value is its name, as the dropdown sends it.
-const WEAPON_POOL = [['AK117', 'ak117', 'AR'], ['AK-47', 'ak47', 'AR'], ['Fennec', 'fennec', 'SMG'], ['KILO 141', 'kilo141', 'AR'], ['KILO BOLT-ACTION', 'kiloboltaction', 'SNIPER'], ['PPSh-41', 'PPSh-41', 'SMG', true]]
+const WEAPON_POOL = [['AK117', 'ak117', 'AR'], ['AK-47', 'ak47', 'AR'], ['Fennec', 'fennec', 'SMG'], ['KILO 141', 'kilo141', 'AR'], ['KILO BOLT-ACTION', 'kiloboltaction', 'SNIPER'], ['PPSh-41', 'PPSh-41', 'SMG', true], ['HS0405', 'hs0405', 'SHOTGUN'], ['HS2126', 'HS2126', 'SHOTGUN', true]]
     .map(([weaponName, weaponKey, category, noBuild]) => ({ weaponName, weaponKey, category, noBuild: Boolean(noBuild) }));
 async function textWeapon(mode, text) {
     const picked = require('../utils/search').pickWeapon(text, WEAPON_POOL);
@@ -134,18 +134,32 @@ async function check(name, fn) {
         assert.strictEqual(ran.length, before);
         assert.deepStrictEqual(buttons(posts[0]), ['"custom_id":"txtrun_gunsmith~weapon=kilo141"', '"custom_id":"txtrun_gunsmith~weapon=kiloboltaction"']);
     });
-    await check('kilo ar opens the AR Kilo; lol after d is silent, after @Dioreo only offered', async (before) => {
+    await check('kilo ar opens the AR Kilo; one loose word after d or @Dioreo is offered, never run', async (before) => {
         await onMessage(fakeMessage('d gs kilo ar').message);
         assert.strictEqual(lastRun().interaction.options.getString('weapon'), 'kilo141');
         const after = ran.length;
-        const quiet = fakeMessage('d gs lol');
+        const offered = fakeMessage('d gs lol', { guildId: 'gloose' }); // outside g1's 30-per-10-s budget
+        await onMessage(offered.message);
+        assert.deepStrictEqual(buttons(offered.posts[0]), ['"custom_id":"txtrun_gunsmith~weapon=kilo141"'], 'one word after a gunsmith word is a weapon request (2026-11-05)');
+        const quiet = fakeMessage('d gs kilo lol', { guildId: 'gloose' });
         await onMessage(quiet.message);
-        assert.strictEqual(quiet.posts.length, 0);
+        assert.strictEqual(quiet.posts.length, 0, 'two words with no weapon in them stay chat');
         const asked = fakeMessage(`<@${BOT}> gs lol`);
         await onMessage(asked.message);
         assert.strictEqual(ran.length, after, 'a loose match never runs');
         assert.deepStrictEqual(buttons(asked.posts[0]), ['"custom_id":"txtrun_gunsmith~weapon=kilo141"']);
         assert.strictEqual(after, before + 1);
+    });
+    // His three messages on prod, 2026-11-05 14:06 EST, each answered with nothing: a typed start with a digit or a look-alike in it now opens the one weapon it starts, after `d` and through every gunsmith word.
+    await check('d gs hs0, d gs hso and d build hs0 open the HS0405', async () => {
+        for (const text of ['d gs hs0', 'd gs hso', 'd build hs0', 'd b hso', 'dior gunsmith hs04']) {
+            const { message, posts } = fakeMessage(text, { guildId: 'ghs' }); // its own server, so these five replies stay out of g1's 30-per-10-s budget the later checks count on
+            const before = ran.length;
+            await onMessage(message);
+            assert.strictEqual(ran.length, before + 1, `${text}: ran`);
+            assert.strictEqual(lastRun().interaction.options.getString('weapon'), 'hs0405', text);
+            assert.strictEqual(posts.length, 0, `${text}: no extra card`);
+        }
     });
     await check('a weapon with no build opens through its name, as the dropdown sends it', async () => {
         await onMessage(fakeMessage('d gs ppsh').message);
@@ -159,6 +173,11 @@ async function check(name, fn) {
         await onMessage(message);
         assert.strictEqual(ran.length, before);
         assert.strictEqual(posts.length, 0);
+    });
+    await check('no match after d plus a gunsmith word says so in one line', async () => {
+        const { message, posts } = fakeMessage('d build zzz', { guildId: 'ghs' });
+        await onMessage(message);
+        assert.ok(/No match for “zzz”\.$/.test(posts[0]?.content || ''), posts[0]?.content);
     });
     await check('no match after @Dioreo says so in one line', async () => {
         const { message, posts } = fakeMessage(`<@${BOT}> gs zzz`);

@@ -201,7 +201,9 @@ function codeImageKey(weaponName, code) {
 // The Mongo query for another build already pointing at `key`, with or without a file extension: a key is one picture, and two builds must never share it.
 function keyHolderQuery(key, exceptId = null) {
     const k = String(key || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    return { imageKey: new RegExp(`^${k}(\\.(png|jpe?g|webp|gif|avif))?$`, 'i'), ...(exceptId ? { _id: { $ne: exceptId } } : {}) };
+    const re = new RegExp(`^${k}(\\.(png|jpe?g|webp|gif|avif))?$`, 'i');
+    // An option of a merged build holds its own picture (models/Loadout.js variants, 2026-11-05), so a key is taken there too.
+    return { $or: [{ imageKey: re }, { 'variants.imageKey': re }], ...(exceptId ? { _id: { $ne: exceptId } } : {}) };
 }
 
 // A picture moved to a new key (the code or the weapon name changed, the attachments did not): uploaded again from the asset's own delivery URL, read off the Admin API so the copy is today's version rather than a cached one. The old key stays, because Revert restores it. Same contract as uploadLoadoutImage.
@@ -226,7 +228,7 @@ async function uploadLoadoutImage(sourceUrl, imageKey) {
     // The loadout image this overwrites is copied to archive/loadouts/ first (Harkirat, 2026-10-21 11:39 EDT); a first upload under a new key has nothing to archive. utils/cloudinaryArchive.js.
     await archiveBeforeReplace(imageKey, sourceUrl, 'loadouts');
     try {
-        await cloudinary.uploader.upload(sourceUrl, {
+        const result = await cloudinary.uploader.upload(sourceUrl, {
             public_id: imageKey, // bare key, NOT folder-prefixed -- gun-builds is dynamic-folder mode,
                                   // decoupled from public_id (see .claude/rules/loadout-images-and-metadata.md)
             asset_folder: FOLDER,
@@ -234,7 +236,8 @@ async function uploadLoadoutImage(sourceUrl, imageKey) {
             invalidate: true,
             resource_type: 'image'
         });
-        return { success: true, error: null };
+        // Cloudinary's own version number for this upload, new on every overwrite: it goes in the build's picture URL (Loadout.imageVersion), because `invalidate` clears only Cloudinary's cache and Discord keeps its copy of a URL for up to 30 days.
+        return { success: true, error: null, version: result?.version || null };
     } catch (err) {
         const message = safeErrorMessage(err);
         console.error(`Loadout image upload failed for key "${imageKey}": ${message}`);

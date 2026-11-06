@@ -271,8 +271,9 @@ function loadoutsPageDef(mode, headerLabel, icon, client) {
             {
                 heading: 'Manage a Single Loadout',
                 blocks: [
-                    `### ${emojis.mngAdd} Add Single Loadout\n-# Add one loadout. Additive — doesn't affect existing loadouts.`,
-                    `### ${emojis.mngEdit} Edit Single Loadout\n-# Update an existing loadout's info. Search by weapon name to pick a ${mode} loadout.`,
+                    // A letter on the build # is an option of a merged build (utils/loadoutOptions.js, 2026-11-05), so both lines say so where the admin decides.
+                    `### ${emojis.mngAdd} Add Single Loadout\n-# Add one loadout. Additive — doesn't affect existing loadouts. Build # \`2b\` adds it to Build 2 as Option B.`,
+                    `### ${emojis.mngEdit} Edit Single Loadout\n-# Update an existing loadout's info. Search by weapon name to pick a ${mode} loadout, or \`BAL-27 2b\` for one option. Change an option's build # to move it.`,
                     `### ${emojis.mngDelete} Delete Single Loadout\n-# Remove a single loadout from the database. Search by weapon name to pick a ${mode} loadout.`
                 ],
                 buttons: ['add', 'edit', 'delete']
@@ -608,7 +609,8 @@ function buildLoadoutsBulkRemoveModal(mode) {
     const modal = new ModalBuilder().setCustomId(`modal_loadouts_bulk_remove_${mode}`).setTitle(`Delete Multiple ${mode} Loadouts`);
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('lines').setLabel('Weapon | [Build Name]').setStyle(TextInputStyle.Paragraph)
-            .setPlaceholder("BAL-27  (removes ALL builds of this weapon)\nBAL-27 | Build 2  (removes just this one build)")
+            // `| 2b` removes one option of a merged build (2026-11-05).
+            .setPlaceholder("BAL-27  (every build)\nBAL-27 | Build 2  (one build)\nBAL-27 | 2b  (Option B of Build 2)")
             .setRequired(true))
     );
     return modal;
@@ -646,7 +648,8 @@ function loadoutModal({ customId, title, mode, values = {}, isEdit }) {
         components: [
             loadoutLabel('Weapon name, label', 'The label is optional and only shown here, e.g. BAL-27, Ranked', input('weapon', 1, true, 80, 'BAL-27, Ranked')),
             loadoutLabel(dmz ? 'Category, build #' : 'Category, build #, gunsmith code',
-                dmz ? 'A build # another build has swaps the two; blank is the next number' : 'The code is required; a build # another build has swaps the two',
+                // `2b` names Build 2's Option B (merged builds, utils/loadoutOptions.js, 2026-11-05).
+                dmz ? "A taken build # swaps the two; 2b is Build 2's Option B; blank is the next" : "Code required. A taken build # swaps the two; 2b is Build 2's Option B",
                 input('build', 1, true, 60, dmz ? 'AR, 2' : 'AR, 2, 1C2B4A8B9A')),
             loadoutLabel('Attachments and badges', 'One attachment per line, then a Badges: line', input('attachments', 2, true, 1000, 'Gauge-9 Mono\nCrown-H3 Barrel\nBadges: meta, top3')),
             loadoutLabel(isEdit ? 'Replace image (URL)' : 'Image (URL)', 'Optional. Use this or the screenshot, not both', input('image_url', 1, false, 500, 'https://...')),
@@ -662,12 +665,14 @@ function buildAddLoadoutModal(mode) {
     return loadoutModal({ customId: `add_loadout_${mode}`, title: `Create New ${mode} Loadout`, mode, isEdit: false });
 }
 
-// `siblings` are the weapon's builds in this mode, the target included; they give a legacy build (one with its label as its name) its build #. Callers without them still get a working box, with the # blank.
-function buildEditLoadoutModal(targetLoadout, targetId, siblings = null) {
+// `siblings` are the weapon's builds in this mode, the target included; they give a legacy build (one with its label as its name) its build #. Callers without them still get a working box, with the # blank. `option` opens one option of a merged build (utils/loadoutOptions.js, 2026-11-05): its boxes, its tag (`2b`) as the build #, and `edit_loadout_{id}~{option}` as the id, so the save knows which option it was. Any build with options carries the `~`, Option A's too.
+function buildEditLoadoutModal(targetLoadout, targetId, siblings = null, option = 0) {
     const { editValues } = require('../utils/loadoutForm');
     const tokens = require('../utils/adminParser').loadoutBadgeTokens(targetLoadout);
-    const values = targetLoadout.weaponName ? editValues(targetLoadout, siblings || [targetLoadout], tokens) : {};
-    return loadoutModal({ customId: `edit_loadout_${targetId}`, title: 'Edit Loadout', mode: targetLoadout.mode || 'MP', values, isEdit: true });
+    const values = targetLoadout.weaponName ? editValues(targetLoadout, siblings || [targetLoadout], tokens, option) : {};
+    const merged = (targetLoadout.variants || []).length > 0;
+    const title = merged ? `Edit Loadout · Option ${String.fromCharCode(65 + option)}` : 'Edit Loadout';
+    return loadoutModal({ customId: `edit_loadout_${targetId}${merged ? `~${option}` : ''}`, title, mode: targetLoadout.mode || 'MP', values, isEdit: true });
 }
 
 // --- PATCH NOTES modal builders --- (all 3 operate on the single "current" entry — the last item in patchNotes[], the one whose title stays synced to currentSeasonTitle — rather than a search-and-pick flow. If none exists yet, Date/Info's submit creates the first one.)

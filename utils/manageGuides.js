@@ -139,6 +139,7 @@ function loadoutsSections() {
         section('✨ What Gets Auto-Formatted',
             '• **Mode** is not a field: the MP or DMZ page you paste on decides it.\n' +
             '• **Code** is required on the MP page (a block without one is skipped and named); DMZ has no code.\n' +
+            '• **Options of a merged build:** `Build: Build 2b` is Build 2\'s Option B (`2c` Option C, and so on). It replaces that option, or adds it if it is the next letter; Build 2 must exist, or come earlier in the paste. Badges and Label go on Build 2\'s own block. An Export writes every option this way.\n' +
             '• **Build**, **Label**, **Image** and **Badges** are optional — omit the whole line if it doesn\'t apply. With no Build line the block is a new build, numbered after the weapon\'s others. **Label** is back end only. Re-pasting a build that already exists keeps its stored Image, Code and Label when you leave those lines out.\n' +
             '• **Image** takes a Cloudinary key, as an Export writes it; the single Add/Edit pop-up takes a URL or a screenshot and files it under the build\'s code for you.\n' +
             '• Attachment names are kept **exactly as typed** — no auto-casing, since these must match the real in-game names precisely. A `-` bullet is optional, and is how you force a line containing a colon to be read as an attachment.'),

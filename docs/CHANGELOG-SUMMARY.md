@@ -12,6 +12,16 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.9.0 — November 5, 2026
+- **New:** merged builds can be edited and reordered in /manage by number: `2` is Build 2's Option A, `2b` its Option B, and changing the number moves the option.
+- **Changed:** when a build is removed, the builds after it move up a number, so a weapon's builds always run 1, 2, 3 with no gap.
+
+## v3.8.6 — November 5, 2026
+- **Fixed:** typing part of a weapon name after `d gs` works now, digits and O/0 mix-ups included (`d gs hs0` opens the HS0405), a name nothing matches says so instead of staying silent, and `d top`, `d best` and `d hm` open that list.
+
+## v3.8.5 — November 5, 2026
+- **Fixed:** a new picture for a /gunsmith build shows straight away, where before Discord could keep showing the old one for weeks.
+
 ## v3.8.4 — November 4, 2026
 - **Fixed:** undoing a bulk change in /manage now puts back exactly what was there, Set End Date always opens the right draw, and a new season no longer keeps the old season's end dates.
 
