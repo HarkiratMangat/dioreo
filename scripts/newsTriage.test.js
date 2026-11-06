@@ -496,6 +496,92 @@ check('the handler owns news| and nothing else', async () => {
         const text = JSON.stringify(require('../utils/newsTriage/card').buildPromoteCheck(rd));
         assert.ok(/No post ever dated these/.test(text) && /Nearly full in \/manage/.test(text));
     });
+    // ---- the fresh review R1 (2026-11-05 20:16 EST): a check per finding fixed ----
+    const DM = require('../utils/newsTriage/draftMerge');
+    const ev = (name, extra = {}) => ({ kind: 'event', name, where: 'draft', action: 'calendar', change: 'new', certainty: 'confirmed', startText: 'Nov 20', start: D('2026-11-20'), end: D('2026-11-30'), rewards: [], ...extra });
+    check('R1#2: a month and day already reached is this year, not next', () => {
+        assert.strictEqual(iso(r.readDate('November 5', D('2026-11-05T15:00:00Z'))), '2026-11-05T00:00:00.000Z');
+        assert.strictEqual(iso(r.readDate('10/28', D('2026-10-29T12:00:00Z'))), '2026-10-28T00:00:00.000Z');
+        assert.strictEqual(iso(r.readDate('1/5', D('2026-12-20T12:00:00Z'))), '2027-01-05T00:00:00.000Z', 'a date ahead still moves forward');
+        assert.strictEqual(iso(r.readDate('12/28', D('2027-01-03T12:00:00Z'))), '2026-12-28T00:00:00.000Z', 'a recap across the new year');
+    });
+    check('R1#1: a draft row with no end, or 2X CP, survives a /manage box save, and a later end replaces All Season', () => {
+        const { formatCalendarAsBulkText, parseBulkEvents } = require('../utils/adminParser');
+        const back = parseBulkEvents(formatCalendarAsBulkText([{ title: 'Botanist Draw', date: D('2026-11-19'), endDate: null, isOngoing: true, category: 'draw', isDoubleCP: true }, { title: 'Old Row', date: D('2026-11-20'), endDate: null, isOngoing: false, category: 'event' }]));
+        assert.strictEqual(back.length, 2, 'no row dropped');
+        assert.ok(back[0].isOngoing && back[0].isDoubleCP && back[0].title === 'Botanist Draw', JSON.stringify(back[0]));
+        const d = { calendar: [] };
+        DM.applyDraftChanges(d, DM.planDraftChanges(d, [ev('Red Moon Event', { end: null })], { id: 'p', channelId: 'c' }, { newId: () => 'x' }).changes);
+        assert.ok(d.calendar[0].isOngoing && d.calendar[0].newsSource.noEnd);
+        assert.deepStrictEqual(pipe.draftReadiness({ draft: { ...d, active: true } }).noEnd, ['Red Moon Event']);
+        DM.applyDraftChanges(d, DM.planDraftChanges(d, [ev('Red Moon Event', { end: D('2026-12-01') })], { id: 'p2', channelId: 'c' }).changes);
+        assert.ok(!d.calendar[0].isOngoing && iso(d.calendar[0].endDate) === '2026-12-01T00:00:00.000Z' && !d.calendar[0].newsSource.noEnd);
+    });
+    check('R1#9: MP and BR versions of a mode are two items', () => {
+        assert.strictEqual(r.strictName('Attack of the Undead MP Mode', 'Attack of the Undead BR Mode'), false);
+        assert.strictEqual(r.strictName('Attack of the Undead MP Mode', 'Attack of the Undead'), true, 'a name with no MP or BR still matches');
+    });
+    check('R1#4: Undo keeps a row changed since, and never hides a draft that still holds rows', () => {
+        const d = { active: false, calendar: [], newDraws: [], returningDraws: [] };
+        const u1 = DM.applyDraftChanges(d, DM.planDraftChanges(d, [{ kind: 'season', part: 'main', name: 'Season 10 — Wrong', where: 'draft', action: 'season', start: D('2026-11-12'), startText: 'Nov 12', certainty: 'confirmed' }], { id: 'p1', channelId: 'c' }).changes).undo;
+        DM.applyDraftChanges(d, DM.planDraftChanges(d, [ev('Red Moon Event')], { id: 'p2', channelId: 'c' }, { newId: () => 'r1' }).changes);
+        const u3 = DM.applyDraftChanges(d, DM.planDraftChanges(d, [ev('Red Moon Event', { end: D('2026-12-05') })], { id: 'p3', channelId: 'c' }).changes).undo;
+        DM.undoDraftChanges(d, u1);
+        assert.strictEqual(d.active, true, 'a draft holding a row stays active'); assert.ok(!d.currentSeasonTitle, 'the title it set is gone');
+        d.calendar[0].title = 'Red Moon Themed Event'; // he renamed it
+        const stats = {}; DM.undoDraftChanges(d, u3, stats);
+        assert.strictEqual(d.calendar[0].title, 'Red Moon Themed Event', 'his rename is kept'); assert.deepStrictEqual(stats, { restored: 0, kept: 1 });
+    });
+    check('R1#5: a lower source cancelling an official row only notes it', () => {
+        const row = { _id: 'o', title: 'Red Moon Event', date: D('2026-11-20'), endDate: D('2026-11-30'), category: 'event', isOngoing: false };
+        row.newsSource = { channelId: 'off', messageId: 'm', rank: 3, dated: true, sig: DM.sig(row) };
+        const plan = DM.planDraftChanges({ calendar: [row] }, [ev('Red Moon Event', { change: 'cancelled' })], { id: 'leak', channelId: 'leaks' });
+        assert.strictEqual(plan.changes.length, 0); assert.ok(plan.notes.some(n => /lower source/.test(n.why)));
+        assert.strictEqual(DM.planDraftChanges({ calendar: [row] }, [ev('Red Moon Event', { change: 'cancelled' })], { id: 'o2', channelId: 'off', official: true }).changes[0].type, 'remove');
+    });
+    check('R1#6: a carried row follows its live row until Promote, and goes when the live row does', () => {
+        const d = { bpStart: D('2026-11-12'), calendar: [], newDraws: [], returningDraws: [] };
+        const live = { calendar: [{ title: 'Herrscher Draw', category: 'draw', date: D('2026-10-20'), endDate: D('2026-11-20') }, { title: 'Other Event', category: 'event', date: D('2026-10-20'), endDate: D('2026-11-25') }] };
+        DM.applyDraftChanges(d, DM.planCarryOver(d, live).changes);
+        live.calendar[0].endDate = D('2026-11-25');
+        DM.applyDraftChanges(d, DM.planCarryOver(d, live).changes);
+        assert.strictEqual(iso(d.calendar.find(x => x.title === 'Herrscher Draw').endDate), '2026-11-25T00:00:00.000Z', 'his extension carried');
+        live.calendar.shift();
+        DM.applyDraftChanges(d, DM.planCarryOver(d, live).changes);
+        assert.deepStrictEqual(d.calendar.map(x => x.title), ['Other Event'], 'deleted live row gone from the draft');
+        assert.strictEqual(DM.planCarryOver(d, { calendar: [] }).changes.length, 0, 'an empty live read removes nothing');
+    });
+    check("R1#7: an official season start replaces a leak's, never one he changed", () => {
+        const d = { calendar: [] };
+        const season = (start, official, certainty) => DM.applyDraftChanges(d, DM.planDraftChanges(d, [{ kind: 'season', part: 'main', name: 'Season 10 — Anniversary', where: 'draft', action: 'season', start, startText: 'x', certainty }], { id: String(start), channelId: 'c', official }).changes);
+        season(D('2026-11-13'), false, 'expected');
+        assert.strictEqual(iso(d.bpStart), '2026-11-13T00:00:00.000Z');
+        season(D('2026-11-12'), true, 'confirmed');
+        assert.strictEqual(iso(d.bpStart), '2026-11-12T00:00:00.000Z', 'the official start wins');
+        d.bpStart = D('2026-11-14'); // he changed it in /manage
+        season(D('2026-11-12'), true, 'confirmed');
+        assert.strictEqual(iso(d.bpStart), '2026-11-14T00:00:00.000Z', 'his start is kept');
+    });
+    check('R1#14: an Undo from before the season had a title is refused once the draft was emptied', () => {
+        const after = DM.afterOf({ calendar: [{ _id: 'r1' }] });
+        assert.strictEqual(DM.undoAllowed({ calendar: [] }, after), false, 'emptied by Promote');
+        assert.strictEqual(DM.undoAllowed({ calendar: [{ _id: 'r1' }] }, after), true);
+    });
+    check('R1#3: a /manage box save keeps the news rows it did not change', () => {
+        const row = { _id: 'n1', title: 'Red Moon Event', date: D('2026-11-20'), endDate: D('2026-11-30'), category: 'event', isOngoing: false };
+        row.newsSource = { rank: 2, sig: DM.sig(row) };
+        const kept = DM.keepNewsRows([row], [{ title: 'Red Moon Event', date: D('2026-11-20'), endDate: D('2026-11-30'), category: 'event', isOngoing: false }, { title: 'His Event', date: D('2026-11-21'), endDate: D('2026-11-22'), category: 'event' }], 'calendar');
+        assert.ok(kept[0]._id === 'n1' && kept[0].newsSource && !kept[1].newsSource);
+        assert.ok(!DM.keepNewsRows([row], [{ title: 'Red Moon Event', date: D('2026-11-20'), endDate: D('2026-12-02'), category: 'event' }], 'calendar')[0].newsSource, 'a line he changed is his');
+    });
+    check('R1#8 #10 #12 #16: edits to uncarded posts, repeat picks, retries, catch-up cursors, and Dismiss', () => {
+        const W = srcOf('../bot/newsWatch.js');
+        assert.ok(/recheckEdited\(/.test(PB.noteSourceChange), 'an edit to a post with no card is read again');
+        assert.ok(/state\.forced\.get\(post\.id\)/.test(PB.processPost) && /onRetry/.test(PB.aiRead) && /onRetry\(\)/.test(srcOf('../utils/newsTriage/model.js')), 'a repeat pick is refused and a retry counts');
+        assert.ok(/persistCalls\(\)/.test(PB.takeReadSlot) && /loadReadCount\(\)\.finally/.test(W), 'the day\'s count survives a restart');
+        assert.ok(/catching\.has\(post\.channelId\)/.test(W) && /ordered\.length >= 500/.test(W), 'catch-up holds the cursor and says when it stops');
+        assert.ok(/canDo\(/.test(HB.dismiss) && HB.dismiss.indexOf('canDo(') < HB.dismiss.indexOf('deferUpdate('), 'Dismiss checks a tier first');
+    });
     check('rule: the draft holds the next season only, never one past it', () => {
         const base = { postedAt: D('2026-10-08T12:00:00Z'), liveEnd: D('2026-10-15T00:00:00Z'), liveTitle: 'Season 8 — Haunted', live: {}, draft: {}, catalogue: [] };
         const s10 = r.resolveItem({ kind: 'season', change: 'new', name: 'Season 10', start: 'November 12th UTC', season: 'later', region: 'global', certainty: 'confirmed' }, base);

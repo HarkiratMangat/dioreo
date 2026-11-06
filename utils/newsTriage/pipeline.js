@@ -13,7 +13,7 @@ const CARD_DAYS = 30;
 const PAUSE_MS = 60 * 60 * 1000;
 
 // Live state, in memory only: the day's skipped posts (titles, never stored), the AI-call count for the cap, and the failure pause. statsSince: the briefing's counts start at the last briefing or at start-up, whichever is later; a deploy restarts them, so the briefing says "since" rather than claiming the last 24 hours (2026-11-05 15:34 EST).
-const state = { skipped: [], day: '', calls: 0, failures: 0, pausedUntil: 0, alerted: false, queue: Promise.resolve(), stats: { reads: 0, costUsd: 0, carded: 0, drafted: 0, failures: 0 }, statsSince: new Date() };
+const state = { skipped: [], day: '', calls: 0, failures: 0, pausedUntil: 0, alerted: false, forced: new Map(), queue: Promise.resolve(), stats: { reads: 0, costUsd: 0, carded: 0, drafted: 0, failures: 0 }, statsSince: new Date() };
 
 function config(env = process.env) {
     const watch = new Set(String(env.NEWS_WATCH || '').split(',').map(s => s.trim()).filter(Boolean));
@@ -48,8 +48,13 @@ function takeReadSlot(cfg, { force = false } = {}) {
     rollDay();
     if (Date.now() < state.pausedUntil) return 'paused';
     if (!force && state.calls >= cfg.cap) return 'capped';
-    state.calls += 1;
+    state.calls += 1; persistCalls();
     return null;
+}
+// The day's count is saved, so a restart (or a crash loop, each boot of which catches up) does not reset the cap (the fresh review R1, 2026-11-05 20:15 EST).
+function persistCalls() { if (require('mongoose').connection.readyState !== 1) return; require('../../models/BotControls').updateOne({ _id: 'global' }, { $set: { newsReadDay: state.day, newsReadCalls: state.calls } }, { upsert: true }).catch(() => {}); }
+async function loadReadCount() {
+    try { const c = await require('../../models/BotControls').findById('global', { newsReadDay: 1, newsReadCalls: 1 }).lean(); rollDay(); if (c && c.newsReadDay === state.day) state.calls = Math.max(state.calls, c.newsReadCalls || 0); } catch { /* the cap starts at zero, as before */ }
 }
 
 function rollDay(now = new Date()) {
@@ -82,7 +87,7 @@ async function loadContext(postedAt) {
     ]);
     const d = doc || {}; const draft = d.draft || {};
     return {
-        postedAt, liveEnd: d.bpEnd || null, liveTitle: d.currentSeasonTitle || '', draftStart: draft.bpStart || null, draftTitle: draft.currentSeasonTitle || '', draftEnd: (!draft.bpEndTBD && draft.bpEnd) || null, catalogue,
+        postedAt, liveEnd: d.bpEnd || null, liveTitle: d.currentSeasonTitle || '', draftStart: draft.bpStart || null, draftTitle: draft.currentSeasonTitle || '', draftEnd: (!draft.bpEndTBD && draft.bpEnd) || ((draft.bpStart || d.bpEnd) ? new Date(new Date(draft.bpStart || d.bpEnd).getTime() + 75 * DAY_MS) : null), catalogue,
         live: { newDraws: d.newDraws || [], returningDraws: d.returningDraws || [], calendar: d.calendar || [] },
         draft: { newDraws: draft.newDraws || [], returningDraws: draft.returningDraws || [], calendar: draft.calendar || [] },
         draftDoc: draft, liveDoc: d,
@@ -226,7 +231,7 @@ async function aiRead(post, ctx, readPost) {
     const onUsage = (u, loc) => { try { state.stats.costUsd += require('../visionExtract').estimateVisionCostUsd(loc, u).estimatedCostUsd; } catch { /* never breaks a read */ } };
     state.stats.reads += 1;
     try {
-        const raw = await (readPost || require('./model').readPost)({ text: post.text, imageUrl: post.image, postedAt: post.createdAt, liveSeason: ctx.liveSeason, source: /official/i.test(post.channelName || '') ? 'official' : 'leaks' }, { onUsage });
+        const raw = await (readPost || require('./model').readPost)({ text: post.text, imageUrl: post.image, postedAt: post.createdAt, liveSeason: ctx.liveSeason, source: /official/i.test(post.channelName || '') ? 'official' : 'leaks' }, { onUsage, onRetry: () => { state.calls += 1; persistCalls(); } });
         state.failures = 0; state.alerted = false;
         return raw;
     } catch (err) {
@@ -253,12 +258,15 @@ async function processPost(post, { rest, selfId, appId, force = false, env = pro
             const pre = prefilter(post.text, { hasImage: Boolean(post.image) });
             if (!pre.read) { noteSkipped(post, pre.reason); return { status: 'skipped', reason: pre.reason }; }
         }
+        // Make a card reads past the cap, so the same post picked again the same day is not read again (the fresh review R1, 2026-11-05 20:15 EST: every pick was a paid read).
+        if (force && state.forced.get(post.id) === new Date().toISOString().slice(0, 10)) return { status: 'no card', reason: 'already read today, and the AI found nothing to add' };
         const blocked = takeReadSlot(cfg, { force });
         if (blocked) { noteSkipped(post, blocked === 'paused' ? 'AI reads paused after errors' : 'daily AI limit reached'); return { status: blocked }; }
 
         const ctx = await loadContext(post.createdAt);
         let raw;
         try { raw = await aiRead(post, ctx, readPost); } catch (err) { noteSkipped(post, 'the AI read failed'); return { status: 'error', error: err?.message || String(err) }; }
+        if (force) state.forced.set(post.id, new Date().toISOString().slice(0, 10));
 
         const { card, skipped } = resolveItems(raw, { ...ctx, namesRegion: namesRegion(post.text), namesTestServer: namesTestServer(post.text), autoDraft: cfg.autoDraft });
         // Next-season items go straight into the Next Season Draft (draftMerge.js); the card then shows what was drafted, with Undo, and keeps a button only for this season's items, patch notes, and a draft draw with no image.
@@ -295,7 +303,11 @@ async function noteSourceChange(rest, channelId, messageId, what, appId) {
     try {
         const NewsCard = require('../../models/NewsCard');
         const card = await NewsCard.findOne({ sourceChannelId: channelId, sourceMessageId: messageId });
-        if (!card) return false;
+        if (!card) {
+            // An edit to a post with no card: one still being read, or one skipped, may now say something worth a card (the fresh review R1, 2026-11-05 20:15 EST). Queued behind any read in flight, it reads the post as it is then, through the filter and the cap like any post.
+            if (what === 'edited') enqueue(() => recheckEdited(rest, channelId, messageId, appId)).catch(err => console.error('News triage: re-checking an edited post failed:', err?.message || err));
+            return false;
+        }
         const wrote = card.draftChangeId && !card.draftUndone;
         // A post whose rows are in the draft says so when it goes away or changes (2026-11-05 15:34 EST): before, the rows outlived their source with nothing pointing at them.
         const note = what === 'deleted'
@@ -308,6 +320,19 @@ async function noteSourceChange(rest, channelId, messageId, what, appId) {
         if (what === 'edited' && wrote) enqueue(() => rereadEdited(rest, channelId, messageId, appId)).catch(err => console.error('News triage: re-reading an edited post failed:', err?.message || err));
         return true;
     } catch (err) { console.error('News triage: could not mark a source change:', err?.message || err); return false; }
+}
+
+async function recheckEdited(rest, channelId, messageId, appId) {
+    const NewsCard = require('../../models/NewsCard');
+    const card = await NewsCard.findOne({ sourceChannelId: channelId, sourceMessageId: messageId }).lean();
+    // A card made while this waited: its draft side is re-read as any edit is; a this-season card already says the post was edited.
+    if (card) return card.draftChangeId && !card.draftUndone ? rereadEdited(rest, channelId, messageId, appId) : null;
+    const raw = await rest.get(Routes.channelMessage(channelId, messageId));
+    const ch = await rest.get(Routes.channel(channelId)).catch(() => ({}));
+    const post = toPost(raw, { guildId: raw.guild_id || '', channelName: ch.name || '' });
+    const res = await processPost(post, { rest, appId });
+    if (res.status !== 'skipped') console.log(`📰 News triage: edited #${post.channelName} ${post.id} → ${res.status}${res.reason ? ` (${res.reason})` : ''}`);
+    return res;
 }
 
 // An edited post that wrote draft rows is read again once per edit, and only its draft side is merged (the same source, so its rows update rather than add). Any change goes on a follow-up card with its own Undo.
@@ -360,7 +385,7 @@ function draftReadiness(d) {
         ranked: part(draft.rankTitle, 'Ranked Series', draft.rankEnd, draft.rankEndTBD), dmz: part(draft.dmzTitle, 'DMZ Season', draft.dmzEnd, draft.dmzEndTBD),
         calendar: calendar.length, draws: draws.length, fromNews: [...calendar, ...draws].filter(r => r.newsSource).length,
         noImage: calendar.filter(r => r.category === 'draw' && !draws.some(x => sq(x.title) === sq(r.title))).map(r => r.title),
-        noEnd: calendar.filter(r => !r.endDate && !r.isOngoing).map(r => r.title),
+        noEnd: calendar.filter(r => (!r.endDate && !r.isOngoing) || (r.newsSource && r.newsSource.noEnd)).map(r => r.title),
         // Only rows the AI judged EXPECTED (rank 1). Rank 2 is a confirmed read from #leaks, which reposts CODM's own calendar: 35 of Season 9's 42 drafted rows, so listing it warned about nearly everything (2026-11-05 15:34 EST).
         leakOnly: [...calendar, ...draws].filter(r => r.newsSource && r.newsSource.rank === 1).map(r => r.title),
         stillRunning: draft.bpStart ? (d?.calendar || []).filter(r => !r.endDate && !r.isOngoing && r.date && new Date(r.date) > new Date(new Date(draft.bpStart) - 30 * DAY_MS) && !calendar.some(x => sq(x.title) === sq(r.title))).map(r => r.title) : [],
@@ -430,6 +455,8 @@ async function postSkippedList(rest, { env = process.env, appId } = {}) {
     try {
         const NewsSkip = require('../../models/NewsSkip');
         rows = await NewsSkip.find({}).sort({ createdAt: 1 }).limit(200).lean();
+        // Posts the cap or a pause kept from the AI come first: the list shows 12 and the dropdown 25, and on a launch day they were the ones past the end (the fresh review R1, 2026-11-05 20:15 EST).
+        rows.sort((a, b) => Number(/limit|paused/.test(b.reason || '')) - Number(/limit|paused/.test(a.reason || '')));
         for (const [i, r] of rows.entries()) {
             let title = '';
             if (i < 25) { try { title = toPost(await rest.get(Routes.channelMessage(r.channelId, r.messageId)), { guildId: r.guildId }).title; } catch { /* deleted or unreadable */ } }
@@ -458,4 +485,4 @@ function msUntilNextDigest(now = new Date()) {
     return next - now;
 }
 
-module.exports = { config, enabled, toPost, processPost, enqueue, noteSourceChange, postSkippedList, msUntilNextDigest, redrawCard, loadContext, state, carryOver, draftLines, autoDraft, draftReadiness, gatherBriefing, promoteCheck, skipKinds, promoteDue, fixStillWrong, rereadEdited };
+module.exports = { loadReadCount, recheckEdited, config, enabled, toPost, processPost, enqueue, noteSourceChange, postSkippedList, msUntilNextDigest, redrawCard, loadContext, state, carryOver, draftLines, autoDraft, draftReadiness, gatherBriefing, promoteCheck, skipKinds, promoteDue, fixStillWrong, rereadEdited };

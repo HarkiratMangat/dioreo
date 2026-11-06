@@ -33,8 +33,11 @@ function edits(a, b) {
     }
     return prev[b.length];
 }
+// MP and BR versions of one mode are two items ("Attack of the Undead MP Mode" and "… BR Mode" were two edits apart, so the typo rule merged them; the fresh review R1, 2026-11-05 20:14 EST). A name with no MP or BR still matches either.
+const modeOf = s => (norm(s).match(/\b(mp|br)\b/g) || []).sort().join(',');
 function strictName(a, b) {
     if (numbersOf(a) !== numbersOf(b)) return false;
+    if (modeOf(a) && modeOf(b) && modeOf(a) !== modeOf(b)) return false;
     const x = norm(a).replace(/\s+/g, ''); const y = norm(b).replace(/\s+/g, '');
     if (!x || !y) return false;
     if (x === y) return true;
@@ -52,8 +55,14 @@ function readDate(text, postedAt) {
     const found = chrono.parse(said, { instant: ref, timezone: 0 }, { forwardDate: true })[0];
     if (!found) return null;
     const c = found.start;
-    if (c.isCertain('hour') && c.isCertain('timezoneOffset')) return c.date();
-    return new Date(Date.UTC(c.get('year'), c.get('month') - 1, c.get('day')));
+    let d = c.isCertain('hour') && c.isCertain('timezoneOffset') ? c.date() : new Date(Date.UTC(c.get('year'), c.get('month') - 1, c.get('day')));
+    // chrono's forwardDate moves a month and day with no year that is already behind the post a year ahead: "live now, 11/5 – 11/19" posted Nov 5 at 15:00 UTC read as Nov 5 2027 (the fresh review R1, 2026-11-05 20:14 EST; a date-only result has an implied noon). A date within four months before the post is the post's own year; a date months ahead ("1/5" posted in December) still moves forward.
+    if (!c.isCertain('year') && c.isCertain('month')) {
+        const back = new Date(d); back.setUTCFullYear(d.getUTCFullYear() - 1);
+        const DAY = 24 * 60 * 60 * 1000;
+        if (d - ref > 180 * DAY && ref - back >= 0 && ref - back <= 120 * DAY) d = back;
+    }
+    return d;
 }
 
 // Day-first slash dates (2026-11-04 23:06 EST, the Season 9 backtest). A Halloween sales image listed its offers as "28/10 - 17/11", "03/11 - 12/12"; chrono reads 03/11 as March 11, which sent four live draws into the Season 10 draft months off, with nothing to flag it. A post is day-first when any of its slash dates has a first number over 12; failing that, a slash date that reads months away is swapped when the swap lands near the post.

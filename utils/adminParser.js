@@ -635,9 +635,10 @@ function splitTitleDate(line) {
 function formatCalendarAsBulkText(calendar) {
     return calendar.map(event => {
         const startStr = dayjs.utc(event.date).format('M/D');
-        const endStr = event.isOngoing ? 'All Season' : dayjs.utc(event.endDate).format('M/D');
+        // A row with no end writes "All Season", and a 2X CP row its marker, so the box reads back what it showed (the fresh review R1, 2026-11-05 20:14 EST): a null end wrote "Invalid Date", which the parser drops, and the 2X flag was lost on every save.
+        const endStr = event.isOngoing || !event.endDate ? 'All Season' : dayjs.utc(event.endDate).format('M/D');
         const prefix = CALENDAR_CATEGORY_TO_PREFIX[event.category] || 'e';
-        return `${prefix}• ${startStr} - ${endStr} | ${event.title}`;
+        return `${prefix}• ${startStr} - ${endStr} | ${event.title}${event.isDoubleCP ? ' 2x CP' : ''}`;
     }).join('\n');
 }
 

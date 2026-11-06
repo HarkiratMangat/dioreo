@@ -82,14 +82,23 @@ function planDraftChanges(draftIn, items, post, { newId, skipKinds = DEFAULT_SKI
             const title = part === 'main' ? seasonTitle(item.name) : String(item.name || '').trim();
             const set = {};
             const empty = (k, def) => !draft[k] || draft[k] === def;
-            if (part === 'main') { if (!draft.currentSeasonTitle && title) set.currentSeasonTitle = title; if (!draft.bpStart && item.start) set.bpStart = new Date(item.start); }
+            // A better source replaces a season field news triage set itself (`newsSeasonSet` records the rank and the value it wrote); one he changed since is his (the fresh review R1, 2026-11-05 20:14 EST: a datamine's "Season 10 starts Nov 13" stuck after the official post said Nov 12, and the carry-over, promote check and placeholder dates all hang on bpStart).
+            const ns = { ...(draft.newsSeasonSet || {}) }; let nsChanged = false;
+            const val = v => (v instanceof Date ? v.toISOString() : v ?? null);
+            const put = (k, v, isEmpty) => {
+                const prev = ns[k];
+                const ours = prev && prev.value === val(draft[k]);
+                if (isEmpty || (ours && rank > (prev.rank || 0) && val(v) !== val(draft[k]))) { set[k] = v; ns[k] = { rank, value: val(v) }; nsChanged = true; }
+            };
+            if (part === 'main') { if (title) put('currentSeasonTitle', title, !draft.currentSeasonTitle); if (item.start) put('bpStart', new Date(item.start), !draft.bpStart); }
             const P = { 'battle pass': ['bp', 'Battle Pass'], ranked: ['rank', 'Ranked Series'], dmz: ['dmz', 'DMZ Season'] }[part];
             if (P) {
                 const [k, def] = P;
-                if (title && empty(`${k}Title`, def)) set[`${k}Title`] = title;
-                if (item.start && !draft[`${k}Start`]) set[`${k}Start`] = new Date(item.start);
-                if (item.end && !draft[`${k}End`]) { set[`${k}End`] = new Date(item.end); set[`${k}EndTBD`] = false; }
+                if (title) put(`${k}Title`, title, empty(`${k}Title`, def));
+                if (item.start) put(`${k}Start`, new Date(item.start), !draft[`${k}Start`]);
+                if (item.end) { put(`${k}End`, new Date(item.end), !draft[`${k}End`]); if (set[`${k}End`]) set[`${k}EndTBD`] = false; }
             }
+            if (nsChanged) set.newsSeasonSet = ns;
             if (Object.keys(set).length) changes.push({ type: 'season', set, name: title });
             else notes.push({ name: title, why: 'the draft already has its title and start' });
             return;
@@ -102,7 +111,10 @@ function planDraftChanges(draftIn, items, post, { newId, skipKinds = DEFAULT_SKI
         const found = findRows(draft, item.name, item.kind);
         if (item.change === 'cancelled') {
             for (const f of found) {
-                if (f.row.newsSource && sig(f.row) === f.row.newsSource.sig) changes.push({ type: 'remove', list: f.list, id: String(f.row._id), name: f.row.title });
+                const written = f.row.newsSource && sig(f.row) === f.row.newsSource.sig;
+                // A cancellation from a lower source than the one that listed it is only a note: a #leaks "cancelled" (or a misread "postponed") removed an official row (the fresh review R1, 2026-11-05 20:14 EST).
+                if (written && rank >= (f.row.newsSource.rank || 0)) changes.push({ type: 'remove', list: f.list, id: String(f.row._id), name: f.row.title });
+                else if (written) notes.push({ name: f.row.title, why: 'cancelled by a lower source than the one that listed it: check, and remove it yourself if it is' });
                 else notes.push({ name: f.row.title, why: 'cancelled, but you added or edited it: remove it yourself' });
             }
             if (!found.length) notes.push({ name: item.name, why: 'cancelled; it was not in the draft' });
@@ -116,14 +128,15 @@ function planDraftChanges(draftIn, items, post, { newId, skipKinds = DEFAULT_SKI
         const hasDrawRow = found.some(f => f.list !== 'calendar');
         if (item.kind === 'draw' && !item.thumbnailUrl && !hasDrawRow) { needsBox.push(item); notes.push({ name: item.name, why: 'no image found, so only its calendar row is drafted: add the draw with its Add to Next Season Draft button' }); }
         if (item.kind === 'draw' && (item.thumbnailUrl || hasDrawRow)) wanted.push({ list: item.drawType === 'returning' ? 'returningDraws' : 'newDraws', row: { title: item.name, date: item.start || null, items: (item.rewards || []).map(r => ({ tier: r.tier, name: r.name })), thumbnailUrl: item.thumbnailUrl || '', priceType: '' } });
-        wanted.push({ list: 'calendar', row: { title: item.name, date: item.start || null, endDate: item.end || null, category: CATEGORY[item.kind], isOngoing: false, isDoubleCP: Boolean(item.doubleCP) } });
+        // No end from the post is written All Season with `newsSource.noEnd` (the fresh review R1, 2026-11-05 20:14 EST): /manage's calendar box has no way to write a missing end, so a null end came back as "Invalid Date", and its save dropped the row from the draft without a word. The first post that gives an end replaces it, and the briefing and promote check list it until then.
+        wanted.push({ list: 'calendar', row: { title: item.name, date: item.start || null, endDate: item.end || null, category: CATEGORY[item.kind], isOngoing: !item.end, isDoubleCP: Boolean(item.doubleCP) } });
 
         for (const w of wanted) {
             const hit = found.find(f => (w.list === 'calendar') === (f.list === 'calendar'));
             if (!hit) {
                 const row = { ...w.row, _id: makeId() };
                 // A dateless confirmed item sits on the next season's start as a placeholder (resolve.js); `dated: false` lets any later post that gives a real date replace it, whatever its rank (Grim Duo kept the placeholder in the backtest).
-                row.newsSource = { ...source(rank), dated: Boolean(item.startText), sig: sig(row) };
+                row.newsSource = { ...source(rank), dated: Boolean(item.startText), sig: sig(row), ...(w.list === 'calendar' && !row.endDate ? { noEnd: true } : {}) };
                 changes.push({ type: 'add', list: w.list, row, name: row.title });
                 continue;
             }
@@ -137,11 +150,12 @@ function planDraftChanges(draftIn, items, post, { newId, skipKinds = DEFAULT_SKI
             // A lower source never moves a higher one's date, even when it says the date changed (the scenario grid, 2026-11-05 17:13 EST: the rule above said so and `|| changed` let a leak's "changed" move an official date). The same or a better source does.
             if (item.startText && w.row.date && (!cur.date || placeholder || (asGood && day(w.row.date) !== day(cur.date)))) set.date = w.row.date;
             if (w.list === 'calendar' && w.row.endDate && (!cur.endDate || (asGood && day(w.row.endDate) !== day(cur.endDate)))) set.endDate = w.row.endDate;
+            if (set.endDate && cur.isOngoing && cur.newsSource.noEnd) set.isOngoing = false;
             if (w.list !== 'calendar' && !cur.thumbnailUrl && w.row.thumbnailUrl) set.thumbnailUrl = w.row.thumbnailUrl;
             if (w.list !== 'calendar' && !(cur.items || []).length && w.row.items.length) set.items = w.row.items;
             if (!Object.keys(set).length) continue;
             const next = { ...cur, ...set };
-            changes.push({ type: 'update', list: hit.list, id: String(cur._id), set: { ...set, newsSource: { ...source(Math.max(rank, cur.newsSource.rank || 0)), dated: Boolean(set.date) || !placeholder, sig: sig(next) } }, name: next.title });
+            changes.push({ type: 'update', list: hit.list, id: String(cur._id), set: { ...set, newsSource: { ...source(Math.max(rank, cur.newsSource.rank || 0)), dated: Boolean(set.date) || !placeholder, sig: sig(next), ...(cur.newsSource.noEnd && !set.endDate ? { noEnd: true } : {}) } }, name: next.title });
         }
     }
 }
@@ -154,7 +168,15 @@ function planCarryOver(draft, live, { newId } = {}) {
     const changes = [];
     const running = (live.calendar || []).filter(r => r.endDate && new Date(r.endDate) > start);
     for (const r of running) {
-        if ((draft.calendar || []).some(d => same(d.title, r.title) && (d.category || 'event') === (r.category || 'event'))) continue;
+        const have = (draft.calendar || []).find(d => same(d.title, r.title) && (d.category || 'event') === (r.category || 'event'));
+        if (have) {
+            // A carried row follows its live row until Promote to Live (the fresh review R1, 2026-11-05 20:14 EST): it was copied once, so an end he extended on the live bot was put back to the old one at Promote.
+            if (have.newsSource?.carried && sig(have) === have.newsSource.sig && (day(have.date) !== day(r.date) || day(have.endDate) !== day(r.endDate) || Boolean(have.isOngoing) !== Boolean(r.isOngoing))) {
+                const next = { ...have, date: r.date || null, endDate: r.endDate, isOngoing: Boolean(r.isOngoing) };
+                changes.push({ type: 'update', list: 'calendar', id: String(have._id), set: { date: next.date, endDate: next.endDate, isOngoing: next.isOngoing, newsSource: { ...have.newsSource, sig: sig(next) } }, name: have.title });
+            }
+            continue;
+        }
         const row = { title: r.title, date: r.date || null, endDate: r.endDate, category: r.category || 'event', isOngoing: Boolean(r.isOngoing), isDoubleCP: Boolean(r.isDoubleCP), _id: makeId() };
         row.newsSource = { channelId: '', messageId: '', rank: RANK.official, carried: true, sig: sig(row) };
         changes.push({ type: 'add', list: 'calendar', row, name: row.title });
@@ -165,6 +187,15 @@ function planCarryOver(draft, live, { newId } = {}) {
             const drow = { title: d.title, date: d.date || null, thumbnailUrl: d.thumbnailUrl || '', priceType: d.priceType || '', items: (d.items || []).map(i => ({ tier: i.tier, name: i.name })), _id: makeId() };
             drow.newsSource = { channelId: '', messageId: '', rank: RANK.official, carried: true, sig: sig(drow) };
             changes.push({ type: 'add', list, row: drow, name: drow.title });
+        }
+    }
+    // A carried row whose live row was deleted, or now ends before the season starts, goes: Promote to Live would bring it back (the fresh review R1, 2026-11-05 20:14 EST). Never when the live calendar reads empty, which is a failed read, not a deletion.
+    if ((live.calendar || []).length) {
+        for (const d of draft.calendar || []) {
+            if (!d.newsSource?.carried || sig(d) !== d.newsSource.sig) continue;
+            if (running.some(r => same(r.title, d.title) && (r.category || 'event') === (d.category || 'event'))) continue;
+            changes.push({ type: 'remove', list: 'calendar', id: String(d._id), name: d.title });
+            if ((d.category || 'event') === 'draw') for (const list of DRAW_LISTS) for (const x of draft[list] || []) if (x.newsSource?.carried && sig(x) === x.newsSource.sig && same(x.title, d.title)) changes.push({ type: 'remove', list, id: String(x._id), name: x.title });
         }
     }
     return { changes, notes: [] };
@@ -187,23 +218,37 @@ function applyDraftChanges(draft, changes) {
         if (i < 0) continue;
         const row = list[i];
         if (!row.newsSource || sig(row) !== row.newsSource.sig) continue;
-        if (c.type === 'update') { undo.updated.push({ list: c.list, id: c.id, before: JSON.parse(JSON.stringify(row)) }); list[i] = { ...row, ...c.set }; applied.push(c); }
+        if (c.type === 'update') { undo.updated.push({ list: c.list, id: c.id, before: JSON.parse(JSON.stringify(row)), afterSig: c.set?.newsSource?.sig || null }); list[i] = { ...row, ...c.set }; applied.push(c); }
         if (c.type === 'remove') { undo.removed.push({ list: c.list, index: i, row: JSON.parse(JSON.stringify(row)) }); list.splice(i, 1); applied.push(c); }
     }
     return { undo, applied };
 }
 
-// Reverses applyDraftChanges by id: added rows out, updated rows back as they were, removed rows back in place. Rows added since by anyone else stay.
-function undoDraftChanges(draft, undo) {
-    for (const a of undo.added || []) draft[a.list] = (draft[a.list] || []).filter(r => String(r._id) !== a.id);
-    for (const u of undo.updated || []) { const list = draft[u.list] || []; const i = list.findIndex(r => String(r._id) === u.id); if (i >= 0) list[i] = u.before; }
-    for (const r of [...(undo.removed || [])].reverse()) { const list = (draft[r.list] = draft[r.list] || []); list.splice(Math.min(r.index, list.length), 0, r.row); }
+// Reverses applyDraftChanges by id: added rows out, updated rows back as they were, removed rows back in place. Only a row still as this change left it is put back (an added row news triage still owns, an updated row whose sig is the one this change wrote); one changed since, by him or a later post, is kept and counted (the fresh review R1, 2026-11-05 20:14 EST: Undo put `before` over later edits, and restored `active: false` under a draft holding thirty rows, which hid it from /manage and Promote). `stats` gets how many were restored and kept.
+function undoDraftChanges(draft, undo, stats = {}) {
+    stats.restored = 0; stats.kept = 0;
+    const owned = row => row && row.newsSource && sig(row) === row.newsSource.sig;
+    for (const a of undo.added || []) {
+        const list = draft[a.list] || []; const i = list.findIndex(r => String(r._id) === a.id);
+        if (i < 0) continue;
+        if (owned(list[i])) { list.splice(i, 1); stats.restored++; } else stats.kept++;
+    }
+    for (const u of undo.updated || []) {
+        const list = draft[u.list] || []; const i = list.findIndex(r => String(r._id) === u.id);
+        if (i < 0) continue;
+        if (!u.afterSig || sig(list[i]) === u.afterSig) { list[i] = u.before; stats.restored++; } else stats.kept++;
+    }
+    for (const r of [...(undo.removed || [])].reverse()) { const list = (draft[r.list] = draft[r.list] || []); list.splice(Math.min(r.index, list.length), 0, r.row); stats.restored++; }
     if (undo.season) Object.assign(draft, undo.season);
     const same = (a, b) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null) || (a && b && !isNaN(new Date(a)) && !isNaN(new Date(b)) && new Date(a).getTime() === new Date(b).getTime());
+    let wasInactive = false;
     for (const s of [...(undo.seasons || [])].reverse()) {
         if (!s._before) { Object.assign(draft, s); continue; }
-        for (const [k, v] of Object.entries(s._before)) if (k === 'active' || same(draft[k], s._after?.[k])) draft[k] = v;
+        if (s._before.active === false) wasInactive = true;
+        for (const [k, v] of Object.entries(s._before)) { if (k === 'active') continue; if (same(draft[k], s._after?.[k])) { draft[k] = v; stats.restored++; } else stats.kept++; }
     }
+    // The draft goes back to inactive only when nothing is left in it.
+    if (wasInactive && !DRAW_LISTS.concat('calendar').some(l => (draft[l] || []).length) && !draft.currentSeasonTitle && !draft.bpStart) draft.active = false;
     return draft;
 }
 
@@ -212,8 +257,22 @@ function undoAllowed(draft, after) {
     if (!after) return true;
     const t = (draft?.currentSeasonTitle || '') === (after.title || '');
     const s = (!draft?.bpStart && !after.bpStart) || (draft?.bpStart && after.bpStart && new Date(draft.bpStart).getTime() === new Date(after.bpStart).getTime());
-    return Boolean(t && s);
+    if (!(t && s)) return false;
+    // A change made before the season had a title or start matches an emptied draft too, so it also needs one of the rows it left to still be there (the fresh review R1, 2026-11-05 20:14 EST: a cancellation's Undo after Promote to Live put last season's row into the new draft).
+    if (!after.title && !after.bpStart && (after.rowIds || []).length) {
+        const ids = new Set(DRAW_LISTS.concat('calendar').flatMap(l => (draft?.[l] || []).map(r => String(r._id))));
+        return after.rowIds.some(id => ids.has(String(id)));
+    }
+    return true;
 }
-const afterOf = draft => ({ title: draft?.currentSeasonTitle || '', bpStart: draft?.bpStart || null });
+const afterOf = draft => ({ title: draft?.currentSeasonTitle || '', bpStart: draft?.bpStart || null, rowIds: DRAW_LISTS.concat('calendar').flatMap(l => (draft?.[l] || []).map(r => String(r._id))).slice(0, 30) });
 
-module.exports = { undoAllowed, afterOf, planDraftChanges, planCarryOver, applyDraftChanges, undoDraftChanges, sig, SKIP_KIND, KIND_GROUPS, DEFAULT_SKIP, skippedKind, RANK };
+// A /manage draft box re-parses its whole list, so every row came back new, with no _id or newsSource: news triage's Undo then found nothing (and still said Undone), and later posts treated the rows as his (the fresh review R1, 2026-11-05 20:14 EST). A line he left as it was keeps its row's id and source; a line he changed becomes his.
+function keepNewsRows(prior, rows, kind) {
+    const key = kind === 'calendar' ? r => [r.title, day(r.date), r.isOngoing ? 'all' : day(r.endDate), r.category || 'event'].join('|') : r => [r.title, day(r.date)].join('|');
+    const pool = new Map();
+    for (const p of prior || []) if (p.newsSource && sig(p) === p.newsSource.sig) pool.set(key(p), p);
+    return (rows || []).map(r => { const p = pool.get(key(r)); if (!p) return r; pool.delete(key(r)); return { ...r, _id: p._id, newsSource: p.newsSource }; });
+}
+
+module.exports = { keepNewsRows, undoAllowed, afterOf, planDraftChanges, planCarryOver, applyDraftChanges, undoDraftChanges, sig, SKIP_KIND, KIND_GROUPS, DEFAULT_SKIP, skippedKind, RANK };

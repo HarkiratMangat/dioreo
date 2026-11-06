@@ -47,6 +47,23 @@ What the merge does, each rule from the 60-day Season 9 backtest (draft rows mat
 - **An edited post that wrote draft rows is read again** and merged (same source, so rows update); a deleted one notes on its card that its rows are still in the draft.
 - **Names are cleaned in `model.js`** (mentions, @everyone, links): a name is the one free-text field that can travel from a post to /draws.
 
+### What a fresh review found (2026-11-05 20:19 EST, worker R1, `local/project/features/news-channel-triage/review-R1.md`)
+
+Fifteen of its sixteen findings were real and are fixed, each with a check in `scripts/newsTriage.test.js` (`R1#n`):
+- 🔴 **A month and day already reached is the post's own year** (`resolve.js` `readDate`): chrono's `forwardDate` read "live now, 11/5 – 11/19" posted Nov 5 as Nov 5 the next year, which sent a live draw to the draft or dropped it.
+- 🔴 **No end from a post is written All Season, with `newsSource.noEnd`**: /manage's calendar box cannot write a missing end, so the null end came back as "Invalid Date" and the box's save dropped the row. The box now writes "All Season" for any row with no end, and its 2X CP marker.
+- 🔴 **A /manage draft box save keeps the news rows it did not change** (`draftMerge.js` `keepNewsRows`, called from `season.bulkDraftDraws` and `season.bulkDraftCalendar`): every save used to re-make every row, so Undo found nothing and still said Undone, and later posts treated the rows as his.
+- **Undo puts back only what is still as it left it**, says so when nothing is left to undo, and keeps the draft active while it holds rows. It is refused for a change made before the season had a title once the draft has been emptied (`afterOf` keeps the row ids).
+- **A lower source cannot cancel a higher one's row**; it becomes a note.
+- **A carried row follows its live row** until Promote (an extended end is carried; a deleted live row's copy goes), and nothing is removed on an empty live read.
+- **A better source replaces a season field news triage set** (`draft.newsSeasonSet` records each one's rank and value); one he changed is kept.
+- **MP and BR versions of a mode are two items** in the strict match.
+- **An edit to a post with no card is read again** (`recheckEdited`), behind any read in flight.
+- **The cap counts calls, not posts, and survives a restart**: a retry takes a slot, the day's count is saved in `BotControls.newsReadDay`/`newsReadCalls`, and Make a card will not read the same post twice in a day.
+- **Catch-up holds a channel's cursor** while it runs, so a new post cannot move it past posts not yet read, and it alerts when it stops at 500.
+- Posts the cap kept from the AI come first in the skipped list; the draft season's end is taken as 75 days after its start when none is set; closing a card takes a tier that can act on one.
+- **Not fixed, plausible only:** a slow database could keep a card's box from opening inside Discord's 3 seconds (`handlers/news.js` `openItem` reads the card, two permissions and the draft before `showModal`). Watch the dev soak for an "interaction failed".
+
 ## What he sees, and why (2026-11-05 11:10 EST, Harkirat: "put yourself in my eyes… what info do I NEED and want to KNOW?")
 
 - **The daily briefing** (00:05 UTC, every day, `card.js` `buildBriefing`, `pipeline.js` `gatherBriefing`): the counts since the last briefing or the last restart, said as such (posts read by the AI, their cost, cards, draft rows written, failed reads) · the **Next Season Draft's readiness** (title, BP start and end, Ranked and DMZ, row counts, draws with no image, rows with no end date, rows still only expected, live rows that may run into it) · **what the bot may be wrong about** (live fixes, re-checked against the live rows each time rather than whether a button was clicked) · **is each channel still delivering** (last post per followed channel, flagged after three days) · the skipped list with Make a card. A quiet day still posts, so silence never reads as health.

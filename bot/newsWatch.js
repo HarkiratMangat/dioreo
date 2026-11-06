@@ -29,10 +29,13 @@ async function updateCursor(channelId, messageId) {
     await NewsCursor.updateOne({ channelId }, { $set: { lastMessageId: messageId } }, { upsert: true });
 }
 
-async function handle(client, message) {
+// A channel being caught up: a new post read in the middle must not move its cursor past catch-up posts not yet read, or a crash before the catch-up ends loses them (the fresh review R1, 2026-11-05 20:15 EST). Its id waits here and is written when the catch-up ends.
+const catching = new Set(); const pendingLive = new Map();
+async function handle(client, message, fromCatchUp = false) {
     const post = pipeline.toPost(message);
     const result = await pipeline.processPost(post, { rest: client.rest, selfId: client.user?.id, appId: appIdOf(client) });
-    await updateCursor(post.channelId, post.id).catch(err => console.error('News triage: cursor update failed:', err?.message || err));
+    if (fromCatchUp || !catching.has(post.channelId)) await updateCursor(post.channelId, post.id).catch(err => console.error('News triage: cursor update failed:', err?.message || err));
+    else { const p = pendingLive.get(post.channelId); if (!p || BigInt(post.id) > BigInt(p)) pendingLive.set(post.channelId, post.id); }
     // Every outcome is logged, one line each (2026-11-04 22:10 EST): a read that ended in no card used to leave no trace but an in-memory list, which is how CODM's own season post went missing unnoticed.
     if (result.status !== 'not watched' && result.status !== 'own post') console.log(`📰 News triage: #${post.channelName} ${post.id} → ${result.status}${result.reason ? ` (${result.reason})` : ''}${result.error ? ` (${result.error})` : ''}`);
 }
@@ -41,6 +44,7 @@ async function handle(client, message) {
 async function catchUp(client) {
     const NewsCursor = require('../models/NewsCursor');
     for (const channelId of pipeline.config().watch) {
+        catching.add(channelId);
         try {
             const channel = await client.channels.fetch(channelId);
             const cur = await NewsCursor.findOne({ channelId }).lean();
@@ -60,10 +64,16 @@ async function catchUp(client) {
                 if (sorted.length < 100) break;
                 after = sorted[sorted.length - 1].id;
             }
-            for (const m of ordered) await pipeline.enqueue(() => handle(client, m));
+            // Stopped at 500: the newer posts past it are never read, so it says so (the fresh review R1, 2026-11-05 20:15 EST).
+            if (ordered.length >= 500) { const msg = `#${channel.name} had more than 500 posts since Dioreo Admin last read it; the posts after ${ordered[ordered.length - 1].id} were not read. Make a card from any that matter.`; console.error('News triage:', msg); try { require('../utils/alertWebhook').sendAlert('News catch-up stopped at 500', msg, 'warn'); } catch { /* alerting never breaks catch-up */ } }
+            for (const m of ordered) await pipeline.enqueue(() => handle(client, m, true));
             if (ordered.length) console.log(`📰 News triage: caught up ${ordered.length} post(s) in #${channel.name}`);
         } catch (err) {
             console.error(`News triage: catch-up failed for ${channelId}:`, err?.message || err);
+        } finally {
+            catching.delete(channelId);
+            const p = pendingLive.get(channelId);
+            if (p) { pendingLive.delete(channelId); await updateCursor(channelId, p).catch(() => {}); }
         }
     }
 }
@@ -87,7 +97,8 @@ function registerNewsWatch(client) {
         pipeline.noteSourceChange(client.rest, message.channelId, message.id, 'deleted', appIdOf(client)).catch(() => {});
     });
     client.once(Events.ClientReady, () => {
-        catchUp(client).catch(err => console.error('News triage catch-up failed:', err));
+        // The day's AI count first, so the catch-up cannot read past a cap reached before a restart.
+        pipeline.loadReadCount().finally(() => catchUp(client).catch(err => console.error('News triage catch-up failed:', err)));
         // Also at start-up: a bot that was down at 00:05 UTC the day before a season would otherwise never post its promote check (it posts once per season).
         pipeline.promoteCheck(client.rest, { appId: appIdOf(client) }).catch(() => {});
         setTimeout(() => {

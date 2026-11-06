@@ -308,7 +308,10 @@ registerEntity('season', {
             let applied; let names;
             if (op.payload.reverse) {
                 if (!M.undoAllowed(draft, op.payload.after)) return { ok: false, reason: 'the Next Season Draft has moved to another season since this change, so undoing it would write last season into it. Change the rows in /manage instead' };
-                M.undoDraftChanges(draft, op.payload.undo || {});
+                const stats = {};
+                M.undoDraftChanges(draft, op.payload.undo || {}, stats);
+                // Every row it wrote was changed since: say so, rather than report an Undo that changed nothing (the fresh review R1).
+                if (!stats.restored && stats.kept) return { ok: false, reason: 'every row this change wrote has been changed since (in /manage or by a later post), so there is nothing left to undo' };
                 applied = { reversed: true, changes: op.payload.changes };
                 names = 'Undid news triage\'s draft changes';
             } else {
@@ -329,7 +332,7 @@ registerEntity('season', {
                 'draft.currentSeasonTitle': draft.currentSeasonTitle || '', 'draft.bpStart': draft.bpStart || null,
             };
             // The battle pass, ranked and DMZ parts a season post can name (draftMerge.js); written only when present, so an op from before them leaves the fields alone.
-            for (const k of ['bpTitle', 'rankTitle', 'dmzTitle', 'bpEnd', 'rankEnd', 'dmzEnd', 'rankStart', 'dmzStart', 'bpEndTBD', 'rankEndTBD', 'dmzEndTBD']) if (k in draft) $set[`draft.${k}`] = draft[k];
+            for (const k of ['newsSeasonSet', 'bpTitle', 'rankTitle', 'dmzTitle', 'bpEnd', 'rankEnd', 'dmzEnd', 'rankStart', 'dmzStart', 'bpEndTBD', 'rankEndTBD', 'dmzEndTBD']) if (k in draft) $set[`draft.${k}`] = draft[k];
             await SeasonalData.updateOne(DOC, { $set }, { session });
             return { ok: true, change: { action: 'edit', model: 'SeasonalData', target: 'draft (news)', summary: names }, applied };
         },
@@ -403,7 +406,7 @@ registerEntity('season', {
                     // A staged New draw belongs to the DRAFT's season, never the live one (utils/drawCatalog.js insertFields).
                     const { validDraws, skipped } = await resolveThumbnailsForDraws(parseBulkDrawList(op.payload.newText), { releaseSeason: require('../../utils/quickAdd').seasonNumber(draft.currentSeasonTitle), releaseYear: require('../../utils/quickAdd').seasonYear(draft) });
                     validDraws.sort((a, b) => new Date(a.date) - new Date(b.date));
-                    $set['draft.newDraws'] = validDraws;
+                    $set['draft.newDraws'] = require('../../utils/newsTriage/draftMerge').keepNewsRows(prior.newDraws, validDraws, 'draw');
                     summary.push(`New Draws: staged ${validDraws.length}`);
                     // A draw with no image link and nothing cached is left out, as the live bulk add leaves it out; the live add says so, and the draft stayed silent (found 2026-11-04 00:33 EST).
                     if (skipped.length) summary.push(`New Draws skipped (no image link given and nothing cached yet): ${skipped.join(', ')}`);
@@ -411,7 +414,7 @@ registerEntity('season', {
                 if (op.payload.returningText) {
                     const { validDraws, skipped } = await resolveThumbnailsForDraws(parseBulkDrawList(op.payload.returningText));
                     validDraws.sort((a, b) => new Date(a.date) - new Date(b.date));
-                    $set['draft.returningDraws'] = validDraws;
+                    $set['draft.returningDraws'] = require('../../utils/newsTriage/draftMerge').keepNewsRows(prior.returningDraws, validDraws, 'draw');
                     summary.push(`Returning Draws: staged ${validDraws.length}`);
                     if (skipped.length) summary.push(`Returning Draws skipped (no image link given and nothing cached yet): ${skipped.join(', ')}`);
                 }
@@ -440,7 +443,8 @@ registerEntity('season', {
         apply: async (op, { session }) => {
             const before = await SeasonalData.findOne(DOC).select('draft').lean().session(session);
             const prior = before.draft?.calendar || [];
-            const sorted = [...op.payload.parsed].sort((a, b) => new Date(a.date) - new Date(b.date));
+            // A line he left as it was keeps news triage's id and source, so its Undo and later posts still find it (utils/newsTriage/draftMerge.js keepNewsRows).
+            const sorted = require('../../utils/newsTriage/draftMerge').keepNewsRows(prior, [...op.payload.parsed].sort((a, b) => new Date(a.date) - new Date(b.date)), 'calendar');
             await SeasonalData.updateOne(DOC, { $set: { 'draft.calendar': sorted, 'draft.active': true } }, { session });
             return {
                 ok: true,

@@ -122,6 +122,10 @@ async function openItem(interaction, cardId, index) {
 
 async function dismiss(interaction, cardId) {
     const NewsCard = require('../models/NewsCard');
+    // Closing a card takes a tier that can act on one (the fresh review R1, 2026-11-05 20:14 EST: /manage access alone let a loadouts-only admin dismiss any card).
+    const { canDo } = require('../utils/adminAccess');
+    const may = (await canDo(interaction.user.id, 'rightclick.addToCalendar')) || (await require('../utils/manageActions').resolveAction('seasondraft', 'bulkcalendar', interaction.user.id)).ok;
+    if (!may) { try { await interaction.reply({ content: 'You do not have access to act on these cards.', flags: MessageFlags.Ephemeral }); } catch (e) { console.error(e); } return; }
     await interaction.deferUpdate();
     await NewsCard.updateOne({ _id: cardId }, { $set: { dismissed: true } }).catch(() => {});
     const card = await NewsCard.findById(cardId).lean().catch(() => null);
