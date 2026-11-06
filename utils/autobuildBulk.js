@@ -179,7 +179,7 @@ function renderPage(batch, key, index, heldImages = null) {
     }
     const warn = emojis.warn;
     const line = {
-        saved: () => `${BOT_EMOJI.checkmark} **Saved:** ${item.doc.weaponName} — ${item.doc.buildName} (${item.doc.category}${item.doc.mode === 'DMZ' ? ', DMZ' : ''})`,
+        saved: () => `${BOT_EMOJI.checkmark} **Saved:** ${item.doc.weaponName} — ${item.savedAs || item.doc.buildName} (${item.doc.category}${item.doc.mode === 'DMZ' ? ', DMZ' : ''})${item.placeNote ? `\n${BOT_EMOJI.warn} ${item.placeNote}` : ''}`,
         cancelled: () => BOT_EMOJI.cross + ' **Discarded:** nothing saved or uploaded.',
         failed: () => `${warn} **Couldn't read this screenshot:** ${item.error}`,
         retry: () => `${warn} **Image upload failed** (${item.error}). Nothing was saved yet. Press **Re-upload** to send the image again.`,
@@ -397,7 +397,7 @@ async function confirmAllItems(batch, confirm = confirmCore) {
 
 // Records a confirmCore result on a batch item. Returns 'stop' when the build needs an Adjust before it can be saved.
 function applyResult(item, result) {
-    if (result.status === 'saved') { item.status = 'saved'; item.doc = result.doc; return 'ok'; }
+    if (result.status === 'saved') { item.status = 'saved'; item.doc = result.doc; item.savedAs = result.savedAs || null; item.placeNote = result.placeError || result.placeNote || null; return 'ok'; }
     if (result.status === 'retry') { item.status = 'retry'; item.retryToken = result.retryToken; item.error = result.error; return 'ok'; }
     if (result.status === 'expired') { item.status = 'cancelled'; return 'ok'; }
     return 'stop'; // nocategory · nomode · busy

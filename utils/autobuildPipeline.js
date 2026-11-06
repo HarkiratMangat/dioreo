@@ -470,7 +470,9 @@ async function placeBuild(doc, data, siblingDocs, actorId) {
         ], { actorId });
         if (!r.ok) throw new Error(JSON.stringify(r.errors || r.reason || r).slice(0, 200));
         const fresh = await Loadout.findById(destDoc._id);
-        return { doc: fresh, savedAs: `Build ${lo.optionTag(tag.number, tag.option)}` };
+        // An option takes its build's label, comment and badges (/manage's join rule), so a typed one is not kept: say so rather than drop it quietly.
+        const dropped = [String(data.buildLabel || '').trim() && 'label', data.description && 'comment', String(data.badgesRaw || '').trim() && 'badges'].filter(Boolean);
+        return { doc: fresh, savedAs: `Build ${lo.optionTag(tag.number, tag.option)}`, note: dropped.length ? `An option uses Build ${tag.number}'s ${dropped.join(', ')}, so the ${dropped.join(' and ')} typed here ${dropped.length === 1 ? 'was' : 'were'} not kept. Change ${dropped.length === 1 ? 'it' : 'them'} on Build ${tag.number} in /manage.` : null };
     } catch (err) {
         console.error('Could not place the /autobuild build where Adjust asked:', err?.message || err);
         return { doc, savedAs: doc.buildName, error: `It saved as ${doc.buildName}: it could not be moved to Build ${data.buildTag}. Move it with /manage.` };
@@ -567,7 +569,7 @@ async function confirmCoreNow(token, actorId = null) {
             if (data.submission) require('./buildSubmissions').onSaved(data.submission, doc);
             // The image now lives under the build's own key, so the cached copy goes ("if it's confirmed, then it goes from the cache folder into the actual correct storage folder").
             releaseCache(data);
-            return { status: 'saved', doc, savedAs: placed.savedAs, placeError: placed.error };
+            return { status: 'saved', doc, savedAs: placed.savedAs, placeError: placed.error, placeNote: placed.note || null };
         }
 
         // First failure: do NOT write yet. Stash the confirmed data (with weaponKey/buildName/imageKey already computed) under a new retry token, ask for the image again.
@@ -614,7 +616,7 @@ function confirmReply(client, result) {
 // Confirm click -- `interaction` is the BUTTON interaction. Caller (handlers/autobuild.js) must call interaction.deferUpdate() before calling this, since the review card is being replaced.
 async function confirmAndWrite(interaction, token) {
     const result = await confirmCore(token, interaction.user?.id);
-    if (result.status === 'saved') return await replaceWithV2Card(interaction, buildPostCreationCard(result.doc, result.placeError || null, result.savedAs));
+    if (result.status === 'saved') return await replaceWithV2Card(interaction, buildPostCreationCard(result.doc, result.placeError || result.placeNote || null, result.savedAs));
     return interaction.followUp(confirmReply(interaction.client, result));
 }
 
