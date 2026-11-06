@@ -353,7 +353,7 @@ async function refreshForRender(interaction, batch, key) {
     if (!pending.length || !dbUp()) return;
     try {
         const Loadout = require('../models/Loadout');
-        const allBuilds = await Loadout.find({}).select('weaponKey weaponName category buildName shareCode attachments mode').lean();
+        const allBuilds = await Loadout.find({}).select('weaponKey weaponName category buildName shareCode attachments mode variants').lean();
         const { refreshReviewWarnings } = require('./autobuildPipeline');
         for (const it of pending) refreshReviewWarnings(it.data, allBuilds);
         const others = await Stored().find({ ownerId: { $ne: batch.adminId }, key: { $ne: key } }).lean();
@@ -412,7 +412,7 @@ function readingCard(done, total) {
 // Reads screenshots three at a time into new batch items, stashing each as an ordinary review under its own token. Shared by a new batch and by Add more. An item's own preset (the start form, 2026-10-25 12:49 EDT) wins over the batch-wide options for what it names, and leaves the rest to them.
 async function readInto(interaction, newItems, { explicitCategory = null, badgesOption = null, explicitMode = null, credit = null } = {}) {
     const Loadout = require('../models/Loadout');
-    const allBuilds = await Loadout.find({}).select('weaponKey weaponName category buildName shareCode attachments mode').lean();
+    const allBuilds = await Loadout.find({}).select('weaponKey weaponName category buildName shareCode attachments mode variants').lean();
     let done = 0;
     await sendV2Payload(interaction, readingCard(0, newItems.length)).catch(() => {});
     let next = 0;

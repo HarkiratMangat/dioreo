@@ -217,11 +217,48 @@ const lastToken = () => [...pipeline.pendingAutobuilds.keys()].pop();
         assert.deepStrictEqual(data.attachmentSlots, ['Optic', 'Muzzle'], 'MP still orders by slot and keeps labels');
         assert.ok(cardText(sends[0]).includes('-# *Set by you*'));
     });
-    await check('the Edit box pre-fills "Category | Mode" and no longer demands a Gunsmith code', () => {
-        const json = pipeline.buildEditModal('t', { weaponName: 'AK117', gunsmithCode: '', attachments: DMZ_AK117, category: 'AR', mode: 'DMZ', badgesRaw: '' }).toJSON();
+    await check('Adjust is /manage\'s five boxes: weapon + label, category + build # + code, attachments + comment, a Mode dropdown, badges', () => {
+        const json = pipeline.buildEditModal('t', { weaponName: 'AK117', buildLabel: 'Ranked', gunsmithCode: '', attachments: DMZ_AK117, category: 'AR', mode: 'DMZ', badgesRaw: '', description: 'Close range' }).toJSON();
         const inputs = Object.fromEntries(json.components.map(r => { const c = r.component || r.components[0]; return [c.custom_id, c]; }));
-        assert.strictEqual(inputs.category.value, 'AR | DMZ');
-        assert.strictEqual(inputs.code.required, false);
+        assert.deepStrictEqual(Object.keys(inputs), ['weapon', 'ident', 'attachments', 'mode', 'badges']);
+        assert.strictEqual(inputs.weapon.value, 'AK117, Ranked');
+        assert.strictEqual(inputs.ident.value, 'AR, ', 'DMZ has no code part; a blank build # is the next build');
+        assert.ok(inputs.attachments.value.endsWith('\nComment: Close range'));
+        assert.deepStrictEqual(inputs.mode.options.filter(o => o.default).map(o => o.value), ['DMZ']);
+        const mp = pipeline.buildEditModal('t', { weaponName: 'M21 EBR', gunsmithCode: '1C2C4A7E8A', attachments: ['A'], category: 'SNIPER', mode: 'MP', badgesRaw: '', buildTag: '2b' }).toJSON();
+        const mpIdent = mp.components.map(r => r.component || r.components[0]).find(c => c.custom_id === 'ident');
+        assert.strictEqual(mpIdent.value, 'SNIPER, 2b, 1C2C4A7E8A');
+    });
+    await check('Adjust reads build #, comment and mode the way /manage does', () => {
+        const base = { mode: 'MP', description: 'old note' };
+        const r = pipeline.parseAdjustFields({ weapon: 'm21 ebr, Ranked', ident: 'sniper, 2b, 1c2c4a7e8a', attachments: 'Monolithic Suppressor\nsoh\nBadges: meta\nComment: Tap fire\nat range', mode: 'MP', badges: ['top5'] }, base);
+        assert.strictEqual(r.weaponName, 'M21 EBR');
+        assert.strictEqual(r.buildLabel, 'Ranked');
+        assert.strictEqual(r.category, 'SNIPER');
+        assert.strictEqual(r.buildTag, '2b');
+        assert.strictEqual(r.rawCode, '1C2C4A7E8A');
+        assert.deepStrictEqual(r.rawAttachments, ['Monolithic Suppressor', 'Sleight of Hand']);
+        assert.strictEqual(r.badgesRaw, 'top5,meta');
+        assert.strictEqual(r.description, 'Tap fire\nat range');
+        assert.strictEqual(pipeline.parseAdjustFields({ weapon: 'M21 EBR', ident: 'SNIPER, , 1C2C4A7E8A', attachments: 'A', mode: 'MP', badges: [] }, base).buildTag, '', 'blank build # = next');
+        assert.strictEqual(pipeline.parseAdjustFields({ weapon: 'M21 EBR', ident: 'SNIPER, 3, 1C2C4A7E8A', attachments: 'A', mode: 'MP', badges: [] }, base).description, 'old note', 'no Comment line keeps the stored comment');
+        assert.strictEqual(pipeline.parseAdjustFields({ weapon: 'M21 EBR', ident: 'SNIPER, 3, 1C2C4A7E8A', attachments: 'A\nComment:', mode: 'MP', badges: [] }, base).description, '', 'an empty Comment line clears it');
+        assert.ok(pipeline.parseAdjustFields({ weapon: 'AK117', ident: 'AR, 2, 1A2B', attachments: 'A', mode: 'DMZ', badges: [] }, base).error, 'DMZ takes no code');
+        assert.ok(pipeline.parseAdjustFields({ weapon: 'AK117', ident: 'AR, x9', attachments: 'A', mode: 'MP', badges: [] }, base).error, 'a bad build # is refused');
+    });
+    await check('Adjust\'s build # is checked against the weapon\'s builds', () => {
+        const sib = [
+            { _id: 'a', buildName: 'Build 1', attachments: ['A'], variants: [] },
+            { _id: 'b', buildName: 'Build 2', attachments: ['B'], variants: [{ attachments: ['C'] }] },
+        ];
+        const p = (buildTag) => pipeline.buildTargetProblem({ buildTag }, sib);
+        assert.strictEqual(p(''), null);
+        assert.strictEqual(p('3'), null, 'the next build');
+        assert.strictEqual(p('1'), null, 'a taken number swaps');
+        assert.ok(p('4'), 'past the next build');
+        assert.strictEqual(p('2c'), null, 'the next option');
+        assert.ok(p('2d'), 'a gap in the letters');
+        assert.ok(p('5b'), 'no such build');
     });
 
     if (failed) { console.log(`\n${failed} check(s) failed.`); process.exit(1); }

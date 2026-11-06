@@ -18,6 +18,27 @@ const pendingAutobuilds = new Map();
 // Tracks tokens currently mid-upload/write inside confirmAndWrite -- closes a real duplicate-write race: `confirmAndWrite` only deletes a token from `pendingAutobuilds` AFTER its write durably succeeds (a deliberate fix for an earlier data-loss bug, see git history around this file), which means the token stays visible in the Map for the full duration of the Cloudinary upload + Mongo write. Without this marker, two overlapping Confirm clicks on the same token (an admin double-click, or a race with something else reading the same token) would both pass the "does this token still exist" guard and both independently upload+write, producing two duplicate builds for one weapon. Always released in a `finally` so an unexpected throw (e.g. doc.save() failing) doesn't permanently strand the token as "in progress" for the rest of its 10-minute TTL.
 const confirmInProgress = new Set();
 
+// Adjust's build # (2026-11-06 17:31 EST, Harkirat's pick A: /manage's "Category, build #, code" box): blank is the next build, as before; `2` puts the build at Build 2 (the build there moves to the end, /manage's add rule); `2b` makes it Option B of Build 2 (utils/loadoutOptions.js). `siblings` are this weapon's builds in this mode. Returns a warning line, or null when the number can be used. An option count needs `variants`; a caller that did not load them skips that half, and Save checks again with them.
+function buildTargetProblem(data, siblings) {
+    if (!data.buildTag) return null;
+    const form = require('./loadoutForm');
+    const lo = require('./loadoutOptions');
+    const tag = lo.parseBuildTag(data.buildTag);
+    if (!tag) return `${BOT_EMOJI.warn} **\`${data.buildTag}\` isn't a build number**\n> **Fix:** use 1, 2, 3, or 2b for Build 2's Option B, with **Adjust**`;
+    const next = siblings.length + 1;
+    if (!tag.lettered) {
+        if (tag.number < 1 || tag.number > next) return `${BOT_EMOJI.warn} **Build ${tag.number} isn't free to use**\n> This weapon has ${siblings.length ? `builds 1 to ${siblings.length}` : 'no builds yet'}, so a new build can be 1 to ${next}\n> **Fix:** the build # with **Adjust**, or leave it blank for the next build`;
+        return null;
+    }
+    const dest = siblings.find(b => form.numberFor(b, siblings) === tag.number);
+    if (!dest) return `${BOT_EMOJI.warn} **There is no Build ${tag.number} to add an option to**\n> **Fix:** a plain number makes a new build, with **Adjust**`;
+    if (dest.variants === undefined && dest.attachments === undefined) return null;
+    const count = lo.optionsOf(dest).length;
+    if (count >= lo.MAX_OPTIONS) return `${BOT_EMOJI.warn} **Build ${tag.number} already has ${lo.MAX_OPTIONS} options**, the most a build can have`;
+    if (tag.option > count) return `${BOT_EMOJI.warn} **Build ${tag.number} has ${count === 1 ? 'one option' : `options ${tag.number} to ${lo.optionTag(tag.number, count - 1)}`}**\n> **Fix:** the next one is \`${lo.optionTag(tag.number, count)}\`, with **Adjust**`;
+    return null;
+}
+
 // Recomputes the two advisory warnings shown on the review card (mutates `data` in place). Called at initial extraction AND after every Edit submission, since editing the weapon/code/attachments/ category is exactly what changes whether either warning applies. Pure given `allMpBuilds` (the full current MP loadout set) -- the caller does the DB fetch so this stays cheap to re-run.
 //   - categoryConflict: an existing build of THIS weapon is saved under a DIFFERENT category than the one chosen here (live-test 4 -- picking MARKSMAN for a weapon already saved as AR silently registered AK117 under two categories). weaponKey is the weapon's identity, so a weapon living under two categories is always a mistake worth flagging.
 //   - duplicateWarning: this looks like a build already in the DB (live-test 1 + note #14) -- see loadoutRender.js's findDuplicateLoadouts for the two soft rules.
@@ -35,6 +56,7 @@ function refreshReviewWarnings(data, allBuilds) {
     // Position in /gunsmith, which lists a weapon's builds in _id order (utils/loadoutLookup.js; the portal's buildNumberOf uses the same rule). The new build would come last.
     const ordered = sameMode.filter(b => b.weaponKey === weaponKey).sort((a, b) => String(a._id).localeCompare(String(b._id)));
     data.ordinal = ordered.length + 1;
+    data.buildWarning = buildTargetProblem(data, ordered);
     // A label is the build's own field since 2026-10-26 01:19 EDT (models/Loadout.js), shown after the weapon name in /manage's Edit pop-up; an older build may still carry its label as its name. Two builds of one weapon never share one: Save refuses a taken label.
     const label = String(data.buildLabel || '').trim().toLowerCase();
     data.labelConflict = label ? ordered.some(b => [b.label, b.buildName].some(n => String(n || '').trim().toLowerCase() === label)) : false;
@@ -108,7 +130,7 @@ function resolveMode(explicitMode, detectedMode) {
     return null;
 }
 
-// "Category | Mode" -- the Edit box's combined field (Discord caps a modal at five fields and all five are taken). The mode half is optional and keeps the current mode when left off, so an old habit of typing only "AR" still works. Anything that isn't MP or DMZ clears the mode, and the review card then asks for it, rather than guessing.
+// ⚠️ Adjust no longer has this box (2026-11-06 17:39 EST: Mode is its own dropdown, see buildEditModal); kept for its tests and any older caller. "Category | Mode" -- the Edit box's combined field (Discord caps a modal at five fields and all five are taken). The mode half is optional and keeps the current mode when left off, so an old habit of typing only "AR" still works. Anything that isn't MP or DMZ clears the mode, and the review card then asks for it, rather than guessing.
 function parseCategoryAndMode(raw, currentMode) {
     const [catPart, modePart] = String(raw || '').split('|').map(p => p.trim());
     const category = (catPart || '').toUpperCase() || null;
@@ -140,7 +162,7 @@ function buildReviewCard(token, data, opts = {}) {
     // Warnings first, above the build (Harkirat, 2026-10-20 13:19 EDT: "warning section should be above the wep name, mode, etc.").
     const warnings = [
         data.categoryConflict ? `${BOT_EMOJI.warn} **Category mismatch:** this weapon is already saved as \`${data.categoryConflict}\`\n> **Saving as:** \`${data.category}\`, so it would sit under two categories\n> **Fix:** change the category with **Adjust**` : null,
-        data.labelWarning, data.duplicateWarning, data.codeWarning, data.catalogueWarning, data.equipCapWarning, data.confidenceWarning,
+        data.formWarning, data.buildWarning, data.labelWarning, data.duplicateWarning, data.codeWarning, data.catalogueWarning, data.equipCapWarning, data.confidenceWarning,
         // The start form's preset words nothing recognised, and its notes (2026-10-25 12:49 EDT: "shows on that build's review page, never dropped silently").
         data.presetWarning ? `${BOT_EMOJI.warn} ${data.presetWarning}` : null, ...(data.formNotes || []).map(n => `${BOT_EMOJI.warn} ${n}`),
         ...(opts.notes || []),
@@ -167,7 +189,8 @@ function buildReviewCard(token, data, opts = {}) {
         `### Weapon: \`${data.weaponName}\` — \`${data.category || 'unknown'}\``,
         `**Label:** \`${label || '—'}\``,
         label ? null : '-# *Set custom build label using **Adjust***',
-        `**Build:** \`Build ${data.ordinal || 1}\``,
+        `**Build:** \`Build ${data.buildTag || data.ordinal || 1}\``,
+        data.buildTag ? null : '-# *Set the build # with **Adjust**; blank saves it as the next build*',
         `**Mode:** \`${data.mode || 'unknown'}\``,
         `-# *${modeHint}*`,
         `**Badges:** \`${badges || '—'}\``,
@@ -175,6 +198,7 @@ function buildReviewCard(token, data, opts = {}) {
         '### Attachments:',
         ...attachmentLines,
         codeLine,
+        data.description ? `**Comment:** ${data.description}` : null,
     ].filter(l => l !== null).join('\n');
 
     const components = [
@@ -254,7 +278,7 @@ async function extractToData(sourceImageUrl, { explicitCategory = null, badgesOp
     // Every read is recorded, and the exact same file again reuses its earlier read (models/VisionRead.js, 2026-10-25 13:52 EDT).
     const extracted = await extractLoadoutFromImage(sourceImageUrl, { taskName: 'autobuild_live', knownWeapons: catIndex ? [...catIndex.weapons.values()].map(w => w.name) : [], record: true, reuse: true });
     // One fetch, reused for BOTH the attachment-name corrector's known-vocabulary set AND the duplicate/category-conflict warnings (refreshReviewWarnings) -- richer field select than the old attachments-only projection so those checks have shareCode/category/weaponName to work with. Both modes since 2026-10-19 17:52 EDT: DMZ uses the same attachment names (and adds some MP builds don't have), so the vocabulary is the union, and refreshReviewWarnings splits by mode where it matters.
-    const builds = allBuilds || await Loadout.find({}).select('weaponKey weaponName category buildName shareCode attachments mode').lean();
+    const builds = allBuilds || await Loadout.find({}).select('weaponKey weaponName category buildName shareCode attachments mode variants').lean();
     const knownAttachments = await knownAttachmentNames(builds);
     const correctedAttachments = extracted.attachments.map(a => correctAttachmentName(a, knownAttachments));
     const correctedCode = correctGunsmithCode(extracted.gunsmithCode);
@@ -375,6 +399,8 @@ async function writeLoadoutDoc(data, imageKeyOverride) {
         shareCode: data.gunsmithCode || '',
         ...(data.sourceHash ? { sourceHash: data.sourceHash } : {}),
         ...badges,
+        // Adjust's Comment: line (2026-11-06 17:31 EST), the build's comment shown on its card.
+        ...(data.description ? { description: String(data.description) } : {}),
         // A build from Submit a Build keeps its submitter, shown only if they chose credit (utils/buildSubmissions.js, Harkirat 2026-10-25 17:06 EDT).
         ...(data.submission ? { submittedBy: { discordId: data.submission.discordId, credited: Boolean(data.submission.credited) } } : {}),
         // The footer's credit (utils/loadoutCredit.js, 2026-11-02 23:10 EST): a submission's own pick, or /autobuild's credit_user / credit_name. No thank-you DM for the latter: that user never sent the build, so the DM exception for submitters does not reach them.
@@ -398,9 +424,9 @@ async function writeLoadoutDoc(data, imageKeyOverride) {
     return doc;
 }
 
-function buildPostCreationCard(doc, imageWarning) {
+function buildPostCreationCard(doc, imageWarning, savedAs = null) {
     const accentColor = getMpCategoryAccent(doc.category);
-    let content = `${BOT_EMOJI.checkmark} **Loadout created:** ${doc.weaponName} (${doc.buildName}, ${doc.category}${doc.mode === 'DMZ' ? ', DMZ' : ''})`;
+    let content = `${BOT_EMOJI.checkmark} **Loadout created:** ${doc.weaponName} (${savedAs || doc.buildName}, ${doc.category}${doc.mode === 'DMZ' ? ', DMZ' : ''})`;
     if (imageWarning) content += `\n${BOT_EMOJI.warn} ${imageWarning}`;
     const container = {
         type: 17,
@@ -411,6 +437,44 @@ function buildPostCreationCard(doc, imageWarning) {
         ]
     };
     return { components: [container], flags: 32768 };
+}
+
+// Puts a just-saved build where Adjust's build # asked (2026-11-06 17:31 EST), through the op core so it is one Revert like any /manage move: a plain number another build holds swaps the two (loadout.edit's numberBuild, so that build takes the new one's place at the end, /manage's add rule); a letter moves it into that build as an option (/manage's join: the new build is removed and its option inserted). Never throws: a failed move leaves the build saved as the next build and says so.
+async function placeBuild(doc, data, siblingDocs) {
+    if (!data.buildTag) return { doc, savedAs: doc.buildName };
+    const form = require('./loadoutForm');
+    const lo = require('./loadoutOptions');
+    const tag = lo.parseBuildTag(data.buildTag);
+    const { commitSet } = require('../core/changeset');
+    const target = (d) => ({ id: String(d._id), mode: d.mode });
+    try {
+        if (!tag.lettered) {
+            if (form.numberFor(doc, [...siblingDocs, doc]) === tag.number) return { doc, savedAs: doc.buildName };
+            // loadout.edit writes the whole build (validateBuild resets attachments, badges and category when left out), so the build is sent as it stands with only the number asked.
+            const cur = doc.toObject ? doc.toObject() : doc;
+            const payload = { weaponName: cur.weaponName, mode: cur.mode, category: cur.category, label: cur.label || '', attachments: cur.attachments, attachmentSlots: cur.attachmentSlots, shareCode: cur.shareCode, description: cur.description || '',
+                isMeta: !!cur.isMeta, isToxic: !!cur.isToxic, isAss: !!cur.isAss, categoryRank: cur.categoryRank ?? null, dmzRangeRank: cur.dmzRangeRank ?? null, rankModes: cur.rankModes || [], buildNumber: tag.number };
+            const r = await commitSet([{ type: 'loadout.edit', target: target(doc), payload }], { actorId: data.adminId });
+            if (!r.ok) throw new Error(JSON.stringify(r.errors || r.reason || r).slice(0, 200));
+            const fresh = await Loadout.findById(doc._id);
+            return { doc: fresh || doc, savedAs: fresh?.buildName || doc.buildName };
+        }
+        const dest = await Loadout.findOne({ weaponKey: doc.weaponKey, mode: doc.mode, _id: { $ne: doc._id }, buildName: `Build ${tag.number}` }).lean()
+            || siblingDocs.find(b => form.numberFor(b, siblingDocs) === tag.number);
+        if (!dest) throw new Error(`no Build ${tag.number}`);
+        const destDoc = await Loadout.findById(dest._id).lean();
+        const option = lo.optionsOf(doc.toObject ? doc.toObject() : doc)[0];
+        const r = await commitSet([
+            { type: 'loadout.delete', target: target(doc) },
+            { type: 'loadout.options', target: target(destDoc), payload: lo.optionsToFields(lo.insertAt(lo.optionsOf(destDoc), option, tag.option)) },
+        ], { actorId: data.adminId });
+        if (!r.ok) throw new Error(JSON.stringify(r.errors || r.reason || r).slice(0, 200));
+        const fresh = await Loadout.findById(destDoc._id);
+        return { doc: fresh, savedAs: `Build ${lo.optionTag(tag.number, tag.option)}` };
+    } catch (err) {
+        console.error('Could not place the /autobuild build where Adjust asked:', err?.message || err);
+        return { doc, savedAs: doc.buildName, error: `It saved as ${doc.buildName}: it could not be moved to Build ${data.buildTag}. Move it with /manage.` };
+    }
 }
 
 // The next MP build number for a weapon: one past the highest of its "Build N" names AND its WEAPON-N image keys (2026-10-20 13:22 EDT). Counting names alone missed a build that carries a label, so the next build was handed that build's image key and uploaded over its image. Pure.
@@ -455,7 +519,10 @@ async function confirmCoreNow(token) {
 
     try {
         const weaponKeyForLookup = data.weaponName.toLowerCase().replace(/\s+/g, '');
-        const siblingDocs = await Loadout.find({ weaponKey: weaponKeyForLookup, mode: data.mode }).select('buildName label imageKey shareCode').lean();
+        const siblingDocs = await Loadout.find({ weaponKey: weaponKeyForLookup, mode: data.mode }).select('buildName label imageKey shareCode attachments variants').lean();
+        // Adjust's build # checked against the builds saved now, with their options (buildTargetProblem).
+        const targetProblem = buildTargetProblem(data, siblingDocs);
+        if (targetProblem) return { status: 'badbuild', message: targetProblem };
         const label = String(data.buildLabel || '').trim();
         if (label && siblingDocs.some(s => [s.label, s.buildName].some(n => String(n || '').trim().toLowerCase() === label.toLowerCase()))) return { status: 'labeltaken' };
         // The same code twice on one weapon is the same build twice.
@@ -489,7 +556,9 @@ async function confirmCoreNow(token) {
 
         if (uploadResult.success) {
             // Delete AFTER the write succeeds, not before -- if doc.save() throws (a real possibility: Mongoose validation, a dropped connection), the token must still be sitting in pendingAutobuilds so the confirmed data isn't silently lost with nothing written anywhere. (Found in review: this used to delete first, which meant a save() failure here lost the data permanently -- no Loadout doc, no recoverable token.)
-            const doc = await writeLoadoutDoc({ ...data, weaponKey, buildName, imageKey, imageVersion: uploadResult.version });
+            let doc = await writeLoadoutDoc({ ...data, weaponKey, buildName, imageKey, imageVersion: uploadResult.version });
+            const placed = await placeBuild(doc, data, siblingDocs);
+            doc = placed.doc;
             // The read and its build point at each other (2026-10-26 01:19 EDT): the build carries the read's fileHash, the read the build's id.
             require('./visionReads').noteOutcome(data.readId, 'saved', doc._id);
             pendingAutobuilds.delete(token);
@@ -497,7 +566,7 @@ async function confirmCoreNow(token) {
             if (data.submission) require('./buildSubmissions').onSaved(data.submission, doc);
             // The image now lives under the build's own key, so the cached copy goes ("if it's confirmed, then it goes from the cache folder into the actual correct storage folder").
             releaseCache(data);
-            return { status: 'saved', doc };
+            return { status: 'saved', doc, savedAs: placed.savedAs, placeError: placed.error };
         }
 
         // First failure: do NOT write yet. Stash the confirmed data (with weaponKey/buildName/imageKey already computed) under a new retry token, ask for the image again.
@@ -517,13 +586,14 @@ function confirmMessage(client, result) {
     switch (result.status) {
         case 'expired': return glyphs(`${BOT_EMOJI.cross} This review has expired or was already handled. Run ${mentionCommand(client, '/autobuild')} again.`);
         case 'nocategory': return glyphs(BOT_EMOJI.cross + ' Category is still unresolved -- click **Adjust** and set one before saving.');
-        case 'nomode': return glyphs(BOT_EMOJI.cross + " MP or DMZ is still unresolved -- click **Adjust** and put `| MP` or `| DMZ` after the category before saving.");
+        case 'nomode': return glyphs(BOT_EMOJI.cross + ' MP or DMZ is still unresolved -- click **Adjust** and pick it in **Mode** before saving.');
+        case 'badbuild': return glyphs(result.message || `${BOT_EMOJI.cross} That build # can't be used -- fix it with **Adjust**.`);
         case 'busy': return `${require('./emojiMap').cooldown} Already saving this build -- give it a moment.`;
         case 'cutcode': return glyphs(`${BOT_EMOJI.warn} Its code looks cut off -- fix it with **Adjust**, or press **Save anyway** on its page.`);
         case 'rival': return glyphs(`${BOT_EMOJI.warn} ${result.message || 'Another admin has this build waiting.'} Pick **Save mine** or **Leave it to them** on its page.`);
         case 'labeltaken': return `${BOT_EMOJI.cross} That build label is already used by another build of this weapon -- pick another with **Adjust**.`;
         // Both places a code can be typed: Adjust on a review, the Approve pop-up on a submitted build.
-        case 'nocode': return `${BOT_EMOJI.cross} An MP build needs its Gunsmith code before it saves: its picture is keyed by it. Add it in the \`Label | Code\` box (**Adjust** on a review, **Approve** again on a submission).`;
+        case 'nocode': return `${BOT_EMOJI.cross} An MP build needs its Gunsmith code before it saves: its picture is keyed by it. Add it in the \`Category, build #, code\` box with **Adjust** (or the \`Label | Code\` box with **Approve** on a submission).`;
         case 'codetaken': return `${BOT_EMOJI.cross} ${result.message || 'Another build of this weapon has that code.'} The same code is the same build, so check that one with /gunsmith.`;
         case 'retry': return glyphs(`${BOT_EMOJI.warn} Image upload to Cloudinary failed (${result.error}). Nothing was saved yet. Press **Re-upload** to send the image again (retry token \`${result.retryToken}\`).\n\nIf it fails again, the loadout will be created anyway without an image, and you can fix it later via \`/manage\`.`);
         default: return glyphs(BOT_EMOJI.cross + ' Something went wrong saving this build.');
@@ -543,7 +613,7 @@ function confirmReply(client, result) {
 // Confirm click -- `interaction` is the BUTTON interaction. Caller (handlers/autobuild.js) must call interaction.deferUpdate() before calling this, since the review card is being replaced.
 async function confirmAndWrite(interaction, token) {
     const result = await confirmCore(token);
-    if (result.status === 'saved') return await replaceWithV2Card(interaction, buildPostCreationCard(result.doc, null));
+    if (result.status === 'saved') return await replaceWithV2Card(interaction, buildPostCreationCard(result.doc, result.placeError || null, result.savedAs));
     return interaction.followUp(confirmReply(interaction.client, result));
 }
 
@@ -620,14 +690,22 @@ function buildEditModal(token, data, customId = `autobuild_editmodal_${token}`) 
     const text = (id, label, input) => new LabelBuilder().setLabel(label).setTextInputComponent(input.setCustomId(id));
     const picked = new Set(String(data.badgesRaw || '').toLowerCase().split(',').map(t => t.trim().replace(/-/g, '')).filter(Boolean));
     const choices = badgeChoices(data.mode).map(o => ({ ...o, default: picked.has(o.value) }));
+    const isDmz = data.mode === 'DMZ';
+    // His pick A (2026-11-06 17:31 EST): the same five boxes as /manage's Add and Edit Loadout (utils/loadoutForm.js), with Mode as a dropdown in the slot /manage spends on the image URL. `|| ''` on every value: TextInputBuilder.setValue(undefined) throws synchronously, before showModal() can answer.
+    const label = String(data.buildLabel || '').trim();
+    const identValue = isDmz ? `${data.category || ''}, ${data.buildTag || ''}` : `${data.category || ''}, ${data.buildTag || ''}, ${data.gunsmithCode || ''}`;
     modal.addLabelComponents(
-        // `|| ''` fallback on every value -- TextInputBuilder.setValue(undefined) throws SYNCHRONOUSLY, which would throw inside showModal() before the interaction is ever acknowledged. Gemini extraction can genuinely leave weaponName/gunsmithCode undefined on a bad read.
-        text('weapon', 'Weapon Name', new TextInputBuilder().setStyle(TextInputStyle.Short).setValue(data.weaponName || '').setRequired(true)),
-        // Not required since 2026-10-19 17:53 EDT: a DMZ build has no Gunsmith code at all, and a required box would force one to be invented.
-        text('code', 'Build Label | Gunsmith Code', new TextInputBuilder().setPlaceholder('Ranked | 1A2B3C4D5E   (label optional; code needed on MP)').setStyle(TextInputStyle.Short).setValue(`${data.buildLabel || ''} | ${data.gunsmithCode || ''}`).setRequired(false)),
-        text('attachments', 'Attachments (one per line)', new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setValue(data.attachments.join('\n')).setRequired(true)),
-        // The mode rides in the category box as "Category | Mode" -- see parseCategoryAndMode.
-        text('category', 'Category | Mode', new TextInputBuilder().setStyle(TextInputStyle.Short).setPlaceholder('AR | MP   or   SNIPER | DMZ').setValue(`${data.category || ''} | ${data.mode || ''}`).setRequired(true)),
+        text('weapon', 'Weapon name, label', new TextInputBuilder().setStyle(TextInputStyle.Short).setPlaceholder('M21 EBR, Ranked   (label optional)').setValue(`${data.weaponName || ''}${label ? `, ${label}` : ''}`).setRequired(true)),
+        // A DMZ build has no gunsmith code; a blank build # saves it as the next build.
+        text('ident', 'Category, build #, gunsmith code', new TextInputBuilder().setStyle(TextInputStyle.Short).setPlaceholder(isDmz ? 'SNIPER, 2   (blank build # = next build)' : 'SNIPER, 2b, 1C2C4A7E8A   (blank build # = next build)').setValue(identValue).setRequired(true)),
+        // One per line, then a Comment: line (everything after it is the comment), as on /manage.
+        text('attachments', 'Attachments and comment', new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setValue(`${data.attachments.join('\n')}\nComment: ${data.description || ''}`).setRequired(true)),
+        new LabelBuilder().setLabel('Mode').setStringSelectMenuComponent(
+            new StringSelectMenuBuilder().setCustomId('mode').setPlaceholder('MP or DMZ').setRequired(true).setMinValues(1).setMaxValues(1).addOptions(
+                { label: 'MP', value: 'MP', default: data.mode === 'MP' },
+                { label: 'DMZ', value: 'DMZ', default: data.mode === 'DMZ' }
+            )
+        ),
         new LabelBuilder().setLabel('Badges').setDescription('Optional. Pick any; one tier at most').setStringSelectMenuComponent(
             new StringSelectMenuBuilder().setCustomId('badges').setPlaceholder('No badges').setRequired(false).setMinValues(0).setMaxValues(choices.length).addOptions(choices)
         )
@@ -635,24 +713,47 @@ function buildEditModal(token, data, customId = `autobuild_editmodal_${token}`) 
     return modal;
 }
 
+// Adjust's five boxes read into review fields, or { error }. Pure, so scripts/autobuildDmz.test.js pins it. `values` = { weapon, ident, attachments, mode, badges[] } as typed and picked. The rules are /manage's (utils/loadoutForm.js): `Weapon, label`; `Category, build #, code` (no code on DMZ, a blank build # is the next build); attachments one per line, a `Badges:` line joins the dropdown's picks, and a `Comment:` line runs to the end (no Comment line keeps the stored comment, an empty one clears it).
+function parseAdjustFields(values, data) {
+    const form = require('./loadoutForm');
+    const mode = values.mode === 'MP' || values.mode === 'DMZ' ? values.mode : (data.mode || null);
+    const { weaponName: rawWeapon, label } = form.parseWeaponLabel(values.weapon);
+    if (!rawWeapon) return { error: 'the first box needs the weapon name, e.g. `M21 EBR, Ranked`.' };
+    const ident = form.parseIdentity(values.ident, mode);
+    if (ident.error) return { error: ident.error };
+    const { attachments, badgesRaw: typedBadges, comment } = form.parseAttachmentsBadges(values.attachments);
+    if (!attachments.length) return { error: 'the attachments box needs at least one attachment.' };
+    const tag = ident.number == null ? '' : require('./loadoutOptions').optionTag(ident.number, ident.option);
+    const badgesRaw = [...(values.badges || []), ...String(typedBadges || '').split(',').map(t => t.trim().toLowerCase()).filter(Boolean)].filter((t, i, a) => a.indexOf(t) === i).join(',');
+    return {
+        // Same normalizer as the initial extraction: strip a skin suffix + force the all-caps convention.
+        weaponName: normalizeWeaponName(rawWeapon),
+        buildLabel: label,
+        category: ident.category,
+        mode,
+        rawCode: ident.code,
+        buildTag: tag,
+        rawAttachments: attachments,
+        badgesRaw,
+        description: comment === undefined ? data.description : comment,
+    };
+}
+
 // The modal's fields applied to a review's `data`, returning the updated copy -- shared with utils/autobuildBulk.js (2026-10-20 10:33 EDT). Re-runs the SAME post-processing (fuzzy-match + code-corrector) on whatever was typed, per the design spec. Neither stashes nor answers the interaction.
 async function applyEditFields(interaction, data) {
     // Same normalizer as the initial extraction: strip a skin suffix + force the all-caps convention, so a manually-typed "Machine Pistol" or "R9-0 - Death's Voice" is stored consistently too.
-    const weaponName = normalizeWeaponName(interaction.fields.getTextInputValue('weapon'));
-    // "Build Label | Gunsmith Code" (2026-10-20 13:22 EDT, Harkirat: "implement the build label into autobuild"), /manage's own "Build Name | Share Code" convention, because the modal's five fields are taken. With no pipe, a value shaped like a code is the code and anything else is the label.
-    const codeBox = interaction.fields.getTextInputValue('code');
-    let buildLabel, rawCode;
-    if (codeBox.includes('|')) { const [l, ...rest] = codeBox.split('|'); buildLabel = l.trim(); rawCode = rest.join('|').trim(); }
-    else if (/^(?:\d[A-Za-z])+\d?$|^(?:[A-Za-z]\d)+[A-Za-z]?$/.test(codeBox.trim().replace(/\s+/g, ''))) { buildLabel = ''; rawCode = codeBox.trim(); }
-    else { buildLabel = codeBox.trim(); rawCode = ''; }
-    const rawAttachments = interaction.fields.getTextInputValue('attachments').split('\n').map(s => s.trim()).filter(Boolean);
-    const { category, mode } = parseCategoryAndMode(interaction.fields.getTextInputValue('category'), data.mode);
-    // The dropdown's picks are the same tokens the old text box took (badgeChoices), joined the way the box read them.
-    let badgesRaw = '';
-    try { badgesRaw = interaction.fields.getStringSelectValues('badges').join(','); } catch { badgesRaw = ''; }
+    const read = (id) => { try { return interaction.fields.getTextInputValue(id); } catch { return ''; } };
+    const pick = (id) => { try { return interaction.fields.getStringSelectValues(id); } catch { return []; } };
+    const parsed = parseAdjustFields({ weapon: read('weapon'), ident: read('ident'), attachments: read('attachments'), mode: pick('mode')[0], badges: pick('badges') }, data);
+    if (parsed.error) {
+        // Nothing typed is lost to a box that didn't read: the review keeps its values and says what to fix.
+        const kept = { ...data, formWarning: `${BOT_EMOJI.warn} **Adjust didn't save:** ${parsed.error}` };
+        return kept;
+    }
+    const { weaponName, buildLabel, category, mode, rawCode, buildTag, rawAttachments, badgesRaw, description } = parsed;
 
     // Same richer select as runExtraction -- reused for the attachment corrector AND the recomputed duplicate/category-conflict warnings (an Edit is exactly what changes whether either applies).
-    const allBuilds = await Loadout.find({}).select('weaponKey weaponName category buildName shareCode attachments mode').lean();
+    const allBuilds = await Loadout.find({}).select('weaponKey weaponName category buildName shareCode attachments mode variants').lean();
     const knownAttachments = await knownAttachmentNames(allBuilds);
     // Variable length now (was force-padded to exactly 5) -- a restricted-slot weapon legitimately has fewer, and blank lines were already filtered out above.
     const correctedAttachments = rawAttachments.map(a => correctAttachmentName(a, knownAttachments));
@@ -674,7 +775,10 @@ async function applyEditFields(interaction, data) {
         mode,
         modeSource: mode === data.mode ? data.modeSource : (mode ? 'explicit' : null),
         badgesRaw,
-        buildLabel
+        buildLabel,
+        buildTag,
+        description,
+        formWarning: null
     };
     refreshReviewWarnings(updated, allBuilds);
     updated.catalogueWarning = await catalogueWarningFor(updated);
@@ -703,5 +807,5 @@ module.exports = {
     // The shared halves bulk /autobuild (utils/autobuildBulk.js) drives.
     extractToData, confirmCore, withWeaponQueue, confirmMessage, confirmReply, reuploadRow, applyEditFields, releaseCache,
     // Exported for scripts/autobuildDmz.test.js; nothing else calls them.
-    resolveMode, parseCategoryAndMode, refreshReviewWarnings, nextBuildNumber, badgeChoices, findDmzDuplicates, badgeTokensOf, badgeFieldsFor, writeLoadoutDoc, cleanAttachmentPairs
+    resolveMode, parseCategoryAndMode, parseAdjustFields, buildTargetProblem, refreshReviewWarnings, nextBuildNumber, badgeChoices, findDmzDuplicates, badgeTokensOf, badgeFieldsFor, writeLoadoutDoc, cleanAttachmentPairs
 };
