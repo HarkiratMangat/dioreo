@@ -903,9 +903,12 @@ function sectionOf(interaction) {
 function buildManageCommandData() {
     const action = option => option.setName('action').setDescription("Jump straight to one of this section's own actions").setAutocomplete(true);
     const visibility = option => option.setName('visibility').setDescription('Show this panel only to you, or publicly to everyone in the chat. (Defaults to only you.)').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' });
-    const section = (name, description, { withAction = true } = {}) => sub => {
+    // `build:` on the two gunsmith subcommands (Harkirat, 2026-11-06 11:05 EST: "improve/expand the add/edit capabilities to the slash command options itself for /manage gunsmith mp"): one build or option, autocompleted, opened straight away; with action Add its next option, with Delete its delete confirm (handlers/manage/loadouts.js openFromSlash). Before visibility, which stays last.
+    const build = option => option.setName('build').setDescription('One build or option to open now: Edit by default, Add for its next option, Delete to remove it').setAutocomplete(true);
+    const section = (name, description, { withAction = true, withBuild = false } = {}) => sub => {
         sub.setName(name).setDescription(description);
         if (withAction) sub.addStringOption(action);
+        if (withBuild) sub.addStringOption(build);
         return sub.addStringOption(visibility);
     };
     return new SlashCommandBuilder()
@@ -919,8 +922,8 @@ function buildManageCommandData() {
         .addSubcommand(section('calendar', 'Calendar events'))
         .addSubcommand(section('patch-notes', 'Season patch notes'))
         .addSubcommandGroup(group => group.setName('gunsmith').setDescription('Gunsmith builds')
-            .addSubcommand(section('mp', 'Multiplayer builds'))
-            .addSubcommand(section('dmz', 'DMZ builds')))
+            .addSubcommand(section('mp', 'Multiplayer builds', { withBuild: true }))
+            .addSubcommand(section('dmz', 'DMZ builds', { withBuild: true })))
         .addSubcommandGroup(group => group.setName('season').setDescription('Season settings')
             .addSubcommand(sub => sub.setName('titles').setDescription('Season titles and deadlines'))
             .addSubcommand(section('draft', 'Stage the next season')))
@@ -985,6 +988,9 @@ module.exports = {
         // Stage 3 (2026-08-14 18:04 EDT) -- action: opens one of the section's own actions directly. Must run BEFORE deferReply(): a kind:'modal' entry's run() calls showModal(), which has to be the interaction's FIRST response (same constraint season_titlesdeadlines works around above). Mirrors handlers/manage/index.js's mng_act_ button dispatch exactly -- resolveAction() is the one choke point (it also re-checks the per-page permission just verified above, so a scoped admin can't reach another section's action by typing its id directly) and run() is trusted to manage its OWN response completely: kind:'file' calls reply(), kind:'view' defers itself, kind:'modal' shows a modal. Do NOT deferReply() before calling it -- a kind:'file' entry's run() calls interaction.reply(), which throws if this has already acknowledged.
         let actionFallbackNote = '';
         const actionId = interaction.options.getString('action');
+        // build: on /manage gunsmith mp|dmz opens that build or option directly, before any deferral (it shows a pop-up or the delete confirm).
+        const buildValue = (section === 'loadouts_mp' || section === 'loadouts_dmz') ? interaction.options.getString('build') : null;
+        if (buildValue) return await require('../handlers/manage/loadouts').openFromSlash(interaction, section, buildValue, actionId);
         if (actionId) {
             const { resolveAction, DENIAL_MESSAGE } = require('../utils/manageActions');
             const resolved = await resolveAction(section, actionId, interaction.user.id);

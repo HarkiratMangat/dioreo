@@ -348,6 +348,96 @@ async function saveOption(interaction, { plan, picture, fail, unknown, mode, wea
     return interaction.followUp({ flags: 32768 | 64, components: savedPanel({ doc: saved, option: shown, before: before ? { ...before, buildName: src.buildName } : null, moveLine, changeIds: result.changeIds, notes, warnings: warns, pictureReplaced: Boolean(picture.replaced) }) });
 }
 
+// Add option's pop-up: Create New, filled with the build's weapon, its next option's tag (`2d`) and the attachments of the option on show, so a variation is a few edits away. The code and the picture are left for the new option's own. Shared by the saved panel's Add option and /manage gunsmith's `build:` with action Add.
+async function showAddOption(interaction, doc, option = 0) {
+    const Loadout = require('../../models/Loadout');
+    const form = require('../../utils/loadoutForm');
+    const lo = require('../../utils/loadoutOptions');
+    const siblings = await Loadout.find({ weaponKey: doc.weaponKey, mode: doc.mode }).lean();
+    const count = 1 + (doc.variants || []).length;
+    if (count >= lo.MAX_OPTIONS) return await interaction.reply({ content: `${BOT_EMOJI.cross} ${doc.weaponName} ${doc.buildName} already has ${lo.MAX_OPTIONS} options, the most a build can have.`, ephemeral: true });
+    const tag = lo.optionTag(form.numberFor(doc, siblings) ?? 1, count);
+    const view = require('../../utils/loadoutRender').variantView(doc, option);
+    const manage = require('../../commands/manage');
+    return await interaction.showModal(manage.prefillModal(manage.buildAddLoadoutModal(doc.mode || 'MP'), {
+        weapon: doc.label ? `${doc.weaponName}, ${doc.label}` : doc.weaponName,
+        build: doc.mode === 'DMZ' ? `${doc.category}, ${tag}` : `${doc.category}, ${tag}, `,
+        attachments: (view.attachments || []).join('\n'),
+    }));
+}
+
+// --- /manage gunsmith mp|dmz build: --- (Harkirat, 2026-11-06 11:05 EST: "improve/expand the add/edit capabilities to the slash command options itself"). buildChoices is the autocomplete: a build, each option of a merged build (`id~i`), the whole merged build (`id`, for a delete), and a new build of each weapon (`new:weaponKey`). openFromSlash opens what was picked: Edit (the default) its pop-up, Add a new build's or the build's next option's, Delete its confirm. Each is gated by the button it stands for (resolveAction), and a typed value that was not picked from the list goes through Edit's own search.
+async function buildChoices(group, query) {
+    const { loadoutModeFor } = require('../../utils/manageActions');
+    const { compareBuilds, buildNumberOf } = require('../../utils/loadoutForm');
+    const lo = require('../../utils/loadoutOptions');
+    const Loadout = require('../../models/Loadout');
+    const builds = await Loadout.find({ mode: loadoutModeFor(group) }).select('weaponName weaponKey buildName label variants.label').lean();
+    builds.sort((a, b) => a.weaponName.localeCompare(b.weaponName) || compareBuilds(a, b));
+    const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const q = norm(query);
+    const out = [];
+    const cut = (s) => (s.length > 100 ? `${s.slice(0, 99)}…` : s);
+    let last = null;
+    const pushNew = (b) => out.push({ name: cut(`${b.weaponName} · + New build`), value: `new:${b.weaponKey}`.slice(0, 100), key: norm(`${b.weaponName} new build`) });
+    for (const b of builds) {
+        if (last && last.weaponKey !== b.weaponKey) pushNew(last);
+        last = b;
+        const n = buildNumberOf(b.buildName);
+        const count = 1 + (b.variants || []).length;
+        const label = b.label ? ` · ${b.label}` : '';
+        if (count < 2) { out.push({ name: cut(`${b.weaponName} · ${b.buildName}${label}`), value: String(b._id), key: norm(`${b.weaponName} ${n ?? ''} ${b.buildName} ${b.label}`) }); continue; }
+        for (let i = 0; i < count; i++) {
+            const tag = n === null ? `${b.buildName} ${lo.optionLetter(i)}` : lo.optionTag(n, i);
+            const own = i ? (b.variants[i - 1].label ? ` · ${b.variants[i - 1].label}` : '') : label;
+            out.push({ name: cut(`${b.weaponName} · ${tag} · Option ${lo.optionLetter(i)}${own}`), value: `${b._id}~${i}`, key: norm(`${b.weaponName} ${tag} ${i ? '' : n ?? ''} ${b.buildName}`) });
+        }
+        out.push({ name: cut(`${b.weaponName} · ${b.buildName} · all ${count} options (Delete)`), value: String(b._id), key: norm(`${b.weaponName} ${b.buildName} all options`) });
+    }
+    if (last) pushNew(last);
+    // Every typed word must appear, so `bal 1b`, `bal-27 1b` and `hemlock` all find theirs.
+    const words = String(query || '').split(/\s+/).map(norm).filter(Boolean);
+    return out.filter(c => !q || words.every(w => c.key.includes(w))).slice(0, 25).map(({ name, value }) => ({ name, value }));
+}
+
+async function openFromSlash(interaction, group, value, actionId) {
+    const { resolveAction, DENIAL_MESSAGE, loadoutModeFor } = require('../../utils/manageActions');
+    const action = actionId === 'add' || actionId === 'delete' ? actionId : 'edit';
+    const gate = await resolveAction(group, action, interaction.user.id);
+    if (!gate.ok) return await interaction.reply({ content: gate.message || DENIAL_MESSAGE[gate.reason], ephemeral: true });
+    const mode = loadoutModeFor(group);
+    const Loadout = require('../../models/Loadout');
+    const manage = require('../../commands/manage');
+    const v = String(value).trim();
+    // A new build of a weapon: Create New with the weapon, its class and the next number.
+    if (v.startsWith('new:')) {
+        const siblings = await Loadout.find({ weaponKey: v.slice(4), mode }).lean();
+        if (!siblings.length) return await interaction.reply({ content: `${BOT_EMOJI.cross} That weapon has no ${mode} builds any more. Pick again.`, ephemeral: true });
+        const first = siblings[0];
+        const next = siblings.length + 1;
+        return await interaction.showModal(manage.prefillModal(manage.buildAddLoadoutModal(mode), {
+            weapon: first.weaponName,
+            build: mode === 'DMZ' ? `${first.category}, ${next}` : `${first.category}, ${next}, `,
+        }));
+    }
+    let match = null;
+    const picked = /^([0-9a-f]{24})(?:~(\d+))?$/.exec(v);
+    if (picked) {
+        const doc = await Loadout.findById(picked[1]).lean();
+        if (doc && doc.mode === mode) match = { id: picked[2] !== undefined ? `${picked[1]}~${picked[2]}` : picked[1], doc, option: picked[2] !== undefined ? Number(picked[2]) : null };
+        if (!match) return await interaction.reply({ content: `${BOT_EMOJI.cross} That build no longer exists. Pick again.`, ephemeral: true });
+    } else {
+        // Typed rather than picked: Edit's own search (`BAL-27 2`, `STATIC-HV 2b`, a label).
+        const hits = await require('./shared').resolveManagePanelMatches(group, v, action === 'delete' ? 'delete' : 'edit');
+        if (hits.length !== 1) return await interaction.reply({ content: `${BOT_EMOJI.cross} ${hits.length ? `${hits.length} builds match` : 'No build matches'} \`${v.slice(0, 60)}\`. Pick one from the build list.`, ephemeral: true });
+        match = hits[0];
+    }
+    const option = Math.min(match.option || 0, (match.doc.variants || []).length);
+    if (action === 'add') return await showAddOption(interaction, match.doc, option);
+    if (action === 'delete') return await require('./shared').resolveManagePanelAction(interaction, group, 'delete', match);
+    return await interaction.showModal(await editLoadoutModal(match.doc, option));
+}
+
 // --- SAVE A LOADOUT (Add or Edit) --- custom_ids: add_loadout_{MP|DMZ} · edit_loadout_{id}. One body for both since the five-field pop-up (2026-10-26 01:19 EDT): the two had drifted into near copies. `preset` is a Save anyway replay (handleCatalogueWarning above): the typed values come from the warning's pending store instead of a pop-up, and the catalogue check is skipped because the admin already saw it.
 async function saveLoadout(interaction, preset, isEdit) {
     // A pop-up opened from Edit's search picker (mng_pick_): acknowledge by updating the picker and draw it again with nothing picked. Discord sends no event when the option already picked is picked again, so without this the same build could not be reopened from the list (click-test 2026-11-06 11:00 EST). Every answer below is a follow-up either way.
@@ -508,19 +598,7 @@ async function handleSavedAction(interaction) {
         const t = splitTarget(id.replace('mng_ldaddopt_', ''));
         const doc = await Loadout.findById(t.id).lean();
         if (!doc) return await interaction.reply({ content: `${BOT_EMOJI.cross} That build no longer exists.`, ephemeral: true });
-        const form = require('../../utils/loadoutForm');
-        const lo = require('../../utils/loadoutOptions');
-        const siblings = await Loadout.find({ weaponKey: doc.weaponKey, mode: doc.mode }).lean();
-        const count = 1 + (doc.variants || []).length;
-        if (count >= lo.MAX_OPTIONS) return await interaction.reply({ content: `${BOT_EMOJI.cross} ${doc.weaponName} ${doc.buildName} already has ${lo.MAX_OPTIONS} options, the most a build can have.`, ephemeral: true });
-        const tag = lo.optionTag(form.numberFor(doc, siblings) ?? 1, count);
-        const view = require('../../utils/loadoutRender').variantView(doc, t.option);
-        const manage = require('../../commands/manage');
-        return await interaction.showModal(manage.prefillModal(manage.buildAddLoadoutModal(doc.mode || 'MP'), {
-            weapon: doc.label ? `${doc.weaponName}, ${doc.label}` : doc.weaponName,
-            build: doc.mode === 'DMZ' ? `${doc.category}, ${tag}` : `${doc.category}, ${tag}, `,
-            attachments: (view.attachments || []).join('\n'),
-        }));
+        return await showAddOption(interaction, doc, t.option);
     }
     if (id.startsWith('mng_ldcredit_')) {
         const doc = await Loadout.findById(id.replace('mng_ldcredit_', '')).lean();
@@ -740,8 +818,11 @@ async function exportUpTo5(interaction) {
 
     const matched = [];
     const notFound = [];
+    const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
     for (const weapon of requested) {
-        const hits = candidates.filter(l => fuzzyMatch(weapon, l.weaponName));
+        // The weapon named, exactly, when there is one (click-test 2026-11-06 11:05 EST: two names exported six builds, the fuzzy match pulling in look-alike weapons); the fuzzy match only when nothing is exact.
+        const exact = candidates.filter(l => norm(l.weaponName) === norm(weapon));
+        const hits = exact.length ? exact : candidates.filter(l => fuzzyMatch(weapon, l.weaponName));
         if (hits.length > 0) matched.push(...hits);
         else notFound.push(weapon);
     }
@@ -802,4 +883,4 @@ async function deleteItem(match, actorId) {
     return result.changeIds;   // for the Revert button under "Deleted" (handlers/manage/index.js)
 }
 
-module.exports = { editLoadout, addLoadout, editLoadoutModal, splitTarget, planOptionSave, creditModal, saveCredit, pictureWarningPanel, handleSavedAction, bulkAddLoadouts, handleCatalogueWarning, bulkDeleteLoadouts, exportUpTo5, exportCategory, deleteItem };
+module.exports = { editLoadout, addLoadout, editLoadoutModal, buildChoices, openFromSlash, showAddOption, splitTarget, planOptionSave, creditModal, saveCredit, pictureWarningPanel, handleSavedAction, bulkAddLoadouts, handleCatalogueWarning, bulkDeleteLoadouts, exportUpTo5, exportCategory, deleteItem };
