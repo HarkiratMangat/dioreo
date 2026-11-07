@@ -222,6 +222,20 @@ const PICK_TEST = {
     hm: l => l.categoryRank === 'capable', toxic: l => l.isToxic, ass: l => l.isAss,
 };
 
+// Search the way `build:` autocomplete does (every typed word must appear), plus one rule it lacks: a word shaped like a build tag (`1`, `1b`) must equal the build's own tag, so `fss 1b` finds Option B and not Option A. His click-test, 2026-11-07 12:55 EST: "shouldnt this have found the fss hurricane?" — the panel's old substring search needs the full name.
+async function searchBuilds(query) {
+    const choices = await require('./manage/loadouts').buildChoices(GROUP, query);
+    const tags = String(query || '').toLowerCase().split(/\s+/).filter(w => /^\d+[a-z]?$/.test(w));
+    return choices
+        .filter(c => !String(c.value).startsWith('new:') && !/\(Delete\)$/.test(c.name))
+        .filter(c => {
+            if (!tags.length) return true;
+            const m = / · (?:Build )?(\d+[a-z]?)(?: · |$)/i.exec(c.name);
+            return m && tags.includes(m[1].toLowerCase());
+        })
+        .map(c => { const [id, opt] = String(c.value).split('~'); return { id, option: opt === undefined ? 0 : Number(opt), label: c.name }; });
+}
+
 // Union of the typed names and the quick picks (Harkirat, 2026-11-07 11:22 EST: "all meta and all ar").
 async function resolveSet(namesRaw, picks) {
     const all = await Loadout().find({ mode: MODE }).lean();
@@ -232,13 +246,12 @@ async function resolveSet(namesRaw, picks) {
         else if (PICK_TEST[p]) all.filter(PICK_TEST[p]).forEach(add);
     }
     const unmatched = [];
-    const { resolveManagePanelMatches } = require('./manage/shared');
     for (const line of String(namesRaw || '').split('\n').map(s => s.trim()).filter(Boolean)) {
         const cat = CATEGORY_WORDS[line.toLowerCase().replace(/^all\s+/, '')];
         if (cat) { all.filter(l => l.category === cat).forEach(add); continue; }
-        const hits = await resolveManagePanelMatches(GROUP, line, 'edit');
+        const hits = await searchBuilds(line);
         if (!hits.length) { unmatched.push(line); continue; }
-        hits.forEach(h => add(h.doc));
+        for (const h of hits) { const d = all.find(l => String(l._id) === h.id); if (d) add(d); }
     }
     const { compareBuilds } = require('../utils/loadoutForm');
     const builds = [...byId.values()].sort((a, b) => a.weaponName.localeCompare(b.weaponName) || compareBuilds(a, b));
@@ -396,15 +409,16 @@ async function route(interaction) {
     // Pop-up submits
     if (verb === 'findm') {
         const q = interaction.fields.getTextInputValue('q');
-        const hits = await require('./manage/shared').resolveManagePanelMatches(GROUP, q, 'edit');
-        if (!hits.length) return show(interaction, await pageView(`${emojis.cross} No build matches \`${q.slice(0, 60)}\`. Try a shorter name, or browse by class.`));
-        if (hits.length === 1) return show(interaction, await cardView(...String(hits[0].id).split('~')));
-        const keys = new Set(hits.map(h => h.doc?.weaponKey));
-        if (keys.size === 1) return show(interaction, await weaponView([...keys][0], `-# ${emojis.gunsmithSearch} Every match for \`${q.slice(0, 40)}\` is a ${hits[0].doc.weaponName} build.`));
+        const hits = await searchBuilds(q);
+        if (!hits.length) return show(interaction, await pageView(`${emojis.cross} No build matches \`${q.slice(0, 60)}\`. Try fewer words, or browse by class.`));
+        if (hits.length === 1) return show(interaction, await cardView(hits[0].id, hits[0].option));
+        const docs = await Loadout().find({ _id: { $in: [...new Set(hits.map(h => h.id))] } }).select('weaponKey weaponName').lean();
+        const keys = new Set(docs.map(d => d.weaponKey));
+        if (keys.size === 1) return show(interaction, await weaponView([...keys][0], `-# ${emojis.gunsmithSearch} Every match for \`${q.slice(0, 40)}\` is a ${docs[0].weaponName} build.`));
         return show(interaction, panel([
             text(`${crumb('Search')}\n## ${emojis.gunsmithSearch} ${hits.length} builds match \`${q.slice(0, 60)}\``),
             BIG(), text('-# Pick one…'),
-            { type: 1, components: [{ type: 3, custom_id: `${PREFIX}pick`, placeholder: 'Pick a build', options: hits.slice(0, 25).map(h => ({ label: String(h.label).slice(0, 100), value: String(h.id).slice(0, 100) })) }] },
+            { type: 1, components: [{ type: 3, custom_id: `${PREFIX}pick`, placeholder: 'Pick a build', options: hits.slice(0, 25).map(h => ({ label: h.label.slice(0, 100), value: `${h.id}~${h.option}` })) }] },
             SMALL(), row(ebtn('find', 'Search Again', emojis.gunsmithSearch), ebtn('page', 'Back', emojis.returnArrow)),
         ]));
     }
