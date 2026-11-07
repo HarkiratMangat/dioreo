@@ -1099,13 +1099,17 @@ Approved direction 2026-10-25 22:16 EDT (Harkirat, bot-polish thread); built in 
 
 **Prod's data: done 2026-10-21 11:08 EDT.** The three starts went to prod first (Harkirat's "sure", 2026-10-21 11:02 EDT): BP 2026-10-15, Ranked 2026-09-10, DMZ 2026-04-23, all at 00:00 UTC. Then BP and Ranked got this season's titles, "Season 9 2026" and "Ranked Series 3 2026", both ending 2026-11-12 00:00 UTC (his "sure go ahead", 2026-10-21 11:07 EDT). Prod reads that document fresh on every `/season end`, so no restart was needed. Read back after both writes.
 
-### 🐞 Restore the 14 draw thumbnails the cleanup deleted `[P1 · S]`
+### CLOSED 2026-11-06 19:20 EST · 🐞 Restore the 14 draw thumbnails the cleanup deleted `[P1 · S]`
+> ✅ **Checked 2026-11-06 19:20 EST:** every draw on prod (18, New and Returning) has a thumbnail URL that answers 200 (a HEAD request each). Nothing left to restore.
+
 
 *Filed 2026-10-21 11:21 EDT, narrowed 11:22 EDT.* All 14 draws on prod (and dev) show a broken image: every stored `thumbnailUrl` returns 404, and Cloudinary's `temp_draws/` holds **0 assets** (Admin API read, prod account, 2026-10-21 11:19 EDT). **The cause is already fixed:** the 45-day cleanup deleting in-use thumbnails was found by the bug sweep and fixed in #212 (Pre-Release v3.103.0, `f8373419`, in `utils/cloudinaryCache.js` and `bot/lifecycle.js`). Prod still runs `main`, which has the bug, and Harkirat chose no `main` hotfix, so the fix ships with v3. **Open: the images themselves.** **Do:** re-cache the 14 from Harkirat's source links through `/manage`'s draw edit (or `resolveThumbnail`), after the v3 deploy so prod's old cleanup cannot delete them again. **Verify:** `/draws` on prod shows every thumbnail a day after the deploy.
 
 **Archive, never delete (Harkirat, 2026-10-21 11:25 EDT: "instead of deleting, can we move any \"deleted\" images to an archive folder instead from now on? ... with respective sub-folders for draws, banners, etc.").** Three delete sites: draws' 45-day prune (`utils/cloudinaryCache.js`, `delete_resources`), a deleted patch-notes entry's folder (`utils/patchNotesCache.js`, `delete_resources`) and a cleared calendar banner (`utils/calendarBannerCache.js`, `uploader.destroy`). **Do:** move each to `archive/draws/`, `archive/patch_notes/`, `archive/calendar_banners/` (rename the `public_id`, set `asset_folder`, archive date in the name so repeats never clash); nothing ever deletes from `archive/`. ✅ **Built 2026-10-21 11:45 EDT** on `fix/command-refresh-polish` (Harkirat, 2026-10-21 11:39 EDT: "yes go ahead", to both this and archiving the old image when one is replaced): `utils/cloudinaryArchive.js`, all four modules, `scripts/cloudinaryArchive.test.js`. Live once v3 deploys. **Still open: the live check below.** Storage is not a concern: 1.4 GB, 25% of the free plan's credits (Admin API `usage`, 2026-10-21 11:26 EDT). **Verify:** a unit test per site shows a move, not a delete (the dev bot cannot write to Cloudinary), then one real prune on prod after the v3 deploy leaves the moved asset under `archive/`.
 
-### Announcements: split text boxes without a divider `[P2 · XS]` (the text-commands announcement needs it)
+### CLOSED 2026-11-06 19:20 EST · Announcements: split text boxes without a divider `[P2 · XS]`
+> ✅ **Shipped in v3.3.0 (#237, text commands):** `utils/announcement.js` reads `----` `====` `--` `==` `++`; checked in the file 2026-11-06 19:20 EST.
+ (the text-commands announcement needs it)
 
 > ✅ **BUILT 2026-10-30 16:36 EDT** on `feat/text-commands`, wider than filed, his five marks: `----` divider small · `====` divider large · `--` no line small · `==` no line large (he wrote small; read as large) · `++` next text box. `---` still works. Tested in `scripts/announcementDelivery.test.js`. Closes when text commands merge.
 
@@ -1579,7 +1583,9 @@ rg -n '^### ' docs/db-deferred-list.md | rg -v '✅|CLOSED|DECIDED-NO|🚫|SUPER
 
 **Do:** produce the real enumeration as step 4's first unit, replace Task 8's five bullets with it, and give each item a `[P· E · Model]` tag. **Verify by:** Task 8 naming a list whose length is a count somebody derived, with no "roughly" anywhere in it.
 
-### `[P2 · M · Opus5-High]` The `/commands` page is **NOT live** — the belief gap ran the other way, and Harkirat was right
+### CLOSED 2026-11-06 19:20 EST · `[P2 · M · Opus5-High]` The `/commands` page is **NOT live**
+> ✅ **Live now:** `https://dioreo.app/commands` serves the commands page (it carries `data-cmd` entries; the homepage carries none), checked 2026-11-06 19:20 EST.
+ — the belief gap ran the other way, and Harkirat was right
 
 *Filed 2026-09-06 19:09 EDT, in his words: "it honestly still needs work and in my mind/subconcious I thought it was parked and pending. i didnt even know/remember it was live."*
 
@@ -2011,7 +2017,9 @@ It did not run for `local/handoff/2026-08-30-mode-collapse-and-season-overlays.m
 
 **Re-checked 2026-10-19 18:05 EDT:** the `SessionStart` check reports **six** (the DMZ prompt-cap note, the v3 and v2 lists, the v4/v5 ideas, and the two MarkEdit bugs). Still not worked; this sweep was a tracker pass and left them for a notes session. **Re-checked 2026-09-23 09:00 EDT:** the `SessionStart` check now reports **nine** (six DMZ/v2/v3/v4 feature notes, the MarkEdit mark and cursor bugs). Carried again through the Board 4 session of 2026-09-22→23, which is design-board work and never opened them. **Verify:** the `SessionStart` notes check reports 0 open items, each one answered, marked in-file and, once confirmed, swept to the graveyard.
 
-### Events and Playlists auto-collapse on real data, hiding 20 of the season's 39 items `[P2 · S · Opus5-Medium]`
+### CLOSED 2026-11-06 19:20 EST · Events and Playlists auto-collapse on real data, hiding 20 of the season's 39 items `[P2 · S · Opus5-Medium]`
+> ✅ Closed on its own 2026-09-06 adjudication below: the rule is correct and nothing changes.
+
 
 🔴 **MEASURED 2026-09-06 17:46 EDT AND THE CLAIM DOES NOT REPRODUCE. Adjudicated: THE RULE IS CORRECT, NO CHANGE.**
 
