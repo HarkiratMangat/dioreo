@@ -23,6 +23,8 @@ const MOCK_NOTE = '-# Mock-up · nothing here saves';
 
 // Select's tick lists, in memory (mock only). token -> { ids, ticked: Set, labels: Map }
 const TICK = new Map();
+// Paste's last text by token, so Paste Again reopens with it (mock only).
+const PASTE = new Map();
 
 // ---------- house style (the MP Gunsmiths landing, v3.12.0, and the lists page, v3.7.1) ----------
 // `## <emoji> Title` + the season in bold italic · ==== a spacing-2 divider between parts, -- a spacing-1 gap · a `-#` hint above each button group · buttons carry an emoji, Title Case, grey unless they are the main action.
@@ -56,12 +58,12 @@ async function pageView(note = null) {
     const components = [
         text(`## ${emojis.database} MP Gunsmith${await seasonLine()}\n-# ${builds.length} builds · ${weapons} weapons`),
         BIG(),
-        text('-# Find a build by class…'),
+        text('-# Go straight to a build…'),
+        row(ebtn('find', 'Search Builds', emojis.gunsmithSearch, 1), ebtn('add', 'Add Build', emojis.mngAdd, 3)),
+        SMALL(),
+        text('-# Or browse by class…'),
         row(...present.slice(0, 4).map(classBtn)),
         row(...present.slice(4).map(classBtn)),
-        SMALL(),
-        text('-# Or go straight to one…'),
-        row(ebtn('find', 'Search Builds', emojis.gunsmithSearch, 1), ebtn('add', 'Add Build', emojis.mngAdd, 3)),
         BIG(),
         text('-# Many builds at once…'),
         row(ebtn('paste', 'Paste Builds', emojis.mngBulkAdd), ebtn('select', 'Select Builds', emojis.filter), ebtn('export', 'Export', emojis.mngExport), ebtn('guide', 'Guide', emojis.guide)),
@@ -111,6 +113,18 @@ async function weaponView(weaponKey, note = null) {
     return panel(components);
 }
 
+// The /manage card is for acting, so the picture sits as a thumbnail beside the attachments instead of a full-width gallery under them (lead's call, 2026-11-07 12:21 EST, his "you decide"). A merged build's options already carry their own thumbnails, so only a gallery is moved.
+function compactCard(body) {
+    const g = body.findIndex(c => c.type === 12);
+    const at = body.findIndex(c => c.type === 10 && /^### Attachments/.test(c.content || ''));
+    if (g === -1 || at === -1) return body;
+    const url = body[g].items?.[0]?.media?.url;
+    const out = body.filter((_, i) => i !== g && !(i === g - 1 && body[i].type === 14));
+    const ai = out.findIndex(c => c.type === 10 && /^### Attachments/.test(c.content || ''));
+    if (url) out[ai] = { type: 9, components: [out[ai]], accessory: { type: 11, media: { url } } };
+    return out;
+}
+
 // ---------- the one build card ----------
 async function cardView(id, option = 0, header = null, extra = []) {
     const doc = await Loadout().findById(id).lean();
@@ -123,7 +137,7 @@ async function cardView(id, option = 0, header = null, extra = []) {
     const index = Math.max(0, siblings.findIndex(x => String(x._id) === String(doc._id)));
     const components = [text(crumb(classWord(doc.category), doc.weaponName, `${doc.buildName}${count > 1 ? ` · Option ${L(opt)}` : ''}`))];
     if (header) components.push(text(header), SMALL());
-    components.push(...buildLoadoutCardBody(doc, { variant: opt, index, total: siblings.length }));
+    components.push(...compactCard(buildLoadoutCardBody(doc, { variant: opt, index, total: siblings.length })));
     if (extra.length) components.push(BIG(), ...extra);
     else {
         components.push(BIG());
@@ -137,17 +151,17 @@ async function cardView(id, option = 0, header = null, extra = []) {
 }
 
 // A result: what the action WOULD do, in the house style, with the way back.
-function resultView({ crumbs = [], title, body = [], back = 'page', backLabel = 'Back', ok = true }) {
+function resultView({ crumbs = [], title, body = [], back = 'page', backLabel = 'Back', ok = true, extraButtons = [] }) {
     return panel([
         ...(crumbs.length ? [text(crumb(...crumbs))] : []),
-        text(`### ${ok ? emojis.checkmark : emojis.cross} ${title}`),
+        text(`### ${ok === 'warn' ? emojis.warn : ok ? emojis.checkmark : emojis.cross} ${title}`),
         ...(body.length ? [SMALL(), text(body.join('\n').slice(0, 3800))] : []),
         BIG(),
-        row(ebtn(back, backLabel, emojis.returnArrow), ...(back === 'page' ? [] : [ebtn('page', 'Home', emojis.database)])),
+        row(...extraButtons, ebtn(back, backLabel, emojis.returnArrow), ...(back === 'page' ? [] : [ebtn('page', 'Home', emojis.database)])),
     ]);
 }
-function noticeView(lines, backTo = 'page', backLabel = 'Back') {
-    return resultView({ title: lines[0].replace(/^###\s*/, ''), body: lines.slice(1), back: backTo, backLabel, ok: !lines[0].includes(emojis.cross) });
+function noticeView(lines, backTo = 'page', backLabel = 'Back', crumbs = []) {
+    return resultView({ crumbs, title: lines[0].replace(/^###\s*/, ''), body: lines.slice(1), back: backTo, backLabel, ok: !lines[0].includes(emojis.cross) });
 }
 
 // ---------- pop-ups ----------
@@ -176,7 +190,7 @@ function exportModal() {
         components: [
             labelled('Weapons, builds or classes', { type: 4, custom_id: 'names', style: 2, required: false, max_length: 2000, placeholder: NAMES_PLACEHOLDER }, 'One per line. Added to the quick picks below.'),
             labelled('Quick picks', quickPickSelect(), 'Everything picked is included: All AR + All Meta = both.'),
-            labelled('Send to', { type: 21, custom_id: 'dest', required: true, options: [{ value: 'file', label: 'A file here', default: true }, { value: 'chat', label: 'A message here' }, { value: 'dm', label: 'A DM to me' }] }),
+            labelled('Send to', { type: 21, custom_id: 'dest', required: true, options: [{ value: 'file', label: 'A file here', default: true }, { value: 'dm', label: 'A DM to me' }] }),
             labelled('Include', { type: 22, custom_id: 'include', required: false, min_values: 0, max_values: 6, options: [['code', 'Gunsmith code'], ['label', 'Label'], ['badges', 'Badges'], ['comment', 'Comment'], ['image', 'Image key'], ['mode', 'Mode']].map(([value, label]) => ({ value, label, default: value !== 'mode' })) }),
             labelled('Merged builds', { type: 21, custom_id: 'merged', required: true, options: [{ value: 'keep', label: 'Keep options together (2, 2b)', default: true }, { value: 'split', label: 'Each option as its own build' }, { value: 'first', label: 'First option only' }] }),
         ],
@@ -248,6 +262,27 @@ function exportText(builds, { include = ['code', 'label', 'badges', 'comment', '
 
 function shortName(l) { return `${l.weaponName} · ${l.buildName}${l.label ? ` · ${l.label}` : ''}${(l.variants || []).length ? ` (${1 + l.variants.length} options)` : ''}`; }
 
+// What an edit changes, field by field, in words (his click-test critique: raw box text read as noise).
+function semanticDiff(before, now) {
+    const f = require('../utils/loadoutForm');
+    const w0 = f.parseWeaponLabel(before.weapon), w1 = f.parseWeaponLabel(now.weapon);
+    const i0 = f.parseIdentity(before.build, MODE), i1 = f.parseIdentity(now.build, MODE);
+    const a0 = f.parseAttachmentsBadges(before.attachments), a1 = f.parseAttachmentsBadges(now.attachments);
+    const out = [];
+    const line = (label, x, y) => { if (String(x || '') !== String(y || '')) out.push(`**${label}:** ${x ? `~~${x}~~ ` : ''}${y || '*none*'}`); };
+    line('Weapon', w0.weaponName, w1.weaponName);
+    line('Label', w0.label, w1.label);
+    if (!i1.error) { line('Class', i0.category, i1.category); line('Build #', i0.number, i1.number); line('Code', i0.code, i1.code); }
+    else out.push(`${emojis.warn} ${i1.error}`);
+    const gone = a0.attachments.filter(x => !a1.attachments.includes(x)), added = a1.attachments.filter(x => !a0.attachments.includes(x));
+    if (gone.length || added.length) out.push(`**Attachments:** ${[...gone.map(x => `~~${x}~~`), ...added.map(x => `+ ${x}`)].join(' · ')}`);
+    else if (a0.attachments.join('|') !== a1.attachments.join('|')) out.push('**Attachments:** same five, new order');
+    line('Badges', a0.badgesRaw, a1.badgesRaw);
+    line('Comment', a0.comment, a1.comment);
+    if ((now.image_url || '').trim() && now.image_url.trim() !== (before.image_url || '').trim()) out.push('**Picture:** from the new URL');
+    return out;
+}
+
 // ---------- Select's tick list ----------
 function tickView(token, note = null) {
     const t = TICK.get(token);
@@ -259,7 +294,7 @@ function tickView(token, note = null) {
     if (t.unmatched?.length) components.push(text(`-# ${emojis.warn} No build matched ${t.unmatched.map(x => `\`${x}\``).join(', ')}`));
     if (t.ids.length > 25) components.push(text(`-# Only 25 fit in one list; narrow the search for the other ${t.ids.length - 25}.`));
     if (note) components.push(text(note));
-    components.push(BIG(), text('-# Untick what to leave out…'));
+    components.push(BIG(), text('-# Tick the builds to act on…'));
     if (shown.length) components.push({ type: 1, components: [{ type: 3, custom_id: `${PREFIX}tick|${token}`, min_values: 0, max_values: shown.length, placeholder: 'Tick the builds', options: shown.map(id => ({ label: t.labels.get(id).slice(0, 100), value: id, default: t.ticked.has(id) })) }] });
     components.push(SMALL(), row(ebtn(`tdel|${token}`, `Delete ${t.ticked.size}`, emojis.mngBulkDelete, 4, !t.ticked.size), ebtn(`texp|${token}`, `Export ${t.ticked.size}`, emojis.mngExport, 2, !t.ticked.size), ebtn('select', 'Search Again', emojis.gunsmithSearch)), backRow());
     return panel(components);
@@ -283,9 +318,14 @@ async function route(interaction) {
 
     // Buttons and selects that only change the message
     if (verb === 'page') return show(interaction, await pageView());
-    if (verb === 'add') return interaction.showModal(reId(manage.buildAddLoadoutModal(MODE), `${PREFIX}addm`));
+    if (verb === 'add') return interaction.showModal({ ...reId(manage.buildAddLoadoutModal(MODE), `${PREFIX}addm`), title: 'Add MP Build' });
     if (verb === 'find') return interaction.showModal(searchModal('findm', 'Find a Build', 'Weapon, build or label', 'BAL-27 · BAL-27 2 · STATIC-HV 2b · Ranked', 'BAL-27 2'));
-    if (verb === 'paste') return interaction.showModal(reId(manage.buildLoadoutsBulkAddModal(MODE), `${PREFIX}pastem`));
+    if (verb === 'paste') {
+        const last = a ? PASTE.get(a) : '';
+        const modal = reId(manage.buildLoadoutsBulkAddModal(MODE), `${PREFIX}pastem`);
+        if (last) for (const r of modal.components) for (const c of r.components || []) if (c.custom_id === 'bulk_text') c.value = last.slice(0, 4000);
+        return interaction.showModal({ ...modal, title: 'Paste MP Builds' });
+    }
     if (verb === 'select') return interaction.showModal(selectModal());
     if (verb === 'export') return interaction.showModal(exportModal());
     if (verb === 'guide') {
@@ -306,13 +346,15 @@ async function route(interaction) {
     if (verb === 'edit') {
         const doc = await Loadout().findById(a).lean();
         if (!doc) return show(interaction, await pageView(`${emojis.cross} That build no longer exists.`));
-        return interaction.showModal(reId(await require('./manage/loadouts').editLoadoutModal(doc, Number(b) || 0), `${PREFIX}editm|${a}|${b}`));
+        const L = require('../utils/loadoutOptions').optionLetter;
+        const title = `Edit ${doc.weaponName} ${doc.buildName}${(doc.variants || []).length ? ` · ${L(Number(b) || 0)}` : ''}`.slice(0, 45);
+        return interaction.showModal({ ...reId(await require('./manage/loadouts').editLoadoutModal(doc, Number(b) || 0), `${PREFIX}editm|${a}|${b}`), title });
     }
     if (verb === 'move') {
         const doc = await Loadout().findById(a).lean();
         const { buildNumberOf } = require('../utils/loadoutForm');
         const tag = require('../utils/loadoutOptions').optionTag(buildNumberOf(doc.buildName), Number(b) || 0);
-        return interaction.showModal({ custom_id: `${PREFIX}movem|${a}|${b}`, title: `Move ${doc.weaponName} ${tag}`.slice(0, 45), components: [labelled('New build #', { type: 4, custom_id: 'to', style: 1, required: true, max_length: 4, value: String(tag), placeholder: '3 · 2b' }, 'A number swaps with that build. A letter makes it an option of that build.')] });
+        return interaction.showModal({ custom_id: `${PREFIX}movem|${a}|${b}`, title: `Move ${doc.weaponName} ${doc.buildName}`.slice(0, 45), components: [labelled('New build #', { type: 4, custom_id: 'to', style: 1, required: true, max_length: 4, value: String(tag), placeholder: '3 · 2b' }, 'A number swaps with that build. A letter makes it an option of that build.')] });
     }
     if (verb === 'newopt') {
         const doc = await Loadout().findById(a).lean();
@@ -328,7 +370,7 @@ async function route(interaction) {
     }
     if (verb === 'delok') {
         const doc = await Loadout().findById(a).lean();
-        return show(interaction, resultView({ crumbs: doc ? [classWord(doc.category), doc.weaponName] : [], title: `Would delete ${doc ? `${doc.weaponName} ${doc.buildName}` : 'that build'}`, body: ['-# Nothing was deleted.'], back: doc ? `wback|${doc.weaponKey}` : 'page', backLabel: doc ? doc.weaponName : 'Back' }));
+        return show(interaction, resultView({ ok: 'warn', crumbs: doc ? [classWord(doc.category), doc.weaponName] : [], title: `Would delete ${doc ? `${doc.weaponName} ${doc.buildName}` : 'that build'}`, body: ['-# Nothing was deleted.'], back: doc ? `wback|${doc.weaponKey}` : 'page', backLabel: doc ? doc.weaponName : 'Back' }));
     }
     if (verb === 'tick') {
         const t = TICK.get(a);
@@ -339,7 +381,11 @@ async function route(interaction) {
     if (verb === 'tdel') {
         const t = TICK.get(a);
         if (!t) return show(interaction, tickView(a));
-        return show(interaction, resultView({ crumbs: ['Select Builds'], title: `Would delete ${t.ticked.size} builds`, body: [...[...t.ticked].map(id => `- ${t.labels.get(id)}`), '', '-# Nothing was deleted.'], back: `tlist|${a}`, backLabel: 'Back to List' }));
+        return show(interaction, resultView({ ok: 'warn', crumbs: ['Select Builds'], title: `Delete ${t.ticked.size} build${t.ticked.size === 1 ? '' : 's'}?`, body: [...[...t.ticked].map(id => `- ${t.labels.get(id)}`), '', '-# Every change is recorded and can be reverted.'], back: `tlist|${a}`, backLabel: 'Cancel', extraButtons: [ebtn(`tdelok|${a}`, `Yes, Delete ${t.ticked.size}`, emojis.mngBulkDelete, 4)] }));
+    }
+    if (verb === 'tdelok') {
+        const t = TICK.get(a);
+        return show(interaction, resultView({ ok: 'warn', crumbs: ['Select Builds'], title: `Would delete ${t ? t.ticked.size : 0} builds`, body: ['-# Nothing was deleted.'], back: `tlist|${a}`, backLabel: 'Back to List' }));
     }
     if (verb === 'texp') {
         const t = TICK.get(a);
@@ -353,6 +399,8 @@ async function route(interaction) {
         const hits = await require('./manage/shared').resolveManagePanelMatches(GROUP, q, 'edit');
         if (!hits.length) return show(interaction, await pageView(`${emojis.cross} No build matches \`${q.slice(0, 60)}\`. Try a shorter name, or browse by class.`));
         if (hits.length === 1) return show(interaction, await cardView(...String(hits[0].id).split('~')));
+        const keys = new Set(hits.map(h => h.doc?.weaponKey));
+        if (keys.size === 1) return show(interaction, await weaponView([...keys][0], `-# ${emojis.gunsmithSearch} Every match for \`${q.slice(0, 40)}\` is a ${hits[0].doc.weaponName} build.`));
         return show(interaction, panel([
             text(`${crumb('Search')}\n## ${emojis.gunsmithSearch} ${hits.length} builds match \`${q.slice(0, 60)}\``),
             BIG(), text('-# Pick one…'),
@@ -383,20 +431,13 @@ async function route(interaction) {
         const doc = await Loadout().findById(a).lean();
         const siblings = await Loadout().find({ weaponKey: doc.weaponKey, mode: MODE }).lean();
         const before = require('../utils/loadoutForm').editValues(doc, siblings, require('../utils/adminParser').loadoutBadgeTokens(doc), Number(b) || 0);
-        const changes = [];
-        for (const key of ['weapon', 'build', 'attachments', 'image_url']) {
-            let now = '';
-            try { now = interaction.fields.getTextInputValue(key) || ''; } catch { now = ''; }
-            const was = before[key] || '';
-            if (now.trim() === was.trim()) continue;
-            const wasLines = was.split('\n'), nowLines = now.split('\n');
-            const gone = wasLines.filter(l => !nowLines.includes(l)), added = nowLines.filter(l => !wasLines.includes(l));
-            changes.push(...gone.filter(Boolean).map(l => `- ~~${l}~~`), ...added.filter(Boolean).map(l => `- ${l}`));
-        }
+        const now = {};
+        for (const key of ['weapon', 'build', 'attachments', 'image_url']) { try { now[key] = interaction.fields.getTextInputValue(key) || ''; } catch { now[key] = ''; } }
         let shot = false;
         try { shot = (interaction.fields.getUploadedFiles('image_file')?.size || 0) > 0; } catch { shot = false; }
-        if (shot) changes.push('- New screenshot attached');
-        return show(interaction, await cardView(a, b, `### ${emojis.checkmark} Would update ${doc.weaponName} ${doc.buildName}\n${changes.length ? changes.map(c => `> ${c.replace(/^- /, '')}`).join('\n') : '> No changes.'}\n-# Nothing was saved.`, [row(ebtn(`card|${a}|${b}`, 'Back to Build', emojis.returnArrow), ebtn(`edit|${a}|${b}`, 'Edit Again', emojis.mngEdit, 1))]));
+        const changes = semanticDiff(before, now);
+        if (shot) changes.push('**Picture:** a new screenshot');
+        return show(interaction, await cardView(a, b, `### ${emojis.checkmark} Would update ${doc.weaponName} ${doc.buildName}\n${changes.length ? changes.map(c => `> ${c}`).join('\n') : '> No changes.'}\n-# Nothing was saved.`, [row(ebtn(`edit|${a}|${b}`, 'Edit Again', emojis.mngEdit, 1), ebtn(`card|${a}|${b}`, 'Back to Build', emojis.returnArrow), ebtn('page', 'Home', emojis.database))]));
     }
     if (verb === 'movem') {
         const doc = await Loadout().findById(a).lean();
@@ -411,28 +452,40 @@ async function route(interaction) {
         if (/[a-z]$/.test(to)) lines.push(there ? `It becomes an option of **${there.buildName}**${there.label ? ` (${there.label})` : ''}.` : `There is no Build ${n} to join.`);
         else if (there) lines.push(`**${there.buildName}**${there.label ? ` (${there.label})` : ''} becomes **${doc.buildName}**: the two swap.`);
         lines.push('', '-# Nothing was moved.');
-        return show(interaction, noticeView(lines, `card|${a}|${b}`, 'Back to Build'));
+        return show(interaction, noticeView(lines, `card|${a}|${b}`, 'Back to Build', [classWord(doc.category), doc.weaponName, doc.buildName]));
     }
     if (verb === 'pastem') {
-        const { parsed, errors } = require('../utils/adminParser').parseBulkLoadoutList(interaction.fields.getTextInputValue('bulk_text'));
+        const raw = interaction.fields.getTextInputValue('bulk_text');
+        const token = Date.now().toString(36);
+        PASTE.set(token, raw);
+        const { parsed, errors } = require('../utils/adminParser').parseBulkLoadoutList(raw);
         const added = [], replaced = [];
         for (const e of parsed) {
             const buildName = /^\d+[a-z]?$/i.test(e.buildName || '') ? `Build ${e.buildName}` : (e.buildName || 'next build');
-            const exists = await Loadout().exists({ mode: MODE, weaponKey: e.weaponKey, buildName: buildName.replace(/[a-z]$/i, '') });
-            (exists ? replaced : added).push(`${classIcon(e.category)} ${e.weaponName} · ${buildName}`);
+            const old = await Loadout().findOne({ mode: MODE, weaponKey: e.weaponKey, buildName: buildName.replace(/[a-z]$/i, '') }).lean();
+            const name = `${classIcon(e.category)} ${e.weaponName} · ${buildName}`;
+            if (!old) { added.push(name); continue; }
+            const diff = [];
+            if (e.shareCode && e.shareCode !== old.shareCode) diff.push('code');
+            if ((e.attachments || []).join('|') !== (old.attachments || []).join('|')) diff.push('attachments');
+            const tok = require('../utils/adminParser').loadoutBadgeTokens;
+            if (tok(e).join(',') !== tok(old).join(',')) diff.push('badges');
+            if ((e.label || '') !== (old.label || '') && !(e.defaulted || []).includes('label')) diff.push('label');
+            replaced.push(`${name}${diff.length ? ` · *${diff.join(', ')}*` : ' · *no change*'}`);
         }
         const problems = errors.map(e => (typeof e === 'string' ? e : (e.message || JSON.stringify(e))));
         const parts = [];
         if (added.length) parts.push(`${emojis.mngAdd} **Added · ${added.length}**`, ...added.map(x => `- ${x}`), '');
         if (replaced.length) parts.push(`${emojis.mngBulkReplace} **Replaced · ${replaced.length}**`, ...replaced.map(x => `- ${x}`), '');
         if (problems.length) parts.push(`${emojis.warn} **Problems · ${problems.length}**`, ...problems.map(x => `- ${x}`), '');
-        parts.push('-# Nothing was saved.');
-        return show(interaction, resultView({ crumbs: ['Paste Builds'], title: `Paste preview · ${parsed.length} build${parsed.length === 1 ? '' : 's'}`, body: parts, ok: !problems.length || parsed.length > 0, back: 'paste', backLabel: 'Paste Again' }));
+        parts.push('-# Nothing is saved until you press Save.');
+        return show(interaction, resultView({ ok: problems.length ? 'warn' : true, crumbs: ['Paste Builds'], title: `Paste preview · ${parsed.length} build${parsed.length === 1 ? '' : 's'}`, body: parts, back: `paste|${token}`, backLabel: 'Edit Paste', extraButtons: parsed.length ? [ebtn(`pasteok|${token}`, `Save ${parsed.length}`, emojis.checkmark, 3)] : [] }));
     }
+    if (verb === 'pasteok') return show(interaction, resultView({ crumbs: ['Paste Builds'], title: 'Would save the paste', body: ['-# Nothing was saved.'], back: `paste|${a}`, backLabel: 'Edit Paste' }));
     if (verb === 'selectm') {
         const { builds, unmatched } = await resolveSet(field(interaction, 'names'), field(interaction, 'picks') || []);
         const token = Date.now().toString(36);
-        TICK.set(token, { ids: builds.map(l => String(l._id)), ticked: new Set(builds.slice(0, 25).map(l => String(l._id))), labels: new Map(builds.map(l => [String(l._id), shortName(l)])), unmatched });
+        TICK.set(token, { ids: builds.map(l => String(l._id)), ticked: new Set(), labels: new Map(builds.map(l => [String(l._id), shortName(l)])), unmatched });
         return show(interaction, tickView(token));
     }
     if (verb === 'exportm') {
