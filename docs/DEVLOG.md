@@ -309,6 +309,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-11-04 10:57 EST — The VM's image tool was older than the Mac's (v3.8.3)
 - 2026-11-04 14:55 EST — Undo that replays the forward path, and a harness that drives /manage with no database (v3.8.4)
 - 2026-11-05 22:36 EST — news posts become drafts, and what kept finding new problems (v3.10.0)
+- 2026-11-06 20:46 EST — Gunsmith editing grows up: comments, a build option, right-click Edit Loadout, and /autobuild's build # (v3.11.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4990,6 +4991,18 @@ The build was right early; its correctness was not. Every review pass found more
 The grid found two defects on its first run. The rules found five. The fresh reviewer found fifteen real ones, three of which could lose data: a date earlier the same day read as next year, a draft row with no end dropped by a /manage save, and every /manage draft save silently breaking Undo. Re-running the 60-day Season 9 backtest after a change, which had been skipped once, caught a draft titled "Season 10".
 
 The lesson: a pass that samples risks will always find one more. A finite list of rules, a generated grid and a cold reader are how it stops.
+
+## 2026-11-06 20:46 EST — Gunsmith editing grows up: comments, a build option, right-click Edit Loadout, and /autobuild's build # (v3.11.0)
+
+A day of build upkeep turned into a round of /manage gunsmith fixes. Harkirat found he could not see or change a build's comment in Edit, and could not tell how a merged build's options were edited; a Sonnet click-test of every /manage command turned up twelve more tweaks, and he picked eleven.
+
+**What shipped.** A `Comment:` line in the attachments box (and in bulk paste and export); a `build:` option on `/manage gunsmith` that opens a build or option straight away; Edit another option on a merged build's panel; weapon and attachment shorthands (`shv`, `3lr`, `soh`); a right-click Edit Loadout on any /gunsmith card; /autobuild's Adjust rebuilt as /manage's five boxes with a build # and a comment; and `scripts/auditLoadouts.js`, which found eight catalogue gaps and nothing else across 162 builds.
+
+**Lessons.**
+- The first right-click parser read `### Gunsmith Code:` lines that the card does not draw. Rendering a real card and running the parser on it caught it before any click; a test written from memory of the card would have passed.
+- A dev click-test of Adjust found the saved line said "Build 1" for an option saved as 1c, and dropped the typed label and comment silently. The script rehearsal had passed, because it checked the database and not what the admin reads.
+- `loadout.edit` rewrites the whole build: a renumber sent with only `buildNumber` would have wiped attachments, badges and class. The dev rehearsal caught it as a validation error before prod.
+- The auto-mode safety check blocked two approved prod runs because the approval arrived relayed. A narrow allow rule for `local/project/` prod scripts (Harkirat's pick) fixed it without loosening anything else.
 
 # Part B — Lessons Ledger (thematic)
 
