@@ -230,9 +230,12 @@ async function searchBuilds(query) {
     return choices
         .filter(c => !String(c.value).startsWith('new:') && !/\(Delete\)$/.test(c.name))
         .filter(c => {
-            if (!tags.length) return true;
+            // A number that is part of the weapon's own name (KILO 141, AK117) is the name, not a build tag.
+            const weaponNorm = String(c.name.split(' · ')[0]).toLowerCase().replace(/[^a-z0-9]/g, '');
+            const own = tags.filter(tg => !weaponNorm.includes(tg));
+            if (!own.length) return true;
             const m = / · (?:Build )?(\d+[a-z]?)(?: · |$)/i.exec(c.name);
-            return m && tags.includes(m[1].toLowerCase());
+            return m && own.includes(m[1].toLowerCase());
         })
         .map(c => { const [id, opt] = String(c.value).split('~'); return { id, option: opt === undefined ? 0 : Number(opt), label: c.name }; });
 }
@@ -526,8 +529,120 @@ function tickView(token, note = null, page = 0) {
 
 // ---------- routing ----------
 async function show(interaction, components) {
-    if (!interaction.deferred && !interaction.replied) await interaction.deferUpdate();
+    if (!interaction.deferred && !interaction.replied) {
+        // A pop-up opened straight from the slash command has no message under it to update, so its answer is a fresh private reply.
+        if ((interaction.isModalSubmit?.() && !interaction.message) || interaction.isChatInputCommand?.()) await interaction.deferReply({ flags: 64 });
+        else await interaction.deferUpdate();
+    }
     return sendV2Payload(interaction, components, { skipExpiry: true });
+}
+
+// ---------- The slash command: go straight to a thing (his 13:40 EST: "add more capablity to the slash command for directly going into something without havign to walk through the panel") ----------
+const DO_CHOICES = [['Add Build', 'add'], ['Edit', 'edit'], ['Move', 'move'], ['Add Option', 'addopt'], ['Delete', 'delete'], ['Paste Builds', 'paste'], ['Export', 'export'], ['Guide', 'guide']];
+
+async function autocomplete(interaction) {
+    const focused = interaction.options.getFocused(true);
+    const q = String(focused.value || '');
+    const cut = (x) => (x.length > 100 ? `${x.slice(0, 99)}…` : x);
+    if (focused.name === 'weapon') {
+        const builds = await Loadout().find({ mode: MODE }).select('weaponName weaponKey category').lean();
+        const by = new Map();
+        for (const b of builds) by.set(b.weaponKey, { name: b.weaponName, cat: b.category, n: (by.get(b.weaponKey)?.n || 0) + 1 });
+        const norm = (x) => String(x || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const words = q.split(/\s+/).map(norm).filter(Boolean);
+        const list = [...by.entries()].filter(([, w]) => words.every(x => norm(w.name).includes(x))).sort((a, b) => a[1].name.localeCompare(b[1].name)).slice(0, 25);
+        return interaction.respond(list.map(([key, w]) => ({ name: cut(`${w.name} · ${classWord(w.cat)} · ${w.n} build${w.n === 1 ? '' : 's'}`), value: key })));
+    }
+    if (focused.name === 'build') {
+        const hits = q.trim() ? await searchBuilds(q) : [];
+        const info = await infoFor(hits.map(h => (h.option ? `${h.id}~${h.option}` : h.id)));
+        const out = hits.slice(0, 24).map(h => {
+            const key = h.option ? `${h.id}~${h.option}` : h.id;
+            const i = info.get(key);
+            const plain = i ? `${i.title.replace(/\*\*/g, '')}${i.small ? ` · ${i.small.replace(/<a?:\w+:\d+>\s?/g, '')}` : ''}` : h.label;
+            return { name: cut(plain), value: `${h.id}~${h.option}` };
+        });
+        if (q.trim()) {
+            const w = await Loadout().findOne({ mode: MODE, weaponName: new RegExp(q.trim().split(/\s+/)[0].replace(/[^a-z0-9-]/gi, ''), 'i') }).select('weaponName weaponKey').lean();
+            if (w && out.length < 25) out.push({ name: cut(`＋ New build for ${w.weaponName}`), value: `new:${w.weaponKey}` });
+        }
+        return interaction.respond(out);
+    }
+    return interaction.respond([]);
+}
+
+async function openFromSlash(interaction) {
+    const o = interaction.options;
+    const build = o.getString('build'), weapon = o.getString('weapon'), cls = o.getString('class'), builds = o.getString('builds'), act = o.getString('do');
+    const manage = require('../commands/manage');
+    // A pop-up has to be the first answer, so every path that opens one does it before anything else.
+    if (build && build.startsWith('new:')) {
+        const siblings = await Loadout().find({ weaponKey: build.slice(4), mode: MODE }).lean();
+        if (!siblings.length) return show(interaction, await pageView(`${emojis.cross} That weapon has no MP builds.`));
+        return interaction.showModal({ ...reId(manage.prefillModal(manage.buildAddLoadoutModal(MODE), { weapon: siblings[0].weaponName, build: `${siblings[0].category}, ${siblings.length + 1}, ` }), `${PREFIX}addm`), title: 'Add MP Build' });
+    }
+    if (build) {
+        const [id, optRaw] = build.split('~');
+        const opt = Number(optRaw) || 0;
+        const doc = /^[0-9a-f]{24}$/.test(id) ? await Loadout().findById(id).lean() : null;
+        if (!doc) {
+            const hits = await searchBuilds(build);
+            if (hits.length === 1) return show(interaction, await cardView(hits[0].id, hits[0].option));
+            return show(interaction, await pageView(`${emojis.cross} Pick a build from the list, or type more of its name.`));
+        }
+        if (act === 'edit') {
+            const L = require('../utils/loadoutOptions').optionLetter;
+            return interaction.showModal({ ...reId(await require('./manage/loadouts').editLoadoutModal(doc, opt), `${PREFIX}editm|${id}|${opt}`), title: `Edit ${doc.weaponName} ${doc.buildName}${(doc.variants || []).length ? ` · ${L(opt)}` : ''}`.slice(0, 45) });
+        }
+        if (act === 'move') {
+            const { buildNumberOf } = require('../utils/loadoutForm');
+            const tag = require('../utils/loadoutOptions').optionTag(buildNumberOf(doc.buildName), opt);
+            return interaction.showModal({ custom_id: `${PREFIX}movem|${id}|${opt}`, title: `Move ${doc.weaponName} ${doc.buildName}`.slice(0, 45), components: [labelled('New build #', { type: 4, custom_id: 'to', style: 1, required: true, max_length: 4, value: String(tag), placeholder: '3 · 2b' }, 'A number swaps with that build. A letter makes it an option of that build.')] });
+        }
+        if (act === 'addopt') {
+            const { buildNumberOf } = require('../utils/loadoutForm');
+            const tag = require('../utils/loadoutOptions').optionTag(buildNumberOf(doc.buildName), (doc.variants || []).length + 1);
+            return interaction.showModal({ ...reId(manage.prefillModal(manage.buildAddLoadoutModal(MODE), { weapon: doc.weaponName, build: `${doc.category}, ${tag}, ` }), `${PREFIX}addm`), title: 'Add MP Build' });
+        }
+        if (act === 'delete') {
+            const L = require('../utils/loadoutOptions').optionLetter;
+            const merged = (doc.variants || []).length > 0;
+            return show(interaction, await cardView(id, opt, `### ${emojis.warn} Delete ${doc.weaponName} ${doc.buildName}${merged ? `, Option ${L(opt)}` : ''}?`, [row(ebtn(`delok|${id}|${opt}`, 'Yes, Delete', emojis.deleteBin, 4), ebtn(`card|${id}|${opt}`, 'Cancel', emojis.returnArrow))]));
+        }
+        return show(interaction, await cardView(id, opt));
+    }
+    if (builds) {
+        const lines = builds.split(/[,\n]/).map(x => x.trim()).filter(Boolean).join('\n');
+        const { keys, unmatched } = await resolveKeys(lines, []);
+        const token = Date.now().toString(36);
+        const all = keys.map(k => k.key);
+        TICK.set(token, { ids: all, ticked: new Set(act ? all : []), labels: new Map(keys.map(k => [k.key, k.label])), info: await infoFor(all), query: lines.split('\n'), unmatched });
+        if (act === 'edit') {
+            const modal = blocksModal(`${PREFIX}teditm|${token}`, `Edit ${all.length} MP Build${all.length === 1 ? '' : 's'}`, await keyBlocks(all));
+            if (modal) return interaction.showModal(modal);
+            return show(interaction, tickView(token, `${emojis.warn} Too many builds for one Edit pop-up. Use Expand View, or fewer builds.`));
+        }
+        if (act === 'export') {
+            const blocks = await keyBlocks(all);
+            return interaction.reply({ content: `${blocks.length} builds`, files: [{ attachment: Buffer.from(blocks.join('\n\n'), 'utf-8'), name: 'mp-builds.txt' }], flags: 64 });
+        }
+        if (act === 'delete') {
+            const t = TICK.get(token);
+            return show(interaction, resultView({ ok: 'warn', crumbs: ['Select Builds'], title: `Delete ${t.ticked.size} build${t.ticked.size === 1 ? '' : 's'}?`, body: [...capList([...t.ticked].map(x => `- ${t.labels.get(x)}`)), '', '-# Every change is recorded and can be reverted.'], back: `tlist|${token}|0`, backLabel: 'Cancel', extraButtons: [ebtn(`tdelok|${token}`, `Yes, Delete ${t.ticked.size}`, emojis.deleteBin, 4)] }));
+        }
+        return show(interaction, tickView(token));
+    }
+    if (weapon) return show(interaction, await weaponView(weapon));
+    if (cls) return show(interaction, await classView(cls));
+    if (act === 'add') return interaction.showModal({ ...reId(manage.buildAddLoadoutModal(MODE), `${PREFIX}addm`), title: 'Add MP Build' });
+    if (act === 'paste') return interaction.showModal({ ...reId(manage.buildLoadoutsBulkAddModal(MODE), `${PREFIX}pastem`), title: 'Paste MP Builds' });
+    if (act === 'export') return interaction.showModal(exportModal());
+    if (act === 'guide') {
+        const action = require('../utils/manageActions').ACTIONS_BY_PAGE[GROUP].find(x => x.id === 'formatguide');
+        return action.run({ interaction, page: GROUP, manageCommand: manage });
+    }
+    if (act) return show(interaction, await pageView(`${emojis.warn} **${DO_CHOICES.find(c => c[1] === act)?.[0]}** needs a \`build:\` (or \`builds:\` for several) to act on.`));
+    return show(interaction, await pageView());
 }
 
 async function openPage(interaction) {
@@ -787,4 +902,4 @@ async function handleMockManageInteraction(interaction) {
 const OWNED_PREFIXES = [PREFIX];
 
 // One exported function, as scripts/handlerRouting.test.js requires of every handler; the command and the feature folder's probe reach the rest through `mock`.
-module.exports = { handleMockManageInteraction, OWNED_PREFIXES, mock: { infoFor, tickView, SELECT_PAGE, TICK, stepView, resolveKeys, keyBlocks, blocksModal, previewBlocks, openPage, pageView, classView, weaponView, cardView, exportModal, selectModal, exportText, resolveSet, PREFIX } };
+module.exports = { handleMockManageInteraction, OWNED_PREFIXES, mock: { autocomplete, openFromSlash, DO_CHOICES, infoFor, tickView, SELECT_PAGE, TICK, stepView, resolveKeys, keyBlocks, blocksModal, previewBlocks, openPage, pageView, classView, weaponView, cardView, exportModal, selectModal, exportText, resolveSet, PREFIX } };

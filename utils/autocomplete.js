@@ -4,6 +4,8 @@
 async function runAutocomplete(interaction) {
     const focusedValue = interaction.options.getFocused().toLowerCase();
     const commandName = interaction.commandName;
+    // THROWAWAY (2026-11-07 13:42 EST): /mockmanage's options, the manage-rehaul mock-up; removed before the rehaul's PR.
+    if (commandName === 'mockmanage') return require('../handlers/mockManage').mock.autocomplete(interaction);
     // NOTE (fixed during review): every autocomplete site below used a plain `.includes()` (or an equivalent raw Mongo $regex), which requires the query to appear as a literal, contiguous substring of the stored name -- so typing "dlq" never matched "DL Q33", since the space between "DL" and "Q33" breaks that literal sequence. fuzzyMatch() strips spaces/punctuation from both sides first, so this now matches. Applied consistently across every autocomplete route in the bot, not just one.
     const { fuzzyMatch, findWeaponMatches } = require('../utils/search');
 
