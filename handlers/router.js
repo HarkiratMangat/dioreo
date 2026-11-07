@@ -28,7 +28,6 @@ const HANDLER_BINDINGS = [
     ['help', 'handleHelpInteraction'],
     ['invite', 'handleInviteInteraction'],
     ['embedTest', 'handleEmbedTestInteraction'],
-    ['mockManage', 'handleMockManageInteraction'],
     ['addToPatchNotes', 'handleAddToPatchNotesInteraction'],
     ['viewColors', 'handleViewColorsInteraction'],
     ['patchnotes', 'handlePatchnotesInteraction'],
@@ -59,8 +58,6 @@ const handleHelpInteraction = late('help', 'handleHelpInteraction');
 const handleInviteInteraction = late('invite', 'handleInviteInteraction');
 const handleEmojisInteraction = late('emojis', 'handleEmojisInteraction');
 const handleEmbedTestInteraction = late('embedTest', 'handleEmbedTestInteraction');
-// THROWAWAY (2026-11-07 11:28 EST): the /mockmanage mock-up of the manage rehaul, dev bot only; removed before the rehaul's PR.
-const handleMockManageInteraction = late('mockManage', 'handleMockManageInteraction');
 const handleAddToPatchNotesInteraction = late('addToPatchNotes', 'handleAddToPatchNotesInteraction');
 const handleViewColorsInteraction = late('viewColors', 'handleViewColorsInteraction');
 const handlePatchnotesInteraction = late('patchnotes', 'handlePatchnotesInteraction');
@@ -260,8 +257,6 @@ async function handleInteractionInner(interaction) {
         if (await handleAnnouncementControlsInteraction(interaction)) return;
         markHandler('embedTest');
         if (await handleEmbedTestInteraction(interaction)) return;
-        markHandler('mockManage');
-        if (await handleMockManageInteraction(interaction)) return;
         markHandler('textCommands');
         if (await handleTextCommandsInteraction(interaction)) return;
         markHandler('addToPatchNotes');
