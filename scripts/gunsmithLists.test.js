@@ -77,6 +77,16 @@ assert.deepStrictEqual(mc.components.at(-1).components.map(x => x.custom_id), ['
 assert.ok(!JSON.stringify(mc.components).includes('KOSHKA'), 'no non-META weapon in the META page itself');
 assert.deepStrictEqual(meta.components.filter(c => c.type === 1 && c.components[0].type === 3).map(c => c.components[0].options.map(o => o.label)), selects.map(s => s.options.map(o => o.label)), 'the META page\'s dropdowns hold every listed weapon, as page 2\'s do (his 2026-11-06 22:06 EST)');
 console.log('  ✓ page 1 by default: META weapons by class, the same title, the pager, every list button');
+// Every list card (META, Best, Top 3 & 5, HM) carries the same two dropdowns of every listed weapon, the open one preselected (his 2026-11-06 22:12 EST: "work the class, not the instance").
+for (const token of ['MP.*.meta', 'MP.*.best', 'MP.*.top', 'MP.*.hm']) {
+    const on = builds.filter(x => x.isMeta || x.categoryRank);
+    const listCard = require('../utils/loadoutRender').buildLoadoutCard([on[0]], 0, { color: 1, idPrefix: 'mp', categoryBuilds: on, browse: { scopeToken: token, flatIndex: 0, flatTotal: on.length, scopeLabel: 'x' }, listedBuilds: builds });
+    const cardSelects = listCard.components.filter(c => c.type === 1 && c.components[0].type === 3).map(c => c.components[0]);
+    assert.deepStrictEqual(cardSelects.map(x => x.custom_id), ['gsb~lists~MP', 'gsb~ljump~A', 'gsb~ljump~B'], `${token}: View other lists, then both weapon dropdowns`);
+    assert.deepStrictEqual(cardSelects.slice(1).map(x => x.options.map(o => o.label)), selects.map(x => x.options.map(o => o.label)), `${token}: every listed weapon`);
+    assert.ok(cardSelects.slice(1).some(x => x.options.some(o => o.default && o.value.endsWith(`|${on[0].weaponKey}`))), `${token}: the open weapon preselected`);
+}
+console.log('  ✓ every list card: both full weapon dropdowns, the open weapon preselected');
 
 // The in-game class order, everywhere a class list sorts (his 2026-11-03 11:44 EST).
 assert.deepStrictEqual(CLASS_ORDER, ['AR', 'SNIPER', 'LMG', 'SMG', 'SHOTGUN', 'MARKSMAN', 'SECONDARIES']);

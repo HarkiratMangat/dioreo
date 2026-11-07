@@ -91,6 +91,8 @@ async function renderScopeBrowse(interaction, scope, flatIndex, { isUpdate = fal
         isEphemeral,
         categoryBuilds: builds,
         browse: { scopeToken, flatIndex, flatTotal: builds.length, scopeLabel },
+        // A list's card (META, Best, Top 3 & 5, HM) gets every listed weapon in its dropdowns (utils/loadoutRender.js, his 2026-11-06 22:12 EST).
+        listedBuilds: scope.mode === 'MP' && (scope.metaOnly || scope.list) ? await require('../utils/gunsmithLists').listedBuilds() : null,
     });
     await sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
 }

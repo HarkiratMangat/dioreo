@@ -398,7 +398,7 @@ function dmzBrowseRow(dmzBuilds, selectId, activeKey) {
 // Shared Components V2 card builder for /dmz and /gunsmith (mp + dmz, and their scoped browse) -- same layout for both, differing only in accent color and the button custom_id prefix ('dmz' vs 'mp') so handlers/loadouts.js can tell a click apart and query the right mode. The card's CONTENT comes from buildLoadoutCardBody above; everything this function adds is chrome (pager, the bottom row, the switch rows, share). `missing` is the open class's weapons with no build (utils/loadoutLookup.js missingWeapons), for the weapon dropdown's last option.
 //
 // HIS LAYOUT (2026-10-25 18:43-19:02 EDT, mock-ups C to E in #testing-spam; it replaced the 16:40 EDT order): the body ends with the footer under the image; then a row of the weapon's builds, a LARGE divider, and the arrows, which walk WEAPONS. Search... and Copy Code (DMZ: Copy Attachments) sit outside the card, above the dropdowns. The old `copyatt` ids still answer cards posted before.
-function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false, categoryBuilds = null, hideBadges = false, browse = null, missing = [], variant = 0 }) {
+function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false, categoryBuilds = null, hideBadges = false, browse = null, missing = [], variant = 0, listedBuilds = null }) {
     const activeBuild = builds[index];
     variant = browse ? Math.min(Math.max(Number(variant) || 0, 0), variantCount(activeBuild) - 1) : 0;
     const mode = activeBuild.mode === 'DMZ' ? 'DMZ' : 'MP';
@@ -450,8 +450,12 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false,
         // A list's card (META, Best, Top 3 & 5, HM; 2026-11-02 21:44 EST): View other lists…, then the list's own weapons.
         const label = scope.list ? require('./gunsmithLists').LISTS.find(l => l.token === browse.scopeToken)?.label || 'listed' : 'META';
         outerComponents.push(listSwitchRow(browse.scopeToken));
-        const row = metaJumpRow(categoryBuilds, weaponSelectId, activeBuild.weaponKey, label);
-        if (row) outerComponents.push(row);
+        // Every list view carries the lists page's two weapon dropdowns, every weapon on any list split by class, never only this list's own (Harkirat, 2026-11-06 22:12 EST, on the META page's dropdowns: "and on the best/top/hm page? work the class, not the instance"). The caller passes `listedBuilds` (commands/gunsmith.js renderScopeBrowse); without it the old one-list dropdown stays.
+        if (listedBuilds) outerComponents.push(...require('./gunsmithLists').jumpRows(listedBuilds, activeBuild.weaponKey));
+        else {
+            const row = metaJumpRow(categoryBuilds, weaponSelectId, activeBuild.weaponKey, label);
+            if (row) outerComponents.push(row);
+        }
     } else {
         outerComponents.push(...mpSwitchRows(activeBuild.category, categoryBuilds, weaponSelectId, activeBuild.weaponKey, missing));
     }
