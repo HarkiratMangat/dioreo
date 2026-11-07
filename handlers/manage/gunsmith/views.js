@@ -100,18 +100,6 @@ async function weaponView(mode, weaponKey, note = null) {
     return panel(mode, components);
 }
 
-// The /manage card is for acting, so the picture sits as a thumbnail beside the attachments instead of a full-width gallery under them (lead's call, 2026-11-07 12:21 EST, his "you decide"). A merged build's options carry their own thumbnails already, so only a gallery moves.
-function compactCard(body) {
-    const g = body.findIndex(c => c.type === 12);
-    const at = body.findIndex(c => c.type === 10 && /^### Attachments/.test(c.content || ''));
-    if (g === -1 || at === -1) return body;
-    const url = body[g].items?.[0]?.media?.url;
-    const out = body.filter((_, i) => i !== g && !(i === g - 1 && body[i].type === 14));
-    const ai = out.findIndex(c => c.type === 10 && /^### Attachments/.test(c.content || ''));
-    if (url && ai !== -1) out[ai] = { type: 9, components: [out[ai]], accessory: { type: 11, media: { url } } };
-    return out;
-}
-
 // ---------- one build ----------
 // `header` sits above the card (a confirm question, a saved note); `extra` replaces the action rows (a confirm's buttons, the Expand View pager).
 async function cardView(mode, id, option = 0, header = null, extra = null) {
@@ -125,7 +113,8 @@ async function cardView(mode, id, option = 0, header = null, extra = null) {
     const index = Math.max(0, siblings.findIndex(x => String(x._id) === String(doc._id)));
     const components = [text(crumb(mode, classWord(doc.category), doc.weaponName, `${doc.buildName}${count > 1 ? ` · Option ${lo.optionLetter(opt)}` : ''}`))];
     if (header) components.push(text(header), SMALL());
-    components.push(...compactCard(buildLoadoutCardBody(doc, { variant: opt, index, total: siblings.length })), BIG());
+    // The card's picture is the /gunsmith card's own full-width gallery: a thumbnail beside the attachments squeezed each name onto two lines on a phone (his call, 2026-11-07 15:51 EST: "thumbnail instead of large image looks a bit too squished").
+    components.push(...buildLoadoutCardBody(doc, { variant: opt, index, total: siblings.length }), BIG());
     if (extra) components.push(...extra);
     else {
         if (count > 1) components.push({ type: 1, components: [{ type: 3, custom_id: ID(mode, 'opt', id), placeholder: 'Pick an option', options: Array.from({ length: count }, (_, i) => ({ label: `Option ${lo.optionLetter(i)}`, value: String(i), default: i === opt })) }] });
