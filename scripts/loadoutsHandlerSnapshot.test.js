@@ -21,6 +21,8 @@ function capture() {
         editDMZ: manageCommand.buildEditLoadoutModal({ ...SAMPLE_LOADOUT, mode: 'DMZ', buildName: 'Build 1', dmzRangeRank: 'best-close', categoryRank: null }, '507f1f77bcf86cd799439013').toJSON(),
         bulkAddMP: manageCommand.buildLoadoutsBulkAddModal('MP').toJSON(),
         bulkAddDMZ: manageCommand.buildLoadoutsBulkAddModal('DMZ').toJSON(),
+        // Replace Multiple's own title (2026-11-06 11:02 EST): the same upsert, titled Replace.
+        bulkReplaceMP: manageCommand.buildLoadoutsBulkAddModal('MP', true).toJSON(),
         bulkRemoveMP: manageCommand.buildLoadoutsBulkRemoveModal('MP').toJSON(),
         bulkRemoveDMZ: manageCommand.buildLoadoutsBulkRemoveModal('DMZ').toJSON(),
         export5MP: manageCommand.buildLoadoutsExportUpTo5Modal('MP').toJSON(),

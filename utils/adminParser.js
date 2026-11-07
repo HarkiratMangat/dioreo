@@ -454,6 +454,7 @@ function gunsmithCodeProblem(code) {
 // Fuzzy-corrects one vision-extracted attachment name against the set of attachment strings already used somewhere in the Loadout collection -- a vision model reading a small in-game label can get spacing/punctuation/capitalization slightly wrong ("Gauge-9 Mo" for "Gauge-9 Mono") even when it got the actual attachment right. Checks for an exact normalized match first (cheapest, most common case once the model gets it basically right), then falls back to a two-directional fuzzyMatch scan (either string could be the "noisier" one depending on what the model added or dropped) so a real but imperfect read still resolves to the canonical stored spelling. No match at all -- likely a genuinely new attachment CODM just added -- passes the extracted text through untouched rather than forcing it onto something wrong.
 function correctAttachmentName(extracted, knownAttachments) {
     if (!extracted) return extracted;
+    extracted = require('./attachmentAliases').expandAttachmentAlias(extracted);
     const normalizedExtracted = normalizeForSearch(extracted);
 
     const exact = knownAttachments.find(known => normalizeForSearch(known) === normalizedExtracted);
@@ -514,6 +515,7 @@ const PLACEHOLDER_IMAGE = 'https://placehold.co/1024x576/1a1a1a/e5e5e5?text=Comi
  *   Code: 1I2C6B8A9D
  *   Label: Ranked
  *   Badges: meta, best
+ *   Comment: Best for close range
  *   - Gauge-9 Mono
  *   - Crown-H3 Barrel
  *
@@ -525,8 +527,8 @@ const PLACEHOLDER_IMAGE = 'https://placehold.co/1024x576/1a1a1a/e5e5e5?text=Comi
  *
  * A block missing its Weapon/Category header, carrying an unrecognized `Key:`, or with no attachment lines at all doesn't silently vanish -- it's collected in `errors` (with a snippet of the offending block) so the admin is told exactly what didn't parse, same as parseLoadoutBadges()'s `unrecognized` reporting.
  */
-// `Label:` since 2026-10-26 01:19 EDT: a build's back-end label (models/Loadout.js), which used to be its Build: name.
-const LOADOUT_BLOCK_KEYS = { build: 'buildName', image: 'imageKey', code: 'shareCode', badges: 'badges', label: 'label' };
+// `Label:` since 2026-10-26 01:19 EDT: a build's back-end label (models/Loadout.js), which used to be its Build: name. `Comment:` since 2026-11-06 10:58 EST: the build's comment (`description`); several Comment lines join into one comment over several lines.
+const LOADOUT_BLOCK_KEYS = { build: 'buildName', image: 'imageKey', code: 'shareCode', badges: 'badges', label: 'label', comment: 'description' };
 // A `Key: value` line. Deliberately NARROW (a letter, then at most 13 more letters/spaces, then the colon) so a real attachment name can't be swallowed as a mistyped field -- and the bullet test below runs first regardless, so `- Ammo: 40 Round` is always an attachment no matter what precedes the colon.
 const LOADOUT_KEYED_LINE = /^([A-Za-z][A-Za-z ]{0,13})\s*:\s*(.*)$/;
 const LOADOUT_BULLET = /^[-•*]\s+/;
@@ -564,14 +566,16 @@ function parseBulkLoadoutList(bulkText) {
             const key = keyed[1].trim().toLowerCase();
             // A typo'd key must NOT fall through into `attachments` -- "Buld: Aggressive Flex" quietly becoming an attachment named "Buld: Aggressive Flex" is precisely the silent-wrong-result this format redesign exists to remove.
             if (!Object.prototype.hasOwnProperty.call(LOADOUT_BLOCK_KEYS, key)) { badKey = keyed[1].trim(); break; }
-            fields[LOADOUT_BLOCK_KEYS[key]] = keyed[2].trim();
+            const field = LOADOUT_BLOCK_KEYS[key];
+            fields[field] = field === 'description' && fields.description !== undefined ? `${fields.description}\n${keyed[2].trim()}` : keyed[2].trim();
         }
         if (badKey) {
-            errors.push(`"${snippet}" -- unrecognized field "${badKey}:". Valid fields are Build, Label, Image, Code and Badges; an attachment whose name contains a colon needs a leading "- " bullet.`);
+            errors.push(`"${snippet}" -- unrecognized field "${badKey}:". Valid fields are Build, Label, Image, Code, Badges and Comment; an attachment whose name contains a colon needs a leading "- " bullet.`);
             continue;
         }
 
-        const cleanAttachments = attachments.filter(Boolean);
+        // A short name (soh, mono) becomes its catalogue name, as in the single pop-up (utils/attachmentAliases.js).
+        const cleanAttachments = attachments.filter(Boolean).map(a => require('./attachmentAliases').expandAttachmentAlias(a));
         if (cleanAttachments.length === 0) {
             errors.push(`"${snippet}" -- no attachment lines found under the header`);
             continue;
@@ -593,8 +597,9 @@ function parseBulkLoadoutList(bulkText) {
             imageKey: fields.imageKey || PLACEHOLDER_IMAGE,
             shareCode: fields.shareCode || '',
             label: fields.label || '',
-            // Which of these the block left out, so a paste over an EXISTING build keeps its stored value instead of writing the default (2026-10-20, Harkirat's call in the v3 sweep). A new build still gets the default. core/ops/loadouts.js's bulkEntryWrite reads this and never stores it.
-            defaulted: [!fields.imageKey && 'imageKey', !fields.shareCode && 'shareCode', !fields.label && 'label'].filter(Boolean),
+            description: (fields.description || '').trim(),
+            // Which of these the block left out, so a paste over an EXISTING build keeps its stored value instead of writing the default (2026-10-20, Harkirat's call in the v3 sweep). A new build still gets the default. core/ops/loadouts.js's bulkEntryWrite reads this and never stores it. A block with no Comment line keeps the stored comment; `Comment:` with nothing after it clears it.
+            defaulted: [!fields.imageKey && 'imageKey', !fields.shareCode && 'shareCode', !fields.label && 'label', fields.description === undefined && 'description'].filter(Boolean),
             isMeta,
             categoryRank,
             dmzRangeRank,
@@ -662,7 +667,10 @@ function formatPatchNotesAsText(patchNotes) {
  * Bulk-import-compatible export of loadouts -- round-trips straight back into parseBulkLoadoutList()'s labelled-block format (see that function for the format itself and for why it changed on 2026-08-22). An optional field with no value is OMITTED rather than emitted empty: a trailing `Code:` with nothing after it is exactly the noise the redesign set out to delete, and the old format's `... | | meta` gap was the same problem in pipe form. Mode is deliberately NOT emitted -- the page a paste lands on decides it, and emitting it used to let a DMZ export silently reassign itself to MP. Badge reconstruction mirrors manage.js's buildEditLoadoutModal (dmzRangeRank is stored hyphenated -- "best-close" -- but the parser's token format has no hyphen, so it's stripped back out here too).
  */
 function formatLoadoutsAsBulkText(loadouts) {
-    return loadouts.map(l => {
+    // Weapon by weapon, then Build 1, 2, 3 (click-test 2026-11-06 10:58 EST: an export listed ISO HEMLOCK Build 2 before Build 1, in database order).
+    const { compareBuilds } = require('./loadoutForm');
+    const sorted = [...loadouts].sort((a, b) => String(a.weaponName).localeCompare(String(b.weaponName)) || compareBuilds(a, b));
+    return sorted.map(l => {
         const badges = loadoutBadgeTokens(l).join(', ');
         const lines = [`${l.weaponName} | ${l.category}`];
         if (l.buildName) lines.push(`Build: ${l.buildName}`);
@@ -671,13 +679,17 @@ function formatLoadoutsAsBulkText(loadouts) {
         if (l.shareCode) lines.push(`Code: ${l.shareCode}`);
         if (l.label) lines.push(`Label: ${l.label}`);
         if (badges) lines.push(`Badges: ${badges}`);
+        // One Comment line per line of the comment, so a re-paste reads it back whole.
+        for (const c of String(l.description || '').split('\n').map(s => s.trim()).filter(Boolean)) lines.push(`Comment: ${c}`);
         lines.push(...(l.attachments || []).map(a => `- ${a}`));
-        // A merged build's options follow it as `Build: Build 2b` blocks (utils/loadoutOptions.js, 2026-11-05), so a re-import writes them back into the same build; the badges and label are the build's and ride on its own block.
+        // A merged build's options follow it as `Build: Build 2b` blocks (utils/loadoutOptions.js, 2026-11-05), so a re-import writes them back into the same build; the badges, label and comment are the build's and ride on its own block; an option's own label rides on its block.
         const n = /^Build (\d+)$/.exec(l.buildName || '');
         const options = n ? (l.variants || []).map((v, i) => {
             const opt = [`${l.weaponName} | ${l.category}`, `Build: Build ${n[1]}${String.fromCharCode(98 + i)}`];
             if (v.imageKey && !String(v.imageKey).startsWith('http')) opt.push(`Image: ${v.imageKey}`);
             if (v.shareCode) opt.push(`Code: ${v.shareCode}`);
+            // An option has its own label (models/Loadout.js variants.label), written so a re-paste keeps it.
+            if (v.label) opt.push(`Label: ${v.label}`);
             opt.push(...(v.attachments || []).map(a => `- ${a}`));
             return opt.join('\n');
         }) : [];

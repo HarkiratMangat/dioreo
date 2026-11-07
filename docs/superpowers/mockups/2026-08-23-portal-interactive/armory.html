@@ -627,6 +627,8 @@
     if (b.imageKey && !String(b.imageKey).startsWith('http')) lines.push('Image: ' + b.imageKey);
     if (b.shareCode) lines.push('Code: ' + b.shareCode);
     if (badges) lines.push('Badges: ' + badges);
+    /* The build's comment, one Comment line per line (the bot's format since 2026-11-06 11:10 EST). */
+    String(b.description || '').split('\n').map(s => s.trim()).filter(Boolean).forEach(c => lines.push('Comment: ' + c));
     (b.attachments || []).forEach(a => lines.push('- ' + a));
     return lines.join('\n');
   };

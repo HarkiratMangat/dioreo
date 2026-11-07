@@ -1061,7 +1061,7 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 - ⏳ **BUILT 2026-11-04 20:18 EST on `feat/news-channel-triage`, PR pending his word — see `.claude/rules/news-triage.md`.** News-channel triage: a model reads a followed CODM announcement channel and drafts /manage entries for him to approve `[P2 · L]` *(filed 2026-11-01 18:57 EST, Harkirat: "file it for now, i'll request for it later")*. Brief: `local/project/proposals/incoming/news-channel-triage-brief.md` (on this Mac); review against the repo: `local/project/proposals/incoming/review-2026-11-01.md`. His answer to the brief's open question: the source is **an outside announcement channel followed into dioreoland**. What the review found stale in the brief: the bot already runs `GuildMessages` + Message Content where granted, with a `messageCreate` listener (`bot/textCommands.js`); Add to Draws / Calendar / Patch Notes already do its "Phase 0" by hand; storing message text needs a PRIVACY amendment ("We don't keep your messages"); cards would go to his DMs (`dmOwner`) unless he names a new posting exception; the app is already past Discord's 5 message right-clicks. **Verify when built:** a post in the followed channel produces an owner DM with a pre-filled /manage entry, and nothing is written until he approves.
 
-- **/autobuild vision provider: Gemini vs Claude A/B, then shadow mode** `[P2 · M]` *(filed 2026-11-01 18:57 EST, the same word)*. Brief: `local/project/proposals/incoming/vision-provider-evaluation.md` (on this Mac); review: `local/project/proposals/incoming/review-2026-11-01.md`. The review's pick was to do this before news triage, since triage would share its provider layer. Left by the brief: `scripts/indexDrawImages.js` and `scripts/visionReads.test.js` also call the vision path; no Anthropic key exists yet (he makes a Console workspace with a spend limit); its Claude-side claims (Max API credits, Sonnet 5.5 request rules) are unverified. **Verify when built:** a table of per-field accuracy, raw and post-corrector, for both providers on the confirmed `Loadout` set, with the disagreements listed.
+- **/autobuild vision provider: Gemini vs Claude A/B, then shadow mode** `[P2 · M]` ⏳ *Harkirat 2026-11-06 19:41 EST: "we'll do this later then. probably tomorrow"; it starts with him making an Anthropic Console key with a spend limit.* *(filed 2026-11-01 18:57 EST, the same word)*. Brief: `local/project/proposals/incoming/vision-provider-evaluation.md` (on this Mac); review: `local/project/proposals/incoming/review-2026-11-01.md`. The review's pick was to do this before news triage, since triage would share its provider layer. Left by the brief: `scripts/indexDrawImages.js` and `scripts/visionReads.test.js` also call the vision path; no Anthropic key exists yet (he makes a Console workspace with a spend limit); its Claude-side claims (Max API credits, Sonnet 5.5 request rules) are unverified. **Verify when built:** a table of per-field accuracy, raw and post-corrector, for both providers on the confirmed `Loadout` set, with the disagreements listed.
 
 - **/timestamp: switch timezone and view after it renders** `[P2 · S · Sonnet5-Medium]` *(filed 2026-10-28 21:52 EDT, Harkirat, in the text-commands doc: "file that we need to do a minor tweak to the timestamp command and implement some more buttons/controls within it to dynamically switch things like timezone/view, etc after the embed is rendered cuz currently we cant do that.")* Today the reply has only the style dropdown (`tsmenu|`); timezone and view (embed vs plain text) are slash options only, so a text-command timestamp can't change them at all. **Do:** add controls on the rendered reply for view and timezone, through `commands/timestamp.js`'s `overrideState` path and `handlers/timestamp.js`. **Verify:** `/timestamp 8pm` and `d time 8pm` can each switch to plain text and to another timezone without retyping.
 
@@ -1099,19 +1099,25 @@ Approved direction 2026-10-25 22:16 EDT (Harkirat, bot-polish thread); built in 
 
 **Prod's data: done 2026-10-21 11:08 EDT.** The three starts went to prod first (Harkirat's "sure", 2026-10-21 11:02 EDT): BP 2026-10-15, Ranked 2026-09-10, DMZ 2026-04-23, all at 00:00 UTC. Then BP and Ranked got this season's titles, "Season 9 2026" and "Ranked Series 3 2026", both ending 2026-11-12 00:00 UTC (his "sure go ahead", 2026-10-21 11:07 EDT). Prod reads that document fresh on every `/season end`, so no restart was needed. Read back after both writes.
 
-### 🐞 Restore the 14 draw thumbnails the cleanup deleted `[P1 · S]`
+### CLOSED 2026-11-06 19:20 EST · 🐞 Restore the 14 draw thumbnails the cleanup deleted `[P1 · S]`
+> ✅ **Checked 2026-11-06 19:20 EST:** every draw on prod (18, New and Returning) has a thumbnail URL that answers 200 (a HEAD request each). Nothing left to restore.
+
 
 *Filed 2026-10-21 11:21 EDT, narrowed 11:22 EDT.* All 14 draws on prod (and dev) show a broken image: every stored `thumbnailUrl` returns 404, and Cloudinary's `temp_draws/` holds **0 assets** (Admin API read, prod account, 2026-10-21 11:19 EDT). **The cause is already fixed:** the 45-day cleanup deleting in-use thumbnails was found by the bug sweep and fixed in #212 (Pre-Release v3.103.0, `f8373419`, in `utils/cloudinaryCache.js` and `bot/lifecycle.js`). Prod still runs `main`, which has the bug, and Harkirat chose no `main` hotfix, so the fix ships with v3. **Open: the images themselves.** **Do:** re-cache the 14 from Harkirat's source links through `/manage`'s draw edit (or `resolveThumbnail`), after the v3 deploy so prod's old cleanup cannot delete them again. **Verify:** `/draws` on prod shows every thumbnail a day after the deploy.
 
 **Archive, never delete (Harkirat, 2026-10-21 11:25 EDT: "instead of deleting, can we move any \"deleted\" images to an archive folder instead from now on? ... with respective sub-folders for draws, banners, etc.").** Three delete sites: draws' 45-day prune (`utils/cloudinaryCache.js`, `delete_resources`), a deleted patch-notes entry's folder (`utils/patchNotesCache.js`, `delete_resources`) and a cleared calendar banner (`utils/calendarBannerCache.js`, `uploader.destroy`). **Do:** move each to `archive/draws/`, `archive/patch_notes/`, `archive/calendar_banners/` (rename the `public_id`, set `asset_folder`, archive date in the name so repeats never clash); nothing ever deletes from `archive/`. ✅ **Built 2026-10-21 11:45 EDT** on `fix/command-refresh-polish` (Harkirat, 2026-10-21 11:39 EDT: "yes go ahead", to both this and archiving the old image when one is replaced): `utils/cloudinaryArchive.js`, all four modules, `scripts/cloudinaryArchive.test.js`. Live once v3 deploys. **Still open: the live check below.** Storage is not a concern: 1.4 GB, 25% of the free plan's credits (Admin API `usage`, 2026-10-21 11:26 EDT). **Verify:** a unit test per site shows a move, not a delete (the dev bot cannot write to Cloudinary), then one real prune on prod after the v3 deploy leaves the moved asset under `archive/`.
 
-### Announcements: split text boxes without a divider `[P2 · XS]` (the text-commands announcement needs it)
+### CLOSED 2026-11-06 19:20 EST · Announcements: split text boxes without a divider `[P2 · XS]`
+> ✅ **Shipped in v3.3.0 (#237, text commands):** `utils/announcement.js` reads `----` `====` `--` `==` `++`; checked in the file 2026-11-06 19:20 EST.
+ (the text-commands announcement needs it)
 
 > ✅ **BUILT 2026-10-30 16:36 EDT** on `feat/text-commands`, wider than filed, his five marks: `----` divider small · `====` divider large · `--` no line small · `==` no line large (he wrote small; read as large) · `++` next text box. `---` still works. Tested in `scripts/announcementDelivery.test.js`. Closes when text commands merge.
 
 *Filed 2026-10-30 16:21 EDT, Harkirat: "we'll do it later, just file it for now".* `utils/announcement.js` `buildAnnouncementContainer` starts a new Text Display only at a line that is exactly `---`, and that line always adds a divider (`type: 14, divider: true`), so two text boxes with nothing between them can't be written. **Do:** a line that is exactly `--` starts a new box with no divider; `---` keeps its divider. Update the composer's help text in `/manage` and the portal's Broadcast realm if either describes `---` (portal is pins2's: a proposal). **Verify:** a test where `--` yields two `type: 10` blocks with no divider between them, and `---` still yields one.
 
-### Reuse a returning draw's image by matching its items, not its title `[P2 · M]`
+### CLOSED 2026-11-06 19:21 EST · Reuse a returning draw's image by matching its items, not its title `[P2 · M]`
+> ✅ **The prod run happened:** all 18 draws on prod have their picture in `draws/` and none in `temp_draws/` (read 2026-11-06 19:21 EST).
+
 
 > ✅ **BUILT 2026-10-30 16:24 EDT** on `feat/text-commands` (builder thread, Harkirat's "draws/ folder, image linked to a draw"): `utils/cloudinaryCache.js` (tags + context + fingerprint, `draws/` permanent, override in place), `utils/drawImageBackfill.js` + `scripts/backfillDrawImages.js`, `scripts/drawImageLink.test.js`. Rule chosen: exact fingerprint (items + rarities, comments ignored) reuses, the newest image carrying them winning; a replaced image is overwritten only under the same title; ≥60% shared items is named, never reused; price type vetoes only when both set. **Still open: the prod run** of `DRAW_BACKFILL_APPROVED=1 node scripts/backfillDrawImages.js --write` against the PROD database right after the deploy (dev dry run: 12 current draws, 12 in `temp_draws/`, 0 in `archive/draws/`), which needs his word. The backfill also rewrites the image URLs inside `ChangeLog.inverse` (Undo), so an Undo after the move does not restore a dead link.
 
@@ -1233,7 +1239,8 @@ Separate from `[P3 · L]` below, which is about staging a change from a sentence
 - 🤖 **`[P3 · L]` Natural-language staging from the portal's command bar** *(filed 2026-09-15 14:48 EDT from Harkirat's review pin `pmu2w98v8`)* He wants a system — an LLM or something like it — that takes a plain request and stages exactly that change: *"add the meta badge to locus"*, *"send an announcement saying 'hi world' starting tomorrow, for 10 days and showing it twice"*. Every change would still become staged ops through `core/` and reach players only through Review, so the model proposes and the operation algebra validates. Separate from board 3's P7, which only makes search answer plain words with real actions (plan `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2b). **Verify:** a typed request stages the intended op with its values shown before staging, and a request it cannot map stages nothing.
 
 
-### `[P2 · M]` Event and draw reminders when a player runs a command — needs a design session, after the v3 launch (launched 2026-10-27, so it is open now)
+### `[P2 · M]` Event and draw reminders when a player runs a command
+> ⏸️ **Deferred by Harkirat 2026-11-06 19:41 EST:** "deferred for now, we already have /today for that." — needs a design session, after the v3 launch (launched 2026-10-27, so it is open now)
 
 Filed 2026-09-14 12:21 EDT from Harkirat's comment on pins-2 design board 2 (2026-09-14 12:01 EDT). A short reminder that can pop up when someone uses a bot command: a calendar event is live, a lucky draw is out or releasing alongside it, how many days are left. Players can turn it on or off. **Not designed yet** — it needs a full discussion and design session first: what triggers it, how often it may appear, where the on/off switch lives, and how it sits beside the existing announcement follow-up. **Timing:** after v3-pre-release launches. **Verify:** a dated design spec for it exists under `docs/superpowers/specs/`.
 
@@ -1579,7 +1586,9 @@ rg -n '^### ' docs/db-deferred-list.md | rg -v '✅|CLOSED|DECIDED-NO|🚫|SUPER
 
 **Do:** produce the real enumeration as step 4's first unit, replace Task 8's five bullets with it, and give each item a `[P· E · Model]` tag. **Verify by:** Task 8 naming a list whose length is a count somebody derived, with no "roughly" anywhere in it.
 
-### `[P2 · M · Opus5-High]` The `/commands` page is **NOT live** — the belief gap ran the other way, and Harkirat was right
+### CLOSED 2026-11-06 19:20 EST · `[P2 · M · Opus5-High]` The `/commands` page is **NOT live**
+> ✅ **Live now:** `https://dioreo.app/commands` serves the commands page (it carries `data-cmd` entries; the homepage carries none), checked 2026-11-06 19:20 EST.
+ — the belief gap ran the other way, and Harkirat was right
 
 *Filed 2026-09-06 19:09 EDT, in his words: "it honestly still needs work and in my mind/subconcious I thought it was parked and pending. i didnt even know/remember it was live."*
 
@@ -2011,7 +2020,9 @@ It did not run for `local/handoff/2026-08-30-mode-collapse-and-season-overlays.m
 
 **Re-checked 2026-10-19 18:05 EDT:** the `SessionStart` check reports **six** (the DMZ prompt-cap note, the v3 and v2 lists, the v4/v5 ideas, and the two MarkEdit bugs). Still not worked; this sweep was a tracker pass and left them for a notes session. **Re-checked 2026-09-23 09:00 EDT:** the `SessionStart` check now reports **nine** (six DMZ/v2/v3/v4 feature notes, the MarkEdit mark and cursor bugs). Carried again through the Board 4 session of 2026-09-22→23, which is design-board work and never opened them. **Verify:** the `SessionStart` notes check reports 0 open items, each one answered, marked in-file and, once confirmed, swept to the graveyard.
 
-### Events and Playlists auto-collapse on real data, hiding 20 of the season's 39 items `[P2 · S · Opus5-Medium]`
+### CLOSED 2026-11-06 19:20 EST · Events and Playlists auto-collapse on real data, hiding 20 of the season's 39 items `[P2 · S · Opus5-Medium]`
+> ✅ Closed on its own 2026-09-06 adjudication below: the rule is correct and nothing changes.
+
 
 🔴 **MEASURED 2026-09-06 17:46 EDT AND THE CLAIM DOES NOT REPRODUCE. Adjudicated: THE RULE IS CORRECT, NO CHANGE.**
 
@@ -2488,6 +2499,8 @@ So Discord warns you that a change has been superseded and the portal does not, 
 **Verify:** the portal's Undo control and its "can be undone" count both reflect `getLaterChangesTo`, or state plainly that they do not.
 
 ### Undo is offered without checking that the inverse still validates `[P1 . S . Opus5-High]`
+> ⏸️ **Deferred by Harkirat 2026-11-06 19:41 EST** ("defer for now"). The fix when picked up: one shared check in `core/revert.js` (`canRevert` also asks `getLaterChangesTo` and validates the inverse), used by Discord and the portal; the portal half is pins2's.
+
 
 *Filed 2026-09-20 15:18 EDT from Harkirat's scale correction — the portal's History numbers come from the dev bot, which is rarely active; prod climbs exponentially. This is a live portal defect, not a board question.*
 
@@ -2528,6 +2541,9 @@ The "Can be undone" filter and the row's Undo control are both computed as `kind
 
 ### `[P3 · XS]` `/draw prices`: the Advanced Character page never says the 2 legendary weapons are the secondary reward — filed 2026-11-01 01:05 EDT
 Only a code comment in `commands/drawprices.js` (about line 276, confirmed by Harkirat 2026-08-07) says it; the visible text does not. He asked for this to be checked in his review note on the Dual Demise draw and it was: no visible wording. A one-line text change on the page.
+
+### `[P3 · S]` Dioreo Admin's right-clicks: one "Dioreo Admin" menu when a sixth is needed — filed 2026-11-06 20:36 EST
+Dioreo Admin is at Discord's cap of five message right-clicks (Add to Patch Notes, Autobuild Gunsmith, Add to Draws, Add to Calendar, Edit Loadout). Harkirat picked **C, leave it, for now** (2026-11-06 20:36 EST) over A (one right-click opening a private menu of the five, freeing four slots) and B (a third app). **Do, when a sixth is wanted:** build A, the menu running each action's existing `execute()`. **Verify:** `scripts/rightClickCommands.test.js` still passes with the admin app at one message right-click.
 
 ## 🧹 Someday / tech-debt
 

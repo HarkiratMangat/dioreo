@@ -61,6 +61,7 @@ export const TESTS = [
     {"cmd": "node scripts/commandMentions.test.js", "lane": "unit"},
     {"cmd": "node scripts/addToPatchNotes.test.js", "lane": "unit"},
     {"cmd": "node scripts/rightClickCommands.test.js", "lane": "unit"},
+    {"cmd": "node scripts/auditLoadouts.test.js", "lane": "unit"},
     {"cmd": "node scripts/newsTriage.test.js", "lane": "unit"},
     {"cmd": "node scripts/newsTriageGrid.test.js", "lane": "unit"},
     {"cmd": "node scripts/timestampZone.test.js", "lane": "unit"},

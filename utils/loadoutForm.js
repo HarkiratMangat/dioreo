@@ -35,17 +35,26 @@ function parseIdentity(raw, mode) {
     return { category: category.toUpperCase(), number, option, lettered, code };
 }
 
-// The attachments box: one attachment per line, and a `Badges:` line for the badges (the pop-up has no sixth slot, Discord's cap). A leading bullet is dropped, as the bulk format allows.
+// The attachments box: one attachment per line, a `Badges:` line for the badges, and a `Comment:` line for the build's comment (the pop-up has no sixth slot, Discord's cap). A leading bullet is dropped, as the bulk format allows. The comment (Harkirat, 2026-11-06 00:19 EST: "yes" to a `Comment:` line under `Badges:`): everything from `Comment:` to the end of the box, so it may run over several lines. `comment` is undefined when the box has no `Comment:` line, so a save leaves the stored comment alone (Share Code's omit/clear/set rule), and '' when the line is there but empty, which clears it. It is the BUILD's comment (models/Loadout.js `description`), shared by every option of a merged build.
 const BADGES_LINE = /^badges\s*:\s*(.*)$/i;
+const COMMENT_LINE = /^comment\s*:\s*(.*)$/i;
 function parseAttachmentsBadges(raw) {
     const attachments = [];
     let badgesRaw = '';
-    for (const line of String(raw || '').split('\n').map(l => l.trim()).filter(Boolean)) {
+    let comment;
+    const lines = String(raw || '').split('\n');
+    const at = lines.findIndex(l => COMMENT_LINE.test(l.trim()));
+    if (at !== -1) {
+        comment = [COMMENT_LINE.exec(lines[at].trim())[1], ...lines.slice(at + 1)].join('\n').trim();
+        lines.length = at;
+    }
+    for (const line of lines.map(l => l.trim()).filter(Boolean)) {
         const badge = BADGES_LINE.exec(line);
         if (badge) { badgesRaw = [badgesRaw, badge[1].trim()].filter(Boolean).join(', '); continue; }
-        attachments.push(line.replace(/^[-•*]\s+/, '').trim());
+        // A short name (soh, mono) becomes its catalogue name (utils/attachmentAliases.js).
+        attachments.push(require('./attachmentAliases').expandAttachmentAlias(line.replace(/^[-•*]\s+/, '').trim()));
     }
-    return { attachments: attachments.filter(Boolean), badgesRaw };
+    return { attachments: attachments.filter(Boolean), badgesRaw, comment };
 }
 
 // The number in a `Build N` name, or null for a legacy labelled build (one whose label was stored as its name).
@@ -86,7 +95,7 @@ function planNumbering({ siblings, targetId = null, wanted = null }) {
     return { number, moves };
 }
 
-// The three text boxes, filled from a saved build, so reopening Edit and saving unchanged changes nothing. A legacy build with its label as its name shows that name as the label. `option` fills the boxes from one option of a merged build: its attachments and code, and its tag (`2b`) as the build #. The weapon, label and badges are the whole build's.
+// The three text boxes, filled from a saved build, so reopening Edit and saving unchanged changes nothing. A legacy build with its label as its name shows that name as the label. `option` fills the boxes from one option of a merged build: its attachments and code, and its tag (`2b`) as the build #. The weapon, label, badges and comment are the whole build's.
 function editValues(build, siblings, badgeTokens = [], option = 0) {
     const label = build.label || (buildNumberOf(build.buildName) === null && build.buildName !== 'Standard Build' ? build.buildName : '');
     const n = numberFor(build, siblings);
@@ -98,7 +107,8 @@ function editValues(build, siblings, badgeTokens = [], option = 0) {
     return {
         weapon: label ? `${build.weaponName}, ${label}` : build.weaponName,
         build: identity,
-        attachments: [...(view.attachments || []), `Badges: ${badgeTokens.join(', ')}`].join('\n'),
+        // The comment is the whole build's, so every option's box shows the same one.
+        attachments: [...(view.attachments || []), `Badges: ${badgeTokens.join(', ')}`, `Comment: ${build.description || ''}`].join('\n'),
     };
 }
 

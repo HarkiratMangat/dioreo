@@ -77,6 +77,62 @@ async function check(name, fn) {
         assert.strictEqual(h.state.changes.length, before + 1);
     });
 
+    // The Comment line (2026-11-06 11:06 EST): a Comment line sets the build's comment, no line keeps it, an empty one clears it.
+    await check('a Comment line sets the comment; an Edit with no Comment line keeps it; an empty one clears it', async () => {
+        h.reset(); Loadout.seed([]); knownCatalogue();
+        await loadouts.addLoadout(h.modal('add_loadout_MP', form({ attachments: `${ATTACH}\nComment: Close range\nno suppressor` })));
+        const id = String(Loadout.rows[0]._id);
+        assert.strictEqual(Loadout.rows[0].description, 'Close range\nno suppressor');
+        await loadouts.editLoadout(h.modal(`edit_loadout_${id}`, form()));
+        assert.strictEqual(Loadout.rows[0].description, 'Close range\nno suppressor', 'no Comment line leaves it');
+        await loadouts.editLoadout(h.modal(`edit_loadout_${id}`, form({ attachments: `${ATTACH}\nComment:` })));
+        assert.strictEqual(Loadout.rows[0].description, '', 'an empty Comment line clears it');
+    });
+
+    await check('an option save of a merged build writes the shared comment', async () => {
+        h.reset(); Loadout.seed([]); knownCatalogue();
+        await loadouts.addLoadout(h.modal('add_loadout_MP', form()));
+        const doc = Loadout.rows[0];
+        doc.variants = [{ attachments: ATTACH.split('\n'), attachmentSlots: [], shareCode: '1D2B4A8B9A', imageKey: '', label: '' }];
+        const i = h.modal(`edit_loadout_${doc._id}~1`, form({ build: 'AR, 1b, 1D2B4A8B9A', attachments: `${ATTACH}\nComment: Both options` }));
+        await loadouts.editLoadout(i);
+        assert.strictEqual(Loadout.rows[0].description, 'Both options', i.text());
+    });
+
+    await check('an Edit does not ask about names already saved on the build, only new ones', async () => {
+        h.reset(); Loadout.seed([]); knownCatalogue();
+        await loadouts.addLoadout(h.modal('add_loadout_MP', form()));
+        const id = String(Loadout.rows[0]._id);
+        CatalogueItem.seed([{ kind: 'weapon', name: 'Fennec', key: 'fennec', category: 'SMG', mode: 'MP' }]); invalidateCatalogue();   // the catalogue now knows none of this build's names, as for builds saved before it existed
+        const same = h.modal(`edit_loadout_${id}`, form({ weapon: 'BAL-27, Ranked' }));
+        await loadouts.editLoadout(same);
+        assert.ok(!/mng_cat/.test(same.text()), `a label-only edit asked: ${same.text()}`);
+        assert.strictEqual(Loadout.rows[0].label, 'Ranked');
+        const added = h.modal(`edit_loadout_${id}`, form({ attachments: ATTACH.replace('No Stock', 'Brand New Stock') }));
+        await loadouts.editLoadout(added);
+        assert.ok(/mng_cat/.test(added.text()) && /Brand New Stock/.test(added.text()), 'a new name still asks');
+    });
+
+    await check('build: autocomplete lists each option, the whole merged build and a new build; openFromSlash opens the right pop-up', async () => {
+        h.reset(); Loadout.seed([]); knownCatalogue();
+        await loadouts.addLoadout(h.modal('add_loadout_MP', form()));
+        const doc = Loadout.rows[0];
+        doc.variants = [{ attachments: ['X'], attachmentSlots: [], shareCode: '1D2B4A8B9A', imageKey: '', label: 'Fast' }];
+        const choices = await loadouts.buildChoices('loadouts_mp', 'bal 1b');
+        assert.ok(choices.some(c => c.value === `${doc._id}~1` && /1b/.test(c.name) && /Fast/.test(c.name)), JSON.stringify(choices));
+        const all = await loadouts.buildChoices('loadouts_mp', 'bal');
+        assert.ok(all.some(c => c.value === String(doc._id) && /all 2 options/.test(c.name)), JSON.stringify(all));
+        assert.ok(all.some(c => c.value === `new:${doc.weaponKey}`), JSON.stringify(all));
+        const edit = h.modal('x'); await loadouts.openFromSlash(edit, 'loadouts_mp', `${doc._id}~1`, null);
+        assert.ok(edit.sent[0]?.modal && JSON.stringify(edit.sent[0].modal).includes(`edit_loadout_${doc._id}~1`), edit.text());
+        const add = h.modal('x'); await loadouts.openFromSlash(add, 'loadouts_mp', String(doc._id), 'add');
+        assert.ok(JSON.stringify(add.sent[0]?.modal).includes('AR, 1c, '), `Add opens Create New for 1c: ${add.text()}`);
+        const fresh = h.modal('x'); await loadouts.openFromSlash(fresh, 'loadouts_mp', `new:${doc.weaponKey}`, 'add');
+        assert.ok(JSON.stringify(fresh.sent[0]?.modal).includes('AR, 2, '), `a new build gets the next number: ${fresh.text()}`);
+        const typed = h.modal('x'); await loadouts.openFromSlash(typed, 'loadouts_mp', 'BAL-27 1b', null);
+        assert.ok(JSON.stringify(typed.sent[0]?.modal).includes(`edit_loadout_${doc._id}~1`), `a typed tag finds the option: ${typed.text()}`);
+    });
+
     if (failures) { console.error(`\n${failures} failing`); process.exit(1); }
     console.log('\n/manage loadout handlers: all checks pass');
     process.exit(0);

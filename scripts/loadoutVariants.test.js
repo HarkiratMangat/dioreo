@@ -27,7 +27,7 @@ const comps = buildLoadoutCardBody(build);
 const sections = comps.filter(c => c.type === 9);
 assert.strictEqual(sections.length, 2, 'one card per option, its screenshot beside it');
 const optB = sections[1].components[0].content;
-assert.ok(optB.startsWith('**Option B**') && optB.includes('2D4D5H7B9B') && optB.includes('-# 2. Removed Pad') && optB.includes('-# 5. Rapid Fire'), 'title line with its code, full list in small text');
+assert.ok(optB.startsWith('**Option B**') && optB.includes('2D4D5H7B9B') && optB.includes('-# 2\\. Removed Pad') && optB.includes('-# 5\\. Rapid Fire') && !/^-# \d+\. /m.test(optB), 'title line with its code, full list in small text');
 assert.ok(!comps.some(c => c.type === 14 && c.divider && comps.indexOf(c) > 2), 'no dividers between the cards');
 assert.ok(!text(comps).includes('### Gunsmith Code:') && !comps.some(c => c.type === 12));
 

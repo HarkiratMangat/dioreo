@@ -179,7 +179,7 @@ function renderPage(batch, key, index, heldImages = null) {
     }
     const warn = emojis.warn;
     const line = {
-        saved: () => `${BOT_EMOJI.checkmark} **Saved:** ${item.doc.weaponName} — ${item.doc.buildName} (${item.doc.category}${item.doc.mode === 'DMZ' ? ', DMZ' : ''})`,
+        saved: () => `${BOT_EMOJI.checkmark} **Saved:** ${item.doc.weaponName} — ${item.savedAs || item.doc.buildName} (${item.doc.category}${item.doc.mode === 'DMZ' ? ', DMZ' : ''})${item.placeNote ? `\n${BOT_EMOJI.warn} ${item.placeNote}` : ''}`,
         cancelled: () => BOT_EMOJI.cross + ' **Discarded:** nothing saved or uploaded.',
         failed: () => `${warn} **Couldn't read this screenshot:** ${item.error}`,
         retry: () => `${warn} **Image upload failed** (${item.error}). Nothing was saved yet. Press **Re-upload** to send the image again.`,
@@ -353,7 +353,7 @@ async function refreshForRender(interaction, batch, key) {
     if (!pending.length || !dbUp()) return;
     try {
         const Loadout = require('../models/Loadout');
-        const allBuilds = await Loadout.find({}).select('weaponKey weaponName category buildName shareCode attachments mode').lean();
+        const allBuilds = await Loadout.find({}).select('weaponKey weaponName category buildName shareCode attachments mode variants').lean();
         const { refreshReviewWarnings } = require('./autobuildPipeline');
         for (const it of pending) refreshReviewWarnings(it.data, allBuilds);
         const others = await Stored().find({ ownerId: { $ne: batch.adminId }, key: { $ne: key } }).lean();
@@ -397,7 +397,7 @@ async function confirmAllItems(batch, confirm = confirmCore) {
 
 // Records a confirmCore result on a batch item. Returns 'stop' when the build needs an Adjust before it can be saved.
 function applyResult(item, result) {
-    if (result.status === 'saved') { item.status = 'saved'; item.doc = result.doc; return 'ok'; }
+    if (result.status === 'saved') { item.status = 'saved'; item.doc = result.doc; item.savedAs = result.savedAs || null; item.placeNote = result.placeError || result.placeNote || null; return 'ok'; }
     if (result.status === 'retry') { item.status = 'retry'; item.retryToken = result.retryToken; item.error = result.error; return 'ok'; }
     if (result.status === 'expired') { item.status = 'cancelled'; return 'ok'; }
     return 'stop'; // nocategory · nomode · busy
@@ -412,7 +412,7 @@ function readingCard(done, total) {
 // Reads screenshots three at a time into new batch items, stashing each as an ordinary review under its own token. Shared by a new batch and by Add more. An item's own preset (the start form, 2026-10-25 12:49 EDT) wins over the batch-wide options for what it names, and leaves the rest to them.
 async function readInto(interaction, newItems, { explicitCategory = null, badgesOption = null, explicitMode = null, credit = null } = {}) {
     const Loadout = require('../models/Loadout');
-    const allBuilds = await Loadout.find({}).select('weaponKey weaponName category buildName shareCode attachments mode').lean();
+    const allBuilds = await Loadout.find({}).select('weaponKey weaponName category buildName shareCode attachments mode variants').lean();
     let done = 0;
     await sendV2Payload(interaction, readingCard(0, newItems.length)).catch(() => {});
     let next = 0;
@@ -532,7 +532,7 @@ async function handleBatchComponent(interaction) {
                 pendingAutobuilds.delete(item.token);
                 item.status = 'cancelled';
             } else {
-                const result = await confirmCore(item.token);
+                const result = await confirmCore(item.token, interaction.user?.id);
                 if (applyResult(item, result) === 'stop') {
                     await interaction.followUp(confirmReply(interaction.client, result)).catch(() => {});
                 }

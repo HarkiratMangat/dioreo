@@ -278,6 +278,8 @@ const PAGES = {
                 boxes: [
                     text(`**Sections**\n${SECTIONS.map(([n, d]) => `> -# ${m(`/${n}`)}  *${d}*`).join('\n')}`),
                     text("`[action]`\n-# Open one of that section's buttons directly, e.g. **Add Multiple** or **Export**. Purge, Promote and Discard stay on the panel"),
+                    // build: on the gunsmith subcommands (2026-11-06 11:10 EST).
+                    text("`[build]`\n-# Gunsmith only: open one build or option straight away. With **Add** it opens its next option, with **Delete** its confirm"),
                     text('`[visibility]`\n-# Only you by default, or everyone in the chat. Not on season titles'),
                 ],
                 sections: [
@@ -286,7 +288,7 @@ const PAGES = {
                     line(1),
                     text("**Right-click or tap and hold a message**\n-# Apps → **Add to Calendar** · **Add to Draws** · **Add to Patch Notes**: that section's Add box, filled from the post"),
                 ],
-                examples: [['/manage draws action:Add Multiple'], ['/manage season draft', "Stage next season without touching what's live"], ['/manage patch-notes visibility:Public']],
+                examples: [['/manage draws action:Add Multiple'], ['/manage gunsmith mp build:ISO HEMLOCK · 1b'], ['/manage season draft', "Stage next season without touching what's live"], ['/manage patch-notes visibility:Public']],
                 legendNote: ' · no text command', gate: true,
             };
         },

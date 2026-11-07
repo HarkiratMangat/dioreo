@@ -12,6 +12,11 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.11.0 — November 6, 2026
+- **New:** short names work when searching: `shv`, `sx9`, `3lr`, `kba` and more for weapons, and `soh`, `mono`, `tacsup` for attachments.
+- **New (admins):** builds can carry a comment, `/manage gunsmith` takes a build to open straight away, right-click a gunsmith card to edit it, and /autobuild's Adjust sets the build number and comment.
+- **Changed:** a merged build's attachment lists sit closer together.
+
 ## v3.10.0 — November 5, 2026
 - **New (admins):** posts in the followed CODM news channels now become cards for Dioreo's admins, with a button that opens the right /manage box, and next season's draws, events and dates are drafted into the Next Season Draft for review before they go live.
 - **Fixed:** a calendar event with no end date is no longer dropped when the season draft is saved.

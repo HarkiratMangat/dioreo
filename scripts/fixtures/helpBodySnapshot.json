@@ -28972,6 +28972,10 @@
           },
           {
             "type": 10,
+            "content": "`[build]`\n-# Gunsmith only: open one build or option straight away. With **Add** it opens its next option, with **Delete** its confirm"
+          },
+          {
+            "type": 10,
             "content": "`[visibility]`\n-# Only you by default, or everyone in the chat. Not on season titles"
           },
           {
@@ -29081,7 +29085,7 @@
           },
           {
             "type": 10,
-            "content": "-# **Examples**\n-# `/manage draws action:Add Multiple`\n-# `/manage season draft`  Stage next season without touching what's live\n-# `/manage patch-notes visibility:Public`"
+            "content": "-# **Examples**\n-# `/manage draws action:Add Multiple`\n-# `/manage gunsmith mp build:ISO HEMLOCK · 1b`\n-# `/manage season draft`  Stage next season without touching what's live\n-# `/manage patch-notes visibility:Public`"
           },
           {
             "type": 10,

@@ -54,6 +54,9 @@ async function routeManage(interaction) {
         // MANAGE PANEL DISAMBIGUATION SELECT -- shown by handleSearchSubmit when a search query matched more than one item.
         if (interaction.customId.startsWith('mng_pick_')) return await handlePick(interaction);
 
+        // A merged build's saved panel: Edit another option (handlers/manage/loadouts.js handleSavedAction).
+        if (interaction.customId.startsWith('mng_ldeditopt_')) return await loadouts.handleSavedAction(interaction);
+
         // Patch Notes' own "Past Seasons" select -- its options ARE the full list already, so picking one goes straight to its edit modal, no search step.
         if (interaction.customId === 'mng_patchseason_pick') return await patchnotes.handlePatchSeasonPick(interaction);
     }

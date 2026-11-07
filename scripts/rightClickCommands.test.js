@@ -175,13 +175,31 @@ check('at most five message right-clicks per app, Discord\'s cap, with Dioreo Ad
     assert.ok(count(off.publicCommands) <= 5, `admin off: ${count(off.publicCommands)} message commands on one app; Discord allows 5`);
     for (const name of ['Convert Times', 'View Colors']) assert.ok(off.publicCommands.some(c => c.toJSON().name === name && c.toJSON().type === 3), `admin off keeps the public ${name}`);
     const byName = Object.fromEntries(messageCommands.map(c => [c.name, c]));
-    for (const name of ['Add to Patch Notes', 'Autobuild Gunsmith', 'Add to Draws', 'Add to Calendar']) {
+    for (const name of ['Add to Patch Notes', 'Autobuild Gunsmith', 'Add to Draws', 'Add to Calendar', 'Edit Loadout']) {
         assert.deepStrictEqual(byName[name].integration_types, [1], `${name} is admin-only`);
     }
     assert.deepStrictEqual(byName['Convert Times'].integration_types, [0, 1], 'Convert Times is public');
     const registry = fs.readFileSync(path.join(__dirname, '..', 'bot', 'registry.js'), 'utf8');
     for (const name of ['Autobuild Gunsmith', 'Add to Draws', 'Add to Calendar']) assert.ok(registry.includes(`'${name}'`), `${name} is in ADMIN_COMMAND_NAMES`);
     assert.ok(!registry.includes("'Convert Times'"), 'Convert Times stays gateable by a server\'s /admin rules');
+});
+
+// ---- Edit Loadout ----
+const editLoadout = require('../commands/editLoadout');
+check('Edit Loadout reads a /gunsmith card: every option code (shown WEAPON-CODE), the weapon heading and a Build N footer', () => {
+    const card = { components: [{ type: 17, components: [
+        { type: 10, content: '## <:Rank:1> BAL-27\n-# Meta' },
+        { type: 9, components: [{ type: 10, content: '### Attachments' }], accessory: { type: 2, label: 'Copy' } },
+        { type: 10, content: '**Option A** · <a:GunsmithCode:1> `BAL-27-1C2C4A8A9B`' },
+        { type: 10, content: '**Option B** · <a:GunsmithCode:1> `BAL-27-1C2C4A8A9D`\n-# 1\\. Polarfire-S' },
+        { type: 10, content: '-# AR • Build 2 of 3 • Last updated' },
+    ] }] };
+    const id = editLoadout.cardIdentity(editLoadout.messageTexts(card));
+    assert.deepStrictEqual(id.codes, ['1C2C4A8A9B', '1C2C4A8A9D']);
+    assert.strictEqual(id.weapon, 'BAL-27');
+    assert.strictEqual(id.buildNumber, 2);
+    assert.deepStrictEqual(editLoadout.cardIdentity(['## AK117', '-# AR • Build 1 of 1']).codes, [], 'a DMZ card has no code, so the footer is the way in');
+    assert.deepStrictEqual(editLoadout.data.toJSON().integration_types, [1], 'admin-only, on Dioreo Admin');
 });
 
 console.log(failed ? `\n${failed} check(s) FAILED.` : '\nAll right-click command checks passed.');

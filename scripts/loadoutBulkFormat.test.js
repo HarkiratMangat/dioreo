@@ -22,6 +22,26 @@ const BLOCK = [
     '- Crown-H3 Barrel',
 ].join('\n');
 
+check('Comment lines: one comment over several lines, left out keeps the stored one, exported back line by line', () => {
+    const { parsed, errors } = parseBulkLoadoutList('LOCUS | SNIPER\nComment: One shot\nComment: to the chest\n- FMJ');
+    assert.deepStrictEqual(errors, []);
+    assert.strictEqual(parsed[0].description, 'One shot\nto the chest');
+    assert.ok(!parsed[0].defaulted.includes('description'));
+    assert.ok(parseBulkLoadoutList('LOCUS | SNIPER\n- FMJ').parsed[0].defaulted.includes('description'), 'no Comment line keeps the stored comment');
+    const text = formatLoadoutsAsBulkText([{ weaponName: 'LOCUS', category: 'SNIPER', buildName: 'Build 1', attachments: ['FMJ'], description: 'One shot\nto the chest' }]);
+    assert.ok(text.includes('Comment: One shot\nComment: to the chest'), text);
+    assert.strictEqual(parseBulkLoadoutList(text).parsed[0].description, 'One shot\nto the chest', 'an export pastes back with its comment');
+});
+
+check('an export lists a weapon Build 1 first, and writes each option with its own label', () => {
+    const text = formatLoadoutsAsBulkText([
+        { weaponName: 'ISO HEMLOCK', category: 'AR', buildName: 'Build 2', attachments: ['X'] },
+        { weaponName: 'ISO HEMLOCK', category: 'AR', buildName: 'Build 1', attachments: ['Y'], variants: [{ label: 'Fast', attachments: ['Z'], shareCode: '' }] },
+    ]);
+    assert.ok(text.indexOf('Build: Build 1') < text.indexOf('Build: Build 2'), text);
+    assert.ok(text.includes('Build: Build 1b\nLabel: Fast'), text);
+});
+
 check('a full labelled block parses every field', () => {
     const { parsed, errors } = parseBulkLoadoutList(BLOCK);
     assert.deepStrictEqual(errors, []);

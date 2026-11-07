@@ -29,7 +29,27 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.10.0 — 2026-11-05 22:36 EST (#257) — Followed news posts become /manage drafts and a Next Season Draft
+## v3.11.0 — 2026-11-06 20:39 EST (#258) — Gunsmith editing: comments, a build option, right-click Edit Loadout, and /autobuild's build #
+
+### Added
+- **A `Comment:` line** in /manage's Add and Edit Loadout attachments box (everything after it is the build's comment; no line keeps the stored one, an empty line clears it), in bulk paste (`Comment:` key lines) and in exports, which also write an option's own label.
+- **`build:` on `/manage gunsmith mp|dmz`**: autocomplete lists each build, each option of a merged build and "new build of <weapon>"; picking one opens Edit straight away, `action:add` opens the next option or a new build, `action:delete` its confirm (`handlers/manage/loadouts.js` `buildChoices` / `openFromSlash`).
+- **Edit another option** on a merged build's saved panel (`mng_ldeditopt_`), and the search pick list can reopen the option already on screen.
+- **Right-click → Apps → Edit Loadout** (Dioreo Admin, `commands/editLoadout.js`): reads a /gunsmith card's codes (shown `WEAPON-CODE`) and opens /manage's Edit box for that build; a merged build asks which option, a DMZ card goes by the weapon name. Dioreo Admin is now at Discord's five message right-clicks.
+- **Shorthands**: weapons (`shv`, `sx9`, `t63`, `3lr`, `kba`, `mkg`, `xbow`, `deagle`, `mow` …, `utils/search.js` `WEAPON_ALIASES`) and whole-line attachments (`soh`, `mono`, `tacsup`, `quickdraw` …, `utils/attachmentAliases.js`) in /gunsmith, text commands and /manage's attachments box.
+- **/autobuild's Adjust is /manage's five boxes**: weapon + label, category + build # + code, attachments + `Comment:`, a Mode dropdown, badges (`parseAdjustFields`). A build # places the saved build through the op core (`placeBuild`): a number swaps with the build there, `2b` joins Build 2 as an option, committed as the admin who pressed Save; a bad number is a card warning and a refused Save (`badbuild`).
+- **`scripts/auditLoadouts.js`**: a read-only audit of every build (codes, duplicates, numbering, names, class, attachment counts, catalogue names, slot labels, badges, placeholders, `--pictures`). Prod 2026-11-06 20:39 EST: 162 builds, 0 findings after the catalogue learned eight missing names.
+
+### Changed
+- The catalogue warning on an Edit asks only about names the edit adds, and a bulk paste skips names already saved on that weapon.
+- Export Up To 5 prefers an exact weapon name.
+- A merged build's option lists sit close in small text (the list dot is escaped).
+- `.claude/settings.local.json`: one-off prod scripts under `local/project/` skip the auto-mode check (Harkirat's pick, 2026-11-06 17:52 EST), with `..` refused.
+
+### Tests
+- `scripts/loadoutForm.test.js`, `loadoutBulkFormat.test.js`, `manageLoadoutHandlers.test.js`, `weaponSearch.test.js`, `autobuildDmz.test.js`, `rightClickCommands.test.js` and the new `auditLoadouts.test.js`.
+
+## v3.10.0 — 2026-11-05 22:36 EST (#257 · `55902c3`) — Followed news posts become /manage drafts and a Next Season Draft
 
 ### Added
 - **News-channel triage.** Dioreo Admin reads the followed news channels in dioreoland (#leaks, #official-codm-news). A free filter keeps about two thirds of posts from the AI; Gemini 3.8 Flash on Flex PayGo with low thinking reads the rest, capped at 60 reads a day. Each post that announces a Global draw, event, mode, season or patch becomes one card in a private channel (`NEWS_CHANNEL`).

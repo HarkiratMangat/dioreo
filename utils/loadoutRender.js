@@ -230,7 +230,8 @@ function optionCards(build) {
     return Array.from({ length: variantCount(build) }, (_, i) => {
         const v = variantView(build, i);
         const code = v.mode !== 'DMZ' && v.shareCode ? ` · ${emojis.gunsmithCode} \`${gunsmithCodeText(build, v.shareCode)}\`` : '';
-        const text = { type: 10, content: `**Option ${String.fromCharCode(65 + i)}**${code}\n${orderedAttachments(v).map((att, n) => `-# ${n + 1}. ${att}`).join('\n')}` };
+        // `1\\.` with the dot escaped (Harkirat, 2026-11-06 11:47 EST, a phone screenshot of SKS's options "so spaced out"): `-# 1. X` reads as subtext holding an ordered list, so every line became a list of its own, drawn at full size with a list's gap above and below. Escaped, the number is plain text and the five lines sit close in small text.
+        const text = { type: 10, content: `**Option ${String.fromCharCode(65 + i)}**${code}\n${orderedAttachments(v).map((att, n) => `-# ${n + 1}\\. ${att}`).join('\n')}` };
         return hasRealImage(v) ? { type: 9, components: [text], accessory: { type: 11, media: { url: buildImageUrl(v.imageKey, pictureVersion(v)) } } } : text;
     });
 }
