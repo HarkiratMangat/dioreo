@@ -105,8 +105,8 @@ async function weaponView(weaponKey, note = null) {
     for (const b of builds) {
         const opts = (b.variants || []).length;
         const words = badgeWords(b);
-        const head = `**${b.buildName}**${b.label ? ` · ${b.label}` : ''}${words.length ? `  ${words.join('  ')}` : ''}`;
-        const sub = `-# ${emojis.gunsmithCode} \`${b.shareCode || 'no code'}\` · ${(b.attachments || []).length} attachments${opts ? ` · ${opts + 1} options` : ''}`;
+        const head = `**${b.buildName}**`;
+        const sub = `-# ${[b.label, words.join(' '), opts ? `${opts + 1} options` : null].filter(Boolean).join(' · ') || `${(b.attachments || []).length} attachments`}`;
         components.push({ type: 9, components: [text(`${head}\n${sub}`)], accessory: ebtn(`card|${b._id}|0`, 'Open', emojis.edit) });
     }
     components.push(BIG(), row(ebtn(`newb|${weaponKey}`, 'New Build', emojis.mngAdd, 3)), row(ebtn(`cls|${w.category}`, classWord(w.category), emojis.returnArrow), ebtn('page', 'Home', emojis.database)));
@@ -447,9 +447,14 @@ async function keyInfo(key) {
     const v = opt ? variantView(d, opt) : d;
     const optCount = 1 + (d.variants || []).length;
     const label = opt !== null ? (opt ? d.variants[opt - 1].label : d.label) : d.label;
+    const { buildNumberOf } = require('../utils/loadoutForm');
+    const n = buildNumberOf(d.buildName);
+    const tag = n === null ? d.buildName : (opt !== null && optCount > 1 ? require('../utils/loadoutOptions').optionTag(n, opt) : String(n));
+    // His 13:26 EST: the title must not wrap on a phone, and a code means nothing on a build with several options. So the title is the weapon and its build number only; the label, badges and option count sit on the small line, and no code is shown.
     return {
         icon: classIcon(d.category),
-        title: `**${d.weaponName}** · ${d.buildName}${opt !== null && optCount > 1 ? ` · Option ${L(opt)}` : ''}${label ? ` · ${label}` : ''}`,
+        title: `**${d.weaponName}** · ${tag}`,
+        small: [label, badgeWords(d).join(' '), opt === null && optCount > 1 ? `${optCount} options` : null].filter(Boolean).join(' · ') || `${(v.attachments || []).length} attachments`,
         plain: `${d.weaponName} · ${d.buildName}${opt !== null && optCount > 1 ? ` ${L(opt)}` : ''}${label ? ` · ${label}` : ''}`,
         badges: badgeWords(d).join('  '),
         sub: `\`${v.shareCode || 'no code'}\` · ${(v.attachments || []).length} attachments${opt === null && optCount > 1 ? ` · ${optCount} options` : ''}`,
@@ -478,7 +483,7 @@ function tickView(token, note = null) {
         const i = t.info.get(key);
         if (!i) continue;
         const mark = t.ticked.has(key) ? emojis.check : emojis.smallDot;
-        lines.push(`${mark} ${i.icon} ${i.title}${i.badges ? `  ${i.badges}` : ''}\n-# ${emojis.blank}${emojis.blank} ${i.sub}`);
+        lines.push(`${mark} ${i.icon} ${i.title}${i.small ? `\n-# ${emojis.blank}${emojis.blank} ${i.small}` : ''}`);
     }
     let listText = lines.join('\n');
     if (listText.length > 3900) listText = `${listText.slice(0, 3850)}\n-# …`;
