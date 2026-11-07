@@ -29,6 +29,13 @@ function disableAllComponents(components) {
     });
 }
 
+// What an idle panel becomes (Harkirat, 2026-11-06 23:18 EST: "remove all the outside rows on timeout. leave the buttons/dropdowns inside the panel as disabled/greyed out"): every top-level action row outside the panel is dropped, and everything left is disabled. A row of link buttons only stays, since a link never goes stale (see isLinkButton). A message made of action rows alone (no panel) keeps them, disabled, so it never edits down to nothing.
+function expiredComponents(components) {
+    const hasPanel = components.some(c => c && c.type !== 1);
+    const kept = hasPanel ? components.filter(c => c?.type !== 1 || (c.components || []).every(isLinkButton)) : components;
+    return disableAllComponents(kept);
+}
+
 // Call once per render of a passively-expiring panel (initial command AND every button/select re-render), right after the message is sent/edited. `components` must be the EXACT array just sent -- it's what gets cloned-and-disabled if the timer ever actually fires. `timeoutMs` (2026-10-20 13:57 EDT, bulk /autobuild): a panel may idle out sooner or later than the bot-wide 10 minutes, but never past the 15-minute life of the token that has to grey it out.
 function schedulePanelExpiry(interaction, messageId, components, timeoutMs = IDLE_TIMEOUT_MS) {
     const existing = pendingTimers.get(messageId);
@@ -41,7 +48,7 @@ function schedulePanelExpiry(interaction, messageId, components, timeoutMs = IDL
             // `allowed_mentions` with nothing allowed: an edit that names no rules gets Discord's default, which re-applies every <@id> in the message as a ping, so an expired /colors panel lit up yellow for the person it names (Harkirat, 2026-10-25 12:27 EDT: "don't have that yellow ping highlight (it happens when the message expires)"). The mention stays clickable; only the ping goes. Every expiring panel goes through here. A text command's reply (utils/textCommands/adapter.js) is an ordinary message with no interaction token, so it is edited with the bot token instead, which never expires.
             const route = interaction.__dioreoText ? Routes.channelMessage(interaction.channelId, messageId) : Routes.webhookMessage(applicationId, token, '@original');
             await client.rest.patch(route, {
-                body: { components: disableAllComponents(components), allowed_mentions: { parse: [] } }
+                body: { components: expiredComponents(components), allowed_mentions: { parse: [] } }
             });
         } catch (err) {
             // Best-effort UX nicety, not a critical path -- the token may already be dead (bot restarted since this render, or the message was deleted), and there's no user to notify either way. Log and move on rather than let this throw into an unhandled rejection from inside a bare setTimeout callback. The two expected outcomes are logged as info, not errors (code-housekeeping, 2026-11-04 13:40 EST): prod's log counted 5 of these as errors in 10 days, every one Unknown Message, which inflates vmstatus.sh's ERRORS line for nothing. 10008 = the message was deleted, 50027 = the interaction token expired.
@@ -74,4 +81,4 @@ function hasInteractiveComponents(components) {
     });
 }
 
-module.exports = { schedulePanelExpiry, cancelPanelExpiry, hasInteractiveComponents, disableAllComponents, IDLE_TIMEOUT_MS };
+module.exports = { schedulePanelExpiry, cancelPanelExpiry, hasInteractiveComponents, disableAllComponents, expiredComponents, IDLE_TIMEOUT_MS };

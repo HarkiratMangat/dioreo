@@ -220,3 +220,23 @@ run().then(() => {
     }
     console.log(`✅ passiveExpiry (bot-wide extension): ${checks.length} cases passed`);
 });
+
+// The idle edit drops every action row outside the panel and greys out what is inside (Harkirat, 2026-11-06 23:18 EST). A link-only row stays; a message of rows alone keeps them, disabled.
+{
+    const assert = require('assert');
+    const { expiredComponents } = require('../utils/passiveExpiry');
+    const panel = { type: 17, components: [{ type: 10, content: 'x' }, { type: 1, components: [{ type: 2, style: 2, custom_id: 'in' }] }] };
+    const out = expiredComponents([
+        panel,
+        { type: 1, components: [{ type: 2, style: 2, custom_id: 'search' }] },
+        { type: 1, components: [{ type: 3, custom_id: 'pick', options: [] }] },
+        { type: 1, components: [{ type: 2, style: 5, url: 'https://dioreo.app', label: 'Website' }] },
+    ]);
+    assert.strictEqual(out.length, 2, 'the panel and the link-only row are left');
+    assert.strictEqual(out[0].components[1].components[0].disabled, true, 'the button inside the panel is greyed out');
+    assert.strictEqual(out[1].components[0].url, 'https://dioreo.app', 'a link-only row stays, live');
+    assert.strictEqual(out[1].components[0].disabled, undefined);
+    const rowsOnly = expiredComponents([{ type: 1, components: [{ type: 2, style: 2, custom_id: 'a' }] }]);
+    assert.deepStrictEqual([rowsOnly.length, rowsOnly[0].components[0].disabled], [1, true], 'rows alone are kept, disabled');
+    console.log('✅ passiveExpiry: the idle edit drops the outside rows and greys out the panel');
+}
