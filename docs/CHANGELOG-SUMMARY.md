@@ -12,6 +12,9 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.13.0 — November 7, 2026
+- **New (admins):** `/manage gunsmith mp` and `dmz` are one panel: search a build by name and number (`fss 1b`), browse by class, select many builds to edit as text, step through them, delete or export them, and go straight to a build from the slash command.
+
 ## v3.12.1 — November 7, 2026
 - **Fixed (admins):** news cards read "today's daily reset" as the next reset, and no longer call a draw that is new this season a returning one.
 
