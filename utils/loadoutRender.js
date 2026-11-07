@@ -242,6 +242,7 @@ function optionCards(build) {
 //
 // ⚠️ WHAT IS DELIBERATELY NOT IN HERE: the Container (type 17) wrapper, the trailing divider, the pagination/Copy row, the browse dropdown and the Share button. Every one of those is a LIVE control whose custom_id routes to handlers/loadouts.js and resolves an index against a query only /gunsmith has made -- embedded in a change panel they would either mislead or misfire, and the Container would nest inside another Container. buildLoadoutCard() below still owns all of it, so its output is byte-identical to before (scripts/loadoutRenderSnapshot.test.js is the proof and must not move). `copyIds` (2026-10-20 12:12 EDT, Harkirat: "move the copy attachment and copy code buttons so they're inline with their respective sections as accessory buttons"): when given, the Attachments and Gunsmith Code headings become Sections with their Copy button as the accessory. Only buildLoadoutCard passes it; a change panel draws the body with no live controls, exactly as before. A "Coming Soon" placeholder (scripts/createPlaceholderLoadouts.js): a weapon whose only attachment line is the coming-soon note has no real build yet. Lists never show it, and opening it draws the missing-weapon card (Harkirat, 2026-10-24 09:45 EDT: "in lists, if a weapon is missing, do not show it in the list. if an image only is missing, that's fine to include").
 function isPlaceholderBuild(build) {
+    if (build && build.noAttachments) return false; // a weapon with no attachments at all, such as the Nail Gun (models/Loadout.js)
     return !(build.attachments || []).some(a => a && !/^coming soon/i.test(String(a).trim()));
 }
 
@@ -321,10 +322,12 @@ function buildLoadoutCardBody(build, { index = 0, total = 1, hideBadges = false,
 
     // A build with options shows each option in full (optionCards); the attachments, code and picture below are a single build's.
     if (cards) containerComponents.push(...optionCards(build));
+    // A weapon with no attachments and no gunsmith code (the Nail Gun, models/Loadout.js `noAttachments`) says so in one quiet line instead of an empty list and a code that would read "Build 1".
+    else if (activeBuild.noAttachments) containerComponents.push({ type: 10, content: '-# *This weapon has no attachments or gunsmith code.*' });
     else containerComponents.push({ type: 10, content: `### Attachments\n${attachmentLines}` });
 
     // Prefers the real in-game Gunsmith code (shareCode) when present, falling back to buildName — see models/Loadout.js for why these are two separate fields. DMZ builds never have a real code (confirmed by Harkirat — the DMZ Gunsmith screen doesn't expose one the way MP's does), so this whole section (and the Copy Code button below) is skipped entirely for DMZ rather than showing the buildName as if it were a real copyable code.
-    const codeText = activeBuild.mode !== 'DMZ' && gunsmithCodeText(activeBuild);
+    const codeText = activeBuild.mode !== 'DMZ' && !activeBuild.noAttachments && gunsmithCodeText(activeBuild);
     // The code on its heading's line, his format (2026-10-25 15:38 EDT): "### Gunsmith Code: `1C2B4A8B9A`".
     if (codeText && !cards) containerComponents.push({ type: 10, content: `### Gunsmith Code: \`${codeText}\`` });
 
@@ -438,8 +441,9 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false,
     const outerComponents = [containerPayload, { type: 1, components: [
         // Search · Attachments · Code, in that order, one word each (Harkirat, 2026-10-25 23:18 EDT: "search... -> Search", "copy attachments -> Attachments", "copy code -> Code", and Attachments back on the MP card). DMZ has no Gunsmith code, so it stops at Attachments.
         { type: 2, style: 2, label: 'Search', custom_id: `gsb~search~${mode}`, emoji: emojis.parseEmoji(emojis.gunsmithSearch) },
-        { type: 2, style: 2, label: 'Attachments', custom_id: copyAttCustomId, emoji: emojis.parseEmoji(emojis.copyAttachments) },
-        ...(mode === 'DMZ' ? [] : [{ type: 2, style: 1, label: 'Code', custom_id: copyCustomId, emoji: emojis.parseEmoji(emojis.gunsmithCode) }]),
+        // A weapon with no attachments and no code (the Nail Gun) has nothing to copy, so it keeps Search only (his 2026-11-06 22:55 EST).
+        ...(activeBuild.noAttachments ? [] : [{ type: 2, style: 2, label: 'Attachments', custom_id: copyAttCustomId, emoji: emojis.parseEmoji(emojis.copyAttachments) }]),
+        ...(mode === 'DMZ' || activeBuild.noAttachments ? [] : [{ type: 2, style: 1, label: 'Code', custom_id: copyCustomId, emoji: emojis.parseEmoji(emojis.gunsmithCode) }]),
     ] }];
     const scope = browse ? require('./loadoutScopes').parseScopeToken(browse.scopeToken) : null;
     const weaponSelectId = browse ? `gsb~jump~${browse.scopeToken}` : `${idPrefix}browse`;

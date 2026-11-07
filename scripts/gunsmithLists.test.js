@@ -100,6 +100,17 @@ assert.deepStrictEqual(rows[3].components.map(b => [b.label, b.style, b.custom_i
 assert.deepStrictEqual(lc.at(-2), { type: 14, spacing: 2, divider: true }, 'a divider above that section');
 assert.ok(!JSON.stringify(L.buildLandingPage(['AR']).components).includes('gsb~cls~SMG'), 'a class with no build gets no button');
 console.log('  ✓ the MP Gunsmiths landing: title, classes 4 then 3, lists, Search and Submit');
+// A weapon with no attachments and no code (the Nail Gun, models/Loadout.js noAttachments, his 2026-11-06 22:55 EST): a real build, its card says so in one line, and only Search sits under it.
+{
+    const { isPlaceholderBuild, buildLoadoutCard } = require('../utils/loadoutRender');
+    const nail = { weaponKey: 'nailgun', weaponName: 'NAIL GUN', category: 'SECONDARIES', mode: 'MP', buildName: 'Build 1', attachments: [], noAttachments: true, shareCode: '', imageKey: 'NAIL-GUN-1', lastUpdated: new Date() };
+    assert.strictEqual(isPlaceholderBuild(nail), false, 'never a Coming Soon placeholder');
+    assert.strictEqual(isPlaceholderBuild({ attachments: [] }), true, 'an empty build without the flag still is one');
+    const nc = JSON.stringify(buildLoadoutCard([nail], 0, { color: 1, idPrefix: 'mp' }).components);
+    assert.ok(nc.includes('This weapon has no attachments or gunsmith code') && !nc.includes('### Attachments') && !nc.includes('Gunsmith Code:'), 'one quiet line, no list, no code');
+    assert.ok(nc.includes('gsb~search~MP') && !nc.includes('copyatt') && !nc.includes('mpcopy_'), 'Search only, no Attachments or Code button');
+    console.log('  ✓ a no-attachment weapon: real build, one line, Search only');
+}
 // A landing class button reaches the loadouts handler and opens that class's MP browse in place (handlers/loadouts.js `gsb~cls~`).
 (async () => {
     const gPath = require.resolve('../commands/gunsmith');

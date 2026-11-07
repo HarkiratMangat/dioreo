@@ -154,7 +154,7 @@ function buildLandingPage(categories, { isEphemeral = false, season = null } = {
 
 // Every class with at least one real MP build, for the landing's buttons.
 async function buildCategories() {
-    const builds = await require('../models/Loadout').find({ mode: 'MP' }).select('category attachments').lean();
+    const builds = await require('../models/Loadout').find({ mode: 'MP' }).select('category attachments noAttachments').lean();
     return [...new Set(builds.filter(b => !isPlaceholderBuild(b)).map(b => b.category))];
 }
 

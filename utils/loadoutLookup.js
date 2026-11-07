@@ -60,7 +60,7 @@ async function missingWeapons(category) {
     if (!category) return [];
     const { normKey } = require('./catalogue');
     const CatalogueItem = require('../models/CatalogueItem');
-    const built = new Set((await Loadout.find({ mode: 'MP', category }).select('weaponName attachments').lean()).filter(b => !isPlaceholderBuild(b)).map(b => normKey(b.weaponName)));
+    const built = new Set((await Loadout.find({ mode: 'MP', category }).select('weaponName attachments noAttachments').lean()).filter(b => !isPlaceholderBuild(b)).map(b => normKey(b.weaponName)));
     return (await CatalogueItem.find({ kind: 'weapon', category, dmzOnly: { $ne: true } }).lean())
         .filter(w => !built.has(w.key || normKey(w.name)))
         .sort((a, b) => a.name.localeCompare(b.name))
@@ -71,7 +71,7 @@ async function missingWeapons(category) {
 async function missingWeaponsAll() {
     const { normKey } = require('./catalogue');
     const CatalogueItem = require('../models/CatalogueItem');
-    const built = new Set((await Loadout.find({ mode: 'MP' }).select('weaponName attachments').lean()).filter(b => !isPlaceholderBuild(b)).map(b => normKey(b.weaponName)));
+    const built = new Set((await Loadout.find({ mode: 'MP' }).select('weaponName attachments noAttachments').lean()).filter(b => !isPlaceholderBuild(b)).map(b => normKey(b.weaponName)));
     return (await CatalogueItem.find({ kind: 'weapon', dmzOnly: { $ne: true } }).lean())
         .filter(w => !built.has(w.key || normKey(w.name)))
         .map(w => ({ name: w.name.toUpperCase(), category: w.category || '?' }))
@@ -148,7 +148,7 @@ function searchModal(mode, visibility = null) {
 
 // Every weapon a typed name could mean, one row per weapon, from the same two places the /gunsmith dropdown reads (utils/autocomplete.js): the builds, a weapon whose only builds are "Coming Soon" placeholders marked noBuild, and for MP the CODM catalogue's weapons with no build at all. A catalogue weapon's weaponKey is its NAME, as the dropdown sends it, which resolveWeapon turns into the No build yet card. Text commands ask through commands/gunsmith.js textWeapon (2026-10-29 11:05 EDT).
 async function weaponCandidates(mode) {
-    const builds = await Loadout.find({ mode }).select('weaponName weaponKey category attachments').lean();
+    const builds = await Loadout.find({ mode }).select('weaponName weaponKey category attachments noAttachments').lean();
     const byKey = new Map();
     for (const b of builds) {
         const prev = byKey.get(b.weaponKey);
