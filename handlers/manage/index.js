@@ -311,6 +311,8 @@ async function routeManage(interaction) {
 // Returns TRUE when this panel owns the interaction (and has now handled it), FALSE when it does not -- the same contract every handlers/*.js module follows, so the router dispatches them uniformly.
 async function handleManageInteraction(interaction) {
     if (!ownsCustomId(interaction.customId)) return false;
+    // The rehauled /manage gunsmith panel (handlers/manage/gunsmith/, 2026-11-07 14:13 EST) owns its own `mng_gs|` ids, behind the same router admin lock as every `mng_` id.
+    if (await require('./gunsmith').handleGunsmithInteraction(interaction)) return true;
     await routeManage(interaction);
     return true;
 }

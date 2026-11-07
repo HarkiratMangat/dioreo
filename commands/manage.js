@@ -910,6 +910,18 @@ function buildManageCommandData() {
         if (withBuild) sub.addStringOption(build);
         return sub.addStringOption(visibility);
     };
+    // /manage gunsmith mp|dmz go straight to a thing (the gunsmith rehaul, 2026-11-07 14:13 EST; his 13:40 EST ask for slash options that skip walking through the panel). build: one build (autocomplete), do: what to do with it, builds: several as a Select list, weapon: / class: their pages; a target plus do: acts at once (handlers/manage/gunsmith/index.js openFromSlash). Their action: is gone: do: covers every job it had. visibility stays LAST.
+    const gunsmith = (name, description) => sub => sub.setName(name).setDescription(description)
+        .addStringOption(o => o.setName('build').setDescription('Go to one build: a weapon, a number or a label, e.g. fss 1b').setAutocomplete(true))
+        .addStringOption(o => o.setName('do').setDescription('What to do. With build: or builds: it happens right away').addChoices(
+            { name: 'Add Build', value: 'add' }, { name: 'Edit', value: 'edit' }, { name: 'Move', value: 'move' }, { name: 'Add Option', value: 'newopt' },
+            { name: 'Delete', value: 'delete' }, { name: 'Paste Builds', value: 'paste' }, { name: 'Export', value: 'export' }, { name: 'Guide', value: 'guide' }))
+        .addStringOption(o => o.setName('builds').setDescription('Several builds, comma-separated: fss 1b, static, smg'))
+        .addStringOption(o => o.setName('weapon').setDescription('Go to a weapon and all its builds').setAutocomplete(true))
+        .addStringOption(o => o.setName('class').setDescription('Go to a class and pick a weapon').addChoices(
+            { name: 'Assault', value: 'AR' }, { name: 'Sniper', value: 'SNIPER' }, { name: 'LMG', value: 'LMG' }, { name: 'SMG', value: 'SMG' },
+            { name: 'Shotgun', value: 'SHOTGUN' }, { name: 'Marksman', value: 'MARKSMAN' }, { name: 'Secondary', value: 'SECONDARIES' }))
+        .addStringOption(visibility);
     return new SlashCommandBuilder()
         .setName('manage')
         // Trimmed 2026-07-18 (mobile-width audit, v2 quick-wins batch) -- the old 68-char version truncated on Discord mobile's command picker row.
@@ -921,8 +933,8 @@ function buildManageCommandData() {
         .addSubcommand(section('calendar', 'Calendar events'))
         .addSubcommand(section('patch-notes', 'Season patch notes'))
         .addSubcommandGroup(group => group.setName('gunsmith').setDescription('Gunsmith builds')
-            .addSubcommand(section('mp', 'Multiplayer builds', { withBuild: true }))
-            .addSubcommand(section('dmz', 'DMZ builds', { withBuild: true })))
+            .addSubcommand(gunsmith('mp', 'Multiplayer builds'))
+            .addSubcommand(gunsmith('dmz', 'DMZ builds')))
         .addSubcommandGroup(group => group.setName('season').setDescription('Season settings')
             .addSubcommand(sub => sub.setName('titles').setDescription('Season titles and deadlines'))
             .addSubcommand(section('draft', 'Stage the next season')))
@@ -987,9 +999,8 @@ module.exports = {
         // Stage 3 (2026-08-14 18:04 EDT) -- action: opens one of the section's own actions directly. Must run BEFORE deferReply(): a kind:'modal' entry's run() calls showModal(), which has to be the interaction's FIRST response (same constraint season_titlesdeadlines works around above). Mirrors handlers/manage/index.js's mng_act_ button dispatch exactly -- resolveAction() is the one choke point (it also re-checks the per-page permission just verified above, so a scoped admin can't reach another section's action by typing its id directly) and run() is trusted to manage its OWN response completely: kind:'file' calls reply(), kind:'view' defers itself, kind:'modal' shows a modal. Do NOT deferReply() before calling it -- a kind:'file' entry's run() calls interaction.reply(), which throws if this has already acknowledged.
         let actionFallbackNote = '';
         const actionId = interaction.options.getString('action');
-        // build: on /manage gunsmith mp|dmz opens that build or option directly, before any deferral (it shows a pop-up or the delete confirm).
-        const buildValue = (section === 'loadouts_mp' || section === 'loadouts_dmz') ? interaction.options.getString('build') : null;
-        if (buildValue) return await require('../handlers/manage/loadouts').openFromSlash(interaction, section, buildValue, actionId);
+        // /manage gunsmith mp|dmz is the rehauled panel (handlers/manage/gunsmith/, 2026-11-07 14:13 EST): its options open a build, a list, a page or a pop-up, before any deferral here.
+        if (section === 'loadouts_mp' || section === 'loadouts_dmz') return await require('../handlers/manage/gunsmith').openFromSlash(interaction, section === 'loadouts_dmz' ? 'DMZ' : 'MP');
         if (actionId) {
             const { resolveAction, DENIAL_MESSAGE } = require('../utils/manageActions');
             const resolved = await resolveAction(section, actionId, interaction.user.id);

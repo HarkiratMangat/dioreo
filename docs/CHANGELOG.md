@@ -29,7 +29,31 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.12.1 — 2026-11-07 14:13 EST (#260) — News triage reads "today's daily reset" as the next reset, and stops calling this season's new draws returning
+## v3.13.0 — 2026-11-07 15:59 EST (#261) — /manage gunsmith mp and dmz rehauled: one panel to search, browse, select, edit, paste and export builds
+
+### Added
+- **A new `/manage gunsmith mp` and `dmz` panel** (`handlers/manage/gunsmith/`), one message that changes in place: a home page with Search Builds, Add Build, the seven classes, Paste Builds, Select Builds, Export and Guide; a class page with its weapons; a weapon page with every build; and one build card (the /gunsmith card) with an option picker on a merged build and Edit, Move, Add Option and Delete. The section dropdown sits under the home page.
+- **Search Builds** matches every typed word, and a word shaped like a build tag must equal the build's own: `fss 1b` opens Option B, `kilo 141 2` Build 2, while a number in a weapon's name (KILO 141) stays part of the name.
+- **Select Builds**: typed names, builds or classes plus quick picks (all builds, each class, Meta, Best, Top 3, Top 5, HM, Toxic, Ass; DMZ's ranks by range), as a union. The list is 10 two-line rows a page, a dropdown selects and unselects, Select All N and Clear, and the selection is kept across pages and restarts (`models/ManageSelection.js`, no user id, deleted after 24 hours).
+- **Edit N** opens the selected builds as paste text in one pop-up (5 boxes of 4,000 characters, about 90 builds); the preview lists what is added, what changed and how, and what is unchanged, and Save sends only the blocks that change something.
+- **Expand View** steps through the selected builds one card at a time; Edit saves each as it goes, with its Revert, and Finish lists which were edited.
+- **Delete N** confirms with the list, deletes in one change, and answers with Revert.
+- **Paste Builds** shows the same preview before Save, and Edit Paste keeps the text.
+- **One Export pop-up**: names and quick picks as a union, a file or a DM, what each block carries (code, label, badges, comment, image key, mode) and how a merged build is written (options together, each option as its own build, or the first option only).
+- **Slash options** on `/manage gunsmith mp|dmz`: `build:` (autocomplete, with `＋ New build` for the weapon typed), `do:` (Add Build, Edit, Move, Add Option, Delete, Paste Builds, Export, Guide), `builds:` (a comma list, opened as a Select list), `weapon:` and `class:`. A target with `do:` acts at once.
+
+### Changed
+- **Every save goes through the existing code**, unchanged: Add, Add Option and New Build open the real Add pop-up; Edit, Move and Expand View's Edit save through `editLoadout` with a preset; Paste and Edit N through `bulkAddLoadouts`; Delete through `deleteItem`. The ChangeLog, Revert, and the code, catalogue and picture warnings are what they were.
+- **Every action re-checks its own tier** with `resolveAction` before it opens a pop-up or writes, and a delete's Yes re-checks the destructive tier.
+- `/manage gunsmith mp|dmz` no longer takes `action:`; `do:` covers it. The section dropdown's MP and DMZ entries open the new panel. Old panels' buttons and pop-ups still work.
+
+### Removed
+- The throwaway `/mockmanage` mock-up the plan was drawn from.
+
+### Tests
+- `scripts/manageGunsmith.test.js`: the search rules, Edit N's packing, a Select page at 134 builds inside Discord's limits, quick picks, Export's choices. `scripts/manageActions.test.js` knows the gunsmith options.
+
+## v3.12.1 — 2026-11-07 14:13 EST (#260 · `3d386ee1`) — News triage reads "today's daily reset" as the next reset, and stops calling this season's new draws returning
 
 ### Fixed
 - **"Today's daily reset" is the next 00:00 UTC after the post** (`utils/newsTriage/resolve.js` `nextReset`). #leaks posted "Sapphire Winter Draw will be coming on today's daily reset" at 17:53 UTC on Nov 7; it was read as the post's own UTC day, Nov 7, so the card said the bot's correct Nov 8 had changed. Only a phrase that is nothing but the reset is read this way, "today's update", "daily refresh" and "tonight" count too, a post up to two hours after a reset means the one that just passed, and a written date beside the reset still wins ("the daily reset on November 12" no longer reads as today).

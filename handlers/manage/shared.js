@@ -252,6 +252,9 @@ async function renderManagePage(interaction) {
         return await interaction.showModal(manageCommand.buildWipeSeasonModal());
     }
 
+    // The two gunsmith sections are the rehauled panel (handlers/manage/gunsmith/, 2026-11-07 14:13 EST), which carries this same dropdown under it.
+    if (targetPage === 'loadouts_mp' || targetPage === 'loadouts_dmz') return require('./gunsmith').renderHome(interaction, targetPage === 'loadouts_dmz' ? 'DMZ' : 'MP');
+
     await interaction.deferUpdate();
     const { sendV2Payload } = require('../../utils/sendV2Payload');
 

@@ -312,6 +312,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-11-06 20:46 EST — Gunsmith editing grows up: comments, a build option, right-click Edit Loadout, and /autobuild's build # (v3.11.0)
 - 2026-11-07 00:00 EST — A front door for the gunsmith, Title Case everywhere, and an emoji that had quietly cloned itself (v3.12.0)
 - 2026-11-07 14:13 EST — Whose "today", and whose "new": two words the news card read from the wrong side (v3.12.1)
+- 2026-11-07 15:59 EST — /manage gunsmith rehauled from a mock-up he clicked through (v3.13.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -5023,6 +5024,18 @@ The date came from a #leaks post at 12:53 PM Toronto time: "will be coming on to
 "Returning" came from the draw index. The rule said any draw the index knows is returning. That was true when the index held only old draws, but since 2026-11-01 a draw saved into New gets added to the index with the season it was saved in. So the more complete the index became, the more new draws the rule called returning. The index already stored the season each draw first ran in. The rule just never checked it.
 
 Both bugs are the same kind of mistake: a rule written against what the data looked like when it was built, which stayed in place after the data changed underneath it.
+
+## 2026-11-07 15:59 EST — /manage gunsmith rehauled from a mock-up he clicked through (v3.13.0)
+
+Harkirat asked for the whole of `/manage` to be rehauled, one section at a time, starting with gunsmith MP, and set a rule for the session: plan and discuss first, nothing built until he approved the plan. His complaint about the old panel was that nothing about it felt refined, intuitive, quick or consistent.
+
+**A throwaway mock-up did the planning.** Instead of describing screens, a dev-only `/mockmanage` command ran the proposed flow against the dev database, writing nothing. He clicked through it, and most of the plan's details came from what he saw: the first design was rejected as bare, so it was rebuilt in the house style of the MP Gunsmiths landing. Searching `fss 1b` found nothing, which led to the search rule (every word must appear, and a build tag must equal the build's own). His "edit 3 should open them as a large text field" became Edit N, and his idea of paging through builds became Expand View. He also asked for "select" instead of "tick", for list rows that never wrap on a phone and show no codes, and for named icons. Once he called it fine, the plan was written down and he approved it.
+
+**The real panel is a new layer over the old save code.** Nothing that writes was copied: every save hands its values to the existing handlers (`editLoadout` with a preset, `bulkAddLoadouts`, `deleteItem`), so the ChangeLog, Revert and the code, catalogue and picture warnings behave exactly as before. State that has to outlive a click (Select's list, Edit N's text) lives in a small `ManageSelection` collection that stores no user id, so the privacy policy did not change.
+
+**What the checks caught.** A probe built every view at 134 builds and confirmed each one stays under Discord's 40 components and 4,000 characters, and that one Edit pop-up holds about 90 builds. Round-tripping every build through Edit N turned up a parser quirk: a stored "Quickdraw" is read back as "Quick Draw". The phone check, run in DevTools at iPhone 16 size, found two layout problems (Finish wrapping onto its own line, and a thumbnail squeezing attachment names onto two lines) plus a `＋ New build` suggestion that offered the wrong KILO.
+
+**Lesson:** a mock-up he can click finds what a written plan would not, because his feedback arrives on things he can see. The one miss was mine: testing in the bot's DM instead of #testing-spam, which he corrected.
 
 # Part B — Lessons Ledger (thematic)
 

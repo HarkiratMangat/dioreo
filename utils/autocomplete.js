@@ -44,10 +44,9 @@ async function runAutocomplete(interaction) {
         // Same admin gate execute() itself opens with, checked here too so a non-admin never even sees the action names -- an autocomplete interaction carries no customId, so the router's prefix guard doesn't cover this route the way it covers buttons/selects/modals. Every admin sees every page's actions (the permission restructure, 2026-10-19 19:25 EDT): picking one they lack the tier for gets the same warning the button would.
         const { hasCommandAccess } = require('../utils/adminAccess');
         if (!(await hasCommandAccess(interaction.user.id, 'manage'))) return await interaction.respond([]);
-        // build: on /manage gunsmith mp|dmz lists that mode's builds, each option of a merged build, and a new build per weapon (2026-11-06 11:05 EST).
-        if (interaction.options.getFocused(true)?.name === 'build') {
-            if (page !== 'loadouts_mp' && page !== 'loadouts_dmz') return await interaction.respond([]);
-            return await interaction.respond(await require('../handlers/manage/loadouts').buildChoices(page, focusedValue));
+        // build: and weapon: on /manage gunsmith mp|dmz (the gunsmith rehaul, 2026-11-07 14:13 EST): build: lists builds, each option of a merged build, and `＋ New build` for the weapon typed; weapon: lists weapons. handlers/manage/gunsmith/index.js autocomplete.
+        if (page === 'loadouts_mp' || page === 'loadouts_dmz') {
+            return await require('../handlers/manage/gunsmith').autocomplete(interaction, page === 'loadouts_dmz' ? 'DMZ' : 'MP');
         }
         const { listSlashActions } = require('../utils/manageActions');
         const filtered = listSlashActions(page)
