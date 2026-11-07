@@ -87,6 +87,19 @@ for (const token of ['MP.*.meta', 'MP.*.best', 'MP.*.top', 'MP.*.hm']) {
     assert.ok(cardSelects.slice(1).some(x => x.options.some(o => o.default && o.value.endsWith(`|${on[0].weaponKey}`))), `${token}: the open weapon preselected`);
 }
 console.log('  ✓ every list card: both full weapon dropdowns, the open weapon preselected');
+// The MP Gunsmiths landing (bare `d gs`, his Mock B, 2026-11-06 22:16-22:37 EST): the title and season, the class buttons in the in-game order 4 then 3, the list buttons, then Search Builds (blue) and Submit a Build (grey).
+const land = L.buildLandingPage(['SMG', 'SECONDARIES', 'AR', 'MARKSMAN', 'LMG', 'SNIPER', 'SHOTGUN'], { season });
+const lc = land.components[0].components;
+assert.ok(/^## .* MP Gunsmiths\n/.test(lc[0].content), 'the title, the season under it');
+assert.ok(!JSON.stringify(land.components).includes('builds across'), 'no counts line (his 22:21 EST)');
+assert.strictEqual(lc.find(c => c.type === 10 && c.content.startsWith('-# Browse')).content, '-# Browse a class…');
+const rows = lc.filter(c => c.type === 1);
+assert.deepStrictEqual(rows.slice(0, 2).map(r => r.components.map(b => b.custom_id)), [['gsb~cls~AR', 'gsb~cls~SNIPER', 'gsb~cls~LMG', 'gsb~cls~SMG'], ['gsb~cls~SHOTGUN', 'gsb~cls~MARKSMAN', 'gsb~cls~SECONDARIES']], 'classes in the in-game order, 4 then 3');
+assert.deepStrictEqual(rows[2].components.map(b => b.custom_id), ['gsb~open~MP.*.meta', 'gsb~open~MP.*.best', 'gsb~open~MP.*.top', 'gsb~open~MP.*.hm'], 'the list buttons');
+assert.deepStrictEqual(rows[3].components.map(b => [b.label, b.style, b.custom_id]), [['Search Builds', 1, 'gsb~search~MP'], ['Submit a Build', 2, 'gsb~submit~MP~-']], 'Search blue, Submit grey, in their own section');
+assert.deepStrictEqual(lc.at(-2), { type: 14, spacing: 2, divider: true }, 'a divider above that section');
+assert.ok(!JSON.stringify(L.buildLandingPage(['AR']).components).includes('gsb~cls~SMG'), 'a class with no build gets no button');
+console.log('  ✓ the MP Gunsmiths landing: title, classes 4 then 3, lists, Search and Submit');
 
 // The in-game class order, everywhere a class list sorts (his 2026-11-03 11:44 EST).
 assert.deepStrictEqual(CLASS_ORDER, ['AR', 'SNIPER', 'LMG', 'SMG', 'SHOTGUN', 'MARKSMAN', 'SECONDARIES']);

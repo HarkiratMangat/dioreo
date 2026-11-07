@@ -180,7 +180,7 @@ function parseArgs(tokens, textCommand, commandJson = null, { allowTypos = false
             if (checkDatetime && !checkDatetime(text)) unresolved = { option: restOpt.name, text };
             else values[restOpt.name] = text;
         } else if (!filled && restOpt.rest === 'weapon') {
-            // No weapon, or only a class word: the first weapon alphabetically with a build (commands/gunsmith.js reads `~first~`, which no weaponKey can be).
+            // No weapon, or only a class word: `~first~<CLASS?>` (no weaponKey can hold `~`). commands/gunsmith.js opens the MP Gunsmiths landing for a bare one (2026-11-06) and the class's first weapon alphabetically for a class.
             const category = classOf(text, restOpt.classes);
             // `d gs meta` / `d dmz meta`: that mode's META browse (his ask, B6, 2026-10-29 20:06 EDT); commands/gunsmith.js opens `~scope~` as the dropdown's All META row. `d gs meta` (and best, top, hm, lists) opens the gunsmith lists page since 2026-11-02 21:44 EST; `d dmz meta` keeps DMZ's META browse.
             const { listWord, text: afterList } = narrowList(listWordOf(text.split(/\s+/)[0]), text.split(/\s+/).slice(1).join(' '));

@@ -128,7 +128,53 @@ async function currentSeason() {
     return { title: doc.currentSeasonTitle, emoji: require('./seasonEmoji').seasonEmojiFor(doc.currentSeasonTitle, doc.currentSeasonEmoji) };
 }
 
-// Sends the page: a fresh reply (slash or text command), or in place of the card a dropdown or button sat under.
+// Sends the page: a fresh reply (slash or text command), or in place of the card a dropdown or button sat under. THE MP GUNSMITHS LANDING (Harkirat, 2026-11-06: "let's create a new landing page or something so it doesn't just feel like a random jump into a build" at 22:06 EST; Mock B picked at 22:16 EST with Search moved to its own section beside Submit a Build; titled "MP Gunsmiths", no counts line, "Browse a class…", Search blue and Submit grey at 22:21 EST; "yes" to build it at 22:37 EST). What a bare `d gs` (`d gunsmith`, `d build`, `d b`) opens: the title with the season, the classes as buttons in the in-game order (4 then 3), the list buttons, then Search Builds and Submit a Build. A class button is `gsb~cls~<CATEGORY>` (handlers/loadouts.js), that class's browse from its first build. Only classes with a real build get a button.
+function buildLandingPage(categories, { isEphemeral = false, season = null } = {}) {
+    const { withShareButton } = require('./shareButton');
+    const { toBoldItalicUnicode } = require('./titleBlock');
+    const seasonLine = season?.title ? `\n${season.emoji ? `${season.emoji} ` : ''}${toBoldItalicUnicode(season.title)}` : '';
+    const present = new Set(categories);
+    const cls = CLASSES.filter(([c]) => present.has(c));
+    const classButton = ([c, icon, word]) => ({ type: 2, style: 2, label: word, custom_id: `gsb~cls~${c}`, ...(emojis[icon] ? { emoji: emojis.parseEmoji(emojis[icon]) } : {}) });
+    const classRows = [cls.slice(0, 4), cls.slice(4)].filter(r => r.length).map(r => ({ type: 1, components: r.map(classButton) }));
+    const container = { type: 17, accent_color: mpAccent(), components: [
+        { type: 10, content: `## ${emojis.gunsmithList || ''} MP Gunsmiths${seasonLine}` },
+        { type: 14, spacing: 2, divider: true },
+        ...(classRows.length ? [{ type: 10, content: '-# Browse a class…' }, ...classRows, { type: 14, spacing: 1, divider: false }] : []),
+        { type: 10, content: '-# Or view all builds for…' },
+        { type: 1, components: LISTS.map(listButton) },
+        { type: 14, spacing: 2, divider: true },
+        { type: 1, components: [
+            { type: 2, style: 1, label: 'Search Builds', custom_id: 'gsb~search~MP', ...(emojis.gunsmithSearch ? { emoji: emojis.parseEmoji(emojis.gunsmithSearch) } : {}) },
+            { type: 2, style: 2, label: 'Submit a Build', custom_id: 'gsb~submit~MP~-', ...(emojis.share ? { emoji: emojis.parseEmoji(emojis.share) } : {}) },
+        ] },
+    ] };
+    return { components: withShareButton([container], isEphemeral), flags: 32768 };
+}
+
+// Every class with at least one real MP build, for the landing's buttons.
+async function buildCategories() {
+    const builds = await require('../models/Loadout').find({ mode: 'MP' }).select('category attachments').lean();
+    return [...new Set(builds.filter(b => !isPlaceholderBuild(b)).map(b => b.category))];
+}
+
+async function renderLandingPage(interaction, { isUpdate = false, deferred = false, isEphemeral: givenEphemeral = false, visibilityChoice = null } = {}) {
+    const { sendV2Payload } = require('./sendV2Payload');
+    let isEphemeral = givenEphemeral;
+    if (isUpdate) {
+        isEphemeral = Boolean(interaction.message?.flags?.bitfield & 64);
+        await interaction.deferUpdate();
+    } else if (!deferred) {
+        const prefs = await require('../models/UserPreference').findOne({ discordId: interaction.user.id });
+        const argPrivate = visibilityChoice === null || visibilityChoice === undefined ? null : visibilityChoice === 'hidden';
+        isEphemeral = require('./ephemeral').resolveEphemeral({ argPrivate, prefs, prefsField: 'loadoutVisibility' });
+        await interaction.deferReply({ ephemeral: isEphemeral });
+    }
+    const [categories, season] = await Promise.all([buildCategories(), currentSeason()]);
+    const out = buildLandingPage(categories, { isEphemeral, season });
+    return sendV2Payload(interaction, out.components, { flags: out.flags });
+}
+
 async function renderListsPage(interaction, { isUpdate = false, deferred = false, isEphemeral: givenEphemeral = false, visibilityChoice = null, page = 'meta' } = {}) {
     const { sendV2Payload } = require('./sendV2Payload');
     let isEphemeral = givenEphemeral;
@@ -147,4 +193,4 @@ async function renderListsPage(interaction, { isUpdate = false, deferred = false
     return sendV2Payload(interaction, out.components, { flags: out.flags });
 }
 
-module.exports = { LISTS, CLASSES, listedBuilds, strongestList, weaponLine, classBlocks, jumpRows, buildListsPage, renderListsPage };
+module.exports = { LISTS, CLASSES, listedBuilds, strongestList, weaponLine, classBlocks, jumpRows, buildListsPage, renderListsPage, buildLandingPage, renderLandingPage };

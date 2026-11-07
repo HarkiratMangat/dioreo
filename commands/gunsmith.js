@@ -145,6 +145,8 @@ async function execute(interaction) {
     }
     // A text command with no weapon, or only a class word (`d gunsmith`, `d gs smg`), opens the first weapon alphabetically that has a build, in the whole catalogue or in that class (the text-commands spec, his comment: "running a bare `d gunsmith` or something would just open the 1st alphabetic gun on the catalogue"). Only utils/textCommands/args.js sends `~first~<CATEGORY?>`; the slash command's options are unchanged.
     if (raw.startsWith('~first~')) {
+        // Bare `d gs` (no class) opens the MP Gunsmiths landing instead (utils/gunsmithLists.js buildLandingPage; Harkirat, 2026-11-06 22:06 EST: "so it doesn't just feel like a random jump into a build"). A class word still opens that class's first build, and DMZ keeps its first build.
+        if (!raw.slice(7) && mode === 'MP') return require('../utils/gunsmithLists').renderLandingPage(interaction, { visibilityChoice: interaction.options.getString('visibility') });
         const first = await firstWeaponKey(mode, raw.slice(7) || null);
         return require('../utils/loadoutLookup').lookupAndRenderWeapon(interaction, { mode, rawQuery: first || raw.slice(7) || 'weapon', requestedBuild: null, visibilityChoice: interaction.options.getString('visibility') });
     }

@@ -152,7 +152,8 @@ async function route(interaction) {
         // /gunsmith browse-row SCOPE PAGING + COPY + META SWITCH + OPEN -- a BUTTON. `open` is the missing-weapon card's "Browse all <class> builds". `action` outside {next,prev,copy,copyatt,meta,open} guards the disabled `gsb~ind~` page-count label, which is not clickable but shares the `gsb~` prefix.
         if (interaction.isButton() && interaction.customId.startsWith('gsb~')) {
             const [, action, scopeToken, flatIndexRaw] = interaction.customId.split('~');
-            // The card's bottom-row Search... (2026-10-25 16:25 EDT): `gsb~search~<mode>` opens the same one-box search as the dropdown's option. Pressed on a text command's Did you mean card, it also stops that card deleting itself, as any press there does (utils/textCommands/cardTimers.js).
+            // The card's bottom-row Search... (2026-10-25 16:25 EDT): `gsb~search~<mode>` opens the same one-box search as the dropdown's option. Pressed on a text command's Did you mean card, it also stops that card deleting itself, as any press there does (utils/textCommands/cardTimers.js). The MP Gunsmiths landing's class buttons: `gsb~cls~<CATEGORY>`, that class's browse from its first build, in place (utils/gunsmithLists.js buildLandingPage).
+            if (action === 'cls') return await require('../commands/gunsmith').renderScopeBrowse(interaction, { mode: 'MP', category: scopeToken, metaOnly: false }, 0, { isUpdate: true });
             if (action === 'search') { require('../utils/textCommands/cardTimers').cancel(interaction.message?.id); return await interaction.showModal(searchModal(scopeToken === 'DMZ' ? 'DMZ' : 'MP')); }
             // The no-build pager's arrows: `gsb~nb~<CLASS>~<n>`.
             if (action === 'nb') return await openNoBuild(interaction, scopeToken, flatIndexRaw);
