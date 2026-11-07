@@ -29,7 +29,26 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.11.0 — 2026-11-06 20:39 EST (#258) — Gunsmith editing: comments, a build option, right-click Edit Loadout, and /autobuild's build #
+## v3.12.0 — 2026-11-07 00:00 EST (#259) — An MP Gunsmiths landing, full list dropdowns, Title Case buttons and new emojis
+
+### Added
+- **An MP Gunsmiths landing** for a bare `d gs` (`d gunsmith`, `d build`, `d b`), which used to jump into the catalogue's first build: the season, the classes as buttons in the in-game order (`gsb~cls~<CATEGORY>`, that class's browse in place), the list buttons, then Search Builds and Submit a Build (`utils/gunsmithLists.js` `buildLandingPage`).
+- **An icon-only Search** in the lists page's header, the one-box search pop-up.
+- **Search All Builds** on a text command's weapon Did you mean card; pressing it also stops the card deleting itself.
+- **No-attachment builds** (`Loadout.noAttachments`) for weapons like the Nail Gun, which has no attachments and no gunsmith code: a real build, never Coming Soon, needs no code, and its card shows one quiet line with only Search under it. The Nail Gun is added with his screenshot.
+- **Emoji map:** `credit`, `doubleCp` (Credit and 2xCP, uploaded to Cloudinary and every bot) and `offPrivate`, `onPublic`.
+
+### Changed
+- **Both weapon dropdowns hold every listed weapon** (META, Best, Top 3, Top 5, HM) on the lists page's two pages and on every list card, which used to show only their own weapons.
+- **Every button label is Title Case**, with a, an, the, and, or, as, of, in, on, at, to, for and vs lowercase; questions stay as written, and help prose naming a button follows it. The rule is in `.claude/rules/rendering-and-ui.md`.
+- **A Did you mean card stays 30 seconds** (was 10); the timestamp cards keep 10.
+- **The start of a class word** (4 letters or more, fitting one class) opens that class: `d gs second`, `d gs snip`.
+- **An idle panel drops its outside rows** on timeout (the Search/Code row, dropdowns, nav buttons, Show Everyone); the buttons inside stay greyed out, and a link-only row stays live.
+
+### Removed
+- The five old season emojis without an underscore (`S6TakeYourHeart` … `S107thAnniversary`) from Cloudinary's originals, prod Dioreo and both dev apps; the `S#_` copies are the ones in use. The emoji sync had spread them, since it copies any name one app holds.
+
+## v3.11.0 — 2026-11-06 20:39 EST (#258 · `3f0f6fcf`) — Gunsmith editing: comments, a build option, right-click Edit Loadout, and /autobuild's build #
 
 ### Added
 - **A `Comment:` line** in /manage's Add and Edit Loadout attachments box (everything after it is the build's comment; no line keeps the stored one, an empty line clears it), in bulk paste (`Comment:` key lines) and in exports, which also write an option's own label.

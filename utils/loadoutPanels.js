@@ -64,8 +64,8 @@ function actionRow(doc, changeIds = [], option = 0) {
     const room = 1 + (doc.variants || []).length < MAX_OPTIONS;
     return { type: 1, components: [
         { type: 2, style: 2, label: 'Open in /gunsmith', custom_id: `mng_ldopen_${id}`, emoji: emojis.parseEmoji(emojis.search) },
-        { type: 2, style: 1, label: 'Edit again', custom_id: `mng_ldedit_${target}`, emoji: emojis.parseEmoji(emojis.edit) },
-        ...(room ? [{ type: 2, style: 3, label: 'Add option', custom_id: `mng_ldaddopt_${target}`, emoji: emojis.parseEmoji(emojis.plus) }] : []),
+        { type: 2, style: 1, label: 'Edit Again', custom_id: `mng_ldedit_${target}`, emoji: emojis.parseEmoji(emojis.edit) },
+        ...(room ? [{ type: 2, style: 3, label: 'Add Option', custom_id: `mng_ldaddopt_${target}`, emoji: emojis.parseEmoji(emojis.plus) }] : []),
         // Who the build is credited to (handlers/manage/loadouts.js creditModal, 2026-11-02 23:01 EST).
         { type: 2, style: 2, label: 'Credit', custom_id: `mng_ldcredit_${id}` },
         ...(changeIds.length && revertId.length <= 100 ? [{ type: 2, style: 4, label: 'Revert', custom_id: revertId }] : []),
@@ -140,7 +140,7 @@ function deletePanel({ doc, token, option = null }) {
         { type: 10, content: `**Attachments**\n${attachmentList(view)}` },
         { type: 1, components: [
             { type: 2, style: 2, label: 'Cancel', custom_id: `mng_delcancel_${token}` },
-            { type: 2, style: 4, label: 'Yes, delete', custom_id: `mng_delconfirm_${token}`, emoji: emojis.parseEmoji(emojis.deleteBin) },
+            { type: 2, style: 4, label: 'Yes, Delete', custom_id: `mng_delconfirm_${token}`, emoji: emojis.parseEmoji(emojis.deleteBin) },
         ] },
     ] }];
 }
@@ -158,10 +158,10 @@ function bulkPanel({ mode, created, updated, learned = [], skipped = [], missing
 // Names the catalogue does not know yet, before anything is saved.
 function cataloguePanel({ described, token }) {
     return [{ type: 17, accent_color: WARN_ACCENT, components: [
-        { type: 10, content: `### ${emojis.warn} Not in the catalogue yet\n${described}\n-# A typo, or a new item? **Save anyway** saves it as typed and adds these names, so they won't warn again. **Back to edit** reopens the box with what you typed.` },
+        { type: 10, content: `### ${emojis.warn} Not in the catalogue yet\n${described}\n-# A typo, or a new item? **Save Anyway** saves it as typed and adds these names, so they won't warn again. **Back to Edit** reopens the box with what you typed.` },
         { type: 1, components: [
-            { type: 2, style: 2, label: 'Back to edit', custom_id: `mng_catedit|${token}`, emoji: emojis.parseEmoji(emojis.edit) },
-            { type: 2, style: 3, label: 'Save anyway', custom_id: `mng_catok|${token}`, emoji: emojis.parseEmoji(emojis.checkmark) },
+            { type: 2, style: 2, label: 'Back to Edit', custom_id: `mng_catedit|${token}`, emoji: emojis.parseEmoji(emojis.edit) },
+            { type: 2, style: 3, label: 'Save Anyway', custom_id: `mng_catok|${token}`, emoji: emojis.parseEmoji(emojis.checkmark) },
         ] },
     ] }];
 }
@@ -170,10 +170,10 @@ function cataloguePanel({ described, token }) {
 function codePanel({ lines, token }) {
     const one = lines.length === 1;
     return [{ type: 17, accent_color: WARN_ACCENT, components: [
-        { type: 10, content: `### ${emojis.warn} ${one ? 'This code looks' : 'These codes look'} cut off\n${lines.join('\n')}\n-# The game draws O like 0, so a last O is easy to lose. **Back to edit** reopens the box with what you typed; **Save anyway** saves it as it is.` },
+        { type: 10, content: `### ${emojis.warn} ${one ? 'This code looks' : 'These codes look'} cut off\n${lines.join('\n')}\n-# The game draws O like 0, so a last O is easy to lose. **Back to Edit** reopens the box with what you typed; **Save Anyway** saves it as it is.` },
         { type: 1, components: [
-            { type: 2, style: 2, label: 'Back to edit', custom_id: `mng_codeedit|${token}`, emoji: emojis.parseEmoji(emojis.edit) },
-            { type: 2, style: 3, label: 'Save anyway', custom_id: `mng_codeok|${token}`, emoji: emojis.parseEmoji(emojis.checkmark) },
+            { type: 2, style: 2, label: 'Back to Edit', custom_id: `mng_codeedit|${token}`, emoji: emojis.parseEmoji(emojis.edit) },
+            { type: 2, style: 3, label: 'Save Anyway', custom_id: `mng_codeok|${token}`, emoji: emojis.parseEmoji(emojis.checkmark) },
         ] },
     ] }];
 }

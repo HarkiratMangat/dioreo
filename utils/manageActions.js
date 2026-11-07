@@ -154,7 +154,7 @@ const loadoutsActions = () => [
       run: async ({ interaction, page, manageCommand }) => await interaction.showModal(manageCommand.buildLoadoutsBulkAddModal(loadoutModeFor(page), true)) },
     { id: 'bulkdelete', label: 'Delete', style: 4, kind: 'modal', slash: true,
       run: async ({ interaction, page, manageCommand }) => await interaction.showModal(manageCommand.buildLoadoutsBulkRemoveModal(loadoutModeFor(page))) },
-    { id: 'exportupto5', label: 'Up To 5', style: 2, kind: 'modal', slash: true,
+    { id: 'exportupto5', label: 'Up to 5', style: 2, kind: 'modal', slash: true,
       run: async ({ interaction, page, manageCommand }) => await interaction.showModal(manageCommand.buildLoadoutsExportUpTo5Modal(loadoutModeFor(page))) },
     { id: 'exportcategory', label: 'Category', style: 2, kind: 'modal', slash: true,
       run: async ({ interaction, page, manageCommand }) => await interaction.showModal(manageCommand.buildLoadoutsExportCategoryModal(loadoutModeFor(page))) },

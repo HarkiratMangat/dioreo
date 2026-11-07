@@ -137,9 +137,9 @@ function parseQuery(queryInput, tz) {
 
 // The row under the panel (2026-11-01 15:19 EDT, Harkirat's panel update): Edit timestamp (grey, the Edit emoji) opens a form with the panel's own date and time, timezone, view and format; the timezone button is blue "Set timezone" until the panel's owner has saved one, then grey "My timezone", and saves the PRESSER's own zone, which /timestamp, /remind and /settings all read. Both ids carry the owner, so a re-render and the form know whose panel it is.
 function panelActionRow(ownerId, ownerHasZone) {
-    const zone = ownerHasZone ? { style: 2, label: 'My timezone' } : { style: 1, label: 'Set timezone' };
+    const zone = ownerHasZone ? { style: 2, label: 'My Timezone' } : { style: 1, label: 'Set Timezone' };
     return { type: 1, components: [
-        { type: 2, style: 2, label: 'Edit timestamp', custom_id: `tsedit|${ownerId}`, emoji: emojis.parseEmoji(emojis.edit) },
+        { type: 2, style: 2, label: 'Edit Timestamp', custom_id: `tsedit|${ownerId}`, emoji: emojis.parseEmoji(emojis.edit) },
         { type: 2, ...zone, custom_id: `tszone|${ownerId}`, emoji: emojis.parseEmoji(emojis.timezone) },
     ] };
 }

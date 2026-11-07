@@ -94,9 +94,9 @@ function quickaddSections() {
             '• A description like `mythic character` lists every draw that fits: press **Pick** and choose one, or that line is skipped on Save.\n' +
             '• A best guess says so; **Pick** swaps it for another draw or keeps what you typed.'),
         section('➕ Not in the Draw Index',
-            'Press **Add details** to give its items, type and a picture, the same as Add Draw. Without them it is saved as typed, with no items.'),
+            'Press **Add Details** to give its items, type and a picture, the same as Add Draw. Without them it is saved as typed, with no items.'),
         section('🏷️ After Save',
-            'If the saved draws carry items the draw index has no kind for, one more message asks: **Set item kinds** gives a dropdown per item (weapon, character, vehicle, other). **Revert all** on the result undoes the save.')
+            'If the saved draws carry items the draw index has no kind for, one more message asks: **Set item kinds** gives a dropdown per item (weapon, character, vehicle, other). **Revert All** on the result undoes the save.')
     ];
 }
 

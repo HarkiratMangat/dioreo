@@ -25,8 +25,9 @@ const text = JSON.stringify(page.components);
 const container = page.components[0];
 
 // His template (2026-11-03 11:44 EST): the title with the season under it, the MP accent, a bold class label, the tiers with names joined by " · ", a divider between classes, the hint above the buttons.
-assert.ok(/^## .* Current META Weapons\n/.test(container.components[0].content), 'the title');
-assert.ok(container.components[0].content.endsWith(`\n${require('../utils/titleBlock').toBoldItalicUnicode(season.title)}`), 'the season line, bold italic');
+assert.ok(/^## .* Current META Weapons\n/.test(container.components[0].components[0].content), 'the title');
+assert.deepStrictEqual([container.components[0].type, container.components[0].accessory.custom_id, container.components[0].accessory.label], [9, 'gsb~search~MP', undefined], 'an icon-only Search on the header (his 2026-11-06 22:06 EST)');
+assert.ok(container.components[0].components[0].content.endsWith(`\n${require('../utils/titleBlock').toBoldItalicUnicode(season.title)}`), 'the season line, bold italic');
 assert.strictEqual(container.accent_color, require('../utils/loadoutPanels').ACCENT.MP, 'the MP accent');
 const blocks = container.components.filter(c => c.type === 10 && c.content.startsWith('**')).map(c => c.content);
 assert.strictEqual(blocks.length, 3, 'Assault, Sniper and SMG only');
@@ -35,7 +36,7 @@ const ar = blocks[0].split('\n').slice(1).map(l => l.replace(/^.*?\*\*/, '**'));
 assert.deepStrictEqual(ar, ['**Best**  BAL-27', '**Top 3**  ISO HEMLOCK · HVK-30', '**Top 5**  ODEN', '**HM**  GRAV']);
 assert.ok(!blocks.join('\n').includes('**META**'), 'META is on its own sub-page');
 const kinds = container.components.map(c => c.type === 14 ? `${c.divider ? 'line' : 'gap'}${c.spacing}` : c.type);
-assert.deepStrictEqual(kinds, [10, 'line2', 10, 'gap1', 10, 'gap1', 10, 'gap1', 1, 'line2', 10, 1], 'his notation: ==== a large divider, -- a small gap with no line; the /draws order: pager under the lists, then the hint and the buttons');
+assert.deepStrictEqual(kinds, [9, 'line2', 10, 'gap1', 10, 'gap1', 10, 'gap1', 1, 'line2', 10, 1], 'his notation: ==== a large divider, -- a small gap with no line; the /draws order: pager under the lists, then the hint and the buttons');
 assert.strictEqual(blocks[2].split('\n').at(-1).replace(/^.*?\*\*/, '**'), '**HM**  CX-9 (Burst)', 'a labelled build shows its label in brackets');
 assert.ok(!text.includes('Long range'), 'an unbadged build never lends its label');
 assert.ok(!text.includes('Flex'), 'a label shows only when switched on (his 12:13 EST)');
@@ -65,7 +66,7 @@ console.log('  ✓ list buttons, the two-page pager, labels in brackets, two cla
 // Page 1 (the default, his 14:13 EST): META weapons only, by class, under the same title, the pager on 1/2, every list button.
 const meta = L.buildListsPage(builds, { season });
 const mc = meta.components[0];
-assert.strictEqual(mc.components[0].content, container.components[0].content, 'the same title on both pages');
+assert.strictEqual(mc.components[0].components[0].content, container.components[0].components[0].content, 'the same title on both pages');
 assert.deepStrictEqual(mc.components.at(-4).components.map(x => [x.custom_id, x.disabled, x.label || null]), [['gsb~lpage~0', true, null], ['gsb~lpage~at', true, 'META · 1/2'], ['gsb~lpage~1', false, null]]);
 assert.deepStrictEqual(mc.components.filter(c => c.type === 10 && c.content.startsWith('**')).map(c => c.content.split('\n')[1]), [`${require('../utils/emojiMap').whiteDotGlow} **BAL-27**  \`1A2B3C4D5E\``, `${require('../utils/emojiMap').whiteDotGlow} **STATIC-HV**  \`1A2B3C4D5E\``], 'a list: WhiteDotGlow, the bold name, its first META build\'s bare code (his 13:27 and 14:02 EST)');
 assert.ok(!JSON.stringify(mc.components).includes('BAL-27-1A2B3C4D5E'), 'no weapon prefix on the code');
@@ -73,8 +74,58 @@ assert.strictEqual(mc.components.find(c => c.type === 10 && c.content.startsWith
 const ordered = L.classBlocks([b('FSS HURRICANE', 'SMG', { isMeta: true, categoryRank: 'top3' }), b('STATIC-HV', 'SMG', { isMeta: true, categoryRank: 'best' }), b('VMP', 'SMG', { isMeta: true })], [['meta', null, null, x => x.isMeta]]);
 assert.deepStrictEqual(ordered[0].content.split('\n').slice(1).map(l => l.match(/\*\*(.+?)\*\*/)[1]), ['STATIC-HV', 'FSS HURRICANE', 'VMP'], 'META names strongest first (his 12:17 EST)');
 assert.deepStrictEqual(mc.components.at(-1).components.map(x => x.custom_id), ['gsb~open~MP.*.meta', 'gsb~open~MP.*.best', 'gsb~open~MP.*.top', 'gsb~open~MP.*.hm'], 'every list button on page 2 too');
-assert.ok(!JSON.stringify(meta.components).includes('KOSHKA'), 'no unbadged-for-META weapon in its dropdowns');
+assert.ok(!JSON.stringify(mc.components).includes('KOSHKA'), 'no non-META weapon in the META page itself');
+assert.deepStrictEqual(meta.components.filter(c => c.type === 1 && c.components[0].type === 3).map(c => c.components[0].options.map(o => o.label)), selects.map(s => s.options.map(o => o.label)), 'the META page\'s dropdowns hold every listed weapon, as page 2\'s do (his 2026-11-06 22:06 EST)');
 console.log('  ✓ page 1 by default: META weapons by class, the same title, the pager, every list button');
+// Every list card (META, Best, Top 3 & 5, HM) carries the same two dropdowns of every listed weapon, the open one preselected (his 2026-11-06 22:12 EST: "work the class, not the instance").
+for (const token of ['MP.*.meta', 'MP.*.best', 'MP.*.top', 'MP.*.hm']) {
+    const on = builds.filter(x => x.isMeta || x.categoryRank);
+    const listCard = require('../utils/loadoutRender').buildLoadoutCard([on[0]], 0, { color: 1, idPrefix: 'mp', categoryBuilds: on, browse: { scopeToken: token, flatIndex: 0, flatTotal: on.length, scopeLabel: 'x' }, listedBuilds: builds });
+    const cardSelects = listCard.components.filter(c => c.type === 1 && c.components[0].type === 3).map(c => c.components[0]);
+    assert.deepStrictEqual(cardSelects.map(x => x.custom_id), ['gsb~lists~MP', 'gsb~ljump~A', 'gsb~ljump~B'], `${token}: View other lists, then both weapon dropdowns`);
+    assert.deepStrictEqual(cardSelects.slice(1).map(x => x.options.map(o => o.label)), selects.map(x => x.options.map(o => o.label)), `${token}: every listed weapon`);
+    assert.ok(!cardSelects.slice(1).some(x => x.options.some(o => o.default)), `${token}: nothing preselected, so each dropdown keeps its "Jump to…" placeholder (click test 2026-11-06 23:04 EST: a preselected weapon hid it)`);
+}
+console.log('  ✓ every list card: both full weapon dropdowns, their placeholders showing');
+// The MP Gunsmiths landing (bare `d gs`, his Mock B, 2026-11-06 22:16-22:37 EST): the title and season, the class buttons in the in-game order 4 then 3, the list buttons, then Search Builds (blue) and Submit a Build (grey).
+const land = L.buildLandingPage(['SMG', 'SECONDARIES', 'AR', 'MARKSMAN', 'LMG', 'SNIPER', 'SHOTGUN'], { season });
+const lc = land.components[0].components;
+assert.ok(/^## .* MP Gunsmiths\n/.test(lc[0].content), 'the title, the season under it');
+assert.ok(!JSON.stringify(land.components).includes('builds across'), 'no counts line (his 22:21 EST)');
+assert.strictEqual(lc.find(c => c.type === 10 && c.content.startsWith('-# Browse')).content, '-# Browse a class…');
+const rows = lc.filter(c => c.type === 1);
+assert.deepStrictEqual(rows.slice(0, 2).map(r => r.components.map(b => b.custom_id)), [['gsb~cls~AR', 'gsb~cls~SNIPER', 'gsb~cls~LMG', 'gsb~cls~SMG'], ['gsb~cls~SHOTGUN', 'gsb~cls~MARKSMAN', 'gsb~cls~SECONDARIES']], 'classes in the in-game order, 4 then 3');
+assert.deepStrictEqual(rows[2].components.map(b => b.custom_id), ['gsb~open~MP.*.meta', 'gsb~open~MP.*.best', 'gsb~open~MP.*.top', 'gsb~open~MP.*.hm'], 'the list buttons');
+assert.deepStrictEqual(rows[3].components.map(b => [b.label, b.style, b.custom_id]), [['Search Builds', 1, 'gsb~search~MP'], ['Submit a Build', 2, 'gsb~submit~MP~-']], 'Search blue, Submit grey, in their own section');
+assert.deepStrictEqual(lc.at(-2), { type: 14, spacing: 2, divider: true }, 'a divider above that section');
+assert.ok(!JSON.stringify(L.buildLandingPage(['AR']).components).includes('gsb~cls~SMG'), 'a class with no build gets no button');
+console.log('  ✓ the MP Gunsmiths landing: title, classes 4 then 3, lists, Search and Submit');
+// A weapon with no attachments and no code (the Nail Gun, models/Loadout.js noAttachments, his 2026-11-06 22:55 EST): a real build, its card says so in one line, and only Search sits under it.
+{
+    const { isPlaceholderBuild, buildLoadoutCard } = require('../utils/loadoutRender');
+    const nail = { weaponKey: 'nailgun', weaponName: 'NAIL GUN', category: 'SECONDARIES', mode: 'MP', buildName: 'Build 1', attachments: [], noAttachments: true, shareCode: '', imageKey: 'NAIL-GUN-1', lastUpdated: new Date() };
+    assert.strictEqual(isPlaceholderBuild(nail), false, 'never a Coming Soon placeholder');
+    assert.strictEqual(isPlaceholderBuild({ attachments: [] }), true, 'an empty build without the flag still is one');
+    const nc = JSON.stringify(buildLoadoutCard([nail], 0, { color: 1, idPrefix: 'mp' }).components);
+    assert.ok(nc.includes('This weapon has no attachments or gunsmith code') && !nc.includes('### Attachments') && !nc.includes('Gunsmith Code:'), 'one quiet line, no list, no code');
+    assert.ok(nc.includes('gsb~search~MP') && !nc.includes('copyatt') && !nc.includes('mpcopy_'), 'Search only, no Attachments or Code button');
+    console.log('  ✓ a no-attachment weapon: real build, one line, Search only');
+}
+// A landing class button reaches the loadouts handler and opens that class's MP browse in place (handlers/loadouts.js `gsb~cls~`).
+(async () => {
+    const gPath = require.resolve('../commands/gunsmith');
+    const g = require(gPath);
+    const real = g.renderScopeBrowse;
+    const calls = [];
+    g.renderScopeBrowse = async (_i, scope, index, opts) => { calls.push([scope, index, opts]); };
+    try {
+        const { handleLoadoutsInteraction } = require('../handlers/loadouts');
+        const press = { customId: 'gsb~cls~SECONDARIES', isButton: () => true, isStringSelectMenu: () => false, isModalSubmit: () => false, isAutocomplete: () => false, isChatInputCommand: () => false, message: { id: 'm1', flags: { bitfield: 0 } }, user: { id: 'u' } };
+        assert.strictEqual(await handleLoadoutsInteraction(press), true, 'the handler consumes a class button');
+        assert.deepStrictEqual(calls, [[{ mode: 'MP', category: 'SECONDARIES', metaOnly: false }, 0, { isUpdate: true }]], 'that class, from its first build, in place');
+        console.log('  ✓ a landing class button opens that class in place');
+    } finally { g.renderScopeBrowse = real; }
+})().catch(e => { console.error(e); process.exit(1); });
 
 // The in-game class order, everywhere a class list sorts (his 2026-11-03 11:44 EST).
 assert.deepStrictEqual(CLASS_ORDER, ['AR', 'SNIPER', 'LMG', 'SMG', 'SHOTGUN', 'MARKSMAN', 'SECONDARIES']);
@@ -98,5 +149,5 @@ console.log('  ✓ list scope tokens, old tokens unchanged, strongest list');
 // An empty set says the lists are pending; no season leaves the line out.
 const empty = L.buildListsPage([]);
 assert.ok(JSON.stringify(empty.components).includes('pending an update'));
-assert.ok(!empty.components[0].components[0].content.includes('\n'), 'no season line without a season');
+assert.ok(!empty.components[0].components[0].components[0].content.includes('\n'), 'no season line without a season');
 console.log('\ngunsmithLists: all checks passed.');

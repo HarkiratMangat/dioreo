@@ -68,11 +68,11 @@ async function check(name, fn) { try { await fn(); console.log(`  ok   ${name}`)
         assert.ok(!JSON.stringify(panel).includes('tsmenu|'), 'no dropdown inside the panel');
         const inner = panel.components;
         assert.deepStrictEqual([inner.at(-2).type, inner.at(-2).spacing, inner.at(-1).content.startsWith('-# Parsed')], [14, 1, true], 'small divider, then Parsed, last');
-        assert.deepStrictEqual(buttons.components.map(b => [b.label, b.style, b.custom_id]), [['Edit timestamp', 2, 'tsedit|u1'], ['Set timezone', 1, 'tszone|u1']]);
+        assert.deepStrictEqual(buttons.components.map(b => [b.label, b.style, b.custom_id]), [['Edit Timestamp', 2, 'tsedit|u1'], ['Set Timezone', 1, 'tszone|u1']]);
         assert.ok(buttons.components.every(b => b.emoji), 'both carry their emoji');
         assert.ok(menu.components[0].custom_id.startsWith('tsmenu|') && menu.components[0].placeholder === 'Switch views or pick a format');
         const saved = (await render(null, false, true)).components[1].components[1];
-        assert.deepStrictEqual([saved.label, saved.style], ['My timezone', 2], 'a saved zone: grey My timezone');
+        assert.deepStrictEqual([saved.label, saved.style], ['My Timezone', 2], 'a saved zone: grey My Timezone');
     });
     await check('a same-day range: one code per format, the end as a time, relative shows the start', async () => {
         sent.length = 0;

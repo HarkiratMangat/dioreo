@@ -74,6 +74,11 @@ function classOf(text, classes) {
     for (const [category, words] of Object.entries(classes)) {
         for (const w of words) if (sameWord(typed, squash(w))) return category;
     }
+    // The start of a class word, 4 letters or more, when it fits one class only: `second`, `snip`, `shot`, `marks` (Harkirat, 2026-11-06 22:36 EST: "shouldnt `d gs second` have just openned the 1st alphabetic build in the secondaries class?").
+    if (typed.length >= 4) {
+        const hits = new Set(Object.entries(classes).filter(([, words]) => words.some(w => squash(w).startsWith(typed))).map(([c]) => c));
+        if (hits.size === 1) return [...hits][0];
+    }
     return null;
 }
 
@@ -175,7 +180,7 @@ function parseArgs(tokens, textCommand, commandJson = null, { allowTypos = false
             if (checkDatetime && !checkDatetime(text)) unresolved = { option: restOpt.name, text };
             else values[restOpt.name] = text;
         } else if (!filled && restOpt.rest === 'weapon') {
-            // No weapon, or only a class word: the first weapon alphabetically with a build (commands/gunsmith.js reads `~first~`, which no weaponKey can be).
+            // No weapon, or only a class word: `~first~<CLASS?>` (no weaponKey can hold `~`). commands/gunsmith.js opens the MP Gunsmiths landing for a bare one (2026-11-06) and the class's first weapon alphabetically for a class.
             const category = classOf(text, restOpt.classes);
             // `d gs meta` / `d dmz meta`: that mode's META browse (his ask, B6, 2026-10-29 20:06 EDT); commands/gunsmith.js opens `~scope~` as the dropdown's All META row. `d gs meta` (and best, top, hm, lists) opens the gunsmith lists page since 2026-11-02 21:44 EST; `d dmz meta` keeps DMZ's META browse.
             const { listWord, text: afterList } = narrowList(listWordOf(text.split(/\s+/)[0]), text.split(/\s+/).slice(1).join(' '));

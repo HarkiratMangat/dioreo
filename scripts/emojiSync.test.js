@@ -71,7 +71,7 @@ t('the panel: counts per app, the four views, a page of rows, and Sync naming ho
     const withClients = apps.map(a => ({ ...a, client: { application: { id: a.key } } }));
     const panel = buildEmojiPanel({ rows, apps: withClients, senderAppId: 'admin' });
     const s = JSON.stringify(panel);
-    assert.ok(s.includes('**2** emojis') && s.includes('Dioreo Admin (Dev) missing **1**') && s.includes('**1** with no original') && s.includes('Nothing to sync'), 'Beta has no original, so Sync has nothing it can do');
+    assert.ok(s.includes('**2** emojis') && s.includes('Dioreo Admin (Dev) missing **1**') && s.includes('**1** with no original') && s.includes('Nothing to Sync'), 'Beta has no original, so Sync has nothing it can do');
     const withFile = S.buildRows(prod, apps, { isProd: false, originals: new Map([['Alpha', {}], ['Beta', {}]]) });
     assert.ok(JSON.stringify(buildEmojiPanel({ rows: withFile, apps: withClients })).includes('Sync 1 missing') && JSON.stringify(buildEmojiPanel({ rows: withFile, apps: withClients })).includes('emo_sync_all'));
     assert.ok(!s.includes('**Extra**'), 'All lists the prod emojis only');
@@ -88,7 +88,7 @@ t('the panel: counts per app, the four views, a page of rows, and Sync naming ho
     const big = buildEmojiPanel({ rows: many, apps: withClients, page: 2 });
     // A Section's accessory counts toward Discord's 40 too (B7's fix-up, 2026-10-30 15:01 EDT: this skipped it).
     const count = (c) => 1 + [...(c.components || []), ...(c.accessory ? [c.accessory] : [])].reduce((n, x) => n + count(x), 0);
-    assert.ok(count(big[0]) <= 40 && JSON.stringify(big).includes('emo_page_') && JSON.stringify(big).includes('Nothing to sync'));
+    assert.ok(count(big[0]) <= 40 && JSON.stringify(big).includes('emo_page_') && JSON.stringify(big).includes('Nothing to Sync'));
 });
 
 t('the Upload original pop-up: a name, the file, what to do if taken, and whether to add it to the bots; discord.js accepts both pop-ups', () => {
@@ -215,7 +215,7 @@ t('the sync result: one text block per emoji, in-sync and synced named apart (20
     assert.strictEqual(blocks[0], '## ' + require('../utils/emojiMap').checkmark + ' 2 Emojis Synced');
     assert.deepStrictEqual(blocks.slice(1), ['**Tada**' + '\n-# **In-sync:** Dioreo · Dev · Dev Admin\n-# **Synced:** Dioreo Admin', '**Heart**\n-# **In-sync:** Dioreo · Dioreo Admin\n-# **Synced:** Dev\n-# ' + require('../utils/emojiMap').pending + ' **Pending:** Dev Admin, within an hour']);
     assert.ok(out[0].components.length <= 40);
-    assert.ok(textsOf(buildSyncReport({ before, res: { added: [], failed: [], held: [] } })).includes('Nothing to sync'));
+    assert.ok(textsOf(buildSyncReport({ before, res: { added: [], failed: [], held: [] } })).includes('Nothing to sync')); // the report's sentence, not the panel's button
 });
 
 (async () => {

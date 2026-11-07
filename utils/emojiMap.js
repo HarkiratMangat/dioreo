@@ -198,6 +198,12 @@ const emojis = {
     gunsmithSearch: '<a:GunsmithSearch:1564113024225255454>',
     copyAttachments: '<a:CopyAttachments:1564113025747918880>',
     search: '<a:Search:1564113027245281424>',
+    // Credit and 2xCP, his animated 256px sets (made 2026-11-06, "Credit and 2xCP, just add them to all the bots, cloudinary, and emojimap"). Added to Cloudinary emoji-originals/, Dioreo (Dev), Dioreo Admin (Dev) and prod Dioreo (2026-11-06 21:11 EST); prod Dioreo Admin gets them from the VM's sync after a deploy. Not wired into a panel yet: Credit is for the gunsmith saved-build panel's Credit button, 2xCP for the calculator's Double CP line and /calendar's Double CP events.
+    credit: '<a:Credit:1568447710892134551>',
+    doubleCp: '<a:2xCP:1568447712368525312>',
+    // OffPrivate and OnPublic, his animated pair ("also add these to emojimap", 2026-11-06 21:12 EST); already on Cloudinary emoji-originals/ and on prod Dioreo, Dioreo (Dev) and Dioreo Admin (Dev); prod ids here, the dev apps re-point by name. Not wired into a panel yet.
+    offPrivate: '<a:OffPrivate:1565832509760217310>',
+    onPublic: '<a:OnPublic:1565832590630461510>',
     // /gunsmith's build-number buttons, his static Number1-Number6 (2026-10-25 22:47 EDT); Prod ids.
     number1: '<:Number1:1564113028293726300>',
     number2: '<:Number2:1564113029606547466>',

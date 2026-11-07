@@ -30,7 +30,7 @@ function askPanel(token, items) {
     const more = items.length > 15 ? `\n-# …and ${items.length - 15} more` : '';
     return [{ type: 17, accent_color: ACCENT.draws, components: [
         { type: 10, content: `### ${emojis.warn} Which kind is each new item?\n-# The draw index doesn't know ${items.length === 1 ? 'this one' : 'these'} yet. Five at a time.\n${shown.join('\n')}${more}` },
-        { type: 1, components: [{ type: 2, style: 1, label: `Set item kinds (${items.length})`, custom_id: `mng_kinds_${token}` }] }
+        { type: 1, components: [{ type: 2, style: 1, label: `Set Item Kinds (${items.length})`, custom_id: `mng_kinds_${token}` }] }
     ] }];
 }
 

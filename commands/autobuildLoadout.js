@@ -34,7 +34,7 @@ function buildPicker(key, images) {
             min_values: 1, max_values: shown.length,
             options: shown.map((_, i) => ({ label: `Image ${i + 1}`, value: String(i) })),
         }] },
-        { type: 1, components: [{ type: 2, style: 1, label: `Read all ${shown.length}`, custom_id: `autobuild_pickall|${key}` }] },
+        { type: 1, components: [{ type: 2, style: 1, label: `Read All ${shown.length}`, custom_id: `autobuild_pickall|${key}` }] },
     ] }];
 }
 

@@ -61,7 +61,7 @@ t('one-thing follows fire and are used up: a release once it releases, a leaving
     assert.deepStrictEqual(p.fired.map(f => f.title), ['Black Hole Draw', 'Rust 10v10']);
 });
 
-t('the DM: his order (last chance, leaving soon, released, season, patch notes) and a Manage reminders button', () => {
+t('the DM: his order (last chance, leaving soon, released, season, patch notes) and a Manage Reminders button', () => {
     const due = R.computeDue(doc(), RUN);
     const p = R.personalise(sub({ categories: ['newDraws', 'leaving', 'bpEnding', 'patchNotes', 'newSeason'] }), due);
     const dm = R.buildReminderDM(p, doc(), { nowMs: RUN });
@@ -69,7 +69,7 @@ t('the DM: his order (last chance, leaving soon, released, season, patch notes) 
     const order = ['Heads up, last chance', 'Heads up, leaving soon', 'Released', 'New season', 'Season', 'Patch notes'].map(h => s.indexOf(`### `) >= 0 && s.indexOf(h));
     assert.ok(order.every(i => i > 0), `every section present: ${order}`);
     assert.deepStrictEqual([...order].sort((a, b) => a - b), order, 'in his order');
-    assert.ok(s.includes('"custom_id":"remind_open"'), 'Manage reminders');
+    assert.ok(s.includes('"custom_id":"remind_open"'), 'Manage Reminders');
     assert.ok(countComponents(dm) <= 40);
     assert.strictEqual(R.buildReminderDM(null, doc()), null);
 });
@@ -101,13 +101,13 @@ t('the panel: a toggle per category, green when on, two dropdowns with follows p
     assert.ok(s.includes('When something releases...') && s.includes('When something leaves soon...'), 'each dropdown under its label');
     assert.ok(countComponents(panel) <= 40, `components: ${countComponents(panel)}`);
     assert.ok(s.includes('remind_stop:u1'));
-    assert.ok(s.includes('remind_test:u1'), 'Send a test beside the header');
+    assert.ok(s.includes('remind_test:u1'), 'Send a Test beside the header');
     for (const [, title] of R.PANEL_GROUPS) assert.ok(s.includes(`**${title}**`), `the ${title} group label`);
     assert.deepStrictEqual(R.PANEL_GROUPS.map(([key]) => R.CATEGORIES.filter(c => c.group === key).length), [4, 4, 2], 'every category in a group, at most 5 to a row');
     assert.ok(!R.buildPanel(null, doc(), { ownerId: 'u1', nowMs: RUN }).some(c => text(c).includes('remind_stop:')), 'nothing to stop with no record');
 });
 
-t('the one-time timezone tip: a Set timezone button, then a confirmation with none', () => {
+t('the one-time timezone tip: a Set Timezone button, then a confirmation with none', () => {
     const tip = text(R.buildTimezoneNote('u1'));
     assert.ok(tip.includes('"custom_id":"remind_tzdm:u1"') && tip.includes('UTC'));
     const done = text(R.buildTimezoneNote('u1', { setTo: 'Toronto (America)' }));
@@ -213,7 +213,7 @@ t('failed DMs, his rule: a note on the first failure; paused once the note was s
     assert.ok(paused.pausedAt && paused.pauseNoteShown === false);
     assert.deepStrictEqual([paused.categories, paused.follows], [[], []], 'turned off: what they followed is cleared');
     const note = JSON.stringify(R.buildPanel(sub({ pausedAt: d(RUN) }), doc(), { ownerId: 'u1', nowMs: RUN }));
-    assert.ok(note.includes('so they were turned off') && !note.includes('remind_resume'), 'a warning line in the header, no Turn back on');
+    assert.ok(note.includes('so they were turned off') && !note.includes('remind_resume'), 'a warning line in the header, no Turn Back On');
     assert.ok(R.isRefusal({ code: 50278 }) && R.isRefusal({ rawError: { code: 50007 } }) && !R.isRefusal({ code: 500 }));
 });
 
@@ -234,7 +234,7 @@ t('the bell: a grey emoji-only button on a title, and on /today', () => {
     assert.strictEqual(today[0].components[0].accessory?.custom_id, 'remind_open');
 });
 
-t('Send a test: today\'s real reminder when reminders are on, a "nothing at today\'s update" card when nothing fired, the plain card when nothing is on', () => {
+t('Send a Test: today\'s real reminder when reminders are on, a "nothing at today\'s update" card when nothing fired, the plain card when nothing is on', () => {
     const before = RUN + 60 * 1000; // a minute after the run, so today's daily update is RUN
     const real = JSON.stringify(R.buildTestDM({ categories: [...R.CATEGORY_KEYS].filter(k => k !== 'digest'), follows: [] }, doc(), { nowMs: before }));
     assert.ok(real.includes("A test: this is your reminder from today's daily update") && real.includes('Your reminders'), 'the real DM under a test note');
@@ -253,24 +253,24 @@ t("the dropdowns write each time in the reader's zone, since Discord draws no <t
     assert.ok(/releases [A-Z][a-z]{2} \d+ UTC"/.test(JSON.stringify(R.buildPanel(null, doc(), { ownerId: '1', nowMs: RUN }))), 'no zone saved: "Oct 28 UTC"');
 });
 
-t('Set timezone: a button on the panel, blue until a zone is chosen; no picker inside the panel', () => {
+t('Set Timezone: a button on the panel, blue until a zone is chosen; no picker inside the panel', () => {
     const sub = { categories: ['newDraws'], follows: [] };
     const normal = JSON.stringify(R.buildPanel(sub, doc(), { ownerId: '1', nowMs: RUN }));
-    assert.ok(normal.includes('remind_tz:1') && normal.includes('Set timezone') && normal.includes('remind_stop:1'), 'Set timezone sits in the foot beside Stop all');
+    assert.ok(normal.includes('remind_tz:1') && normal.includes('Set Timezone') && normal.includes('remind_stop:1'), 'Set Timezone sits in the foot beside Stop all');
     const btn = (opts) => R.buildPanel(sub, doc(), { ownerId: '1', nowMs: RUN, ...opts })[0].components.flatMap(c => c.components || []).find(c => c.custom_id === 'remind_tz:1');
-    assert.deepStrictEqual([btn({}).style, btn({}).label], [1, 'Set timezone'], 'no zone chosen: blue Set timezone');
-    assert.deepStrictEqual([btn({ timeZone: 'Asia/Tokyo' }).style, btn({ timeZone: 'Asia/Tokyo' }).label], [2, 'My timezone'], 'a zone chosen: grey Adjust timezone');
+    assert.deepStrictEqual([btn({}).style, btn({}).label], [1, 'Set Timezone'], 'no zone chosen: blue Set Timezone');
+    assert.deepStrictEqual([btn({ timeZone: 'Asia/Tokyo' }).style, btn({ timeZone: 'Asia/Tokyo' }).label], [2, 'My Timezone'], 'a zone chosen: grey Adjust timezone');
     assert.ok(!normal.includes('remind_tzset:') && !normal.includes('remind_tzcancel:'), 'no timezone picker in the panel: several matches answer privately');
 });
 
-t('Stop all asks on its own: a warning heading, "Yes, stop all!" and Keep them with its icon, and no timezone button', () => {
+t('Stop all asks on its own: a warning heading, "Yes, Stop All!" and Keep them with its icon, and no timezone button', () => {
     const conf = R.buildPanel({ categories: ['newDraws'], follows: [{ kind: 'release', title: 'Grim Duo Draw' }] }, doc(), { ownerId: '1', nowMs: RUN, confirmStop: true });
     const cs = JSON.stringify(conf);
-    assert.ok(!cs.includes('remind_test:1') && cs.includes('remind_rel:1') && cs.includes('remind_lv:1'), 'no Send a test, both dropdowns kept');
+    assert.ok(!cs.includes('remind_test:1') && cs.includes('remind_rel:1') && cs.includes('remind_lv:1'), 'no Send a Test, both dropdowns kept');
     assert.ok(require('../commands/today').countComponents(conf) <= 40, 'within 40');
     const ps = JSON.stringify(R.buildPanel({ categories: ['newDraws'], follows: [] }, doc(), { ownerId: '1', nowMs: RUN, confirmStop: true }));
-    assert.ok(ps.includes("Stop All clears every reminder you've set!") && ps.includes('"Yes, stop all!"') && ps.includes('"Keep them"'), 'the warning and the two choices');
-    assert.ok(!ps.includes('remind_tz:1') && !ps.includes('and delete'), 'no Set timezone, no "and delete"');
+    assert.ok(ps.includes("Stop All clears every reminder you've set!") && ps.includes('"Yes, Stop All!"') && ps.includes('"Keep Them"'), 'the warning and the two choices');
+    assert.ok(!ps.includes('remind_tz:1') && !ps.includes('and delete'), 'no Set Timezone, no "and delete"');
 });
 
 const findId = (list, id) => { for (const c of list || []) { if (c.custom_id === id) return c; if (c.accessory?.custom_id === id) return c.accessory; const hit = findId(c.components, id); if (hit) return hit; } return null; };

@@ -310,6 +310,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-11-04 14:55 EST — Undo that replays the forward path, and a harness that drives /manage with no database (v3.8.4)
 - 2026-11-05 22:36 EST — news posts become drafts, and what kept finding new problems (v3.10.0)
 - 2026-11-06 20:46 EST — Gunsmith editing grows up: comments, a build option, right-click Edit Loadout, and /autobuild's build # (v3.11.0)
+- 2026-11-07 00:00 EST — A front door for the gunsmith, Title Case everywhere, and an emoji that had quietly cloned itself (v3.12.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -5003,6 +5004,14 @@ A day of build upkeep turned into a round of /manage gunsmith fixes. Harkirat fo
 - A dev click-test of Adjust found the saved line said "Build 1" for an option saved as 1c, and dropped the typed label and comment silently. The script rehearsal had passed, because it checked the database and not what the admin reads.
 - `loadout.edit` rewrites the whole build: a renumber sent with only `buildNumber` would have wiped attachments, badges and class. The dev rehearsal caught it as a validation error before prod.
 - The auto-mode safety check blocked two approved prod runs because the approval arrived relayed. A narrow allow rule for `local/project/` prod scripts (Harkirat's pick) fixed it without loosening anything else.
+
+## 2026-11-07 00:00 EST — A front door for the gunsmith, Title Case everywhere, and an emoji that had quietly cloned itself (v3.12.0)
+
+A long evening that started with two emojis and ended with a new front door for the gunsmith. Harkirat dropped in Credit and 2xCP, then OffPrivate and OnPublic, and noticed the five season emojis still had a second, older copy under the names without an underscore. The cause turned out to be the emoji sync itself: it copies any name one app holds onto the others, so one stray name had spread to every bot. Deleting the Cloudinary originals first was the only order that keeps them gone.
+
+The gunsmith work came from using it. The lists page's dropdowns only held the page's own weapons, so they now hold every listed weapon, on the page and on every list card ("work the class, not the instance"). A bare `d gs` jumped straight into the alphabetically first build, which felt random, so it now opens an MP Gunsmiths landing he picked from three mock-ups and polished in two rounds. Buttons had been half Title Case and half sentence case; the count said about sixty each way, Discord's own buttons use Title Case, and an AST pass moved every label over, followed by a second pass for the five labels built at runtime that the first missed.
+
+The click test in Chrome caught one thing the tests could not: preselecting the open weapon on a list card hid the dropdown's own "Jump to…" label. It also showed the dev bot answers `d!` in Dioreoland while plain `d` goes to prod, which had made an earlier test look like the old behaviour. The Nail Gun, a weapon with no attachments and no code, became a field rather than a special case, so the next weapon like it needs no code.
 
 # Part B — Lessons Ledger (thematic)
 

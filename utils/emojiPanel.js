@@ -89,8 +89,8 @@ function buildEmojiPanel({ rows, apps, page = 0, filter = 'all', note = null, se
     components.push({ type: 1, components: [
         missingCount
             ? { type: 2, style: 3, label: `Sync ${missingCount} missing`, custom_id: `emo_sync_${f.key}`, ...syncIcon }
-            : { type: 2, style: 2, label: 'Nothing to sync', custom_id: 'emo_sync_none', disabled: true, ...syncIcon },
-        { type: 2, style: 1, label: 'Upload original', custom_id: 'emo_upload', emoji: emojis.parseEmoji(emojis.mngAdd) },
+            : { type: 2, style: 2, label: 'Nothing to Sync', custom_id: 'emo_sync_none', disabled: true, ...syncIcon },
+        { type: 2, style: 1, label: 'Upload Original', custom_id: 'emo_upload', emoji: emojis.parseEmoji(emojis.mngAdd) },
         { type: 2, style: 2, label: 'Find...', custom_id: `emo_find_${f.key}`, emoji: emojis.parseEmoji(emojis.search) },
     ] });
     // The /manage page dropdown, outside the container, so picking another section swaps the whole message back to /manage (2026-10-28 12:11 EDT). Every caller is owner-only, hence showEmojis.

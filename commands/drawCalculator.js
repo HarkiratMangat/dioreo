@@ -1295,7 +1295,7 @@ function buildSavedPanelAt(state, savedBaskets, accentColor, { notice = null, sa
         components.push({ type: 10, content: `## This Calculation\n-# Viewing **${String(current.name).replace(/\*/g, '')}**. Rename it, or delete it from your saved calculations.` });
         components.push({ type: 1, components: [
             { type: 2, style: 2, label: 'Rename', custom_id: encodeState('modal_name', view) },
-            { type: 2, style: armed ? 4 : 2, label: armed ? 'Delete Calculation — click again' : 'Delete Calculation', custom_id: encodeState(armed ? 'del' : 'delarm', view) }
+            { type: 2, style: armed ? 4 : 2, label: armed ? 'Delete Calculation — Click Again' : 'Delete Calculation', custom_id: encodeState(armed ? 'del' : 'delarm', view) }
         ] });
         saveSection = true;
     } else if (current && (current.banners || []).length) {
@@ -1355,7 +1355,7 @@ function buildSavedPanelAt(state, savedBaskets, accentColor, { notice = null, sa
         if (armed) components.push({ type: 10, content: `### ${emojis.warn} Delete ${list.length === 1 ? 'this calculation' : `all ${list.length} calculations`}? This cannot be undone.` });
         components.push({ type: 1, components: [
             ...(armed ? [{ type: 2, style: 2, label: list.length === 1 ? 'Keep It' : 'Keep Them', custom_id: encodeState('saved', view), emoji: emojis.parseEmoji(emojis.keep) }] : []),
-            { type: 2, style: armed ? 4 : 2, label: armed ? `Delete All (${list.length}) — click again` : 'Delete All', custom_id: encodeState(armed ? 'delall' : 'delallarm', view), emoji: emojis.parseEmoji(emojis.deleteAll) },
+            { type: 2, style: armed ? 4 : 2, label: armed ? `Delete All (${list.length}) — Click Again` : 'Delete All', custom_id: encodeState(armed ? 'delall' : 'delallarm', view), emoji: emojis.parseEmoji(emojis.deleteAll) },
         ] });
         }
     }

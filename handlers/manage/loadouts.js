@@ -157,9 +157,9 @@ function pictureWarningPanel(imageKey, token, { noneEmoji = BOT_EMOJI.collapse, 
           components: [{ type: 10, content: `### ${BOT_EMOJI.warn} Attachments changed, so the picture might not match\n-# **Picture:** \`${imageKey}\`\n-# Nothing is saved until you pick.` }],
           accessory: { type: 11, media: { url: buildImageUrl(imageKey, pictureVersion(build)) } } },
         { type: 1, components: [
-            { type: 2, style: 2, label: 'Keep the picture', custom_id: `mng_picok|${token}`, emoji: icon(BOT_EMOJI.keep) },
-            { type: 2, style: 2, label: 'Save without a picture', custom_id: `mng_picnone|${token}`, emoji: icon(noneEmoji) },
-            { type: 2, style: 1, label: 'Upload a new picture', custom_id: `mng_picnew|${token}`, emoji: icon(BOT_EMOJI.plus) }
+            { type: 2, style: 2, label: 'Keep the Picture', custom_id: `mng_picok|${token}`, emoji: icon(BOT_EMOJI.keep) },
+            { type: 2, style: 2, label: 'Save Without a Picture', custom_id: `mng_picnone|${token}`, emoji: icon(noneEmoji) },
+            { type: 2, style: 1, label: 'Upload a New Picture', custom_id: `mng_picnew|${token}`, emoji: icon(BOT_EMOJI.plus) }
         ] }
     ] }];
 }

@@ -353,10 +353,10 @@ function disputeCard(dis, build, { imageUrl = null, state = dis.status, note = n
     const id = idOf(dis);
     if (state === 'pending') {
         parts.push({ type: 1, components: [
-            { type: 2, style: 4, label: 'Remove build', custom_id: `gsb~dis~rm~${id}`, disabled: !build },
-            { type: 2, style: 1, label: 'Change credit', custom_id: `gsb~dis~credit~${id}`, disabled: !build },
+            { type: 2, style: 4, label: 'Remove Build', custom_id: `gsb~dis~rm~${id}`, disabled: !build },
+            { type: 2, style: 1, label: 'Change Credit', custom_id: `gsb~dis~credit~${id}`, disabled: !build },
             { type: 2, style: 2, label: 'Deny', custom_id: `gsb~dis~no~${id}` },
-            { type: 2, style: 2, label: 'More info', custom_id: `gsb~dis~info~${id}` },
+            { type: 2, style: 2, label: 'More Info', custom_id: `gsb~dis~info~${id}` },
         ] });
         if (note) parts.push({ type: 10, content: `-# ${note}` });
     } else {

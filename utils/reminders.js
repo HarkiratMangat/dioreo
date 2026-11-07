@@ -133,7 +133,7 @@ function extraBlocks(p) {
 }
 
 // The "Manage reminders" row every reminder DM ends with; the button opens the panel privately. It sits OUTSIDE the card, under it (Harkirat, 2026-10-25 20:18 EDT: "move the button outside the embed"), with the Remind bell the /remind panel's title uses (his 20:28 EDT correction: AddReminder was a misreading of "the other emoji").
-const manageRow = () => ({ type: 1, components: [{ type: 2, style: 2, label: 'Manage reminders', custom_id: 'remind_open', emoji: emojis.parseEmoji(emojis.remind) }] });
+const manageRow = () => ({ type: 1, components: [{ type: 2, style: 2, label: 'Manage Reminders', custom_id: 'remind_open', emoji: emojis.parseEmoji(emojis.remind) }] });
 
 // The DM, as Components V2 JSON, or null. His order (round 3): Last chance · Leaving soon · Released · Season · Patch notes. With the digest on, the /today brief takes the place of Released and the leaving lists, with followed items marked by the bell (his round-2 Q4: the digest absorbs the rest), and the season and patch-note parts follow it.
 function buildReminderDM(p, seasonalDoc, { nowMs = Date.now(), accentColor = 4093660 } = {}) {
@@ -173,7 +173,7 @@ function buildTimezoneNote(ownerId, { accentColor = 4093660, setTo = null, clien
     if (setTo) return [{ type: 17, accent_color: accentColor, components: [block(`### ${emojis.checkmark} Timezone set\n**${setTo}** · ${remind}'s lists now show your local time.\n-# Tip: Adjust your timezone anytime in ${settings}`)] }];
     return [{ type: 17, accent_color: accentColor, components: [
         block(`## ${emojis.remindAlert} Heads up: set your timezone!\nDioreo doesn't know your timezone yet, so the dates in ${remind}'s lists show in UTC.\nSet it once and they'll appear in your local time.`),
-        { type: 1, components: [{ type: 2, style: 1, label: 'Set timezone', custom_id: `remind_tzdm:${ownerId}`, emoji: parseEmoji(emojis.timezone) }] },
+        { type: 1, components: [{ type: 2, style: 1, label: 'Set Timezone', custom_id: `remind_tzdm:${ownerId}`, emoji: parseEmoji(emojis.timezone) }] },
         block(`-# Tip: Adjust your timezone anytime in ${settings}`),
     ] }];
 }
@@ -248,7 +248,7 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
         : sub?.failingSince ? `-# ${emojis.warn} Your last reminder couldn't reach you. Turn on DMs from a server you share with Dioreo, or add Dioreo to your account.` : null;
     const headerText = block([`## ${emojis.remind} Reminders`, '-# Dioreo only sends one DM a day, a minute after the daily update, with only what you pick.', ...(warning ? [warning] : [])].join('\n'));
     // No Send a test while Stop all asks, which keeps room for both dropdowns (Harkirat, 2026-10-25 01:07 EDT: "i agree").
-    const header = confirmStop ? headerText : { type: 9, components: [headerText], accessory: { type: 2, style: 2, label: 'Send a test', custom_id: `remind_test:${ownerId}` } };
+    const header = confirmStop ? headerText : { type: 9, components: [headerText], accessory: { type: 2, style: 2, label: 'Send a Test', custom_id: `remind_test:${ownerId}` } };
 
     const groups = [];
     const toggle = (c, label, emoji, on) => ({ type: 2, style: on ? 3 : 2, label, custom_id: `remind_cat:${c.key}:${ownerId}`, emoji: parseEmoji(emoji) });
@@ -294,14 +294,14 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
         // The Stop all confirmation stands alone: no timezone button, a warning heading above the two choices, as the calculator's Delete All does (Harkirat, 2026-10-24 21:38 EDT).
     } else {
         // Blue "Set timezone" until a zone is chosen, then grey (Harkirat, 2026-10-24 21:29 EDT), worded "My timezone" as /timestamp's button is since 2026-11-01 15:19 EDT (his "change /remind's timezone button wording to match"; it read "Adjust timezone").
-        foot.push(timeZone ? { type: 2, style: 2, label: 'My timezone', custom_id: `remind_tz:${ownerId}`, emoji: parseEmoji(emojis.timezone) } : { type: 2, style: 1, label: 'Set timezone', custom_id: `remind_tz:${ownerId}`, emoji: parseEmoji(emojis.timezone) });
+        foot.push(timeZone ? { type: 2, style: 2, label: 'My Timezone', custom_id: `remind_tz:${ownerId}`, emoji: parseEmoji(emojis.timezone) } : { type: 2, style: 1, label: 'Set Timezone', custom_id: `remind_tz:${ownerId}`, emoji: parseEmoji(emojis.timezone) });
         // Announcements on/off (2026-10-26 15:20 EDT, announcement-controls; his colours 15:30 EDT: green while on, grey while off). Not a reminder: an announcement shows after a command, never by DM. The same setting as /settings and the button under an announcement.
         foot.push({ type: 2, style: announcementsOff ? 2 : 3, label: `Announcements: ${announcementsOff ? 'Off' : 'On'}`, custom_id: `remind_ann:${ownerId}`, emoji: parseEmoji(emojis.announcements) });
     }
     if ((releases.length > MAX_OPTIONS || leaving.length > MAX_OPTIONS)) foot.push({ type: 2, style: 2, label: 'Search', custom_id: `remind_search:${ownerId}`, emoji: { name: '🔍' } });
     // "Yes, stop all!" (his wording, 2026-10-24 21:38 EDT: "leave out the and delete part"), and Keep them with his Keep icon. Keep comes first, on the left (2026-10-24 22:58 EDT, Harkirat: "shouldn't the keep them but[ton] be on the left side of the yes stop all?"), as in the calculator.
-    if (confirmStop) foot.push({ type: 2, style: 2, label: 'Keep them', custom_id: `remind_stopno:${ownerId}`, emoji: parseEmoji(emojis.keep) }, { type: 2, style: 4, label: 'Yes, stop all!', custom_id: `remind_stopyes:${ownerId}`, emoji: parseEmoji(emojis.disableReminder) });
-    else if (sub && (cats.size || follows.length)) foot.push({ type: 2, style: 4, label: 'Stop all', custom_id: `remind_stop:${ownerId}`, emoji: parseEmoji(emojis.disableReminder) });
+    if (confirmStop) foot.push({ type: 2, style: 2, label: 'Keep Them', custom_id: `remind_stopno:${ownerId}`, emoji: parseEmoji(emojis.keep) }, { type: 2, style: 4, label: 'Yes, Stop All!', custom_id: `remind_stopyes:${ownerId}`, emoji: parseEmoji(emojis.disableReminder) });
+    else if (sub && (cats.size || follows.length)) foot.push({ type: 2, style: 4, label: 'Stop All', custom_id: `remind_stop:${ownerId}`, emoji: parseEmoji(emojis.disableReminder) });
 
     const OR_GAP = { type: 14, divider: false, spacing: 1 };
     const panel = [{ type: 17, accent_color: accentColor, components: [
@@ -477,7 +477,7 @@ async function maybeShowReminderNote(interaction) {
         if (!sub) return;
         const fix = 'Turn on DMs from a server you share with Dioreo, or add Dioreo to your account.';
         if (sub.pausedAt && !sub.pauseNoteShown) {
-            await interaction.followUp({ content: `${emojis.remindAlert} **Your reminders were turned off:** Dioreo couldn't deliver them for several days. ${fix} Then set them again.`, components: [{ type: 1, components: [{ type: 2, style: 2, label: 'Open reminders', custom_id: 'remind_open', emoji: parseEmoji(emojis.remind) }] }], flags: 64 });
+            await interaction.followUp({ content: `${emojis.remindAlert} **Your reminders were turned off:** Dioreo couldn't deliver them for several days. ${fix} Then set them again.`, components: [{ type: 1, components: [{ type: 2, style: 2, label: 'Open Reminders', custom_id: 'remind_open', emoji: parseEmoji(emojis.remind) }] }], flags: 64 });
             await ReminderSubscription.updateOne({ _id: sub._id }, { $set: { pauseNoteShown: true } });
         } else if (sub.noteDue) {
             await interaction.followUp({ content: `-# ${emojis.remindAlert} Your reminder DM couldn't reach you. ${fix}`, flags: 64 });

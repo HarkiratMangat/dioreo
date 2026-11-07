@@ -77,11 +77,11 @@ check('the Why button: its id, its words, the Info emoji', () => {
     assert.strictEqual(b.label, 'Why am I seeing this?');
     assert.strictEqual(b.emoji.name, 'Info');
 });
-check('the answer: Turn off is red with the DisableReminder bell; once off, Turn back on is blue; once back, Turn off again', () => {
+check('the answer: Turn off is red with the DisableReminder bell; once off, Turn Back On is blue; once back, Turn off again', () => {
     const off = findId(buildWhyPanel('on'), 'ann_off');
     assert.ok(off && off.style === 4 && off.emoji.name === 'DisableReminder', 'red Turn off');
     const on = findId(buildWhyPanel('off'), 'ann_on');
-    assert.ok(on && on.style === 1 && on.label === 'Turn back on', 'blue Turn back on');
+    assert.ok(on && on.style === 1 && on.label === 'Turn Back On', 'blue Turn Back On');
     assert.ok(!findId(buildWhyPanel('off'), 'ann_off'), 'no Turn off while off');
     assert.ok(findId(buildWhyPanel('back'), 'ann_off'), 'Turn off again once back on');
 });

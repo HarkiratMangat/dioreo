@@ -70,7 +70,7 @@ function validateBuild(payload) {
 // The gunsmith code: required on MP (Harkirat, 2026-10-25 21:48 EDT), since the picture is keyed by it. A "Coming Soon" placeholder has no build yet and is exempt.
 function codeRule(build) {
     const { isPlaceholderBuild } = require('../../utils/loadoutRender');
-    if (build.mode !== 'MP' || String(build.shareCode || '').trim() || isPlaceholderBuild(build)) return null;
+    if (build.mode !== 'MP' || String(build.shareCode || '').trim() || isPlaceholderBuild(build) || build.noAttachments) return null; // the Nail Gun has no code to give (models/Loadout.js noAttachments)
     return 'An MP build needs its gunsmith code.';
 }
 

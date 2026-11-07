@@ -91,7 +91,7 @@ async function runAutocomplete(interaction) {
         return await interaction.respond([]);
     }
 
-    const matchingWeapons = await Loadout.find(queryFilter).select('weaponName weaponKey category isMeta categoryRank isToxic attachments').lean();
+    const matchingWeapons = await Loadout.find(queryFilter).select('weaponName weaponKey category isMeta categoryRank isToxic attachments noAttachments').lean();
     // A weapon whose only builds are "Coming Soon" placeholders is listed like a catalogue weapon with no build ("— Build pending") and is never a featured pick.
     const { isPlaceholderBuild } = require('../utils/loadoutRender');
     const uniqueMap = new Map();

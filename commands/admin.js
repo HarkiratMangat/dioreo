@@ -299,7 +299,7 @@ function toolsRow(settings, resetArmed) {
     if (resetArmed && changed) {
         return { type: 1, components: [
             { type: 2, style: 2, label: 'Cancel', custom_id: 'admin_home|cancel' },
-            { type: 2, style: 4, label: `Confirm: clear ${count} ${isText() ? 'text' : 'slash'} rule${count === 1 ? '' : 's'}${prefixes ? ' and the prefix' : ''}, set ${WORDS[VIEW].public}`, custom_id: 'admin_reset' },
+            { type: 2, style: 4, label: `Confirm: Clear ${count} ${isText() ? 'Text' : 'Slash'} Rule${count === 1 ? '' : 's'}${prefixes ? ' and the Prefix' : ''}, Set ${WORDS[VIEW].public}`, custom_id: 'admin_reset' },
         ] };
     }
     return { type: 1, components: [

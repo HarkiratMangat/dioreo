@@ -196,11 +196,11 @@ function whyRowNeeded(toShow, seen) {
 function buildWhyPanel(state, client = null) {
     const emojis = require('./emojiMap');
     const settings = require('./commandMentions').mentionCommand(client, 'settings');
-    const turnOff = { type: 2, style: 4, label: 'Turn off announcements', custom_id: ANN_OFF_ID, emoji: emojis.parseEmoji(emojis.disableReminder) };
+    const turnOff = { type: 2, style: 4, label: 'Turn Off Announcements', custom_id: ANN_OFF_ID, emoji: emojis.parseEmoji(emojis.disableReminder) };
     if (state === 'off') {
         return [{ type: 17, components: [
             { type: 10, content: `${emojis.checkmark} Announcements are off. Dioreo won't show them after your commands. Turn them back on any time in ${settings}.` },
-            { type: 1, components: [{ type: 2, style: 1, label: 'Turn back on', custom_id: ANN_ON_ID, emoji: emojis.parseEmoji(emojis.announcements) }] },
+            { type: 1, components: [{ type: 2, style: 1, label: 'Turn Back On', custom_id: ANN_ON_ID, emoji: emojis.parseEmoji(emojis.announcements) }] },
         ] }];
     }
     if (state === 'back') {
@@ -245,7 +245,7 @@ async function hasDueAnnouncement(userId) {
 function openButtonRow() {
     const emojis = require('./emojiMap');
     const emoji = emojis.parseEmoji(emojis.announcements);
-    return { type: 1, components: [{ type: 2, style: 2, label: 'New announcement', custom_id: ANN_OPEN_ID, ...(emoji ? { emoji } : {}) }] };
+    return { type: 1, components: [{ type: 2, style: 2, label: 'New Announcement', custom_id: ANN_OPEN_ID, ...(emoji ? { emoji } : {}) }] };
 }
 
 // Returns TRUE when it delivered (and marked) at least one announcement, FALSE when nothing was due or the send failed; the New announcement button uses it to tell an empty press apart. `asReply` (2026-10-30 21:28 EDT, the New announcement button was broken): send the announcement AS the interaction's own deferred reply instead of a follow-up. A follow-up sent straight after deferReply() does not make a new message: Discord turns it into an edit of the "thinking" placeholder (its documented, deprecated compatibility path), so the old ann_open branch delivered into the placeholder and then deleteReply() deleted the announcement it had just shown, while still counting it as a showing.

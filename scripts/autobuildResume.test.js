@@ -1,4 +1,4 @@
-// scripts/autobuildResume.test.js -- saved, resumable /autobuild batches and the two-admin dispute (Harkirat, 2026-10-25 13:31-14:05 EDT): a batch stored and loaded back puts its reviews and failed uploads where Save and Re-upload look; open vs finished; how two waiting builds clash; Save asking before it takes a build another admin also has waiting; Save All stopping there; one save at a time per weapon; the Add screenshots button. No Discord, no database, no Vertex. Run: `node scripts/autobuildResume.test.js` (also via `npm test`).
+// scripts/autobuildResume.test.js -- saved, resumable /autobuild batches and the two-admin dispute (Harkirat, 2026-10-25 13:31-14:05 EDT): a batch stored and loaded back puts its reviews and failed uploads where Save and Re-upload look; open vs finished; how two waiting builds clash; Save asking before it takes a build another admin also has waiting; Save All stopping there; one save at a time per weapon; the Add Screenshots button. No Discord, no database, no Vertex. Run: `node scripts/autobuildResume.test.js` (also via `npm test`).
 const assert = require('assert');
 const bulk = require('../utils/autobuildBulk');
 const pipe = require('../utils/autobuildPipeline');
@@ -54,7 +54,7 @@ t('Save on a build another admin also has waiting shows the choice instead of Sa
     const it = item({ ...mp('PKM', '1A2B', FIVE), rival: { kind: 'build', name: 'Alex' }, rivalNote: 'Also waiting in Alex\'s batch' }, 'pending', { askRival: true });
     const page = bulk.renderPage({ items: [it], page: 0, skipped: 0 }, 'k', 0);
     const labels = JSON.stringify(page).match(/"label":"[^"]+"/g).join(' ');
-    assert.ok(/Save mine/.test(labels) && /Leave it to them/.test(labels), labels);
+    assert.ok(/Save Mine/.test(labels) && /Leave It to Them/.test(labels), labels);
     assert.ok(!/Save Build 1/.test(labels), 'the plain Save is still there');
     assert.ok(/Also waiting in Alex/.test(JSON.stringify(page)), 'the clash is not explained on the page');
 });
@@ -76,10 +76,10 @@ t('saves of one weapon queue one at a time; different weapons do not wait for ea
     assert.deepStrictEqual(order, ['other', 'first', 'second']);
 });
 
-t('every page carries Add screenshots and stays under the 40-component cap', () => {
+t('every page carries Add Screenshots and stays under the 40-component cap', () => {
     const batch = { items: Array.from({ length: 10 }, (_, i) => item(mp(`W${i}`, '', FIVE))), page: 0, skipped: 0 };
     const page = bulk.renderPage(batch, 'k', 0);
-    assert.ok(/autobuild_b\|add\|k/.test(JSON.stringify(page)), 'no Add screenshots button');
+    assert.ok(/autobuild_b\|add\|k/.test(JSON.stringify(page)), 'no Add Screenshots button');
     assert.ok(count(page) <= 40, `${count(page)} components`);
 });
 

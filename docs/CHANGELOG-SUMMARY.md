@@ -12,6 +12,13 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.12.0 — November 7, 2026
+- **New:** typing `d gs` on its own opens an MP Gunsmiths page with every class, the lists, Search and Submit a Build.
+- **New:** the Nail Gun is in the gunsmith, as the weapon with no attachments or code.
+- **Changed:** the lists page and every list card can jump to any listed weapon, not only their own.
+- **Changed:** every button reads in Title Case, and "Did you mean" replies stay for 30 seconds with a Search All Builds button.
+- **Changed:** when a panel times out, the rows under it disappear and only the panel stays, greyed out.
+
 ## v3.11.0 — November 6, 2026
 - **New:** short names work when searching: `shv`, `sx9`, `3lr`, `kba` and more for weapons, and `soh`, `mono`, `tacsup` for attachments.
 - **New (admins):** builds can carry a comment, `/manage gunsmith` takes a build to open straight away, right-click a gunsmith card to edit it, and /autobuild's Adjust sets the build number and comment.

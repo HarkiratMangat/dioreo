@@ -111,7 +111,7 @@ check('panel on the current season: Add + Replace aimed at it, the newest season
     assert.ok(all.length <= 40, `${all.length} components`);
 });
 
-check('a season with no images gets only Add images (Add and Replace would open the same box)', () => {
+check('a season with no images gets only Add Images (Add and Replace would open the same box)', () => {
     const all = flat(command.buildPanel(KEY, source, seasons(3, 0)));
     assert.deepStrictEqual(all.filter(c => c.type === 2).map(b => b.custom_id), [`ptn_add|${KEY}|id2`]);
 });

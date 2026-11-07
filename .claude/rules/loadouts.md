@@ -96,3 +96,6 @@ A plain name/category match can't help a query like `pistol` at all — most Sec
 
 ## Shorthands (2026-11-06 20:39 EST, v3.11.0)
 Weapon shorthands live in `utils/search.js` `WEAPON_ALIASES` (`shv`, `sx9`, `t63`, `3lr`, `kba`, `mkg`, `xbow`, `deagle`, `mow` …) and are checked first by `findWeaponMatches` and `pickWeapon`; ambiguous ones (`hs`, `kilo`, `ak`, `pk`, `50`) are left out on purpose. Attachment shorthands are whole lines only (`utils/attachmentAliases.js`: `soh`, `mono`, `tacsup`, `gran`, `quickdraw` …), expanded in /manage's attachments box and bulk paste. Pinned by `scripts/weaponSearch.test.js` and `scripts/loadoutForm.test.js`.
+
+- **A weapon with no attachments and no code** (2026-11-06 23:00 EST, Harkirat: the Nail Gun "has no gunsmith code and no attachments. that's just how the weapon is. it's an \"exception\""): `Loadout.noAttachments: true`. `isPlaceholderBuild` returns false for it, so it lists and opens like any build; `core/ops/loadouts.js` codeRule asks it for no code; its card shows `-# *This weapon has no attachments or gunsmith code.*` in place of the list and the code line, and only Search sits under it (no Attachments, no Code). Any query that reads `attachments` only to test for a placeholder must also select `noAttachments`. Added to the dev database by `local/project/features/nail-gun/add-nail-gun.js` in Dioreo-Bot.
+

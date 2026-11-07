@@ -197,7 +197,7 @@ async function buildAlertsBody({ view = 'main' } = {}) {
     body.push({
         type: 1, components: [
             { type: 2, style: 2, label: 'What do alerts mean?', custom_id: 'bot_alerts_explain' },
-            { type: 2, style: 5, label: 'Full history in the portal', url: PORTAL_ANALYTICS_URL },
+            { type: 2, style: 5, label: 'Full History in the Portal', url: PORTAL_ANALYTICS_URL },
         ],
     });
     return body;
@@ -219,7 +219,7 @@ function buildAlertsExplainBody() {
                 + `Use **Export Log** for the full text record beyond what fits in Discord.`,
         },
         { type: 14, spacing: 2 },
-        { type: 1, components: [{ type: 2, style: 2, label: '← Back to alerts', custom_id: 'bot_alerts_back' }] },
+        { type: 1, components: [{ type: 2, style: 2, label: '← Back to Alerts', custom_id: 'bot_alerts_back' }] },
     ];
 }
 
@@ -574,9 +574,9 @@ async function buildChangeDetailBody(changeId) {
     body.push({ type: 10, content: `-# It applies the exact inverse recorded at the time — nothing is recomputed — and writes its own entry to this log.` });
     const canEditHere = MANAGE_PAGE_SCOPES.includes(row.page);
     body.push({ type: 1, components: [
-        { type: 2, style: 4, label: 'Revert this change', custom_id: `bot_revert_${row.changeId}` },
+        { type: 2, style: 4, label: 'Revert This Change', custom_id: `bot_revert_${row.changeId}` },
         ...(canEditHere ? [{ type: 2, style: 1, label: `Edit in ${PAGE_LABEL[row.page] || row.page}`, custom_id: `bot_changeedit_${row.page}` }] : []),
-        { type: 2, style: 5, label: 'Open in the portal', url: PORTAL_ANALYTICS_URL },
+        { type: 2, style: 5, label: 'Open in the Portal', url: PORTAL_ANALYTICS_URL },
     ] });
     body.push(reference);
     return body;
@@ -605,7 +605,7 @@ async function buildChangesBody() {
         body.push({ type: 10, content: CHANGES_EMPTY });
     }
     body.push({ type: 14, spacing: 2 });
-    body.push({ type: 1, components: [{ type: 2, style: 5, label: 'Full history in the portal', url: PORTAL_ANALYTICS_URL }] });
+    body.push({ type: 1, components: [{ type: 2, style: 5, label: 'Full History in the Portal', url: PORTAL_ANALYTICS_URL }] });
     return body;
 }
 
@@ -676,7 +676,7 @@ async function buildUsageBody() {
             ...head,
             { type: 10, content: USAGE_EMPTY },
             { type: 14, spacing: 1 },
-            { type: 1, components: [{ type: 2, style: 5, label: 'Full breakdown in the portal', url: PORTAL_ANALYTICS_URL }] },
+            { type: 1, components: [{ type: 2, style: 5, label: 'Full Breakdown in the Portal', url: PORTAL_ANALYTICS_URL }] },
         ];
     }
     return [
@@ -684,7 +684,7 @@ async function buildUsageBody() {
         { type: 10, content: `### Most Used\n${buildUsageBars(byCommand.slice(0, 5))}` },
         { type: 10, content: `-# Bars are relative to the busiest command. Your own \`/manage\` and \`/bot\` use is deliberately left out.` },
         { type: 14, spacing: 1 },
-        { type: 1, components: [{ type: 2, style: 5, label: 'Full breakdown in the portal', url: PORTAL_ANALYTICS_URL }] },
+        { type: 1, components: [{ type: 2, style: 5, label: 'Full Breakdown in the Portal', url: PORTAL_ANALYTICS_URL }] },
     ];
 }
 
@@ -795,7 +795,7 @@ async function buildTimingBody() {
         return [
             { type: 10, content: TIMING_EMPTY },
             { type: 14, spacing: 1 },
-            { type: 1, components: [{ type: 2, style: 5, label: 'Full breakdown in the portal', url: PORTAL_ANALYTICS_URL }] },
+            { type: 1, components: [{ type: 2, style: 5, label: 'Full Breakdown in the Portal', url: PORTAL_ANALYTICS_URL }] },
         ];
     }
     const ack = ackVerdict(ackP[1]);
@@ -825,7 +825,7 @@ async function buildTimingBody() {
                { type: 10, content: `-# **"Slowest 1 in 20"** means: run it twenty times and about one run will be roughly this slow. Ranked by that, not by how often each is used — and your own admin commands **are** counted here, unlike Usage.` }]
             : [{ type: 10, content: TIMING_EMPTY }]),
         { type: 14, spacing: 1 },
-        { type: 1, components: [{ type: 2, style: 5, label: 'Full breakdown in the portal', url: PORTAL_ANALYTICS_URL }] },
+        { type: 1, components: [{ type: 2, style: 5, label: 'Full Breakdown in the Portal', url: PORTAL_ANALYTICS_URL }] },
     ];
 }
 
@@ -980,7 +980,7 @@ function buildHotpatchPanel(out) {
         head(`${BOT_EMOJI.cross} **Nothing was applied.**\n\`\`\`\n${String(result.error).slice(0, 800)}\n\`\`\`\nThe process is still running the code it had.`);
     }
     body.push({ type: 1, components: [
-        { type: 2, style: 4, custom_id: 'bot_hp_restart', label: 'Full restart', emoji: { name: '♻️' } },
+        { type: 2, style: 4, custom_id: 'bot_hp_restart', label: 'Full Restart', emoji: { name: '♻️' } },
         { type: 2, style: 2, custom_id: 'bot_hp_cancel', label: 'Cancel' },
     ] });
     return [{ type: 17, accent_color: 0xFEE75C, components: body }];

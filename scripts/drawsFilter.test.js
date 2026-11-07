@@ -1,4 +1,4 @@
-// scripts/drawsFilter.test.js -- /draws' date lines and its filtered list (2026-11-01 13:16 EDT, Harkirat's six tweaks): each date says what it is with the state's dot, a status filter shows one list under /today's headings, an empty picked section is a line at the top instead of a page, and a filtered view carries Reset filter beside Calculate. Also proves every filter, section and page stays under Discord's 40 components and 4,000 characters, which is where FILTERED_CHUNK comes from.
+// scripts/drawsFilter.test.js -- /draws' date lines and its filtered list (2026-11-01 13:16 EDT, Harkirat's six tweaks): each date says what it is with the state's dot, a status filter shows one list under /today's headings, an empty picked section is a line at the top instead of a page, and a filtered view carries Reset Filter beside Calculate. Also proves every filter, section and page stays under Discord's 40 components and 4,000 characters, which is where FILTERED_CHUNK comes from.
 const assert = require('assert');
 const draws = require('../commands/draws');
 const emojis = require('../utils/emojiMap');
@@ -99,10 +99,10 @@ t('the class (14:32 EDT, "Work the class!"): every empty list says it the same w
     assert.strictEqual(emptyNote({ label: 'X', emoji: '', counts: [{ emojiKey: 'greenDotGlow', label: 'live', n: 0 }] }), `${emojis.warn} *Zero (0) **X** this season.*`);
 });
 
-t('Reset filter sits left of Calculate on any filtered view, and only there', () => {
+t('Reset Filter sits left of Calculate on any filtered view, and only there', () => {
     const row = out => out[0].components.filter(c => c.type === 1).pop().components;
     const filtered = row(draws.buildContainer(season(), 'new', 0, 1, true, mask('live')));
-    assert.deepStrictEqual(filtered.map(b => b.label), ['Reset filter', 'Calculate']);
+    assert.deepStrictEqual(filtered.map(b => b.label), ['Reset Filter', 'Calculate']);
     assert.strictEqual(filtered[0].custom_id, 'subpage_reset');
     assert.strictEqual(filtered[0].emoji.name, emojis.parseEmoji(emojis.returnArrow).name);
     assert.deepStrictEqual(row(draws.buildContainer(season(), 'new', 0, 1, true, 0)).map(b => b.label), ['Calculate']);

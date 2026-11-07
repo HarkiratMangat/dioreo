@@ -126,13 +126,13 @@ async function check(name, fn) {
         assert.strictEqual(posts.length, 1);
         assert.ok(JSON.stringify(posts[0]).includes('Did you mean'));
         assert.strictEqual(posts[0].components[0].accent_color, 16743772, 'the Did you mean card wears /help\'s coral');
-        assert.deepStrictEqual(buttons(posts[0]), ['"custom_id":"txtrun_gunsmith~weapon=ak117"', '"custom_id":"txtrun_gunsmith~weapon=ak47"']);
+        assert.deepStrictEqual(buttons(posts[0]), ['"custom_id":"txtrun_gunsmith~weapon=ak117"', '"custom_id":"txtrun_gunsmith~weapon=ak47"', '"custom_id":"gsb~search~MP"']);
     });
     await check('d build kilo: two weapons fit every word, so Did you mean after d too', async (before) => {
         const { message, posts } = fakeMessage('d build kilo');
         await onMessage(message);
         assert.strictEqual(ran.length, before);
-        assert.deepStrictEqual(buttons(posts[0]), ['"custom_id":"txtrun_gunsmith~weapon=kilo141"', '"custom_id":"txtrun_gunsmith~weapon=kiloboltaction"']);
+        assert.deepStrictEqual(buttons(posts[0]), ['"custom_id":"txtrun_gunsmith~weapon=kilo141"', '"custom_id":"txtrun_gunsmith~weapon=kiloboltaction"', '"custom_id":"gsb~search~MP"']);
     });
     await check('kilo ar opens the AR Kilo; one loose word after d or @Dioreo is offered, never run', async (before) => {
         await onMessage(fakeMessage('d gs kilo ar').message);
@@ -140,14 +140,14 @@ async function check(name, fn) {
         const after = ran.length;
         const offered = fakeMessage('d gs lol', { guildId: 'gloose' }); // outside g1's 30-per-10-s budget
         await onMessage(offered.message);
-        assert.deepStrictEqual(buttons(offered.posts[0]), ['"custom_id":"txtrun_gunsmith~weapon=kilo141"'], 'one word after a gunsmith word is a weapon request (2026-11-05)');
+        assert.deepStrictEqual(buttons(offered.posts[0]), ['"custom_id":"txtrun_gunsmith~weapon=kilo141"', '"custom_id":"gsb~search~MP"'], 'one word after a gunsmith word is a weapon request (2026-11-05)');
         const quiet = fakeMessage('d gs kilo lol', { guildId: 'gloose' });
         await onMessage(quiet.message);
         assert.strictEqual(quiet.posts.length, 0, 'two words with no weapon in them stay chat');
         const asked = fakeMessage(`<@${BOT}> gs lol`);
         await onMessage(asked.message);
         assert.strictEqual(ran.length, after, 'a loose match never runs');
-        assert.deepStrictEqual(buttons(asked.posts[0]), ['"custom_id":"txtrun_gunsmith~weapon=kilo141"']);
+        assert.deepStrictEqual(buttons(asked.posts[0]), ['"custom_id":"txtrun_gunsmith~weapon=kilo141"', '"custom_id":"gsb~search~MP"']);
         assert.strictEqual(after, before + 1);
     });
     // His three messages on prod, 2026-11-05 14:06 EST, each answered with nothing: a typed start with a digit or a look-alike in it now opens the one weapon it starts, after `d` and through every gunsmith word.
@@ -556,7 +556,7 @@ async function check(name, fn) {
         assert.ok(!JSON.stringify(keys).includes('zzqqxx'), 'never what they typed');
         misfires.__pending.clear();
     });
-    await check('a due announcement puts a New announcement button on the text reply from its first post (his "go C", 2026-10-30 18:18 EDT; up front since 2026-10-30 22:05 EDT)', async () => {
+    await check('a due announcement puts a New Announcement button on the text reply from its first post (his "go C", 2026-10-30 18:18 EDT; up front since 2026-10-30 22:05 EDT)', async () => {
         const path = require('path');
         const f = require.resolve(path.join(__dirname, '..', 'utils', 'announcement'));
         const real = require.cache[f];
@@ -588,7 +588,7 @@ async function check(name, fn) {
             assert.strictEqual(patches.length, 0, 'no edit to add it');
         } finally { if (real) require.cache[f] = real; else delete require.cache[f]; }
     });
-    await check('pressing New announcement shows it AS the private reply and never deletes it (the v3.3.1 bug, 2026-10-30 21:28 EDT)', async () => {
+    await check('pressing New Announcement shows it AS the private reply and never deletes it (the v3.3.1 bug, 2026-10-30 21:28 EDT)', async () => {
         const path = require('path');
         const f = require.resolve(path.join(__dirname, '..', 'utils', 'announcement'));
         const h = require.resolve(path.join(__dirname, '..', 'handlers', 'announcementControls'));

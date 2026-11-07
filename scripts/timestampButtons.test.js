@@ -1,4 +1,4 @@
-// scripts/timestampButtons.test.js -- /timestamp's button row (2026-11-01 15:19 EDT, Harkirat's panel update): Edit timestamp's form and what its submit changes, and Set timezone / My timezone saving the presser's own zone. No database and no Discord: the models, /remind's save and the render are stubbed.
+// scripts/timestampButtons.test.js -- /timestamp's button row (2026-11-01 15:19 EDT, Harkirat's panel update): Edit Timestamp's form and what its submit changes, and Set Timezone / My Timezone saving the presser's own zone. No database and no Discord: the models, /remind's save and the render are stubbed.
 const assert = require('assert');
 const path = require('path');
 const stub = (rel, exportsObj) => { const f = require.resolve(path.join('..', rel)); require.cache[f] = { id: f, filename: f, loaded: true, exports: exportsObj }; };
@@ -57,7 +57,7 @@ async function check(name, fn) { try { runs.length = 0; saved.length = 0; prefsB
         assert.deepStrictEqual([s.ownerId, s.ownerHasZone, s.unix, s.tz, s.queryInput, s.style, s.ephemeral, s.isTextMode], ['u1', true, String(U), 'America/Vancouver', 'in 2 hours', 'short_list', true, false]);
         assert.strictEqual(H.panelState({ flags: { bitfield: 0 }, components: [], interactionMetadata: { user: { id: 'u9' } } }, 'x').ownerId, 'u9', 'a panel from before the row: the interaction that made it');
     });
-    await check('Edit timestamp opens his five-part form, filled from the panel', async () => {
+    await check('Edit Timestamp opens his five-part form, filled from the panel', async () => {
         const i = fake({ customId: 'tsedit|u1' });
         assert.strictEqual(await H.handleTimestampInteraction(i), true);
         const [kind, m] = i.calls[0];
@@ -101,7 +101,7 @@ async function check(name, fn) { try { runs.length = 0; saved.length = 0; prefsB
         assert.ok(bad.calls[0][1].content.includes('Could not read') && bad.calls[0][1].flags === 64);
         assert.ok(zone.calls[0][1].content.includes('No timezone matches'));
     });
-    await check('Set timezone opens the shared box; a pick saves the PRESSER\'s zone and turns the owner\'s button grey', async () => {
+    await check('Set Timezone opens the shared box; a pick saves the PRESSER\'s zone and turns the owner\'s button grey', async () => {
         const open = fake({ customId: 'tszone|u1', user: 'u2' });
         await H.handleTimestampInteraction(open);
         assert.strictEqual(open.calls[0][1].custom_id, 'tszonem:u2');

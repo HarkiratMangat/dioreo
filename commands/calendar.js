@@ -191,7 +191,7 @@ const visiblePages = mask => PAGE_ORDER.filter(p => !(mask & ANY_PAGE_BITS) || (
 
 // The Reset filter row of a filtered view: the same page with no filter. `_m0` reads as no filter in handlers/pagination.js's calpage_ branch, so it needs no branch of its own; `_r` keeps the id apart from the pager's `_p`/`_n` on the same message.
 function resetFilterRow(page) {
-    return { type: 1, components: [{ type: 2, style: 2, label: 'Reset filter', emoji: emojis.parseEmoji(emojis.returnArrow), custom_id: `calpage_${page}_m0_r` }] };
+    return { type: 1, components: [{ type: 2, style: 2, label: 'Reset Filter', emoji: emojis.parseEmoji(emojis.returnArrow), custom_id: `calpage_${page}_m0_r` }] };
 }
 
 // The pager above the filter: it walks only the visible pages and loops. Direction rides in the id (`_p`/`_n`), so two pages still give two different ids (Discord rejects a message whose ids repeat).

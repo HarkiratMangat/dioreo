@@ -62,7 +62,7 @@ module.exports = {
                     ? `${emojis.reminderEnabled} ${target.type === 'category' ? `You'll get a DM for ${what}` : `You'll get a DM when ${what}`}, at the daily update (00:01 UTC). Run it again to turn it off.`
                     : `${emojis.disableReminder} Reminder off: ${what}.`);
             }
-            return await interaction.editReply({ content: lines.join('\n'), components: [{ type: 1, components: [{ type: 2, style: 2, label: 'Open reminders', custom_id: 'remind_open', emoji: emojis.parseEmoji(emojis.remind) }] }] });
+            return await interaction.editReply({ content: lines.join('\n'), components: [{ type: 1, components: [{ type: 2, style: 2, label: 'Open Reminders', custom_id: 'remind_open', emoji: emojis.parseEmoji(emojis.remind) }] }] });
         }
 
         // The panel: public unless hidden here or forced private by the server's rules (attachGuildPolicy clamps the defer).

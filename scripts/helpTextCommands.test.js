@@ -155,9 +155,9 @@ async function check(name, fn) {
             }
         }
     });
-    await check('Draw Prices: the Simple view lists the group words, the Detailed view every type in its quoted group', async () => {
+    await check('Draw Prices: the Simple View lists the group words, the Detailed View every type in its quoted group', async () => {
         const simple = await all('/draw prices', 'text');
-        assert.ok(simple.includes('`mythic` · `legendary` · `armory` · `advanced`') && simple.includes('*+9 more in Detailed view*'));
+        assert.ok(simple.includes('`mythic` · `legendary` · `armory` · `advanced`') && simple.includes('*+9 more in Detailed View*'));
         const detail = await all('/draw prices', 'text', { detail: true });
         for (const bit of ['-# **Mythic**', '> -# **`double legendary`** · `double leggy` · `dl`', '-# **Special**', '-# or just `10` · `20` · `30`']) assert.ok(detail.includes(bit), `missing ${bit}`);
         assert.ok(!detail.includes('`lcw`') && !detail.includes('`dlw`'), 'lcw / dlw shown');

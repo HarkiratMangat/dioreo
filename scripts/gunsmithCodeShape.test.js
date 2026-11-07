@@ -38,7 +38,7 @@ check('anything else that is not number-letter pairs is named too', () => {
     assert.match(gunsmithCodeProblem('1C2BB4'), /number-letter pairs/);
 });
 
-check('the /manage code warning offers Back to edit and Save anyway, and says what it saw', () => {
+check('the /manage code warning offers Back to edit and Save Anyway, and says what it saw', () => {
     const [c] = panels.codePanel({ lines: ['`1C2B4C5B7`: it ends on a number with no letter after it.'], token: 't' });
     const ids = c.components.flatMap(x => x.components || []).map(b => b.custom_id).filter(Boolean);
     assert.deepStrictEqual(ids, ['mng_codeedit|t', 'mng_codeok|t']);
@@ -47,13 +47,13 @@ check('the /manage code warning offers Back to edit and Save anyway, and says wh
     assert.match(panels.codePanel({ lines: ['a', 'b'], token: 't' })[0].components[0].content, /These codes look cut off/);
 });
 
-check('/autobuild: the review warns, Save reads Save anyway, and Save All stops on it', () => {
+check('/autobuild: the review warns, Save reads Save Anyway, and Save All stops on it', () => {
     const { refreshReviewWarnings, buildReviewCard } = require('../utils/autobuildPipeline');
     const data = { weaponName: 'FSS Hurricane', gunsmithCode: '1C2B4C5B7', attachments: ['A', 'B', 'C', 'D', 'E'], category: 'SMG', mode: 'MP', sourceImageUrl: 'https://example.com/x.png' };
     refreshReviewWarnings(data, []);
     assert.match(data.codeWarning, /looks cut off/);
     const card = JSON.stringify(buildReviewCard('tok', data));
-    assert.match(card, /"label":"Save anyway"/);
+    assert.match(card, /"label":"Save Anyway"/);
     const ok = { ...data, gunsmithCode: '1C2B4C5B7O' };
     refreshReviewWarnings(ok, []);
     assert.strictEqual(ok.codeWarning, null);
