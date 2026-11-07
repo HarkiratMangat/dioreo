@@ -20,6 +20,8 @@ const CHANNEL_WINDOW_MS = 10_000;
 const HELP_ACCENT = 16743772;      // /help and /invite's coral, #FF7D5C
 const TIMESTAMP_ACCENT = 1548962;  // /timestamp's Cyber Teal, #17A2A2
 const CARD_TTL_MS = 10_000;
+// A Did you mean card (a command, a weapon or a season) stays 30 s, not 10 (Harkirat, 2026-11-06 22:36 EST: "make the \"did you mean\" messages stay for 30s").
+const PICK_TTL_MS = 30_000;
 const EDIT_WINDOW_MS = 60_000;
 // Where Dioreo can't post, the member gets one DM per SERVER per day, and three a day in all (B6, his layout and limits 2026-10-29 15:45-15:49 EDT; it was one per channel per day, his 2026-10-28 17:18 EDT call). Held in memory only: a restart forgets it, and nothing is stored.
 const CANT_POST_DM_MS = 24 * 60 * 60 * 1000;
@@ -202,7 +204,7 @@ function pickButton(label, customId, iconKey) {
     return { type: 2, style: 2, label: String(label).slice(0, 80), custom_id: customId, ...(emoji ? { emoji } : {}) };
 }
 
-// #2, Did you mean for commands (his wording, B6, 2026-10-29 13:52 EDT): `Did you mean \`a\` or \`b\`?` over what they typed; one match sits beside its button, several get a row. Deletes itself 10 s after it is posted unless pressed.
+// #2, Did you mean for commands (his wording, B6, 2026-10-29 13:52 EDT): `Did you mean \`a\` or \`b\`?` over what they typed; one match sits beside its button, several get a row. Deletes itself 30 s after it is posted unless pressed (PICK_TTL_MS).
 function didYouMeanCard(names, typed) {
     const emojis = require('../utils/emojiMap');
     const list = names.slice(0, 5);
@@ -450,7 +452,10 @@ function pickCard(textCommand, choices, typed) {
     const emojis = require('../utils/emojiMap');
     const list = choices.slice(0, 5);
     const buttons = list.map(c => pickButton(c.label, runCustomId('txtrun_', textCommand, encodePayload({ values: c.values })), textCommand.icon));
-    return card(HELP_ACCENT, titled(`### ${emojis.search} Did you mean ${orList(list.map(c => String(c.label).slice(0, 60)))}?\n-# You typed \`${shownText(typed)}\``, buttons));
+    // A weapon pick ends with Search All Builds in its own row, the one-box search pop-up (`gsb~search~<mode>`, handlers/loadouts.js), blue as on the d gs landing (Harkirat, 2026-11-06 22:36 EST: "add a \"search all builds\" button into them").
+    const mode = textCommand?.name === 'gunsmith' ? 'MP' : textCommand?.name === 'gunsmith dmz' ? 'DMZ' : null;
+    const search = mode ? [{ type: 14, spacing: 1, divider: false }, { type: 1, components: [{ type: 2, style: 1, label: 'Search All Builds', custom_id: `gsb~search~${mode}`, emoji: emojis.parseEmoji(emojis.gunsmithSearch) }] }] : [];
+    return card(HELP_ACCENT, [...titled(`### ${emojis.search} Did you mean ${orList(list.map(c => String(c.label).slice(0, 60)))}?\n-# You typed \`${shownText(typed)}\``, buttons), ...search]);
 }
 
 // DEV BOT ONLY, like handlers/router.js's click log (2026-10-28 18:01 EDT, his question: "why does dioreo take like a second to send a reply"): where a text command's time goes. Nothing is stored; production prints nothing.
@@ -518,14 +523,14 @@ async function onMessage(message, { edited = false } = {}) {
     // A misfire is keyed by Dioreo's word: the command it answered for or suggested, never what was typed.
     const misfire = (kind, word = verdict.command) => ({ kind, word, via: verdict.via });
     const noteNoMatch = () => require('../utils/textCommands/misfires').note(message.guildId, 'noMatch', verdict.command, verdict.via);
-    if (resolved?.kind === 'pick') return reply(message, pickCard(resolved.textCommand, resolved.choices, rest), { ttl: CARD_TTL_MS, misfire: misfire('pick') });
+    if (resolved?.kind === 'pick') return reply(message, pickCard(resolved.textCommand, resolved.choices, rest), { ttl: PICK_TTL_MS, misfire: misfire('pick') });
     if (resolved?.kind === 'noMatch') { noteNoMatch(); return reply(message, noMatchLine(resolved.text), { ttl: CARD_TTL_MS }); }
     if (resolved?.kind === 'run') return runTextCommand(message, { ...resolved.verdict, typed });
     if (verdict.kind === 'needsInput') return reply(message, needsInputCard(findTextCommand(verdict.command), verdict.via), { ttl: CARD_TTL_MS, misfire: misfire('askedForInput') });
     if (verdict.kind === 'noMatch' && verdict.option === 'datetime') return reply(message, couldntReadCard(findTextCommand(verdict.command), verdict.via, verdict.text), { ttl: CARD_TTL_MS, misfire: misfire('couldntRead') });
     if (verdict.kind === 'noMatch') { noteNoMatch(); return reply(message, noMatchLine(verdict.text), { ttl: CARD_TTL_MS }); }
     if (verdict.kind === 'help') return reply(message, helpCard(client, prefixes));
-    if (verdict.kind === 'didYouMean') return reply(message, didYouMeanCard(verdict.candidates, rest), { ttl: CARD_TTL_MS, misfire: misfire('didYouMean', verdict.candidates.join('/')) });
+    if (verdict.kind === 'didYouMean') return reply(message, didYouMeanCard(verdict.candidates, rest), { ttl: PICK_TTL_MS, misfire: misfire('didYouMean', verdict.candidates.join('/')) });
     if (verdict.kind === 'emojiReply') return reply(message, { content: mentionReplyEmoji(client) });
 }
 

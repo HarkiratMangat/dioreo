@@ -56,6 +56,8 @@ const rows = [
     ['d gunsmith', { kind: 'run', command: 'gunsmith', values: { weapon: '~first~' } }],
     ['d gs smg', { kind: 'run', values: { weapon: '~first~SMG' } }],
     ['d gs assault rifles', { kind: 'run', values: { weapon: '~first~AR' } }],
+    ['d gs second', { kind: 'run', values: { weapon: '~first~SECONDARIES' } }], // the start of a class word, one class only (his 2026-11-06 22:36 EST)
+    ['d gs snip', { kind: 'run', values: { weapon: '~first~SNIPER' } }],
     // `d meta` opened the META browse (B6); since 2026-11-02 21:44 EST it and its siblings open the gunsmith lists page, carrying which list was named (`~lists~meta`). A class word after it is still ignored after d.
     ['d meta pistols', { kind: 'run', command: 'gunsmith', values: { weapon: '~lists~meta' } }],
     ['d meta', { kind: 'run', command: 'gunsmith', values: { weapon: '~lists~meta' } }],

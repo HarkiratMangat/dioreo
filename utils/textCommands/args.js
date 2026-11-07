@@ -74,6 +74,11 @@ function classOf(text, classes) {
     for (const [category, words] of Object.entries(classes)) {
         for (const w of words) if (sameWord(typed, squash(w))) return category;
     }
+    // The start of a class word, 4 letters or more, when it fits one class only: `second`, `snip`, `shot`, `marks` (Harkirat, 2026-11-06 22:36 EST: "shouldnt `d gs second` have just openned the 1st alphabetic build in the secondaries class?").
+    if (typed.length >= 4) {
+        const hits = new Set(Object.entries(classes).filter(([, words]) => words.some(w => squash(w).startsWith(typed))).map(([c]) => c));
+        if (hits.size === 1) return [...hits][0];
+    }
     return null;
 }
 
