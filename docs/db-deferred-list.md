@@ -1240,9 +1240,7 @@ Separate from `[P3 · L]` below, which is about staging a change from a sentence
 
 
 ### `[P2 · M]` Event and draw reminders when a player runs a command
-> ⏸️ **Deferred by Harkirat 2026-11-06 19:41 EST:** "deferred for now, we already have /today for that."
-#### (original heading kept below)
-#### — needs a design session, after the v3 launch (launched 2026-10-27, so it is open now)
+> ⏸️ **Deferred by Harkirat 2026-11-06 19:41 EST:** "deferred for now, we already have /today for that." — needs a design session, after the v3 launch (launched 2026-10-27, so it is open now)
 
 Filed 2026-09-14 12:21 EDT from Harkirat's comment on pins-2 design board 2 (2026-09-14 12:01 EDT). A short reminder that can pop up when someone uses a bot command: a calendar event is live, a lucky draw is out or releasing alongside it, how many days are left. Players can turn it on or off. **Not designed yet** — it needs a full discussion and design session first: what triggers it, how often it may appear, where the on/off switch lives, and how it sits beside the existing announcement follow-up. **Timing:** after v3-pre-release launches. **Verify:** a dated design spec for it exists under `docs/superpowers/specs/`.
 

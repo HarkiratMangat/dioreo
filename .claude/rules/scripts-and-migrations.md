@@ -82,3 +82,5 @@ paths:
 **What moved:** everything that reads *"here is what this script does"*. Its headings are the script names, so `ctx_search` over `docs/reference/scripts-catalogue.md` finds one in a call.
 
 ⚠️ **This split is a correction, not a mechanism.** The `.claude/rules/` size ratchet that would have kept it split was proposed and rejected on 2026-09-02, so nothing prevents the catalogue being written back into this file one section at a time. That is exactly how it got to 114KB.
+
+- **`scripts/auditLoadouts.js`** (2026-11-06 19:41 EST) — a read-only audit of every gunsmith build (codes, duplicates, numbering, names, class, attachment counts, catalogue names, slot labels, badges, placeholders; `--pictures` checks each picture loads; `--out` writes Markdown). Its pure checks are pinned by `scripts/auditLoadouts.test.js`. Run: `node --env-file=<env> scripts/auditLoadouts.js --pictures --out <file>`.
