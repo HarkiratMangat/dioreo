@@ -1,8 +1,7 @@
 // ==========================================
 // RIGHT-CLICK → APPS → "Edit Loadout" (message context menu)
 // ==========================================
-// Right-click a /gunsmith build card and /manage's Edit Loadout box opens for that build, already filled (Harkirat, 2026-11-06 19:17 EST: "let's do this next", from the open-items list). Built 2026-11-06 19:27 EST.
-// The card is read for its gunsmith code (each option's code on a merged build, shown as `WEAPON-CODE`) and, failing that (a DMZ build has no code), its weapon heading: one build of that weapon opens straight away, several show a pick list. One build opens its Edit box straight away through handlers/manage/loadouts.js openFromSlash, which also checks the clicker's edit permission on that page; several (a merged build's options) show /manage's own pick list (`mng_pick_<group>_edit`).
+// Right-click a /gunsmith build card and /manage's Edit Loadout box opens for that build, already filled (Harkirat, 2026-11-06 19:17 EST: "let's do this next", from the open-items list). Built 2026-11-06 19:27 EST. The card is read for its gunsmith code (each option's code on a merged build, shown as `WEAPON-CODE`) and, failing that (a DMZ build has no code), its weapon heading: one build of that weapon opens straight away, several show a pick list. One build opens its Edit box straight away through handlers/manage/loadouts.js openFromSlash, which also checks the clicker's edit permission on that page; several (a merged build's options) show /manage's own pick list (`mng_pick_<group>_edit`).
 const { ContextMenuCommandBuilder, ApplicationCommandType, MessageFlags } = require('discord.js');
 
 // Every text a message carries: its content, embed text and each Components V2 Text Display, found by walking the raw component JSON (a /gunsmith card is a Container of Sections and Text Displays).

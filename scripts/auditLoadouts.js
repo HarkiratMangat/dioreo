@@ -1,7 +1,6 @@
 // scripts/auditLoadouts.js
 //
-// A read-only audit of every gunsmith build (Harkirat, 2026-11-06 19:17 EST: "a build data audit ... let's do this next"). Writes nothing to the database.
-// Usage: node --env-file=<env> scripts/auditLoadouts.js [--pictures] [--out <file.md>]
+// A read-only audit of every gunsmith build (Harkirat, 2026-11-06 19:17 EST: "a build data audit ... let's do this next"). Writes nothing to the database. Usage: node --env-file=<env> scripts/auditLoadouts.js [--pictures] [--out <file.md>]
 //   --pictures  also asks Cloudinary for each build's picture (one HEAD request per option)
 //   --out       writes the report as Markdown; without it the report prints
 //
