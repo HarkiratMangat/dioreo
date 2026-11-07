@@ -437,19 +437,65 @@ async function previewBlocks(raw) {
 }
 
 // ---------- Select's tick list ----------
+// Redesigned 2026-11-07 13:19 EST (his "honestly improve this panels design signifantly"): the list is the panel, one line per build with its tick mark, class, badges and code; the dropdown only flips ticks (no chips); Tick All / Clear; the actions say how many they act on.
+async function keyInfo(key) {
+    const { id, opt } = splitKey(key);
+    const d = await Loadout().findById(id).lean();
+    if (!d) return null;
+    const { variantView } = require('../utils/loadoutRender');
+    const L = require('../utils/loadoutOptions').optionLetter;
+    const v = opt ? variantView(d, opt) : d;
+    const optCount = 1 + (d.variants || []).length;
+    const label = opt !== null ? (opt ? d.variants[opt - 1].label : d.label) : d.label;
+    return {
+        icon: classIcon(d.category),
+        title: `**${d.weaponName}** · ${d.buildName}${opt !== null && optCount > 1 ? ` · Option ${L(opt)}` : ''}${label ? ` · ${label}` : ''}`,
+        plain: `${d.weaponName} · ${d.buildName}${opt !== null && optCount > 1 ? ` ${L(opt)}` : ''}${label ? ` · ${label}` : ''}`,
+        badges: badgeWords(d).join('  '),
+        sub: `\`${v.shareCode || 'no code'}\` · ${(v.attachments || []).length} attachments${opt === null && optCount > 1 ? ` · ${optCount} options` : ''}`,
+        code: v.shareCode || '',
+        emoji: classOf(d.category)[1],
+    };
+}
+
 function tickView(token, note = null) {
     const t = TICK.get(token);
     if (!t) return resultView({ title: 'That list expired. Search again.', ok: false });
     const shown = t.ids.slice(0, 25);
+    const n = t.ticked.size;
+    const searched = (t.query || []).map(q => `\`${q}\``).join(' · ');
     const components = [
-        text(`${crumb('Select Builds')}\n## ${emojis.filter} Select Builds\n-# **${t.ids.length}** found · **${t.ticked.size}** ticked`),
+        text(`${crumb('Select Builds')}\n## ${emojis.filter} Select Builds${searched ? `\n-# ${searched}` : ''}`),
     ];
-    if (t.unmatched?.length) components.push(text(`-# ${emojis.warn} No build matched ${t.unmatched.map(x => `\`${x}\``).join(', ')}`));
-    if (t.ids.length > 25) components.push(text(`-# Only 25 fit in one list; narrow the search for the other ${t.ids.length - 25}.`));
+    if (t.unmatched?.length) components.push(text(`-# ${emojis.warn} Nothing matched ${t.unmatched.map(x => `\`${x}\``).join(', ')}`));
+    components.push(BIG());
+    if (!shown.length) {
+        components.push(text(`${emojis.cross} **No builds found.** Try fewer words, a class like \`smg\`, or a quick pick.`), BIG(), row(ebtn('select', 'Search Again', emojis.gunsmithSearch, 1), ebtn('page', 'Back', emojis.returnArrow)));
+        return panel(components);
+    }
+    const lines = [];
+    for (const key of shown) {
+        const i = t.info.get(key);
+        if (!i) continue;
+        const mark = t.ticked.has(key) ? emojis.check : emojis.smallDot;
+        lines.push(`${mark} ${i.icon} ${i.title}${i.badges ? `  ${i.badges}` : ''}\n-# ${emojis.blank}${emojis.blank} ${i.sub}`);
+    }
+    let listText = lines.join('\n');
+    if (listText.length > 3900) listText = `${listText.slice(0, 3850)}\n-# …`;
+    components.push(
+        text(`-# **${t.ids.length}** found · **${n}** ticked${t.ids.length > 25 ? ` · showing 25, narrow the search for the rest` : ''}`),
+        text(listText),
+        SMALL(),
+        { type: 1, components: [{ type: 3, custom_id: `${PREFIX}tick|${token}`, min_values: 1, max_values: shown.length, placeholder: 'Tick or untick builds…', options: shown.map(key => { const i = t.info.get(key) || { plain: key }; return { label: i.plain.slice(0, 100), value: key, description: `${t.ticked.has(key) ? 'Ticked' : 'Not ticked'}${i.code ? ` · ${i.code}` : ''}`.slice(0, 100), ...(i.emoji && emojis[i.emoji] ? { emoji: emojis.parseEmoji(emojis[i.emoji]) } : {}) }; }) }] },
+        row(ebtn(`tall|${token}`, 'Tick All', emojis.checkmark, 2, n === shown.length), ebtn(`tnone|${token}`, 'Clear', emojis.cross, 2, !n)),
+    );
     if (note) components.push(text(note));
-    components.push(BIG(), text('-# Tick the builds to act on…'));
-    if (shown.length) components.push({ type: 1, components: [{ type: 3, custom_id: `${PREFIX}tick|${token}`, min_values: 0, max_values: shown.length, placeholder: 'Tick the builds', options: shown.map(id => ({ label: t.labels.get(id).slice(0, 100), value: id, default: t.ticked.has(id) })) }] });
-    components.push(SMALL(), row(ebtn(`tedit|${token}`, `Edit ${t.ticked.size}`, emojis.mngEdit, 1, !t.ticked.size), ebtn(`step|${token}|0`, 'Expand View', emojis.gunsmithList, 2, !t.ticked.size), ebtn(`texp|${token}`, `Export ${t.ticked.size}`, emojis.mngExport, 2, !t.ticked.size), ebtn(`tdel|${token}`, `Delete ${t.ticked.size}`, emojis.mngBulkDelete, 4, !t.ticked.size)), row(ebtn('select', 'Search Again', emojis.gunsmithSearch), ebtn('page', 'Back', emojis.returnArrow)));
+    components.push(
+        BIG(),
+        text(n ? `-# With the **${n}** ticked…` : '-# Tick builds to edit, export or delete them…'),
+        row(ebtn(`tedit|${token}`, `Edit ${n || ''}`.trim(), emojis.mngEdit, 1, !n), ebtn(`step|${token}|0`, 'Expand View', emojis.gunsmithList, 2, !n), ebtn(`texp|${token}`, `Export ${n || ''}`.trim(), emojis.mngExport, 2, !n), ebtn(`tdel|${token}`, `Delete ${n || ''}`.trim(), emojis.mngBulkDelete, 4, !n)),
+        row(ebtn('select', 'Search Again', emojis.gunsmithSearch), ebtn('page', 'Home', emojis.database)),
+    );
     return panel(components);
 }
 
@@ -527,7 +573,12 @@ async function route(interaction) {
     }
     if (verb === 'tick') {
         const t = TICK.get(a);
-        if (t) t.ticked = new Set(interaction.values);
+        if (t) for (const v of interaction.values) { if (t.ticked.has(v)) t.ticked.delete(v); else t.ticked.add(v); }
+        return show(interaction, tickView(a));
+    }
+    if (verb === 'tall' || verb === 'tnone') {
+        const t = TICK.get(a);
+        if (t) t.ticked = verb === 'tall' ? new Set(t.ids.slice(0, 25)) : new Set();
         return show(interaction, tickView(a));
     }
     if (verb === 'tlist') return show(interaction, tickView(a));
@@ -652,7 +703,11 @@ async function route(interaction) {
     if (verb === 'selectm') {
         const { keys, unmatched } = await resolveKeys(field(interaction, 'names'), field(interaction, 'picks') || []);
         const token = Date.now().toString(36);
-        TICK.set(token, { ids: keys.map(k => k.key), ticked: new Set(), labels: new Map(keys.map(k => [k.key, k.label])), unmatched });
+        const info = new Map();
+        for (const k of keys.slice(0, 25)) info.set(k.key, await keyInfo(k.key));
+        const pickLabels = Object.fromEntries(QUICK_PICKS);
+        const query = [...String(field(interaction, 'names') || '').split('\n').map(x => x.trim()).filter(Boolean), ...(field(interaction, 'picks') || []).map(v => pickLabels[v] || v)];
+        TICK.set(token, { ids: keys.map(k => k.key), ticked: new Set(), labels: new Map(keys.map(k => [k.key, k.label])), info, query, unmatched });
         return show(interaction, tickView(token));
     }
     if (verb === 'exportm') {
