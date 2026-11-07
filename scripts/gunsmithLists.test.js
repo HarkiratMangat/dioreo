@@ -100,6 +100,21 @@ assert.deepStrictEqual(rows[3].components.map(b => [b.label, b.style, b.custom_i
 assert.deepStrictEqual(lc.at(-2), { type: 14, spacing: 2, divider: true }, 'a divider above that section');
 assert.ok(!JSON.stringify(L.buildLandingPage(['AR']).components).includes('gsb~cls~SMG'), 'a class with no build gets no button');
 console.log('  ✓ the MP Gunsmiths landing: title, classes 4 then 3, lists, Search and Submit');
+// A landing class button reaches the loadouts handler and opens that class's MP browse in place (handlers/loadouts.js `gsb~cls~`).
+(async () => {
+    const gPath = require.resolve('../commands/gunsmith');
+    const g = require(gPath);
+    const real = g.renderScopeBrowse;
+    const calls = [];
+    g.renderScopeBrowse = async (_i, scope, index, opts) => { calls.push([scope, index, opts]); };
+    try {
+        const { handleLoadoutsInteraction } = require('../handlers/loadouts');
+        const press = { customId: 'gsb~cls~SECONDARIES', isButton: () => true, isStringSelectMenu: () => false, isModalSubmit: () => false, isAutocomplete: () => false, isChatInputCommand: () => false, message: { id: 'm1', flags: { bitfield: 0 } }, user: { id: 'u' } };
+        assert.strictEqual(await handleLoadoutsInteraction(press), true, 'the handler consumes a class button');
+        assert.deepStrictEqual(calls, [[{ mode: 'MP', category: 'SECONDARIES', metaOnly: false }, 0, { isUpdate: true }]], 'that class, from its first build, in place');
+        console.log('  ✓ a landing class button opens that class in place');
+    } finally { g.renderScopeBrowse = real; }
+})().catch(e => { console.error(e); process.exit(1); });
 
 // The in-game class order, everywhere a class list sorts (his 2026-11-03 11:44 EST).
 assert.deepStrictEqual(CLASS_ORDER, ['AR', 'SNIPER', 'LMG', 'SMG', 'SHOTGUN', 'MARKSMAN', 'SECONDARIES']);
