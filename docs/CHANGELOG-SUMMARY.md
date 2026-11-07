@@ -12,6 +12,9 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.12.1 — November 7, 2026
+- **Fixed (admins):** news cards read "today's daily reset" as the next reset, and no longer call a draw that is new this season a returning one.
+
 ## v3.12.0 — November 7, 2026
 - **New:** typing `d gs` on its own opens an MP Gunsmiths page with every class, the lists, Search and Submit a Build.
 - **New:** the Nail Gun is in the gunsmith, as the weapon with no attachments or code.

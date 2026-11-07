@@ -29,7 +29,14 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.12.0 — 2026-11-07 00:00 EST (#259) — An MP Gunsmiths landing, full list dropdowns, Title Case buttons and new emojis
+## v3.12.1 — 2026-11-07 14:13 EST (#260) — News triage reads "today's daily reset" as the next reset, and stops calling this season's new draws returning
+
+### Fixed
+- **"Today's daily reset" is the next 00:00 UTC after the post** (`utils/newsTriage/resolve.js` `nextReset`). #leaks posted "Sapphire Winter Draw will be coming on today's daily reset" at 17:53 UTC on Nov 7; it was read as the post's own UTC day, Nov 7, so the card said the bot's correct Nov 8 had changed. Only a phrase that is nothing but the reset is read this way, "today's update", "daily refresh" and "tonight" count too, a post up to two hours after a reset means the one that just passed, and a written date beside the reset still wins ("the daily reset on November 12" no longer reads as today).
+- **A draw in the draw index is returning only if it first ran in an earlier season.** The index holds this season's new draws too (a draw saved into New gets that season), so the same card called Sapphire Winter Draw, new this season, returning. The index's `releaseSeason`/`releaseYear` are now compared with the item's season (a later season with both years known is a staged draw, still new; a document with no season is still an older draw, and its warning now says "no season recorded"), and for a draw already on the bot, the bot's own list decides.
+- **The daily briefing leaves dismissed fix cards out.** A wrong fix card stayed in every briefing's "wrong on the bot" list for a week, even after Dismiss.
+
+## v3.12.0 — 2026-11-07 00:00 EST (#259 · `e9fc8245`) — An MP Gunsmiths landing, full list dropdowns, Title Case buttons and new emojis
 
 ### Added
 - **An MP Gunsmiths landing** for a bare `d gs` (`d gunsmith`, `d build`, `d b`), which used to jump into the catalogue's first build: the season, the classes as buttons in the in-game order (`gsb~cls~<CATEGORY>`, that class's browse in place), the list buttons, then Search Builds and Submit a Build (`utils/gunsmithLists.js` `buildLandingPage`).

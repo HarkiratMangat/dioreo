@@ -79,15 +79,16 @@ function enqueue(fn) {
 }
 
 async function loadContext(postedAt) {
+    const { seasonYear } = require('../quickAdd');
     const SeasonalData = require('../../models/SeasonalData');
     const DrawCatalog = require('../../models/DrawCatalog');
     const [doc, catalogue] = await Promise.all([
         SeasonalData.findOne({ docType: 'global' }).lean(),
-        DrawCatalog.find({}, { title: 1, aliases: 1 }).lean(),
+        DrawCatalog.find({}, { title: 1, aliases: 1, releaseSeason: 1, releaseYear: 1 }).lean(),
     ]);
     const d = doc || {}; const draft = d.draft || {};
     return {
-        postedAt, liveEnd: d.bpEnd || null, liveTitle: d.currentSeasonTitle || '', draftStart: draft.bpStart || null, draftTitle: draft.currentSeasonTitle || '', draftEnd: (!draft.bpEndTBD && draft.bpEnd) || ((draft.bpStart || d.bpEnd) ? new Date(new Date(draft.bpStart || d.bpEnd).getTime() + 75 * DAY_MS) : null), catalogue,
+        postedAt, liveEnd: d.bpEnd || null, liveTitle: d.currentSeasonTitle || '', liveYear: seasonYear(d), draftStart: draft.bpStart || null, draftTitle: draft.currentSeasonTitle || '', draftYear: seasonYear(draft), draftEnd: (!draft.bpEndTBD && draft.bpEnd) || ((draft.bpStart || d.bpEnd) ? new Date(new Date(draft.bpStart || d.bpEnd).getTime() + 75 * DAY_MS) : null), catalogue,
         live: { newDraws: d.newDraws || [], returningDraws: d.returningDraws || [], calendar: d.calendar || [] },
         draft: { newDraws: draft.newDraws || [], returningDraws: draft.returningDraws || [], calendar: draft.calendar || [] },
         draftDoc: draft, liveDoc: d,
@@ -431,7 +432,8 @@ async function gatherBriefing(rest, cfg, now = new Date()) {
     try { liveDoc = await require('../../models/SeasonalData').findOne({ docType: 'global' }).lean(); out.readiness = draftReadiness(liveDoc); } catch { /* no database */ }
     try {
         const NewsCard = require('../../models/NewsCard');
-        const recent = await NewsCard.find({ createdAt: { $gte: new Date(now - 7 * DAY_MS) }, 'items.action': 'fix' }, { items: 1 }).lean();
+        // A dismissed card is left out (2026-11-07): Dismiss is his "not this one", unlike opening the box and cancelling. A wrong fix (the Sapphire Winter Draw card, read a day early) otherwise stayed in every briefing for a week after he dismissed it.
+        const recent = await NewsCard.find({ createdAt: { $gte: new Date(now - 7 * DAY_MS) }, 'items.action': 'fix', dismissed: { $ne: true } }, { items: 1 }).lean();
         // Each fix is checked against the live row as it is NOW, not against whether its button was clicked (2026-11-05 15:34 EST): opening the box and cancelling used to hide it, and a fix made by hand in /manage stayed listed.
         for (const c of recent) for (const it of c.items) if (it.action === 'fix' && fixStillWrong(it, liveDoc)) out.fixes.push({ name: it.name, text: (it.warnings || []).find(w => /^On the bot/.test(w)) || 'dates changed' });
     } catch { /* no database */ }
