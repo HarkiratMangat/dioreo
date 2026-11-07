@@ -1355,7 +1355,7 @@ function buildSavedPanelAt(state, savedBaskets, accentColor, { notice = null, sa
         if (armed) components.push({ type: 10, content: `### ${emojis.warn} Delete ${list.length === 1 ? 'this calculation' : `all ${list.length} calculations`}? This cannot be undone.` });
         components.push({ type: 1, components: [
             ...(armed ? [{ type: 2, style: 2, label: list.length === 1 ? 'Keep It' : 'Keep Them', custom_id: encodeState('saved', view), emoji: emojis.parseEmoji(emojis.keep) }] : []),
-            { type: 2, style: armed ? 4 : 2, label: armed ? `Delete All (${list.length}) — click again` : 'Delete All', custom_id: encodeState(armed ? 'delall' : 'delallarm', view), emoji: emojis.parseEmoji(emojis.deleteAll) },
+            { type: 2, style: armed ? 4 : 2, label: armed ? `Delete All (${list.length}) — Click Again` : 'Delete All', custom_id: encodeState(armed ? 'delall' : 'delallarm', view), emoji: emojis.parseEmoji(emojis.deleteAll) },
         ] });
         }
     }

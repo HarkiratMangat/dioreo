@@ -271,7 +271,7 @@ t('a NEW line starts at 0 -- no inherited default from a sibling line of the sam
 t('New Calculation is one press, and the empty form offers Restore Calculation while a copy is kept (2026-10-19 00:13 EDT)', () => {
     const plain = buttonLabelled(render(makeBasket()), 'New Calculation');
     assert.ok(plain && plain.style !== 4 && verbOf(plain) === 'reset', 'one press, never Danger');
-    assert.strictEqual(buttonLabelled(render(makeBasket(), { verb: 'resetarm' }), 'New Calculation — click again'), undefined, 'no click again');
+    assert.strictEqual(buttonLabelled(render(makeBasket(), { verb: 'resetarm' }), 'New Calculation — Click Again'), undefined, 'no click again');
     const empty = { banners: [], submitted: false };
     // In the form's bottom row, in New Calculation's place, with its icon (his ask, 2026-10-19 00:14 EDT).
     const kept = render(makeBasket({ ...empty, previous: { banners: [{ drawKey: 'mythicWeapon', pullsDone: 2 }], submitted: true } }));
@@ -713,7 +713,7 @@ t('the Saved view opens a calculation, deletes several, or deletes all, and its 
     assert.ok(del && del.max_values === 3 && del.min_values === 1);
     assert.strictEqual(verbOf(buttonLabelled(panel, 'Delete All')), 'delallarm', 'Delete All is two-step');
     assert.ok(buttonLabelled(panel, 'Delete All').emoji, 'with his DeleteAll icon');
-    const armed = buttonLabelled(savedView(savedList(3), { verb: 'delallarm' }), 'Delete All (3) — click again');
+    const armed = buttonLabelled(savedView(savedList(3), { verb: 'delallarm' }), 'Delete All (3) — Click Again');
     assert.ok(armed && armed.style === 4 && verbOf(armed) === 'delall');
     // Armed Delete All warns and offers Keep Them, like a single delete (2026-10-19 10:46 EDT).
     const armedPanel = savedView(savedList(3), { verb: 'delallarm' });
