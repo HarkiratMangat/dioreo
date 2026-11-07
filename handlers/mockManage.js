@@ -483,16 +483,16 @@ function tickView(token, note = null) {
     let listText = lines.join('\n');
     if (listText.length > 3900) listText = `${listText.slice(0, 3850)}\n-# …`;
     components.push(
-        text(`-# **${t.ids.length}** found · **${n}** ticked${t.ids.length > 25 ? ` · showing 25, narrow the search for the rest` : ''}`),
+        text(`-# **${t.ids.length}** found · **${n}** selected${t.ids.length > 25 ? ` · showing 25, narrow the search for the rest` : ''}`),
         text(listText),
         SMALL(),
-        { type: 1, components: [{ type: 3, custom_id: `${PREFIX}tick|${token}`, min_values: 1, max_values: shown.length, placeholder: 'Tick or untick builds…', options: shown.map(key => { const i = t.info.get(key) || { plain: key }; return { label: i.plain.slice(0, 100), value: key, description: `${t.ticked.has(key) ? 'Ticked' : 'Not ticked'}${i.code ? ` · ${i.code}` : ''}`.slice(0, 100), ...(i.emoji && emojis[i.emoji] ? { emoji: emojis.parseEmoji(emojis[i.emoji]) } : {}) }; }) }] },
-        row(ebtn(`tall|${token}`, 'Tick All', emojis.checkmark, 2, n === shown.length), ebtn(`tnone|${token}`, 'Clear', emojis.cross, 2, !n)),
+        { type: 1, components: [{ type: 3, custom_id: `${PREFIX}tick|${token}`, min_values: 1, max_values: shown.length, placeholder: 'Select or unselect builds…', options: shown.map(key => { const i = t.info.get(key) || { plain: key }; return { label: i.plain.slice(0, 100), value: key, description: `${t.ticked.has(key) ? 'Selected' : 'Not selected'}${i.code ? ` · ${i.code}` : ''}`.slice(0, 100), ...(i.emoji && emojis[i.emoji] ? { emoji: emojis.parseEmoji(emojis[i.emoji]) } : {}) }; }) }] },
+        row(ebtn(`tall|${token}`, 'Select All', emojis.checkmark, 2, n === shown.length), ebtn(`tnone|${token}`, 'Clear', emojis.cross, 2, !n)),
     );
     if (note) components.push(text(note));
     components.push(
         BIG(),
-        text(n ? `-# With the **${n}** ticked…` : '-# Tick builds to edit, export or delete them…'),
+        text(n ? `-# With the **${n}** selected…` : '-# Select builds to edit, export or delete them…'),
         row(ebtn(`tedit|${token}`, `Edit ${n || ''}`.trim(), emojis.mngEdit, 1, !n), ebtn(`step|${token}|0`, 'Expand View', emojis.gunsmithList, 2, !n), ebtn(`texp|${token}`, `Export ${n || ''}`.trim(), emojis.mngExport, 2, !n), ebtn(`tdel|${token}`, `Delete ${n || ''}`.trim(), emojis.mngBulkDelete, 4, !n)),
         row(ebtn('select', 'Search Again', emojis.gunsmithSearch), ebtn('page', 'Home', emojis.database)),
     );
@@ -627,7 +627,7 @@ async function route(interaction) {
         const raw = b ? PASTE.get(b) : null;
         const blocks = raw ? raw.split(/\n\s*\n/).filter(x => x.trim()) : await keyBlocks(t.ids.filter(x => t.ticked.has(x)));
         const modal = blocksModal(`${PREFIX}teditm|${a}`, `Edit ${t.ticked.size} MP Build${t.ticked.size === 1 ? '' : 's'}`, blocks);
-        if (!modal) return show(interaction, tickView(a, `${emojis.warn} Too much text for one pop-up (5 boxes of 4,000). Tick fewer builds, or use Expand View.`));
+        if (!modal) return show(interaction, tickView(a, `${emojis.warn} Too much text for one pop-up (5 boxes of 4,000). Select fewer builds, or use Expand View.`));
         return interaction.showModal(modal);
     }
     if (verb === 'teditm') {
