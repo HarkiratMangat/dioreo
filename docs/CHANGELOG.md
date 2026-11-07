@@ -29,7 +29,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.13.0 — 2026-11-07 15:59 EST (#PR) — /manage gunsmith mp and dmz rehauled: one panel to search, browse, select, edit, paste and export builds
+## v3.13.0 — 2026-11-07 15:59 EST (#261) — /manage gunsmith mp and dmz rehauled: one panel to search, browse, select, edit, paste and export builds
 
 ### Added
 - **A new `/manage gunsmith mp` and `dmz` panel** (`handlers/manage/gunsmith/`), one message that changes in place: a home page with Search Builds, Add Build, the seven classes, Paste Builds, Select Builds, Export and Guide; a class page with its weapons; a weapon page with every build; and one build card (the /gunsmith card) with an option picker on a merged build and Edit, Move, Add Option and Delete. The section dropdown sits under the home page.
