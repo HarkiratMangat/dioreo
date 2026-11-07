@@ -21,8 +21,7 @@ const classWord = (c) => classOf(c)[2];
 const CATEGORY_WORDS = { ar: 'AR', ars: 'AR', assault: 'AR', smg: 'SMG', smgs: 'SMG', lmg: 'LMG', lmgs: 'LMG', marksman: 'MARKSMAN', marksmen: 'MARKSMAN', sniper: 'SNIPER', snipers: 'SNIPER', shotgun: 'SHOTGUN', shotguns: 'SHOTGUN', secondary: 'SECONDARIES', secondaries: 'SECONDARIES', pistol: 'SECONDARIES', pistols: 'SECONDARIES' };
 const categoryOfLine = (line) => CATEGORY_WORDS[String(line).toLowerCase().trim().replace(/^all\s+/, '')] || null;
 
-// ---------- badges, as words ----------
-// MP badges: utils/adminParser.js loadoutBadgeTokens. DMZ's rank is a tier plus an optional range (`bestclose`, `top3midlong`; models/Loadout.js dmzRangeRank), read as words here: "Best Close", "Top 3 Mid-Long".
+// ---------- badges, as words ---------- MP badges: utils/adminParser.js loadoutBadgeTokens. DMZ's rank is a tier plus an optional range (`bestclose`, `top3midlong`; models/Loadout.js dmzRangeRank), read as words here: "Best Close", "Top 3 Mid-Long".
 const MP_BADGE = { meta: ['meta', 'Meta'], best: ['best', 'Best'], top3: ['top3', 'Top 3'], top5: ['top5', 'Top 5'], capable: ['hm', 'HM'], toxic: ['toxic', 'Toxic'], ass: ['ass', 'Ass'] };
 function badgeWord(token) {
     if (MP_BADGE[token]) return MP_BADGE[token];
@@ -34,8 +33,7 @@ function badgeWord(token) {
 }
 const badgeWords = (l) => require('../../../utils/adminParser').loadoutBadgeTokens(l).map(badgeWord).filter(Boolean).map(([e, w]) => `${emojis[e] || ''} ${w}`.trim());
 
-// ---------- quick picks ----------
-// One list per mode, every pick a union with the others and with the typed names (Harkirat, 2026-11-07 11:22 EST: "all meta and all ar"). Under Discord's 25 options either way.
+// ---------- quick picks ---------- One list per mode, every pick a union with the others and with the typed names (Harkirat, 2026-11-07 11:22 EST: "all meta and all ar"). Under Discord's 25 options either way.
 const RANK = (l) => String(l.dmzRangeRank || '');
 const PICK_TESTS = {
     MP: [
@@ -63,8 +61,7 @@ function pickTest(mode, pick) {
     return row ? row[2] : null;
 }
 
-// ---------- search ----------
-// Every typed word must appear, the way `build:` autocomplete works (handlers/manage/loadouts.js buildChoices), plus one rule it lacks: a word shaped like a build tag (`1`, `1b`) must equal the build's own tag, so `fss 1b` finds Option B and not Option A. His click-test, 2026-11-07 12:55 EST: "shouldnt this have found the fss hurricane?". A number that is part of the weapon's own name (KILO 141, AK117) is the name, not a tag.
+// ---------- search ---------- Every typed word must appear, the way `build:` autocomplete works (handlers/manage/loadouts.js buildChoices), plus one rule it lacks: a word shaped like a build tag (`1`, `1b`) must equal the build's own tag, so `fss 1b` finds Option B and not Option A. His click-test, 2026-11-07 12:55 EST: "shouldnt this have found the fss hurricane?". A number that is part of the weapon's own name (KILO 141, AK117) is the name, not a tag.
 async function searchBuilds(mode, query) {
     const choices = await require('../loadouts').buildChoices(GROUP[mode], query);
     const tags = String(query || '').toLowerCase().split(/\s+/).filter(w => /^\d+[a-z]?$/.test(w));

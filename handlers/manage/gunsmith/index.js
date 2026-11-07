@@ -24,8 +24,7 @@ const loadouts = () => require('../loadouts');
 const PREFIX = 'mng_gs|';
 const isObjectId = (x) => /^[0-9a-f]{24}$/.test(String(x || ''));
 
-// ---------- answering ----------
-// One message that changes in place. A slash command, or a pop-up opened straight from one (no message under it), answers with a fresh reply instead.
+// ---------- answering ---------- One message that changes in place. A slash command, or a pop-up opened straight from one (no message under it), answers with a fresh reply instead.
 async function show(interaction, components, { ephemeral = true } = {}) {
     if (!interaction.deferred && !interaction.replied) {
         if (interaction.isChatInputCommand?.() || (interaction.isModalSubmit?.() && !interaction.message)) await interaction.deferReply({ flags: ephemeral ? 64 : 0 });
@@ -123,8 +122,7 @@ async function renderHome(interaction, mode) {
     return show(interaction, await home(mode, null, interaction));
 }
 
-// ---------- deletes ----------
-// One build or one option, as mng_delconfirm_ does it (handlers/manage/index.js), answered in place with Revert.
+// ---------- deletes ---------- One build or one option, as mng_delconfirm_ does it (handlers/manage/index.js), answered in place with Revert.
 async function deleteOne(interaction, mode, id, opt) {
     const doc = isObjectId(id) ? await Loadout().findById(id).lean() : null;
     if (!doc || doc.mode !== mode) return show(interaction, await home(mode, `${emojis.cross} That build no longer exists.`, interaction));
@@ -167,8 +165,7 @@ async function deleteMany(interaction, mode, keys) {
     return { ok: true, changeIds: result.changeIds, count: keys.length };
 }
 
-// ---------- the slash command ----------
-// His 13:40 EST ask: more ways for the slash command to go straight to something without walking through the panel. `build:` opens a build (or `＋ New build`), `builds:` a Select list, `weapon:` / `class:` their pages; `do:` with a target acts at once. A pop-up has to be the first answer, so every path that opens one runs before anything is deferred.
+// ---------- the slash command ---------- His 13:40 EST ask: more ways for the slash command to go straight to something without walking through the panel. `build:` opens a build (or `＋ New build`), `builds:` a Select list, `weapon:` / `class:` their pages; `do:` with a target acts at once. A pop-up has to be the first answer, so every path that opens one runs before anything is deferred.
 const DO_CHOICES = [['Add Build', 'add'], ['Edit', 'edit'], ['Move', 'move'], ['Add Option', 'newopt'], ['Delete', 'delete'], ['Paste Builds', 'paste'], ['Export', 'export'], ['Guide', 'guide']];
 
 async function openFromSlash(interaction, mode) {

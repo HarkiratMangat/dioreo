@@ -277,9 +277,13 @@ const PAGES = {
                 usageNote: "-# One subcommand per section; each opens that section's panel",
                 boxes: [
                     text(`**Sections**\n${SECTIONS.map(([n, d]) => `> -# ${m(`/${n}`)}  *${d}*`).join('\n')}`),
-                    text("`[action]`\n-# Open one of that section's buttons directly, e.g. **Add Multiple** or **Export**. Purge, Promote and Discard stay on the panel"),
-                    // build: on the gunsmith subcommands (2026-11-06 11:10 EST).
-                    text("`[build]`\n-# Gunsmith only: open one build or option straight away. With **Add** it opens its next option, with **Delete** its confirm"),
+                    text("`[action]`\n-# Open one of that section's buttons directly, e.g. **Add Multiple** or **Export**. Purge, Promote and Discard stay on the panel. Not on gunsmith"),
+                    // Gunsmith's own options (the gunsmith rehaul, 2026-11-07 16:03 EST; handlers/manage/gunsmith/index.js openFromSlash).
+                    text("`[build]`\n-# Gunsmith: go to one build or option, e.g. `fss 1b`, or pick **＋ New build**"),
+                    text("`[do]`\n-# Gunsmith: what to do with `build` or `builds`: Edit, Move, Add Option, Delete; or alone, Add Build, Paste Builds, Export, Guide"),
+                    text("`[builds]`\n-# Gunsmith: several builds, comma-separated, opened as a Select list"),
+                    text("`[weapon]`\n-# Gunsmith: a weapon's page, with all its builds"),
+                    text("`[class]`\n-# Gunsmith: a class's page, to pick a weapon"),
                     text('`[visibility]`\n-# Only you by default, or everyone in the chat. Not on season titles'),
                 ],
                 sections: [

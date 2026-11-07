@@ -1,5 +1,4 @@
-// Tests for the rehauled /manage gunsmith panel (handlers/manage/gunsmith/, 2026-11-07 14:24 EST). No database: the one search that reads builds gets a stub of handlers/manage/loadouts.js buildChoices.
-// Covers the plan's checks (local/project/features/manage-rehaul/spec.md): the search rules (`fss 1b` finds Option B; a number in a weapon's name is the name), Edit N's pop-up packing, the Select page within Discord's limits (40 components, 4,000 characters, 25 options, custom ids of 100), and the quick picks.
+// Tests for the rehauled /manage gunsmith panel (handlers/manage/gunsmith/, 2026-11-07 14:24 EST). No database: the one search that reads builds gets a stub of handlers/manage/loadouts.js buildChoices. Covers the plan's checks (local/project/features/manage-rehaul/spec.md): the search rules (`fss 1b` finds Option B; a number in a weapon's name is the name), Edit N's pop-up packing, the Select page within Discord's limits (40 components, 4,000 characters, 25 options, custom ids of 100), and the quick picks.
 const assert = require('assert');
 const path = require('path');
 

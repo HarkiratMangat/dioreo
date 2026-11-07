@@ -42,8 +42,7 @@ async function seasonLine() {
     return `\n${emoji ? `${emoji} ` : ''}${require('../../../utils/titleBlock').toBoldItalicUnicode(doc.currentSeasonTitle)}`;
 }
 
-// ---------- home ----------
-// `pageRow` is /manage's section dropdown (commands/manage.js buildPageSelectRow), under the panel so the other sections stay one pick away.
+// ---------- home ---------- `pageRow` is /manage's section dropdown (commands/manage.js buildPageSelectRow), under the panel so the other sections stay one pick away.
 async function pageView(mode, note = null, { pageRow = null } = {}) {
     const builds = await Loadout().find({ mode }).select('category weaponKey').lean();
     const weapons = new Set(builds.map(b => b.weaponKey)).size;
@@ -100,8 +99,7 @@ async function weaponView(mode, weaponKey, note = null) {
     return panel(mode, components);
 }
 
-// ---------- one build ----------
-// `header` sits above the card (a confirm question, a saved note); `extra` replaces the action rows (a confirm's buttons, the Expand View pager).
+// ---------- one build ---------- `header` sits above the card (a confirm question, a saved note); `extra` replaces the action rows (a confirm's buttons, the Expand View pager).
 async function cardView(mode, id, option = 0, header = null, extra = null) {
     const doc = /^[0-9a-f]{24}$/.test(String(id)) ? await Loadout().findById(id).lean() : null;
     if (!doc || doc.mode !== mode) return pageView(mode, `${emojis.cross} That build no longer exists.`);
@@ -127,8 +125,7 @@ async function cardView(mode, id, option = 0, header = null, extra = null) {
     return panel(mode, components);
 }
 
-// ---------- a result in place ----------
-// `ok`: true ✅ · 'warn' ⚠️ · false ❌. `back` is the verb parts of the way back; Home is added unless back IS home.
+// ---------- a result in place ---------- `ok`: true ✅ · 'warn' ⚠️ · false ❌. `back` is the verb parts of the way back; Home is added unless back IS home.
 function resultView(mode, { crumbs = [], title, body = [], back = 'page', backLabel = 'Back', ok = true, extraButtons = [], extraRows = [] }) {
     const backParts = [].concat(back);
     return panel(mode, [
@@ -141,8 +138,7 @@ function resultView(mode, { crumbs = [], title, body = [], back = 'page', backLa
     ]);
 }
 
-// ---------- Select ----------
-// Redesigned 2026-11-07 13:19 EST (his ask to improve this panel's design significantly): the list IS the panel, one short two-line row per entry with its selected mark; the dropdown flips selection; Select All N / Clear; the actions say how many they act on. 10 rows a page (13:30 EST, after his "have you tested the limit"): about one phone screen, well under 40 components and 4,000 characters.
+// ---------- Select ---------- Redesigned 2026-11-07 13:19 EST (his ask to improve this panel's design significantly): the list IS the panel, one short two-line row per entry with its selected mark; the dropdown flips selection; Select All N / Clear; the actions say how many they act on. 10 rows a page (13:30 EST, after his "have you tested the limit"): about one phone screen, well under 40 components and 4,000 characters.
 const SELECT_PAGE = 10;
 
 function selectView(mode, token, sel, info, note = null, page = 0) {
@@ -189,8 +185,7 @@ function selectView(mode, token, sel, info, note = null, page = 0) {
     return panel(mode, components);
 }
 
-// ---------- Expand View: the selected entries, one card at a time ----------
-// His idea, 13:05 EST ("select multiple builds and just switch through them like pages"), and 13:17 EST: each Edit saves right away (the saved panel below carries Revert); Finish only says which were edited, read from each build's lastUpdated since the view opened.
+// ---------- Expand View: the selected entries, one card at a time ---------- His idea, 13:05 EST ("select multiple builds and just switch through them like pages"), and 13:17 EST: each Edit saves right away (the saved panel below carries Revert); Finish only says which were edited, read from each build's lastUpdated since the view opened.
 async function stepView(mode, token, sel, i, option = null, header = null) {
     const selected = new Set(sel.selected);
     const keys = sel.ids.filter(k => selected.has(k));

@@ -28968,11 +28968,27 @@
           },
           {
             "type": 10,
-            "content": "`[action]`\n-# Open one of that section's buttons directly, e.g. **Add Multiple** or **Export**. Purge, Promote and Discard stay on the panel"
+            "content": "`[action]`\n-# Open one of that section's buttons directly, e.g. **Add Multiple** or **Export**. Purge, Promote and Discard stay on the panel. Not on gunsmith"
           },
           {
             "type": 10,
-            "content": "`[build]`\n-# Gunsmith only: open one build or option straight away. With **Add** it opens its next option, with **Delete** its confirm"
+            "content": "`[build]`\n-# Gunsmith: go to one build or option, e.g. `fss 1b`, or pick **＋ New build**"
+          },
+          {
+            "type": 10,
+            "content": "`[do]`\n-# Gunsmith: what to do with `build` or `builds`: Edit, Move, Add Option, Delete; or alone, Add Build, Paste Builds, Export, Guide"
+          },
+          {
+            "type": 10,
+            "content": "`[builds]`\n-# Gunsmith: several builds, comma-separated, opened as a Select list"
+          },
+          {
+            "type": 10,
+            "content": "`[weapon]`\n-# Gunsmith: a weapon's page, with all its builds"
+          },
+          {
+            "type": 10,
+            "content": "`[class]`\n-# Gunsmith: a class's page, to pick a weapon"
           },
           {
             "type": 10,
