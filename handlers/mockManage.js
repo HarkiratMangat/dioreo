@@ -360,6 +360,8 @@ async function resolveKeys(namesRaw, picks) {
     }
     return { keys: [...keys.entries()].map(([key, label]) => ({ key, label })), unmatched };
 }
+// A long list in a result shows its first 20 and how many more, so a 134-build delete still fits Discord's 4,000-character text block.
+const capList = (lines, max = 20) => (lines.length > max ? [...lines.slice(0, max), `-# …and ${lines.length - max} more`] : lines);
 const splitKey = (key) => { const [id, opt] = String(key).split('~'); return { id, opt: opt === undefined ? null : Number(opt) }; };
 
 // One entry as paste-format text: a whole build as the export writes it, one option as its own `Build: Build 1b` block.
@@ -438,10 +440,24 @@ async function previewBlocks(raw) {
 
 // ---------- Select's tick list ----------
 // Redesigned 2026-11-07 13:19 EST (his "honestly improve this panels design signifantly"): the list is the panel, one line per build with its tick mark, class, badges and code; the dropdown only flips ticks (no chips); Tick All / Clear; the actions say how many they act on.
+// Page size for Select: 10 builds a page. Discord allows 25 options in the dropdown, but 10 two-line rows keep a page to about one phone screen (lead's call, 2026-11-07 13:30 EST, his "have you tested the limit of how many can be selected before it paginates").
+const SELECT_PAGE = 10;
+
+async function infoFor(keys) {
+    const ids = [...new Set(keys.map(k => splitKey(k).id))];
+    const docs = new Map((await Loadout().find({ _id: { $in: ids } }).lean()).map(d => [String(d._id), d]));
+    const out = new Map();
+    for (const k of keys) { const d = docs.get(splitKey(k).id); if (d) out.set(k, keyInfoFromDoc(k, d)); }
+    return out;
+}
+
 async function keyInfo(key) {
-    const { id, opt } = splitKey(key);
-    const d = await Loadout().findById(id).lean();
-    if (!d) return null;
+    const d = await Loadout().findById(splitKey(key).id).lean();
+    return d ? keyInfoFromDoc(key, d) : null;
+}
+
+function keyInfoFromDoc(key, d) {
+    const { opt } = splitKey(key);
     const { variantView } = require('../utils/loadoutRender');
     const L = require('../utils/loadoutOptions').optionLetter;
     const v = opt ? variantView(d, opt) : d;
@@ -463,10 +479,12 @@ async function keyInfo(key) {
     };
 }
 
-function tickView(token, note = null) {
+function tickView(token, note = null, page = 0) {
     const t = TICK.get(token);
     if (!t) return resultView({ title: 'That list expired. Search again.', ok: false });
-    const shown = t.ids.slice(0, 25);
+    const pages = Math.max(1, Math.ceil(t.ids.length / SELECT_PAGE));
+    const pg = Math.min(Math.max(Number(page) || 0, 0), pages - 1);
+    const shown = t.ids.slice(pg * SELECT_PAGE, pg * SELECT_PAGE + SELECT_PAGE);
     const n = t.ticked.size;
     const searched = (t.query || []).map(q => `\`${q}\``).join(' · ');
     const components = [
@@ -488,17 +506,18 @@ function tickView(token, note = null) {
     let listText = lines.join('\n');
     if (listText.length > 3900) listText = `${listText.slice(0, 3850)}\n-# …`;
     components.push(
-        text(`-# **${t.ids.length}** found · **${n}** selected${t.ids.length > 25 ? ` · showing 25, narrow the search for the rest` : ''}`),
+        text(`-# **${t.ids.length}** found · **${n}** selected${pages > 1 ? ` · page ${pg + 1} of ${pages}` : ''}`),
         text(listText),
         SMALL(),
-        { type: 1, components: [{ type: 3, custom_id: `${PREFIX}tick|${token}`, min_values: 1, max_values: shown.length, placeholder: 'Select or unselect builds…', options: shown.map(key => { const i = t.info.get(key) || { plain: key }; return { label: i.plain.slice(0, 100), value: key, description: `${t.ticked.has(key) ? 'Selected' : 'Not selected'}${i.code ? ` · ${i.code}` : ''}`.slice(0, 100), ...(i.emoji && emojis[i.emoji] ? { emoji: emojis.parseEmoji(emojis[i.emoji]) } : {}) }; }) }] },
-        row(ebtn(`tall|${token}`, 'Select All', emojis.checkmark, 2, n === shown.length), ebtn(`tnone|${token}`, 'Clear', emojis.cross, 2, !n)),
+        { type: 1, components: [{ type: 3, custom_id: `${PREFIX}tick|${token}|${pg}`, min_values: 1, max_values: shown.length, placeholder: 'Select or unselect builds…', options: shown.map(key => { const i = t.info.get(key) || { plain: key }; return { label: i.plain.slice(0, 100), value: key, description: `${t.ticked.has(key) ? 'Selected' : 'Not selected'}${i.code ? ` · ${i.code}` : ''}`.slice(0, 100), ...(i.emoji && emojis[i.emoji] ? { emoji: emojis.parseEmoji(emojis[i.emoji]) } : {}) }; }) }] },
+        ...(pages > 1 ? [row({ type: 2, style: 2, custom_id: `${PREFIX}tlist|${token}|${pg - 1}`, emoji: emojis.parseEmoji(emojis.left), disabled: pg === 0 }, { type: 2, style: 2, label: `Page ${pg + 1} / ${pages}`, custom_id: `${PREFIX}tpg|${token}`, disabled: true }, { type: 2, style: 2, custom_id: `${PREFIX}tlist|${token}|${pg + 1}`, emoji: emojis.parseEmoji(emojis.right), disabled: pg === pages - 1 })] : []),
+        row(ebtn(`tall|${token}|${pg}`, `Select All ${t.ids.length}`, emojis.checkmark, 2, n === t.ids.length), ebtn(`tnone|${token}|${pg}`, 'Clear', emojis.cross, 2, !n)),
     );
     if (note) components.push(text(note));
     components.push(
         BIG(),
         text(n ? `-# With the **${n}** selected…` : '-# Select builds to edit, export or delete them…'),
-        row(ebtn(`tedit|${token}`, `Edit ${n || ''}`.trim(), emojis.mngEdit, 1, !n), ebtn(`step|${token}|0`, 'Expand View', emojis.gunsmithList, 2, !n), ebtn(`texp|${token}`, `Export ${n || ''}`.trim(), emojis.mngExport, 2, !n), ebtn(`tdel|${token}`, `Delete ${n || ''}`.trim(), emojis.mngBulkDelete, 4, !n)),
+        row(ebtn(`tedit|${token}||${pg}`, `Edit ${n || ''}`.trim(), emojis.mngEdit, 1, !n), ebtn(`step|${token}|0`, 'Expand View', emojis.gunsmithList, 2, !n), ebtn(`texp|${token}`, `Export ${n || ''}`.trim(), emojis.mngExport, 2, !n), ebtn(`tdel|${token}`, `Delete ${n || ''}`.trim(), emojis.mngBulkDelete, 4, !n)),
         row(ebtn('select', 'Search Again', emojis.gunsmithSearch), ebtn('page', 'Home', emojis.database)),
     );
     return panel(components);
@@ -579,14 +598,14 @@ async function route(interaction) {
     if (verb === 'tick') {
         const t = TICK.get(a);
         if (t) for (const v of interaction.values) { if (t.ticked.has(v)) t.ticked.delete(v); else t.ticked.add(v); }
-        return show(interaction, tickView(a));
+        return show(interaction, tickView(a, null, b));
     }
     if (verb === 'tall' || verb === 'tnone') {
         const t = TICK.get(a);
-        if (t) t.ticked = verb === 'tall' ? new Set(t.ids.slice(0, 25)) : new Set();
-        return show(interaction, tickView(a));
+        if (t) t.ticked = verb === 'tall' ? new Set(t.ids) : new Set();
+        return show(interaction, tickView(a, null, b));
     }
-    if (verb === 'tlist') return show(interaction, tickView(a));
+    if (verb === 'tlist') return show(interaction, tickView(a, null, b));
     if (verb === 'step') return show(interaction, await stepView(a, b));
     if (verb === 'stopt') return show(interaction, await stepView(a, b, interaction.values[0]));
     if (verb === 'stedit') {
@@ -609,12 +628,12 @@ async function route(interaction) {
         const t = TICK.get(a);
         const ids = t ? t.ids.filter(x => t.ticked.has(x)) : [];
         const edited = ids.filter(x => t?.edited?.has(x));
-        return show(interaction, resultView({ crumbs: ['Select Builds', 'Bulk Edit'], title: `Bulk edit done · ${edited.length} of ${ids.length} edited`, body: [...ids.map(x => `- ${t.edited?.has(x) ? emojis.checkmark : '·'} ${t.labels.get(x)}`), '', '-# Nothing was saved.'], back: `tlist|${a}`, backLabel: 'Back to List' }));
+        return show(interaction, resultView({ crumbs: ['Select Builds', 'Bulk Edit'], title: `Bulk edit done · ${edited.length} of ${ids.length} edited`, body: [...capList(ids.map(x => `- ${t.edited?.has(x) ? emojis.checkmark : '·'} ${t.labels.get(x)}`)), '', '-# Nothing was saved.'], back: `tlist|${a}`, backLabel: 'Back to List' }));
     }
     if (verb === 'tdel') {
         const t = TICK.get(a);
         if (!t) return show(interaction, tickView(a));
-        return show(interaction, resultView({ ok: 'warn', crumbs: ['Select Builds'], title: `Delete ${t.ticked.size} build${t.ticked.size === 1 ? '' : 's'}?`, body: [...[...t.ticked].map(id => `- ${t.labels.get(id)}`), '', '-# Every change is recorded and can be reverted.'], back: `tlist|${a}`, backLabel: 'Cancel', extraButtons: [ebtn(`tdelok|${a}`, `Yes, Delete ${t.ticked.size}`, emojis.mngBulkDelete, 4)] }));
+        return show(interaction, resultView({ ok: 'warn', crumbs: ['Select Builds'], title: `Delete ${t.ticked.size} build${t.ticked.size === 1 ? '' : 's'}?`, body: [...capList([...t.ticked].map(id => `- ${t.labels.get(id)}`)), '', '-# Every change is recorded and can be reverted.'], back: `tlist|${a}`, backLabel: 'Cancel', extraButtons: [ebtn(`tdelok|${a}`, `Yes, Delete ${t.ticked.size}`, emojis.mngBulkDelete, 4)] }));
     }
     if (verb === 'tdelok') {
         const t = TICK.get(a);
@@ -632,7 +651,12 @@ async function route(interaction) {
         const raw = b ? PASTE.get(b) : null;
         const blocks = raw ? raw.split(/\n\s*\n/).filter(x => x.trim()) : await keyBlocks(t.ids.filter(x => t.ticked.has(x)));
         const modal = blocksModal(`${PREFIX}teditm|${a}`, `Edit ${t.ticked.size} MP Build${t.ticked.size === 1 ? '' : 's'}`, blocks);
-        if (!modal) return show(interaction, tickView(a, `${emojis.warn} Too much text for one pop-up (5 boxes of 4,000). Select fewer builds, or use Expand View.`));
+        if (!modal) {
+            // How many of these fit: pack blocks into 5 boxes of 4,000 until one would overflow.
+            let fit = 0;
+            for (let k = 1; k <= blocks.length && blocksModal('x', 'x', blocks.slice(0, k)); k++) fit = k;
+            return show(interaction, tickView(a, `${emojis.warn} **Edit holds about ${fit} of these** (one pop-up is 5 boxes of 4,000 characters). Select ${fit} or fewer, or use Expand View for the rest.`, c));
+        }
         return interaction.showModal(modal);
     }
     if (verb === 'teditm') {
@@ -708,8 +732,7 @@ async function route(interaction) {
     if (verb === 'selectm') {
         const { keys, unmatched } = await resolveKeys(field(interaction, 'names'), field(interaction, 'picks') || []);
         const token = Date.now().toString(36);
-        const info = new Map();
-        for (const k of keys.slice(0, 25)) info.set(k.key, await keyInfo(k.key));
+        const info = await infoFor(keys.map(k => k.key));
         const pickLabels = Object.fromEntries(QUICK_PICKS);
         const query = [...String(field(interaction, 'names') || '').split('\n').map(x => x.trim()).filter(Boolean), ...(field(interaction, 'picks') || []).map(v => pickLabels[v] || v)];
         TICK.set(token, { ids: keys.map(k => k.key), ticked: new Set(), labels: new Map(keys.map(k => [k.key, k.label])), info, query, unmatched });
@@ -763,4 +786,4 @@ async function handleMockManageInteraction(interaction) {
 const OWNED_PREFIXES = [PREFIX];
 
 // One exported function, as scripts/handlerRouting.test.js requires of every handler; the command and the feature folder's probe reach the rest through `mock`.
-module.exports = { handleMockManageInteraction, OWNED_PREFIXES, mock: { TICK, stepView, resolveKeys, keyBlocks, blocksModal, previewBlocks, openPage, pageView, classView, weaponView, cardView, exportModal, selectModal, exportText, resolveSet, PREFIX } };
+module.exports = { handleMockManageInteraction, OWNED_PREFIXES, mock: { infoFor, tickView, SELECT_PAGE, TICK, stepView, resolveKeys, keyBlocks, blocksModal, previewBlocks, openPage, pageView, classView, weaponView, cardView, exportModal, selectModal, exportText, resolveSet, PREFIX } };
