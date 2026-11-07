@@ -432,7 +432,8 @@ async function gatherBriefing(rest, cfg, now = new Date()) {
     try { liveDoc = await require('../../models/SeasonalData').findOne({ docType: 'global' }).lean(); out.readiness = draftReadiness(liveDoc); } catch { /* no database */ }
     try {
         const NewsCard = require('../../models/NewsCard');
-        const recent = await NewsCard.find({ createdAt: { $gte: new Date(now - 7 * DAY_MS) }, 'items.action': 'fix' }, { items: 1 }).lean();
+        // A dismissed card is left out (2026-11-07): Dismiss is his "not this one", unlike opening the box and cancelling. A wrong fix (the Sapphire Winter Draw card, read a day early) otherwise stayed in every briefing for a week after he dismissed it.
+        const recent = await NewsCard.find({ createdAt: { $gte: new Date(now - 7 * DAY_MS) }, 'items.action': 'fix', dismissed: { $ne: true } }, { items: 1 }).lean();
         // Each fix is checked against the live row as it is NOW, not against whether its button was clicked (2026-11-05 15:34 EST): opening the box and cancelling used to hide it, and a fix made by hand in /manage stayed listed.
         for (const c of recent) for (const it of c.items) if (it.action === 'fix' && fixStillWrong(it, liveDoc)) out.fixes.push({ name: it.name, text: (it.warnings || []).find(w => /^On the bot/.test(w)) || 'dates changed' });
     } catch { /* no database */ }

@@ -47,12 +47,12 @@ function strictName(a, b) {
 }
 const sameDay = (a, b) => dayjs.utc(a).format('YYYY-MM-DD') === dayjs.utc(b).format('YYYY-MM-DD');
 
-// "Today's daily reset" is the NEXT daily reset after the post, not the post's own UTC day (2026-11-07 13:48 EST, Harkirat: "today's reset is technically nov 8 midnight utc"). #leaks posted "Sapphire Winter Draw will be coming on today's daily reset" at 17:53 UTC on Nov 7; the reset it means is 00:00 UTC on Nov 8 (7 PM in Toronto), and reading it as "today" in UTC said Nov 7, so the card claimed the bot's Nov 8 was wrong. Only a phrase that is nothing but the reset is read this way; "the reset on November 8" still goes to chrono. A post up to two hours after a reset ("live now with today's reset") means the one that just passed. "Tomorrow's reset" is left to chrono's "tomorrow": a poster west of UTC and one at UTC mean different resets by it, and the day after the post is the reading that matches "tomorrow" alone.
-const RESET_WORDS = new Set(['today', 'todays', 'tonight', 'tonights', 'the', 'this', 'next', 'upcoming', 'daily', 'reset', 'update', 'server', 'game', 'games', 'on', 'at', 'with', 'after', 'by', 'in', 'from']);
+// "Today's daily reset" is the NEXT daily reset after the post, not the post's own UTC day (2026-11-07 13:48 EST, Harkirat: "today's reset is technically nov 8 midnight utc"). #leaks posted "Sapphire Winter Draw will be coming on today's daily reset" at 17:53 UTC on Nov 7; the reset it means is 00:00 UTC on Nov 8 (7 PM in Toronto), and reading it as "today" in UTC said Nov 7, so the card claimed the bot's Nov 8 was wrong. Only a phrase that is nothing but the reset is read this way; "the reset on November 8" still goes to chrono. A post up to two hours after a reset ("live now with today's reset") means the one that just passed. "Tomorrow's reset" is left to chrono's "tomorrow": a poster west of UTC and one at UTC mean different resets by it, and the day after the post is the reading that matches "tomorrow" alone. "Today's update", "daily refresh" and "tonight" count too: every CODM drop is at 00:00 UTC, so "tonight" after the UTC reset can only mean the next one. "Today" alone does NOT: "live today" posted at 17:53 UTC means the reset that already happened, and the start words carry no tense to tell it from "coming today". "The update" alone does not either: it can mean the season's update.
+const RESET_WORDS = new Set(['today', 'todays', 'tonight', 'tonights', 'the', 'this', 'next', 'upcoming', 'daily', 'reset', 'update', 'refresh', 'server', 'game', 'games', 'on', 'at', 'with', 'after', 'by', 'in', 'from']);
 const RESET_GRACE_MS = 2 * 60 * 60 * 1000;
 function nextReset(text, ref) {
     const s = String(text).toLowerCase().replace(/['\u2019]/g, '');
-    if (!/\breset\b|\bdaily update\b/.test(s)) return null;
+    if (!/\breset\b|\b(daily|todays|tonights) (update|refresh)\b|^\s*tonight\s*$/.test(s)) return null;
     const words = s.split(/[^a-z]+/).filter(Boolean);
     if (!words.every(w => RESET_WORDS.has(w))) return null;
     const base = new Date(ref.getTime() - RESET_GRACE_MS);
@@ -95,6 +95,14 @@ function readSlashDate(text, postedAt, dmy) {
     // Swapped only when the written order is over 100 days out and the swap within 45: "12/10" posted 10-07 is Dec 10 (64 days), not Oct 12, and a 60-day cut-off flipped it in the backtest, which drafted the Street Fighter armory ending before it began.
     const DAY = 24 * 60 * 60 * 1000;
     return away(asIs) > 100 * DAY && away(swapped) <= 45 * DAY ? swapped : asIs;
+}
+
+// Whether a draw-index document's season is the item's own season or a later one, which makes it new. The same season is new (a year missing on either side is not held against it). A later season, with both years known, is a draw staged for the Next Season Draft (core/ops/season gives it the draft's season), still new. A different number with a year missing is most likely a past year's season, since numbers repeat every year, so it is returning; so is a document with no season at all.
+function firstRanThisSeasonOrLater(cat, forNo, forYear) {
+    const s = cat && cat.releaseSeason; const y = cat && cat.releaseYear;
+    if (!s || !forNo) return false;
+    if (s === forNo && (!y || !forYear || y === forYear)) return true;
+    return Boolean(y && forYear && (y > forYear || (y === forYear && s > forNo)));
 }
 
 function catalogueMatch(name, catalogue) {
@@ -168,10 +176,9 @@ function resolveItem(raw, ctx) {
     else if (cat && drawType === 'new') {
         const forNo = where === 'draft' ? (seasonNo(ctx.draftTitle) || nextNo) : seasonNo(ctx.liveTitle);
         const forYear = where === 'draft' ? ctx.draftYear : ctx.liveYear;
-        const sameSeason = cat.releaseSeason && forNo && cat.releaseSeason === forNo && (!cat.releaseYear || !forYear || cat.releaseYear === forYear);
-        if (!sameSeason) {
+        if (!firstRanThisSeasonOrLater(cat, forNo, forYear)) {
             drawType = 'returning';
-            warnings.push(cat.releaseSeason ? `"${cat.title}" first ran in Season ${cat.releaseSeason}${cat.releaseYear ? ` ${cat.releaseYear}` : ''}, so this is read as a returning draw.` : `"${cat.title}" is in the draw index, so this is read as a returning draw.`);
+            warnings.push(cat.releaseSeason ? `"${cat.title}" first ran in Season ${cat.releaseSeason}${cat.releaseYear ? ` ${cat.releaseYear}` : ''}, so this is read as a returning draw.` : `"${cat.title}" is in the draw index with no season recorded, so this is read as a returning draw.`);
         }
     }
 
