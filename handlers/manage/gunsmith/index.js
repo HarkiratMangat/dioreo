@@ -297,12 +297,14 @@ async function confirmDeleteMany(mode, token, sel, page) {
 }
 
 // A preview of paste text in place, with Save and the way back to the text.
-async function previewPanel(mode, token, raw, { editAgain, crumbs, title }) {
+async function previewPanel(mode, token, raw, { editAgain, crumbs, title, backToList = null }) {
     const pv = await B.previewBlocks(mode, raw);
     return V.resultView(mode, {
         ok: pv.problems ? 'warn' : true, crumbs, title: `${title} · ${pv.count} of ${pv.total} to save`, body: pv.parts,
         back: editAgain, backLabel: crumbs[crumbs.length - 1] === 'Paste' ? 'Edit Paste' : 'Edit Again',
         extraButtons: pv.count ? [V.btn(mode, ['save', token], `Save ${pv.count}`, emojis.checkmark, 3)] : [],
+        // Edit N's preview also goes back to its list, so a look that changes nothing is one click from the selection.
+        extraRows: backToList ? [V.row(V.btn(mode, backToList, 'Back to List', emojis.returnArrow))] : [],
     });
 }
 
@@ -510,7 +512,7 @@ async function routeSelection(interaction, mode, verb, a, b, c) {
     if (verb === 'teditm' && interaction.isModalSubmit?.()) {
         const raw = B.readBoxes(interaction);
         await setSel(a, { text: raw });
-        return show(interaction, await previewPanel(mode, a, raw, { editAgain: ['tedit', a, 0, 'again'], crumbs: ['Select Builds', 'Edit'], title: 'Edit preview' }));
+        return show(interaction, await previewPanel(mode, a, raw, { editAgain: ['tedit', a, 0, 'again'], crumbs: ['Select Builds', 'Edit'], title: 'Edit preview', backToList: ['list', a, 0] }));
     }
     // Save for Paste and Edit N: only the blocks that add or change something go to the real bulk save, whose result (with Revert, or a warning to answer) follows this message.
     if (verb === 'save') {
@@ -520,7 +522,7 @@ async function routeSelection(interaction, mode, verb, a, b, c) {
         if (!pv.keep) return show(interaction, V.resultView(mode, { title: 'Nothing to save: every build is unchanged.', ok: 'warn', back: isEdit ? ['list', a, 0] : 'page', backLabel: isEdit ? 'Back to List' : 'Home' }));
         await interaction.deferUpdate();
         await loadouts().bulkAddLoadouts(interaction, { customId: `modal_loadouts_bulk_add_${mode}`, values: { bulk_text: pv.keep } });
-        return show(interaction, V.resultView(mode, { crumbs: isEdit ? ['Select Builds', 'Edit'] : ['Paste'], title: `Sent ${pv.count} build${pv.count === 1 ? '' : 's'} to save`, body: ['-# The result, with Revert, is in the message below.'], back: isEdit ? ['list', a, 0] : 'page', backLabel: isEdit ? 'Back to List' : 'Home' }));
+        return show(interaction, V.resultView(mode, { crumbs: isEdit ? ['Select Builds', 'Edit'] : ['Paste'], title: `Sent ${pv.count} build${pv.count === 1 ? '' : 's'} to save`, body: ['-# The result is in the message below. A bulk save is reverted from `/bot analytics` › Changes.'], back: isEdit ? ['list', a, 0] : 'page', backLabel: isEdit ? 'Back to List' : 'Home' }));
     }
 
     if (verb === 'texp') {
