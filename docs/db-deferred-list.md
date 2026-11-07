@@ -2542,6 +2542,9 @@ The "Can be undone" filter and the row's Undo control are both computed as `kind
 ### `[P3 · XS]` `/draw prices`: the Advanced Character page never says the 2 legendary weapons are the secondary reward — filed 2026-11-01 01:05 EDT
 Only a code comment in `commands/drawprices.js` (about line 276, confirmed by Harkirat 2026-08-07) says it; the visible text does not. He asked for this to be checked in his review note on the Dual Demise draw and it was: no visible wording. A one-line text change on the page.
 
+### `[P3 · S]` Dioreo Admin's right-clicks: one "Dioreo Admin" menu when a sixth is needed — filed 2026-11-06 20:36 EST
+Dioreo Admin is at Discord's cap of five message right-clicks (Add to Patch Notes, Autobuild Gunsmith, Add to Draws, Add to Calendar, Edit Loadout). Harkirat picked **C, leave it, for now** (2026-11-06 20:36 EST) over A (one right-click opening a private menu of the five, freeing four slots) and B (a third app). **Do, when a sixth is wanted:** build A, the menu running each action's existing `execute()`. **Verify:** `scripts/rightClickCommands.test.js` still passes with the admin app at one message right-click.
+
 ## 🧹 Someday / tech-debt
 
 - **/help's home page lists `/manage` as plain text** `[P3 · XS · Sonnet5-Medium]` *(filed 2026-10-30 22:43 EDT, Harkirat: "leave it as is for now since im the only one that can even see /manage listed on the help panel currently")*. Since /manage split into subcommands, the bare name cannot be a clickable mention, so it is the one plain entry in the Admin row (`commands/help.js` `cmd('/manage', …)`). Options he was shown: every section as a mention (like /bot), `/manage draws` only, or leave it pointing at the /manage page. **Verify before building:** someone other than him can see /manage on the landing (a granted manage admin).
