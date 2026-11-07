@@ -106,8 +106,9 @@ async function weaponView(weaponKey, note = null) {
         const opts = (b.variants || []).length;
         const words = badgeWords(b);
         const head = `**${b.buildName}**`;
-        const sub = `-# ${[b.label, words.join(' '), opts ? `${opts + 1} options` : null].filter(Boolean).join(' · ') || `${(b.attachments || []).length} attachments`}`;
-        components.push({ type: 9, components: [text(`${head}\n${sub}`)], accessory: ebtn(`card|${b._id}|0`, 'Open', emojis.edit) });
+        const subText = [b.label, words.join(' '), opts ? `${opts + 1} options` : null].filter(Boolean).join(' · ');
+        const sub = subText ? `-# ${subText}` : '';
+        components.push({ type: 9, components: [text(sub ? `${head}\n${sub}` : head)], accessory: ebtn(`card|${b._id}|0`, 'Open', emojis.edit) });
     }
     components.push(BIG(), row(ebtn(`newb|${weaponKey}`, 'New Build', emojis.mngAdd, 3)), row(ebtn(`cls|${w.category}`, classWord(w.category), emojis.returnArrow), ebtn('page', 'Home', emojis.database)));
     return panel(components);
@@ -470,7 +471,7 @@ function keyInfoFromDoc(key, d) {
     return {
         icon: classIcon(d.category),
         title: `**${d.weaponName}** · ${tag}`,
-        small: [label, badgeWords(d).join(' '), opt === null && optCount > 1 ? `${optCount} options` : null].filter(Boolean).join(' · ') || `${(v.attachments || []).length} attachments`,
+        small: [label, badgeWords(d).join(' '), opt === null && optCount > 1 ? `${optCount} options` : null].filter(Boolean).join(' · '),
         plain: `${d.weaponName} · ${d.buildName}${opt !== null && optCount > 1 ? ` ${L(opt)}` : ''}${label ? ` · ${label}` : ''}`,
         badges: badgeWords(d).join('  '),
         sub: `\`${v.shareCode || 'no code'}\` · ${(v.attachments || []).length} attachments${opt === null && optCount > 1 ? ` · ${optCount} options` : ''}`,
