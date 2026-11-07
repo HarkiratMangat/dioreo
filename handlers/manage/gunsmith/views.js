@@ -223,7 +223,7 @@ async function stepView(mode, token, sel, i, option = null, header = null) {
         row(
             btn(mode, ['stedit', token, at, opt], 'Edit', emojis.edit, 1),
             arrow(mode, ['step', token, at - 1], 'left', at === 0),
-            counter(mode, ['stn', token], `${at + 1} / ${n}`),
+            // No n / N counter button: the heading already says "1 of 19", and at phone width a fourth button pushed Finish onto its own line (click-test, 2026-11-07 14:32 EST).
             last ? btn(mode, ['stdone', token], 'Finish', emojis.checkmark, 3) : arrow(mode, ['step', token, at + 1], 'right', false),
         ),
         row(btn(mode, ['list', token, Math.floor(sel.ids.indexOf(keys[at]) / SELECT_PAGE)], 'Back to List', emojis.returnArrow), homeBtn(mode)),

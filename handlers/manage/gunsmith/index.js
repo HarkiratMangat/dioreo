@@ -268,10 +268,15 @@ async function autocomplete(interaction, mode) {
             const i = info.get(keyOf(h));
             return { name: cut(i ? `${i.plain.replace(/\*\*/g, '')}${i.plainSmall && !i.plain.includes(i.plainSmall) ? ` · ${i.plainSmall}` : ''}` : h.label), value: `${h.id}~${h.option}` };
         });
-        // `＋ New build` for the weapon typed, so Add is one pick away.
+        // `＋ New build` for the weapon typed, so Add is one pick away: the top match's weapon, else the weapon whose name holds every typed word. Matching the first word alone offered KILO BOLT-ACTION for `kilo 141 2` (phone click-test, 2026-11-07 14:31 EST).
         if (q.trim() && out.length < 25) {
-            const first = q.trim().split(/\s+/)[0].replace(/[^a-z0-9-]/gi, '');
-            const w = first ? await Loadout().findOne({ mode, weaponName: new RegExp(first.replace(/-/g, '\\-'), 'i') }).select('weaponName weaponKey').lean() : null;
+            let w = hits[0] ? await Loadout().findById(hits[0].id).select('weaponName weaponKey').lean() : null;
+            if (!w) {
+                const norm = (x) => String(x || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                const words = q.trim().split(/\s+/).filter(x => !/^\d+[a-z]?$/i.test(x)).map(norm).filter(Boolean);
+                const weapons = words.length ? await Loadout().find({ mode }).select('weaponName weaponKey').lean() : [];
+                w = weapons.find(x => words.every(word => norm(x.weaponName).includes(word))) || null;
+            }
             if (w) out.push({ name: cut(`＋ New build for ${w.weaponName}`), value: `new:${w.weaponKey}` });
         }
         return interaction.respond(out);
