@@ -29,7 +29,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.12.1 — 2026-11-07 14:13 EST (#PR) — News triage reads "today's daily reset" as the next reset, and stops calling this season's new draws returning
+## v3.12.1 — 2026-11-07 14:13 EST (#260) — News triage reads "today's daily reset" as the next reset, and stops calling this season's new draws returning
 
 ### Fixed
 - **"Today's daily reset" is the next 00:00 UTC after the post** (`utils/newsTriage/resolve.js` `nextReset`). #leaks posted "Sapphire Winter Draw will be coming on today's daily reset" at 17:53 UTC on Nov 7; it was read as the post's own UTC day, Nov 7, so the card said the bot's correct Nov 8 had changed. Only a phrase that is nothing but the reset is read this way, "today's update", "daily refresh" and "tonight" count too, a post up to two hours after a reset means the one that just passed, and a written date beside the reset still wins ("the daily reset on November 12" no longer reads as today).
