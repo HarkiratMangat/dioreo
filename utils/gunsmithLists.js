@@ -105,7 +105,8 @@ function buildListsPage(builds, { isEphemeral = false, season = null, page = 'me
     const blocks = classBlocks(shown, meta ? META_LINES : TIER_LINES);
     const seasonLine = season?.title ? `\n${season.emoji ? `${season.emoji} ` : ''}${toBoldItalicUnicode(season.title)}` : '';
     const container = { type: 17, accent_color: mpAccent(), components: [
-        { type: 10, content: `## ${emojis.gunsmithList || ''} Current META Weapons${seasonLine}` },
+        // The header carries an icon-only Search, the card's own one-box search pop-up (`gsb~search~MP`), as the reminders bell does: a Section holding the title and the season line (Harkirat, 2026-11-06 22:06 EST: "add an icon only button in the header of the lists command with the \"search mp builds\" pop-up").
+        { type: 9, components: [{ type: 10, content: `## ${emojis.gunsmithList || ''} Current META Weapons${seasonLine}` }], accessory: { type: 2, style: 2, custom_id: 'gsb~search~MP', ...(emojis.gunsmithSearch ? { emoji: emojis.parseEmoji(emojis.gunsmithSearch) } : { label: 'Search' }) } },
         { type: 14, spacing: 2, divider: true },
         ...(blocks.length ? withDividers(blocks) : [{ type: 10, content: '*The lists are pending an update. Check back soon.*' }]),
         // The /draws order (his pick A, 2026-11-03 13:23 EST): a small gap, the pager under the lists, a large divider, then the hint and every list's button, on both pages.
@@ -115,7 +116,8 @@ function buildListsPage(builds, { isEphemeral = false, season = null, page = 'me
         { type: 10, content: '-# View all builds for…' },
         { type: 1, components: LISTS.map(listButton) },
     ] };
-    return { components: withShareButton([container, ...jumpRows(shown)], isEphemeral), flags: 32768 };
+    // Both weapon dropdowns hold every weapon on any list (META, Best, Top 3, Top 5, HM) on both pages, never only the page's own weapons (Harkirat, 2026-11-06 22:06 EST: "those 2 dropdowns below should be holding the full meta, best, top 3, top 5, and hm weapons").
+    return { components: withShareButton([container, ...jumpRows(builds)], isEphemeral), flags: 32768 };
 }
 
 // The season line under the title: the current season, with its emoji, as /today and /calendar show it.

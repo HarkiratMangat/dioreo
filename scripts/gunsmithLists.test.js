@@ -25,8 +25,9 @@ const text = JSON.stringify(page.components);
 const container = page.components[0];
 
 // His template (2026-11-03 11:44 EST): the title with the season under it, the MP accent, a bold class label, the tiers with names joined by " · ", a divider between classes, the hint above the buttons.
-assert.ok(/^## .* Current META Weapons\n/.test(container.components[0].content), 'the title');
-assert.ok(container.components[0].content.endsWith(`\n${require('../utils/titleBlock').toBoldItalicUnicode(season.title)}`), 'the season line, bold italic');
+assert.ok(/^## .* Current META Weapons\n/.test(container.components[0].components[0].content), 'the title');
+assert.deepStrictEqual([container.components[0].type, container.components[0].accessory.custom_id, container.components[0].accessory.label], [9, 'gsb~search~MP', undefined], 'an icon-only Search on the header (his 2026-11-06 22:06 EST)');
+assert.ok(container.components[0].components[0].content.endsWith(`\n${require('../utils/titleBlock').toBoldItalicUnicode(season.title)}`), 'the season line, bold italic');
 assert.strictEqual(container.accent_color, require('../utils/loadoutPanels').ACCENT.MP, 'the MP accent');
 const blocks = container.components.filter(c => c.type === 10 && c.content.startsWith('**')).map(c => c.content);
 assert.strictEqual(blocks.length, 3, 'Assault, Sniper and SMG only');
@@ -35,7 +36,7 @@ const ar = blocks[0].split('\n').slice(1).map(l => l.replace(/^.*?\*\*/, '**'));
 assert.deepStrictEqual(ar, ['**Best**  BAL-27', '**Top 3**  ISO HEMLOCK · HVK-30', '**Top 5**  ODEN', '**HM**  GRAV']);
 assert.ok(!blocks.join('\n').includes('**META**'), 'META is on its own sub-page');
 const kinds = container.components.map(c => c.type === 14 ? `${c.divider ? 'line' : 'gap'}${c.spacing}` : c.type);
-assert.deepStrictEqual(kinds, [10, 'line2', 10, 'gap1', 10, 'gap1', 10, 'gap1', 1, 'line2', 10, 1], 'his notation: ==== a large divider, -- a small gap with no line; the /draws order: pager under the lists, then the hint and the buttons');
+assert.deepStrictEqual(kinds, [9, 'line2', 10, 'gap1', 10, 'gap1', 10, 'gap1', 1, 'line2', 10, 1], 'his notation: ==== a large divider, -- a small gap with no line; the /draws order: pager under the lists, then the hint and the buttons');
 assert.strictEqual(blocks[2].split('\n').at(-1).replace(/^.*?\*\*/, '**'), '**HM**  CX-9 (Burst)', 'a labelled build shows its label in brackets');
 assert.ok(!text.includes('Long range'), 'an unbadged build never lends its label');
 assert.ok(!text.includes('Flex'), 'a label shows only when switched on (his 12:13 EST)');
@@ -65,7 +66,7 @@ console.log('  ✓ list buttons, the two-page pager, labels in brackets, two cla
 // Page 1 (the default, his 14:13 EST): META weapons only, by class, under the same title, the pager on 1/2, every list button.
 const meta = L.buildListsPage(builds, { season });
 const mc = meta.components[0];
-assert.strictEqual(mc.components[0].content, container.components[0].content, 'the same title on both pages');
+assert.strictEqual(mc.components[0].components[0].content, container.components[0].components[0].content, 'the same title on both pages');
 assert.deepStrictEqual(mc.components.at(-4).components.map(x => [x.custom_id, x.disabled, x.label || null]), [['gsb~lpage~0', true, null], ['gsb~lpage~at', true, 'META · 1/2'], ['gsb~lpage~1', false, null]]);
 assert.deepStrictEqual(mc.components.filter(c => c.type === 10 && c.content.startsWith('**')).map(c => c.content.split('\n')[1]), [`${require('../utils/emojiMap').whiteDotGlow} **BAL-27**  \`1A2B3C4D5E\``, `${require('../utils/emojiMap').whiteDotGlow} **STATIC-HV**  \`1A2B3C4D5E\``], 'a list: WhiteDotGlow, the bold name, its first META build\'s bare code (his 13:27 and 14:02 EST)');
 assert.ok(!JSON.stringify(mc.components).includes('BAL-27-1A2B3C4D5E'), 'no weapon prefix on the code');
@@ -73,7 +74,8 @@ assert.strictEqual(mc.components.find(c => c.type === 10 && c.content.startsWith
 const ordered = L.classBlocks([b('FSS HURRICANE', 'SMG', { isMeta: true, categoryRank: 'top3' }), b('STATIC-HV', 'SMG', { isMeta: true, categoryRank: 'best' }), b('VMP', 'SMG', { isMeta: true })], [['meta', null, null, x => x.isMeta]]);
 assert.deepStrictEqual(ordered[0].content.split('\n').slice(1).map(l => l.match(/\*\*(.+?)\*\*/)[1]), ['STATIC-HV', 'FSS HURRICANE', 'VMP'], 'META names strongest first (his 12:17 EST)');
 assert.deepStrictEqual(mc.components.at(-1).components.map(x => x.custom_id), ['gsb~open~MP.*.meta', 'gsb~open~MP.*.best', 'gsb~open~MP.*.top', 'gsb~open~MP.*.hm'], 'every list button on page 2 too');
-assert.ok(!JSON.stringify(meta.components).includes('KOSHKA'), 'no unbadged-for-META weapon in its dropdowns');
+assert.ok(!JSON.stringify(mc.components).includes('KOSHKA'), 'no non-META weapon in the META page itself');
+assert.deepStrictEqual(meta.components.filter(c => c.type === 1 && c.components[0].type === 3).map(c => c.components[0].options.map(o => o.label)), selects.map(s => s.options.map(o => o.label)), 'the META page\'s dropdowns hold every listed weapon, as page 2\'s do (his 2026-11-06 22:06 EST)');
 console.log('  ✓ page 1 by default: META weapons by class, the same title, the pager, every list button');
 
 // The in-game class order, everywhere a class list sorts (his 2026-11-03 11:44 EST).
@@ -98,5 +100,5 @@ console.log('  ✓ list scope tokens, old tokens unchanged, strongest list');
 // An empty set says the lists are pending; no season leaves the line out.
 const empty = L.buildListsPage([]);
 assert.ok(JSON.stringify(empty.components).includes('pending an update'));
-assert.ok(!empty.components[0].components[0].content.includes('\n'), 'no season line without a season');
+assert.ok(!empty.components[0].components[0].components[0].content.includes('\n'), 'no season line without a season');
 console.log('\ngunsmithLists: all checks passed.');
