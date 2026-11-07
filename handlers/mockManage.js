@@ -66,7 +66,7 @@ async function pageView(note = null) {
         row(...present.slice(4).map(classBtn)),
         BIG(),
         text('-# Many builds at once…'),
-        row(ebtn('paste', 'Paste Builds', emojis.mngBulkAdd), ebtn('select', 'Select Builds', emojis.filter), ebtn('export', 'Export', emojis.mngExport), ebtn('guide', 'Guide', emojis.guide)),
+        row(ebtn('paste', 'Paste Builds', emojis.mngBulkAdd), ebtn('select', 'Select Builds', emojis.filter), ebtn('export', 'Export', emojis.copyExport), ebtn('guide', 'Guide', emojis.guide)),
     ];
     if (note) components.splice(1, 0, SMALL(), text(note));
     return panel(components);
@@ -86,7 +86,7 @@ async function classView(category) {
         { type: 1, components: [{ type: 3, custom_id: `${PREFIX}wpn`, placeholder: `${weapons.length} ${classWord(category)} weapons`, options: shown.map(([key, w]) => ({ label: w.name.slice(0, 100), value: key, description: `${w.n} build${w.n === 1 ? '' : 's'}` })) }] },
         ...(weapons.length > 25 ? [text(`-# ${emojis.warn} ${weapons.length - 25} more need Search.`)] : []),
         BIG(),
-        row(ebtn('page', 'Home', emojis.database)),
+        row(ebtn('page', 'Home', emojis.returnArrow)),
     ]);
 }
 
@@ -110,7 +110,7 @@ async function weaponView(weaponKey, note = null) {
         const sub = subText ? `-# ${subText}` : '';
         components.push({ type: 9, components: [text(sub ? `${head}\n${sub}` : head)], accessory: ebtn(`card|${b._id}|0`, 'Open', emojis.edit) });
     }
-    components.push(BIG(), row(ebtn(`newb|${weaponKey}`, 'New Build', emojis.mngAdd, 3)), row(ebtn(`cls|${w.category}`, classWord(w.category), emojis.returnArrow), ebtn('page', 'Home', emojis.database)));
+    components.push(BIG(), row(ebtn(`newb|${weaponKey}`, 'New Build', emojis.mngAdd, 3)), row(ebtn(`cls|${w.category}`, classWord(w.category), emojis.returnArrow), ebtn('page', 'Home', emojis.returnArrow)));
     return panel(components);
 }
 
@@ -144,8 +144,8 @@ async function cardView(id, option = 0, header = null, extra = []) {
         components.push(BIG());
         if (count > 1) components.push({ type: 1, components: [{ type: 3, custom_id: `${PREFIX}opt|${id}`, placeholder: 'Pick an option', options: Array.from({ length: count }, (_, i) => ({ label: `Option ${L(i)}`, value: String(i), default: i === opt })) }] });
         components.push(
-            row(ebtn(`edit|${id}|${opt}`, 'Edit', emojis.mngEdit, 1), ebtn(`move|${id}|${opt}`, 'Move', emojis.mngBulkReplace), ebtn(`newopt|${id}`, 'Add Option', emojis.mngAdd), ebtn(`del|${id}|${opt}`, 'Delete', emojis.mngDelete, 4)),
-            row(ebtn(`wback|${doc.weaponKey}`, doc.weaponName, emojis.returnArrow), ebtn('page', 'Home', emojis.database)),
+            row(ebtn(`edit|${id}|${opt}`, 'Edit', emojis.edit, 1), ebtn(`move|${id}|${opt}`, 'Move', emojis.mngBulkReplace), ebtn(`newopt|${id}`, 'Add Option', emojis.mngAdd), ebtn(`del|${id}|${opt}`, 'Delete', emojis.deleteBin, 4)),
+            row(ebtn(`wback|${doc.weaponKey}`, doc.weaponName, emojis.returnArrow), ebtn('page', 'Home', emojis.returnArrow)),
         );
     }
     return panel(components);
@@ -158,7 +158,7 @@ function resultView({ crumbs = [], title, body = [], back = 'page', backLabel = 
         text(`### ${ok === 'warn' ? emojis.warn : ok ? emojis.checkmark : emojis.cross} ${title}`),
         ...(body.length ? [SMALL(), text(body.join('\n').slice(0, 3800))] : []),
         BIG(),
-        row(...extraButtons, ebtn(back, backLabel, emojis.returnArrow), ...(back === 'page' ? [] : [ebtn('page', 'Home', emojis.database)])),
+        row(...extraButtons, ebtn(back, backLabel, emojis.returnArrow), ...(back === 'page' ? [] : [ebtn('page', 'Home', emojis.returnArrow)])),
     ]);
 }
 function noticeView(lines, backTo = 'page', backLabel = 'Back', crumbs = []) {
@@ -310,8 +310,8 @@ async function stepView(token, i, option = null, header = null) {
     if (count > 1 && keyOpt === null) rows.push({ type: 1, components: [{ type: 3, custom_id: `${PREFIX}stopt|${token}|${at}`, placeholder: 'Pick an option', options: Array.from({ length: count }, (_, k) => ({ label: `Option ${L(k)}`, value: String(k), default: k === opt })) }] });
     const last = at === n - 1;
     rows.push(
-        row(ebtn(`stedit|${token}|${at}|${opt}`, 'Edit', emojis.mngEdit, header ? 2 : 1), { type: 2, style: 2, custom_id: `${PREFIX}step|${token}|${at - 1}`, emoji: emojis.parseEmoji(emojis.left), disabled: at === 0 }, { type: 2, style: 2, label: `${at + 1} / ${n}`, custom_id: `${PREFIX}stcount|${token}`, disabled: true }, last ? ebtn(`stdone|${token}`, 'Finish', emojis.checkmark, header ? 3 : 2) : { type: 2, style: header ? 1 : 2, custom_id: `${PREFIX}step|${token}|${at + 1}`, emoji: emojis.parseEmoji(emojis.right) }),
-        row(ebtn(`tlist|${token}`, 'Back to List', emojis.returnArrow), ebtn('page', 'Home', emojis.database)),
+        row(ebtn(`stedit|${token}|${at}|${opt}`, 'Edit', emojis.edit, header ? 2 : 1), { type: 2, style: 2, custom_id: `${PREFIX}step|${token}|${at - 1}`, emoji: emojis.parseEmoji(emojis.left), disabled: at === 0 }, { type: 2, style: 2, label: `${at + 1} / ${n}`, custom_id: `${PREFIX}stcount|${token}`, disabled: true }, last ? ebtn(`stdone|${token}`, 'Finish', emojis.checkmark, header ? 3 : 2) : { type: 2, style: header ? 1 : 2, custom_id: `${PREFIX}step|${token}|${at + 1}`, emoji: emojis.parseEmoji(emojis.right) }),
+        row(ebtn(`tlist|${token}`, 'Back to List', emojis.returnArrow), ebtn('page', 'Home', emojis.returnArrow)),
     );
     return cardView(id, opt, header ? `${head}\n${header}` : head, rows);
 }
@@ -518,8 +518,8 @@ function tickView(token, note = null, page = 0) {
     components.push(
         BIG(),
         text(n ? `-# With the **${n}** selected…` : '-# Select builds to edit, export or delete them…'),
-        row(ebtn(`tedit|${token}||${pg}`, `Edit ${n || ''}`.trim(), emojis.mngEdit, 1, !n), ebtn(`step|${token}|0`, 'Expand View', emojis.gunsmithList, 2, !n), ebtn(`texp|${token}`, `Export ${n || ''}`.trim(), emojis.mngExport, 2, !n), ebtn(`tdel|${token}`, `Delete ${n || ''}`.trim(), emojis.mngBulkDelete, 4, !n)),
-        row(ebtn('select', 'Search Again', emojis.gunsmithSearch), ebtn('page', 'Home', emojis.database)),
+        row(ebtn(`tedit|${token}||${pg}`, `Edit ${n || ''}`.trim(), emojis.edit, 1, !n), ebtn(`step|${token}|0`, 'Expand View', emojis.expand, 2, !n), ebtn(`texp|${token}`, `Export ${n || ''}`.trim(), emojis.copyExport, 2, !n), ebtn(`tdel|${token}`, `Delete ${n || ''}`.trim(), emojis.deleteBin, 4, !n)),
+        row(ebtn('select', 'Search Again', emojis.gunsmithSearch), ebtn('page', 'Home', emojis.returnArrow)),
     );
     return panel(components);
 }
@@ -590,7 +590,7 @@ async function route(interaction) {
         const doc = await Loadout().findById(a).lean();
         const L = require('../utils/loadoutOptions').optionLetter;
         const merged = (doc.variants || []).length > 0;
-        return show(interaction, await cardView(a, b, `### ${emojis.warn} Delete ${doc.weaponName} ${doc.buildName}${merged ? `, Option ${L(Number(b) || 0)}` : ''}?\n-# ${merged ? 'Only this option goes; the ones after it move up a letter.' : 'The build goes; every change can be reverted.'}`, [row(ebtn(`delok|${a}|${b}`, 'Yes, Delete', emojis.mngDelete, 4), ebtn(`card|${a}|${b}`, 'Cancel', emojis.returnArrow))]));
+        return show(interaction, await cardView(a, b, `### ${emojis.warn} Delete ${doc.weaponName} ${doc.buildName}${merged ? `, Option ${L(Number(b) || 0)}` : ''}?\n-# ${merged ? 'Only this option goes; the ones after it move up a letter.' : 'The build goes; every change can be reverted.'}`, [row(ebtn(`delok|${a}|${b}`, 'Yes, Delete', emojis.deleteBin, 4), ebtn(`card|${a}|${b}`, 'Cancel', emojis.returnArrow))]));
     }
     if (verb === 'delok') {
         const doc = await Loadout().findById(a).lean();
@@ -634,7 +634,7 @@ async function route(interaction) {
     if (verb === 'tdel') {
         const t = TICK.get(a);
         if (!t) return show(interaction, tickView(a));
-        return show(interaction, resultView({ ok: 'warn', crumbs: ['Select Builds'], title: `Delete ${t.ticked.size} build${t.ticked.size === 1 ? '' : 's'}?`, body: [...capList([...t.ticked].map(id => `- ${t.labels.get(id)}`)), '', '-# Every change is recorded and can be reverted.'], back: `tlist|${a}`, backLabel: 'Cancel', extraButtons: [ebtn(`tdelok|${a}`, `Yes, Delete ${t.ticked.size}`, emojis.mngBulkDelete, 4)] }));
+        return show(interaction, resultView({ ok: 'warn', crumbs: ['Select Builds'], title: `Delete ${t.ticked.size} build${t.ticked.size === 1 ? '' : 's'}?`, body: [...capList([...t.ticked].map(id => `- ${t.labels.get(id)}`)), '', '-# Every change is recorded and can be reverted.'], back: `tlist|${a}`, backLabel: 'Cancel', extraButtons: [ebtn(`tdelok|${a}`, `Yes, Delete ${t.ticked.size}`, emojis.deleteBin, 4)] }));
     }
     if (verb === 'tdelok') {
         const t = TICK.get(a);
@@ -705,7 +705,7 @@ async function route(interaction) {
     }
     if (verb === 'editm') {
         const { doc, changes } = await editDiff(interaction, a, b);
-        return show(interaction, await cardView(a, b, `### ${emojis.checkmark} Would update ${doc.weaponName} ${doc.buildName}\n${changes.length ? changes.map(x => `> ${x}`).join('\n') : '> No changes.'}\n-# Nothing was saved.`, [row(ebtn(`edit|${a}|${b}`, 'Edit Again', emojis.mngEdit, 1), ebtn(`card|${a}|${b}`, 'Back to Build', emojis.returnArrow), ebtn('page', 'Home', emojis.database))]));
+        return show(interaction, await cardView(a, b, `### ${emojis.checkmark} Would update ${doc.weaponName} ${doc.buildName}\n${changes.length ? changes.map(x => `> ${x}`).join('\n') : '> No changes.'}\n-# Nothing was saved.`, [row(ebtn(`edit|${a}|${b}`, 'Edit Again', emojis.edit, 1), ebtn(`card|${a}|${b}`, 'Back to Build', emojis.returnArrow), ebtn('page', 'Home', emojis.returnArrow))]));
     }
     if (verb === 'movem') {
         const doc = await Loadout().findById(a).lean();
