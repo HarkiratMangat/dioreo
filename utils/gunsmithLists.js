@@ -78,14 +78,13 @@ const withDividers = blocks => blocks.flatMap((b, i) => (i ? [{ type: 14, spacin
 
 // The two jump dropdowns (Discord caps one at 25; the lists name ~34 weapons): AR, Sniper and LMG, then the rest, in the in-game order. Each option opens the weapon in its strongest list.
 const FIRST_GROUP = new Set(CLASS_ORDER.slice(0, 3));
-// `activeKey` (a list card's open weapon) is preselected in its dropdown.
-function jumpRows(builds, activeKey = null) {
+function jumpRows(builds) {
     const byWeapon = new Map();
     for (const b of builds.filter(x => x.isMeta || x.categoryRank)) { if (!byWeapon.has(b.weaponKey)) byWeapon.set(b.weaponKey, []); byWeapon.get(b.weaponKey).push(b); }
     const groups = [...byWeapon.values()].sort((a, b) => byClassOrder(a[0].category, b[0].category) || realName(a[0].weaponName).localeCompare(realName(b[0].weaponName)));
     const option = list => {
         const icon = emojis[classOf(list[0].category)[1]];
-        return { label: realName(list[0].weaponName).slice(0, 100), value: `${strongestList(list)}|${list[0].weaponKey}`, description: weaponLine(list).slice(0, 100), ...(icon ? { emoji: emojis.parseEmoji(icon) } : {}), ...(activeKey && list[0].weaponKey === activeKey ? { default: true } : {}) };
+        return { label: realName(list[0].weaponName).slice(0, 100), value: `${strongestList(list)}|${list[0].weaponKey}`, description: weaponLine(list).slice(0, 100), ...(icon ? { emoji: emojis.parseEmoji(icon) } : {}) };
     };
     return [
         ['A', 'Jump to an AR, Sniper or LMG…', groups.filter(g => FIRST_GROUP.has(g[0].category))],

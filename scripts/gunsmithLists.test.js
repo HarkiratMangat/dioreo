@@ -84,9 +84,9 @@ for (const token of ['MP.*.meta', 'MP.*.best', 'MP.*.top', 'MP.*.hm']) {
     const cardSelects = listCard.components.filter(c => c.type === 1 && c.components[0].type === 3).map(c => c.components[0]);
     assert.deepStrictEqual(cardSelects.map(x => x.custom_id), ['gsb~lists~MP', 'gsb~ljump~A', 'gsb~ljump~B'], `${token}: View other lists, then both weapon dropdowns`);
     assert.deepStrictEqual(cardSelects.slice(1).map(x => x.options.map(o => o.label)), selects.map(x => x.options.map(o => o.label)), `${token}: every listed weapon`);
-    assert.ok(cardSelects.slice(1).some(x => x.options.some(o => o.default && o.value.endsWith(`|${on[0].weaponKey}`))), `${token}: the open weapon preselected`);
+    assert.ok(!cardSelects.slice(1).some(x => x.options.some(o => o.default)), `${token}: nothing preselected, so each dropdown keeps its "Jump to…" placeholder (click test 2026-11-06 23:04 EST: a preselected weapon hid it)`);
 }
-console.log('  ✓ every list card: both full weapon dropdowns, the open weapon preselected');
+console.log('  ✓ every list card: both full weapon dropdowns, their placeholders showing');
 // The MP Gunsmiths landing (bare `d gs`, his Mock B, 2026-11-06 22:16-22:37 EST): the title and season, the class buttons in the in-game order 4 then 3, the list buttons, then Search Builds (blue) and Submit a Build (grey).
 const land = L.buildLandingPage(['SMG', 'SECONDARIES', 'AR', 'MARKSMAN', 'LMG', 'SNIPER', 'SHOTGUN'], { season });
 const lc = land.components[0].components;

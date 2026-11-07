@@ -455,7 +455,7 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false,
         const label = scope.list ? require('./gunsmithLists').LISTS.find(l => l.token === browse.scopeToken)?.label || 'listed' : 'META';
         outerComponents.push(listSwitchRow(browse.scopeToken));
         // Every list view carries the lists page's two weapon dropdowns, every weapon on any list split by class, never only this list's own (Harkirat, 2026-11-06 22:12 EST, on the META page's dropdowns: "and on the best/top/hm page? work the class, not the instance"). The caller passes `listedBuilds` (commands/gunsmith.js renderScopeBrowse); without it the old one-list dropdown stays.
-        if (listedBuilds) outerComponents.push(...require('./gunsmithLists').jumpRows(listedBuilds, activeBuild.weaponKey));
+        if (listedBuilds) outerComponents.push(...require('./gunsmithLists').jumpRows(listedBuilds));
         else {
             const row = metaJumpRow(categoryBuilds, weaponSelectId, activeBuild.weaponKey, label);
             if (row) outerComponents.push(row);
