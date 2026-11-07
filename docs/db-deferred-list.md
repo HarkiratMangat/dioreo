@@ -1115,7 +1115,9 @@ Approved direction 2026-10-25 22:16 EDT (Harkirat, bot-polish thread); built in 
 
 *Filed 2026-10-30 16:21 EDT, Harkirat: "we'll do it later, just file it for now".* `utils/announcement.js` `buildAnnouncementContainer` starts a new Text Display only at a line that is exactly `---`, and that line always adds a divider (`type: 14, divider: true`), so two text boxes with nothing between them can't be written. **Do:** a line that is exactly `--` starts a new box with no divider; `---` keeps its divider. Update the composer's help text in `/manage` and the portal's Broadcast realm if either describes `---` (portal is pins2's: a proposal). **Verify:** a test where `--` yields two `type: 10` blocks with no divider between them, and `---` still yields one.
 
-### Reuse a returning draw's image by matching its items, not its title `[P2 · M]`
+### CLOSED 2026-11-06 19:21 EST · Reuse a returning draw's image by matching its items, not its title `[P2 · M]`
+> ✅ **The prod run happened:** all 18 draws on prod have their picture in `draws/` and none in `temp_draws/` (read 2026-11-06 19:21 EST).
+
 
 > ✅ **BUILT 2026-10-30 16:24 EDT** on `feat/text-commands` (builder thread, Harkirat's "draws/ folder, image linked to a draw"): `utils/cloudinaryCache.js` (tags + context + fingerprint, `draws/` permanent, override in place), `utils/drawImageBackfill.js` + `scripts/backfillDrawImages.js`, `scripts/drawImageLink.test.js`. Rule chosen: exact fingerprint (items + rarities, comments ignored) reuses, the newest image carrying them winning; a replaced image is overwritten only under the same title; ≥60% shared items is named, never reused; price type vetoes only when both set. **Still open: the prod run** of `DRAW_BACKFILL_APPROVED=1 node scripts/backfillDrawImages.js --write` against the PROD database right after the deploy (dev dry run: 12 current draws, 12 in `temp_draws/`, 0 in `archive/draws/`), which needs his word. The backfill also rewrites the image URLs inside `ChangeLog.inverse` (Undo), so an Undo after the move does not restore a dead link.
 
