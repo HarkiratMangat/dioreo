@@ -32,7 +32,7 @@
               {
                 "type": 2,
                 "style": 5,
-                "label": "Add to server or apps",
+                "label": "Add to Server or Apps",
                 "url": "https://discord.com/oauth2/authorize?client_id=1491474871778021550"
               }
             ]
@@ -342,7 +342,7 @@
               {
                 "type": 2,
                 "style": 5,
-                "label": "Add to server or apps",
+                "label": "Add to Server or Apps",
                 "url": "https://discord.com/oauth2/authorize?client_id=1491474871778021550"
               }
             ]
@@ -2279,7 +2279,7 @@
           },
           {
             "type": 10,
-            "content": "**Type**\n`mythic` · `legendary` · `armory` · `advanced`\n-# *+9 more in Detailed view*"
+            "content": "**Type**\n`mythic` · `legendary` · `armory` · `advanced`\n-# *+9 more in Detailed View*"
           },
           {
             "type": 10,
@@ -2302,7 +2302,7 @@
               {
                 "type": 2,
                 "style": 2,
-                "label": "Detailed view",
+                "label": "Detailed View",
                 "custom_id": "help_view~detail~/draw prices",
                 "emoji": {
                   "animated": true,
@@ -4350,7 +4350,7 @@
           },
           {
             "type": 10,
-            "content": "**Good to know**\n> -# One DM a day, just after the daily update\n> -# Leaving: 2 days and 1 day before · Season ends: 3 days before and the last day\n> -# **Send a test** shows today's DM now · **Stop all** turns everything off"
+            "content": "**Good to know**\n> -# One DM a day, just after the daily update\n> -# Leaving: 2 days and 1 day before · Season ends: 3 days before and the last day\n> -# **Send a Test** shows today's DM now · **Stop All** turns everything off"
           },
           {
             "type": 1,
@@ -4622,7 +4622,7 @@
           },
           {
             "type": 10,
-            "content": "**Good to know**\n> -# One DM a day, just after the daily update\n> -# Leaving: 2 days and 1 day before · Season ends: 3 days before and the last day\n> -# **Send a test** shows today's DM now · **Stop all** turns everything off"
+            "content": "**Good to know**\n> -# One DM a day, just after the daily update\n> -# Leaving: 2 days and 1 day before · Season ends: 3 days before and the last day\n> -# **Send a Test** shows today's DM now · **Stop All** turns everything off"
           },
           {
             "type": 1,
@@ -5929,7 +5929,7 @@
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# <a:Edit:1560408533160296519> **Edit timestamp**  *Change the time, timezone, view or format*\n> -# <a:Timezone:1563768937202716695> **Set timezone**  *Saved once, used across Dioreo*\n> -# **Format menu**  *Switch views or pick a format*"
+            "content": "**On the page**\n> -# <a:Edit:1560408533160296519> **Edit Timestamp**  *Change the time, timezone, view or format*\n> -# <a:Timezone:1563768937202716695> **Set Timezone**  *Saved once, used across Dioreo*\n> -# **Format menu**  *Switch views or pick a format*"
           },
           {
             "type": 10,
@@ -6188,7 +6188,7 @@
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# <a:Edit:1560408533160296519> **Edit timestamp**  *Change the time, timezone, view or format*\n> -# <a:Timezone:1563768937202716695> **Set timezone**  *Saved once, used across Dioreo*\n> -# **Format menu**  *Switch views or pick a format*"
+            "content": "**On the page**\n> -# <a:Edit:1560408533160296519> **Edit Timestamp**  *Change the time, timezone, view or format*\n> -# <a:Timezone:1563768937202716695> **Set Timezone**  *Saved once, used across Dioreo*\n> -# **Format menu**  *Switch views or pick a format*"
           },
           {
             "type": 1,
@@ -8493,7 +8493,7 @@
               {
                 "type": 2,
                 "style": 2,
-                "label": "Simple view",
+                "label": "Simple View",
                 "custom_id": "help_view~text~/draw prices",
                 "emoji": {
                   "animated": true,
@@ -8746,7 +8746,7 @@
               {
                 "type": 2,
                 "style": 5,
-                "label": "Add to server or apps",
+                "label": "Add to Server or Apps",
                 "url": "https://discord.com/oauth2/authorize?client_id=1491474871778021550"
               }
             ]
@@ -9071,7 +9071,7 @@
               {
                 "type": 2,
                 "style": 5,
-                "label": "Add to server or apps",
+                "label": "Add to Server or Apps",
                 "url": "https://discord.com/oauth2/authorize?client_id=1491474871778021550"
               }
             ]
@@ -11089,7 +11089,7 @@
           },
           {
             "type": 10,
-            "content": "**Type**\n`mythic` · `legendary` · `armory` · `advanced`\n-# *+9 more in Detailed view*"
+            "content": "**Type**\n`mythic` · `legendary` · `armory` · `advanced`\n-# *+9 more in Detailed View*"
           },
           {
             "type": 10,
@@ -11112,7 +11112,7 @@
               {
                 "type": 2,
                 "style": 2,
-                "label": "Detailed view",
+                "label": "Detailed View",
                 "custom_id": "help_view~detail~/draw prices",
                 "emoji": {
                   "animated": true,
@@ -13248,7 +13248,7 @@
           },
           {
             "type": 10,
-            "content": "**Good to know**\n> -# One DM a day, just after the daily update\n> -# Leaving: 2 days and 1 day before · Season ends: 3 days before and the last day\n> -# **Send a test** shows today's DM now · **Stop all** turns everything off"
+            "content": "**Good to know**\n> -# One DM a day, just after the daily update\n> -# Leaving: 2 days and 1 day before · Season ends: 3 days before and the last day\n> -# **Send a Test** shows today's DM now · **Stop All** turns everything off"
           },
           {
             "type": 1,
@@ -13531,7 +13531,7 @@
           },
           {
             "type": 10,
-            "content": "**Good to know**\n> -# One DM a day, just after the daily update\n> -# Leaving: 2 days and 1 day before · Season ends: 3 days before and the last day\n> -# **Send a test** shows today's DM now · **Stop all** turns everything off"
+            "content": "**Good to know**\n> -# One DM a day, just after the daily update\n> -# Leaving: 2 days and 1 day before · Season ends: 3 days before and the last day\n> -# **Send a Test** shows today's DM now · **Stop All** turns everything off"
           },
           {
             "type": 1,
@@ -14893,7 +14893,7 @@
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# <a:Edit:1560408533160296519> **Edit timestamp**  *Change the time, timezone, view or format*\n> -# <a:Timezone:1563768937202716695> **Set timezone**  *Saved once, used across Dioreo*\n> -# **Format menu**  *Switch views or pick a format*"
+            "content": "**On the page**\n> -# <a:Edit:1560408533160296519> **Edit Timestamp**  *Change the time, timezone, view or format*\n> -# <a:Timezone:1563768937202716695> **Set Timezone**  *Saved once, used across Dioreo*\n> -# **Format menu**  *Switch views or pick a format*"
           },
           {
             "type": 10,
@@ -15163,7 +15163,7 @@
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# <a:Edit:1560408533160296519> **Edit timestamp**  *Change the time, timezone, view or format*\n> -# <a:Timezone:1563768937202716695> **Set timezone**  *Saved once, used across Dioreo*\n> -# **Format menu**  *Switch views or pick a format*"
+            "content": "**On the page**\n> -# <a:Edit:1560408533160296519> **Edit Timestamp**  *Change the time, timezone, view or format*\n> -# <a:Timezone:1563768937202716695> **Set Timezone**  *Saved once, used across Dioreo*\n> -# **Format menu**  *Switch views or pick a format*"
           },
           {
             "type": 1,
@@ -17833,7 +17833,7 @@
               {
                 "type": 2,
                 "style": 2,
-                "label": "Simple view",
+                "label": "Simple View",
                 "custom_id": "help_view~text~/draw prices",
                 "emoji": {
                   "animated": true,
@@ -18097,7 +18097,7 @@
               {
                 "type": 2,
                 "style": 5,
-                "label": "Add to server or apps",
+                "label": "Add to Server or Apps",
                 "url": "https://discord.com/oauth2/authorize?client_id=1491474871778021550"
               }
             ]
@@ -18477,7 +18477,7 @@
               {
                 "type": 2,
                 "style": 5,
-                "label": "Add to server or apps",
+                "label": "Add to Server or Apps",
                 "url": "https://discord.com/oauth2/authorize?client_id=1491474871778021550"
               }
             ]
@@ -20880,7 +20880,7 @@
           },
           {
             "type": 10,
-            "content": "**Type**\n`mythic` · `legendary` · `armory` · `advanced`\n-# *+9 more in Detailed view*"
+            "content": "**Type**\n`mythic` · `legendary` · `armory` · `advanced`\n-# *+9 more in Detailed View*"
           },
           {
             "type": 10,
@@ -20903,7 +20903,7 @@
               {
                 "type": 2,
                 "style": 2,
-                "label": "Detailed view",
+                "label": "Detailed View",
                 "custom_id": "help_view~detail~/draw prices",
                 "emoji": {
                   "animated": true,
@@ -23479,7 +23479,7 @@
           },
           {
             "type": 10,
-            "content": "**Good to know**\n> -# One DM a day, just after the daily update\n> -# Leaving: 2 days and 1 day before · Season ends: 3 days before and the last day\n> -# **Send a test** shows today's DM now · **Stop all** turns everything off"
+            "content": "**Good to know**\n> -# One DM a day, just after the daily update\n> -# Leaving: 2 days and 1 day before · Season ends: 3 days before and the last day\n> -# **Send a Test** shows today's DM now · **Stop All** turns everything off"
           },
           {
             "type": 1,
@@ -23817,7 +23817,7 @@
           },
           {
             "type": 10,
-            "content": "**Good to know**\n> -# One DM a day, just after the daily update\n> -# Leaving: 2 days and 1 day before · Season ends: 3 days before and the last day\n> -# **Send a test** shows today's DM now · **Stop all** turns everything off"
+            "content": "**Good to know**\n> -# One DM a day, just after the daily update\n> -# Leaving: 2 days and 1 day before · Season ends: 3 days before and the last day\n> -# **Send a Test** shows today's DM now · **Stop All** turns everything off"
           },
           {
             "type": 1,
@@ -25454,7 +25454,7 @@
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# <a:Edit:1560408533160296519> **Edit timestamp**  *Change the time, timezone, view or format*\n> -# <a:Timezone:1563768937202716695> **Set timezone**  *Saved once, used across Dioreo*\n> -# **Format menu**  *Switch views or pick a format*"
+            "content": "**On the page**\n> -# <a:Edit:1560408533160296519> **Edit Timestamp**  *Change the time, timezone, view or format*\n> -# <a:Timezone:1563768937202716695> **Set Timezone**  *Saved once, used across Dioreo*\n> -# **Format menu**  *Switch views or pick a format*"
           },
           {
             "type": 10,
@@ -25779,7 +25779,7 @@
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# <a:Edit:1560408533160296519> **Edit timestamp**  *Change the time, timezone, view or format*\n> -# <a:Timezone:1563768937202716695> **Set timezone**  *Saved once, used across Dioreo*\n> -# **Format menu**  *Switch views or pick a format*"
+            "content": "**On the page**\n> -# <a:Edit:1560408533160296519> **Edit Timestamp**  *Change the time, timezone, view or format*\n> -# <a:Timezone:1563768937202716695> **Set Timezone**  *Saved once, used across Dioreo*\n> -# **Format menu**  *Switch views or pick a format*"
           },
           {
             "type": 1,
@@ -32614,7 +32614,7 @@
               {
                 "type": 2,
                 "style": 2,
-                "label": "Simple view",
+                "label": "Simple View",
                 "custom_id": "help_view~text~/draw prices",
                 "emoji": {
                   "animated": true,
@@ -32933,7 +32933,7 @@
               {
                 "type": 2,
                 "style": 5,
-                "label": "Add to server or apps",
+                "label": "Add to Server or Apps",
                 "url": "https://discord.com/oauth2/authorize?client_id=1491474871778021550"
               }
             ]
@@ -33258,7 +33258,7 @@
               {
                 "type": 2,
                 "style": 5,
-                "label": "Add to server or apps",
+                "label": "Add to Server or Apps",
                 "url": "https://discord.com/oauth2/authorize?client_id=1491474871778021550"
               }
             ]
@@ -35276,7 +35276,7 @@
           },
           {
             "type": 10,
-            "content": "**Type**\n`mythic` · `legendary` · `armory` · `advanced`\n-# *+9 more in Detailed view*"
+            "content": "**Type**\n`mythic` · `legendary` · `armory` · `advanced`\n-# *+9 more in Detailed View*"
           },
           {
             "type": 10,
@@ -35299,7 +35299,7 @@
               {
                 "type": 2,
                 "style": 2,
-                "label": "Detailed view",
+                "label": "Detailed View",
                 "custom_id": "help_view~detail~/draw prices",
                 "emoji": {
                   "animated": true,
@@ -37435,7 +37435,7 @@
           },
           {
             "type": 10,
-            "content": "**Good to know**\n> -# One DM a day, just after the daily update\n> -# Leaving: 2 days and 1 day before · Season ends: 3 days before and the last day\n> -# **Send a test** shows today's DM now · **Stop all** turns everything off"
+            "content": "**Good to know**\n> -# One DM a day, just after the daily update\n> -# Leaving: 2 days and 1 day before · Season ends: 3 days before and the last day\n> -# **Send a Test** shows today's DM now · **Stop All** turns everything off"
           },
           {
             "type": 1,
@@ -37718,7 +37718,7 @@
           },
           {
             "type": 10,
-            "content": "**Good to know**\n> -# One DM a day, just after the daily update\n> -# Leaving: 2 days and 1 day before · Season ends: 3 days before and the last day\n> -# **Send a test** shows today's DM now · **Stop all** turns everything off"
+            "content": "**Good to know**\n> -# One DM a day, just after the daily update\n> -# Leaving: 2 days and 1 day before · Season ends: 3 days before and the last day\n> -# **Send a Test** shows today's DM now · **Stop All** turns everything off"
           },
           {
             "type": 1,
@@ -39080,7 +39080,7 @@
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# <a:Edit:1560408533160296519> **Edit timestamp**  *Change the time, timezone, view or format*\n> -# <a:Timezone:1563768937202716695> **Set timezone**  *Saved once, used across Dioreo*\n> -# **Format menu**  *Switch views or pick a format*"
+            "content": "**On the page**\n> -# <a:Edit:1560408533160296519> **Edit Timestamp**  *Change the time, timezone, view or format*\n> -# <a:Timezone:1563768937202716695> **Set Timezone**  *Saved once, used across Dioreo*\n> -# **Format menu**  *Switch views or pick a format*"
           },
           {
             "type": 10,
@@ -39350,7 +39350,7 @@
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# <a:Edit:1560408533160296519> **Edit timestamp**  *Change the time, timezone, view or format*\n> -# <a:Timezone:1563768937202716695> **Set timezone**  *Saved once, used across Dioreo*\n> -# **Format menu**  *Switch views or pick a format*"
+            "content": "**On the page**\n> -# <a:Edit:1560408533160296519> **Edit Timestamp**  *Change the time, timezone, view or format*\n> -# <a:Timezone:1563768937202716695> **Set Timezone**  *Saved once, used across Dioreo*\n> -# **Format menu**  *Switch views or pick a format*"
           },
           {
             "type": 1,
@@ -42000,7 +42000,7 @@
               {
                 "type": 2,
                 "style": 2,
-                "label": "Simple view",
+                "label": "Simple View",
                 "custom_id": "help_view~text~/draw prices",
                 "emoji": {
                   "animated": true,

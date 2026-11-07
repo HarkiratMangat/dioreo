@@ -67,7 +67,7 @@ function refreshReviewWarnings(data, allBuilds) {
     // Every warning has Harkirat's shape (2026-10-20 13:19 EDT): a bold title line, then `>` lines for the detail and what to do. A code that looks cut off (Harkirat, 2026-10-28 01:06 EDT): Save reads Save anyway, and a batch's Save All stops on it.
     const codeProblem = data.mode !== 'DMZ' && data.gunsmithCode ? gunsmithCodeProblem(data.gunsmithCode) : null;
     data.codeWarning = codeProblem
-        ? `${BOT_EMOJI.warn} **The code looks cut off:** \`${data.gunsmithCode}\`\n> ${codeProblem[0].toUpperCase()}${codeProblem.slice(1)}; the game draws O like 0, so a last O is easy to lose\n> **Fix:** the code, with **Adjust**, or **Save anyway** if it is right`
+        ? `${BOT_EMOJI.warn} **The code looks cut off:** \`${data.gunsmithCode}\`\n> ${codeProblem[0].toUpperCase()}${codeProblem.slice(1)}; the game draws O like 0, so a last O is easy to lose\n> **Fix:** the code, with **Adjust**, or **Save Anyway** if it is right`
         : null;
     data.equipCapWarning = data.mode === 'MP' && data.attachments.length > 5
         ? `${BOT_EMOJI.warn} **${data.attachments.length} attachments on an MP build**\n> MP equips at most 5, so one is probably misread, or this is a DMZ screenshot\n> **Fix:** the list or the mode, with **Adjust**`
@@ -218,7 +218,7 @@ function buildReviewCard(token, data, opts = {}) {
     components.push(...(opts.rows || [{
         type: 1,
         components: [
-            { type: 2, style: 3, label: data.codeWarning ? 'Save anyway' : 'Save Build', custom_id: `autobuild_confirm_${token}`, emoji: emojiIcon('saveStar') },
+            { type: 2, style: 3, label: data.codeWarning ? 'Save Anyway' : 'Save Build', custom_id: `autobuild_confirm_${token}`, emoji: emojiIcon('saveStar') },
             { type: 2, style: 1, label: 'Adjust', custom_id: `autobuild_editbtn_${token}`, emoji: emojiIcon('edit') },
             { type: 2, style: 4, label: 'Discard', custom_id: `autobuild_cancel_${token}`, emoji: emojiIcon('deleteBin') }
         ]
@@ -592,8 +592,8 @@ function confirmMessage(client, result) {
         case 'nomode': return glyphs(BOT_EMOJI.cross + ' MP or DMZ is still unresolved -- click **Adjust** and pick it in **Mode** before saving.');
         case 'badbuild': return glyphs(result.message || `${BOT_EMOJI.cross} That build # can't be used -- fix it with **Adjust**.`);
         case 'busy': return `${require('./emojiMap').cooldown} Already saving this build -- give it a moment.`;
-        case 'cutcode': return glyphs(`${BOT_EMOJI.warn} Its code looks cut off -- fix it with **Adjust**, or press **Save anyway** on its page.`);
-        case 'rival': return glyphs(`${BOT_EMOJI.warn} ${result.message || 'Another admin has this build waiting.'} Pick **Save mine** or **Leave it to them** on its page.`);
+        case 'cutcode': return glyphs(`${BOT_EMOJI.warn} Its code looks cut off -- fix it with **Adjust**, or press **Save Anyway** on its page.`);
+        case 'rival': return glyphs(`${BOT_EMOJI.warn} ${result.message || 'Another admin has this build waiting.'} Pick **Save Mine** or **Leave It to Them** on its page.`);
         case 'labeltaken': return `${BOT_EMOJI.cross} That build label is already used by another build of this weapon -- pick another with **Adjust**.`;
         // Both places a code can be typed: Adjust on a review, the Approve pop-up on a submitted build.
         case 'nocode': return `${BOT_EMOJI.cross} An MP build needs its Gunsmith code before it saves: its picture is keyed by it. Add it in the \`Category, build #, code\` box with **Adjust** (or the \`Label | Code\` box with **Approve** on a submission).`;

@@ -32,7 +32,7 @@ const NO_SURFACE = {
     'season.restoreDraft': { why: 'inverse-only — season.discardDraft inverts to it', inverseOnly: true },
     'season.newsDraft': { why: 'written only by news triage (utils/newsTriage/pipeline.js), never staged by the portal; its own inverse', inverseOnly: true },
     'catalogue.forget': { why: 'inverse-only — catalogue.learn inverts to it', inverseOnly: true },
-    // ── Bot-side for now: the CODM catalogue learns a name only alongside a loadout save that met it (/manage Save anyway, /autobuild Confirm), in the same changeset. The portal sends it once pins2 ports the catalogue warning to the Armory (local/project/proposals in the bot project).
+    // ── Bot-side for now: the CODM catalogue learns a name only alongside a loadout save that met it (/manage Save Anyway, /autobuild Confirm), in the same changeset. The portal sends it once pins2 ports the catalogue warning to the Armory (local/project/proposals in the bot project).
     'patchnote.setSeasonDates': { why: 'a past season\'s own dates, set once by scripts/setSeasonDates.js for seasons that rotated before Promote to Live saved them (2026-10-28); no editor anywhere yet' },
     'loadout.credit': { why: 'a build\'s credit is set from Discord (/manage\'s Credit button, /autobuild); the portal Armory has no credit field yet (a pins2 proposal)' },
     'loadout.options': { why: 'a merged build\'s options (1, 1b, 1c) are edited from Discord (/manage Edit, Add option, Delete); the portal Armory does not read variants yet (a pins2 proposal, merged-builds-editor/proposals/pins2-portal-armory-options.md)' },

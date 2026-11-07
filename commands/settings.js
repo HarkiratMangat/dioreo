@@ -333,8 +333,8 @@ module.exports = {
                 type: 9,
                 components: [{ type: 10, content: `**Announcements** = \`${announcementsOff ? 'Off' : 'On'}\`\n-# Dioreo bot news and updates.` }],
                 accessory: announcementsOff
-                    ? { type: 2, style: 1, label: 'Turn on', custom_id: `toggle_announcements_on|${userId}` }
-                    : { type: 2, style: 4, label: 'Turn off', custom_id: `toggle_announcements_off|${userId}` }
+                    ? { type: 2, style: 1, label: 'Turn On', custom_id: `toggle_announcements_on|${userId}` }
+                    : { type: 2, style: 4, label: 'Turn Off', custom_id: `toggle_announcements_off|${userId}` }
             });
 
             containerComponents.push({ type: 10, content: `-# ← Back to page 1 for Visibility settings` });

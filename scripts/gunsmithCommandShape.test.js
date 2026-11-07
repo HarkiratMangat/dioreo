@@ -38,7 +38,7 @@ for (const sub of json.options.filter(o => o.name !== 'list')) {
 }
 
 {
-    // The empty META card (B6, his wording 2026-10-29 20:13 EDT): no heading, the pending line in italics, Search builds and Submit a Build for that mode.
+    // The empty META card (B6, his wording 2026-10-29 20:13 EDT): no heading, the pending line in italics, Search Builds and Submit a Build for that mode.
     const card = require('../commands/gunsmith').emptyMetaCard('DMZ')[0];
     const text = card.components.filter(c => c.type === 10).map(c => c.content).join('\n');
     assert.ok(text.includes('## Meta — DMZ') && text.includes('*The Meta list is pending an update. Check back soon.*') && !/No META builds/i.test(text), text);

@@ -85,7 +85,7 @@ function draftPanel(token, state) {
     const accessory = (d, i) => d.candidates?.length && !d.edited
         ? { type: 2, style: 1, label: 'Pick', custom_id: `mng_qa_pick_${token}_${i}` }
         : !d.matchedBy && !d.existing && !d.edited
-            ? { type: 2, style: 1, label: 'Add details', emoji: emojis.parseEmoji(emojis.mngAdd), custom_id: `mng_qa_edit_${token}_${i}` }
+            ? { type: 2, style: 1, label: 'Add Details', emoji: emojis.parseEmoji(emojis.mngAdd), custom_id: `mng_qa_edit_${token}_${i}` }
             : { type: 2, style: 2, label: 'Edit', emoji: emojis.parseEmoji(emojis.mngEdit), custom_id: `mng_qa_edit_${token}_${i}` };
     const components = [
         { type: 10, content: [`### ${emojis.mngAdd} Quick Add · ${drafts.length} draw${drafts.length === 1 ? '' : 's'}`,
@@ -99,7 +99,7 @@ function draftPanel(token, state) {
         })),
         { type: 14, spacing: 1, divider: true },
         { type: 1, components: [
-            { type: 2, style: 3, label: writes ? `Save ${writes}` : 'Nothing to save', custom_id: `mng_qa_save_${token}`, disabled: !writes },
+            { type: 2, style: 3, label: writes ? `Save ${writes}` : 'Nothing to Save', custom_id: `mng_qa_save_${token}`, disabled: !writes },
             { type: 2, style: 2, label: 'Cancel', custom_id: `mng_qa_cancel_${token}` }
         ] }
     ];
@@ -315,7 +315,7 @@ async function save(interaction, token, state) {
     ];
     const ends = todo.filter(d => d.end).length;
     const panel = resultPanel({ page: 'draws', heading: 'Quick Add saved', summary: ends ? `-# ${ends} end date${ends === 1 ? '' : 's'} on /calendar too.` : null, sections });
-    panel[0].components.push({ type: 14, spacing: 1, divider: false }, { type: 1, components: [{ type: 2, style: 4, label: 'Revert all', custom_id: `mng_qa_revert_${token}` }] });
+    panel[0].components.push({ type: 14, spacing: 1, divider: false }, { type: 1, components: [{ type: 2, style: 4, label: 'Revert All', custom_id: `mng_qa_revert_${token}` }] });
     const sent = await sendV2Payload(interaction, panel);
     // Items the draw index has no kind for are asked about, not left blank (handlers/manage/itemKinds.js).
     await require('./itemKinds').askItemKinds(interaction, added.map(d => d.title));

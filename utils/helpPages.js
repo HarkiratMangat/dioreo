@@ -97,7 +97,7 @@ const PAGES = {
         blurb: 'A DM when draws, events and modes go live or leave, and before the season ends',
         page(x) {
             const groups = text("**Turn on a group**\n> -# **Draws, events & modes**  *Going live, or leaving soon*\n> -# **Season**  *New season, BP, Ranked, DMZ ends*\n> -# **Updates**  *Patch notes, the daily brief*\n-# Or pick single draws, events and modes in the panel's two lists");
-            const good = text("**Good to know**\n> -# One DM a day, just after the daily update\n> -# Leaving: 2 days and 1 day before · Season ends: 3 days before and the last day\n> -# **Send a test** shows today's DM now · **Stop all** turns everything off");
+            const good = text("**Good to know**\n> -# One DM a day, just after the daily update\n> -# Leaving: 2 days and 1 day before · Season ends: 3 days before and the last day\n> -# **Send a Test** shows today's DM now · **Stop All** turns everything off");
             const where = x.view === 'text' ? dot(['today', 'calendar', 'draws', 'patch notes', 'end'].map(w => `${x.p} ${w}`)) : '/today, /calendar, /draws, /patch notes and /season end';
             const bellLine = text(`**The ${bell()} bell**\n-# On ${where}: opens your reminders privately`);
             return x.view === 'text'
@@ -165,8 +165,8 @@ const PAGES = {
             const boxes = x.detail
                 ? [...['Mythic', 'Legendary', 'Special', 'More'].map((g, i) => text(`${i === 0 ? '**Type**\n' : ''}-# **${g}**\n${types.filter(v => v.group === g).map(v => `> ${row(v)}`).join('\n')}`)),
                     text(`**Region**\n${dot(regions.map(v => v.aliases[0]))}\n-# or just ${dot(regions.map(v => v.shown[0]))}`)]
-                : [text(`**Type**\n${dot(groupWords)}\n-# *+${types.length - groupWords.length} more in Detailed view*`), text(`**Region**\n${dot(regions.map(v => v.aliases[0]))}`)];
-            const toggle = { type: 2, style: 2, label: x.detail ? 'Simple view' : 'Detailed view', custom_id: `help_view~${x.detail ? 'text' : 'detail'}~/draw prices`, ...emojiField(x.detail ? 'collapse' : 'expand') };
+                : [text(`**Type**\n${dot(groupWords)}\n-# *+${types.length - groupWords.length} more in Detailed View*`), text(`**Region**\n${dot(regions.map(v => v.aliases[0]))}`)];
+            const toggle = { type: 2, style: 2, label: x.detail ? 'Simple View' : 'Detailed View', custom_id: `help_view~${x.detail ? 'text' : 'detail'}~/draw prices`, ...emojiField(x.detail ? 'collapse' : 'expand') };
             return { args: '[type] [region]', boxes, buttons: [toggle], examples: examples.slice(0, x.detail ? 4 : 3) };
         },
     },
@@ -192,7 +192,7 @@ const PAGES = {
         page(x) {
             const rightClick = text('**Right-click or tap and hold a message**\n-# Apps → **Convert Times**: every date and time in it, in your own time zone');
             // The buttons and menu under the panel (2026-11-01 15:19 EDT, his panel update), in /calendar's "On the page" shape.
-            const shows = text(`**On the page**\n> -# ${emojis.edit} **Edit timestamp**  *Change the time, timezone, view or format*\n> -# ${emojis.timezone} **Set timezone**  *Saved once, used across Dioreo*\n> -# **Format menu**  *Switch views or pick a format*`);
+            const shows = text(`**On the page**\n> -# ${emojis.edit} **Edit Timestamp**  *Change the time, timezone, view or format*\n> -# ${emojis.timezone} **Set Timezone**  *Saved once, used across Dioreo*\n> -# **Format menu**  *Switch views or pick a format*`);
             if (x.view !== 'text') {
                 return {
                     boxes: [text(`\`<datetime>\`\nType it the way you'd say it.\n-# Such as ${dot(['tomorrow', 'sun 4:30pm', '8pm to 10pm', '8pm utc+5'])}`), text('`[timezone]`\n-# Any short name, city or country (it searches as you type); blank uses your /settings one'), text('`[style]`\n-# Short List, All Formats, or one format'), text('`[view]`\n-# Embed panel or plain text'), VIS, shows],

@@ -1,6 +1,6 @@
 // scripts/catalogue.test.js
 //
-// The CODM catalogue (utils/catalogue.js, core/ops/catalogue.js): the seed built from the tracked JSON, the unknown-name check that drives /manage's warning, slot inference, the items Save anyway learns, the op's page per mode, and the modal prefill Back to edit uses. No database.
+// The CODM catalogue (utils/catalogue.js, core/ops/catalogue.js): the seed built from the tracked JSON, the unknown-name check that drives /manage's warning, slot inference, the items Save Anyway learns, the op's page per mode, and the modal prefill Back to edit uses. No database.
 const assert = require('assert');
 const cat = require('../utils/catalogue');
 const json = require('../docs/pins2/data/2026-09-25-codm-weapons-attachments.json');
@@ -62,7 +62,7 @@ check('slots come back aligned, blank where unknown, and [] when none is known',
     assert.deepStrictEqual(cat.slotsFromIndex(index, ['Nope']), []);
 });
 
-check('Save anyway learns the weapon with its typed category and the attachments with no slot', () => {
+check('Save Anyway learns the weapon with its typed category and the attachments with no slot', () => {
     const items = cat.learnItems({ weapon: 'New Gun', attachments: ['New Part'], count: 2 }, { category: 'smg' });
     assert.deepStrictEqual(items.map(i => [i.kind, i.name, i.category ?? i.slot, i.source]),
         [['weapon', 'New Gun', 'SMG', 'confirmed'], ['attachment', 'New Part', null, 'confirmed']]);

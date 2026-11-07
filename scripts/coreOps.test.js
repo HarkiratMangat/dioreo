@@ -61,7 +61,7 @@ check('every op type maps back to a registry action, except the documented inter
                                     // registry's group/action split can't represent
         'patchnote.setSeasonDates', // a past season's own dates, set by scripts/setSeasonDates.js
                                     // (Promote to Live saves them itself); no page button of its own
-        'catalogue.learn',         // rides in the same changeset as a loadout save (Save anyway,
+        'catalogue.learn',         // rides in the same changeset as a loadout save (Save Anyway,
                                     // /autobuild Confirm); no page button of its own
         'catalogue.forget',        // internal -- catalogue.learn's inverse target only
         'loadout.options',         // a merged build's options (utils/loadoutOptions.js): rides on Add, Edit and Delete by a build # with a letter, never a page action of its own; declares page: per mode

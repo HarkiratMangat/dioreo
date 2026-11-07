@@ -89,8 +89,8 @@ function buildCard(card) {
     for (const note of card.notes || []) parts.push({ type: 10, content: `-# ${note}` });
     parts.push({ type: 14, spacing: 2, divider: true });
     if (card.dismissed) parts.push({ type: 10, content: `-# ${emojis.cross} **Dismissed**` });
-    const row = card.jumpUrl ? [{ type: 2, style: 5, label: 'Open post', url: card.jumpUrl }] : [];
-    if (card.draftChangeId && !card.draftUndone) row.push({ type: 2, style: 4, label: 'Undo draft changes', custom_id: `news|undo|${id}` });
+    const row = card.jumpUrl ? [{ type: 2, style: 5, label: 'Open Post', url: card.jumpUrl }] : [];
+    if (card.draftChangeId && !card.draftUndone) row.push({ type: 2, style: 4, label: 'Undo Draft Changes', custom_id: `news|undo|${id}` });
     if (!card.dismissed) row.push({ type: 2, style: 2, label: 'Dismiss', custom_id: `news|dismiss|${id}` });
     if (row.length) parts.push({ type: 1, components: row });
     return fitText([{ type: 17, accent_color: ACCENT, components: parts }]);

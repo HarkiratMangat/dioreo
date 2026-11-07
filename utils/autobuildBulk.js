@@ -106,7 +106,7 @@ function batchRows(batch, key, index, heldImages) {
     if (pager) inside.push({ type: 14, spacing: 1, divider: false }, pager);
     const pending = batch.items.filter(it => it.status === 'pending').length;
     // More screenshots join this batch through the start form (2026-10-25 14:03 EDT).
-    inside.push({ type: 14, spacing: 1, divider: false }, { type: 1, components: [{ type: 2, style: 2, label: 'Add screenshots', custom_id: id('add', key), emoji: icon('edit') }] });
+    inside.push({ type: 14, spacing: 1, divider: false }, { type: 1, components: [{ type: 2, style: 2, label: 'Add Screenshots', custom_id: id('add', key), emoji: icon('edit') }] });
     if (pending > 1) {
         inside.push({ type: 14, spacing: 1, divider: true }, { type: 1, components: [
             { type: 2, style: 3, label: `Save All ${pending}`, custom_id: id('all', key), emoji: icon('saveStar') },
@@ -163,8 +163,8 @@ function renderPage(batch, key, index, heldImages = null) {
                 // Pressing Save on a build another admin also has waiting asks first (2026-10-25 14:01 EDT): keep yours, or leave it to them (yours is discarded).
                 item.askRival
                     ? { type: 1, components: [
-                        { type: 2, style: 3, label: 'Save mine', custom_id: id('force', key, index), emoji: icon('saveStar') },
-                        { type: 2, style: 4, label: 'Leave it to them', custom_id: id('yield', key, index), emoji: icon('deleteBin') },
+                        { type: 2, style: 3, label: 'Save Mine', custom_id: id('force', key, index), emoji: icon('saveStar') },
+                        { type: 2, style: 4, label: 'Leave It to Them', custom_id: id('yield', key, index), emoji: icon('deleteBin') },
                         { type: 2, style: 2, label: 'Back', custom_id: id('page', key, index) },
                     ] }
                     : { type: 1, components: [

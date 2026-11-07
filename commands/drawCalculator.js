@@ -1295,7 +1295,7 @@ function buildSavedPanelAt(state, savedBaskets, accentColor, { notice = null, sa
         components.push({ type: 10, content: `## This Calculation\n-# Viewing **${String(current.name).replace(/\*/g, '')}**. Rename it, or delete it from your saved calculations.` });
         components.push({ type: 1, components: [
             { type: 2, style: 2, label: 'Rename', custom_id: encodeState('modal_name', view) },
-            { type: 2, style: armed ? 4 : 2, label: armed ? 'Delete Calculation — click again' : 'Delete Calculation', custom_id: encodeState(armed ? 'del' : 'delarm', view) }
+            { type: 2, style: armed ? 4 : 2, label: armed ? 'Delete Calculation — Click Again' : 'Delete Calculation', custom_id: encodeState(armed ? 'del' : 'delarm', view) }
         ] });
         saveSection = true;
     } else if (current && (current.banners || []).length) {

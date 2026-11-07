@@ -106,7 +106,7 @@ function emptyMetaCard(mode, label = 'Meta') {
         { type: 10, content: `-# ${mode} • ${label} pending` },
         { type: 14, spacing: 2, divider: true },
         { type: 1, components: [
-            { type: 2, style: 2, label: 'Search builds', custom_id: `gsb~search~${mode}`, emoji: BOT_EMOJI.parseEmoji(BOT_EMOJI.gunsmithSearch) },
+            { type: 2, style: 2, label: 'Search Builds', custom_id: `gsb~search~${mode}`, emoji: BOT_EMOJI.parseEmoji(BOT_EMOJI.gunsmithSearch) },
             { type: 2, style: 1, label: 'Submit a Build', custom_id: `gsb~submit~${mode}~-`, emoji: BOT_EMOJI.parseEmoji(BOT_EMOJI.share) },
         ] },
     ] }];

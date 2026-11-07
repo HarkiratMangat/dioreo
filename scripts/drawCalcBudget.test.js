@@ -306,7 +306,7 @@ t('Delete Calculation is two-step the same way', () => {
     const named = makeBasket({ name: 'My Push' });
     const inSaved = s => dc.buildCalculatorPanel(state({ page: 3, ...s }), named, ACCENT, { savedBaskets: [named] });
     assert.ok(buttonLabelled(inSaved(), 'Delete Calculation'), 'the Saved view offers Delete for the open saved calculation');
-    const armedDelete = buttonLabelled(inSaved({ verb: 'delarm' }), 'Delete Calculation — click again');
+    const armedDelete = buttonLabelled(inSaved({ verb: 'delarm' }), 'Delete Calculation — Click Again');
     assert.ok(armedDelete && armedDelete.style === 4 && verbOf(armedDelete) === 'del' && dc.decodeState(armedDelete.custom_id).page === 3);
 });
 

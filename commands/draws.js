@@ -301,7 +301,7 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
     const { encodeState } = require('./drawCalculator');
     // RESET FILTER (2026-11-01 13:16 EDT, Harkirat: "when any filter is selected, show a "Reset filter" button to the left of calculate with the "Return" emoji. which wipes the filters and takes you back to the normal /draws view"). `subpage_reset` in handlers/pagination.js; the footer's All Draws does the same, but sits far from the dropdown.
     const actions = [
-        ...(mask ? [{ type: 2, style: 2, label: 'Reset filter', emoji: emojis.parseEmoji(emojis.returnArrow), custom_id: 'subpage_reset' }] : []),
+        ...(mask ? [{ type: 2, style: 2, label: 'Reset Filter', emoji: emojis.parseEmoji(emojis.returnArrow), custom_id: 'subpage_reset' }] : []),
         ...(priced ? [{ type: 2, style: 1, label: 'Calculate', emoji: emojis.parseEmoji(emojis.calculator), custom_id: encodeState('drawspick', {}) }] : [])
     ];
     // Its own row since the toggle went. The toggle's ids (`page_new_draws`/`page_returning_draws`) still open their section on panels posted before (handlers/pagination.js).

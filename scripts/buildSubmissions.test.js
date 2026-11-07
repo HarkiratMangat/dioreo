@@ -61,7 +61,7 @@ t('the dispute card: Remove / Change credit only when the build was found; the a
     const found = JSON.stringify(S.disputeCard(dis, build));
     assert.ok(found.includes('<@42>') && found.includes('anonymous to players') && found.includes('wants credit instead'));
     const buttons = S.disputeCard(dis, null).flatMap(flat).filter(c => c.type === 2);
-    assert.deepStrictEqual(buttons.map(b => [b.label, Boolean(b.disabled)]), [['Remove build', true], ['Change credit', true], ['Deny', false], ['More info', false]]);
+    assert.deepStrictEqual(buttons.map(b => [b.label, Boolean(b.disabled)]), [['Remove Build', true], ['Change Credit', true], ['Deny', false], ['More Info', false]]);
     assert.ok(JSON.stringify(S.disputeCard({ ...dis, status: 'credited', resolvedAt: new Date(0) }, build)).includes('Credit changed to them'));
 });
 

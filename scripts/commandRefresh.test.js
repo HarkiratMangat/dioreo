@@ -222,10 +222,10 @@ t('/calendar: a looping pager over the pages the filter keeps, and a filter drop
     // An empty filtered page keeps its heading and leads with the warning icon (2026-10-21 15:53 EDT).
     const noMatch = { ...doc, calendar: doc.calendar.filter(e => e.title === 'Over Event') };
     const emptyJson = JSON.stringify(calendar.buildContainer(noMatch, 1, undefined, false, calendar.filterMask('live')));
-    // The shared empty note (utils/emptyNote.js, 2026-11-01 14:32 EDT "Work the class!"): what the filter hid, counted, and a Reset filter that keeps the page.
+    // The shared empty note (utils/emptyNote.js, 2026-11-01 14:32 EDT "Work the class!"): what the filter hid, counted, and a Reset Filter that keeps the page.
     assert.ok(/## [^"]*Special Events.*:Warn:.*Zero \(0\) \*\*Special Events\*\* match this filter\..*`1` ended/.test(emptyJson), emptyJson.slice(0, 600));
-    assert.ok(emptyJson.includes('"custom_id":"calpage_1_m0_r"') && emptyJson.includes('Reset filter'), 'a filtered page carries Reset filter back to the same page');
-    assert.ok(!JSON.stringify(calendar.buildContainer(doc, 1, undefined, false, 'all')).includes('Reset filter'), 'no Reset filter without a filter');
+    assert.ok(emptyJson.includes('"custom_id":"calpage_1_m0_r"') && emptyJson.includes('Reset Filter'), 'a filtered page carries Reset Filter back to the same page');
+    assert.ok(!JSON.stringify(calendar.buildContainer(doc, 1, undefined, false, 'all')).includes('Reset Filter'), 'no Reset Filter without a filter');
     const bare = JSON.stringify(calendar.buildContainer({ ...doc, calendar: [] }, 1, undefined, false, 'all'));
     assert.ok(bare.includes('Zero (0) **Special Events** this season.'), 'nothing at all: says so, without a filter line');
     const navCalendar = (mode) => JSON.parse(json(1, mode)).find(c => c.type === 1 && c.components.some(b => b.custom_id === 'nav_calendar')).components.find(b => b.custom_id === 'nav_calendar');

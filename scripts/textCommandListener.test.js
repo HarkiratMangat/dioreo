@@ -556,7 +556,7 @@ async function check(name, fn) {
         assert.ok(!JSON.stringify(keys).includes('zzqqxx'), 'never what they typed');
         misfires.__pending.clear();
     });
-    await check('a due announcement puts a New announcement button on the text reply from its first post (his "go C", 2026-10-30 18:18 EDT; up front since 2026-10-30 22:05 EDT)', async () => {
+    await check('a due announcement puts a New Announcement button on the text reply from its first post (his "go C", 2026-10-30 18:18 EDT; up front since 2026-10-30 22:05 EDT)', async () => {
         const path = require('path');
         const f = require.resolve(path.join(__dirname, '..', 'utils', 'announcement'));
         const real = require.cache[f];
@@ -588,7 +588,7 @@ async function check(name, fn) {
             assert.strictEqual(patches.length, 0, 'no edit to add it');
         } finally { if (real) require.cache[f] = real; else delete require.cache[f]; }
     });
-    await check('pressing New announcement shows it AS the private reply and never deletes it (the v3.3.1 bug, 2026-10-30 21:28 EDT)', async () => {
+    await check('pressing New Announcement shows it AS the private reply and never deletes it (the v3.3.1 bug, 2026-10-30 21:28 EDT)', async () => {
         const path = require('path');
         const f = require.resolve(path.join(__dirname, '..', 'utils', 'announcement'));
         const h = require.resolve(path.join(__dirname, '..', 'handlers', 'announcementControls'));

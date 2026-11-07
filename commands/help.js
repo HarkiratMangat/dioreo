@@ -332,7 +332,7 @@ function homeHero(client) {
     return [
         { type: 9, components: [{ type: 10, content: `## ${emojis.dioreoCombo} Dioreo's Commands\n> **Dioreo** helps you look up CODM loadouts, lucky draw pricing, the seasonal event calendar, patch notes, and more!` }], accessory: { type: 11, media: { url: MASCOT_URL } } },
         // "Add to server or apps" since 2026-10-27 10:44 EDT (Harkirat).
-        { type: 1, components: [{ type: 2, style: 5, label: 'Website', url: WEBSITE_URL }, { type: 2, style: 5, label: 'Add to server or apps', url: buildInviteUrls(client).chooser }] },
+        { type: 1, components: [{ type: 2, style: 5, label: 'Website', url: WEBSITE_URL }, { type: 2, style: 5, label: 'Add to Server or Apps', url: buildInviteUrls(client).chooser }] },
         // Credits · Terms · Privacy Policy (2026-10-19 09:41 EDT, Harkirat). NOTICE carries every third-party credit, hence its button's name.
         { type: 1, components: [{ type: 2, style: 5, label: 'Credits', url: `${WEBSITE_URL}/notice` }, { type: 2, style: 5, label: 'Terms', url: `${WEBSITE_URL}/terms` }, { type: 2, style: 5, label: 'Policy', url: `${WEBSITE_URL}/privacy` }] },
     ];

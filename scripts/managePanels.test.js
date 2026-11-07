@@ -1,6 +1,6 @@
 // scripts/managePanels.test.js
 //
-// The panels /manage's Draws, Calendar and Patch Notes pages answer with (utils/managePanels.js, Harkirat 2026-10-26 12:52 EDT, the loadout treatment for the other pages). Pins what each carries: the item as saved, its picture, what changed, Edit again and Revert with ids the router routes. And that Discord accepts the shape: one container, under 40 components, button ids within 100 characters.
+// The panels /manage's Draws, Calendar and Patch Notes pages answer with (utils/managePanels.js, Harkirat 2026-10-26 12:52 EDT, the loadout treatment for the other pages). Pins what each carries: the item as saved, its picture, what changed, Edit Again and Revert with ids the router routes. And that Discord accepts the shape: one container, under 40 components, button ids within 100 characters.
 const assert = require('assert');
 const p = require('../utils/managePanels');
 
@@ -22,7 +22,7 @@ const shapeOk = (panel) => {
 const draw = { _id: 'd1', title: 'Wraith Hunter', date: new Date('2026-10-20T00:00:00Z'), thumbnailUrl: 'https://res.cloudinary.com/x/draw.png', priceType: '',
     items: [{ tier: 'legendary', name: 'Amp63 - Wraith' }, { tier: 'epic', name: 'Calling Card' }, { tier: 'comment', name: 'Bundle only' }] };
 
-check('an added draw shows its picture, its items and Edit again on its own id', () => {
+check('an added draw shows its picture, its items and Edit Again on its own id', () => {
     const panel = p.drawPanel({ draw, category: 'new', changeIds: ['#201'] });
     shapeOk(panel);
     const head = panel[0].components[0];
@@ -38,7 +38,7 @@ check('a draw with no picture says so instead of a broken thumbnail', () => {
     const panel = p.drawPanel({ draw: { ...draw, thumbnailUrl: null }, category: 'returning' });
     assert.strictEqual(panel[0].components[0].type, 10);
     assert.ok(text(panel).includes('No picture') && text(panel).includes('Returning draw'));
-    assert.deepStrictEqual(buttons(panel).map(b => b.label), ['Open in /draws', 'Edit again'], 'no Revert without change ids');
+    assert.deepStrictEqual(buttons(panel).map(b => b.label), ['Open in /draws', 'Edit Again'], 'no Revert without change ids');
     assert.strictEqual(buttons(panel)[0].custom_id, 'mng_rsopen|draws|returning', 'Open lands on the draw\'s own section');
 });
 
@@ -101,7 +101,7 @@ check('the delete confirmations show the item and keep the dispatcher ids', () =
     assert.deepStrictEqual(buttons(bulk).map(b => b.custom_id), ['mng_bulkdelcancel_tok3', 'mng_bulkdelconfirm_tok3']);
 });
 
-check('every Edit again id is one handlers/manage/index.js routes', () => {
+check('every Edit Again id is one handlers/manage/index.js routes', () => {
     const src = require('fs').readFileSync(require('path').join(__dirname, '../handlers/manage/index.js'), 'utf8');
     assert.ok(src.includes("'mng_rsopen|', 'mng_rsedit|', 'mng_rsrevert|'"), 'the dispatcher routes all three prefixes');
 });

@@ -75,7 +75,7 @@ const panelsAwaitingZone = new Map();
 
 async function notYours(interaction) {
     try {
-        await interaction.reply({ content: `${emojis.remind} This is someone else's reminders panel.`, components: [{ type: 1, components: [{ type: 2, style: 2, label: 'Open your own reminders', custom_id: 'remind_open', emoji: emojis.parseEmoji(emojis.remind) }] }], flags: 64 });
+        await interaction.reply({ content: `${emojis.remind} This is someone else's reminders panel.`, components: [{ type: 1, components: [{ type: 2, style: 2, label: 'Open Your Own Reminders', custom_id: 'remind_open', emoji: emojis.parseEmoji(emojis.remind) }] }], flags: 64 });
     } catch (error) {
         console.error('Failed to answer a click on someone else\'s reminders panel:', error?.message);
     }

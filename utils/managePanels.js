@@ -64,7 +64,7 @@ function actionRow({ openId = null, openLabel = 'Open', editId = null, changeIds
     const revertId = `mng_rsrevert|${changeIds.join(',')}`;
     const buttons = [
         ...(openId ? [{ type: 2, style: 2, label: openLabel, custom_id: openId, emoji: emojis.parseEmoji(emojis.search) }] : []),
-        ...(editId ? [{ type: 2, style: 1, label: 'Edit again', custom_id: editId, emoji: emojis.parseEmoji(emojis.edit) }] : []),
+        ...(editId ? [{ type: 2, style: 1, label: 'Edit Again', custom_id: editId, emoji: emojis.parseEmoji(emojis.edit) }] : []),
         ...(changeIds.length && revertId.length <= 100 ? [{ type: 2, style: 4, label: 'Revert', custom_id: revertId }] : []),
     ];
     return buttons.length ? [divider(false), { type: 1, components: buttons }] : [];
@@ -138,7 +138,7 @@ function deleteItemPanel({ group, match, token }) {
         ...(isDraw && doc.items?.length ? [{ type: 10, content: `**Items**\n${itemLines(doc.items)}`.slice(0, 3800) }] : []),
         { type: 1, components: [
             { type: 2, style: 2, label: 'Cancel', custom_id: `mng_delcancel_${token}` },
-            { type: 2, style: 4, label: 'Yes, delete', custom_id: `mng_delconfirm_${token}`, emoji: emojis.parseEmoji(emojis.deleteBin) },
+            { type: 2, style: 4, label: 'Yes, Delete', custom_id: `mng_delconfirm_${token}`, emoji: emojis.parseEmoji(emojis.deleteBin) },
         ] },
     ] }];
 }
@@ -149,7 +149,7 @@ function bulkDeletePanel({ description, summary, token }) {
         { type: 10, content: `### ${emojis.warn} ${description}?\n${summary.map(s => `- ${s}`).join('\n')}\n-# Every change is recorded and can be reverted.`.slice(0, 3800) },
         { type: 1, components: [
             { type: 2, style: 2, label: 'Cancel', custom_id: `mng_bulkdelcancel_${token}` },
-            { type: 2, style: 4, label: 'Yes, delete', custom_id: `mng_bulkdelconfirm_${token}`, emoji: emojis.parseEmoji(emojis.deleteBin) },
+            { type: 2, style: 4, label: 'Yes, Delete', custom_id: `mng_bulkdelconfirm_${token}`, emoji: emojis.parseEmoji(emojis.deleteBin) },
         ] },
     ] }];
 }
