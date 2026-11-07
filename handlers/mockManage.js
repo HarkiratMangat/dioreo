@@ -275,6 +275,45 @@ function exportText(builds, { include = ['code', 'label', 'badges', 'comment', '
 
 function shortName(l) { return `${l.weaponName} · ${l.buildName}${l.label ? ` · ${l.label}` : ''}${(l.variants || []).length ? ` (${1 + l.variants.length} options)` : ''}`; }
 
+// One edit pop-up's submit, read and compared with the build as stored. Shared by a single Edit and the bulk stepper.
+async function editDiff(interaction, id, option) {
+    const doc = await Loadout().findById(id).lean();
+    const siblings = await Loadout().find({ weaponKey: doc.weaponKey, mode: MODE }).lean();
+    const before = require('../utils/loadoutForm').editValues(doc, siblings, require('../utils/adminParser').loadoutBadgeTokens(doc), Number(option) || 0);
+    const now = {};
+    for (const key of ['weapon', 'build', 'attachments', 'image_url']) { try { now[key] = interaction.fields.getTextInputValue(key) || ''; } catch { now[key] = ''; } }
+    let shot = false;
+    try { shot = (interaction.fields.getUploadedFiles('image_file')?.size || 0) > 0; } catch { shot = false; }
+    const changes = semanticDiff(before, now);
+    if (shot) changes.push('**Picture:** a new screenshot');
+    return { doc, changes };
+}
+
+// ---------- Bulk edit: the ticked builds, one card at a time (his idea, 2026-11-07 13:05 EST: "select multiple builds and just switch through them like pages") ----------
+async function stepView(token, i, option = 0, header = null) {
+    const t = TICK.get(token);
+    if (!t || !t.ticked.size) return resultView({ title: 'That list expired. Select again.', ok: false });
+    const ids = t.ids.filter(x => t.ticked.has(x));
+    const n = ids.length;
+    const at = Math.min(Math.max(Number(i) || 0, 0), n - 1);
+    const id = ids[at];
+    const doc = await Loadout().findById(id).lean();
+    const L = require('../utils/loadoutOptions').optionLetter;
+    const count = 1 + (doc.variants || []).length;
+    const opt = Math.min(Number(option) || 0, count - 1);
+    t.edited = t.edited || new Set();
+    const done = t.edited.size;
+    const head = `### ${emojis.mngEdit} Bulk Edit · ${at + 1} of ${n}\n-# ${done} edited · ${n - done} to go${t.edited.has(id) ? ' · this one is edited' : ''}`;
+    const rows = [];
+    if (count > 1) rows.push({ type: 1, components: [{ type: 3, custom_id: `${PREFIX}stopt|${token}|${at}`, placeholder: 'Pick an option', options: Array.from({ length: count }, (_, k) => ({ label: `Option ${L(k)}`, value: String(k), default: k === opt })) }] });
+    const last = at === n - 1;
+    rows.push(
+        row(ebtn(`stedit|${token}|${at}|${opt}`, 'Edit', emojis.mngEdit, header ? 2 : 1), { type: 2, style: 2, custom_id: `${PREFIX}step|${token}|${at - 1}`, emoji: emojis.parseEmoji(emojis.left), disabled: at === 0 }, { type: 2, style: 2, label: `${at + 1} / ${n}`, custom_id: `${PREFIX}stcount|${token}`, disabled: true }, last ? ebtn(`stdone|${token}`, 'Finish', emojis.checkmark, header ? 3 : 2) : { type: 2, style: header ? 1 : 2, custom_id: `${PREFIX}step|${token}|${at + 1}`, emoji: emojis.parseEmoji(emojis.right) }),
+        row(ebtn(`tlist|${token}`, 'Back to List', emojis.returnArrow), ebtn('page', 'Home', emojis.database)),
+    );
+    return cardView(id, opt, header ? `${head}\n${header}` : head, rows);
+}
+
 // What an edit changes, field by field, in words (his click-test critique: raw box text read as noise).
 function semanticDiff(before, now) {
     const f = require('../utils/loadoutForm');
@@ -309,7 +348,7 @@ function tickView(token, note = null) {
     if (note) components.push(text(note));
     components.push(BIG(), text('-# Tick the builds to act on…'));
     if (shown.length) components.push({ type: 1, components: [{ type: 3, custom_id: `${PREFIX}tick|${token}`, min_values: 0, max_values: shown.length, placeholder: 'Tick the builds', options: shown.map(id => ({ label: t.labels.get(id).slice(0, 100), value: id, default: t.ticked.has(id) })) }] });
-    components.push(SMALL(), row(ebtn(`tdel|${token}`, `Delete ${t.ticked.size}`, emojis.mngBulkDelete, 4, !t.ticked.size), ebtn(`texp|${token}`, `Export ${t.ticked.size}`, emojis.mngExport, 2, !t.ticked.size), ebtn('select', 'Search Again', emojis.gunsmithSearch)), backRow());
+    components.push(SMALL(), row(ebtn(`step|${token}|0`, `Edit ${t.ticked.size}`, emojis.mngEdit, 1, !t.ticked.size), ebtn(`texp|${token}`, `Export ${t.ticked.size}`, emojis.mngExport, 2, !t.ticked.size), ebtn(`tdel|${token}`, `Delete ${t.ticked.size}`, emojis.mngBulkDelete, 4, !t.ticked.size)), row(ebtn('select', 'Search Again', emojis.gunsmithSearch), ebtn('page', 'Back', emojis.returnArrow)));
     return panel(components);
 }
 
@@ -326,7 +365,7 @@ async function openPage(interaction) {
 }
 
 async function route(interaction) {
-    const [, verb, a, b] = interaction.customId.split('|');
+    const [, verb, a, b, c] = interaction.customId.split('|');
     const manage = require('../commands/manage');
 
     // Buttons and selects that only change the message
@@ -391,6 +430,30 @@ async function route(interaction) {
         return show(interaction, tickView(a));
     }
     if (verb === 'tlist') return show(interaction, tickView(a));
+    if (verb === 'step') return show(interaction, await stepView(a, b));
+    if (verb === 'stopt') return show(interaction, await stepView(a, b, interaction.values[0]));
+    if (verb === 'stedit') {
+        const t = TICK.get(a);
+        const ids = t ? t.ids.filter(x => t.ticked.has(x)) : [];
+        const doc = await Loadout().findById(ids[Number(b)]).lean();
+        if (!doc) return show(interaction, resultView({ title: 'That list expired. Select again.', ok: false }));
+        const L = require('../utils/loadoutOptions').optionLetter;
+        const title = `Edit ${doc.weaponName} ${doc.buildName}${(doc.variants || []).length ? ` · ${L(Number(c) || 0)}` : ''}`.slice(0, 45);
+        return interaction.showModal({ ...reId(await require('./manage/loadouts').editLoadoutModal(doc, Number(c) || 0), `${PREFIX}steditm|${a}|${b}|${c}`), title });
+    }
+    if (verb === 'steditm') {
+        const t = TICK.get(a);
+        const ids = t ? t.ids.filter(x => t.ticked.has(x)) : [];
+        const { changes } = await editDiff(interaction, ids[Number(b)], c);
+        if (t && changes.length) { t.edited = t.edited || new Set(); t.edited.add(ids[Number(b)]); }
+        return show(interaction, await stepView(a, b, c, `${emojis.checkmark} **Would update**\n${changes.length ? changes.map(x => `> ${x}`).join('\n') : '> No changes.'}`));
+    }
+    if (verb === 'stdone') {
+        const t = TICK.get(a);
+        const ids = t ? t.ids.filter(x => t.ticked.has(x)) : [];
+        const edited = ids.filter(x => t?.edited?.has(x));
+        return show(interaction, resultView({ crumbs: ['Select Builds', 'Bulk Edit'], title: `Bulk edit done · ${edited.length} of ${ids.length} edited`, body: [...ids.map(x => `- ${t.edited?.has(x) ? emojis.checkmark : '·'} ${t.labels.get(x)}`), '', '-# Nothing was saved.'], back: `tlist|${a}`, backLabel: 'Back to List' }));
+    }
     if (verb === 'tdel') {
         const t = TICK.get(a);
         if (!t) return show(interaction, tickView(a));
@@ -442,16 +505,8 @@ async function route(interaction) {
         ].filter(x => x !== null)));
     }
     if (verb === 'editm') {
-        const doc = await Loadout().findById(a).lean();
-        const siblings = await Loadout().find({ weaponKey: doc.weaponKey, mode: MODE }).lean();
-        const before = require('../utils/loadoutForm').editValues(doc, siblings, require('../utils/adminParser').loadoutBadgeTokens(doc), Number(b) || 0);
-        const now = {};
-        for (const key of ['weapon', 'build', 'attachments', 'image_url']) { try { now[key] = interaction.fields.getTextInputValue(key) || ''; } catch { now[key] = ''; } }
-        let shot = false;
-        try { shot = (interaction.fields.getUploadedFiles('image_file')?.size || 0) > 0; } catch { shot = false; }
-        const changes = semanticDiff(before, now);
-        if (shot) changes.push('**Picture:** a new screenshot');
-        return show(interaction, await cardView(a, b, `### ${emojis.checkmark} Would update ${doc.weaponName} ${doc.buildName}\n${changes.length ? changes.map(c => `> ${c}`).join('\n') : '> No changes.'}\n-# Nothing was saved.`, [row(ebtn(`edit|${a}|${b}`, 'Edit Again', emojis.mngEdit, 1), ebtn(`card|${a}|${b}`, 'Back to Build', emojis.returnArrow), ebtn('page', 'Home', emojis.database))]));
+        const { doc, changes } = await editDiff(interaction, a, b);
+        return show(interaction, await cardView(a, b, `### ${emojis.checkmark} Would update ${doc.weaponName} ${doc.buildName}\n${changes.length ? changes.map(x => `> ${x}`).join('\n') : '> No changes.'}\n-# Nothing was saved.`, [row(ebtn(`edit|${a}|${b}`, 'Edit Again', emojis.mngEdit, 1), ebtn(`card|${a}|${b}`, 'Back to Build', emojis.returnArrow), ebtn('page', 'Home', emojis.database))]));
     }
     if (verb === 'movem') {
         const doc = await Loadout().findById(a).lean();
