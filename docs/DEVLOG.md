@@ -311,6 +311,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-11-05 22:36 EST — news posts become drafts, and what kept finding new problems (v3.10.0)
 - 2026-11-06 20:46 EST — Gunsmith editing grows up: comments, a build option, right-click Edit Loadout, and /autobuild's build # (v3.11.0)
 - 2026-11-07 00:00 EST — A front door for the gunsmith, Title Case everywhere, and an emoji that had quietly cloned itself (v3.12.0)
+- 2026-11-07 14:13 EST — Whose "today", and whose "new": two words the news card read from the wrong side (v3.12.1)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -5012,6 +5013,16 @@ A long evening that started with two emojis and ended with a new front door for 
 The gunsmith work came from using it. The lists page's dropdowns only held the page's own weapons, so they now hold every listed weapon, on the page and on every list card ("work the class, not the instance"). A bare `d gs` jumped straight into the alphabetically first build, which felt random, so it now opens an MP Gunsmiths landing he picked from three mock-ups and polished in two rounds. Buttons had been half Title Case and half sentence case; the count said about sixty each way, Discord's own buttons use Title Case, and an AST pass moved every label over, followed by a second pass for the five labels built at runtime that the first missed.
 
 The click test in Chrome caught one thing the tests could not: preselecting the open weapon on a list card hid the dropdown's own "Jump to…" label. It also showed the dev bot answers `d!` in Dioreoland while plain `d` goes to prod, which had made an earlier test look like the old behaviour. The Nail Gun, a weapon with no attachments and no code, became a field rather than a special case, so the next weapon like it needs no code.
+
+## 2026-11-07 14:13 EST — Whose "today", and whose "new": two words the news card read from the wrong side (v3.12.1)
+
+Harkirat was looking at a news card for Sapphire Winter Draw and saw it was wrong twice over. The card said the draw's date had moved from Nov 8 to Nov 7, and it called the draw returning when it was brand new.
+
+The date came from a #leaks post at 12:53 PM Toronto time: "will be coming on today's daily reset." The code changed "today's daily reset" to "today" and read it in UTC, where it was already Nov 7. But the game's daily reset is 00:00 UTC, which is 7 PM in Toronto, so the reset the poster meant was Nov 8. A rule that is right for a written date ("November 8" means that day at 00:00 UTC) was wrong for a word that points at an event. "Today's reset" names the next reset, not a day on the calendar.
+
+"Returning" came from the draw index. The rule said any draw the index knows is returning. That was true when the index held only old draws, but since 2026-11-01 a draw saved into New gets added to the index with the season it was saved in. So the more complete the index became, the more new draws the rule called returning. The index already stored the season each draw first ran in. The rule just never checked it.
+
+Both bugs are the same kind of mistake: a rule written against what the data looked like when it was built, which stayed in place after the data changed underneath it.
 
 # Part B — Lessons Ledger (thematic)
 

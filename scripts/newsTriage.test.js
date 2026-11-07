@@ -47,9 +47,22 @@ check('a date with a time and a zone is that instant', () => {
 });
 check('a bare date is that day at 00:00 UTC, in the post\'s year', () => {
     assert.strictEqual(iso(r.readDate('November 27th', new Date('2026-11-04T20:19:00Z'))), '2026-11-27T00:00:00.000Z');
-    assert.strictEqual(iso(r.readDate("today's daily reset", new Date('2026-10-24T05:00:00Z'))), '2026-10-24T00:00:00.000Z');
     assert.strictEqual(r.readDate(null, new Date()), null);
     assert.strictEqual(r.readDate('soon', new Date()), null);
+});
+
+check('"today\'s daily reset" is the next 00:00 UTC after the post, not the post\'s UTC day', () => {
+    // The Sapphire Winter Draw post, 2026-11-07 12:53 EST: the reset it means is Nov 8 00:00 UTC.
+    assert.strictEqual(iso(r.readDate("today's daily reset", new Date('2026-11-07T17:53:00Z'))), '2026-11-08T00:00:00.000Z');
+    assert.strictEqual(iso(r.readDate('today\u2019s daily reset', new Date('2026-11-07T17:53:00Z'))), '2026-11-08T00:00:00.000Z', 'a curly apostrophe');
+    assert.strictEqual(iso(r.readDate('the daily reset', new Date('2026-10-24T05:00:00Z'))), '2026-10-25T00:00:00.000Z');
+    assert.strictEqual(iso(r.readDate('next reset', new Date('2026-11-07T23:59:00Z'))), '2026-11-08T00:00:00.000Z');
+    assert.strictEqual(iso(r.readDate("with today's reset", new Date('2026-11-08T00:30:00Z'))), '2026-11-08T00:00:00.000Z', 'a post just after a reset means that reset');
+    assert.strictEqual(iso(r.readDate('the daily reset on November 12', new Date('2026-11-07T17:53:00Z'))), '2026-11-12T00:00:00.000Z', 'a written date beside the reset wins');
+    assert.strictEqual(iso(r.readDate("tomorrow's daily reset", new Date('2026-11-01T15:18:00Z'))), '2026-11-02T00:00:00.000Z', 'tomorrow is still the day after the post (Grim Duo: "coming tomorrow" at 15:18 UTC went live Nov 2)');
+    for (const t of ["today's update", 'tonight', "tonight's daily refresh", 'daily refresh']) assert.strictEqual(iso(r.readDate(t, new Date('2026-11-07T17:53:00Z'))), '2026-11-08T00:00:00.000Z', t);
+    assert.strictEqual(iso(r.readDate('today', new Date('2026-11-07T17:53:00Z'))), '2026-11-07T00:00:00.000Z', '"today" alone is the post\'s day: "live today" means the reset that passed');
+    assert.strictEqual(iso(r.readDate('the update', new Date('2026-11-07T17:53:00Z'))), null, '"the update" alone is not the daily reset');
 });
 
 // ---- routing ----
@@ -112,6 +125,31 @@ check('next season with no date uses the draft\'s start and warns', () => {
 check('the draw index turns a "new" draw into a returning one', () => {
     const it = r.resolveItem(raw({ name: 'The Hunger Eternal Draw', start: 'tomorrow' }), { ...ctx, postedAt: new Date('2026-10-29T15:32:00Z') });
     assert.strictEqual(it.drawType, 'returning'); assert.strictEqual(it.catalogueTitle, 'Hunger Eternal Draw');
+});
+check('a draw the index lists as new THIS season stays new; one from an earlier season is returning', () => {
+    const s9 = { ...ctx, liveTitle: 'Season 9 — Test', liveYear: 2026, postedAt: new Date('2026-11-07T17:53:00Z'), catalogue: [{ title: 'Sapphire Winter Draw', aliases: [], releaseSeason: 9, releaseYear: 2026 }, { title: 'Old Frost Draw', aliases: [], releaseSeason: 8, releaseYear: 2026 }, { title: 'Last Year Draw', aliases: [], releaseSeason: 9, releaseYear: 2025 }] };
+    const fresh = r.resolveItem(raw({ name: 'Sapphire Winter Draw', start: "today's daily reset" }), s9);
+    assert.strictEqual(fresh.drawType, 'new'); assert.ok(!fresh.warnings.some(w => /returning/.test(w)), JSON.stringify(fresh.warnings));
+    const older = r.resolveItem(raw({ name: 'Old Frost Draw', start: "today's daily reset" }), s9);
+    assert.strictEqual(older.drawType, 'returning'); assert.ok(older.warnings.some(w => /first ran in Season 8 2026/.test(w)));
+    assert.strictEqual(r.resolveItem(raw({ name: 'Last Year Draw', start: "today's daily reset" }), s9).drawType, 'returning', 'season numbers repeat each year');
+    const staged = r.resolveItem(raw({ name: 'Staged Draw', start: "today's daily reset" }), { ...s9, catalogue: [{ title: 'Staged Draw', aliases: [], releaseSeason: 10, releaseYear: 2026 }] });
+    assert.strictEqual(staged.drawType, 'new', 'a draw staged for next season is not returning');
+    const noSeason = r.resolveItem(raw({ name: 'Seeded Draw', start: "today's daily reset" }), { ...s9, catalogue: [{ title: 'Seeded Draw', aliases: [] }] });
+    assert.strictEqual(noSeason.drawType, 'returning'); assert.ok(noSeason.warnings.some(w => /no season recorded/.test(w)), 'the warning says why');
+});
+check('the daily briefing leaves dismissed fix cards out', () => {
+    const src = require('fs').readFileSync(require('path').join(__dirname, '../utils/newsTriage/pipeline.js'), 'utf8');
+    const q = src.slice(src.indexOf('async function gatherBriefing'), src.indexOf('fixStillWrong(it, liveDoc)'));
+    assert.ok(/'items\.action': 'fix', dismissed: \{ \$ne: true \}/.test(q), 'a dismissed wrong fix stayed in the briefing for a week');
+});
+check('the Sapphire Winter Draw post: the bot already has it on Nov 8 as a new draw, so no card', () => {
+    const live = { newDraws: [{ _id: 's', title: 'Sapphire Winter Draw', date: new Date('2026-11-08T00:00:00Z') }], returningDraws: [], calendar: [{ _id: 'c', title: 'Sapphire Winter Draw', category: 'draw', date: new Date('2026-11-08T00:00:00Z'), endDate: new Date('2026-11-21T00:00:00Z') }] };
+    const sctx = { ...ctx, liveTitle: 'Season 9 — Test', liveYear: 2026, postedAt: new Date('2026-11-07T17:53:00Z'), catalogue: [{ title: 'Sapphire Winter Draw', aliases: [], releaseSeason: 9, releaseYear: 2026 }], live };
+    assert.strictEqual(r.resolveItem(raw({ name: 'Sapphire Winter Draw', start: "today's daily reset", season: 'current' }), sctx).skip, 'already on /draws');
+    // A real move still shows as a fix, with the bot's list (new), not the index's guess.
+    const moved = r.resolveItem(raw({ name: 'Sapphire Winter Draw', start: 'November 9', season: 'current' }), { ...sctx, catalogue: [{ title: 'Sapphire Winter Draw', aliases: [] }] });
+    assert.strictEqual(moved.action, 'fix'); assert.strictEqual(moved.drawType, 'new'); assert.ok(!moved.warnings.some(w => /returning/.test(w)));
 });
 check('another region, a later season, and a draw already on /draws get no card', () => {
     assert.strictEqual(r.resolveItem(raw({ region: 'other' }), ctx).skip, 'another region');
