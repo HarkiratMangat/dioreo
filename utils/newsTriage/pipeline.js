@@ -79,15 +79,16 @@ function enqueue(fn) {
 }
 
 async function loadContext(postedAt) {
+    const { seasonYear } = require('../quickAdd');
     const SeasonalData = require('../../models/SeasonalData');
     const DrawCatalog = require('../../models/DrawCatalog');
     const [doc, catalogue] = await Promise.all([
         SeasonalData.findOne({ docType: 'global' }).lean(),
-        DrawCatalog.find({}, { title: 1, aliases: 1 }).lean(),
+        DrawCatalog.find({}, { title: 1, aliases: 1, releaseSeason: 1, releaseYear: 1 }).lean(),
     ]);
     const d = doc || {}; const draft = d.draft || {};
     return {
-        postedAt, liveEnd: d.bpEnd || null, liveTitle: d.currentSeasonTitle || '', draftStart: draft.bpStart || null, draftTitle: draft.currentSeasonTitle || '', draftEnd: (!draft.bpEndTBD && draft.bpEnd) || ((draft.bpStart || d.bpEnd) ? new Date(new Date(draft.bpStart || d.bpEnd).getTime() + 75 * DAY_MS) : null), catalogue,
+        postedAt, liveEnd: d.bpEnd || null, liveTitle: d.currentSeasonTitle || '', liveYear: seasonYear(d), draftStart: draft.bpStart || null, draftTitle: draft.currentSeasonTitle || '', draftYear: seasonYear(draft), draftEnd: (!draft.bpEndTBD && draft.bpEnd) || ((draft.bpStart || d.bpEnd) ? new Date(new Date(draft.bpStart || d.bpEnd).getTime() + 75 * DAY_MS) : null), catalogue,
         live: { newDraws: d.newDraws || [], returningDraws: d.returningDraws || [], calendar: d.calendar || [] },
         draft: { newDraws: draft.newDraws || [], returningDraws: draft.returningDraws || [], calendar: draft.calendar || [] },
         draftDoc: draft, liveDoc: d,

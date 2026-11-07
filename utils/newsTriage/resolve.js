@@ -47,11 +47,26 @@ function strictName(a, b) {
 }
 const sameDay = (a, b) => dayjs.utc(a).format('YYYY-MM-DD') === dayjs.utc(b).format('YYYY-MM-DD');
 
+// "Today's daily reset" is the NEXT daily reset after the post, not the post's own UTC day (2026-11-07 13:48 EST, Harkirat: "today's reset is technically nov 8 midnight utc"). #leaks posted "Sapphire Winter Draw will be coming on today's daily reset" at 17:53 UTC on Nov 7; the reset it means is 00:00 UTC on Nov 8 (7 PM in Toronto), and reading it as "today" in UTC said Nov 7, so the card claimed the bot's Nov 8 was wrong. Only a phrase that is nothing but the reset is read this way; "the reset on November 8" still goes to chrono. A post up to two hours after a reset ("live now with today's reset") means the one that just passed. "Tomorrow's reset" is left to chrono's "tomorrow": a poster west of UTC and one at UTC mean different resets by it, and the day after the post is the reading that matches "tomorrow" alone.
+const RESET_WORDS = new Set(['today', 'todays', 'tonight', 'tonights', 'the', 'this', 'next', 'upcoming', 'daily', 'reset', 'update', 'server', 'game', 'games', 'on', 'at', 'with', 'after', 'by', 'in', 'from']);
+const RESET_GRACE_MS = 2 * 60 * 60 * 1000;
+function nextReset(text, ref) {
+    const s = String(text).toLowerCase().replace(/['\u2019]/g, '');
+    if (!/\breset\b|\bdaily update\b/.test(s)) return null;
+    const words = s.split(/[^a-z]+/).filter(Boolean);
+    if (!words.every(w => RESET_WORDS.has(w))) return null;
+    const base = new Date(ref.getTime() - RESET_GRACE_MS);
+    return new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate() + 1));
+}
+
 // A date as written, read against the post's time in UTC (the game's daily update is 00:00 UTC, and every admin date in Dioreo is UTC-0: .claude/rules/design-decisions.md). With no time of day it is that day's 00:00 UTC; with a time and a zone ("4pm PT") it is that instant.
 function readDate(text, postedAt) {
     if (!text) return null;
     const ref = postedAt instanceof Date ? postedAt : new Date(postedAt || Date.now());
-    const said = String(text).replace(/\b(today'?s )?daily (reset|update)\b/i, 'today').replace(/\breset\b/i, '');
+    const reset = nextReset(text, ref);
+    if (reset) return reset;
+    // A phrase that is only the reset was read above; here the reset words are dropped and the date beside them is read ("the daily reset on November 8"). They were once replaced with "today", which chrono read before the real date.
+    const said = String(text).replace(/\b(today'?s |tonight'?s )?daily (reset|update)\b/i, '').replace(/\breset\b/i, '');
     const found = chrono.parse(said, { instant: ref, timezone: 0 }, { forwardDate: true })[0];
     if (!found) return null;
     const c = found.start;
@@ -89,7 +104,7 @@ function catalogueMatch(name, catalogue) {
 // A season title is "Season 10 — 7th Anniversary": an em dash, never a colon or a hyphen (Harkirat, 2026-11-04 22:55 EST: "i dont use : in my titles"). Only the season title: draw and event names keep the game's own colons ("Honkai: Gleaming Front").
 const seasonTitle = name => String(name || '').replace(/^(Season\s+\d+)\s*[:\-–—]\s*/i, '$1 — ').trim();
 
-// One raw item from utils/newsTriage/model.js → a card item, or `{ skip: reason }`. ctx: { postedAt, liveEnd, liveTitle, draftStart, draftTitle, draftEnd, namesRegion, catalogue: [{ title, aliases }], live: { newDraws, returningDraws, calendar }, draft: { same } }
+// One raw item from utils/newsTriage/model.js → a card item, or `{ skip: reason }`. ctx: { postedAt, liveEnd, liveTitle, liveYear, draftStart, draftTitle, draftYear, draftEnd, namesRegion, catalogue: [{ title, aliases, releaseSeason, releaseYear }], live: { newDraws, returningDraws, calendar }, draft: { same } }
 function resolveItem(raw, ctx) {
     const warnings = [];
     const start = readSlashDate(raw.start, ctx.postedAt, ctx.dayFirst);
@@ -147,7 +162,18 @@ function resolveItem(raw, ctx) {
 
     const cat = action === 'draw' || (action === 'info' && raw.kind === 'draw') ? catalogueMatch(raw.name, ctx.catalogue) : null;
     let drawType = raw.change === 'returning' ? 'returning' : 'new';
-    if (cat && drawType === 'new') { drawType = 'returning'; warnings.push(`"${cat.title}" is in the draw index, so this is read as a returning draw.`); }
+    // The bot's own list wins for a draw it already has: the fix edits that row, in that list.
+    if (fix && fix.fixDrawType) drawType = fix.fixDrawType;
+    // Being in the draw index is not being returning (2026-11-07 13:51 EST, Harkirat on Sapphire Winter Draw: "it also stated its a returning draw, even though its a new draw"). The index holds this season's new draws too: a draw saved into New gets the season it was saved in (utils/drawCatalog.js insertFields). So the index makes a draw returning only when it first ran in an EARLIER season than the one this item is for; a document with no season is one seeded from before seasons were recorded, which is an older draw.
+    else if (cat && drawType === 'new') {
+        const forNo = where === 'draft' ? (seasonNo(ctx.draftTitle) || nextNo) : seasonNo(ctx.liveTitle);
+        const forYear = where === 'draft' ? ctx.draftYear : ctx.liveYear;
+        const sameSeason = cat.releaseSeason && forNo && cat.releaseSeason === forNo && (!cat.releaseYear || !forYear || cat.releaseYear === forYear);
+        if (!sameSeason) {
+            drawType = 'returning';
+            warnings.push(cat.releaseSeason ? `"${cat.title}" first ran in Season ${cat.releaseSeason}${cat.releaseYear ? ` ${cat.releaseYear}` : ''}, so this is read as a returning draw.` : `"${cat.title}" is in the draw index, so this is read as a returning draw.`);
+        }
+    }
 
     const pool = (where === 'draft' ? ctx.draft : ctx.live) || {};
     // When the draft is filled automatically (draftMerge.js), an item already in the draft is not dropped here: the merge decides whether it updates the row (a later post with its end date, an official post over a leak). Dropping it lost Leader's Kill Confirmed's end date in the backtest.
