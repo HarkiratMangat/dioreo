@@ -171,6 +171,9 @@ function promoteConfirm(doc) {
         lines.push(`**${label}:** ${was === now ? 'unchanged' : `~~${was}~~ → ${now}`}`);
     }
     lines.push(`**Draws:** ~~${live.nd} New, ${live.rd} Returning~~ → ${c.nd} New, ${c.rd} Returning`, `**Calendar:** ~~${plural(live.cal, 'event')}~~ → ${plural(c.cal, 'event')}`);
+    // What the draft has not staged, named before the Yes (the lead, 2026-11-07 21:19 EST, click-testing a dev draft with no title and no end dates): promoting copies the draft as it is, so a gap here becomes a gap on /season end and /calendar.
+    const missing = [...(d.currentSeasonTitle ? [] : ['the season title']), ...PARTS().filter(([, key]) => !d[`${key}End`] && !d[`${key}EndTBD`]).map(([label]) => `the ${label} end`)];
+    if (missing.length) lines.push('', `${emojis.warn} **Not staged:** ${missing.join(', ')}. Promoting now leaves ${missing.length === 1 ? 'it' : 'them'} blank for players.`);
     return panel([
         text(`${crumb('Next Season Draft', 'Promote')}\n### ${emojis.warn} Promote the staged draft to live?\n-# Players see this at once. The draft is cleared. Every change is recorded in /bot analytics › Changes.`),
         SMALL(),

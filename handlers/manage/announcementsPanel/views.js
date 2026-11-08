@@ -37,6 +37,8 @@ function preview(doc, max = 100) {
     const line = String(doc.text || '').split('\n').map(x => x.replace(/^\s*(#{1,6}\s+|-#\s+)/, '').trim()).find(x => x && !/^(-{2,4}|={2,4}|\+\+)$/.test(x)) || '(no text)';
     return line.length > max ? `${line.slice(0, max - 1)}…` : line;
 }
+// A dropdown label cannot draw a custom emoji, so its `<:name:id>` markup would show as raw text there (the lead, 2026-11-07 21:21 EST, click-testing): labels drop it; text rows keep it.
+const plainLabel = (t) => String(t).replace(/<a?:\w+:\d+>\s*/g, '').trim() || '(emoji only)';
 const expiryWords = (d) => (d.expiresAt ? `expires ${rel(d.expiresAt)}` : 'never expires');
 // What the row says besides its text, on a small line.
 function factsLine(d, now = new Date()) {
@@ -57,7 +59,7 @@ function pageView(data, note = null, { pageRow = null, now = new Date() } = {}) 
         const lines = live.slice(0, LIST_ROWS).map((d, i) => `**${i + 1}.** ${preview(d)}\n-# ${factsLine(d, now)}`);
         if (live.length > LIST_ROWS) lines.push(`-# …and ${live.length - LIST_ROWS} more in the dropdown`);
         components.push(text(lines.join('\n').slice(0, 2400)));
-        components.push({ type: 1, components: [{ type: 3, custom_id: ID('open'), placeholder: 'Open an announcement…', options: live.slice(0, MAX_OPTIONS).map((d, i) => ({ label: `${i + 1}. ${preview(d)}`.slice(0, 100), value: String(d._id), description: `${isScheduled(d, now) ? 'Scheduled' : 'Active'} · ${d.expiresAt ? 'expires' : 'never expires'}`.slice(0, 100) })) }] });
+        components.push({ type: 1, components: [{ type: 3, custom_id: ID('open'), placeholder: 'Open an announcement…', options: live.slice(0, MAX_OPTIONS).map((d, i) => ({ label: `${i + 1}. ${plainLabel(preview(d))}`.slice(0, 100), value: String(d._id), description: `${isScheduled(d, now) ? 'Scheduled' : 'Active'} · ${d.expiresAt ? 'expires' : 'never expires'}`.slice(0, 100) })) }] });
     }
     components.push(
         BIG(),
@@ -68,7 +70,7 @@ function pageView(data, note = null, { pageRow = null, now = new Date() } = {}) 
         components.push(
             SMALL(),
             text(`-# Recently expired (read only)\n${expired.map(d => `- ${preview(d, 70)} · expired ${rel(d.expiresAt)}`).join('\n')}`.slice(0, 900)),
-            { type: 1, components: [{ type: 3, custom_id: ID('again'), placeholder: 'Post one again…', options: expired.map(d => ({ label: preview(d).slice(0, 100), value: String(d._id), description: 'Opens Post New with its text filled in' })) }] },
+            { type: 1, components: [{ type: 3, custom_id: ID('again'), placeholder: 'Post one again…', options: expired.map(d => ({ label: plainLabel(preview(d)).slice(0, 100), value: String(d._id), description: 'Opens Post New with its text filled in' })) }] },
         );
     }
     return panel(components, pageRow ? [pageRow] : []);
@@ -77,17 +79,23 @@ function pageView(data, note = null, { pageRow = null, now = new Date() } = {}) 
 // ---------- one announcement ---------- `header` sits above the card (a confirm question, a saved note); `extra` replaces the action rows. `body` is what players get: the shared renderer's text, utils/announcement.js announcementBody.
 function cardView(doc, { header = null, extra = null, now = new Date() } = {}) {
     if (!doc) return null;
-    const body = require('../../../utils/announcement').announcementBody(doc);
-    const components = [text(crumb(preview(doc, 40)))];
+    // The announcement as players get it: the delivered Container itself (utils/announcement.js buildAnnouncementContainer, its own accent, layout marks drawn as dividers and gaps, the banner, the permanent footer), then the admin panel under it. Before this the text was shown raw and `----` / `++` read as literal marks (the lead's click-test, 2026-11-07 21:21 EST).
+    const delivered = require('../../../utils/announcement').buildAnnouncementContainer(doc);
+    const components = [text(crumb(plainLabel(preview(doc, 40))))];
     if (header) components.push(text(header), SMALL());
-    components.push(
-        text(`${body.slice(0, 3000)}${body.length > 3000 ? '\n…' : ''}`),
-        text(`-# ${factsLine(doc, now)}${doc.bannerImageUrl ? ' · has a banner image' : ''}\n-# Layout marks on a line of their own (\`----\`, \`====\`, \`++\`) draw as dividers and gaps for players.`),
-        BIG(),
-    );
+    components.push(text(`-# ${factsLine(doc, now)}${doc.bannerImageUrl ? ' · has a banner image' : ''}\n-# Above: exactly what players get.`), BIG());
     if (extra) components.push(...extra);
     else components.push(row(btn(['edit', String(doc._id)], 'Edit', emojis.edit, 1), btn(['del', String(doc._id)], 'Delete', emojis.deleteBin, 4)), row(homeBtn()));
-    return panel(components);
+    // A message holds 4,000 characters of text in all, and a long announcement nearly fills that alone: cut its longest text box by the overflow and say so, so the panel still fits. Delivery is untouched (players get the full text).
+    const out = [delivered, ...panel(components)];
+    const boxes = (c) => (c.components || []).filter(x => x.type === 10);
+    const over = out.flatMap(boxes).reduce((n, x) => n + x.content.length, 0) - 3950;
+    if (over > 0) {
+        const longest = boxes(delivered).sort((x, y) => y.content.length - x.content.length)[0];
+        const note = '\n-# …cut here to fit the panel; players get the full text.';
+        if (longest) longest.content = longest.content.slice(0, Math.max(0, longest.content.length - over - note.length)) + note;
+    }
+    return out;
 }
 
 function resultView({ crumbs = [], title, body = [], back = 'page', backLabel = 'Back', ok = true, extraButtons = [], extraRows = [] }) {
@@ -102,4 +110,4 @@ function resultView({ crumbs = [], title, body = [], back = 'page', backLabel = 
     ]);
 }
 
-module.exports = { ID, ACCENT, LIST_ROWS, MAX_OPTIONS, EXPIRED_SHOWN, row, text, btn, homeBtn, panel, plural, preview, isScheduled, factsLine, pageView, cardView, resultView };
+module.exports = { ID, ACCENT, LIST_ROWS, MAX_OPTIONS, EXPIRED_SHOWN, row, text, btn, homeBtn, panel, plural, preview, plainLabel, isScheduled, factsLine, pageView, cardView, resultView };

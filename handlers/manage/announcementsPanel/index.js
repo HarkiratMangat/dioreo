@@ -148,7 +148,7 @@ async function autocomplete(interaction) {
     const words = String(interaction.options.getFocused() || '').toLowerCase().split(/\s+/).filter(Boolean);
     const { live } = await loadData();
     const hits = live.filter(d => words.every(w => String(d.text || '').toLowerCase().includes(w))).slice(0, 25);
-    return interaction.respond(hits.map(d => ({ name: V.preview(d).slice(0, 100), value: String(d._id) })));
+    return interaction.respond(hits.map(d => ({ name: V.plainLabel(V.preview(d)).slice(0, 100), value: String(d._id) })));
 }
 
 // ---------- routing ----------
