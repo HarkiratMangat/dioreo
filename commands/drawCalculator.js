@@ -1476,21 +1476,6 @@ function finishCostPage(state, basket, accentColor, components, liveDoubleCPEntr
 
 // The Edit Draws page is gone (2026-10-13 23:01 EDT): Edit on the result reopens the form, which holds every line, its progress, Remove and Move Up. A panel posted before that still sends page 1, which now renders the result.
 
-// RETIRED FROM THE UI, KEPT ON PURPOSE (2026-10-14 19:58 EDT): the Draw Info button left the calculator's nav row in the intake of 2026-10-14 (commit 15b49b09), so no new panel can reach this. It still runs for a panel posted before that, through the old `info` verb in handlers/drawCalc.js, and one case in scripts/drawCalcBudget.test.js covers it. Harkirat chose to leave it until a later code-housekeeping session decides on deletion (filed in docs/db-deferred-list.md, Someday / tech-debt). /draw prices shows real pricing in the meantime. Draw Info -- its OWN ephemeral message, own fresh 40-component budget, full buildDrawEntries fidelity for every DISTINCT draw type in the basket (measured 23/40 at all nine draw types in the single-draw design; a basket of any size still spans at most nine distinct types, so this never needs pagination -- spec §3).
-function buildDrawInfoPanel(basket, accentColor) {
-    const { buildDrawEntries } = require('./drawprices');
-    // Filter to keys drawprices still knows -- buildDrawEntries indexes DRAW_META directly and would throw on a retired key (same hazard drawName() guards on the text paths).
-    const types = usedTypes(basket.banners).filter(k => DRAW_META[k]);
-    const components = [{ type: 10, content: `## ${emojis.calculator} Draw Info` }, { type: 14, spacing: 2, divider: true }];
-    if (!types.length) {
-        components.push({ type: 10, content: 'This calculation is empty — nothing to show yet.' });
-    } else {
-        const blocks = buildDrawEntries(basket.region, types);
-        for (const set of blocks) for (const block of set) components.push({ type: 10, content: block });
-    }
-    return { type: 17, accent_color: accentColor, components };
-}
-
 // THE HELP PANEL (2026-10-14 18:33 EDT, Harkirat's second pass: "add some emojis to the help sections. and the 'words you'll see' section is useless. similarly with the button sections. rework those to hold and visually show better info"). Help now explains what the screen CANNOT show: how a draw's price climbs spin by spin (drawn from the player's own draw at their own region), how to find a region, and what the result's figures mean, including the optimizer's real rules. Labels a button already carries are not repeated here. 🔴 A REGION IS NOT "THE FIRST SPIN ON ANY DRAW". Measured 2026-10-14 18:33 EDT: Mythic Character's first spin is 20/35/50 CP and Pick Your Reward Card's is 60/90/120 at the 10/20/30 regions, so the old Help line ("check it on any draw") would make a player on the 10 CP region read 20 and pick wrong. Help names the draws whose first spin IS the region.
 function helpLadder(region, drawKey) {
     const pick = (r, k) => (entryFor(r, k) && entryFor(r, k).draws ? { region: r, drawKey: k } : null);
@@ -1688,7 +1673,7 @@ async function newCalculation(userId, basket, state = {}) {
 
 module.exports = {
     encodeState, decodeState, newCalculation, restorableCopy, defaultState, clampFocus,
-    buildCalculatorPanel, buildSetupPanel, buildMissingBasketPanel, buildExportText, buildDrawInfoPanel, buildHelpPanel, buildSavedPanel, savedChecksum, savedDescription,
+    buildCalculatorPanel, buildSetupPanel, buildMissingBasketPanel, buildExportText, buildHelpPanel, buildSavedPanel, savedChecksum, savedDescription,
     buildCostBlock, entryFor, usedTypes, groupForDisplay,
     isDoubleCPEventLive, findLiveDoubleCPEntry, execute,
     parseAmount, parseCount, readBalanceFields, applySelection, shortName, SHORT_NAME, slashShortcut,
