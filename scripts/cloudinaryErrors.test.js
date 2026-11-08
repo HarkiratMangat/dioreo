@@ -1,5 +1,4 @@
-// utils/cloudinaryErrors.js: the one Cloudinary error sanitizer (2026-11-08 01:17 EST, replacing ten per-module copies).
-// Pins the two halves of the CLAUDE.md secret-logging ban: the message never carries the key or secret, and no module grows its own copy back.
+// utils/cloudinaryErrors.js: the one Cloudinary error sanitizer (2026-11-08 01:17 EST, replacing ten per-module copies). Pins the two halves of the CLAUDE.md secret-logging ban: the message never carries the key or secret, and no module grows its own copy back.
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');

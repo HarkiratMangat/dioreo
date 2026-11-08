@@ -1270,11 +1270,8 @@ const replyLimitsModal = guildId => {
 
 module.exports = {
     buildAnalyticsPanel,
-    buildAccessPanel,
     pageSelectRow,
-    PAGE_META,
     __testables: { revertSentence, fmtFieldValue, sameValue, describeListChange, fmtItems, fmtUtcDay, RECORD_VIEWS, viewFor, genericFields, renderRecord, countPanelComponents, ackVerdict, buildVitalsBlock, buildChangesRows, CHANGES_EMPTY, ALERTS_EMPTY, buildUsageBars, headroom, feltSpeed, fmtDur, usageDeltaLine, visibleWidth },
-    buildHotpatchPanel,
     buildChangeDetailBody,
     buildUsageExport,
     buildTimingExport,

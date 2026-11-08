@@ -149,8 +149,7 @@ function parsePermissionsInput(raw) {
 }
 
 module.exports = {
-    isOwner, isAdmin, can, canAction, canDo, checkRevert, effectiveTiers, getGrants,
-    denialMessage: denialFor, denyDo,
+    isOwner, isAdmin, can, canAction, canDo, checkRevert, effectiveTiers, denialMessage: denialFor, denyDo,
     hasCommandAccess, hasManagePageAccess, getManagePages, getBotPages,
     invalidateAdminCache, formatGrants: P.formatGrants, MANAGE_PAGE_SCOPES,
     // legacy, portal-only (see the block above)

@@ -81,4 +81,4 @@ function startPresenceRotation(client, { loadSeason, intervalMs = ROTATE_MS } = 
     return { tick, stop: () => clearInterval(timer) };
 }
 
-module.exports = { seasonCountdownLine, rankedCountdownLine, dmzCountdownLine, buildPresence, startPresenceRotation, HELP_LINE, INSTALL_LINE, ROTATE_MS };
+module.exports = { seasonCountdownLine, rankedCountdownLine, dmzCountdownLine, buildPresence, startPresenceRotation, HELP_LINE, INSTALL_LINE };

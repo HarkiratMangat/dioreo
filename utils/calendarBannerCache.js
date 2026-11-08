@@ -58,4 +58,4 @@ async function clearBannerImage(page) {
     await archiveByMove([publicIdFor(page)], 'calendar_banners');
 }
 
-module.exports = { cacheBannerImage, clearBannerImage, VALID_PAGES, FOLDER };
+module.exports = { cacheBannerImage, clearBannerImage, FOLDER };

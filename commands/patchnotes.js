@@ -272,11 +272,9 @@ module.exports = {
     seasonEntryIndex,
     formatAdditionalInfo,
     clampInfoText,
-    INFO_TEXT_BUDGET,
     seasonEmoji,
     findPatchByQuery,
     buildSearchModal,
-    HISTORY_SHOWN,
 
     // COMMAND DEFINITION: Base 'patch', Subcommand 'notes'
     data: new SlashCommandBuilder()

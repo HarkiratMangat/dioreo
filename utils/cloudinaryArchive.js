@@ -116,4 +116,4 @@ async function archiveBeforeReplace(publicId, sourceUrl, kind, now = new Date())
     }
 }
 
-module.exports = { archiveByMove, archiveBeforeReplace, archivePublicIdFor, archiveFolderFor, isSameAsset, ARCHIVE_ROOT, KINDS };
+module.exports = { archiveByMove, archiveBeforeReplace, archivePublicIdFor, isSameAsset, KINDS };

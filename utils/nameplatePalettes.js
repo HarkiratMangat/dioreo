@@ -90,4 +90,4 @@ function nameplatePaletteLabel(paletteName) {
     return paletteName.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
 
-module.exports = { NAMEPLATE_PALETTES, NAMEPLATE_GRADIENT_STOPS, nameplatePaletteHex, deriveNameplateName, nameplateNameFromAsset, nameplatePaletteLabel };
+module.exports = { NAMEPLATE_GRADIENT_STOPS, nameplatePaletteHex, deriveNameplateName, nameplateNameFromAsset, nameplatePaletteLabel };

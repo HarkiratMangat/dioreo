@@ -136,4 +136,4 @@ async function registerApplicationCommands(client, commands, { token = process.e
     }
 }
 
-module.exports = { loadCommandModules, registerApplicationCommands, splitCommands, capMessageCommands, belongsOnAdminApp, ADMIN_COMMAND_NAMES, ADMIN_APP_COMMAND_NAMES, MESSAGE_COMMAND_CAP };
+module.exports = { loadCommandModules, registerApplicationCommands, splitCommands, ADMIN_COMMAND_NAMES, ADMIN_APP_COMMAND_NAMES };

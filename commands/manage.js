@@ -998,7 +998,7 @@ module.exports = {
     get PAGES() { return buildPagesTable(); },
     PURGE_LABELS,
     buildManagePage,
-    buildPastSeasonsOptions, buildDynamicData,
+    buildDynamicData,
     buildSearchModal,
     buildBulkBothDrawsModal, buildBulkRemoveDrawsModal, buildAddDrawModal, buildEditDrawModal,
     buildQuickAddModal, buildQuickEditModal,
@@ -1010,9 +1010,7 @@ module.exports = {
     buildPageSelectRow: (pageKey, { showEmojis = false, allowedPages = null } = {}) => pageSelectRow(buildPagesTable(), pageKey, allowedPages, showEmojis),
     buildPatchDateInfoModal, buildPatchUrlsModal, buildPatchAddSeasonModal, buildPatchEditSeasonModal,
     buildWipeSeasonModal, buildSeasonTitlesDeadlinesModal,
-    buildDraftTitlesDatesModal, buildDraftBulkDrawsModal, buildDraftBulkCalendarModal, buildDraftStatusText,
-    buildAnnouncementModal, buildAnnouncementListBlocks,
-
+    buildDraftTitlesDatesModal, buildDraftBulkDrawsModal, buildDraftBulkCalendarModal, buildAnnouncementModal,
     async execute(interaction) {
         const { hasCommandAccess } = require('../utils/adminAccess');
         if (!(await hasCommandAccess(interaction.user.id, 'manage'))) {

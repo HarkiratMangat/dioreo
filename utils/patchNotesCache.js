@@ -147,4 +147,4 @@ async function pruneOrphanedPatchFolders(keepPatchIds) {
     }
 }
 
-module.exports = { cachePatchImage, pruneOrphanedPatchFolders, syncPatchEntryMetadata, setPatchImageMetadata, buildPatchMetadata, PATCH_METADATA_FIELDS, FOLDER };
+module.exports = { cachePatchImage, pruneOrphanedPatchFolders, syncPatchEntryMetadata, setPatchImageMetadata, PATCH_METADATA_FIELDS, FOLDER };

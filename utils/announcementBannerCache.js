@@ -56,4 +56,4 @@ async function cacheAnnouncementBanner(announcementId, sourceUrl) {
     }
 }
 
-module.exports = { cacheAnnouncementBanner, publicIdFor, isOurDeliveryUrl, FOLDER };
+module.exports = { cacheAnnouncementBanner, publicIdFor, FOLDER };

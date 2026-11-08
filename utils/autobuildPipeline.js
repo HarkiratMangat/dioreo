@@ -806,7 +806,7 @@ async function applyEditSubmission(interaction, token) {
 }
 
 module.exports = {
-    pendingAutobuilds, pendingImageRetries, buildReviewCard, resolveCategoryAndBadges, runExtraction, confirmAndWrite, retryImageUpload, cancelReview, buildEditModal, applyEditSubmission,
+    pendingAutobuilds, pendingImageRetries, buildReviewCard, runExtraction, confirmAndWrite, retryImageUpload, cancelReview, buildEditModal, applyEditSubmission,
     // The shared halves bulk /autobuild (utils/autobuildBulk.js) drives.
     extractToData, confirmCore, withWeaponQueue, confirmMessage, confirmReply, reuploadRow, applyEditFields, releaseCache,
     // Exported for scripts/autobuildDmz.test.js; nothing else calls them.

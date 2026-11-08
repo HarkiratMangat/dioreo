@@ -603,7 +603,7 @@ async function applyBatchEdit(interaction) {
 }
 
 module.exports = {
-    runBulk, handleBatchComponent, showBatchEditModal, applyBatchEdit, resumeOpenBatch, openBatchFor, MAX_SCREENSHOTS,
+    runBulk, handleBatchComponent, showBatchEditModal, applyBatchEdit, resumeOpenBatch, openBatchFor,
     // Exported for scripts/autobuildBulk.test.js.
-    batches, withGlyphs, IDLE_MS, toStored, fromStored, isOpen, clashOf, batchDuplicateNote, batchDuplicateOf, flagsOf, overview, nextPendingIndex, renderPage, confirmAllItems, applyResult, unreadImages,
+    batches, withGlyphs, IDLE_MS, toStored, fromStored, isOpen, clashOf, batchDuplicateNote, flagsOf, overview, nextPendingIndex, renderPage, confirmAllItems, unreadImages,
 };

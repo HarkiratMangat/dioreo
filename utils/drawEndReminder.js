@@ -138,4 +138,4 @@ async function runDrawEndReminders(client) {
     }
 }
 
-module.exports = { drawsNeedingEndDate, reminderComponents, drawForEndCustomId, drawEndCustomId, drawsOnMessage, isReminderMessage, refreshReminderMessage, calendarRowFor, runDrawEndReminders, msUntilNextDailyRun, REMIND_WINDOW_DAYS };
+module.exports = { drawsNeedingEndDate, reminderComponents, drawForEndCustomId, drawEndCustomId, drawsOnMessage, isReminderMessage, refreshReminderMessage, calendarRowFor, runDrawEndReminders, msUntilNextDailyRun};

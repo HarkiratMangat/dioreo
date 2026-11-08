@@ -1673,12 +1673,11 @@ async function newCalculation(userId, basket, state = {}) {
 
 module.exports = {
     encodeState, decodeState, newCalculation, restorableCopy, defaultState, clampFocus,
-    buildCalculatorPanel, buildSetupPanel, buildMissingBasketPanel, buildExportText, buildHelpPanel, buildSavedPanel, savedChecksum, savedDescription,
-    buildCostBlock, entryFor, usedTypes, groupForDisplay,
-    isDoubleCPEventLive, findLiveDoubleCPEntry, execute,
+    buildCalculatorPanel, buildSetupPanel, buildExportText, buildHelpPanel, savedChecksum, savedDescription,
+    entryFor, findLiveDoubleCPEntry, execute,
     parseAmount, parseCount, readBalanceFields, applySelection, shortName, SHORT_NAME, slashShortcut,
     buildUpgradeModal, readUpgradeModal, upgradeControls, balanceLabel,
-    setTypeCount, SETUP_CONTAINER_BUDGET, SETUP_JSON_BUDGET, MAX_LINES, MAX_SAVED, linePages,
-    CALC_KEYS, metaOf, unitOf, lineName, freshLine, buildProgressPanel, buildSpinsInModal, readSpinsIn, listSeasonDraws, selectionSummary,
-    buildAddDrawsModal, buildPriceDrawsModal, buildRemoveModal, readRemovePicks, progressTitle, buildRegionBalanceModal, regionBalanceSection, lineHint, calcCurrency, buildGoalModal, readGoal, ADVANCED_GOAL_TEXT
+    setTypeCount, SETUP_JSON_BUDGET, MAX_LINES, MAX_SAVED, linePages,
+    CALC_KEYS, unitOf, lineName, freshLine, buildSpinsInModal, readSpinsIn, listSeasonDraws, selectionSummary,
+    buildAddDrawsModal, buildPriceDrawsModal, buildRemoveModal, readRemovePicks, buildRegionBalanceModal, lineHint, calcCurrency, buildGoalModal, readGoal
 };

@@ -179,5 +179,5 @@ module.exports = {
     // pure, exported for scripts/cloudObservability.test.js
     extractPeak,
     // constants worth asserting on / overriding in tests
-    PROJECT, ZONE, VM, CACHE_TTL_MS, WINDOWS, LOG_COUNT_CAP,
+    PROJECT, ZONE, VM, CACHE_TTL_MS, WINDOWS,
 };

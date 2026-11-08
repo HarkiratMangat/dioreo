@@ -91,10 +91,8 @@ module.exports = {
         .setDefaultMemberPermissions(0)
         // ADMIN-ONLY, like /manage: user-install only, and listed in bot/registry.js's ADMIN_COMMAND_NAMES so /admin's server rules never offer it.
         .setIntegrationTypes([1]).setContexts([0, 1, 2]),
-    COMMAND_NAME,
     buildPanel,
     heldFor,
-    listedSeasons,
 
     async execute(interaction) {
         // Create on the Patch Notes page (core/permissions.js's OUTSIDE_ACTIONS): every button on its panel adds or edits a season, and edit is create.
