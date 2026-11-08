@@ -102,8 +102,7 @@ function buildEntryLine(event, seasonalDoc, nowMs = Date.now()) {
     let text;
     if (state === 'tba') text = 'Releases TBA';
     else if (state === 'over') text = `Ended <t:${e}:R>`;
-    // An upcoming entry with an end shows that end after "Until" (2026-10-23 14:33 EDT, Harkirat: "put Until before the expected end date"); the absolute start date it showed there before only repeated the relative one and read as the end. One with no end (a draw's release day, an All Season row while the BP end is TBD) keeps its start date.
-    // A draw with no end date reads TBD for its end (2026-11-08 12:03 EST, Harkirat: "any draw that doesn't have an end date should just a 'TBD' for the end date. They should still be in /calendar"); it showed only its release day before.
+    // An upcoming entry with an end shows that end after "Until" (2026-10-23 14:33 EDT, Harkirat: "put Until before the expected end date"); the absolute start date it showed there before only repeated the relative one and read as the end. One with no end (a draw's release day, an All Season row while the BP end is TBD) keeps its start date. A draw with no end date reads TBD for its end (2026-11-08 12:03 EST, Harkirat: "any draw that doesn't have an end date should just a 'TBD' for the end date. They should still be in /calendar"); it showed only its release day before.
     else if (state === 'soon') text = `${returning ? 'Returns' : event.dateOnly ? 'Releases' : 'Starts'} <t:${s}:R> · ${e ? `Until <t:${e}:D>` : event.dateOnly ? 'Until TBD' : `<t:${s}:D>`}`;
     else if (e) text = `**Live** · ends <t:${e}:R>`;
     else if (event.dateOnly) text = returning ? '**Back** · ends TBD' : '**Live** · ends TBD';

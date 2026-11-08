@@ -168,7 +168,36 @@ async function route(interaction) {
         if (!(await gate(interaction, verb))) return;
         const doc = await getDoc();
         if (!V.isStaged(doc)) return show(interaction, await home('draft', doc, `${emojis.cross} No draft in progress — nothing to ${verb}.`, interaction));
-        return show(interaction, verb === 'promote' ? V.promoteConfirm(doc) : V.discardConfirm(doc));
+        // Promote opens a pop-up: now, or at the Battle Pass start (2026-11-08 12:09 EST). The old in-place confirm card (promoteok) still answers a panel drawn before this.
+        if (verb === 'promote') return interaction.showModal(V.promoteModal(doc));
+        return show(interaction, V.discardConfirm(doc));
+    }
+    if (verb === 'promm' && interaction.isModalSubmit?.()) {
+        if (!(await gate(interaction, 'promote')) || !(await gateDestructive(interaction, 'promote'))) return;
+        let pick = null;
+        try { pick = interaction.fields.getStringSelectValues('when')[0]; } catch { pick = null; }
+        await ack(interaction);
+        if (pick === 'auto') {
+            const { commitSet } = require('../../../core/changeset');
+            const r = await commitSet([{ type: 'season.setAutoPromote', payload: { on: true, by: interaction.user.id } }], { actorId: interaction.user.id });
+            const doc = await getDoc();
+            const at = doc?.draft?.bpStart ? Math.floor(new Date(doc.draft.bpStart).getTime() / 1000) : null;
+            const note = r.ok ? `### ${emojis.checkmark} Auto-promote set\nThe draft goes live <t:${at}:F> (<t:${at}:R>), at the Battle Pass start. Moving that start moves the promote with it. You get a DM when it runs.` : `### ${emojis.cross} Not set\n${require('../season').extractCommitError ? require('../season').extractCommitError(r) : (r.failedAt?.errors || []).join(' ')}`;
+            return show(interaction, await home('draft', doc, note.slice(0, 1800), interaction));
+        }
+        const r = await season().runPromoteDraft(interaction.user.id);
+        return show(interaction, V.resultView({
+            crumbs: ['Next Season Draft', 'Promote'], ok: r.ok, title: r.ok ? 'Promoted to live' : 'Nothing was promoted',
+            body: [r.message],
+            back: r.ok ? ['view', 'live'] : ['view', 'draft'], backLabel: r.ok ? 'Live Season' : 'Next Season Draft',
+            extraButtons: r.ok ? revertButton(r.changeIds) : [],
+        }));
+    }
+    if (verb === 'autooff') {
+        if (!(await gate(interaction, 'promote'))) return;
+        await ack(interaction);
+        const r = await require('../../../core/changeset').commitSet([{ type: 'season.setAutoPromote', payload: { on: false } }], { actorId: interaction.user.id });
+        return show(interaction, await home('draft', await getDoc(), r.ok ? `### ${emojis.checkmark} Auto-promote cancelled\nNothing goes live until you press Promote to Live.` : `### ${emojis.cross} Not cancelled\n${(r.failedAt?.errors || []).join(' ') || 'Try again.'}`, interaction));
     }
     if (verb === 'promoteok') {
         if (!(await gate(interaction, 'promote')) || !(await gateDestructive(interaction, 'promote'))) return;

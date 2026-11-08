@@ -132,7 +132,8 @@ function draftView(doc, note, pageRow) {
         text('-# Change what is staged…'),
         row(btn(['tl', 'draft'], 'Edit Titles & Deadlines', emojis.edit, 1), btn('dr', 'Paste Draws', emojis.mngBulkAdd), btn('cal', 'Paste Calendar', emojis.mngBulkAdd)),
         BIG(),
-        row(btn('promote', 'Promote to Live', emojis.checkmark, 3), btn('discard', 'Discard Draft', emojis.deleteBin, 4)),
+        ...(d.autoPromote && d.bpStart ? [text(`${emojis.mngInfo} **Auto-promotes** <t:${Math.floor(new Date(d.bpStart).getTime() / 1000)}:F> · <t:${Math.floor(new Date(d.bpStart).getTime() / 1000)}:R>`)] : []),
+        row(btn('promote', d.autoPromote ? 'Promote Now…' : 'Promote to Live', emojis.checkmark, 3), ...(d.autoPromote ? [btn('autooff', 'Cancel Auto-Promote', emojis.cross)] : []), btn('discard', 'Discard Draft', emojis.deleteBin, 4)),
         row(btn('guide', 'Guide', emojis.guide), btn(['view', 'live'], 'Live Season', emojis.returnArrow)),
     );
     return panel(components, pageRow ? [pageRow] : []);
@@ -197,6 +198,20 @@ function promoteConfirm(doc) {
         row(btn('promoteok', 'Yes, Promote', emojis.checkmark, 3), btn(['view', 'draft'], 'Cancel', emojis.returnArrow)),
     ]);
 }
+// The Promote pop-up (2026-11-08 12:09 EST, Harkirat, 2026-11-08 11:52 EST: "the \"promote to live\" button should open a pop-up with 2 options for me to select: promote to live right now or auto promote on BP start date/time"). One choice: now, or at the Battle Pass start (only offered while that start is still ahead). Its label line carries what would go live; the Not staged warnings sit on the draft view and the Needs a look card.
+function promoteModal(doc, nowMs = Date.now()) {
+    const d = doc?.draft || {};
+    const c = counts(doc);
+    const start = d.bpStart ? new Date(d.bpStart) : null;
+    const later = start && start.getTime() > nowMs;
+    const when = later ? `${start.toISOString().slice(0, 16).replace('T', ' ')} UTC` : '';
+    const options = [
+        ...(later ? [{ label: 'Auto-promote at the Battle Pass start', value: 'auto', description: when, default: true }] : []),
+        { label: 'Promote to live right now', value: 'now', description: 'Players see it at once', default: !later },
+    ];
+    const what = `${d.currentSeasonTitle || 'Untitled season'} · ${c.nd} New, ${c.rd} Returning, ${c.cal} calendar`;
+    return { title: 'Promote to Live', custom_id: ID('promm'), components: [{ type: 18, label: 'When should it go live?', description: what.slice(0, 100), component: { type: 3, custom_id: 'when', required: true, options } }] };
+}
 function discardConfirm(doc) {
     const d = doc?.draft || {};
     const c = counts(doc);
@@ -228,4 +243,4 @@ function resultView({ crumbs = [], title, body = [], ok = true, back = ['view', 
     ]);
 }
 
-module.exports = { ID, PAGE, row, text, btn, panel, homeBtn, plural, whenLine, stamp, seasonRows, counts, newsRows, calendarDrawsWithoutDraw, isStaged, pageView, listView, promoteConfirm, discardConfirm, resultView };
+module.exports = { ID, PAGE, row, text, btn, panel, homeBtn, plural, whenLine, stamp, seasonRows, counts, newsRows, calendarDrawsWithoutDraw, isStaged, pageView, listView, promoteConfirm, promoteModal, discardConfirm, resultView };

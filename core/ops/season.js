@@ -298,6 +298,25 @@ registerEntity('season', {
         invert: (c) => ({ type: 'season.restoreDraft', payload: { draft: c.applied.draft } })
     },
 
+    // The Promote pop-up's "Auto-promote at the Battle Pass start" (2026-11-08 12:09 EST). Sets or clears draft.autoPromote; utils/autoPromote.js does the promoting. Not a /manage action of its own (it rides on the Promote pop-up, gated as promote), so it declares page:. Its own inverse.
+    'season.setAutoPromote': {
+        page: 'seasondraft', tier: 3,
+        validate: (op) => ({ ok: true, errors: [], normalized: { ...op, payload: { on: Boolean(op.payload?.on), by: String(op.payload?.by || '') } } }),
+        preview: (op, live) => ({ before: { autoPromote: !!live.draft?.autoPromote }, after: { autoPromote: !!op.payload.on } }),
+        apply: async (op, { session }) => {
+            const before = await SeasonalData.findOne(DOC).select('draft').lean().session(session);
+            const d = before?.draft || {};
+            if (op.payload.on && (!d.active || !d.bpStart)) return { ok: false, reason: 'invalid', errors: ['The draft has no Battle Pass start to promote at.'] };
+            await SeasonalData.updateOne(DOC, { $set: { 'draft.autoPromote': op.payload.on, 'draft.autoPromoteBy': op.payload.on ? op.payload.by : '' } }, { session });
+            return {
+                ok: true,
+                change: { action: 'edit', model: 'SeasonalData', target: 'draft', summary: op.payload.on ? 'Set the draft to promote at the Battle Pass start' : 'Cancelled the draft\'s auto-promote' },
+                applied: { prev: { on: !!d.autoPromote, by: d.autoPromoteBy || '' } }
+            };
+        },
+        invert: (c) => ({ type: 'season.setAutoPromote', payload: c.applied.prev })
+    },
+
     // News triage's automatic Next Season Draft writes (utils/newsTriage/draftMerge.js, Harkirat's "yeah" to auto-filling the draft, 2026-11-04 23:59 EST). Not a /manage action, so it declares page:. The changes are planned outside the transaction and re-checked row by row inside it (applyDraftChanges skips a row edited since), and the op is its own inverse: forward applies the changes, reverse undoes them by id.
     'season.newsDraft': {
         page: 'seasondraft', tier: 1,

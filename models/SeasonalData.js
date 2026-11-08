@@ -96,6 +96,9 @@ const SeasonalDataSchema = new mongoose.Schema({
         rankStart: { type: Date },
         dmzStart: { type: Date },
         bpEndTBD: { type: Boolean, default: false },
+        // Auto-promote at the Battle Pass start (2026-11-08 12:09 EST, the Promote pop-up): utils/autoPromote.js promotes the draft once bpStart passes, as autoPromoteBy. Draft only; Promote clears the draft with it.
+        autoPromote: { type: Boolean, default: false },
+        autoPromoteBy: { type: String, default: '' },
         newsSeasonSet: { type: mongoose.Schema.Types.Mixed, default: undefined }, // the season fields news triage set itself, with each one's source rank and value, so a better source may replace them and one he changed is left alone (the fresh review R1, 2026-11-05 20:14 EST). Draft only: Promote to Live does not copy it.
         rankEndTBD: { type: Boolean, default: false },
         dmzEndTBD: { type: Boolean, default: false },
