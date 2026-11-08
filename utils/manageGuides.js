@@ -28,7 +28,7 @@ function topicDefs() {
     return [
         { key: 'draws', label: 'Draws', description: 'New/Returning bulk paste format', rawEmoji: emojis.newDraws, emoji: emojis.parseEmoji(emojis.newDraws) },
         { key: 'calendar', label: 'Calendar', description: 'Bullet-separated event paste format', rawEmoji: emojis.calendar, emoji: emojis.parseEmoji(emojis.calendar) },
-        { key: 'loadouts', label: 'Loadouts', description: 'MP/DMZ block paste format', rawEmoji: emojis.newDraws, emoji: emojis.parseEmoji(emojis.newDraws) },
+        { key: 'loadouts', label: 'Gunsmith Builds', description: 'MP/DMZ build block paste format', rawEmoji: emojis.newDraws, emoji: emojis.parseEmoji(emojis.newDraws) },
         { key: 'patchnotes', label: 'Patch Notes', description: 'Release date, URLs, Additional Info', rawEmoji: emojis.patchNotes, emoji: emojis.parseEmoji(emojis.patchNotes) },
         // Quick Add (2026-11-01): the one-line-per-draw box on the Draws page. Its own topic because its rules (new/returning, the date and zone defaults, Pick, Add details) are not the bulk format's.
         { key: 'quickadd', label: 'Quick Add', description: 'One line per draw: name, then dates', rawEmoji: emojis.mngAdd, emoji: emojis.parseEmoji(emojis.mngAdd) },
@@ -70,8 +70,8 @@ function drawsSections() {
             '\n**Renders as:**\n' +
             `**__Void Implosion Draw__**\n${emojis.legendary} **M4 - Void Implosion**\n${emojis.epic} **Dusk - Otherworld Ensemble**\n-# Girls Frontline Collab\n<t:0:f> (<t:0:R>)\n-# ^ timestamp shown is a placeholder — yours renders with the real date you typed.`),
         section('💡 Tips',
-            '• Use **Export** above to grab this exact format pre-filled with your real current data — the fastest way to see a live, correct example.\n' +
-            '• **Replace Multiple** upserts by title match (updates in place, inserts if new) — anything you don\'t mention is left untouched. Use **Purge** for a full wipe.\n' +
+            '• Use the draws panel\'s **Export** (or `/manage draws do:Export`) to grab this exact format pre-filled with your real current data — the fastest way to see a live, correct example.\n' +
+            '• **Paste Draws**, and **Edit** on Select Draws, update a draw with the same title and add a new one; a preview shows what changes before **Save**. Anything you don\'t mention is left untouched. **Purge Draws** is the full wipe.\n' +
             '• The date can be **Start - End** (`July 15 - August 20`, or `September 10, 2026 - November 12, 2026`), like the season titles box. The end goes on the draw\'s /calendar row, so `/draws` shows when it ends; it needs the Calendar permission, and **Export** writes it back out. The **Add** and **Edit** forms take the same thing.')
     ];
 }
@@ -122,8 +122,8 @@ function calendarSections() {
             '```\nd•7/15 - 8/1 | Jupiter Cannon Draw•p•7/20 - All Season | Krai BR•e•7/18 - 7/25 | Anniversary Celebration\n```' +
             '\n**Renders as:** 3 entries, sorted onto their own pages — "Jupiter Cannon Draw" under **Draws**, "Krai BR" under **Playlists & Modes** (open-ended, tied to the Battle Pass end), "Anniversary Celebration" under **Events**.'),
         section('💡 Tips',
-            '• Use **Export** above to grab this exact format pre-filled with your real current data.\n' +
-            '• **Replace Multiple** upserts by title, doesn\'t touch anything unmentioned. **Purge** for a full wipe.')
+            '• Use the calendar panel\'s **Export** (or `/manage calendar do:Export`) to grab this exact format pre-filled with your real current data.\n' +
+            '• **Paste Entries**, and **Edit** on Select Entries, update an entry with the same title and add a new one; a preview shows what changes before **Save**, and nothing unmentioned is touched. **Purge Calendar** is the full wipe.')
     ];
 }
 
@@ -137,7 +137,7 @@ function loadoutsSections() {
             '**Rank modes (MP only, any number):** `hp` · `s&d` · `dom` · `tdm` · `ftl` · `control`\n' +
             '-# Badges belong to the one build they are typed on. `ass` can\'t sit with `meta` or a tier; `top4` is retired and reads as `top5`.'),
         section('✨ What Gets Auto-Formatted',
-            '• **Mode** is not a field: the MP or DMZ page you paste on decides it.\n' +
+            '• **Mode** is not a field: pasting on `/manage gunsmith mp` or `dmz` decides it.\n' +
             '• **Code** is required on the MP page (a block without one is skipped and named); DMZ has no code.\n' +
             '• **Options of a merged build:** `Build: Build 2b` is Build 2\'s Option B (`2c` Option C, and so on). It replaces that option, or adds it if it is the next letter; Build 2 must exist, or come earlier in the paste. Badges and Label go on Build 2\'s own block. An Export writes every option this way.\n' +
             '• **Comment** is the line players see quoted under the attachments, one per build (every option shares it). Several Comment lines make one comment over several lines; `Comment:` with nothing after it clears it, and leaving the line out keeps the stored one. The single Add/Edit pop-up takes it as a `Comment:` line at the end of the attachments box.\n' +
@@ -147,9 +147,9 @@ function loadoutsSections() {
         section('🖼️ Example',
             '```\nBAL-27 | AR\nBuild: Build 2\nLabel: Aggro\nCode: 1I2C6B8A9D\nBadges: meta, top3\nComment: Best for close range\n- Monolithic Suppressor\n- FTAC Champion\n```'),
         section('💡 Tips',
-            '• Use one of **/manage**\'s **Export** options to get this format filled in with your real data.\n' +
+            '• Use the gunsmith panel\'s **Export** (or `do:Export`) to get this format filled in with your real data; **Edit** on Select Builds opens the selected builds in it.\n' +
             '• The old one-line pipe format (`Weapon | Category | Mode | Build | ...`) is refused with an error naming this format; re-export anything saved in it.\n' +
-            '• **How Images Work**, on /manage\'s Loadouts page, explains how a build\'s picture is filed under its gunsmith code.')
+            '• A build\'s picture is filed under its gunsmith code: the Add and Edit pop-ups take a URL or a screenshot and file it for you, and **/autobuild** does it from a Gunsmith screenshot.')
     ];
 }
 
@@ -160,8 +160,9 @@ function patchnotesSections() {
         section('📅 Release Date',
             '`July 15` → midnight UTC, same as every other date field.\n' +
             '`July 15, 7:20 AM` → **this one field is different** — the moment you add a time, it\'s read as **your own local clock** (`/settings`' + '\u2019s timezone), not UTC, then converted correctly. Every other date field in the bot ignores time-of-day entirely; this is the one exception.'),
-        section('🔗 URLs 1 / URLs 2',
-            'Each is 5 separate fields (image 1-5 / image 6-10), not one big paste. Blank = no image in that slot. Every submitted URL is auto re-hosted to Cloudinary so a dead source link never breaks the carousel later.'),
+        section('🔗 Images 1-5 / Images 6-10',
+            'Each opens 5 separate fields (image 1-5 / image 6-10), not one big paste. Blank = no image in that slot. Every submitted URL is auto re-hosted to Cloudinary so a dead source link never breaks the carousel later.\n' +
+            '-# These, and **Edit Date & Info**, are on the current season\'s card. A past season (the **Past seasons** dropdown, or `season:`) edits in one pop-up: its title, date, info and all ten images.'),
         section('⚔️ Additional Info — one weapon per line, comma-separated',
             'Typing `b:`/`n:`/`f:` ANYWHERE always swaps in the buff/nerf/fix icon — that part always worked.\n' +
             '**The structured "ADDITIONAL CHANGES" layout is a SEPARATE, opt-in thing** that only turns on once a line starts with `#`. Same comma-delimited feel as the Draws/Calendar bulk formats: `#, then Weapon, then Attachment, then n:/b:/f: text` — ONE weapon per line, a NEW LINE for the next weapon:\n' +
@@ -184,7 +185,7 @@ function seasondraftSections() {
             'Typing `TBD` as the date (case-insensitive) marks that deadline as **not yet announced** instead of parsing it as a real date — shown as "TBD" and treated as running indefinitely until it\'s updated. Same rule as the live Season Titles & Deadlines modal.'),
         section('💡 Tips',
             '• Re-running Titles & Deadlines / Draws / Calendar just REPLACES the staged version — fixing a typo is "paste it again," not "undo first."\n' +
-            '• **Promote to Live** swaps title/deadlines/draws/calendar (and banner fields, if ever staged) onto the live document in one shot and snapshots the previous live state for **Undo**.')
+            '• **Promote to Live** shows what changes (and anything not staged yet) before you confirm, then swaps title/deadlines/draws/calendar (and banner fields, if ever staged) onto the live document in one shot. **Revert** on its result, or in `/bot analytics` › Changes, puts back the live season and the staged draft.')
     ];
 }
 
@@ -209,9 +210,9 @@ function announcementsSections() {
         section('📝 Post New Announcement',
             'Write the message, then optionally set an expiry — defaults to **60 days**, or type your own number of days, or `never`.'),
         section('✏️ Edit / Delete',
-            'Live directly on each announcement\'s own card, same as Manage Admins\' per-row buttons above — **Edit** re-opens that announcement\'s text/expiry for changes, **Delete** asks you to confirm (Yes, Delete / Cancel) before it removes it.'),
+            'Open one from the panel\'s **Open an announcement…** dropdown (or `/manage announcement announcement:`): its card shows it exactly as players get it. **Edit** re-opens its text and expiry; **Delete** asks you to confirm, and its result has **Revert**, which brings back the same announcement (nobody who saw it is shown it again).'),
         section('💡 Tip',
-            'Only ACTIVE (non-expired) announcements are listed here — an expired one has already stopped showing to users and drops off this list on its own.')
+            'Running and scheduled announcements are listed. The five most recently expired are shown read-only, and **Post one again…** starts a new post from one of them.')
     ];
 }
 

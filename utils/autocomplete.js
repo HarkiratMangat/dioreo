@@ -46,6 +46,10 @@ async function runAutocomplete(interaction) {
         if (!(await hasCommandAccess(interaction.user.id, 'manage'))) return await interaction.respond([]);
         // build: and weapon: on /manage gunsmith mp|dmz (the gunsmith rehaul, 2026-11-07 14:13 EST): build: lists builds, each option of a merged build, and `＋ New build` for the weapon typed; weapon: lists weapons. handlers/manage/gunsmith/index.js autocomplete. draw: on /manage draws (2026-11-07 19:17 EST): this season's draws by title. handlers/manage/drawsPanel/index.js autocomplete.
         if (page === 'draws') return await require('../handlers/manage/drawsPanel').autocomplete(interaction);
+        // event: / season: / announcement: on the rest of the rehauled sections (2026-11-07 21:00 EST).
+        if (page === 'calendar') return await require('../handlers/manage/calendarPanel').autocomplete(interaction);
+        if (page === 'patchnotes') return await require('../handlers/manage/patchnotesPanel').autocomplete(interaction);
+        if (page === 'announcement') return await require('../handlers/manage/announcementsPanel').autocomplete(interaction);
         if (page === 'loadouts_mp' || page === 'loadouts_dmz') {
             return await require('../handlers/manage/gunsmith').autocomplete(interaction, page === 'loadouts_dmz' ? 'DMZ' : 'MP');
         }

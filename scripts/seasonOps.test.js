@@ -8,6 +8,16 @@ function check(name, fn) {
     catch (e) { failures++; console.error(`  ✗ ${name}\n      ${e.message}`); }
 }
 
+check('promoteDraft records the staged draft in its prior snapshot, so its Revert puts the draft back (found 2026-11-07 22:00 EST)', () => {
+    // Promote clears the draft; a snapshot without it restored the live season and lost everything staged.
+    const src = require('fs').readFileSync(require('path').join(__dirname, '../core/ops/season.js'), 'utf8');
+    const at = src.indexOf("'season.promoteDraft': {");
+    const promote = src.slice(at, src.indexOf('invert:', at));
+    assert.ok(at > -1 && promote.includes('draft: before.draft'), 'promoteDraft\'s prior must carry draft');
+    const inv = ops.resolveOp('season.promoteDraft').invert({ action: 'promote', applied: { prior: { currentSeasonTitle: 'S9', draft: { active: true, calendar: [{ title: 'x' }] } }, patchPrior: null } });
+    assert.deepStrictEqual(inv.payload.draft, { active: true, calendar: [{ title: 'x' }] });
+});
+
 check('promoteDraft and startNew are BOTH tier 3', () => {
     assert.strictEqual(ops.resolveOp('season.promoteDraft').tier, 3);
     assert.strictEqual(ops.resolveOp('season.startNew').tier, 3);

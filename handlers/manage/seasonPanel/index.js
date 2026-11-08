@@ -1,0 +1,205 @@
+// ==========================================
+// /manage season — the rehauled panel: routing, permission checks, saves
+// ==========================================
+// Built 2026-11-07 21:07 EST (builder C3 of the rest of the /manage rehaul), following the draws panel (handlers/manage/drawsPanel/). Two views of one panel: 'live' (`/manage season titles`, the dropdown's "Season: Titles & Deadlines") and 'draft' (`/manage season draft`, the dropdown's Next Season Draft).
+//
+// ⚠️ SAVES GO THROUGH THE EXISTING CODE. The pop-ups are /manage's own builders (commands/manage.js) re-id'd to this panel; the writes are handlers/manage/season.js's lifted functions (saveTitlesDeadlines, saveDraftDraws, saveDraftCalendar, runPromoteDraft, runDiscardDraft), the same commitSet ops the old pop-up handlers and confirm buttons use, so the ChangeLog, Revert and permission checks stay correct. Start New Season opens the OLD pop-up untouched (modal_wipe_season) and its own confirm step (mng_wipeconfirm_*) stays as it was.
+//
+// ⚠️ PERMISSIONS: the router's /manage lock runs first (`mng_`). Live titles and Start New Season are gated with resolvePopupEntry (as commands/manage.js did for the two flat dropdown entries); every draft action runs utils/manageActions.js resolveAction('seasondraft', …) before it opens a pop-up or writes; Promote and Discard re-check the destructive tier on the confirming click. core/changeset.js commitSet checks every op once more.
+//
+// ⚠️ A POP-UP HAS TO BE THE FIRST ANSWER. Every path that opens one runs before anything is deferred.
+//
+// ⚠️ THE CRASH NET IS THE ROUTER'S. Nothing here catches to swallow; error-branch replies are awaited.
+
+const emojis = require('../../../utils/emojiMap');
+const { sendV2Payload } = require('../../../utils/sendV2Payload');
+const V = require('./views');
+
+const PREFIX = 'mng_ss|';
+const manageCommand = () => require('../../../commands/manage');
+const season = () => require('../season');
+const getDoc = async () => (await require('../../../models/SeasonalData').findOne({ docType: 'global' }).lean()) || {};
+const PAGE_KEY = { live: 'season_titlesdeadlines', draft: 'seasondraft' };
+
+// ---------- answering ----------
+async function ack(interaction, { ephemeral = true } = {}) {
+    if (interaction.deferred || interaction.replied) return;
+    if (interaction.isChatInputCommand?.() || (interaction.isModalSubmit?.() && !interaction.message)) await interaction.deferReply({ flags: ephemeral ? 64 : 0 });
+    else await interaction.deferUpdate();
+}
+async function show(interaction, components, { ephemeral = true } = {}) {
+    await ack(interaction, { ephemeral });
+    return sendV2Payload(interaction, components, { skipExpiry: true });
+}
+async function say(interaction, content) {
+    try {
+        if (interaction.deferred || interaction.replied) await interaction.followUp({ content, flags: 64 });
+        else await interaction.reply({ content, flags: 64 });
+    } catch (e) { console.error('manage season: could not answer (interaction likely expired):', e.message); }
+}
+
+// ---------- permission ----------
+const deny = async (interaction, message) => {
+    require('../../../utils/eventStore').markOutcome('rejected_admin');
+    await say(interaction, message);
+    return false;
+};
+// A draft action's own tier on the Next Season Draft page.
+async function gate(interaction, action) {
+    const { resolveAction, DENIAL_MESSAGE } = require('../../../utils/manageActions');
+    const g = await resolveAction('seasondraft', action, interaction.user.id);
+    return g.ok ? true : deny(interaction, g.message || DENIAL_MESSAGE[g.reason] || '🔒 You do not have access to that.');
+}
+// The live Season pseudo-page's two pop-ups ('season_titlesdeadlines', 'season_wipe').
+async function gateLive(interaction, entry) {
+    const g = await require('../../../utils/manageActions').resolvePopupEntry(entry, interaction.user.id);
+    return g.ok ? true : deny(interaction, g.message || '🔒 You do not have access to that.');
+}
+async function gateDestructive(interaction, what) {
+    const { can } = require('../../../utils/adminAccess');
+    if (await can(interaction.user.id, 'manage.seasondraft', 'destructive')) return true;
+    return deny(interaction, `🔒 **You don't have access to ${what} the draft anymore.** Nothing was changed.`);
+}
+
+// ---------- views ----------
+async function home(view, doc, note = null, interaction = null) {
+    const showEmojis = interaction ? require('../../../utils/owner').isOwnerId(interaction.user.id) : false;
+    const pageRow = manageCommand().buildPageSelectRow(PAGE_KEY[view] || PAGE_KEY.live, { showEmojis });
+    return V.pageView(doc || await getDoc(), view, note, { pageRow });
+}
+async function renderHome(interaction, view = 'live') { return show(interaction, await home(view, await getDoc(), null, interaction)); }
+
+// ---------- the pop-ups ---------- /manage's own builders, re-id'd so the submit comes back here. Prefilled from what is stored, as before.
+const reId = (modal, customId) => { const j = modal.toJSON ? modal.toJSON() : JSON.parse(JSON.stringify(modal)); j.custom_id = customId; return j; };
+const titlesModal = (doc, view) => reId(view === 'draft' ? manageCommand().buildDraftTitlesDatesModal(doc) : manageCommand().buildSeasonTitlesDeadlinesModal(doc), V.ID('tm', view));
+const drawsModal = (doc) => reId(manageCommand().buildDraftBulkDrawsModal(doc), V.ID('drm'));
+const calendarModal = (doc) => reId(manageCommand().buildDraftBulkCalendarModal(doc), V.ID('calm'));
+
+// Each opener gates, then opens its pop-up as the interaction's FIRST answer.
+async function openTitles(interaction, view) {
+    if (!(view === 'draft' ? await gate(interaction, 'settitles') : await gateLive(interaction, 'season_titlesdeadlines'))) return;
+    return interaction.showModal(titlesModal(await getDoc(), view));
+}
+async function openWipe(interaction) {
+    if (!(await gateLive(interaction, 'season_wipe'))) return;
+    return interaction.showModal(manageCommand().buildWipeSeasonModal());
+}
+async function openDraws(interaction) { if (await gate(interaction, 'bulkdraws')) return interaction.showModal(drawsModal(await getDoc())); }
+async function openCalendar(interaction) { if (await gate(interaction, 'bulkcalendar')) return interaction.showModal(calendarModal(await getDoc())); }
+
+async function runGuide(interaction) {
+    if (!(await gate(interaction, 'formatguide'))) return;
+    const action = require('../../../utils/manageActions').ACTIONS_BY_PAGE.seasondraft.find(x => x.id === 'formatguide');
+    return action.run({ interaction, page: 'seasondraft', manageCommand: manageCommand() });
+}
+
+// ---------- the slash command ---------- `do:` opens a pop-up or the guide at once; bare opens the view. Every path that opens a pop-up runs before anything is deferred.
+async function openFromSlash(interaction, view = 'live') {
+    const act = interaction.options.getString('do');
+    const ephemeral = interaction.options.getString('visibility') !== 'public';
+    if (view === 'live') {
+        if (act === 'titles') return openTitles(interaction, 'live');
+        if (act === 'newseason') return openWipe(interaction);
+    } else {
+        if (act === 'titles') return openTitles(interaction, 'draft');
+        if (act === 'draws') return openDraws(interaction);
+        if (act === 'calendar') return openCalendar(interaction);
+        if (act === 'guide') return runGuide(interaction);
+    }
+    const note = act ? `${emojis.warn} \`${act}\` is not an option for ${view === 'live' ? 'the live season' : 'the draft'}.` : null;
+    return show(interaction, await home(view, await getDoc(), note, interaction), { ephemeral });
+}
+
+// This panel has no target option.
+async function autocomplete(interaction) { return interaction.respond([]); }
+
+// The panel's own Revert after Promote or Discard (the lead, 2026-11-07 21:11 EST: the spec asks for Revert wherever a save returns change ids). results.js revertChanges does the reverting and its permission check; render lands back on the live view.
+function revertButton(changeIds) {
+    const id = `${PREFIX}revert|${(changeIds || []).join(',')}`;
+    return changeIds?.length && id.length <= 100 ? [{ type: 2, style: 4, label: 'Revert', custom_id: id }] : [];
+}
+
+// A saved result as the note above the redrawn view.
+const savedNote = (r) => (r.ok ? `### ${emojis.checkmark} Saved\n${r.message}` : `### ${emojis.cross} Not saved\n${r.message}`).slice(0, 1800);
+
+// ---------- routing ----------
+async function route(interaction) {
+    const [, verb, a, b] = interaction.customId.split('|');
+    const n = (x) => Number(x) || 0;
+
+    // ----- pop-ups first -----
+    if (verb === 'tl') return openTitles(interaction, a === 'draft' ? 'draft' : 'live');
+    if (verb === 'wipe') return openWipe(interaction);
+    if (verb === 'dr') return openDraws(interaction);
+    if (verb === 'cal') return openCalendar(interaction);
+    if (verb === 'guide') return runGuide(interaction);
+
+    // ----- views -----
+    if (verb === 'view') return show(interaction, await home(a === 'draft' ? 'draft' : 'live', await getDoc(), null, interaction));
+    if (verb === 'ls') return show(interaction, V.listView(await getDoc(), a, n(b)));
+    if (verb === 'revert') return require('../results').revertChanges(interaction, String(a || '').split(',').filter(Boolean), { doneNote: 'it is back as it was', render: async (note) => home('live', await getDoc(), note, interaction) });
+
+    // ----- pop-up submits: save through season.js, then redraw the view with a Saved header -----
+    if (verb === 'tm' && interaction.isModalSubmit?.()) {
+        const view = a === 'draft' ? 'draft' : 'live';
+        if (!(view === 'draft' ? await gate(interaction, 'settitles') : await gateLive(interaction, 'season_titlesdeadlines'))) return;
+        await ack(interaction);
+        const r = await season().saveTitlesDeadlines(interaction.user.id, season().readTitleFields(interaction), { draft: view === 'draft' });
+        return show(interaction, await home(view, await getDoc(), savedNote(r), interaction));
+    }
+    if (verb === 'drm' && interaction.isModalSubmit?.()) {
+        if (!(await gate(interaction, 'bulkdraws'))) return;
+        await ack(interaction);
+        const r = await season().saveDraftDraws(interaction.user.id, interaction.fields.getTextInputValue('new_text')?.trim(), interaction.fields.getTextInputValue('returning_text')?.trim());
+        const sent = await show(interaction, await home('draft', await getDoc(), savedNote(r), interaction));
+        // The staged draws' item kinds are asked about now, as the old pop-up handler did (handlers/manage/itemKinds.js).
+        if (r.ok) await require('../itemKinds').askItemKinds(interaction, r.titles);
+        return sent;
+    }
+    if (verb === 'calm' && interaction.isModalSubmit?.()) {
+        if (!(await gate(interaction, 'bulkcalendar'))) return;
+        await ack(interaction);
+        const r = await season().saveDraftCalendar(interaction.user.id, interaction.fields.getTextInputValue('bulk_text'));
+        return show(interaction, await home('draft', await getDoc(), savedNote(r), interaction));
+    }
+
+    // ----- Promote and Discard: confirm in place, then run the existing logic with the destructive tier re-checked -----
+    if (verb === 'promote' || verb === 'discard') {
+        if (!(await gate(interaction, verb))) return;
+        const doc = await getDoc();
+        if (!V.isStaged(doc)) return show(interaction, await home('draft', doc, `${emojis.cross} No draft in progress — nothing to ${verb}.`, interaction));
+        return show(interaction, verb === 'promote' ? V.promoteConfirm(doc) : V.discardConfirm(doc));
+    }
+    if (verb === 'promoteok') {
+        if (!(await gate(interaction, 'promote')) || !(await gateDestructive(interaction, 'promote'))) return;
+        await ack(interaction);
+        const r = await season().runPromoteDraft(interaction.user.id);
+        return show(interaction, V.resultView({
+            crumbs: ['Next Season Draft', 'Promote'], ok: r.ok, title: r.ok ? 'Promoted to live' : 'Nothing was promoted',
+            body: [r.message],
+            back: r.ok ? ['view', 'live'] : ['view', 'draft'], backLabel: r.ok ? 'Live Season' : 'Next Season Draft',
+            extraButtons: r.ok ? revertButton(r.changeIds) : [],
+        }));
+    }
+    if (verb === 'discardok') {
+        if (!(await gate(interaction, 'discard')) || !(await gateDestructive(interaction, 'discard'))) return;
+        await ack(interaction);
+        const r = await season().runDiscardDraft(interaction.user.id);
+        return show(interaction, V.resultView({
+            crumbs: ['Next Season Draft', 'Discard'], ok: r.ok, title: r.ok ? 'Draft discarded' : 'Nothing was discarded',
+            body: [r.message],
+            extraButtons: r.ok ? revertButton(r.changeIds) : [],
+        }));
+    }
+
+    return say(interaction, `${emojis.cross} That button is from an older panel. Open \`/manage season\` again.`);
+}
+
+// The /manage dispatcher's entry (handlers/manage/index.js): TRUE when the id is this panel's.
+async function handleSeasonPanelInteraction(interaction) {
+    if (typeof interaction.customId !== 'string' || !interaction.customId.startsWith(PREFIX)) return false;
+    await route(interaction);
+    return true;
+}
+
+module.exports = { handleSeasonPanelInteraction, openFromSlash, renderHome, autocomplete, PREFIX };

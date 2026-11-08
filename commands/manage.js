@@ -933,6 +933,39 @@ function buildManageCommandData() {
             { name: 'Assault', value: 'AR' }, { name: 'Sniper', value: 'SNIPER' }, { name: 'LMG', value: 'LMG' }, { name: 'SMG', value: 'SMG' },
             { name: 'Shotgun', value: 'SHOTGUN' }, { name: 'Marksman', value: 'MARKSMAN' }, { name: 'Secondary', value: 'SECONDARIES' }))
         .addStringOption(visibility);
+    // The rest of the /manage rehaul (2026-11-07 21:00 EST, Harkirat 20:54 EST: "finish all of /manage subcommands, slash commands and their rehaul"): every section goes straight to a thing the way draws and gunsmith do. A target (autocomplete) opens its card, show: a list, do: an action, at once with a target. Each panel's openFromSlash reads these names; the names are designed here so every section reads the same. visibility stays LAST.
+    const calendarSub = sub => sub.setName('calendar').setDescription('Calendar events, playlists and draw dates')
+        .addStringOption(o => o.setName('event').setDescription('Go to one calendar entry: type part of its title').setAutocomplete(true))
+        .addStringOption(o => o.setName('do').setDescription('What to do. With event: it happens right away').addChoices(
+            { name: 'Add Entry', value: 'add' }, { name: 'Edit', value: 'edit' }, { name: 'Delete', value: 'delete' },
+            { name: 'Paste Entries', value: 'paste' }, { name: 'Export', value: 'export' }, { name: 'Banners', value: 'banners' }, { name: 'Guide', value: 'guide' }))
+        .addStringOption(o => o.setName('show').setDescription('Open a list of calendar entries').addChoices(
+            { name: 'Events', value: 'event' }, { name: 'Playlists', value: 'playlist' }, { name: 'Draws', value: 'draw' },
+            { name: 'Upcoming', value: 'upcoming' }, { name: 'Active Now', value: 'live' }, { name: 'Ending Soon', value: 'leaving' }, { name: 'Ended', value: 'ended' }))
+        .addStringOption(visibility);
+    const patchSub = sub => sub.setName('patch-notes').setDescription('Season patch notes')
+        .addStringOption(o => o.setName('season').setDescription('Go to one season\'s patch notes: type part of its title').setAutocomplete(true))
+        .addStringOption(o => o.setName('do').setDescription('What to do. With season: it happens to that season').addChoices(
+            { name: 'Add New Season', value: 'add' }, { name: 'Edit Date & Info', value: 'edit' }, { name: 'Images 1-5', value: 'images1' }, { name: 'Images 6-10', value: 'images2' }, { name: 'Guide', value: 'guide' }))
+        .addStringOption(visibility);
+    const titlesSub = sub => sub.setName('titles').setDescription('Season titles and deadlines')
+        .addStringOption(o => o.setName('do').setDescription('What to do, right away').addChoices(
+            { name: 'Edit Titles & Deadlines', value: 'titles' }, { name: 'Start New Season', value: 'newseason' }))
+        .addStringOption(visibility);
+    const draftSub = sub => sub.setName('draft').setDescription('Stage the next season')
+        .addStringOption(o => o.setName('do').setDescription('What to do, right away').addChoices(
+            { name: 'Edit Titles & Deadlines', value: 'titles' }, { name: 'Paste Draws', value: 'draws' }, { name: 'Paste Calendar', value: 'calendar' }, { name: 'Guide', value: 'guide' }))
+        .addStringOption(visibility);
+    const announceSub = sub => sub.setName('announcement').setDescription('Announcements')
+        .addStringOption(o => o.setName('announcement').setDescription('Go to one announcement: type part of its text').setAutocomplete(true))
+        .addStringOption(o => o.setName('do').setDescription('What to do. With announcement: it happens right away').addChoices(
+            { name: 'Post New', value: 'post' }, { name: 'Edit', value: 'edit' }, { name: 'Delete', value: 'delete' }, { name: 'Guide', value: 'guide' }))
+        .addStringOption(visibility);
+    const guideSub = sub => sub.setName('guide').setDescription('The bulk format guides')
+        .addStringOption(o => o.setName('topic').setDescription('Which guide to open (Draws when left out)').addChoices(
+            { name: 'Draws', value: 'draws' }, { name: 'Calendar', value: 'calendar' }, { name: 'Gunsmith Builds', value: 'loadouts' }, { name: 'Patch Notes', value: 'patchnotes' },
+            { name: 'Quick Add', value: 'quickadd' }, { name: 'Next Season Draft', value: 'seasondraft' }, { name: 'Announcements', value: 'announcements' }))
+        .addStringOption(visibility);
     return new SlashCommandBuilder()
         .setName('manage')
         // Trimmed 2026-07-18 (mobile-width audit, v2 quick-wins batch) -- the old 68-char version truncated on Discord mobile's command picker row.
@@ -941,17 +974,17 @@ function buildManageCommandData() {
         // ADMIN-ONLY: stays user-install [1] deliberately -- the 10 public commands moved to [0, 1] (guild install) for v3, but an admin command advertised in every server's command list is noise plus needless surface. Harkirat still reaches it anywhere via his own user install.
         .setIntegrationTypes([1]).setContexts([0, 1, 2])
         .addSubcommand(drawsSub)
-        .addSubcommand(section('calendar', 'Calendar events'))
-        .addSubcommand(section('patch-notes', 'Season patch notes'))
+        .addSubcommand(calendarSub)
+        .addSubcommand(patchSub)
         .addSubcommandGroup(group => group.setName('gunsmith').setDescription('Gunsmith builds')
             .addSubcommand(gunsmith('mp', 'Multiplayer builds'))
             .addSubcommand(gunsmith('dmz', 'DMZ builds')))
         .addSubcommandGroup(group => group.setName('season').setDescription('Season settings')
-            .addSubcommand(sub => sub.setName('titles').setDescription('Season titles and deadlines'))
-            .addSubcommand(section('draft', 'Stage the next season')))
-        .addSubcommand(section('announcement', 'Announcements'))
+            .addSubcommand(titlesSub)
+            .addSubcommand(draftSub))
+        .addSubcommand(announceSub)
         // Jumps straight to the rich Bulk Format Guide (utils/manageGuides.js) instead of a normal data-entry page (2026-07-31 17:20 EDT, Harkirat). Not a key in PAGES (same reason Season's entries are not), so execute() special-cases it.
-        .addSubcommand(section('guide', 'The bulk format guides', { withAction: false }))
+        .addSubcommand(guideSub)
         // The emoji panel (utils/emojiPanel.js), owner only: this was the /emojis command until 2026-10-28.
         .addSubcommand(section('emojis', 'Every bot\'s emojis (owner only)', { withAction: false }));
 }
@@ -995,17 +1028,11 @@ module.exports = {
             return require('../utils/emojiPanel').openEmojiPanel(interaction, { ephemeral: visibilityChoice !== 'public' });
         }
 
-        // Season: Titles & Deadlines is reachable directly from this option now (2026-07-12) — skips rendering the panel entirely, same as picking it from the in-panel mng_pagesel dropdown does. showModal() must be the FIRST response to the interaction (can't follow a deferReply()), so this has to branch before the deferReply() below runs at all.
-        if (section === 'season_titlesdeadlines') {
-            // Opens its pop-up straight away, so it is gated like the button it is (create on Season).
-            const { resolvePopupEntry } = require('../utils/manageActions');
-            const gate = await resolvePopupEntry(section, interaction.user.id);
-            if (!gate.ok) return interaction.reply({ content: gate.message, ephemeral: true });
-            // Shared lookup, not a hand-rolled one (v3-pre-release review, finding #38).
-            const { loadSeasonalDoc } = require('../utils/manageActions');
-            const seasonalDoc = await loadSeasonalDoc();
-            return interaction.showModal(buildSeasonTitlesDeadlinesModal(seasonalDoc));
-        }
+        // The rest of the rehaul (2026-11-07 21:00 EST): Calendar, Patch Notes, Season (titles and draft) and Announcement are rehauled panels, each with its own openFromSlash, like draws and gunsmith below. Each runs before any deferral here, because an option that opens a pop-up must answer first. `season titles` used to open its pop-up straight away; that is now `do: Edit Titles & Deadlines`, and the bare command opens the Season panel.
+        if (section === 'season_titlesdeadlines' || section === 'seasondraft') return await require('../handlers/manage/seasonPanel').openFromSlash(interaction, section === 'seasondraft' ? 'draft' : 'live');
+        if (section === 'calendar') return await require('../handlers/manage/calendarPanel').openFromSlash(interaction);
+        if (section === 'patchnotes') return await require('../handlers/manage/patchnotesPanel').openFromSlash(interaction);
+        if (section === 'announcement') return await require('../handlers/manage/announcementsPanel').openFromSlash(interaction);
 
         // Stage 3 (2026-08-14 18:04 EDT) -- action: opens one of the section's own actions directly. Must run BEFORE deferReply(): a kind:'modal' entry's run() calls showModal(), which has to be the interaction's FIRST response (same constraint season_titlesdeadlines works around above). Mirrors handlers/manage/index.js's mng_act_ button dispatch exactly -- resolveAction() is the one choke point (it also re-checks the per-page permission just verified above, so a scoped admin can't reach another section's action by typing its id directly) and run() is trusted to manage its OWN response completely: kind:'file' calls reply(), kind:'view' defers itself, kind:'modal' shows a modal. Do NOT deferReply() before calling it -- a kind:'file' entry's run() calls interaction.reply(), which throws if this has already acknowledged.
         let actionFallbackNote = '';
@@ -1038,7 +1065,8 @@ module.exports = {
         // Bulk Format Guide, reached directly (2026-07-31 17:20 EDT) -- sends the SAME rich guide panel the in-page "Guide" buttons open (utils/manageGuides.js), skipping the normal page-panel render entirely. Defaults to the Draws topic (first in the dropdown) -- there's no page context to infer a topic from when jumping straight here via the slash option. Read-only reference material, not data-mutating -- available to any admin (guaranteed by the hasCommandAccess check above), not gated per-page like the real data pages below.
         if (section === 'guide') {
             const { buildGuideContainer } = require('../utils/manageGuides');
-            return sendV2Payload(interaction, buildGuideContainer('draws'));
+            // topic: picks the guide (the rehaul, 2026-11-07 21:00 EST); Draws when left out, as before.
+            return sendV2Payload(interaction, buildGuideContainer(interaction.options.getString('topic') || 'draws'));
         }
 
         // buildDynamicData(), not a hand-rolled table (v3-pre-release review, finding #44) -- only fetched when actually landing on a page that needs it; every other page renders from PAGES alone.

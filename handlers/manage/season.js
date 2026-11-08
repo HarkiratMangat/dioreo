@@ -79,26 +79,42 @@ async function handleWipeButton(interaction) {
     }
 }
 
-// --- SEASON TITLES + DEADLINES (merged) --- custom_id: modal_season_titles_deadlines Each of the 3 deadline fields carries both a title and an end date on one line ("Battle Pass, August 28"); parsing (splitTitleDate/TBD handling) now lives entirely in core/ops/season.js.
+// --- SEASON TITLES + DEADLINES (merged) --- custom_id: modal_season_titles_deadlines Each of the 3 deadline fields carries both a title and an end date on one line ("Battle Pass, August 28"); parsing (splitTitleDate/TBD handling) now lives entirely in core/ops/season.js. 2026-11-07 21:06 EST The save is lifted out of the pop-up handlers so the Season panel (handlers/manage/seasonPanel/) can run the SAME write and draw its own answer. Each returns { ok, message } with NO leading emoji; the old handlers below put the cross or checkmark back, so what they send is byte-for-byte what it was.
+const readTitleFields = (interaction) => ({
+    mainTitle: interaction.fields.getTextInputValue('main_title').trim(),
+    bpLine: interaction.fields.getTextInputValue('bp_line'),
+    rankLine: interaction.fields.getTextInputValue('rank_line'),
+    dmzLine: interaction.fields.getTextInputValue('dmz_line')
+});
+
+async function saveTitlesDeadlines(actorId, fields, { draft = false } = {}) {
+    const result = await commitSet([{ type: draft ? 'season.setDraftTitlesDeadlines' : 'season.setTitlesDeadlines', payload: fields }], { actorId });
+    if (!result.ok) return { ok: false, message: extractCommitError(result) };
+    const { change } = result.results[0];
+    let message = draft
+        ? '**Draft Titles & Deadlines Staged!** Nothing is live yet — use Promote to Live when ready.'
+        : '**Season Titles & Deadlines Updated!** The `/season end` module has been synced.';
+    if (change.detail) message += `\n${BOT_EMOJI.warn} ${change.detail}.`;
+    return { ok: true, message, changeIds: result.changeIds };
+}
+
 async function setTitlesDeadlines(interaction) {
     await interaction.deferReply({ ephemeral: true });
-    const mainTitle = interaction.fields.getTextInputValue('main_title').trim();
-    const bpLine = interaction.fields.getTextInputValue('bp_line');
-    const rankLine = interaction.fields.getTextInputValue('rank_line');
-    const dmzLine = interaction.fields.getTextInputValue('dmz_line');
+    const r = await saveTitlesDeadlines(interaction.user.id, readTitleFields(interaction));
+    return interaction.followUp({ content: `${r.ok ? BOT_EMOJI.checkmark : BOT_EMOJI.cross} ${r.message}` });
+}
 
-    const result = await commitSet(
-        [{ type: 'season.setTitlesDeadlines', payload: { mainTitle, bpLine, rankLine, dmzLine } }],
-        { actorId: interaction.user.id }
-    );
-    if (!result.ok) {
-        const why = extractCommitError(result);
-        return await interaction.followUp({ content: `${BOT_EMOJI.cross} ${why}` });
-    }
-    const { change } = result.results[0];
-    let confirmation = BOT_EMOJI.checkmark + ' **Season Titles & Deadlines Updated!** The `/season end` module has been synced.';
-    if (change.detail) confirmation += `\n${BOT_EMOJI.warn} ${change.detail}.`;
-    return interaction.followUp({ content: confirmation });
+// 2026-11-07 21:06 EST Promote and Discard lifted out of the confirm buttons for the Season panel's in-place confirm. `missing` is the defensive "the draft vanished between the prompt and the click" branch.
+async function runPromoteDraft(actorId) {
+    const result = await commitSet([{ type: 'season.promoteDraft' }], { actorId });
+    if (!result.ok) return { ok: false, missing: result.failedAt?.reason === 'missing', message: result.failedAt?.reason === 'missing' ? 'No draft in progress -- nothing to promote.' : extractCommitError(result) };
+    const { change, applied } = result.results[0];
+    return { ok: true, changeIds: result.changeIds, message: `**Draft promoted to live!** "${change.target}" is now the live season (${applied.counts.newDraws} New, ${applied.counts.returningDraws} Returning, ${applied.counts.calendar} calendar event(s)). The draft has been cleared.` };
+}
+async function runDiscardDraft(actorId) {
+    const result = await commitSet([{ type: 'season.discardDraft' }], { actorId });
+    if (!result.ok) return { ok: false, message: extractCommitError(result) };
+    return { ok: true, changeIds: result.changeIds, message: "**Draft discarded.** What's live is untouched." };
 }
 
 // --- NEXT SEASON DRAFT: PROMOTE / DISCARD --- custom_id: mng_draftpromoteconfirm / mng_draftpromotecancel / mng_draftdiscardconfirm / mng_draftdiscardcancel
@@ -106,20 +122,14 @@ async function handleDraftButton(interaction) {
     const customId = interaction.customId;
 
     if (customId === 'mng_draftpromoteconfirm') {
-        const result = await commitSet([{ type: 'season.promoteDraft' }], { actorId: interaction.user.id });
-        if (!result.ok) {
-            const text = result.failedAt?.reason === 'missing'
-                ? BOT_EMOJI.cross + ' No draft in progress -- nothing to promote.'
-                : `${BOT_EMOJI.cross} ${extractCommitError(result)}`;
-            try { await prompt(interaction, { text }); }
+        const r = await runPromoteDraft(interaction.user.id);
+        if (!r.ok) {
+            try { await prompt(interaction, { text: `${BOT_EMOJI.cross} ${r.message}` }); }
             catch (notifyError) { console.error('Failed to notify empty-draft promote attempt:', notifyError); }
             return;
         }
-        const { change, applied } = result.results[0];
         try {
-            await prompt(interaction, {
-                text: `${BOT_EMOJI.checkmark} **Draft promoted to live!** "${change.target}" is now the live season (${applied.counts.newDraws} New, ${applied.counts.returningDraws} Returning, ${applied.counts.calendar} calendar event(s)). The draft has been cleared.`
-            });
+            await prompt(interaction, { text: `${BOT_EMOJI.checkmark} ${r.message}` });
         } catch (notifyError) {
             console.error('Failed to confirm draft promote (interaction likely expired):', notifyError);
         }
@@ -133,13 +143,13 @@ async function handleDraftButton(interaction) {
     }
 
     if (customId === 'mng_draftdiscardconfirm') {
-        const result = await commitSet([{ type: 'season.discardDraft' }], { actorId: interaction.user.id });
-        if (!result.ok) {
-            try { await prompt(interaction, { text: `${BOT_EMOJI.cross} ${extractCommitError(result)}` }); }
+        const r = await runDiscardDraft(interaction.user.id);
+        if (!r.ok) {
+            try { await prompt(interaction, { text: `${BOT_EMOJI.cross} ${r.message}` }); }
             catch (notifyError) { console.error('Failed to notify draft discard failure:', notifyError); }
             return;
         }
-        try { await prompt(interaction, { text: BOT_EMOJI.checkmark + " Draft discarded. What's live is untouched." }); }
+        try { await prompt(interaction, { text: `${BOT_EMOJI.checkmark} ${r.message}` }); }
         catch (notifyError) { console.error('Failed to confirm draft discard (interaction likely expired):', notifyError); }
         return;
     }
@@ -154,63 +164,44 @@ async function handleDraftButton(interaction) {
 // --- NEXT SEASON DRAFT: submit handlers --- custom_id: modal_draft_titles_dates Same shape as setTitlesDeadlines above -- parsing (splitTitleDate/TBD handling) lives entirely in core/ops/season.js, this just writes into seasonalDoc.draft.* instead of the top-level fields, so none of it touches what's currently live.
 async function setDraftTitlesDeadlines(interaction) {
     await interaction.deferReply({ ephemeral: true });
-    const mainTitle = interaction.fields.getTextInputValue('main_title').trim();
-    const bpLine = interaction.fields.getTextInputValue('bp_line');
-    const rankLine = interaction.fields.getTextInputValue('rank_line');
-    const dmzLine = interaction.fields.getTextInputValue('dmz_line');
-
-    const result = await commitSet(
-        [{ type: 'season.setDraftTitlesDeadlines', payload: { mainTitle, bpLine, rankLine, dmzLine } }],
-        { actorId: interaction.user.id }
-    );
-    if (!result.ok) {
-        const why = extractCommitError(result);
-        return await interaction.followUp({ content: `${BOT_EMOJI.cross} ${why}` });
-    }
-    const { change } = result.results[0];
-    let draftConfirmation = BOT_EMOJI.checkmark + ' **Draft Titles & Deadlines Staged!** Nothing is live yet — use Promote to Live when ready.';
-    if (change.detail) draftConfirmation += `\n${BOT_EMOJI.warn} ${change.detail}.`;
-    return interaction.followUp({ content: draftConfirmation });
+    const r = await saveTitlesDeadlines(interaction.user.id, readTitleFields(interaction), { draft: true });
+    return interaction.followUp({ content: `${r.ok ? BOT_EMOJI.checkmark : BOT_EMOJI.cross} ${r.message}` });
 }
 
 // custom_id: modal_draft_bulk_draws
+async function saveDraftDraws(actorId, newText, returningText) {
+    const result = await commitSet([{ type: 'season.bulkDraftDraws', payload: { newText, returningText } }], { actorId });
+    if (!result.ok) return { ok: false, message: extractCommitError(result) };
+    const { summary } = result.results[0].applied;
+    // A staged draw's images and items reach the draw index now, at staging (core/ops/season.js), so its item kinds are asked about now too (handlers/manage/itemKinds.js): `titles` is for the caller's askItemKinds.
+    const { parseBulkDrawList } = require('../../utils/adminParser');
+    const titles = [newText, returningText].filter(Boolean).flatMap(t => parseBulkDrawList(t).map(d => d.title));
+    return { ok: true, titles, changeIds: result.changeIds, message: `**Draft Draws Staged!**\n${summary.join('\n')}\nNothing is live yet — use Promote to Live when ready.` };
+}
+
 async function bulkDraftDraws(interaction) {
     await interaction.deferReply({ ephemeral: true });
     const newText = interaction.fields.getTextInputValue('new_text')?.trim();
     const returningText = interaction.fields.getTextInputValue('returning_text')?.trim();
-
-    const result = await commitSet(
-        [{ type: 'season.bulkDraftDraws', payload: { newText, returningText } }],
-        { actorId: interaction.user.id }
-    );
-    if (!result.ok) {
-        const why = extractCommitError(result);
-        return await interaction.followUp({ content: `${BOT_EMOJI.cross} ${why}` });
-    }
-    const { summary } = result.results[0].applied;
-    const sent = await interaction.followUp({ content: `${BOT_EMOJI.checkmark} **Draft Draws Staged!**\n${summary.join('\n')}\nNothing is live yet — use Promote to Live when ready.` });
-    // A staged draw's images and items reach the draw index now, at staging (core/ops/season.js), so its item kinds are asked about now too (handlers/manage/itemKinds.js).
-    const { parseBulkDrawList } = require('../../utils/adminParser');
-    const titles = [newText, returningText].filter(Boolean).flatMap(t => parseBulkDrawList(t).map(d => d.title));
-    await require('./itemKinds').askItemKinds(interaction, titles);
+    const r = await saveDraftDraws(interaction.user.id, newText, returningText);
+    if (!r.ok) return await interaction.followUp({ content: `${BOT_EMOJI.cross} ${r.message}` });
+    const sent = await interaction.followUp({ content: `${BOT_EMOJI.checkmark} ${r.message}` });
+    await require('./itemKinds').askItemKinds(interaction, r.titles);
     return sent;
 }
 
 // custom_id: modal_draft_bulk_calendar
-async function bulkDraftCalendar(interaction) {
-    await interaction.deferReply({ ephemeral: true });
-    const bulkText = interaction.fields.getTextInputValue('bulk_text');
-
-    const result = await commitSet(
-        [{ type: 'season.bulkDraftCalendar', payload: { text: bulkText } }],
-        { actorId: interaction.user.id }
-    );
-    if (!result.ok) {
-        const why = extractCommitError(result);
-        return await interaction.followUp({ content: `${BOT_EMOJI.cross} ${why}` });
-    }
+async function saveDraftCalendar(actorId, text) {
+    const result = await commitSet([{ type: 'season.bulkDraftCalendar', payload: { text } }], { actorId });
+    if (!result.ok) return { ok: false, message: extractCommitError(result) };
     const { count } = result.results[0].applied;
-    return interaction.followUp({ content: `${BOT_EMOJI.checkmark} **Draft Calendar Staged!** ${count} event(s). Nothing is live yet — use Promote to Live when ready.` });
+    return { ok: true, changeIds: result.changeIds, message: `**Draft Calendar Staged!** ${count} event(s). Nothing is live yet — use Promote to Live when ready.` };
 }
 
-module.exports = { promptWipeSeason, handleWipeButton, setTitlesDeadlines, handleDraftButton, setDraftTitlesDeadlines, bulkDraftDraws, bulkDraftCalendar };
+async function bulkDraftCalendar(interaction) {
+    await interaction.deferReply({ ephemeral: true });
+    const r = await saveDraftCalendar(interaction.user.id, interaction.fields.getTextInputValue('bulk_text'));
+    return interaction.followUp({ content: `${r.ok ? BOT_EMOJI.checkmark : BOT_EMOJI.cross} ${r.message}` });
+}
+
+module.exports = { promptWipeSeason, handleWipeButton, setTitlesDeadlines, handleDraftButton, setDraftTitlesDeadlines, bulkDraftDraws, bulkDraftCalendar, readTitleFields, saveTitlesDeadlines, saveDraftDraws, saveDraftCalendar, runPromoteDraft, runDiscardDraft };

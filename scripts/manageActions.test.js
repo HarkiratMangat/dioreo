@@ -158,30 +158,27 @@ check('MP and DMZ loadout pages offer the identical action set', () => {
 
 // Stage 3 (2026-08-14 18:05 EDT) -- the action: slash option + its scoped autocomplete route.
 
-check("every /manage subcommand with actions registers `action` with autocomplete on (gunsmith: its own options), and `visibility` last", () => {
+check("every /manage subcommand has its rehauled options, its targets autocomplete, no old `action:`, and `visibility` last", () => {
+    // Every section is a rehauled panel now (gunsmith v3.13.0, draws v3.14.0, the rest 2026-11-07 21:04 EST), each with options that go straight to a thing; the old registry-driven `action:` option is retired everywhere. The option names are read by each panel's openFromSlash, so a rename here must move there too.
     const subs = manageCommand.data.toJSON().options.flatMap(o => o.type === 2 ? o.options : [o]); // type 2 = a group, 1 = a subcommand
-    assert.ok(subs.length >= 9, `only ${subs.length} subcommands`);
-    const withoutActions = new Set(['guide', 'emojis', 'titles']);
+    const expected = {
+        draws: ['draw', 'do', 'show', 'visibility'],
+        calendar: ['event', 'do', 'show', 'visibility'],
+        'patch-notes': ['season', 'do', 'visibility'],
+        mp: ['build', 'do', 'builds', 'weapon', 'class', 'visibility'],
+        dmz: ['build', 'do', 'builds', 'weapon', 'class', 'visibility'],
+        titles: ['do', 'visibility'],
+        draft: ['do', 'visibility'],
+        announcement: ['announcement', 'do', 'visibility'],
+        guide: ['topic', 'visibility'],
+        emojis: ['visibility'],
+    };
+    const autocompleted = { draws: ['draw'], calendar: ['event'], 'patch-notes': ['season'], mp: ['build', 'weapon'], dmz: ['build', 'weapon'], announcement: ['announcement'] };
+    assert.deepStrictEqual(subs.map(x => x.name).sort(), Object.keys(expected).sort(), 'the /manage subcommands');
     for (const sub of subs) {
         const names = (sub.options || []).map(x => x.name);
-        // season titles opens a pop-up straight away, so it has no options at all.
-        if (sub.name === 'titles') { assert.deepStrictEqual(names, []); continue; }
-        assert.strictEqual(names[names.length - 1], 'visibility', `/manage ${sub.name}: visibility must be last`);
-        if (withoutActions.has(sub.name)) { assert.ok(!names.includes('action'), `/manage ${sub.name} has no actions to jump to`); continue; }
-        // gunsmith mp|dmz trade action: for build / do / builds / weapon / class (the gunsmith rehaul, 2026-11-07 14:14 EST; handlers/manage/gunsmith/index.js openFromSlash). draws trades action: for draw / do / show (the draws rehaul, 2026-11-07 19:17 EST).
-        if (sub.name === 'draws') {
-            assert.deepStrictEqual(names, ['draw', 'do', 'show', 'visibility'], '/manage draws options');
-            assert.strictEqual(sub.options.find(x => x.name === 'draw').autocomplete, true, '/manage draws: "draw" needs autocomplete');
-            continue;
-        }
-        if (sub.name === 'mp' || sub.name === 'dmz') {
-            assert.deepStrictEqual(names, ['build', 'do', 'builds', 'weapon', 'class', 'visibility'], `/manage gunsmith ${sub.name} options`);
-            for (const auto of ['build', 'weapon']) assert.strictEqual(sub.options.find(x => x.name === auto).autocomplete, true, `/manage gunsmith ${sub.name}: "${auto}" needs autocomplete`);
-            continue;
-        }
-        const actionOption = sub.options.find(x => x.name === 'action');
-        assert.ok(actionOption, `/manage ${sub.name} has no "action" option`);
-        assert.strictEqual(actionOption.autocomplete, true, `/manage ${sub.name}: "action" does not have autocomplete enabled`);
+        assert.deepStrictEqual(names, expected[sub.name], `/manage ${sub.name} options`);
+        for (const auto of autocompleted[sub.name] || []) assert.strictEqual(sub.options.find(x => x.name === auto).autocomplete, true, `/manage ${sub.name}: "${auto}" needs autocomplete`);
     }
 });
 

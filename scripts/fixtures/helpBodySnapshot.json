@@ -28968,15 +28968,19 @@
           },
           {
             "type": 10,
-            "content": "`[action]`\n-# Open one of that section's buttons directly, e.g. **Add Multiple** or **Export**. Purge, Promote and Discard stay on the panel. Not on draws or gunsmith"
-          },
-          {
-            "type": 10,
             "content": "`[draw]`\n-# Draws: go to one draw, by part of its title"
           },
           {
             "type": 10,
-            "content": "`[show]`\n-# Draws: open a list: New, Returning, Upcoming, Active Now, Leaving Soon, Ended, No End Date"
+            "content": "`[event]`\n-# Calendar: go to one entry, by part of its title"
+          },
+          {
+            "type": 10,
+            "content": "`[season]`\n-# Patch notes: go to one season's notes"
+          },
+          {
+            "type": 10,
+            "content": "`[announcement]`\n-# Announcement: go to one, by part of its text"
           },
           {
             "type": 10,
@@ -28984,7 +28988,11 @@
           },
           {
             "type": 10,
-            "content": "`[do]`\n-# Draws and gunsmith: what to do with the draw or build named (Edit, Move, Delete and more), or alone: Add, Paste, Export, Guide"
+            "content": "`[show]`\n-# Draws and calendar: open a list, such as Upcoming, Active Now or Ended"
+          },
+          {
+            "type": 10,
+            "content": "`[do]`\n-# What to do with the thing named (Edit, Move, Delete and more), or alone: Add, Paste, Export, Guide. Season titles and draft: their pop-ups, straight away. Purge, Promote and Discard stay on the panel"
           },
           {
             "type": 10,
@@ -29000,7 +29008,11 @@
           },
           {
             "type": 10,
-            "content": "`[visibility]`\n-# Only you by default, or everyone in the chat. Not on season titles"
+            "content": "`[topic]`\n-# Guide: which bulk format guide to open"
+          },
+          {
+            "type": 10,
+            "content": "`[visibility]`\n-# Only you by default, or everyone in the chat"
           },
           {
             "type": 14,
@@ -29009,7 +29021,7 @@
           },
           {
             "type": 10,
-            "content": "**Bulk format guides**\n-# The paste format for each section's Multiple boxes"
+            "content": "**Bulk format guides**\n-# The paste format for each section's Paste and Edit boxes"
           },
           {
             "type": 1,
@@ -29040,9 +29052,9 @@
                     }
                   },
                   {
-                    "label": "Loadouts",
+                    "label": "Gunsmith Builds",
                     "value": "loadouts",
-                    "description": "MP/DMZ block paste format",
+                    "description": "MP/DMZ build block paste format",
                     "emoji": {
                       "animated": true,
                       "name": "NewDraws",
@@ -29109,7 +29121,7 @@
           },
           {
             "type": 10,
-            "content": "-# **Examples**\n-# `/manage draws action:Add Multiple`\n-# `/manage gunsmith mp build:ISO HEMLOCK · 1b`\n-# `/manage season draft`  Stage next season without touching what's live\n-# `/manage patch-notes visibility:Public`"
+            "content": "-# **Examples**\n-# `/manage calendar show:Active Now`\n-# `/manage gunsmith mp build:ISO HEMLOCK · 1b`\n-# `/manage season draft`  Stage next season without touching what's live\n-# `/manage patch-notes visibility:Public`"
           },
           {
             "type": 10,

@@ -314,6 +314,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-11-07 14:13 EST — Whose "today", and whose "new": two words the news card read from the wrong side (v3.12.1)
 - 2026-11-07 15:59 EST — /manage gunsmith rehauled from a mock-up he clicked through (v3.13.0)
 - 2026-11-07 19:38 EST — /manage draws rehauled on his trust, and the two bugs the round trip found (v3.14.0)
+- 2026-11-07 21:28 EST — The rest of /manage rehauled with three helpers in parallel (v3.15.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -5049,6 +5050,18 @@ He left the Draws section to my judgement ("i'm leaving it under your design cri
 **The full suite found one more, in a place nothing pointed at.** `hotpatch.test.js` began refusing a hotpatch of `/draw prices`. The draws panel required `commands/draws.js`, and `/draws` requires `/draw prices` through the calculator, so every /manage handler became a dependent of both public commands; and `bot/lifecycle.js` required the emoji panel, which requires `commands/manage.js`, so the whole set was restart-only. The panel now reads `/draws` off the public client's commands at call time, the route `utils/hotpatch.js` already names as late-bound, and lifecycle reads `appsOfThisProcess` from `utils/emojiSync.js`. A test fails if `/draws`' closure reaches `handlers/manage/` again.
 
 **Kept as it is, on purpose:** the card is the /draws card, thumbnail beside the dates, the same as players see. The gunsmith card moved to a full-width picture on his word; the draws card shows exactly what /draws shows, which is the point of an admin card.
+
+## 2026-11-07 21:28 EST — The rest of /manage rehauled with three helpers in parallel (v3.15.0)
+
+His ask at 20:54 EST was to finish every /manage subcommand, its slash options and the rehaul, with up to three Sonnet helpers.
+
+**How it was split.** The lead wired every shared file first: the slash options for each section designed in one place in `commands/manage.js`, the dispatch in `handlers/manage/index.js`, the section dropdown's redirects in `shared.js`, the autocomplete routes, and scaffold panels that showed the old page until replaced. Then three helpers worked in parallel on disjoint files: Calendar; Patch Notes with Announcements; Season titles with the draft. Each built against the draws panel as its template and wrote view tests that assert Discord's limits, since none of them could click-test.
+
+**What the click-test found.** The builders' tests were green, and the dev bot still showed three things worth fixing: the announcement card printed layout marks (`----`, `++`) as text because it showed the raw text rather than the delivered container; dropdown labels would print custom emoji markup; and Promote would copy a draft with no title or end dates over the live season without a word. The card now draws the delivered container, labels drop the markup, and Promote names what is not staged before the Yes. Promote and Discard also gained a Revert on the panel.
+
+**What "are you sure?" found.** Unit tests and the rendered panels were not the claim; the claim was that every save and every Revert works. Driving each new pop-up through its slash path and submitting it back, then writing and reverting on the dev database and comparing the stored document byte for byte, found two Revert defects in the shared core that predate this branch but that the new panels put one click away: reverting Promote to Live lost the staged draft, and reverting an announcement Delete re-posted it under a new id so everyone saw it again. Both fixed in core, with tests.
+
+**A near miss worth remembering.** A hotpatch closure check ran `git stash` on handler paths while one helper was still writing. It was restored with `git stash apply` within seconds and nothing was lost, but a shared worktree with live writers is no place for a stash.
 
 # Part B — Lessons Ledger (thematic)
 

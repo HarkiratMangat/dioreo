@@ -229,8 +229,8 @@ async function renderManagePage(interaction) {
     const targetPage = interaction.values[0];
     const manageCommand = interaction.client.commands.get('manage');
 
-    // Since the permission restructure (2026-10-19 19:25 EDT) any admin may browse every page -- the router's prefix guard already proved this is an admin -- and each button checks its own tier on the press. The two Season entries open a pop-up straight away, so picking one IS the action and is gated here like a button (utils/manageActions.js's resolvePopupEntry).
-    if (targetPage === 'season_titlesdeadlines' || targetPage === 'season_wipe') {
+    // Since the permission restructure (2026-10-19 19:25 EDT) any admin may browse every page -- the router's prefix guard already proved this is an admin -- and each button checks its own tier on the press. Only Start New Season (season_wipe) still opens a pop-up straight away from this dropdown, so only it is gated as its button here; Season: Titles & Deadlines is the Season panel since the rehaul (2026-11-07 21:00 EST), which checks each action's own tier.
+    if (targetPage === 'season_wipe') {
         const { resolvePopupEntry } = require('../../utils/manageActions');
         const gate = await resolvePopupEntry(targetPage, interaction.user.id);
         if (!gate.ok) return interaction.reply({ content: gate.message, ephemeral: true });
@@ -243,11 +243,7 @@ async function renderManagePage(interaction) {
         const state = await P.loadState();
         return require('../../utils/sendV2Payload').sendV2Payload(interaction, P.buildEmojiPanel({ ...state, senderAppId: interaction.applicationId }));
     }
-    if (targetPage === 'season_titlesdeadlines') {
-        const SeasonalData = require('../../models/SeasonalData');
-        const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
-        return await interaction.showModal(manageCommand.buildSeasonTitlesDeadlinesModal(seasonalDoc));
-    }
+    if (targetPage === 'season_titlesdeadlines') return require('./seasonPanel').renderHome(interaction, 'live');
     if (targetPage === 'season_wipe') {
         return await interaction.showModal(manageCommand.buildWipeSeasonModal());
     }
@@ -256,6 +252,11 @@ async function renderManagePage(interaction) {
     if (targetPage === 'loadouts_mp' || targetPage === 'loadouts_dmz') return require('./gunsmith').renderHome(interaction, targetPage === 'loadouts_dmz' ? 'DMZ' : 'MP');
     // Draws is the rehauled panel too (handlers/manage/drawsPanel/, 2026-11-07 19:17 EST).
     if (targetPage === 'draws') return require('./drawsPanel').renderHome(interaction);
+    // And the rest (2026-11-07 21:00 EST).
+    if (targetPage === 'calendar') return require('./calendarPanel').renderHome(interaction);
+    if (targetPage === 'patchnotes') return require('./patchnotesPanel').renderHome(interaction);
+    if (targetPage === 'seasondraft') return require('./seasonPanel').renderHome(interaction, 'draft');
+    if (targetPage === 'announcement') return require('./announcementsPanel').renderHome(interaction);
 
     await interaction.deferUpdate();
     const { sendV2Payload } = require('../../utils/sendV2Payload');

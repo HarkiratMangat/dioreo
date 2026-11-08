@@ -46,6 +46,17 @@ check('announcement.delete inverts to a post carrying the original createdAt and
     assert.strictEqual(inv.payload.color, doc.color, 'restoring must not silently re-roll the accent color');
 });
 
+check('announcement.delete inverts with the announcement\'s own _id, and validation keeps it for the restoring post (found 2026-11-07 22:00 EST)', () => {
+    // Under a new _id every player who had already seen the announcement got it again: UserPreference.seenAnnouncementIds holds the old one.
+    const inv = ops.resolveOp('announcement.delete').invert({ action: 'delete', applied: { removed: { text: 'Hi', expiresAt: null, createdAt: new Date('2026-10-01T00:00:00Z'), color: 1 }, removedId: '6aefe540958e9501058517dc' } });
+    assert.strictEqual(inv.payload.restoreId, '6aefe540958e9501058517dc');
+    const v = ops.resolveOp('announcement.post').validate(inv);
+    assert.ok(v.ok, JSON.stringify(v.errors));
+    assert.strictEqual(v.normalized.payload.restoreId, '6aefe540958e9501058517dc');
+    const old = ops.resolveOp('announcement.delete').invert({ action: 'delete', applied: { removed: { text: 'Hi', expiresAt: null } } });
+    assert.ok(!('restoreId' in old.payload), 'a row recorded before removedId restores as it always did');
+});
+
 check('announcement.delete\'s invert re-validates without re-parsing expiresAt as a day-count', () => {
     // The most likely regression: alreadyNormalized() failing to detect a restored Date and running it back through computeExpiresAt(), which would reject a real Date as an unparseable string.
     const inv = ops.resolveOp('announcement.delete').invert({

@@ -11,9 +11,9 @@ const BOT_EMOJI = require('../../utils/emojiMap'); // the bot's own status glyph
 const { commitSet } = require('../../core/changeset');
 const { prompt, extractCommitError } = require('./shared');
 
-// --- POST NEW --- custom_id: modal_announce_post Creates an independent doc rather than overwriting anything -- see models/Announcement.js's header for why the old singleton design was replaced.
-async function postAnnouncement(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+// --- POST NEW --- custom_id: modal_announce_post Creates an independent doc rather than overwriting anything -- see models/Announcement.js's header for why the old singleton design was replaced. 2026-11-07 21:05 EST: the rehauled panel (handlers/manage/announcementsPanel/) calls these with `opts` = { customId, onResult }, the same contract as handlers/manage/patchnotes.js: its own pop-up id, and `onResult({ ok })` so it can redraw its card. Every reply is ephemeral on its own flag, because a deferUpdate first would otherwise make the follow-up public. Callers that pass nothing behave as before.
+async function postAnnouncement(interaction, opts = {}) {
+    if (!interaction.deferred && !interaction.replied) await interaction.deferReply({ ephemeral: true });
     const text = interaction.fields.getTextInputValue('text').trim();
     const expiry = interaction.fields.getTextInputValue('expiry');
     // Blank means "show now" -- omitting the key lets core/ops/announcements.js's `payload?.startsAt ?? null` default apply, rather than sending an empty string through as a literal (unparseable) date value.
@@ -22,18 +22,20 @@ async function postAnnouncement(interaction) {
     const result = await commitSet([{ type: 'announcement.post', payload: { text, expiry, ...(startsAtRaw ? { startsAt: startsAtRaw } : {}) } }], { actorId: interaction.user.id });
     if (!result.ok) {
         const why = extractCommitError(result);
-        return await interaction.followUp({ content: `${BOT_EMOJI.cross} ${why}` });
+        opts.onResult?.({ ok: false });
+        return await interaction.followUp({ content: `${BOT_EMOJI.cross} ${why}`, flags: 64 });
     }
+    opts.onResult?.({ ok: true });
     const { expiresAt, startsAt } = result.results[0].applied;
     // Surfaced in the confirmation, not left to be discovered on /calendar-adjacent surfaces later (same reasoning as the Double CP callout on calendar bulk imports, 2026-08-22 20:11 EDT) -- posting with a future startsAt is easy to misread as "live now" if the confirmation doesn't say otherwise.
     const startsLine = startsAt ? ` **Scheduled to start** <t:${Math.floor(new Date(startsAt).getTime() / 1000)}:R> -- won't show to anyone before then.` : ' Anyone who hasn\'t seen it yet will, on their next command.';
-    return interaction.followUp({ content: `${BOT_EMOJI.checkmark} Posted a new announcement${expiresAt ? ` (expires <t:${Math.floor(expiresAt.getTime() / 1000)}:R>)` : ' (never expires)'}.${startsLine}` });
+    return interaction.followUp({ content: `${BOT_EMOJI.checkmark} Posted a new announcement${expiresAt ? ` (expires <t:${Math.floor(expiresAt.getTime() / 1000)}:R>)` : ' (never expires)'}.${startsLine}`, flags: 64 });
 }
 
 // --- EDIT --- custom_id: modal_announce_edit_{id} Updates ONE existing doc in place by its own _id -- never touches any other announcement, and never resets who's already seen this one (an edit is a correction, not a new notice).
-async function editAnnouncement(interaction) {
-    await interaction.deferReply({ ephemeral: true });
-    const id = interaction.customId.replace('modal_announce_edit_', '');
+async function editAnnouncement(interaction, opts = {}) {
+    if (!interaction.deferred && !interaction.replied) await interaction.deferReply({ ephemeral: true });
+    const id = (opts.customId ?? interaction.customId).replace('modal_announce_edit_', '');
     const text = interaction.fields.getTextInputValue('text').trim();
     const expiry = interaction.fields.getTextInputValue('expiry');
     // Same overwrite-on-every-submit convention as `expiry` -- blank explicitly clears back to "show now", it is not a "leave whatever was there" no-op (the modal always re-submits every field in full).
@@ -50,12 +52,14 @@ async function editAnnouncement(interaction) {
         { actorId: interaction.user.id }
     );
     if (!result.ok) {
+        opts.onResult?.({ ok: false });
         if (result.failedAt?.reason === 'missing') {
-            return await interaction.followUp({ content: BOT_EMOJI.cross + ' That announcement no longer exists (it may have just been deleted or expired).' });
+            return await interaction.followUp({ content: BOT_EMOJI.cross + ' That announcement no longer exists (it may have just been deleted or expired).', flags: 64 });
         }
         const why = extractCommitError(result);
-        return await interaction.followUp({ content: `${BOT_EMOJI.cross} ${why}` });
+        return await interaction.followUp({ content: `${BOT_EMOJI.cross} ${why}`, flags: 64 });
     }
+    opts.onResult?.({ ok: true });
     const { expiresAt, startsAt, prior } = result.results[0].applied;
     // Same reasoning as postAnnouncement's confirmation -- state the scheduled start plainly. Also flags a START-DATE CHANGE specifically (added vs cleared vs moved) since editing an announcement for an unrelated reason (a typo in the text) could otherwise silently reschedule -- or un-schedule -- it with nothing in the confirmation to catch that before it's live.
     const startsLine = startsAt ? ` **Scheduled to start** <t:${Math.floor(new Date(startsAt).getTime() / 1000)}:R>.` : '';
@@ -67,7 +71,7 @@ async function editAnnouncement(interaction) {
         else if (!nowStarts && priorStarts) startChangeNote = ' ' + BOT_EMOJI.warn + ' The start date was REMOVED -- this announcement is now immediately visible.';
         else if (nowStarts && priorStarts) startChangeNote = ' ' + BOT_EMOJI.warn + ' The start date CHANGED.';
     }
-    return interaction.followUp({ content: `${BOT_EMOJI.checkmark} Updated the announcement${expiresAt ? ` (now expires <t:${Math.floor(expiresAt.getTime() / 1000)}:R>)` : ' (never expires)'}.${startsLine}${startChangeNote}` });
+    return interaction.followUp({ content: `${BOT_EMOJI.checkmark} Updated the announcement${expiresAt ? ` (now expires <t:${Math.floor(expiresAt.getTime() / 1000)}:R>)` : ' (never expires)'}.${startsLine}${startChangeNote}`, flags: 64 });
 }
 
 // --- BUTTONS: edit_ / delete_ / delconfirm_ / delcancel_ --- all embed the target announcement's own Mongo _id, matched by exact prefix here rather than going through the registry.

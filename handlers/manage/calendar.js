@@ -45,14 +45,14 @@ async function addCalendarEvent(interaction) {
     return interaction.followUp({ flags: 32768 | 64, components: calendarPanel({ event: { _id: result.results[0].applied.elementId, title, date: startDate, endDate, isOngoing, category, isDoubleCP }, changeIds: result.changeIds }) });
 }
 
-// --- SAVE EDITED CALENDAR EVENT --- custom_id: edit_calendar_{id}
-async function editCalendarEvent(interaction) {
+// --- SAVE EDITED CALENDAR EVENT --- custom_id: edit_calendar_{id} `opts` (2026-11-07 21:06 EST, the rehauled calendar panel, handlers/manage/calendarPanel/): `{ customId }` names the event when the pop-up was re-id'd to the panel's own id. The panel defers its own answer first, so the defer below is skipped when it already happened. Existing callers pass nothing and behave as before.
+async function editCalendarEvent(interaction, opts = null) {
     // Change End Date on the reminder DM opens this box; its submit redraws the card too (see addCalendarEvent).
     const reminder = require('../../utils/drawEndReminder');
     const fromReminder = reminder.isReminderMessage(interaction.message);
-    if (fromReminder) await interaction.deferUpdate(); else await interaction.deferReply({ ephemeral: true });
+    if (!interaction.deferred && !interaction.replied) { if (fromReminder) await interaction.deferUpdate(); else await interaction.deferReply({ ephemeral: true }); }
     const { parseAdminDate, normalizeCalendarCategory } = require('../../utils/adminParser');
-    const targetId = interaction.customId.replace('edit_calendar_', '');
+    const targetId = (opts?.customId ?? interaction.customId).replace('edit_calendar_', '');
 
     // Existence pre-check kept exactly as before the refactor -- calendar.edit's op would also report this as `reason: 'missing'`, but the pre-core handler simply returned with no reply at all when the id wasn't found (a stale search result), and this preserves that exact silent behaviour rather than introducing a new error reply where none existed.
     const seasonalDoc = await loadOrCreateSeasonalDoc();
@@ -88,14 +88,14 @@ async function editCalendarEvent(interaction) {
     return await interaction.followUp({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} That event no longer exists (it may have been deleted or replaced since you opened it), so nothing was saved.`, FAIL_ACCENT) });
 }
 
-// --- BULK ADD/REPLACE CALENDAR EVENTS --- custom_id: modal_calendar_bulk_{add|replace} Replace upserts by fuzzy-matched title (update in place if found, insert if not) -- Purge already covers a full wipe, so Replace doesn't need to double as one. Parsing now happens INSIDE the op (core/ops/calendar.js), which is the only file that knows a calendar event's shape -- this handler just relays the raw pasted text and re-derives the same per-category breakdown from the op's own result.
-async function bulkAddOrReplaceCalendar(interaction) {
+// --- BULK ADD/REPLACE CALENDAR EVENTS --- custom_id: modal_calendar_bulk_{add|replace} Replace upserts by fuzzy-matched title (update in place if found, insert if not) -- Purge already covers a full wipe, so Replace doesn't need to double as one. Parsing now happens INSIDE the op (core/ops/calendar.js), which is the only file that knows a calendar event's shape -- this handler just relays the raw pasted text and re-derives the same per-category breakdown from the op's own result. `opts` (2026-11-07 21:06 EST, the calendar panel's Paste and Edit N): `{ customId, values: { bulk_text } }` stands in for the pop-up's own id and field, and the caller has already deferred. Existing callers pass nothing.
+async function bulkAddOrReplaceCalendar(interaction, opts = null) {
     // Deferred first (fixed 2026-08-07 12:24 EDT) -- the parse + fuzzy-match (replace mode) + save() inside the op can still blow Discord's 3-second interaction-ack window with no deferReply.
-    await interaction.deferReply({ ephemeral: true });
-    const customId = interaction.customId;
+    if (!interaction.deferred && !interaction.replied) await interaction.deferReply({ ephemeral: true });
+    const customId = opts?.customId ?? interaction.customId;
     const mode = customId === 'modal_calendar_bulk_add' ? 'add' : 'replace';
     const opType = mode === 'add' ? 'calendar.bulkAdd' : 'calendar.bulkReplace';
-    const bulkText = interaction.fields.getTextInputValue('bulk_text');
+    const bulkText = opts?.values ? opts.values.bulk_text : interaction.fields.getTextInputValue('bulk_text');
 
     const result = await commitSet([{ type: opType, payload: { text: bulkText } }], { actorId: interaction.user.id });
     if (!result.ok) {
@@ -207,7 +207,8 @@ async function purge(actorId) {
         return { confirmMsg: `${BOT_EMOJI.cross} ${extractCommitError(result)}` };
     }
     const { applied } = result.results[0];
-    return { confirmMsg: `${BOT_EMOJI.checkmark} Purged the calendar (${applied.events.length} event(s) removed).` };
+    // changeIds (2026-11-07 21:06 EST): the calendar panel puts a Revert under the result; the old confirm path ignores it.
+    return { confirmMsg: `${BOT_EMOJI.checkmark} Purged the calendar (${applied.events.length} event(s) removed).`, changeIds: result.changeIds };
 }
 
 // --- DELETE (calendar) --- called from index.js's mng_delconfirm_ dispatch with the resolved match.

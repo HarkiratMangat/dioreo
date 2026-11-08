@@ -76,7 +76,9 @@ function validatePost(payload) {
                 text, expiresAt, startsAt, bannerImageUrl, repeatCount,
                 color: payload?.color ?? null,
                 createdAt: payload?.createdAt ?? null,
-                createdBy: payload?.createdBy ?? null
+                createdBy: payload?.createdBy ?? null,
+                // Kept so a Revert of a Delete can reuse the announcement's own _id (apply() honours it only when restoring).
+                ...(payload?.restoreId ? { restoreId: String(payload.restoreId) } : {})
             }
         }
     };
@@ -87,10 +89,10 @@ registerEntity('announcements', {
         action: 'announcement:post', tier: 1,
         validate: (op) => validatePost(op.payload),
         preview: (op) => ({ before: {}, after: { text: op.payload.text, expiresAt: op.payload.expiresAt, startsAt: op.payload.startsAt } }),
-        apply: async (op, { session, actorId }) => {
+        apply: async (op, { session, actorId, restoring = false }) => {
             const color = op.payload.color ?? generateAccentColor();
-            // Minted ahead of the write (same move as core/ops/patchnotes.js's addSeason) so the banner re-host below has a real _id to key its Cloudinary public_id on before the document exists.
-            const _id = new mongoose.Types.ObjectId();
+            // Minted ahead of the write (same move as core/ops/patchnotes.js's addSeason) so the banner re-host below has a real _id to key its Cloudinary public_id on before the document exists. A Revert of a Delete gets the announcement's OWN _id back (`restoreId`, only when `restoring`): under a new id every player who had already seen it got it again, because UserPreference.seenAnnouncementIds holds the old one (found 2026-11-07 22:00 EST, round-tripping Delete and Revert on the dev bot).
+            const _id = restoring && op.payload.restoreId && mongoose.isValidObjectId(op.payload.restoreId) ? new mongoose.Types.ObjectId(String(op.payload.restoreId)) : new mongoose.Types.ObjectId();
             let bannerImageUrl = op.payload.bannerImageUrl || null;
             let bannerUploadError = null;
             if (bannerImageUrl) {
@@ -161,9 +163,10 @@ registerEntity('announcements', {
             return {
                 ok: true,
                 change: { action: 'delete', model: 'Announcement', target: truncate(cur.text), summary: 'Deleted an announcement' },
-                applied: { removed: rest }
+                applied: { removed: rest, removedId: String(_id) }
             };
         },
-        invert: (c) => ({ type: 'announcement.post', payload: { ...c.applied.removed } })
+        // restoreId: the post above reuses it when restoring, so the reverted announcement is the same one, not a new one everybody sees again. A row recorded before this has no removedId and restores under a new id, as before.
+        invert: (c) => ({ type: 'announcement.post', payload: { ...c.applied.removed, ...(c.applied.removedId ? { restoreId: c.applied.removedId } : {}) } })
     }
 });

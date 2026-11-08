@@ -29,7 +29,30 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.14.0 — 2026-11-07 19:38 EST (#262) — /manage draws rehauled: one panel to browse, open, edit, move, select, paste and export draws
+## v3.15.0 — 2026-11-07 21:28 EST (#263) — /manage calendar, patch notes, season and announcement rehauled: every section is one panel with slash options that go straight to a thing
+
+### Added
+- **A new `/manage calendar` panel** (`handlers/manage/calendarPanel/`): a home with Add Entry, Paste Entries, Search Calendar, a list dropdown (Events, Playlists, Draws, Upcoming, Active Now, Ending Soon, Ended, and Needs a Look when something is wrong), Select Entries, Export, Banners, Guide and Purge Calendar. Lists of 10 a page; an entry card drawn as /calendar draws it, with Edit (saved and redrawn in place) and Delete (confirm in place). Select (`ManageSelection` mode `CALENDAR`) with Edit N, Export N and Delete N; Paste and Edit N show a preview (Added, Changed and what, Unchanged, Not read) and save only what changes.
+- **A new `/manage patch-notes` panel** (`handlers/manage/patchnotesPanel/`): the current season's card with Edit Date & Info, Images 1-5 and Images 6-10; Add New Season; a past-seasons dropdown to each season's card and its one Edit pop-up; Guide; Purge Patch Notes.
+- **A new Season panel** (`handlers/manage/seasonPanel/`) for `/manage season titles` and `season draft`. Live: Battle Pass, Ranked and DMZ with titles and deadlines as times, Edit Titles & Deadlines, Start New Season. Draft: what is staged, read-only lists of the staged draws, calendar and news-triage items, the three draft pop-ups, and Promote to Live and Discard Draft, each confirming in place with what changes (old struck through, staged after) and answered with Revert. Promote names anything the draft has not staged before the Yes.
+- **A new `/manage announcement` panel** (`handlers/manage/announcementsPanel/`): running, scheduled and recently expired announcements; a card showing the announcement exactly as players get it (the delivered container) with Edit and Delete (confirm in place, now with Revert); Post Again opens Post New with an expired announcement's text.
+- **Slash options on every section**: `calendar` `event:` / `do:` / `show:`, `patch-notes` `season:` / `do:`, `season titles` and `season draft` `do:`, `announcement` `announcement:` / `do:`, `guide` `topic:`. A target opens its card; a target with `do:` acts at once. `/help`'s /manage page lists them.
+
+### Changed
+- **The old `action:` option is gone from every /manage subcommand**; `do:` covers it. Purge, Promote and Discard stay on the panel.
+- **A bare `/manage season titles` opens the Season panel**; the pop-up is `do: Edit Titles & Deadlines`. The section dropdown's Season: Titles & Deadlines entry opens the panel too.
+- **The bulk format guides and `/help`'s /manage page describe the new panels**: Paste and Edit with their preview, each panel's Export, Images 1-5 / 6-10, a past season's one pop-up, Promote's preview and Revert, and the announcement card. The Loadouts guide is named Gunsmith Builds.
+- **Every save goes through the existing code** (the old calendar, patch notes, season and announcement handlers, which now take an optional id and result callback without changing what they do for their old callers), so the ChangeLog, Revert and permission checks are what they were. Old panels' buttons still work.
+- The calendar `editCalendarEvent` / `bulkAddOrReplaceCalendar` and `purge` return what the panel needs (change ids); season.js's writes are lifted into functions the panel and the old pop-ups share.
+
+### Fixed
+- **Reverting Promote to Live puts the staged draft back.** Promote clears the draft, and its snapshot did not carry it, so a Revert restored the live season and lost everything staged (`core/ops/season.js`: the prior snapshot now holds `draft`). Found by round-tripping Promote and Revert on the dev bot.
+- **Reverting an announcement Delete brings back the same announcement.** It came back under a new id, so every player who had already seen it got it again (`core/ops/announcements.js`: the inverse carries the original id and the restoring post reuses it). The same Revert on `/bot analytics` › Changes is fixed with it.
+
+### Tests
+- `scripts/manageCalendarPanel.test.js`, `scripts/managePatchAnnounce.test.js`, `scripts/manageSeasonPanel.test.js`: every view inside Discord's limits with realistic data, custom ids, previews, autocomplete, slash routing and the old handlers' new options. `scripts/manageActions.test.js` expects the new option set on every subcommand. `/help`'s snapshot re-recorded for the new /manage options. `scripts/seasonOps.test.js` and `scripts/announcementOps.test.js` pin both Revert fixes.
+
+## v3.14.0 — 2026-11-07 19:38 EST (#262 · `4156ca6b`) — /manage draws rehauled: one panel to browse, open, edit, move, select, paste and export draws
 
 ### Added
 - **A new `/manage draws` panel** (`handlers/manage/drawsPanel/`), one message that changes in place: a home page with Quick Add, Add New Draw, Add Returning Draw, Search Draws, a list dropdown (New, Returning, Upcoming, Active Now, Leaving Soon, Ended, No End Date, each with its count), Paste Draws, Select Draws, Export, Guide and Purge Draws.
