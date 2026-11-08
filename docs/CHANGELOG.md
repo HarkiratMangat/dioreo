@@ -29,7 +29,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.15.0 — 2026-11-07 21:28 EST (#PR) — /manage calendar, patch notes, season and announcement rehauled: every section is one panel with slash options that go straight to a thing
+## v3.15.0 — 2026-11-07 21:28 EST (#263) — /manage calendar, patch notes, season and announcement rehauled: every section is one panel with slash options that go straight to a thing
 
 ### Added
 - **A new `/manage calendar` panel** (`handlers/manage/calendarPanel/`): a home with Add Entry, Paste Entries, Search Calendar, a list dropdown (Events, Playlists, Draws, Upcoming, Active Now, Ending Soon, Ended, and Needs a Look when something is wrong), Select Entries, Export, Banners, Guide and Purge Calendar. Lists of 10 a page; an entry card drawn as /calendar draws it, with Edit (saved and redrawn in place) and Delete (confirm in place). Select (`ManageSelection` mode `CALENDAR`) with Edit N, Export N and Delete N; Paste and Edit N show a preview (Added, Changed and what, Unchanged, Not read) and save only what changes.
