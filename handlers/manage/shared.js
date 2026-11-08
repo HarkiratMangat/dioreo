@@ -254,6 +254,8 @@ async function renderManagePage(interaction) {
 
     // The two gunsmith sections are the rehauled panel (handlers/manage/gunsmith/, 2026-11-07 14:13 EST), which carries this same dropdown under it.
     if (targetPage === 'loadouts_mp' || targetPage === 'loadouts_dmz') return require('./gunsmith').renderHome(interaction, targetPage === 'loadouts_dmz' ? 'DMZ' : 'MP');
+    // Draws is the rehauled panel too (handlers/manage/drawsPanel/, 2026-11-07 19:17 EST).
+    if (targetPage === 'draws') return require('./drawsPanel').renderHome(interaction);
 
     await interaction.deferUpdate();
     const { sendV2Payload } = require('../../utils/sendV2Payload');

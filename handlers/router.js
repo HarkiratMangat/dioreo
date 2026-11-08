@@ -28,7 +28,6 @@ const HANDLER_BINDINGS = [
     ['help', 'handleHelpInteraction'],
     ['invite', 'handleInviteInteraction'],
     ['embedTest', 'handleEmbedTestInteraction'],
-    ['mockDraws', 'handleMockDrawsInteraction'],
     ['addToPatchNotes', 'handleAddToPatchNotesInteraction'],
     ['viewColors', 'handleViewColorsInteraction'],
     ['patchnotes', 'handlePatchnotesInteraction'],
@@ -59,8 +58,6 @@ const handleHelpInteraction = late('help', 'handleHelpInteraction');
 const handleInviteInteraction = late('invite', 'handleInviteInteraction');
 const handleEmojisInteraction = late('emojis', 'handleEmojisInteraction');
 const handleEmbedTestInteraction = late('embedTest', 'handleEmbedTestInteraction');
-// THROWAWAY (2026-11-07 16:46 EST): the /mockdraws mock-up of the /manage draws rehaul, dev bot only; removed before that rehaul's PR.
-const handleMockDrawsInteraction = late('mockDraws', 'handleMockDrawsInteraction');
 const handleAddToPatchNotesInteraction = late('addToPatchNotes', 'handleAddToPatchNotesInteraction');
 const handleViewColorsInteraction = late('viewColors', 'handleViewColorsInteraction');
 const handlePatchnotesInteraction = late('patchnotes', 'handlePatchnotesInteraction');
@@ -260,8 +257,6 @@ async function handleInteractionInner(interaction) {
         if (await handleAnnouncementControlsInteraction(interaction)) return;
         markHandler('embedTest');
         if (await handleEmbedTestInteraction(interaction)) return;
-        markHandler('mockDraws');
-        if (await handleMockDrawsInteraction(interaction)) return;
         markHandler('textCommands');
         if (await handleTextCommandsInteraction(interaction)) return;
         markHandler('addToPatchNotes');

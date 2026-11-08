@@ -169,6 +169,12 @@ check("every /manage subcommand with actions registers `action` with autocomplet
         assert.strictEqual(names[names.length - 1], 'visibility', `/manage ${sub.name}: visibility must be last`);
         if (withoutActions.has(sub.name)) { assert.ok(!names.includes('action'), `/manage ${sub.name} has no actions to jump to`); continue; }
         // gunsmith mp|dmz trade action: for build / do / builds / weapon / class (the gunsmith rehaul, 2026-11-07 14:14 EST; handlers/manage/gunsmith/index.js openFromSlash).
+        // draws trades action: for draw / do / show (the draws rehaul, 2026-11-07 19:17 EST).
+        if (sub.name === 'draws') {
+            assert.deepStrictEqual(names, ['draw', 'do', 'show', 'visibility'], '/manage draws options');
+            assert.strictEqual(sub.options.find(x => x.name === 'draw').autocomplete, true, '/manage draws: "draw" needs autocomplete');
+            continue;
+        }
         if (sub.name === 'mp' || sub.name === 'dmz') {
             assert.deepStrictEqual(names, ['build', 'do', 'builds', 'weapon', 'class', 'visibility'], `/manage gunsmith ${sub.name} options`);
             for (const auto of ['build', 'weapon']) assert.strictEqual(sub.options.find(x => x.name === auto).autocomplete, true, `/manage gunsmith ${sub.name}: "${auto}" needs autocomplete`);

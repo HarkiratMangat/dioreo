@@ -910,6 +910,17 @@ function buildManageCommandData() {
         if (withBuild) sub.addStringOption(build);
         return sub.addStringOption(visibility);
     };
+    // /manage draws goes straight to a thing too (the draws rehaul, 2026-11-07 19:17 EST): draw: one draw (autocomplete), show: a list, do: an action, at once with a draw (handlers/manage/drawsPanel/index.js openFromSlash). Its action: is gone; do: covers what it opened. visibility stays LAST.
+    const drawsSub = sub => sub.setName('draws').setDescription('New and returning draws')
+        .addStringOption(o => o.setName('draw').setDescription('Go to one draw: type part of its title').setAutocomplete(true))
+        .addStringOption(o => o.setName('do').setDescription('What to do. With draw: it happens right away').addChoices(
+            { name: 'Quick Add', value: 'quickadd' }, { name: 'Add New Draw', value: 'addnew' }, { name: 'Add Returning Draw', value: 'addreturning' },
+            { name: 'Edit', value: 'edit' }, { name: 'Set End Date', value: 'end' }, { name: 'Move New/Returning', value: 'move' }, { name: 'Delete', value: 'delete' },
+            { name: 'Paste Draws', value: 'paste' }, { name: 'Export', value: 'export' }, { name: 'Guide', value: 'guide' }))
+        .addStringOption(o => o.setName('show').setDescription('Open a list of draws').addChoices(
+            { name: 'New Draws', value: 'new' }, { name: 'Returning Draws', value: 'returning' }, { name: 'Upcoming', value: 'upcoming' },
+            { name: 'Active Now', value: 'live' }, { name: 'Leaving Soon', value: 'leaving' }, { name: 'Ended', value: 'ended' }, { name: 'No End Date', value: 'noend' }))
+        .addStringOption(visibility);
     // /manage gunsmith mp|dmz go straight to a thing (the gunsmith rehaul, 2026-11-07 14:13 EST; his 13:40 EST ask for slash options that skip walking through the panel). build: one build (autocomplete), do: what to do with it, builds: several as a Select list, weapon: / class: their pages; a target plus do: acts at once (handlers/manage/gunsmith/index.js openFromSlash). Their action: is gone: do: covers every job it had. visibility stays LAST.
     const gunsmith = (name, description) => sub => sub.setName(name).setDescription(description)
         .addStringOption(o => o.setName('build').setDescription('Go to one build: a weapon, a number or a label, e.g. fss 1b').setAutocomplete(true))
@@ -929,7 +940,7 @@ function buildManageCommandData() {
         .setDefaultMemberPermissions(0)
         // ADMIN-ONLY: stays user-install [1] deliberately -- the 10 public commands moved to [0, 1] (guild install) for v3, but an admin command advertised in every server's command list is noise plus needless surface. Harkirat still reaches it anywhere via his own user install.
         .setIntegrationTypes([1]).setContexts([0, 1, 2])
-        .addSubcommand(section('draws', 'New and returning draws'))
+        .addSubcommand(drawsSub)
         .addSubcommand(section('calendar', 'Calendar events'))
         .addSubcommand(section('patch-notes', 'Season patch notes'))
         .addSubcommandGroup(group => group.setName('gunsmith').setDescription('Gunsmith builds')
@@ -1001,6 +1012,8 @@ module.exports = {
         const actionId = interaction.options.getString('action');
         // /manage gunsmith mp|dmz is the rehauled panel (handlers/manage/gunsmith/, 2026-11-07 14:13 EST): its options open a build, a list, a page or a pop-up, before any deferral here.
         if (section === 'loadouts_mp' || section === 'loadouts_dmz') return await require('../handlers/manage/gunsmith').openFromSlash(interaction, section === 'loadouts_dmz' ? 'DMZ' : 'MP');
+        // /manage draws is the rehauled panel too (2026-11-07 19:17 EST).
+        if (section === 'draws') return await require('../handlers/manage/drawsPanel').openFromSlash(interaction);
         if (actionId) {
             const { resolveAction, DENIAL_MESSAGE } = require('../utils/manageActions');
             const resolved = await resolveAction(section, actionId, interaction.user.id);
