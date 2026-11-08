@@ -292,7 +292,7 @@ const PAGES = {
                     text('`[visibility]`\n-# Only you by default, or everyone in the chat'),
                 ],
                 sections: [
-                    text("**Bulk format guides**\n-# The paste format for each section's Multiple boxes"),
+                    text("**Bulk format guides**\n-# The paste format for each section's Paste and Edit boxes"),
                     { type: 1, components: [{ type: 3, custom_id: 'help_guide_pick', placeholder: 'Open a guide…', options: topicDefs().map(t => ({ label: t.label, value: t.key, description: t.description, emoji: t.emoji || undefined })) }] },
                     line(1),
                     text("**Right-click or tap and hold a message**\n-# Apps → **Add to Calendar** · **Add to Draws** · **Add to Patch Notes**: that section's Add box, filled from the post"),

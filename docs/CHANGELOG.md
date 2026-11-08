@@ -41,6 +41,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ### Changed
 - **The old `action:` option is gone from every /manage subcommand**; `do:` covers it. Purge, Promote and Discard stay on the panel.
 - **A bare `/manage season titles` opens the Season panel**; the pop-up is `do: Edit Titles & Deadlines`. The section dropdown's Season: Titles & Deadlines entry opens the panel too.
+- **The bulk format guides and `/help`'s /manage page describe the new panels**: Paste and Edit with their preview, each panel's Export, Images 1-5 / 6-10, a past season's one pop-up, Promote's preview and Revert, and the announcement card. The Loadouts guide is named Gunsmith Builds.
 - **Every save goes through the existing code** (the old calendar, patch notes, season and announcement handlers, which now take an optional id and result callback without changing what they do for their old callers), so the ChangeLog, Revert and permission checks are what they were. Old panels' buttons still work.
 - The calendar `editCalendarEvent` / `bulkAddOrReplaceCalendar` and `purge` return what the panel needs (change ids); season.js's writes are lifted into functions the panel and the old pop-ups share.
 

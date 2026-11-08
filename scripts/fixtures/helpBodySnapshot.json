@@ -29021,7 +29021,7 @@
           },
           {
             "type": 10,
-            "content": "**Bulk format guides**\n-# The paste format for each section's Multiple boxes"
+            "content": "**Bulk format guides**\n-# The paste format for each section's Paste and Edit boxes"
           },
           {
             "type": 1,
@@ -29052,9 +29052,9 @@
                     }
                   },
                   {
-                    "label": "Loadouts",
+                    "label": "Gunsmith Builds",
                     "value": "loadouts",
-                    "description": "MP/DMZ block paste format",
+                    "description": "MP/DMZ build block paste format",
                     "emoji": {
                       "animated": true,
                       "name": "NewDraws",
