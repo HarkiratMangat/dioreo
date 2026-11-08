@@ -49,7 +49,7 @@ async function gatePost(interaction) {
     const g = await resolveAction('announcement', 'post', interaction.user.id);
     if (g.ok) return true;
     require('../../../utils/eventStore').markOutcome('rejected_admin');
-    await say(interaction, g.message || DENIAL_MESSAGE[g.reason] || '🔒 You do not have access to that.');
+    await say(interaction, g.message || DENIAL_MESSAGE[g.reason] || `${emojis.accessDenied} You do not have access to that.`);
     return false;
 }
 async function gateRow(interaction, key) { // 'manage.announcementEdit' | 'manage.announcementDelete'
@@ -63,7 +63,7 @@ async function gateDestructive(interaction) {
     const { can } = require('../../../utils/adminAccess');
     if (await can(interaction.user.id, 'manage.announcement', 'destructive')) return true;
     require('../../../utils/eventStore').markOutcome('rejected_admin');
-    await say(interaction, "🔒 **You don't have access to delete announcements anymore.** Nothing was deleted.");
+    await say(interaction, `${emojis.accessDenied} **You don't have access to delete announcements anymore.** Nothing was deleted.`);
     return false;
 }
 
@@ -106,7 +106,7 @@ function confirmCard(doc) {
 
 function revertButton(changeIds) {
     const id = `${PREFIX}revert|${(changeIds || []).join(',')}`;
-    return changeIds?.length && id.length <= 100 ? [{ type: 2, style: 4, label: 'Revert', custom_id: id }] : [];
+    return changeIds?.length && id.length <= 100 ? [{ type: 2, style: 4, label: 'Revert', custom_id: id, emoji: emojis.parseEmoji(emojis.keep) }] : [];
 }
 
 // ---------- the slash command ---------- `announcement:` opens one (autocomplete), `do:` an action (on it, at once). A pop-up has to be the first answer, so every path that opens one runs before anything is deferred.
@@ -140,7 +140,7 @@ async function openFromSlash(interaction) {
 async function runGuide(interaction) {
     const { resolveAction, DENIAL_MESSAGE } = require('../../../utils/manageActions');
     const g = await resolveAction('announcement', 'formatguide', interaction.user.id);
-    if (!g.ok) return say(interaction, g.message || DENIAL_MESSAGE[g.reason] || '🔒 You do not have access to that.');
+    if (!g.ok) return say(interaction, g.message || DENIAL_MESSAGE[g.reason] || `${emojis.accessDenied} You do not have access to that.`);
     return g.entry.run({ interaction, page: 'announcement', manageCommand: manageCommand() });
 }
 

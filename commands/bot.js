@@ -114,9 +114,9 @@ function errorTiers(summary, cloud) {
 
 // A plain-language verdict line before any facts, matching the panel design rule ("Health opens with a single plain-language verdict line ... before any facts"). Not literally alertExplain.js's explain() — that explains one alert TITLE, there is no aggregate-verdict function there to reuse — but the same spirit: state the answer, not just the numbers.
 function healthVerdict({ summary }) {
-    if (summary.last24h.error > 0) return `🔴 **Something broke in the last 24 hours** — ${summary.last24h.error} error alert(s). See Alerts below.`;
-    if (summary.last24h.warn > 0) return `🟡 **Minor hiccups in the last 24 hours** — ${summary.last24h.warn} warning(s), nothing that needed action.`;
-    return `🟢 **All systems normal.** No warnings or errors in the last 24 hours.`;
+    if (summary.last24h.error > 0) return `${BOT_EMOJI.redDotGlow} **Something broke in the last 24 hours** — ${summary.last24h.error} error alert(s). See Alerts below.`;
+    if (summary.last24h.warn > 0) return `${BOT_EMOJI.yellowDotGlow} **Minor hiccups in the last 24 hours** — ${summary.last24h.warn} warning(s), nothing that needed action.`;
+    return `${BOT_EMOJI.greenDotGlow} **All systems normal.** No warnings or errors in the last 24 hours.`;
 }
 
 function fmtPct(v) { return v == null ? '—' : `${v}%`; }
@@ -153,7 +153,7 @@ async function buildHealthBody(client) {
     const stats = await computeHealthStats(client);
     const s = stats.summary;
     const line = (t) => `🟢 ${t.info} · 🟡 ${t.caution} · 🟠 ${t.warn} · 🔴 ${t.error}`;
-    const lastErr = s.lastError ? `\`${s.lastError.alertId}\` · <t:${unix(s.lastError.createdAt)}:R>` : '_none recorded_ 🟢';
+    const lastErr = s.lastError ? `\`${s.lastError.alertId}\` · <t:${unix(s.lastError.createdAt)}:R>` : `_none recorded_ ${BOT_EMOJI.greenDotGlow}`;
     const tiers = errorTiers(s, stats.cloud);
     const tierLine = tiers.logged == null
         ? `**Errors, last 24h:** ${tiers.announced} announced to Discord`
@@ -179,7 +179,7 @@ async function buildAlertsBody({ view = 'main' } = {}) {
     if (view === 'explain') return buildAlertsExplainBody();
     const [summary, recent] = await Promise.all([getAlertSummary(), getRecentAlerts({ page: 0, perPage: ALERTS_PER_PAGE })]);
     const line = (t) => `🟢 ${t.info} · 🟡 ${t.caution} · 🟠 ${t.warn} · 🔴 ${t.error}`;
-    const lastErr = summary.lastError ? `\`${summary.lastError.alertId}\` · <t:${unix(summary.lastError.createdAt)}:R>` : '_none recorded_ 🟢';
+    const lastErr = summary.lastError ? `\`${summary.lastError.alertId}\` · <t:${unix(summary.lastError.createdAt)}:R>` : `_none recorded_ ${BOT_EMOJI.greenDotGlow}`;
     const body = [
         { type: 10, content: `-# Every alert the bot has posted — ${summary.total.toLocaleString()} recorded.` },
         { type: 10, content: `**Last 24h:** ${line(summary.last24h)}\n**Last 7d:** ${line(summary.last7d)}\n**Last error:** ${lastErr}` },
@@ -242,7 +242,7 @@ function buildChangesRows(items) {
             type: 9,
             components: [{ type: 10, content:
                 // 🔴 NO changeId HERE. `Aug22-28` is an internal MMMDD-NN log id that LOOKS like a date, sitting inches from "19 hours ago" and disagreeing with it -- Harkirat: "your 'Aug22-28' timestamp or whatever is so confusing." It is a reference, not a fact about the change, so it lives in the detail panel labelled explicitly as not-a-date.
-                `**${truncate(c.summary || `${c.action} on ${c.page}`, 70)}**${c.undone ? ' ↩️' : ''}`
+                `**${truncate(c.summary || `${c.action} on ${c.page}`, 70)}**${c.undone ? ` ${BOT_EMOJI.keep}` : ''}`
                 + `\n-# ${PAGE_LABEL[c.page] || c.page || '?'} · <@${c.actorId}> · <t:${unix(c.createdAt)}:R>${reason}` }],
             // 🔴 THIS OPENS A DETAIL PANEL, IT DOES NOT REVERT. Harkirat, 2026-08-23 10:07 EDT, on the version where it fired immediately: "what am I even doing by tapping 'revert' or am i just blindly reverting?" -- he was, and a one-line summary is not enough to decide by. The revert itself now lives behind that panel, which states exactly which record is affected and what the stored inverse will do. Still one tap to reach, which is what the spec's time-critical argument actually protected: it objected to a BROWSER round-trip, not to a confirmation step. Disabled rows keep the panel reachable on purpose -- "why can't I revert this?" is a question the detail view answers, and greying out the only way to ask it is the worse failure.
             accessory: { type: 2, style: 2, label: gate.ok ? 'Details' : 'Why not?', custom_id: `bot_changedetail_${c.changeId}` },
@@ -334,7 +334,7 @@ const RECORD_VIEWS = {
         // The player-facing card, from commands/draws.js itself.
         render: (d) => require('./draws').buildDrawSections([{ ...d, items: d.items || [] }]),
         // 🔴 MEASURED, AND IT KILLED THE FEATURE THIS WAS PLANNED AS. The phase-2 plan assumed a draw's `date` decides whether players see it, so this panel would say "scheduled until X / already past". It does not: commands/draws.js renders seasonalDoc.newDraws / returningDraws IN FULL -- no .filter(), no Date.now(), no visibility test anywhere in the file. The date is a label it prints, nothing more. "Scheduled" would have been a confident falsehood, and the true statement is the more useful one anyway: every draw edit is live the instant it saves. 2026-11-01: /draws gained a filter (Upcoming, Live, Leaving soon, Ended), but a player has to pick it; the panel /draws opens on still lists every draw, so the sentence below stays true with the filter named.
-        visibility: () => `🟢 **Players can see this now.** \`/draws\` lists every draw in the season — the date is a label it shows, not a schedule that hides it. Only a filter a player picks narrows the list.`,
+        visibility: () => `${BOT_EMOJI.greenDotGlow} **Players can see this now.** \`/draws\` lists every draw in the season — the date is a label it shows, not a schedule that hides it. Only a filter a player picks narrows the list.`,
     },
     calendar: {
         noun: 'event', dateOnly: ['date', 'endDate'],
@@ -357,7 +357,7 @@ const RECORD_VIEWS = {
             const doc = await SeasonalData.findOne({ docType: 'global' }).select('bpEnd bpEndTBD').lean();
             return isEventEnded(e, doc || {}, Date.now())
                 ? `⚫ **This one has already ended.** It is hidden from \`/calendar\`'s Active Now and Upcoming filters, but still listed in the Full Timeline and Past/Ended.`
-                : `🟢 **Players can see this now.** It shows on \`/calendar\` in the Full Timeline and in the Active Now or Upcoming filter.`;
+                : `${BOT_EMOJI.greenDotGlow} **Players can see this now.** It shows on \`/calendar\` in the Full Timeline and in the Active Now or Upcoming filter.`;
         },
     },
     loadouts_mp: {
@@ -365,7 +365,7 @@ const RECORD_VIEWS = {
         fetch: async (t) => { const L = require('../models/Loadout'); const id = t.id || t.elementId; return id ? L.findById(id).lean() : null; },
         // The content half of the real /gunsmith card. NOT buildLoadoutCard -- that returns a whole Container ending in a live pagination/Copy row whose custom_ids resolve an index against a query only /gunsmith has made, so those buttons would either mislead or misfire here, and a Container cannot nest inside the panel's own. See utils/loadoutRender.js's buildLoadoutCardBody header.
         render: (b) => require('../utils/loadoutRender').buildLoadoutCardBody(b, { index: 0, total: 1, hideBadges: false }),
-        visibility: () => `🟢 **Players can see this now.** \`/gunsmith\` serves whatever is stored — a build is live the moment it saves.`,
+        visibility: () => `${BOT_EMOJI.greenDotGlow} **Players can see this now.** \`/gunsmith\` serves whatever is stored — a build is live the moment it saves.`,
     },
     announcement: {
         noun: 'announcement', dateOnly: [],
@@ -444,10 +444,10 @@ async function fetchRecord(row) {
 function revertSentence(row, noun, changedCount) {
     const verb = String(row.inverse?.type || '').split('.')[1];
     const thing = noun || 'record';
-    if (verb === 'delete') return `↩️ **Reverting deletes this ${thing}.** Nothing else is touched.`;
-    if (verb === 'add' || verb === 'post') return `↩️ **Reverting puts this ${thing} back**, exactly as it was.`;
-    if (verb === 'edit') return `↩️ **Reverting undoes ${changedCount === 1 ? 'that change' : changedCount ? `those ${changedCount} changes` : 'the edit'}**, putting the old values back.`;
-    return `↩️ **Reverting applies the inverse** recorded when this change was made.`;
+    if (verb === 'delete') return `${BOT_EMOJI.keep} **Reverting deletes this ${thing}.** Nothing else is touched.`;
+    if (verb === 'add' || verb === 'post') return `${BOT_EMOJI.keep} **Reverting puts this ${thing} back**, exactly as it was.`;
+    if (verb === 'edit') return `${BOT_EMOJI.keep} **Reverting undoes ${changedCount === 1 ? 'that change' : changedCount ? `those ${changedCount} changes` : 'the edit'}**, putting the old values back.`;
+    return `${BOT_EMOJI.keep} **Reverting applies the inverse** recorded when this change was made.`;
 }
 
 // fieldList retired 2026-08-23 11:04 EDT -- genericFields() replaced it, and generically: it renders whatever fields the record actually carries instead of a hardcoded per-page list, which is what made patch notes / season / seasondraft / access work without a branch each.
@@ -475,7 +475,7 @@ async function buildChangeDetailBody(changeId) {
     const noun = view.noun;
 
     const body = [
-        { type: 10, content: `### ${truncate(row.summary || `${row.action} on ${row.page}`, 90)}${row.undone ? ' ↩️' : ''}` },
+        { type: 10, content: `### ${truncate(row.summary || `${row.action} on ${row.page}`, 90)}${row.undone ? ` ${BOT_EMOJI.keep}` : ''}` },
         { type: 10, content: `-# by <@${row.actorId}> · <t:${unix(row.createdAt)}:f> (<t:${unix(row.createdAt)}:R>)` },
         { type: 14, spacing: 1 },
     ];
@@ -574,7 +574,7 @@ async function buildChangeDetailBody(changeId) {
     body.push({ type: 10, content: `-# It applies the exact inverse recorded at the time — nothing is recomputed — and writes its own entry to this log.` });
     const canEditHere = MANAGE_PAGE_SCOPES.includes(row.page);
     body.push({ type: 1, components: [
-        { type: 2, style: 4, label: 'Revert This Change', custom_id: `bot_revert_${row.changeId}` },
+        { type: 2, style: 4, label: 'Revert This Change', custom_id: `bot_revert_${row.changeId}`, emoji: BOT_EMOJI.parseEmoji(BOT_EMOJI.keep) },
         ...(canEditHere ? [{ type: 2, style: 1, label: `Edit in ${PAGE_LABEL[row.page] || row.page}`, custom_id: `bot_changeedit_${row.page}` }] : []),
         { type: 2, style: 5, label: 'Open in the Portal', url: PORTAL_ANALYTICS_URL },
     ] });
@@ -969,7 +969,7 @@ function buildHotpatchPanel(out) {
         return [{ type: 17, accent_color: 0x57F287, components: body }];
     }
     if (plan.verdict === 'ALLOW' && !result) {
-        head(`🔍 **Dry run — nothing changed.** These would reload:\n${plan.members.map(f => `• \`${f}\``).join('\n')}`);
+        head(`${BOT_EMOJI.search} **Dry run — nothing changed.** These would reload:\n${plan.members.map(f => `• \`${f}\``).join('\n')}`);
         return [{ type: 17, accent_color: 0x5865F2, components: body }];
     }
     if (plan.verdict === 'REFUSE_STRUCTURAL') {
@@ -1324,7 +1324,7 @@ module.exports = {
 
         if (sub === 'access') {
             if (!isOwner(interaction.user.id)) {
-                return interaction.reply({ content: '🔒 **Only the bot owner can manage the admin list.**', ephemeral: true });
+                return interaction.reply({ content: `${BOT_EMOJI.accessDenied} **Only the bot owner can manage the admin list.**`, ephemeral: true });
             }
             const visibilityChoice = interaction.options.getString('visibility');
             const isEphemeral = visibilityChoice === null ? true : visibilityChoice === 'hidden';
@@ -1335,7 +1335,7 @@ module.exports = {
         if (sub === 'servers') {
             // Owner-only, never grantable: it changes another server's settings without that server's admins in the room. Always private, since it shows a server's whole setup.
             if (!isOwner(interaction.user.id)) {
-                return interaction.reply({ content: '🔒 **Only the bot owner can change another server\'s settings.**', ephemeral: true });
+                return interaction.reply({ content: `${BOT_EMOJI.accessDenied} **Only the bot owner can change another server's settings.**`, ephemeral: true });
             }
             await interaction.deferReply({ flags: 64 });
             const guildId = (interaction.options.getString('server') || '').trim();
@@ -1350,7 +1350,7 @@ module.exports = {
         if (sub === 'penalties' || sub === 'freeze') {
             // Owner-only, never grantable (B7): these silence people and commands bot-wide. Always private.
             if (!isOwner(interaction.user.id)) {
-                return interaction.reply({ content: '🔒 **Only the bot owner can use this.**', ephemeral: true });
+                return interaction.reply({ content: `${BOT_EMOJI.accessDenied} **Only the bot owner can use this.**`, ephemeral: true });
             }
             await interaction.deferReply({ flags: 64 });
             if (sub === 'freeze') return sendV2Payload(interaction, buildFreezePanel(), { allowedMentions: { parse: [] } });
@@ -1363,7 +1363,7 @@ module.exports = {
         if (sub === 'hotpatch') {
             // isOwner ONLY -- this runs new code in the process. The 'bot' token is grantable to any admin.
             if (!isOwner(interaction.user.id)) {
-                return interaction.reply({ content: '🔒 **Only the bot owner can hotpatch.** This one loads new code into the running process.', ephemeral: true });
+                return interaction.reply({ content: `${BOT_EMOJI.accessDenied} **Only the bot owner can hotpatch.** This one loads new code into the running process.`, ephemeral: true });
             }
             await interaction.deferReply({ flags: 64 });   // always ephemeral; this is never a public panel
             const { runHotpatch } = require('../utils/hotpatch');
@@ -1378,7 +1378,7 @@ module.exports = {
 
         // analytics
         if (!(await hasCommandAccess(interaction.user.id, 'bot'))) {
-            return interaction.reply({ content: `🔒 **This one's admin-only.** ${mentionCommand(interaction.client, '/bot analytics')} shows the bot's own usage and health data — try any of the bot's public commands instead!`, ephemeral: true });
+            return interaction.reply({ content: `${BOT_EMOJI.accessDenied} **This one's admin-only.** ${mentionCommand(interaction.client, '/bot analytics')} shows the bot's own usage and health data — try any of the bot's public commands instead!`, ephemeral: true });
         }
         // Per page: any tier on bot.<page>. A page they don't hold falls back to the first one they do, with a note, rather than a dead end.
         const pages = await getBotPages(interaction.user.id);
@@ -1387,6 +1387,6 @@ module.exports = {
         const visibilityChoice = interaction.options.getString('visibility');
         const isEphemeral = visibilityChoice === null ? true : visibilityChoice === 'hidden';
         await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
-        return sendV2Payload(interaction, await buildAnalyticsPanel({ page, client: interaction.client, pages }), page === asked ? {} : { content: `🔒 You don't have permission on ${PAGE_META[asked]?.label || asked}, so this opened on ${PAGE_META[page].label}.` });
+        return sendV2Payload(interaction, await buildAnalyticsPanel({ page, client: interaction.client, pages }), page === asked ? {} : { content: `${BOT_EMOJI.accessDenied} You don't have permission on ${PAGE_META[asked]?.label || asked}, so this opened on ${PAGE_META[page].label}.` });
     },
 };

@@ -29,7 +29,35 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.15.1 — 2026-11-08 10:52 EST (#264) — Small fixes: one Cloudinary error helper, hooks that stay in their own checkout, the Draw Info panel removed, 65 unused exports dropped
+## v3.16.0 — 2026-11-08 14:44 EST (#265) — Season draft upgrades, draws in release order, custom emoji and "No image yet" placeholders
+
+### Added
+- **Season draft, Harkirat's asks of 2026-11-08 11:52 EST** (`handlers/manage/seasonPanel/`):
+  - **Season Emoji** box, the fifth in both Titles & Deadlines pop-ups: a prod id, `name:id` or `<a:name:id>` (`utils/seasonEmoji.js` `resolveEmojiInput`); it shows the emoji the season is using, stored or `season{N}`.
+  - **Promote to Live opens a pop-up**: auto-promote at the Battle Pass start (default while it is ahead) or promote now. Auto-promote is `season.setAutoPromote` (revertible, destructive tier); `utils/autoPromote.js` claims and promotes within a minute of `draft.bpStart`, as the admin who committed it, and DMs the owner. A draft edit by anyone else switches it off; news triage's writes do not. The pre-season promote check says when it is set.
+  - **Staged lists drawn by /draws and /calendar** as on the season's first day, their own buttons off, with Compact List one tap away (both builders take an optional clock).
+  - **Needs a Look** card: the promote check's checks plus draws with no picture or items, matched as the same draw; every compact-list row says where it came from (typed / news, official / leak / expected leak / carried over / news, edited by you).
+  - **Edit Draws**: the draft's draws one at a time (Edit per draw, Add Draw, Remove Draws, Paste Draws), through `season.bulkDraftDraws`' parsed path, so untouched rows keep their id, picture and news tag.
+- **"No image yet" placeholders** (`utils/placeholders.js`, Cloudinary `site_assets/`): draw thumbnails on /draws, /today and /manage's cards, loadout option cards and screenshots, /calendar's three banners, /patch notes with no images.
+
+### Changed
+- **/draws and /manage's draws panel list in release order** (`utils/drawDates.js` `byRelease`), as do the draft's compact lists and the calculator's season draws. Harkirat: "unsorted is wrong."
+- **/calendar shows a draw row under its /draws name** when the two differ.
+- **Custom emoji where Unicode stood**: Search, Cross, Info, Return, the glow dots; Keep on every Revert and Undo; Locked on someone else's panel, AccessDenied on a missing permission. /admin's emoji-less buttons and the marks left are filed in the deferred list.
+- The draft panel's Battle Pass emoji is /season end's; Search Older Seasons carries the Search icon.
+- `draftReadiness` moved to `utils/newsTriage/readiness.js` (pipeline.js re-uses it).
+
+### Fixed
+- **Carry-over skipped a still-running draw whose calendar row was already in the draft**, so Alchemy Stars would have left /draws at Promote. The Season 9 backtest is unchanged after it (38 of 53).
+- Two findings of the commit security review on auto-promote: the armer is the committing admin, never a name in the payload; a draft edit by anyone else switches it off.
+
+### Records
+- `.claude/rules/manage-panel.md`, `news-triage.md`, `loadout-images-and-metadata.md`, CLAUDE.md's owner-DM exceptions; `docs/db-deferred-list.md` (two Someday entries).
+
+### Prod data, outside this release's code (Harkirat's answer, 2026-11-08 11:52 EST)
+- The Alchemy Stars calendar rows, live and draft, renamed "Alchemy Stars Draw" to match /draws.
+
+## v3.15.1 — 2026-11-08 10:52 EST (#264 · `f2a59140`) — Small fixes: one Cloudinary error helper, hooks that stay in their own checkout, the Draw Info panel removed, 65 unused exports dropped
 
 ### Changed
 - **One Cloudinary error sanitizer** (`utils/cloudinaryErrors.js`): `safeErrorMessage` and `errorHttpCode` were copied into ten utils modules and two scripts; all now require the one module. `scripts/cloudinaryErrors.test.js` checks the message never carries the API key or secret, and fails if any file defines its own copy again. CLAUDE.md's secret-logging ban and `.claude/rules/loadout-images-and-metadata.md` point at it.

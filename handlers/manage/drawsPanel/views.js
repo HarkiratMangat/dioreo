@@ -37,7 +37,9 @@ const D = () => {
 };
 function allDraws(doc, nowMs = Date.now()) {
     const t = (d, sec) => ({ ...d, _sec: sec, _key: `${sec[0]}:${d._id}`, ...D().drawTiming(d, doc, nowMs) });
-    return [...(doc.newDraws || []).map(d => t(d, 'new')), ...(doc.returningDraws || []).map(d => t(d, 'returning'))];
+    // In release order, as /draws lists them (utils/drawDates.js byRelease); keys are by _id, so the order changes nothing a button points at.
+    const { byRelease } = require('../../../utils/drawDates');
+    return [...byRelease(doc.newDraws).map(d => t(d, 'new')), ...byRelease(doc.returningDraws).map(d => t(d, 'returning'))];
 }
 const splitKey = (key) => { const [s, id] = String(key).split(':'); return { section: s === 'r' ? 'returning' : 'new', id }; };
 const rowFor = (doc) => (d) => require('../../../utils/drawEndReminder').calendarRowFor(doc, d.title);

@@ -98,19 +98,15 @@ function buildDrawSections(drawsArray, ctx = {}) {
             shown = shown.slice(0, -1);
             textContent = compose(shown, itemLines.length - shown.length);
         }
-        if (draw.thumbnailUrl) {
-            sections.push({
-                type: 9,
-                components: [{ type: 10, content: textContent }],
-                accessory: {
-                    type: 11, // Attaches Thumbnail natively to the right side of the block
-                    media: { url: draw.thumbnailUrl }
-                }
-            });
-        } else {
-            // No image was provided/cached for this draw (relaxed 2026-08-22 19:40 EDT, click-test fix -- handlers/manage/draws.js no longer hard-rejects a no-image submission). A Components V2 Section (type 9) requires an accessory, so a bare Text Display is used instead of pointing a Thumbnail at a null/broken URL.
-            sections.push({ type: 10, content: `${textContent}\n-# *(no image)*` });
-        }
+        // A draw with no picture (allowed since 2026-08-22 19:40 EDT) shows Harkirat's "No image yet" placeholder (2026-11-08 11:45 EST), so every draw block has the same shape; it used to be a bare Text Display ending "(no image)", because a Section needs an accessory and a thumbnail cannot point at nothing.
+        sections.push({
+            type: 9,
+            components: [{ type: 10, content: textContent }],
+            accessory: {
+                type: 11, // Attaches Thumbnail natively to the right side of the block
+                media: { url: draw.thumbnailUrl || require('../utils/placeholders').PLACEHOLDER.square }
+            }
+        });
     });
     return sections;
 }
@@ -206,13 +202,15 @@ const STATUS_GROUPS = [
 // The filtered list's page size: one heading per group on a page costs a component each, so it holds one draw fewer than CHUNK_SIZE. Measured by scripts/drawsFilter.test.js's worst case (every group on one page, a note, Reset and Calculate) under 40.
 const FILTERED_CHUNK = CHUNK_SIZE - 1;
 
-function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PRESET_ACCENT, isEphemeral = false, filter = 0) {
+function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PRESET_ACCENT, isEphemeral = false, filter = 0, opts = {}) {
     const seasonTitle = seasonalDoc.currentSeasonTitle || "Current Season";
     const mask = filterMask(filter);
     const states = mask & STATE_BITS;
-    const nowMs = Date.now();
+    // `opts.nowMs` draws the page as of another moment: the season panel's staged preview renders the draft as on the day the season starts (2026-11-08).
+    const nowMs = opts.nowMs ?? Date.now();
     const ctx = { seasonalDoc, nowMs };
-    const timed = (key) => (seasonalDoc[key === 'new' ? 'newDraws' : 'returningDraws'] || []).map(d => ({ ...d, _section: key, ...drawTiming(d, seasonalDoc, nowMs) }));
+    // In release order (utils/drawDates.js byRelease, 2026-11-08 12:18 EST): the stored order is the paste order, which is not the order players should read.
+    const timed = (key) => require('../utils/drawDates').byRelease(seasonalDoc[key === 'new' ? 'newDraws' : 'returningDraws']).map(d => ({ ...d, _section: key, ...drawTiming(d, seasonalDoc, nowMs) }));
     const lists = {
         new: timed('new').filter(d => !states || (d.bits & states)),
         returning: timed('returning').filter(d => !states || (d.bits & states))

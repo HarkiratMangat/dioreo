@@ -71,7 +71,7 @@ async function handleWipeButton(interaction) {
         const token = customId.replace('mng_wipecancel_', '');
         pendingSeasonWipes.delete(token);
         try {
-            await prompt(interaction, { text: '❎ Cancelled -- nothing was changed.' });
+            await prompt(interaction, { text: `${BOT_EMOJI.cross} Cancelled -- nothing was changed.` });
         } catch (notifyError) {
             console.error('Failed to confirm season-wipe cancellation (interaction likely expired):', notifyError);
         }
@@ -79,15 +79,24 @@ async function handleWipeButton(interaction) {
     }
 }
 
-// --- SEASON TITLES + DEADLINES (merged) --- custom_id: modal_season_titles_deadlines Each of the 3 deadline fields carries both a title and an end date on one line ("Battle Pass, August 28"); parsing (splitTitleDate/TBD handling) now lives entirely in core/ops/season.js. 2026-11-07 21:06 EST The save is lifted out of the pop-up handlers so the Season panel (handlers/manage/seasonPanel/) can run the SAME write and draw its own answer. Each returns { ok, message } with NO leading emoji; the old handlers below put the cross or checkmark back, so what they send is byte-for-byte what it was.
-const readTitleFields = (interaction) => ({
-    mainTitle: interaction.fields.getTextInputValue('main_title').trim(),
-    bpLine: interaction.fields.getTextInputValue('bp_line'),
-    rankLine: interaction.fields.getTextInputValue('rank_line'),
-    dmzLine: interaction.fields.getTextInputValue('dmz_line')
-});
+// --- SEASON TITLES + DEADLINES (merged) --- custom_id: modal_season_titles_deadlines Each of the 3 deadline fields carries both a title and an end date on one line ("Battle Pass, August 28"); parsing (splitTitleDate/TBD handling) now lives entirely in core/ops/season.js. 2026-11-07 21:06 EST The save is lifted out of the pop-up handlers so the Season panel (handlers/manage/seasonPanel/) can run the SAME write and draw its own answer. Each returns { ok, message } with NO leading emoji; the old handlers below put the cross or checkmark back, so what they send is byte-for-byte what it was. The Season Emoji box (2026-11-08 12:04 EST): its emoji wins; left blank, an emoji typed in front of the title still sets it, and with neither the season has none. A value Dioreo cannot resolve keeps the stored emoji and says so (`emojiNote`, read off by saveTitlesDeadlines, never sent to the op). A box opened before this change has no such field.
+const readTitleFields = (interaction) => {
+    const fields = {
+        mainTitle: interaction.fields.getTextInputValue('main_title').trim(),
+        bpLine: interaction.fields.getTextInputValue('bp_line'),
+        rankLine: interaction.fields.getTextInputValue('rank_line'),
+        dmzLine: interaction.fields.getTextInputValue('dmz_line')
+    };
+    let typed = null;
+    try { typed = interaction.fields.getTextInputValue('season_emoji'); } catch { return fields; }
+    const r = require('../../utils/seasonEmoji').resolveEmojiInput(typed, interaction.client);
+    if (r.error) return { ...fields, emojiNote: r.error };
+    if (r.mention || !require('../../utils/seasonEmoji').splitSeasonEmoji(fields.mainTitle).emoji) fields.currentSeasonEmoji = r.mention;
+    return fields;
+};
 
-async function saveTitlesDeadlines(actorId, fields, { draft = false } = {}) {
+async function saveTitlesDeadlines(actorId, allFields, { draft = false } = {}) {
+    const { emojiNote, ...fields } = allFields;
     const result = await commitSet([{ type: draft ? 'season.setDraftTitlesDeadlines' : 'season.setTitlesDeadlines', payload: fields }], { actorId });
     if (!result.ok) return { ok: false, message: extractCommitError(result) };
     const { change } = result.results[0];
@@ -95,6 +104,7 @@ async function saveTitlesDeadlines(actorId, fields, { draft = false } = {}) {
         ? '**Draft Titles & Deadlines Staged!** Nothing is live yet — use Promote to Live when ready.'
         : '**Season Titles & Deadlines Updated!** The `/season end` module has been synced.';
     if (change.detail) message += `\n${BOT_EMOJI.warn} ${change.detail}.`;
+    if (emojiNote) message += `\n${BOT_EMOJI.warn} ${emojiNote} The season's emoji was left as it was.`;
     return { ok: true, message, changeIds: result.changeIds };
 }
 
@@ -137,7 +147,7 @@ async function handleDraftButton(interaction) {
     }
 
     if (customId === 'mng_draftpromotecancel') {
-        try { await prompt(interaction, { text: '❎ Promote cancelled -- the draft is untouched.' }); }
+        try { await prompt(interaction, { text: `${BOT_EMOJI.cross} Promote cancelled -- the draft is untouched.` }); }
         catch (notifyError) { console.error('Failed to confirm draft promote cancellation (interaction likely expired):', notifyError); }
         return;
     }
@@ -155,7 +165,7 @@ async function handleDraftButton(interaction) {
     }
 
     if (customId === 'mng_draftdiscardcancel') {
-        try { await prompt(interaction, { text: '❎ Discard cancelled -- the draft is untouched.' }); }
+        try { await prompt(interaction, { text: `${BOT_EMOJI.cross} Discard cancelled -- the draft is untouched.` }); }
         catch (notifyError) { console.error('Failed to confirm draft discard cancellation (interaction likely expired):', notifyError); }
         return;
     }

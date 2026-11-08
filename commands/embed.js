@@ -179,7 +179,7 @@ module.exports = {
         .setIntegrationTypes([1]).setContexts([0, 1, 2]),
 
     async execute(interaction) {
-        if (!isAllowed(interaction)) return say(interaction, '🔒 `/embed` is a tool for the owner.');
+        if (!isAllowed(interaction)) return say(interaction, `${emojis.accessDenied} \`/embed\` is a tool for the owner.`);
 
         const visibility = interaction.options.getString('visibility');
         const clean = Boolean(interaction.options.getBoolean('clean'));

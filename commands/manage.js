@@ -747,7 +747,7 @@ function buildWipeSeasonModal() {
     return modal;
 }
 
-// The season title box shows the season's emoji in front of its title (2026-10-19 09:30 EDT), so deleting it from the box clears it -- core/ops/season.js splits it back off on submit.
+// The Season Emoji box shows the emoji the season is USING (2026-11-08 12:18 EST, Harkirat: "it never shows in the actual form field... so that leaves me in the open and clueless"): the stored one, or the season{N} emoji picked by its title number, which is where Seasons 6 to 10 get theirs and why the old box showed nothing. Submitting it unchanged stores that same emoji. The season title box showed the season's emoji in front of its title (2026-10-19 09:30 EDT); since 2026-11-08 12:04 EST the emoji has its own Season Emoji box (the fifth), and the title box holds the title alone. An emoji typed in front of the title still works. withEmoji is kept for any other caller.
 function withEmoji(emoji, title) {
     return [emoji, title].filter(Boolean).join(' ');
 }
@@ -766,10 +766,11 @@ function buildSeasonTitlesDeadlinesModal(seasonalDoc) {
 
     const modal = new ModalBuilder().setCustomId('modal_season_titles_deadlines').setTitle('Edit Season Titles & Deadlines');
     modal.addComponents(
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('main_title').setLabel('Main Season Title').setStyle(TextInputStyle.Short).setValue(withEmoji(seasonalDoc?.currentSeasonEmoji, seasonalDoc?.currentSeasonTitle))),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('main_title').setLabel('Main Season Title').setStyle(TextInputStyle.Short).setValue(seasonalDoc?.currentSeasonTitle || '')),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('bp_line').setLabel('Battle Pass: Title, Start - End').setStyle(TextInputStyle.Short).setValue(bpLine)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('rank_line').setLabel('Ranked Series: Title, Start - End').setStyle(TextInputStyle.Short).setValue(rankLine)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('dmz_line').setLabel('DMZ Season: Title, Start - End').setStyle(TextInputStyle.Short).setValue(dmzLine))
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('dmz_line').setLabel('DMZ Season: Title, Start - End').setStyle(TextInputStyle.Short).setValue(dmzLine)),
+        new ActionRowBuilder().addComponents((() => { const i = new TextInputBuilder().setCustomId('season_emoji').setLabel('Season Emoji (id or <a:name:id>)').setStyle(TextInputStyle.Short).setRequired(false).setPlaceholder('e.g. 1565194787768897617'); const shown = require('../utils/seasonEmoji').seasonEmojiFor(seasonalDoc?.currentSeasonTitle, seasonalDoc?.currentSeasonEmoji); if (shown) i.setValue(shown); return i; })())
     );
     return modal;
 }
@@ -803,10 +804,11 @@ function buildDraftTitlesDatesModal(seasonalDoc, override = {}) {
 
     const modal = new ModalBuilder().setCustomId('modal_draft_titles_dates').setTitle('Draft: Season Titles & Deadlines');
     modal.addComponents(
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('main_title').setLabel('Main Season Title').setStyle(TextInputStyle.Short).setValue(withEmoji(draft.currentSeasonEmoji, draft.currentSeasonTitle || override.mainTitle || '')).setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('main_title').setLabel('Main Season Title').setStyle(TextInputStyle.Short).setValue(draft.currentSeasonTitle || override.mainTitle || '').setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('bp_line').setLabel('Battle Pass: Title, Start - End').setStyle(TextInputStyle.Short).setValue(bpLine).setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('rank_line').setLabel('Ranked Series: Title, Start - End').setStyle(TextInputStyle.Short).setValue(rankLine).setRequired(false)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('dmz_line').setLabel('DMZ Season: Title, Start - End').setStyle(TextInputStyle.Short).setValue(dmzLine).setRequired(false))
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('dmz_line').setLabel('DMZ Season: Title, Start - End').setStyle(TextInputStyle.Short).setValue(dmzLine).setRequired(false)),
+        new ActionRowBuilder().addComponents((() => { const i = new TextInputBuilder().setCustomId('season_emoji').setLabel('Season Emoji (id or <a:name:id>)').setStyle(TextInputStyle.Short).setRequired(false).setPlaceholder('e.g. 1565194787768897617'); const shown = require('../utils/seasonEmoji').seasonEmojiFor(draft.currentSeasonTitle || override.mainTitle, draft.currentSeasonEmoji); if (shown) i.setValue(shown); return i; })())
     );
     return modal;
 }
@@ -1015,7 +1017,7 @@ module.exports = {
         const { hasCommandAccess } = require('../utils/adminAccess');
         if (!(await hasCommandAccess(interaction.user.id, 'manage'))) {
             // Reworded 2026-07-18 (v2 quick-wins batch) -- matches the identical reword of handlers/router.js's centralized button/select/modal guard for this same panel (see interactionCreate).
-            return interaction.reply({ content: "🔒 **This one's admin-only.** These buttons run Dioreo's database directly — try any of the bot's public commands instead!", ephemeral: true });
+            return interaction.reply({ content: `${emojis.accessDenied} **This one's admin-only.** These buttons run Dioreo's database directly — try any of the bot's public commands instead!`, ephemeral: true });
         }
         // Every admin may open every section (the permission restructure, 2026-10-19 19:25 EDT); what they may DO there is checked per button by resolveAction's tier check, and again by core/changeset.js's commitSet on the write.
         const section = sectionOf(interaction) || 'draws';

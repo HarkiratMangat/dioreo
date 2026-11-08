@@ -43,7 +43,7 @@ async function route(interaction) {
             if (!actingUser) {
                 // Awaited + wrapped in its own try/catch -- see the matching note above. Reworded 2026-07-18 -- clearer + says what to do instead, per Harkirat's request.
                 try {
-                    await interaction.followUp({ content: "🔒 **Not your dashboard!** This panel belongs to someone else — run `/settings` yourself to get your own to play with.", ephemeral: true });
+                    await interaction.followUp({ content: `${BOT_EMOJI.locked} **Not your dashboard!** This panel belongs to someone else — run \`/settings\` yourself to get your own to play with.`, ephemeral: true });
                 } catch (notifyError) {
                     console.error('Failed to notify user of blocked settings action (interaction likely expired):', notifyError);
                 }
@@ -85,7 +85,7 @@ async function route(interaction) {
                 // Awaited + wrapped in its own try/catch -- see the matching note above. Reworded 2026-07-18 -- clearer + says what to do instead, per Harkirat's request.
                 try {
                     // reply(), not followUp() (v3-pre-release review, finding #16) -- this branch deliberately never defers/replies before this point (see the "single-hop UPDATE_MESSAGE" comment above), and discord.js's followUp() throws InteractionNotReplied when called on an interaction that has neither. That throw was silently swallowed by the catch below, logging a misleading "(interaction likely expired)" while the real cause was the wrong verb -- the user just saw a bare "This interaction failed" with no explanation.
-                    await interaction.reply({ content: "🔒 **Not your dashboard!** This panel belongs to someone else — run `/settings` yourself to get your own to play with.", ephemeral: true });
+                    await interaction.reply({ content: `${BOT_EMOJI.locked} **Not your dashboard!** This panel belongs to someone else — run \`/settings\` yourself to get your own to play with.`, ephemeral: true });
                 } catch (notifyError) {
                     console.error('Failed to notify user of blocked settings action (interaction likely expired):', notifyError);
                 }
@@ -135,7 +135,7 @@ async function route(interaction) {
             const actingUser = await resolvePanelActor(interaction, targetUserId);
             if (!actingUser) {
                 try {
-                    await interaction.followUp({ content: "🔒 **Not your dashboard!** These stats belong to someone else.", ephemeral: true });
+                    await interaction.followUp({ content: `${BOT_EMOJI.locked} **Not your dashboard!** These stats belong to someone else.`, ephemeral: true });
                 } catch (notifyError) {
                     console.error('Failed to notify user of blocked stats action (interaction likely expired):', notifyError);
                 }
@@ -159,7 +159,7 @@ async function route(interaction) {
             const actingUser = await resolvePanelActor(interaction, targetUserId);
             if (!actingUser) {
                 try {
-                    await interaction.followUp({ content: "🔒 **Not your dashboard!** This panel belongs to someone else — run `/settings` yourself to get your own to play with.", ephemeral: true });
+                    await interaction.followUp({ content: `${BOT_EMOJI.locked} **Not your dashboard!** This panel belongs to someone else — run \`/settings\` yourself to get your own to play with.`, ephemeral: true });
                 } catch (notifyError) {
                     console.error('Failed to notify user of blocked settings action (interaction likely expired):', notifyError);
                 }
@@ -190,7 +190,7 @@ async function handlePickerSearchSubmit(interaction, picker) {
     const actingUser = await resolvePanelActor(interaction, targetUserId);
     if (!actingUser) {
         try {
-            await interaction.reply({ content: `🔒 **Not your dashboard!** Run \`/settings\` yourself to search your own ${picker.noun}.`, ephemeral: true });
+            await interaction.reply({ content: `${BOT_EMOJI.locked} **Not your dashboard!** Run \`/settings\` yourself to search your own ${picker.noun}.`, ephemeral: true });
         } catch (notifyError) {
             console.error(`Failed to notify user of blocked ${picker.noun} search (interaction likely expired):`, notifyError);
         }
@@ -206,7 +206,7 @@ async function handlePickerSearchSubmit(interaction, picker) {
     if (matches.length > 1) {
         // Multiple hits -- rather than a second select+pick round-trip (which would need its own message identity to edit back into the real panel), just list the candidates and ask for a more specific search. Keeps this a single, coherent flow.
         return await interaction.reply({
-            content: `🔎 **${matches.length} matches for "${query}"** — search again with just one of these:\n`
+            content: `${BOT_EMOJI.search} **${matches.length} matches for "${query}"** — search again with just one of these:\n`
                 + matches.map(m => `-# 🔹 \`${m.label}\``).join('\n'),
             ephemeral: true
         });

@@ -89,7 +89,7 @@ function quickaddSections() {
             '• `starts …` and `ends …` take a date, a weekday or `in 2 days`. No start means today.\n' +
             '• A date with no time is **midnight UTC**. A time with no zone is **Toronto** time.\n' +
             '• A zone you type wins (`7pm pdt`, `7pm gmt`). `est`/`edt` and the like are read as the region, so the right one is used for that date even if the other was typed.'),
-        section('🔎 Finding the Draw',
+        section(`${emojis.search} Finding the Draw`,
             '• The draw index is searched by title, other names, item names and skins, and forgives small typos (`herscher`, `mythic draw` for Mythic Drop).\n' +
             '• A description like `mythic character` lists every draw that fits: press **Pick** and choose one, or that line is skipped on Save.\n' +
             '• A best guess says so; **Pick** swaps it for another draw or keeps what you typed.'),
@@ -108,7 +108,7 @@ function calendarSections() {
         section('🏷️ Section Prefix',
             `\`d\` ${emojis.newDraws} Draws · \`p\`/\`g\`/\`m\` ${emojis.modes} Playlists & Modes · \`e\` ${emojis.events} Events\n` +
             '-# The prefix sits directly touching the bullet (`d•`, not `d •`). `g`/`m` are aliases for `p` (playlist = game mode = mode).'),
-        section('↩️ No-Bullet Lines',
+        section(`${emojis.returnArrow} No-Bullet Lines`,
             'Each entry can ALSO stand on its own line with no `•` at all — prefix (optional) then a space instead of a bullet: `p 8/6 - 8/19 | Krai BR`. Mixing both styles in one paste is fine; a line with no `•` anywhere is read as one complete entry.'),
         section('🎁 Double CP',
             'Add `2x`, `(2x)`, `CP`, `2xCP`, or similar to a title to flag it as a Double CP event — `Krai BR 2x` strips the marker off the saved title; `Krai BR 2x CP Sale` keeps it (it reads as the event\'s real name) and still sets the flag.'),

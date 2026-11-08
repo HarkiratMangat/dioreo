@@ -38,4 +38,23 @@ function upcomingSeasonEmoji(doc) {
     return m ? (emojis[`season${Number(m[1]) + 1}`] || null) : null;
 }
 
-module.exports = { splitSeasonEmoji, seasonEmojiFor, withCaptionEmoji, upcomingSeasonEmoji };
+// The Season Emoji box (2026-11-08 12:04 EST, Harkirat: "a way to set/state the new season's emoji (providing it the prod emoji id). it begins to use that emoji right away anywhere the new season title is mentioned"). Takes `<a:name:id>`, `name:id`, a bare id, or a name. A bare id is looked up in the app's own emojis, then in emojiMap's prod ids; Discord draws a custom emoji by its id, but needs the `a` to animate it, which only a lookup knows. Returns { mention } ('' clears), or { error }.
+function resolveEmojiInput(raw, client) {
+    const text = String(raw || '').trim();
+    if (!text) return { mention: '' };
+    const full = /^<a?:\w+:\d+>$/.exec(text);
+    if (full) return { mention: text };
+    const nameId = /^:?(\w+):(\d+):?$/.exec(text);
+    const id = nameId ? nameId[2] : (/^\d{15,22}$/.test(text) ? text : null);
+    if (id) {
+        const own = client?.application?.emojis?.cache?.get?.(id);
+        if (own) return { mention: `<${own.animated ? 'a' : ''}:${own.name}:${own.id}>` };
+        const known = Object.values(emojis).find(v => typeof v === 'string' && v.endsWith(`:${id}>`));
+        if (known) return { mention: known };
+        return { error: `Dioreo can't find an emoji with the id ${id}. Paste it as <a:Name:${id}> (or <:Name:${id}> if it doesn't move).` };
+    }
+    const byName = emojis.byName(text.replace(/^:|:$/g, ''));
+    return byName ? { mention: byName } : { error: `No emoji named "${text}" on Dioreo. Paste its id or <a:Name:id>.` };
+}
+
+module.exports = { splitSeasonEmoji, seasonEmojiFor, withCaptionEmoji, upcomingSeasonEmoji, resolveEmojiInput };

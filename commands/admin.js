@@ -367,7 +367,7 @@ function buildChannels(settings, place = {}, scope = null) {
                 { type: 14, spacing: 2 },
                 withClear(`${visText('ephemeral')} in${ephemeral.length ? ` (${ephemeral.length})` : ''} · ${channelList(ephemeral)}\n${visText('public')} in${publicIds.length ? ` (${publicIds.length})` : ''} · ${channelList(publicIds)}`, sid('admin_ch_clear', '', scope), rules.length),
                 ...(gated.length ? [{ type: 10, content: `-# ${BOT_EMOJI.warn} Discord's own permissions make these private for @everyone, whatever this page says: ${channelList(gated)}. Allow **Use External Apps** in those channels to change it.` }] : []),
-                { type: 10, content: '-# 🔎 Type to search · threads follow their channel' },
+                { type: 10, content: `-# ${BOT_EMOJI.search} Type to search · threads follow their channel` },
             ],
         },
         channelSelect(sid('admin_ch_ephemeral', '', scope), isText() ? 'Off in these channels…' : 'Always private in these channels…', ephemeral),
@@ -407,7 +407,7 @@ function buildRoles(settings, place = {}, scope = null) {
                 // Clear removes the everywhere rules only, so it sits beside them; a role's channel rules clear on that role's own screen, where the admin can see which they are.
                 withClear(`**Everywhere** · ${rules.length ? rules.map(r => `<@&${r.roleId}> → ${visText(r.visibility)}`).join(' · ') : 'none'}`, sid('admin_role_clear', '', scope), rules.length),
                 { type: 10, content: `**In chosen channels** · ${scoped.length ? scoped.map(roleRuleText).join(' · ') : 'none'}` },
-                { type: 10, content: '-# 🔎 Type to search your roles' },
+                { type: 10, content: `-# ${BOT_EMOJI.search} Type to search your roles` },
             ],
         },
         roleSelect(sid('admin_role_public', '', scope), isText() ? 'Always on for these roles…' : 'Always public for these roles…', rules.filter(r => r.visibility === 'public').map(r => r.roleId)),
@@ -625,7 +625,7 @@ function buildHelp(client, place = {}, prefix = 'd') {
                 ].join('\n') },
                 divider,
                 { type: 10, content: [
-                    '### 🔒 What Private Means',
+                    `### ${BOT_EMOJI.locked} What Private Means`,
                     row('Private', 'only the person who ran the command sees the answer'),
                     row('Public', `allows a public answer; anyone who chose private in ${mentionCommand(client, '/settings')} still gets private`),
                     row('Not the command', 'it still shows in the list; remove it in **Server Settings → Integrations**'),
@@ -838,7 +838,7 @@ async function handleComponent(interaction) {
         require('../utils/eventStore').markOutcome('rejected_admin');
         return interaction.reply({
             // The same words as the command's denied panel, as one private message (a click on someone else's panel).
-            content: `🔒 ${emojis.cross} **Access Denied** — It doesn't seem like you're an admin in this server!\n> These controls change how Dioreo behaves for everyone in this server, so they need the **Manage Server** permission.\n${deniedHints(interaction.client)}`,
+            content: `${emojis.accessDenied} **Access Denied** — It doesn't seem like you're an admin in this server!\n> These controls change how Dioreo behaves for everyone in this server, so they need the **Manage Server** permission.\n${deniedHints(interaction.client)}`,
             ephemeral: true,
         });
     }
@@ -1117,7 +1117,7 @@ module.exports = {
                 accent_color: ACCENT,
                 components: [
                     // (Harkirat's wording and layout, 2026-10-25 11:00 EDT: the -# lines in their own text box so Discord leaves a gap; his lock and Access Denied emojis to come)
-                    { type: 10, content: '## 🔒 Server admins only' },
+                    { type: 10, content: `## ${BOT_EMOJI.accessDenied} Server admins only` },
                     { type: 10, content: `${emojis.cross} **Access Denied** — It doesn't seem like you're an admin in this server!\n> These controls change how Dioreo behaves for everyone in this server, so they need the **Manage Server** permission.` },
                     { type: 10, content: deniedHints(interaction.client) },
                 ],

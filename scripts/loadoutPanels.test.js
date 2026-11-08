@@ -38,11 +38,12 @@ check('the saved panel shows the build, its picture, the changes and three butto
     assert.ok(count(panel[0]) < 40);
 });
 
-check('an add says Added, has no change list, and a placeholder picture gets no thumbnail', () => {
+check('an add says Added, has no change list, and a placeholder picture gets the "No image yet" thumbnail', () => {
     const panel = p.savedPanel({ doc: { ...after, imageKey: 'https://placehold.co/x' }, changeIds: ['#1'] });
     const t = text(panel);
     assert.ok(t.includes('Added · BAL-27 Build 2') && !t.includes('What changed'));
-    assert.strictEqual(panel[0].components[0].type, 10);
+    assert.strictEqual(panel[0].components[0].type, 9);
+    assert.ok(panel[0].components[0].accessory.media.url.includes('site_assets/placeholder-1x1.png'));
 });
 
 check('Revert is left off when there is no change id, or the ids would pass 100 characters', () => {

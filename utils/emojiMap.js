@@ -79,6 +79,9 @@ const emojis = {
     deleteAll: '<a:DeleteAll:1561138182681133247>',
     // The draw calculator's Keep It / Keep Them buttons (2026-10-19 12:09 EDT, Harkirat).
     keep: '<a:Keep:1561770923760033880>',
+    // Lock notices (Harkirat, 2026-11-08 11:52 EST: "for the 'not your panel', we have a custom emoji"): Locked on someone else's panel and on what Private means, AccessDenied when a permission is missing. Prod ids; the dev apps' copies are re-pointed by name.
+    locked: '<a:Locked:1564791404549513347>',
+    accessDenied: '<a:AccessDenied:1564791399554093246>',
     warn: '<a:Warn:1561783059228139530>',
     mythicCard: '<:MythicCard:1542258676889288794>',   // mythicWeapon's upgrade -- "Weapon Upgrade"
     mythicCoin: '<:MythicCoin:1542258675706757150>',   // mythicCharacter's upgrade -- "Character Upgrade"

@@ -30,7 +30,7 @@ module.exports = {
 
     async execute(interaction) {
         if (!(await hasCommandAccess(interaction.user.id, 'autobuild'))) {
-            return interaction.reply({ content: "🔒 **This one's admin-only.** Try any of the bot's public commands instead!", ephemeral: true });
+            return interaction.reply({ content: `${BOT_EMOJI.accessDenied} **This one's admin-only.** Try any of the bot's public commands instead!`, ephemeral: true });
         }
 
         const attachment = interaction.options.getAttachment('screenshot');

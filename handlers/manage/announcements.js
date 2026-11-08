@@ -136,7 +136,7 @@ async function handleButton(interaction) {
 
     if (customId.startsWith('mng_announce_delcancel_')) {
         try {
-            await prompt(interaction, { text: '❎ Delete cancelled -- nothing was changed.' });
+            await prompt(interaction, { text: `${BOT_EMOJI.cross} Delete cancelled -- nothing was changed.` });
         } catch (notifyError) {
             console.error('Failed to confirm manage-panel announcement-delete cancellation (interaction likely expired):', notifyError);
         }

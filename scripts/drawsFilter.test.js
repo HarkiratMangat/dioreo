@@ -42,9 +42,22 @@ t('each date line is his template: small text, the dot and what happened, then t
     assert.ok(line(by('New Draw 0')).endsWith(`<t:${end}:f>`));
     assert.strictEqual(draws.drawDateLines({ title: 'X', date: null }, { seasonalDoc: doc }), '> -# *Date TBA*');
     // /bot analytics renders a draw with no season: a labelled line all the same.
-    assert.match(draws.buildDrawSections([{ title: 'X', date: new Date(now - D), items: [] }])[0].content, /\*\*Live\*\* · since <t:/);
+    assert.match(draws.buildDrawSections([{ title: 'X', date: new Date(now - D), items: [] }])[0].components[0].content, /\*\*Live\*\* · since <t:/);
+    // A draw with no picture still gets a thumbnail: the "No image yet" placeholder (2026-11-08).
+    assert.ok(draws.buildDrawSections([{ title: 'X', date: new Date(now - D), items: [] }])[0].accessory.media.url.includes('site_assets/placeholder-1x1.png'));
 });
 
+t('/draws lists each section in release order, whatever order it was stored in (2026-11-08 12:18 EST, his "unsorted is wrong")', () => {
+    const doc = { currentSeasonTitle: 'S', newDraws: [], calendar: [], returningDraws: [
+        { _id: 'a', title: 'Late Draw', date: new Date(now - 2 * D), items: [] },
+        { _id: 'b', title: 'Early Draw', date: new Date(now - 9 * D), items: [] },
+        { _id: 'c', title: 'Undated Draw', date: null, items: [] },
+        { _id: 'd', title: 'Middle Draw', date: new Date(now - 5 * D), items: [] }] };
+    const all = texts(draws.buildContainer(doc, 'returning', 0, 1, true, 0)).join('\n');
+    const order = ['Early Draw', 'Middle Draw', 'Late Draw', 'Undated Draw'].map(t => all.indexOf(t));
+    assert.ok(order.every(i => i >= 0) && order.every((v, i) => !i || v > order[i - 1]), `order: ${order}`);
+    assert.deepStrictEqual(doc.returningDraws.map(d => d._id), ['a', 'b', 'c', 'd'], 'the stored order is untouched');
+});
 t('a status filter shows one list under /today\'s headings, each draw once', () => {
     const doc = season();
     const pages = [];

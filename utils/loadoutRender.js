@@ -232,7 +232,7 @@ function optionCards(build) {
         const code = v.mode !== 'DMZ' && v.shareCode ? ` · ${emojis.gunsmithCode} \`${gunsmithCodeText(build, v.shareCode)}\`` : '';
         // `1\\.` with the dot escaped (Harkirat, 2026-11-06 11:47 EST, a phone screenshot of SKS's options "so spaced out"): `-# 1. X` reads as subtext holding an ordered list, so every line became a list of its own, drawn at full size with a list's gap above and below. Escaped, the number is plain text and the five lines sit close in small text.
         const text = { type: 10, content: `**Option ${String.fromCharCode(65 + i)}**${code}\n${orderedAttachments(v).map((att, n) => `-# ${n + 1}\\. ${att}`).join('\n')}` };
-        return hasRealImage(v) ? { type: 9, components: [text], accessory: { type: 11, media: { url: buildImageUrl(v.imageKey, pictureVersion(v)) } } } : text;
+        return { type: 9, components: [text], accessory: { type: 11, media: { url: hasRealImage(v) ? buildImageUrl(v.imageKey, pictureVersion(v)) : require('./placeholders').PLACEHOLDER.square } } };
     });
 }
 
@@ -332,12 +332,11 @@ function buildLoadoutCardBody(build, { index = 0, total = 1, hideBadges = false,
     if (codeText && !cards) containerComponents.push({ type: 10, content: `### Gunsmith Code: \`${codeText}\`` });
 
     // NOTE (removed during review, per Harkirat's request): there used to be a divider here between Gunsmith Code and the image -- dropped so the image sits directly under the text above it. 🔴 GUARDED, and NOT defensively -- found live 2026-08-23 12:58 EDT while wiring the change-detail panel. buildImageUrl() calls imageKey.startsWith(), which THROWS on a build with no imageKey. Every stored Loadout has one, so /gunsmith never hit it; a change panel does, because it reconstructs a BEFORE state as {...current, ...inversePayload} and renders delete payloads that may carry only the fields the op touched. renderRecord()'s try/catch would have swallowed the throw and quietly fallen back to a field list -- the budget fallback firing for the wrong reason, which is the "a guard that never fires is decoration" failure inverted. Omitting the gallery is the honest render of a build with no image.
-    if (activeBuild.imageKey && !cards) {
+    if (!cards) {
         // A small space over the screenshot, no line (Harkirat, 2026-10-25 15:38-16:40 EDT: the line moved below the image, where it sets off the footer and the controls; it was a divider:true small since 2026-10-24 09:45 EDT).
         containerComponents.push({ type: 14, spacing: 1, divider: false });
-        // A build with only the placeholder image says so in one quiet line instead of showing a grey "Coming Soon" rectangle; it stays in every list (his call, same message).
-        if (hasRealImage(activeBuild)) containerComponents.push({ type: 12, items: [{ media: { url: buildImageUrl(activeBuild.imageKey, pictureVersion(activeBuild)) } }] });
-        else containerComponents.push({ type: 10, content: '-# *No screenshot of this build yet.*' });
+        // A build with no screenshot shows Harkirat's own "No image yet" placeholder (2026-11-08 11:45 EST). It replaces the one quiet line "No screenshot of this build yet." that stood in for the old grey "Coming Soon" rectangle (his call, 2026-10-25): this placeholder is his design, made for exactly this.
+        containerComponents.push({ type: 12, items: [{ media: { url: hasRealImage(activeBuild) ? buildImageUrl(activeBuild.imageKey, pictureVersion(activeBuild)) : require('./placeholders').PLACEHOLDER.wide } }] });
     }
     // `footerBuild` is false on a single weapon's card with a pager, which already reads "Build 2 of 5"; a browse card's pager counts the class instead, and a one-build card has no pager, so both keep the build in the footer (Harkirat, 2026-10-24 18:25 EDT: with one build "it doesn't mention build one of one for this anymore"). A submitted build names its submitter at the end, or "anonymous" (Harkirat, 2026-10-25 16:53-16:59 EDT); the mention never pings (every send here goes out with no allowed mentions). Or a plain-name credit, "Credit: name" (2026-11-02 23:01 EST, utils/loadoutCredit.js).
     const sub = require('./loadoutCredit').creditLine(activeBuild);

@@ -30,7 +30,7 @@ async function renderAnalyticsPage(interaction, page, subState = {}) {
     const { getBotPages } = require('../utils/adminAccess');
     const pages = await getBotPages(interaction.user.id);
     if (!pages.includes(page)) {
-        return await interaction.reply({ content: "🔒 **You don't have permission for that page.** Ask the bot owner to grant it if you need it.", ephemeral: true });
+        return await interaction.reply({ content: `${BOT_EMOJI.accessDenied} **You don't have permission for that page.** Ask the bot owner to grant it if you need it.`, ephemeral: true });
     }
     await interaction.deferUpdate();
     const { buildAnalyticsPanel } = require('../commands/bot');
@@ -46,7 +46,7 @@ async function route(interaction) {
     if (interaction.isModalSubmit() && customId === 'bot_srvmodal') {
         const { isOwner } = require('../utils/adminAccess');
         if (!isOwner(interaction.user.id)) {
-            return await interaction.reply({ content: "🔒 **Only the bot owner can change another server's settings.**", ephemeral: true });
+            return await interaction.reply({ content: `${BOT_EMOJI.accessDenied} **Only the bot owner can change another server's settings.**`, ephemeral: true });
         }
         const guildId = (interaction.fields.getTextInputValue('id') || '').trim();
         if (!/^\d{15,22}$/.test(guildId)) {
@@ -62,7 +62,7 @@ async function route(interaction) {
     if (interaction.isButton() && customId.startsWith('bot_srv_')) {
         const { isOwner } = require('../utils/adminAccess');
         if (!isOwner(interaction.user.id)) {
-            return await interaction.reply({ content: "🔒 **Only the bot owner can change another server's settings.**", ephemeral: true });
+            return await interaction.reply({ content: `${BOT_EMOJI.accessDenied} **Only the bot owner can change another server's settings.**`, ephemeral: true });
         }
         const [verb, guildId] = customId.slice('bot_srv_'.length).split('|');
         // "Enter an ID": a one-box pop-up; its submit is bot_srvmodal below.
@@ -145,7 +145,7 @@ async function route(interaction) {
     if ((interaction.isButton() || interaction.isModalSubmit()) && (customId.startsWith('bot_pen') || customId.startsWith('bot_frz'))) {
         const { isOwner } = require('../utils/adminAccess');
         if (!isOwner(interaction.user.id)) {
-            return await interaction.reply({ content: '🔒 **Only the bot owner can use this.**', ephemeral: true });
+            return await interaction.reply({ content: `${BOT_EMOJI.accessDenied} **Only the bot owner can use this.**`, ephemeral: true });
         }
         const bot = require('../commands/bot');
         const controls = require('../utils/botControls');
@@ -245,7 +245,7 @@ async function route(interaction) {
     if (interaction.isModalSubmit() && customId.startsWith('bot_srvlim|')) {
         const { isOwner } = require('../utils/adminAccess');
         if (!isOwner(interaction.user.id)) {
-            return await interaction.reply({ content: "🔒 **Only the bot owner can change another server's settings.**", ephemeral: true });
+            return await interaction.reply({ content: `${BOT_EMOJI.accessDenied} **Only the bot owner can change another server's settings.**`, ephemeral: true });
         }
         const guildId = customId.split('|')[1];
         if (!/^\d{15,22}$/.test(guildId || '')) return;
@@ -269,7 +269,7 @@ async function route(interaction) {
     // --- HOTPATCH PANEL BUTTONS --- 🔴 Owner re-check, independent of the router's coarse `bot_` -> hasCommandAccess(userId,'bot') guard, exactly as every /bot access mutation does. That guard proves "has SOME /bot access", not ownership -- and this button restarts production.
     if (interaction.isButton() && customId === 'bot_hp_restart') {
         const { isOwner } = require('../utils/adminAccess');
-        if (!isOwner(interaction.user.id)) return await respondText(interaction, '🔒 Owner only.');
+        if (!isOwner(interaction.user.id)) return await respondText(interaction, `${BOT_EMOJI.accessDenied} Owner only.`);
         await interaction.deferUpdate();
         await respondText(interaction, '♻️ **Restarting.** Back in ~15s — watch for the “Bot online” alert.');
         // NO sudo. Write the marker deploy.sh writes, then SIGTERM ourselves; systemd's Restart=always brings the unit back and bot/lifecycle.js's readRestartReason() labels the alert "Manual restart". Handing a Discord button passwordless sudo would be a real privilege grant for no gain.
@@ -314,7 +314,7 @@ async function route(interaction) {
         const row = await getChange(changeId);
         // Any tier on the change's page opens its detail, and the Changes page itself must be held too: the detail panel is part of that page.
         if (!row || !(await can(interaction.user.id, 'bot.changes')) || !(await hasManagePageAccess(interaction.user.id, row.page))) {
-            return await interaction.reply({ content: "🔒 You don't have access to the section that change belongs to.", ephemeral: true });
+            return await interaction.reply({ content: `${BOT_EMOJI.accessDenied} You don't have access to the section that change belongs to.`, ephemeral: true });
         }
         // A SEPARATE ephemeral message, never a re-render of the panel -- the analytics page stays put behind it, so reading one row's detail does not cost you the glance you were looking at.
         await interaction.deferReply({ flags: 64 });
@@ -333,7 +333,7 @@ async function route(interaction) {
         // Revert needs the Undo tier (core/permissions.js's UNDO_TIER, Destructive) on the change's OWN page, plus the Changes page the button sits on. core/changeset.js's commitSet re-runs the same checkRevert, so this early check only exists to answer before deferring.
         const gate = await checkRevert(interaction.user.id, row);
         if (!gate.ok || !(await can(interaction.user.id, 'bot.changes'))) {
-            return await interaction.reply({ content: gate.ok ? "🔒 **You don't have permission for the Changes page.**" : gate.reason, ephemeral: true });
+            return await interaction.reply({ content: gate.ok ? `${BOT_EMOJI.accessDenied} **You don't have permission for the Changes page.**` : gate.reason, ephemeral: true });
         }
         await interaction.deferReply({ ephemeral: true });
         const { revertChange } = require('../core/revert');
@@ -342,14 +342,14 @@ async function route(interaction) {
             return await interaction.followUp({ content: `${BOT_EMOJI.cross} ${result.reason}` });
         }
         // Matches handleUndo's own pattern (handlers/manage/shared.js) -- a plain confirmation followUp, no re-render. The interaction is already acknowledged via deferReply/followUp above; deferUpdate() (what renderAnalyticsPage needs to refresh the panel in place) cannot be called on an interaction a second time. Re-opening the Changes page shows the update.
-        return await interaction.followUp({ content: `↩️ **Reverted** \`${changeId}\`.` });
+        return await interaction.followUp({ content: `${BOT_EMOJI.keep} **Reverted** \`${changeId}\`.` });
     }
 
     // --- ACCESS PAGE (ported from the retired handlers/manage/admins.js) ---
     if (interaction.isButton() && customId === 'bot_admin_grant') {
         const { isOwner } = require('../utils/adminAccess');
         if (!isOwner(interaction.user.id)) {
-            return interaction.reply({ content: '🔒 **Only the bot owner can manage the admin list.**', ephemeral: true });
+            return interaction.reply({ content: `${BOT_EMOJI.accessDenied} **Only the bot owner can manage the admin list.**`, ephemeral: true });
         }
         const { buildAdminGrantModal } = require('../commands/bot');
         return interaction.showModal(buildAdminGrantModal());
@@ -358,7 +358,7 @@ async function route(interaction) {
     if (interaction.isButton() && customId.startsWith('bot_admin_editperms_')) {
         const { isOwner } = require('../utils/adminAccess');
         if (!isOwner(interaction.user.id)) {
-            return interaction.reply({ content: '🔒 **Only the bot owner can manage the admin list.**', ephemeral: true });
+            return interaction.reply({ content: `${BOT_EMOJI.accessDenied} **Only the bot owner can manage the admin list.**`, ephemeral: true });
         }
         const discordId = customId.replace('bot_admin_editperms_', '');
         const AdminUser = require('../models/AdminUser');
@@ -374,7 +374,7 @@ async function route(interaction) {
         && !customId.startsWith('bot_admin_revokeconfirm_') && !customId.startsWith('bot_admin_revokecancel_')) {
         const { isOwner } = require('../utils/adminAccess');
         if (!isOwner(interaction.user.id)) {
-            return interaction.reply({ content: '🔒 **Only the bot owner can manage the admin list.**', ephemeral: true });
+            return interaction.reply({ content: `${BOT_EMOJI.accessDenied} **Only the bot owner can manage the admin list.**`, ephemeral: true });
         }
         const discordId = customId.replace('bot_admin_revoke_', '');
         return interaction.reply({
@@ -394,7 +394,7 @@ async function route(interaction) {
         const { isOwner, invalidateAdminCache } = require('../utils/adminAccess');
         const discordId = customId.replace('bot_admin_revokeconfirm_', '');
         if (!isOwner(interaction.user.id)) {
-            try { await respondText(interaction, '🔒 **Only the bot owner can manage the admin list.**'); }
+            try { await respondText(interaction, `${BOT_EMOJI.accessDenied} **Only the bot owner can manage the admin list.**`); }
             catch (notifyError) { console.error('Failed to notify non-owner bot-access revoke attempt:', notifyError); }
             return;
         }
@@ -413,7 +413,7 @@ async function route(interaction) {
 
     if (interaction.isButton() && customId.startsWith('bot_admin_revokecancel_')) {
         try {
-            await respondText(interaction, '❎ Revoke cancelled — nothing was changed.');
+            await respondText(interaction, `${BOT_EMOJI.cross} Revoke cancelled — nothing was changed.`);
         } catch (notifyError) {
             console.error('Failed to confirm bot-access revoke cancellation (interaction likely expired):', notifyError);
         }
@@ -431,7 +431,7 @@ async function route(interaction) {
         const { isOwner, invalidateAdminCache } = require('../utils/adminAccess');
         const { parseGrantsInput, formatGrants } = require('../core/permissions');
         if (!isOwner(interaction.user.id)) {
-            return interaction.reply({ content: '🔒 **Only the bot owner can manage the admin list.**', ephemeral: true });
+            return interaction.reply({ content: `${BOT_EMOJI.accessDenied} **Only the bot owner can manage the admin list.**`, ephemeral: true });
         }
         const rawId = interaction.fields.getTextInputValue('discord_id').trim();
         // ⚠️ THIS WRITES `note` AND NOT `title`, AND THAT IS CORRECT RATHER THAN A GAP. The portal split the single free-text label into a public `title` (what its Access grid prints) and a private `note` on 2026-09-11; every reader falls back to `title || note`, so an admin granted from here shows their note on the grid until somebody gives them a title in the portal's Edit drawer. Adding a second modal field to this panel is a separate decision about a surface that was not in scope.
@@ -464,7 +464,7 @@ async function route(interaction) {
         const { isOwner, invalidateAdminCache } = require('../utils/adminAccess');
         const { parseGrantsInput, formatGrants } = require('../core/permissions');
         if (!isOwner(interaction.user.id)) {
-            return interaction.reply({ content: '🔒 **Only the bot owner can manage the admin list.**', ephemeral: true });
+            return interaction.reply({ content: `${BOT_EMOJI.accessDenied} **Only the bot owner can manage the admin list.**`, ephemeral: true });
         }
         const discordId = customId.replace('bot_adminmodal_editperms_', '');
         const parsed = parseGrantsInput(interaction.fields.getTextInputValue('permissions'));

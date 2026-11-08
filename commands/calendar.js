@@ -46,11 +46,14 @@ function getDrawSectionEntries(seasonalDoc) {
     const newDraws = seasonalDoc.newDraws || [];
     const returningDraws = seasonalDoc.returningDraws || [];
 
+    // A row shows its draw's /draws name when the two differ (2026-11-08 12:03 EST, Harkirat: "when a /draws and /calendar name for the exact same draw differ, utilize the /draw's name"); `rowTitle` keeps the stored one.
+    const { bestDrawMatch } = require('../utils/search');
     const taggedExplicit = explicitDraws.map(entry => {
-        let drawType = 'new';
-        if (newDraws.some(d => isSameDrawTitle(entry.title, d.title))) drawType = 'new';
-        else if (returningDraws.some(d => isSameDrawTitle(entry.title, d.title))) drawType = 'returning';
-        return { ...entry, drawType };
+        const asNew = bestDrawMatch(newDraws, entry.title);
+        const asReturning = asNew ? null : bestDrawMatch(returningDraws, entry.title);
+        const drawType = asReturning ? 'returning' : 'new';
+        const match = asNew || asReturning;
+        return { ...entry, drawType, ...(match && match.title !== entry.title ? { title: match.title, rowTitle: entry.title } : {}) };
     });
 
     const syntheticNew = newDraws
@@ -99,7 +102,7 @@ function buildEntryLine(event, seasonalDoc, nowMs = Date.now()) {
     let text;
     if (state === 'tba') text = 'Releases TBA';
     else if (state === 'over') text = `Ended <t:${e}:R>`;
-    // An upcoming entry with an end shows that end after "Until" (2026-10-23 14:33 EDT, Harkirat: "put Until before the expected end date"); the absolute start date it showed there before only repeated the relative one and read as the end. One with no end (a draw's release day, an All Season row while the BP end is TBD) keeps its start date.
+    // An upcoming entry with an end shows that end after "Until" (2026-10-23 14:33 EDT, Harkirat: "put Until before the expected end date"); the absolute start date it showed there before only repeated the relative one and read as the end. One with no end (a draw's release day, an All Season row while the BP end is TBD) keeps its start date. A draw with no end date keeps its release-day line: "Ends TBD" was built and taken back the same hour (2026-11-08 12:18 EST, Harkirat: "no, just do it like we currently do. i thought they didn't show up in calendar at all"), because /calendar already lists them.
     else if (state === 'soon') text = `${returning ? 'Returns' : event.dateOnly ? 'Releases' : 'Starts'} <t:${s}:R> · ${e ? `Until <t:${e}:D>` : `<t:${s}:D>`}`;
     else if (e) text = `**Live** · ends <t:${e}:R>`;
     else if (event.dateOnly) text = returning ? `**Back** · returned <t:${s}:R>` : `**Live** · released <t:${s}:R>`;
@@ -120,9 +123,8 @@ const ENDED_SHOWN = 3;
 const FOLD_FROM = 5;
 
 // One Text Display per section (heading + entries together) -- Discord renders visible vertical margin BETWEEN components, not between lines inside one, so keeping heading+content in a single component is what keeps a section visually tight instead of looking like two floating pieces.
-function buildSectionComponent(headingLine, entries, seasonalDoc, collapseEnded = false) {
+function buildSectionComponent(headingLine, entries, seasonalDoc, collapseEnded = false, nowMs = Date.now()) {
     if (entries.length === 0) return null;
-    const nowMs = Date.now();
     let shown = entries, hiddenCount = 0;
     if (collapseEnded && entries.length >= FOLD_FROM) {
         // Entries are sorted finished-first, oldest finished at the top, so the earliest ones are the ones folded away.
@@ -224,9 +226,10 @@ function buildFilterRow(page, mask) {
     };
 }
 
-function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEphemeral = false, filterMode = 'all', client) {
+function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEphemeral = false, filterMode = 'all', client, opts = {}) {
     const seasonTitle = seasonalDoc.currentSeasonTitle || "Current Season";
-    const nowMs = Date.now();
+    // `opts.nowMs` draws the page as of another moment (the season panel's staged preview, 2026-11-08); every section reads the same clock.
+    const nowMs = opts.nowMs ?? Date.now();
     const sortByDate = compareEntries(seasonalDoc, nowMs);
     const mask = filterMask(filterMode);
     const states = mask & STATE_BITS;
@@ -266,8 +269,9 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
         return fitMessage(seasonalDoc, { nowMs, withDays: true, types: types.size ? types : null }, body => withShareButton([{ type: 17, accent_color: accentColor, components: [...title, { type: 14, spacing: 2, divider: true }, ...body, { type: 14, spacing: 2, divider: true }, ...(todayPager ? [todayPager] : []), buildFilterRow(safePage, mask), ...(mask & ~TODAY_BIT ? [resetFilterRow(safePage)] : [])] }, todayNav], isEphemeral));
     }
 
-    // Per-page banner -- rendered as a true cover image at the VERY TOP of the container, above even the title (Harkirat's explicit call, 2026-07-31 17:20 EDT -- reads like a real banner/ splash image rather than a mid-card illustration this way). Independently settable per page; omitted entirely (no placeholder) when unset.
-    const bannerUrl = seasonalDoc[BANNER_FIELDS_BY_PAGE[safePage]];
+    // Per-page banner -- rendered as a true cover image at the VERY TOP of the container, above even the title (Harkirat's explicit call, 2026-07-31 17:20 EDT -- reads like a real banner/ splash image rather than a mid-card illustration this way). Independently settable per page; omitted entirely (no placeholder) when unset. A page with a banner slot (Draws, Events, Modes) and no banner set shows the "No image yet" placeholder (2026-11-08 11:45 EST); the Today page has no slot.
+    const bannerField = BANNER_FIELDS_BY_PAGE[safePage];
+    const bannerUrl = bannerField ? (seasonalDoc[bannerField] || require('../utils/placeholders').PLACEHOLDER.wide) : null;
     if (bannerUrl) {
         calendarComponents.push({ type: 12, items: [{ media: { url: bannerUrl } }] });
     }
@@ -288,8 +292,8 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
         // NEW/RETURNING DRAWS soft-split (notes follow-up, 2026-07-31 14:00 EDT) -- replaces the old single "Draws" heading entirely; each sub-heading carries its own matching emoji (emojiMap.js's existing newDraws/returningDraws icons, already used elsewhere in the bot for this exact New/Returning distinction).
         const newDrawEntries = drawEntries.filter(e => e.drawType === 'new');
         const returningDrawEntries = drawEntries.filter(e => e.drawType === 'returning');
-        const newSection = buildSectionComponent(sectionHeading(emojis.newDraws, 'New Draws'), newDrawEntries, seasonalDoc, !states);
-        const returningSection = buildSectionComponent(sectionHeading(emojis.returningDraws, 'Returning Draws'), returningDrawEntries, seasonalDoc, !states);
+        const newSection = buildSectionComponent(sectionHeading(emojis.newDraws, 'New Draws'), newDrawEntries, seasonalDoc, !states, nowMs);
+        const returningSection = buildSectionComponent(sectionHeading(emojis.returningDraws, 'Returning Draws'), returningDrawEntries, seasonalDoc, !states, nowMs);
         if (!newSection && !returningSection) {
             calendarComponents.push(emptyPage(sectionHeading(emojis.newDraws, 'Lucky Draws'), 'Lucky Draws', emojis.newDraws, allDrawEntries));
         } else {
@@ -301,10 +305,10 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
             calendarComponents.push(returningSection || emptyPage(sectionHeading(emojis.returningDraws, 'Returning Draws'), 'Returning Draws', emojis.returningDraws, allReturning));
         }
     } else if (safePage === 1) {
-        const eventSection = buildSectionComponent(sectionHeading(emojis.events, 'Special Events'), eventEntries, seasonalDoc, !states);
+        const eventSection = buildSectionComponent(sectionHeading(emojis.events, 'Special Events'), eventEntries, seasonalDoc, !states, nowMs);
         calendarComponents.push(eventSection || emptyPage(sectionHeading(emojis.events, 'Special Events'), 'Special Events', emojis.events, allEventEntries));
     } else {
-        const playlistSection = buildSectionComponent(sectionHeading(emojis.modes, 'Playlists & Game Modes'), playlistEntries, seasonalDoc, !states);
+        const playlistSection = buildSectionComponent(sectionHeading(emojis.modes, 'Playlists & Game Modes'), playlistEntries, seasonalDoc, !states, nowMs);
         calendarComponents.push(playlistSection || emptyPage(sectionHeading(emojis.modes, 'Playlists & Game Modes'), 'Playlists & Game Modes', emojis.modes, allPlaylistEntries));
     }
 

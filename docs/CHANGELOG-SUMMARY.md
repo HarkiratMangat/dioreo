@@ -12,6 +12,12 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.16.0 — November 8, 2026
+- **Changed:** draws now list in release order on `/draws`.
+- **New:** a placeholder picture where a draw, build, banner or patch-notes season has none yet.
+- **Changed:** clearer custom icons on buttons and notices.
+- **New (admins):** the next-season draft gets a season emoji box, auto-promote at the season start, its lists shown as players will see them, a Needs a Look check, and one-at-a-time draw editing.
+
 ## v3.15.1 — November 8, 2026
 - **Fixed (admins):** a date typed on its own in the next-season draft is the season's start, not its end.
 - **Fixed (admins):** promoting the next-season draft puts its draws in date order, and the draft panel separates carried-over rows from news and warns about a calendar draw missing from the draw lists.

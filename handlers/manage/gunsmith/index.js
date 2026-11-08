@@ -46,14 +46,14 @@ async function gate(interaction, mode, action) {
     const g = await resolveAction(S.GROUP[mode], action, interaction.user.id);
     if (g.ok) return true;
     require('../../../utils/eventStore').markOutcome('rejected_admin');
-    await say(interaction, g.message || DENIAL_MESSAGE[g.reason] || '🔒 You do not have access to that.');
+    await say(interaction, g.message || DENIAL_MESSAGE[g.reason] || `${emojis.accessDenied} You do not have access to that.`);
     return false;
 }
 async function gateDestructive(interaction, mode) {
     const { can } = require('../../../utils/adminAccess');
     if (await can(interaction.user.id, `manage.${S.GROUP[mode]}`, 'destructive')) return true;
     require('../../../utils/eventStore').markOutcome('rejected_admin');
-    await say(interaction, "🔒 **You don't have access to delete here anymore.** Nothing was deleted.");
+    await say(interaction, `${emojis.accessDenied} **You don't have access to delete here anymore.** Nothing was deleted.`);
     return false;
 }
 
@@ -134,7 +134,7 @@ async function deleteOne(interaction, mode, id, opt) {
 }
 function revertButton(changeIds) {
     const id = `mng_ldrevert|${(changeIds || []).join(',')}`;
-    return changeIds?.length && id.length <= 100 ? [{ type: 2, style: 4, label: 'Revert', custom_id: id }] : [];
+    return changeIds?.length && id.length <= 100 ? [{ type: 2, style: 4, label: 'Revert', custom_id: id, emoji: emojis.parseEmoji(emojis.keep) }] : [];
 }
 
 // Many entries: whole builds go in one loadout.bulkDelete; options of a build that stays are cut with loadout.options, as bulkDeleteLoadouts builds them.

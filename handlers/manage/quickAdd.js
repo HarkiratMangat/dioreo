@@ -66,14 +66,14 @@ function draftLines(d, i) {
     const items = shown.length ? `-# ${shown.length} item${shown.length === 1 ? '' : 's'}: ${shown.slice(0, 2).map(it => it.name).join(', ')}${shown.length > 2 ? ', …' : ''}` : '-# No items';
     const notes = [];
     if (d.duplicateOf !== null && d.duplicateOf !== undefined) notes.push(`${emojis.warn} Same draw as line ${d.duplicateOf + 1}: skipped on Save.`);
-    if (d.existing) notes.push(`ℹ️ Already on /draws as **${d.existing.title}**: Save ${[d.end && 'sets its end date', d.startGiven && 'moves its start'].filter(Boolean).join(' and ') || 'changes nothing'}.`);
+    if (d.existing) notes.push(`${BOT_EMOJI.info} Already on /draws as **${d.existing.title}**: Save ${[d.end && 'sets its end date', d.startGiven && 'moves its start'].filter(Boolean).join(' and ') || 'changes nothing'}.`);
     if (d.needsPick) notes.push(`${emojis.warn} "${d.query}" fits ${d.candidates.length} draw${d.candidates.length === 1 ? '' : 's'}. Pick one, or it's skipped on Save.`);
     else if (!d.matchedBy && !d.existing && !d.edited) notes.push(`${emojis.warn} Not in the draw index. Add details gives its items and picture, or it's saved as typed.`);
     // Which season the draw index files it under (his question, 2026-11-01 12:55 EDT): a draw new to the index and saved as New gets this season; one the index already has keeps its own, whatever the line says.
-    if (d.category === 'new' && !d.existing && !d.matchedBy && d.seasonNow) notes.push(`ℹ️ Goes into the draw index as a Season ${d.seasonNow} draw once it has a picture.`);
-    else if (d.category === 'new' && d.indexSeason && d.seasonNow && d.indexSeason !== d.seasonNow) notes.push(`ℹ️ The draw index keeps it as a Season ${d.indexSeason} draw.`);
-    else if (d.matchedBy === 'words' && !d.edited) notes.push(d.sure ? `ℹ️ Matched from "${d.query}".` : `${emojis.warn} Best guess for "${d.query}". Pick to choose another.`);
-    else if (d.matchedBy === 'alias' && !d.edited) notes.push(`ℹ️ "${d.query}" is another name for this draw.`);
+    if (d.category === 'new' && !d.existing && !d.matchedBy && d.seasonNow) notes.push(`${BOT_EMOJI.info} Goes into the draw index as a Season ${d.seasonNow} draw once it has a picture.`);
+    else if (d.category === 'new' && d.indexSeason && d.seasonNow && d.indexSeason !== d.seasonNow) notes.push(`${BOT_EMOJI.info} The draw index keeps it as a Season ${d.indexSeason} draw.`);
+    else if (d.matchedBy === 'words' && !d.edited) notes.push(d.sure ? `${BOT_EMOJI.info} Matched from "${d.query}".` : `${emojis.warn} Best guess for "${d.query}". Pick to choose another.`);
+    else if (d.matchedBy === 'alias' && !d.edited) notes.push(`${BOT_EMOJI.info} "${d.query}" is another name for this draw.`);
     for (const p of d.problems) notes.push(`${emojis.warn} ${p}`);
     return [head, when, items, ...notes.map(n => `-# ${n}`)].join('\n').slice(0, 900);
 }
@@ -315,7 +315,7 @@ async function save(interaction, token, state) {
     ];
     const ends = todo.filter(d => d.end).length;
     const panel = resultPanel({ page: 'draws', heading: 'Quick Add saved', summary: ends ? `-# ${ends} end date${ends === 1 ? '' : 's'} on /calendar too.` : null, sections });
-    panel[0].components.push({ type: 14, spacing: 1, divider: false }, { type: 1, components: [{ type: 2, style: 4, label: 'Revert All', custom_id: `mng_qa_revert_${token}` }] });
+    panel[0].components.push({ type: 14, spacing: 1, divider: false }, { type: 1, components: [{ type: 2, style: 4, label: 'Revert All', custom_id: `mng_qa_revert_${token}`, emoji: BOT_EMOJI.parseEmoji(BOT_EMOJI.keep) }] });
     const sent = await sendV2Payload(interaction, panel);
     // Items the draw index has no kind for are asked about, not left blank (handlers/manage/itemKinds.js).
     await require('./itemKinds').askItemKinds(interaction, added.map(d => d.title));

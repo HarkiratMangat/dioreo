@@ -21,7 +21,7 @@ async function route(interaction) {
         const command = interaction.client.commands.get('embed');
         if (!command || !command.isAllowed(interaction)) {
             try {
-                await interaction.reply({ content: '🔒 `/embed` is a tool for the owner.', flags: 64 });
+                await interaction.reply({ content: `${require('../utils/emojiMap').accessDenied} \`/embed\` is a tool for the owner.`, flags: 64 });
             } catch (notifyError) {
                 console.error('embedtest: could not refuse a modal submit (interaction likely expired):', notifyError);
             }
@@ -34,7 +34,7 @@ async function route(interaction) {
     if ((interaction.isButton() && interaction.customId === 'embedtest_edit') || (interaction.isModalSubmit() && interaction.customId === 'embedtest_editmodal')) {
         const command = interaction.client.commands.get('embed');
         if (!command || !command.isAllowed(interaction)) {
-            try { await interaction.reply({ content: '🔒 `/embed` is a tool for the owner.', flags: 64 }); }
+            try { await interaction.reply({ content: `${require('../utils/emojiMap').accessDenied} \`/embed\` is a tool for the owner.`, flags: 64 }); }
             catch (notifyError) { console.error('embedtest: could not refuse an edit (interaction likely expired):', notifyError); }
             return;
         }

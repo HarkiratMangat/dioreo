@@ -316,6 +316,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-11-07 19:38 EST — /manage draws rehauled on his trust, and the two bugs the round trip found (v3.14.0)
 - 2026-11-07 21:28 EST — The rest of /manage rehauled with three helpers in parallel (v3.15.0)
 - 2026-11-08 11:04 EST — Small fixes, a draft date read backwards, and a bug report that was mine (v3.15.1)
+- 2026-11-08 14:44 EST — Season draft upgrades, draws in release order, and a carry-over that dropped a running draw (v3.16.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -5071,6 +5072,10 @@ Harkirat picked the small-fixes batch from a list of six, and the first thing th
 The exports pass produced the lesson. To decide whether an export was used inside its own file, a line scan skipped the `module.exports = {…}` block. Two counters, `noteBuildOpened` and `noteShare`, are called only through wrappers defined inside that block, so the scan read them as never called, and a "Your Stats never counts builds or shares" bug went onto the deferred list and into a message to Harkirat. His think-pass request the next morning caught it with one grep for the wrapper names. The same blind spot had already fired once that night (`COMMAND_NAME`, used by `.setName()` inside a command's export object) and was patched as an instance rather than as the scan. A filtered search that reports something unused needs one plain whole-file search before anyone is told.
 
 He also found a real bug while using the new Season panel: in the Next Season Draft's titles box he typed "November 12" with no end, and it was saved as the end date. The draft box had inherited the live Deadlines box's rule, where a lone date is the deadline. For next season the date known first is the start, so the draft box now reads a lone date as the start with the end TBD, and his draft was repaired to match.
+
+## 2026-11-08 14:44 EST — Season draft upgrades, draws in release order, and a carry-over that dropped a running draw (v3.16.0)
+
+Harkirat's eight season-draft asks (2026-11-08 11:52 EST) shipped together with the emoji and placeholder pass. The click-walk's Alchemy Stars finding turned out to be a carry-over bug no test covered: a calendar row already in the draft stopped the still-running draw from being carried, so Promote would have taken it off /draws. "Unsorted is wrong" became a class sweep across four lists. The "Ends TBD" wording was built and taken back within the hour, because his question had been about my phrasing ("no calendar row"), not the behaviour; the same phrase then turned up again in Needs a Look and was caught by a think-pass. The commit security review found two real auto-promote gaps (a client-supplied armer, and edits by another admin going live under the armer's authority), both closed before the PR. Lesson recorded: name the commit a test run covered, and re-run after any later code commit before claiming it.
 
 # Part B — Lessons Ledger (thematic)
 

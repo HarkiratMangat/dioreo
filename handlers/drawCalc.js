@@ -148,7 +148,7 @@ async function route(interaction) {
     const actingUser = state.authorId ? await resolvePanelActor(interaction, state.authorId) : interaction.user;
     if (!actingUser) {
         try {
-            await interaction.reply({ content: "🔒 **That isn't your calculator!** Run `/draw calculator` to start your own.", ephemeral: true });
+            await interaction.reply({ content: `${BOT_EMOJI.locked} **That isn't your calculator!** Run \`/draw calculator\` to start your own.`, ephemeral: true });
         } catch (notifyError) { console.error('Failed to notify user of blocked calculator action (interaction likely expired):', notifyError); }
         return true;
     }

@@ -90,7 +90,7 @@ function buildCard(card) {
     parts.push({ type: 14, spacing: 2, divider: true });
     if (card.dismissed) parts.push({ type: 10, content: `-# ${emojis.cross} **Dismissed**` });
     const row = card.jumpUrl ? [{ type: 2, style: 5, label: 'Open Post', url: card.jumpUrl }] : [];
-    if (card.draftChangeId && !card.draftUndone) row.push({ type: 2, style: 4, label: 'Undo Draft Changes', custom_id: `news|undo|${id}` });
+    if (card.draftChangeId && !card.draftUndone) row.push({ type: 2, style: 4, label: 'Undo Draft Changes', custom_id: `news|undo|${id}`, emoji: emojis.parseEmoji(emojis.keep) });
     if (!card.dismissed) row.push({ type: 2, style: 2, label: 'Dismiss', custom_id: `news|dismiss|${id}` });
     if (row.length) parts.push({ type: 1, components: row });
     return fitText([{ type: 17, accent_color: ACCENT, components: parts }]);
@@ -181,7 +181,9 @@ function buildPromoteCheck(r) {
     if ((r.fullBoxes || []).length) bad.push(`Nearly full in /manage (its box holds 4,000 characters): ${r.fullBoxes.join(' · ')}`);
     if ((r.stillRunning || []).length) bad.push(`Live with no end date, may run into this season: ${listNames(r.stillRunning)}`);
     const when = r.startsAt ? `<t:${Math.floor(new Date(r.startsAt).getTime() / 1000)}:R>` : 'soon';
-    const lines = [`### ${emojis.mngInfo} Next season starts ${when}`, `-# Check, then Promote to Live from /manage → Next Season Draft once it starts.`, '',
+    // With auto-promote set (2026-11-08 12:52 EST) the last step is already scheduled, so the card says so instead of asking him to promote by hand.
+    const step = r.autoPromote ? `-# Auto-promote is set: the draft goes live ${when}. Cancel it in /manage → Next Season Draft.` : `-# Check, then Promote to Live from /manage → Next Season Draft once it starts.`;
+    const lines = [`### ${emojis.mngInfo} Next season starts ${when}`, step, '',
         ...good.map(g => `${ok} ${g}`), ...bad.map(x => `${warn} ${x}`), '', bad.length ? `**${bad.length} thing${bad.length === 1 ? '' : 's'} to look at before promoting.**` : '**Everything checked is ready.**'];
     return fitText([{ type: 17, accent_color: ACCENT, components: [{ type: 10, content: lines.join('\n') }] }]);
 }

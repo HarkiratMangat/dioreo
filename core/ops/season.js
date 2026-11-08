@@ -80,6 +80,11 @@ function mapParsedEvents(parsed) {
     return parsed.map(e => ({ title: e.title, date: e.startDate, endDate: e.isOngoing ? null : e.endDate, isOngoing: e.isOngoing, category: e.category }));
 }
 
+// An armed auto-promote is bound to the admin who armed it (the commit security review, 2026-11-08 12:12 EST): a draft edit by ANYONE ELSE switches it off, so nobody can change what goes live under another admin's authority. The armer's own edits keep it, and news triage's writes (season.newsDraft) never touch it, because news fills the draft by design right up to the season. Reverting the edit does not re-arm it; arming again is one click.
+async function disarmAutoPromote(session, actorId) {
+    await SeasonalData.updateOne({ ...DOC, 'draft.autoPromote': true, 'draft.autoPromoteBy': { $ne: String(actorId || '') } }, { $set: { 'draft.autoPromote': false } }, { session });
+}
+
 registerEntity('season', {
     'season.setTitlesDeadlines': {
         action: 'season:titlesdeadlines', tier: 1,
@@ -298,6 +303,27 @@ registerEntity('season', {
         invert: (c) => ({ type: 'season.restoreDraft', payload: { draft: c.applied.draft } })
     },
 
+    // The Promote pop-up's "Auto-promote at the Battle Pass start" (2026-11-08 12:09 EST). Sets or clears draft.autoPromote; utils/autoPromote.js does the promoting. Not a /manage action of its own (it rides on the Promote pop-up, gated as promote), so it declares page:. Its own inverse.
+    'season.setAutoPromote': {
+        page: 'seasondraft', tier: 3,
+        validate: (op) => ({ ok: true, errors: [], normalized: { ...op, payload: { on: Boolean(op.payload?.on), by: String(op.payload?.by || '') } } }),
+        preview: (op, live) => ({ before: { autoPromote: !!live.draft?.autoPromote }, after: { autoPromote: !!op.payload.on } }),
+        apply: async (op, { session, actorId, restoring }) => {
+            const before = await SeasonalData.findOne(DOC).select('draft').lean().session(session);
+            const d = before?.draft || {};
+            if (op.payload.on && (!d.active || !d.bpStart)) return { ok: false, reason: 'invalid', errors: ['The draft has no Battle Pass start to promote at.'] };
+            // The armer is whoever commits the op, never a name in the payload (the commit security review, 2026-11-08 12:37 EST): a payload's `by` is honoured only on a Revert, which puts back the value it recorded.
+            const by = restoring ? String(op.payload.by || '') : String(actorId || '');
+            await SeasonalData.updateOne(DOC, { $set: { 'draft.autoPromote': op.payload.on, 'draft.autoPromoteBy': op.payload.on ? by : '' } }, { session });
+            return {
+                ok: true,
+                change: { action: 'edit', model: 'SeasonalData', target: 'draft', summary: op.payload.on ? 'Set the draft to promote at the Battle Pass start' : 'Cancelled the draft\'s auto-promote' },
+                applied: { prev: { on: !!d.autoPromote, by: d.autoPromoteBy || '' } }
+            };
+        },
+        invert: (c) => ({ type: 'season.setAutoPromote', payload: c.applied.prev })
+    },
+
     // News triage's automatic Next Season Draft writes (utils/newsTriage/draftMerge.js, Harkirat's "yeah" to auto-filling the draft, 2026-11-04 23:59 EST). Not a /manage action, so it declares page:. The changes are planned outside the transaction and re-checked row by row inside it (applyDraftChanges skips a row edited since), and the op is its own inverse: forward applies the changes, reverse undoes them by id.
     'season.newsDraft': {
         page: 'seasondraft', tier: 1,
@@ -351,7 +377,8 @@ registerEntity('season', {
         action: 'seasondraft:settitles', tier: 1,
         validate: (op) => ({ ok: true, errors: [], normalized: op }),
         preview: (op, live) => ({ before: { active: !!live.draft?.active }, after: { active: true } }),
-        apply: async (op, { session }) => {
+        apply: async (op, { session, actorId }) => {
+            await disarmAutoPromote(session, actorId);
             const before = await SeasonalData.findOne(DOC).select('draft').lean().session(session);
             const draft = before.draft || {};
             const prior = { ...draft };
@@ -396,7 +423,8 @@ registerEntity('season', {
             return { ok: true, errors: [], normalized: op };
         },
         preview: (op, live) => ({ before: { new: live.draft?.newDraws?.length || 0, returning: live.draft?.returningDraws?.length || 0 }, after: {} }),
-        apply: async (op, { session }) => {
+        apply: async (op, { session, actorId }) => {
+            await disarmAutoPromote(session, actorId);
             const before = await SeasonalData.findOne(DOC).select('draft').lean().session(session);
             const draft = before.draft || {};
             const prior = { newDraws: draft.newDraws || [], returningDraws: draft.returningDraws || [] };
@@ -445,7 +473,8 @@ registerEntity('season', {
             return { ok: true, errors: [], normalized: { ...op, payload: { ...op.payload, parsed: mapParsedEvents(parsed) } } };
         },
         preview: (op, live) => ({ before: { count: live.draft?.calendar?.length || 0 }, after: { count: op.payload.parsed.length } }),
-        apply: async (op, { session }) => {
+        apply: async (op, { session, actorId }) => {
+            await disarmAutoPromote(session, actorId);
             const before = await SeasonalData.findOne(DOC).select('draft').lean().session(session);
             const prior = before.draft?.calendar || [];
             // A line he left as it was keeps news triage's id and source, so its Undo and later posts still find it (utils/newsTriage/draftMerge.js keepNewsRows).

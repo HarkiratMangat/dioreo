@@ -175,7 +175,8 @@ function buildBriefBody(seasonalDoc, { nowMs = Date.now(), mode = 'spaced' } = {
     const drawBlock = e => {
         const d = bestDrawMatch(allDraws, e.title);
         const text = [`### ${e.title}`, ...(d?.items || []).filter(i => i.tier !== 'comment').map(itemLine)].join('\n');
-        return d?.thumbnailUrl ? { type: 9, components: [block(text)], accessory: { type: 11, media: { url: d.thumbnailUrl } } } : block(text);
+        // No picture: the "No image yet" placeholder (2026-11-08 11:45 EST), as on /draws.
+        return { type: 9, components: [block(text)], accessory: { type: 11, media: { url: d?.thumbnailUrl || require('../utils/placeholders').PLACEHOLDER.square } } };
     };
     // A section: its heading on its own, each draw, then one block per small group.
     const section = (heading, all) => {

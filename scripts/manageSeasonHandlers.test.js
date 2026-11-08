@@ -76,6 +76,29 @@ const button = (customId) => Object.assign(h.modal(customId), { isButton: () => 
         assert.strictEqual(h.state.doc.newDraws.length + h.state.doc.calendar.length, 0);
     });
 
+    await check('the draft draws panel removes one draw, adds one, and keeps the rest exactly (2026-11-08 12:28 EST)', async () => {
+        const panel = require('../handlers/manage/seasonPanel');
+        const d = (t, day, extra = {}) => ({ _id: h.id(), title: t, date: new Date(`2026-11-${String(day).padStart(2, '0')}T00:00:00.000Z`), items: [{ tier: 'legendary', name: 'Gun - Skin' }], thumbnailUrl: 'https://res.cloudinary.com/x/image/upload/draws/a.jpg', ...extra });
+        const keep = d('Keep Me', 12, { newsSource: { channelId: '1', messageId: '2', rank: 3, sig: 'x' } }), gone = d('Remove Me', 14);
+        h.reset({ draft: { active: true, currentSeasonTitle: 'Season 10', bpStart: new Date('2026-11-12T00:00:00Z'), newDraws: [keep, gone], returningDraws: [], calendar: [] } });
+        const rm = h.modal('mng_ss|ddrmm|n', {}, { selects: { pick: [String(gone._id)] } });
+        await (panel.handleSeasonPanelInteraction || panel)(rm);
+        assert.deepStrictEqual(h.state.doc.draft.newDraws.map(x => x.title), ['Keep Me'], rm.text());
+        assert.deepStrictEqual(h.state.doc.draft.newDraws[0].newsSource, keep.newsSource, 'the untouched row keeps its news tag');
+        const add = h.modal('mng_ss|ddaddm|n', { title: 'Botanist Mythic Drop', items: 'm Weapon - Bloom\nl Other - Petal', date: 'November 26, 2026', image: 'https://res.cloudinary.com/x/image/upload/draws/b.jpg', type: '' });
+        await (panel.handleSeasonPanelInteraction || panel)(add);
+        assert.deepStrictEqual(h.state.doc.draft.newDraws.map(x => x.title), ['Keep Me', 'Botanist Mythic Drop'], add.text());
+        assert.ok(add.text().includes('Added Botanist Mythic Drop'));
+    });
+
+    await check('auto-promote records the admin who commits it, whatever name the payload carries (2026-11-08 12:37 EST)', async () => {
+        h.reset({ draft: { active: true, currentSeasonTitle: 'Season 10', bpStart: new Date('2026-11-12T00:00:00Z'), newDraws: [], returningDraws: [], calendar: [] } });
+        const r = await require('../core/changeset').commitSet([{ type: 'season.setAutoPromote', payload: { on: true, by: 'someone-else' } }], { actorId: h.OWNER });
+        assert.ok(r.ok, JSON.stringify(r.failedAt || r));
+        assert.strictEqual(h.state.doc.draft.autoPromote, true);
+        assert.strictEqual(h.state.doc.draft.autoPromoteBy, h.OWNER);
+    });
+
     if (failures) { console.error(`\n${failures} failing`); process.exit(1); }
     console.log('\n/manage season handlers: all checks pass');
     process.exit(0);

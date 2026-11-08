@@ -66,7 +66,7 @@ const browseAll = JSON.stringify(R.buildLoadoutCard(two, 0, { color: 1, idPrefix
 assert.ok(browseAll.includes('"AR · 2/2"'), 'a browse pager names the class and the weapon\'s place in it');
 assert.ok(R.isPlaceholderBuild(ar[3]) && !R.isPlaceholderBuild(ar[0]), 'placeholder detection');
 const noImg = JSON.stringify(R.buildLoadoutCard([{ ...fixture[0], imageKey: 'https://placehold.co/1x1?text=Coming+Soon' }], 0, { color: 1, idPrefix: 'mp' }));
-assert.ok(noImg.includes('*No screenshot of this build yet.*') && !noImg.includes('"type":12'), 'a placeholder image is replaced by one line');
+assert.ok(!noImg.includes('No screenshot of this build yet') && noImg.includes('site_assets/placeholder-16x9.png'), 'a build with no screenshot shows the 16x9 "No image yet" placeholder');
 const missing = JSON.stringify(R.buildMissingWeaponCard({ weaponName: 'PHARO', category: 'AR', categoryBuilds: ar }));
 assert.ok(missing.includes('No build yet') && missing.includes('gsb~open~MP.AR.std'), 'the missing-weapon card says so and opens the class');
 // His /gunsmith review (Harkirat, 2026-10-25 15:33-16:40 EDT).

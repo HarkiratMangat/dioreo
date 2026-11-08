@@ -110,12 +110,12 @@ t('/today: Going live with its draws, and Leaving soon grouped under one "Ends" 
     assert.ok(blocks.slice(leave + 1, leave + 3).every(b => /^-# \*\*Ends <t:\d+:R>\*\*/.test(b)));
 });
 
-t("/today: a draw with an image shows it as the thumbnail; one without is a plain block", () => {
+t("/today: a draw with an image shows it as the thumbnail; one without shows the \"No image yet\" placeholder", () => {
     const withImage = doc();
     withImage.returningDraws[0] = { ...withImage.returningDraws[0], thumbnailUrl: 'https://example.com/deepstar.png' };
     const sec = buildTodayBody(withImage, { nowMs: NOW }).find(c => c.type === 9);
     assert.ok(sec && sec.accessory.media.url === 'https://example.com/deepstar.png' && sec.components[0].content.startsWith('### Deepstar Wraith'));
-    assert.ok(!buildTodayBody(doc(), { nowMs: NOW }).some(c => c.type === 9), 'no image, no Section');
+    assert.ok(buildTodayBody(doc(), { nowMs: NOW }).some(c => c.type === 9 && c.accessory.media.url.includes('site_assets/placeholder-1x1.png')), 'no image: the placeholder');
 });
 
 t('/today: an empty Released or Going live is one bold red line with its time underneath, never a "nothing goes live" claim without "on the calendar"', () => {
@@ -212,7 +212,7 @@ t('a busy season still fits on both screens: under 40 components and 3,800 chara
         assert.strictEqual(/\+\d+ more/.test(JSON.stringify(page)), trimmed, trimmed ? 'the trimmed list says how many more' : 'nothing trimmed');
     }
     // A normal day keeps his layout: each released draw is its own block.
-    assert.ok(buildTodayBody(doc(), { nowMs: NOW }).some(c => c.type === 10 && c.content.startsWith('### Deepstar Wraith')));
+    assert.ok(buildTodayBody(doc(), { nowMs: NOW }).some(c => c.type === 9 && c.components[0].content.startsWith('### Deepstar Wraith')));
     assert.ok(typeof fitMessage === 'function');
 });
 

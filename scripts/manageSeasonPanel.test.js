@@ -104,7 +104,7 @@ const emptyDraft = () => ({ ...live(), draft: { active: false, newDraws: [], ret
         const e = V.pageView(emptyDraft(), 'draft');
         assert.match(allText(e), /Nothing is staged, and nothing goes live until you press Promote to Live/);
         const labels = []; walk(e, c => { if (c.type === 2) labels.push(c.label); });
-        assert.deepStrictEqual(labels.filter(Boolean), ['Edit Titles & Deadlines', 'Paste Draws', 'Paste Calendar', 'Guide', 'Live Season']);
+        assert.deepStrictEqual(labels.filter(Boolean), ['Edit Titles & Deadlines', 'Draws', 'Paste Calendar', 'Guide', 'Live Season']);
         const f = []; walk(V.pageView(fullDraft(), 'draft'), c => { if (c.type === 2) f.push(c.label); });
         for (const want of ['New Draws · 10', 'Returning · 20', 'Calendar · 40', 'News · 5', 'Promote to Live', 'Discard Draft', 'Guide', 'Live Season']) assert.ok(f.includes(want), `missing button ${want}`);
     });
@@ -191,7 +191,7 @@ const emptyDraft = () => ({ ...live(), draft: { active: false, newDraws: [], ret
         await P.handleSeasonPanelInteraction(b);
         const ids = []; walk(shown.components, c => { if (c.custom_id) ids.push(c.custom_id); });
         assert.strictEqual(shown.custom_id, 'mng_ss|tm|draft');
-        assert.deepStrictEqual(ids, ['main_title', 'bp_line', 'rank_line', 'dmz_line']);
+        assert.deepStrictEqual(ids, ['main_title', 'bp_line', 'rank_line', 'dmz_line', 'season_emoji']);
     });
     await check('only ids starting mng_ss| are handled; others fall through', async () => {
         assert.strictEqual(await P.handleSeasonPanelInteraction(fake('mng_dr|page')), false);
