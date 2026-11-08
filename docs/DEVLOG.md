@@ -5059,6 +5059,8 @@ His ask at 20:54 EST was to finish every /manage subcommand, its slash options a
 
 **What the click-test found.** The builders' tests were green, and the dev bot still showed three things worth fixing: the announcement card printed layout marks (`----`, `++`) as text because it showed the raw text rather than the delivered container; dropdown labels would print custom emoji markup; and Promote would copy a draft with no title or end dates over the live season without a word. The card now draws the delivered container, labels drop the markup, and Promote names what is not staged before the Yes. Promote and Discard also gained a Revert on the panel.
 
+**What "are you sure?" found.** Unit tests and the rendered panels were not the claim; the claim was that every save and every Revert works. Driving each new pop-up through its slash path and submitting it back, then writing and reverting on the dev database and comparing the stored document byte for byte, found two Revert defects in the shared core that predate this branch but that the new panels put one click away: reverting Promote to Live lost the staged draft, and reverting an announcement Delete re-posted it under a new id so everyone saw it again. Both fixed in core, with tests.
+
 **A near miss worth remembering.** A hotpatch closure check ran `git stash` on handler paths while one helper was still writing. It was restored with `git stash apply` within seconds and nothing was lost, but a shared worktree with live writers is no place for a stash.
 
 # Part B — Lessons Ledger (thematic)

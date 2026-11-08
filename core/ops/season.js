@@ -170,7 +170,9 @@ registerEntity('season', {
                 bpStart: before.bpStart || null, rankStart: before.rankStart || null, dmzStart: before.dmzStart || null,
                 bpEndTBD: before.bpEndTBD, rankEndTBD: before.rankEndTBD, dmzEndTBD: before.dmzEndTBD,
                 newDraws: before.newDraws, returningDraws: before.returningDraws, calendar: before.calendar,
-                drawsBannerUrl: before.drawsBannerUrl, eventsBannerUrl: before.eventsBannerUrl, playlistsBannerUrl: before.playlistsBannerUrl
+                drawsBannerUrl: before.drawsBannerUrl, eventsBannerUrl: before.eventsBannerUrl, playlistsBannerUrl: before.playlistsBannerUrl,
+                // The staged draft too (found 2026-11-07 22:00 EST, round-tripping Promote and its Revert on the dev bot): Promote clears the draft below, and a snapshot without it put the live season back but lost everything that had been staged. restoreSnapshot sets whatever top-level fields it is given, so carrying `draft` is all a Revert needs. Rows recorded before this have no `draft` and restore as they always did.
+                draft: before.draft || { active: false, newDraws: [], returningDraws: [], calendar: [] }
             };
             const $set = {};
             // The draft's emoji goes live WITH its title, blank included: a new season never keeps the old one's emoji.

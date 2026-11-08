@@ -44,8 +44,12 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 - **Every save goes through the existing code** (the old calendar, patch notes, season and announcement handlers, which now take an optional id and result callback without changing what they do for their old callers), so the ChangeLog, Revert and permission checks are what they were. Old panels' buttons still work.
 - The calendar `editCalendarEvent` / `bulkAddOrReplaceCalendar` and `purge` return what the panel needs (change ids); season.js's writes are lifted into functions the panel and the old pop-ups share.
 
+### Fixed
+- **Reverting Promote to Live puts the staged draft back.** Promote clears the draft, and its snapshot did not carry it, so a Revert restored the live season and lost everything staged (`core/ops/season.js`: the prior snapshot now holds `draft`). Found by round-tripping Promote and Revert on the dev bot.
+- **Reverting an announcement Delete brings back the same announcement.** It came back under a new id, so every player who had already seen it got it again (`core/ops/announcements.js`: the inverse carries the original id and the restoring post reuses it). The same Revert on `/bot analytics` › Changes is fixed with it.
+
 ### Tests
-- `scripts/manageCalendarPanel.test.js`, `scripts/managePatchAnnounce.test.js`, `scripts/manageSeasonPanel.test.js`: every view inside Discord's limits with realistic data, custom ids, previews, autocomplete, slash routing and the old handlers' new options. `scripts/manageActions.test.js` expects the new option set on every subcommand. `/help`'s snapshot re-recorded for the new /manage options.
+- `scripts/manageCalendarPanel.test.js`, `scripts/managePatchAnnounce.test.js`, `scripts/manageSeasonPanel.test.js`: every view inside Discord's limits with realistic data, custom ids, previews, autocomplete, slash routing and the old handlers' new options. `scripts/manageActions.test.js` expects the new option set on every subcommand. `/help`'s snapshot re-recorded for the new /manage options. `scripts/seasonOps.test.js` and `scripts/announcementOps.test.js` pin both Revert fixes.
 
 ## v3.14.0 — 2026-11-07 19:38 EST (#262 · `4156ca6b`) — /manage draws rehauled: one panel to browse, open, edit, move, select, paste and export draws
 
