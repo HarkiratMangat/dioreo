@@ -119,6 +119,14 @@ function seasonDoc(nNew = 3, nRet = 30) {
         assert.match(JSON.stringify(V.selectView(doc, 'tok12345', sel)), /Edit 7/);
         assert.strictEqual(V.cardView(doc, 'n:doesnotexist'), null);
     });
+    await check('Active Now lists what ends soonest first', () => {
+        const doc = seasonDoc(3, 6);
+        doc.calendar = V.allDraws(doc).map((d, i) => ({ _id: oid(950 + i), title: d.title, date: new Date(d.startMs), endDate: new Date(now + (20 - i * 2) * DAY), category: 'draw' }));
+        const titles = JSON.stringify(V.listView(doc, 'live', 0)).match(/\*\*[^*]+\*\*/g) || [];
+        const ends = V.allDraws(doc).filter(V.STATUS.live.test).sort((a, b) => a.endMs - b.endMs).map(d => `**${d.title}**`);
+        assert.ok(ends.length > 2, 'too few live draws to prove an order');
+        assert.deepStrictEqual(titles.slice(0, ends.length), ends.slice(0, titles.length));
+    });
     await check('custom ids are mng_dr|… and refuse to pass 100 characters', () => {
         assert.strictEqual(V.ID('card', `n:${oid(1)}`), `mng_dr|card|n:${oid(1)}`);
         assert.throws(() => V.ID('x'.repeat(100)), /over 100/);

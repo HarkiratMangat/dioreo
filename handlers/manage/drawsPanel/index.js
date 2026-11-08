@@ -85,8 +85,7 @@ function resolveKeys(doc, names, picks = []) {
 }
 const field = (i, id) => { try { const f = i.fields.getField(id); return f?.value ?? f?.values ?? null; } catch { return null; } };
 
-// ---------- paste text ----------
-// What pasted or edited draw lines would do, line by line against the draws saved now, matched the way Replace Multiple saves them (utils/bulkMerge.js upsertByTitle: the same title, else the best fuzzy match). `keepNew` / `keepRet` are the lines that add or change something, which is all Save sends, so an Edit N left as it was saves nothing.
+// ---------- paste text ---------- What pasted or edited draw lines would do, line by line against the draws saved now, matched the way Replace Multiple saves them (utils/bulkMerge.js upsertByTitle: the same title, else the best fuzzy match). `keepNew` / `keepRet` are the lines that add or change something, which is all Save sends, so an Edit N left as it was saves nothing.
 function previewDraws(doc, newText, retText) {
     const { parseBulkDrawList } = require('../../../utils/adminParser');
     const { bestDrawMatch, fuzzyMatch } = require('../../../utils/search');
@@ -146,7 +145,8 @@ async function previewPanel(token, newText, retText, { isEdit }) {
 }
 
 function revertButton(changeIds) {
-    const id = `mng_rsrevert|${(changeIds || []).join(',')}`;
+    // The panel's own Revert, so it lands back on the draws home rather than a bare note (results.js revertChanges does the reverting and its permission check).
+    const id = `${PREFIX}revert|${(changeIds || []).join(',')}`;
     return changeIds?.length && id.length <= 100 ? [{ type: 2, style: 4, label: 'Revert', custom_id: id }] : [];
 }
 
@@ -173,8 +173,7 @@ async function confirmCard(doc, kind, key) {
     return V.cardView(doc, key, { header: q, extra: [V.row(V.btn([`${kind}ok`, key], kind === 'move' ? 'Yes, Move' : 'Yes, Delete', kind === 'move' ? emojis.checkmark : emojis.deleteBin, kind === 'move' ? 3 : 4), V.btn(['card', key], 'Cancel', emojis.returnArrow))] });
 }
 
-// ---------- the slash command ----------
-// `draw:` opens a draw (autocomplete), `show:` a list, `do:` an action (with a draw, at once). A pop-up has to be the first answer, so every path that opens one runs before anything is deferred.
+// ---------- the slash command ---------- `draw:` opens a draw (autocomplete), `show:` a list, `do:` an action (with a draw, at once). A pop-up has to be the first answer, so every path that opens one runs before anything is deferred.
 async function openFromSlash(interaction) {
     const o = interaction.options;
     const drawValue = o.getString('draw'), act = o.getString('do'), list = o.getString('show');
@@ -247,6 +246,7 @@ async function route(interaction) {
 
     // ----- views -----
     if (verb === 'page') return renderHome(interaction);
+    if (verb === 'revert') return require('../results').revertChanges(interaction, String(a || '').split(',').filter(Boolean), { doneNote: 'it is back as it was', render: async (note) => home(await getDoc(), note, interaction) });
     if (verb === 'browse' && interaction.isStringSelectMenu?.()) return show(interaction, V.listView(await getDoc(), interaction.values[0]));
     if (verb === 'list') return show(interaction, V.listView(await getDoc(), a, n(b)));
     if (verb === 'open' && interaction.isStringSelectMenu?.()) {

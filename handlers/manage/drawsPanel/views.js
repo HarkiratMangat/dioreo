@@ -92,10 +92,13 @@ async function pageView(doc, note = null, { pageRow = null } = {}) {
     return panel(components, pageRow ? [pageRow] : []);
 }
 
-// ---------- a list ----------
+// ---------- a list ---------- The order each list reads in: what ends soonest first on Active Now and Leaving Soon, the latest ended first on Ended, by start everywhere else (found click-testing, 2026-11-07 19:36 EST: Active Now read 4, 4, 10, 13, 9 days).
+const END = (d) => (Number.isFinite(d.endMs) ? d.endMs : Infinity);
+const byStart = (a, b) => (a.startMs || 0) - (b.startMs || 0);
+const ORDER = { live: (a, b) => END(a) - END(b) || byStart(a, b), leaving: (a, b) => END(a) - END(b) || byStart(a, b), ended: (a, b) => END(b) - END(a) || byStart(a, b) };
 function listView(doc, status, page = 0) {
     const s = STATUS[status] || STATUS.new;
-    const list = allDraws(doc).filter(s.test).sort((a, b) => (a.startMs || 0) - (b.startMs || 0));
+    const list = allDraws(doc).filter(s.test).sort(ORDER[status] || byStart);
     const pages = Math.max(1, Math.ceil(list.length / PAGE));
     const pg = Math.min(Math.max(Number(page) || 0, 0), pages - 1);
     const shown = list.slice(pg * PAGE, pg * PAGE + PAGE);
@@ -110,8 +113,7 @@ function listView(doc, status, page = 0) {
     return panel(components);
 }
 
-// ---------- one draw ----------
-// `header` sits above the card (a confirm question, a saved note); `extra` replaces the action rows. `back` is the list it was opened from.
+// ---------- one draw ---------- `header` sits above the card (a confirm question, a saved note); `extra` replaces the action rows. `back` is the list it was opened from.
 function cardView(doc, key, { header = null, extra = null, back = null } = {}) {
     const d = allDraws(doc).find(x => x._key === key);
     if (!d) return null;
