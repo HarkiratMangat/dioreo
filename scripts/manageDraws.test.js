@@ -146,9 +146,11 @@ function seasonDoc(nNew = 3, nRet = 30) {
         const full = P.exportText(doc, keys);
         assert.match(full, /^New Draws\n/);
         assert.match(full, /\n\nReturning Draws\n/);
-        assert.ok(full.includes('res.cloudinary.com'));
+        // The draw's own picture link, compared whole: a host substring check is what CodeQL flags as URL sanitisation.
+        const link = doc.newDraws[0].thumbnailUrl;
+        assert.ok(full.split('\n').some(l => l.endsWith(`, ${link}`)), 'the export lost the picture link');
         const bare = P.exportText(doc, keys, []);
-        assert.ok(!bare.includes('res.cloudinary.com') && !/type:/.test(bare), bare);
+        assert.ok(!bare.split('\n').some(l => l.endsWith(`, ${link}`)) && !/type:/.test(bare), bare);
     });
 
     console.log(failed ? `\n${failed} check(s) FAILED.` : '\nAll manage draws checks passed.');
