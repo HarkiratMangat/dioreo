@@ -1,8 +1,6 @@
 // utils/autoPromote.js -- promote the Next Season Draft once its Battle Pass start passes (2026-11-08 12:09 EST).
 //
-// Harkirat, 2026-11-08 11:52 EST: "the \"promote to live\" button should open a pop-up with 2 options for me to select: promote to live right now or auto promote on BP start date/time".
-// The pop-up's "Auto-promote" sets draft.autoPromote (core op season.setAutoPromote). bot/lifecycle.js calls runAutoPromote() at start-up and every minute. It CLAIMS the draft first (flips autoPromote off in one atomic update), so two ticks, or a restart mid-run, can never promote twice; then promotes through the same op as the button, as the admin who set it, so it is in History with a Revert. The owner gets a DM either way (CLAUDE.md's owner-DM exceptions): what went live, or why nothing did.
-// The time is read off draft.bpStart at the tick, so moving the start after setting it moves the promote with it.
+// Harkirat, 2026-11-08 11:52 EST: "the \"promote to live\" button should open a pop-up with 2 options for me to select: promote to live right now or auto promote on BP start date/time". The pop-up's "Auto-promote" sets draft.autoPromote (core op season.setAutoPromote). bot/lifecycle.js calls runAutoPromote() at start-up and every minute. It CLAIMS the draft first (flips autoPromote off in one atomic update), so two ticks, or a restart mid-run, can never promote twice; then promotes through the same op as the button, as the admin who set it, so it is in History with a Revert. The owner gets a DM either way (CLAUDE.md's owner-DM exceptions): what went live, or why nothing did. The time is read off draft.bpStart at the tick, so moving the start after setting it moves the promote with it.
 const SeasonalData = require('../models/SeasonalData');
 
 function isDue(doc, nowMs = Date.now()) {
