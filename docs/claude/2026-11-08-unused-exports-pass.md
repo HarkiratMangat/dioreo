@@ -15,16 +15,16 @@ Each candidate was re-checked against today's tree, not the 17-day-old scan: `gi
 
 | Outcome | Count | Which |
 |---|---:|---|
-| Dropped from `module.exports`, code kept (still used in its own file) | 63 | the rows of the scan not listed below |
+| Dropped from `module.exports`, code kept (still used in its own file) | 65 | the rows of the scan not listed below |
 | Kept: another file now names it | 12 | `FILTER_OPTIONS`, `entryState`, `MODAL_ID`, `resolveCommandToCategory`, `resolveManagePanelMatches`, `flagsOf`, `writeLoadoutDoc`, `CATEGORY_KEYS`, `drawEndCustomId`, `UNKNOWN_TYPE`, `MAX_IMAGES`, `commandLabel` |
 | Kept: the Cloudinary SDK passthrough in `utils/cloudinaryClient.js`, never in an export list | 7 | `AKAMAI_SHARED_CDN`, `CF_SHARED_CDN`, `PreloadedFile`, `SHARED_CDN`, `cloudinary_js_config`, `provisioning`, `search_folders` |
 | Kept: `utils/emojiMap.js` keys, looked up by string | 4 | `blueDash`, `dioreoKawaii`, `season6`, `season8` |
-| Kept: never called, but they are Your Stats counters, not dead code | 2 | `noteBuildOpened`, `noteShare` (filed in `docs/db-deferred-list.md`: builds opened and panels shared are never counted) |
 | Already gone before this pass | 1 | `noteFirstCommandSafely` |
 
-63 + 12 + 7 + 4 + 2 + 1 = 89.
+65 + 12 + 7 + 4 + 1 = 89.
 
 ## What to know next time
 
 - A same-named symbol in another file counts as a reference to `git grep -w`, so the 12 kept for "another file names it" may include a few false keeps. That errs safe.
+- **A use written inside the `module.exports = {…}` block is invisible to a line scan that skips that block.** That is how `noteBuildOpened` and `noteShare` first read as never called (their callers are the `noteBuildOpenedSafely` / `noteShareSafely` wrappers defined in the export block, used by `handlers/share.js`, `handlers/loadouts.js` and `commands/gunsmith.js`) and briefly got filed as a Your Stats bug, retracted the same morning. Search the export block too.
 - `COMMAND_NAME` in `commands/addToPatchNotes.js` is used by `.setName()` inside the module's own export object; a line scan that skips the export block reads it as unused. Re-checked by requiring the module.
