@@ -91,6 +91,14 @@ const button = (customId) => Object.assign(h.modal(customId), { isButton: () => 
         assert.ok(add.text().includes('Added Botanist Mythic Drop'));
     });
 
+    await check('auto-promote records the admin who commits it, whatever name the payload carries (2026-11-08 12:37 EST)', async () => {
+        h.reset({ draft: { active: true, currentSeasonTitle: 'Season 10', bpStart: new Date('2026-11-12T00:00:00Z'), newDraws: [], returningDraws: [], calendar: [] } });
+        const r = await require('../core/changeset').commitSet([{ type: 'season.setAutoPromote', payload: { on: true, by: 'someone-else' } }], { actorId: h.OWNER });
+        assert.ok(r.ok, JSON.stringify(r.failedAt || r));
+        assert.strictEqual(h.state.doc.draft.autoPromote, true);
+        assert.strictEqual(h.state.doc.draft.autoPromoteBy, h.OWNER);
+    });
+
     if (failures) { console.error(`\n${failures} failing`); process.exit(1); }
     console.log('\n/manage season handlers: all checks pass');
     process.exit(0);

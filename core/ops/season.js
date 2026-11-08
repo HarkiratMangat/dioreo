@@ -308,11 +308,13 @@ registerEntity('season', {
         page: 'seasondraft', tier: 3,
         validate: (op) => ({ ok: true, errors: [], normalized: { ...op, payload: { on: Boolean(op.payload?.on), by: String(op.payload?.by || '') } } }),
         preview: (op, live) => ({ before: { autoPromote: !!live.draft?.autoPromote }, after: { autoPromote: !!op.payload.on } }),
-        apply: async (op, { session }) => {
+        apply: async (op, { session, actorId, restoring }) => {
             const before = await SeasonalData.findOne(DOC).select('draft').lean().session(session);
             const d = before?.draft || {};
             if (op.payload.on && (!d.active || !d.bpStart)) return { ok: false, reason: 'invalid', errors: ['The draft has no Battle Pass start to promote at.'] };
-            await SeasonalData.updateOne(DOC, { $set: { 'draft.autoPromote': op.payload.on, 'draft.autoPromoteBy': op.payload.on ? op.payload.by : '' } }, { session });
+            // The armer is whoever commits the op, never a name in the payload (the commit security review, 2026-11-08 12:37 EST): a payload's `by` is honoured only on a Revert, which puts back the value it recorded.
+            const by = restoring ? String(op.payload.by || '') : String(actorId || '');
+            await SeasonalData.updateOne(DOC, { $set: { 'draft.autoPromote': op.payload.on, 'draft.autoPromoteBy': op.payload.on ? by : '' } }, { session });
             return {
                 ok: true,
                 change: { action: 'edit', model: 'SeasonalData', target: 'draft', summary: op.payload.on ? 'Set the draft to promote at the Battle Pass start' : 'Cancelled the draft\'s auto-promote' },
