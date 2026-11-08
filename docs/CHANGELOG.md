@@ -29,7 +29,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.14.0 — 2026-11-07 19:38 EST (#PR) — /manage draws rehauled: one panel to browse, open, edit, move, select, paste and export draws
+## v3.14.0 — 2026-11-07 19:38 EST (#262) — /manage draws rehauled: one panel to browse, open, edit, move, select, paste and export draws
 
 ### Added
 - **A new `/manage draws` panel** (`handlers/manage/drawsPanel/`), one message that changes in place: a home page with Quick Add, Add New Draw, Add Returning Draw, Search Draws, a list dropdown (New, Returning, Upcoming, Active Now, Leaving Soon, Ended, No End Date, each with its count), Paste Draws, Select Draws, Export, Guide and Purge Draws.
