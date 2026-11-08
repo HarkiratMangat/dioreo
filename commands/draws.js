@@ -202,11 +202,12 @@ const STATUS_GROUPS = [
 // The filtered list's page size: one heading per group on a page costs a component each, so it holds one draw fewer than CHUNK_SIZE. Measured by scripts/drawsFilter.test.js's worst case (every group on one page, a note, Reset and Calculate) under 40.
 const FILTERED_CHUNK = CHUNK_SIZE - 1;
 
-function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PRESET_ACCENT, isEphemeral = false, filter = 0) {
+function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PRESET_ACCENT, isEphemeral = false, filter = 0, opts = {}) {
     const seasonTitle = seasonalDoc.currentSeasonTitle || "Current Season";
     const mask = filterMask(filter);
     const states = mask & STATE_BITS;
-    const nowMs = Date.now();
+    // `opts.nowMs` draws the page as of another moment: the season panel's staged preview renders the draft as on the day the season starts (2026-11-08).
+    const nowMs = opts.nowMs ?? Date.now();
     const ctx = { seasonalDoc, nowMs };
     // In release order (utils/drawDates.js byRelease, 2026-11-08 12:18 EST): the stored order is the paste order, which is not the order players should read.
     const timed = (key) => require('../utils/drawDates').byRelease(seasonalDoc[key === 'new' ? 'newDraws' : 'returningDraws']).map(d => ({ ...d, _section: key, ...drawTiming(d, seasonalDoc, nowMs) }));

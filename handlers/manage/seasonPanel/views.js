@@ -126,8 +126,8 @@ function draftView(doc, note, pageRow) {
     components.push(
         text(`**Title:** ${seasonName(d.currentSeasonTitle, d.currentSeasonEmoji)}\n${seasonRows(d)}${c.fields ? `\n-# ${emojis.mngInfo} News set ${plural(c.fields, 'season field')} here.` : ''}${c.carried ? `\n-# ${emojis.mngInfo} ${plural(c.carried, 'row')} carried over: still running when this season starts.` : ''}${gapLine(d)}`),
         BIG(),
-        text('-# Staged lists (read only)…'),
-        row(btn(['ls', 'nd', 0], `New Draws · ${c.nd}`, emojis.newDraws, 2, !c.nd), btn(['ls', 'rd', 0], `Returning · ${c.rd}`, emojis.returningDraws, 2, !c.rd), btn(['ls', 'cal', 0], `Calendar · ${c.cal}`, emojis.calendar, 2, !c.cal), btn(['ls', 'news', 0], `News · ${c.news}`, emojis.mngInfo, 2, !c.news)),
+        text('-# Staged lists, as players will see them…'),
+        row(btn(['lv', 'nd', 0], `New Draws · ${c.nd}`, emojis.newDraws, 2, !c.nd), btn(['lv', 'rd', 0], `Returning · ${c.rd}`, emojis.returningDraws, 2, !c.rd), btn(['lv', 'cal', 0], `Calendar · ${c.cal}`, emojis.calendar, 2, !c.cal), btn(['ls', 'news', 0], `News · ${c.news}`, emojis.mngInfo, 2, !c.news)),
         SMALL(),
         text('-# Change what is staged…'),
         row(btn(['tl', 'draft'], 'Edit Titles & Deadlines', emojis.edit, 1), btn('dr', 'Paste Draws', emojis.mngBulkAdd), btn('cal', 'Paste Calendar', emojis.mngBulkAdd)),
@@ -170,6 +170,60 @@ function listView(doc, kind, page = 0) {
     if (pages > 1) components.push(row(arrow(['ls', key, pg - 1], 'left', pg === 0), counter(['pgn', key], `Page ${pg + 1} / ${pages}`), arrow(['ls', key, pg + 1], 'right', pg === pages - 1)));
     components.push(BIG(), row(btn(['view', 'draft'], 'Back', emojis.returnArrow), homeBtn()));
     return panel(components);
+}
+
+// ---------- staged lists, as players will see them ---------- (2026-11-08 12:21 EST, Harkirat, 2026-11-08 11:52 EST: "the \"staged list\", i essentially want to see those lists as they would appear in the bot"). The draft is laid over the live document and drawn by /draws and /calendar themselves, as of the moment the season starts (or now, once it has), so every line reads as it will on day one. Their own buttons are taken off (they would act on the LIVE lists) and this panel's pager and Back go under. /draws and /calendar are read off the public client, never required (a require would put every /manage handler in their hotpatch closure, .claude/rules/hotpatch.md). Anything that cannot be drawn falls back to the compact list.
+function previewDoc(doc) {
+    const d = doc?.draft || {};
+    const out = { ...doc, currentSeasonTitle: d.currentSeasonTitle || doc?.currentSeasonTitle || '', currentSeasonEmoji: d.currentSeasonEmoji || '', newDraws: d.newDraws || [], returningDraws: d.returningDraws || [], calendar: d.calendar || [] };
+    for (const [, key] of PARTS()) for (const f of ['Title', 'Start', 'End', 'EndTBD']) out[`${key}${f}`] = d[`${key}${f}`];
+    return out;
+}
+const previewNow = (doc, nowMs = Date.now()) => { const s = doc?.draft?.bpStart ? new Date(doc.draft.bpStart).getTime() : NaN; return Number.isFinite(s) ? Math.max(nowMs, s) : nowMs; };
+// Takes every button and dropdown off a drawn page: action rows go, and a Section whose accessory is a button (the reminders bell) keeps only its text.
+function stripControls(components) {
+    const out = [];
+    for (const c of components || []) {
+        if (c.type === 1) continue;
+        if (c.type === 9 && c.accessory?.type === 2) { out.push(...stripControls(c.components)); continue; }
+        out.push(c.components && c.type !== 9 ? { ...c, components: stripControls(c.components) } : c);
+    }
+    return out;
+}
+const countAll = (c) => (Array.isArray(c) ? c.reduce((n, x) => n + countAll(x), 0) : 1 + (c.components ? countAll(c.components) : 0) + (c.accessory ? 1 : 0));
+const pageOf = (components) => { const m = /(\d+)\s*\/\s*(\d+)/.exec(JSON.stringify((components || []).filter(c => c.type === 1).map(r => (r.components || []).map(b => b.label || '')))); return m ? Number(m[2]) : 1; };
+function botLookView(doc, kind, page = 0, nowMs = Date.now()) {
+    const key = ['nd', 'rd', 'cal'].includes(kind) ? kind : 'nd';
+    const cmd = require('../../../bot/clients').publicClient()?.commands?.get(key === 'cal' ? 'calendar' : 'draws');
+    if (!cmd?.buildContainer) return listView(doc, key, 0);
+    const at = previewNow(doc, nowMs);
+    const pd = previewDoc(doc);
+    let pg = Math.max(0, Number(page) || 0), pages, drawn;
+    try {
+        if (key === 'cal') {
+            pages = 3; pg = Math.min(pg, 2);
+            drawn = cmd.buildContainer(pd, pg, undefined, true, 'all', undefined, { nowMs: at });
+        } else {
+            const first = cmd.buildContainer(pd, key === 'nd' ? 'new' : 'returning', 0, undefined, true, key === 'nd' ? 1 : 2, { nowMs: at });
+            pages = pageOf(first[0]?.components);
+            pg = Math.min(pg, pages - 1);
+            drawn = pg ? cmd.buildContainer(pd, key === 'nd' ? 'new' : 'returning', pg, undefined, true, key === 'nd' ? 1 : 2, { nowMs: at }) : first;
+        }
+    } catch (e) { console.error('season panel: staged preview failed, showing the list:', e.message); return listView(doc, key, 0); }
+    const container = drawn?.[0];
+    if (!container?.components) return listView(doc, key, 0);
+    const startAt = doc?.draft?.bpStart ? Math.floor(new Date(doc.draft.bpStart).getTime() / 1000) : null;
+    const when = startAt && at > nowMs ? `on <t:${startAt}:F>, when the season starts` : 'right now';
+    const nav = [
+        { type: 14, spacing: 1, divider: true },
+        text(`-# ${emojis.mngInfo} **Staged, not live.** Shown as players will see it ${when}. Its buttons are off here.`),
+        ...(pages > 1 ? [row(arrow(['lv', key, pg - 1], 'left', pg === 0), counter(['pgv', key], `Page ${pg + 1} / ${pages}`), arrow(['lv', key, pg + 1], 'right', pg === pages - 1))] : []),
+        row(btn(['view', 'draft'], 'Back', emojis.returnArrow), btn(['ls', key, 0], 'Compact List', emojis.mngInfo)),
+    ];
+    let body = stripControls(container.components);
+    const out = [{ ...container, components: [...body, ...nav] }];
+    if (countAll(out) > 40) return listView(doc, key, 0);
+    return out;
 }
 
 // ---------- in-place confirms ---------- What Promote swaps, field by field: the live value struck through, then the staged one. Comparing the strings tells the admin what really moves.
@@ -243,4 +297,4 @@ function resultView({ crumbs = [], title, body = [], ok = true, back = ['view', 
     ]);
 }
 
-module.exports = { ID, PAGE, row, text, btn, panel, homeBtn, plural, whenLine, stamp, seasonRows, counts, newsRows, calendarDrawsWithoutDraw, isStaged, pageView, listView, promoteConfirm, promoteModal, discardConfirm, resultView };
+module.exports = { ID, PAGE, row, text, btn, panel, homeBtn, plural, whenLine, stamp, seasonRows, counts, newsRows, calendarDrawsWithoutDraw, isStaged, pageView, listView, botLookView, previewDoc, promoteConfirm, promoteModal, discardConfirm, resultView };

@@ -123,9 +123,8 @@ const ENDED_SHOWN = 3;
 const FOLD_FROM = 5;
 
 // One Text Display per section (heading + entries together) -- Discord renders visible vertical margin BETWEEN components, not between lines inside one, so keeping heading+content in a single component is what keeps a section visually tight instead of looking like two floating pieces.
-function buildSectionComponent(headingLine, entries, seasonalDoc, collapseEnded = false) {
+function buildSectionComponent(headingLine, entries, seasonalDoc, collapseEnded = false, nowMs = Date.now()) {
     if (entries.length === 0) return null;
-    const nowMs = Date.now();
     let shown = entries, hiddenCount = 0;
     if (collapseEnded && entries.length >= FOLD_FROM) {
         // Entries are sorted finished-first, oldest finished at the top, so the earliest ones are the ones folded away.
@@ -227,9 +226,10 @@ function buildFilterRow(page, mask) {
     };
 }
 
-function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEphemeral = false, filterMode = 'all', client) {
+function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEphemeral = false, filterMode = 'all', client, opts = {}) {
     const seasonTitle = seasonalDoc.currentSeasonTitle || "Current Season";
-    const nowMs = Date.now();
+    // `opts.nowMs` draws the page as of another moment (the season panel's staged preview, 2026-11-08); every section reads the same clock.
+    const nowMs = opts.nowMs ?? Date.now();
     const sortByDate = compareEntries(seasonalDoc, nowMs);
     const mask = filterMask(filterMode);
     const states = mask & STATE_BITS;
@@ -292,8 +292,8 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
         // NEW/RETURNING DRAWS soft-split (notes follow-up, 2026-07-31 14:00 EDT) -- replaces the old single "Draws" heading entirely; each sub-heading carries its own matching emoji (emojiMap.js's existing newDraws/returningDraws icons, already used elsewhere in the bot for this exact New/Returning distinction).
         const newDrawEntries = drawEntries.filter(e => e.drawType === 'new');
         const returningDrawEntries = drawEntries.filter(e => e.drawType === 'returning');
-        const newSection = buildSectionComponent(sectionHeading(emojis.newDraws, 'New Draws'), newDrawEntries, seasonalDoc, !states);
-        const returningSection = buildSectionComponent(sectionHeading(emojis.returningDraws, 'Returning Draws'), returningDrawEntries, seasonalDoc, !states);
+        const newSection = buildSectionComponent(sectionHeading(emojis.newDraws, 'New Draws'), newDrawEntries, seasonalDoc, !states, nowMs);
+        const returningSection = buildSectionComponent(sectionHeading(emojis.returningDraws, 'Returning Draws'), returningDrawEntries, seasonalDoc, !states, nowMs);
         if (!newSection && !returningSection) {
             calendarComponents.push(emptyPage(sectionHeading(emojis.newDraws, 'Lucky Draws'), 'Lucky Draws', emojis.newDraws, allDrawEntries));
         } else {
@@ -305,10 +305,10 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
             calendarComponents.push(returningSection || emptyPage(sectionHeading(emojis.returningDraws, 'Returning Draws'), 'Returning Draws', emojis.returningDraws, allReturning));
         }
     } else if (safePage === 1) {
-        const eventSection = buildSectionComponent(sectionHeading(emojis.events, 'Special Events'), eventEntries, seasonalDoc, !states);
+        const eventSection = buildSectionComponent(sectionHeading(emojis.events, 'Special Events'), eventEntries, seasonalDoc, !states, nowMs);
         calendarComponents.push(eventSection || emptyPage(sectionHeading(emojis.events, 'Special Events'), 'Special Events', emojis.events, allEventEntries));
     } else {
-        const playlistSection = buildSectionComponent(sectionHeading(emojis.modes, 'Playlists & Game Modes'), playlistEntries, seasonalDoc, !states);
+        const playlistSection = buildSectionComponent(sectionHeading(emojis.modes, 'Playlists & Game Modes'), playlistEntries, seasonalDoc, !states, nowMs);
         calendarComponents.push(playlistSection || emptyPage(sectionHeading(emojis.modes, 'Playlists & Game Modes'), 'Playlists & Game Modes', emojis.modes, allPlaylistEntries));
     }
 
