@@ -62,7 +62,7 @@ const REUSED_FROM = { items: 'the cached draw with the same items', alias: 'the 
 
 function thumbnailNote(thumbResult) {
     if (thumbResult.error) return `${BOT_EMOJI.warn} Cloudinary caching failed, kept the original URL instead: ${thumbResult.error}`;
-    if (thumbResult.reused && thumbResult.matchedTitle) return `ℹ️ Thumbnail reused from ${REUSED_FROM[thumbResult.matchedBy] || REUSED_FROM['similar-title']}: "${thumbResult.matchedTitle}"`;
+    if (thumbResult.reused && thumbResult.matchedTitle) return `${BOT_EMOJI.info} Thumbnail reused from ${REUSED_FROM[thumbResult.matchedBy] || REUSED_FROM['similar-title']}: "${thumbResult.matchedTitle}"`;
     return null;
 }
 
@@ -342,7 +342,7 @@ async function handleSearchSubmit(interaction) {
         pendingManageEdits.set(token, { group, match: matches[0] });
         setTimeout(() => pendingManageEdits.delete(token), 10 * 60 * 1000).unref();
         return interaction.reply({
-            content: `🔎 Found **${matches[0].label}** -- click below to edit:`,
+            content: `${BOT_EMOJI.search} Found **${matches[0].label}** -- click below to edit:`,
             // Edit + Search Again share ONE action row -- only valid for this single-match case: the multi-match case below can't inline them because a select menu must occupy its own row.
             components: [
                 { type: 1, components: [
@@ -362,7 +362,7 @@ async function handleSearchSubmit(interaction) {
         value: group === 'draws' ? `${m.id}|${m.type}` : m.id
     }));
     return interaction.reply({
-        content: `🔎 Found **${matches.length}** matches for "${query}" -- pick one:`,
+        content: `${BOT_EMOJI.search} Found **${matches.length}** matches for "${query}" -- pick one:`,
         components: [
             { type: 1, components: [{ type: 3, custom_id: `mng_pick_${group}_${action}`, placeholder: 'Select one...', options }] },
             searchAgainRow

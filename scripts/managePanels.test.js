@@ -34,9 +34,10 @@ check('an added draw shows its picture, its items and Edit Again on its own id',
     assert.deepStrictEqual(ids, ['mng_rsopen|draws|new', 'mng_rsedit|draws|new|d1', 'mng_rsrevert|#201']);
 });
 
-check('a draw with no picture says so instead of a broken thumbnail', () => {
+check('a draw with no picture says so and shows the "No image yet" placeholder', () => {
     const panel = p.drawPanel({ draw: { ...draw, thumbnailUrl: null }, category: 'returning' });
-    assert.strictEqual(panel[0].components[0].type, 10);
+    assert.strictEqual(panel[0].components[0].type, 9);
+    assert.ok(panel[0].components[0].accessory.media.url.includes('site_assets/placeholder-1x1.png'));
     assert.ok(text(panel).includes('No picture') && text(panel).includes('Returning draw'));
     assert.deepStrictEqual(buttons(panel).map(b => b.label), ['Open in /draws', 'Edit Again'], 'no Revert without change ids');
     assert.strictEqual(buttons(panel)[0].custom_id, 'mng_rsopen|draws|returning', 'Open lands on the draw\'s own section');

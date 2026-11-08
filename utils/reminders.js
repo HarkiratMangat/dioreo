@@ -298,7 +298,7 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
         // Announcements on/off (2026-10-26 15:20 EDT, announcement-controls; his colours 15:30 EDT: green while on, grey while off). Not a reminder: an announcement shows after a command, never by DM. The same setting as /settings and the button under an announcement.
         foot.push({ type: 2, style: announcementsOff ? 2 : 3, label: `Announcements: ${announcementsOff ? 'Off' : 'On'}`, custom_id: `remind_ann:${ownerId}`, emoji: parseEmoji(emojis.announcements) });
     }
-    if ((releases.length > MAX_OPTIONS || leaving.length > MAX_OPTIONS)) foot.push({ type: 2, style: 2, label: 'Search', custom_id: `remind_search:${ownerId}`, emoji: { name: '🔍' } });
+    if ((releases.length > MAX_OPTIONS || leaving.length > MAX_OPTIONS)) foot.push({ type: 2, style: 2, label: 'Search', custom_id: `remind_search:${ownerId}`, emoji: parseEmoji(emojis.search) });
     // "Yes, stop all!" (his wording, 2026-10-24 21:38 EDT: "leave out the and delete part"), and Keep them with his Keep icon. Keep comes first, on the left (2026-10-24 22:58 EDT, Harkirat: "shouldn't the keep them but[ton] be on the left side of the yes stop all?"), as in the calculator.
     if (confirmStop) foot.push({ type: 2, style: 2, label: 'Keep Them', custom_id: `remind_stopno:${ownerId}`, emoji: parseEmoji(emojis.keep) }, { type: 2, style: 4, label: 'Yes, Stop All!', custom_id: `remind_stopyes:${ownerId}`, emoji: parseEmoji(emojis.disableReminder) });
     else if (sub && (cats.size || follows.length)) foot.push({ type: 2, style: 4, label: 'Stop All', custom_id: `remind_stop:${ownerId}`, emoji: parseEmoji(emojis.disableReminder) });

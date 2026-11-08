@@ -1015,7 +1015,7 @@ module.exports = {
         const { hasCommandAccess } = require('../utils/adminAccess');
         if (!(await hasCommandAccess(interaction.user.id, 'manage'))) {
             // Reworded 2026-07-18 (v2 quick-wins batch) -- matches the identical reword of handlers/router.js's centralized button/select/modal guard for this same panel (see interactionCreate).
-            return interaction.reply({ content: "🔒 **This one's admin-only.** These buttons run Dioreo's database directly — try any of the bot's public commands instead!", ephemeral: true });
+            return interaction.reply({ content: `${emojis.accessDenied} **This one's admin-only.** These buttons run Dioreo's database directly — try any of the bot's public commands instead!`, ephemeral: true });
         }
         // Every admin may open every section (the permission restructure, 2026-10-19 19:25 EDT); what they may DO there is checked per button by resolveAction's tier check, and again by core/changeset.js's commitSet on the write.
         const section = sectionOf(interaction) || 'draws';

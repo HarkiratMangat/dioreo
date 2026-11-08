@@ -39,7 +39,7 @@ async function gate(interaction, action) {
     const g = await resolveAction('patchnotes', action, interaction.user.id);
     if (g.ok) return true;
     require('../../../utils/eventStore').markOutcome('rejected_admin');
-    await say(interaction, g.message || DENIAL_MESSAGE[g.reason] || '🔒 You do not have access to that.');
+    await say(interaction, g.message || DENIAL_MESSAGE[g.reason] || `${emojis.accessDenied} You do not have access to that.`);
     return false;
 }
 // A past season's Edit is the old Past Seasons dropdown's press (handlers/manage/patchnotes.js handlePatchSeasonPick), so it needs the same tier.
@@ -54,7 +54,7 @@ async function gateDestructive(interaction) {
     const { can } = require('../../../utils/adminAccess');
     if (await can(interaction.user.id, 'manage.patchnotes', 'destructive')) return true;
     require('../../../utils/eventStore').markOutcome('rejected_admin');
-    await say(interaction, "🔒 **You don't have access to purge patch notes anymore.** Nothing was deleted.");
+    await say(interaction, `${emojis.accessDenied} **You don't have access to purge patch notes anymore.** Nothing was deleted.`);
     return false;
 }
 

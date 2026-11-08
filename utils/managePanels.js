@@ -13,10 +13,11 @@ const isUrl = (u) => /^https?:\/\//i.test(String(u || ''));
 const stamp = (d, f = 'D') => (d ? `<t:${Math.floor(new Date(d).getTime() / 1000)}:${f}>` : null);
 const CALENDAR_LABEL = { draw: 'Lucky Draw', event: 'Event', playlist: 'Playlist & Mode' };
 
-// The title and summary lines, with a picture beside them when there is one.
-function headerBlock(title, lines, imageUrl) {
+// The title and summary lines, with a picture beside them when there is one. `imageUrl` is `false` for a card that never has a picture (calendar, patch notes); a draw passes its own, and one with none gets the "No image yet" placeholder (2026-11-08 11:45 EST).
+function headerBlock(title, lines, imageUrl = false) {
     const content = [title, ...lines.filter(Boolean)].join('\n');
-    if (!isUrl(imageUrl)) return { type: 10, content };
+    if (imageUrl === false) return { type: 10, content };
+    if (!isUrl(imageUrl)) imageUrl = require('./placeholders').PLACEHOLDER.square;
     return { type: 9, components: [{ type: 10, content }], accessory: { type: 11, media: { url: imageUrl } } };
 }
 
@@ -65,7 +66,7 @@ function actionRow({ openId = null, openLabel = 'Open', editId = null, changeIds
     const buttons = [
         ...(openId ? [{ type: 2, style: 2, label: openLabel, custom_id: openId, emoji: emojis.parseEmoji(emojis.search) }] : []),
         ...(editId ? [{ type: 2, style: 1, label: 'Edit Again', custom_id: editId, emoji: emojis.parseEmoji(emojis.edit) }] : []),
-        ...(changeIds.length && revertId.length <= 100 ? [{ type: 2, style: 4, label: 'Revert', custom_id: revertId }] : []),
+        ...(changeIds.length && revertId.length <= 100 ? [{ type: 2, style: 4, label: 'Revert', custom_id: revertId, emoji: emojis.parseEmoji(emojis.keep) }] : []),
     ];
     return buttons.length ? [divider(false), { type: 1, components: buttons }] : [];
 }
@@ -82,7 +83,7 @@ function drawPanel({ draw, category, before = null, changeIds = [], notes = [], 
         headerBlock(`### ${emojis.checkmark} ${before ? 'Updated' : 'Added'} · ${draw.title}`, [
             `-# ${category === 'new' ? 'New' : 'Returning'} draw${kind ? ` · ${kind}` : ''} · releases ${stamp(draw.date)}${endDate ? ` · ends ${stamp(endDate)}` : ''}`,
             isUrl(draw.thumbnailUrl) ? null : '-# No picture',
-        ], draw.thumbnailUrl),
+        ], draw.thumbnailUrl || ''),
         divider(),
         ...whatChanged(before, drawChanges(before, draw)),
         { type: 10, content: `**Items (${(draw.items || []).filter(i => i.tier !== 'comment').length})**\n${itemLines(draw.items) || '*none*'}`.slice(0, 3800) },
@@ -134,7 +135,7 @@ function deleteItemPanel({ group, match, token }) {
         : [`-# ${CALENDAR_LABEL[doc.category] || 'Event'} · ${stamp(doc.date)} → ${doc.isOngoing ? 'All Season' : stamp(doc.endDate)}`];
     lines.push('-# Every change is recorded and can be reverted.');
     return [{ type: 17, accent_color: FAIL_ACCENT, components: [
-        headerBlock(`### ${emojis.warn} Delete ${doc.title || match.label}?`, lines, isDraw ? doc.thumbnailUrl : null),
+        headerBlock(`### ${emojis.warn} Delete ${doc.title || match.label}?`, lines, isDraw ? (doc.thumbnailUrl || '') : false),
         ...(isDraw && doc.items?.length ? [{ type: 10, content: `**Items**\n${itemLines(doc.items)}`.slice(0, 3800) }] : []),
         { type: 1, components: [
             { type: 2, style: 2, label: 'Cancel', custom_id: `mng_delcancel_${token}` },

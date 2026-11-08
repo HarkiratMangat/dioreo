@@ -334,7 +334,7 @@ async function sendPolicyNotice(interaction) {
         if (shown >= NOTICE_LIMIT) return false;
         await PolicyNotice.updateOne({ userHash, guildId: interaction.guildId }, { $set: { rulesAt, shown: shown + 1, lastShownAt: new Date() } }, { upsert: true });
         await interaction.followUp({
-            content: `🔒 **Why is this private?** This server's admins set Dioreo to answer privately here, so your own Public choice doesn't apply in this server.\n-# Shown ${NOTICE_LIMIT === shown + 1 ? 'one last time' : 'twice'} after the server's settings change.`,
+            content: `${require('./emojiMap').locked} **Why is this private?** This server's admins set Dioreo to answer privately here, so your own Public choice doesn't apply in this server.\n-# Shown ${NOTICE_LIMIT === shown + 1 ? 'one last time' : 'twice'} after the server's settings change.`,
             ephemeral: true,
             allowedMentions: { parse: [] },
         });

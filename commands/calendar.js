@@ -266,8 +266,9 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
         return fitMessage(seasonalDoc, { nowMs, withDays: true, types: types.size ? types : null }, body => withShareButton([{ type: 17, accent_color: accentColor, components: [...title, { type: 14, spacing: 2, divider: true }, ...body, { type: 14, spacing: 2, divider: true }, ...(todayPager ? [todayPager] : []), buildFilterRow(safePage, mask), ...(mask & ~TODAY_BIT ? [resetFilterRow(safePage)] : [])] }, todayNav], isEphemeral));
     }
 
-    // Per-page banner -- rendered as a true cover image at the VERY TOP of the container, above even the title (Harkirat's explicit call, 2026-07-31 17:20 EDT -- reads like a real banner/ splash image rather than a mid-card illustration this way). Independently settable per page; omitted entirely (no placeholder) when unset.
-    const bannerUrl = seasonalDoc[BANNER_FIELDS_BY_PAGE[safePage]];
+    // Per-page banner -- rendered as a true cover image at the VERY TOP of the container, above even the title (Harkirat's explicit call, 2026-07-31 17:20 EDT -- reads like a real banner/ splash image rather than a mid-card illustration this way). Independently settable per page; omitted entirely (no placeholder) when unset. A page with a banner slot (Draws, Events, Modes) and no banner set shows the "No image yet" placeholder (2026-11-08 11:45 EST); the Today page has no slot.
+    const bannerField = BANNER_FIELDS_BY_PAGE[safePage];
+    const bannerUrl = bannerField ? (seasonalDoc[bannerField] || require('../utils/placeholders').PLACEHOLDER.wide) : null;
     if (bannerUrl) {
         calendarComponents.push({ type: 12, items: [{ media: { url: bannerUrl } }] });
     }

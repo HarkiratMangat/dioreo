@@ -71,7 +71,7 @@ async function handleWipeButton(interaction) {
         const token = customId.replace('mng_wipecancel_', '');
         pendingSeasonWipes.delete(token);
         try {
-            await prompt(interaction, { text: '❎ Cancelled -- nothing was changed.' });
+            await prompt(interaction, { text: `${BOT_EMOJI.cross} Cancelled -- nothing was changed.` });
         } catch (notifyError) {
             console.error('Failed to confirm season-wipe cancellation (interaction likely expired):', notifyError);
         }
@@ -137,7 +137,7 @@ async function handleDraftButton(interaction) {
     }
 
     if (customId === 'mng_draftpromotecancel') {
-        try { await prompt(interaction, { text: '❎ Promote cancelled -- the draft is untouched.' }); }
+        try { await prompt(interaction, { text: `${BOT_EMOJI.cross} Promote cancelled -- the draft is untouched.` }); }
         catch (notifyError) { console.error('Failed to confirm draft promote cancellation (interaction likely expired):', notifyError); }
         return;
     }
@@ -155,7 +155,7 @@ async function handleDraftButton(interaction) {
     }
 
     if (customId === 'mng_draftdiscardcancel') {
-        try { await prompt(interaction, { text: '❎ Discard cancelled -- the draft is untouched.' }); }
+        try { await prompt(interaction, { text: `${BOT_EMOJI.cross} Discard cancelled -- the draft is untouched.` }); }
         catch (notifyError) { console.error('Failed to confirm draft discard cancellation (interaction likely expired):', notifyError); }
         return;
     }

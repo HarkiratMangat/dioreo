@@ -98,19 +98,15 @@ function buildDrawSections(drawsArray, ctx = {}) {
             shown = shown.slice(0, -1);
             textContent = compose(shown, itemLines.length - shown.length);
         }
-        if (draw.thumbnailUrl) {
-            sections.push({
-                type: 9,
-                components: [{ type: 10, content: textContent }],
-                accessory: {
-                    type: 11, // Attaches Thumbnail natively to the right side of the block
-                    media: { url: draw.thumbnailUrl }
-                }
-            });
-        } else {
-            // No image was provided/cached for this draw (relaxed 2026-08-22 19:40 EDT, click-test fix -- handlers/manage/draws.js no longer hard-rejects a no-image submission). A Components V2 Section (type 9) requires an accessory, so a bare Text Display is used instead of pointing a Thumbnail at a null/broken URL.
-            sections.push({ type: 10, content: `${textContent}\n-# *(no image)*` });
-        }
+        // A draw with no picture (allowed since 2026-08-22 19:40 EDT) shows Harkirat's "No image yet" placeholder (2026-11-08 11:45 EST), so every draw block has the same shape; it used to be a bare Text Display ending "(no image)", because a Section needs an accessory and a thumbnail cannot point at nothing.
+        sections.push({
+            type: 9,
+            components: [{ type: 10, content: textContent }],
+            accessory: {
+                type: 11, // Attaches Thumbnail natively to the right side of the block
+                media: { url: draw.thumbnailUrl || require('../utils/placeholders').PLACEHOLDER.square }
+            }
+        });
     });
     return sections;
 }

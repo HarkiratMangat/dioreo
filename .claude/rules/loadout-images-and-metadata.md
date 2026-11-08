@@ -43,6 +43,20 @@ This was a real, standing mystery — even to Harkirat, who built it: he had to 
   **Also fixed the root cause of "draws/patch-notes look like they're in the wrong folder":** `utils/cloudinaryCache.js`/`utils/patchNotesCache.js` always correctly baked their folder into the `public_id` path (`temp_draws/{slug}`, `patch_notes/{id}/{index}`), but never set Cloudinary's newer, separate `asset_folder` field — so the dashboard's own "Folder" grouping never recognized them as organized, even though the URLs were always correct. Both modules now pass `asset_folder` on upload; the 12 pre-existing `temp_draws/` assets were moved into a real folder the same way as the loadout cleanup above. Real Cloudinary folders now exist for all three subsystems: `gun-builds`, `temp_draws`, `patch_notes`. **Still no in-bot way to browse what's in `gun-builds`** — that part of the original "Verify Cloudinary folder organization" roadmap item is genuinely still open, though now much less urgent since the account itself is clean.
 
 
+## The "No image yet" placeholders (`utils/placeholders.js`, 2026-11-08 11:55 EST)
+
+Harkirat's four placeholder images live in Cloudinary `site_assets/` (1x1, 16x9, 17x6, 21x9) and `PLACEHOLDER` holds their delivery URLs. His ask: "utilize them in the bot for where an image has to go but currently a custom one is not set." **A designed slot gets one; an optional picture never does.**
+
+| Slot | Placeholder |
+|---|---|
+| A draw's thumbnail on `/draws`, `/today` and /manage's draw cards (saved, delete) | `square` |
+| A loadout option card and /manage's loadout header | `square` |
+| A build's screenshot on `/gunsmith` (replaced the "No screenshot of this build yet." line) | `wide` |
+| `/calendar`'s Draws, Events and Modes banner (the Today page has no slot) | `wide` |
+| `/patch notes` with no images | `wide` |
+
+Never on: announcement banners, profile images, calendar or patch-note /manage cards (`headerBlock`'s `imageUrl` defaults to `false`, meaning no picture slot; a draw passes `thumbnailUrl || ''` so a missing one gets the placeholder). 17x6 and 21x9 are uploaded for future slots and used nowhere yet.
+
 ## Draw thumbnail Cloudinary cache (`utils/cloudinaryCache.js`)
 > 🔄 **REWORKED 2026-10-30 16:24 EDT (Harkirat: draw images "will remain forever in a draws/ folder, with an image linked to a draw"). Everything below that says `temp_draws/`, the 45-day prune, `pruneExpiredThumbnails` or `archive/draws/` is HISTORY.** Now: images live in **`draws/<slug>`** and never expire, archive or delete; a replaced image is **overwritten in place** (no archive copy, the `archive/draws/` folder is retired). Each upload carries Cloudinary **tags** (`dioreo_draw`, `fp_<fingerprint>`) and **context** (`title`, `price_type`, `fp`, `items` = the sorted `tier:name` keys), so a draw is linked to its image by what it contains. A draw with no image finds one by (1) its title's slug, (2) the same fingerprint (same non-comment items at the same rarities; price type vetoes only when BOTH sides set one), (3) the old 0.75 fuzzy title. A near-miss on items (≥60% shared) is only NAMED in the error, never reused. A new image under the SAME title replaces it in place; under a NEW title it gets its own asset (an overwrite is irreversible now, and two live draws can share items), and the items link follows the newest image carrying them. `temp_draws/` is still READ as a fallback until `scripts/backfillDrawImages.js` (dry run by default; `--write` needs `DRAW_BACKFILL_APPROVED=1`; plan in `utils/drawImageBackfill.js`) has moved it. Pinned by `scripts/drawImageLink.test.js`.
 

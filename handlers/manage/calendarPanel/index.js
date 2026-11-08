@@ -40,14 +40,14 @@ async function gate(interaction, action) {
     const g = await resolveAction('calendar', action, interaction.user.id);
     if (g.ok) return true;
     require('../../../utils/eventStore').markOutcome('rejected_admin');
-    await say(interaction, g.message || DENIAL_MESSAGE[g.reason] || '🔒 You do not have access to that.');
+    await say(interaction, g.message || DENIAL_MESSAGE[g.reason] || `${emojis.accessDenied} You do not have access to that.`);
     return false;
 }
 async function gateDestructive(interaction) {
     const { can } = require('../../../utils/adminAccess');
     if (await can(interaction.user.id, 'manage.calendar', 'destructive')) return true;
     require('../../../utils/eventStore').markOutcome('rejected_admin');
-    await say(interaction, "🔒 **You don't have access to delete calendar entries anymore.** Nothing was deleted.");
+    await say(interaction, `${emojis.accessDenied} **You don't have access to delete calendar entries anymore.** Nothing was deleted.`);
     return false;
 }
 
@@ -143,7 +143,7 @@ async function previewPanel(token, text, { isEdit }) {
 function revertButton(changeIds) {
     // The panel's own Revert, so it lands back on the calendar home rather than a bare note (results.js revertChanges does the reverting and its permission check).
     const id = `${PREFIX}revert|${(changeIds || []).join(',')}`;
-    return changeIds?.length && id.length <= 100 ? [{ type: 2, style: 4, label: 'Revert', custom_id: id }] : [];
+    return changeIds?.length && id.length <= 100 ? [{ type: 2, style: 4, label: 'Revert', custom_id: id, emoji: emojis.parseEmoji(emojis.keep) }] : [];
 }
 
 // ---------- the entry pop-ups ----------

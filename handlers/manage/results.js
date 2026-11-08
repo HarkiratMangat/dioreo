@@ -30,7 +30,7 @@ async function revertChanges(interaction, changeIds, opts = 'it is back as it wa
         done.push(changeId);
     }
     const { sendV2Payload } = require('../../utils/sendV2Payload');
-    const note = `↩️ **Reverted.** ${done.join(', ')} undone; ${doneNote}.`;
+    const note = `${BOT_EMOJI.keep} **Reverted.** ${done.join(', ')} undone; ${doneNote}.`;
     return await sendV2Payload(interaction, render ? await render(note) : notePanel(note));
 }
 

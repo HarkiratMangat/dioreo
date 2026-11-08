@@ -224,7 +224,7 @@ async function handleInteractionInner(interaction) {
                 // Reworded 2026-07-18 (v2 quick-wins batch) -- clearer about what's actually going on (this is Dior's own admin panel, not a permissions bug) and points at what to do instead, per Harkirat's "easier to understand, some humor, actually useful" request. This is /manage's own admin-only lock -- unlike the per-user panel locks below, there's no "someone else's panel" concept here to admin-override; only ALLOWED_ADMIN_ID was ever meant to pass this one.
                 markOutcome('rejected_admin');
                 try {
-                    await interaction.reply({ content: "🔒 **This one's admin-only.** These buttons run Dioreo's database directly — try any of the bot's public commands instead!", ephemeral: true });
+                    await interaction.reply({ content: `${require('../utils/emojiMap').accessDenied} **This one's admin-only.** These buttons run Dioreo's database directly — try any of the bot's public commands instead!`, ephemeral: true });
                 } catch (notifyError) {
                     console.error('Failed to notify user of blocked manage-panel action (interaction likely expired):', notifyError);
                 }

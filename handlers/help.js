@@ -71,7 +71,7 @@ async function route(interaction) {
         // B2b. BOT ADMIN'S "jump to a /manage guide" DROPDOWN (item 10, added 2026-08-15 13:11 EDT). Re-checks perms.manage server-side rather than trusting the dropdown having been hidden -- same defense-in-depth every other admin-gated action in this bot uses (the dropdown is only ever RENDERED for someone who already has it, this is the click-time re-check). Opens as its own new ephemeral reply, same pattern /manage's own Guide button uses (utils/manageActions.js's openFormatGuide) -- never edits the /help page underneath it.
         if (interaction.isStringSelectMenu() && interaction.customId === 'help_guide_pick') {
             if (!(await hasCommandAccess(interaction.user.id, 'manage'))) {
-                return await interaction.reply({ content: "🔒 You don't have access to `/manage`.", ephemeral: true });
+                return await interaction.reply({ content: `${require('../utils/emojiMap').accessDenied} You don't have access to \`/manage\`.`, ephemeral: true });
             }
             const { buildGuideContainer } = require('../utils/manageGuides');
             const { sendV2Payload } = require('../utils/sendV2Payload');

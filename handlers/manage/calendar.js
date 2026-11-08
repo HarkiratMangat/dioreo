@@ -197,7 +197,7 @@ async function setBanners(interaction) {
     );
     return interaction.followUp({ flags: 32768 | 64, components: changes.length
         ? resultPanel({ page: 'calendar', heading: 'Calendar banners updated', sections: [{ head: 'Banners', lines: changes.map(c => `- ${c}`) }], changeIds: result.changeIds })
-        : notePanel('ℹ️ No changes made.') });
+        : notePanel(`${BOT_EMOJI.info} No changes made.`) });
 }
 
 // --- PURGE (calendar) --- called from index.js's mng_purgeconfirm_ dispatch. Calendar has only one scope ('all') -- there's no per-sub-category purge the way Draws has new/returning.

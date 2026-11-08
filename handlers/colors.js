@@ -30,7 +30,7 @@ async function handleColorsButton(interaction) {
         const actingUser = await resolvePanelActor(interaction, targetUserId);
         if (!actingUser) {
             try {
-                await interaction.reply({ content: "🔒 **Those aren't your colors!** Run `/colors` (or `/settings` → View Colors) to see your own palette.", ephemeral: true });
+                await interaction.reply({ content: `${require('../utils/emojiMap').locked} **Those aren't your colors!** Run \`/colors\` (or \`/settings\` → View Colors) to see your own palette.`, ephemeral: true });
             } catch (notifyError) {
                 console.error('Failed to notify user of blocked View Colors action (interaction likely expired):', notifyError);
             }
@@ -83,7 +83,7 @@ async function handleColorsButton(interaction) {
         const actingUser = await resolvePanelActor(interaction, targetUserId);
         if (!actingUser) {
             try {
-                await interaction.reply({ content: "🔒 **Those aren't your colors!** Run `/colors` (or `/settings` → View Colors) to see your own palette.", ephemeral: true });
+                await interaction.reply({ content: `${require('../utils/emojiMap').locked} **Those aren't your colors!** Run \`/colors\` (or \`/settings\` → View Colors) to see your own palette.`, ephemeral: true });
             } catch (notifyError) {
                 console.error('Failed to notify user of blocked View Colors action (interaction likely expired):', notifyError);
             }
@@ -125,7 +125,7 @@ async function handleColorsButton(interaction) {
         const actingUser = await resolvePanelActor(interaction, targetUserId);
         if (!actingUser) {
             try {
-                await interaction.reply({ content: "🔒 **Those aren't your colors!** Run `/colors` (or `/settings` → View Colors) to see your own palette.", ephemeral: true });
+                await interaction.reply({ content: `${require('../utils/emojiMap').locked} **Those aren't your colors!** Run \`/colors\` (or \`/settings\` → View Colors) to see your own palette.`, ephemeral: true });
             } catch (notifyError) {
                 console.error('Failed to notify user of blocked View Colors action (interaction likely expired):', notifyError);
             }
@@ -170,7 +170,7 @@ async function handleColorsButton(interaction) {
         const actingUser = await resolvePanelActor(interaction, targetUserId);
         if (!actingUser) {
             try {
-                await interaction.reply({ content: "🔒 **Those aren't your colors!** Run `/colors` (or `/settings` → View Colors) to see your own palette.", ephemeral: true });
+                await interaction.reply({ content: `${require('../utils/emojiMap').locked} **Those aren't your colors!** Run \`/colors\` (or \`/settings\` → View Colors) to see your own palette.`, ephemeral: true });
             } catch (notifyError) {
                 console.error('Failed to notify user of blocked View Colors action (interaction likely expired):', notifyError);
             }
@@ -217,7 +217,7 @@ async function handleColorsButton(interaction) {
         const actingUser = await resolvePanelActor(interaction, targetUserId);
         if (!actingUser) {
             try {
-                await interaction.reply({ content: "🔒 **Those aren't your colors!** Run `/colors` (or `/settings` → View Colors) to see your own palette.", ephemeral: true });
+                await interaction.reply({ content: `${require('../utils/emojiMap').locked} **Those aren't your colors!** Run \`/colors\` (or \`/settings\` → View Colors) to see your own palette.`, ephemeral: true });
             } catch (notifyError) {
                 console.error('Failed to notify user of blocked View Colors action (interaction likely expired):', notifyError);
             }

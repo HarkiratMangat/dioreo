@@ -42,7 +42,9 @@ t('each date line is his template: small text, the dot and what happened, then t
     assert.ok(line(by('New Draw 0')).endsWith(`<t:${end}:f>`));
     assert.strictEqual(draws.drawDateLines({ title: 'X', date: null }, { seasonalDoc: doc }), '> -# *Date TBA*');
     // /bot analytics renders a draw with no season: a labelled line all the same.
-    assert.match(draws.buildDrawSections([{ title: 'X', date: new Date(now - D), items: [] }])[0].content, /\*\*Live\*\* · since <t:/);
+    assert.match(draws.buildDrawSections([{ title: 'X', date: new Date(now - D), items: [] }])[0].components[0].content, /\*\*Live\*\* · since <t:/);
+    // A draw with no picture still gets a thumbnail: the "No image yet" placeholder (2026-11-08).
+    assert.ok(draws.buildDrawSections([{ title: 'X', date: new Date(now - D), items: [] }])[0].accessory.media.url.includes('site_assets/placeholder-1x1.png'));
 });
 
 t('a status filter shows one list under /today\'s headings, each draw once', () => {

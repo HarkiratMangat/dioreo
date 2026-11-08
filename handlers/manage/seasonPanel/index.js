@@ -48,17 +48,17 @@ const deny = async (interaction, message) => {
 async function gate(interaction, action) {
     const { resolveAction, DENIAL_MESSAGE } = require('../../../utils/manageActions');
     const g = await resolveAction('seasondraft', action, interaction.user.id);
-    return g.ok ? true : deny(interaction, g.message || DENIAL_MESSAGE[g.reason] || '🔒 You do not have access to that.');
+    return g.ok ? true : deny(interaction, g.message || DENIAL_MESSAGE[g.reason] || `${emojis.accessDenied} You do not have access to that.`);
 }
 // The live Season pseudo-page's two pop-ups ('season_titlesdeadlines', 'season_wipe').
 async function gateLive(interaction, entry) {
     const g = await require('../../../utils/manageActions').resolvePopupEntry(entry, interaction.user.id);
-    return g.ok ? true : deny(interaction, g.message || '🔒 You do not have access to that.');
+    return g.ok ? true : deny(interaction, g.message || `${emojis.accessDenied} You do not have access to that.`);
 }
 async function gateDestructive(interaction, what) {
     const { can } = require('../../../utils/adminAccess');
     if (await can(interaction.user.id, 'manage.seasondraft', 'destructive')) return true;
-    return deny(interaction, `🔒 **You don't have access to ${what} the draft anymore.** Nothing was changed.`);
+    return deny(interaction, `${emojis.accessDenied} **You don't have access to ${what} the draft anymore.** Nothing was changed.`);
 }
 
 // ---------- views ----------
@@ -116,7 +116,7 @@ async function autocomplete(interaction) { return interaction.respond([]); }
 // The panel's own Revert after Promote or Discard (the lead, 2026-11-07 21:11 EST: the spec asks for Revert wherever a save returns change ids). results.js revertChanges does the reverting and its permission check; render lands back on the live view.
 function revertButton(changeIds) {
     const id = `${PREFIX}revert|${(changeIds || []).join(',')}`;
-    return changeIds?.length && id.length <= 100 ? [{ type: 2, style: 4, label: 'Revert', custom_id: id }] : [];
+    return changeIds?.length && id.length <= 100 ? [{ type: 2, style: 4, label: 'Revert', custom_id: id, emoji: emojis.parseEmoji(emojis.keep) }] : [];
 }
 
 // A saved result as the note above the redrawn view.

@@ -96,7 +96,7 @@ async function routeManage(interaction) {
             if (!(await can(interaction.user.id, `manage.${group}`, 'destructive'))) {
                 require('../../utils/eventStore').markOutcome('rejected_admin');
                 try {
-                    await prompt(interaction, { text: "🔒 **You don't have access to that section anymore.** Nothing was deleted." });
+                    await prompt(interaction, { text: `${BOT_EMOJI.accessDenied} **You don't have access to that section anymore.** Nothing was deleted.` });
                 } catch (notifyError) {
                     console.error('Failed to notify user of a revoked manage-panel purge (interaction likely expired):', notifyError);
                 }
@@ -115,7 +115,7 @@ async function routeManage(interaction) {
         }
         if (customId.startsWith('mng_purgecancel_')) {
             try {
-                await prompt(interaction, { text: '❎ Purge cancelled -- nothing was deleted.' });
+                await prompt(interaction, { text: `${BOT_EMOJI.cross} Purge cancelled -- nothing was deleted.` });
             } catch (notifyError) {
                 console.error('Failed to confirm manage-panel purge cancellation (interaction likely expired):', notifyError);
             }
@@ -157,7 +157,7 @@ async function routeManage(interaction) {
             if (!(await can(interaction.user.id, `manage.${group}`, 'destructive'))) {
                 require('../../utils/eventStore').markOutcome('rejected_admin');
                 try {
-                    await prompt(interaction, { text: "🔒 **You don't have access to that section anymore.** Nothing was deleted." });
+                    await prompt(interaction, { text: `${BOT_EMOJI.accessDenied} **You don't have access to that section anymore.** Nothing was deleted.` });
                 } catch (notifyError) {
                     console.error('Failed to notify user of a revoked manage-panel delete (interaction likely expired):', notifyError);
                 }
@@ -179,7 +179,7 @@ async function routeManage(interaction) {
             const token = customId.replace('mng_delcancel_', '');
             pendingManageDeletes.delete(token);
             try {
-                await prompt(interaction, { components: notePanel('❎ Cancelled -- nothing was deleted.') });
+                await prompt(interaction, { components: notePanel(`${BOT_EMOJI.cross} Cancelled -- nothing was deleted.`) });
             } catch (notifyError) {
                 console.error('Failed to confirm manage-panel delete cancellation (interaction likely expired):', notifyError);
             }
@@ -218,7 +218,7 @@ async function routeManage(interaction) {
             const token = customId.replace('mng_bulkdelcancel_', '');
             pendingBulkDeletes.delete(token);
             try {
-                await prompt(interaction, { components: notePanel('❎ Cancelled -- nothing was deleted.') });
+                await prompt(interaction, { components: notePanel(`${BOT_EMOJI.cross} Cancelled -- nothing was deleted.`) });
             } catch (notifyError) {
                 console.error('Failed to confirm bulk-delete cancellation (interaction likely expired):', notifyError);
             }

@@ -62,7 +62,7 @@ async function addDraw(interaction) {
     let typeNote = null;
     if (!isKnownType(priceType) && namesDrawType(thumbResult.catalog?.priceType)) {
         priceType = thumbResult.catalog.priceType;
-        typeNote = `ℹ️ Draw Type set from the draw index: ${drawTypeName(priceType)}`;
+        typeNote = `${BOT_EMOJI.info} Draw Type set from the draw index: ${drawTypeName(priceType)}`;
     }
 
     const newDrawObj = { title, items: parsedItems, date: parsedSingleDate, thumbnailUrl: thumbResult.url, ...(priceType ? { priceType } : {}) };

@@ -15,9 +15,10 @@ const code = (s) => `\`${String(s).replace(/`/g, 'ˋ')}\``;
 // One header block: the title and summary lines, with the build's picture as the accessory when it has one. `build` gives the picture's version, so a picture replaced at the same key shows the new one (utils/loadoutRender.js pictureVersion).
 function headerBlock(title, lines, imageKey, build) {
     const content = [title, ...lines.filter(Boolean)].join('\n');
-    if (!isRealPicture(imageKey)) return { type: 10, content };
     const { buildImageUrl, pictureVersion } = require('./loadoutRender');
-    return { type: 9, components: [{ type: 10, content }], accessory: { type: 11, media: { url: buildImageUrl(imageKey, pictureVersion(build)) } } };
+    // No picture: the "No image yet" placeholder (2026-11-08 11:45 EST).
+    const url = isRealPicture(imageKey) ? buildImageUrl(imageKey, pictureVersion(build)) : require('./placeholders').PLACEHOLDER.square;
+    return { type: 9, components: [{ type: 10, content }], accessory: { type: 11, media: { url } } };
 }
 
 // "AR · Build 2 · Ranked · `1C2B4A8B9A`" and the badges, the same facts the Edit pop-up holds.
@@ -68,7 +69,7 @@ function actionRow(doc, changeIds = [], option = 0) {
         ...(room ? [{ type: 2, style: 3, label: 'Add Option', custom_id: `mng_ldaddopt_${target}`, emoji: emojis.parseEmoji(emojis.plus) }] : []),
         // Who the build is credited to (handlers/manage/loadouts.js creditModal, 2026-11-02 23:01 EST).
         { type: 2, style: 2, label: 'Credit', custom_id: `mng_ldcredit_${id}` },
-        ...(changeIds.length && revertId.length <= 100 ? [{ type: 2, style: 4, label: 'Revert', custom_id: revertId }] : []),
+        ...(changeIds.length && revertId.length <= 100 ? [{ type: 2, style: 4, label: 'Revert', custom_id: revertId, emoji: emojis.parseEmoji(emojis.keep) }] : []),
     ] };
 }
 
