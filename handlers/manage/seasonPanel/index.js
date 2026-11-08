@@ -138,6 +138,7 @@ async function route(interaction) {
     if (verb === 'view') return show(interaction, await home(a === 'draft' ? 'draft' : 'live', await getDoc(), null, interaction));
     if (verb === 'ls') return show(interaction, V.listView(await getDoc(), a, n(b)));
     if (verb === 'lv') return show(interaction, V.botLookView(await getDoc(), a, n(b)));
+    if (verb === 'look') return show(interaction, V.needsLookView(await getDoc()));
     if (verb === 'revert') return require('../results').revertChanges(interaction, String(a || '').split(',').filter(Boolean), { doneNote: 'it is back as it was', render: async (note) => home('live', await getDoc(), note, interaction) });
 
     // ----- pop-up submits: save through season.js, then redraw the view with a Saved header -----

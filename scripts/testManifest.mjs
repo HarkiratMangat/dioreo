@@ -169,6 +169,7 @@ export const TESTS = [
     {"cmd": "node scripts/seasonEmoji.test.js", "lane": "unit"},
     {"cmd": "node scripts/autoPromote.test.js", "lane": "unit"},
     {"cmd": "node scripts/seasonPreview.test.js", "lane": "unit"},
+    {"cmd": "node scripts/seasonNeedsLook.test.js", "lane": "unit"},
     {"cmd": "node scripts/botPresence.test.js", "lane": "unit"},
     {"cmd": "node scripts/commandRefresh.test.js", "lane": "unit"},
     {"cmd": "node scripts/today.test.js", "lane": "unit"},

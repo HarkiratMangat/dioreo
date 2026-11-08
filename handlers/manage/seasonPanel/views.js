@@ -127,7 +127,7 @@ function draftView(doc, note, pageRow) {
         text(`**Title:** ${seasonName(d.currentSeasonTitle, d.currentSeasonEmoji)}\n${seasonRows(d)}${c.fields ? `\n-# ${emojis.mngInfo} News set ${plural(c.fields, 'season field')} here.` : ''}${c.carried ? `\n-# ${emojis.mngInfo} ${plural(c.carried, 'row')} carried over: still running when this season starts.` : ''}${gapLine(d)}`),
         BIG(),
         text('-# Staged lists, as players will see them…'),
-        row(btn(['lv', 'nd', 0], `New Draws · ${c.nd}`, emojis.newDraws, 2, !c.nd), btn(['lv', 'rd', 0], `Returning · ${c.rd}`, emojis.returningDraws, 2, !c.rd), btn(['lv', 'cal', 0], `Calendar · ${c.cal}`, emojis.calendar, 2, !c.cal), btn(['ls', 'news', 0], `News · ${c.news}`, emojis.mngInfo, 2, !c.news)),
+        row(btn(['lv', 'nd', 0], `New Draws · ${c.nd}`, emojis.newDraws, 2, !c.nd), btn(['lv', 'rd', 0], `Returning · ${c.rd}`, emojis.returningDraws, 2, !c.rd), btn(['lv', 'cal', 0], `Calendar · ${c.cal}`, emojis.calendar, 2, !c.cal), btn(['ls', 'news', 0], `News · ${c.news}`, emojis.mngInfo, 2, !c.news), (() => { const n = needsLook(doc).length; return btn('look', n ? `Needs a Look · ${n}` : 'All Checked', n ? emojis.warn : emojis.checkmark, n ? 4 : 3); })()),
         SMALL(),
         text('-# Change what is staged…'),
         row(btn(['tl', 'draft'], 'Edit Titles & Deadlines', emojis.edit, 1), btn('dr', 'Paste Draws', emojis.mngBulkAdd), btn('cal', 'Paste Calendar', emojis.mngBulkAdd)),
@@ -141,10 +141,26 @@ function draftView(doc, note, pageRow) {
 
 // ---------- read-only lists ---------- Ten a page, in the order they are staged. `kind`: nd · rd · cal · news.
 const dayStamp = (d) => (d ? `<t:${unix(d)}:f>` : 'no date');
-function drawLine(r) { return `**${r.title || '(untitled)'}**\n-# ${dayStamp(r.date)} · ${plural((r.items || []).length, 'item')}`; }
+// Where a staged row came from (2026-11-08 12:23 EST, Harkirat: "how do i check if something in the draft was stated by me manually or auto-set by the news-distill feature?"): typed (no news tag), news (official, a leak, or an expected leak, by the source's rank), carried over (still running when the season starts), or a news row he has since edited, which news triage no longer touches (its sig no longer matches, utils/newsTriage/draftMerge.js).
+function origin(r) {
+    const s = r?.newsSource;
+    if (!s) return 'typed';
+    let now = s.sig;
+    try { now = require('../../../utils/newsTriage/draftMerge').sig(r); } catch { /* keep the stored sig */ }
+    if (s.sig && now !== s.sig) return 'news, edited by you';
+    if (s.carried) return 'carried over';
+    return s.rank === 3 ? 'news, official' : s.rank === 1 ? 'news, expected leak' : 'news, leak';
+}
+function provenance(draft) {
+    const rows = [...(draft?.newDraws || []), ...(draft?.returningDraws || []), ...(draft?.calendar || [])];
+    const tally = { typed: 0, news: 0, carried: 0, edited: 0 };
+    for (const r of rows) { const o = origin(r); if (o === 'typed') tally.typed++; else if (o === 'carried over') tally.carried++; else if (o.includes('edited')) tally.edited++; else tally.news++; }
+    return tally;
+}
+function drawLine(r) { return `**${r.title || '(untitled)'}**\n-# ${dayStamp(r.date)} · ${plural((r.items || []).length, 'item')} · *${origin(r)}*`; }
 function calLine(r) {
     const end = r.isOngoing ? 'All Season' : r.endDate ? `<t:${unix(r.endDate)}:f>` : 'no end date';
-    return `**${r.title || '(untitled)'}**\n-# ${r.category || 'event'} · ${dayStamp(r.date)} › ${end}`;
+    return `**${r.title || '(untitled)'}**\n-# ${r.category || 'event'} · ${dayStamp(r.date)} › ${end} · *${origin(r)}*`;
 }
 function newsLine({ kind, r }) {
     const s = r.newsSource || {};
@@ -170,6 +186,53 @@ function listView(doc, kind, page = 0) {
     if (pages > 1) components.push(row(arrow(['ls', key, pg - 1], 'left', pg === 0), counter(['pgn', key], `Page ${pg + 1} / ${pages}`), arrow(['ls', key, pg + 1], 'right', pg === pages - 1)));
     components.push(BIG(), row(btn(['view', 'draft'], 'Back', emojis.returnArrow), homeBtn()));
     return panel(components);
+}
+
+// ---------- Needs a Look ---------- (2026-11-08 12:23 EST, Harkirat: "how do i check what's still pending in the draft or needs my notice/double-check? such as info, images, dates, etc."). The promote check's own checks (utils/newsTriage/readiness.js), plus what it does not look at: a draw with no picture or no items, and draw names matched as the same draw (utils/search.js) rather than letter for letter.
+function needsLook(doc) {
+    const r = require('../../../utils/newsTriage/readiness').draftReadiness(doc);
+    if (!r) return [];
+    const { isSameDrawTitle } = require('../../../utils/search');
+    const d = doc?.draft || {};
+    const draws = [...(d.newDraws || []), ...(d.returningDraws || [])];
+    const calDraws = (d.calendar || []).filter(x => x.category === 'draw');
+    const names = l => (l.length > 6 ? `${l.slice(0, 6).join(', ')} and ${l.length - 6} more` : l.join(', '));
+    const w = [];
+    if (!r.title) w.push('No season title');
+    if (!d.bpStart) w.push('No Battle Pass start date (auto-promote needs one)');
+    if (!r.bpEnd) w.push('No Battle Pass end date, or TBD');
+    if (!r.ranked) w.push('Ranked not set');
+    if (!r.dmz) w.push('DMZ not set');
+    const noPic = draws.filter(x => !x.thumbnailUrl).map(x => x.title);
+    if (noPic.length) w.push(`Draws with no picture: ${names(noPic)}`);
+    const noItems = draws.filter(x => !(x.items || []).some(i => i.tier !== 'comment')).map(x => x.title);
+    if (noItems.length) w.push(`Draws with no items: ${names(noItems)}`);
+    const noDraw = calDraws.filter(c => !draws.some(x => isSameDrawTitle(x.title, c.title))).map(c => c.title);
+    if (noDraw.length) w.push(`On the calendar, not in the draw lists: ${names(noDraw)}`);
+    const noRow = draws.filter(x => !calDraws.some(c => isSameDrawTitle(x.title, c.title))).map(x => x.title);
+    if (noRow.length) w.push(`Draws with no calendar row, so no end date: ${names(noRow)}`);
+    if (r.noEnd.length) w.push(`Calendar rows with no end date: ${names(r.noEnd)}`);
+    if (r.early.length) w.push(`Dated before the season starts: ${names(r.early)}`);
+    if (r.twice) w.push(`${plural(r.twice, 'title')} listed twice`);
+    if (r.seamGap) w.push(`The seasons do not meet: ${r.seamGap}`);
+    if (r.leakOnly.length) w.push(`Expected, not confirmed yet: ${names(r.leakOnly)}`);
+    if ((r.undated || []).length) w.push(`No post ever dated these, so they show as starting on day one: ${names(r.undated)}`);
+    if ((r.fullBoxes || []).length) w.push(`Nearly full in /manage (a box holds 4,000 characters): ${r.fullBoxes.join(' · ')}`);
+    if ((r.stillRunning || []).length) w.push(`Live with no end date, may run into this season: ${names(r.stillRunning)}`);
+    return w;
+}
+function needsLookView(doc) {
+    const w = needsLook(doc);
+    const p = provenance(doc?.draft);
+    return panel([
+        text(`${crumb('Next Season Draft', 'Needs a Look')}\n## ${w.length ? emojis.warn : emojis.checkmark} Needs a Look\n-# What to check before this draft goes live. Fix it with Edit Titles & Deadlines, Paste Draws or Paste Calendar.`),
+        SMALL(),
+        text((w.length ? w.map(x => `${emojis.warn} ${x}`).join('\n') : `${emojis.checkmark} **Everything checked is ready.**`).slice(0, 3600)),
+        SMALL(),
+        text(`-# **Where the rows came from:** ${p.typed} typed by you · ${p.news} from news · ${p.carried} carried over · ${p.edited} news rows you edited. Each row says which in the Compact List.`),
+        BIG(),
+        row(btn(['view', 'draft'], 'Back', emojis.returnArrow), homeBtn()),
+    ]);
 }
 
 // ---------- staged lists, as players will see them ---------- (2026-11-08 12:21 EST, Harkirat, 2026-11-08 11:52 EST: "the \"staged list\", i essentially want to see those lists as they would appear in the bot"). The draft is laid over the live document and drawn by /draws and /calendar themselves, as of the moment the season starts (or now, once it has), so every line reads as it will on day one. Their own buttons are taken off (they would act on the LIVE lists) and this panel's pager and Back go under. /draws and /calendar are read off the public client, never required (a require would put every /manage handler in their hotpatch closure, .claude/rules/hotpatch.md). Anything that cannot be drawn falls back to the compact list.
@@ -297,4 +360,4 @@ function resultView({ crumbs = [], title, body = [], ok = true, back = ['view', 
     ]);
 }
 
-module.exports = { ID, PAGE, row, text, btn, panel, homeBtn, plural, whenLine, stamp, seasonRows, counts, newsRows, calendarDrawsWithoutDraw, isStaged, pageView, listView, botLookView, previewDoc, promoteConfirm, promoteModal, discardConfirm, resultView };
+module.exports = { ID, PAGE, row, text, btn, panel, homeBtn, plural, whenLine, stamp, seasonRows, counts, newsRows, calendarDrawsWithoutDraw, isStaged, pageView, listView, botLookView, previewDoc, needsLook, needsLookView, origin, promoteConfirm, promoteModal, discardConfirm, resultView };
