@@ -69,6 +69,20 @@
             "value": "DMZ Season, TBD"
           }
         ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "season_emoji",
+            "label": "Season Emoji (id or <a:name:id>)",
+            "style": 1,
+            "required": false,
+            "placeholder": "e.g. 1565194787768897617",
+            "value": "<a:S8_AgainstAllFate:1561595098767163496>"
+          }
+        ]
       }
     ]
   },
@@ -121,6 +135,19 @@
             "label": "DMZ Season: Title, Start - End",
             "style": 1,
             "value": "DMZ Season"
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "season_emoji",
+            "label": "Season Emoji (id or <a:name:id>)",
+            "style": 1,
+            "required": false,
+            "placeholder": "e.g. 1565194787768897617"
           }
         ]
       }
@@ -179,6 +206,20 @@
             "style": 1,
             "value": "DMZ Season",
             "required": false
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "season_emoji",
+            "label": "Season Emoji (id or <a:name:id>)",
+            "style": 1,
+            "required": false,
+            "placeholder": "e.g. 1565194787768897617",
+            "value": "<a:S9_VampiresVsWerewolves:1561595142425550898>"
           }
         ]
       }

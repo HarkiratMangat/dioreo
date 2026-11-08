@@ -101,6 +101,7 @@ const OP_TIERS = {
     'season.bulkDraftCalendar': 'create',
     'season.newsDraft': 'create',             // news triage's automatic Next Season Draft writes; staged only, nothing live changes
     'season.promoteDraft': 'destructive',
+    'season.setAutoPromote': 'destructive', // arms a promote (2026-11-08), so it takes the promote's own tier
     'season.discardDraft': 'destructive',
     'season.restoreDraft': 'destructive',     // inverse-only
     // Announcements
