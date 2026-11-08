@@ -48,3 +48,11 @@ For a **bulk** op (parses a whole textarea into an array), the equivalent guard 
 - A change recorded before this has no `insertedIds`; its undo still restores by id, and only leaves behind what that paste added.
 - `scripts/bulkRestore.test.js` and the Replace Multiple checks in `scripts/manageDrawHandlers.test.js` / `manageCalendarHandlers.test.js` fail if this regresses.
 
+## 🔴 A Revert must bring back the SAME thing — test it as a round trip, not by reading the inverse
+
+*Added 2026-11-07 22:42 EST (v3.15.0), found round-tripping on the dev bot after the /manage panels put a Revert one click after each action.*
+
+- **`season.promoteDraft`'s prior snapshot carries `draft`.** Promote clears the draft; without it in the snapshot, `season.restoreSnapshot` put the live season back and the staged draft was gone. restoreSnapshot sets whatever top-level fields it is given, so the snapshot is the whole fix. Rows recorded before this restore as they always did.
+- **`announcement.delete`'s inverse carries `restoreId`** (the deleted `_id`), `validatePost` keeps it in the normalized payload, and `announcement.post` reuses it **only when `restoring`**. Under a new `_id`, every player who had already seen the announcement got it again, because `UserPreference.seenAnnouncementIds` keys on the id.
+- ⚠️ **A validator that rebuilds `normalized.payload` field by field silently drops any new inverse field.** That is how the first `restoreId` fix did nothing. When an inverse gains a field, check it survives `validate()`.
+- `scripts/seasonOps.test.js` and `scripts/announcementOps.test.js` pin both. The dev-database round-trip probes live in Dioreo-Bot's `local/project/features/manage-rehaul-rest/probes/` (gitignored).
