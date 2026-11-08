@@ -82,6 +82,11 @@ const stagedLine = (doc) => {
     return `staged · ${c.nd} new · ${c.rd} returning · ${c.cal} calendar`;
 };
 
+const gapLine = (d) => {
+    const orphans = calendarDrawsWithoutDraw(d);
+    return orphans.length ? `\n${emojis.warn} **On the calendar, not in the draw lists:** ${orphans.slice(0, 5).join(', ')}${orphans.length > 5 ? ` and ${orphans.length - 5} more` : ''}. /draws will not show ${orphans.length === 1 ? 'it' : 'them'} after Promote; add the draw or match its title.` : '';
+};
+
 // ---------- the two home views ----------
 function pageView(doc, view = 'live', note = null, { pageRow = null } = {}) {
     return view === 'draft' ? draftView(doc, note, pageRow) : liveView(doc, note, pageRow);
@@ -132,11 +137,6 @@ function draftView(doc, note, pageRow) {
     );
     return panel(components, pageRow ? [pageRow] : []);
 }
-
-const gapLine = (d) => {
-    const orphans = calendarDrawsWithoutDraw(d);
-    return orphans.length ? `\n${emojis.warn} **On the calendar, not in the draw lists:** ${orphans.slice(0, 5).join(', ')}${orphans.length > 5 ? ` and ${orphans.length - 5} more` : ''}. /draws will not show ${orphans.length === 1 ? 'it' : 'them'} after Promote; add the draw or match its title.` : '';
-};
 
 // ---------- read-only lists ---------- Ten a page, in the order they are staged. `kind`: nd · rd · cal · news.
 const dayStamp = (d) => (d ? `<t:${unix(d)}:f>` : 'no date');
