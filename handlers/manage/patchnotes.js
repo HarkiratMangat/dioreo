@@ -19,8 +19,9 @@ async function currentPatchElementId() {
 }
 
 // --- DATE/INFO --- custom_id: modal_patch_dateinfo
-async function setDateInfo(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+// 2026-11-07 21:05 EST: the rehauled panel (handlers/manage/patchnotesPanel/) calls these with `opts` = { customId, onResult }: it hands its own pop-up's submit here under the id the old code expects, and `onResult({ ok, elementId })` tells it what the save did so it can redraw its card. A guarded defer lets it deferUpdate first. Callers that pass nothing behave exactly as before.
+async function setDateInfo(interaction, opts = {}) {
+    if (!interaction.deferred && !interaction.replied) await interaction.deferReply({ ephemeral: true });
     const UserPreference = require('../../models/UserPreference');
     const adminPrefs = await UserPreference.findOne({ discordId: interaction.user.id });
     const releaseDate = interaction.fields.getTextInputValue('release_date');
@@ -37,15 +38,17 @@ async function setDateInfo(interaction) {
     const result = await commitSet([op], { actorId: interaction.user.id });
     if (!result.ok) {
         const why = extractCommitError(result);
+        opts.onResult?.({ ok: false });
         return await interaction.followUp({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} ${why}`, FAIL_ACCENT) });
     }
+    opts.onResult?.({ ok: true, elementId: result.results[0].applied.elementId });
     return interaction.followUp({ flags: 32768 | 64, components: patchPanel({ heading: 'Patch notes date & info updated', title: result.results[0].change.target, entryId: result.results[0].applied.elementId, changeIds: result.changeIds }) });
 }
 
 // --- URLS 1 / URLS 2 --- custom_id: modal_patch_urls_{1|2} Each of the 5 URLs is its own field -- a blank field means "no image in this slot". URLs 1 owns images[0..4], URLs 2 owns images[5..9] -- each submit only replaces its own half, preserving whatever the other slot has saved.
-async function setUrls(interaction) {
-    await interaction.deferReply({ ephemeral: true });
-    const customId = interaction.customId;
+async function setUrls(interaction, opts = {}) {
+    if (!interaction.deferred && !interaction.replied) await interaction.deferReply({ ephemeral: true });
+    const customId = opts.customId ?? interaction.customId;
     const slot = customId === 'modal_patch_urls_1' ? 1 : 2;
     const rawUrls = [0, 1, 2, 3, 4].map(i => interaction.fields.getTextInputValue(`url${i}`));
 
@@ -57,15 +60,17 @@ async function setUrls(interaction) {
     const result = await commitSet([op], { actorId: interaction.user.id });
     if (!result.ok) {
         const why = extractCommitError(result);
+        opts.onResult?.({ ok: false });
         return await interaction.followUp({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} ${why}`, FAIL_ACCENT) });
     }
     const { title, imageCount } = result.results[0].applied;
+    opts.onResult?.({ ok: true, elementId: result.results[0].applied.elementId });
     return interaction.followUp({ flags: 32768 | 64, components: patchPanel({ heading: `Patch notes images ${slot === 1 ? '1–5' : '6–10'} updated`, title, lines: [`${imageCount} image(s) in total`], entryId: result.results[0].applied.elementId, changeIds: result.changeIds }) });
 }
 
 // --- ADD NEW SEASON --- custom_id: modal_patch_addseason Always PUSHES a brand-new patchNotes[] entry, becoming the new "current" entry (the old current entry automatically becomes a past season). URLs come in as two multi-line fields instead of 5 individually-addressable Short fields, matching the original mockup shape.
-async function addSeason(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+async function addSeason(interaction, opts = {}) {
+    if (!interaction.deferred && !interaction.replied) await interaction.deferReply({ ephemeral: true });
     const UserPreference = require('../../models/UserPreference');
     const adminPrefs = await UserPreference.findOne({ discordId: interaction.user.id });
     // Filter-then-slice, same order as the pre-core handler -- taking the first 5 RAW lines before filtering out blanks/non-http would silently drop a later valid url in favor of an earlier blank one.
@@ -84,16 +89,18 @@ async function addSeason(interaction) {
     );
     if (!result.ok) {
         const why = extractCommitError(result);
+        opts.onResult?.({ ok: false });
         return await interaction.followUp({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} ${why}`, FAIL_ACCENT) });
     }
     const { title, imageCount } = result.results[0].applied;
+    opts.onResult?.({ ok: true, elementId: result.results[0].applied.elementId });
     return interaction.followUp({ flags: 32768 | 64, components: patchPanel({ heading: 'New season added', title, lines: [`Now the Current Season · ${imageCount} image(s)`, 'The previous season moved to Past Seasons'], entryId: result.results[0].applied.elementId, changeIds: result.changeIds }) });
 }
 
 // --- PAST SEASONS: EDIT --- custom_id: modal_patch_editseason_{id} Updates ONE SPECIFIC existing entry in place (picked via handlePatchSeasonPick below), never touches which entry is "current".
-async function editSeason(interaction) {
-    await interaction.deferReply({ ephemeral: true });
-    const entryId = interaction.customId.replace('modal_patch_editseason_', '');
+async function editSeason(interaction, opts = {}) {
+    if (!interaction.deferred && !interaction.replied) await interaction.deferReply({ ephemeral: true });
+    const entryId = (opts.customId ?? interaction.customId).replace('modal_patch_editseason_', '');
     const UserPreference = require('../../models/UserPreference');
     const adminPrefs = await UserPreference.findOne({ discordId: interaction.user.id });
     const parseUrlLines = text => (text || '').split('\n').map(u => u.trim()).filter(u => u && u.startsWith('http')).slice(0, 5);
@@ -111,6 +118,7 @@ async function editSeason(interaction) {
     );
     if (!result.ok) {
         // Matches the pre-core handler's own wording for a stale/removed target.
+        opts.onResult?.({ ok: false });
         if (result.failedAt?.reason === 'missing') {
             return await interaction.followUp({ flags: 32768 | 64, components: notePanel(BOT_EMOJI.cross + ' That season no longer exists -- it may have been changed or removed since this modal opened.', FAIL_ACCENT) });
         }
@@ -118,6 +126,7 @@ async function editSeason(interaction) {
         return await interaction.followUp({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} ${why}`, FAIL_ACCENT) });
     }
     const { title, imageCount } = result.results[0].applied;
+    opts.onResult?.({ ok: true, elementId: result.results[0].applied.elementId });
     return interaction.followUp({ flags: 32768 | 64, components: patchPanel({ heading: 'Past season updated', title, lines: [`${imageCount} image(s)`], entryId: result.results[0].applied.elementId, changeIds: result.changeIds }) });
 }
 
