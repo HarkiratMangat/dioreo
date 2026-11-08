@@ -18,8 +18,7 @@ async function currentPatchElementId() {
     return String(seasonalDoc.patchNotes[seasonalDoc.patchNotes.length - 1]._id);
 }
 
-// --- DATE/INFO --- custom_id: modal_patch_dateinfo
-// 2026-11-07 21:05 EST: the rehauled panel (handlers/manage/patchnotesPanel/) calls these with `opts` = { customId, onResult }: it hands its own pop-up's submit here under the id the old code expects, and `onResult({ ok, elementId })` tells it what the save did so it can redraw its card. A guarded defer lets it deferUpdate first. Callers that pass nothing behave exactly as before.
+// --- DATE/INFO --- custom_id: modal_patch_dateinfo 2026-11-07 21:05 EST: the rehauled panel (handlers/manage/patchnotesPanel/) calls these with `opts` = { customId, onResult }: it hands its own pop-up's submit here under the id the old code expects, and `onResult({ ok, elementId })` tells it what the save did so it can redraw its card. A guarded defer lets it deferUpdate first. Callers that pass nothing behave exactly as before.
 async function setDateInfo(interaction, opts = {}) {
     if (!interaction.deferred && !interaction.replied) await interaction.deferReply({ ephemeral: true });
     const UserPreference = require('../../models/UserPreference');

@@ -278,7 +278,10 @@ const PAGES = {
                 boxes: [
                     text(`**Sections**\n${SECTIONS.map(([n, d]) => `> -# ${m(`/${n}`)}  *${d}*`).join('\n')}`),
                     // Every section's own options since the rest of the rehaul (2026-11-07 21:06 EST): the old [action] is retired everywhere.
-                    text("`[draw]` `[event]` `[season]` `[announcement]`\n-# Go to one thing by part of its title: a draw, a calendar entry, a season's patch notes, an announcement"),
+                    text("`[draw]`\n-# Draws: go to one draw, by part of its title"),
+                    text("`[event]`\n-# Calendar: go to one entry, by part of its title"),
+                    text("`[season]`\n-# Patch notes: go to one season's notes"),
+                    text("`[announcement]`\n-# Announcement: go to one, by part of its text"),
                     text("`[build]`\n-# Gunsmith: go to one build or option, e.g. `fss 1b`, or pick **＋ New build**"),
                     text("`[show]`\n-# Draws and calendar: open a list, such as Upcoming, Active Now or Ended"),
                     text("`[do]`\n-# What to do with the thing named (Edit, Move, Delete and more), or alone: Add, Paste, Export, Guide. Season titles and draft: their pop-ups, straight away. Purge, Promote and Discard stay on the panel"),

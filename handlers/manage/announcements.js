@@ -11,8 +11,7 @@ const BOT_EMOJI = require('../../utils/emojiMap'); // the bot's own status glyph
 const { commitSet } = require('../../core/changeset');
 const { prompt, extractCommitError } = require('./shared');
 
-// --- POST NEW --- custom_id: modal_announce_post Creates an independent doc rather than overwriting anything -- see models/Announcement.js's header for why the old singleton design was replaced.
-// 2026-11-07 21:05 EST: the rehauled panel (handlers/manage/announcementsPanel/) calls these with `opts` = { customId, onResult }, the same contract as handlers/manage/patchnotes.js: its own pop-up id, and `onResult({ ok })` so it can redraw its card. Every reply is ephemeral on its own flag, because a deferUpdate first would otherwise make the follow-up public. Callers that pass nothing behave as before.
+// --- POST NEW --- custom_id: modal_announce_post Creates an independent doc rather than overwriting anything -- see models/Announcement.js's header for why the old singleton design was replaced. 2026-11-07 21:05 EST: the rehauled panel (handlers/manage/announcementsPanel/) calls these with `opts` = { customId, onResult }, the same contract as handlers/manage/patchnotes.js: its own pop-up id, and `onResult({ ok })` so it can redraw its card. Every reply is ephemeral on its own flag, because a deferUpdate first would otherwise make the follow-up public. Callers that pass nothing behave as before.
 async function postAnnouncement(interaction, opts = {}) {
     if (!interaction.deferred && !interaction.replied) await interaction.deferReply({ ephemeral: true });
     const text = interaction.fields.getTextInputValue('text').trim();

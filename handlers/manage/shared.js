@@ -229,8 +229,7 @@ async function renderManagePage(interaction) {
     const targetPage = interaction.values[0];
     const manageCommand = interaction.client.commands.get('manage');
 
-    // Since the permission restructure (2026-10-19 19:25 EDT) any admin may browse every page -- the router's prefix guard already proved this is an admin -- and each button checks its own tier on the press. The two Season entries open a pop-up straight away, so picking one IS the action and is gated here like a button (utils/manageActions.js's resolvePopupEntry).
-    // Only Start New Season still opens a pop-up from this dropdown; Season: Titles & Deadlines is the Season panel now (the rehaul, 2026-11-07 21:00 EST), which checks each action's own tier.
+    // Since the permission restructure (2026-10-19 19:25 EDT) any admin may browse every page -- the router's prefix guard already proved this is an admin -- and each button checks its own tier on the press. Only Start New Season (season_wipe) still opens a pop-up straight away from this dropdown, so only it is gated as its button here; Season: Titles & Deadlines is the Season panel since the rehaul (2026-11-07 21:00 EST), which checks each action's own tier.
     if (targetPage === 'season_wipe') {
         const { resolvePopupEntry } = require('../../utils/manageActions');
         const gate = await resolvePopupEntry(targetPage, interaction.user.id);

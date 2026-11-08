@@ -79,8 +79,7 @@ async function handleWipeButton(interaction) {
     }
 }
 
-// --- SEASON TITLES + DEADLINES (merged) --- custom_id: modal_season_titles_deadlines Each of the 3 deadline fields carries both a title and an end date on one line ("Battle Pass, August 28"); parsing (splitTitleDate/TBD handling) now lives entirely in core/ops/season.js.
-// 2026-11-07 21:06 EST The save is lifted out of the pop-up handlers so the Season panel (handlers/manage/seasonPanel/) can run the SAME write and draw its own answer. Each returns { ok, message } with NO leading emoji; the old handlers below put the cross or checkmark back, so what they send is byte-for-byte what it was.
+// --- SEASON TITLES + DEADLINES (merged) --- custom_id: modal_season_titles_deadlines Each of the 3 deadline fields carries both a title and an end date on one line ("Battle Pass, August 28"); parsing (splitTitleDate/TBD handling) now lives entirely in core/ops/season.js. 2026-11-07 21:06 EST The save is lifted out of the pop-up handlers so the Season panel (handlers/manage/seasonPanel/) can run the SAME write and draw its own answer. Each returns { ok, message } with NO leading emoji; the old handlers below put the cross or checkmark back, so what they send is byte-for-byte what it was.
 const readTitleFields = (interaction) => ({
     mainTitle: interaction.fields.getTextInputValue('main_title').trim(),
     bpLine: interaction.fields.getTextInputValue('bp_line'),

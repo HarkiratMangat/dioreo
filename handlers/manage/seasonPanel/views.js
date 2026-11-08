@@ -157,8 +157,7 @@ function listView(doc, kind, page = 0) {
     return panel(components);
 }
 
-// ---------- in-place confirms ----------
-// What Promote swaps, field by field: the live value struck through, then the staged one. Comparing the strings tells the admin what really moves.
+// ---------- in-place confirms ---------- What Promote swaps, field by field: the live value struck through, then the staged one. Comparing the strings tells the admin what really moves.
 const oneLine = (title, end, tbd, start) => `${title}, ${whenLine(start, end, tbd)}`;
 function promoteConfirm(doc) {
     const d = doc?.draft || {};

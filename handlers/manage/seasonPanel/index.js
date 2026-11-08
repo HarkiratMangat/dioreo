@@ -69,8 +69,7 @@ async function home(view, doc, note = null, interaction = null) {
 }
 async function renderHome(interaction, view = 'live') { return show(interaction, await home(view, await getDoc(), null, interaction)); }
 
-// ---------- the pop-ups ----------
-// /manage's own builders, re-id'd so the submit comes back here. Prefilled from what is stored, as before.
+// ---------- the pop-ups ---------- /manage's own builders, re-id'd so the submit comes back here. Prefilled from what is stored, as before.
 const reId = (modal, customId) => { const j = modal.toJSON ? modal.toJSON() : JSON.parse(JSON.stringify(modal)); j.custom_id = customId; return j; };
 const titlesModal = (doc, view) => reId(view === 'draft' ? manageCommand().buildDraftTitlesDatesModal(doc) : manageCommand().buildSeasonTitlesDeadlinesModal(doc), V.ID('tm', view));
 const drawsModal = (doc) => reId(manageCommand().buildDraftBulkDrawsModal(doc), V.ID('drm'));

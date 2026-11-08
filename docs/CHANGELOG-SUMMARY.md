@@ -12,6 +12,9 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.15.0 — November 7, 2026
+- **New (admins):** every `/manage` section is now one panel: calendar entries by list with a card to edit or delete them, patch notes by season, the live season and the next-season draft with Promote and Discard that confirm first, and announcements shown exactly as players see them. Every section's slash command can go straight to one thing.
+
 ## v3.14.0 — November 7, 2026
 - **New (admins):** `/manage draws` is one panel: browse draws by list (Active Now, Leaving Soon and more), open one to edit it, change its end date, move it between New and Returning or delete it, and select many to edit as text, export or delete.
 - **Fixed (admins):** an exported draw with a picture pastes back, and replacing a draw no longer overwrites a draw with a similar title.
