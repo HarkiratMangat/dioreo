@@ -31,6 +31,22 @@ check('promoteDraft inverts to restoreSnapshot carrying the WHOLE prior document
         'a rotation cannot be undone by a diff -- every rotated field must be in the snapshot');
 });
 
+check('a date on its own is the START in the draft box and the END in the live box (2026-11-08 10:54 EST)', () => {
+    const { applyFields } = require('../core/ops/season');
+    const cur = { title: 'Battle Pass', start: null, end: null, endTBD: false };
+    const draft = applyFields(cur, {}, 'bp', 'Battle Pass, November 12', 'Battle Pass', [], { loneDate: 'start' });
+    assert.ok(draft.start instanceof Date && draft.start.getUTCDate() === 12, 'the draft reads it as the start');
+    assert.strictEqual(draft.end, null); assert.strictEqual(draft.endTBD, true);
+    const live = applyFields(cur, {}, 'bp', 'Battle Pass, November 12', 'Battle Pass', []);
+    assert.ok(live.end instanceof Date && live.end.getUTCDate() === 12, 'the live box reads it as the end');
+    assert.strictEqual(live.start, null);
+    const range = applyFields(cur, {}, 'bp', 'Battle Pass, November 12 - December 10', 'Battle Pass', [], { loneDate: 'start' });
+    assert.ok(range.start && range.end, 'a range still sets both');
+    const src = require('fs').readFileSync(require('path').join(__dirname, '../core/ops/season.js'), 'utf8');
+    const at = src.indexOf("'season.setDraftTitlesDeadlines': {");
+    assert.strictEqual((src.slice(at, src.indexOf("'season.", at + 10)).match(/loneDate: 'start'/g) || []).length, 3, 'all three draft lines read a lone date as the start');
+});
+
 check('setTitlesDeadlines accepts the literal word TBD without corrupting the date', () => {
     // applyLine's TBD branch is exercised through apply(), not validate() (validate is a pass-through here since resolving "leave unchanged" needs the live document) -- this checks the parsing helper's OWN contract indirectly via a round-tripped restoreSnapshot invert instead.
     const impl = ops.resolveOp('season.setTitlesDeadlines');

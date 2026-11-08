@@ -12,6 +12,10 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.15.1 — November 8, 2026
+- **Fixed (admins):** a date typed on its own in the next-season draft is the season's start, not its end.
+- **Behind the scenes:** tidier code and checks, with nothing you'll notice. Sapphire Winter's picture is now the official poster, and Botanist Mythic Drop is staged for Season 10.
+
 ## v3.15.0 — November 7, 2026
 - **New (admins):** every `/manage` section is now one panel: calendar entries by list with a card to edit or delete them, patch notes by season, the live season and the next-season draft with Promote and Discard that confirm first, and announcements shown exactly as players see them. Every section's slash command can go straight to one thing.
 
