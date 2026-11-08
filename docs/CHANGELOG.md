@@ -29,7 +29,36 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.13.0 — 2026-11-07 15:59 EST (#261) — /manage gunsmith mp and dmz rehauled: one panel to search, browse, select, edit, paste and export builds
+## v3.14.0 — 2026-11-07 19:38 EST (#PR) — /manage draws rehauled: one panel to browse, open, edit, move, select, paste and export draws
+
+### Added
+- **A new `/manage draws` panel** (`handlers/manage/drawsPanel/`), one message that changes in place: a home page with Quick Add, Add New Draw, Add Returning Draw, Search Draws, a list dropdown (New, Returning, Upcoming, Active Now, Leaving Soon, Ended, No End Date, each with its count), Paste Draws, Select Draws, Export, Guide and Purge Draws.
+- **Lists** of 10 a page with an Open dropdown and Select These N. Active Now and Leaving Soon read what ends soonest first, Ended the latest ended first, the rest by start.
+- **One draw card**: the /draws card itself, a line with New or Returning, the draw type and a missing end date, then Edit, Set or Change End Date, Move to New/Returning and Delete. Edit saves and redraws the card in place, with the result and Revert below.
+- **Move** takes a draw between New and Returning in one change, items, picture, type and end date with it, answered with Revert.
+- **Select Draws**: titles and quick picks (every list above) as a union; a list of 10 a page, Select All and Clear, kept across pages and restarts (`models/ManageSelection.js`, mode `DRAWS`). Edit N opens the selected draws as paste text, and the preview names what changed and how; with nothing changed there is nothing to save. Export N and Delete N work on the selection.
+- **Paste Draws** shows the same preview before Save.
+- **One Export pop-up**: titles and quick picks, a file or a DM, and whether end dates, image links and draw types are included.
+- **Slash options** on `/manage draws`: `draw:` (autocomplete), `do:` (Quick Add, Add New, Add Returning, Edit, End Date, Move, Delete, Paste, Export, Guide) and `show:` (a list). `/help` lists them.
+
+### Fixed
+- **An exported draw pastes back.** A Cloudinary link's `f_auto,q_auto` comma split the line, so every exported draw with a picture was skipped on paste (`utils/adminParser.js`).
+- **Replace updates the draw with the same title.** The fuzzy match took the first close title, so pasting the Hero's Collection draw overwrote the Champion's Collection draw (`utils/bulkMerge.js`, now exact title first, then the best match).
+
+### Changed
+- **Every save goes through the existing code**: Edit through `editDraw`, Paste and Edit N through `bulkAddOrReplaceDraws`, Delete through `deleteDraw`, Delete N through `draw.bulkDelete`, Purge through `purgeDraws`, end dates through the calendar pop-ups. The ChangeLog and Revert are what they were.
+- **Every action re-checks its own tier** with `resolveAction`, and a delete or purge re-checks the destructive tier.
+- `/manage draws` no longer takes `action:`; `do:` covers it. The section dropdown's Draws entry opens the new panel. Old panels' buttons still work.
+- The panel's Revert lands back on the draws home, not a bare note (`revertChanges` takes a `render`).
+- **A hotpatch to `/draws` or `/draw prices` is still allowed.** The panel reads `/draws` off the public client's commands at call time, not by `require`, and `bot/lifecycle.js` reads `appsOfThisProcess` from `utils/emojiSync.js` instead of the emoji panel, which had pulled every /manage handler into the restart-only set.
+
+### Removed
+- The throwaway `/mockdraws` mock-up the panel was drawn from.
+
+### Tests
+- `scripts/manageDraws.test.js`: the export round trip, the Hero/Champion match, Edit N's preview, selection by title and quick pick, list order, every view inside Discord's limits with 35 draws, and the export's sections.
+
+## v3.13.0 — 2026-11-07 15:59 EST (#261 · `1581a11b`) — /manage gunsmith mp and dmz rehauled: one panel to search, browse, select, edit, paste and export builds
 
 ### Added
 - **A new `/manage gunsmith mp` and `dmz` panel** (`handlers/manage/gunsmith/`), one message that changes in place: a home page with Search Builds, Add Build, the seven classes, Paste Builds, Select Builds, Export and Guide; a class page with its weapons; a weapon page with every build; and one build card (the /gunsmith card) with an option picker on a merged build and Edit, Move, Add Option and Delete. The section dropdown sits under the home page.

@@ -148,8 +148,7 @@ async function editDraw(interaction, opts = {}) {
     return await interaction.followUp({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} That draw no longer exists (it may have been deleted or replaced since you opened it), so nothing was saved.`, FAIL_ACCENT) });
 }
 
-// --- BULK ADD/REPLACE BOTH DRAW CATEGORIES AT ONCE --- custom_id: modal_draws_bulk_{add|replace}_both One modal, two independently-optional fields -- only whichever field was actually filled in gets touched. Replace upserts by fuzzy-matched title (update in place, keep _id) rather than wholesale- overwriting the array; Add just appends everything parsed. Both categories commit in ONE changeset (matching the pre-core handler's single seasonalDoc.save() for both).
-// `preset` ({ customId, values: { new_text, returning_text } }) is the /manage draws panel's Save after its preview: the text it previewed, not a pop-up's fields, and the interaction may already be acknowledged (2026-11-07 19:13 EST).
+// --- BULK ADD/REPLACE BOTH DRAW CATEGORIES AT ONCE --- custom_id: modal_draws_bulk_{add|replace}_both One modal, two independently-optional fields -- only whichever field was actually filled in gets touched. Replace upserts by fuzzy-matched title (update in place, keep _id) rather than wholesale- overwriting the array; Add just appends everything parsed. Both categories commit in ONE changeset (matching the pre-core handler's single seasonalDoc.save() for both). `preset` ({ customId, values: { new_text, returning_text } }) is the /manage draws panel's Save after its preview: the text it previewed, not a pop-up's fields, and the interaction may already be acknowledged (2026-11-07 19:13 EST).
 async function bulkAddOrReplaceDraws(interaction, preset = null) {
     if (!interaction.deferred && !interaction.replied) await interaction.deferReply({ ephemeral: true });
     const customId = preset ? preset.customId : interaction.customId;

@@ -29,8 +29,12 @@ const panel = (components, after = []) => [{ type: 17, accent_color: ACCENT, com
 const homeBtn = () => btn('page', 'Home', emojis.returnArrow);
 const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
 
-// ---------- the draws, timed ----------
-const D = () => require('../../../commands/draws');
+// ---------- the draws, timed ---------- /draws through the public client's command Collection, looked up on each call, never required: a require would put every /manage handler in the closure of a hotpatch to /draws or /draw prices (which /draws requires), and utils/hotpatch.js would refuse it. bot/registry.js fills the Collection and a hotpatch re-sets it. Tests set clients.public.
+const D = () => {
+    const cmd = require('../../../bot/clients').publicClient()?.commands?.get('draws');
+    if (!cmd) throw new Error('drawsPanel: /draws is not loaded on the public client');
+    return cmd;
+};
 function allDraws(doc, nowMs = Date.now()) {
     const t = (d, sec) => ({ ...d, _sec: sec, _key: `${sec[0]}:${d._id}`, ...D().drawTiming(d, doc, nowMs) });
     return [...(doc.newDraws || []).map(d => t(d, 'new')), ...(doc.returningDraws || []).map(d => t(d, 'returning'))];

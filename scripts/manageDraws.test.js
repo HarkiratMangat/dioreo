@@ -38,6 +38,8 @@ function seasonDoc(nNew = 3, nRet = 30) {
 (async () => {
     console.log('manage draws');
     const { parseBulkDrawList, formatDrawsAsBulkText } = require('../utils/adminParser');
+    // The panel reads /draws off the public client's commands (views.js D()), as the running bot does.
+    require('../bot/clients').clients.public = { commands: new Map([['draws', require('../commands/draws')]]) };
     const V = require('../handlers/manage/drawsPanel/views');
     const P = require('../handlers/manage/drawsPanel');
 
@@ -126,6 +128,13 @@ function seasonDoc(nNew = 3, nRet = 30) {
         const ends = V.allDraws(doc).filter(V.STATUS.live.test).sort((a, b) => a.endMs - b.endMs).map(d => `**${d.title}**`);
         assert.ok(ends.length > 2, 'too few live draws to prove an order');
         assert.deepStrictEqual(titles.slice(0, ends.length), ends.slice(0, titles.length));
+    });
+    await check('a hotpatch to /draws or /draw prices is not refused because of the draws panel', () => {
+        const { planHotpatch } = require('../utils/hotpatch');
+        for (const f of ['commands/draws.js', 'commands/drawprices.js']) {
+            const p = planHotpatch({ files: [f] });
+            assert.ok(!p.members.some(m => m.startsWith('handlers/manage/')), `${f}: the closure reaches ${p.members.filter(m => m.startsWith('handlers/manage/')).join(', ')}`);
+        }
     });
     await check('custom ids are mng_dr|… and refuse to pass 100 characters', () => {
         assert.strictEqual(V.ID('card', `n:${oid(1)}`), `mng_dr|card|n:${oid(1)}`);
