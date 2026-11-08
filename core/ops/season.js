@@ -187,9 +187,11 @@ registerEntity('season', {
             if (draft.dmzEndTBD) { $set.dmzEnd = null; $set.dmzEndTBD = true; } else if (draft.dmzEnd) { $set.dmzEnd = draft.dmzEnd; $set.dmzEndTBD = false; } else { $set.dmzEnd = null; $set.dmzEndTBD = false; }
             // The starts go live with the draft, blank included: a new season never keeps the old one's start, or its bar would count from the wrong day.
             $set.bpStart = draft.bpStart || null; $set.rankStart = draft.rankStart || null; $set.dmzStart = draft.dmzStart || null;
-            $set.newDraws = draft.newDraws || [];
-            $set.returningDraws = draft.returningDraws || [];
-            $set.calendar = draft.calendar || [];
+            // In date order (2026-11-08 11:30 EST, a click-walk of /manage season draft on a copy of prod): /draws shows its lists in stored order and every draw op re-sorts after a write, but the draft is filled by carry-over and news triage in arrival order, so promoting it as it was put Samurai's Soul (Nov 1) after Ultra Violet (Nov 6).
+            const byDate = (rows) => [...(rows || [])].sort((x, y) => new Date(x.date || 0) - new Date(y.date || 0));
+            $set.newDraws = byDate(draft.newDraws);
+            $set.returningDraws = byDate(draft.returningDraws);
+            $set.calendar = byDate(draft.calendar);
             if (draft.drawsBannerUrl) $set.drawsBannerUrl = draft.drawsBannerUrl;
             if (draft.eventsBannerUrl) $set.eventsBannerUrl = draft.eventsBannerUrl;
             if (draft.playlistsBannerUrl) $set.playlistsBannerUrl = draft.playlistsBannerUrl;

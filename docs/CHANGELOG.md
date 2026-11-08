@@ -39,6 +39,10 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ### Fixed
 - **A date typed on its own in the Next Season Draft's titles box is the season's START** (end TBD), not its end (`core/ops/season.js` `applyLine`'s `loneDate`; Harkirat's report, 2026-11-08 10:51 EST: "i put november 12 only, no end date. and it assumed it as the end date"). The live Titles & Deadlines box still reads a lone date as the deadline. Pinned in `scripts/seasonOps.test.js`.
 
+- **Promote to Live puts the draws and calendar live in date order** (`core/ops/season.js` `season.promoteDraft`). `/draws` shows its lists in stored order and every draw op re-sorts after a write, but the draft is filled by carry-over and news triage in arrival order; a click-walk of `/manage season draft` on a copy of prod's Season 10 draft found Samurai's Soul (Nov 1) promoted after Ultra Violet (Nov 6). Pinned in `scripts/manageSeasonHandlers.test.js`.
+- **The draft panel no longer counts carried-over rows as news.** Prod's draft showed "News · 21" when all 21 rows were carried over from Season 9 (still running when Season 10 starts); the home now says how many rows are carried over, and News counts only what news triage wrote. Discard's card lists both.
+- **The draft panel names a calendar draw with no draw in the lists** (`views.js` `calendarDrawsWithoutDraw`), on its home and on the Promote card: such a draw would vanish from `/draws` after Promote and lose its end date. Prod's draft has one, Alchemy Stars (see below).
+
 ### Removed
 - **The retired `/draw calculator` Draw Info panel** (`buildDrawInfoPanel`, off the nav row since 2026-10-14): Harkirat's pick. A calculator panel posted before then can still send `info`; it now opens Help (`scripts/drawCalcHandler.test.js`).
 

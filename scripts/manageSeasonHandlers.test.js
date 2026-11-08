@@ -20,6 +20,16 @@ const button = (customId) => Object.assign(h.modal(customId), { isButton: () => 
         assert.strictEqual(h.state.changes.length, 1);
     });
 
+    await check('Promote puts the draws and calendar live in date order (2026-11-08 11:30 EST)', async () => {
+        const d = (t, day) => ({ _id: h.id(), title: t, date: `2026-11-${String(day).padStart(2, '0')}T00:00:00.000Z`, items: [] });
+        h.reset({ draft: { active: true, currentSeasonTitle: 'Season 10', newDraws: [d('Late', 20), d('Early', 2)], returningDraws: [d('Ultra Violet', 6), d("Samurai's Soul", 1)], calendar: [{ ...d('B', 9), category: 'event' }, { ...d('A', 3), category: 'event' }] } });
+        await season.handleDraftButton(button('mng_draftpromoteconfirm'));
+        const s = h.state.doc;
+        assert.deepStrictEqual(s.newDraws.map(x => x.title), ['Early', 'Late']);
+        assert.deepStrictEqual(s.returningDraws.map(x => x.title), ["Samurai's Soul", 'Ultra Violet']);
+        assert.deepStrictEqual(s.calendar.map(x => x.title), ['A', 'B']);
+    });
+
     await check('the draft takes pasted draws and events without touching the live season', async () => {
         h.reset({ newDraws: [{ _id: 'a'.repeat(24), title: 'Live Draw', date: '2026-11-01T12:00:00.000Z' }] });
         await season.bulkDraftDraws(h.modal('modal_draft_draws', { new_text: 'Iron Wolf, l AK117, Dec 5 2026, https://img/iw', returning_text: '' }));
