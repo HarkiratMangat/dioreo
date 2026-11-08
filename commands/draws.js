@@ -208,7 +208,8 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
     const states = mask & STATE_BITS;
     const nowMs = Date.now();
     const ctx = { seasonalDoc, nowMs };
-    const timed = (key) => (seasonalDoc[key === 'new' ? 'newDraws' : 'returningDraws'] || []).map(d => ({ ...d, _section: key, ...drawTiming(d, seasonalDoc, nowMs) }));
+    // In release order (utils/drawDates.js byRelease, 2026-11-08 12:18 EST): the stored order is the paste order, which is not the order players should read.
+    const timed = (key) => require('../utils/drawDates').byRelease(seasonalDoc[key === 'new' ? 'newDraws' : 'returningDraws']).map(d => ({ ...d, _section: key, ...drawTiming(d, seasonalDoc, nowMs) }));
     const lists = {
         new: timed('new').filter(d => !states || (d.bits & states)),
         returning: timed('returning').filter(d => !states || (d.bits & states))

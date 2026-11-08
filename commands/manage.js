@@ -747,7 +747,7 @@ function buildWipeSeasonModal() {
     return modal;
 }
 
-// The season title box showed the season's emoji in front of its title (2026-10-19 09:30 EDT); since 2026-11-08 12:04 EST the emoji has its own Season Emoji box (the fifth), and the title box holds the title alone. An emoji typed in front of the title still works. withEmoji is kept for any other caller.
+// The Season Emoji box shows the emoji the season is USING (2026-11-08 12:18 EST, Harkirat: "it never shows in the actual form field... so that leaves me in the open and clueless"): the stored one, or the season{N} emoji picked by its title number, which is where Seasons 6 to 10 get theirs and why the old box showed nothing. Submitting it unchanged stores that same emoji. The season title box showed the season's emoji in front of its title (2026-10-19 09:30 EDT); since 2026-11-08 12:04 EST the emoji has its own Season Emoji box (the fifth), and the title box holds the title alone. An emoji typed in front of the title still works. withEmoji is kept for any other caller.
 function withEmoji(emoji, title) {
     return [emoji, title].filter(Boolean).join(' ');
 }
@@ -770,7 +770,7 @@ function buildSeasonTitlesDeadlinesModal(seasonalDoc) {
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('bp_line').setLabel('Battle Pass: Title, Start - End').setStyle(TextInputStyle.Short).setValue(bpLine)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('rank_line').setLabel('Ranked Series: Title, Start - End').setStyle(TextInputStyle.Short).setValue(rankLine)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('dmz_line').setLabel('DMZ Season: Title, Start - End').setStyle(TextInputStyle.Short).setValue(dmzLine)),
-        new ActionRowBuilder().addComponents((() => { const i = new TextInputBuilder().setCustomId('season_emoji').setLabel('Season Emoji (id or <a:name:id>)').setStyle(TextInputStyle.Short).setRequired(false).setPlaceholder('e.g. 1565194787768897617'); if (seasonalDoc?.currentSeasonEmoji) i.setValue(seasonalDoc?.currentSeasonEmoji); return i; })())
+        new ActionRowBuilder().addComponents((() => { const i = new TextInputBuilder().setCustomId('season_emoji').setLabel('Season Emoji (id or <a:name:id>)').setStyle(TextInputStyle.Short).setRequired(false).setPlaceholder('e.g. 1565194787768897617'); const shown = require('../utils/seasonEmoji').seasonEmojiFor(seasonalDoc?.currentSeasonTitle, seasonalDoc?.currentSeasonEmoji); if (shown) i.setValue(shown); return i; })())
     );
     return modal;
 }
@@ -808,7 +808,7 @@ function buildDraftTitlesDatesModal(seasonalDoc, override = {}) {
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('bp_line').setLabel('Battle Pass: Title, Start - End').setStyle(TextInputStyle.Short).setValue(bpLine).setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('rank_line').setLabel('Ranked Series: Title, Start - End').setStyle(TextInputStyle.Short).setValue(rankLine).setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('dmz_line').setLabel('DMZ Season: Title, Start - End').setStyle(TextInputStyle.Short).setValue(dmzLine).setRequired(false)),
-        new ActionRowBuilder().addComponents((() => { const i = new TextInputBuilder().setCustomId('season_emoji').setLabel('Season Emoji (id or <a:name:id>)').setStyle(TextInputStyle.Short).setRequired(false).setPlaceholder('e.g. 1565194787768897617'); if (draft.currentSeasonEmoji) i.setValue(draft.currentSeasonEmoji); return i; })())
+        new ActionRowBuilder().addComponents((() => { const i = new TextInputBuilder().setCustomId('season_emoji').setLabel('Season Emoji (id or <a:name:id>)').setStyle(TextInputStyle.Short).setRequired(false).setPlaceholder('e.g. 1565194787768897617'); const shown = require('../utils/seasonEmoji').seasonEmojiFor(draft.currentSeasonTitle || override.mainTitle, draft.currentSeasonEmoji); if (shown) i.setValue(shown); return i; })())
     );
     return modal;
 }

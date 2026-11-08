@@ -57,4 +57,10 @@ function planEndRow({ row, prev = null, title, start, end }) {
     };
 }
 
-module.exports = { formatDrawDates, formatDrawDatesForBulk, parseDrawDates, planEndRow };
+// A draw list in release order, oldest first, undated last; draws released the same day keep their stored order (Array sort is stable). /draws and /manage's draws panel both list this way (2026-11-08 12:18 EST, Harkirat: "then it should sort. because unsorted is wrong."): they showed the order a list was pasted in, so two Nov 1 draws sat below a Nov 6 one. The stored order is untouched; only what is shown is sorted.
+function byRelease(list) {
+    const t = d => { const ms = d?.date ? new Date(d.date).getTime() : NaN; return Number.isFinite(ms) ? ms : Infinity; };
+    return [...(list || [])].sort((a, b) => t(a) - t(b));
+}
+
+module.exports = { formatDrawDates, formatDrawDatesForBulk, parseDrawDates, planEndRow, byRelease };
