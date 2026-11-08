@@ -1227,8 +1227,9 @@ async function listSeasonDraws(nowMs = Date.now()) {
     const seasonOver = bpEndMs !== null && nowMs > bpEndMs;
     const calendarDraws = (doc.calendar || []).filter(e => e.category === 'draw');
     const out = [];
-    // Each draw keeps which list it came from (2026-10-21 10:21 EDT), so /draws' Price These Draws pop-up can offer New and Returning in their own dropdowns.
-    for (const d of [...(doc.newDraws || []).map(x => ({ ...x, __kind: 'new' })), ...(doc.returningDraws || []).map(x => ({ ...x, __kind: 'returning' }))]) {
+    // Each draw keeps which list it came from (2026-10-21 10:21 EDT), so /draws' Price These Draws pop-up can offer New and Returning in their own dropdowns. In release order, as /draws lists them (2026-11-08 12:52 EST, his "unsorted is wrong").
+    const { byRelease } = require('../utils/drawDates');
+    for (const d of [...byRelease(doc.newDraws).map(x => ({ ...x, __kind: 'new' })), ...byRelease(doc.returningDraws).map(x => ({ ...x, __kind: 'returning' }))]) {
         if (!d.priceType || !isPricedDrawType(d.priceType) || !CALC_KEYS.includes(d.priceType)) continue;
         if (seasonOver) {
             const cal = calendarDraws.find(e => isSameDrawTitle(e.title, d.title));

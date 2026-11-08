@@ -27,6 +27,7 @@ function draftReadiness(d) {
         // /manage's draft boxes are Discord text inputs, which hold 4,000 characters, and news triage adds rows without looking at the box (prod's 11 returning draws measured 2,690 characters, with their image links).
         fullBoxes: (() => { try { const ap = require('../adminParser'); const withItems = l => (l || []).map(r => ({ ...r, items: r.items || [] })); return [['calendar', ap.formatCalendarAsBulkText(calendar)], ['new draws', ap.formatDrawsAsBulkText(withItems(draft.newDraws))], ['returning draws', ap.formatDrawsAsBulkText(withItems(draft.returningDraws))]].filter(([, t]) => t.length > 3600).map(([n, t]) => `${n} (${t.length.toLocaleString('en-US')} of 4,000 characters)`); } catch { return []; } })(),
         startsAt: draft.bpStart || null,
+        autoPromote: Boolean(draft.autoPromote && draft.bpStart),
     };
 }
 

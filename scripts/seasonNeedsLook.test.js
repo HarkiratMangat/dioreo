@@ -25,7 +25,7 @@ t('Needs a Look names a draw with no picture, no items, or no calendar row, and 
     assert.ok(/no picture: Bare Draw/.test(w), w);
     assert.ok(/no items: Bare Draw/.test(w));
     assert.ok(/not in the draw lists: Ghost Draw/.test(w));
-    assert.ok(/no calendar row, so no end date: Botanist Mythic Drop/.test(w));
+    assert.ok(/no end date yet: Botanist Mythic Drop/.test(w));
     assert.ok(!/No season title|Ranked not set|DMZ not set/.test(w), 'what is set is not listed');
 });
 t('an Alchemy-style name pair counts as one draw, not a calendar row with no draw', () => {

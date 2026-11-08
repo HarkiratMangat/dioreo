@@ -168,8 +168,8 @@ function newsLine({ kind, r }) {
     return `**${r.title || '(untitled)'}**\n-# ${kind} · ${dayStamp(r.date)}${flags.length ? ` · ${flags.join(' · ')}` : ''}`;
 }
 const KINDS = () => ({
-    nd: { label: 'New Draws', emoji: emojis.newDraws, items: (d) => d.newDraws || [], line: drawLine },
-    rd: { label: 'Returning Draws', emoji: emojis.returningDraws, items: (d) => d.returningDraws || [], line: drawLine },
+    nd: { label: 'New Draws', emoji: emojis.newDraws, items: (d) => require('../../../utils/drawDates').byRelease(d.newDraws), line: drawLine },
+    rd: { label: 'Returning Draws', emoji: emojis.returningDraws, items: (d) => require('../../../utils/drawDates').byRelease(d.returningDraws), line: drawLine },
     cal: { label: 'Calendar', emoji: emojis.calendar, items: (d) => d.calendar || [], line: calLine },
     news: { label: 'News Items', emoji: emojis.mngInfo, items: (d) => newsRows(d), line: newsLine },
 });
@@ -259,7 +259,8 @@ function needsLook(doc) {
     const noDraw = calDraws.filter(c => !draws.some(x => isSameDrawTitle(x.title, c.title))).map(c => c.title);
     if (noDraw.length) w.push(`On the calendar, not in the draw lists: ${names(noDraw)}`);
     const noRow = draws.filter(x => !calDraws.some(c => isSameDrawTitle(x.title, c.title))).map(x => x.title);
-    if (noRow.length) w.push(`Draws with no calendar row, so no end date: ${names(noRow)}`);
+    // Worded as the missing END, never "no calendar row" (2026-11-08 12:52 EST): such a draw still shows on /calendar, and the row phrasing is what made him think it would not.
+    if (noRow.length) w.push(`Draws with no end date yet: ${names(noRow)}`);
     if (r.noEnd.length) w.push(`Calendar rows with no end date: ${names(r.noEnd)}`);
     if (r.early.length) w.push(`Dated before the season starts: ${names(r.early)}`);
     if (r.twice) w.push(`${plural(r.twice, 'title')} listed twice`);

@@ -131,12 +131,14 @@ async function saveDraftDraw(interaction, verb, sec, id) {
     const doc = await getDoc();
     const list = doc?.draft?.[key] || [];
     const DD = require('../../../utils/draftDraws');
-    let next, title = null;
+    let next, title = null, carriedGone = [];
     if (verb === 'ddrmm') {
         let ids = [];
         try { ids = interaction.fields.getStringSelectValues('pick'); } catch { ids = []; }
         next = DD.removeDraws(list, ids);
         if (next.length === list.length) return show(interaction, V.draftDrawsView(doc, s, 0, `${emojis.cross} Nothing was removed: those draws are no longer staged.`));
+        // A carried draw is still running when the season starts, so the daily carry-over puts it back (2026-11-08 12:52 EST): say so, rather than let it reappear tomorrow unexplained.
+        carriedGone = list.filter(d => ids.map(String).includes(String(d._id)) && d.newsSource?.carried).map(d => d.title);
     } else {
         const f = (k) => { try { return interaction.fields.getTextInputValue(k) || ''; } catch { return ''; } };
         const old = verb === 'ddeditm' ? list.find(d => String(d._id) === String(id)) : null;
@@ -149,11 +151,15 @@ async function saveDraftDraw(interaction, verb, sec, id) {
         const { validDraws } = await require('../../../utils/bulkMerge').resolveThumbnailsForDraws(parsed, s === 'n' ? { releaseSeason: q.seasonNumber(doc?.draft?.currentSeasonTitle), releaseYear: q.seasonYear(doc?.draft || {}) } : undefined);
         if (!validDraws.length) return show(interaction, V.draftDrawsView(doc, s, 0, `${emojis.cross} **Not saved: it needs a picture.** Paste an image link; none is cached under that name yet.`));
         title = validDraws[0].title;
+        // A second copy of a staged draw is refused (2026-11-08 12:52 EST): the same draw twice would list twice on /draws after Promote.
+        const { isSameDrawTitle } = require('../../../utils/search');
+        const twin = (doc?.draft?.newDraws || []).concat(doc?.draft?.returningDraws || []).find(d => String(d._id) !== String(id || '') && isSameDrawTitle(d.title, title));
+        if (twin) return show(interaction, V.draftDrawsView(doc, s, 0, `${emojis.cross} **Not saved: ${twin.title} is already staged.** Use its Edit instead.`));
         next = old ? DD.editDraw(list, id, validDraws[0]) : DD.addDraw(list, validDraws[0]);
     }
     const r = await require('../../../core/changeset').commitSet([{ type: 'season.bulkDraftDraws', payload: { parsed: { [key]: next } } }], { actorId: interaction.user.id });
     const label = verb === 'ddrmm' ? `Removed ${list.length - next.length}` : verb === 'ddeditm' ? `Saved ${title}` : `Added ${title}`;
-    const note = r.ok ? `### ${emojis.checkmark} ${label}\n-# Staged, not live.` : `### ${emojis.cross} Not saved\n${(r.failedAt?.errors || []).join(' ') || 'Try again.'}`;
+    const note = r.ok ? `### ${emojis.checkmark} ${label}\n-# Staged, not live.${carriedGone.length ? `\n${emojis.warn} ${carriedGone.join(', ')} ${carriedGone.length === 1 ? 'is' : 'are'} still running when the season starts, so the daily carry-over adds ${carriedGone.length === 1 ? 'it' : 'them'} back. To drop one for good, end it before the season on the live calendar.` : ''}` : `### ${emojis.cross} Not saved\n${(r.failedAt?.errors || []).join(' ') || 'Try again.'}`;
     const out = V.draftDrawsView(await getDoc(), s, 0, note);
     if (r.ok) out[0].components.splice(out[0].components.length - 1, 0, V.row(...revertButton(r.changeIds)));
     const sent = await show(interaction, out);
