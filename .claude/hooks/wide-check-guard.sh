@@ -21,7 +21,7 @@ judge() {
   # A whole-suite run only. `test:hooks`, `docs:audit:test` and the other scoped tasks ARE the narrow instruments this nudge points at, so they must never trigger it.
   printf '%s' "$cmd" | grep -qE '(^|[|;&[:space:]])(npm|pnpm|yarn)[[:space:]]+(run[[:space:]]+)?test([[:space:]]|$)' || return 1
 
-  root="${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}"
+  root="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}"
   changed=$(git -C "$root" status --porcelain 2>/dev/null | awk '{ print $NF }')
   # A clean tree means a push or a merge is the likely next step, and that is the one row that earns the suite.
   [ -z "$changed" ] && return 1

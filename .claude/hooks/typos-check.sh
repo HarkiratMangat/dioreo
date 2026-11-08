@@ -11,7 +11,7 @@ content=$(jq -r '.tool_input.new_string // .tool_input.content // empty')
 [ -z "$content" ] && exit 0
 command -v typos >/dev/null 2>&1 || exit 0
 
-root="${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}"
+root="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}"
 [ -d "$root" ] || exit 0
 tmp="$root/.typos-probe-$$.md"
 printf '%s' "$content" > "$tmp"

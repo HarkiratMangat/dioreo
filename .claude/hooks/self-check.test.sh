@@ -141,7 +141,7 @@ absent 'mode 4b: does not falsely claim a compact invalidated it' 'A /compact ra
 # ===========================================================================
 # MODE 5 — the fork/compact SessionStart marker. A fork COPIES the transcript, so without this the inherited derivation would suppress the one re-pick Harkirat explicitly asked for.
 # ===========================================================================
-MARKER="${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/.model-gate-reset"
+MARKER="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}/.claude/.model-gate-reset"
 touch "$MARKER"
 run_with '{"type":"assistant","text":"Sonnet5-H · Some task · Aug 20. Premise Low · Delib High → Sonnet5-High"}'   # MG-EXAMPLE
 check 'mode 5: the marker forces a fresh derivation despite an inherited one' 'started from a FORK or a COMPACT'
@@ -186,7 +186,7 @@ absent 'mode 5b: without the marker the same transcript is quiet' 'started from 
 # ===========================================================================
 # The registration that makes mode 5 reachable at all. A hook nobody runs is documentation.
 # ===========================================================================
-SETTINGS="${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/settings.json"
+SETTINGS="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}/.claude/settings.json"
 if python3 -c "
 import json,sys
 d=json.load(open('$SETTINGS'))

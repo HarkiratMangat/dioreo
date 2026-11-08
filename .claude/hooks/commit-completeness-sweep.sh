@@ -24,7 +24,7 @@
 
 set -uo pipefail
 
-REPO="${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}"
+REPO="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}"
 BASE="${1:-main}"
 TRANSCRIPT="${2:-}"
 MODE="${3:-pr}"          # commit | pr | stop (retired; kept so the claim-gate proof still runs)

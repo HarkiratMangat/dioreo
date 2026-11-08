@@ -11,7 +11,7 @@ cmd=$(jq -r '.tool_input.command // empty')
 [ -z "$cmd" ] && exit 0
 echo "$cmd" | grep -qE '(npm (run )?(docs:audit|docs:reflow)|docs-audit\.mjs|reflow-prose\.mjs)' || exit 0
 
-root="${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}"
+root="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}"
 cd "$root" 2>/dev/null || exit 0
 git rev-parse --git-dir >/dev/null 2>&1 || exit 0
 

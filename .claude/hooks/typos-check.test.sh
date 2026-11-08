@@ -36,9 +36,9 @@ a "empty content is silent"       silent ""
 a "project vocabulary is silent"  silent "The loadout accent color for the DMZ changelog devlog."
 
 # The probe file must never be left behind: it is written into the repo root, so a leak would show up as an untracked file and could end up committed.
-before=$(find "${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}" -maxdepth 1 -name '.typos-probe-*' | wc -l | tr -d ' ')
+before=$(find "${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}" -maxdepth 1 -name '.typos-probe-*' | wc -l | tr -d ' ')
 r "We recieve it." >/dev/null
-after=$(find "${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}" -maxdepth 1 -name '.typos-probe-*' | wc -l | tr -d ' ')
+after=$(find "${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}" -maxdepth 1 -name '.typos-probe-*' | wc -l | tr -d ' ')
 if [ "$before" = "$after" ]; then echo "  PASS  probe file is cleaned up"; pass=$((pass+1))
 else echo "  FAIL  probe file leaked into the repo root ($before -> $after)"; fail=$((fail+1)); fi
 

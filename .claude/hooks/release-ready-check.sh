@@ -12,7 +12,7 @@
 cmd=$(jq -r '.tool_input.command // empty')
 printf '%s' "$cmd" | grep -qE '(^|[;&|] *)((rtk|sudo|command|nohup|time) +)*gh pr merge' || exit 0
 
-cd "${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}" 2>/dev/null || exit 0
+cd "${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}" 2>/dev/null || exit 0
 git rev-parse --git-dir >/dev/null 2>&1 || exit 0
 
 # ⚠️ THE BASE IS NOT ALWAYS `main` — fixed 2026-08-02 16:49 EDT. This diffed `origin/main...HEAD` unconditionally, which is wrong for every v3 PR: those target the long-lived `v3-pre-release` integration branch, so the diff would have included all of that branch's divergence and the verdict would have been about the wrong set of files. It is invisible today only because `main` and `v3-pre-release` happen to be identical (`git rev-list --left-right --count` = 0 0), which is exactly the kind of coincidence that hides a bug until the day it matters. RELEASE_CHECK_BASE lets the test pin the base without a network call.
