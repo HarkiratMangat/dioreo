@@ -259,7 +259,7 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
         }]
     });
     if (seasonalDoc.patchNotes.length > HISTORY_SHOWN) {
-        containerPayload.components.push({ type: 1, components: [{ type: 2, style: 2, label: 'Search Older Seasons', custom_id: 'patch_search_open' }] });
+        containerPayload.components.push({ type: 1, components: [{ type: 2, style: 2, label: 'Search Older Seasons', custom_id: 'patch_search_open', emoji: require('../utils/emojiMap').parseEmoji(require('../utils/emojiMap').search) }] });
     }
 
     const globalNavigationRow = buildGlobalNavRow('nav_patchnotes');

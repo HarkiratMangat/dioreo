@@ -89,6 +89,16 @@ t('a stored emoji is re-pointed by NAME at the booted app, as the map\'s own ids
         assert.strictEqual(emojis.NopeNotAnEmoji, undefined);
         assert.strictEqual(emojis.season9, orig.season9, 'a mapped key is untouched');
     });
+    t('the Season Emoji box takes a mention, name:id, a bare id or a name, and says when it cannot find one (2026-11-08 12:05 EST)', () => {
+        const { resolveEmojiInput } = require('../utils/seasonEmoji');
+        const client = { application: { emojis: { cache: new Map([['1565194787768897617', { id: '1565194787768897617', name: 'S10_7thAnniversary', animated: true }]]) } } };
+        assert.deepStrictEqual(resolveEmojiInput('<a:Any:42>'), { mention: '<a:Any:42>' });
+        assert.deepStrictEqual(resolveEmojiInput('1565194787768897617', client), { mention: '<a:S10_7thAnniversary:1565194787768897617>' }, 'a bare id from the app');
+        assert.deepStrictEqual(resolveEmojiInput(':S10_7thAnniversary:1565194787768897617:', client), { mention: '<a:S10_7thAnniversary:1565194787768897617>' });
+        assert.deepStrictEqual(resolveEmojiInput(''), { mention: '' }, 'blank clears');
+        assert.ok(resolveEmojiInput('999999999999999999', { application: { emojis: { cache: new Map() } } }).error, 'an unknown id is an error, never a guessed mention');
+        assert.ok(resolveEmojiInput('NopeNotAnEmoji').error);
+    });
     Object.assign(emojis, orig);
     console.log(`\n${passed} passed, ${failed} failed`);
     process.exit(failed ? 1 : 0);

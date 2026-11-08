@@ -175,15 +175,17 @@ function planCarryOver(draft, live, { newId } = {}) {
                 const next = { ...have, date: r.date || null, endDate: r.endDate, isOngoing: Boolean(r.isOngoing) };
                 changes.push({ type: 'update', list: 'calendar', id: String(have._id), set: { date: next.date, endDate: next.endDate, isOngoing: next.isOngoing, newsSource: { ...have.newsSource, sig: sig(next) } }, name: have.title });
             }
-            continue;
+        } else {
+            const row = { title: r.title, date: r.date || null, endDate: r.endDate, category: r.category || 'event', isOngoing: Boolean(r.isOngoing), isDoubleCP: Boolean(r.isDoubleCP), _id: makeId() };
+            row.newsSource = { channelId: '', messageId: '', rank: RANK.official, carried: true, sig: sig(row) };
+            changes.push({ type: 'add', list: 'calendar', row, name: row.title });
         }
-        const row = { title: r.title, date: r.date || null, endDate: r.endDate, category: r.category || 'event', isOngoing: Boolean(r.isOngoing), isDoubleCP: Boolean(r.isDoubleCP), _id: makeId() };
-        row.newsSource = { channelId: '', messageId: '', rank: RANK.official, carried: true, sig: sig(row) };
-        changes.push({ type: 'add', list: 'calendar', row, name: row.title });
         if ((r.category || 'event') !== 'draw') continue;
+        // The draw is carried even when its calendar row is already in the draft (2026-11-08 12:03 EST): the click-walk found Alchemy Stars, still running until Nov 18, with its row in the draft and no draw, because the row was news-written under another name and this loop moved on at the row. A draw is found by its /draws name or, failing that, the same draw under the row's name (utils/search.js isSameDrawTitle), and keeps its /draws name (Harkirat, 11:52 EST: "when a /draws and /calendar name for the exact same draw differ, utilize the /draw's name").
+        const { isSameDrawTitle, bestDrawMatch } = require('../search');
         for (const list of DRAW_LISTS) {
-            const d = (live[list] || []).find(x => same(x.title, r.title));
-            if (!d || DRAW_LISTS.some(l => (draft[l] || []).some(x => same(x.title, d.title)))) continue;
+            const d = (live[list] || []).find(x => same(x.title, r.title)) || bestDrawMatch(live[list] || [], r.title);
+            if (!d || DRAW_LISTS.some(l => (draft[l] || []).some(x => same(x.title, d.title) || isSameDrawTitle(x.title, d.title)))) continue;
             const drow = { title: d.title, date: d.date || null, thumbnailUrl: d.thumbnailUrl || '', priceType: d.priceType || '', items: (d.items || []).map(i => ({ tier: i.tier, name: i.name })), _id: makeId() };
             drow.newsSource = { channelId: '', messageId: '', rank: RANK.official, carried: true, sig: sig(drow) };
             changes.push({ type: 'add', list, row: drow, name: drow.title });

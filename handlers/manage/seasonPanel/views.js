@@ -40,7 +40,7 @@ function whenLine(start, end, tbd) {
     return `${start ? `Starts <t:${unix(start)}:f> · ` : ''}Ends ${endText}`;
 }
 // Read inside the function: emoji values change at boot.
-const PARTS = () => [['Battle Pass', 'bp', emojis.bp], ['Ranked', 'rank', emojis.rank], ['DMZ', 'dmz', emojis.dmz]];
+const PARTS = () => [['Battle Pass', 'bp', emojis.bp1], ['Ranked', 'rank', emojis.rank], ['DMZ', 'dmz', emojis.dmz]];
 // Battle Pass / Ranked / DMZ as three rows: the title, then its deadline on a small line. `src` is the live document or its `draft`.
 function seasonRows(src) {
     return PARTS().map(([label, key, emoji]) => `${emoji} **${label}** · ${src?.[`${key}Title`] || label}\n-# ${whenLine(src?.[`${key}Start`], src?.[`${key}End`], src?.[`${key}EndTBD`])}`).join('\n');

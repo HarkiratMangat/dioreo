@@ -589,6 +589,13 @@ check('the handler owns news| and nothing else', async () => {
         assert.deepStrictEqual(d.calendar.map(x => x.title), ['Other Event'], 'deleted live row gone from the draft');
         assert.strictEqual(DM.planCarryOver(d, { calendar: [] }).changes.length, 0, 'an empty live read removes nothing');
     });
+    check('a still-running draw is carried even when its calendar row is already in the draft, under the /draws name (2026-11-08)', () => {
+        const d = { bpStart: D('2026-11-12'), calendar: [{ _id: 'c', title: 'Alchemy Stars — It Goes Two Draw', category: 'draw', date: D('2026-10-20'), endDate: D('2026-11-18') }], newDraws: [], returningDraws: [] };
+        const live = { calendar: [{ title: 'Alchemy Stars — It Goes Two Draw', category: 'draw', date: D('2026-10-20'), endDate: D('2026-11-18') }], newDraws: [], returningDraws: [{ title: 'Alchemy Stars Draw', date: D('2026-10-20'), items: [] }] };
+        DM.applyDraftChanges(d, DM.planCarryOver(d, live).changes);
+        assert.deepStrictEqual(d.returningDraws.map(x => x.title), ['Alchemy Stars Draw']);
+        assert.strictEqual(DM.planCarryOver(d, live).changes.length, 0, 'a second run adds nothing');
+    });
     check("R1#7: an official season start replaces a leak's, never one he changed", () => {
         const d = { calendar: [] };
         const season = (start, official, certainty) => DM.applyDraftChanges(d, DM.planDraftChanges(d, [{ kind: 'season', part: 'main', name: 'Season 10 — Anniversary', where: 'draft', action: 'season', start, startText: 'x', certainty }], { id: String(start), channelId: 'c', official }).changes);

@@ -191,7 +191,7 @@ const emptyDraft = () => ({ ...live(), draft: { active: false, newDraws: [], ret
         await P.handleSeasonPanelInteraction(b);
         const ids = []; walk(shown.components, c => { if (c.custom_id) ids.push(c.custom_id); });
         assert.strictEqual(shown.custom_id, 'mng_ss|tm|draft');
-        assert.deepStrictEqual(ids, ['main_title', 'bp_line', 'rank_line', 'dmz_line']);
+        assert.deepStrictEqual(ids, ['main_title', 'bp_line', 'rank_line', 'dmz_line', 'season_emoji']);
     });
     await check('only ids starting mng_ss| are handled; others fall through', async () => {
         assert.strictEqual(await P.handleSeasonPanelInteraction(fake('mng_dr|page')), false);

@@ -46,11 +46,14 @@ function getDrawSectionEntries(seasonalDoc) {
     const newDraws = seasonalDoc.newDraws || [];
     const returningDraws = seasonalDoc.returningDraws || [];
 
+    // A row shows its draw's /draws name when the two differ (2026-11-08 12:03 EST, Harkirat: "when a /draws and /calendar name for the exact same draw differ, utilize the /draw's name"); `rowTitle` keeps the stored one.
+    const { bestDrawMatch } = require('../utils/search');
     const taggedExplicit = explicitDraws.map(entry => {
-        let drawType = 'new';
-        if (newDraws.some(d => isSameDrawTitle(entry.title, d.title))) drawType = 'new';
-        else if (returningDraws.some(d => isSameDrawTitle(entry.title, d.title))) drawType = 'returning';
-        return { ...entry, drawType };
+        const asNew = bestDrawMatch(newDraws, entry.title);
+        const asReturning = asNew ? null : bestDrawMatch(returningDraws, entry.title);
+        const drawType = asReturning ? 'returning' : 'new';
+        const match = asNew || asReturning;
+        return { ...entry, drawType, ...(match && match.title !== entry.title ? { title: match.title, rowTitle: entry.title } : {}) };
     });
 
     const syntheticNew = newDraws
@@ -100,9 +103,10 @@ function buildEntryLine(event, seasonalDoc, nowMs = Date.now()) {
     if (state === 'tba') text = 'Releases TBA';
     else if (state === 'over') text = `Ended <t:${e}:R>`;
     // An upcoming entry with an end shows that end after "Until" (2026-10-23 14:33 EDT, Harkirat: "put Until before the expected end date"); the absolute start date it showed there before only repeated the relative one and read as the end. One with no end (a draw's release day, an All Season row while the BP end is TBD) keeps its start date.
-    else if (state === 'soon') text = `${returning ? 'Returns' : event.dateOnly ? 'Releases' : 'Starts'} <t:${s}:R> · ${e ? `Until <t:${e}:D>` : `<t:${s}:D>`}`;
+    // A draw with no end date reads TBD for its end (2026-11-08 12:03 EST, Harkirat: "any draw that doesn't have an end date should just a 'TBD' for the end date. They should still be in /calendar"); it showed only its release day before.
+    else if (state === 'soon') text = `${returning ? 'Returns' : event.dateOnly ? 'Releases' : 'Starts'} <t:${s}:R> · ${e ? `Until <t:${e}:D>` : event.dateOnly ? 'Until TBD' : `<t:${s}:D>`}`;
     else if (e) text = `**Live** · ends <t:${e}:R>`;
-    else if (event.dateOnly) text = returning ? `**Back** · returned <t:${s}:R>` : `**Live** · released <t:${s}:R>`;
+    else if (event.dateOnly) text = returning ? '**Back** · ends TBD' : '**Live** · ends TBD';
     else text = `**Live** · ends ${seasonalDoc.bpEndTBD ? 'TBD' : 'with the season'}`;
     const dot = state === 'live' ? emojis.greenDotGlow : state === 'over' ? emojis.redDotGlow : emojis.lightBlueDotGlow;
     const title = state === 'over' ? `~~**${event.title}**~~` : `**${event.title}**`;

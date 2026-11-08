@@ -747,7 +747,7 @@ function buildWipeSeasonModal() {
     return modal;
 }
 
-// The season title box shows the season's emoji in front of its title (2026-10-19 09:30 EDT), so deleting it from the box clears it -- core/ops/season.js splits it back off on submit.
+// The season title box showed the season's emoji in front of its title (2026-10-19 09:30 EDT); since 2026-11-08 12:04 EST the emoji has its own Season Emoji box (the fifth), and the title box holds the title alone. An emoji typed in front of the title still works. withEmoji is kept for any other caller.
 function withEmoji(emoji, title) {
     return [emoji, title].filter(Boolean).join(' ');
 }
@@ -766,10 +766,11 @@ function buildSeasonTitlesDeadlinesModal(seasonalDoc) {
 
     const modal = new ModalBuilder().setCustomId('modal_season_titles_deadlines').setTitle('Edit Season Titles & Deadlines');
     modal.addComponents(
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('main_title').setLabel('Main Season Title').setStyle(TextInputStyle.Short).setValue(withEmoji(seasonalDoc?.currentSeasonEmoji, seasonalDoc?.currentSeasonTitle))),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('main_title').setLabel('Main Season Title').setStyle(TextInputStyle.Short).setValue(seasonalDoc?.currentSeasonTitle || '')),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('bp_line').setLabel('Battle Pass: Title, Start - End').setStyle(TextInputStyle.Short).setValue(bpLine)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('rank_line').setLabel('Ranked Series: Title, Start - End').setStyle(TextInputStyle.Short).setValue(rankLine)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('dmz_line').setLabel('DMZ Season: Title, Start - End').setStyle(TextInputStyle.Short).setValue(dmzLine))
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('dmz_line').setLabel('DMZ Season: Title, Start - End').setStyle(TextInputStyle.Short).setValue(dmzLine)),
+        new ActionRowBuilder().addComponents((() => { const i = new TextInputBuilder().setCustomId('season_emoji').setLabel('Season Emoji (id or <a:name:id>)').setStyle(TextInputStyle.Short).setRequired(false).setPlaceholder('e.g. 1565194787768897617'); if (seasonalDoc?.currentSeasonEmoji) i.setValue(seasonalDoc?.currentSeasonEmoji); return i; })())
     );
     return modal;
 }
@@ -803,10 +804,11 @@ function buildDraftTitlesDatesModal(seasonalDoc, override = {}) {
 
     const modal = new ModalBuilder().setCustomId('modal_draft_titles_dates').setTitle('Draft: Season Titles & Deadlines');
     modal.addComponents(
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('main_title').setLabel('Main Season Title').setStyle(TextInputStyle.Short).setValue(withEmoji(draft.currentSeasonEmoji, draft.currentSeasonTitle || override.mainTitle || '')).setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('main_title').setLabel('Main Season Title').setStyle(TextInputStyle.Short).setValue(draft.currentSeasonTitle || override.mainTitle || '').setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('bp_line').setLabel('Battle Pass: Title, Start - End').setStyle(TextInputStyle.Short).setValue(bpLine).setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('rank_line').setLabel('Ranked Series: Title, Start - End').setStyle(TextInputStyle.Short).setValue(rankLine).setRequired(false)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('dmz_line').setLabel('DMZ Season: Title, Start - End').setStyle(TextInputStyle.Short).setValue(dmzLine).setRequired(false))
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('dmz_line').setLabel('DMZ Season: Title, Start - End').setStyle(TextInputStyle.Short).setValue(dmzLine).setRequired(false)),
+        new ActionRowBuilder().addComponents((() => { const i = new TextInputBuilder().setCustomId('season_emoji').setLabel('Season Emoji (id or <a:name:id>)').setStyle(TextInputStyle.Short).setRequired(false).setPlaceholder('e.g. 1565194787768897617'); if (draft.currentSeasonEmoji) i.setValue(draft.currentSeasonEmoji); return i; })())
     );
     return modal;
 }
