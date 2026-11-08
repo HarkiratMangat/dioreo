@@ -16,10 +16,8 @@ const { archiveByMove, archiveBeforeReplace } = require('./cloudinaryArchive');
 const FOLDER = 'calendar_banners';
 const VALID_PAGES = ['draws', 'events', 'playlists'];
 
-// SECURITY: never log a raw Cloudinary error object -- see utils/cloudinaryCache.js's matching note for the exact leak shape (the Admin API's rejected-promise carries the account's live API key+secret in `request_options.auth`). Sanitized in this file, same isolation rule as every other Cloudinary module.
-function safeErrorMessage(err) {
-    return err?.message || err?.error?.message || 'Unknown Cloudinary error';
-}
+// SECURITY: never log a raw Cloudinary error object; utils/cloudinaryErrors.js sanitizes it (the Admin API's rejected promise carries the live API key and secret in `request_options.auth`).
+const { safeErrorMessage } = require('./cloudinaryErrors');
 
 function publicIdFor(page) {
     return `${FOLDER}/${page}`;

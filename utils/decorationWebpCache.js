@@ -43,12 +43,8 @@ const FRAME_OPTS = { inputExt: '.png', preInputArgs: ['-f', 'apng'], fps: FPS };
 // Cap the rendered width the same way utils/resizedImage.js caps the nameplate/avatar previews -- decorations are typically already small (avatar-decoration scale, confirmed 288x288 on a real equipped decoration -- comfortably under this cap already), so this is a ceiling, not a forced upscale or a binding constraint in the common case.
 const MAX_WIDTH = 512;
 
-function safeErrorMessage(err) {
-    return err?.message || err?.error?.message || 'Unknown Cloudinary error';
-}
-function errorHttpCode(err) {
-    return err?.http_code ?? err?.error?.http_code ?? null;
-}
+// SECURITY: never log a raw Cloudinary error object; utils/cloudinaryErrors.js sanitizes it (the Admin API's rejected promise carries the live API key and secret in `request_options.auth`).
+const { safeErrorMessage, errorHttpCode } = require('./cloudinaryErrors');
 
 // ⚠️ THE PUBLIC ID IS THE CACHE KEY. Built by utils/collectibleCacheKey.js -- read its header first. Same scheme and same reasoning as nameplateWebpCache.js's publicIdFor, with one difference: a decoration has NO name field anywhere in Discord's payload (confirmed when nameplate names shipped -- there is genuinely nothing to parse), so an uncatalogued decoration's legacy id falls back to its asset hash. That hash is unique per variant, so the legacy space stays collision-free here.
 function publicIdFor(decorationAsset, catalog) {

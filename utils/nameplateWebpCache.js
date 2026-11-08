@@ -46,13 +46,8 @@ const FPS = 12;
 // ONE definition, used by the render and the heal path AND folded into the palette cache key. These three values decide which pixels the extractor ever sees, so a change here changes every stored palette. Passing this to paletteContextFields/readPaletteContext is what makes that change invalidate them; see colorExtract.js's `extra` parameter for why the cache modules own this rather than the fingerprint reaching in for it. -f apng is REQUIRED (pivoted 2026-08-15 10:31 EDT from `.webm`/`-c:v libvpx-vp9` -- see this file's header) -- without it ffmpeg silently reads an animated PNG as a single still frame.
 const FRAME_OPTS = { inputExt: '.png', preInputArgs: ['-f', 'apng'], fps: FPS };
 
-// SECURITY: never log a raw Cloudinary error object -- same leak shape as every other Cloudinary module here (the Admin API's rejected-promise carries the account's live API key+secret in `request_options.auth`). Sanitized in this file, isolated per-module like the rest.
-function safeErrorMessage(err) {
-    return err?.message || err?.error?.message || 'Unknown Cloudinary error';
-}
-function errorHttpCode(err) {
-    return err?.http_code ?? err?.error?.http_code ?? null;
-}
+// SECURITY: never log a raw Cloudinary error object; utils/cloudinaryErrors.js sanitizes it (the Admin API's rejected promise carries the live API key and secret in `request_options.auth`).
+const { safeErrorMessage, errorHttpCode } = require('./cloudinaryErrors');
 
 // Discord serves every nameplate under `nameplates/nameplates/<design>/` -- the repeated segment is THEIRS, and carrying it into our public id produced ids like `dev_nameplate_webp/nameplates-nameplates-twilight-cobalt`, where two thirds of the name is a constant. Shortened to `<design>-<palette>` 2026-08-11 17:34 EDT (Harkirat asked why it was so long, and the honest answer was that nothing had questioned it).
 //

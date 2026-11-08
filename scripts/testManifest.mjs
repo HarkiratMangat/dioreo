@@ -49,6 +49,7 @@ export const TESTS = [
     {"cmd": "node scripts/textCommandServer.test.js", "lane": "unit"},
     {"cmd": "node scripts/textCommandPrefix.test.js", "lane": "unit"},
     {"cmd": "node scripts/drawImageLink.test.js", "lane": "unit"},
+    {"cmd": "node scripts/cloudinaryErrors.test.js", "lane": "unit"},
     {"cmd": "node scripts/drawCatalog.test.js", "lane": "unit"},
     {"cmd": "node scripts/quickAdd.test.js", "lane": "unit"},
     {"cmd": "node scripts/drawsFilter.test.js", "lane": "unit"},

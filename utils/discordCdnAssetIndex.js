@@ -5,10 +5,8 @@ const cloudinary = require('./cloudinaryClient'); // timed proxy over the SDK --
 const { isCloudinaryWriteBlocked } = require('./cloudinaryDevGuard');
 const DiscordCdnAsset = require('../models/DiscordCdnAsset');
 
-// SECURITY: never log a raw Cloudinary error object -- same leak shape as every other Cloudinary module here (the Admin API's rejected-promise carries the account's live API key+secret in `request_options.auth`).
-function safeErrorMessage(err) {
-    return err?.message || err?.error?.message || 'Unknown Cloudinary error';
-}
+// SECURITY: never log a raw Cloudinary error object; utils/cloudinaryErrors.js sanitizes it (the Admin API's rejected promise carries the live API key and secret in `request_options.auth`).
+const { safeErrorMessage } = require('./cloudinaryErrors');
 
 // Upserted (never a blind insert) so re-rendering the same design -- a legitimate, expected event, e.g. a catalog refresh healing a fallback entry -- keeps exactly one row per publicId rather than accumulating stale ones. Called from the SAME step the Discord upload succeeds (both the single-file live path and the bulk script's per-variant loop), so a later Cloudinary-side deletion cannot un-write this.
 async function recordDiscordCdnAsset({ publicId, kind, channelId, messageId, discordCdnUrl, filename }) {

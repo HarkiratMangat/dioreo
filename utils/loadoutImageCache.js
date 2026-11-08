@@ -10,9 +10,8 @@ const { archiveBeforeReplace } = require('./cloudinaryArchive');
 
 const FOLDER = 'gun-builds'; // same flat folder every existing loadout image already lives in
 
-function safeErrorMessage(err) {
-    return err?.message || err?.error?.message || 'Unknown Cloudinary error';
-}
+// SECURITY: never log a raw Cloudinary error object; utils/cloudinaryErrors.js sanitizes it (the Admin API's rejected promise carries the live API key and secret in `request_options.auth`).
+const { safeErrorMessage } = require('./cloudinaryErrors');
 
 // --- Loadout Structured Metadata schema ------------------------------------------------------------- Real account-level STRUCTURED METADATA FIELDS (queryable + validated in the dashboard/Admin API), switched from loose `context` on 2026-07-21 at Harkirat's request. Create/refresh via scripts/createCloudinaryMetadataFields.js (idempotent). external_ids are Title_Case with `_` for multi-word (a space isn't a legal external_id char). Every field is a `string` except Build_Number (integer) and the two date fields -- deliberately: a string can never fail validation, so a metadata write can never cascade into a failed image upload (see syncLoadoutMetadata's decoupling).
 //

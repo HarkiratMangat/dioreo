@@ -34,13 +34,8 @@ const CONTEXT_KEYS_MAX = 900;
 // Items shared (of all items either draw has) at which a near-miss is named in the error. Never used to reuse an image.
 const SUGGEST_SIMILARITY = 0.6;
 
-// SECURITY: never log a raw Cloudinary error object directly -- caught live during review, the Admin API's rejected-promise shape is `{ request_options: { ..., auth: 'api_key:api_secret' }, error: { message, http_code } }`, meaning `console.error('...', err)` (or any fallback like `err.message || err`, which still logs the whole object when `.message` is missing) prints the account's live API key AND secret in plaintext straight to the console/log aggregator. These two helpers are the ONLY sanctioned way to read a Cloudinary error anywhere in this file -- the upload API's errors carry `.message`/`.http_code` directly, while the Admin API's (used by `getCachedUrl`) nest them one level under `.error` instead, so both shapes need checking.
-function safeErrorMessage(err) {
-    return err?.message || err?.error?.message || 'Unknown Cloudinary error';
-}
-function errorHttpCode(err) {
-    return err?.http_code ?? err?.error?.http_code ?? null;
-}
+// SECURITY: never log a raw Cloudinary error object; utils/cloudinaryErrors.js sanitizes it (the Admin API's rejected promise carries the live API key and secret in `request_options.auth`).
+const { safeErrorMessage, errorHttpCode } = require('./cloudinaryErrors');
 
 // Turns a draw title into a Cloudinary-safe public_id -- lowercase, non-alphanumeric collapsed to a single hyphen, no leading/trailing hyphens. Reused as the cache KEY for both upload and lookup, so "Shadow and Shade" always maps to the same asset regardless of how many times it's re-cached.
 function slugify(title) {

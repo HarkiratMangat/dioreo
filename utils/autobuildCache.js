@@ -12,9 +12,8 @@ const { isCloudinaryWriteBlocked, IS_DEV } = require('./cloudinaryDevGuard');
 
 const FOLDER = IS_DEV ? 'dev_autobuild_cache' : 'autobuild_cache';
 
-function safeErrorMessage(err) {
-    return err?.message || err?.error?.message || 'Unknown Cloudinary error';
-}
+// SECURITY: never log a raw Cloudinary error object; utils/cloudinaryErrors.js sanitizes it (the Admin API's rejected promise carries the live API key and secret in `request_options.auth`).
+const { safeErrorMessage } = require('./cloudinaryErrors');
 
 function cacheIdFor(hash) {
     return `${FOLDER}/${hash}`;

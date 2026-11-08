@@ -4,7 +4,7 @@
 // ==========================================
 // Pins batch 2, spec §7 / plan §10.3 row 2. Every other pasted link in this repo is re-hosted on Cloudinary (utils/patchNotesCache.js, utils/calendarBannerCache.js) so a dead external link at commit time never becomes a permanently-broken record; announcements get the same treatment. The re-host runs inside core/ops/announcements.js's own apply() -- see that file's header -- never in the portal, which only ever hands over the raw pasted URL.
 //
-// SECURITY: never log a raw Cloudinary error object -- see utils/cloudinaryCache.js's matching note (the Admin API's rejected-promise carries the account's live API key+secret in `request_options.auth`).
+// SECURITY: never log a raw Cloudinary error object -- utils/cloudinaryErrors.js sanitizes it (the Admin API's rejected-promise carries the account's live API key+secret in `request_options.auth`).
 const crypto = require('crypto');
 const cloudinary = require('./cloudinaryClient'); // timed proxy over the SDK -- see utils/cloudinaryClient.js
 
@@ -17,9 +17,8 @@ const { withDeliveryDefaults } = require('./cloudinaryDeliveryUrl');
 
 const FOLDER = 'announcement_banners';
 
-function safeErrorMessage(err) {
-    return err?.message || err?.error?.message || 'Unknown Cloudinary error';
-}
+// SECURITY: never log a raw Cloudinary error object; utils/cloudinaryErrors.js sanitizes it (the Admin API's rejected promise carries the live API key and secret in `request_options.auth`).
+const { safeErrorMessage } = require('./cloudinaryErrors');
 
 // 🔴 THE PUBLIC ID IS KEYED ON {announcementId}-{hash of the SOURCE link}, NEVER a fixed one-per- announcement id (unlike utils/calendarBannerCache.js's fixed per-page id, which is safe there only because that module has no undo to protect). An undo in Review restores the PRIOR bannerImageUrl STRING verbatim -- if a later edit re-uploaded under the SAME fixed public_id, that overwrite would silently make the prior (already-committed) URL start serving the NEW image the moment it landed, because Cloudinary's `overwrite:true` replaces the asset the public_id points at. Hashing the source means two different pasted links for one announcement get two different assets, so an old, already- stored URL keeps pointing at whatever it always pointed at, undo or not.
 function publicIdFor(announcementId, sourceUrl) {

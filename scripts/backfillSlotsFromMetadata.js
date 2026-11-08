@@ -17,9 +17,7 @@ const PROD = process.argv.includes('--prod');
 const SLOT_FIELDS = [['Muzzle', 'Muzzle'], ['Barrel', 'Barrel'], ['Optic', 'Optic'], ['Stock', 'Stock'], ['Perk', 'Perk'], ['Laser', 'Laser'], ['Underbarrel', 'Underbarrel'], ['Ammunition', 'Ammunition'], ['Rear_Grip', 'Rear Grip']];
 
 // Never log a raw Cloudinary error: its rejected promise carries the account's API key and secret (CLAUDE.md, Cloudinary secret-logging ban).
-function safeErrorMessage(err) {
-    return (err && err.error && err.error.message) || (err && err.message) || 'unknown Cloudinary error';
-}
+const { safeErrorMessage } = require('../utils/cloudinaryErrors');
 
 // Twelve attachments Cloudinary's metadata cannot answer for, supplied by Harkirat 2026-09-16 11:28 EDT, and the reason each one is missing. EIGHT carry a slot label Cloudinary has no field for at all (SLOT_TO_FIELD in utils/loadoutImageCache.js holds nine names; see its header): Smoothbore, Bolt, Trigger Action, Bowstring, Guard, Limb. THREE name a perfectly canonical slot whose field exists and is simply EMPTY, because the 2026-07-21 vision pass never captured that attachment -- the two 3-LINE RIFLE barrels (both images hold identical 4-of-9 metadata and differ in life only by the barrel that got dropped) and the STRIKER's reload case. ONE is different again, and Harkirat named it 2026-09-16 11:31 EDT: Hi-Accuracy Sniper Ammo was only ever seen on a DMZ build, and a DMZ screenshot prints no slot label at all, so the vision pass had nothing to read. The attachment is NOT DMZ-only -- it exists in MP too and simply has not appeared on an MP screenshot yet -- so the corpus pass above will resolve it on its own the day one does. So no amount of better name-matching could have filled any of these; they are a correction, and they are consulted only where the metadata has nothing to say.
 const KNOWN_SLOTS = require('../utils/catalogue').RULED_SLOTS; // his twelve, one copy (moved 2026-10-19 16:22 EDT)
