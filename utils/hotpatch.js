@@ -260,4 +260,4 @@ async function runHotpatch({ client, files = [], pull = false, dryRun = false })
     return { plan, result, commit: after, changed };
 }
 
-module.exports = { planHotpatch, applyHotpatch, runHotpatch, changedRuntimeFiles, REPO_ROOT, BOUNDARIES };
+module.exports = { planHotpatch, applyHotpatch, runHotpatch, changedRuntimeFiles, REPO_ROOT };

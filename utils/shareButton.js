@@ -27,4 +27,4 @@ function withShareButton(components, isEphemeral) {
     return [...components, shareButtonRow()];
 }
 
-module.exports = { withShareButton, SHARE_BUTTON_CUSTOM_ID, SHARE_BUTTON_ENABLED };
+module.exports = { withShareButton, SHARE_BUTTON_CUSTOM_ID };

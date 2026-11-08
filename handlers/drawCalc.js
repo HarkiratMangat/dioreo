@@ -12,7 +12,7 @@ const { sendV2Payload } = require('../utils/sendV2Payload');
 const { getAccentColorForCommand } = require('../utils/accentColor');
 const UserPreference = require('../models/UserPreference');
 const {
-    decodeState, encodeState, clampFocus, buildCalculatorPanel, buildDrawInfoPanel, buildHelpPanel,
+    decodeState, encodeState, clampFocus, buildCalculatorPanel, buildHelpPanel,
     findLiveDoubleCPEntry, buildExportText, readBalanceFields, applySelection, setTypeCount, MAX_LINES, MAX_SAVED, shortName, savedChecksum,
     buildUpgradeModal, readUpgradeModal, buildSpinsInModal, readSpinsIn, CALC_KEYS, listSeasonDraws, freshLine, unitOf, lineName,
     buildAddDrawsModal, buildPriceDrawsModal, buildRemoveModal, readRemovePicks, buildRegionBalanceModal, calcCurrency, buildGoalModal, readGoal,
@@ -424,20 +424,13 @@ async function route(interaction) {
     if (interaction.isButton() && (state.verb === 'info' || state.verb === 'help')) {
         const prefs = await UserPreference.findOne({ discordId: actingUserId });
         const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);
-        let panel;
-        if (state.verb === 'info') {
-            const basket = state.basketId ? await basketStore.load(actingUserId, state.basketId) : null;
-            // Legacy: only panels posted before the Draw Info button left the nav row (15b49b09) can send `info`. Kept so those older panels' Draw Info button still answers; see buildDrawInfoPanel's comment.
-            panel = buildDrawInfoPanel(basket || { banners: [], region: 'region_10' }, accentColor);
-        } else {
-            // Help draws its price ladder from the open calculation's region and first draw (2026-10-14 18:33 EDT), so it shows the player their own numbers.
-            const open = state.basketId ? await basketStore.load(actingUserId, state.basketId) : null;
-            panel = buildHelpPanel(accentColor, { region: open?.region || 'region_10', drawKey: open?.banners?.[0]?.drawKey || 'mythicWeapon', currency: calcCurrency(open, prefs?.cpCurrency || 'USD'), client: interaction.client });
-        }
+        // Help draws its price ladder from the open calculation's region and first draw (2026-10-14 18:33 EDT), so it shows the player their own numbers. A stale panel's Draw Info button (`info`, off the nav row since 15b49b09) opens Help too: the Draw Info panel was removed 2026-11-08 01:20 EST (Harkirat's pick B, deciding the 2026-10-14 "decide in a later housekeeping session").
+        const open = state.basketId ? await basketStore.load(actingUserId, state.basketId) : null;
+        const panel = buildHelpPanel(accentColor, { region: open?.region || 'region_10', drawKey: open?.banners?.[0]?.drawKey || 'mythicWeapon', currency: calcCurrency(open, prefs?.cpCurrency || 'USD'), client: interaction.client });
         try {
             await interaction.deferReply({ flags: 64 });
             await sendV2Payload(interaction, [panel], { skipExpiry: true });
-        } catch (notifyError) { console.error('Failed to send Draw Info/Help panel (interaction likely expired):', notifyError); }
+        } catch (notifyError) { console.error('Failed to send the calculator Help panel (interaction likely expired):', notifyError); }
         return true;
     }
 

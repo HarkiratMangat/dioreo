@@ -20,10 +20,8 @@ const { withDeliveryDefaults } = require('./cloudinaryDeliveryUrl');
 
 const FOLDER = 'patch_notes';
 
-// SECURITY: never log a raw Cloudinary error object -- see utils/cloudinaryCache.js's matching note for the exact leak shape (the Admin API's rejected-promise carries the account's live API key+secret in `request_options.auth`). Every Cloudinary call in THIS file has its error caught and sanitized IN this file, same isolation rule as the draws cache module.
-function safeErrorMessage(err) {
-    return err?.message || err?.error?.message || 'Unknown Cloudinary error';
-}
+// SECURITY: never log a raw Cloudinary error object; utils/cloudinaryErrors.js sanitizes it (the Admin API's rejected promise carries the live API key and secret in `request_options.auth`).
+const { safeErrorMessage } = require('./cloudinaryErrors');
 
 // --- Patch-notes Structured Metadata (2026-07-21, Harkirat's request) ------------------------------- Structured metadata fields for patch-notes images so each cached screenshot carries which season it belongs to, its order in the carousel, and the season's release date. Created via scripts/createCloudinaryMetadataFields.js (idempotent), same as the loadout fields. Account-global fields -- a patch image just doesn't set the loadout fields and vice versa. Cloudinary-only, kept in sync from the SeasonalData patchNotes[] entry (on image (re)cache, on release-date edit, and on season rename -- see handlers/manage/season.js and core/ops/season.js). `Patch_Id` is the patch subdoc's own immutable `_id` (stable across title renames, same reason the public_id is keyed by it); `Patch_Season` is the human-readable title.
 const PATCH_METADATA_FIELDS = [
@@ -149,4 +147,4 @@ async function pruneOrphanedPatchFolders(keepPatchIds) {
     }
 }
 
-module.exports = { cachePatchImage, pruneOrphanedPatchFolders, syncPatchEntryMetadata, setPatchImageMetadata, buildPatchMetadata, PATCH_METADATA_FIELDS, FOLDER };
+module.exports = { cachePatchImage, pruneOrphanedPatchFolders, syncPatchEntryMetadata, setPatchImageMetadata, PATCH_METADATA_FIELDS, FOLDER };

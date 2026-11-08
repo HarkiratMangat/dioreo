@@ -150,4 +150,4 @@ async function commitSet(ops, { actorId, source = 'discord', revertOf = null }) 
     return { ok: true, changeIds, results };
 }
 
-module.exports = { validateSet, previewSet, commitSet, pageForOp, pagesForOp, checkOps };
+module.exports = { validateSet, previewSet, commitSet, pageForOp, checkOps };

@@ -13,7 +13,7 @@ const { planDrawBackfill, parseStoredUrl, rewriteDeep } = require('../utils/draw
 const ChangeLog = require('../models/ChangeLog');
 const { metadataFor, DRAW_TAG, FOLDER, LEGACY_FOLDER } = require('../utils/cloudinaryCache');
 
-const safeErrorMessage = err => err?.message || err?.error?.message || 'Unknown Cloudinary error';
+const { safeErrorMessage } = require('../utils/cloudinaryErrors');
 const WRITE = process.argv.includes('--write');
 
 async function listFolder(prefix) {

@@ -154,4 +154,4 @@ function exactTimezone(input) {
     return hit ? hit.tz : null;
 }
 
-module.exports = { ALL_TIMEZONES, EVERY_TIMEZONE, QUICK_TIMEZONES, findTimezoneLabel, timezoneBaseLabel, searchTimezones, resolveTimezone, exactTimezone, displayLabel, utcOffsetMinutes, quickZoneOptions };
+module.exports = { EVERY_TIMEZONE, QUICK_TIMEZONES, findTimezoneLabel, timezoneBaseLabel, searchTimezones, resolveTimezone, exactTimezone, displayLabel, utcOffsetMinutes, quickZoneOptions };

@@ -588,12 +588,11 @@ function paletteFields(kind, isGuild) {
 }
 
 module.exports = {
-    getDominantColor, getColorPalette, perceptualDistanceHex, MERGE_DELTA_E, paletteFields,
+    getDominantColor, getColorPalette, MERGE_DELTA_E, paletteFields,
     // Exported for scripts/paletteShape.test.js only -- no runtime caller. The low-colour restrict's every failure is silent (a palette that is merely SHORT looks exactly like a palette of a simple image), so the selection rule is tested directly rather than inferred from output.
     spanLightness, LOW_COLOUR_CHROMA, LOW_COLOUR_COUNT,
     reserveLightnessRange, LIGHTNESS_GAP, SALIENCE_CHROMA_REF, CHROMA_FLOOR,
     fillLightnessGap, applyLadder, PALETTE_RUNGS, LADDER,
-    composeNameplatePalette, serializePalette, deserializePalette,
-    paletteContextFields, readPaletteContext, PALETTE_ALGO_VERSION,
+    composeNameplatePalette, paletteContextFields, readPaletteContext, PALETTE_ALGO_VERSION,
     PALETTE_COUNTS, NAMEPLATE_OVERASK, chromaOfHex
 };

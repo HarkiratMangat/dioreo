@@ -120,7 +120,7 @@ async function noteOwnCommand(interaction) {
 
 module.exports = {
     commandKeyOf, noteOwnCommandSafely: (i) => safely(noteOwnCommand(i), 'own command'),
-    noteCommand, noteBuildOpened, noteCpPriced, noteShare, resetStats, summarize, hourLabel, loadStatsView, dayUpdate,
+    noteCommand, noteCpPriced, resetStats, summarize, hourLabel, loadStatsView, dayUpdate,
     noteBuildOpenedSafely: (u, b) => safely(noteBuildOpened(u, b), 'build'),
     noteCpPricedSafely: (u, cp) => safely(noteCpPriced(u, cp), 'CP priced'),
     noteShareSafely: (u) => safely(noteShare(u), 'share'),

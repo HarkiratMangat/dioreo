@@ -148,4 +148,4 @@ function assignColorNames(entries) {
     });
 }
 
-module.exports = { assignColorNames, pickName, baseWordOf, MARGIN, MAX_MATCH_DISTANCE };
+module.exports = { assignColorNames, MARGIN };

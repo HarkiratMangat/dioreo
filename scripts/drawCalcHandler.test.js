@@ -64,6 +64,15 @@ async function check(name, fn) {
         assert.ok(/isn't your calculator/.test(i.text()), i.text());
     });
 
+    await check("a stale panel's Draw Info button is answered with Help (the Draw Info panel was removed 2026-11-08 01:21 EST)", async () => {
+        const b = await fresh();
+        const info = await press(b, 'info');
+        const help = await press(b, 'help');
+        assert.ok(info.sent.length, 'the press is answered, never left on interaction failed');
+        assert.ok(info.text().length > 200, 'it carries the Help panel');
+        assert.strictEqual(info.text(), help.text());
+    });
+
     if (failures) { console.error(`\n${failures} failing`); process.exit(1); }
     console.log('\n/draw calculator buttons: all checks pass');
     process.exit(0);

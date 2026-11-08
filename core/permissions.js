@@ -261,7 +261,7 @@ function describe() {
 module.exports = {
     TIERS, TIER_LABELS, MANAGE_PAGES, BOT_PAGES, COMMANDS, SCOPES, OP_TIERS, UNDO_TIER, CHANGE_EDIT_TIER,
     OUTSIDE_ACTIONS, POPUP_FIRST_ENTRIES, OWNER_ONLY,
-    manageScope, botScope, scopeLabel, scopeKind, isScope, isTier,
+    manageScope, botScope, scopeLabel, isScope, isTier,
     expandGrants, fullTiers, legacyToGrants, grantsOf, tierForOp, tierForAction,
     parseGrantsInput, grantsToInput, formatGrants, describe,
 };

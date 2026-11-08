@@ -13,4 +13,4 @@ function withDeliveryDefaults(url, transform = DEFAULT_TRANSFORM) {
     return url.replace('/upload/', `/upload/${transform}/`);
 }
 
-module.exports = { withDeliveryDefaults, DEFAULT_TRANSFORM };
+module.exports = { withDeliveryDefaults };

@@ -10,7 +10,7 @@
 # `--diff "$BASE"` adds archive-conservation, which is a fact about the CHANGE (did items removed from an active list actually land in an archive) and cannot be evaluated from the tree alone.
 
 set -uo pipefail
-REPO="${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}"
+REPO="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}"
 cd "$REPO" 2>/dev/null || exit 0
 git rev-parse --git-dir >/dev/null 2>&1 || exit 0
 BASE="${1:-main}"

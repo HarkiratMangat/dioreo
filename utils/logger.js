@@ -143,4 +143,4 @@ function logBootBanner() {
     console.log(`🏷️ diors-builds v${VERSION} · ${COMMIT} · node ${process.version} · pid ${process.pid}`);
 }
 
-module.exports = { patchConsole, logBootBanner, VERSION, COMMIT, LOG_FILE, noteHotpatch, currentCommit };
+module.exports = { patchConsole, logBootBanner, VERSION, COMMIT, noteHotpatch, currentCommit };

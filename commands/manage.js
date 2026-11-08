@@ -793,7 +793,7 @@ function buildAnnouncementModal(announcementDoc) {
     return modal;
 }
 
-// --- NEXT SEASON DRAFT modal builders (2026-07-30 22:24 EDT) --- Same field shapes/parsers as their live equivalents above (splitTitleDate/parseAdminDate for titles+dates, parseBulkDrawList/parseBulkEvents for the bulk pastes) so handlers/manage/season.js's submit handlers can reuse the exact same parsing logic, just writing into `seasonalDoc.draft.*` instead of the top-level fields. `override` (2026-11-04 22:10 EST, news-channel triage): a season post's title and start fill only what the draft does not have yet, never a title or date he typed. A start with no end reads "start - TBD", because a single date in this box is the END (.claude/rules/design-decisions.md, the season-dates bullet).
+// --- NEXT SEASON DRAFT modal builders (2026-07-30 22:24 EDT) --- Same field shapes/parsers as their live equivalents above (splitTitleDate/parseAdminDate for titles+dates, parseBulkDrawList/parseBulkEvents for the bulk pastes) so handlers/manage/season.js's submit handlers can reuse the exact same parsing logic, just writing into `seasonalDoc.draft.*` instead of the top-level fields. `override` (2026-11-04 22:10 EST, news-channel triage): a season post's title and start fill only what the draft does not have yet, never a title or date he typed. A start with no end reads "start - TBD". A date typed on its own in THIS box is the START, end TBD (core/ops/season.js applyLine's `loneDate`, since 2026-11-08 10:54 EST); in the live box it is still the END.
 function buildDraftTitlesDatesModal(seasonalDoc, override = {}) {
     const draft = seasonalDoc?.draft || {};
     const bpStart = draft.bpStart || override.bpStart || null;
@@ -998,7 +998,7 @@ module.exports = {
     get PAGES() { return buildPagesTable(); },
     PURGE_LABELS,
     buildManagePage,
-    buildPastSeasonsOptions, buildDynamicData,
+    buildDynamicData,
     buildSearchModal,
     buildBulkBothDrawsModal, buildBulkRemoveDrawsModal, buildAddDrawModal, buildEditDrawModal,
     buildQuickAddModal, buildQuickEditModal,
@@ -1010,9 +1010,7 @@ module.exports = {
     buildPageSelectRow: (pageKey, { showEmojis = false, allowedPages = null } = {}) => pageSelectRow(buildPagesTable(), pageKey, allowedPages, showEmojis),
     buildPatchDateInfoModal, buildPatchUrlsModal, buildPatchAddSeasonModal, buildPatchEditSeasonModal,
     buildWipeSeasonModal, buildSeasonTitlesDeadlinesModal,
-    buildDraftTitlesDatesModal, buildDraftBulkDrawsModal, buildDraftBulkCalendarModal, buildDraftStatusText,
-    buildAnnouncementModal, buildAnnouncementListBlocks,
-
+    buildDraftTitlesDatesModal, buildDraftBulkDrawsModal, buildDraftBulkCalendarModal, buildAnnouncementModal,
     async execute(interaction) {
         const { hasCommandAccess } = require('../utils/adminAccess');
         if (!(await hasCommandAccess(interaction.user.id, 'manage'))) {

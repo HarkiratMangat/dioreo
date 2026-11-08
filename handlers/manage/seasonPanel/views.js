@@ -51,15 +51,24 @@ const seasonName = (title, emoji) => {
     return `${e ? `${e} ` : ''}${require('../../../utils/titleBlock').toBoldItalicUnicode(title)}`;
 };
 
-// ---------- what is staged ----------
+// ---------- what is staged ---------- News rows are the ones news triage wrote. A CARRIED row (utils/newsTriage/draftMerge.js planCarryOver: a live row still running when the next season starts) also carries newsSource, but it came from the live season, not from a news post, so it is counted apart (2026-11-08 11:30 EST: on prod's Season 10 draft all 21 "News" rows were carried over).
+const fromNews = (r) => r.newsSource && !r.newsSource.carried;
+const isCarried = (r) => Boolean(r.newsSource?.carried);
 const newsRows = (draft) => [
-    ...(draft?.newDraws || []).filter(r => r.newsSource).map(r => ({ kind: 'New draw', r })),
-    ...(draft?.returningDraws || []).filter(r => r.newsSource).map(r => ({ kind: 'Returning draw', r })),
-    ...(draft?.calendar || []).filter(r => r.newsSource).map(r => ({ kind: 'Calendar', r })),
+    ...(draft?.newDraws || []).filter(fromNews).map(r => ({ kind: 'New draw', r })),
+    ...(draft?.returningDraws || []).filter(fromNews).map(r => ({ kind: 'Returning draw', r })),
+    ...(draft?.calendar || []).filter(fromNews).map(r => ({ kind: 'Calendar', r })),
 ];
+const carriedCount = (draft) => [...(draft?.newDraws || []), ...(draft?.returningDraws || []), ...(draft?.calendar || [])].filter(isCarried).length;
+// A calendar draw row with no draw of the same title in either list (2026-11-08 11:30 EST): /draws would not show it after Promote, and the draw's end date (read off this row by title) would be lost. On prod's Season 10 draft, "Alchemy Stars — It Goes Two Draw" was on the calendar while the live draw it came from is titled "Alchemy Stars Draw".
+const norm = (x) => String(x || '').trim().toLowerCase();
+function calendarDrawsWithoutDraw(draft) {
+    const titles = new Set([...(draft?.newDraws || []), ...(draft?.returningDraws || [])].map(d => norm(d.title)));
+    return (draft?.calendar || []).filter(r => r.category === 'draw' && !titles.has(norm(r.title))).map(r => r.title);
+}
 function counts(doc) {
     const d = doc?.draft || {};
-    return { nd: (d.newDraws || []).length, rd: (d.returningDraws || []).length, cal: (d.calendar || []).length, news: newsRows(d).length, fields: Object.keys(d.newsSeasonSet || {}).length };
+    return { nd: (d.newDraws || []).length, rd: (d.returningDraws || []).length, cal: (d.calendar || []).length, news: newsRows(d).length, carried: carriedCount(d), fields: Object.keys(d.newsSeasonSet || {}).length };
 }
 const isStaged = (doc) => {
     const d = doc?.draft;
@@ -71,6 +80,11 @@ const stagedLine = (doc) => {
     if (!isStaged(doc)) return 'nothing staged';
     const c = counts(doc);
     return `staged · ${c.nd} new · ${c.rd} returning · ${c.cal} calendar`;
+};
+
+const gapLine = (d) => {
+    const orphans = calendarDrawsWithoutDraw(d);
+    return orphans.length ? `\n${emojis.warn} **On the calendar, not in the draw lists:** ${orphans.slice(0, 5).join(', ')}${orphans.length > 5 ? ` and ${orphans.length - 5} more` : ''}. /draws will not show ${orphans.length === 1 ? 'it' : 'them'} after Promote; add the draw or match its title.` : '';
 };
 
 // ---------- the two home views ----------
@@ -110,7 +124,7 @@ function draftView(doc, note, pageRow) {
         return panel(components, pageRow ? [pageRow] : []);
     }
     components.push(
-        text(`**Title:** ${seasonName(d.currentSeasonTitle, d.currentSeasonEmoji)}\n${seasonRows(d)}${c.fields ? `\n-# ${emojis.mngInfo} News set ${plural(c.fields, 'season field')} here.` : ''}`),
+        text(`**Title:** ${seasonName(d.currentSeasonTitle, d.currentSeasonEmoji)}\n${seasonRows(d)}${c.fields ? `\n-# ${emojis.mngInfo} News set ${plural(c.fields, 'season field')} here.` : ''}${c.carried ? `\n-# ${emojis.mngInfo} ${plural(c.carried, 'row')} carried over: still running when this season starts.` : ''}${gapLine(d)}`),
         BIG(),
         text('-# Staged lists (read only)…'),
         row(btn(['ls', 'nd', 0], `New Draws · ${c.nd}`, emojis.newDraws, 2, !c.nd), btn(['ls', 'rd', 0], `Returning · ${c.rd}`, emojis.returningDraws, 2, !c.rd), btn(['ls', 'cal', 0], `Calendar · ${c.cal}`, emojis.calendar, 2, !c.cal), btn(['ls', 'news', 0], `News · ${c.news}`, emojis.mngInfo, 2, !c.news)),
@@ -173,6 +187,8 @@ function promoteConfirm(doc) {
     // What the draft has not staged, named before the Yes (the lead, 2026-11-07 21:19 EST, click-testing a dev draft with no title and no end dates): promoting copies the draft as it is, so a gap here becomes a gap on /season end and /calendar.
     const missing = [...(d.currentSeasonTitle ? [] : ['the season title']), ...PARTS().filter(([, key]) => !d[`${key}End`] && !d[`${key}EndTBD`]).map(([label]) => `the ${label} end`)];
     if (missing.length) lines.push('', `${emojis.warn} **Not staged:** ${missing.join(', ')}. Promoting now leaves ${missing.length === 1 ? 'it' : 'them'} blank for players.`);
+    const gap = gapLine(d);
+    if (gap) lines.push(gap.trim());
     return panel([
         text(`${crumb('Next Season Draft', 'Promote')}\n### ${emojis.warn} Promote the staged draft to live?\n-# Players see this at once. The draft is cleared. Every change is recorded in /bot analytics › Changes.`),
         SMALL(),
@@ -190,6 +206,7 @@ function discardConfirm(doc) {
         `**Draws:** ${c.nd} New, ${c.rd} Returning`,
         `**Calendar:** ${plural(c.cal, 'event')}`,
         ...(c.news ? [`**News items:** ${c.news}`] : []),
+        ...(c.carried ? [`**Carried over:** ${c.carried}`] : []),
     ];
     return panel([
         text(`${crumb('Next Season Draft', 'Discard')}\n### ${emojis.warn} Discard the staged draft?\n-# This erases everything staged for next season. What is live is untouched. Every change is recorded in /bot analytics › Changes.`),
@@ -211,4 +228,4 @@ function resultView({ crumbs = [], title, body = [], ok = true, back = ['view', 
     ]);
 }
 
-module.exports = { ID, PAGE, row, text, btn, panel, homeBtn, plural, whenLine, stamp, seasonRows, counts, newsRows, isStaged, pageView, listView, promoteConfirm, discardConfirm, resultView };
+module.exports = { ID, PAGE, row, text, btn, panel, homeBtn, plural, whenLine, stamp, seasonRows, counts, newsRows, calendarDrawsWithoutDraw, isStaged, pageView, listView, promoteConfirm, discardConfirm, resultView };

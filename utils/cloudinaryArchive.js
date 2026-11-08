@@ -18,12 +18,8 @@ const ARCHIVE_ROOT = 'archive';
 // Each kind's sub-folder under archive/, and the folder its live images sit in (dropped from the archived id, since archive/{kind}/ already says where it came from). Loadout images have bare public_ids (gun-builds is a dashboard folder only), so there is nothing to drop.
 const KINDS = { draws: 'temp_draws', patch_notes: 'patch_notes', calendar_banners: 'calendar_banners', loadouts: null };
 
-function safeErrorMessage(err) {
-    return err?.message || err?.error?.message || 'Unknown Cloudinary error';
-}
-function errorHttpCode(err) {
-    return err?.http_code ?? err?.error?.http_code ?? null;
-}
+// SECURITY: never log a raw Cloudinary error object; utils/cloudinaryErrors.js sanitizes it (the Admin API's rejected promise carries the live API key and secret in `request_options.auth`).
+const { safeErrorMessage, errorHttpCode } = require('./cloudinaryErrors');
 
 // 2026-10-21T15:40:12.345Z -> 20261021-154012 (UTC), so two archives of the same image never collide and sort by when they were archived.
 function stampFor(now) {
@@ -120,4 +116,4 @@ async function archiveBeforeReplace(publicId, sourceUrl, kind, now = new Date())
     }
 }
 
-module.exports = { archiveByMove, archiveBeforeReplace, archivePublicIdFor, archiveFolderFor, isSameAsset, ARCHIVE_ROOT, KINDS };
+module.exports = { archiveByMove, archiveBeforeReplace, archivePublicIdFor, isSameAsset, KINDS };

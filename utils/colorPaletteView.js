@@ -546,4 +546,4 @@ function buildRefreshNotice({ source, activeIsGuild = false, changed, accentClea
         + '\n*The same image always gives the same colors — refresh after you change it.*';
 }
 
-module.exports = { buildColorPalettePanel, SOURCE_ORDER, SOURCE_META, getAvailableSources, buildSwatchEntries, buildRefreshNotice };
+module.exports = { buildColorPalettePanel, SOURCE_META, getAvailableSources, buildSwatchEntries, buildRefreshNotice };

@@ -315,6 +315,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-11-07 15:59 EST — /manage gunsmith rehauled from a mock-up he clicked through (v3.13.0)
 - 2026-11-07 19:38 EST — /manage draws rehauled on his trust, and the two bugs the round trip found (v3.14.0)
 - 2026-11-07 21:28 EST — The rest of /manage rehauled with three helpers in parallel (v3.15.0)
+- 2026-11-08 11:04 EST — Small fixes, a draft date read backwards, and a bug report that was mine (v3.15.1)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -5062,6 +5063,14 @@ His ask at 20:54 EST was to finish every /manage subcommand, its slash options a
 **What "are you sure?" found.** Unit tests and the rendered panels were not the claim; the claim was that every save and every Revert works. Driving each new pop-up through its slash path and submitting it back, then writing and reverting on the dev database and comparing the stored document byte for byte, found two Revert defects in the shared core that predate this branch but that the new panels put one click away: reverting Promote to Live lost the staged draft, and reverting an announcement Delete re-posted it under a new id so everyone saw it again. Both fixed in core, with tests.
 
 **A near miss worth remembering.** A hotpatch closure check ran `git stash` on handler paths while one helper was still writing. It was restored with `git stash apply` within seconds and nothing was lost, but a shared worktree with live writers is no place for a stash.
+
+## 2026-11-08 11:04 EST — Small fixes, a draft date read backwards, and a bug report that was mine (v3.15.1)
+
+Harkirat picked the small-fixes batch from a list of six, and the first thing the list taught was that it was out of date: two of its three items had already shipped (the `/draw prices` Advanced Character line on 2026-11-01, the announcement layout markers on 2026-10-30) and their deferred entries had never been closed. What was left was real tidying: one Cloudinary error sanitizer in place of twelve copies, hooks that fall back to their own checkout, the retired Draw Info panel deleted, and 65 exports nothing outside their own file uses.
+
+The exports pass produced the lesson. To decide whether an export was used inside its own file, a line scan skipped the `module.exports = {…}` block. Two counters, `noteBuildOpened` and `noteShare`, are called only through wrappers defined inside that block, so the scan read them as never called, and a "Your Stats never counts builds or shares" bug went onto the deferred list and into a message to Harkirat. His think-pass request the next morning caught it with one grep for the wrapper names. The same blind spot had already fired once that night (`COMMAND_NAME`, used by `.setName()` inside a command's export object) and was patched as an instance rather than as the scan. A filtered search that reports something unused needs one plain whole-file search before anyone is told.
+
+He also found a real bug while using the new Season panel: in the Next Season Draft's titles box he typed "November 12" with no end, and it was saved as the end date. The draft box had inherited the live Deadlines box's rule, where a lone date is the deadline. For next season the date known first is the start, so the draft box now reads a lone date as the start with the end TBD, and his draft was repaired to match.
 
 # Part B — Lessons Ledger (thematic)
 

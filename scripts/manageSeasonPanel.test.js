@@ -131,6 +131,25 @@ const emptyDraft = () => ({ ...live(), draft: { active: false, newDraws: [], ret
         limits(V.discardConfirm(fullDraft()), 'discard card');
         limits(V.resultView({ title: 'Done', body: ['x'], crumbs: ['a'] }), 'result');
     });
+    await check('carried-over rows are not counted as news, and a calendar draw with no draw is named (2026-11-08 11:30 EST)', () => {
+        const doc = fullDraft();
+        doc.draft.returningDraws.push(draw(90, 'Carried Draw', { newsSource: NEWS({ carried: true }) }));
+        doc.draft.calendar.push({ _id: oid(91), title: 'Carried Draw', date: new Date(now), endDate: new Date(now + DAY), category: 'draw', newsSource: NEWS({ carried: true }) });
+        doc.draft.calendar.push({ _id: oid(92), title: 'Orphan Long Title Draw', date: new Date(now), endDate: new Date(now + DAY), category: 'draw' });
+        const c = V.counts(doc);
+        assert.strictEqual(c.news, 5, 'carried rows stay out of News');
+        assert.strictEqual(c.carried, 2);
+        const t = allText(V.pageView(doc, 'draft'));
+        assert.match(t, /2 rows carried over/);
+        const orphans = V.calendarDrawsWithoutDraw(doc.draft);
+        assert.ok(orphans.includes('Orphan Long Title Draw') && !orphans.includes('Carried Draw'), JSON.stringify(orphans));
+        assert.match(t, /On the calendar, not in the draw lists:\*\* .+ and \d+ more\. \/draws will not show them after Promote/, 'the fixture has more than five, so the line names five and counts the rest');
+        assert.match(allText(V.promoteConfirm(doc)), /On the calendar, not in the draw lists/);
+        const one = { ...doc, draft: { ...doc.draft, calendar: doc.draft.calendar.filter(r => r.category !== 'draw' || r.title === 'Orphan Long Title Draw') } };
+        assert.match(allText(V.pageView(one, 'draft')), /not in the draw lists:\*\* Orphan Long Title Draw\. \/draws will not show it/);
+        assert.match(allText(V.discardConfirm(doc)), /Carried over:\*\* 2/);
+        limits(V.pageView(doc, 'draft', null, { pageRow }), 'draft with carried and orphan rows');
+    });
     await check('custom ids are mng_ss|… and refuse to pass 100 characters', () => {
         assert.strictEqual(V.ID('ls', 'nd', 3), 'mng_ss|ls|nd|3');
         assert.strictEqual(P.PREFIX, 'mng_ss|');

@@ -16,8 +16,8 @@ const { splitSeasonEmoji } = require('../../utils/seasonEmoji');
 
 const DOC = { docType: 'global' };
 
-// Shared by setTitlesDeadlines (live) and setDraftTitlesDeadlines (staged) -- each of the 3 deadline fields carries both a title and an end date on one line ("Battle Pass, August 28"). A blank line leaves that title+date pair untouched; typing the literal word "TBD" sets the TBD flag and nulls the date (the L194 bug this guards against: a TBD typo silently becoming a real date). A RANGE sets the start too ("Battle Pass, Aug 6 - Nov 17", 2026-10-21 10:17 EDT, for /season end's progress bar). A single date clears the start: the box pre-fills the range whenever a start is stored, so a submitted single date means it was deleted.
-function applyLine(current, line, label, skipped) {
+// Shared by setTitlesDeadlines (live) and setDraftTitlesDeadlines (staged) -- each of the 3 deadline fields carries both a title and an end date on one line ("Battle Pass, August 28"). A blank line leaves that title+date pair untouched; typing the literal word "TBD" sets the TBD flag and nulls the date (the L194 bug this guards against: a TBD typo silently becoming a real date). A RANGE sets the start too ("Battle Pass, Aug 6 - Nov 17", 2026-10-21 10:17 EDT, for /season end's progress bar). A single date clears the start: the box pre-fills the range whenever a start is stored, so a submitted single date means it was deleted. `loneDate` decides what one date on its own means. Live ("Edit Titles & Deadlines"): the END, a deadline. Draft: the START, with the end TBD, because next season's start is the date known first (Harkirat, 2026-11-08 10:54 EST: "i put november 12 only, no end date. and it assumed it as the end date instead of the start date").
+function applyLine(current, line, label, skipped, { loneDate = 'end' } = {}) {
     const { title, dateStr } = splitTitleDate(line || '');
     const result = { title: current.title, start: current.start, end: current.end, endTBD: current.endTBD };
     if (title) result.title = title;
@@ -29,7 +29,8 @@ function applyLine(current, line, label, skipped) {
             result.end = null; result.endTBD = true; result.start = null;
         } else {
             const parsed = parseAdminDate(dateStr);
-            if (parsed) { result.end = parsed; result.endTBD = false; result.start = null; }
+            if (parsed && loneDate === 'start') { result.start = parsed; result.end = null; result.endTBD = true; }
+            else if (parsed) { result.end = parsed; result.endTBD = false; result.start = null; }
             else skipped.push(label);
         }
     }
@@ -39,10 +40,10 @@ function applyLine(current, line, label, skipped) {
 // 🔴 THE PORTAL'S IDENTITY EDITOR WROTE NOTHING, SILENTLY, ON EVERY FIELD. applyLine reads the Discord modal's one-line-per-deadline format ("Battle Pass 7 | Sep 10"), and the portal composes discrete fields — currentSeasonTitle, bpTitle, bpEnd, bpEndTBD — because a web form with three inputs is not a modal with one textarea. It sent those keys straight through as the payload, so `op.payload.bpLine` was undefined for every line, applyLine returned `current` unchanged for all three, and `(op.payload.mainTitle || '')` fell back to the existing title. The op validated, the changeset staged, Review showed it, committing it applied EXACTLY NOTHING, and every surface reported success. Nothing could catch it: validate() passes anything, preview() reads mainTitle and so agreed with the no-op, and no test exercised the caller's payload against the op's reader.
 //
 // ⚠️ ADDITIVE, AND THE LINE PATH IS UNTOUCHED. Discord still sends lines and still behaves identically; a field payload simply takes precedence when one is present. Making the portal build "title | date" strings instead would have put a parser between a form and a field that already has the value, and would break on any title containing the separator.
-function applyFields(current, payload, prefix, line, label, skipped) {
+function applyFields(current, payload, prefix, line, label, skipped, opts = {}) {
     const tKey = `${prefix}Title`, eKey = `${prefix}End`, bKey = `${prefix}EndTBD`, sKey = `${prefix}Start`;
     const hasFields = payload && (payload[tKey] !== undefined || payload[eKey] !== undefined || payload[bKey] !== undefined || payload[sKey] !== undefined);
-    if (!hasFields) return applyLine(current, line, label, skipped);
+    if (!hasFields) return applyLine(current, line, label, skipped, opts);
 
     const out = { title: current.title, start: current.start, end: current.end, endTBD: current.endTBD };
     // The start date (2026-10-21 10:17 EDT) as its own field, for a form like the portal's. Blank clears it; an unparseable one is reported, as the end is.
@@ -186,9 +187,11 @@ registerEntity('season', {
             if (draft.dmzEndTBD) { $set.dmzEnd = null; $set.dmzEndTBD = true; } else if (draft.dmzEnd) { $set.dmzEnd = draft.dmzEnd; $set.dmzEndTBD = false; } else { $set.dmzEnd = null; $set.dmzEndTBD = false; }
             // The starts go live with the draft, blank included: a new season never keeps the old one's start, or its bar would count from the wrong day.
             $set.bpStart = draft.bpStart || null; $set.rankStart = draft.rankStart || null; $set.dmzStart = draft.dmzStart || null;
-            $set.newDraws = draft.newDraws || [];
-            $set.returningDraws = draft.returningDraws || [];
-            $set.calendar = draft.calendar || [];
+            // In date order (2026-11-08 11:30 EST, a click-walk of /manage season draft on a copy of prod): /draws shows its lists in stored order and every draw op re-sorts after a write, but the draft is filled by carry-over and news triage in arrival order, so promoting it as it was put Samurai's Soul (Nov 1) after Ultra Violet (Nov 6).
+            const byDate = (rows) => [...(rows || [])].sort((x, y) => new Date(x.date || 0) - new Date(y.date || 0));
+            $set.newDraws = byDate(draft.newDraws);
+            $set.returningDraws = byDate(draft.returningDraws);
+            $set.calendar = byDate(draft.calendar);
             if (draft.drawsBannerUrl) $set.drawsBannerUrl = draft.drawsBannerUrl;
             if (draft.eventsBannerUrl) $set.eventsBannerUrl = draft.eventsBannerUrl;
             if (draft.playlistsBannerUrl) $set.playlistsBannerUrl = draft.playlistsBannerUrl;
@@ -355,9 +358,9 @@ registerEntity('season', {
             const typed = readSeasonTitle(op.payload, draft.currentSeasonEmoji);
             const mainTitle = typed.title;
             const skipped = [];
-            const bp = applyFields({ title: draft.bpTitle || 'Battle Pass', start: draft.bpStart || null, end: draft.bpEnd, endTBD: draft.bpEndTBD }, op.payload, 'bp', op.payload.bpLine, 'Battle Pass', skipped);
-            const rank = applyFields({ title: draft.rankTitle || 'Ranked Series', start: draft.rankStart || null, end: draft.rankEnd, endTBD: draft.rankEndTBD }, op.payload, 'rank', op.payload.rankLine, 'Ranked', skipped);
-            const dmz = applyFields({ title: draft.dmzTitle || 'DMZ Season', start: draft.dmzStart || null, end: draft.dmzEnd, endTBD: draft.dmzEndTBD }, op.payload, 'dmz', op.payload.dmzLine, 'DMZ', skipped);
+            const bp = applyFields({ title: draft.bpTitle || 'Battle Pass', start: draft.bpStart || null, end: draft.bpEnd, endTBD: draft.bpEndTBD }, op.payload, 'bp', op.payload.bpLine, 'Battle Pass', skipped, { loneDate: 'start' });
+            const rank = applyFields({ title: draft.rankTitle || 'Ranked Series', start: draft.rankStart || null, end: draft.rankEnd, endTBD: draft.rankEndTBD }, op.payload, 'rank', op.payload.rankLine, 'Ranked', skipped, { loneDate: 'start' });
+            const dmz = applyFields({ title: draft.dmzTitle || 'DMZ Season', start: draft.dmzStart || null, end: draft.dmzEnd, endTBD: draft.dmzEndTBD }, op.payload, 'dmz', op.payload.dmzLine, 'DMZ', skipped, { loneDate: 'start' });
             const $set = {
                 'draft.active': true,
                 ...(mainTitle ? { 'draft.currentSeasonTitle': mainTitle, 'draft.currentSeasonEmoji': typed.emoji } : {}),

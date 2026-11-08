@@ -184,4 +184,4 @@ function buildRetryModal(token) {
     return json;
 }
 
-module.exports = { failWithRetry, buildRetryModal, pendingModalRetries, captureModalValues, specFor, codeBlock, loadoutSnippet, drawSnippet, calendarSnippet };
+module.exports = { failWithRetry, buildRetryModal, pendingModalRetries, specFor, codeBlock, loadoutSnippet, drawSnippet, calendarSnippet };

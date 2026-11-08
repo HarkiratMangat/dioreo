@@ -309,4 +309,4 @@ function registerAdminLifecycle(client, commands, token) {
     });
 }
 
-module.exports = { registerLifecycle, registerAdminLifecycle, runCloudinaryCleanup, runBasketExpiry, formatPing, formatUptime, readRestartReason, restartContext };
+module.exports = { registerLifecycle, registerAdminLifecycle, runCloudinaryCleanup, formatUptime, readRestartReason, restartContext };

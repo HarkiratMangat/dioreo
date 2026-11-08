@@ -51,4 +51,4 @@ function buildInviteUrls(client) {
     };
 }
 
-module.exports = { buildInviteUrls, FALLBACK_CLIENT_ID, GUILD_PERMISSIONS };
+module.exports = { buildInviteUrls };

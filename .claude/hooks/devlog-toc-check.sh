@@ -13,7 +13,7 @@
 
 set -uo pipefail
 # ⚠️ CLAUDE_PROJECT_DIR, not a hardcoded path. Fixed 2026-07-29 00:45 EDT after discovering it while using a worktree to avoid disturbing a parallel session: superpowers' using-git-worktrees skill actively encourages worktrees, and with the path pinned to the main tree this gate silently inspected the WRONG branch -- reporting clean about work that isn't there, or dirty about work you can't see. A gate that answers confidently about the wrong tree is worse than no gate.
-REPO="${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}"
+REPO="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}"
 cd "$REPO" 2>/dev/null || exit 0
 git rev-parse --git-dir >/dev/null 2>&1 || exit 0
 BASE="${1:-main}"

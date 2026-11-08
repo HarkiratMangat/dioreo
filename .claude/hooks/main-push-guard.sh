@@ -28,7 +28,7 @@ cmd=$(jq -r '.tool_input.command // empty')
 echo "$cmd" | grep -qE '(^|[;&|] *)((rtk|sudo|command|nohup|time|env( +[A-Za-z_][A-Za-z0-9_]*=[^ ]*)*) +)*git +push([^[:alnum:]]|$)' || exit 0
 echo "$cmd" | grep -q -- '--dry-run' && exit 0
 
-dir="${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}"
+dir="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}"
 branch=$(cd "$dir" 2>/dev/null && git rev-parse --abbrev-ref HEAD 2>/dev/null) || exit 0
 
 # ⚠️ TWO WAYS TO PUSH TO main, AND THE FIRST VERSION ONLY CAUGHT ONE. Checking the current branch misses an explicit refspec — `git push origin HEAD:main`, or `git push origin <sha>:main`, or `git push origin main` from a feature branch — all advance main from anywhere. Found while force-pushing main to retract a commit, using a command this guard was supposed to cover and did not. The word boundary matters: `main` must not match `main-something` or `maintenance`.

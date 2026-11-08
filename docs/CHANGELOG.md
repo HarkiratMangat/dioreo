@@ -29,7 +29,34 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.15.0 — 2026-11-07 21:28 EST (#263) — /manage calendar, patch notes, season and announcement rehauled: every section is one panel with slash options that go straight to a thing
+## v3.15.1 — 2026-11-08 10:52 EST (#264) — Small fixes: one Cloudinary error helper, hooks that stay in their own checkout, the Draw Info panel removed, 65 unused exports dropped
+
+### Changed
+- **One Cloudinary error sanitizer** (`utils/cloudinaryErrors.js`): `safeErrorMessage` and `errorHttpCode` were copied into ten utils modules and two scripts; all now require the one module. `scripts/cloudinaryErrors.test.js` checks the message never carries the API key or secret, and fails if any file defines its own copy again. CLAUDE.md's secret-logging ban and `.claude/rules/loadout-images-and-metadata.md` point at it.
+- **Hooks fall back to their own checkout.** Thirteen `.claude/hooks/` files (two of them tests) used `/Applications/Claude Code/Diors-Builds` when `CLAUDE_PROJECT_DIR` is unset, so a hook run by hand in a worktree read the main checkout; they now resolve the repo the script lives in.
+- **65 exports no other file uses leave `module.exports`** (the code stays, each is still used in its own file); 24 are kept with a reason. Record: `docs/claude/2026-11-08-unused-exports-pass.md`.
+
+### Fixed
+- **A date typed on its own in the Next Season Draft's titles box is the season's START** (end TBD), not its end (`core/ops/season.js` `applyLine`'s `loneDate`; Harkirat's report, 2026-11-08 10:51 EST: "i put november 12 only, no end date. and it assumed it as the end date"). The live Titles & Deadlines box still reads a lone date as the deadline. Pinned in `scripts/seasonOps.test.js`.
+
+- **Promote to Live puts the draws and calendar live in date order** (`core/ops/season.js` `season.promoteDraft`). `/draws` shows its lists in stored order and every draw op re-sorts after a write, but the draft is filled by carry-over and news triage in arrival order; a click-walk of `/manage season draft` on a copy of prod's Season 10 draft found Samurai's Soul (Nov 1) promoted after Ultra Violet (Nov 6). Pinned in `scripts/manageSeasonHandlers.test.js`.
+- **The draft panel no longer counts carried-over rows as news.** Prod's draft showed "News · 21" when all 21 rows were carried over from Season 9 (still running when Season 10 starts); the home now says how many rows are carried over, and News counts only what news triage wrote. Discard's card lists both.
+- **The draft panel names a calendar draw with no draw in the lists** (`views.js` `calendarDrawsWithoutDraw`), on its home and on the Promote card: such a draw would vanish from `/draws` after Promote and lose its end date. Prod's draft has one, Alchemy Stars (see below).
+
+### Removed
+- **The retired `/draw calculator` Draw Info panel** (`buildDrawInfoPanel`, off the nav row since 2026-10-14): Harkirat's pick. A calculator panel posted before then can still send `info`; it now opens Help (`scripts/drawCalcHandler.test.js`).
+
+### Records
+- Deferred list: the announcement layout markers (bot half shipped 2026-10-30) and the `/draw prices` Advanced Character line (shipped 2026-11-01) were still open; closed with the 89-exports and Draw Info entries. The 2026-10-20 sweep entry keeps only the analytics prune.
+- `docs/ROADMAP.md` launch checklist B: the loadout audit is done (Harkirat, 2026-11-08 00:15 EST).
+- Notes: the DMZ `/autobuild` partials item marked shipped (v3.93.0); the confirmed timeout-greying item swept to the graveyard.
+
+### Prod data, outside this release's code (Harkirat's asks, 2026-11-08)
+- **Sapphire Winter Draw's image** is his official poster with the bottom logo bar cropped (1080×1261): Cloudinary `draws/sapphire-winter-draw` at a new version, tags and context kept, and the live draw, its staged draft copy and the draw index pointed at it.
+- **The Season 10 draft's dates** his "November 12" had saved as end dates are now the start of Battle Pass, Ranked and DMZ, each ending TBD.
+- **Botanist Mythic Drop** is in the Season 10 Next Season Draft: Mythic Weapon type, Signal 50 – Exobotanica (mythic) and Tempest – Exo Botanist (epic), releasing Nov 26 at 4 PM PT, its poster in Cloudinary `draws/botanist-mythic-drop` and the draw index with release season 10.
+
+## v3.15.0 — 2026-11-07 21:28 EST (#263 · `bbda84b2`) — /manage calendar, patch notes, season and announcement rehauled: every section is one panel with slash options that go straight to a thing
 
 ### Added
 - **A new `/manage calendar` panel** (`handlers/manage/calendarPanel/`): a home with Add Entry, Paste Entries, Search Calendar, a list dropdown (Events, Playlists, Draws, Upcoming, Active Now, Ending Soon, Ended, and Needs a Look when something is wrong), Select Entries, Export, Banners, Guide and Purge Calendar. Lists of 10 a page; an entry card drawn as /calendar draws it, with Edit (saved and redrawn in place) and Delete (confirm in place). Select (`ManageSelection` mode `CALENDAR`) with Edit N, Export N and Delete N; Paste and Edit N show a preview (Added, Changed and what, Unchanged, Not read) and save only what changes.

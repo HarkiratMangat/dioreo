@@ -87,7 +87,7 @@ RENAME_RE='(Sonnet|Opus|Fable|Haiku)[0-9.]*-[A-Za-z]{1,4}[ ]*·[ ]*[^·]{2,60}·
 # Find the most recent derivation in the transcript.
 # ---------------------------------------------------------------------------
 # A SessionStart hook with matcher `compact|fork` drops this marker; consume it once and force a fresh derivation. FORK is why it exists: a fork COPIES the transcript, so the previous session's derivation is still greppable and would wrongly suppress the re-recommendation on the one case Harkirat named as genuinely wanting a new model pick ("only time i'd switch model mid session is if i fork or the actual session drastically pivots", 2026-08-20 12:16 EDT). `compact` is belt-and- braces alongside the in-transcript boundary check below -- a session RESUMED from a compact and an in-session /compact are different code paths and only the marker covers the first. Consume-once, same shape as bot/lifecycle.js's .restart-reason. Fully swallowed: a marker problem must never be able to break the prompt.
-RESET_MARKER="${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/.model-gate-reset"
+RESET_MARKER="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}/.claude/.model-gate-reset"
 FORCED=0
 if [ -f "$RESET_MARKER" ]; then FORCED=1; rm -f "$RESET_MARKER" 2>/dev/null || true; fi
 

@@ -287,7 +287,6 @@ module.exports = {
     formatReport,
     COMPONENT_CAP,
     DUMMY_PREFIX,
-    EDIT_BUTTON_ID,
     EDIT_MODAL_ID,
     EDIT_BOX_MAX,
     editRow,
