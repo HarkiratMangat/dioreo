@@ -117,7 +117,7 @@ function draftView(doc, note, pageRow) {
     if (!staged) {
         components.push(
             text('-# Stage next season…'),
-            row(btn(['tl', 'draft'], 'Edit Titles & Deadlines', emojis.edit, 1), btn('dr', 'Paste Draws', emojis.mngBulkAdd), btn('cal', 'Paste Calendar', emojis.mngBulkAdd)),
+            row(btn(['tl', 'draft'], 'Edit Titles & Deadlines', emojis.edit, 1), btn(['dd', 'n', 0], 'Draws', emojis.newDraws), btn('cal', 'Paste Calendar', emojis.mngBulkAdd)),
             BIG(),
             row(btn('guide', 'Guide', emojis.guide), btn(['view', 'live'], 'Live Season', emojis.returnArrow)),
         );
@@ -130,7 +130,7 @@ function draftView(doc, note, pageRow) {
         row(btn(['lv', 'nd', 0], `New Draws · ${c.nd}`, emojis.newDraws, 2, !c.nd), btn(['lv', 'rd', 0], `Returning · ${c.rd}`, emojis.returningDraws, 2, !c.rd), btn(['lv', 'cal', 0], `Calendar · ${c.cal}`, emojis.calendar, 2, !c.cal), btn(['ls', 'news', 0], `News · ${c.news}`, emojis.mngInfo, 2, !c.news), (() => { const n = needsLook(doc).length; return btn('look', n ? `Needs a Look · ${n}` : 'All Checked', n ? emojis.warn : emojis.checkmark, n ? 4 : 3); })()),
         SMALL(),
         text('-# Change what is staged…'),
-        row(btn(['tl', 'draft'], 'Edit Titles & Deadlines', emojis.edit, 1), btn('dr', 'Paste Draws', emojis.mngBulkAdd), btn('cal', 'Paste Calendar', emojis.mngBulkAdd)),
+        row(btn(['tl', 'draft'], 'Edit Titles & Deadlines', emojis.edit, 1), btn(['dd', 'n', 0], 'Edit Draws', emojis.newDraws), btn('cal', 'Paste Calendar', emojis.mngBulkAdd)),
         BIG(),
         ...(d.autoPromote && d.bpStart ? [text(`${emojis.mngInfo} **Auto-promotes** <t:${Math.floor(new Date(d.bpStart).getTime() / 1000)}:F> · <t:${Math.floor(new Date(d.bpStart).getTime() / 1000)}:R>`)] : []),
         row(btn('promote', d.autoPromote ? 'Promote Now…' : 'Promote to Live', emojis.checkmark, 3), ...(d.autoPromote ? [btn('autooff', 'Cancel Auto-Promote', emojis.cross)] : []), btn('discard', 'Discard Draft', emojis.deleteBin, 4)),
@@ -186,6 +186,55 @@ function listView(doc, kind, page = 0) {
     if (pages > 1) components.push(row(arrow(['ls', key, pg - 1], 'left', pg === 0), counter(['pgn', key], `Page ${pg + 1} / ${pages}`), arrow(['ls', key, pg + 1], 'right', pg === pages - 1)));
     components.push(BIG(), row(btn(['view', 'draft'], 'Back', emojis.returnArrow), homeBtn()));
     return panel(components);
+}
+
+// ---------- the draft's draws, one at a time ---------- (2026-11-08 12:27 EST, Harkirat, 2026-11-08 11:52 EST: "i want a better draws drafting method. i basically want a version of the new/returning draws panel but with the design/mix of how the /draw calculator handles the \"draw selections/edit\" panel. so I'm able to add draws or delete draws 1 by 1 or also bulk paste."). The calculator's selection editor, for draws: the list with each draw's Edit beside its heading, New and Returning as two buttons, and a footer of Add Draw · Remove Draws (pop-ups) · Paste Draws · Back. Six draws a page (a draw is a Section: 3 of Discord's 40).
+const DD_PER_PAGE = 6;
+const SEC = { n: { key: 'newDraws', label: 'New Draws', emoji: () => emojis.newDraws }, r: { key: 'returningDraws', label: 'Returning Draws', emoji: () => emojis.returningDraws } };
+const topTier = (d) => { const order = ['mythic', 'legendary', 'epic', 'rare', 'uncommon', 'common']; const tiers = (d.items || []).map(i => String(i.tier || '').toLowerCase()); return order.find(t => tiers.includes(t)) || null; };
+function draftDrawsView(doc, sec = 'n', page = 0, note = null) {
+    const s = SEC[sec] ? sec : 'n';
+    const list = require('../../../utils/draftDraws').byDate(doc?.draft?.[SEC[s].key] || []);
+    const pages = Math.max(1, Math.ceil(list.length / DD_PER_PAGE));
+    const pg = Math.min(Math.max(Number(page) || 0, 0), pages - 1);
+    const shown = list.slice(pg * DD_PER_PAGE, pg * DD_PER_PAGE + DD_PER_PAGE);
+    const nN = (doc?.draft?.newDraws || []).length, nR = (doc?.draft?.returningDraws || []).length;
+    const components = [text(`${crumb('Next Season Draft', 'Draws')}\n## ${SEC[s].emoji()} Draft ${SEC[s].label}\n-# Add, edit or remove one draw at a time, or paste many. Nothing goes live until Promote to Live.`)];
+    if (note) components.push(SMALL(), text(note));
+    components.push(BIG(), row(btn(['dd', 'n', 0], `New Draws · ${nN}`, emojis.newDraws, s === 'n' ? 3 : 2, s === 'n'), btn(['dd', 'r', 0], `Returning Draws · ${nR}`, emojis.returningDraws, s === 'r' ? 3 : 2, s === 'r')), SMALL());
+    if (!shown.length) components.push(text(`-# Nothing staged here yet. Add Draw adds one; Paste Draws adds many.`));
+    for (const d of shown) {
+        const tier = topTier(d);
+        const items = (d.items || []).filter(i => i.tier !== 'comment').length;
+        components.push({ type: 9, components: [text(`### ${tier && emojis[tier] ? `${emojis[tier]} ` : ''}${d.title || '(untitled)'}\n-# ${dayStamp(d.date)} · ${plural(items, 'item')}${d.thumbnailUrl ? '' : ' · no picture'} · *${origin(d)}*`)], accessory: btn(['ddedit', s, String(d._id || '')], 'Edit', emojis.edit) });
+    }
+    if (pages > 1) components.push(row(arrow(['dd', s, pg - 1], 'left', pg === 0), counter(['ddpg', s], `Page ${pg + 1} / ${pages}`), arrow(['dd', s, pg + 1], 'right', pg === pages - 1)));
+    components.push(BIG(), row(btn(['ddadd', s], 'Add Draw', emojis.mngAdd, 3), btn(['ddrm', s], 'Remove Draws', emojis.deleteBin, 4, !list.length), btn('dr', 'Paste Draws', emojis.mngBulkAdd), btn(['view', 'draft'], 'Back', emojis.returnArrow)));
+    return panel(components);
+}
+// The Add / Edit Draw pop-up: Title, Items (one per line, as the bulk format writes them), Release Date, Image Link, Draw Type.
+function draftDrawModal(sec, draw = null) {
+    const s = SEC[sec] ? sec : 'n';
+    const { itemLines } = require('../../../utils/draftDraws');
+    const { formatAdminDate } = require('../../../utils/adminParser');
+    const code = draw?.priceType ? (require('../../../utils/drawTypes').drawTypeCode?.(draw.priceType) || '') : '';
+    const input = (id, label, style, value, required, placeholder) => ({ type: 1, components: [{ type: 4, custom_id: id, label, style, required, ...(value ? { value: String(value).slice(0, 4000) } : {}), ...(placeholder ? { placeholder } : {}) }] });
+    return {
+        title: draw ? 'Edit Draft Draw' : `Add a ${s === 'n' ? 'New' : 'Returning'} Draw`,
+        custom_id: draw ? ID('ddeditm', s, String(draw._id || '')) : ID('ddaddm', s),
+        components: [
+            input('title', 'Title', 1, draw?.title, true, 'e.g. Botanist Mythic Drop'),
+            input('items', 'Items, one per line', 2, draw ? itemLines(draw) : '', true, 'm Weapon - Skin\nl Weapon - Skin\n-# a note'),
+            input('date', 'Release Date', 1, draw?.date ? formatAdminDate(draw.date) : '', true, 'e.g. November 26'),
+            input('image', 'Image Link', 1, draw?.thumbnailUrl, false, 'Blank keeps the picture, or finds one by name'),
+            input('type', 'Draw Type (optional)', 1, code, false, 'e.g. 7s, mw, lw'),
+        ],
+    };
+}
+function draftRemoveModal(doc, sec) {
+    const s = SEC[sec] ? sec : 'n';
+    const list = require('../../../utils/draftDraws').byDate(doc?.draft?.[SEC[s].key] || []).slice(0, 25);
+    return { title: `Remove ${SEC[s].label}`, custom_id: ID('ddrmm', s), components: [{ type: 18, label: 'Draws to remove', description: 'Revert brings them back.', component: { type: 3, custom_id: 'pick', required: true, min_values: 1, max_values: Math.max(1, list.length), options: list.map(d => ({ label: String(d.title || '(untitled)').slice(0, 100), value: String(d._id), description: `${d.date ? new Date(d.date).toISOString().slice(0, 10) : 'no date'} · ${origin(d)}`.slice(0, 100) })) } }] };
 }
 
 // ---------- Needs a Look ---------- (2026-11-08 12:23 EST, Harkirat: "how do i check what's still pending in the draft or needs my notice/double-check? such as info, images, dates, etc."). The promote check's own checks (utils/newsTriage/readiness.js), plus what it does not look at: a draw with no picture or no items, and draw names matched as the same draw (utils/search.js) rather than letter for letter.
@@ -360,4 +409,4 @@ function resultView({ crumbs = [], title, body = [], ok = true, back = ['view', 
     ]);
 }
 
-module.exports = { ID, PAGE, row, text, btn, panel, homeBtn, plural, whenLine, stamp, seasonRows, counts, newsRows, calendarDrawsWithoutDraw, isStaged, pageView, listView, botLookView, previewDoc, needsLook, needsLookView, origin, promoteConfirm, promoteModal, discardConfirm, resultView };
+module.exports = { ID, PAGE, row, text, btn, panel, homeBtn, plural, whenLine, stamp, seasonRows, counts, newsRows, calendarDrawsWithoutDraw, isStaged, pageView, listView, botLookView, previewDoc, needsLook, needsLookView, origin, draftDrawsView, draftDrawModal, draftRemoveModal, promoteConfirm, promoteModal, discardConfirm, resultView };

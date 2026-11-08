@@ -122,6 +122,45 @@ function revertButton(changeIds) {
 // A saved result as the note above the redrawn view.
 const savedNote = (r) => (r.ok ? `### ${emojis.checkmark} Saved\n${r.message}` : `### ${emojis.cross} Not saved\n${r.message}`).slice(0, 1800);
 
+// ---------- the draft's draws, one at a time (2026-11-08 12:27 EST) ---------- The changed list goes through season.bulkDraftDraws' `parsed` path (utils/draftDraws.js): untouched rows keep their _id, picture and news tag, Revert puts the old list back, and an armed auto-promote set by someone else switches off. Only the added or edited draw is parsed and has its picture resolved, as Paste Draws does.
+async function saveDraftDraw(interaction, verb, sec, id) {
+    if (!(await gate(interaction, 'bulkdraws'))) return;
+    const s = sec === 'r' ? 'r' : 'n';
+    const key = s === 'r' ? 'returningDraws' : 'newDraws';
+    await ack(interaction);
+    const doc = await getDoc();
+    const list = doc?.draft?.[key] || [];
+    const DD = require('../../../utils/draftDraws');
+    let next, title = null;
+    if (verb === 'ddrmm') {
+        let ids = [];
+        try { ids = interaction.fields.getStringSelectValues('pick'); } catch { ids = []; }
+        next = DD.removeDraws(list, ids);
+        if (next.length === list.length) return show(interaction, V.draftDrawsView(doc, s, 0, `${emojis.cross} Nothing was removed: those draws are no longer staged.`));
+    } else {
+        const f = (k) => { try { return interaction.fields.getTextInputValue(k) || ''; } catch { return ''; } };
+        const old = verb === 'ddeditm' ? list.find(d => String(d._id) === String(id)) : null;
+        if (verb === 'ddeditm' && !old) return show(interaction, V.draftDrawsView(doc, s, 0, `${emojis.cross} That draw is no longer staged.`));
+        const image = f('image').trim() || old?.thumbnailUrl || '';
+        const { parseBulkDrawList } = require('../../../utils/adminParser');
+        const parsed = parseBulkDrawList(DD.lineFor({ title: f('title'), type: f('type'), items: f('items'), date: f('date'), image }));
+        if (parsed.length !== 1 || !parsed[0].date) return show(interaction, V.draftDrawsView(doc, s, 0, `${emojis.cross} **Not saved.** Check the title, one item per line, and a date like November 26.`));
+        const q = require('../../../utils/quickAdd');
+        const { validDraws } = await require('../../../utils/bulkMerge').resolveThumbnailsForDraws(parsed, s === 'n' ? { releaseSeason: q.seasonNumber(doc?.draft?.currentSeasonTitle), releaseYear: q.seasonYear(doc?.draft || {}) } : undefined);
+        if (!validDraws.length) return show(interaction, V.draftDrawsView(doc, s, 0, `${emojis.cross} **Not saved: it needs a picture.** Paste an image link; none is cached under that name yet.`));
+        title = validDraws[0].title;
+        next = old ? DD.editDraw(list, id, validDraws[0]) : DD.addDraw(list, validDraws[0]);
+    }
+    const r = await require('../../../core/changeset').commitSet([{ type: 'season.bulkDraftDraws', payload: { parsed: { [key]: next } } }], { actorId: interaction.user.id });
+    const label = verb === 'ddrmm' ? `Removed ${list.length - next.length}` : verb === 'ddeditm' ? `Saved ${title}` : `Added ${title}`;
+    const note = r.ok ? `### ${emojis.checkmark} ${label}\n-# Staged, not live.` : `### ${emojis.cross} Not saved\n${(r.failedAt?.errors || []).join(' ') || 'Try again.'}`;
+    const out = V.draftDrawsView(await getDoc(), s, 0, note);
+    if (r.ok) out[0].components.splice(out[0].components.length - 1, 0, V.row(...revertButton(r.changeIds)));
+    const sent = await show(interaction, out);
+    if (r.ok && title) await require('../itemKinds').askItemKinds(interaction, [title]);
+    return sent;
+}
+
 // ---------- routing ----------
 async function route(interaction) {
     const [, verb, a, b] = interaction.customId.split('|');
@@ -139,6 +178,18 @@ async function route(interaction) {
     if (verb === 'ls') return show(interaction, V.listView(await getDoc(), a, n(b)));
     if (verb === 'lv') return show(interaction, V.botLookView(await getDoc(), a, n(b)));
     if (verb === 'look') return show(interaction, V.needsLookView(await getDoc()));
+    // ----- the draft's draws, one at a time (2026-11-08 12:27 EST) -----
+    if (verb === 'dd') return show(interaction, V.draftDrawsView(await getDoc(), a, n(b)));
+    if (verb === 'ddadd') { if (await gate(interaction, 'bulkdraws')) return interaction.showModal(V.draftDrawModal(a)); return; }
+    if (verb === 'ddedit') {
+        if (!(await gate(interaction, 'bulkdraws'))) return;
+        const doc = await getDoc();
+        const draw = (doc?.draft?.[a === 'r' ? 'returningDraws' : 'newDraws'] || []).find(d => String(d._id) === String(b));
+        if (!draw) return show(interaction, V.draftDrawsView(doc, a, 0, `${emojis.cross} That draw is no longer staged.`));
+        return interaction.showModal(V.draftDrawModal(a, draw));
+    }
+    if (verb === 'ddrm') { if (await gate(interaction, 'bulkdraws')) return interaction.showModal(V.draftRemoveModal(await getDoc(), a)); return; }
+    if ((verb === 'ddaddm' || verb === 'ddeditm' || verb === 'ddrmm') && interaction.isModalSubmit?.()) return saveDraftDraw(interaction, verb, a, b);
     if (verb === 'revert') return require('../results').revertChanges(interaction, String(a || '').split(',').filter(Boolean), { doneNote: 'it is back as it was', render: async (note) => home('live', await getDoc(), note, interaction) });
 
     // ----- pop-up submits: save through season.js, then redraw the view with a Saved header -----
