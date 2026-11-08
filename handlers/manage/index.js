@@ -315,6 +315,11 @@ async function handleManageInteraction(interaction) {
     if (await require('./gunsmith').handleGunsmithInteraction(interaction)) return true;
     // The rehauled /manage draws panel (handlers/manage/drawsPanel/, 2026-11-07 19:17 EST), its own `mng_dr|` ids.
     if (await require('./drawsPanel').handleDrawsPanelInteraction(interaction)) return true;
+    // The rest of the rehaul (2026-11-07 21:00 EST): Calendar `mng_ca|`, Patch Notes `mng_pn|`, Season `mng_ss|`, Announcement `mng_an|`. The old ids (mng_act_*, modal_calendar_*, modal_patch_*, mng_announce_*, mng_draft*) still route below, so posted panels keep working.
+    if (await require('./calendarPanel').handleCalendarPanelInteraction(interaction)) return true;
+    if (await require('./patchnotesPanel').handlePatchnotesPanelInteraction(interaction)) return true;
+    if (await require('./seasonPanel').handleSeasonPanelInteraction(interaction)) return true;
+    if (await require('./announcementsPanel').handleAnnouncementsPanelInteraction(interaction)) return true;
     await routeManage(interaction);
     return true;
 }
