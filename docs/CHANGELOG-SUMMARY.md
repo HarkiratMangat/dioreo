@@ -12,6 +12,10 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.14.0 — November 7, 2026
+- **New (admins):** `/manage draws` is one panel: browse draws by list (Active Now, Leaving Soon and more), open one to edit it, change its end date, move it between New and Returning or delete it, and select many to edit as text, export or delete.
+- **Fixed (admins):** an exported draw with a picture pastes back, and replacing a draw no longer overwrites a draw with a similar title.
+
 ## v3.13.0 — November 7, 2026
 - **New (admins):** `/manage gunsmith mp` and `dmz` are one panel: search a build by name and number (`fss 1b`), browse by class, select many builds to edit as text, step through them, delete or export them, and go straight to a build from the slash command.
 

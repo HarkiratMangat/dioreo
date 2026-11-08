@@ -313,6 +313,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-11-07 00:00 EST — A front door for the gunsmith, Title Case everywhere, and an emoji that had quietly cloned itself (v3.12.0)
 - 2026-11-07 14:13 EST — Whose "today", and whose "new": two words the news card read from the wrong side (v3.12.1)
 - 2026-11-07 15:59 EST — /manage gunsmith rehauled from a mock-up he clicked through (v3.13.0)
+- 2026-11-07 19:38 EST — /manage draws rehauled on his trust, and the two bugs the round trip found (v3.14.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -5036,6 +5037,18 @@ Harkirat asked for the whole of `/manage` to be rehauled, one section at a time,
 **What the checks caught.** A probe built every view at 134 builds and confirmed each one stays under Discord's 40 components and 4,000 characters, and that one Edit pop-up holds about 90 builds. Round-tripping every build through Edit N turned up a parser quirk: a stored "Quickdraw" is read back as "Quick Draw". The phone check, run in DevTools at iPhone 16 size, found two layout problems (Finish wrapping onto its own line, and a thumbnail squeezing attachment names onto two lines) plus a `＋ New build` suggestion that offered the wrong KILO.
 
 **Lesson:** a mock-up he can click finds what a written plan would not, because his feedback arrives on things he can see. The one miss was mine: testing in the bot's DM instead of #testing-spam, which he corrected.
+
+## 2026-11-07 19:38 EST — /manage draws rehauled on his trust, and the two bugs the round trip found (v3.14.0)
+
+He left the Draws section to my judgement ("i'm leaving it under your design critique and judgement"), so the panel follows the gunsmith one he had already approved: a home page, lists, one card, Select, Paste, Export, every save through the code that already saved draws.
+
+**The round trip found two real bugs.** Exporting every draw and pasting the file straight back should change nothing. It changed a lot. First, every draw with a picture was skipped: the Cloudinary link carries `f_auto,q_auto`, and the paste parser split the line on that comma. Second, the Hero's Collection draw overwrote the Champion's Collection draw, because Replace took the first fuzzy title match instead of the same title. Both lived in code the old Replace Multiple already used, so they were live bugs, not new ones. The round trip now reads "0 of 12 to save", and a test pins it.
+
+**Click-testing in #testing-spam found two more.** The shared Revert answered with a bare note and no way back to the panel, so the panel now has its own Revert that lands on the draws home. And Active Now read 4, 4, 10, 13, 9 days: a status list sorted by start answers the wrong question, so Active Now and Leaving Soon now read what ends soonest first.
+
+**The full suite found one more, in a place nothing pointed at.** `hotpatch.test.js` began refusing a hotpatch of `/draw prices`. The draws panel required `commands/draws.js`, and `/draws` requires `/draw prices` through the calculator, so every /manage handler became a dependent of both public commands; and `bot/lifecycle.js` required the emoji panel, which requires `commands/manage.js`, so the whole set was restart-only. The panel now reads `/draws` off the public client's commands at call time, the route `utils/hotpatch.js` already names as late-bound, and lifecycle reads `appsOfThisProcess` from `utils/emojiSync.js`. A test fails if `/draws`' closure reaches `handlers/manage/` again.
+
+**Kept as it is, on purpose:** the card is the /draws card, thumbnail beside the dates, the same as players see. The gunsmith card moved to a full-width picture on his word; the draws card shows exactly what /draws shows, which is the point of an admin card.
 
 # Part B — Lessons Ledger (thematic)
 

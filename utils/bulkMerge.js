@@ -42,7 +42,13 @@ function upsertByTitle(existingArray, parsedItems) {
     const finalArray = [...existingArray];
 
     for (const parsed of parsedItems) {
-        const matchIndex = finalArray.findIndex(item => fuzzyMatch(parsed.title, item.title));
+        // The same title first, then the best of the fuzzy matches (2026-11-07 19:15 EST): the first fuzzy match let a pasted "Street Fighter: Hero's Collection" update "Champion's Collection", the draw listed before it, because the two share most words. /manage draws' Edit N pastes whole lists back, so this has to pick the right one. utils/search.js bestDrawMatch is the rule /calendar's rows already use.
+        const norm = (t) => String(t || '').trim().toLowerCase();
+        let matchIndex = finalArray.findIndex(item => norm(item.title) === norm(parsed.title));
+        if (matchIndex === -1) {
+            const best = require('./search').bestDrawMatch(finalArray, parsed.title, x => x.title, (itemTitle, title) => fuzzyMatch(title, itemTitle));
+            matchIndex = best ? finalArray.indexOf(best) : -1;
+        }
         if (matchIndex > -1) {
             finalArray[matchIndex] = Object.assign({}, finalArray[matchIndex], parsed);
             updatedCount++;

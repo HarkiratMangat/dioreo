@@ -28968,7 +28968,15 @@
           },
           {
             "type": 10,
-            "content": "`[action]`\n-# Open one of that section's buttons directly, e.g. **Add Multiple** or **Export**. Purge, Promote and Discard stay on the panel. Not on gunsmith"
+            "content": "`[action]`\n-# Open one of that section's buttons directly, e.g. **Add Multiple** or **Export**. Purge, Promote and Discard stay on the panel. Not on draws or gunsmith"
+          },
+          {
+            "type": 10,
+            "content": "`[draw]`\n-# Draws: go to one draw, by part of its title"
+          },
+          {
+            "type": 10,
+            "content": "`[show]`\n-# Draws: open a list: New, Returning, Upcoming, Active Now, Leaving Soon, Ended, No End Date"
           },
           {
             "type": 10,
@@ -28976,7 +28984,7 @@
           },
           {
             "type": 10,
-            "content": "`[do]`\n-# Gunsmith: what to do with `build` or `builds`: Edit, Move, Add Option, Delete; or alone, Add Build, Paste Builds, Export, Guide"
+            "content": "`[do]`\n-# Draws and gunsmith: what to do with the draw or build named (Edit, Move, Delete and more), or alone: Add, Paste, Export, Guide"
           },
           {
             "type": 10,

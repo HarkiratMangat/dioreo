@@ -7,8 +7,9 @@
 
 const BOT_EMOJI = require('../../utils/emojiMap');
 
-// Every change a save made, newest first, so a swap or a restore unwinds in order. `doneNote` is the page's own last line ("the build is back as it was").
-async function revertChanges(interaction, changeIds, doneNote = 'it is back as it was') {
+// Every change a save made, newest first, so a swap or a restore unwinds in order. `doneNote` is the page's own last line ("the build is back as it was"). `opts` is the page's own last line, or `{ doneNote, render }`: `render(note)` returns the panel to show after it, so a panel with its own navigation (the draws panel, 2026-11-07) lands back on a page instead of a bare note.
+async function revertChanges(interaction, changeIds, opts = 'it is back as it was') {
+    const { doneNote = 'it is back as it was', render = null } = typeof opts === 'string' ? { doneNote: opts } : (opts || {});
     const { getChange } = require('../../utils/changeStore');
     const { checkRevert } = require('../../utils/adminAccess');
     const { notePanel, FAIL_ACCENT } = require('../../utils/managePanels');
@@ -29,7 +30,8 @@ async function revertChanges(interaction, changeIds, doneNote = 'it is back as i
         done.push(changeId);
     }
     const { sendV2Payload } = require('../../utils/sendV2Payload');
-    return await sendV2Payload(interaction, notePanel(`↩️ **Reverted.** ${done.join(', ')} undone; ${doneNote}.`));
+    const note = `↩️ **Reverted.** ${done.join(', ')} undone; ${doneNote}.`;
+    return await sendV2Payload(interaction, render ? await render(note) : notePanel(note));
 }
 
 // Open: the page players see, privately, through the command's own execute() (a synthetic interaction, utils/interactionContext.js), so it can never drift from the real command. A draw opens on its New or Returning section, a season on itself, the calendar on its Today page.

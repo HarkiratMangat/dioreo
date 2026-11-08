@@ -13,16 +13,8 @@ const S = require('./emojiSync');
 const PAGE_SIZE = 12; // four marks a row since the status reports (21:16 EDT); 15 rows would pass Discord's 4,000 characters
 const ACCENT = 5793266; // Discord Blurple, the admin surfaces' colour
 
-// The apps this process runs, in display order: the public one first (on prod it IS the prod app), then Dioreo Admin when it is logged in.
-const SHORT = { prod: { main: 'Dioreo', admin: 'Admin' }, dev: { main: 'Dev', admin: 'Dev Admin' } };
-function appsOfThisProcess() {
-    const { clients } = require('../bot/clients');
-    const env = process.env.NODE_ENV === 'development' ? 'dev' : 'prod';
-    return [
-        clients.public && { key: 'main', env, short: SHORT[env].main, label: clients.public.user?.username || 'Dioreo', client: clients.public },
-        clients.admin && { key: 'admin', env, short: SHORT[env].admin, label: clients.admin.user?.username || 'Dioreo Admin', client: clients.admin },
-    ].filter(Boolean);
-}
+// appsOfThisProcess lives in utils/emojiSync.js (moved 2026-11-07 19:44 EST): bot/lifecycle.js needs only it, and requiring this panel pulled commands/manage.js and every /manage handler into the restart-only set, so a hotpatch of /draws or /draw prices was refused once the draws panel read commands/draws.js.
+const { appsOfThisProcess } = S;
 
 // This process's two apps, live, then the other bot's two from its last status report (utils/emojiSync.js), marked `remote` with the report's time: Sync and Upload never write to those, the other bot fills them itself.
 async function loadState() {

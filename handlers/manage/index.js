@@ -313,6 +313,8 @@ async function handleManageInteraction(interaction) {
     if (!ownsCustomId(interaction.customId)) return false;
     // The rehauled /manage gunsmith panel (handlers/manage/gunsmith/, 2026-11-07 14:13 EST) owns its own `mng_gs|` ids, behind the same router admin lock as every `mng_` id.
     if (await require('./gunsmith').handleGunsmithInteraction(interaction)) return true;
+    // The rehauled /manage draws panel (handlers/manage/drawsPanel/, 2026-11-07 19:17 EST), its own `mng_dr|` ids.
+    if (await require('./drawsPanel').handleDrawsPanelInteraction(interaction)) return true;
     await routeManage(interaction);
     return true;
 }

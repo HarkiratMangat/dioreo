@@ -139,7 +139,9 @@ function parseBulkDrawList(bulkText) {
     const parsedDraws = [];
 
     for (const line of lines) {
-        const parts = line.split(',').map(p => p.trim());
+        // A comma INSIDE a link is not a field break (2026-11-07 19:13 EST): Cloudinary links carry `f_auto,q_auto`, and Export writes them, so every exported draw with a picture split its link in two, the date field became the link's tail and the line was skipped. A link has no spaces, so its inner commas (one not followed by a space or the line's end) are held aside while the line splits.
+        const HELD = '\u0000';
+        const parts = line.replace(/https?:\/\/\S+/g, url => url.replace(/,(?!\s|$)/g, HELD)).split(',').map(p => p.trim().split(HELD).join(','));
         if (parts.length < 3) continue; // Skip malformed lines -- Title + at least 1 item + Date
 
         const title = toTitleCase(parts[0]);

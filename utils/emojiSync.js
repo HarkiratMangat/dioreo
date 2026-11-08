@@ -257,4 +257,15 @@ async function runAutoSync(apps, { originals = null, other, now = Date.now(), wr
     } finally { syncing = false; }
 }
 
-module.exports = { prodEmojisFromSource, listAppEmojis, buildRows, sourceCandidates, uploadMissing, replaceEmoji, appliedStore, listOriginals, uploadOriginal, safeCloudinaryError, writeStatus, readOtherStatus, runAutoSync, MAX_UPLOAD_BYTES, MAX_ORIGINAL_BYTES, EMOJI_NAME, ORIGINALS_FOLDER };
+// The apps this process runs, in display order: the public one first (on prod it IS the prod app), then Dioreo Admin when it is logged in.
+const SHORT = { prod: { main: 'Dioreo', admin: 'Admin' }, dev: { main: 'Dev', admin: 'Dev Admin' } };
+function appsOfThisProcess() {
+    const { clients } = require('../bot/clients');
+    const env = process.env.NODE_ENV === 'development' ? 'dev' : 'prod';
+    return [
+        clients.public && { key: 'main', env, short: SHORT[env].main, label: clients.public.user?.username || 'Dioreo', client: clients.public },
+        clients.admin && { key: 'admin', env, short: SHORT[env].admin, label: clients.admin.user?.username || 'Dioreo Admin', client: clients.admin },
+    ].filter(Boolean);
+}
+
+module.exports = { appsOfThisProcess, prodEmojisFromSource, listAppEmojis, buildRows, sourceCandidates, uploadMissing, replaceEmoji, appliedStore, listOriginals, uploadOriginal, safeCloudinaryError, writeStatus, readOtherStatus, runAutoSync, MAX_UPLOAD_BYTES, MAX_ORIGINAL_BYTES, EMOJI_NAME, ORIGINALS_FOLDER };

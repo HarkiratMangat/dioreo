@@ -86,11 +86,11 @@ async function addDraw(interaction) {
     return sent;
 }
 
-// --- SAVE EDITED DRAW --- custom_id: edit_draw_{id}_{new|returning}
-async function editDraw(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+// --- SAVE EDITED DRAW --- custom_id: edit_draw_{id}_{new|returning}. `opts.customId` names the draw when the pop-up carried another id, and a caller that already acknowledged the interaction skips the defer: the /manage draws panel opens this same pop-up from a draw card under its own id and redraws the card in place after the save (2026-11-07 19:13 EST).
+async function editDraw(interaction, opts = {}) {
+    if (!interaction.deferred && !interaction.replied) await interaction.deferReply({ ephemeral: true });
     const { toTitleCase, parseItemLine } = require('../../utils/adminParser');
-    const [, , targetId, drawType] = interaction.customId.split('_');
+    const [, , targetId, drawType] = (opts.customId || interaction.customId).split('_');
 
     // Existence pre-check kept exactly as before the refactor -- draw.edit's op would also report this as `reason: 'missing'`, but the pre-core handler simply returned with no reply at all when the id wasn't found (a stale search result), and this preserves that exact silent behaviour rather than introducing a new error reply where none existed.
     const seasonalDoc = await loadOrCreateSeasonalDoc();
@@ -148,14 +148,15 @@ async function editDraw(interaction) {
     return await interaction.followUp({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} That draw no longer exists (it may have been deleted or replaced since you opened it), so nothing was saved.`, FAIL_ACCENT) });
 }
 
-// --- BULK ADD/REPLACE BOTH DRAW CATEGORIES AT ONCE --- custom_id: modal_draws_bulk_{add|replace}_both One modal, two independently-optional fields -- only whichever field was actually filled in gets touched. Replace upserts by fuzzy-matched title (update in place, keep _id) rather than wholesale- overwriting the array; Add just appends everything parsed. Both categories commit in ONE changeset (matching the pre-core handler's single seasonalDoc.save() for both).
-async function bulkAddOrReplaceDraws(interaction) {
-    await interaction.deferReply({ ephemeral: true });
-    const customId = interaction.customId;
+// --- BULK ADD/REPLACE BOTH DRAW CATEGORIES AT ONCE --- custom_id: modal_draws_bulk_{add|replace}_both One modal, two independently-optional fields -- only whichever field was actually filled in gets touched. Replace upserts by fuzzy-matched title (update in place, keep _id) rather than wholesale- overwriting the array; Add just appends everything parsed. Both categories commit in ONE changeset (matching the pre-core handler's single seasonalDoc.save() for both). `preset` ({ customId, values: { new_text, returning_text } }) is the /manage draws panel's Save after its preview: the text it previewed, not a pop-up's fields, and the interaction may already be acknowledged (2026-11-07 19:13 EST).
+async function bulkAddOrReplaceDraws(interaction, preset = null) {
+    if (!interaction.deferred && !interaction.replied) await interaction.deferReply({ ephemeral: true });
+    const customId = preset ? preset.customId : interaction.customId;
     const mode = customId === 'modal_draws_bulk_add_both' ? 'add' : 'replace';
     const opType = mode === 'add' ? 'draw.bulkAdd' : 'draw.bulkReplace';
-    const newText = interaction.fields.getTextInputValue('new_text')?.trim();
-    const returningText = interaction.fields.getTextInputValue('returning_text')?.trim();
+    const field = (k) => (preset ? (preset.values[k] ?? '') : interaction.fields.getTextInputValue(k));
+    const newText = field('new_text')?.trim();
+    const returningText = field('returning_text')?.trim();
 
     if (!newText && !returningText) {
         return interaction.followUp({ flags: 32768 | 64, components: notePanel(BOT_EMOJI.cross + ' Both fields were left blank -- nothing was changed.', FAIL_ACCENT) });

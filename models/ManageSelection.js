@@ -10,7 +10,8 @@ const mongoose = require('mongoose');
 
 const manageSelectionSchema = new mongoose.Schema({
     _id: { type: String, required: true }, // the token in the panel's custom_ids
-    mode: { type: String, enum: ['MP', 'DMZ'], required: true },
+    // MP / DMZ: the gunsmith panel. DRAWS: the draws panel (handlers/manage/drawsPanel/, 2026-11-07 19:13 EST), whose entry keys are `n:<id>` (New) or `r:<id>` (Returning).
+    mode: { type: String, enum: ['MP', 'DMZ', 'DRAWS'], required: true },
     // Entry keys, in list order: a build id, or `id~option` for one option of a merged build.
     ids: { type: [String], default: [] },
     selected: { type: [String], default: [] },
