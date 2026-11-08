@@ -1065,9 +1065,6 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 - **/timestamp: switch timezone and view after it renders** `[P2 · S · Sonnet5-Medium]` *(filed 2026-10-28 21:52 EDT, Harkirat, in the text-commands doc: "file that we need to do a minor tweak to the timestamp command and implement some more buttons/controls within it to dynamically switch things like timezone/view, etc after the embed is rendered cuz currently we cant do that.")* Today the reply has only the style dropdown (`tsmenu|`); timezone and view (embed vs plain text) are slash options only, so a text-command timestamp can't change them at all. **Do:** add controls on the rendered reply for view and timezone, through `commands/timestamp.js`'s `overrideState` path and `handlers/timestamp.js`. **Verify:** `/timestamp 8pm` and `d time 8pm` can each switch to plain text and to another timezone without retyping.
 
-### Layout markers for announcements: dividers and spacing per gap `[P3 · S]`
-Filed 2026-10-26 23:52 EDT. Harkirat: *"The announcement builder thing, we can defer that for later. That could be a post V3 thing to work on."* Since `feat/announcements-components-v2`, an announcement is a Components V2 Container and a line of exactly `---` becomes a divider with its line drawn (`utils/announcement.js` `buildAnnouncementContainer`). His v3 launch layout needs more than that, per gap: `--divider:true large--`, `--divider:false small--` (a Separator's `divider` and `spacing`), and a marker that starts a new Text Display (his "Confused?" line sits in its own box). The preview script that already reads exactly these markers is `local/project/features/launch/post-layout.js` (gitignored, on this Mac; his launch text with the markers is `layout-b.txt` beside it); the builder would take the same syntax. Also teach the portal's Broadcast preview (pins2's area) to draw the Container. **Done when** `/manage` can post his launch layout as written and it renders the same as the preview.
-
 ### Loadout pictures keyed by gunsmith code, and the condensed Edit pop-up `[P1 · M]`
 
 Approved direction 2026-10-25 22:16 EDT (Harkirat, bot-polish thread); built in a NEW thread after bot-polish merges, his call. Plan: `local/project/features/bot-polish/loadout-key-plan.md` (on this Mac). In short: MP picture keys become `WEAPON-CODE` (codes repeat across weapons, never within one); the code is required for MP builds, while DMZ has no code and keeps `DMZ-WEAPON-N`; a back-end `label` field, shown in the pop-up after the weapon name; the Edit and Add pop-ups become five fields with a screenshot upload; a taken build number swaps the two builds; a failed screenshot upload refuses the save. Migration copies each picture to its new key and keeps the old ones (Revert restores old keys); the dry run checks Cloudinary's `Gunsmith_Code` metadata against each build and lists mismatches. Prod read, the Cloudinary copy and the prod switch each wait for his word. pins2's portal mints `WEAPON-1` keys and needs a note. Also link each saved build to its /autobuild screenshot fingerprint (`sourceHash` on the build, `Source_Hash` metadata, the build id on its `VisionRead`), so an Edit screenshot the bot already read is checked against the build's code before it saves.
@@ -1128,6 +1125,7 @@ Approved direction 2026-10-25 22:16 EDT (Harkirat, bot-polish thread); built in 
 *Filed 2026-10-20 18:46 EDT.* The `/commands` page, open PR #209 on branch `feat/commands-page-items`, deliberately does not claim `/timestamp` uses the saved `/settings` timezone or that "in 2 hours" is right, because both were bugs. `fix/timestamp-timezone` fixes them. [now, 2026-10-22: `fix/timestamp-timezone` landed as #213 in Pre-Release v3.104.0; only #209 is still open.] **Do:** once both are merged, word the page's `/timestamp` entry to say so and mention Short List, then rebuild `public/`. Also mark #209's two `/timestamp` bug rows ("ignores the timezone saved in `/settings`" and the relative-phrase one) fixed by this branch, since they only exist on #209's branch until it merges. **Verify:** the page's `/timestamp` text matches `/help`.
 
 ### Your Stats — per-user usage stats on a /settings page — built in v3.104.0 (#213) and hidden since v3.105.0 (`STATS_VISIBLE = false`, `commands/settings.js`); open: milestone messages and the season-end Dioreo Wrapped `[P2 · M]`
+> 🐞 **Found 2026-11-08 01:31 EST (the unused-exports pass): two of its counters are never called.** `utils/userStats.js` `noteBuildOpened` (builds opened) and `noteShare` (panels shared) are defined and exported but nothing calls them, so both read 0 for everyone since v3.104.0. **Do:** call `noteBuildOpened` where a /gunsmith build is shown and `noteShare` in `handlers/share.js`, before Your Stats is shown. **Verify:** open a build and press Show Everyone on the dev bot, and both counts on the Your Stats page go up by one.
 
 > ⏸️ **Hidden until a post-v3 launch** (Harkirat, 2026-10-21 10:15 EDT): the button and `open:` choice are off behind `STATS_VISIBLE` in `commands/settings.js`; counting carries on. **Launch:** set it to `true`, put Your Stats back in `scripts/settingsJumpTo.test.js`'s choices, and check PRIVACY §2.1e still matches what players see.
 
@@ -1141,13 +1139,13 @@ Approved direction 2026-10-25 22:16 EDT (Harkirat, bot-polish thread); built in 
 - **Later, same data:** milestone messages (100th command, one year) and a season-end Dioreo Wrapped.
 - **Verify:** run three commands on the dev bot, open Your Stats, see the counts; Reset clears them; a click on someone else's panel counts nothing.
 
-### What the 2026-10-20 sweep left open — three items `[P2 · S]`
+### What the 2026-10-20 sweep left open — one item left, the analytics prune `[P2 · S]`
 
 Filed 2026-10-20 18:15 EDT from the v3 sweep (full report in the project files under `v3-sweep/`). Everything else it found is fixed in Pre-Release v3.103.0.
 
 - **`AnalyticsEvent` has no prune**; the 400k-document alert is its only safeguard. A prune of rolled-up events past 90 days deletes data, so it needs his word.
-- **Eight copies of `safeErrorMessage` / `errorHttpCode`** across the Cloudinary cache modules could move into a new shared helper module (`utils/cloudinaryClient.js` is the SDK timing proxy, not a home for them).
-- **Eleven hooks fall back to the main Diors-Builds checkout** when `CLAUDE_PROJECT_DIR` is unset; `git rev-parse --show-toplevel` would keep a hand-run hook inside its own worktree.
+- ~~**Eight copies of `safeErrorMessage` / `errorHttpCode`**~~ ✅ done 2026-11-08 01:31 EST: there were twelve (ten utils modules, two scripts); all now require `utils/cloudinaryErrors.js`, and `scripts/cloudinaryErrors.test.js` fails if a copy comes back.
+- ~~**Eleven hooks fall back to the main Diors-Builds checkout**~~ ✅ done 2026-11-08 01:31 EST: thirteen hook files (two of them tests) now fall back to the script's own repo, `$(cd "$(dirname "$0")/../.." && pwd)`.
 
 **Verify condition:** each bullet is either fixed with a test or recorded as decided-no.
 
@@ -2539,9 +2537,6 @@ The "Can be undone" filter and the row's Undo control are both computed as `kind
 4. **The portal's `#manifest { margin-top: var(--s6) }` inside a board stage** (added 2026-09-20 02:00 EDT). It makes room for a realm header that does not exist inside a stage, so a stage's panel sits 60px down (28 stage padding + 32) with 28 below — and, because the stage is a grid with `justify-items:center`, an auto-width panel is max-content wide and can overflow its track. Fixed for `#history-manifest` in `gates.css` (margin 0, `width:100%`, `justify-self:stretch`, 3-E v57). **Unswept:** the Armory manifest (`#manifest`, `app.css:2841`) measures the same 60/28 and is an accepted gate. **Verify:** for every `.g-stage > .panel`, the four insets to the stage read 28.
 5. **`.b3-fc`'s state hue and count rule (ROUND 9B, 3-E v58) reaches an accepted gate** (added 2026-09-20 10:08 EDT). `--c` now falls back to `--patch` and every chip count is the hue lifted at 700, so Repairs' filter chips changed without being looked at: `All 5`'s count is `--patch` 700 where it was grey (computed value read on M2, never screenshotted). It is the class fix Harkirat asked for on History's toggles; whether M2 keeps it is his. **Verify:** he accepts M2's chips in the intake round after the 2026-09-20 compact, or M2's `.b3-fc` gets `--c:var(--ink3)` back and the README says why.
 
-### `[P3 · XS]` `/draw prices`: the Advanced Character page never says the 2 legendary weapons are the secondary reward — filed 2026-11-01 01:05 EDT
-Only a code comment in `commands/drawprices.js` (about line 276, confirmed by Harkirat 2026-08-07) says it; the visible text does not. He asked for this to be checked in his review note on the Dual Demise draw and it was: no visible wording. A one-line text change on the page.
-
 ### `[P3 · S]` Dioreo Admin's right-clicks: one "Dioreo Admin" menu when a sixth is needed — filed 2026-11-06 20:36 EST
 Dioreo Admin is at Discord's cap of five message right-clicks (Add to Patch Notes, Autobuild Gunsmith, Add to Draws, Add to Calendar, Edit Loadout). Harkirat picked **C, leave it, for now** (2026-11-06 20:36 EST) over A (one right-click opening a private menu of the five, freeing four slots) and B (a third app). **Do, when a sixth is wanted:** build A, the menu running each action's existing `execute()`. **Verify:** `scripts/rightClickCommands.test.js` still passes with the admin app at one message right-click.
 
@@ -2568,14 +2563,6 @@ Dioreo Admin is at Discord's cap of five message right-clicks (Add to Patch Note
 - **To fix:** widen the `hash-chain` regex with `(?:Pre-Release )?` after backfilling any v3 entry it then flags (additive, never `--amend`); add a file-level pass to `readme-map` for `reference/` and `ideas/`; make `nav-map-sync` compare each rule's `paths:` with its table cell; add an identifier-existence pass to `xref` for backticked names in the live rules (skipping lines that say retired, renamed or formerly).
 - **Verify when done:** `npm run docs:audit:test` shows each new check failing on a fixture (a v3 entry with no hash, an unnamed reference file, a row missing a declared path) and passing on the valid one.
 
-### `[P3 · S · Sonnet5-Medium]` 89 exports that no other file references — decide which are dead
-
-*Filed 2026-10-22 from the housekeeping sweep's think-pass (#216). The full list, grouped by file, is `docs/claude/2026-10-22-unused-exports-scan.md`.*
-
-- **What it is:** a scan of every module's `module.exports` against every tracked code file, tests and scripts included. 89 keys in 45 files are named nowhere else. The sweep removed the two it could prove dead (`noteCommandSafely`, `regionsWithData`) and left the rest, because an export can be public API on purpose, kept for a test, or reached by a computed name such as an `emojiMap.js` key.
-- **To do:** go through the list in one code-housekeeping session, delete what is truly dead from the file and from `module.exports` together, and run the full suite.
-- **Verify when done:** the scan, re-run, returns only the exports you decided to keep.
-
 ### `[P3 · XS]` Wire `/draw calculator`'s shortcut options back in, if Harkirat wants them
 
 *Filed 2026-10-17 23:38 EDT. Harkirat, 2026-10-17 23:37 EDT: "can we also remove the options from the draw calc slash command, except for the visibility option? i honestly dont think they're that useful at the moment. dont delete the code, but unwire it and document it. it might be wired back into the bot at some future stage if i feel like it".*
@@ -2584,15 +2571,6 @@ Dioreo Admin is at Discord's cap of five message right-clicks (Add to Patch Note
 - **Where the code is:** the option definitions are in `addCalculatorShortcutOptions` (`commands/drawprices.js`), applied nowhere; `slashShortcut` and the option reads in `commands/drawCalculator.js` are untouched and return no shortcut while the options are absent. Its test (`scripts/drawCalcBudget.test.js`, slashShortcut) still runs.
 - **To wire back:** call `addCalculatorShortcutOptions(sub)` on the calculator subcommand before `.addStringOption(... 'visibility' ...)`, rebuild `public/commands.html` with `npm run site`, restart the bot so the command registers.
 - **Verify when done:** the dev bot's registered `draw calculator` lists the four options, and `/draw calculator draw:` opens straight on a result.
-
-### `[P3 · XS]` Decide whether to delete `buildDrawInfoPanel` and the `info` verb — a later code-housekeeping session
-
-*Filed 2026-10-14 19:58 EDT. Harkirat, same time: "document it and leave the code behind for now. we'll decide if we want to delete it in a later code housekeeping session or something".*
-
-- **What it is:** the old calculator's "Draw Info" screen, which showed real draw prices. Its button left the calculator's nav row in the intake of 2026-10-14 (`15b49b09`), so no new panel can open it. It stays reachable only from calculator panels posted before that, through the `info` verb (`handlers/drawCalc.js`).
-- **Where:** `commands/drawCalculator.js` `buildDrawInfoPanel`, the `info` branch in `handlers/drawCalc.js`, and one case in `scripts/drawCalcBudget.test.js` ("Draw Info must skip the retired key").
-- **Deleting it costs:** an old panel's Draw Info button would do nothing. **Keeping it costs:** dead code. If the Advanced Legendary draws join the calculator, decide then whether Draw Info returns or their pool details go through `/draw prices` (see the 2026-10-14 00:51 EDT note under the advanced-draws item).
-- **Verify when picked up:** `rg buildDrawInfoPanel` shows only the definition, the export, the one handler call and the one test case.
 
 ### `[P3 · S · Sonnet5-High]` CI speed: where the next seconds are, measured on GitHub and deliberately not taken — the path to check if a CI/tests improvement session starts
 

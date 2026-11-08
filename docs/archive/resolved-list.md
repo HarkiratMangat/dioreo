@@ -5,6 +5,45 @@ status: dead
 
 # ✅ Resolved list — closed items from the Dior's Builds deferred list
 
+## ✅ Layout markers for announcements (bot half) — closed 2026-11-08 01:31 EST `[DONE · 2026-11-08 01:31 EST]`
+
+Closed 2026-11-08 01:31 EST in the small-fixes batch: the bot half already shipped on 2026-10-30 16:36 EDT as his own marks (`----` `====` `--` `==` `++`, `utils/announcement.js` `SEPARATOR_MARKS`, his words in its comment), which replace the `--divider:...--` syntax this entry proposed. The portal's Broadcast preview drawing the Container is pins2's (paused) and is already named in `.claude/rules/admin-access-and-announcements.md`.
+
+### Layout markers for announcements: dividers and spacing per gap `[P3 · S]`
+Filed 2026-10-26 23:52 EDT. Harkirat: *"The announcement builder thing, we can defer that for later. That could be a post V3 thing to work on."* Since `feat/announcements-components-v2`, an announcement is a Components V2 Container and a line of exactly `---` becomes a divider with its line drawn (`utils/announcement.js` `buildAnnouncementContainer`). His v3 launch layout needs more than that, per gap: `--divider:true large--`, `--divider:false small--` (a Separator's `divider` and `spacing`), and a marker that starts a new Text Display (his "Confused?" line sits in its own box). The preview script that already reads exactly these markers is `local/project/features/launch/post-layout.js` (gitignored, on this Mac; his launch text with the markers is `layout-b.txt` beside it); the builder would take the same syntax. Also teach the portal's Broadcast preview (pins2's area) to draw the Container. **Done when** `/manage` can post his launch layout as written and it renders the same as the preview.
+
+## ✅ /draw prices Advanced Character page names its secondary reward — closed 2026-11-08 01:31 EST `[DONE · 2026-11-08 01:31 EST]`
+
+Closed 2026-11-08 01:31 EST: already shipped 2026-11-01 18:23 EST, `commands/drawprices.js` line 302 ("Main Reward: 2 Legendary Characters · Secondary Reward: 2 Legendary Weapons"). The entry was never closed.
+
+### `[P3 · XS]` `/draw prices`: the Advanced Character page never says the 2 legendary weapons are the secondary reward — filed 2026-11-01 01:05 EDT
+Only a code comment in `commands/drawprices.js` (about line 276, confirmed by Harkirat 2026-08-07) says it; the visible text does not. He asked for this to be checked in his review note on the Dual Demise draw and it was: no visible wording. A one-line text change on the page.
+
+## ✅ The 89 unused exports — closed 2026-11-08 01:31 EST `[DONE · 2026-11-08 01:31 EST]`
+
+Closed 2026-11-08 01:31 EST (Harkirat's pick D): 63 dropped from `module.exports`, 26 kept with a reason each. Record: `docs/claude/2026-11-08-unused-exports-pass.md`.
+
+### `[P3 · S · Sonnet5-Medium]` 89 exports that no other file references — decide which are dead
+
+*Filed 2026-10-22 from the housekeeping sweep's think-pass (#216). The full list, grouped by file, is `docs/claude/2026-10-22-unused-exports-scan.md`.*
+
+- **What it is:** a scan of every module's `module.exports` against every tracked code file, tests and scripts included. 89 keys in 45 files are named nowhere else. The sweep removed the two it could prove dead (`noteCommandSafely`, `regionsWithData`) and left the rest, because an export can be public API on purpose, kept for a test, or reached by a computed name such as an `emojiMap.js` key.
+- **To do:** go through the list in one code-housekeeping session, delete what is truly dead from the file and from `module.exports` together, and run the full suite.
+- **Verify when done:** the scan, re-run, returns only the exports you decided to keep.
+
+## ✅ buildDrawInfoPanel and the `info` verb — closed 2026-11-08 01:31 EST `[DONE · 2026-11-08 01:31 EST]`
+
+Closed 2026-11-08 01:31 EST (Harkirat's pick B): the panel is deleted; a stale Draw Info press opens the calculator Help, pinned in `scripts/drawCalcHandler.test.js`.
+
+### `[P3 · XS]` Decide whether to delete `buildDrawInfoPanel` and the `info` verb — a later code-housekeeping session
+
+*Filed 2026-10-14 19:58 EDT. Harkirat, same time: "document it and leave the code behind for now. we'll decide if we want to delete it in a later code housekeeping session or something".*
+
+- **What it is:** the old calculator's "Draw Info" screen, which showed real draw prices. Its button left the calculator's nav row in the intake of 2026-10-14 (`15b49b09`), so no new panel can open it. It stays reachable only from calculator panels posted before that, through the `info` verb (`handlers/drawCalc.js`).
+- **Where:** `commands/drawCalculator.js` `buildDrawInfoPanel`, the `info` branch in `handlers/drawCalc.js`, and one case in `scripts/drawCalcBudget.test.js` ("Draw Info must skip the retired key").
+- **Deleting it costs:** an old panel's Draw Info button would do nothing. **Keeping it costs:** dead code. If the Advanced Legendary draws join the calculator, decide then whether Draw Info returns or their pool details go through `/draw prices` (see the 2026-10-14 00:51 EDT note under the advanced-draws item).
+- **Verify when picked up:** `rg buildDrawInfoPanel` shows only the definition, the export, the one handler call and the one test case.
+
 ## ✅ DrawCatalog model, sync script and bot use — closed 2026-11-01 `[DONE · 2026-11-01]`
 
 Built in v3.5.0: `models/DrawCatalog.js`, `utils/drawCatalog.js` (read before Cloudinary in `resolveThumbnail`, kept in step on upload), `scripts/syncDrawCatalog.js`, and the draw type filled from the index. Account: `docs/reference/draw-index.md` § How the bot uses it.
