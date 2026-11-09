@@ -277,8 +277,10 @@ function buildCalendarEventFromParts(prefixChar, rawEntry) {
     if (!startDate) return null; // Unparseable start date -- skip this entry rather than import a wrong one
     // "All Season" means the event runs through the rest of the season with no fixed end date
     const isOngoing = /all season/i.test(endStr);
-    const endDate = isOngoing ? null : parseAdminDate(endStr);
-    if (!isOngoing && !endDate) return null; // Unparseable end date -- same skip
+    // "TBD" (or TBA) means the end is not announced yet: no end date and not ongoing, the same row news triage writes for an undated end, which Needs a Look lists as "Calendar rows with no end date" (2026-11-09 14:51 EST). Until then a TBD line was dropped without a word: his Season 10 paste lost "11/12 - TBD | Create Your Truth Playlist (Verdansk Intro)" that way.
+    const isTBD = /^(tbd|tba)\.?$/i.test(endStr);
+    const endDate = isOngoing || isTBD ? null : parseAdminDate(endStr);
+    if (!isOngoing && !isTBD && !endDate) return null; // Unparseable end date -- same skip
 
     return { title, startDate, endDate, isOngoing, category, isDoubleCP };
 }

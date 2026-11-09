@@ -169,4 +169,13 @@ check('calendar.bulkAdd: the original db-deferred-list repro ("Krai BR Mode")', 
     assert.strictEqual(r.normalized.payload.parsed[0].title, 'Krai BR Mode', 'must not truncate to "Krai BR Mod"');
 });
 
+check('calendar paste: a TBD end is a row with no end date, never a dropped line (2026-11-09)', () => {
+    const { parseBulkEvents } = require('../utils/adminParser');
+    const [p] = parseBulkEvents('11/12 - TBD | Create Your Truth Playlist (Verdansk Intro)');
+    assert.ok(p, 'the line must not be dropped');
+    assert.strictEqual(p.endDate, null); assert.strictEqual(p.isOngoing, false);
+    assert.strictEqual(parseBulkEvents('12/4 - tba | Cold Embrace Mythic Drop')[0].endDate, null);
+    assert.strictEqual(parseBulkEvents('12/4 - soonish | Nope').length, 0, 'an unreadable end is still skipped');
+});
+
 process.exit(failures ? 1 : 0);
