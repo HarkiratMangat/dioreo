@@ -24,7 +24,21 @@ t('a title finds its draw, complete, and says it is on /draws', () => {
     const r = C.checkLine(INDEX, 'Lethal Hollow Draw', ctx);
     assert.strictEqual(r.status, 'found'); assert.strictEqual(r.title, 'Lethal Hollow Draw'); assert.strictEqual(r.matchedBy, 'title');
     assert.deepStrictEqual(r.needs, []); assert.strictEqual(r.onDraws, 'New'); assert.strictEqual(r.season, 'Season 7 2025');
-    assert.match(C.resultBlock(r, require('../utils/emojiMap')), /^\S+ \*\*Lethal Hollow Draw\*\*\n-# Complete · by its title · 2 items · Mythic Weapon · Season 7 2025 · on \/draws \(New\)$/);
+    assert.match(C.resultBlock(r, require('../utils/emojiMap')), /^\S+ \*\*Lethal Hollow Draw\*\*\n-# Complete · by its title · 2 items · Mythic Weapon Draw · Season 7 2025 · on \/draws \(New\)$/);
+});
+t('a draw staged in the Next Season Draft says so, beside /draws', () => {
+    const r = C.checkLine(INDEX, 'herrscher of reason', { ...ctx, seasonalDoc: { ...SEASON, draft: { newDraws: [], returningDraws: [{ title: 'Herrscher of Reason Draw' }] } } });
+    assert.strictEqual(r.inDraft, 'Returning');
+    assert.match(C.resultBlock(r, require('../utils/emojiMap')), /not on \/draws · staged in the draft \(Returning\)/);
+});
+t('a draw staged or listed under another of its names is still found there', () => {
+    const doc = { newDraws: [], returningDraws: [{ title: 'Hollow Point Draw' }], draft: { newDraws: [], returningDraws: [{ title: 'Hollow Point Draw' }] } };
+    const r = C.checkLine(INDEX, 'Lethal Hollow Draw', { ...ctx, seasonalDoc: doc });
+    assert.strictEqual(r.onDraws, 'Returning'); assert.strictEqual(r.inDraft, 'Returning');
+});
+t('draw types read by their bot names', () => {
+    assert.strictEqual(C.typeLabel('sevenSpinLegendaryWeapon'), require('../utils/drawTypes').drawTypeName('sevenSpinLegendaryWeapon'));
+    assert.ok(!/Seven Spin Legendary Weapon$/.test(C.typeLabel('sevenSpinLegendaryWeapon')));
 });
 t('another name it ran under finds it', () => assert.strictEqual(C.checkLine(INDEX, 'hollow point', ctx).matchedBy, 'alias'));
 t('an item name finds its draw and names the item', () => {

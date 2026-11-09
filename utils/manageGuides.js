@@ -118,6 +118,7 @@ function calendarSections() {
             '• **Title** is kept **exactly as typed** — NOT title-cased, since event names routinely carry acronyms (`MP`/`BR`/`DMZ`) that auto-casing would mangle.\n' +
             '• **Section prefix is optional.** Leave it off and the title is auto-classified by keyword — words like "draw"/"mode"/"playlist"/"map", or a standalone `MP`/`BR`, route it automatically. Ambiguous titles (e.g. a bare map name) should keep the explicit prefix.\n' +
             '• `All Season` as the end date means the event runs until the Battle Pass ends — shown as an open-ended range, no fixed end date stored.\n' +
+            '• `TBD` as the end date means the end is not announced yet: the event is saved with no end date (Needs a Look lists it), and exports back as `TBD`.\n' +
             '• Dates are UTC-0.'),
         section('🖼️ Example',
             '**Paste this:**\n' +

@@ -9,8 +9,8 @@ const MAX_LINES = 20;          // checked per paste; checkView shows as many as 
 const MAX_SHOWN_DESCRIBED = 5;
 
 const clean = (s, max = 80) => String(s || '').replace(/[*_`~|>]/g, '').replace(/\s+/g, ' ').trim().slice(0, max);
-// "mythicWeapon" -> "Mythic Weapon": the draw type as a reader would say it.
-const typeLabel = (t) => String(t || '').replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, c => c.toUpperCase());
+// The draw type by the name the rest of the bot gives it (utils/drawTypes.js, as Quick Add's draft shows it: "7 Spins Legendary Weapon Draw"); it was a camel-case split of the key until 2026-11-09 15:17 EST.
+const typeLabel = (t) => require('./drawTypes').drawTypeName(t) || String(t || '');
 
 // What a document still lacks for the bot to use it fully: a picture for /draws, items for prices and fingerprints, every item's kind (the Set item kinds box asks for these), and a draw type for /draw prices.
 function needsOf(entry) {
@@ -37,9 +37,10 @@ function itemHit(entry, line) {
     }) || null;
 }
 
-// Whether /draws lists it now, and in which section.
-function onDraws(seasonalDoc, title, isSameTitle) {
-    const list = [['New', seasonalDoc?.newDraws || []], ['Returning', seasonalDoc?.returningDraws || []]].flatMap(([section, draws]) => draws.map(draw => ({ section, draw })));
+// Whether /draws lists it now, and in which section. `fromDraft` reads the Next Season Draft's lists instead (2026-11-09 15:16 EST): while he plans a season, "not on /draws" says nothing about whether he already staged it.
+function onDraws(seasonalDoc, title, isSameTitle, fromDraft = false) {
+    const src = fromDraft ? seasonalDoc?.draft : seasonalDoc;
+    const list = [['New', src?.newDraws || []], ['Returning', src?.returningDraws || []]].flatMap(([section, draws]) => draws.map(draw => ({ section, draw })));
     const hit = require('./search').bestDrawMatch(list, title, x => x.draw.title, isSameTitle);
     return hit ? hit.section : null;
 }
@@ -63,7 +64,9 @@ function checkLine(entries, line, { seasonalDoc = null, isSameTitle } = {}) {
         season: e.releaseSeason ? `Season ${e.releaseSeason}${e.releaseYear ? ` ${e.releaseYear}` : ''}` : null,
         needs: needsOf(e),
         alternates: found.alternates || [],
-        onDraws: onDraws(seasonalDoc, e.title, isSameTitle),
+        // A draw can run under another of its names ("Pop Idol Draw" is Starry Symphony's), so the lists are searched by the title, each other name, and the line as typed (2026-11-09 15:17 EST).
+        onDraws: [e.title, ...(e.aliases || []), line].reduce((hit, t) => hit || onDraws(seasonalDoc, t, isSameTitle), null),
+        inDraft: [e.title, ...(e.aliases || []), line].reduce((hit, t) => hit || onDraws(seasonalDoc, t, isSameTitle, true), null),
     };
 }
 
@@ -90,6 +93,7 @@ function resultBlock(r, E) {
         r.priceType ? typeLabel(r.priceType) : null,
         r.season,
         r.onDraws ? `on /draws (${r.onDraws})` : 'not on /draws',
+        r.inDraft ? `staged in the draft (${r.inDraft})` : null,
     ].filter(Boolean);
     // The typed line is shown only when it differs from the title it found ("Lethal Hollow Draw → Lethal Hollow Draw" said nothing twice).
     const same = typed.toLowerCase() === clean(r.title, 70).toLowerCase();

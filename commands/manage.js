@@ -586,7 +586,8 @@ function buildEditCalendarModal(targetEvent, targetId) {
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('title').setLabel('Event Title').setStyle(TextInputStyle.Short).setValue(targetEvent.title)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('start_date').setLabel('Start Date').setStyle(TextInputStyle.Short).setValue(formatAdminDate(targetEvent.date))),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('end_date').setLabel('End Date (blank = All Season)').setStyle(TextInputStyle.Short).setValue(targetEvent.isOngoing ? '' : formatAdminDate(targetEvent.endDate)).setRequired(false)),
+        // A row with no end that is not ongoing prefills "TBD" (2026-11-09 15:14 EST): a blank box saves as All Season, so a TBD row edited for a typo used to become one that runs all season.
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('end_date').setLabel('End Date (blank = All Season, or TBD)').setStyle(TextInputStyle.Short).setValue(targetEvent.isOngoing ? '' : targetEvent.endDate ? formatAdminDate(targetEvent.endDate) : 'TBD').setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('category').setLabel('Section (draw / event / playlist)').setStyle(TextInputStyle.Short).setValue(targetEvent.category || 'event').setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('double_cp').setLabel('Double CP Event? (Y/N)').setStyle(TextInputStyle.Short).setValue(targetEvent.isDoubleCP ? 'Yes' : 'No').setRequired(false))
     );
