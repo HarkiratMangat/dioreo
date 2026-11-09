@@ -421,10 +421,10 @@ async function check(name, fn) {
         assert.strictEqual(c.accent_color, 16743772);
         assert.ok(/Need help\?\n-# Prefix: \*\*`@Dioreo`\*\*, \*\*`d`\*\* or \*\*`dior`\*\*$/.test(c.components[0].components[0].content), c.components[0].components[0].content);
         assert.strictEqual(c.components[0].accessory.custom_id, 'txtpriv_help');
-        assert.deepStrictEqual(c.components.slice(2, 6).map(x => x.content.replace(/^<a?:\w+:\d+> /, '')), ['**Gunsmith:** `gunsmith` · `dmz`', '**Draws:** `draws` · `prices` · `calculator`', '**Season:** `today` · `calendar` · `remind` · `patch notes` · `end`', '**Utilities:** `timestamp` · `colors` · `settings` · `invite` · `help`']);
-        assert.ok(c.components[6].content.endsWith('Or use **slash commands** </help:42>'));
+        assert.deepStrictEqual(c.components.slice(2, 7).map(x => x.content.replace(/^<a?:\w+:\d+> /, '')), ['**Gunsmith:** `gunsmith` · `dmz` · `list`', '**Draws:** `draws` · `prices` · `calculator`', '**Season:** `today` · `calendar` · `remind` · `patch notes` · `end`', '**Utilities:** `timestamp` · `colors`', '**Misc:** `settings` · `prefix` · `invite` · `help` · `announcement`']);
+        assert.ok(c.components[7].content.endsWith('Or use **slash commands** </help:42>'));
         const noContent = helpCard({ textMessageContent: false }).components[0];
-        assert.ok(noContent.components[0].components[0].content.endsWith('Prefix: **`@Dioreo`**') && noContent.components[6].content.includes('`@Dioreo draws`'));
+        assert.ok(noContent.components[0].components[0].content.endsWith('Prefix: **`@Dioreo`**') && noContent.components[7].content.includes('`@Dioreo draws`'));
     });
     await check('Did you mean: one match beside its button, several in a row, with what was typed', async () => {
         const one = didYouMeanCard(['calendar'], 'calender stuff').components[0].components[0];

@@ -31,9 +31,9 @@ async function runAutocomplete(interaction) {
 
     // === ROUTE B2: /help's cmd: option -- suggests every real command from commands/help.js's staticCommands (/gunsmith is one entry, not one per subcommand) ===
     if (commandName === 'help') {
-        const { helpChoices, helpPerms } = require('../commands/help');
+        const { helpChoices, helpPerms, helpScope } = require('../commands/help');
         // Restricted entries are suggested only to someone who could use them, through the SAME permission set the page itself uses (commands/help.js helpPerms; this branch built its own without `botAccess` until 2026-10-25, hiding /emojis and the owner-only /bot commands from the owner). It also matches alias keywords, look-alikes and typos -- see commands/help.js. Each choice shows the name with a short plain line (utils/helpSearch.js choiceLabel); its value stays the bare name.
-        return await interaction.respond(await helpChoices(focusedValue, await helpPerms(interaction)));
+        return await interaction.respond(await helpChoices(focusedValue, await helpPerms(interaction), helpScope(interaction)));
     }
 
     // === ROUTE B3 (stage 3, 2026-08-14 18:05 EDT): /manage's action: option -- scoped by the subcommand it sits on (it was a sibling `content` option until 2026-10-28 12:11 EDT), since Discord cannot scope one option's static choices by another option's live value (the whole reason this is autocomplete, not a `choices()` list -- see the registry's comment in utils/manageActions.js). NOTE (removed 2026-07-09, re-added here for a different reason): /manage's old autocomplete route was for search-by-name (draws/loadouts/ calendar/patchnotes edit/delete), replaced by the one-field search modal and never coming back. This route only ever suggests ACTION IDS off the registry, never touches a collection. ===

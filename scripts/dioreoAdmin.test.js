@@ -46,9 +46,11 @@ const nameOf = c => (typeof c.toJSON === 'function' ? c.toJSON().name : c.name);
         const adm = adminCommands.map(nameOf).sort();
         for (const name of ADMIN_APP_COMMAND_NAMES) assert.ok(!pub.includes(name), `${name} is still on the public app`);
         assert.ok(pub.includes('admin'), '/admin left the public app');
-        // Every devOnly module joins the admin app, /dmz while it is hidden (2026-10-21 21:07 EDT); /embed is a named admin command since 2026-10-28.
-        assert.deepStrictEqual(adm, [...ADMIN_APP_COMMAND_NAMES, 'dmz'].sort());
-        assert.strictEqual(pub.length + adm.length, commands.length);
+        // Every devOnly module joins the admin app, /dmz while it is hidden (2026-10-21 21:07 EDT); /embed is a named admin command since 2026-10-28. /help is on both (bothApps, 2026-11-09 13:10 EST): Dioreo Admin's own /help for its commands.
+        assert.deepStrictEqual(adm, [...ADMIN_APP_COMMAND_NAMES, 'dmz', 'help'].sort());
+        assert.ok(pub.includes('help'), "Dioreo's /help left the public app");
+        assert.strictEqual(adminCommands.find(c => nameOf(c) === 'help').toJSON().integration_types.join(), '1', "Dioreo Admin's /help is user-install only, like its other commands");
+        assert.strictEqual(pub.length + adm.length, commands.length + 1);
     });
 
     await test('MUST: each app answers with its OWN emoji ids, across awaits and timers', async () => {
