@@ -356,6 +356,19 @@ function fake({ customId = '', chat = false, modal = false, select = false, mess
             assert.match(JSON.stringify(sent.at(-1)), /Draft discarded/);
         } finally { Object.assign(old, real); }
     });
+    await check('a draft that would be refused says why and disables Post, before anyone presses it', async () => {
+        sent.length = 0;
+        await AP.handleAnnouncementsPanelInteraction(fake({ customId: 'mng_an|postm', modal: true, message: true, fieldValues: { text: 'Hi', expiry: 'soonish' } }));
+        const dump = JSON.stringify(sent.at(-1));
+        assert.match(dump, /wasn't understood/);
+        const postBtn = (tree) => { let hit = null; const walk = (n) => { if (!n || typeof n !== 'object') return; if (String(n.custom_id || '').startsWith('mng_an|dpost|')) hit = n; Object.values(n).forEach(walk); }; walk(tree); return hit; };
+        assert.strictEqual(postBtn(sent.at(-1)).disabled, true);
+        sent.length = 0;
+        await AP.handleAnnouncementsPanelInteraction(fake({ customId: 'mng_an|postm', modal: true, message: true, fieldValues: { text: 'Hi', expiry: '3' } }));
+        const ok = JSON.stringify(sent.at(-1));
+        assert.match(ok, /expires <t:\d+:R>/, 'a real time, from core\'s own check');
+        assert.strictEqual(postBtn(sent.at(-1)).disabled, false);
+    });
     await check('must NOT: someone else cannot post another admin\'s draft', async () => {
         sent.length = 0;
         await AP.handleAnnouncementsPanelInteraction(fake({ customId: 'mng_an|postm', modal: true, message: true, fieldValues: { text: 'Mine' } }));
@@ -363,7 +376,7 @@ function fake({ customId = '', chat = false, modal = false, select = false, mess
         const other = fake({ customId: `mng_an|dpost|${t}`, message: true });
         other.user = { id: 'someone-else' };
         await AP.handleAnnouncementsPanelInteraction(other);
-        assert.match(JSON.stringify(sent.at(-1)), /draft is gone/);
+        assert.match(JSON.stringify(other.calls), /Only the admin who wrote this draft/);
         assert.ok(AP._drafts.has(t), 'the owner\'s draft is still there');
     });
     await check('the old save handlers take the new opts and stay safe for callers that pass none', () => {

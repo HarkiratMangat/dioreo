@@ -102,18 +102,18 @@ function fitPanel(delivered, components) {
     return out;
 }
 
-// ---------- a draft ---------- (Harkirat, 2026-11-09 10:57 EST: "for the /manage announcement command, seeing an embed rendered draft of the announcement before "posting it". So it's able to be tweaked or discarded or confirmed"; built 2026-11-09 12:11 EST.) The announcement exactly as players will get it, then Post (Save for an edit) · Edit · Discard. Nothing is written until Post. `doc` is the draft drawn as an announcement; `token` keys it in ./index.js's memory.
-function draftView(doc, { token, kind = 'post', values = {}, header = null }) {
+// ---------- a draft ---------- (Harkirat, 2026-11-09 10:57 EST: "for the /manage announcement command, seeing an embed rendered draft of the announcement before "posting it". So it's able to be tweaked or discarded or confirmed"; built 2026-11-09 12:11 EST.) The announcement exactly as players will get it, then Post (Save for an edit) · Edit · Discard. Nothing is written until Post. `doc` is the draft drawn as an announcement; `token` keys it in ./index.js's memory. `check` is core's own validation of the drafted values (core/changeset.js validateSet): its expiry and start as real times, or the errors that would refuse Post, shown here with Post disabled rather than after the press.
+function draftView(doc, { token, kind = 'post', header = null, check = { ok: true, errors: [] } }) {
     const delivered = require('../../../utils/announcement').buildAnnouncementContainer(doc);
-    const expiry = String(values.expiry || '').trim();
-    const starts = String(values.starts_at || '').trim();
-    const when = [`expires ${!expiry ? 'in 60 days (the default)' : /^never$/i.test(expiry) ? 'never' : `in \`${expiry.slice(0, 30)}\``}`, starts ? `starts \`${starts.slice(0, 40)}\`` : 'shows right away'].join(' · ');
+    const when = check.ok
+        ? [check.expiresAt ? `expires ${rel(check.expiresAt)}` : 'never expires', check.startsAt ? `**starts ${rel(check.startsAt)}**` : 'shows right away'].join(' · ')
+        : `${emojis.warn} ${check.errors.join(' ')}`.slice(0, 600);
     const components = [
         text(crumb(kind === 'edit' ? plainLabel(preview(doc, 40)) : 'Post New', 'Draft')),
         ...(header ? [text(header), SMALL()] : []),
         text(`### ${emojis.edit} Draft · not ${kind === 'edit' ? 'saved' : 'posted'} yet\n-# ${when}\n-# Above: exactly what players will get.`),
         BIG(),
-        row(btn(['dpost', token], kind === 'edit' ? 'Save' : 'Post', emojis.checkmark, 3), btn(['dedit', token], 'Edit', emojis.edit, 1), btn(['ddisc', token], 'Discard', emojis.deleteBin, 4)),
+        row(btn(['dpost', token], kind === 'edit' ? 'Save' : 'Post', emojis.checkmark, 3, !check.ok), btn(['dedit', token], 'Edit', emojis.edit, 1), btn(['ddisc', token], 'Discard', emojis.deleteBin, 4)),
     ];
     return fitPanel(delivered, components);
 }

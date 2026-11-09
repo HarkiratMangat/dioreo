@@ -100,7 +100,16 @@ function keepDraft(d) {
 }
 function takeDraft(token, userId) {
     const d = drafts.get(token);
-    return d && Date.now() - d.at <= DRAFT_TTL_MS && d.userId === userId ? d : null;
+    if (!d || Date.now() - d.at > DRAFT_TTL_MS) return { gone: true };
+    return d.userId === userId ? { draft: d } : { notYours: true };
+}
+// Core's own check of the drafted values, the one Post would run: the times it would save, or why it would refuse.
+function checkDraft(d) {
+    const { validateSet } = require('../../../core/changeset');
+    const v = validateSet([{ type: 'announcement.post', payload: { text: d.values.text, expiry: d.values.expiry, ...(String(d.values.starts_at || '').trim() ? { startsAt: d.values.starts_at.trim() } : {}) } }]);
+    if (!v.ok) return { ok: false, errors: v.failures.flatMap(f => f.errors) };
+    const p = v.normalized[0]?.payload || {};
+    return { ok: true, errors: [], expiresAt: p.expiresAt || null, startsAt: p.startsAt || null };
 }
 const readFields = (interaction) => ({ text: interaction.fields.getTextInputValue('text') || '', expiry: interaction.fields.getTextInputValue('expiry') || '', starts_at: interaction.fields.getTextInputValue('starts_at') || '' });
 // The draft drawn as an announcement: its own colour, and for an edit the stored post time and banner, so the preview is what players will get.
@@ -109,7 +118,7 @@ async function showDraft(interaction, token, header = null) {
     const d = drafts.get(token);
     const existing = d.kind === 'edit' ? await getOne(d.id) : null;
     if (d.kind === 'edit' && !existing) return gone(interaction);
-    return show(interaction, V.draftView(draftDoc(d, existing), { token, kind: d.kind, values: d.values, header }));
+    return show(interaction, V.draftView(draftDoc(d, existing), { token, kind: d.kind, header, check: checkDraft(d) }));
 }
 // Puts the draft's values back into a pop-up for Edit.
 function fillModal(j, values) {
@@ -224,8 +233,10 @@ async function route(interaction) {
 
     // ----- a draft: Post (Save), Edit, Discard -----
     if (verb === 'dpost' || verb === 'dedit' || verb === 'ddisc') {
-        const d = takeDraft(a, interaction.user.id);
-        if (!d) return show(interaction, await home(`${emojis.warn} That draft is gone (a draft lasts 15 minutes, and a restart clears it). Nothing was posted.`, interaction));
+        const t = takeDraft(a, interaction.user.id);
+        if (t.notYours) return say(interaction, `${emojis.accessDenied} Only the admin who wrote this draft can use it.`);
+        if (t.gone) return show(interaction, await home(`${emojis.warn} That draft is gone (a draft lasts 15 minutes, and a restart clears it). Nothing was posted.`, interaction));
+        const d = t.draft;
         const gate = () => (d.kind === 'edit' ? gateRow(interaction, 'manage.announcementEdit') : gatePost(interaction));
         if (verb === 'dedit') {
             if (!(await gate())) return;

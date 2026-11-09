@@ -48,29 +48,28 @@ function parseTargets(words) {
     return out;
 }
 
+const codeOf = e => e?.code ?? e?.rawError?.code;
+const isNoAccess = e => [50001, 50013].includes(codeOf(e)) || e?.status === 403;
+
+// A channel Dioreo cannot see answers 403, not 404: it is still a channel id, and its deletes report "where Dioreo can't see" (think-pass, 2026-11-09 12:48 EST).
 async function channelExists(client, id) {
-    try { return Boolean(await client.rest.get(Routes.channel(id))); } catch { return false; }
+    try { await client.rest.get(Routes.channel(id)); return true; } catch (e) { return isNoAccess(e); }
 }
 
-// Turns the words into one plan: which channel, which message ids, how many of the last ones.
+// Turns the words into one plan: which channel, which message ids, how many of the last ones. His order is `[server id] [channel id] [message ids]`: a server Dioreo is in is skipped by its id, and of the first two other ids, the first that names a channel is the channel, so an id before it is a server Dioreo cannot see and is ignored (think-pass, 2026-11-09 12:48 EST: the first version read that id as a message and then every id after it, the real channel included, as messages too).
 async function resolveTargets({ client, words, hereChannelId, channelId: explicit = null }) {
     const t = parseTargets(words);
     let channelId = explicit || t.channelIds[0] || null;
-    const messageIds = [];
-    let leading = true;
-    for (const id of t.ids) {
-        if (leading) {
-            if (client.guilds?.cache?.has?.(id)) continue;
-            if (!channelId && await channelExists(client, id)) { channelId = id; continue; }
-            leading = false;
+    let ids = t.ids.filter(id => !client.guilds?.cache?.has?.(id));
+    if (!channelId) {
+        for (let i = 0; i < Math.min(2, ids.length); i++) {
+            if (await channelExists(client, ids[i])) { channelId = ids[i]; ids = ids.slice(i + 1); break; }
         }
-        if (!messageIds.includes(id)) messageIds.push(id);
     }
+    const messageIds = [...new Set(ids)];
     const count = t.count ?? (messageIds.length || t.links.length ? null : 1);
     return { channelId: channelId || hereChannelId, messageIds, links: t.links, count, ignored: t.ignored };
 }
-
-const codeOf = e => e?.code ?? e?.rawError?.code;
 function classify(e, result) {
     const code = codeOf(e);
     if (code === 10008 || code === 10003 || e?.status === 404) result.notFound++;
@@ -78,16 +77,16 @@ function classify(e, result) {
     else result.failed++;
 }
 
-// Dioreo's newest `count` messages in a channel, newest first.
-async function lastOwn(client, channelId, authorId, count) {
+// The newest `count` messages by Dioreo or Dioreo Admin in a channel, newest first, each with its author. Both apps are Dioreo: in #news-distill the cards are Dioreo Admin's.
+async function lastOwn(reader, channelId, authorIds, count) {
     const found = [];
     let before = null;
     for (let page = 0; page < HISTORY_PAGES && found.length < count; page++) {
         const query = new URLSearchParams({ limit: '100' });
         if (before) query.set('before', before);
-        const batch = await client.rest.get(Routes.channelMessages(channelId), { query });
+        const batch = await reader(c => c.rest.get(Routes.channelMessages(channelId), { query }));
         if (!Array.isArray(batch) || !batch.length) break;
-        for (const m of batch) if (m.author?.id === authorId && found.length < count) found.push(m.id);
+        for (const m of batch) if (authorIds.has(m.author?.id) && found.length < count) found.push({ id: m.id, authorId: m.author.id });
         before = batch[batch.length - 1].id;
         if (batch.length < 100) break;
     }
@@ -95,25 +94,33 @@ async function lastOwn(client, channelId, authorId, count) {
 }
 
 async function runDelete({ client, adminClient = null, plan }) {
-    const result = { deleted: 0, notFound: 0, notOurs: 0, noAccess: 0, failed: 0, asked: plan.count, foundLast: null, ignored: plan.ignored || [] };
+    const result = { deleted: 0, notFound: 0, notOurs: 0, noAccess: 0, failed: 0, asked: plan.count, foundLast: null, ignored: plan.ignored || [], channelId: plan.channelId };
     const ours = new Map([[client.user.id, client]]);
     if (adminClient?.user?.id && adminClient.user.id !== client.user.id) ours.set(adminClient.user.id, adminClient);
+    // Reads go through Dioreo first and fall back to Dioreo Admin where Dioreo cannot see the channel (a private channel only the admin app was given).
+    const reader = async (fn) => {
+        try { return await fn(client); } catch (e) {
+            const other = [...ours.values()].find(c => c !== client);
+            if (other && isNoAccess(e)) return fn(other);
+            throw e;
+        }
+    };
     const del = async (by, channelId, id) => {
         try { await by.rest.delete(Routes.channelMessage(channelId, id)); result.deleted++; } catch (e) { classify(e, result); }
     };
     const done = new Set();
     if (plan.count) {
-        let ids = [];
-        try { ids = await lastOwn(client, plan.channelId, client.user.id, plan.count); } catch (e) { classify(e, result); }
-        result.foundLast = ids.length;
-        for (const id of ids) { done.add(id); await del(client, plan.channelId, id); }
+        let found = [];
+        try { found = await lastOwn(reader, plan.channelId, new Set(ours.keys()), plan.count); } catch (e) { classify(e, result); }
+        result.foundLast = found.length;
+        for (const m of found) { done.add(m.id); await del(ours.get(m.authorId), plan.channelId, m.id); }
     }
     const jobs = [...plan.messageIds.map(id => ({ channelId: plan.channelId, id })), ...plan.links.map(l => ({ channelId: l.channelId, id: l.messageId }))];
     for (const job of jobs) {
         if (done.has(job.id)) continue;
         done.add(job.id);
         let msg;
-        try { msg = await client.rest.get(Routes.channelMessage(job.channelId, job.id)); } catch (e) { classify(e, result); continue; }
+        try { msg = await reader(c => c.rest.get(Routes.channelMessage(job.channelId, job.id))); } catch (e) { classify(e, result); continue; }
         const by = ours.get(msg?.author?.id);
         if (!by) { result.notOurs++; continue; }
         await del(by, job.channelId, job.id);
@@ -122,10 +129,12 @@ async function runDelete({ client, adminClient = null, plan }) {
 }
 
 const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
-function noteText(r) {
+// `here` is the channel the note is posted in: a delete somewhere else names that channel.
+function noteText(r, { here = null, clearsAt = null } = {}) {
     const emojis = require('./emojiMap');
+    const where = r.channelId && here && r.channelId !== here ? ` in <#${r.channelId}>` : '';
     const head = r.deleted
-        ? `${emojis.broom || ''} Deleted **${plural(r.deleted, 'message')}**.`
+        ? `${emojis.broom || ''} Deleted **${plural(r.deleted, 'message')}**${where}.`
         : (r.asked && r.foundLast === 0 ? `${emojis.warn || ''} No Dioreo message found here.` : `${emojis.warn || ''} Nothing deleted.`);
     const why = [];
     if (r.asked && r.foundLast !== null && r.foundLast > 0 && r.foundLast < r.asked) why.push(`only ${r.foundLast} of Dioreo's in the last ${HISTORY_PAGES * 100}`);
@@ -134,7 +143,10 @@ function noteText(r) {
     if (r.noAccess) why.push(`${r.noAccess} where Dioreo can't see`);
     if (r.failed) why.push(`${r.failed} failed`);
     if (r.ignored?.length) why.push(`ignored ${r.ignored.slice(0, 3).map(w => `\`${w.replace(/`/g, '').slice(0, 24)}\``).join(', ')}`);
-    return [head.trim(), why.length ? `-# ${emojis.warn} ${why.join(' · ')}` : null].filter(Boolean).join('\n');
+    // The live countdown, the text-command cooldown warning's own form (`<t:…:R>` counts down in every client).
+    const clears = clearsAt ? `Clears <t:${Math.ceil(clearsAt / 1000)}:R>` : null;
+    const small = why.length ? `-# ${emojis.warn} ${why.join(' · ')}${clears ? ` · ${clears}` : ''}` : (clears ? `-# ${clears}` : null);
+    return [head.trim(), small].filter(Boolean).join('\n');
 }
 
 function adminOf(client) {
@@ -149,7 +161,7 @@ async function runFromMessage(message, words, { canPost = true } = {}) {
     const result = await runDelete({ client, adminClient: adminOf(client), plan });
     if (!canPost) return result;
     const note = await client.rest.post(Routes.channelMessages(message.channelId), {
-        body: { content: noteText(result), allowed_mentions: { parse: [], replied_user: false }, message_reference: { message_id: message.id, fail_if_not_exists: false } },
+        body: { content: noteText(result, { here: message.channelId, clearsAt: Date.now() + NOTE_TTL_MS }), allowed_mentions: { parse: [], replied_user: false }, message_reference: { message_id: message.id, fail_if_not_exists: false } },
     }).catch(() => null);
     if (note?.id) setTimeout(() => { client.rest.delete(Routes.channelMessage(message.channelId, note.id)).catch(() => {}); }, NOTE_TTL_MS).unref?.();
     return result;
@@ -164,7 +176,7 @@ async function runFromSlash(interaction) {
     if (channelText && !ID.test(channelText)) return interaction.editReply({ content: `${require('./emojiMap').cross} That is not a channel ID: 17–20 digits.` });
     const plan = await resolveTargets({ client, words, hereChannelId: interaction.channelId, channelId: channelText || null });
     const result = await runDelete({ client, adminClient: adminOf(client) || (interaction.client !== client ? interaction.client : null), plan });
-    return interaction.editReply({ content: noteText(result), allowedMentions: { parse: [] } });
+    return interaction.editReply({ content: noteText(result, { here: interaction.channelId }), allowedMentions: { parse: [] } });
 }
 
 module.exports = { OWNER_WORDS, DELETE_WORDS, MAX_LAST, NOTE_TTL_MS, readOwnerCommand, parseTargets, resolveTargets, runDelete, noteText, runFromMessage, runFromSlash };

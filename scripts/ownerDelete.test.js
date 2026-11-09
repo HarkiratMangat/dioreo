@@ -15,12 +15,15 @@ function world() {
         [THERE]: [msg(19, BOT), msg(18, USER)],
     };
 }
-function fakeClient(userId, store, calls, { guilds = [] } = {}) {
+// `hidden`: channels this app cannot see (403), as a private channel only Dioreo Admin was given.
+function fakeClient(userId, store, calls, { guilds = [], hidden = [] } = {}) {
     return {
         user: { id: userId }, guilds: { cache: new Set(guilds) },
         rest: {
             async get(route, opts) {
                 let m;
+                const ch = route.match(/^\/channels\/(\d+)/)?.[1];
+                if (hidden.includes(ch)) throw err(50001, 403);
                 if ((m = route.match(/^\/channels\/(\d+)$/))) { if (store[m[1]]) return { id: m[1] }; throw err(10003, 404); }
                 if ((m = route.match(/^\/channels\/(\d+)\/messages\/(\d+)$/))) { const found = (store[m[1]] || []).find(x => x.id === m[2]); if (!found) throw err(10008, 404); return found; }
                 if ((m = route.match(/^\/channels\/(\d+)\/messages$/))) {
@@ -40,7 +43,7 @@ function fakeClient(userId, store, calls, { guilds = [] } = {}) {
         },
     };
 }
-const setup = (opts) => { const store = world(); const calls = []; return { store, calls, client: fakeClient(BOT, store, calls, opts), admin: fakeClient(ADMIN, store, calls) }; };
+const setup = (opts = {}) => { const store = world(); const calls = []; return { store, calls, client: fakeClient(BOT, store, calls, opts), admin: fakeClient(ADMIN, store, calls, { hidden: opts.adminHidden || [] }) }; };
 const left = (store, ch) => store[ch].map(m => m.id);
 
 const tests = [];
@@ -72,6 +75,36 @@ t('a leading server id is skipped and a leading channel id picks the channel; th
     assert.deepStrictEqual(plan.messageIds, [id(19), id(18)]);
     assert.strictEqual(plan.count, null);
 });
+t('a server id Dioreo cannot see, before the channel id, is ignored; the channel is still found', async () => {
+    const { client } = setup();
+    const plan = await resolveTargets({ client, words: ['200000000000000099', THERE, id(19)], hereChannelId: HERE });
+    assert.strictEqual(plan.channelId, THERE);
+    assert.deepStrictEqual(plan.messageIds, [id(19)]);
+});
+t('a channel Dioreo cannot see is still a channel (403, not 404), and its deletes say so', async () => {
+    const { client } = setup({ hidden: [THERE] });
+    const plan = await resolveTargets({ client, words: [THERE, id(19)], hereChannelId: HERE });
+    assert.strictEqual(plan.channelId, THERE);
+    const r = await runDelete({ client, plan });
+    assert.strictEqual(r.noAccess, 1);
+    assert.match(noteText(r, { here: HERE }), /1 where Dioreo can't see/);
+});
+t('Dioreo Admin\'s messages count in last N and are deleted with its token; where only Dioreo Admin can see, it reads', async () => {
+    const { client, admin, store, calls } = setup();
+    const r = await runDelete({ client, adminClient: admin, plan: await resolveTargets({ client, words: ['3'], hereChannelId: HERE }) });
+    assert.strictEqual(r.deleted, 3);
+    assert.deepStrictEqual(calls.filter(c => c[0] === 'delete').map(c => [c[1], c[2]]), [[BOT, id(9)], [BOT, id(7)], [ADMIN, id(6)]]);
+    assert.deepStrictEqual(left(store, HERE), [id(8), id(5), id(4)]);
+    const hidden = setup({ hidden: [HERE] });
+    const r2 = await runDelete({ client: hidden.client, adminClient: hidden.admin, plan: { channelId: HERE, messageIds: [], links: [], count: 1, ignored: [] } });
+    assert.strictEqual(r2.deleted, 1, 'read through Dioreo Admin when Dioreo cannot see the channel');
+});
+t('the note names another channel, and carries a live countdown', () => {
+    const r = { deleted: 2, notFound: 0, notOurs: 0, noAccess: 0, failed: 0, ignored: [], channelId: THERE };
+    assert.match(noteText(r, { here: HERE }), new RegExp(`Deleted \\*\\*2 messages\\*\\* in <#${THERE}>\\.`));
+    assert.doesNotMatch(noteText({ ...r, channelId: HERE }, { here: HERE }), /in <#/);
+    assert.match(noteText(r, { here: HERE, clearsAt: 1700000000000 }), /\n-# Clears <t:1700000000:R>$/);
+});
 t('nothing at all means Dioreo\'s last message here', async () => {
     const { client, admin, store } = setup();
     const plan = await resolveTargets({ client, words: [], hereChannelId: HERE });
@@ -80,7 +113,7 @@ t('nothing at all means Dioreo\'s last message here', async () => {
     assert.strictEqual(r.deleted, 1);
     assert.deepStrictEqual(left(store, HERE), [id(8), id(7), id(6), id(5), id(4)]);
 });
-t('last N counts only Dioreo\'s own messages, newest first, and leaves everyone else\'s', async () => {
+t('last N counts only Dioreo\'s own messages, newest first, and leaves everyone else\'s', async () => { // HERE: 9 BOT, 8 USER, 7 BOT, 6 ADMIN, 5 BOT, 4 USER
     const { client, admin, store } = setup();
     const r = await runDelete({ client, adminClient: admin, plan: await resolveTargets({ client, words: ['2'], hereChannelId: HERE }) });
     assert.strictEqual(r.deleted, 2);
@@ -103,9 +136,9 @@ t('a message link acts in its own channel', async () => {
 t('a count with fewer of Dioreo\'s messages than asked deletes what there is and says so', async () => {
     const { client, admin } = setup();
     const r = await runDelete({ client, adminClient: admin, plan: await resolveTargets({ client, words: ['10'], hereChannelId: HERE }) });
-    assert.strictEqual(r.deleted, 3);
-    assert.match(noteText(r), /Deleted \*\*3 messages\*\*/);
-    assert.match(noteText(r), /only 3 of Dioreo's/);
+    assert.strictEqual(r.deleted, 4, 'three of Dioreo\'s and one of Dioreo Admin\'s');
+    assert.match(noteText(r), /Deleted \*\*4 messages\*\*/);
+    assert.match(noteText(r), /only 4 of Dioreo's/);
 });
 t('the note: the count, then each warning on one small line; nothing found says so', () => {
     assert.match(noteText({ deleted: 1, notFound: 0, notOurs: 0, noAccess: 0, failed: 0, ignored: [] }), /Deleted \*\*1 message\*\*\.$/);
