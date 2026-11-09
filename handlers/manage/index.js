@@ -277,6 +277,7 @@ async function routeManage(interaction) {
         // DRAWS
         if (customId === 'modal_draws_bulk_add_both' || customId === 'modal_draws_bulk_replace_both') return await draws.bulkAddOrReplaceDraws(interaction);
         if (customId === 'modal_draws_quickadd') return await require('./quickAdd').submitQuickAdd(interaction);
+        if (customId.startsWith('modal_draws_quickadd_draft_')) return await require('./quickAdd').submitQuickAdd(interaction, { target: 'draft', section: customId.endsWith('_r') ? 'r' : 'n' });
         if (customId.startsWith('modal_qa_edit_')) return await require('./quickAdd').submitEdit(interaction);
         if (customId.startsWith('modal_qa_pick_')) return await require('./quickAdd').submitPick(interaction);
         if (customId.startsWith('modal_kinds_')) return await require('./itemKinds').submit(interaction);

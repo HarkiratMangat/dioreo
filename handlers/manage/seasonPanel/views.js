@@ -209,7 +209,8 @@ function draftDrawsView(doc, sec = 'n', page = 0, note = null) {
         components.push({ type: 9, components: [text(`### ${tier && emojis[tier] ? `${emojis[tier]} ` : ''}${d.title || '(untitled)'}\n-# ${dayStamp(d.date)} · ${plural(items, 'item')}${d.thumbnailUrl ? '' : ' · no picture'} · *${origin(d)}*`)], accessory: btn(['ddedit', s, String(d._id || '')], 'Edit', emojis.edit) });
     }
     if (pages > 1) components.push(row(arrow(['dd', s, pg - 1], 'left', pg === 0), counter(['ddpg', s], `Page ${pg + 1} / ${pages}`), arrow(['dd', s, pg + 1], 'right', pg === pages - 1)));
-    components.push(BIG(), row(btn(['ddadd', s], 'Add Draw', emojis.mngAdd, 3), btn(['ddrm', s], 'Remove Draws', emojis.deleteBin, 4, !list.length), btn('dr', 'Paste Draws', emojis.mngBulkAdd), btn(['view', 'draft'], 'Back', emojis.returnArrow)));
+    // Quick Add (2026-11-09 14:13 EST, Harkirat: "theres no 'quick add' options in /manage season draft when adding draws"): the /manage draws Quick Add, staging into the draft (handlers/manage/quickAdd.js, target 'draft').
+    components.push(BIG(), row(btn(['ddqa', s], 'Quick Add', emojis.mngAdd, 3), btn(['ddadd', s], 'Add Draw', emojis.mngAdd), btn(['ddrm', s], 'Remove Draws', emojis.deleteBin, 4, !list.length), btn('dr', 'Paste Draws', emojis.mngBulkAdd), btn(['view', 'draft'], 'Back', emojis.returnArrow)));
     return panel(components);
 }
 // The Add / Edit Draw pop-up: Title, Items (one per line, as the bulk format writes them), Release Date, Image Link, Draw Type.
