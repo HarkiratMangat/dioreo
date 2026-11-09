@@ -317,6 +317,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-11-07 21:28 EST — The rest of /manage rehauled with three helpers in parallel (v3.15.0)
 - 2026-11-08 11:04 EST — Small fixes, a draft date read backwards, and a bug report that was mine (v3.15.1)
 - 2026-11-08 14:44 EST — Season draft upgrades, draws in release order, and a carry-over that dropped a running draw (v3.16.0)
+- 2026-11-09 15:56 EST — Owner delete, an admin /help, a draw index check, and a TBD that the calendar threw away (v3.17.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -5076,6 +5077,16 @@ He also found a real bug while using the new Season panel: in the Next Season Dr
 ## 2026-11-08 14:44 EST — Season draft upgrades, draws in release order, and a carry-over that dropped a running draw (v3.16.0)
 
 Harkirat's eight season-draft asks (2026-11-08 11:52 EST) shipped together with the emoji and placeholder pass. The click-walk's Alchemy Stars finding turned out to be a carry-over bug no test covered: a calendar row already in the draft stopped the still-running draw from being carried, so Promote would have taken it off /draws. "Unsorted is wrong" became a class sweep across four lists. The "Ends TBD" wording was built and taken back within the hour, because his question had been about my phrasing ("no calendar row"), not the behaviour; the same phrase then turned up again in Needs a Look and was caught by a think-pass. The commit security review found two real auto-promote gaps (a client-supplied armer, and edits by another admin going live under the armer's authority), both closed before the PR. Lesson recorded: name the commit a test run covered, and re-run after any later code commit before claiming it.
+
+## 2026-11-09 15:56 EST — Owner delete, an admin /help, a draw index check, and a TBD that the calendar threw away (v3.17.0)
+
+Harkirat's five asks for the bot (owner delete, the presence line, Add bot, announcement drafts, and the /commands rework he left for later), then a /help split across the two apps, then a draw index check he used straight away to plan Season 10.
+
+The session's useful turn was planning Season 10 against prod's real data. Checking his eight returning offers against the index found that half of them had pictures he thought he had already sent; putting his schedule into the draft found that Paste Calendar had been dropping every "TBD" line without a word, which is why "Create Your Truth" never reached the draft; and fixing that exposed a second half of the same bug: the export and the calendar Edit pop-up wrote a not-announced end back as "All Season", so saving a prefilled box would have turned three TBD rows into ones that run all season.
+
+A think-pass ran the new Check Draw Index against prod's live data and found two defects its green unit tests had passed: a draw staged under another of its names read as not staged, and draw types printed as camel-split keys. The lesson recorded for later sessions: run a read feature's real code against real data before calling it done.
+
+Prod data written on his word along the way (all revertable from /bot analytics): Season 10's draws and schedule in the Next Season Draft, ten draw pictures in the index, placeholders for the three draws with no picture yet, Pop Idol as another name of Starry Symphony, and seven index titles brought to his short-words-lowercase rule.
 
 # Part B — Lessons Ledger (thematic)
 
