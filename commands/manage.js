@@ -492,14 +492,13 @@ function buildAddDrawModal(drawType, prefill = {}) {
     return modal;
 }
 
-// QUICK ADD (2026-11-01, Harkirat: "a large text field form, where I just type the draw name or item name (plus a start and/or end date. One per line"). One box; handlers/manage/quickAdd.js reads it with utils/quickAdd.js and answers with a draft to check before anything is saved. A placeholder is capped at 100 characters (buildCalendarBulkModal's 2026-08-07 crash), so it carries one example and the description the rest. `draftSection` ('n' | 'r', 2026-11-09 14:13 EST): the Next Season Draft's own Quick Add, opened from its Draws view; a line without new or returning takes the tab it was opened from.
-function buildQuickAddModal({ draftSection = null } = {}) {
+// QUICK ADD (2026-11-01, Harkirat: "a large text field form, where I just type the draw name or item name (plus a start and/or end date. One per line"). One box; handlers/manage/quickAdd.js reads it with utils/quickAdd.js and answers with a draft to check before anything is saved. A placeholder is capped at 100 characters (buildCalendarBulkModal's 2026-08-07 crash), so it carries one example and the description the rest. `draftSection` ('n' | 'r', 2026-11-09 14:13 EST): the Next Season Draft's own Quick Add, opened from its Draws view; a line without new or returning takes the tab it was opened from. `value` (2026-11-09 14:37 EST): lines to start the box with, for Needs a Look's Stage These.
+function buildQuickAddModal({ draftSection = null, value = '' } = {}) {
     const draft = draftSection === 'n' || draftSection === 'r';
     return new ModalBuilder().setCustomId(draft ? `modal_draws_quickadd_draft_${draftSection}` : 'modal_draws_quickadd').setTitle(draft ? 'Quick Add to the Draft' : 'Quick Add Draws').addLabelComponents(
         new LabelBuilder().setLabel('One draw per line: name, then dates')
             .setDescription(draft ? `${draftSection === 'n' ? 'New' : 'Returning'} unless a line says otherwise. e.g. "cx9 mythic, ends Nov 5" · "herrscher, returning"` : 'Returning unless a line says new. e.g. "cx9 mythic, new, ends Nov 5" · "herrscher, ends Nov 12 7pm"')
-            .setTextInputComponent(new TextInputBuilder().setCustomId('lines').setStyle(TextInputStyle.Paragraph).setMaxLength(4000)
-                .setPlaceholder('Herrscher of Reason, ends Nov 12 7pm edt'))
+            .setTextInputComponent((() => { const t = new TextInputBuilder().setCustomId('lines').setStyle(TextInputStyle.Paragraph).setMaxLength(4000).setPlaceholder('Herrscher of Reason, ends Nov 12 7pm edt'); return value ? t.setValue(String(value).slice(0, 4000)) : t; })())
     );
 }
 

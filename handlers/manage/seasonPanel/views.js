@@ -272,17 +272,30 @@ function needsLook(doc) {
     if ((r.stillRunning || []).length) w.push(`Live with no end date, may run into this season: ${names(r.stillRunning)}`);
     return w;
 }
+// The draft's calendar draw rows with no staged draw of the same draw (isSameDrawTitle, as needsLook matches them), as Quick Add lines with the row's own dates (2026-11-09 14:37 EST, Harkirat's "yes" to a Stage These button): `Title, starts 2026-11-20, ends 2027-02-17`, a time added when the row has one. Quick Add reads its own When format back the same way.
+function unstagedCalendarLines(doc, max = 10) {
+    const { isSameDrawTitle } = require('../../../utils/search');
+    const d = doc?.draft || {};
+    const draws = [...(d.newDraws || []), ...(d.returningDraws || [])];
+    const day = (x) => { const iso = new Date(x).toISOString(); return iso.slice(11, 16) === '00:00' ? iso.slice(0, 10) : `${iso.slice(0, 10)} ${iso.slice(11, 16)} UTC`; };
+    // A draw still on the LIVE /draws keeps its live section, as the daily carry-over files it (utils/newsTriage/draftMerge.js); any other line takes the tab Quick Add opens in (New).
+    const liveSection = (title) => ((doc?.returningDraws || []).some(x => isSameDrawTitle(x.title, title)) ? 'returning' : (doc?.newDraws || []).some(x => isSameDrawTitle(x.title, title)) ? 'new' : null);
+    return (d.calendar || []).filter(c => c.category === 'draw' && !draws.some(x => isSameDrawTitle(x.title, c.title)))
+        .slice(0, max).map(c => [c.title, liveSection(c.title), c.date ? `starts ${day(c.date)}` : null, c.endDate ? `ends ${day(c.endDate)}` : null].filter(Boolean).join(', '));
+}
 function needsLookView(doc) {
     const w = needsLook(doc);
+    const unstaged = unstagedCalendarLines(doc);
     const p = provenance(doc?.draft);
     return panel([
-        text(`${crumb('Next Season Draft', 'Needs a Look')}\n## ${w.length ? emojis.warn : emojis.checkmark} Needs a Look\n-# What to check before this draft goes live. Fix it with Edit Titles & Deadlines, Paste Draws or Paste Calendar.`),
+        text(`${crumb('Next Season Draft', 'Needs a Look')}\n## ${w.length ? emojis.warn : emojis.checkmark} Needs a Look\n-# What to check before this draft goes live. Fix it with Edit Titles & Deadlines, Paste Draws or Paste Calendar${unstaged.length ? ', or Stage These for the calendar draws not staged yet' : ''}.`),
         SMALL(),
         text((w.length ? w.map(x => `${emojis.warn} ${x}`).join('\n') : `${emojis.checkmark} **Everything checked is ready.**`).slice(0, 3600)),
         SMALL(),
         text(`-# **Where the rows came from:** ${p.typed} typed by you · ${p.news} from news · ${p.carried} carried over · ${p.edited} news rows you edited. Each row says which in the Compact List.`),
         BIG(),
-        row(btn(['view', 'draft'], 'Back', emojis.returnArrow), homeBtn()),
+        // Stage These opens the draft's Quick Add with the calendar draws that have no staged draw, one line each with the row's dates.
+        row(...(unstaged.length ? [btn('ddstage', `Stage These · ${unstaged.length}`, emojis.mngAdd, 1)] : []), btn(['view', 'draft'], 'Back', emojis.returnArrow), homeBtn()),
     ]);
 }
 
@@ -411,4 +424,4 @@ function resultView({ crumbs = [], title, body = [], ok = true, back = ['view', 
     ]);
 }
 
-module.exports = { ID, PAGE, row, text, btn, panel, homeBtn, plural, whenLine, stamp, seasonRows, counts, newsRows, calendarDrawsWithoutDraw, isStaged, pageView, listView, botLookView, previewDoc, needsLook, needsLookView, origin, draftDrawsView, draftDrawModal, draftRemoveModal, promoteConfirm, promoteModal, discardConfirm, resultView };
+module.exports = { unstagedCalendarLines, ID, PAGE, row, text, btn, panel, homeBtn, plural, whenLine, stamp, seasonRows, counts, newsRows, calendarDrawsWithoutDraw, isStaged, pageView, listView, botLookView, previewDoc, needsLook, needsLookView, origin, draftDrawsView, draftDrawModal, draftRemoveModal, promoteConfirm, promoteModal, discardConfirm, resultView };

@@ -388,11 +388,14 @@ async function saveToDraft(interaction, token, state) {
         }
         // End dates go on the draft's calendar, as the live Save puts them on /calendar.
         const row = calendarRowFor({ calendar, ...next }, d.existing?.title || d.title);
+        const same = (a, b) => a && b && new Date(a).getTime() === new Date(b).getTime();
         if (d.end) {
             const event = { title: row?.title || d.title, date: d.startGiven || !row ? d.start : new Date(row.date), endDate: d.end, isOngoing: false, category: 'draw', isDoubleCP: Boolean(row?.isDoubleCP) };
+            // A row that already reads this way (Stage These copies the row's own dates) is left alone, so no empty calendar change is written.
+            if (row && same(row.date, event.date) && same(row.endDate, event.endDate)) return;
             calendar = row ? calendar.map(e => (e === row ? { ...e, ...event } : e)) : [...calendar, event];
             calendarChanged = true;
-        } else if (row && d.startGiven) {
+        } else if (row && d.startGiven && !same(row.date, d.start)) {
             calendar = calendar.map(e => (e === row ? { ...e, date: d.start } : e));
             calendarChanged = true;
         }

@@ -187,6 +187,12 @@ async function route(interaction) {
     // ----- the draft's draws, one at a time (2026-11-08 12:27 EST) -----
     if (verb === 'dd') return show(interaction, V.draftDrawsView(await getDoc(), a, n(b)));
     if (verb === 'ddadd') { if (await gate(interaction, 'bulkdraws')) return interaction.showModal(V.draftDrawModal(a)); return; }
+    if (verb === 'ddstage') {
+        if (!(await gate(interaction, 'bulkdraws'))) return;
+        const lines = V.unstagedCalendarLines(await getDoc());
+        if (!lines.length) return show(interaction, V.needsLookView(await getDoc()));
+        return interaction.showModal(require('../../../commands/manage').buildQuickAddModal({ draftSection: 'n', value: lines.join('\n') }));
+    }
     if (verb === 'ddqa') { if (await gate(interaction, 'bulkdraws')) return interaction.showModal(require('../../../commands/manage').buildQuickAddModal({ draftSection: a === 'r' ? 'r' : 'n' })); return; }
     if (verb === 'ddedit') {
         if (!(await gate(interaction, 'bulkdraws'))) return;

@@ -126,6 +126,33 @@ const lastToken = () => [...quick.DRAFTS.keys()].at(-1);
         assert.strictEqual(quick.SAVED.get(token).target, 'draft', 'so Revert All names the draft, not /calendar');
         assert.ok(b.text().includes(`mng_qa_revert_${token}`) && /Draft Draws/.test(b.text()), b.text());
     });
+    await check("Stage These: the draft calendar's unstaged draws become Quick Add lines with their own dates", async () => {
+        const SV = require('../handlers/manage/seasonPanel/views');
+        const doc = draftDoc({ newDraws: [{ _id: h.id(), title: 'Thermal Core Draw', items: [], date: new Date('2026-12-01T00:00:00Z') }], calendar: [
+            { title: 'Iron Wolf Draw', category: 'draw', date: new Date('2026-11-20T00:00:00Z'), endDate: new Date('2027-02-17T00:00:00Z') },
+            { title: 'thermal core draw', category: 'draw', date: new Date('2026-12-01T00:00:00Z') },
+            { title: 'Lunar Festival', category: 'event', date: new Date('2026-12-02T00:00:00Z') },
+            { title: 'Night Market Draw', category: 'draw', date: new Date('2026-12-05T19:00:00Z') },
+        ] });
+        assert.deepStrictEqual(SV.unstagedCalendarLines(doc), ['Iron Wolf Draw, starts 2026-11-20, ends 2027-02-17', 'Night Market Draw, starts 2026-12-05 19:00 UTC']);
+        const view = JSON.stringify(SV.needsLookView(doc));
+        assert.ok(/Stage These · 2/.test(view) && view.includes('ddstage'), 'the button, with its count');
+        assert.ok(!/Stage These/.test(JSON.stringify(SV.needsLookView(draftDoc()))), 'no button when nothing is unstaged');
+        // A draw still live on /draws keeps its live section, as the carry-over files it.
+        assert.deepStrictEqual(SV.unstagedCalendarLines({ ...doc, returningDraws: [{ title: 'Iron Wolf Draw' }] })[0], 'Iron Wolf Draw, returning, starts 2026-11-20, ends 2027-02-17');
+    });
+
+    await check("Stage These: staging a line copied from its calendar row adds the draw and leaves the row alone", async () => {
+        const row = { _id: h.id(), title: 'Iron Wolf Draw', category: 'draw', date: new Date('2026-11-20T00:00:00Z'), endDate: new Date('2027-02-17T00:00:00Z'), isOngoing: false };
+        h.reset(draftDoc({ calendar: [row] }));
+        const lines = require('../handlers/manage/seasonPanel/views').unstagedCalendarLines(h.state.doc).join('\n');
+        await quick.submitQuickAdd(h.modal('modal_draws_quickadd_draft_n', { lines }), { target: 'draft', section: 'n' });
+        await quick.handleButton(button(`mng_qa_save_${lastToken()}`));
+        const staged = h.state.doc.draft.newDraws;
+        assert.deepStrictEqual(staged.map(d => [d.title, new Date(d.date).toISOString()]), [['Iron Wolf Draw', '2026-11-20T00:00:00.000Z']]);
+        assert.strictEqual(h.state.changes.length, 1, 'the draws change only, no empty calendar change');
+        assert.strictEqual(new Date(h.state.doc.draft.calendar[0].endDate).toISOString(), '2027-02-17T00:00:00.000Z');
+    });
     drawCatalog.loadCatalog = realLoad;
 
     if (failures) { console.error(`\n${failures} failing`); process.exit(1); }

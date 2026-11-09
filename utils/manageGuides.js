@@ -98,7 +98,7 @@ function quickaddSections() {
         section('🏷️ After Save',
             'If the saved draws carry items the draw index has no kind for, one more message asks: **Set item kinds** gives a dropdown per item (weapon, character, vehicle, other). **Revert All** on the result undoes the save.'),
         section('🌱 In the Next Season Draft',
-            '**Season → Next Season Draft → Edit Draws → Quick Add** stages the draws instead of saving them live. A line takes the tab you opened it from unless it says `new` or `returning`, end dates go on the draft calendar, and a draw with no picture is left out. Players see nothing until Promote to Live.')
+            '**Season → Next Season Draft → Edit Draws → Quick Add** stages the draws instead of saving them live. A line takes the tab you opened it from unless it says `new` or `returning`, end dates go on the draft calendar, and a draw with no picture is left out. **Needs a Look → Stage These** fills the box with the draft calendar\'s draws that are not staged yet. Players see nothing until Promote to Live.')
     ];
 }
 
