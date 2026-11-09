@@ -49,7 +49,9 @@ From a simulated click-through of every /manage panel (his ask, 2026-11-09). Fin
 - **Players' View** on the draft's staged lists uses the Expand emoji.
 
 ### Fixed
-- **Promote to Live renamed the OUTGOING season's patch notes** to the new title when the new season had no entry yet; it now renames the last entry only when it is the new season's or no season's (`core/ops/season.js`). This is what left Season 8 and 9's titles wrong on prod, which still needs a one-off correction.
+- **Promote to Live renamed the OUTGOING season's patch notes** to the new title when the new season had no entry yet; it now renames the last entry only when it is the new season's or no season's (`core/ops/season.js`). Prod's Season 8 and 9 entries, whose own titles read "Season 7 — Terminated" under their overrides, were corrected by hand on 2026-11-09 (his OK).
+- **Titles & Deadlines copied the live season's title and emoji onto next season's patch notes entry** when that entry was already in (held under its own title override); it now leaves another season's entry alone, as Promote does. Its emoji would have shown on /patch notes, which reads the entry's own emoji first.
+- **Add New Season stored the live season's title under a typed one** (`patchnote.addSeason`); a typed title is now the entry's own title too, and blank still means the current season. This and the line above are where the wrong titles came from.
 - **The calendar paste's 2X CP** was dropped when a draft calendar was merged (`mapParsedEvents`).
 - **`helpBodySnapshot`'s fixture** still pinned the retired DB_Guide emoji.
 

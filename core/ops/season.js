@@ -116,9 +116,11 @@ registerEntity('season', {
             await SeasonalData.updateOne(DOC, { $set }, { session });
             let patchPrior = null;
             const titleChanged = currentSeasonTitle !== before.currentSeasonTitle;
-            // The emoji rides the same sync as the title, and an emoji-only edit syncs too: the current entry is what /patch notes shows, so it shows this season's emoji.
-            if (before.patchNotes.length > 0 && (titleChanged || currentSeasonEmoji !== (before.currentSeasonEmoji || ''))) {
-                const last = before.patchNotes[before.patchNotes.length - 1];
+            // The emoji rides the same sync as the title, and an emoji-only edit syncs too: the current entry is what /patch notes shows, so it shows this season's emoji. Never onto ANOTHER season's entry (2026-11-09, the /manage audit's item 14): when next season's patch notes are added before Promote, the newest entry is next season's, held under its own title override, and copying this season's title and emoji onto it is how prod's Season 8 and 9 entries came to read "Season 7 — Terminated" underneath (and its emoji would show on /patch notes, which reads the entry's own emoji first). Promote has the same rule.
+            const lastEntry = before.patchNotes[before.patchNotes.length - 1];
+            const lastIsOther = lastEntry && lastEntry.titleOverride && seasonEntryIndex([lastEntry], before.currentSeasonTitle) === -1;
+            if (before.patchNotes.length > 0 && !lastIsOther && (titleChanged || currentSeasonEmoji !== (before.currentSeasonEmoji || ''))) {
+                const last = lastEntry;
                 patchPrior = { elementId: String(last._id), title: last.title, emoji: last.emoji || '' };
                 await SeasonalData.updateOne({ ...DOC, 'patchNotes._id': last._id }, { $set: { 'patchNotes.$.title': currentSeasonTitle, 'patchNotes.$.emoji': currentSeasonEmoji } }, { session });
                 // The pre-core handler always re-synced the latest patch entry's cached-image Cloudinary metadata after a title rename -- missed on a first pass of this op (DB field updates fine; only the Cloudinary-side metadata would have gone stale). Best-effort, matching the original's own no-throw contract.
