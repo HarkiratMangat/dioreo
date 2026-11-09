@@ -105,6 +105,14 @@ function resolveSeasonId(doc, value) {
     const hits = V.entries(doc).filter(p => words.every(w => V.displayTitle(p).toLowerCase().includes(w)));
     return hits.length === 1 ? { id: String(hits[0]._id) } : { id: null, count: hits.length };
 }
+// Delete Season's confirm, on the card (the card's Delete and the slash command's do: Delete Season).
+function deleteConfirm(doc, id) {
+    const p = V.findEntry(doc, id);
+    const cur = V.isCurrent(doc, id);
+    const prev = cur ? V.pastEntries(doc)[0] : null;
+    return V.cardView(doc, id, { header: `### ${emojis.warn} Delete ${V.displayTitle(p)}?\n-# Its notes and images leave /patch notes. ${cur ? (prev ? `It is the current season, so /patch notes opens on ${V.displayTitle(prev)} instead.` : 'It is the only season, so /patch notes will have nothing to show.') : 'It leaves the season dropdown.'} Revert brings it back as it was.`, extra: [V.row(V.btn(['delok', id], 'Yes, Delete', emojis.deleteBin, 4), V.btn(['card', id], 'Cancel', emojis.returnArrow))] });
+}
+
 async function openFromSlash(interaction) {
     const o = interaction.options;
     const seasonValue = o.getString('season'), act = o.getString('do');
@@ -129,6 +137,18 @@ async function openFromSlash(interaction) {
         }
         if (!(await gatePastEdit(interaction))) return;
         return interaction.showModal(await editModal(doc, target, interaction.user.id));
+    }
+    // Upload Images, Season Dates and Delete Season (2026-11-09, the /manage audit's finding 12): on the season named, else the current one, the same gates as their card buttons.
+    if (act === 'upload' || act === 'dates' || act === 'delete') {
+        const target = id || (V.currentEntry(doc) ? String(V.currentEntry(doc)._id) : null);
+        if (!target) return view(await home(doc, `${emojis.cross} There is no season yet. Add New Season first.`, interaction));
+        const p = V.findEntry(doc, target);
+        if (act === 'delete') {
+            if (!(await gate(interaction, 'purge'))) return;
+            return view(deleteConfirm(doc, target));
+        }
+        if (!(V.isCurrent(doc, target) ? await gate(interaction, act === 'upload' ? 'urls1' : 'dateinfo') : await gatePastEdit(interaction))) return;
+        return interaction.showModal(act === 'upload' ? V.uploadModal(p) : V.datesModal(p));
     }
     if (id) return view(V.cardView(doc, id));
     return view(await home(doc, null, interaction));
@@ -239,9 +259,7 @@ async function route(interaction) {
         const doc = await getDoc();
         const p = V.findEntry(doc, a);
         if (!p) return show(interaction, await home(doc, `${emojis.cross} That season no longer exists.`, interaction));
-        const cur = V.isCurrent(doc, a);
-        const prev = cur ? V.pastEntries(doc)[0] : null;
-        return show(interaction, V.cardView(doc, a, { header: `### ${emojis.warn} Delete ${V.displayTitle(p)}?\n-# Its notes and images leave /patch notes. ${cur ? (prev ? `It is the current season, so /patch notes opens on ${V.displayTitle(prev)} instead.` : 'It is the only season, so /patch notes will have nothing to show.') : 'It leaves the season dropdown.'} Revert brings it back as it was.`, extra: [V.row(V.btn(['delok', a], 'Yes, Delete', emojis.deleteBin, 4), V.btn(['card', a], 'Cancel', emojis.returnArrow))] }));
+        return show(interaction, deleteConfirm(doc, a));
     }
     if (verb === 'delok') {
         if (!(await gate(interaction, 'purge')) || !(await gateDestructive(interaction))) return;

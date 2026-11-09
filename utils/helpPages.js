@@ -314,8 +314,9 @@ const PAGES = {
                     text("`[season]`\n-# Patch notes: go to one season's notes"),
                     text("`[announcement]`\n-# Announcement: go to one, by part of its text"),
                     text("`[build]`\n-# Gunsmith: go to one build or option, e.g. `fss 1b`, or pick **＋ New build**"),
-                    text("`[show]`\n-# Draws and calendar: open a list, such as Upcoming, Active Now or Ended"),
-                    text("`[do]`\n-# What to do with the thing named (Edit, Move, Delete and more), or alone: Add, Paste, Export, Guide. Season titles and draft: their pop-ups, straight away. Purge, Promote and Discard stay on the panel"),
+                    text("`[show]`\n-# Draws and calendar: open a list, such as Upcoming, Active Now, Ended or Needs a Look"),
+                    // The audit's new actions (2026-11-09, finding 13): Check Draw Index, the draft's editors, the patch notes card's, End Now / Post Again / Search / Expired.
+                    text("`[do]`\n-# What to do with the thing named (Edit, Move, End Now, Delete and more), or alone: Add, Paste, Export, Guide. Draws: Check Draw Index. Patch notes: Upload Images, Season Dates, Delete Season. Draft: Quick Add, Edit Draws, Edit Calendar, Banners, Needs a Look. Announcement: Post Again, Search, Expired. Purge, Promote and Discard stay on the panel"),
                     text("`[builds]`\n-# Gunsmith: several builds, comma-separated, opened as a Select list"),
                     text("`[weapon]`\n-# Gunsmith: a weapon's page, with all its builds"),
                     text("`[class]`\n-# Gunsmith: a class's page, to pick a weapon"),

@@ -239,8 +239,7 @@ function draftRemoveModal(doc, sec) {
     return { title: `Remove ${SEC[s].label}`, custom_id: ID('ddrmm', s), components: [{ type: 18, label: 'Draws to remove', description: 'Revert brings them back.', component: { type: 3, custom_id: 'pick', required: true, min_values: 1, max_values: Math.max(1, list.length), options: list.map(d => ({ label: String(d.title || '(untitled)').slice(0, 100), value: String(d._id), description: `${d.date ? new Date(d.date).toISOString().slice(0, 10) : 'no date'} · ${origin(d)}`.slice(0, 100) })) } }] };
 }
 
-// ---------- Needs a Look ---------- (2026-11-08 12:23 EST, Harkirat: "how do i check what's still pending in the draft or needs my notice/double-check? such as info, images, dates, etc."). The promote check's own checks (utils/newsTriage/readiness.js), plus what it does not look at: a draw with no picture or no items, and draw names matched as the same draw (utils/search.js) rather than letter for letter.
-// Each line carries the button that fixes it (2026-11-09, the /manage audit's finding 4): `fix` is { parts, label } for this panel, or { raw, label } for another /manage panel's own id. needsLook() keeps returning the lines alone, for the counts and the tests.
+// ---------- Needs a Look ---------- (2026-11-08 12:23 EST, Harkirat: "how do i check what's still pending in the draft or needs my notice/double-check? such as info, images, dates, etc."). The promote check's own checks (utils/newsTriage/readiness.js), plus what it does not look at: a draw with no picture or no items, and draw names matched as the same draw (utils/search.js) rather than letter for letter. Each line carries the button that fixes it (2026-11-09, the /manage audit's finding 4): `fix` is { parts, label } for this panel, or { raw, label } for another /manage panel's own id. needsLook() keeps returning the lines alone, for the counts and the tests.
 function needsLookItems(doc) {
     const r = require('../../../utils/newsTriage/readiness').draftReadiness(doc);
     if (!r) return [];
@@ -281,7 +280,7 @@ function needsLookItems(doc) {
     const noType = draws.filter(noTypePred).map(x => x.title);
     if (noType.length) add(`Draws with no draw type: ${names(noType)}`, cardOf(noTypePred));
     const noDraw = calDraws.filter(c => !draws.some(x => isSameDrawTitle(x.title, c.title))).map(c => c.title);
-    if (noDraw.length) add(`On the calendar, not in the draw lists: ${names(noDraw)}`, { parts: ['ddstage'], label: 'Stage These' });
+    if (noDraw.length) add(`On the calendar, not in the draw lists: ${names(noDraw)}`, { parts: ['ddstage'], label: `Stage These · ${Math.min(noDraw.length, 10)}` });
     const noRowPred = x => !calDraws.some(c => isSameDrawTitle(x.title, c.title));
     const noRow = draws.filter(noRowPred).map(x => x.title);
     // Worded as the missing END, never "no calendar row" (2026-11-08 12:52 EST): such a draw still shows on /calendar, and the row phrasing is what made him think it would not.

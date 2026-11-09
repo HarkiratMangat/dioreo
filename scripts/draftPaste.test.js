@@ -125,6 +125,20 @@ const tokenIn = (i, verb) => (i.text().match(new RegExp(`mng_ss\\|${verb}\\|([0-
         assert.ok(E.calendarRemoveModal(doc, 3).components[0].component.options.length <= 25);
     });
 
+    await check('the slash command reaches the draft editors: Quick Add and Banners open their pop-up first, the rest their view', async () => {
+        const { openFromSlash } = require('../handlers/manage/seasonPanel');
+        h.reset({ draft: { active: true, newDraws: [draw('Iron Wolf', 5)], returningDraws: [], calendar: [] } });
+        const slash = (act) => Object.assign(h.modal(''), { isModalSubmit: () => false, isChatInputCommand: () => true, options: { getString: (k) => ({ do: act, visibility: null }[k] ?? null) } });
+        const qa = slash('quickadd'); await openFromSlash(qa, 'draft');
+        assert.strictEqual(qa.sent[0].modal.toJSON().custom_id, 'modal_draws_quickadd_draft_n');
+        const bn = slash('banners'); await openFromSlash(bn, 'draft');
+        assert.ok(bn.sent[0].modal && /mng_ss\|dbnm/.test(JSON.stringify(bn.sent[0].modal)), JSON.stringify(bn.sent[0]).slice(0, 200));
+        for (const [act, marker] of [['editdraws', 'mng_ss|ddadd'], ['editcalendar', 'mng_ss|dcadd'], ['look', 'Needs a Look']]) {
+            const i = slash(act); await openFromSlash(i, 'draft');
+            assert.ok(i.text().includes(marker), `${act}: ${i.text().slice(0, 200)}`);
+        }
+    });
+
     console.log(failures ? `\n${failures} failed` : '\ndraftPaste: all checks passed');
     process.exit(failures ? 1 : 0);
 })();

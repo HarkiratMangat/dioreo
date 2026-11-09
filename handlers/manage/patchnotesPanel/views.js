@@ -98,8 +98,7 @@ async function pageView(doc, note = null, { pageRow = null } = {}) {
     return panel(components, pageRow ? [pageRow] : []);
 }
 
-// ---------- one season ---------- `header` sits above the card (a saved note); `extra` replaces the action rows; `revertIds` adds a Revert beside Home (a save's change ids, shown in place since 2026-11-09).
-// Since 2026-11-09 (the /manage audit's finding 8) the card shows the season's images as players see them, a past season's own dates, and offers Upload Images, Season Dates and Delete Season.
+// ---------- one season ---------- `header` sits above the card (a saved note); `extra` replaces the action rows; `revertIds` adds a Revert beside Home (a save's change ids, shown in place since 2026-11-09). Since 2026-11-09 (the /manage audit's finding 8) the card shows the season's images as players see them, a past season's own dates, and offers Upload Images, Season Dates and Delete Season.
 function cardView(doc, id, { header = null, extra = null, revertIds = null } = {}) {
     const p = findEntry(doc, id);
     if (!p) return null;

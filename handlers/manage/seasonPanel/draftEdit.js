@@ -10,8 +10,7 @@
 //
 // Every write is one commitSet of season.bulkDraftDraws / season.bulkDraftCalendar (`parsed`) or season.setDraftBanners, so the ChangeLog, Revert and the armed auto-promote check behave as the rest of the draft. Each action is gated as the draft action it belongs to (bulkdraws for draws, bulkcalendar for the calendar and banners) by ./index.js's gate, passed in.
 //
-// ⚠️ A POP-UP HAS TO BE THE FIRST ANSWER: every opener gates, then shows the modal before anything is deferred.
-// ⚠️ EMOJIS ARE READ INSIDE FUNCTIONS (utils/emojiMap.js values are re-pointed at boot).
+// ⚠️ A POP-UP HAS TO BE THE FIRST ANSWER: every opener gates, then shows the modal before anything is deferred. ⚠️ EMOJIS ARE READ INSIDE FUNCTIONS (utils/emojiMap.js values are re-pointed at boot).
 
 const emojis = require('../../../utils/emojiMap');
 const V = require('./views');

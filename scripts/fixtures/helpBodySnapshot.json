@@ -34257,11 +34257,11 @@
           },
           {
             "type": 10,
-            "content": "`[show]`\n-# Draws and calendar: open a list, such as Upcoming, Active Now or Ended"
+            "content": "`[show]`\n-# Draws and calendar: open a list, such as Upcoming, Active Now, Ended or Needs a Look"
           },
           {
             "type": 10,
-            "content": "`[do]`\n-# What to do with the thing named (Edit, Move, Delete and more), or alone: Add, Paste, Export, Guide. Season titles and draft: their pop-ups, straight away. Purge, Promote and Discard stay on the panel"
+            "content": "`[do]`\n-# What to do with the thing named (Edit, Move, End Now, Delete and more), or alone: Add, Paste, Export, Guide. Draws: Check Draw Index. Patch notes: Upload Images, Season Dates, Delete Season. Draft: Quick Add, Edit Draws, Edit Calendar, Banners, Needs a Look. Announcement: Post Again, Search, Expired. Purge, Promote and Discard stay on the panel"
           },
           {
             "type": 10,
@@ -35442,8 +35442,8 @@
                     "default": false,
                     "emoji": {
                       "animated": true,
-                      "name": "DB_Guide",
-                      "id": "1532894836301238477"
+                      "name": "Guide",
+                      "id": "1569464660179025953"
                     }
                   },
                   {
@@ -35865,8 +35865,8 @@
                     "default": false,
                     "emoji": {
                       "animated": true,
-                      "name": "DB_Guide",
-                      "id": "1532894836301238477"
+                      "name": "Guide",
+                      "id": "1569464660179025953"
                     }
                   },
                   {
@@ -36245,7 +36245,7 @@
         "components": [
           {
             "type": 10,
-            "content": "## <a:DB_Guide:1532894836301238477> Servers\n-# One server's /admin rules, a checkup, reply limits, and leave or block — owner-only"
+            "content": "## <a:Guide:1569464660179025953> Servers\n-# One server's /admin rules, a checkup, reply limits, and leave or block — owner-only"
           },
           {
             "type": 1,
@@ -36284,8 +36284,8 @@
                     "default": true,
                     "emoji": {
                       "animated": true,
-                      "name": "DB_Guide",
-                      "id": "1532894836301238477"
+                      "name": "Guide",
+                      "id": "1569464660179025953"
                     }
                   },
                   {
@@ -36703,8 +36703,8 @@
                     "default": false,
                     "emoji": {
                       "animated": true,
-                      "name": "DB_Guide",
-                      "id": "1532894836301238477"
+                      "name": "Guide",
+                      "id": "1569464660179025953"
                     }
                   },
                   {
@@ -37122,8 +37122,8 @@
                     "default": false,
                     "emoji": {
                       "animated": true,
-                      "name": "DB_Guide",
-                      "id": "1532894836301238477"
+                      "name": "Guide",
+                      "id": "1569464660179025953"
                     }
                   },
                   {
@@ -37537,8 +37537,8 @@
                     "default": false,
                     "emoji": {
                       "animated": true,
-                      "name": "DB_Guide",
-                      "id": "1532894836301238477"
+                      "name": "Guide",
+                      "id": "1569464660179025953"
                     }
                   },
                   {
@@ -37960,8 +37960,8 @@
                     "default": false,
                     "emoji": {
                       "animated": true,
-                      "name": "DB_Guide",
-                      "id": "1532894836301238477"
+                      "name": "Guide",
+                      "id": "1569464660179025953"
                     }
                   },
                   {

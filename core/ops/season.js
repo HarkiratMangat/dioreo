@@ -468,7 +468,7 @@ registerEntity('season', {
 
     // The draft's /calendar page banners (2026-11-09, the /manage audit's finding 5): Promote to Live already copied draft.*BannerUrl onto the live fields, but nothing could set them. A filled field re-hosts to its own `next_` Cloudinary id (utils/calendarBannerCache.js `draft`), a blank one clears the staged banner; the live banners are untouched until Promote. No /manage registry action of its own: the draft panel's Banners button is gated as the calendar's (seasondraft:bulkcalendar), so `page:` is declared.
     'season.setDraftBanners': {
-        page: 'seasondraft',
+        page: 'seasondraft', tier: 2,
         validate: (op) => {
             const bad = Object.keys(op.payload || {}).filter(k => !['draws', 'events', 'playlists'].includes(k));
             if (bad.length) return { ok: false, errors: [`Unknown banner page: ${bad.join(', ')}`] };

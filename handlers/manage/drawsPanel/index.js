@@ -184,6 +184,7 @@ async function openFromSlash(interaction) {
     if (act === 'addnew' || act === 'addreturning') return (await gate(interaction, act)) && interaction.showModal(m.buildAddDrawModal(act === 'addnew' ? 'new' : 'returning'));
     if (act === 'paste') return (await gate(interaction, 'bulkadd')) && interaction.showModal(reId(m.buildBulkBothDrawsModal('add'), V.ID('pastem'), 'Paste Draws'));
     if (act === 'export') return (await gate(interaction, 'exportnew')) && interaction.showModal(V.exportModal());
+    if (act === 'check') return (await gate(interaction, 'exportnew')) && interaction.showModal(V.checkModal());
     if (act === 'guide') return runGuide(interaction);
     const doc = await getDoc();
     if (drawValue) {

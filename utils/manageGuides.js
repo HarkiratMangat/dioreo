@@ -72,7 +72,9 @@ function drawsSections() {
         section('💡 Tips',
             '• Use the draws panel\'s **Export** (or `/manage draws do:Export`) to grab this exact format pre-filled with your real current data — the fastest way to see a live, correct example.\n' +
             '• **Paste Draws**, and **Edit** on Select Draws, update a draw with the same title and add a new one; a preview shows what changes before **Save**. Anything you don\'t mention is left untouched. **Purge Draws** is the full wipe.\n' +
-            '• The date can be **Start - End** (`July 15 - August 20`, or `September 10, 2026 - November 12, 2026`), like the season titles box. The end goes on the draw\'s /calendar row, so `/draws` shows when it ends; it needs the Calendar permission, and **Export** writes it back out. The **Add** and **Edit** forms take the same thing.')
+            '• The date can be **Start - End** (`July 15 - August 20`, or `September 10, 2026 - November 12, 2026`), like the season titles box. The end goes on the draw\'s /calendar row, so `/draws` shows when it ends; it needs the Calendar permission, and **Export** writes it back out. The **Add** and **Edit** forms take the same thing.\n' +
+            '• **Check Draw Index** (beside Search Draws, or `do:Check Draw Index`) takes up to 20 names, one a line, and says which the draw index has and what each lacks. It changes nothing.\n' +
+            '• **Needs a Look** lists the running draws with no picture, a placeholder, no items, no draw type or no end date; each draw\'s card names what it lacks.')
     ];
 }
 
@@ -126,7 +128,8 @@ function calendarSections() {
             '\n**Renders as:** 3 entries, sorted onto their own pages — "Jupiter Cannon Draw" under **Draws**, "Krai BR" under **Playlists & Modes** (open-ended, tied to the Battle Pass end), "Anniversary Celebration" under **Events**.'),
         section('💡 Tips',
             '• Use the calendar panel\'s **Export** (or `/manage calendar do:Export`) to grab this exact format pre-filled with your real current data.\n' +
-            '• **Paste Entries**, and **Edit** on Select Entries, update an entry with the same title and add a new one; a preview shows what changes before **Save**, and nothing unmentioned is touched. **Purge Calendar** is the full wipe.')
+            '• **Paste Entries**, and **Edit** on Select Entries, update an entry with the same title and add a new one; a preview shows what changes before **Save**, and nothing unmentioned is touched. **Purge Calendar** is the full wipe.\n' +
+            '• A **draw** row\'s card has **Open the Draw**, its card in /manage draws. A draw row with no draw of that title on /draws is marked and listed under **Needs a Look**: players see dates with no items or picture, and **Add the Draw** opens Quick Add with the row\'s dates.')
     ];
 }
 
@@ -151,6 +154,7 @@ function loadoutsSections() {
             '```\nBAL-27 | AR\nBuild: Build 2\nLabel: Aggro\nCode: 1I2C6B8A9D\nBadges: meta, top3\nComment: Best for close range\n- Monolithic Suppressor\n- FTAC Champion\n```'),
         section('💡 Tips',
             '• Use the gunsmith panel\'s **Export** (or `do:Export`) to get this format filled in with your real data; **Edit** on Select Builds opens the selected builds in it.\n' +
+            '• **Expand View** on Select Builds walks the selected builds one card at a time, each with its own **Edit** that saves at once; **Finish** says which you edited.\n' +
             '• The old one-line pipe format (`Weapon | Category | Mode | Build | ...`) is refused with an error naming this format; re-export anything saved in it.\n' +
             '• A build\'s picture is filed under its gunsmith code: the Add and Edit pop-ups take a URL or a screenshot and file it for you, and **/autobuild** does it from a Gunsmith screenshot.')
     ];
@@ -165,7 +169,10 @@ function patchnotesSections() {
             '`July 15, 7:20 AM` → **this one field is different** — the moment you add a time, it\'s read as **your own local clock** (`/settings`' + '\u2019s timezone), not UTC, then converted correctly. Every other date field in the bot ignores time-of-day entirely; this is the one exception.'),
         section('🔗 Images 1-5 / Images 6-10',
             'Each opens 5 separate fields (image 1-5 / image 6-10), not one big paste. Blank = no image in that slot. Every submitted URL is auto re-hosted to Cloudinary so a dead source link never breaks the carousel later.\n' +
-            '-# These, and **Edit Date & Info**, are on the current season\'s card. A past season (the **Past seasons** dropdown, or `season:`) edits in one pop-up: its title, date, info and all ten images.'),
+            '-# These, and **Edit Date & Info**, are on the current season\'s card. A past season (the **Past seasons** dropdown, or `season:`) edits in one pop-up: its title, date, info and all ten images.\n' +
+            '-# **Upload Images** on any season\'s card takes up to 10 pictures from your device, added after the ones it has or replacing them. The card shows the season\'s pictures as players see them.'),
+        section('📆 Season Dates and Delete Season',
+            '**Season Dates** (a past season\'s card) sets its Battle Pass start and end, which /draws uses to say a draw carried over from that season; blank both to clear them. **Delete Season** asks first. Every save answers on the card with **Revert**, and so does Purge.'),
         section('⚔️ Additional Info — one weapon per line, comma-separated',
             'Typing `b:`/`n:`/`f:` ANYWHERE always swaps in the buff/nerf/fix icon — that part always worked.\n' +
             '**The structured "ADDITIONAL CHANGES" layout is a SEPARATE, opt-in thing** that only turns on once a line starts with `#`. Same comma-delimited feel as the Draws/Calendar bulk formats: `#, then Weapon, then Attachment, then n:/b:/f: text` — ONE weapon per line, a NEW LINE for the next weapon:\n' +
@@ -186,9 +193,12 @@ function seasondraftSections() {
         section('📅 Titles & Deadlines',
             '`Title, End Date` on one line per deadline, e.g. `Battle Pass, August 28`.\n' +
             'Typing `TBD` as the date (case-insensitive) marks that deadline as **not yet announced** instead of parsing it as a real date — shown as "TBD" and treated as running indefinitely until it\'s updated. Same rule as the live Season Titles & Deadlines modal.'),
+        section('➕ Paste, Quick Add and the Editors',
+            '• **Paste Draws** and **Paste Calendar** add and update: a line matching a staged title updates it, a new one is added, and rows you leave out stay staged. A preview shows Added and Changed before **Stage**.\n' +
+            '• **Edit Draws** opens the staged draws six a page: **Quick Add**, **Add Draw**, and each draw\'s card with **Edit**, **Set End Date** (on the draft calendar) and **Move** between New and Returning. **Edit Calendar** adds, edits and removes one row at a time; **Banners** sets the draft\'s /calendar page banners.\n' +
+            '• **Needs a Look** lists what to check before Promote, each line with a button that opens its fix; **Stage These** turns calendar draws with no staged draw into Quick Add lines. **Players\' View** on a staged list draws it as /draws or /calendar will.'),
         section('💡 Tips',
-            '• Re-running Titles & Deadlines / Draws / Calendar just REPLACES the staged version — fixing a typo is "paste it again," not "undo first."\n' +
-            '• **Promote to Live** shows what changes (and anything not staged yet) before you confirm, then swaps title/deadlines/draws/calendar (and banner fields, if ever staged) onto the live document in one shot. **Revert** on its result, or in `/bot analytics` › Changes, puts back the live season and the staged draft.')
+            '• **Promote to Live** shows what changes (and anything not staged yet), then asks: **Auto-promote** at the Battle Pass start (Dioreo DMs you when it runs; any draft edit by someone else switches it off) or **Promote now**. It swaps title, deadlines, draws, calendar and banners onto the live season in one shot, and keeps last season\'s patch notes title. **Revert** on its result, or in `/bot analytics` › Changes, puts back the live season and the staged draft.')
     ];
 }
 
@@ -211,11 +221,11 @@ function announcementsSections() {
         section('📋 This Isn\'t A Bulk Paste Either — It\'s A Notice Feed',
             'Announcement posts a message every user sees (once) on their next command, until it expires. Each one is its own independent entry — posting a new one never touches the others.'),
         section('📝 Post New Announcement',
-            'Write the message, then optionally set an expiry — defaults to **60 days**, or type your own number of days, or `never`.'),
-        section('✏️ Edit / Delete',
-            'Open one from the panel\'s **Open an announcement…** dropdown (or `/manage announcement announcement:`): its card shows it exactly as players get it. **Edit** re-opens its text and expiry; **Delete** asks you to confirm, and its result has **Revert**, which brings back the same announcement (nobody who saw it is shown it again).'),
-        section('💡 Tip',
-            'Running and scheduled announcements are listed. The five most recently expired are shown read-only, and **Post one again…** starts a new post from one of them.')
+            'Write the message, then optionally set an expiry — defaults to **60 days**, or type your own number of days, or `never`. Submitting shows a **draft** exactly as players will get it, with its real expiry and start: **Post** sends it, **Edit** reopens the box, **Discard** drops it. Nothing goes out before Post.'),
+        section('✏️ Edit / End Now / Delete',
+            'Open one from the panel\'s **Open an announcement…** dropdown (or `/manage announcement announcement:`): its card shows it exactly as players get it. **Edit** re-opens its text and expiry, as a draft too. **End Now** stops it without deleting it (a scheduled one: **Cancel It**), so it moves to Expired. **Delete** asks you to confirm. Each result has **Revert**, which brings back the same announcement (nobody who saw it is shown it again).'),
+        section('🔎 Expired and Search',
+            '**Expired** lists every expired announcement, a page at a time; its card offers **Post Again** (Post New with its text filled in) and **Delete**. **Search** finds active, scheduled and expired ones by every word you type.')
     ];
 }
 

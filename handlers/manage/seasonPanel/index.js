@@ -17,8 +17,11 @@ const V = require('./views');
 
 const PREFIX = 'mng_ss|';
 const manageCommand = () => require('../../../commands/manage');
+const draftEdit = () => require('./draftEdit');
 const season = () => require('../season');
 const getDoc = async () => (await require('../../../models/SeasonalData').findOne({ docType: 'global' }).lean()) || {};
+// What ./draftEdit.js needs from this file.
+const ctx = () => ({ gate, ack, show, say, getDoc, home, revertButton });
 const PAGE_KEY = { live: 'season_titlesdeadlines', draft: 'seasondraft' };
 
 // ---------- answering ----------
@@ -104,6 +107,12 @@ async function openFromSlash(interaction, view = 'live') {
         if (act === 'draws') return openDraws(interaction);
         if (act === 'calendar') return openCalendar(interaction);
         if (act === 'guide') return runGuide(interaction);
+        // The draft's editors from the slash command (2026-11-09, the /manage audit's finding 12): Quick Add and Banners open their pop-up first; the rest open their view.
+        if (act === 'quickadd') { if (await gate(interaction, 'bulkdraws')) return interaction.showModal(manageCommand().buildQuickAddModal({ draftSection: 'n' })); return; }
+        if (act === 'banners') { if (await gate(interaction, 'bulkcalendar')) return interaction.showModal(draftEdit().bannersModal(await getDoc())); return; }
+        if (act === 'editdraws') return show(interaction, V.draftDrawsView(await getDoc(), 'n', 0), { ephemeral });
+        if (act === 'editcalendar') return show(interaction, draftEdit().draftCalendarView(await getDoc(), 0), { ephemeral });
+        if (act === 'look') return show(interaction, V.needsLookView(await getDoc()), { ephemeral });
     }
     const note = act ? `${emojis.warn} \`${act}\` is not an option for ${view === 'live' ? 'the live season' : 'the draft'}.` : null;
     return show(interaction, await home(view, await getDoc(), note, interaction), { ephemeral });
@@ -121,9 +130,6 @@ function revertButton(changeIds, view = null) {
 // A saved result as the note above the redrawn view.
 const savedNote = (r) => (r.ok ? `### ${emojis.checkmark} Saved\n${r.message}` : `### ${emojis.cross} Not saved\n${r.message}`).slice(0, 1800);
 
-const draftEdit = () => require('./draftEdit');
-// What ./draftEdit.js needs from this file.
-const ctx = () => ({ gate, ack, show, say, getDoc, home, revertButton });
 
 // ---------- the draft's draws, one at a time (2026-11-08 12:27 EST) ---------- The changed list goes through season.bulkDraftDraws' `parsed` path (utils/draftDraws.js): untouched rows keep their _id, picture and news tag, Revert puts the old list back, and an armed auto-promote set by someone else switches off. Only the added or edited draw is parsed and has its picture resolved, as Paste Draws does.
 async function saveDraftDraw(interaction, verb, sec, id) {

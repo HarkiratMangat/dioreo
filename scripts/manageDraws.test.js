@@ -129,6 +129,22 @@ function seasonDoc(nNew = 3, nRet = 30) {
         assert.ok(ends.length > 2, 'too few live draws to prove an order');
         assert.deepStrictEqual(titles.slice(0, ends.length), ends.slice(0, titles.length));
     });
+    await check('Needs a Look lists a running draw with no picture, no items or no draw type, names the gaps, and skips an ended one', () => {
+        const doc = seasonDoc(2, 3);
+        doc.newDraws[0] = { ...doc.newDraws[0], thumbnailUrl: null, priceType: '' };
+        doc.newDraws[1] = { ...doc.newDraws[1], items: [{ tier: 'comment', name: 'a note' }] };
+        doc.returningDraws[0] = { ...doc.returningDraws[0], thumbnailUrl: null };   // ended 10 days ago: not listed
+        const all = V.allDraws(doc);
+        const look = all.filter(V.STATUS.look.test).map(d => d.title);
+        assert.ok(look.includes(doc.newDraws[0].title) && look.includes(doc.newDraws[1].title), look.join(' | '));
+        assert.ok(!look.includes(doc.returningDraws[0].title), 'an ended draw needs no look');
+        const gaps = V.gapsFor(all.find(d => d.title === doc.newDraws[0].title));
+        assert.ok(gaps.includes('no picture') && gaps.includes('no draw type'), gaps.join(', '));
+        const list = JSON.stringify(V.listView(doc, 'look', 0));
+        assert.match(list, /no picture/);
+        limits(V.listView(doc, 'look', 0), 'look list');
+    });
+
     await check('a hotpatch to /draws or /draw prices is not refused because of the draws panel', () => {
         const { planHotpatch } = require('../utils/hotpatch');
         for (const f of ['commands/draws.js', 'commands/drawprices.js']) {

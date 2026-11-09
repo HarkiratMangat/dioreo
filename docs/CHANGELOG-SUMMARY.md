@@ -12,6 +12,11 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.18.0 — November 9, 2026
+- **Improved:** staging the next season adds and updates draws and calendar rows instead of replacing them, with a preview first, and every staged draw has its own card.
+- **New:** patch notes show their pictures and take uploads; announcements can be ended early, and expired ones found and posted again.
+- **Fixed:** promoting a new season no longer renames last season's patch notes.
+
 ## v3.17.0 — November 9, 2026
 - **New:** a `/help` on Dioreo Admin for the admin pages, and Misc, Gunsmith Lists and Announcements pages on `/help`.
 - **New:** the website's Install button is now **Add bot**.

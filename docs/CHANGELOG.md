@@ -29,7 +29,31 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.17.0 — 2026-11-09 15:56 EST (#267) — Owner delete, an admin /help, announcement drafts, a draw index check and Quick Add for the season draft
+## v3.18.0 — 2026-11-09 18:33 EST — /manage audit: the season draft adds instead of replacing, a fix button on every Needs a Look line, and the gaps in draws, patch notes, announcements and calendar
+
+From a simulated click-through of every /manage panel (his ask, 2026-11-09). Findings: `/mnt/project-files/manage-audit/findings-2026-11-09.md`.
+
+### Added
+- **The season draft's Paste Draws and Paste Calendar add and update, with a preview** (`utils/draftPaste.js`): a line matching a staged title updates it in place (keeping its id, picture and news tag), a new line is added, and anything not pasted stays staged; nothing is written before **Stage**. The pop-ups open empty, which also ends the "over 4,000 characters" error a prefilled box threw on a large draft.
+- **A draft calendar editor** (Edit Calendar): add, edit or remove one row; `TBD` clears an end, and a second copy of a title is refused.
+- **A draft draw's card** (Open, on Edit Draws): its items and picture, **Set End Date** (on the draft calendar), **Move** between New and Returning (with its id), Edit and Remove.
+- **Draft banners**: the next season's three /calendar page banners, staged and promoted with the rest (`season.setDraftBanners`).
+- **A fix button on each Needs a Look line**: titles, patch notes, a draw's card, Stage These, the draft calendar, the season seam, news items, last season's rows.
+- **Needs a Look on /manage draws**: running draws with no picture, a placeholder, no items, no draw type or no end date; the card lists what each lacks (`utils/drawChecks.js`).
+- **Patch notes**: each season's card shows its pictures; **Upload Images** (up to 10 from the device, added or replacing), **Season Dates** for a past season, and **Delete Season** (asks first). Every save answers on the card with **Revert**, and so does Purge.
+- **Announcements**: **End Now** (or **Cancel It** for a scheduled one) through `announcement.edit`, so Revert restores the old expiry; an **Expired** list with a card per announcement (Post Again, Delete); **Search** over active, scheduled and expired; autocomplete and `announcement:` reach expired ones.
+- **Calendar**: a draw row's card has **Open the Draw** (its card in /manage draws); a draw row with no draw on /draws is marked, listed under Needs a Look, and offers **Add the Draw** (Quick Add with the row's dates).
+- **Slash `do:` choices** for all of these: draws Check Draw Index (and `show:` Needs a Look); patch notes Upload Images, Season Dates, Delete Season; draft Quick Add, Edit Draws, Edit Calendar, Banners, Needs a Look; announcement End Now, Post Again, Search, Expired.
+- **Guides and /help** cover them, plus Expand View, auto-promote and announcement drafts.
+- **The new prod emojis**: Guide (replacing DB_Guide), PasteImport on every paste button, News.
+- **Players' View** on the draft's staged lists uses the Expand emoji.
+
+### Fixed
+- **Promote to Live renamed the OUTGOING season's patch notes** to the new title when the new season had no entry yet; it now renames the last entry only when it is the new season's or no season's (`core/ops/season.js`). This is what left Season 8 and 9's titles wrong on prod, which still needs a one-off correction.
+- **The calendar paste's 2X CP** was dropped when a draft calendar was merged (`mapParsedEvents`).
+- **`helpBodySnapshot`'s fixture** still pinned the retired DB_Guide emoji.
+
+## v3.17.0 — 2026-11-09 15:56 EST (#267 · `cbeac22d`) — Owner delete, an admin /help, announcement drafts, a draw index check and Quick Add for the season draft
 
 ### Added
 - **`d owner delete` and `/bot delete`** (owner only; aliases `override`/`dev` and `d`/`purge`): delete Dioreo's or Dioreo Admin's own messages by id, link or last N, in any channel Dioreo can see (`utils/ownerDelete.js`). Each message's author is read first; anyone else gets silence; the owner's note deletes itself after 5 s.

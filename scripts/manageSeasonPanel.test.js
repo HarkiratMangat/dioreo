@@ -104,7 +104,7 @@ const emptyDraft = () => ({ ...live(), draft: { active: false, newDraws: [], ret
         const e = V.pageView(emptyDraft(), 'draft');
         assert.match(allText(e), /Nothing is staged, and nothing goes live until you press Promote to Live/);
         const labels = []; walk(e, c => { if (c.type === 2) labels.push(c.label); });
-        assert.deepStrictEqual(labels.filter(Boolean), ['Edit Titles & Deadlines', 'Draws', 'Paste Calendar', 'Guide', 'Live Season']);
+        assert.deepStrictEqual(labels.filter(Boolean), ['Edit Titles & Deadlines', 'Draws', 'Calendar', 'Guide', 'Live Season']);
         const f = []; walk(V.pageView(fullDraft(), 'draft'), c => { if (c.type === 2) f.push(c.label); });
         for (const want of ['New Draws · 10', 'Returning · 20', 'Calendar · 40', 'News · 5', 'Promote to Live', 'Discard Draft', 'Guide', 'Live Season']) assert.ok(f.includes(want), `missing button ${want}`);
     });

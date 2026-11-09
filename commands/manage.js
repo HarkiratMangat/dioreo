@@ -914,10 +914,10 @@ function buildManageCommandData() {
         .addStringOption(o => o.setName('do').setDescription('What to do. With draw: it happens right away').addChoices(
             { name: 'Quick Add', value: 'quickadd' }, { name: 'Add New Draw', value: 'addnew' }, { name: 'Add Returning Draw', value: 'addreturning' },
             { name: 'Edit', value: 'edit' }, { name: 'Set End Date', value: 'end' }, { name: 'Move New/Returning', value: 'move' }, { name: 'Delete', value: 'delete' },
-            { name: 'Paste Draws', value: 'paste' }, { name: 'Export', value: 'export' }, { name: 'Guide', value: 'guide' }))
+            { name: 'Paste Draws', value: 'paste' }, { name: 'Check Draw Index', value: 'check' }, { name: 'Export', value: 'export' }, { name: 'Guide', value: 'guide' }))
         .addStringOption(o => o.setName('show').setDescription('Open a list of draws').addChoices(
             { name: 'New Draws', value: 'new' }, { name: 'Returning Draws', value: 'returning' }, { name: 'Upcoming', value: 'upcoming' },
-            { name: 'Active Now', value: 'live' }, { name: 'Leaving Soon', value: 'leaving' }, { name: 'Ended', value: 'ended' }, { name: 'No End Date', value: 'noend' }))
+            { name: 'Active Now', value: 'live' }, { name: 'Leaving Soon', value: 'leaving' }, { name: 'Ended', value: 'ended' }, { name: 'No End Date', value: 'noend' }, { name: 'Needs a Look', value: 'look' }))
         .addStringOption(visibility);
     // /manage gunsmith mp|dmz go straight to a thing (the gunsmith rehaul, 2026-11-07 14:13 EST; his 13:40 EST ask for slash options that skip walking through the panel). build: one build (autocomplete), do: what to do with it, builds: several as a Select list, weapon: / class: their pages; a target plus do: acts at once (handlers/manage/gunsmith/index.js openFromSlash). Their action: is gone: do: covers every job it had. visibility stays LAST.
     const gunsmith = (name, description) => sub => sub.setName(name).setDescription(description)
@@ -944,7 +944,8 @@ function buildManageCommandData() {
     const patchSub = sub => sub.setName('patch-notes').setDescription('Season patch notes')
         .addStringOption(o => o.setName('season').setDescription('Go to one season\'s patch notes: type part of its title').setAutocomplete(true))
         .addStringOption(o => o.setName('do').setDescription('What to do. With season: it happens to that season').addChoices(
-            { name: 'Add New Season', value: 'add' }, { name: 'Edit Date & Info', value: 'edit' }, { name: 'Images 1-5', value: 'images1' }, { name: 'Images 6-10', value: 'images2' }, { name: 'Guide', value: 'guide' }))
+            { name: 'Add New Season', value: 'add' }, { name: 'Edit Date & Info', value: 'edit' }, { name: 'Images 1-5', value: 'images1' }, { name: 'Images 6-10', value: 'images2' },
+            { name: 'Upload Images', value: 'upload' }, { name: 'Season Dates', value: 'dates' }, { name: 'Delete Season', value: 'delete' }, { name: 'Guide', value: 'guide' }))
         .addStringOption(visibility);
     const titlesSub = sub => sub.setName('titles').setDescription('Season titles and deadlines')
         .addStringOption(o => o.setName('do').setDescription('What to do, right away').addChoices(
@@ -952,12 +953,14 @@ function buildManageCommandData() {
         .addStringOption(visibility);
     const draftSub = sub => sub.setName('draft').setDescription('Stage the next season')
         .addStringOption(o => o.setName('do').setDescription('What to do, right away').addChoices(
-            { name: 'Edit Titles & Deadlines', value: 'titles' }, { name: 'Paste Draws', value: 'draws' }, { name: 'Paste Calendar', value: 'calendar' }, { name: 'Guide', value: 'guide' }))
+            { name: 'Edit Titles & Deadlines', value: 'titles' }, { name: 'Quick Add', value: 'quickadd' }, { name: 'Edit Draws', value: 'editdraws' }, { name: 'Paste Draws', value: 'draws' },
+            { name: 'Edit Calendar', value: 'editcalendar' }, { name: 'Paste Calendar', value: 'calendar' }, { name: 'Banners', value: 'banners' }, { name: 'Needs a Look', value: 'look' }, { name: 'Guide', value: 'guide' }))
         .addStringOption(visibility);
     const announceSub = sub => sub.setName('announcement').setDescription('Announcements')
         .addStringOption(o => o.setName('announcement').setDescription('Go to one announcement: type part of its text').setAutocomplete(true))
         .addStringOption(o => o.setName('do').setDescription('What to do. With announcement: it happens right away').addChoices(
-            { name: 'Post New', value: 'post' }, { name: 'Edit', value: 'edit' }, { name: 'Delete', value: 'delete' }, { name: 'Guide', value: 'guide' }))
+            { name: 'Post New', value: 'post' }, { name: 'Edit', value: 'edit' }, { name: 'End Now', value: 'end' }, { name: 'Post Again', value: 'again' }, { name: 'Delete', value: 'delete' },
+            { name: 'Search', value: 'find' }, { name: 'Expired', value: 'expired' }, { name: 'Guide', value: 'guide' }))
         .addStringOption(visibility);
     const guideSub = sub => sub.setName('guide').setDescription('The bulk format guides')
         .addStringOption(o => o.setName('topic').setDescription('Which guide to open (Draws when left out)').addChoices(
