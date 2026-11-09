@@ -1,4 +1,4 @@
-// The bot's presence: one activity card whose top line AND verb rotate every minute: "Watching" the season countdown, "Playing" the DMZ countdown (2026-10-21 19:45 EDT, Harkirat: "lets rotate the season countdown, the rank countdown, dmz countdown, and the /help command"; the Playing verb is my pick), "Competing in" the ranked countdown (2026-10-21 19:41 EDT, Harkirat: "can we change the watching and competing in every minute as well?"), then "Listening to" /help. The second line is `/help · @dioreo help` under a countdown and the install line under /help (2026-11-09). First version (2026-10-21 19:31 EDT, Harkirat: "lets do the season and countdown as the main line and Website: dioreo.app as the second line, make the first line swap between the season countdown and /help").
+// The bot's presence: one activity card whose top line AND verb rotate every minute: "Watching" the season countdown, "Playing" the DMZ countdown (2026-10-21 19:45 EDT, Harkirat: "lets rotate the season countdown, the rank countdown, dmz countdown, and the /help command"; the Playing verb is my pick), "Competing in" the ranked countdown (2026-10-21 19:41 EDT, Harkirat: "can we change the watching and competing in every minute as well?"), then "Listening to" /help. The second line is `/help · @dioreo help` under a countdown and the install line under /help (2026-11-09 12:12 EST). First version (2026-10-21 19:31 EDT, Harkirat: "lets do the season and countdown as the main line and Website: dioreo.app as the second line, make the first line swap between the season countdown and /help").
 //
 // Why ONE card with a `state` line and not a custom status beside it: tried on the dev bot 2026-10-21 18:49-19:23 EDT. A custom status (type 4) hid the Watching card whichever order the two were listed in, and a bot cannot set `status_display_type` (Discord allows bots only name, state, type and url), so the member list always shows the top line (`name`) and only the profile card shows `state`.
 //
@@ -53,8 +53,7 @@ const TURNS = [
     () => ({ name: HELP_LINE, type: ActivityType.Listening, state: INSTALL_LINE }),
 ];
 
-// The presence for one top line and verb. Also passed to the Client at login (index.js), so the very first IDENTIFY already carries it.
-// `state` is the second line: the install line under /help, the /help line under a countdown (TURNS above).
+// The presence for one top line and verb. Also passed to the Client at login (index.js), so the very first IDENTIFY already carries it. `state` is the second line: the install line under /help, the /help line under a countdown (TURNS above).
 function buildPresence(topLine = HELP_LINE, type = ActivityType.Watching, state = topLine === HELP_LINE ? INSTALL_LINE : HELP_LINE) {
     return {
         status: 'online',

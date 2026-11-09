@@ -8863,7 +8863,7 @@ function linkAudit() {
     const walk = d => fs.readdirSync(d, { withFileTypes: true })
         .flatMap(e => e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)]);
 
-    // A root path that _redirects answers (the site's own /invite button, 2026-11-09) resolves on Cloudflare Pages, not in the tree, so it counts as live. Only exact source paths: a redirect never makes a mistyped page name pass.
+    // A root path that _redirects answers (the site's own /invite button, 2026-11-09 12:12 EST) resolves on Cloudflare Pages, not in the tree, so it counts as live. Only exact source paths: a redirect never makes a mistyped page name pass.
     const redirectsFile = path.join(root, '_redirects');
     const redirected = new Set(fs.existsSync(redirectsFile)
         ? fs.readFileSync(redirectsFile, 'utf8').split('\n').map(l => l.trim().split(/\s+/)[0]).filter(Boolean)

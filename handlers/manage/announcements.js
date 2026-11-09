@@ -10,16 +10,18 @@
 const BOT_EMOJI = require('../../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { commitSet } = require('../../core/changeset');
 const { prompt, extractCommitError } = require('./shared');
+// The draft preview's Post button (announcementsPanel, 2026-11-09 12:11 EST) has no pop-up fields: it passes the drafted values as `opts.values`, read here the way a pop-up's fields are.
+const fieldsOf = (interaction, opts) => (opts.values ? { getTextInputValue: (k) => String(opts.values[k] ?? '') } : interaction.fields);
 
 // --- POST NEW --- custom_id: modal_announce_post Creates an independent doc rather than overwriting anything -- see models/Announcement.js's header for why the old singleton design was replaced. 2026-11-07 21:05 EST: the rehauled panel (handlers/manage/announcementsPanel/) calls these with `opts` = { customId, onResult }, the same contract as handlers/manage/patchnotes.js: its own pop-up id, and `onResult({ ok })` so it can redraw its card. Every reply is ephemeral on its own flag, because a deferUpdate first would otherwise make the follow-up public. Callers that pass nothing behave as before.
 async function postAnnouncement(interaction, opts = {}) {
     if (!interaction.deferred && !interaction.replied) await interaction.deferReply({ ephemeral: true });
-    const text = interaction.fields.getTextInputValue('text').trim();
-    const expiry = interaction.fields.getTextInputValue('expiry');
+    const text = fieldsOf(interaction, opts).getTextInputValue('text').trim();
+    const expiry = fieldsOf(interaction, opts).getTextInputValue('expiry');
     // Blank means "show now" -- omitting the key lets core/ops/announcements.js's `payload?.startsAt ?? null` default apply, rather than sending an empty string through as a literal (unparseable) date value.
-    const startsAtRaw = interaction.fields.getTextInputValue('starts_at')?.trim();
+    const startsAtRaw = fieldsOf(interaction, opts).getTextInputValue('starts_at')?.trim();
 
-    const result = await commitSet([{ type: 'announcement.post', payload: { text, expiry, ...(startsAtRaw ? { startsAt: startsAtRaw } : {}) } }], { actorId: interaction.user.id });
+    const result = await commitSet([{ type: 'announcement.post', payload: { text, expiry, ...(startsAtRaw ? { startsAt: startsAtRaw } : {}), ...(opts.values?.color != null ? { color: opts.values.color } : {}) } }], { actorId: interaction.user.id });
     if (!result.ok) {
         const why = extractCommitError(result);
         opts.onResult?.({ ok: false });
@@ -36,10 +38,10 @@ async function postAnnouncement(interaction, opts = {}) {
 async function editAnnouncement(interaction, opts = {}) {
     if (!interaction.deferred && !interaction.replied) await interaction.deferReply({ ephemeral: true });
     const id = (opts.customId ?? interaction.customId).replace('modal_announce_edit_', '');
-    const text = interaction.fields.getTextInputValue('text').trim();
-    const expiry = interaction.fields.getTextInputValue('expiry');
+    const text = fieldsOf(interaction, opts).getTextInputValue('text').trim();
+    const expiry = fieldsOf(interaction, opts).getTextInputValue('expiry');
     // Same overwrite-on-every-submit convention as `expiry` -- blank explicitly clears back to "show now", it is not a "leave whatever was there" no-op (the modal always re-submits every field in full).
-    const startsAtRaw = interaction.fields.getTextInputValue('starts_at')?.trim();
+    const startsAtRaw = fieldsOf(interaction, opts).getTextInputValue('starts_at')?.trim();
 
     // The Discord modal is capped at 5 fields and has neither a banner-image nor a repeat-count field (portal-only, pins batch 2 spec §7/§10.3) -- core/ops/announcements.js's apply() always $sets both from whatever the payload carries, defaulting an ABSENT key to null, so a Discord-side text/date fix would otherwise silently wipe a banner or repeat count the portal had set. Carry the CURRENT values through unchanged, the same "resubmit everything" contract this handler already applies to text/expiry/starts_at.
     const Announcement = require('../../models/Announcement');

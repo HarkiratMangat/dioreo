@@ -18152,7 +18152,7 @@
           },
           {
             "type": 10,
-            "content": "**<a:ServerSettings:1536468904996774008> Admin** *(slash only)*\n`/admin` · `/manage` · `/manage emojis` · `/autobuild` · `/bot analytics` · `/bot access` · `/bot servers` · `/bot penalties` · `/bot freeze` · `/bot hotpatch` · `/embed`"
+            "content": "**<a:ServerSettings:1536468904996774008> Admin** *(slash only)*\n`/admin` · `/manage` · `/manage emojis` · `/autobuild` · `/bot analytics` · `/bot access` · `/bot servers` · `/bot penalties` · `/bot freeze` · `/bot delete` · `/bot hotpatch` · `/embed`"
           },
           {
             "type": 10,
@@ -18528,7 +18528,7 @@
           },
           {
             "type": 10,
-            "content": "**<a:ServerSettings:1536468904996774008> Admin**\n`/admin` · `/manage` · `/manage emojis` · `/autobuild` · `/bot analytics` · `/bot access` · `/bot servers` · `/bot penalties` · `/bot freeze` · `/bot hotpatch` · `/embed`"
+            "content": "**<a:ServerSettings:1536468904996774008> Admin**\n`/admin` · `/manage` · `/manage emojis` · `/autobuild` · `/bot analytics` · `/bot access` · `/bot servers` · `/bot penalties` · `/bot freeze` · `/bot delete` · `/bot hotpatch` · `/embed`"
           },
           {
             "type": 10,
@@ -30101,6 +30101,17 @@
                     }
                   },
                   {
+                    "label": "Delete Messages",
+                    "value": "/bot delete",
+                    "description": "/bot delete",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "DeleteBin",
+                      "id": "1560788313508683807"
+                    }
+                  },
+                  {
                     "label": "Hot Patch",
                     "value": "/bot hotpatch",
                     "description": "/bot hotpatch",
@@ -30480,6 +30491,17 @@
                     }
                   },
                   {
+                    "label": "Delete Messages",
+                    "value": "/bot delete",
+                    "description": "/bot delete",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "DeleteBin",
+                      "id": "1560788313508683807"
+                    }
+                  },
+                  {
                     "label": "Hot Patch",
                     "value": "/bot hotpatch",
                     "description": "/bot hotpatch",
@@ -30852,6 +30874,17 @@
                       "animated": false,
                       "name": "Pending",
                       "id": "1565022888229339166"
+                    }
+                  },
+                  {
+                    "label": "Delete Messages",
+                    "value": "/bot delete",
+                    "description": "/bot delete",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "DeleteBin",
+                      "id": "1560788313508683807"
                     }
                   },
                   {
@@ -31230,6 +31263,17 @@
                     }
                   },
                   {
+                    "label": "Delete Messages",
+                    "value": "/bot delete",
+                    "description": "/bot delete",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "DeleteBin",
+                      "id": "1560788313508683807"
+                    }
+                  },
+                  {
                     "label": "Hot Patch",
                     "value": "/bot hotpatch",
                     "description": "/bot hotpatch",
@@ -31605,6 +31649,17 @@
                     }
                   },
                   {
+                    "label": "Delete Messages",
+                    "value": "/bot delete",
+                    "description": "/bot delete",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "DeleteBin",
+                      "id": "1560788313508683807"
+                    }
+                  },
+                  {
                     "label": "Hot Patch",
                     "value": "/bot hotpatch",
                     "description": "/bot hotpatch",
@@ -31636,6 +31691,396 @@
           {
             "type": 10,
             "content": "-# **Examples**\n-# `/bot freeze`"
+          },
+          {
+            "type": 10,
+            "content": "-# Usage: `/cmd <required> [optional]` · no text command\n-# Needs Dioreo's own admin access, not a server permission"
+          },
+          {
+            "type": 14,
+            "spacing": 1,
+            "divider": true
+          },
+          {
+            "type": 1,
+            "components": [
+              {
+                "type": 3,
+                "custom_id": "help_command",
+                "placeholder": "Jump to a command…",
+                "options": [
+                  {
+                    "label": "All commands",
+                    "value": "landing",
+                    "description": "Back to the list of every command",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "DioreoComboCoral",
+                      "id": "1565359721790177371"
+                    }
+                  },
+                  {
+                    "label": "/gunsmith mp",
+                    "value": "/gunsmith mp",
+                    "description": "MP Gunsmith",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "GunsmithSearch",
+                      "id": "1564113024225255454"
+                    }
+                  },
+                  {
+                    "label": "/gunsmith dmz",
+                    "value": "/gunsmith dmz",
+                    "description": "DMZ Gunsmith",
+                    "default": false,
+                    "emoji": {
+                      "animated": false,
+                      "name": "DMZ_CODM",
+                      "id": "1523190115319549963"
+                    }
+                  },
+                  {
+                    "label": "/draws",
+                    "value": "/draws",
+                    "description": "Lucky Draws",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "NewDraws",
+                      "id": "1523837409211453613"
+                    }
+                  },
+                  {
+                    "label": "/draw prices",
+                    "value": "/draw prices",
+                    "description": "Lucky Draw Prices",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "DrawPrices",
+                      "id": "1525864071776305163"
+                    }
+                  },
+                  {
+                    "label": "/draw calculator",
+                    "value": "/draw calculator",
+                    "description": "Draw Calculator",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "DrawCalc",
+                      "id": "1560743128934256680"
+                    }
+                  },
+                  {
+                    "label": "/today",
+                    "value": "/today",
+                    "description": "Today",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "DailyUpdate",
+                      "id": "1563415690738802690"
+                    }
+                  },
+                  {
+                    "label": "/calendar",
+                    "value": "/calendar",
+                    "description": "Calendar",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "Calendar",
+                      "id": "1523762208050385107"
+                    }
+                  },
+                  {
+                    "label": "/remind",
+                    "value": "/remind",
+                    "description": "Reminders",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "Remind",
+                      "id": "1563677560431452180"
+                    }
+                  },
+                  {
+                    "label": "/season end",
+                    "value": "/season end",
+                    "description": "Season End",
+                    "default": false,
+                    "emoji": {
+                      "animated": false,
+                      "name": "BP_CODM",
+                      "id": "1523190108386365470"
+                    }
+                  },
+                  {
+                    "label": "/patch notes",
+                    "value": "/patch notes",
+                    "description": "Patch Notes",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "PatchNotes",
+                      "id": "1523762216954888286"
+                    }
+                  },
+                  {
+                    "label": "/timestamp",
+                    "value": "/timestamp",
+                    "description": "Timestamps",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "Timestamps",
+                      "id": "1523762211103969420"
+                    }
+                  },
+                  {
+                    "label": "/colors",
+                    "value": "/colors",
+                    "description": "Profile Colors",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "ShowColors",
+                      "id": "1537280503105847486"
+                    }
+                  },
+                  {
+                    "label": "/settings",
+                    "value": "/settings",
+                    "description": "Settings",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "Settings",
+                      "id": "1523762203537309696"
+                    }
+                  },
+                  {
+                    "label": "Server Prefix",
+                    "value": "/prefix",
+                    "description": "d prefix",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "Command",
+                      "id": "1565523050982801468"
+                    }
+                  },
+                  {
+                    "label": "/invite",
+                    "value": "/invite",
+                    "description": "Invite Dioreo",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "ShareHeart",
+                      "id": "1539021725784739891"
+                    }
+                  },
+                  {
+                    "label": "/admin",
+                    "value": "/admin",
+                    "description": "Server Settings",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "ServerSettings",
+                      "id": "1536468904996774008"
+                    }
+                  },
+                  {
+                    "label": "/manage",
+                    "value": "/manage",
+                    "description": "Manage Data",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "DB_Database",
+                      "id": "1524967327437815899"
+                    }
+                  },
+                  {
+                    "label": "/manage emojis",
+                    "value": "/manage emojis",
+                    "description": "Emoji Manager",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "Swatches",
+                      "id": "1537301451506847947"
+                    }
+                  },
+                  {
+                    "label": "/autobuild",
+                    "value": "/autobuild",
+                    "description": "Autobuild",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "GunsmithCode",
+                      "id": "1564113023025676308"
+                    }
+                  },
+                  {
+                    "label": "/bot",
+                    "value": "/bot",
+                    "description": "Bot Tools",
+                    "default": true,
+                    "emoji": {
+                      "animated": true,
+                      "name": "BotAccess",
+                      "id": "1540915865506160660"
+                    }
+                  },
+                  {
+                    "label": "/embed",
+                    "value": "/embed",
+                    "description": "Embed Preview",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "Edit",
+                      "id": "1560408533160296519"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "/bot delete slash": [
+      {
+        "type": 17,
+        "accent_color": 16743772,
+        "components": [
+          {
+            "type": 10,
+            "content": "## <a:DeleteBin:1560788313508683807> Delete Messages\n-# Delete Dioreo's own messages anywhere it can see them; also typed as `d owner delete` — owner-only"
+          },
+          {
+            "type": 1,
+            "components": [
+              {
+                "type": 3,
+                "custom_id": "help_bot",
+                "placeholder": "Another /bot command…",
+                "options": [
+                  {
+                    "label": "Bot Analytics",
+                    "value": "/bot analytics",
+                    "description": "/bot analytics",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "DB_Info",
+                      "id": "1525337539085340722"
+                    }
+                  },
+                  {
+                    "label": "Admin Access",
+                    "value": "/bot access",
+                    "description": "/bot access",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "BotAccess",
+                      "id": "1540915865506160660"
+                    }
+                  },
+                  {
+                    "label": "Servers",
+                    "value": "/bot servers",
+                    "description": "/bot servers",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "DB_Guide",
+                      "id": "1532894836301238477"
+                    }
+                  },
+                  {
+                    "label": "Spam Penalties",
+                    "value": "/bot penalties",
+                    "description": "/bot penalties",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "Cooldown",
+                      "id": "1565362761821847712"
+                    }
+                  },
+                  {
+                    "label": "Freeze",
+                    "value": "/bot freeze",
+                    "description": "/bot freeze",
+                    "default": false,
+                    "emoji": {
+                      "animated": false,
+                      "name": "Pending",
+                      "id": "1565022888229339166"
+                    }
+                  },
+                  {
+                    "label": "Delete Messages",
+                    "value": "/bot delete",
+                    "description": "/bot delete",
+                    "default": true,
+                    "emoji": {
+                      "animated": true,
+                      "name": "DeleteBin",
+                      "id": "1560788313508683807"
+                    }
+                  },
+                  {
+                    "label": "Hot Patch",
+                    "value": "/bot hotpatch",
+                    "description": "/bot hotpatch",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "Edit",
+                      "id": "1560408533160296519"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": 14,
+            "spacing": 2,
+            "divider": true
+          },
+          {
+            "type": 10,
+            "content": "### `/bot delete`"
+          },
+          {
+            "type": 10,
+            "content": "`[messages]`\n-# Message IDs or links, or a number for Dioreo's last N; blank deletes its last one"
+          },
+          {
+            "type": 10,
+            "content": "`[channel]`\n-# A channel ID; blank is this channel"
+          },
+          {
+            "type": 14,
+            "spacing": 1,
+            "divider": true
+          },
+          {
+            "type": 10,
+            "content": "-# **Examples**\n-# `/bot delete messages:3`"
           },
           {
             "type": 10,
@@ -31973,6 +32418,17 @@
                       "animated": false,
                       "name": "Pending",
                       "id": "1565022888229339166"
+                    }
+                  },
+                  {
+                    "label": "Delete Messages",
+                    "value": "/bot delete",
+                    "description": "/bot delete",
+                    "default": false,
+                    "emoji": {
+                      "animated": true,
+                      "name": "DeleteBin",
+                      "id": "1560788313508683807"
                     }
                   },
                   {

@@ -323,10 +323,11 @@ const BOT_SUBS = {
     '/bot servers': adminPage("One server's /admin rules, a checkup, reply limits, and leave or block — owner-only", [text("`[server]`\n-# A server ID; leave it blank to pick the server you're in or type one")], [['/bot servers']]),
     '/bot penalties': adminPage('Text-command spam penalties: who has one, then lift, extend, exempt or block one person, and tune the ladder — owner-only', [text('`[user]`\n-# A user ID to open; leave it blank for everyone on a penalty now')], [['/bot penalties']]),
     '/bot freeze': adminPage('Pause Dioreo, or chosen commands, without a deploy; you and /bot are never frozen — owner-only', [], [['/bot freeze']]),
+    '/bot delete': adminPage("Delete Dioreo's own messages anywhere it can see them; also typed as `d owner delete` — owner-only", [text('`[messages]`\n-# Message IDs or links, or a number for Dioreo\'s last N; blank deletes its last one'), text('`[channel]`\n-# A channel ID; blank is this channel')], [['/bot delete messages:3']]),
     '/bot hotpatch': adminPage('Reload changed files into the running bot without a restart — owner-only', [text('`[pull]`\n-# git pull first (default: yes)'), text('`[dry_run]`\n-# Show the plan and change nothing'), text('`[file]`\n-# Limit to one changed file (default: everything the pull brought in)')], [['/bot hotpatch dry_run:True']]),
 };
-const BOT_SUB_NAMES = { '/bot analytics': 'Bot Analytics', '/bot access': 'Admin Access', '/bot servers': 'Servers', '/bot penalties': 'Spam Penalties', '/bot freeze': 'Freeze', '/bot hotpatch': 'Hot Patch' };
-const BOT_SUB_ICON = { '/bot analytics': 'mngInfo', '/bot access': 'botAccess', '/bot servers': 'guide', '/bot penalties': 'cooldown', '/bot freeze': 'pending', '/bot hotpatch': 'edit' };
+const BOT_SUB_NAMES = { '/bot analytics': 'Bot Analytics', '/bot access': 'Admin Access', '/bot servers': 'Servers', '/bot penalties': 'Spam Penalties', '/bot freeze': 'Freeze', '/bot delete': 'Delete Messages', '/bot hotpatch': 'Hot Patch' };
+const BOT_SUB_ICON = { '/bot analytics': 'mngInfo', '/bot access': 'botAccess', '/bot servers': 'guide', '/bot penalties': 'cooldown', '/bot freeze': 'pending', '/bot delete': 'deleteBin', '/bot hotpatch': 'edit' };
 const BOT_SUB_ORDER = Object.keys(BOT_SUB_NAMES);
 
 function adminPage(blurb, boxes, examples, extra = {}) {

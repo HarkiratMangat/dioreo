@@ -187,3 +187,10 @@ Every decision here is his, from B7's thread (the plan's "B7's thread: decided a
 - Announcements keep their slash mentions here (`linkCommandMentions(…, { slash: true })`), never the typed form.
 - `news` is not a word: its singular `new` would run it.
 - `d help <page>` also reaches the slash-only pages (`SLASH_ONLY_PAGES` in `commands.js`); `commands/help.js` resolvePage still gates who sees them.
+
+## `owner delete`: the owner deletes Dioreo's own messages (2026-11-09 12:12 EST, Harkirat's ask 10:57 EST)
+- **Forms:** `owner` / `override` / `dev`, then `delete` / `d` / `purge`, after any prefix that works in the server. Then message ids, message links, a number N (1–100, Dioreo's last N here, looking back 500 messages), a channel id or `#mention` (default: here). A server id is accepted and ignored: the channel names its server, so only a channel id is ever needed. Nothing at all = Dioreo's last message here.
+- **Silence for everyone else.** `bot/textCommands.js` `onMessage` reads the owner words BEFORE `parseTextCommand`, so a non-owner's `@Dioreo owner delete` or `@Dioreo dev` gets no help card, no Did you mean, no limit and no spam points. Exact words only: `ownr` is not it.
+- **Only Dioreo's (and Dioreo Admin's) own messages.** `utils/ownerDelete.js` reads each listed message's author first; a server that granted Manage Messages would otherwise let it delete anyone's. Dioreo Admin's messages are deleted with Dioreo Admin's token. One delete at a time (bulk delete needs Manage Messages). All REST: the message cache is 0.
+- **The note:** one reply in the channel he typed in, pinging no one, deleted after 5 s (his "5s, not 10s"); none where Dioreo can't post. `/bot delete messages: channel:` on Dioreo Admin is the same code, answered privately.
+- Tests: `scripts/ownerDelete.test.js` (the words, targets, last N, someone else's message left alone, the note) and two `scripts/textCommandListener.test.js` checks (silence for anyone else; the owner's run).

@@ -618,6 +618,24 @@ async function check(name, fn) {
             assert.ok(/if \(asReply\) await require\('\.\/sendV2Payload'\)\.sendV2Payload\(/.test(src), 'asReply sends through @original, not a follow-up');
         } finally { if (real) require.cache[f] = real; else delete require.cache[f]; if (realSv) require.cache[sv] = realSv; else delete require.cache[sv]; delete require.cache[h]; }
     });
+    // `d owner delete` (2026-11-09 12:12 EST): anyone but the owner gets nothing at all, and the owner's run never reaches a command module.
+    await check('must NOT: the owner delete words from anyone else get no reply, no help card, no Did you mean', async (before) => {
+        for (const text of [`<@${BOT}> owner delete`, 'd owner delete 3', `<@${BOT}> dev`, 'dior override purge 2', 'd owner']) {
+            const { message, posts } = fakeMessage(text);
+            await onMessage(message);
+            assert.strictEqual(posts.length, 0, `posted for: ${text}`);
+        }
+        assert.strictEqual(ran.length, before);
+    });
+    await check('the owner\'s d owner delete runs the delete and leaves one note, pinging no one', async (before) => {
+        const { message, posts } = fakeMessage('d dev purge');
+        message.author.id = require('../utils/owner').ALLOWED_ADMIN_ID;
+        await onMessage(message);
+        assert.strictEqual(ran.length, before);
+        assert.strictEqual(posts.length, 1);
+        assert.match(posts[0].content, /No Dioreo message found here/);
+        assert.deepStrictEqual(posts[0].allowed_mentions, { parse: [], replied_user: false });
+    });
     console.log(failures ? `\n${failures} failing` : '\ntextCommandListener: all passing');
     process.exit(failures ? 1 : 0);
 })();

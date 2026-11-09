@@ -33,15 +33,15 @@ const ann = (i, extra = {}) => ({ _id: oid(100 + i), text: LONG(i), createdAt: n
 const PAGE_ROW = { type: 1, components: [{ type: 3, custom_id: 'mng_pagesel', placeholder: 'Switch section', options: Array.from({ length: 10 }, (_, i) => ({ label: `Section ${i}`, value: `s${i}` })) }] };
 
 const OWNER = require('../utils/owner').ALLOWED_ADMIN_ID;
-function fake({ customId = '', chat = false, modal = false, select = false, message = false, values = [], opts = {}, focused = '' } = {}) {
+function fake({ customId = '', chat = false, modal = false, select = false, message = false, values = [], opts = {}, focused = '', fieldValues = {} } = {}) {
     const calls = [];
     const i = {
         calls, customId, values, deferred: false, replied: false, user: { id: OWNER }, client: { commands: new Map() },
         message: message ? { id: 'm1' } : undefined,
         options: { getString: (k) => opts[k] ?? null, getFocused: () => focused },
         isChatInputCommand: () => chat, isModalSubmit: () => modal, isStringSelectMenu: () => select, isButton: () => !chat && !modal && !select,
-        fields: { getTextInputValue: () => '' },
-        showModal: async (m) => { calls.push(['showModal', (m.toJSON ? m.toJSON() : m).custom_id]); },
+        fields: { getTextInputValue: (k) => fieldValues[k] ?? '' },
+        showModal: async (m) => { i.lastModal = m.toJSON ? m.toJSON() : m; calls.push(['showModal', i.lastModal.custom_id]); },
         deferUpdate: async () => { calls.push('deferUpdate'); i.deferred = true; },
         deferReply: async () => { calls.push('deferReply'); i.deferred = true; },
         reply: async (x) => { calls.push(['reply', x]); i.replied = true; },
@@ -289,25 +289,82 @@ function fake({ customId = '', chat = false, modal = false, select = false, mess
         assert.ok(!inputs.find(c => c.custom_id === 'expiry').value, 'the expiry is left blank (the 60-day default)');
         assert.ok(!inputs.find(c => c.custom_id === 'starts_at').value);
     });
-    await check('an announcement pop-up submit from the panel defers the update and saves through the OLD handler under its own id', async () => {
+    await check('must NOT: a Post New submit saves nothing; it shows the draft as players will get it, with Post · Edit · Discard', async () => {
         const old = require('../handlers/manage/announcements');
-        const real = { postAnnouncement: old.postAnnouncement, editAnnouncement: old.editAnnouncement };
+        const real = { postAnnouncement: old.postAnnouncement };
         try {
             announcements = { live: [ann(1)], expired: [] };
             const seen = [];
-            old.postAnnouncement = async (interaction, opts) => { seen.push(['post', opts.customId]); opts.onResult({ ok: true }); };
-            old.editAnnouncement = async (interaction, opts) => { seen.push(['edit', opts.customId]); opts.onResult({ ok: true }); };
+            old.postAnnouncement = async () => { seen.push('post'); };
             sent.length = 0;
-            const p = fake({ customId: 'mng_an|postm', modal: true, message: true });
+            const p = fake({ customId: 'mng_an|postm', modal: true, message: true, fieldValues: { text: '# Hello players\nNew season soon', expiry: '7', starts_at: '' } });
             await AP.handleAnnouncementsPanelInteraction(p);
+            assert.deepStrictEqual(seen, [], 'nothing saved on submit');
             assert.deepStrictEqual(p.calls, ['deferUpdate']);
-            assert.match(JSON.stringify(sent.at(-1)), /Saved/);
-            const id = String(announcements.live[0]._id);
-            const e = fake({ customId: `mng_an|editm|${id}`, modal: true, message: true });
-            await AP.handleAnnouncementsPanelInteraction(e);
-            assert.deepStrictEqual(seen.pop(), ['edit', `modal_announce_edit_${id}`]);
-            assert.match(JSON.stringify(sent.at(-1)), /Announcements/, 'the announcement\'s own card is redrawn');
+            const dump = JSON.stringify(sent.at(-1));
+            assert.match(dump, /Hello players/);
+            assert.match(dump, /Draft · not posted yet/);
+            assert.match(dump, /Made with/, 'the delivered container, footer and all');
+            const ids = idsOf(sent.at(-1));
+            for (const v of ['dpost', 'dedit', 'ddisc']) assert.ok(ids.some(x => x.startsWith(`mng_an|${v}|`)), v);
+            // From the slash command (no panel message) the draft is a new private message.
+            const slash = fake({ customId: 'mng_an|postm', modal: true, fieldValues: { text: 'Hi' } });
+            await AP.handleAnnouncementsPanelInteraction(slash);
+            assert.deepStrictEqual(slash.calls, ['deferReply']);
         } finally { Object.assign(old, real); }
+    });
+    await check('Post saves the drafted values through the OLD handler, colour included; Edit reopens the box filled; Discard saves nothing', async () => {
+        const old = require('../handlers/manage/announcements');
+        const real = { postAnnouncement: old.postAnnouncement, editAnnouncement: old.editAnnouncement };
+        const token = (verb) => idsOf(sent.at(-1)).find(x => x.startsWith(`mng_an|${verb}|`)).split('|')[2];
+        try {
+            announcements = { live: [ann(1, { text: 'Old text' })], expired: [] };
+            const seen = [];
+            old.postAnnouncement = async (_i, opts) => { seen.push(['post', opts.values]); opts.onResult({ ok: true }); };
+            old.editAnnouncement = async (_i, opts) => { seen.push(['edit', opts.customId, opts.values.text]); opts.onResult({ ok: true }); };
+            sent.length = 0;
+            await AP.handleAnnouncementsPanelInteraction(fake({ customId: 'mng_an|postm', modal: true, message: true, fieldValues: { text: 'Draft one', expiry: 'never' } }));
+            const t1 = token('dpost');
+            const ed = fake({ customId: `mng_an|dedit|${t1}`, message: true });
+            await AP.handleAnnouncementsPanelInteraction(ed);
+            assert.deepStrictEqual(ed.calls, [['showModal', 'mng_an|postm']]);
+            const inputs = ed.lastModal.components.flatMap(r => r.components);
+            assert.strictEqual(inputs.find(c => c.custom_id === 'text').value, 'Draft one');
+            assert.strictEqual(inputs.find(c => c.custom_id === 'expiry').value, 'never');
+            const post = fake({ customId: `mng_an|dpost|${t1}`, message: true });
+            await AP.handleAnnouncementsPanelInteraction(post);
+            assert.deepStrictEqual(post.calls, ['deferUpdate']);
+            const [kind, values] = seen.pop();
+            assert.strictEqual(kind, 'post');
+            assert.strictEqual(values.text, 'Draft one');
+            assert.strictEqual(typeof values.color, 'number', 'the preview colour is the posted colour');
+            assert.match(JSON.stringify(sent.at(-1)), /Posted/);
+            const again = fake({ customId: `mng_an|dpost|${t1}`, message: true });
+            await AP.handleAnnouncementsPanelInteraction(again);
+            assert.strictEqual(seen.length, 0, 'a posted draft cannot post twice');
+            assert.match(JSON.stringify(sent.at(-1)), /draft is gone/);
+            // Edit: the draft, then Save, under the old edit id.
+            const id = String(announcements.live[0]._id);
+            await AP.handleAnnouncementsPanelInteraction(fake({ customId: `mng_an|editm|${id}`, modal: true, message: true, fieldValues: { text: 'Fixed text' } }));
+            assert.match(JSON.stringify(sent.at(-1)), /Draft · not saved yet/);
+            await AP.handleAnnouncementsPanelInteraction(fake({ customId: `mng_an|dpost|${token('dpost')}`, message: true }));
+            assert.deepStrictEqual(seen.pop(), ['edit', `modal_announce_edit_${id}`, 'Fixed text']);
+            // Discard.
+            await AP.handleAnnouncementsPanelInteraction(fake({ customId: 'mng_an|postm', modal: true, message: true, fieldValues: { text: 'Never mind' } }));
+            await AP.handleAnnouncementsPanelInteraction(fake({ customId: `mng_an|ddisc|${token('ddisc')}`, message: true }));
+            assert.strictEqual(seen.length, 0);
+            assert.match(JSON.stringify(sent.at(-1)), /Draft discarded/);
+        } finally { Object.assign(old, real); }
+    });
+    await check('must NOT: someone else cannot post another admin\'s draft', async () => {
+        sent.length = 0;
+        await AP.handleAnnouncementsPanelInteraction(fake({ customId: 'mng_an|postm', modal: true, message: true, fieldValues: { text: 'Mine' } }));
+        const t = idsOf(sent.at(-1)).find(x => x.startsWith('mng_an|dpost|')).split('|')[2];
+        const other = fake({ customId: `mng_an|dpost|${t}`, message: true });
+        other.user = { id: 'someone-else' };
+        await AP.handleAnnouncementsPanelInteraction(other);
+        assert.match(JSON.stringify(sent.at(-1)), /draft is gone/);
+        assert.ok(AP._drafts.has(t), 'the owner\'s draft is still there');
     });
     await check('the old save handlers take the new opts and stay safe for callers that pass none', () => {
         const src = require('fs').readFileSync(require.resolve('../handlers/manage/announcements.js'), 'utf8') + require('fs').readFileSync(require.resolve('../handlers/manage/patchnotes.js'), 'utf8');

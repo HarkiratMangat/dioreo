@@ -8,6 +8,8 @@
 // ⚠️ PERMISSIONS: the router's /manage lock runs first (`mng_`). Post New runs utils/manageActions.js resolveAction; the per-announcement Edit and Delete are outside the registry (their ids carry a Mongo _id) and check core/permissions.js's OUTSIDE_ACTIONS 'manage.announcementEdit' / 'manage.announcementDelete', as the old row buttons did; Yes, Delete re-checks the destructive tier. core/changeset.js commitSet checks every op once more.
 //
 // ⚠️ THE CRASH NET IS THE ROUTER'S. Nothing here catches to swallow; error-branch replies are awaited.
+//
+// ⚠️ A POP-UP SUBMIT SHOWS A DRAFT, NEVER A SAVE (2026-11-09 12:11 EST, his ask 2026-11-09 10:57 EST). Post New, Post Again and Edit keep what was typed in memory under a token for 15 minutes and show the announcement as players will get it, with Post (Save) · Edit · Discard; only Post runs the old save, through `opts.values`. A restart drops a draft, which costs the admin a retype and nothing else. Old panels' `modal_announce_post` (handlers/manage/index.js) still saves at once.
 
 const emojis = require('../../../utils/emojiMap');
 const { sendV2Payload } = require('../../../utils/sendV2Payload');
@@ -83,6 +85,35 @@ const editModal = (doc) => reId(manageCommand().buildAnnouncementModal(doc), V.I
 function postAgainModal(doc) {
     const j = postModal();
     for (const r of j.components || []) for (const c of r.components || []) if (c.custom_id === 'text') c.value = String(doc.text || '').slice(0, c.max_length || 3900);
+    return j;
+}
+
+// ---------- drafts ---------- token → { kind: 'post'|'edit', id, userId, values: { text, expiry, starts_at, color }, at }. Only the admin who drafted it can post it.
+const DRAFT_TTL_MS = 15 * 60 * 1000;
+const drafts = new Map();
+function keepDraft(d) {
+    const now = Date.now();
+    for (const [k, v] of drafts) if (now - v.at > DRAFT_TTL_MS) drafts.delete(k);
+    const token = require('crypto').randomBytes(5).toString('hex');
+    drafts.set(token, { ...d, at: now });
+    return token;
+}
+function takeDraft(token, userId) {
+    const d = drafts.get(token);
+    return d && Date.now() - d.at <= DRAFT_TTL_MS && d.userId === userId ? d : null;
+}
+const readFields = (interaction) => ({ text: interaction.fields.getTextInputValue('text') || '', expiry: interaction.fields.getTextInputValue('expiry') || '', starts_at: interaction.fields.getTextInputValue('starts_at') || '' });
+// The draft drawn as an announcement: its own colour, and for an edit the stored post time and banner, so the preview is what players will get.
+const draftDoc = (d, existing = null) => ({ _id: existing?._id || 'draft', text: d.values.text.trim(), color: d.values.color ?? existing?.color, createdAt: existing?.createdAt || new Date(), bannerImageUrl: existing?.bannerImageUrl || null });
+async function showDraft(interaction, token, header = null) {
+    const d = drafts.get(token);
+    const existing = d.kind === 'edit' ? await getOne(d.id) : null;
+    if (d.kind === 'edit' && !existing) return gone(interaction);
+    return show(interaction, V.draftView(draftDoc(d, existing), { token, kind: d.kind, values: d.values, header }));
+}
+// Puts the draft's values back into a pop-up for Edit.
+function fillModal(j, values) {
+    for (const r of j.components || []) for (const c of r.components || []) if (values[c.custom_id] !== undefined) c.value = String(values[c.custom_id]).slice(0, c.max_length || 4000);
     return j;
 }
 
@@ -181,12 +212,43 @@ async function route(interaction) {
     if (interaction.isModalSubmit?.()) {
         if (verb === 'postm') {
             if (!(await gatePost(interaction))) return;
-            return submit(interaction, oldSave().postAnnouncement, {});
+            const values = { ...readFields(interaction), color: require('../../../utils/announcement').generateAccentColor() };
+            return showDraft(interaction, keepDraft({ kind: 'post', userId: interaction.user.id, values }));
         }
         if (verb === 'editm') {
             if (!(await gateRow(interaction, 'manage.announcementEdit'))) return;
-            return submit(interaction, oldSave().editAnnouncement, { customId: `modal_announce_edit_${a}` }, a);
+            if (!(await getOne(a))) return gone(interaction);
+            return showDraft(interaction, keepDraft({ kind: 'edit', id: a, userId: interaction.user.id, values: readFields(interaction) }));
         }
+    }
+
+    // ----- a draft: Post (Save), Edit, Discard -----
+    if (verb === 'dpost' || verb === 'dedit' || verb === 'ddisc') {
+        const d = takeDraft(a, interaction.user.id);
+        if (!d) return show(interaction, await home(`${emojis.warn} That draft is gone (a draft lasts 15 minutes, and a restart clears it). Nothing was posted.`, interaction));
+        const gate = () => (d.kind === 'edit' ? gateRow(interaction, 'manage.announcementEdit') : gatePost(interaction));
+        if (verb === 'dedit') {
+            if (!(await gate())) return;
+            if (d.kind === 'post') return interaction.showModal(fillModal(postModal(), d.values));
+            const doc = await getOne(d.id);
+            return doc ? interaction.showModal(fillModal(editModal(doc), d.values)) : gone(interaction);
+        }
+        if (verb === 'ddisc') {
+            drafts.delete(a);
+            const note = `-# ${emojis.checkmark} Draft discarded. Nothing was ${d.kind === 'edit' ? 'changed' : 'posted'}.`;
+            const doc = d.kind === 'edit' ? await getOne(d.id) : null;
+            return show(interaction, (doc && V.cardView(doc, { header: note })) || await home(note, interaction));
+        }
+        if (!(await gate())) return;
+        await interaction.deferUpdate();
+        let result = null;
+        const save = d.kind === 'edit' ? oldSave().editAnnouncement : oldSave().postAnnouncement;
+        await save(interaction, { values: d.values, customId: d.kind === 'edit' ? `modal_announce_edit_${d.id}` : undefined, onResult: (r) => { result = r; } });
+        if (!result?.ok) return showDraft(interaction, a, `-# ${emojis.warn} Not ${d.kind === 'edit' ? 'saved' : 'posted'}. The reason is in the message below; Edit fixes it.`);
+        drafts.delete(a);
+        const header = `-# ${emojis.checkmark} ${d.kind === 'edit' ? 'Saved' : 'Posted'}. The result is in the message below.`;
+        const doc = d.kind === 'edit' ? await getOne(d.id) : null;
+        return show(interaction, (doc && V.cardView(doc, { header })) || await home(header, interaction));
     }
 
     // ----- delete -----
@@ -217,4 +279,4 @@ async function handleAnnouncementsPanelInteraction(interaction) {
     return true;
 }
 
-module.exports = { handleAnnouncementsPanelInteraction, openFromSlash, renderHome, autocomplete, loadData, postAgainModal, PREFIX };
+module.exports = { handleAnnouncementsPanelInteraction, openFromSlash, renderHome, autocomplete, loadData, postAgainModal, PREFIX, DRAFT_TTL_MS, _drafts: drafts };

@@ -86,7 +86,11 @@ function cardView(doc, { header = null, extra = null, now = new Date() } = {}) {
     components.push(text(`-# ${factsLine(doc, now)}${doc.bannerImageUrl ? ' · has a banner image' : ''}\n-# Above: exactly what players get.`), BIG());
     if (extra) components.push(...extra);
     else components.push(row(btn(['edit', String(doc._id)], 'Edit', emojis.edit, 1), btn(['del', String(doc._id)], 'Delete', emojis.deleteBin, 4)), row(homeBtn()));
-    // A message holds 4,000 characters of text in all, and a long announcement nearly fills that alone: cut its longest text box by the overflow and say so, so the panel still fits. Delivery is untouched (players get the full text).
+    return fitPanel(delivered, components);
+}
+
+// A message holds 4,000 characters of text in all, and a long announcement nearly fills that alone: cut its longest text box by the overflow and say so, so the panel still fits. Delivery is untouched (players get the full text).
+function fitPanel(delivered, components) {
     const out = [delivered, ...panel(components)];
     const boxes = (c) => (c.components || []).filter(x => x.type === 10);
     const over = out.flatMap(boxes).reduce((n, x) => n + x.content.length, 0) - 3950;
@@ -96,6 +100,22 @@ function cardView(doc, { header = null, extra = null, now = new Date() } = {}) {
         if (longest) longest.content = longest.content.slice(0, Math.max(0, longest.content.length - over - note.length)) + note;
     }
     return out;
+}
+
+// ---------- a draft ---------- (Harkirat, 2026-11-09 10:57 EST: "for the /manage announcement command, seeing an embed rendered draft of the announcement before "posting it". So it's able to be tweaked or discarded or confirmed"; built 2026-11-09 12:11 EST.) The announcement exactly as players will get it, then Post (Save for an edit) · Edit · Discard. Nothing is written until Post. `doc` is the draft drawn as an announcement; `token` keys it in ./index.js's memory.
+function draftView(doc, { token, kind = 'post', values = {}, header = null }) {
+    const delivered = require('../../../utils/announcement').buildAnnouncementContainer(doc);
+    const expiry = String(values.expiry || '').trim();
+    const starts = String(values.starts_at || '').trim();
+    const when = [`expires ${!expiry ? 'in 60 days (the default)' : /^never$/i.test(expiry) ? 'never' : `in \`${expiry.slice(0, 30)}\``}`, starts ? `starts \`${starts.slice(0, 40)}\`` : 'shows right away'].join(' · ');
+    const components = [
+        text(crumb(kind === 'edit' ? plainLabel(preview(doc, 40)) : 'Post New', 'Draft')),
+        ...(header ? [text(header), SMALL()] : []),
+        text(`### ${emojis.edit} Draft · not ${kind === 'edit' ? 'saved' : 'posted'} yet\n-# ${when}\n-# Above: exactly what players will get.`),
+        BIG(),
+        row(btn(['dpost', token], kind === 'edit' ? 'Save' : 'Post', emojis.checkmark, 3), btn(['dedit', token], 'Edit', emojis.edit, 1), btn(['ddisc', token], 'Discard', emojis.deleteBin, 4)),
+    ];
+    return fitPanel(delivered, components);
 }
 
 function resultView({ crumbs = [], title, body = [], back = 'page', backLabel = 'Back', ok = true, extraButtons = [], extraRows = [] }) {
@@ -110,4 +130,4 @@ function resultView({ crumbs = [], title, body = [], back = 'page', backLabel = 
     ]);
 }
 
-module.exports = { ID, ACCENT, LIST_ROWS, MAX_OPTIONS, EXPIRED_SHOWN, row, text, btn, homeBtn, panel, plural, preview, plainLabel, isScheduled, factsLine, pageView, cardView, resultView };
+module.exports = { ID, ACCENT, LIST_ROWS, MAX_OPTIONS, EXPIRED_SHOWN, row, text, btn, homeBtn, panel, plural, preview, plainLabel, isScheduled, factsLine, pageView, cardView, draftView, resultView };

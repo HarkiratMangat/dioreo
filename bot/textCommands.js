@@ -475,6 +475,13 @@ async function onMessage(message, { edited = false } = {}) {
     // The server's own prefixes, or the default (B7).
     const prefixes = client.textMessageContent ? await prefixesFor(message.guildId) : [];
     const botRoleId = message.guild?.roles?.botRoleFor?.(client.user)?.id || null;
+    // THE OWNER'S DELETE (2026-11-09 12:12 EST, utils/ownerDelete.js): `d owner delete …`. Read BEFORE the ordinary parser so nobody else ever reaches a help card, a Did you mean, a limit or a spam point with these words: for anyone but the owner they are silence (his "Command stays completely silent for anyone else attempting to use it"). The owner skips every limit, as he does everywhere.
+    const ownerAsk = require('../utils/ownerDelete').readOwnerCommand(readTrigger(message.content || '', { botId: client.user.id, botRoleId, prefixes })?.rest);
+    if (ownerAsk) {
+        if (ownerAsk.kind !== 'delete' || !require('../utils/owner').isOwnerId(message.author.id)) return;
+        answered.set(message.id, Date.now());
+        return require('../utils/ownerDelete').runFromMessage(message, ownerAsk.words, { canPost: canPost(message) });
+    }
     let verdict = parseTextCommand(message.content || '', {
         botId: client.user.id,
         botRoleId,

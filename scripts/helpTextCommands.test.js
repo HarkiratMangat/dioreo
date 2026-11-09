@@ -190,7 +190,7 @@ async function check(name, fn) {
         const servers = await msg('/bot servers', 'slash', { perms: ALL });
         const json = JSON.stringify(servers[0]);
         const picker = JSON.parse(json.match(/\{"type":3,"custom_id":"help_bot"[^]*?\]\}/)[0]);
-        assert.deepStrictEqual(picker.options.map(o => o.value), ['/bot analytics', '/bot access', '/bot servers', '/bot penalties', '/bot freeze', '/bot hotpatch']);
+        assert.deepStrictEqual(picker.options.map(o => o.value), ['/bot analytics', '/bot access', '/bot servers', '/bot penalties', '/bot freeze', '/bot delete', '/bot hotpatch']);
         assert.strictEqual(picker.options.find(o => o.default).value, '/bot servers');
         assert.ok(json.includes('## ') && json.includes('Servers'), 'titled with the subcommand');
         const analyticsOnly = { botAdmin: true, bot: true };
