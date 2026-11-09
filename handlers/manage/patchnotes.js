@@ -18,7 +18,7 @@ async function currentPatchElementId() {
     return String(seasonalDoc.patchNotes[seasonalDoc.patchNotes.length - 1]._id);
 }
 
-// --- DATE/INFO --- custom_id: modal_patch_dateinfo 2026-11-07 21:05 EST: the rehauled panel (handlers/manage/patchnotesPanel/) calls these with `opts` = { customId, onResult }: it hands its own pop-up's submit here under the id the old code expects, and `onResult({ ok, elementId })` tells it what the save did so it can redraw its card. A guarded defer lets it deferUpdate first. Callers that pass nothing behave exactly as before.
+// --- DATE/INFO --- custom_id: modal_patch_dateinfo 2026-11-07 21:05 EST: the rehauled panel (handlers/manage/patchnotesPanel/) calls these with `opts` = { customId, onResult, quiet }. Since 2026-11-09 (the /manage audit's finding 9) `onResult` also carries `changeIds` and the `heading` (or `why` on a failure), and `quiet` skips the follow-up message, so the panel shows the result and its Revert in place: it hands its own pop-up's submit here under the id the old code expects, and `onResult({ ok, elementId })` tells it what the save did so it can redraw its card. A guarded defer lets it deferUpdate first. Callers that pass nothing behave exactly as before.
 async function setDateInfo(interaction, opts = {}) {
     if (!interaction.deferred && !interaction.replied) await interaction.deferReply({ ephemeral: true });
     const UserPreference = require('../../models/UserPreference');
@@ -37,10 +37,12 @@ async function setDateInfo(interaction, opts = {}) {
     const result = await commitSet([op], { actorId: interaction.user.id });
     if (!result.ok) {
         const why = extractCommitError(result);
-        opts.onResult?.({ ok: false });
+        opts.onResult?.({ ok: false, why });
+        if (opts.quiet) return;
         return await interaction.followUp({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} ${why}`, FAIL_ACCENT) });
     }
-    opts.onResult?.({ ok: true, elementId: result.results[0].applied.elementId });
+    opts.onResult?.({ ok: true, elementId: result.results[0].applied.elementId, changeIds: result.changeIds, heading: 'Patch notes date & info updated' });
+    if (opts.quiet) return;
     return interaction.followUp({ flags: 32768 | 64, components: patchPanel({ heading: 'Patch notes date & info updated', title: result.results[0].change.target, entryId: result.results[0].applied.elementId, changeIds: result.changeIds }) });
 }
 
@@ -59,11 +61,13 @@ async function setUrls(interaction, opts = {}) {
     const result = await commitSet([op], { actorId: interaction.user.id });
     if (!result.ok) {
         const why = extractCommitError(result);
-        opts.onResult?.({ ok: false });
+        opts.onResult?.({ ok: false, why });
+        if (opts.quiet) return;
         return await interaction.followUp({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} ${why}`, FAIL_ACCENT) });
     }
     const { title, imageCount } = result.results[0].applied;
-    opts.onResult?.({ ok: true, elementId: result.results[0].applied.elementId });
+    opts.onResult?.({ ok: true, elementId: result.results[0].applied.elementId, changeIds: result.changeIds, heading: `Patch notes images ${slot === 1 ? '1–5' : '6–10'} updated` });
+    if (opts.quiet) return;
     return interaction.followUp({ flags: 32768 | 64, components: patchPanel({ heading: `Patch notes images ${slot === 1 ? '1–5' : '6–10'} updated`, title, lines: [`${imageCount} image(s) in total`], entryId: result.results[0].applied.elementId, changeIds: result.changeIds }) });
 }
 
@@ -88,11 +92,13 @@ async function addSeason(interaction, opts = {}) {
     );
     if (!result.ok) {
         const why = extractCommitError(result);
-        opts.onResult?.({ ok: false });
+        opts.onResult?.({ ok: false, why });
+        if (opts.quiet) return;
         return await interaction.followUp({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} ${why}`, FAIL_ACCENT) });
     }
     const { title, imageCount } = result.results[0].applied;
-    opts.onResult?.({ ok: true, elementId: result.results[0].applied.elementId });
+    opts.onResult?.({ ok: true, elementId: result.results[0].applied.elementId, changeIds: result.changeIds, heading: 'New season added' });
+    if (opts.quiet) return;
     return interaction.followUp({ flags: 32768 | 64, components: patchPanel({ heading: 'New season added', title, lines: [`Now the Current Season · ${imageCount} image(s)`, 'The previous season moved to Past Seasons'], entryId: result.results[0].applied.elementId, changeIds: result.changeIds }) });
 }
 
@@ -117,15 +123,18 @@ async function editSeason(interaction, opts = {}) {
     );
     if (!result.ok) {
         // Matches the pre-core handler's own wording for a stale/removed target.
-        opts.onResult?.({ ok: false });
-        if (result.failedAt?.reason === 'missing') {
+        const missing = result.failedAt?.reason === 'missing';
+        opts.onResult?.({ ok: false, why: missing ? 'That season no longer exists: it may have been changed or removed since the pop-up opened.' : extractCommitError(result) });
+        if (opts.quiet) return;
+        if (missing) {
             return await interaction.followUp({ flags: 32768 | 64, components: notePanel(BOT_EMOJI.cross + ' That season no longer exists -- it may have been changed or removed since this modal opened.', FAIL_ACCENT) });
         }
         const why = extractCommitError(result);
         return await interaction.followUp({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} ${why}`, FAIL_ACCENT) });
     }
     const { title, imageCount } = result.results[0].applied;
-    opts.onResult?.({ ok: true, elementId: result.results[0].applied.elementId });
+    opts.onResult?.({ ok: true, elementId: result.results[0].applied.elementId, changeIds: result.changeIds, heading: 'Past season updated' });
+    if (opts.quiet) return;
     return interaction.followUp({ flags: 32768 | 64, components: patchPanel({ heading: 'Past season updated', title, lines: [`${imageCount} image(s)`], entryId: result.results[0].applied.elementId, changeIds: result.changeIds }) });
 }
 
@@ -136,7 +145,7 @@ async function purge(actorId) {
         return { confirmMsg: `${BOT_EMOJI.cross} ${extractCommitError(result)}` };
     }
     const { applied } = result.results[0];
-    return { confirmMsg: `${BOT_EMOJI.checkmark} Purged the patch notes history (${applied.entries.length} entry(s) removed).` };
+    return { confirmMsg: `${BOT_EMOJI.checkmark} Purged the patch notes history (${applied.entries.length} entry(s) removed).`, changeIds: result.changeIds };
 }
 
 // --- PAST SEASONS PICK --- custom_id: mng_patchseason_pick (select menu, rendered on the Patch Notes page itself). Its options ARE the full list already, so picking one goes straight to its edit modal -- no search step, unlike the generic mng_pick_ disambiguation select. Read-only -- unchanged by the operation-core migration.

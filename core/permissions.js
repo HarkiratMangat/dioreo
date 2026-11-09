@@ -88,7 +88,7 @@ const OP_TIERS = {
     'patchnote.editSeason': 'create',         // Past Seasons edit, and the Add to Patch Notes right-click
     'patchnote.setSeasonDates': 'create',     // a past season's own dates; scripts/setSeasonDates.js
     'patchnote.purge': 'destructive',
-    'patchnote.removeSeason': 'destructive',  // inverse-only
+    'patchnote.removeSeason': 'destructive',  // Add New Season's inverse, and the panel's Delete Season
     'patchnote.restoreSeason': 'destructive', // inverse-only
     'patchnote.restore': 'destructive',       // inverse-only
     // Season (live)

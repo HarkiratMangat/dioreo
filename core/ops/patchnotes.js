@@ -136,7 +136,7 @@ registerEntity('patchnotes', {
         invert: (c) => ({ type: 'patchnote.removeSeason', target: { elementId: c.applied.elementId } })
     },
 
-    // Not a registry action -- exists solely as addSeason's inverse (the way core/ops/season.js's season.restoreSnapshot exists solely as promoteDraft's inverse). Not reachable from /manage.
+    // Not a registry action -- addSeason's inverse (the way core/ops/season.js's season.restoreSnapshot is promoteDraft's inverse), and since 2026-11-09 the patch notes panel's Delete Season (handlers/manage/patchnotesPanel/index.js `delok`, gated as the page's purge plus the destructive tier). Its inverse restores the same entry, images included.
     'patchnote.removeSeason': {
         page: 'patchnotes', tier: 2,
         validate: (op) => op.target?.elementId ? { ok: true, errors: [], normalized: op } : { ok: false, errors: ['No entry to remove.'] },

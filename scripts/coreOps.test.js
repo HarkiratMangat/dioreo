@@ -54,7 +54,7 @@ check('every op type maps back to a registry action, except the documented inter
         'season.restoreSnapshot',  // internal -- promoteDraft/startNew's inverse target only
         'season.restoreDraft',     // internal -- discardDraft's inverse target only
         'season.newsDraft',        // internal -- written by news triage (utils/newsTriage/pipeline.js), and its own inverse; no /manage button
-        'patchnote.removeSeason',  // internal -- addSeason's inverse target only
+        'patchnote.removeSeason',  // addSeason's inverse target, and the patch notes panel's Delete Season (not a registry action: it is gated as the page's purge)
         'patchnote.restoreSeason', // internal -- removeSeason's inverse target only
         'patchnote.restore',       // internal -- purge's inverse target only
         'patchnote.editSeason',    // real, but reached via a Mongo-_id-embedding custom_id the

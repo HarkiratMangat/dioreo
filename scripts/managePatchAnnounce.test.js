@@ -99,13 +99,15 @@ function fake({ customId = '', chat = false, modal = false, select = false, mess
         assert.ok(!select.options.some(o => o.value === oid(40)), 'the current season is not a past season');
         assert.match(JSON.stringify(home), /older seasons are not listed/);
     });
-    await check('a past season\'s card offers only the Edit its old pop-up can do; the current one offers the three it has', () => {
+    await check('a past season\'s card offers its Edit, Upload Images, Season Dates and Delete; the current one its three pop-ups, Upload and Delete; both show the images (2026-11-09)', () => {
         const doc = seasonDoc(10);
         const past = idsOf(PV.cardView(doc, oid(3)));
-        assert.deepStrictEqual(past.sort(), [PV.ID('edit', oid(3)), PV.ID('page')].sort());
+        assert.deepStrictEqual(past.sort(), [PV.ID('edit', oid(3)), PV.ID('up', oid(3)), PV.ID('dates', oid(3)), PV.ID('del', oid(3)), PV.ID('page')].sort());
         const cur = idsOf(PV.cardView(doc, oid(10)));
-        assert.deepStrictEqual(cur.sort(), [PV.ID('dateinfo'), PV.ID('urls', 1), PV.ID('urls', 2), PV.ID('page')].sort());
-        assert.match(JSON.stringify(PV.cardView(doc, oid(3))), /one pop-up/);
+        assert.deepStrictEqual(cur.sort(), [PV.ID('dateinfo'), PV.ID('urls', 1), PV.ID('urls', 2), PV.ID('up', oid(10)), PV.ID('del', oid(10)), PV.ID('page')].sort());
+        assert.ok(JSON.stringify(PV.cardView(doc, oid(3))).includes('"type":12'), 'the images as a gallery');
+        assert.ok(idsOf(PV.cardView(doc, oid(3), { revertIds: ['T1'] })).includes(PV.ID('revert', 'T1')), 'a save\'s Revert sits on the card');
+        for (const m of [PV.uploadModal(doc.patchNotes[2]), PV.datesModal(doc.patchNotes[2])]) assert.ok(m.title.length <= 45 && m.custom_id.length <= 100 && m.components.length <= 5);
     });
     await check('the home reads: the current card, its three actions, Add, past seasons, Guide, Purge', async () => {
         const ids = idsOf(await PV.pageView(seasonDoc(3), null, {}));
@@ -167,20 +169,21 @@ function fake({ customId = '', chat = false, modal = false, select = false, mess
         await PP.openFromSlash(miss);
         assert.match(JSON.stringify(sent.at(-1)), /No season matches/);
     });
-    await check('a pop-up submit from the panel defers the update, saves through the OLD handler under its own id, and redraws the card', async () => {
+    await check('a pop-up submit from the panel defers the update, saves through the OLD handler under its own id, and redraws the card with the result and Revert', async () => {
         const old = require('../handlers/manage/patchnotes');
         const real = { setUrls: old.setUrls, setDateInfo: old.setDateInfo, editSeason: old.editSeason };
         try {
             const seen = [];
-            old.setUrls = async (interaction, opts) => { seen.push(['urls', opts.customId]); opts.onResult?.({ ok: true, elementId: oid(10) }); };
+            old.setUrls = async (interaction, opts) => { seen.push(['urls', opts.customId, opts.quiet]); opts.onResult?.({ ok: true, elementId: oid(10), changeIds: ['T9'], heading: 'Patch notes images 6–10 updated' }); };
             old.setDateInfo = async (interaction, opts) => { seen.push(['dateinfo', opts.customId]); opts.onResult?.({ ok: false }); };
             old.editSeason = async (interaction, opts) => { seen.push(['edit', opts.customId]); opts.onResult?.({ ok: true, elementId: oid(3) }); };
             sent.length = 0;
             const a = fake({ customId: 'mng_pn|urlsm|2', modal: true, message: true });
             assert.strictEqual(await PP.handlePatchnotesPanelInteraction(a), true);
             assert.deepStrictEqual(a.calls, ['deferUpdate']);
-            assert.deepStrictEqual(seen.pop(), ['urls', 'modal_patch_urls_2']);
-            assert.match(JSON.stringify(sent.at(-1)), /Saved\. The result, with Revert/);
+            assert.deepStrictEqual(seen.pop(), ['urls', 'modal_patch_urls_2', true], 'quiet: the result is shown in place, not posted below (2026-11-09)');
+            assert.match(JSON.stringify(sent.at(-1)), /images 6–10 updated/);
+            assert.match(JSON.stringify(sent.at(-1)), /mng_pn\|revert\|T9/, 'with its Revert on the card');
             const b = fake({ customId: 'mng_pn|dateinfom', modal: true, message: true });
             await PP.handlePatchnotesPanelInteraction(b);
             assert.match(JSON.stringify(sent.at(-1)), /Not saved/, 'a failed save says so on the redrawn card');

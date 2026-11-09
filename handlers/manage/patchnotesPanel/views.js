@@ -98,19 +98,42 @@ async function pageView(doc, note = null, { pageRow = null } = {}) {
     return panel(components, pageRow ? [pageRow] : []);
 }
 
-// ---------- one season ---------- `header` sits above the card (a saved note); `extra` replaces the action rows.
-function cardView(doc, id, { header = null, extra = null } = {}) {
+// ---------- one season ---------- `header` sits above the card (a saved note); `extra` replaces the action rows; `revertIds` adds a Revert beside Home (a save's change ids, shown in place since 2026-11-09).
+// Since 2026-11-09 (the /manage audit's finding 8) the card shows the season's images as players see them, a past season's own dates, and offers Upload Images, Season Dates and Delete Season.
+function cardView(doc, id, { header = null, extra = null, revertIds = null } = {}) {
     const p = findEntry(doc, id);
     if (!p) return null;
     const cur = isCurrent(doc, id);
     const components = [text(crumb(cur ? 'Current Season' : 'Past Seasons', displayTitle(p)))];
     if (header) components.push(text(header), SMALL());
-    components.push(text(summaryLines(p, { long: true })), text(`-# ${cur ? 'The current season. /patch notes opens on it.' : 'A past season. /patch notes lists it in its season dropdown.'}`), BIG());
+    const D = (x) => `<t:${Math.floor(new Date(x).getTime() / 1000)}:D>`;
+    const dates = cur ? '' : p.seasonStart && p.seasonEnd ? ` Season ran ${D(p.seasonStart)} – ${D(p.seasonEnd)}.` : ' No season dates yet: /patch notes shows its release date alone.';
+    components.push(text(summaryLines(p, { long: true })));
+    const images = (p.images || []).filter(Boolean).slice(0, 10);
+    if (images.length) components.push({ type: 12, items: images.map(url => ({ media: { url } })) });
+    components.push(text(`-# ${cur ? 'The current season. /patch notes opens on it.' : 'A past season. /patch notes lists it in its season dropdown.'}${dates}`), BIG());
+    const sid = String(p._id);
+    const revert = revertIds?.length && ID('revert', revertIds.join(',')).length <= 100 ? [btn(['revert', revertIds.join(',')], 'Revert', emojis.keep, 4)] : [];
     if (extra) components.push(...extra);
-    else if (cur) components.push(row(btn('dateinfo', 'Edit Date & Info', emojis.edit, 1), btn(['urls', 1], 'Images 1-5', emojis.mngUrls), btn(['urls', 2], 'Images 6-10', emojis.mngUrls)), row(homeBtn()));
-    // A past season has one pop-up (the old Past Seasons box): title, date, info and every image in it. There is no separate images or date/info pop-up for it, so none is offered.
-    else components.push(text('-# A past season edits in one pop-up: its title, date, info and all ten images.'), row(btn(['edit', String(p._id)], 'Edit', emojis.edit, 1), homeBtn()));
+    else if (cur) components.push(row(btn('dateinfo', 'Edit Date & Info', emojis.edit, 1), btn(['urls', 1], 'Images 1-5', emojis.mngUrls), btn(['urls', 2], 'Images 6-10', emojis.mngUrls), btn(['up', sid], 'Upload Images', emojis.pasteImport)), row(...revert, btn(['del', sid], 'Delete Season', emojis.deleteBin, 4), homeBtn()));
+    // A past season edits in one pop-up (the old Past Seasons box): title, date, info and every image in it. Upload Images and Season Dates are their own pop-ups.
+    else components.push(row(btn(['edit', sid], 'Edit', emojis.edit, 1), btn(['up', sid], 'Upload Images', emojis.pasteImport), btn(['dates', sid], 'Season Dates', emojis.calendar)), row(...revert, btn(['del', sid], 'Delete Season', emojis.deleteBin, 4), homeBtn()));
     return panel(components);
+}
+
+// Upload Images: up to ten files, added after the season's images or replacing them. The files are re-hosted on Cloudinary by the save (core/ops/patchnotes.js editSeason, utils/patchNotesCache.js), so Discord's expiring attachment links are never what is stored.
+function uploadModal(p) {
+    const n = imageCount(p);
+    return { title: `Images: ${displayTitle(p)}`.slice(0, 45), custom_id: ID('upm', String(p._id)), components: [
+        { type: 18, label: 'Images (up to 10)', description: `${n}/10 now. PNG, JPG, GIF or WebP.`, component: { type: 19, custom_id: 'files', min_values: 1, max_values: 10, required: true } },
+        { type: 18, label: 'Add or replace', component: { type: 3, custom_id: 'how', required: true, options: [{ label: 'Add after the images it has', value: 'add', default: true, description: n >= 10 ? 'It has 10 already: only Replace can change them' : `Room for ${10 - n} more` }, { label: 'Replace every image', value: 'replace' }] } },
+    ] };
+}
+// Season Dates: a past season's own Battle Pass start and end (patchNotes[].seasonStart/seasonEnd), which /patch notes' season dropdown shows. Promote to Live saves them for the outgoing season; this sets them for one Promote never reached.
+function datesModal(p) {
+    const { formatAdminDate } = require('../../../utils/adminParser');
+    const box = (id, label, v) => ({ type: 18, label, component: { type: 4, custom_id: id, style: 1, required: false, placeholder: 'e.g. September 23 2026', ...(v ? { value: formatAdminDate(v) } : {}) } });
+    return { title: `Dates: ${displayTitle(p)}`.slice(0, 45), custom_id: ID('datesm', String(p._id)), components: [box('start', 'Season start (Battle Pass start)', p.seasonStart), box('end', 'Season end (blank both to clear)', p.seasonEnd)] };
 }
 
 function resultView({ crumbs = [], title, body = [], back = 'page', backLabel = 'Back', ok = true, extraButtons = [], extraRows = [] }) {
@@ -125,4 +148,4 @@ function resultView({ crumbs = [], title, body = [], back = 'page', backLabel = 
     ]);
 }
 
-module.exports = { ID, MAX_PAST, row, text, btn, homeBtn, panel, plural, displayTitle, entryEmoji, currentEntry, isCurrent, findEntry, pastEntries, entries, pageView, cardView, resultView };
+module.exports = { ID, MAX_PAST, row, text, btn, homeBtn, panel, plural, displayTitle, entryEmoji, currentEntry, isCurrent, findEntry, pastEntries, entries, pageView, cardView, resultView, uploadModal, datesModal };
