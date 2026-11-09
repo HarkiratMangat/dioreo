@@ -24,6 +24,7 @@ function commandName(c) {
     return typeof c.toJSON === 'function' ? c.toJSON().name : c.name;
 }
 
+// A module with `bothApps` registers on BOTH apps (/help, 2026-11-09 13:14 EST, Harkirat, 2026-11-09 13:10 EST: the admin and owner pages move to a /help on Dioreo Admin). One module serves both, since the two clients share one command map; its `adminData`, when set, is what Dioreo Admin registers, and execute() tells the apps apart (commands/help.js helpScope).
 function belongsOnAdminApp(name, module) {
     return ADMIN_APP_COMMAND_NAMES.has(name) || Boolean(module?.devOnly) || Boolean(module?.adminApp);
 }
@@ -49,6 +50,7 @@ function splitCommands(commands, modules, { adminApp }) {
         const name = commandName(c);
         const type = c.toJSON?.().type ?? c.type;
         const module = (type === 2 || type === 3) ? (modules?.get?.(`${name}#${type}`) ?? modules?.get?.(name)) : modules?.get?.(name);
+        if (module?.bothApps) { publicCommands.push(c); adminCommands.push(module.adminData || c); continue; }
         (belongsOnAdminApp(name, module) ? adminCommands : publicCommands).push(c);
     }
     return { publicCommands, adminCommands };

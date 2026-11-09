@@ -277,8 +277,10 @@ function buildCalendarEventFromParts(prefixChar, rawEntry) {
     if (!startDate) return null; // Unparseable start date -- skip this entry rather than import a wrong one
     // "All Season" means the event runs through the rest of the season with no fixed end date
     const isOngoing = /all season/i.test(endStr);
-    const endDate = isOngoing ? null : parseAdminDate(endStr);
-    if (!isOngoing && !endDate) return null; // Unparseable end date -- same skip
+    // "TBD" (or TBA) means the end is not announced yet: no end date and not ongoing, the same row news triage writes for an undated end, which Needs a Look lists as "Calendar rows with no end date" (2026-11-09 14:51 EST). Until then a TBD line was dropped without a word: his Season 10 paste lost "11/12 - TBD | Create Your Truth Playlist (Verdansk Intro)" that way.
+    const isTBD = /^(tbd|tba)\.?$/i.test(endStr);
+    const endDate = isOngoing || isTBD ? null : parseAdminDate(endStr);
+    if (!isOngoing && !isTBD && !endDate) return null; // Unparseable end date -- same skip
 
     return { title, startDate, endDate, isOngoing, category, isDoubleCP };
 }
@@ -642,8 +644,8 @@ function splitTitleDate(line) {
 function formatCalendarAsBulkText(calendar) {
     return calendar.map(event => {
         const startStr = dayjs.utc(event.date).format('M/D');
-        // A row with no end writes "All Season", and a 2X CP row its marker, so the box reads back what it showed (the fresh review R1, 2026-11-05 20:14 EST): a null end wrote "Invalid Date", which the parser drops, and the 2X flag was lost on every save.
-        const endStr = event.isOngoing || !event.endDate ? 'All Season' : dayjs.utc(event.endDate).format('M/D');
+        // A row with no end writes "All Season", and a 2X CP row its marker, so the box reads back what it showed (the fresh review R1, 2026-11-05 20:14 EST): a null end wrote "Invalid Date", which the parser drops, and the 2X flag was lost on every save. A row with no end that is NOT ongoing writes "TBD" (2026-11-09 15:14 EST): the parser reads TBD back as that same row, where "All Season" would turn a not-yet-announced end into one that runs all season the next time the prefilled box is saved.
+        const endStr = event.isOngoing ? 'All Season' : !event.endDate ? 'TBD' : dayjs.utc(event.endDate).format('M/D');
         const prefix = CALENDAR_CATEGORY_TO_PREFIX[event.category] || 'e';
         return `${prefix}• ${startStr} - ${endStr} | ${event.title}${event.isDoubleCP ? ' 2x CP' : ''}`;
     }).join('\n');

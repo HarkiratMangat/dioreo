@@ -29,7 +29,26 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.16.1 — 2026-11-09 09:40 EST (#266) — A build saved as Build 1 opens first, not fourth
+## v3.17.0 — 2026-11-09 15:56 EST (#267) — Owner delete, an admin /help, announcement drafts, a draw index check and Quick Add for the season draft
+
+### Added
+- **`d owner delete` and `/bot delete`** (owner only; aliases `override`/`dev` and `d`/`purge`): delete Dioreo's or Dioreo Admin's own messages by id, link or last N, in any channel Dioreo can see (`utils/ownerDelete.js`). Each message's author is read first; anyone else gets silence; the owner's note deletes itself after 5 s.
+- **A `/help` on Dioreo Admin** for `/manage`, `/bot`, `/autobuild`, `/embed` and a new **Owner Tools** page; the public `/help` keeps the player pages, with a **Misc** group (settings, prefix, invite, help, announcement), a **Gunsmith Lists** page and an **Announcements** page, and the switcher names each page's main aliases (`commands/help.js` `helpScope`, `utils/helpPages.js`).
+- **Announcement drafts:** `/manage announcement`'s Post New, Post Again and Edit show the announcement as players will get it, with Post, Edit and Discard, before anything is saved; core's validation runs first.
+- **Check Draw Index** in `/manage draws`: paste up to 20 draw or item names and see, per line, whether the draw index has it (found, maybe, fits several, not indexed with the closest named), what it still lacks, its season, and whether /draws or the Next Season Draft lists it (`utils/drawIndexCheck.js`).
+- **Quick Add in the Next Season Draft** (Edit Draws): the /manage draws Quick Add box, staging into the draft; a line takes the tab it was opened from and starts with the draft's Battle Pass unless it says otherwise; end dates go on the draft calendar.
+- **Stage These** on the draft's Needs a Look: the draft calendar's draws with no staged draw open the draft's Quick Add, one line each with the row's dates.
+
+### Changed
+- **The presence's second line** reads "/help · @dioreo help", and the /help line itself too.
+- **The site's Install is "Add bot"**, linking to `/invite` (a redirect to the chooser).
+- **A draw on the "No image yet" placeholder** is listed in Needs a Look and Check Draw Index as still needing its picture.
+
+### Fixed
+- **`/manage emojis` threw "SHORT is not defined"** whenever the other bot's status report existed, since v3.14.0 (#262).
+- **The calendar paste dropped any line whose end was "TBD"** without a word; it now reads TBD as an end not announced yet, and the export and the calendar Edit pop-up write TBD back, where they used to write "All Season".
+
+## v3.16.1 — 2026-11-09 09:40 EST (#266 · `556a0577`) — A build saved as Build 1 opens first, not fourth
 
 ### Fixed
 - **A weapon's builds were listed in Mongo's natural order on the card Open Loadout shows, and by the Prev/Next/number handler**, so a build saved as Build 1 through `/autobuild` after Builds 2 to 4 sat fourth and its button read "Build 4" while its stored name and edit form said Build 1 (Harkirat's report, 2026-11-09 09:25 EST, Kilo Bolt-Action). `utils/openLoadoutCard.js` and `handlers/loadouts.js` now drop placeholders and sort by `compareBuilds`, as `/gunsmith`'s own lookup (`utils/loadoutLookup.js`) already did. Prod data was correct and needed no change.

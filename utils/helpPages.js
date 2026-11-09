@@ -22,17 +22,17 @@ const valuesOf = (name, option) => (textCommandOf(name)?.options || []).find(o =
 
 // Each page's name, as the title and the switcher show it, and its order in the switcher (the v3 announcement's order, his 2026-10-27 19:03 EDT; then /admin and the Bot Admin pages).
 const PAGE_NAMES = {
-    '/gunsmith mp': 'MP Gunsmith', '/gunsmith dmz': 'DMZ Gunsmith', '/draws': 'Lucky Draws', '/draw prices': 'Lucky Draw Prices', '/draw calculator': 'Draw Calculator',
+    '/gunsmith mp': 'MP Gunsmith', '/gunsmith dmz': 'DMZ Gunsmith', '/gunsmith list': 'Gunsmith Lists', '/draws': 'Lucky Draws', '/draw prices': 'Lucky Draw Prices', '/draw calculator': 'Draw Calculator',
     '/today': 'Today', '/calendar': 'Calendar', '/remind': 'Reminders', '/season end': 'Season End', '/patch notes': 'Patch Notes',
-    '/timestamp': 'Timestamps', '/colors': 'Profile Colors', '/settings': 'Settings', '/prefix': 'Server Prefix', '/invite': 'Invite Dioreo', '/admin': 'Server Settings',
-    '/manage': 'Manage Data', '/manage emojis': 'Emoji Manager', '/autobuild': 'Autobuild', '/bot': 'Bot Tools', '/embed': 'Embed Preview',
+    '/timestamp': 'Timestamps', '/colors': 'Profile Colors', '/settings': 'Settings', '/prefix': 'Server Prefix', '/invite': 'Invite Dioreo', '/announcement': 'Announcements', '/admin': 'Server Settings',
+    '/manage': 'Manage Data', '/manage emojis': 'Emoji Manager', '/autobuild': 'Autobuild', '/bot': 'Bot Tools', '/embed': 'Embed Preview', '/owner': 'Owner Tools',
 };
 const PAGE_ORDER = Object.keys(PAGE_NAMES);
 const PAGE_ICON = {
-    '/gunsmith mp': 'gunsmithSearch', '/gunsmith dmz': 'dmz', '/draws': 'newDraws', '/draw prices': 'drawPrices', '/draw calculator': 'calculator',
+    '/gunsmith mp': 'gunsmithSearch', '/gunsmith dmz': 'dmz', '/gunsmith list': 'gunsmithSearch', '/draws': 'newDraws', '/draw prices': 'drawPrices', '/draw calculator': 'calculator',
     '/today': 'dailyUpdate', '/calendar': 'calendar', '/remind': 'remind', '/season end': 'bp', '/patch notes': 'patchNotes',
-    '/timestamp': 'timestamp', '/colors': 'showColors', '/settings': 'settings', '/invite': 'shareHeart', '/prefix': 'command', '/admin': 'serverSettings',
-    '/manage': 'database', '/manage emojis': 'swatches', '/autobuild': 'gunsmithCode', '/bot': 'botAccess', '/embed': 'edit',
+    '/timestamp': 'timestamp', '/colors': 'showColors', '/settings': 'settings', '/invite': 'shareHeart', '/prefix': 'command', '/announcement': 'announcements', '/admin': 'serverSettings',
+    '/manage': 'database', '/manage emojis': 'swatches', '/autobuild': 'gunsmithCode', '/bot': 'botAccess', '/embed': 'edit', '/owner': 'botAccess',
 };
 // /season end wears the live season's own emoji (his call, 2026-10-29 22:55 EDT); /manage emojis its DB_Emojis where the app has it.
 function pageIcon(name, seasonEmoji) {
@@ -90,6 +90,23 @@ const PAGES = {
                     text(`**Good to know**\n> -# Your prefix takes ${code(back)}'s place; ${code('dior')} and **@Dioreo** always work\n> -# Up to ${MAX_LENGTH} characters, no spaces\n> -# ${dot(REMOVE_WORDS)} can't be a prefix: they put it back\n> -# **Edit Prefix** in ${emojis.serverSettings || ''} /admin → Config Text Commands does the same`),
                 ],
                 examples: [[`${x.p} prefix`, "This server's prefix"], [`${x.p} pre !`, 'Set it to ! (admins)'], [`${x.p} prefix reset`, `Back to ${back} (admins)`]],
+            };
+        },
+    },
+    // TEXT ONLY like /prefix (2026-11-09 13:16 EST, Harkirat, 2026-11-09 13:10 EST: "add d announcement to the same category as settings, help, etc on the landing page and create a help page for it as well"). Written from utils/announcementRepost.js.
+    '/announcement': {
+        blurb: "Post the announcements running now, in this channel or another one",
+        textOnly: true,
+        page(x) {
+            return {
+                args: '[words] [channel]',
+                boxes: [
+                    text(`**Which ones**\n-# Blank posts the one running, or opens a picker when there are several\n> -# **Words**  *Match an announcement's first two lines; every word must match*\n> -# **Several**  *Separate them with ${code('|')}, posted in that order*`),
+                    text(`**Somewhere else**\n-# Add a channel ID or #channel at the end to post it there\n> -# Needs **Manage Server** in this server\n> -# You and Dioreo both need to be able to post in that channel`),
+                    text("**Good to know**\n> -# Posted as a plain message, never a reply, so your command can be deleted\n> -# Slash mentions in it stay clickable"),
+                ],
+                sections: [text(`**As a slash command**\n-# ${code('/help cmd:announcement')} shows them only to you; add ${code('visibility:Public')} to post them\n-# Or press **Announcements** under any /help page`)],
+                examples: [[`${x.p} announcement`, 'The one running, or a picker'], [`${x.p} announce launch`, 'The one that mentions "launch"'], [`${x.p} repost beta | prefix`, 'Two, in that order'], [`${x.p} announcement launch #general`, 'Posted in #general']],
             };
         },
     },
@@ -187,6 +204,20 @@ const PAGES = {
     },
     '/gunsmith mp': { blurb: "Find an MP weapon's loadout, or browse a whole class or the Meta", page: x => gunsmithPage(x, 'MP') },
     '/gunsmith dmz': { blurb: "Find a DMZ weapon's loadout, or browse a whole class or the Meta", page: x => gunsmithPage(x, 'DMZ') },
+    // The lists page (2026-11-09 13:16 EST, Harkirat, 2026-11-09 13:10 EST: "add the list command to the landing page for gunsmith"). Its typed forms are /gunsmith mp's words with a list picked (utils/textCommands/commands.js presets), so the page is slash and names them.
+    '/gunsmith list': {
+        blurb: 'META, Best, Top 3, Top 5 and Honorable Mention, by class',
+        slashOnly: true, namesTyped: true, typedWords: ['lists', 'meta', 'best'],
+        page(x) {
+            const p = x.p || 'd';
+            return {
+                boxes: [text('`[view]`\n-# All lists, one list, or a listed weapon (it searches as you type). Blank opens every list'), VIS],
+                // The typed forms only where they work (a server Dioreo is in), as every typed line on /help.
+                sections: x.typedForms === false ? [] : [text(`**Typed**\n> -# **Every list**  ${code(`${p} lists`)}\n> -# **One list**  ${dot([`${p} meta`, `${p} best`, `${p} top`, `${p} hm`])}\n> -# **A weapon in a list**  ${code(`${p} meta ak117`)}`)],
+                examples: [['/gunsmith list'], ['/gunsmith list view:META']],
+            };
+        },
+    },
     '/timestamp': {
         blurb: 'Turn any date or time into a timestamp everyone sees in their own time zone',
         page(x) {
@@ -304,6 +335,29 @@ const PAGES = {
     },
     // The other Bot Admin pages carry their old /help text (his "skip bot admin", 2026-10-29 22:49 EDT). /bot's six subcommands are ONE page with a dropdown inside it (his call, 2026-10-30 14:05 EDT: "Merge the /bot pages into a Singular /bot page with a dropdown inside of it"), so the owner's switcher fits Discord's 25 again: see BOT_SUBS below.
     '/bot': { slashOnly: true, admin: true, subPages: true, blurb: '', page: () => ({}) },
+    // The owner's page (2026-11-09 13:16 EST, Harkirat, 2026-11-09 13:10 EST: "create a help page for the owner-only commands, if none exists"): his typed `d owner delete`, and every owner-only slash command, on Dioreo Admin's /help. A page of its own heading, since its command is typed and no text command lists it (silent for anyone else).
+    '/owner': {
+        blurb: 'Commands only the owner can use, typed and slash',
+        // `namesTyped`: its command is typed, so it is the one admin page that names a typed form, everywhere: the owner reads it in Dioreo Admin's DM, where typed forms cannot run but the command he looks up does, in a server.
+        slashOnly: true, admin: true, namesTyped: true, noSlash: true, typedWords: ['owner delete'],
+        page(x) {
+            const m = n => slashMention(x.client, n);
+            const p = x.p || 'd';
+            return {
+                typedLegend: true,
+                heading: `### ${code(`${p} owner delete [channel] [messages|N]`)}\n${dot(['owner', 'override', 'dev'])} then ${dot(['delete', 'd', 'purge'])}`,
+                boxes: [
+                    text("**What it deletes**\n-# Dioreo's and Dioreo Admin's own messages, never anyone else's. Anyone else typing it gets no reply at all"),
+                    text(`**Which messages**\n> -# **Blank**  *Dioreo's last message here*\n> -# **A number**  *Dioreo's last N here, up to 100*\n> -# **IDs or links**  *Those messages; a link carries its own channel*`),
+                    text("**Where**\n-# A channel ID or #channel picks the channel; blank is this one. A server ID first is fine and ignored: the channel already names its server"),
+                    text("**The note**\n-# One line saying what was deleted, gone after 5 seconds"),
+                ],
+                sections: [text(`**Owner-only slash commands**\n${['/bot delete', '/bot access', '/bot servers', '/bot penalties', '/bot freeze', '/bot hotpatch', '/embed', '/manage emojis'].map(m).join(' · ')}\n-# ${m('/bot delete')} is the slash twin of ${code('d owner delete')}`)],
+                examples: [[`${p} owner delete`, "Dioreo's last message here"], [`${p} dev purge 3`, 'Its last 3 here'], [`${p} owner delete 1536403911676792892 5`, 'Its last 5 in that channel']],
+                legendNote: ' · typed in a server Dioreo is in', gate: true,
+            };
+        },
+    },
     '/embed': adminPage('Render pasted message JSON as a real Components V2 message, to check a design — owner-only', [text('`[json]`\n-# The message JSON; leave both this and `file` empty to paste it in a box'), text('`[file]`\n-# A .json or .txt file, for JSON too long to paste'), text('`[clean]`\n-# Render only the JSON: no Edit JSON button and no emoji note'), VIS], [['/embed clean:True']]),
     '/manage emojis': adminPage('Every app emoji, which bots lack it, and its saved original: sync, upload or find one — owner-only', [VIS], [['/manage emojis']]),
     '/autobuild': adminPage('Read an MP or DMZ loadout out of a Gunsmith screenshot and stage it for review — nothing is saved until you press Save', [
@@ -323,10 +377,11 @@ const BOT_SUBS = {
     '/bot servers': adminPage("One server's /admin rules, a checkup, reply limits, and leave or block — owner-only", [text("`[server]`\n-# A server ID; leave it blank to pick the server you're in or type one")], [['/bot servers']]),
     '/bot penalties': adminPage('Text-command spam penalties: who has one, then lift, extend, exempt or block one person, and tune the ladder — owner-only', [text('`[user]`\n-# A user ID to open; leave it blank for everyone on a penalty now')], [['/bot penalties']]),
     '/bot freeze': adminPage('Pause Dioreo, or chosen commands, without a deploy; you and /bot are never frozen — owner-only', [], [['/bot freeze']]),
+    '/bot delete': adminPage("Delete Dioreo's own messages anywhere it can see them; also typed as `d owner delete` — owner-only", [text('`[messages]`\n-# Message IDs or links, or a number for Dioreo\'s last N; blank deletes its last one'), text('`[channel]`\n-# A channel ID; blank is this channel')], [['/bot delete messages:3']]),
     '/bot hotpatch': adminPage('Reload changed files into the running bot without a restart — owner-only', [text('`[pull]`\n-# git pull first (default: yes)'), text('`[dry_run]`\n-# Show the plan and change nothing'), text('`[file]`\n-# Limit to one changed file (default: everything the pull brought in)')], [['/bot hotpatch dry_run:True']]),
 };
-const BOT_SUB_NAMES = { '/bot analytics': 'Bot Analytics', '/bot access': 'Admin Access', '/bot servers': 'Servers', '/bot penalties': 'Spam Penalties', '/bot freeze': 'Freeze', '/bot hotpatch': 'Hot Patch' };
-const BOT_SUB_ICON = { '/bot analytics': 'mngInfo', '/bot access': 'botAccess', '/bot servers': 'guide', '/bot penalties': 'cooldown', '/bot freeze': 'pending', '/bot hotpatch': 'edit' };
+const BOT_SUB_NAMES = { '/bot analytics': 'Bot Analytics', '/bot access': 'Admin Access', '/bot servers': 'Servers', '/bot penalties': 'Spam Penalties', '/bot freeze': 'Freeze', '/bot delete': 'Delete Messages', '/bot hotpatch': 'Hot Patch' };
+const BOT_SUB_ICON = { '/bot analytics': 'mngInfo', '/bot access': 'botAccess', '/bot servers': 'guide', '/bot penalties': 'cooldown', '/bot freeze': 'pending', '/bot delete': 'deleteBin', '/bot hotpatch': 'edit' };
 const BOT_SUB_ORDER = Object.keys(BOT_SUB_NAMES);
 
 function adminPage(blurb, boxes, examples, extra = {}) {
@@ -370,7 +425,7 @@ const hasTextView = name => Boolean(PAGES[name] && !PAGES[name].slashOnly && tex
 // One command's page: the card's components. `canSwitch` says the other view works here (typed forms where Dioreo is in the server, and a command with a text form). The prefix a typed page's examples use: the server's first (B7: "every typed Usage line on /help shows the prefixes of the server it is read in"), `@Dioreo` where Message Content is off.
 const firstPrefix = (client, prefixes) => (client?.textMessageContent === false ? '@Dioreo' : (prefixes?.[0] || 'd'));
 
-function buildPage(name, { client, view, detail = false, canSwitch = false, seasonEmoji = null, prefixes = null, sub = null, subs = null }) {
+function buildPage(name, { client, view, detail = false, canSwitch = false, typedForms = true, seasonEmoji = null, prefixes = null, sub = null, subs = null }) {
     let def = PAGES[name];
     let title = PAGE_NAMES[name];
     let icon = pageIcon(name, seasonEmoji);
@@ -393,9 +448,9 @@ function buildPage(name, { client, view, detail = false, canSwitch = false, seas
     }
     const typed = view === 'text' || Boolean(def.textOnly);
     const p = firstPrefix(client, prefixes);
-    const part = def.page({ client, p, view, detail });
+    const part = def.page({ client, p, view, detail, typedForms });
     const tc = textCommandOf(name);
-    const usage = typed
+    const usage = part.heading ? text(part.heading) : typed
         ? text(`### ${code(`${p} ${tc.helpWord}${part.args ? ` ${part.args}` : ''}`)}\n${dot(tc.shown || [])}${part.usageExtra || ''}`)
         : text(`### ${slashMention(client, usageName)}${part.usageNote ? `\n${part.usageNote}` : ''}`);
     const buttons = [];
@@ -407,13 +462,14 @@ function buildPage(name, { client, view, detail = false, canSwitch = false, seas
     if (part.sections?.length) out.push(...part.sections, line(1));
     // An example is [code, description?]; one already written as a line (/admin's setups) is used as it is.
     out.push(text(`-# **${part.examplesTitle || 'Examples'}**\n${part.examples.map(([ex, d]) => (ex.startsWith('-# ') ? ex : `-# ${code(ex)}${d ? `  ${d}` : ''}`)).join('\n')}`));
-    out.push(text(`-# Usage: ${code(typed ? `${p} cmd <required> [optional]` : '/cmd <required> [optional]')}${part.legendNote || ''}${part.gate ? `\n${GATE}` : ''}`));
+    out.push(text(`-# Usage: ${code(typed || part.typedLegend ? `${p} cmd <required> [optional]` : '/cmd <required> [optional]')}${part.legendNote || ''}${part.gate ? `\n${GATE}` : ''}`));
     if (part.tail?.length) out.push(line(1), ...part.tail);
     return out;
 }
 
-// The home page, his approved layout (2026-10-29 23:52 EDT): today's hero, links and sign-off; the #1 card's four groups in short words (typed) or as mentions (slash); a Text commands line and its button where typed forms work.
-const HOME_GROUPS = [['gunsmithSearch', 'Gunsmith', ['gunsmith', 'dmz'], ['/gunsmith mp', '/gunsmith dmz']], ['newDraws', 'Draws', ['draws', 'prices', 'calculator'], ['/draws', '/draw prices', '/draw calculator']], ['calendar', 'Season', ['today', 'calendar', 'remind', 'patch notes', 'end'], ['/today', '/calendar', '/remind', '/patch notes', '/season end']], ['eyedropper', 'Utilities', ['timestamp', 'colors', 'settings', 'prefix', 'invite', 'help'], ['/timestamp', '/colors', '/settings', '/invite', '/help']]];
+// The home page, his approved layout (2026-10-29 23:52 EDT): today's hero, links and sign-off; the #1 card's four groups in short words (typed) or as mentions (slash); a Text commands line and its button where typed forms work. 2026-11-09 13:16 EST (Harkirat, 2026-11-09 13:10 EST): the lists join Gunsmith, and what is about Dioreo itself (settings, prefix, invite, help, announcements) leaves Utilities for Misc, his name for it. A slash name in backticks is shown as written, for a form with no slash command of its own.
+const HOME_GROUPS = [['gunsmithSearch', 'Gunsmith', ['gunsmith', 'dmz', 'list'], ['/gunsmith mp', '/gunsmith dmz', '/gunsmith list']], ['newDraws', 'Draws', ['draws', 'prices', 'calculator'], ['/draws', '/draw prices', '/draw calculator']], ['calendar', 'Season', ['today', 'calendar', 'remind', 'patch notes', 'end'], ['/today', '/calendar', '/remind', '/patch notes', '/season end']], ['eyedropper', 'Utilities', ['timestamp', 'colors'], ['/timestamp', '/colors']], ['settings', 'Misc', ['settings', 'prefix', 'invite', 'help', 'announcement'], ['/settings', '/invite', '/help', '`/help cmd:announcement`']]];
+const slashOrAsIs = (client, n) => (n.startsWith('`') ? n : slashMention(client, n));
 function buildHome({ client, view, canSwitch, hero, adminNames = [], prefixes = null }) {
     const typed = view === 'text';
     const p = firstPrefix(client, prefixes);
@@ -424,13 +480,30 @@ function buildHome({ client, view, canSwitch, hero, adminNames = [], prefixes = 
         out.push(text(`### ${emojis.command || ''} Type a command\n-# Start with ${start}, such as ${code(`${p} today`)}`.replace('###  ', '### ')));
         out.push(...HOME_GROUPS.map(([icon, label, words]) => text(`**${emojis[icon]} ${label}**\n${dot(words)}`)));
     } else {
-        out.push(...HOME_GROUPS.map(([icon, label, , names]) => text(`**${emojis[icon]} ${label}**\n${names.map(n => slashMention(client, n)).join(' · ')}`)));
+        out.push(...HOME_GROUPS.map(([icon, label, , names]) => text(`**${emojis[icon]} ${label}**\n${names.map(n => slashOrAsIs(client, n)).join(' · ')}`)));
     }
     // A server admin's /admin and a bot admin's tools: slash only, so they read the same on both views.
-    if (adminNames.length) out.push(text(`**${emojis.serverSettings} Admin**${typed ? ' *(slash only)*' : ''}\n${adminNames.map(n => slashMention(client, n)).join(' · ')}`));
+    if (adminNames.length) out.push(text(`**${emojis.serverSettings} Admin**${typed ? ' *(slash only)*' : ''}\n${adminNames.map(n => (n === '/manage' ? code('/manage <section>') : slashMention(client, n))).join(' · ')}`));
     out.push(text(typed ? `-# ${emojis.info} ${code(`${p} help <command>`)} opens its page, such as ${code(`${p} help calc`)}` : `-# ${emojis.info} **/help** ${code('cmd:')} opens one command's page`));
     if (!typed && canSwitch) out.push(line(1), text(`**Text commands**\n-# Or type one in a message, such as ${code(`${p} today`)}. Works where a server hides slash commands`));
     if (canSwitch) out.push({ type: 1, components: [{ type: 2, style: 2, label: typed ? 'Slash Commands' : 'Text Commands', custom_id: `help_view~${typed ? 'slash' : 'text'}~landing`, ...emojiField('command') }] });
+    return out;
+}
+
+// Dioreo Admin's home page (2026-11-09 13:16 EST, Harkirat, 2026-11-09 13:10 EST): its commands in three groups, each line only what this viewer may use.
+function buildAdminHome({ client, hero, names = [], botSubs = [] }) {
+    const m = n => slashMention(client, n);
+    const out = [...hero, line(2)];
+    const data = ['/manage', '/autobuild'].filter(n => names.includes(n));
+    // A command with subcommands never links as a bare mention (Discord renders it as plain text, found in the 2026-11-09 click-test), so /manage reads as its pattern.
+    const dataName = n => (n === '/manage' ? code('/manage <section>') : m(n));
+    if (data.length) out.push(text(`**${emojis.database} Data**\n${data.map(dataName).join(' · ')}\n-# Right-click or tap and hold a message → Apps: **Add to Calendar** · **Add to Draws** · **Add to Patch Notes** · **Autobuild Gunsmith** · **Edit Loadout**`));
+    const bot = names.includes('/bot') ? botSubs.filter(s => s === '/bot analytics') : [];
+    if (bot.length) out.push(text(`**${emojis.mngInfo} Bot**\n${bot.map(m).join(' · ')}`));
+    const ownerSlash = names.includes('/bot') ? botSubs.filter(s => s !== '/bot analytics') : [];
+    const owner = [...ownerSlash.map(m), ...['/embed', '/manage emojis'].filter(n => names.includes(n)).map(m), ...(names.includes('/owner') ? [code('d owner delete')] : [])];
+    if (owner.length) out.push(text(`**${emojis.botAccess} Owner**\n${owner.join(' · ')}`));
+    out.push(text(`-# ${emojis.info} **/help** ${code('cmd:')} opens one command's page, or pick one below`));
     return out;
 }
 
@@ -443,10 +516,20 @@ function buildSwitcher({ names, current = null, view, client, seasonEmoji = null
         const tc = hasTextView(name) ? textCommandOf(name) : null;
         const emoji = emojis.parseEmoji(pageIcon(name, seasonEmoji) || '');
         // A text-only page has no slash name to show, so it reads as its typed word on both views.
-        const asTyped = tc && (typed || PAGES[name]?.textOnly);
-        options.push({ label: asTyped ? PAGE_NAMES[name] : name, value: name, description: asTyped ? `${p} ${tc.helpWord}` : PAGE_NAMES[name], default: name === current, ...(emoji ? { emoji } : {}) });
+        const noSlash = Boolean(PAGES[name]?.noSlash);
+        const asTyped = (tc && (typed || PAGES[name]?.textOnly)) || noSlash;
+        // The main aliases in the description (2026-11-09 13:16 EST, Harkirat, 2026-11-09 13:10 EST: "in the dropdown list, mention the main aliases for the commands in their desc"): the page's own shown words, at most three. A word that is only the singular or plural of the main one (`draw` beside `draws`) is left out: both always work, so it tells the reader nothing.
+        const main = tc?.helpWord;
+        const also = tc ? (tc.shown || []).filter(w => w !== main && `${w}s` !== main && `${main}s` !== w).slice(0, 3) : [];
+        const typedWords = tc ? [main, ...also] : (PAGES[name]?.typedWords || []);
+        const description = noSlash
+            ? typedWords.map(w => `${p} ${w}`).join(', ')
+            : asTyped
+            ? `${p} ${main}${also.length ? ` · also ${also.join(', ')}` : ''}`
+            : `${PAGE_NAMES[name]}${typedWords.length ? ` · typed: ${typedWords.slice(0, 3).map(w => `${p} ${w}`).join(', ')}` : ''}`;
+        options.push({ label: asTyped ? PAGE_NAMES[name] : name, value: name, description: description.slice(0, 100), default: name === current, ...(emoji ? { emoji } : {}) });
     }
     return { type: 1, components: [{ type: 3, custom_id: typed ? 'help_command~text' : 'help_command', placeholder: 'Jump to a command…', options }] };
 }
 
-module.exports = { PAGES, PAGE_NAMES, PAGE_ORDER, BOT_SUB_ORDER, BOT_SUB_NAMES, buildPage, buildHome, buildSwitcher, hasPage, hasTextView, pageIcon };
+module.exports = { PAGES, PAGE_NAMES, PAGE_ORDER, BOT_SUB_ORDER, BOT_SUB_NAMES, HOME_GROUPS, buildPage, buildHome, buildAdminHome, buildSwitcher, hasPage, hasTextView, pageIcon };

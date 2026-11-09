@@ -421,10 +421,10 @@ async function check(name, fn) {
         assert.strictEqual(c.accent_color, 16743772);
         assert.ok(/Need help\?\n-# Prefix: \*\*`@Dioreo`\*\*, \*\*`d`\*\* or \*\*`dior`\*\*$/.test(c.components[0].components[0].content), c.components[0].components[0].content);
         assert.strictEqual(c.components[0].accessory.custom_id, 'txtpriv_help');
-        assert.deepStrictEqual(c.components.slice(2, 6).map(x => x.content.replace(/^<a?:\w+:\d+> /, '')), ['**Gunsmith:** `gunsmith` · `dmz`', '**Draws:** `draws` · `prices` · `calculator`', '**Season:** `today` · `calendar` · `remind` · `patch notes` · `end`', '**Utilities:** `timestamp` · `colors` · `settings` · `invite` · `help`']);
-        assert.ok(c.components[6].content.endsWith('Or use **slash commands** </help:42>'));
+        assert.deepStrictEqual(c.components.slice(2, 7).map(x => x.content.replace(/^<a?:\w+:\d+> /, '')), ['**Gunsmith:** `gunsmith` · `dmz` · `list`', '**Draws:** `draws` · `prices` · `calculator`', '**Season:** `today` · `calendar` · `remind` · `patch notes` · `end`', '**Utilities:** `timestamp` · `colors`', '**Misc:** `settings` · `prefix` · `invite` · `help` · `announcement`']);
+        assert.ok(c.components[7].content.endsWith('Or use **slash commands** </help:42>'));
         const noContent = helpCard({ textMessageContent: false }).components[0];
-        assert.ok(noContent.components[0].components[0].content.endsWith('Prefix: **`@Dioreo`**') && noContent.components[6].content.includes('`@Dioreo draws`'));
+        assert.ok(noContent.components[0].components[0].content.endsWith('Prefix: **`@Dioreo`**') && noContent.components[7].content.includes('`@Dioreo draws`'));
     });
     await check('Did you mean: one match beside its button, several in a row, with what was typed', async () => {
         const one = didYouMeanCard(['calendar'], 'calender stuff').components[0].components[0];
@@ -617,6 +617,24 @@ async function check(name, fn) {
             const src = require('fs').readFileSync(path.join(__dirname, '..', 'utils', 'announcement.js'), 'utf8');
             assert.ok(/if \(asReply\) await require\('\.\/sendV2Payload'\)\.sendV2Payload\(/.test(src), 'asReply sends through @original, not a follow-up');
         } finally { if (real) require.cache[f] = real; else delete require.cache[f]; if (realSv) require.cache[sv] = realSv; else delete require.cache[sv]; delete require.cache[h]; }
+    });
+    // `d owner delete` (2026-11-09 12:12 EST): anyone but the owner gets nothing at all, and the owner's run never reaches a command module.
+    await check('must NOT: the owner delete words from anyone else get no reply, no help card, no Did you mean', async (before) => {
+        for (const text of [`<@${BOT}> owner delete`, 'd owner delete 3', `<@${BOT}> dev`, 'dior override purge 2', 'd owner']) {
+            const { message, posts } = fakeMessage(text);
+            await onMessage(message);
+            assert.strictEqual(posts.length, 0, `posted for: ${text}`);
+        }
+        assert.strictEqual(ran.length, before);
+    });
+    await check('the owner\'s d owner delete runs the delete and leaves one note, pinging no one', async (before) => {
+        const { message, posts } = fakeMessage('d dev purge');
+        message.author.id = require('../utils/owner').ALLOWED_ADMIN_ID;
+        await onMessage(message);
+        assert.strictEqual(ran.length, before);
+        assert.strictEqual(posts.length, 1);
+        assert.match(posts[0].content, /No Dioreo message found here/);
+        assert.deepStrictEqual(posts[0].allowed_mentions, { parse: [], replied_user: false });
     });
     console.log(failures ? `\n${failures} failing` : '\ntextCommandListener: all passing');
     process.exit(failures ? 1 : 0);

@@ -1138,6 +1138,8 @@ const DIOR_SIG = '<span class="hrt" aria-hidden="true">&#9825;</span> Made with 
    what puts it on its own line under the sig rather than trailing it inline. */
 const SIG_COPYRIGHT = '<span class="sig-cr">&copy; Dioreo&trade;. All rights reserved.</span>';
 const INSTALL_URL = 'https://discord.com/oauth2/authorize?client_id=1491474871778021550';
+// What the site's own buttons link to: dioreo.app/invite, a 302 to INSTALL_URL in _redirects (Harkirat, 2026-11-09 12:03 EST: "change install to add bot and the url to /invite"). /install stays as a redirect so links already shared keep working.
+const INVITE_PATH = '/invite';
 
 /**
  * The install call to action, and the ONLY filled-accent element on the site. Everything else is outlined or plain, so this reads as the single primary action without needing to be large or loud about it.
@@ -1148,13 +1150,13 @@ const INSTALL_URL = 'https://discord.com/oauth2/authorize?client_id=149147487177
 const DISCORD_MARK = `<svg viewBox="0 0 127.14 96.36" aria-hidden="true"><path fill="currentColor" d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"/></svg>`;
 
 // data-spot opts the control into the cursor-tracked highlight in THEME_JS.
-const installBtn = (big = false) => `<a class="ins${big ? ' big' : ''}" href="${INSTALL_URL}"
+const installBtn = (big = false) => `<a class="ins${big ? ' big' : ''}" href="${INVITE_PATH}"
   target="_blank" rel="noopener noreferrer" data-spot
   data-tip="Add to Discord"
-  aria-label="Install Dioreo on Discord">
+  aria-label="Add Dioreo to Discord">
   <span class="ins-gl" aria-hidden="true"></span>
   <span class="ins-ic" aria-hidden="true">${DISCORD_MARK}</span>
-  <span class="ins-t">${big ? 'Add to Discord' : 'Install'}</span>
+  <span class="ins-t">${big ? 'Add to Discord' : 'Add bot'}</span>
   <span class="ins-ar" aria-hidden="true"><svg viewBox="0 0 10 10"><path d="M2.5 7.5 7.5 2.5M4.1 2.5h3.4v3.4"/></svg></span>
 </a>`;
 
@@ -1478,7 +1480,7 @@ const footNav = cur => {
     const tools = [
         pg(TOOL_PAGES[0]),
         out(REPO_URL, 'GitHub', 'Source on GitHub'),
-        out(INSTALL_URL, 'Install', 'Add to Discord'),
+        out(INVITE_PATH, 'Add bot', 'Add to Discord'),
     ];
     return `<nav class="endnav" aria-label="Footer"><div class="en-row">${docs.join(sep)}</div>`
         + `<div class="en-row">${tools.join(sep)}</div></nav>`;
@@ -8747,10 +8749,11 @@ function buildCompanions() {
         // The chronicle family's landing page. Pages already serves the directory index, so this exists for the bare, no-slash form a person types or a Discord message carries — /changelog, not /changelog/.
         + '/changelog /changelog/ 302\n'
         + `/install ${INSTALL_URL} 302\n`
+        + `/invite ${INSTALL_URL} 302\n`
         // The web admin portal lives on its own subdomain (spec decision 8: a host-only session cookie must never be sent to dioreo.app), so this is a convenience alias for the shorter, more memorable path -- same shape as /install pointing at an external target. Was hand-edited directly into a prior build of public/_redirects (bypassing the generator entirely, which every rebuild since then silently discarded) rather than added here; found when CI's "public/ is up to date" gate caught the drift.
         + '/portal https://portal.dioreo.app/ 302\n');
     console.log('  ✓ _redirects (/legal/* → flat paths, /security → contributing#security, '
-        + '/changelog → /changelog/, /install → Discord, /portal → portal.dioreo.app)');
+        + '/changelog → /changelog/, /install and /invite → Discord, /portal → portal.dioreo.app)');
 
     // CONTRIBUTING.md and CONTRIBUTORS.md ARE published now (2026-07-29 22:17 EDT), via EXTRA_PAGES and warmShell. This reverses an earlier decision, so the reason it was reversed is worth keeping: CONTRIBUTING was pulled the first time because a link audit found it shipped four dead links and because it documents working on a repo the reader might not be able to see. Both objections are now answered — CONTRIBUTORS.md is published so that link resolves, the rest degrade to inert text via PUBLISHED_TARGETS, and the header carries a repo link on every page. linkAudit() enforces the first part on every build rather than trusting this note.
 }
@@ -8860,6 +8863,11 @@ function linkAudit() {
     const walk = d => fs.readdirSync(d, { withFileTypes: true })
         .flatMap(e => e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)]);
 
+    // A root path that _redirects answers (the site's own /invite button, 2026-11-09 12:12 EST) resolves on Cloudflare Pages, not in the tree, so it counts as live. Only exact source paths: a redirect never makes a mistyped page name pass.
+    const redirectsFile = path.join(root, '_redirects');
+    const redirected = new Set(fs.existsSync(redirectsFile)
+        ? fs.readFileSync(redirectsFile, 'utf8').split('\n').map(l => l.trim().split(/\s+/)[0]).filter(Boolean)
+        : []);
     let checked = 0;
     const dead = [];
     for (const file of walk(root).filter(f => f.endsWith('.html'))) {
@@ -8870,6 +8878,7 @@ function linkAudit() {
             const rel = raw.split('#')[0];
             if (rel === '') continue;
             checked++;
+            if (rel.startsWith('/') && redirected.has(rel)) continue;
             let target = path.resolve(path.dirname(file), rel);
             if (fs.existsSync(target) && fs.statSync(target).isDirectory()) {
                 target = path.join(target, 'index.html');

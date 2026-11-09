@@ -209,7 +209,8 @@ function draftDrawsView(doc, sec = 'n', page = 0, note = null) {
         components.push({ type: 9, components: [text(`### ${tier && emojis[tier] ? `${emojis[tier]} ` : ''}${d.title || '(untitled)'}\n-# ${dayStamp(d.date)} · ${plural(items, 'item')}${d.thumbnailUrl ? '' : ' · no picture'} · *${origin(d)}*`)], accessory: btn(['ddedit', s, String(d._id || '')], 'Edit', emojis.edit) });
     }
     if (pages > 1) components.push(row(arrow(['dd', s, pg - 1], 'left', pg === 0), counter(['ddpg', s], `Page ${pg + 1} / ${pages}`), arrow(['dd', s, pg + 1], 'right', pg === pages - 1)));
-    components.push(BIG(), row(btn(['ddadd', s], 'Add Draw', emojis.mngAdd, 3), btn(['ddrm', s], 'Remove Draws', emojis.deleteBin, 4, !list.length), btn('dr', 'Paste Draws', emojis.mngBulkAdd), btn(['view', 'draft'], 'Back', emojis.returnArrow)));
+    // Quick Add (2026-11-09 14:13 EST, Harkirat: "theres no 'quick add' options in /manage season draft when adding draws"): the /manage draws Quick Add, staging into the draft (handlers/manage/quickAdd.js, target 'draft').
+    components.push(BIG(), row(btn(['ddqa', s], 'Quick Add', emojis.mngAdd, 3), btn(['ddadd', s], 'Add Draw', emojis.mngAdd), btn(['ddrm', s], 'Remove Draws', emojis.deleteBin, 4, !list.length), btn('dr', 'Paste Draws', emojis.mngBulkAdd), btn(['view', 'draft'], 'Back', emojis.returnArrow)));
     return panel(components);
 }
 // The Add / Edit Draw pop-up: Title, Items (one per line, as the bulk format writes them), Release Date, Image Link, Draw Type.
@@ -254,6 +255,9 @@ function needsLook(doc) {
     if (!r.dmz) w.push('DMZ not set');
     const noPic = draws.filter(x => !x.thumbnailUrl).map(x => x.title);
     if (noPic.length) w.push(`Draws with no picture: ${names(noPic)}`);
+    // A placeholder stands in until the real picture exists, and is still a picture to find (utils/placeholders.js isPlaceholder).
+    const holding = draws.filter(x => x.thumbnailUrl && require('../../../utils/placeholders').isPlaceholder(x.thumbnailUrl)).map(x => x.title);
+    if (holding.length) w.push(`Draws still on the placeholder picture: ${names(holding)}`);
     const noItems = draws.filter(x => !(x.items || []).some(i => i.tier !== 'comment')).map(x => x.title);
     if (noItems.length) w.push(`Draws with no items: ${names(noItems)}`);
     const noDraw = calDraws.filter(c => !draws.some(x => isSameDrawTitle(x.title, c.title))).map(c => c.title);
@@ -271,17 +275,30 @@ function needsLook(doc) {
     if ((r.stillRunning || []).length) w.push(`Live with no end date, may run into this season: ${names(r.stillRunning)}`);
     return w;
 }
+// The draft's calendar draw rows with no staged draw of the same draw (isSameDrawTitle, as needsLook matches them), as Quick Add lines with the row's own dates (2026-11-09 14:37 EST, Harkirat's "yes" to a Stage These button): `Title, starts 2026-11-20, ends 2027-02-17`, a time added when the row has one. Quick Add reads its own When format back the same way.
+function unstagedCalendarLines(doc, max = 10) {
+    const { isSameDrawTitle } = require('../../../utils/search');
+    const d = doc?.draft || {};
+    const draws = [...(d.newDraws || []), ...(d.returningDraws || [])];
+    const day = (x) => { const iso = new Date(x).toISOString(); return iso.slice(11, 16) === '00:00' ? iso.slice(0, 10) : `${iso.slice(0, 10)} ${iso.slice(11, 16)} UTC`; };
+    // A draw still on the LIVE /draws keeps its live section, as the daily carry-over files it (utils/newsTriage/draftMerge.js); any other line takes the tab Quick Add opens in (New).
+    const liveSection = (title) => ((doc?.returningDraws || []).some(x => isSameDrawTitle(x.title, title)) ? 'returning' : (doc?.newDraws || []).some(x => isSameDrawTitle(x.title, title)) ? 'new' : null);
+    return (d.calendar || []).filter(c => c.category === 'draw' && !draws.some(x => isSameDrawTitle(x.title, c.title)))
+        .slice(0, max).map(c => [c.title, liveSection(c.title), c.date ? `starts ${day(c.date)}` : null, c.endDate ? `ends ${day(c.endDate)}` : null].filter(Boolean).join(', '));
+}
 function needsLookView(doc) {
     const w = needsLook(doc);
+    const unstaged = unstagedCalendarLines(doc);
     const p = provenance(doc?.draft);
     return panel([
-        text(`${crumb('Next Season Draft', 'Needs a Look')}\n## ${w.length ? emojis.warn : emojis.checkmark} Needs a Look\n-# What to check before this draft goes live. Fix it with Edit Titles & Deadlines, Paste Draws or Paste Calendar.`),
+        text(`${crumb('Next Season Draft', 'Needs a Look')}\n## ${w.length ? emojis.warn : emojis.checkmark} Needs a Look\n-# What to check before this draft goes live. Fix it with Edit Titles & Deadlines, Paste Draws or Paste Calendar${unstaged.length ? ', or Stage These for the calendar draws not staged yet' : ''}.`),
         SMALL(),
         text((w.length ? w.map(x => `${emojis.warn} ${x}`).join('\n') : `${emojis.checkmark} **Everything checked is ready.**`).slice(0, 3600)),
         SMALL(),
         text(`-# **Where the rows came from:** ${p.typed} typed by you · ${p.news} from news · ${p.carried} carried over · ${p.edited} news rows you edited. Each row says which in the Compact List.`),
         BIG(),
-        row(btn(['view', 'draft'], 'Back', emojis.returnArrow), homeBtn()),
+        // Stage These opens the draft's Quick Add with the calendar draws that have no staged draw, one line each with the row's dates.
+        row(...(unstaged.length ? [btn('ddstage', `Stage These · ${unstaged.length}`, emojis.mngAdd, 1)] : []), btn(['view', 'draft'], 'Back', emojis.returnArrow), homeBtn()),
     ]);
 }
 
@@ -410,4 +427,4 @@ function resultView({ crumbs = [], title, body = [], ok = true, back = ['view', 
     ]);
 }
 
-module.exports = { ID, PAGE, row, text, btn, panel, homeBtn, plural, whenLine, stamp, seasonRows, counts, newsRows, calendarDrawsWithoutDraw, isStaged, pageView, listView, botLookView, previewDoc, needsLook, needsLookView, origin, draftDrawsView, draftDrawModal, draftRemoveModal, promoteConfirm, promoteModal, discardConfirm, resultView };
+module.exports = { unstagedCalendarLines, ID, PAGE, row, text, btn, panel, homeBtn, plural, whenLine, stamp, seasonRows, counts, newsRows, calendarDrawsWithoutDraw, isStaged, pageView, listView, botLookView, previewDoc, needsLook, needsLookView, origin, draftDrawsView, draftDrawModal, draftRemoveModal, promoteConfirm, promoteModal, discardConfirm, resultView };

@@ -37,8 +37,10 @@ function validateEvent(payload) {
     if (!parsedStart) errors.push(`Could not read the start date "${payload?.startDate || ''}".`);
     const endDateRaw = (payload?.endDate || '').trim();
     const isOngoing = !endDateRaw;
-    const parsedEnd = isOngoing ? null : parseAdminDate(endDateRaw);
-    if (!isOngoing && !parsedEnd) errors.push(`Could not read the end date "${endDateRaw}".`);
+    // "TBD" (or TBA) is an end not announced yet: no end date and not ongoing, as Paste Calendar reads it (2026-11-09 15:14 EST).
+    const isTBD = /^(tbd|tba)\.?$/i.test(endDateRaw);
+    const parsedEnd = isOngoing || isTBD ? null : parseAdminDate(endDateRaw);
+    if (!isOngoing && !isTBD && !parsedEnd) errors.push(`Could not read the end date "${endDateRaw}".`);
     if (errors.length) return { ok: false, errors };
     const category = normalizeCalendarCategory(payload.category, title);
     return {

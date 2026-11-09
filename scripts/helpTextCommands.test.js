@@ -65,7 +65,7 @@ async function check(name, fn) {
     await check('the typed home: the #1 card\'s four groups in short words, the prefixes, and a Slash Commands button', async () => {
         const home = await all(null, 'text');
         assert.ok(home.includes('Type a command') && home.includes('**`@Dioreo`**, **`d`** or **`dior`**'), 'no prefix line');
-        for (const g of ['`gunsmith` · `dmz`', '`draws` · `prices` · `calculator`', '`today` · `calendar` · `remind` · `patch notes` · `end`', '`timestamp` · `colors` · `settings` · `prefix` · `invite` · `help`']) assert.ok(home.includes(g), `missing ${g}`);
+        for (const g of ['`gunsmith` · `dmz` · `list`', '`draws` · `prices` · `calculator`', '`today` · `calendar` · `remind` · `patch notes` · `end`', '`timestamp` · `colors`', 'Misc**\n`settings` · `prefix` · `invite` · `help` · `announcement`']) assert.ok(home.includes(g), `missing ${g}`);
         assert.ok(home.includes('`d help <command>` opens its page'));
         assert.ok(!home.includes('/today'), 'the retired `/` prefix is still named');
         assert.ok(buttonIds({ components: await msg(null, 'text') }).includes('help_view~slash~landing'));
@@ -164,7 +164,8 @@ async function check(name, fn) {
         assert.ok(buttonIds({ components: await msg('/draw prices', 'text', { detail: true }) }).includes('help_view~text~/draw prices'));
     });
     await check('a slash-only page (/admin and every Bot Admin page) has no typed form and no Text Command button', async () => {
-        for (const name of help.visiblePageNames(ALL).filter(n => !H.hasTextView(n))) {
+        // A page that names its typed forms on purpose (`namesTyped`: the gunsmith lists, the owner's page) is checked by its own rule below.
+        for (const name of help.visiblePageNames(ALL).filter(n => !H.hasTextView(n) && !H.PAGES[n].namesTyped)) {
             const comps = await msg(name, 'text');
             const page = texts({ components: comps }).join('\n');
             // /admin's page names `d today` as what its Config Text Commands view switches on and off (B7, his draft 2026-10-30): a description, never a typed usage line, so only the usage heading is checked there.
@@ -190,7 +191,7 @@ async function check(name, fn) {
         const servers = await msg('/bot servers', 'slash', { perms: ALL });
         const json = JSON.stringify(servers[0]);
         const picker = JSON.parse(json.match(/\{"type":3,"custom_id":"help_bot"[^]*?\]\}/)[0]);
-        assert.deepStrictEqual(picker.options.map(o => o.value), ['/bot analytics', '/bot access', '/bot servers', '/bot penalties', '/bot freeze', '/bot hotpatch']);
+        assert.deepStrictEqual(picker.options.map(o => o.value), ['/bot analytics', '/bot access', '/bot servers', '/bot penalties', '/bot freeze', '/bot delete', '/bot hotpatch']);
         assert.strictEqual(picker.options.find(o => o.default).value, '/bot servers');
         assert.ok(json.includes('## ') && json.includes('Servers'), 'titled with the subcommand');
         const analyticsOnly = { botAdmin: true, bot: true };
@@ -215,10 +216,12 @@ async function check(name, fn) {
         const typed = (await msg('/season end', 'text'))[0].components.find(c => c.type === 1 && c.components[0].type === 3).components[0];
         assert.strictEqual(typed.custom_id, 'help_command~text');
         const se = typed.options.find(o => o.value === '/season end');
-        assert.ok(se.label === 'Season End' && se.description === 'd end' && se.default, JSON.stringify(se));
+        // The main aliases ride in the description (2026-11-09 13:10 EST, his ask), at most three.
+        assert.ok(se.label === 'Season End' && se.description === 'd end · also se, season end, rank end' && se.default, JSON.stringify(se));
         const slash = (await msg('/season end', 'slash'))[0].components.find(c => c.type === 1 && c.components[0].type === 3).components[0];
         const se2 = slash.options.find(o => o.value === '/season end');
-        assert.ok(slash.custom_id === 'help_command' && se2.label === '/season end' && se2.description === 'Season End');
+        assert.ok(slash.custom_id === 'help_command' && se2.label === '/season end' && se2.description === 'Season End · typed: d end, d se, d season end', JSON.stringify(se2));
+        assert.ok([...typed.options, ...slash.options].every(o => o.description.length <= 100), 'Discord caps a description at 100');
     });
     await check('without Message Content every typed form reads @Dioreo', async () => {
         const page = await all('/draws', 'text', { c: client(false) });
@@ -229,7 +232,8 @@ async function check(name, fn) {
         assert.strictEqual(help.typedFormsHere({ guildId: null, client: dmClient }), false, 'a DM');
         assert.strictEqual(help.typedFormsHere({ guildId: '901', client: dmClient }), false, 'a server Dioreo is not in');
         assert.strictEqual(help.typedFormsHere({ guildId: '900', client: dmClient }), true, 'a server Dioreo is in');
-        for (const [cmd] of every(ALL)) {
+        // The owner's page names his typed command everywhere (namesTyped, admin): it is documentation of a command that runs in a server.
+        for (const [cmd] of every(ALL).filter(([c]) => c !== '/owner')) {
             const comps = await msg(cmd, 'text', { typedForms: false });
             const page = texts({ components: comps }).join('\n');
             assert.ok((cmd === '/admin' ? !/### `d /.test(page) : !/`d [a-z]/.test(page)) && !page.includes('Text commands'), `${cmd || 'home'}: shows a typed form where it cannot work`);
@@ -283,6 +287,53 @@ async function check(name, fn) {
             const msg = await help.buildHelpMessage({ perms, client: client(true), cmd, view });
             for (const id of emojiIds({ components: [...msg, help.helpFooterRow()] })) assert.ok(ownedIds.has(id), `${cmd || 'home'} ${view}: a component names emoji ${id}, which the app does not own`);
         }
+    });
+    // Two /help commands (2026-11-09 13:10 EST, his ask): Dioreo's for players and server admins, Dioreo Admin's for the admin and owner pages. One /help with everything while Dioreo Admin is off.
+    await check('scopes: the public /help has no Bot Admin pages, Dioreo Admin\'s has only those and the owner\'s page, and "all" keeps both', async () => {
+        const H2 = require('../utils/helpPages');
+        const pub = help.visiblePageNames(ALL, 'public');
+        const adm = help.visiblePageNames(ALL, 'admin');
+        assert.ok(!pub.some(n => H2.PAGES[n].admin), `admin page on the public /help: ${pub.filter(n => H2.PAGES[n].admin)}`);
+        assert.ok(pub.includes('/admin') && pub.includes('/announcement') && pub.includes('/gunsmith list'), 'server settings, announcements and the lists stay public');
+        assert.deepStrictEqual(adm, ['/manage', '/manage emojis', '/autobuild', '/bot', '/embed', '/owner']);
+        assert.deepStrictEqual(help.visiblePageNames({ botAdmin: true, manage: true }, 'admin'), ['/manage'], 'an admin with only /manage sees only /manage');
+        assert.ok(!help.visiblePageNames({}, 'admin').length, 'no pages for someone with no admin access');
+        const allNames = help.visiblePageNames(ALL);
+        for (const n of [...pub, ...adm]) assert.ok(allNames.includes(n), `${n} missing from the one-/help setup`);
+        const home = texts({ components: await help.buildHelpMessage({ perms: ALL, client: client(true), view: 'slash', scope: 'admin' }) }).join('\n');
+        assert.ok(home.includes('Dioreo Admin') && home.includes(' Owner**') && home.includes('`d owner delete`') && !home.includes('Misc') && !home.includes('/draws'), 'the admin home');
+        const pubHome = texts({ components: await help.buildHelpMessage({ perms: ALL, client: client(true), view: 'slash', scope: 'public' }) }).join('\n');
+        assert.ok(!/\/manage|\/bot /.test(pubHome) && pubHome.includes('Misc'), 'the public home names no admin command');
+        assert.strictEqual(await help.resolvePage('manage', ALL, 'public'), null, '/manage is not opened from the public /help');
+        assert.strictEqual(await help.resolvePage('announcement', ALL, 'public'), '/announcement');
+        assert.strictEqual(await help.resolvePage('owner', ALL, 'admin'), '/owner');
+        assert.strictEqual(await help.resolvePage('owner', { botAdmin: true, manage: true }, 'admin'), null, 'only the owner opens the owner page');
+        const choices = await help.helpChoices('an', ALL, 'admin');
+        assert.ok(!choices.some(c => c.value === 'announcement'), 'no announcements shortcut on Dioreo Admin');
+    });
+    await check('helpScope: Dioreo Admin\'s interaction is "admin", Dioreo\'s is "public", and "all" with the admin app off', () => {
+        const clients = require('../bot/clients');
+        const before = { ...clients.clients };
+        try {
+            clients.setClients({ public: { application: { id: 'P' } }, admin: null });
+            assert.strictEqual(help.helpScope({ applicationId: 'A' }), 'all');
+            clients.setClients({ public: { application: { id: 'P' } }, admin: { application: { id: 'A' } } });
+            assert.strictEqual(help.helpScope({ applicationId: 'A' }), 'admin');
+            assert.strictEqual(help.helpScope({ applicationId: 'P' }), 'public');
+            assert.strictEqual(help.helpScope({}), 'public', 'a text command (no application id) is the public /help');
+        } finally { clients.setClients(before); }
+    });
+    await check('the announcement and owner pages, and the lists page hiding its typed forms where they cannot work', async () => {
+        const ann = await all('/announcement', 'text');
+        assert.ok(ann.includes('### `d announcement [words] [channel]`') && ann.includes('`announce` · `repost`') && ann.includes('/help cmd:announcement'));
+        const owner = await all('/owner', 'slash');
+        assert.ok(owner.includes('### `d owner delete [channel] [messages|N]`') && owner.includes('`override`') && owner.includes('never anyone else'));
+        assert.ok(owner.includes('-# Usage: `d cmd <required> [optional]`'), 'a typed command reads the typed legend');
+        const sw = JSON.stringify(await msg('/owner', 'slash'));
+        assert.ok(sw.includes('"label":"Owner Tools","value":"/owner","description":"d owner delete"'), 'the owner page is no slash command in the switcher');
+        const listHere = await all('/gunsmith list', 'slash');
+        const listDm = await all('/gunsmith list', 'slash', { typedForms: false });
+        assert.ok(listHere.includes('`d lists`') && !listDm.includes('`d lists`'));
     });
     if (failed) { console.log(`\n${failed} check(s) failed.`); process.exit(1); }
     console.log(`\nAll /help text-command checks passed. Home: ${homeCount} of 40 components. Largest page: ${largest.cmd} (${largest.view}), ${largest.n} of 40 components (${largest.chars} characters). Typed forms parsed: ${spans}.`);

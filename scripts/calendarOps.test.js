@@ -169,4 +169,30 @@ check('calendar.bulkAdd: the original db-deferred-list repro ("Krai BR Mode")', 
     assert.strictEqual(r.normalized.payload.parsed[0].title, 'Krai BR Mode', 'must not truncate to "Krai BR Mod"');
 });
 
+check('calendar paste: a TBD end is a row with no end date, never a dropped line (2026-11-09)', () => {
+    const { parseBulkEvents } = require('../utils/adminParser');
+    const [p] = parseBulkEvents('11/12 - TBD | Create Your Truth Playlist (Verdansk Intro)');
+    assert.ok(p, 'the line must not be dropped');
+    assert.strictEqual(p.endDate, null); assert.strictEqual(p.isOngoing, false);
+    assert.strictEqual(parseBulkEvents('12/4 - tba | Cold Embrace Mythic Drop')[0].endDate, null);
+    assert.strictEqual(parseBulkEvents('12/4 - soonish | Nope').length, 0, 'an unreadable end is still skipped');
+});
+
+check('a TBD row round-trips through the export, the single Add/Edit validation and the Edit pop-up', () => {
+    const { parseBulkEvents, formatCalendarAsBulkText } = require('../utils/adminParser');
+    const row = { title: 'Create Your Truth Playlist', date: new Date('2026-11-12T00:00:00Z'), endDate: null, isOngoing: false, category: 'playlist' };
+    const text = formatCalendarAsBulkText([row]);
+    assert.ok(/ - TBD \| /.test(text), text);
+    const [back] = parseBulkEvents(text);
+    assert.strictEqual(back.isOngoing, false); assert.strictEqual(back.endDate, null);
+    assert.ok(/All Season/.test(formatCalendarAsBulkText([{ ...row, isOngoing: true }])), 'an ongoing row still exports All Season');
+    const v = ops.resolveOp('calendar.add').validate({ type: 'calendar.add', payload: { title: 'X', startDate: '11/12', endDate: 'TBD' } });
+    assert.strictEqual(v.ok, true, JSON.stringify(v.errors));
+    assert.strictEqual(v.normalized.payload.isOngoing, false); assert.strictEqual(v.normalized.payload.endDate, null);
+    const blank = ops.resolveOp('calendar.add').validate({ type: 'calendar.add', payload: { title: 'X', startDate: '11/12', endDate: '' } });
+    assert.strictEqual(blank.normalized.payload.isOngoing, true, 'blank is still All Season');
+    const src = require('fs').readFileSync(require.resolve('../commands/manage.js'), 'utf8');
+    assert.ok(src.includes("targetEvent.endDate ? formatAdminDate(targetEvent.endDate) : 'TBD'"), 'the Edit pop-up prefills TBD for a row with no end that is not ongoing');
+});
+
 process.exit(failures ? 1 : 0);

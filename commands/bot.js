@@ -1314,6 +1314,10 @@ module.exports = {
         .addSubcommand(sub => sub.setName('penalties').setDescription('Text-command spam penalties: lift, extend, exempt, block, tune (owner-only)')
             .addStringOption(o => o.setName('user').setDescription('A user ID to open (blank: everyone on a penalty now)')))
         .addSubcommand(sub => sub.setName('freeze').setDescription('Pause Dioreo, or some commands, without a deploy (owner-only)'))
+        // `/bot delete` (2026-11-09 12:12 EST, Harkirat: "Can we also wire it into Dioreo Admin as a slash command?"): the slash twin of `d owner delete`, utils/ownerDelete.js.
+        .addSubcommand(sub => sub.setName('delete').setDescription("Delete Dioreo's own messages by ID, link or count (owner-only)")
+            .addStringOption(o => o.setName('messages').setDescription('Message IDs or links, or a number for the last N (blank: the last one)'))
+            .addStringOption(o => o.setName('channel').setDescription('Channel ID (blank: this channel)')))
         .addSubcommand(sub => sub.setName('hotpatch').setDescription('Reload changed files without a restart')
             .addBooleanOption(o => o.setName('pull').setDescription('git pull first (default: yes)'))
             .addBooleanOption(o => o.setName('dry_run').setDescription('Show the plan and change nothing'))
@@ -1358,6 +1362,15 @@ module.exports = {
             if (!userId) return sendV2Payload(interaction, buildPenaltiesPanel(interaction.client), { allowedMentions: { parse: [] } });
             if (!/^\d{15,22}$/.test(userId)) return sendV2Payload(interaction, buildPenaltiesPanel(interaction.client, { note: `-# ${emojis.cross} That is not a user ID: 17–20 digits.` }), { allowedMentions: { parse: [] } });
             return sendV2Payload(interaction, buildPenaltyUserPanel(interaction.client, userId), { allowedMentions: { parse: [] } });
+        }
+
+        if (sub === 'delete') {
+            // Owner-only, never grantable: it deletes Dioreo's own messages in any server. Always private; the same code as `d owner delete`.
+            if (!isOwner(interaction.user.id)) {
+                return interaction.reply({ content: `${BOT_EMOJI.accessDenied} **Only the bot owner can use this.**`, ephemeral: true });
+            }
+            await interaction.deferReply({ flags: 64 });
+            return require('../utils/ownerDelete').runFromSlash(interaction);
         }
 
         if (sub === 'hotpatch') {

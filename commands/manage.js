@@ -492,13 +492,13 @@ function buildAddDrawModal(drawType, prefill = {}) {
     return modal;
 }
 
-// QUICK ADD (2026-11-01, Harkirat: "a large text field form, where I just type the draw name or item name (plus a start and/or end date. One per line"). One box; handlers/manage/quickAdd.js reads it with utils/quickAdd.js and answers with a draft to check before anything is saved. A placeholder is capped at 100 characters (buildCalendarBulkModal's 2026-08-07 crash), so it carries one example and the description the rest.
-function buildQuickAddModal() {
-    return new ModalBuilder().setCustomId('modal_draws_quickadd').setTitle('Quick Add Draws').addLabelComponents(
+// QUICK ADD (2026-11-01, Harkirat: "a large text field form, where I just type the draw name or item name (plus a start and/or end date. One per line"). One box; handlers/manage/quickAdd.js reads it with utils/quickAdd.js and answers with a draft to check before anything is saved. A placeholder is capped at 100 characters (buildCalendarBulkModal's 2026-08-07 crash), so it carries one example and the description the rest. `draftSection` ('n' | 'r', 2026-11-09 14:13 EST): the Next Season Draft's own Quick Add, opened from its Draws view; a line without new or returning takes the tab it was opened from. `value` (2026-11-09 14:37 EST): lines to start the box with, for Needs a Look's Stage These.
+function buildQuickAddModal({ draftSection = null, value = '' } = {}) {
+    const draft = draftSection === 'n' || draftSection === 'r';
+    return new ModalBuilder().setCustomId(draft ? `modal_draws_quickadd_draft_${draftSection}` : 'modal_draws_quickadd').setTitle(draft ? 'Quick Add to the Draft' : 'Quick Add Draws').addLabelComponents(
         new LabelBuilder().setLabel('One draw per line: name, then dates')
-            .setDescription('Returning unless a line says new. e.g. "cx9 mythic, new, ends Nov 5" · "herrscher, ends Nov 12 7pm"')
-            .setTextInputComponent(new TextInputBuilder().setCustomId('lines').setStyle(TextInputStyle.Paragraph).setMaxLength(4000)
-                .setPlaceholder('Herrscher of Reason, ends Nov 12 7pm edt'))
+            .setDescription(draft ? `${draftSection === 'n' ? 'New' : 'Returning'} unless a line says otherwise. e.g. "cx9 mythic, ends Nov 5" · "herrscher, returning"` : 'Returning unless a line says new. e.g. "cx9 mythic, new, ends Nov 5" · "herrscher, ends Nov 12 7pm"')
+            .setTextInputComponent((() => { const t = new TextInputBuilder().setCustomId('lines').setStyle(TextInputStyle.Paragraph).setMaxLength(4000).setPlaceholder('Herrscher of Reason, ends Nov 12 7pm edt'); return value ? t.setValue(String(value).slice(0, 4000)) : t; })())
     );
 }
 
@@ -586,7 +586,8 @@ function buildEditCalendarModal(targetEvent, targetId) {
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('title').setLabel('Event Title').setStyle(TextInputStyle.Short).setValue(targetEvent.title)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('start_date').setLabel('Start Date').setStyle(TextInputStyle.Short).setValue(formatAdminDate(targetEvent.date))),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('end_date').setLabel('End Date (blank = All Season)').setStyle(TextInputStyle.Short).setValue(targetEvent.isOngoing ? '' : formatAdminDate(targetEvent.endDate)).setRequired(false)),
+        // A row with no end that is not ongoing prefills "TBD" (2026-11-09 15:14 EST): a blank box saves as All Season, so a TBD row edited for a typo used to become one that runs all season.
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('end_date').setLabel('End Date (blank = All Season, or TBD)').setStyle(TextInputStyle.Short).setValue(targetEvent.isOngoing ? '' : targetEvent.endDate ? formatAdminDate(targetEvent.endDate) : 'TBD').setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('category').setLabel('Section (draw / event / playlist)').setStyle(TextInputStyle.Short).setValue(targetEvent.category || 'event').setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('double_cp').setLabel('Double CP Event? (Y/N)').setStyle(TextInputStyle.Short).setValue(targetEvent.isDoubleCP ? 'Yes' : 'No').setRequired(false))
     );

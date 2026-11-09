@@ -6,7 +6,9 @@
 //
 // PICK (his ask, 2026-11-01 11:50 EDT: "will it ask me for confirmation to pick from a dropdown list"): a draw the words only guess at, or only describe ("mythic character"), gets a Pick button in place of Edit. It opens a dropdown of up to 24 draws from the index plus "keep as typed"; the pick replaces the row and the row's button turns back into Edit. A row still waiting for a pick is skipped on Save.
 //
-// custom_ids: modal_draws_quickadd · mng_qa_edit_<token>_<i> · modal_qa_edit_<token>_<i> · mng_qa_pick_<token>_<i> · modal_qa_pick_<token>_<i> · mng_qa_save_<token> · mng_qa_cancel_<token> · mng_qa_revert_<token> (after Save). The router's /manage lock runs on the `mng_` and `modal_` prefixes first; commitSet checks the admin's tiers again on Save (draws create, and calendar create for an end date).
+// THE DRAFT TARGET (2026-11-09 14:13 EST, Harkirat: "theres no 'quick add' options in /manage season draft when adding draws"): the Next Season Draft's Draws view opens the same box as modal_draws_quickadd_draft_<n|r>. The state carries target 'draft' and the tab it came from: lines match against the DRAFT's lists (a draw already staged is "already staged", never added twice), a line without new or returning takes that tab, and Save stages everything in one commitSet of season.bulkDraftDraws (and season.bulkDraftCalendar for end dates) instead of draw.add and calendar rows. Nothing reaches players until Promote. A draw with no picture is left out, as the draft's Add Draw and Paste Draws leave it out.
+//
+// custom_ids: modal_draws_quickadd · modal_draws_quickadd_draft_<n|r> · mng_qa_edit_<token>_<i> · modal_qa_edit_<token>_<i> · mng_qa_pick_<token>_<i> · modal_qa_pick_<token>_<i> · mng_qa_save_<token> · mng_qa_cancel_<token> · mng_qa_revert_<token> (after Save). The router's /manage lock runs on the `mng_` and `modal_` prefixes first; commitSet checks the admin's tiers again on Save (draws create, and calendar create for an end date).
 const { randomBytes } = require('crypto');
 const { ModalBuilder, LabelBuilder, StringSelectMenuBuilder } = require('discord.js');
 const BOT_EMOJI = require('../../utils/emojiMap');
@@ -32,12 +34,29 @@ function getDraft(token, userId) {
     return d && d.userId === userId ? d : null;
 }
 
+// The lists a line is matched against: /draws for the live Quick Add, the Next Season Draft's own for the draft one (its season title too, so a New draw is indexed under the draft's season).
+async function listsFor(state) {
+    const doc = await loadOrCreateSeasonalDoc();
+    if (state?.target !== 'draft') return doc;
+    const d = doc.draft || {};
+    return { newDraws: d.newDraws || [], returningDraws: d.returningDraws || [], calendar: d.calendar || [], currentSeasonTitle: d.currentSeasonTitle || '', bpStart: d.bpStart || null, draft: d };
+}
+
+// In the draft, a draw not already staged and whose line named no section goes in the tab Quick Add was opened from, and one whose line gave no start starts with the draft's season (its Battle Pass start), not today: a staged draw dated today would read as already running when Promote makes it live.
+function applySection(d, state) {
+    if (state?.target !== 'draft') return d;
+    if (state.section && !d.existing && !d.categoryGiven) d.category = state.section === 'r' ? 'returning' : 'new';
+    if (state.bpStart && !d.existing && !d.startGiven) d.start = new Date(state.bpStart);
+    return d;
+}
+
 // Every draft line, matched, with a second line naming the same draw marked so Save writes it once.
-async function buildDrafts(lines, { zone, now = new Date() }) {
+async function buildDrafts(lines, { zone, now = new Date(), state = null }) {
     const { loadCatalog } = require('../../utils/drawCatalog');
     const { isSameDrawTitle } = require('../../utils/search');
-    const [entries, seasonalDoc] = await Promise.all([loadCatalog(), loadOrCreateSeasonalDoc()]);
-    const drafts = lines.map(line => qa.draftFromLine(qa.parseQuickLine(line, { zone, now }), { entries, seasonalDoc, isSameTitle: isSameDrawTitle, zone, now }));
+    const [entries, seasonalDoc] = await Promise.all([loadCatalog(), listsFor(state)]);
+    if (state?.target === 'draft') state.bpStart = seasonalDoc.bpStart || null;
+    const drafts = lines.map(line => applySection(qa.draftFromLine(qa.parseQuickLine(line, { zone, now }), { entries, seasonalDoc, isSameTitle: isSameDrawTitle, zone, now }), state));
     markDuplicates(drafts, isSameDrawTitle);
     return drafts;
 }
@@ -57,7 +76,8 @@ function markDuplicates(drafts, isSameTitle) {
 // ==========================================
 const stamp = date => `<t:${Math.floor(new Date(date).getTime() / 1000)}:f>`;
 
-function draftLines(d, i) {
+function draftLines(d, i, state = null) {
+    const draft = state?.target === 'draft';
     const { drawTypeName } = require('../../utils/drawTypes');
     const kind = drawTypeName(d.priceType || '');
     const head = d.needsPick ? `**${i + 1}. Pick a draw**` : `**${i + 1}. ${d.title}**\n-# ${d.category === 'new' ? 'New' : 'Returning'} draw${kind ? ` · ${kind}` : ''}`;
@@ -66,9 +86,10 @@ function draftLines(d, i) {
     const items = shown.length ? `-# ${shown.length} item${shown.length === 1 ? '' : 's'}: ${shown.slice(0, 2).map(it => it.name).join(', ')}${shown.length > 2 ? ', …' : ''}` : '-# No items';
     const notes = [];
     if (d.duplicateOf !== null && d.duplicateOf !== undefined) notes.push(`${emojis.warn} Same draw as line ${d.duplicateOf + 1}: skipped on Save.`);
-    if (d.existing) notes.push(`${BOT_EMOJI.info} Already on /draws as **${d.existing.title}**: Save ${[d.end && 'sets its end date', d.startGiven && 'moves its start'].filter(Boolean).join(' and ') || 'changes nothing'}.`);
+    if (d.existing) notes.push(`${BOT_EMOJI.info} Already ${draft ? 'staged' : 'on /draws'} as **${d.existing.title}**: ${draft ? 'Stage' : 'Save'} ${[d.end && 'sets its end date', d.startGiven && 'moves its start'].filter(Boolean).join(' and ') || 'changes nothing'}.`);
+    if (draft && !d.existing && !d.imageUrl && !d.needsPick && (d.matchedBy || d.edited)) notes.push(`${emojis.warn} No picture yet: Add details takes an image link, or it's left out of the draft.`);
     if (d.needsPick) notes.push(`${emojis.warn} "${d.query}" fits ${d.candidates.length} draw${d.candidates.length === 1 ? '' : 's'}. Pick one, or it's skipped on Save.`);
-    else if (!d.matchedBy && !d.existing && !d.edited) notes.push(`${emojis.warn} Not in the draw index. Add details gives its items and picture, or it's saved as typed.`);
+    else if (!d.matchedBy && !d.existing && !d.edited) notes.push(draft ? `${emojis.warn} Not in the draw index. Add details gives its items and picture; without a picture it's left out of the draft.` : `${emojis.warn} Not in the draw index. Add details gives its items and picture, or it's saved as typed.`);
     // Which season the draw index files it under (his question, 2026-11-01 12:55 EDT): a draw new to the index and saved as New gets this season; one the index already has keeps its own, whatever the line says.
     if (d.category === 'new' && !d.existing && !d.matchedBy && d.seasonNow) notes.push(`${BOT_EMOJI.info} Goes into the draw index as a Season ${d.seasonNow} draw once it has a picture.`);
     else if (d.category === 'new' && d.indexSeason && d.seasonNow && d.indexSeason !== d.seasonNow) notes.push(`${BOT_EMOJI.info} The draw index keeps it as a Season ${d.indexSeason} draw.`);
@@ -80,6 +101,7 @@ function draftLines(d, i) {
 
 function draftPanel(token, state) {
     const { drafts, extra } = state;
+    const draft = state.target === 'draft';
     const writes = drafts.filter(willWrite).length;
     // Pick while the match is a guess (or there is none yet), Edit once it is settled. Add details for a draw the index doesn't know: the same Edit box, which asks for items and a picture like Add Draw (his ask, 2026-11-01 12:41 EDT).
     const accessory = (d, i) => d.candidates?.length && !d.edited
@@ -88,18 +110,18 @@ function draftPanel(token, state) {
             ? { type: 2, style: 1, label: 'Add Details', emoji: emojis.parseEmoji(emojis.mngAdd), custom_id: `mng_qa_edit_${token}_${i}` }
             : { type: 2, style: 2, label: 'Edit', emoji: emojis.parseEmoji(emojis.mngEdit), custom_id: `mng_qa_edit_${token}_${i}` };
     const components = [
-        { type: 10, content: [`### ${emojis.mngAdd} Quick Add · ${drafts.length} draw${drafts.length === 1 ? '' : 's'}`,
-            `-# Check each one and Edit what's wrong. Nothing is saved until Save.`,
+        { type: 10, content: [`### ${emojis.mngAdd} Quick Add${draft ? ' · Next Season Draft' : ''} · ${drafts.length} draw${drafts.length === 1 ? '' : 's'}`,
+            draft ? `-# Check each one and Edit what's wrong. Stage puts them in the draft; players see nothing until Promote to Live.` : `-# Check each one and Edit what's wrong. Nothing is saved until Save.`,
             extra ? `-# ${emojis.warn} ${extra} more line${extra === 1 ? '' : 's'} left out: ${qa.MAX_LINES} fit one draft.` : null].filter(Boolean).join('\n') },
         { type: 14, spacing: 1, divider: true },
         ...drafts.map((d, i) => ({
             type: 9,
-            components: [{ type: 10, content: draftLines(d, i) }],
+            components: [{ type: 10, content: draftLines(d, i, state) }],
             accessory: accessory(d, i)
         })),
         { type: 14, spacing: 1, divider: true },
         { type: 1, components: [
-            { type: 2, style: 3, label: writes ? `Save ${writes}` : 'Nothing to Save', custom_id: `mng_qa_save_${token}`, disabled: !writes },
+            { type: 2, style: 3, label: writes ? `${draft ? 'Stage' : 'Save'} ${writes}` : `Nothing to ${draft ? 'Stage' : 'Save'}`, custom_id: `mng_qa_save_${token}`, disabled: !writes },
             { type: 2, style: 2, label: 'Cancel', custom_id: `mng_qa_cancel_${token}` }
         ] }
     ];
@@ -112,15 +134,16 @@ const expiredPanel = () => notePanel(`${BOT_EMOJI.cross} This draft has expired 
 // HANDLERS
 // ==========================================
 // modal_draws_quickadd
-async function submitQuickAdd(interaction) {
+async function submitQuickAdd(interaction, { target = 'live', section = null } = {}) {
     await interaction.deferReply({ ephemeral: true });
     const { lines, extra } = qa.parseQuickText(interaction.fields.getTextInputValue('lines'));
     if (!lines.length) return interaction.followUp({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} The box was empty. Nothing to add.`, FAIL_ACCENT) });
     const zone = qa.TIME_ZONE;
-    const drafts = await buildDrafts(lines, { zone });
+    const base = { userId: interaction.user.id, target, section, extra, zone };
+    const drafts = await buildDrafts(lines, { zone, state: base });
     sweep();
     const token = randomBytes(4).toString('hex');
-    const state = { userId: interaction.user.id, drafts, extra, zone, at: Date.now() };
+    const state = { ...base, drafts, at: Date.now() }; // base carries bpStart now, set by buildDrafts
     DRAFTS.set(token, state);
     return interaction.followUp({ flags: 32768 | 64, components: draftPanel(token, state) });
 }
@@ -143,14 +166,14 @@ async function handleButton(interaction) {
         const saved = SAVED.get(token);
         if (!saved || saved.userId !== interaction.user.id) return interaction.reply({ content: `${BOT_EMOJI.cross} This Revert has expired (30 minutes, or a restart). Each change can still be reverted from /bot analytics.`, ephemeral: true });
         SAVED.delete(token);
-        return require('./results').revertChanges(interaction, saved.changeIds, 'the draws and /calendar rows that Quick Add saved are gone');
+        return require('./results').revertChanges(interaction, saved.changeIds, saved.target === 'draft' ? 'the draws Quick Add staged in the Next Season Draft are gone, and the draft calendar is as it was' : 'the draws and /calendar rows that Quick Add saved are gone');
     }
     const state = getDraft(token, interaction.user.id);
     if (!state) return sendV2Payload(interaction, expiredPanel());
 
     if (verb === 'cancel') {
         DRAFTS.delete(token);
-        return sendV2Payload(interaction, notePanel('Quick Add cancelled. Nothing was saved.', ACCENT.draws));
+        return sendV2Payload(interaction, notePanel(`Quick Add cancelled. Nothing was ${state.target === 'draft' ? 'staged' : 'saved'}.`, ACCENT.draws));
     }
     if (verb === 'edit') {
         const i = Number(index);
@@ -203,7 +226,7 @@ async function submitEdit(interaction) {
         if (hit && itemsText.trim() === qa.itemsToText(before.items).trim()) items = qa.drawItemsFromEntry(hit.entry);
         if (hit && priceType === before.priceType && hit.entry.priceType) priceType = hit.entry.priceType;
     }
-    const seasonalDoc = await loadOrCreateSeasonalDoc();
+    const seasonalDoc = await listsFor(state);
     const listed = require('../../utils/search').bestDrawMatch(
         [['new', seasonalDoc.newDraws || []], ['returning', seasonalDoc.returningDraws || []]].flatMap(([cat, list]) => list.map(d => ({ cat, d }))),
         title, x => x.d.title);
@@ -214,8 +237,10 @@ async function submitEdit(interaction) {
         startGiven: Boolean(parsed.start), startTimed: Boolean(parsed.start?.timed),
         end: parsed.end ? parsed.end.date : null, endTimed: Boolean(parsed.end?.timed),
         existing: listed ? { category: listed.cat, elementId: String(listed.d._id), title: listed.d.title } : null,
-        problems: parsed.problems, edited: true, sure: true, alternates: [], candidates: [], needsPick: false
+        problems: parsed.problems, edited: true, sure: true, alternates: [], candidates: [], needsPick: false,
+        categoryGiven: Boolean(parsed.category) || Boolean(before.categoryGiven)
     };
+    applySection(state.drafts[i], state);
     markDuplicates(state.drafts, isSameDrawTitle);
     state.at = Date.now();
     return sendV2Payload(interaction, draftPanel(token, state));
@@ -247,7 +272,7 @@ async function submitPick(interaction) {
     const { loadCatalog } = require('../../utils/drawCatalog');
     const { isSameDrawTitle } = require('../../utils/search');
     const value = interaction.fields.getStringSelectValues('pick')[0];
-    const [entries, seasonalDoc] = await Promise.all([loadCatalog(), loadOrCreateSeasonalDoc()]);
+    const [entries, seasonalDoc] = await Promise.all([loadCatalog(), listsFor(state)]);
     const entry = value === '__typed__' ? null : entries.find(e => e.slug === value);
     if (value !== '__typed__' && !entry) return sendV2Payload(interaction, expiredPanel());
     const parsed = {
@@ -255,7 +280,9 @@ async function submitPick(interaction) {
         start: before.startGiven ? { date: before.start, timed: before.startTimed } : null,
         end: before.end ? { date: before.end, timed: before.endTimed } : null
     };
-    state.drafts[i] = qa.draftFromLine(parsed, { entries, seasonalDoc, isSameTitle: isSameDrawTitle, zone: state.zone, pick: entry || qa.TYPED });
+    // The section the row already had stays (a pick changes the draw, not the tab).
+    state.drafts[i] = qa.draftFromLine({ ...parsed, category: before.categoryGiven ? before.category : null }, { entries, seasonalDoc, isSameTitle: isSameDrawTitle, zone: state.zone, pick: entry || qa.TYPED });
+    applySection(state.drafts[i], state);
     markDuplicates(state.drafts, isSameDrawTitle);
     state.at = Date.now();
     return sendV2Payload(interaction, draftPanel(token, state));
@@ -264,6 +291,7 @@ async function submitPick(interaction) {
 // mng_qa_save_<token>: one commitSet for the whole draft.
 async function save(interaction, token, state) {
     await interaction.deferUpdate();
+    if (state.target === 'draft') return saveToDraft(interaction, token, state);
     const { resolveThumbnail } = require('../../utils/cloudinaryCache');
     const { calendarRowFor } = require('../../utils/drawEndReminder');
     const { isKnownType } = require('../../utils/drawCatalog');
@@ -322,4 +350,85 @@ async function save(interaction, token, state) {
     return sent;
 }
 
-module.exports = { submitQuickAdd, handleButton, submitEdit, submitPick, buildPickModal, draftPanel, whenText, DRAFTS, SAVED, DRAFT_TTL_MS };
+// mng_qa_save_<token> for the draft target: the changed lists in one commitSet, season.bulkDraftDraws' `parsed` path (untouched rows keep their _id, picture and news tag, and Revert puts the old lists back) plus season.bulkDraftCalendar for end dates. Pictures as the live Save resolves them, a New draw indexed under the DRAFT's season; a draw with no picture is left out and named.
+async function saveToDraft(interaction, token, state) {
+    const { resolveThumbnail } = require('../../utils/cloudinaryCache');
+    const { calendarRowFor } = require('../../utils/drawEndReminder');
+    const { isKnownType } = require('../../utils/drawCatalog');
+    const { namesDrawType } = require('../../utils/drawTypes');
+    const DD = require('../../utils/draftDraws');
+    const lists = await listsFor(state);
+    const todo = state.drafts.filter(willWrite);
+    const releaseSeason = qa.seasonNumber(lists.currentSeasonTitle);
+    const releaseYear = qa.seasonYear(lists.draft || {});
+    const thumbs = await Promise.all(todo.map(d => d.existing ? null : resolveThumbnail(d.title, d.imageInput || '', { items: d.items, priceType: d.priceType || '', ...(d.category === 'new' && releaseSeason ? { releaseSeason, ...(releaseYear ? { releaseYear } : {}) } : {}) }).catch(() => ({ url: null }))));
+    const next = { newDraws: [...lists.newDraws], returningDraws: [...lists.returningDraws] };
+    let calendar = [...lists.calendar];
+    const touched = new Set();
+    let calendarChanged = false;
+    const staged = [], updated = [], noPicture = [];
+    todo.forEach((d, n) => {
+        if (!d.existing) {
+            const url = thumbs[n]?.url || d.imageUrl || null;
+            if (!url) { noPicture.push(d.title); return; }
+            let priceType = d.priceType || '';
+            if (!isKnownType(priceType) && namesDrawType(thumbs[n]?.catalog?.priceType)) priceType = thumbs[n].catalog.priceType;
+            const key = d.category === 'new' ? 'newDraws' : 'returningDraws';
+            next[key] = DD.addDraw(next[key], { title: d.title, items: d.items || [], date: d.start, thumbnailUrl: url, ...(priceType ? { priceType } : {}) });
+            touched.add(key);
+            staged.push(d);
+        } else {
+            const key = d.existing.category === 'new' ? 'newDraws' : 'returningDraws';
+            const at = next[key].findIndex(x => String(x._id) === d.existing.elementId);
+            if (d.startGiven && at >= 0 && new Date(next[key][at].date).getTime() !== new Date(d.start).getTime()) {
+                next[key] = DD.byDate(next[key].map((x, i) => (i === at ? { ...x, date: d.start } : x)));
+                touched.add(key);
+            }
+            updated.push(d);
+        }
+        // End dates go on the draft's calendar, as the live Save puts them on /calendar.
+        const row = calendarRowFor({ calendar, ...next }, d.existing?.title || d.title);
+        const same = (a, b) => a && b && new Date(a).getTime() === new Date(b).getTime();
+        if (d.end) {
+            const event = { title: row?.title || d.title, date: d.startGiven || !row ? d.start : new Date(row.date), endDate: d.end, isOngoing: false, category: 'draw', isDoubleCP: Boolean(row?.isDoubleCP) };
+            // A row that already reads this way (Stage These copies the row's own dates) is left alone, so no empty calendar change is written.
+            if (row && same(row.date, event.date) && same(row.endDate, event.endDate)) return;
+            calendar = row ? calendar.map(e => (e === row ? { ...e, ...event } : e)) : [...calendar, event];
+            calendarChanged = true;
+        } else if (row && d.startGiven && !same(row.date, d.start)) {
+            calendar = calendar.map(e => (e === row ? { ...e, date: d.start } : e));
+            calendarChanged = true;
+        }
+    });
+    const ops = [];
+    if (touched.size) ops.push({ type: 'season.bulkDraftDraws', payload: { parsed: Object.fromEntries([...touched].map(k => [k, next[k]])) } });
+    if (calendarChanged) ops.push({ type: 'season.bulkDraftCalendar', payload: { parsed: calendar } });
+    if (!ops.length) {
+        const why = noPicture.length ? `${BOT_EMOJI.cross} Nothing was staged: ${noPicture.join(', ')} ${noPicture.length === 1 ? 'has' : 'have'} no picture. Add details takes an image link.` : 'Nothing in this draft changes the Next Season Draft.';
+        return interaction.followUp({ flags: 32768 | 64, components: notePanel(why, noPicture.length ? FAIL_ACCENT : ACCENT.draws) });
+    }
+    const result = await commitSet(ops, { actorId: interaction.user.id });
+    if (!result.ok) {
+        const why = result.failures?.map(f => f.errors.join(' ')).join(' ') || extractCommitError(result);
+        return interaction.followUp({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} Nothing was staged: ${why}`, FAIL_ACCENT) });
+    }
+    DRAFTS.delete(token);
+    SAVED.set(token, { userId: interaction.user.id, changeIds: result.changeIds, target: 'draft', at: Date.now() });
+    const sections = [
+        { head: `Staged in the Next Season Draft (${staged.length})`, lines: staged.map(d => `- ${d.title} · ${d.category === 'new' ? 'New' : 'Returning'} · starts ${stamp(d.start)}${d.end ? `, ends ${stamp(d.end)}` : ''}`) },
+        { head: `Updated (${updated.length})`, lines: updated.map(d => `- ${d.existing.title}${d.startGiven ? ` · starts ${stamp(d.start)}` : ''}${d.end ? ` · ends ${stamp(d.end)}` : ''}`) },
+        { head: `Left out: no picture (${noPicture.length})`, lines: noPicture.map(t => `- ${t}`) }
+    ];
+    const ends = todo.filter(d => d.end && !noPicture.includes(d.title)).length;
+    const panel = resultPanel({ page: 'draws', heading: 'Quick Add staged', summary: `-# Players see nothing until Promote to Live.${ends ? ` ${ends} end date${ends === 1 ? '' : 's'} on the draft calendar too.` : ''}`, sections });
+    const SV = require('./seasonPanel/views');
+    panel[0].components.push({ type: 14, spacing: 1, divider: false }, { type: 1, components: [
+        SV.btn(['dd', state.section === 'r' ? 'r' : 'n', 0], 'Draft Draws', emojis.newDraws, 1),
+        { type: 2, style: 4, label: 'Revert All', custom_id: `mng_qa_revert_${token}`, emoji: BOT_EMOJI.parseEmoji(BOT_EMOJI.keep) }
+    ] });
+    const sent = await sendV2Payload(interaction, panel);
+    await require('./itemKinds').askItemKinds(interaction, staged.map(d => d.title));
+    return sent;
+}
+
+module.exports = { submitQuickAdd, handleButton, submitEdit, submitPick, buildPickModal, draftPanel, whenText, listsFor, applySection, saveToDraft, DRAFTS, SAVED, DRAFT_TTL_MS };

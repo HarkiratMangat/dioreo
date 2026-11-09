@@ -12,6 +12,11 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.17.0 — November 9, 2026
+- **New:** a `/help` on Dioreo Admin for the admin pages, and Misc, Gunsmith Lists and Announcements pages on `/help`.
+- **New:** the website's Install button is now **Add bot**.
+- **Fixed:** a few admin tools behind the scenes.
+
 ## v3.16.1 — November 9, 2026
 - **Fixed:** a build saved as Build 1 after other builds now opens first on its card, not last.
 

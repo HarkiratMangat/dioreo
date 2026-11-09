@@ -29,6 +29,7 @@ const COMMAND_ALIASES = {
     '/bot servers': ['servers', 'server settings', 'override', 'reset'],
     '/bot penalties': ['penalties', 'spam', 'penalty', 'lift', 'block user'],
     '/bot freeze': ['freeze', 'pause', 'kill switch', 'stop'],
+    '/bot delete': ['delete messages', 'purge', 'clean up'],
     '/autobuild': ['screenshot', 'scan', 'ocr', 'import'],
     '/settings': ['preferences', 'prefs', 'config', 'timezone'],
     '/invite': ['add', 'install', 'addbot', 'share', 'link'],
@@ -185,7 +186,7 @@ const CATEGORY_DEFS = [
     {
         key: 'botadmin', label: 'Bot Admin',
         // Alphabetical, and it must MATCH buildBotAdminBody's order below -- the first draft listed these one way in the directory and another in the body, which reads as the page having lost track of itself. Harkirat asked for alphabetical here on 2026-08-10 19:34 EDT. ⚠️ Per-command `requires` (added 2026-08-13, per-command admin permissions) -- an admin granted only /bot analytics must not see /manage or /autobuild listed here even though the whole category is visible to them. Category-level `requires: 'botAdmin'` still gates the SECTION (shows if the user has ANY admin access at all, per utils/adminAccess.js's isAdmin()); each command's own key gates that ONE line, same pattern `/admin` already uses inside Preferences. `/bot access` is gated on `botAccess` (isOwner(), not a permission token -- see utils/adminAccess.js's header on why it can never have one).
-        staticCommands: [cmd('/bot analytics', { requires: 'bot', jumpDescription: 'Usage, timing, health, alerts and recent changes' }), cmd('/bot access', { requires: 'botAccess', jumpDescription: 'Grant or revoke admin access' }), cmd('/bot hotpatch', { requires: 'botAccess', jumpDescription: 'Reload changed files into the running bot' }), cmd('/bot servers', { requires: 'botAccess', jumpDescription: 'The servers Dioreo is in, and their settings' }), cmd('/bot penalties', { requires: 'botAccess', jumpDescription: 'Spam penalties: lift, extend, exempt, block' }), cmd('/bot freeze', { requires: 'botAccess', jumpDescription: 'Pause Dioreo or some commands, no deploy' }), cmd('/embed', { requires: 'botAccess', jumpDescription: 'Render pasted message JSON to check a design' }), cmd('/manage emojis', { requires: 'botAccess', jumpDescription: 'Every emoji on each bot, with one-tap sync' }), cmd('/autobuild', { requires: 'autobuild', jumpDescription: 'Turn Gunsmith screenshots into builds' }), cmd('/manage', { requires: 'manage', jumpDescription: 'Add and edit draws, calendar, patch notes, loadouts and more' })],
+        staticCommands: [cmd('/bot analytics', { requires: 'bot', jumpDescription: 'Usage, timing, health, alerts and recent changes' }), cmd('/bot access', { requires: 'botAccess', jumpDescription: 'Grant or revoke admin access' }), cmd('/bot hotpatch', { requires: 'botAccess', jumpDescription: 'Reload changed files into the running bot' }), cmd('/bot servers', { requires: 'botAccess', jumpDescription: 'The servers Dioreo is in, and their settings' }), cmd('/bot penalties', { requires: 'botAccess', jumpDescription: 'Spam penalties: lift, extend, exempt, block' }), cmd('/bot freeze', { requires: 'botAccess', jumpDescription: 'Pause Dioreo or some commands, no deploy' }), cmd('/bot delete', { requires: 'botAccess', jumpDescription: "Delete Dioreo's own messages by ID, link or count" }), cmd('/embed', { requires: 'botAccess', jumpDescription: 'Render pasted message JSON to check a design' }), cmd('/manage emojis', { requires: 'botAccess', jumpDescription: 'Every emoji on each bot, with one-tap sync' }), cmd('/autobuild', { requires: 'autobuild', jumpDescription: 'Turn Gunsmith screenshots into builds' }), cmd('/manage', { requires: 'manage', jumpDescription: 'Add and edit draws, calendar, patch notes, loadouts and more' })],
         requires: 'botAdmin',
     },
 ];
@@ -200,13 +201,25 @@ const HELP_APPS = [
     { name: 'Autobuild Gunsmith', category: 'botadmin', requires: 'autobuild' },
 ];
 
-// Everything `cmd:` can find, in directory order: each visible command (a category's detail commands where it has them, so /gunsmith mp and /gunsmith dmz rather than bare /gunsmith, his ask 2026-10-25 23:05 EDT), then that category's right-click apps.
-function searchEntries(perms = {}) {
+// Everything `cmd:` can find, in directory order: each visible command (a category's detail commands where it has them, so /gunsmith mp and /gunsmith dmz rather than bare /gunsmith, his ask 2026-10-25 23:05 EDT), then that category's right-click apps. WHICH /help THIS IS (2026-11-09 13:15 EST, Harkirat, 2026-11-09 13:10 EST: "move the /bot and /manage help panels from the main /help command into the dioreo admin as a separate /help command just for those admin/owner commands + any other owner-only commands"). 'admin' on Dioreo Admin: only the Bot Admin pages and the owner's page. 'public' on Dioreo while Dioreo Admin is on: everything but those. 'all' while Dioreo Admin is off (a dev setup without its token): one /help with every page, as before. /admin is a server command and stays on the public /help.
+function helpScope(interaction) {
+    const { clients } = require('../bot/clients');
+    if (!clients.admin) return 'all';
+    const adminId = clients.admin.application?.id || clients.admin.user?.id;
+    return interaction?.applicationId && adminId && interaction.applicationId === adminId ? 'admin' : 'public';
+}
+const categoryInScope = (key, scope) => scope === 'all' || (scope === 'admin' ? key === 'botadmin' : key !== 'botadmin');
+const pageInScope = (def, scope) => scope === 'all' || (scope === 'admin' ? Boolean(def?.admin) : !def?.admin);
+
+function searchEntries(perms = {}, scope = 'all') {
     const out = [];
     for (const cat of visibleCategories(perms)) {
+        if (!categoryInScope(cat.key, scope)) continue;
         for (const c of cat.detailCommands || visibleCommands(cat, perms)) out.push({ name: c.name, category: cat.key, aliases: COMMAND_ALIASES[c.name] || COMMAND_ALIASES[c.name.split(' ')[0]] || [] });
         for (const a of HELP_APPS) if (a.category === cat.key && permitted(a, perms)) out.push({ name: a.name, category: cat.key, app: true, aliases: [] });
     }
+    // The owner's page (2026-11-09 13:15 EST): his typed commands and the owner-only slash ones, for the owner, wherever the admin pages show.
+    if (perms.botAccess && scope !== 'public') out.push({ name: '/owner', category: 'botadmin', aliases: ['owner', 'owner delete', 'override', 'dev', 'purge'] });
     return out;
 }
 
@@ -232,14 +245,16 @@ async function resolveCommandToCategory(cmdName, perms = {}) {
 }
 
 // What `cmd:` suggests for a query, best first, as names (the value Discord sends back). Empty: everything, in directory order.
-async function suggestHelpCommandNames(query, perms = {}) {
-    return require('../utils/helpSearch').rank(query, searchEntries(perms)).map(e => e.name).slice(0, 25);
+async function suggestHelpCommandNames(query, perms = {}, scope = 'all') {
+    return require('../utils/helpSearch').rank(query, searchEntries(perms, scope)).map(e => e.name).slice(0, 25);
 }
 
 // The same, as Discord autocomplete choices: each name with a short plain line, so a confused reader sees what it does.
-async function helpChoices(query, perms = {}) {
+async function helpChoices(query, perms = {}, scope = 'all') {
     const S = require('../utils/helpSearch');
-    const choices = S.rank(query, searchEntries(perms)).slice(0, 25).map(e => ({ name: S.choiceLabel(e), value: e.name }));
+    const choices = S.rank(query, searchEntries(perms, scope)).slice(0, 25).map(e => ({ name: S.choiceLabel(e), value: e.name }));
+    // Dioreo Admin's /help is for its own commands: no announcements shortcut there.
+    if (scope === 'admin') return choices;
     // `announcement` is not a command, so the ranked list never offers it and Enter picked /manage (its alias match) instead of the word typed (found in the 2026-10-28 click-test). Two letters put it first: at three (v3.1.1) a player typing `an` saw "No options match your search", because helpSearch drops `an` as a stop word and no command a non-admin sees starts with it (a player's report, 2026-10-28 13:51 EDT). One letter still shows the ranked list alone.
     const typed = String(query || '').toLowerCase().replace(/^\//, '').trim();
     if (typed.length >= 2 && ('announcement'.startsWith(typed) || typed === 'announcements')) {
@@ -249,8 +264,8 @@ async function helpChoices(query, perms = {}) {
 }
 
 // The command a typed `cmd:` means: an exact name, else an alias word ("server" -> /admin), else the best search match. Used to open its category AND to put that command first on the page. A right-click app is not a command block, so it focuses nothing.
-async function matchHelpCommand(cmdName, perms = {}) {
-    const entries = searchEntries(perms);
+async function matchHelpCommand(cmdName, perms = {}, scope = 'all') {
+    const entries = searchEntries(perms, scope);
     const exact = entries.find(e => e.name.toLowerCase() === String(cmdName).toLowerCase());
     if (exact) return exact.app ? null : exact.name;
     const normalized = String(cmdName).toLowerCase().replace(/^\//, '').trim();
@@ -275,8 +290,8 @@ async function helpPerms(interaction) {
 }
 
 // Every real command name this bot has, for /help's `cmd:` autocomplete -- the static entries only (/gunsmith is one entry; the per-category Gunsmith commands it once added are gone). `isAdmin` keeps admin-only commands out of a non-admin's suggestions. Autocomplete is the third of the three places the Server Admin category has to be filtered -- suggesting `/admin` to someone and then handing them the directory when they pick it is worse than never offering it.
-async function getAllHelpCommandNames(perms = {}) {
-    return searchEntries(perms).map(e => e.name);
+async function getAllHelpCommandNames(perms = {}, scope = 'all') {
+    return searchEntries(perms, scope).map(e => e.name);
 }
 
 // The current season's emoji, as /today and /calendar find it. Only when the database is connected: the snapshot test renders this panel with no Mongo, and a buffered query there would wait ten seconds and fail.
@@ -289,15 +304,15 @@ async function currentSeasonEmoji() {
 }
 
 // The pages this viewer may open, in the switcher's order (utils/helpPages.js PAGE_ORDER): what CATEGORY_DEFS lets them see, so a restricted command is hidden from the page, the switcher and `cmd:` alike.
-function visiblePageNames(perms = {}) {
+function visiblePageNames(perms = {}, scope = 'all') {
     const { PAGE_ORDER, PAGES, hasPage } = require('../utils/helpPages');
-    const seen = new Set(searchEntries(perms).filter(e => !e.app).map(e => e.name));
-    // /bot is one page for its subcommands (2026-10-30 14:05 EDT): shown when any of them is. A text-only page (`/prefix`) has no slash command to be hidden, so everyone sees it.
-    return PAGE_ORDER.filter(n => hasPage(n) && (seen.has(n) || PAGES[n].textOnly || (n === '/bot' && visibleBotSubs(perms).length)));
+    const seen = new Set(searchEntries(perms, scope).filter(e => !e.app).map(e => e.name));
+    // /bot is one page for its subcommands (2026-10-30 14:05 EDT): shown when any of them is. A text-only page (`/prefix`, `/announcement`) has no slash command to be hidden, so everyone sees it, on the public /help.
+    return PAGE_ORDER.filter(n => hasPage(n) && pageInScope(PAGES[n], scope) && (seen.has(n) || (PAGES[n].textOnly && !PAGES[n].admin) || (n === '/bot' && visibleBotSubs(perms, scope).length)));
 }
 // The /bot subcommands this viewer may open, in the page's dropdown order.
-function visibleBotSubs(perms = {}) {
-    const seen = new Set(searchEntries(perms).filter(e => !e.app).map(e => e.name));
+function visibleBotSubs(perms = {}, scope = 'all') {
+    const seen = new Set(searchEntries(perms, scope).filter(e => !e.app).map(e => e.name));
     return require('../utils/helpPages').BOT_SUB_ORDER.filter(n => seen.has(n));
 }
 
@@ -305,20 +320,20 @@ function visibleBotSubs(perms = {}) {
 const APP_PAGE = { 'View Colors': '/colors', 'Convert Times': '/timestamp', 'Add to Calendar': '/manage', 'Add to Draws': '/manage', 'Add to Patch Notes': '/manage', 'Autobuild Gunsmith': '/autobuild' };
 
 // The page a `cmd:` (or `d help <word>`) means: an exact page, `/gunsmith` as MP, an app as its command, else what matchHelpCommand and the search find. Null: the home page.
-async function resolvePage(query, perms = {}) {
+async function resolvePage(query, perms = {}, scope = 'all') {
     if (!query) return null;
     // A /bot subcommand stays named (`/bot servers`) so the page opens on it; buildHelpMessage turns it into the /bot page.
-    const visible = [...visiblePageNames(perms), ...visibleBotSubs(perms)];
+    const visible = [...visiblePageNames(perms, scope), ...visibleBotSubs(perms, scope)];
     const lower = String(query).trim().toLowerCase();
     const slashed = lower.startsWith('/') ? lower : `/${lower}`;
     if (visible.includes(slashed)) return slashed;
     // A page this viewer may not open, named exactly, is the home page, never a near miss (`manage` must not land on Reminders).
     if (require('../utils/helpPages').hasPage(slashed)) return null;
     if (slashed === '/gunsmith' && visible.includes('/gunsmith mp')) return '/gunsmith mp';
-    const entries = searchEntries(perms);
+    const entries = searchEntries(perms, scope);
     const app = entries.find(e => e.app && e.name.toLowerCase() === lower);
     if (app) return visible.includes(APP_PAGE[app.name]) ? APP_PAGE[app.name] : null;
-    const name = await matchHelpCommand(query, perms);
+    const name = await matchHelpCommand(query, perms, scope);
     if (name) return visible.includes(name) ? name : name === '/gunsmith' && visible.includes('/gunsmith mp') ? '/gunsmith mp' : null;
     const best = require('../utils/helpSearch').rank(query, entries)[0];
     const fromApp = best?.app ? APP_PAGE[best.name] : null;
@@ -338,22 +353,34 @@ function homeHero(client) {
     ];
 }
 
+// Dioreo Admin's /help header (2026-11-09 13:15 EST): its own title over the same links as the public one.
+function adminHero(client) {
+    return [
+        { type: 9, components: [{ type: 10, content: `## ${emojis.botAccess || emojis.dioreoCombo} Dioreo Admin\n> Tools for Dioreo's admins and owner: the data, the bot, and the owner's own commands. Each page shows only what you can use.` }], accessory: { type: 11, media: { url: MASCOT_URL } } },
+        { type: 1, components: [{ type: 2, style: 5, label: 'Website', url: WEBSITE_URL }] },
+    ];
+}
+
 // One /help message: the card (the home page or one command's page) with the command switcher at its foot; execute() adds the footer row under it. `view` is 'text' or 'slash'; a typed view is offered only where typed forms work (typedFormsHere) and for a command that has one, and falls back to slash otherwise. `detail` is Draw Prices' Detailed view.
-async function buildHelpMessage({ perms = {}, client, accentColor = PRESET_ACCENT, cmd = null, view = 'slash', detail = false, typedForms = true, prefixes = null } = {}) {
+async function buildHelpMessage({ perms = {}, client, accentColor = PRESET_ACCENT, cmd = null, view = 'slash', detail = false, typedForms = true, prefixes = null, scope = 'all' } = {}) {
     const H = require('../utils/helpPages');
     const seasonEmoji = await currentSeasonEmoji();
-    // A text-only page (`/prefix`) is a typed form, so where typed forms do nothing (a DM, a server Dioreo is not in) it is not offered.
-    const names = visiblePageNames(perms).filter(n => typedForms || !H.PAGES[n]?.textOnly);
-    const botSubs = visibleBotSubs(perms);
+    // A text-only page (`/prefix`) is a typed form, so where typed forms do nothing (a DM, a server Dioreo is not in) it is not offered. The owner's page is his to read anywhere.
+    const names = visiblePageNames(perms, scope).filter(n => typedForms || !H.PAGES[n]?.textOnly || H.PAGES[n]?.admin);
+    const botSubs = visibleBotSubs(perms, scope);
     let sub = null;
     if (cmd && botSubs.includes(cmd)) { sub = cmd; cmd = '/bot'; }
     if (cmd && !names.includes(cmd)) cmd = null;
     const canSwitch = typedForms && (!cmd || H.hasTextView(cmd));
     if (view === 'text' && !canSwitch) view = 'slash';
+    // The home page's Admin line names each /bot subcommand: a mention of bare /bot would not resolve, since /bot has subcommands. The owner's page has no slash command, so it is reached from the switcher.
+    const adminNames = names.filter(n => (H.PAGES[n]?.admin || n === '/admin') && n !== '/owner').flatMap(n => (n === '/bot' ? botSubs : [n]));
+    const home = scope === 'admin'
+        ? H.buildAdminHome({ client, hero: adminHero(client), names, botSubs, prefixes })
+        : H.buildHome({ client, view, canSwitch, hero: homeHero(client), adminNames, prefixes });
     const card = cmd
-        ? H.buildPage(cmd, { client, view, detail: detail && view === 'text', canSwitch, seasonEmoji, prefixes, sub, subs: botSubs })
-        // The home page's Admin line names each /bot subcommand: a mention of bare /bot would not resolve, since /bot has subcommands.
-        : [...H.buildHome({ client, view, canSwitch, hero: homeHero(client), adminNames: names.filter(n => !H.hasTextView(n)).flatMap(n => (n === '/bot' ? botSubs : [n])), prefixes }),
+        ? H.buildPage(cmd, { client, view, detail: detail && view === 'text', canSwitch, typedForms, seasonEmoji, prefixes, sub, subs: botSubs })
+        : [...home,
             { type: 14, spacing: 1, divider: true },
             // The sign-off in the launch announcement's style (2026-10-27 01:23 EDT, Harkirat).
             { type: 10, content: `-# Made with ${emojis.diorHeart} by <@${HARKIRAT_ID}>` }];
@@ -375,6 +402,14 @@ function helpFooterRow() {
 
 module.exports = {
     helpFooterRow,
+    // On both apps (bot/registry.js splitCommands): Dioreo's /help, and Dioreo Admin's /help for its own commands (2026-11-09 13:15 EST, Harkirat, 2026-11-09 13:10 EST).
+    bothApps: true,
+    adminData: new SlashCommandBuilder()
+        .setName('help')
+        .setDescription("Dioreo Admin's commands: /manage, /bot and the owner's tools")
+        .addStringOption(option => option.setName('cmd').setDescription('Jump straight to a specific command').setAutocomplete(true))
+        .addStringOption(option => option.setName('visibility').setDescription(`${VISIBILITY_DESCRIPTION} (Defaults to only you.)`).addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
+        .setIntegrationTypes([1]).setContexts([0, 1, 2]),
     data: new SlashCommandBuilder()
         .setName('help')
         .setDescription("See what Dioreo can do and how to report bugs")
@@ -396,11 +431,13 @@ module.exports = {
     typedFormsHere,
     visiblePageNames,
     visibleBotSubs,
+    helpScope,
 
     // `override` comes from handlers/help.js: { cmd, view, detail } from the switcher and the view buttons, or the older `cmd:<name>` / 'landing' strings a panel posted before B6 still sends. A typed view is the default inside a text command or a click on its reply (utils/commandMentions.js inTextCommand), a slash view everywhere else.
     async execute(interaction, override = null) {
         // The two permission levels, resolved once and threaded everywhere. Both are free: server admin comes off the interaction's own computed permissions (no REST call, no privileged intent, false outside a guild), and bot admin is an id comparison.
         const perms = await helpPerms(interaction);
+        const scope = helpScope(interaction);
 
         let cmd = null, view = null, detail = false;
         if (override && typeof override === 'object') ({ cmd = null, view = null, detail = false } = override);
@@ -408,14 +445,14 @@ module.exports = {
         if (!override && interaction.isChatInputCommand()) {
             const cmdOption = interaction.options.getString('cmd');
             // `cmd:announcement` posts the announcements running now instead of a command page (2026-10-28 16:40 EDT, Harkirat: "if i type /help cmd:announcement visibility:public that it'll send the launch announcement as a public message"). Hidden unless visibility says public, like every /help answer. It claims the word before the page lookup, which sent `announcement` to /manage.
-            if (cmdOption && /^\/?announcements?$/i.test(cmdOption.trim())) {
+            if (scope !== 'admin' && cmdOption && /^\/?announcements?$/i.test(cmdOption.trim())) {
                 // Public with several running opens a private picker first (2026-10-30 22:15 EDT, his option 3): utils/announcementRepost.js.
                 return await require('../utils/announcementRepost').executeSlash(interaction, interaction.options.getString('visibility'));
             }
             cmd = cmdOption || null;
         }
         if (cmd === 'landing') cmd = null;
-        if (cmd) cmd = await resolvePage(cmd, perms);
+        if (cmd) cmd = await resolvePage(cmd, perms, scope);
         if (!view) view = require('../utils/commandMentions').inTextCommand() ? 'text' : 'slash';
 
         // Unlike every other command, /help has no saved preference to fall back to -- defaults to hidden (matches /manage's own-panel convention) unless explicitly made public.
@@ -428,9 +465,11 @@ module.exports = {
 
         // No "Show Everyone" button -- the visibility option above already covers that case up front, and repeating it here would be redundant (Harkirat's direct request). The server's own text-command prefixes on every typed page (B7).
         const prefixes = await require('../utils/textCommands/server').prefixesFor(interaction.guildId);
-        const components = await buildHelpMessage({ perms, client: interaction.client, accentColor, cmd, view, detail, typedForms: typedFormsHere(interaction), prefixes });
-        // Under every /help page, outside its card (2026-10-27 01:23 EDT, Harkirat; "regardless of whatever cmd/page of /help is being viewed", 01:21 EDT): Announcements shows what is running now, privately, Bugs & Suggestions opens the pop-up utils/feedback.js sends to the owner, and Submit a Build. Answered by handlers/help.js and handlers/loadouts.js.
-        components.push(helpFooterRow());
+        // Typed forms are read where public Dioreo is in the server, whichever app answers.
+        const typedClient = require('../bot/clients').publicClient(interaction.client);
+        const components = await buildHelpMessage({ perms, client: interaction.client, accentColor, cmd, view, detail, typedForms: typedFormsHere({ guildId: interaction.guildId, client: typedClient }), prefixes, scope });
+        // Under every /help page, outside its card (2026-10-27 01:23 EDT, Harkirat; "regardless of whatever cmd/page of /help is being viewed", 01:21 EDT): Announcements shows what is running now, privately, Bugs & Suggestions opens the pop-up utils/feedback.js sends to the owner, and Submit a Build. Answered by handlers/help.js and handlers/loadouts.js. Dioreo Admin's /help has no player footer (announcements, feedback, builds are the public app's).
+        if (scope !== 'admin') components.push(helpFooterRow());
         // No mention pings or highlights (2026-10-27 10:44 EDT, Harkirat: "i want the clickable username but not the highlight"): the sign-off's <@dior> stays a clickable name, but the panel no longer lights up yellow for him. Same suppression /settings uses.
         return await sendV2Payload(interaction, components, { allowedMentions: { parse: [] } });
     }

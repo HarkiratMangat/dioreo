@@ -8,6 +8,8 @@
 // ⚠️ PERMISSIONS: the router's /manage lock runs first (`mng_`). Post New runs utils/manageActions.js resolveAction; the per-announcement Edit and Delete are outside the registry (their ids carry a Mongo _id) and check core/permissions.js's OUTSIDE_ACTIONS 'manage.announcementEdit' / 'manage.announcementDelete', as the old row buttons did; Yes, Delete re-checks the destructive tier. core/changeset.js commitSet checks every op once more.
 //
 // ⚠️ THE CRASH NET IS THE ROUTER'S. Nothing here catches to swallow; error-branch replies are awaited.
+//
+// ⚠️ A POP-UP SUBMIT SHOWS A DRAFT, NEVER A SAVE (2026-11-09 12:11 EST, his ask 2026-11-09 10:57 EST). Post New, Post Again and Edit keep what was typed in memory under a token for 15 minutes and show the announcement as players will get it, with Post (Save) · Edit · Discard; only Post runs the old save, through `opts.values`. A restart drops a draft, which costs the admin a retype and nothing else. Old panels' `modal_announce_post` (handlers/manage/index.js) still saves at once.
 
 const emojis = require('../../../utils/emojiMap');
 const { sendV2Payload } = require('../../../utils/sendV2Payload');
@@ -86,6 +88,44 @@ function postAgainModal(doc) {
     return j;
 }
 
+// ---------- drafts ---------- token → { kind: 'post'|'edit', id, userId, values: { text, expiry, starts_at, color }, at }. Only the admin who drafted it can post it.
+const DRAFT_TTL_MS = 15 * 60 * 1000;
+const drafts = new Map();
+function keepDraft(d, reuse = null) {
+    const now = Date.now();
+    for (const [k, v] of drafts) if (now - v.at > DRAFT_TTL_MS) drafts.delete(k);
+    const token = reuse || require('crypto').randomBytes(5).toString('hex');
+    drafts.set(token, { ...d, at: now });
+    return token;
+}
+function takeDraft(token, userId) {
+    const d = drafts.get(token);
+    if (!d || Date.now() - d.at > DRAFT_TTL_MS) return { gone: true };
+    return d.userId === userId ? { draft: d } : { notYours: true };
+}
+// Core's own check of the drafted values, the one Post would run: the times it would save, or why it would refuse.
+function checkDraft(d) {
+    const { validateSet } = require('../../../core/changeset');
+    const v = validateSet([{ type: 'announcement.post', payload: { text: d.values.text, expiry: d.values.expiry, ...(String(d.values.starts_at || '').trim() ? { startsAt: d.values.starts_at.trim() } : {}) } }]);
+    if (!v.ok) return { ok: false, errors: v.failures.flatMap(f => f.errors) };
+    const p = v.normalized[0]?.payload || {};
+    return { ok: true, errors: [], expiresAt: p.expiresAt || null, startsAt: p.startsAt || null };
+}
+const readFields = (interaction) => ({ text: interaction.fields.getTextInputValue('text') || '', expiry: interaction.fields.getTextInputValue('expiry') || '', starts_at: interaction.fields.getTextInputValue('starts_at') || '' });
+// The draft drawn as an announcement: its own colour, and for an edit the stored post time and banner, so the preview is what players will get.
+const draftDoc = (d, existing = null) => ({ _id: existing?._id || 'draft', text: d.values.text.trim(), color: d.values.color ?? existing?.color, createdAt: existing?.createdAt || new Date(), bannerImageUrl: existing?.bannerImageUrl || null });
+async function showDraft(interaction, token, header = null) {
+    const d = drafts.get(token);
+    const existing = d.kind === 'edit' ? await getOne(d.id) : null;
+    if (d.kind === 'edit' && !existing) return gone(interaction);
+    return show(interaction, V.draftView(draftDoc(d, existing), { token, kind: d.kind, header, check: checkDraft(d) }));
+}
+// Puts the draft's values back into a pop-up for Edit.
+function fillModal(j, values) {
+    for (const r of j.components || []) for (const c of r.components || []) if (values[c.custom_id] !== undefined) c.value = String(values[c.custom_id]).slice(0, c.max_length || 4000);
+    return j;
+}
+
 // One pop-up submit. From the panel the old save runs under a deferUpdate, its own result follows as a message below, and the panel is redrawn with a "Saved" header; from the slash command there is no panel to redraw, so the old save answers alone.
 async function submit(interaction, save, opts, afterId = null) {
     if (!interaction.message) return save(interaction, opts);
@@ -153,7 +193,7 @@ async function autocomplete(interaction) {
 
 // ---------- routing ----------
 async function route(interaction) {
-    const [, verb, a] = interaction.customId.split('|');
+    const [, verb, a, b] = interaction.customId.split('|');
 
     // ----- pop-ups first (a pop-up has to be the first answer) -----
     if (verb === 'guide') return runGuide(interaction);
@@ -179,14 +219,50 @@ async function route(interaction) {
 
     // ----- pop-up submits -----
     if (interaction.isModalSubmit?.()) {
+        // A box reopened from a draft's Edit carries that draft's token (`postm|<token>`, `editm|<id>|<token>`): the same draft is updated, its colour kept, so a tweak never repaints the preview (found in the 2026-11-09 13:37 EST click-test: each resubmit drew a new colour).
         if (verb === 'postm') {
             if (!(await gatePost(interaction))) return;
-            return submit(interaction, oldSave().postAnnouncement, {});
+            const prior = a && drafts.get(a)?.userId === interaction.user.id ? drafts.get(a) : null;
+            const values = { ...readFields(interaction), color: prior?.values.color ?? require('../../../utils/announcement').generateAccentColor() };
+            return showDraft(interaction, keepDraft({ kind: 'post', userId: interaction.user.id, values }, prior ? a : null));
         }
         if (verb === 'editm') {
             if (!(await gateRow(interaction, 'manage.announcementEdit'))) return;
-            return submit(interaction, oldSave().editAnnouncement, { customId: `modal_announce_edit_${a}` }, a);
+            if (!(await getOne(a))) return gone(interaction);
+            const prior = b && drafts.get(b)?.userId === interaction.user.id ? b : null;
+            return showDraft(interaction, keepDraft({ kind: 'edit', id: a, userId: interaction.user.id, values: readFields(interaction) }, prior));
         }
+    }
+
+    // ----- a draft: Post (Save), Edit, Discard -----
+    if (verb === 'dpost' || verb === 'dedit' || verb === 'ddisc') {
+        const t = takeDraft(a, interaction.user.id);
+        if (t.notYours) return say(interaction, `${emojis.accessDenied} Only the admin who wrote this draft can use it.`);
+        if (t.gone) return show(interaction, await home(`${emojis.warn} That draft is gone (a draft lasts 15 minutes, and a restart clears it). Nothing was posted.`, interaction));
+        const d = t.draft;
+        const gate = () => (d.kind === 'edit' ? gateRow(interaction, 'manage.announcementEdit') : gatePost(interaction));
+        if (verb === 'dedit') {
+            if (!(await gate())) return;
+            if (d.kind === 'post') return interaction.showModal({ ...fillModal(postModal(), d.values), custom_id: V.ID('postm', a) });
+            const doc = await getOne(d.id);
+            return doc ? interaction.showModal({ ...fillModal(editModal(doc), d.values), custom_id: V.ID('editm', d.id, a) }) : gone(interaction);
+        }
+        if (verb === 'ddisc') {
+            drafts.delete(a);
+            const note = `-# ${emojis.checkmark} Draft discarded. Nothing was ${d.kind === 'edit' ? 'changed' : 'posted'}.`;
+            const doc = d.kind === 'edit' ? await getOne(d.id) : null;
+            return show(interaction, (doc && V.cardView(doc, { header: note })) || await home(note, interaction));
+        }
+        if (!(await gate())) return;
+        await interaction.deferUpdate();
+        let result = null;
+        const save = d.kind === 'edit' ? oldSave().editAnnouncement : oldSave().postAnnouncement;
+        await save(interaction, { values: d.values, customId: d.kind === 'edit' ? `modal_announce_edit_${d.id}` : undefined, onResult: (r) => { result = r; } });
+        if (!result?.ok) return showDraft(interaction, a, `-# ${emojis.warn} Not ${d.kind === 'edit' ? 'saved' : 'posted'}. The reason is in the message below; Edit fixes it.`);
+        drafts.delete(a);
+        const header = `-# ${emojis.checkmark} ${d.kind === 'edit' ? 'Saved' : 'Posted'}. The result is in the message below.`;
+        const doc = d.kind === 'edit' ? await getOne(d.id) : null;
+        return show(interaction, (doc && V.cardView(doc, { header })) || await home(header, interaction));
     }
 
     // ----- delete -----
@@ -217,4 +293,4 @@ async function handleAnnouncementsPanelInteraction(interaction) {
     return true;
 }
 
-module.exports = { handleAnnouncementsPanelInteraction, openFromSlash, renderHome, autocomplete, loadData, postAgainModal, PREFIX };
+module.exports = { handleAnnouncementsPanelInteraction, openFromSlash, renderHome, autocomplete, loadData, postAgainModal, PREFIX, DRAFT_TTL_MS, _drafts: drafts };

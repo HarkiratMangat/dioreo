@@ -176,8 +176,8 @@ const code = list => list.map(w => `\`${w}\``).join(' · ');
 // `a`, `b` or `c`
 const orList = names => names.map(n => `\`${n}\``).reduce((out, n, i, all) => (i === 0 ? n : i === all.length - 1 ? `${out} or ${n}` : `${out}, ${n}`), '');
 
-// #1, the help card (his layout, take 3, approved 2026-10-29 13:40 EDT): the prefixes under the title, the four groups in short words, examples and the slash /help underneath. The icon beside the title opens /help privately for whoever taps it (his "private is fine", 2026-10-29 23:51 EDT); the card never deletes itself. Without Message Content only `@Dioreo` works, so only it is shown.
-const HELP_GROUPS = [['gunsmithSearch', 'Gunsmith', ['gunsmith', 'dmz']], ['newDraws', 'Draws', ['draws', 'prices', 'calculator']], ['calendar', 'Season', ['today', 'calendar', 'remind', 'patch notes', 'end']], ['eyedropper', 'Utilities', ['timestamp', 'colors', 'settings', 'invite', 'help']]];
+// #1, the help card (his layout, take 3, approved 2026-10-29 13:40 EDT): the prefixes under the title, the four groups in short words, examples and the slash /help underneath. The icon beside the title opens /help privately for whoever taps it (his "private is fine", 2026-10-29 23:51 EDT); the card never deletes itself. Without Message Content only `@Dioreo` works, so only it is shown. Split as /help's landing is (2026-11-09 13:14 EST, Harkirat, 2026-11-09 13:10 EST): the list under Gunsmith, and Misc for what is about Dioreo itself.
+const HELP_GROUPS = [['gunsmithSearch', 'Gunsmith', ['gunsmith', 'dmz', 'list']], ['newDraws', 'Draws', ['draws', 'prices', 'calculator']], ['calendar', 'Season', ['today', 'calendar', 'remind', 'patch notes', 'end']], ['eyedropper', 'Utilities', ['timestamp', 'colors']], ['settings', 'Misc', ['settings', 'prefix', 'invite', 'help', 'announcement']]];
 function helpCard(client, prefixes = configuredPrefixes()) {
     const emojis = require('../utils/emojiMap');
     // The server's own prefixes where it set some (B7).
@@ -475,6 +475,13 @@ async function onMessage(message, { edited = false } = {}) {
     // The server's own prefixes, or the default (B7).
     const prefixes = client.textMessageContent ? await prefixesFor(message.guildId) : [];
     const botRoleId = message.guild?.roles?.botRoleFor?.(client.user)?.id || null;
+    // THE OWNER'S DELETE (2026-11-09 12:12 EST, utils/ownerDelete.js): `d owner delete …`. Read BEFORE the ordinary parser so nobody else ever reaches a help card, a Did you mean, a limit or a spam point with these words: for anyone but the owner they are silence (his "Command stays completely silent for anyone else attempting to use it"). The owner skips every limit, as he does everywhere.
+    const ownerAsk = require('../utils/ownerDelete').readOwnerCommand(readTrigger(message.content || '', { botId: client.user.id, botRoleId, prefixes })?.rest);
+    if (ownerAsk) {
+        if (ownerAsk.kind !== 'delete' || !require('../utils/owner').isOwnerId(message.author.id)) return;
+        answered.set(message.id, Date.now());
+        return require('../utils/ownerDelete').runFromMessage(message, ownerAsk.words, { canPost: canPost(message) });
+    }
     let verdict = parseTextCommand(message.content || '', {
         botId: client.user.id,
         botRoleId,

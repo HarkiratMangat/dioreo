@@ -96,7 +96,9 @@ function quickaddSections() {
         section('➕ Not in the Draw Index',
             'Press **Add Details** to give its items, type and a picture, the same as Add Draw. Without them it is saved as typed, with no items.'),
         section('🏷️ After Save',
-            'If the saved draws carry items the draw index has no kind for, one more message asks: **Set item kinds** gives a dropdown per item (weapon, character, vehicle, other). **Revert All** on the result undoes the save.')
+            'If the saved draws carry items the draw index has no kind for, one more message asks: **Set item kinds** gives a dropdown per item (weapon, character, vehicle, other). **Revert All** on the result undoes the save.'),
+        section('🌱 In the Next Season Draft',
+            '**Season → Next Season Draft → Edit Draws → Quick Add** stages the draws instead of saving them live. A line takes the tab you opened it from unless it says `new` or `returning`, end dates go on the draft calendar, and a draw with no picture is left out. **Needs a Look → Stage These** fills the box with the draft calendar\'s draws that are not staged yet. Players see nothing until Promote to Live.')
     ];
 }
 
@@ -116,6 +118,7 @@ function calendarSections() {
             '• **Title** is kept **exactly as typed** — NOT title-cased, since event names routinely carry acronyms (`MP`/`BR`/`DMZ`) that auto-casing would mangle.\n' +
             '• **Section prefix is optional.** Leave it off and the title is auto-classified by keyword — words like "draw"/"mode"/"playlist"/"map", or a standalone `MP`/`BR`, route it automatically. Ambiguous titles (e.g. a bare map name) should keep the explicit prefix.\n' +
             '• `All Season` as the end date means the event runs until the Battle Pass ends — shown as an open-ended range, no fixed end date stored.\n' +
+            '• `TBD` as the end date means the end is not announced yet: the event is saved with no end date (Needs a Look lists it), and exports back as `TBD`.\n' +
             '• Dates are UTC-0.'),
         section('🖼️ Example',
             '**Paste this:**\n' +
