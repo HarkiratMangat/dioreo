@@ -12,6 +12,9 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.16.1 — November 9, 2026
+- **Fixed:** a build saved as Build 1 after other builds now opens first on its card, not last.
+
 ## v3.16.0 — November 8, 2026
 - **Changed:** draws now list in release order on `/draws`.
 - **New:** a placeholder picture where a draw, build, banner or patch-notes season has none yet.

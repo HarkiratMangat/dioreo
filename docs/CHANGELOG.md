@@ -29,7 +29,12 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.16.0 — 2026-11-08 14:44 EST (#265) — Season draft upgrades, draws in release order, custom emoji and "No image yet" placeholders
+## v3.16.1 — 2026-11-09 09:40 EST (#266) — A build saved as Build 1 opens first, not fourth
+
+### Fixed
+- **A weapon's builds were listed in Mongo's natural order on the card Open Loadout shows, and by the Prev/Next/number handler**, so a build saved as Build 1 through `/autobuild` after Builds 2 to 4 sat fourth and its button read "Build 4" while its stored name and edit form said Build 1 (Harkirat's report, 2026-11-09 09:25 EST, Kilo Bolt-Action). `utils/openLoadoutCard.js` and `handlers/loadouts.js` now drop placeholders and sort by `compareBuilds`, as `/gunsmith`'s own lookup (`utils/loadoutLookup.js`) already did. Prod data was correct and needed no change.
+
+## v3.16.0 — 2026-11-08 14:44 EST (#265 · `946fda32`) — Season draft upgrades, draws in release order, custom emoji and "No image yet" placeholders
 
 ### Added
 - **Season draft, Harkirat's asks of 2026-11-08 11:52 EST** (`handlers/manage/seasonPanel/`):
