@@ -99,6 +99,7 @@ const OP_TIERS = {
     'season.setDraftTitlesDeadlines': 'create',
     'season.bulkDraftDraws': 'create',        // replaces the STAGED list only; nothing live changes
     'season.bulkDraftCalendar': 'create',
+    'season.setDraftBanners': 'create',       // the draft's three /calendar banners; staged only
     'season.newsDraft': 'create',             // news triage's automatic Next Season Draft writes; staged only, nothing live changes
     'season.promoteDraft': 'destructive',
     'season.setAutoPromote': 'destructive', // arms a promote (2026-11-08), so it takes the promote's own tier

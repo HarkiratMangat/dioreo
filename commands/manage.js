@@ -814,29 +814,24 @@ function buildDraftTitlesDatesModal(seasonalDoc, override = {}) {
     return modal;
 }
 
-// `append` (2026-11-04 20:06 EST, news-channel triage): a card's "Add to Next Season Draft" opens this box with its line added under what is staged, as `newLine` or `returningLine`. A line that would push the box past Discord's 4,000 characters is left off rather than cutting what is staged.
-const withLine = (text, line) => (line && (text ? text.length + 1 : 0) + line.length <= 4000 ? (text ? `${text}\n${line}` : line) : text);
+// `append` (2026-11-04 20:06 EST, news-channel triage): a card's "Add to Next Season Draft" opens this box with its line in it, as `newLine` or `returningLine`. 🔄 2026-11-09 (the /manage audit's findings 1 and 2): the box opens EMPTY apart from that line and its submit ADDS OR UPDATES the pasted rows (handlers/manage/season.js saveDraftDraws, utils/draftPaste.js). It used to open with the whole staged list and replace it: past 4,000 characters discord.js threw "Invalid string length" building it (Season 10's returning draws alone stood at 3,780), and nothing previewed the replace. `seasonalDoc` is kept in the signature for callers; nothing is read from it now.
+const lineOnly = (line) => String(line || '').slice(0, 4000);
 function buildDraftBulkDrawsModal(seasonalDoc, append = {}) {
-    const draft = seasonalDoc?.draft || {};
-    const { formatDrawsAsBulkText } = require('../utils/adminParser');
-    const modal = new ModalBuilder().setCustomId('modal_draft_bulk_draws').setTitle('Draft: New + Returning Draws');
+    const modal = new ModalBuilder().setCustomId('modal_draft_bulk_draws').setTitle('Draft: Add or Update Draws');
+    const box = (id, label, placeholder, line) => { const t = new TextInputBuilder().setCustomId(id).setLabel(label).setStyle(TextInputStyle.Paragraph).setPlaceholder(placeholder).setRequired(false); if (line) t.setValue(lineOnly(line)); return t; };
     modal.addComponents(
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('new_text').setLabel('New Draws (leave blank to skip)').setStyle(TextInputStyle.Paragraph)
-            .setPlaceholder("Title, m Item 1, july 10, url.jpg").setValue(withLine(formatDrawsAsBulkText(draft.newDraws || []), append.newLine)).setRequired(false)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('returning_text').setLabel('Returning Draws (leave blank to skip)').setStyle(TextInputStyle.Paragraph)
-            .setPlaceholder("Title, l Item, aug 5, url.jpg").setValue(withLine(formatDrawsAsBulkText(draft.returningDraws || []), append.returningLine)).setRequired(false))
+        new ActionRowBuilder().addComponents(box('new_text', 'New Draws to add or update (blank = skip)', 'Title, m Item 1, july 10, url.jpg', append.newLine)),
+        new ActionRowBuilder().addComponents(box('returning_text', 'Returning Draws to add or update', 'Title, l Item, aug 5, url.jpg', append.returningLine))
     );
     return modal;
 }
 
 function buildDraftBulkCalendarModal(seasonalDoc, append = {}) {
-    const draft = seasonalDoc?.draft || {};
-    const { formatCalendarAsBulkText } = require('../utils/adminParser');
-    const modal = new ModalBuilder().setCustomId('modal_draft_bulk_calendar').setTitle('Draft: Calendar');
-    modal.addComponents(
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('bulk_text').setLabel('Events (replaces the whole staged list)').setStyle(TextInputStyle.Paragraph)
-            .setPlaceholder("7/15 - 8/1 | Event Title\n7/20 - All Season | Other Event").setValue(withLine(formatCalendarAsBulkText(draft.calendar || []), append.line)).setRequired(true))
-    );
+    const modal = new ModalBuilder().setCustomId('modal_draft_bulk_calendar').setTitle('Draft: Add or Update Calendar');
+    const t = new TextInputBuilder().setCustomId('bulk_text').setLabel('Events to add or update').setStyle(TextInputStyle.Paragraph)
+        .setPlaceholder("7/15 - 8/1 | Event Title\n7/20 - All Season | Other Event").setRequired(true);
+    if (append.line) t.setValue(lineOnly(append.line));
+    modal.addComponents(new ActionRowBuilder().addComponents(t));
     return modal;
 }
 

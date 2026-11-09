@@ -99,14 +99,7 @@ async function openItem(interaction, cardId, index) {
         if (item.action === 'season') modal = manage.buildDraftTitlesDatesModal(doc, { mainTitle: item.name, bpStart: item.start });
         else {
             const line = item.action === 'draw' ? r.draftDrawLine(item, image) : r.draftCalendarLine(item);
-            // The draft boxes hold 4,000 characters and the calendar one REPLACES the whole staged list, so a line that does not fit is handed over to paste instead of being left out of a box he would submit believing it was added (think-pass, 2026-11-04 22:09 EST).
-            const { formatDrawsAsBulkText, formatCalendarAsBulkText } = require('../utils/adminParser');
-            const draft = doc?.draft || {};
-            const staged = item.action === 'draw' ? formatDrawsAsBulkText((item.drawType === 'returning' ? draft.returningDraws : draft.newDraws) || []) : formatCalendarAsBulkText(draft.calendar || []);
-            if ((staged ? staged.length + 1 : 0) + line.length > 4000) {
-                try { await interaction.reply({ content: `The Next Season Draft's box is too full to take this line. Paste it in yourself with /manage season draft:\n\`\`\`\n${line}\n\`\`\``, flags: MessageFlags.Ephemeral }); } catch (e) { console.error(e); }
-                return;
-            }
+            // The draft boxes open with only this line and their submit adds or updates it (2026-11-09, the /manage audit: they used to hold the whole staged list and replace it, so a full box had to hand the line over to paste instead).
             modal = item.action === 'draw'
                 ? manage.buildDraftBulkDrawsModal(doc, { [item.drawType === 'returning' ? 'returningLine' : 'newLine']: line })
                 : manage.buildDraftBulkCalendarModal(doc, { line });

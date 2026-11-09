@@ -26,13 +26,13 @@ t('the pop-up\'s fields make one line the bulk parser reads, and a stored draw\'
     assert.deepStrictEqual(p[0].items.map(i => i.tier), ['mythic', 'legendary', 'comment']);
     assert.strictEqual(DD.itemLines(draw('a', 'A Draw', '2026-11-12')), 'm Gun - Skin\nl Other - Skin');
 });
-t('the panel lists the section in date order, each draw with its own Edit, and stays under 40 components', () => {
+t('the panel lists the section in date order, each draw with its own Open (its card, 2026-11-09), and stays under 40 components', () => {
     const many = Array.from({ length: 9 }, (_, i) => draw(`id${i}`, `Draw ${i}`, `2026-11-${String(20 - i).padStart(2, '0')}`));
     const doc = { draft: { active: true, newDraws: many, returningDraws: [] } };
     const out = V.draftDrawsView(doc, 'n', 0);
     const ids = JSON.stringify(out).match(/"custom_id":"[^"]+"/g);
     assert.ok(ids.every(x => x.includes('mng_ss|')) && new Set(ids).size === ids.length, 'own ids, no duplicates');
-    assert.ok(ids.some(x => x.includes('mng_ss|ddedit|n|id8')), 'the earliest draw first, with its Edit');
+    assert.ok(ids.some(x => x.includes('mng_ss|ddc|n|id8')), 'the earliest draw first, with its Open');
     const count = c => Array.isArray(c) ? c.reduce((n, x) => n + count(x), 0) : 1 + (c.components ? count(c.components) : 0) + (c.accessory ? 1 : 0);
     assert.ok(count(out) <= 40 && count(V.draftDrawsView(doc, 'n', 1)) <= 40);
 });

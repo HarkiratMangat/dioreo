@@ -91,7 +91,7 @@ async function pageView(doc, note = null, { pageRow = null } = {}) {
         { type: 1, components: [{ type: 3, custom_id: ID('browse'), placeholder: 'Or browse a list…', options: Object.entries(STATUS).map(([value, s]) => ({ value, label: `${s.label} · ${n(value)}`, emoji: emojis.parseEmoji(s.emoji()) })) }] },
         BIG(),
         text('-# Many draws at once…'),
-        row(btn('paste', 'Paste Draws', emojis.mngBulkAdd), btn('select', 'Select Draws', emojis.filter), btn('export', 'Export', emojis.copyExport), btn('guide', 'Guide', emojis.guide)),
+        row(btn('paste', 'Paste Draws', emojis.pasteImport), btn('select', 'Select Draws', emojis.filter), btn('export', 'Export', emojis.copyExport), btn('guide', 'Guide', emojis.guide)),
         SMALL(),
         text('-# End of season…'),
         row(btn('purge', 'Purge Draws', emojis.deleteBin, 4)),

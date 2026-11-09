@@ -178,39 +178,81 @@ async function setDraftTitlesDeadlines(interaction) {
     return interaction.followUp({ content: `${r.ok ? BOT_EMOJI.checkmark : BOT_EMOJI.cross} ${r.message}` });
 }
 
-// custom_id: modal_draft_bulk_draws
-async function saveDraftDraws(actorId, newText, returningText) {
-    const result = await commitSet([{ type: 'season.bulkDraftDraws', payload: { newText, returningText } }], { actorId });
-    if (!result.ok) return { ok: false, message: extractCommitError(result) };
-    const { summary } = result.results[0].applied;
-    // A staged draw's images and items reach the draw index now, at staging (core/ops/season.js), so its item kinds are asked about now too (handlers/manage/itemKinds.js): `titles` is for the caller's askItemKinds.
-    const { parseBulkDrawList } = require('../../utils/adminParser');
-    const titles = [newText, returningText].filter(Boolean).flatMap(t => parseBulkDrawList(t).map(d => d.title));
-    return { ok: true, titles, changeIds: result.changeIds, message: `**Draft Draws Staged!**\n${summary.join('\n')}\nNothing is live yet — use Promote to Live when ready.` };
+// custom_id: modal_draft_bulk_draws (and the season panel's Paste Draws Stage, handlers/manage/seasonPanel/draftEdit.js)
+//
+// ⚠️ ADDS AND UPDATES, NEVER REPLACES (2026-11-09, the /manage audit's findings 1 and 2; Harkirat 17:59 EST: "go ahead with all your findings"). The box used to open with the whole staged list and replace it, which broke past Discord's 4,000 characters and saved with no preview. Each pasted line is matched to a staged row (utils/draftPaste.js planDraws), updated in place (its _id and news tag kept) or added; nothing not pasted is touched. The panel shows the plan first; the news card's box (no preview) passes `strict`, so only the same draw by name is updated. The write is season.bulkDraftDraws' `parsed` path, so Revert puts the lists back as they were.
+async function resolveDraftPictures(draft, plan) {
+    const { resolveThumbnail } = require('../../utils/cloudinaryCache');
+    const { isKnownType } = require('../../utils/drawCatalog');
+    const { namesDrawType } = require('../../utils/drawTypes');
+    const q = require('../../utils/quickAdd');
+    const releaseSeason = q.seasonNumber(draft?.currentSeasonTitle);
+    const releaseYear = q.seasonYear(draft || {});
+    const todo = [...plan.added, ...plan.changed.filter(c => c.p.thumbnailUrl)];
+    const pictures = new Map();
+    await Promise.all(todo.map(async ({ sec, p, line }) => {
+        const r = await resolveThumbnail(p.title, p.thumbnailUrl || '', { items: p.items || [], priceType: p.priceType || '', ...(sec === 'new' && releaseSeason ? { releaseSeason, ...(releaseYear ? { releaseYear } : {}) } : {}) }).catch(() => ({ url: null }));
+        const priceType = !isKnownType(p.priceType) && namesDrawType(r?.catalog?.priceType) ? r.catalog.priceType : '';
+        pictures.set(line, { url: r?.url || null, priceType });
+    }));
+    return pictures;
+}
+
+async function saveDraftDraws(actorId, newText, returningText, { strict = false } = {}) {
+    const DP = require('../../utils/draftPaste');
+    const doc = await require('../../models/SeasonalData').findOne({ docType: 'global' }).lean();
+    const draft = doc?.draft || {};
+    const plan = DP.planDraws(draft, newText, returningText, { strict });
+    const skippedNote = [
+        ...(plan.twins.length ? [`Already staged in the other list, left as it is: ${plan.twins.map(t => t.staged).join(', ')}`] : []),
+        ...(plan.skipped.length ? [`Not read (check the title and date): ${plan.skipped.length}`] : []),
+    ];
+    if (!plan.count) return { ok: false, plan, message: ['Nothing to stage: every pasted draw is staged already as written.', ...skippedNote].join('\n') };
+    const pictures = await resolveDraftPictures(draft, plan);
+    const { lists, calendar, noPicture } = DP.applyDraws(draft, plan, pictures);
+    const ops = [];
+    if (Object.keys(lists).length) ops.push({ type: 'season.bulkDraftDraws', payload: { parsed: lists } });
+    if (calendar) ops.push({ type: 'season.bulkDraftCalendar', payload: { parsed: calendar } });
+    if (!ops.length) return { ok: false, plan, noPicture, message: `Nothing was staged: ${noPicture.join(', ')} ${noPicture.length === 1 ? 'has' : 'have'} no picture. Add an image link to the line.` };
+    const result = await commitSet(ops, { actorId });
+    if (!result.ok) return { ok: false, plan, message: extractCommitError(result) };
+    const added = plan.added.filter(a => !noPicture.includes(a.p.title));
+    const titles = [...added.map(a => a.p.title), ...plan.changed.map(c => c.p.title)];
+    const lines = [
+        `**Draft Draws Staged!** ${added.length} added · ${plan.changed.length} updated${plan.same.length ? ` · ${plan.same.length} already as written` : ''}.`,
+        ...(noPicture.length ? [`${BOT_EMOJI.warn} Left out, no picture found: ${noPicture.join(', ')}. Add an image link to the line.`] : []),
+        ...skippedNote.map(x => `${BOT_EMOJI.warn} ${x}`),
+        'Nothing is live yet. Use Promote to Live when ready.',
+    ];
+    return { ok: true, plan, noPicture, titles, changeIds: result.changeIds, message: lines.join('\n') };
 }
 
 async function bulkDraftDraws(interaction) {
     await interaction.deferReply({ ephemeral: true });
     const newText = interaction.fields.getTextInputValue('new_text')?.trim();
     const returningText = interaction.fields.getTextInputValue('returning_text')?.trim();
-    const r = await saveDraftDraws(interaction.user.id, newText, returningText);
+    // No preview on this path (the news card's Add to Next Season Draft, an old posted panel), so only the same draw by name is updated.
+    const r = await saveDraftDraws(interaction.user.id, newText, returningText, { strict: true });
     if (!r.ok) return await interaction.followUp({ content: `${BOT_EMOJI.cross} ${r.message}` });
     const sent = await interaction.followUp({ content: `${BOT_EMOJI.checkmark} ${r.message}` });
     await require('./itemKinds').askItemKinds(interaction, r.titles);
     return sent;
 }
 
-// custom_id: modal_draft_bulk_calendar
-async function saveDraftCalendar(actorId, text) {
-    const result = await commitSet([{ type: 'season.bulkDraftCalendar', payload: { text } }], { actorId });
-    if (!result.ok) return { ok: false, message: extractCommitError(result) };
-    const { count } = result.results[0].applied;
-    return { ok: true, changeIds: result.changeIds, message: `**Draft Calendar Staged!** ${count} event(s). Nothing is live yet — use Promote to Live when ready.` };
+// custom_id: modal_draft_bulk_calendar (and the season panel's Paste Calendar Stage). Adds and updates, never replaces, as saveDraftDraws above.
+async function saveDraftCalendar(actorId, text, { strict = false } = {}) {
+    const DP = require('../../utils/draftPaste');
+    const doc = await require('../../models/SeasonalData').findOne({ docType: 'global' }).lean();
+    const plan = DP.planCalendar(doc?.draft || {}, text, { strict });
+    if (!plan.count) return { ok: false, plan, message: plan.skipped.length && !plan.same.length ? 'Nothing in that text read as a calendar line. Check the Bulk Format Guide. The staged calendar was not changed.' : `Nothing to stage: every pasted line is staged already as written.${plan.skipped.length ? ` ${plan.skipped.length} line(s) not read.` : ''}` };
+    const result = await commitSet([{ type: 'season.bulkDraftCalendar', payload: { parsed: DP.applyCalendar(doc?.draft || {}, plan) } }], { actorId });
+    if (!result.ok) return { ok: false, plan, message: extractCommitError(result) };
+    return { ok: true, plan, changeIds: result.changeIds, message: `**Draft Calendar Staged!** ${plan.added.length} added · ${plan.changed.length} updated${plan.same.length ? ` · ${plan.same.length} already as written` : ''}.${plan.skipped.length ? `\n${BOT_EMOJI.warn} Not read (check the dates and the | before the title): ${plan.skipped.length}` : ''}\nNothing is live yet. Use Promote to Live when ready.` };
 }
 
 async function bulkDraftCalendar(interaction) {
     await interaction.deferReply({ ephemeral: true });
-    const r = await saveDraftCalendar(interaction.user.id, interaction.fields.getTextInputValue('bulk_text'));
+    const r = await saveDraftCalendar(interaction.user.id, interaction.fields.getTextInputValue('bulk_text'), { strict: true });
     return interaction.followUp({ content: `${r.ok ? BOT_EMOJI.checkmark : BOT_EMOJI.cross} ${r.message}` });
 }
 

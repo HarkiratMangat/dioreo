@@ -72,8 +72,6 @@ async function renderHome(interaction, view = 'live') { return show(interaction,
 // ---------- the pop-ups ---------- /manage's own builders, re-id'd so the submit comes back here. Prefilled from what is stored, as before.
 const reId = (modal, customId) => { const j = modal.toJSON ? modal.toJSON() : JSON.parse(JSON.stringify(modal)); j.custom_id = customId; return j; };
 const titlesModal = (doc, view) => reId(view === 'draft' ? manageCommand().buildDraftTitlesDatesModal(doc) : manageCommand().buildSeasonTitlesDeadlinesModal(doc), V.ID('tm', view));
-const drawsModal = (doc) => reId(manageCommand().buildDraftBulkDrawsModal(doc), V.ID('drm'));
-const calendarModal = (doc) => reId(manageCommand().buildDraftBulkCalendarModal(doc), V.ID('calm'));
 
 // Each opener gates, then opens its pop-up as the interaction's FIRST answer.
 async function openTitles(interaction, view) {
@@ -84,8 +82,9 @@ async function openWipe(interaction) {
     if (!(await gateLive(interaction, 'season_wipe'))) return;
     return interaction.showModal(manageCommand().buildWipeSeasonModal());
 }
-async function openDraws(interaction) { if (await gate(interaction, 'bulkdraws')) return interaction.showModal(drawsModal(await getDoc())); }
-async function openCalendar(interaction) { if (await gate(interaction, 'bulkcalendar')) return interaction.showModal(calendarModal(await getDoc())); }
+// Paste Draws and Paste Calendar open empty and add or update with a preview (./draftEdit.js, the /manage audit's findings 1 and 2).
+const openDraws = (interaction) => draftEdit().route(interaction, 'dr', null, null, ctx());
+const openCalendar = (interaction) => draftEdit().route(interaction, 'cal', null, null, ctx());
 
 async function runGuide(interaction) {
     if (!(await gate(interaction, 'formatguide'))) return;
@@ -113,14 +112,18 @@ async function openFromSlash(interaction, view = 'live') {
 // This panel has no target option.
 async function autocomplete(interaction) { return interaction.respond([]); }
 
-// The panel's own Revert after Promote or Discard (the lead, 2026-11-07 21:11 EST: the spec asks for Revert wherever a save returns change ids). results.js revertChanges does the reverting and its permission check; render lands back on the live view.
-function revertButton(changeIds) {
-    const id = `${PREFIX}revert|${(changeIds || []).join(',')}`;
+// The panel's own Revert after Promote or Discard (the lead, 2026-11-07 21:11 EST: the spec asks for Revert wherever a save returns change ids). results.js revertChanges does the reverting and its permission check; render lands back on the live view, or the draft's with `view` 'd' (a draft edit's Revert, 2026-11-09).
+function revertButton(changeIds, view = null) {
+    const id = `${PREFIX}revert|${(changeIds || []).join(',')}${view === 'd' ? '|d' : ''}`;
     return changeIds?.length && id.length <= 100 ? [{ type: 2, style: 4, label: 'Revert', custom_id: id, emoji: emojis.parseEmoji(emojis.keep) }] : [];
 }
 
 // A saved result as the note above the redrawn view.
 const savedNote = (r) => (r.ok ? `### ${emojis.checkmark} Saved\n${r.message}` : `### ${emojis.cross} Not saved\n${r.message}`).slice(0, 1800);
+
+const draftEdit = () => require('./draftEdit');
+// What ./draftEdit.js needs from this file.
+const ctx = () => ({ gate, ack, show, say, getDoc, home, revertButton });
 
 // ---------- the draft's draws, one at a time (2026-11-08 12:27 EST) ---------- The changed list goes through season.bulkDraftDraws' `parsed` path (utils/draftDraws.js): untouched rows keep their _id, picture and news tag, Revert puts the old list back, and an armed auto-promote set by someone else switches off. Only the added or edited draw is parsed and has its picture resolved, as Paste Draws does.
 async function saveDraftDraw(interaction, verb, sec, id) {
@@ -161,7 +164,7 @@ async function saveDraftDraw(interaction, verb, sec, id) {
     const label = verb === 'ddrmm' ? `Removed ${list.length - next.length}` : verb === 'ddeditm' ? `Saved ${title}` : `Added ${title}`;
     const note = r.ok ? `### ${emojis.checkmark} ${label}\n-# Staged, not live.${carriedGone.length ? `\n${emojis.warn} ${carriedGone.join(', ')} ${carriedGone.length === 1 ? 'is' : 'are'} still running when the season starts, so the daily carry-over adds ${carriedGone.length === 1 ? 'it' : 'them'} back. To drop one for good, end it before the season on the live calendar.` : ''}` : `### ${emojis.cross} Not saved\n${(r.failedAt?.errors || []).join(' ') || 'Try again.'}`;
     const out = V.draftDrawsView(await getDoc(), s, 0, note);
-    if (r.ok) out[0].components.splice(out[0].components.length - 1, 0, V.row(...revertButton(r.changeIds)));
+    if (r.ok) out[0].components.splice(out[0].components.length - 1, 0, V.row(...revertButton(r.changeIds, 'd')));
     const sent = await show(interaction, out);
     if (r.ok && title) await require('../itemKinds').askItemKinds(interaction, [title]);
     return sent;
@@ -172,11 +175,12 @@ async function route(interaction) {
     const [, verb, a, b] = interaction.customId.split('|');
     const n = (x) => Number(x) || 0;
 
+    // ----- the draft's paste previews, calendar editor, draw card and banners (./draftEdit.js) -----
+    if (await draftEdit().route(interaction, verb, a, b, ctx())) return;
+
     // ----- pop-ups first -----
     if (verb === 'tl') return openTitles(interaction, a === 'draft' ? 'draft' : 'live');
     if (verb === 'wipe') return openWipe(interaction);
-    if (verb === 'dr') return openDraws(interaction);
-    if (verb === 'cal') return openCalendar(interaction);
     if (verb === 'guide') return runGuide(interaction);
 
     // ----- views -----
@@ -203,7 +207,7 @@ async function route(interaction) {
     }
     if (verb === 'ddrm') { if (await gate(interaction, 'bulkdraws')) return interaction.showModal(V.draftRemoveModal(await getDoc(), a)); return; }
     if ((verb === 'ddaddm' || verb === 'ddeditm' || verb === 'ddrmm') && interaction.isModalSubmit?.()) return saveDraftDraw(interaction, verb, a, b);
-    if (verb === 'revert') return require('../results').revertChanges(interaction, String(a || '').split(',').filter(Boolean), { doneNote: 'it is back as it was', render: async (note) => home('live', await getDoc(), note, interaction) });
+    if (verb === 'revert') return require('../results').revertChanges(interaction, String(a || '').split(',').filter(Boolean), { doneNote: 'it is back as it was', render: async (note) => home(b === 'd' ? 'draft' : 'live', await getDoc(), note, interaction) });
 
     // ----- pop-up submits: save through season.js, then redraw the view with a Saved header -----
     if (verb === 'tm' && interaction.isModalSubmit?.()) {
@@ -213,22 +217,6 @@ async function route(interaction) {
         const r = await season().saveTitlesDeadlines(interaction.user.id, season().readTitleFields(interaction), { draft: view === 'draft' });
         return show(interaction, await home(view, await getDoc(), savedNote(r), interaction));
     }
-    if (verb === 'drm' && interaction.isModalSubmit?.()) {
-        if (!(await gate(interaction, 'bulkdraws'))) return;
-        await ack(interaction);
-        const r = await season().saveDraftDraws(interaction.user.id, interaction.fields.getTextInputValue('new_text')?.trim(), interaction.fields.getTextInputValue('returning_text')?.trim());
-        const sent = await show(interaction, await home('draft', await getDoc(), savedNote(r), interaction));
-        // The staged draws' item kinds are asked about now, as the old pop-up handler did (handlers/manage/itemKinds.js).
-        if (r.ok) await require('../itemKinds').askItemKinds(interaction, r.titles);
-        return sent;
-    }
-    if (verb === 'calm' && interaction.isModalSubmit?.()) {
-        if (!(await gate(interaction, 'bulkcalendar'))) return;
-        await ack(interaction);
-        const r = await season().saveDraftCalendar(interaction.user.id, interaction.fields.getTextInputValue('bulk_text'));
-        return show(interaction, await home('draft', await getDoc(), savedNote(r), interaction));
-    }
-
     // ----- Promote and Discard: confirm in place, then run the existing logic with the destructive tier re-checked -----
     if (verb === 'promote' || verb === 'discard') {
         if (!(await gate(interaction, verb))) return;

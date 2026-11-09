@@ -77,7 +77,8 @@ function readSeasonTitle(payload, currentEmoji) {
 }
 
 function mapParsedEvents(parsed) {
-    return parsed.map(e => ({ title: e.title, date: e.startDate, endDate: e.isOngoing ? null : e.endDate, isOngoing: e.isOngoing, category: e.category }));
+    // isDoubleCP (2026-11-09, the /manage audit): the draft calendar box dropped the 2X CP marker here, so a staged double-CP event went live as a normal one. core/ops/calendar.js's own mapParsedEvents had the same gap fixed 2026-08-22.
+    return parsed.map(e => ({ title: e.title, date: e.startDate, endDate: e.isOngoing ? null : e.endDate, isOngoing: e.isOngoing, category: e.category, isDoubleCP: Boolean(e.isDoubleCP) }));
 }
 
 // An armed auto-promote is bound to the admin who armed it (the commit security review, 2026-11-08 12:12 EST): a draft edit by ANYONE ELSE switches it off, so nobody can change what goes live under another admin's authority. The armer's own edits keep it, and news triage's writes (season.newsDraft) never touch it, because news fills the draft by design right up to the season. Reverting the edit does not re-arm it; arming again is one click.
@@ -460,6 +461,40 @@ registerEntity('season', {
             };
         },
         invert: (c) => ({ type: 'season.bulkDraftDraws', payload: { parsed: c.applied.prior } })
+    },
+
+    // The draft's /calendar page banners (2026-11-09, the /manage audit's finding 5): Promote to Live already copied draft.*BannerUrl onto the live fields, but nothing could set them. A filled field re-hosts to its own `next_` Cloudinary id (utils/calendarBannerCache.js `draft`), a blank one clears the staged banner; the live banners are untouched until Promote. No /manage registry action of its own: the draft panel's Banners button is gated as the calendar's (seasondraft:bulkcalendar), so `page:` is declared.
+    'season.setDraftBanners': {
+        page: 'seasondraft',
+        validate: (op) => {
+            const bad = Object.keys(op.payload || {}).filter(k => !['draws', 'events', 'playlists'].includes(k));
+            if (bad.length) return { ok: false, errors: [`Unknown banner page: ${bad.join(', ')}`] };
+            const notLink = Object.entries(op.payload || {}).filter(([, v]) => v && !/^https?:\/\/\S+$/i.test(String(v).trim())).map(([k]) => k);
+            return notLink.length ? { ok: false, errors: [`Not an image link: ${notLink.join(', ')}. Paste a link starting with https://, or leave it blank.`] } : { ok: true, errors: [], normalized: op };
+        },
+        preview: (op, live) => ({ before: { draws: live.draft?.drawsBannerUrl || '', events: live.draft?.eventsBannerUrl || '', playlists: live.draft?.playlistsBannerUrl || '' }, after: { ...op.payload } }),
+        apply: async (op, { session, actorId, restoring }) => {
+            await disarmAutoPromote(session, actorId);
+            const { cacheBannerImage } = require('../../utils/calendarBannerCache');
+            const before = await SeasonalData.findOne(DOC).select('draft').lean().session(session);
+            const draft = before.draft || {};
+            const prior = {}; const $set = { 'draft.active': true }; const changes = [];
+            for (const key of ['draws', 'events', 'playlists']) {
+                if (!(key in (op.payload || {}))) continue;
+                const field = `${key}BannerUrl`;
+                prior[key] = draft[field] || '';
+                const raw = String(op.payload[key] || '').trim();
+                if (raw === prior[key]) continue;
+                if (!raw) { $set[`draft.${field}`] = ''; changes.push({ key, action: 'cleared' }); continue; }
+                // A Revert hands back the stored url, already re-hosted: write it as it is.
+                const r = restoring || /res\.cloudinary\.com\//.test(raw) ? { url: raw, cached: true } : await cacheBannerImage(key, raw, { draft: true });
+                $set[`draft.${field}`] = r.url || raw;
+                changes.push({ key, action: 'set', cached: Boolean(r.cached) });
+            }
+            await SeasonalData.updateOne(DOC, { $set }, { session });
+            return { ok: true, change: { action: 'edit', model: 'SeasonalData', target: 'draft banners', summary: 'Staged draft calendar banners' }, applied: { prior, changes } };
+        },
+        invert: (c) => ({ type: 'season.setDraftBanners', payload: c.applied.prior })
     },
 
     // ⚠️ MISSING FROM THE PLAN ENTIRELY -- see the header note. Always replaces the whole draft calendar wholesale (unlike the live calendar's merge-based Replace) -- there is no separate add/replace distinction for the draft, matching the real single bulkDraftCalendar handler.

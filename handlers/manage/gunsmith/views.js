@@ -60,7 +60,7 @@ async function pageView(mode, note = null, { pageRow = null } = {}) {
     components.push(
         BIG(),
         text('-# Many builds at once…'),
-        row(btn(mode, 'paste', 'Paste Builds', emojis.mngBulkAdd), btn(mode, 'select', 'Select Builds', emojis.filter), btn(mode, 'export', 'Export', emojis.copyExport), btn(mode, 'guide', 'Guide', emojis.guide)),
+        row(btn(mode, 'paste', 'Paste Builds', emojis.pasteImport), btn(mode, 'select', 'Select Builds', emojis.filter), btn(mode, 'export', 'Export', emojis.copyExport), btn(mode, 'guide', 'Guide', emojis.guide)),
     );
     return panel(mode, components, pageRow ? [pageRow] : []);
 }

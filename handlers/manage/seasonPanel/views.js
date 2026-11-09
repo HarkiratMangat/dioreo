@@ -117,7 +117,7 @@ function draftView(doc, note, pageRow) {
     if (!staged) {
         components.push(
             text('-# Stage next season…'),
-            row(btn(['tl', 'draft'], 'Edit Titles & Deadlines', emojis.edit, 1), btn(['dd', 'n', 0], 'Draws', emojis.newDraws), btn('cal', 'Paste Calendar', emojis.mngBulkAdd)),
+            row(btn(['tl', 'draft'], 'Edit Titles & Deadlines', emojis.edit, 1), btn(['dd', 'n', 0], 'Draws', emojis.newDraws), btn(['dc', 0], 'Calendar', emojis.calendar)),
             BIG(),
             row(btn('guide', 'Guide', emojis.guide), btn(['view', 'live'], 'Live Season', emojis.returnArrow)),
         );
@@ -127,10 +127,10 @@ function draftView(doc, note, pageRow) {
         text(`**Title:** ${seasonName(d.currentSeasonTitle, d.currentSeasonEmoji)}\n${seasonRows(d)}${c.fields ? `\n-# ${emojis.mngInfo} News set ${plural(c.fields, 'season field')} here.` : ''}${c.carried ? `\n-# ${emojis.mngInfo} ${plural(c.carried, 'row')} carried over: still running when this season starts.` : ''}${gapLine(d)}`),
         BIG(),
         text('-# Staged lists, as players will see them…'),
-        row(btn(['lv', 'nd', 0], `New Draws · ${c.nd}`, emojis.newDraws, 2, !c.nd), btn(['lv', 'rd', 0], `Returning · ${c.rd}`, emojis.returningDraws, 2, !c.rd), btn(['lv', 'cal', 0], `Calendar · ${c.cal}`, emojis.calendar, 2, !c.cal), btn(['ls', 'news', 0], `News · ${c.news}`, emojis.mngInfo, 2, !c.news), (() => { const n = needsLook(doc).length; return btn('look', n ? `Needs a Look · ${n}` : 'All Checked', n ? emojis.warn : emojis.checkmark, n ? 4 : 3); })()),
+        row(btn(['lv', 'nd', 0], `New Draws · ${c.nd}`, emojis.newDraws, 2, !c.nd), btn(['lv', 'rd', 0], `Returning · ${c.rd}`, emojis.returningDraws, 2, !c.rd), btn(['lv', 'cal', 0], `Calendar · ${c.cal}`, emojis.calendar, 2, !c.cal), btn(['ls', 'news', 0], `News · ${c.news}`, emojis.news, 2, !c.news), (() => { const n = needsLook(doc).length; return btn('look', n ? `Needs a Look · ${n}` : 'All Checked', n ? emojis.warn : emojis.checkmark, n ? 4 : 3); })()),
         SMALL(),
         text('-# Change what is staged…'),
-        row(btn(['tl', 'draft'], 'Edit Titles & Deadlines', emojis.edit, 1), btn(['dd', 'n', 0], 'Edit Draws', emojis.newDraws), btn('cal', 'Paste Calendar', emojis.mngBulkAdd)),
+        row(btn(['tl', 'draft'], 'Edit Titles & Deadlines', emojis.edit, 1), btn(['dd', 'n', 0], 'Edit Draws', emojis.newDraws), btn(['dc', 0], 'Edit Calendar', emojis.calendar)),
         BIG(),
         ...(d.autoPromote && d.bpStart ? [text(`${emojis.mngInfo} **Auto-promotes** <t:${Math.floor(new Date(d.bpStart).getTime() / 1000)}:F> · <t:${Math.floor(new Date(d.bpStart).getTime() / 1000)}:R>`)] : []),
         row(btn('promote', d.autoPromote ? 'Promote Now…' : 'Promote to Live', emojis.checkmark, 3), ...(d.autoPromote ? [btn('autooff', 'Cancel Auto-Promote', emojis.cross)] : []), btn('discard', 'Discard Draft', emojis.deleteBin, 4)),
@@ -171,7 +171,7 @@ const KINDS = () => ({
     nd: { label: 'New Draws', emoji: emojis.newDraws, items: (d) => require('../../../utils/drawDates').byRelease(d.newDraws), line: drawLine },
     rd: { label: 'Returning Draws', emoji: emojis.returningDraws, items: (d) => require('../../../utils/drawDates').byRelease(d.returningDraws), line: drawLine },
     cal: { label: 'Calendar', emoji: emojis.calendar, items: (d) => d.calendar || [], line: calLine },
-    news: { label: 'News Items', emoji: emojis.mngInfo, items: (d) => newsRows(d), line: newsLine },
+    news: { label: 'News Items', emoji: emojis.news, items: (d) => newsRows(d), line: newsLine },
 });
 function listView(doc, kind, page = 0) {
     const key = KINDS()[kind] ? kind : 'nd';
@@ -184,7 +184,8 @@ function listView(doc, kind, page = 0) {
     if (!shown.length) components.push(text(`${emojis.cross} Nothing staged here.`));
     else components.push(text(shown.map(k.line).join('\n').slice(0, 3900)));
     if (pages > 1) components.push(row(arrow(['ls', key, pg - 1], 'left', pg === 0), counter(['pgn', key], `Page ${pg + 1} / ${pages}`), arrow(['ls', key, pg + 1], 'right', pg === pages - 1)));
-    components.push(BIG(), row(btn(['view', 'draft'], 'Back', emojis.returnArrow), homeBtn()));
+    // Players' View (2026-11-09, Harkirat: "for any of like the expanded view buttons, or like the simple view or list view, use like the expand collapse emojis"): the same list drawn by /draws or /calendar, the twin of that view's Compact List.
+    components.push(BIG(), row(btn(['view', 'draft'], 'Back', emojis.returnArrow), ...(['nd', 'rd', 'cal'].includes(key) ? [btn(['lv', key, 0], "Players' View", emojis.expand, 2, !list.length)] : []), homeBtn()));
     return panel(components);
 }
 
@@ -206,11 +207,11 @@ function draftDrawsView(doc, sec = 'n', page = 0, note = null) {
     for (const d of shown) {
         const tier = topTier(d);
         const items = (d.items || []).filter(i => i.tier !== 'comment').length;
-        components.push({ type: 9, components: [text(`### ${tier && emojis[tier] ? `${emojis[tier]} ` : ''}${d.title || '(untitled)'}\n-# ${dayStamp(d.date)} · ${plural(items, 'item')}${d.thumbnailUrl ? '' : ' · no picture'} · *${origin(d)}*`)], accessory: btn(['ddedit', s, String(d._id || '')], 'Edit', emojis.edit) });
+        components.push({ type: 9, components: [text(`### ${tier && emojis[tier] ? `${emojis[tier]} ` : ''}${d.title || '(untitled)'}\n-# ${dayStamp(d.date)} · ${plural(items, 'item')}${d.thumbnailUrl ? '' : ' · no picture'} · *${origin(d)}*`)], accessory: btn(['ddc', s, String(d._id || '')], 'Open', emojis.expand) });
     }
     if (pages > 1) components.push(row(arrow(['dd', s, pg - 1], 'left', pg === 0), counter(['ddpg', s], `Page ${pg + 1} / ${pages}`), arrow(['dd', s, pg + 1], 'right', pg === pages - 1)));
     // Quick Add (2026-11-09 14:13 EST, Harkirat: "theres no 'quick add' options in /manage season draft when adding draws"): the /manage draws Quick Add, staging into the draft (handlers/manage/quickAdd.js, target 'draft').
-    components.push(BIG(), row(btn(['ddqa', s], 'Quick Add', emojis.mngAdd, 3), btn(['ddadd', s], 'Add Draw', emojis.mngAdd), btn(['ddrm', s], 'Remove Draws', emojis.deleteBin, 4, !list.length), btn('dr', 'Paste Draws', emojis.mngBulkAdd), btn(['view', 'draft'], 'Back', emojis.returnArrow)));
+    components.push(BIG(), row(btn(['ddqa', s], 'Quick Add', emojis.mngAdd, 3), btn(['ddadd', s], 'Add Draw', emojis.mngAdd), btn(['ddrm', s], 'Remove Draws', emojis.deleteBin, 4, !list.length), btn('dr', 'Paste Draws', emojis.pasteImport), btn(['view', 'draft'], 'Back', emojis.returnArrow)));
     return panel(components);
 }
 // The Add / Edit Draw pop-up: Title, Items (one per line, as the bulk format writes them), Release Date, Image Link, Draw Type.
@@ -271,7 +272,6 @@ function needsLook(doc) {
     if (r.seamGap) w.push(`The seasons do not meet: ${r.seamGap}`);
     if (r.leakOnly.length) w.push(`Expected, not confirmed yet: ${names(r.leakOnly)}`);
     if ((r.undated || []).length) w.push(`No post ever dated these, so they show as starting on day one: ${names(r.undated)}`);
-    if ((r.fullBoxes || []).length) w.push(`Nearly full in /manage (a box holds 4,000 characters): ${r.fullBoxes.join(' · ')}`);
     if ((r.stillRunning || []).length) w.push(`Live with no end date, may run into this season: ${names(r.stillRunning)}`);
     return w;
 }
@@ -348,7 +348,7 @@ function botLookView(doc, kind, page = 0, nowMs = Date.now()) {
         { type: 14, spacing: 1, divider: true },
         text(`-# ${emojis.mngInfo} **Staged, not live.** Shown as players will see it ${when}. Its buttons are off here.`),
         ...(pages > 1 ? [row(arrow(['lv', key, pg - 1], 'left', pg === 0), counter(['pgv', key], `Page ${pg + 1} / ${pages}`), arrow(['lv', key, pg + 1], 'right', pg === pages - 1))] : []),
-        row(btn(['view', 'draft'], 'Back', emojis.returnArrow), btn(['ls', key, 0], 'Compact List', emojis.mngInfo)),
+        row(btn(['view', 'draft'], 'Back', emojis.returnArrow), btn(['ls', key, 0], 'Compact List', emojis.collapse)),
     ];
     let body = stripControls(container.components);
     const out = [{ ...container, components: [...body, ...nav] }];

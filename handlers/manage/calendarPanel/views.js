@@ -87,7 +87,7 @@ async function pageView(doc, note = null, { pageRow = null } = {}) {
     components.push(
         BIG(),
         text('-# Add…'),
-        row(btn('add', 'Add Entry', emojis.mngAdd, 3), btn('paste', 'Paste Entries', emojis.mngBulkAdd)),
+        row(btn('add', 'Add Entry', emojis.mngAdd, 3), btn('paste', 'Paste Entries', emojis.pasteImport)),
         SMALL(),
         text('-# Find an entry…'),
         row(btn('find', 'Search Calendar', emojis.gunsmithSearch, 1)),
