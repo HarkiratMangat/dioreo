@@ -240,41 +240,62 @@ function draftRemoveModal(doc, sec) {
 }
 
 // ---------- Needs a Look ---------- (2026-11-08 12:23 EST, Harkirat: "how do i check what's still pending in the draft or needs my notice/double-check? such as info, images, dates, etc."). The promote check's own checks (utils/newsTriage/readiness.js), plus what it does not look at: a draw with no picture or no items, and draw names matched as the same draw (utils/search.js) rather than letter for letter.
-function needsLook(doc) {
+// Each line carries the button that fixes it (2026-11-09, the /manage audit's finding 4): `fix` is { parts, label } for this panel, or { raw, label } for another /manage panel's own id. needsLook() keeps returning the lines alone, for the counts and the tests.
+function needsLookItems(doc) {
     const r = require('../../../utils/newsTriage/readiness').draftReadiness(doc);
     if (!r) return [];
     const { isSameDrawTitle } = require('../../../utils/search');
     const d = doc?.draft || {};
-    const draws = [...(d.newDraws || []), ...(d.returningDraws || [])];
+    const tagged = [...(d.newDraws || []).map(x => ({ x, s: 'n' })), ...(d.returningDraws || []).map(x => ({ x, s: 'r' }))];
+    const draws = tagged.map(t => t.x);
     const calDraws = (d.calendar || []).filter(x => x.category === 'draw');
     const names = l => (l.length > 6 ? `${l.slice(0, 6).join(', ')} and ${l.length - 6} more` : l.join(', '));
     const w = [];
-    if (!r.title) w.push('No season title');
-    if (!d.bpStart) w.push('No Battle Pass start date (auto-promote needs one)');
-    if (!r.bpEnd) w.push('No Battle Pass end date, or TBD');
-    if (!r.ranked) w.push('Ranked not set');
-    if (!r.dmz) w.push('DMZ not set');
-    const noPic = draws.filter(x => !x.thumbnailUrl).map(x => x.title);
-    if (noPic.length) w.push(`Draws with no picture: ${names(noPic)}`);
+    const add = (line, fix = null) => w.push({ text: line, fix });
+    const TITLES = { parts: ['tl', 'draft'], label: 'Edit Titles' };
+    const CAL = { parts: ['dc', 0], label: 'Edit Calendar' };
+    // The first draw a line names, as its card (Edit, End Date, Move are all there).
+    const cardOf = (pred) => { const t = tagged.find(y => pred(y.x)); return t && t.x._id ? { parts: ['ddc', t.s, String(t.x._id)], label: `Open ${String(t.x.title || 'draw').slice(0, 60)}` } : { parts: ['dd', 'n', 0], label: 'Edit Draws' }; };
+    if (!r.title) add('No season title', TITLES);
+    if (!d.bpStart) add('No Battle Pass start date (auto-promote needs one)', TITLES);
+    if (!r.bpEnd) add('No Battle Pass end date, or TBD', TITLES);
+    if (!r.ranked) add('Ranked not set', TITLES);
+    if (!r.dmz) add('DMZ not set', TITLES);
+    // Promote renames the newest /patch notes entry to the new title only when that entry is not the outgoing season's (core/ops/season.js promoteDraft): with no entry for the new season, /patch notes would open on the old one (finding 6).
+    if (r.title && (doc?.patchNotes || []).length && require('../../../commands/patchnotes').seasonEntryIndex(doc.patchNotes, r.title) === -1 && require('../../../commands/patchnotes').seasonEntryIndex([doc.patchNotes[doc.patchNotes.length - 1]], doc?.currentSeasonTitle) === 0) {
+        add(`No /patch notes entry for ${r.title} yet: /patch notes keeps showing the old season after Promote until one is added`, { raw: 'mng_pn|add', label: 'Add Patch Notes' });
+    }
+    const noPicPred = x => !x.thumbnailUrl;
+    const noPic = draws.filter(noPicPred).map(x => x.title);
+    if (noPic.length) add(`Draws with no picture: ${names(noPic)}`, cardOf(noPicPred));
     // A placeholder stands in until the real picture exists, and is still a picture to find (utils/placeholders.js isPlaceholder).
-    const holding = draws.filter(x => x.thumbnailUrl && require('../../../utils/placeholders').isPlaceholder(x.thumbnailUrl)).map(x => x.title);
-    if (holding.length) w.push(`Draws still on the placeholder picture: ${names(holding)}`);
-    const noItems = draws.filter(x => !(x.items || []).some(i => i.tier !== 'comment')).map(x => x.title);
-    if (noItems.length) w.push(`Draws with no items: ${names(noItems)}`);
+    const isPh = require('../../../utils/placeholders').isPlaceholder;
+    const holdPred = x => x.thumbnailUrl && isPh(x.thumbnailUrl);
+    const holding = draws.filter(holdPred).map(x => x.title);
+    if (holding.length) add(`Draws still on the placeholder picture: ${names(holding)}`, cardOf(holdPred));
+    const noItemsPred = x => !(x.items || []).some(i => i.tier !== 'comment');
+    const noItems = draws.filter(noItemsPred).map(x => x.title);
+    if (noItems.length) add(`Draws with no items: ${names(noItems)}`, cardOf(noItemsPred));
+    // No draw type, or Unsure: /draw calculator cannot price it (utils/drawChecks.js, the rule the live draws' Needs a Look uses too).
+    const noTypePred = x => require('../../../utils/drawChecks').gapsOf(x).includes('no draw type');
+    const noType = draws.filter(noTypePred).map(x => x.title);
+    if (noType.length) add(`Draws with no draw type: ${names(noType)}`, cardOf(noTypePred));
     const noDraw = calDraws.filter(c => !draws.some(x => isSameDrawTitle(x.title, c.title))).map(c => c.title);
-    if (noDraw.length) w.push(`On the calendar, not in the draw lists: ${names(noDraw)}`);
-    const noRow = draws.filter(x => !calDraws.some(c => isSameDrawTitle(x.title, c.title))).map(x => x.title);
+    if (noDraw.length) add(`On the calendar, not in the draw lists: ${names(noDraw)}`, { parts: ['ddstage'], label: 'Stage These' });
+    const noRowPred = x => !calDraws.some(c => isSameDrawTitle(x.title, c.title));
+    const noRow = draws.filter(noRowPred).map(x => x.title);
     // Worded as the missing END, never "no calendar row" (2026-11-08 12:52 EST): such a draw still shows on /calendar, and the row phrasing is what made him think it would not.
-    if (noRow.length) w.push(`Draws with no end date yet: ${names(noRow)}`);
-    if (r.noEnd.length) w.push(`Calendar rows with no end date: ${names(r.noEnd)}`);
-    if (r.early.length) w.push(`Dated before the season starts: ${names(r.early)}`);
-    if (r.twice) w.push(`${plural(r.twice, 'title')} listed twice`);
-    if (r.seamGap) w.push(`The seasons do not meet: ${r.seamGap}`);
-    if (r.leakOnly.length) w.push(`Expected, not confirmed yet: ${names(r.leakOnly)}`);
-    if ((r.undated || []).length) w.push(`No post ever dated these, so they show as starting on day one: ${names(r.undated)}`);
-    if ((r.stillRunning || []).length) w.push(`Live with no end date, may run into this season: ${names(r.stillRunning)}`);
+    if (noRow.length) add(`Draws with no end date yet: ${names(noRow)}`, cardOf(noRowPred));
+    if (r.noEnd.length) add(`Calendar rows with no end date: ${names(r.noEnd)}`, CAL);
+    if (r.early.length) add(`Dated before the season starts: ${names(r.early)}`, CAL);
+    if (r.twice) add(`${plural(r.twice, 'title')} listed twice`, CAL);
+    if (r.seamGap) add(`The seasons do not meet: ${r.seamGap}`, { parts: ['tl', 'live'], label: 'Live Season Dates' });
+    if (r.leakOnly.length) add(`Expected, not confirmed yet: ${names(r.leakOnly)}`, { parts: ['ls', 'news', 0], label: 'News List' });
+    if ((r.undated || []).length) add(`No post ever dated these, so they show as starting on day one: ${names(r.undated)}`, { parts: ['ls', 'news', 0], label: 'News List' });
+    if ((r.stillRunning || []).length) add(`Live with no end date, may run into this season: ${names(r.stillRunning)}`, { raw: 'mng_ca|page', label: 'Live Calendar' });
     return w;
 }
+function needsLook(doc) { return needsLookItems(doc).map(i => i.text); }
 // The draft's calendar draw rows with no staged draw of the same draw (isSameDrawTitle, as needsLook matches them), as Quick Add lines with the row's own dates (2026-11-09 14:37 EST, Harkirat's "yes" to a Stage These button): `Title, starts 2026-11-20, ends 2027-02-17`, a time added when the row has one. Quick Add reads its own When format back the same way.
 function unstagedCalendarLines(doc, max = 10) {
     const { isSameDrawTitle } = require('../../../utils/search');
@@ -287,18 +308,27 @@ function unstagedCalendarLines(doc, max = 10) {
         .slice(0, max).map(c => [c.title, liveSection(c.title), c.date ? `starts ${day(c.date)}` : null, c.endDate ? `ends ${day(c.endDate)}` : null].filter(Boolean).join(', '));
 }
 function needsLookView(doc) {
-    const w = needsLook(doc);
+    const items = needsLookItems(doc);
     const unstaged = unstagedCalendarLines(doc);
     const p = provenance(doc?.draft);
+    // The line's number rides as a trailing part, so two lines with the same fix (three title lines, two news lines) never repeat a custom_id, which Discord refuses; every route reads only the parts before it.
+    const fixBtn = (f, i) => (f.raw ? { type: 2, style: 2, label: f.label.slice(0, 80), custom_id: `${f.raw}|${i}`, emoji: emojis.parseEmoji(emojis.edit) } : btn([...f.parts, ...(f.parts.length < 3 ? Array(3 - f.parts.length).fill('') : []), i], f.label.slice(0, 80), f.parts[0] === 'ddstage' ? emojis.mngAdd : emojis.edit, f.parts[0] === 'ddstage' ? 1 : 2));
+    // Each line with its fix beside it, as a Section (3 of Discord's 40): nine fit with the rest of the page; any more share one text block under them.
+    const SHOWN = 9;
+    const body = [];
+    if (!items.length) body.push(text(`${emojis.checkmark} **Everything checked is ready.**`));
+    items.slice(0, SHOWN).forEach((it, i) => body.push(it.fix ? { type: 9, components: [text(`${emojis.warn} ${it.text}`.slice(0, 900))], accessory: fixBtn(it.fix, `x${i}`) } : text(`${emojis.warn} ${it.text}`.slice(0, 900))));
+    const stageShown = items.slice(0, SHOWN).some(it => it.fix?.parts?.[0] === 'ddstage');
+    if (items.length > SHOWN) body.push(text(items.slice(SHOWN).map(x => `${emojis.warn} ${x.text}`).join('\n').slice(0, 1800)));
     return panel([
-        text(`${crumb('Next Season Draft', 'Needs a Look')}\n## ${w.length ? emojis.warn : emojis.checkmark} Needs a Look\n-# What to check before this draft goes live. Fix it with Edit Titles & Deadlines, Paste Draws or Paste Calendar${unstaged.length ? ', or Stage These for the calendar draws not staged yet' : ''}.`),
+        text(`${crumb('Next Season Draft', 'Needs a Look')}\n## ${items.length ? emojis.warn : emojis.checkmark} Needs a Look\n-# What to check before this draft goes live. The button beside each line opens what fixes it.`),
         SMALL(),
-        text((w.length ? w.map(x => `${emojis.warn} ${x}`).join('\n') : `${emojis.checkmark} **Everything checked is ready.**`).slice(0, 3600)),
+        ...body,
         SMALL(),
         text(`-# **Where the rows came from:** ${p.typed} typed by you · ${p.news} from news · ${p.carried} carried over · ${p.edited} news rows you edited. Each row says which in the Compact List.`),
         BIG(),
         // Stage These opens the draft's Quick Add with the calendar draws that have no staged draw, one line each with the row's dates.
-        row(...(unstaged.length ? [btn('ddstage', `Stage These · ${unstaged.length}`, emojis.mngAdd, 1)] : []), btn(['view', 'draft'], 'Back', emojis.returnArrow), homeBtn()),
+        row(...(unstaged.length && !stageShown ? [btn('ddstage', `Stage These · ${unstaged.length}`, emojis.mngAdd, 1)] : []), btn(['view', 'draft'], 'Back', emojis.returnArrow), homeBtn()),
     ]);
 }
 
@@ -427,4 +457,4 @@ function resultView({ crumbs = [], title, body = [], ok = true, back = ['view', 
     ]);
 }
 
-module.exports = { unstagedCalendarLines, ID, PAGE, row, text, btn, panel, homeBtn, plural, whenLine, stamp, seasonRows, counts, newsRows, calendarDrawsWithoutDraw, isStaged, pageView, listView, botLookView, previewDoc, needsLook, needsLookView, origin, draftDrawsView, draftDrawModal, draftRemoveModal, promoteConfirm, promoteModal, discardConfirm, resultView };
+module.exports = { unstagedCalendarLines, needsLookItems, ID, PAGE, row, text, btn, panel, homeBtn, plural, whenLine, stamp, seasonRows, counts, newsRows, calendarDrawsWithoutDraw, isStaged, pageView, listView, botLookView, previewDoc, needsLook, needsLookView, origin, draftDrawsView, draftDrawModal, draftRemoveModal, promoteConfirm, promoteModal, discardConfirm, resultView };

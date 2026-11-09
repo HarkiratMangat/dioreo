@@ -53,7 +53,10 @@ const STATUS = {
     leaving: { label: 'Leaving Soon', test: d => d.bits & 16, emoji: () => emojis.yellowDotGlow },
     ended: { label: 'Ended', test: d => d.bits & 32, emoji: () => emojis.redDotGlow },
     noend: { label: 'No End Date', test: d => d.state !== 'over' && d.state !== 'tba' && !(d.bits & 4) && !Number.isFinite(d.endMs), emoji: () => emojis.warn },
+    // Needs a Look (2026-11-09, the /manage audit's finding 7): a draw that has not ended and lacks a picture, items, a draw type (utils/drawChecks.js) or an end date. An ended draw is left out: nothing players see changes by fixing it.
+    look: { label: 'Needs a Look', test: d => !(d.bits & 32) && gapsFor(d).length > 0, emoji: () => emojis.warn },
 };
+function gapsFor(d) { return [...require('../../../utils/drawChecks').gapsOf(d), ...(STATUS.noend.test(d) ? ['no end date'] : [])]; }
 const dot = (d) => (d.bits & 32 ? emojis.redDotGlow : d.bits & 16 ? emojis.yellowDotGlow : d.bits & 8 ? emojis.greenDotGlow : emojis.lightBlueDotGlow);
 const stateName = (d) => (d.bits & 32 ? 'Ended' : d.bits & 16 ? 'Leaving soon' : d.bits & 8 ? 'Active now' : 'Upcoming');
 function stateWords(d) {
@@ -66,6 +69,8 @@ function stateWords(d) {
 const secWord = (d) => (d._sec === 'new' ? 'New' : 'Returning');
 // One draw as a list row: the dot, the title, then New/Returning and when, on a small line padded under the title.
 const listLine = (d, mark = '') => `${mark}${dot(d)} **${d.title}**\n-# ${emojis.blank}${emojis.blank}${mark ? emojis.blank : ''} ${secWord(d)} · ${stateWords(d)}`;
+// On Needs a Look the small line says what is missing instead.
+const lookLine = (d) => `${dot(d)} **${d.title}**\n-# ${emojis.blank}${emojis.blank} ${secWord(d)} · ${emojis.warn} ${gapsFor(d).join(', ')}`;
 
 async function seasonLine(doc) {
     if (!doc?.currentSeasonTitle) return '';
@@ -77,7 +82,7 @@ async function seasonLine(doc) {
 async function pageView(doc, note = null, { pageRow = null } = {}) {
     const all = allDraws(doc);
     const n = (k) => all.filter(STATUS[k].test).length;
-    const counts = [`${n('new')} new`, `${n('returning')} returning`, `${n('live')} active now`, ...(n('noend') ? [`${emojis.warn} ${n('noend')} with no end date`] : [])].join(' · ');
+    const counts = [`${n('new')} new`, `${n('returning')} returning`, `${n('live')} active now`, ...(n('noend') ? [`${emojis.warn} ${n('noend')} with no end date`] : []), ...(n('look') ? [`${emojis.warn} ${n('look')} need a look`] : [])].join(' · ');
     const components = [text(`## ${emojis.newDraws}${emojis.returningDraws} Draws${await seasonLine(doc)}\n-# ${counts}`)];
     if (note) components.push(SMALL(), text(note));
     components.push(
@@ -87,7 +92,7 @@ async function pageView(doc, note = null, { pageRow = null } = {}) {
         SMALL(),
         text('-# Find a draw…'),
         // Check Draw Index (2026-11-09 13:57 EST, his ask 13:53 EST): paste names, see what the draw index has and lacks (utils/drawIndexCheck.js).
-        row(btn('find', 'Search Draws', emojis.gunsmithSearch, 1), btn('check', 'Check Draw Index', emojis.search)),
+        row(btn('find', 'Search Draws', emojis.gunsmithSearch, 1), btn('check', 'Check Draw Index', emojis.search), btn(['list', 'look', 0], n('look') ? `Needs a Look · ${n('look')}` : 'All Checked', n('look') ? emojis.warn : emojis.checkmark, n('look') ? 4 : 3)),
         { type: 1, components: [{ type: 3, custom_id: ID('browse'), placeholder: 'Or browse a list…', options: Object.entries(STATUS).map(([value, s]) => ({ value, label: `${s.label} · ${n(value)}`, emoji: emojis.parseEmoji(s.emoji()) })) }] },
         BIG(),
         text('-# Many draws at once…'),
@@ -112,7 +117,7 @@ function listView(doc, status, page = 0) {
     const components = [text(`${crumb(s.label)}\n## ${s.emoji()} ${s.label}\n-# ${plural(list.length, 'draw')}${pages > 1 ? ` · page ${pg + 1} of ${pages}` : ''}`), BIG()];
     if (!shown.length) components.push(text(`${emojis.cross} No draws here right now.`));
     else {
-        components.push(text(shown.map(d => listLine(d)).join('\n').slice(0, 3900)));
+        components.push(text(shown.map(d => (status === 'look' ? lookLine(d) : listLine(d))).join('\n').slice(0, 3900)));
         components.push({ type: 1, components: [{ type: 3, custom_id: ID('open', status), placeholder: 'Open a draw…', options: shown.map(d => ({ label: d.title.slice(0, 100), value: d._key, description: `${secWord(d)} · ${stateName(d)}` })) }] });
         if (pages > 1) components.push(row(arrow(['list', status, pg - 1], 'left', pg === 0), counter(['pgn', status], `Page ${pg + 1} / ${pages}`), arrow(['list', status, pg + 1], 'right', pg === pages - 1)));
     }
@@ -130,7 +135,8 @@ function cardView(doc, key, { header = null, extra = null, back = null } = {}) {
     if (header) components.push(text(header), SMALL());
     components.push(...D().buildDrawSections([d], { seasonalDoc: doc, nowMs: Date.now() }));
     // The end date is already in the draw's date lines above; this line says only what they do not: New or Returning, its draw type, and a missing end date.
-    components.push(text(`-# ${secWord(d)} draw · ${type || 'no draw type'}${end?.endDate || d.state === 'over' || (d.bits & 4) ? '' : ` · ${emojis.warn} no end date on /calendar`}`), BIG());
+    const lacks = require('../../../utils/drawChecks').gapsOf(d).filter(g => g !== 'no draw type');
+    components.push(text(`-# ${secWord(d)} draw · ${type || 'no draw type'}${end?.endDate || d.state === 'over' || (d.bits & 4) ? '' : ` · ${emojis.warn} no end date on /calendar`}${lacks.length ? ` · ${emojis.warn} ${lacks.join(', ')}` : ''}`), BIG());
     if (extra) components.push(...extra);
     else {
         const backTo = STATUS[back] ? back : d._sec;
@@ -230,4 +236,4 @@ function checkView({ results, extra = 0, indexSize = 0 }) {
     return panel(components);
 }
 module.exports = {
-    checkModal, checkView, ID, PAGE, STATUS, row, text, btn, homeBtn, panel, plural, allDraws, splitKey, rowFor, secWord, dot, pageView, listView, cardView, resultView, selectView, searchModal, selectModal, exportModal };
+    checkModal, checkView, gapsFor, ID, PAGE, STATUS, row, text, btn, homeBtn, panel, plural, allDraws, splitKey, rowFor, secWord, dot, pageView, listView, cardView, resultView, selectView, searchModal, selectModal, exportModal };

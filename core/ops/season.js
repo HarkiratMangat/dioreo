@@ -208,7 +208,10 @@ registerEntity('season', {
             const newTitle = $set.currentSeasonTitle || before.currentSeasonTitle;
             let patchPrior = null;
             const last = before.patchNotes[before.patchNotes.length - 1];
-            if (draft.currentSeasonTitle && last) {
+            // Only an entry that is not the OUTGOING season's is renamed (2026-11-09, the /manage audit's finding 6): the newest entry is the new season's when its patch notes were added before Promote, and renaming it keeps its title in step. When they were not, the newest entry IS the outgoing season, and renaming it re-titled the old season's notes with the new name (prod's Season 8 and 9 entries read "Season 7" from exactly this). Needs a Look says when the new season has no entry yet.
+            const lastIsNew = last && seasonEntryIndex([last], draft.currentSeasonTitle) === 0;
+            const lastIsOutgoing = last && seasonEntryIndex([last], before.currentSeasonTitle) === 0;
+            if (draft.currentSeasonTitle && last && (lastIsNew || !lastIsOutgoing)) {
                 patchPrior = { elementId: String(last._id), title: last.title, emoji: last.emoji || '' };
                 await SeasonalData.updateOne({ ...DOC, 'patchNotes._id': last._id }, { $set: { 'patchNotes.$.title': newTitle, 'patchNotes.$.emoji': $set.currentSeasonEmoji } }, { session });
             }

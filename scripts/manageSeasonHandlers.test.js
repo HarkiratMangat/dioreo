@@ -99,6 +99,17 @@ const button = (customId) => Object.assign(h.modal(customId), { isButton: () => 
         assert.strictEqual(h.state.doc.draft.autoPromoteBy, h.OWNER);
     });
 
+    await check("Promote never renames the outgoing season's patch notes; it renames the new season's own entry (2026-11-09, the audit's finding 6)", async () => {
+        const pn = (t) => ({ _id: h.id(), title: t, emoji: '', images: [] });
+        h.reset({ currentSeasonTitle: 'Season 9: Old', patchNotes: [pn('Season 8: Older'), pn('Season 9: Old')], draft: { active: true, currentSeasonTitle: 'Season 10: New', newDraws: [], returningDraws: [], calendar: [] } });
+        await season.handleDraftButton(button('mng_draftpromoteconfirm'));
+        assert.deepStrictEqual(h.state.doc.patchNotes.map(p => p.title), ['Season 8: Older', 'Season 9: Old'], 'the old season keeps its title');
+        assert.strictEqual(h.state.doc.currentSeasonTitle, 'Season 10: New');
+        h.reset({ currentSeasonTitle: 'Season 9: Old', patchNotes: [pn('Season 9: Old'), pn('Season 10')], draft: { active: true, currentSeasonTitle: 'Season 10: New', newDraws: [], returningDraws: [], calendar: [] } });
+        await season.handleDraftButton(button('mng_draftpromoteconfirm'));
+        assert.deepStrictEqual(h.state.doc.patchNotes.map(p => p.title), ['Season 9: Old', 'Season 10: New'], "the new season's entry follows the title");
+    });
+
     if (failures) { console.error(`\n${failures} failing`); process.exit(1); }
     console.log('\n/manage season handlers: all checks pass');
     process.exit(0);

@@ -27,6 +27,7 @@ t('Needs a Look names a draw with no picture, no items, or no calendar row, and 
     assert.ok(/not in the draw lists: Ghost Draw/.test(w));
     assert.ok(/no end date yet: Botanist Mythic Drop/.test(w));
     assert.ok(!/No season title|Ranked not set|DMZ not set/.test(w), 'what is set is not listed');
+    assert.ok(/no draw type: Bare Draw, Botanist Mythic Drop/.test(w), 'a draw with no draw type is named (2026-11-09, utils/drawChecks.js)');
 });
 t('Needs a Look names a draw still on the placeholder picture, apart from one with none', () => {
     const { PLACEHOLDER } = require('../utils/placeholders');
@@ -38,7 +39,7 @@ t('Needs a Look names a draw still on the placeholder picture, apart from one wi
 
 t('an Alchemy-style name pair counts as one draw, not a calendar row with no draw', () => {
     const doc = { draft: { active: true, currentSeasonTitle: 'S', bpStart: D('2026-11-12'), bpEndTBD: true, rankTitle: 'R4', rankEndTBD: true, dmzTitle: 'D2', dmzEndTBD: true,
-        newDraws: [], returningDraws: [{ title: 'Alchemy Stars Draw', date: D('2026-10-20'), thumbnailUrl: 'https://x', items: [{ tier: 'legendary', name: 'X' }] }],
+        newDraws: [], returningDraws: [{ title: 'Alchemy Stars Draw', date: D('2026-10-20'), thumbnailUrl: 'https://x', items: [{ tier: 'legendary', name: 'X' }], priceType: 'legendaryWeapon' }],
         calendar: [{ title: 'Alchemy Stars — It Goes Two Draw', category: 'draw', date: D('2026-10-20'), endDate: D('2026-11-18'), newsSource: { carried: true, rank: 3, sig: 'x' } }] } };
     assert.ok(!/Alchemy/.test(V.needsLook(doc).join('\n')));
 });
