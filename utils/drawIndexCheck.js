@@ -16,6 +16,7 @@ const typeLabel = (t) => String(t || '').replace(/([a-z])([A-Z])/g, '$1 $2').rep
 function needsOf(entry) {
     const out = [];
     if (!entry.imageUrl) out.push('no picture');
+    else if (require('./placeholders').isPlaceholder(entry.imageUrl)) out.push('placeholder picture');
     const items = entry.items || [];
     if (!items.length) out.push('no items');
     const noKind = items.filter(i => !i.kind).length;

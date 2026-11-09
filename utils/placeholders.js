@@ -13,4 +13,7 @@ const PLACEHOLDER = {
     wide21x9: withDeliveryDefaults(`${BASE}/v1794156186/site_assets/placeholder-21x9.png`),  // uploaded for a future slot, unused today
 };
 
-module.exports = { PLACEHOLDER };
+// Whether a stored picture is one of these placeholders (2026-11-09 15:03 EST): a draw staged or indexed with the placeholder before its real picture exists (his "no pictures exist yet so use our placeholder images") still needs one, so Needs a Look and Check Draw Index say so.
+const isPlaceholder = (url) => Boolean(url) && /\/site_assets\/placeholder-[^/]+\.png$/.test(String(url).split('?')[0]);
+
+module.exports = { PLACEHOLDER, isPlaceholder };

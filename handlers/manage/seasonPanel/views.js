@@ -255,6 +255,9 @@ function needsLook(doc) {
     if (!r.dmz) w.push('DMZ not set');
     const noPic = draws.filter(x => !x.thumbnailUrl).map(x => x.title);
     if (noPic.length) w.push(`Draws with no picture: ${names(noPic)}`);
+    // A placeholder stands in until the real picture exists, and is still a picture to find (utils/placeholders.js isPlaceholder).
+    const holding = draws.filter(x => x.thumbnailUrl && require('../../../utils/placeholders').isPlaceholder(x.thumbnailUrl)).map(x => x.title);
+    if (holding.length) w.push(`Draws still on the placeholder picture: ${names(holding)}`);
     const noItems = draws.filter(x => !(x.items || []).some(i => i.tier !== 'comment')).map(x => x.title);
     if (noItems.length) w.push(`Draws with no items: ${names(noItems)}`);
     const noDraw = calDraws.filter(c => !draws.some(x => isSameDrawTitle(x.title, c.title))).map(c => c.title);

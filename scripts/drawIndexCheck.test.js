@@ -37,6 +37,11 @@ t('what a draw lacks: picture, item kinds, draw type', () => {
     assert.deepStrictEqual(r.needs, ['no picture', '2 items without a kind', 'no draw type']);
     assert.strictEqual(r.onDraws, null);
 });
+t('a draw on the placeholder picture still needs its real one', () => {
+    const { PLACEHOLDER, isPlaceholder } = require('../utils/placeholders');
+    assert.ok(isPlaceholder(PLACEHOLDER.square) && isPlaceholder(PLACEHOLDER.wide) && !isPlaceholder('https://x/1.png') && !isPlaceholder(''));
+    assert.deepStrictEqual(C.needsOf({ imageUrl: PLACEHOLDER.square, priceType: 'mythicWeapon', items: [item('A - B', 'weapon')] }), ['placeholder picture']);
+});
 t('a draw with no items says so once, under Needs', () => {
     assert.deepStrictEqual(C.needsOf(INDEX[5]), ['no items']);
     const block = C.resultBlock(C.checkLine(INDEX, 'Bare Draw', ctx), require('../utils/emojiMap'));

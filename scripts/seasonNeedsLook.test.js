@@ -28,6 +28,14 @@ t('Needs a Look names a draw with no picture, no items, or no calendar row, and 
     assert.ok(/no end date yet: Botanist Mythic Drop/.test(w));
     assert.ok(!/No season title|Ranked not set|DMZ not set/.test(w), 'what is set is not listed');
 });
+t('Needs a Look names a draw still on the placeholder picture, apart from one with none', () => {
+    const { PLACEHOLDER } = require('../utils/placeholders');
+    const doc = { draft: { active: true, currentSeasonTitle: 'Season 10', newDraws: [{ title: 'Ford Mustang GTD Draw', thumbnailUrl: PLACEHOLDER.square, items: [{ tier: 'legendary', name: 'XM4 - Racing Strips' }], date: new Date() }], returningDraws: [], calendar: [] } };
+    const w = require('../handlers/manage/seasonPanel/views').needsLook(doc).join('\n');
+    assert.ok(/still on the placeholder picture: Ford Mustang GTD Draw/.test(w), w);
+    assert.ok(!/no picture: Ford/.test(w), w);
+});
+
 t('an Alchemy-style name pair counts as one draw, not a calendar row with no draw', () => {
     const doc = { draft: { active: true, currentSeasonTitle: 'S', bpStart: D('2026-11-12'), bpEndTBD: true, rankTitle: 'R4', rankEndTBD: true, dmzTitle: 'D2', dmzEndTBD: true,
         newDraws: [], returningDraws: [{ title: 'Alchemy Stars Draw', date: D('2026-10-20'), thumbnailUrl: 'https://x', items: [{ tier: 'legendary', name: 'X' }] }],
