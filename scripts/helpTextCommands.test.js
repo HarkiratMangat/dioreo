@@ -328,6 +328,9 @@ async function check(name, fn) {
         assert.ok(ann.includes('### `d announcement [words] [channel]`') && ann.includes('`announce` · `repost`') && ann.includes('/help cmd:announcement'));
         const owner = await all('/owner', 'slash');
         assert.ok(owner.includes('### `d owner delete [channel] [messages|N]`') && owner.includes('`override`') && owner.includes('never anyone else'));
+        assert.ok(owner.includes('-# Usage: `d cmd <required> [optional]`'), 'a typed command reads the typed legend');
+        const sw = JSON.stringify(await msg('/owner', 'slash'));
+        assert.ok(sw.includes('"label":"Owner Tools","value":"/owner","description":"d owner delete"'), 'the owner page is no slash command in the switcher');
         const listHere = await all('/gunsmith list', 'slash');
         const listDm = await all('/gunsmith list', 'slash', { typedForms: false });
         assert.ok(listHere.includes('`d lists`') && !listDm.includes('`d lists`'));

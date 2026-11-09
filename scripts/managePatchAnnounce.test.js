@@ -327,7 +327,13 @@ function fake({ customId = '', chat = false, modal = false, select = false, mess
             const t1 = token('dpost');
             const ed = fake({ customId: `mng_an|dedit|${t1}`, message: true });
             await AP.handleAnnouncementsPanelInteraction(ed);
-            assert.deepStrictEqual(ed.calls, [['showModal', 'mng_an|postm']]);
+            assert.deepStrictEqual(ed.calls, [['showModal', `mng_an|postm|${t1}`]], 'the reopened box carries the draft');
+            // Resubmitting it updates the SAME draft and keeps its colour (the 2026-11-09 click-test: a new colour on every resubmit).
+            const colourOf = () => AP._drafts.get(t1).values.color;
+            const before = colourOf();
+            await AP.handleAnnouncementsPanelInteraction(fake({ customId: `mng_an|postm|${t1}`, modal: true, message: true, fieldValues: { text: 'Draft one', expiry: 'never' } }));
+            assert.strictEqual(colourOf(), before);
+            assert.strictEqual(token('dpost'), t1, 'still the same draft');
             const inputs = ed.lastModal.components.flatMap(r => r.components);
             assert.strictEqual(inputs.find(c => c.custom_id === 'text').value, 'Draft one');
             assert.strictEqual(inputs.find(c => c.custom_id === 'expiry').value, 'never');

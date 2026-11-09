@@ -21291,7 +21291,7 @@
           },
           {
             "type": 10,
-            "content": "**<a:ServerSettings:1536468904996774008> Admin** *(slash only)*\n`/admin` · `/manage` · `/manage emojis` · `/autobuild` · `/bot analytics` · `/bot access` · `/bot servers` · `/bot penalties` · `/bot freeze` · `/bot delete` · `/bot hotpatch` · `/embed`"
+            "content": "**<a:ServerSettings:1536468904996774008> Admin** *(slash only)*\n`/admin` · `/manage <section>` · `/manage emojis` · `/autobuild` · `/bot analytics` · `/bot access` · `/bot servers` · `/bot penalties` · `/bot freeze` · `/bot delete` · `/bot hotpatch` · `/embed`"
           },
           {
             "type": 10,
@@ -21591,9 +21591,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -21704,7 +21704,7 @@
           },
           {
             "type": 10,
-            "content": "**<a:ServerSettings:1536468904996774008> Admin**\n`/admin` · `/manage` · `/manage emojis` · `/autobuild` · `/bot analytics` · `/bot access` · `/bot servers` · `/bot penalties` · `/bot freeze` · `/bot delete` · `/bot hotpatch` · `/embed`"
+            "content": "**<a:ServerSettings:1536468904996774008> Admin**\n`/admin` · `/manage <section>` · `/manage emojis` · `/autobuild` · `/bot analytics` · `/bot access` · `/bot servers` · `/bot penalties` · `/bot freeze` · `/bot delete` · `/bot hotpatch` · `/embed`"
           },
           {
             "type": 10,
@@ -22013,9 +22013,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -22401,9 +22401,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -22780,9 +22780,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -23159,9 +23159,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -23538,9 +23538,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -23881,9 +23881,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -24235,9 +24235,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -24593,9 +24593,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -24954,9 +24954,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -25308,9 +25308,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -25665,9 +25665,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -26026,9 +26026,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -26381,9 +26381,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -26740,9 +26740,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -27094,9 +27094,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -27452,9 +27452,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -27811,9 +27811,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -28182,9 +28182,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -28537,9 +28537,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -28896,9 +28896,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -29246,9 +29246,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -29600,9 +29600,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -29967,9 +29967,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -30342,9 +30342,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -30701,9 +30701,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -31068,9 +31068,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -31418,9 +31418,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -31776,9 +31776,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -32114,9 +32114,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -32452,9 +32452,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -32798,9 +32798,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -33148,9 +33148,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -33495,9 +33495,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -33842,9 +33842,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -34196,9 +34196,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -34674,9 +34674,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -35004,9 +35004,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -35379,9 +35379,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -35802,9 +35802,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -36221,9 +36221,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -36640,9 +36640,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -37059,9 +37059,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -37474,9 +37474,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -37897,9 +37897,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -38324,9 +38324,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -38666,9 +38666,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,
@@ -38737,7 +38737,7 @@
           },
           {
             "type": 10,
-            "content": "-# Usage: `/cmd <required> [optional]` · typed in a server Dioreo is in\n-# Needs Dioreo's own admin access, not a server permission"
+            "content": "-# Usage: `d cmd <required> [optional]` · typed in a server Dioreo is in\n-# Needs Dioreo's own admin access, not a server permission"
           },
           {
             "type": 14,
@@ -39017,9 +39017,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": true,
                     "emoji": {
                       "animated": true,
@@ -39390,9 +39390,9 @@
                     }
                   },
                   {
-                    "label": "/owner",
+                    "label": "Owner Tools",
                     "value": "/owner",
-                    "description": "Owner Tools",
+                    "description": "d owner delete",
                     "default": false,
                     "emoji": {
                       "animated": true,

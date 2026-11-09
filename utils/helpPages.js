@@ -339,11 +339,13 @@ const PAGES = {
     '/owner': {
         blurb: 'Commands only the owner can use, typed and slash',
         // `namesTyped`: its command is typed, so it is the one admin page that names a typed form, everywhere: the owner reads it in Dioreo Admin's DM, where typed forms cannot run but the command he looks up does, in a server.
-        slashOnly: true, admin: true, namesTyped: true,
+        slashOnly: true, admin: true, namesTyped: true, noSlash: true, typedWords: ['owner delete'],
         page(x) {
             const m = n => slashMention(x.client, n);
+            const p = x.p || 'd';
             return {
-                heading: `### ${code('d owner delete [channel] [messages|N]')}\n${dot(['owner', 'override', 'dev'])} then ${dot(['delete', 'd', 'purge'])}`,
+                typedLegend: true,
+                heading: `### ${code(`${p} owner delete [channel] [messages|N]`)}\n${dot(['owner', 'override', 'dev'])} then ${dot(['delete', 'd', 'purge'])}`,
                 boxes: [
                     text("**What it deletes**\n-# Dioreo's and Dioreo Admin's own messages, never anyone else's. Anyone else typing it gets no reply at all"),
                     text(`**Which messages**\n> -# **Blank**  *Dioreo's last message here*\n> -# **A number**  *Dioreo's last N here, up to 100*\n> -# **IDs or links**  *Those messages; a link carries its own channel*`),
@@ -351,7 +353,7 @@ const PAGES = {
                     text("**The note**\n-# One line saying what was deleted, gone after 5 seconds"),
                 ],
                 sections: [text(`**Owner-only slash commands**\n${['/bot delete', '/bot access', '/bot servers', '/bot penalties', '/bot freeze', '/bot hotpatch', '/embed', '/manage emojis'].map(m).join(' · ')}\n-# ${m('/bot delete')} is the slash twin of ${code('d owner delete')}`)],
-                examples: [['d owner delete', "Dioreo's last message here"], ['d dev purge 3', 'Its last 3 here'], ['d owner delete 1536403911676792892 5', 'Its last 5 in that channel']],
+                examples: [[`${p} owner delete`, "Dioreo's last message here"], [`${p} dev purge 3`, 'Its last 3 here'], [`${p} owner delete 1536403911676792892 5`, 'Its last 5 in that channel']],
                 legendNote: ' · typed in a server Dioreo is in', gate: true,
             };
         },
@@ -460,7 +462,7 @@ function buildPage(name, { client, view, detail = false, canSwitch = false, type
     if (part.sections?.length) out.push(...part.sections, line(1));
     // An example is [code, description?]; one already written as a line (/admin's setups) is used as it is.
     out.push(text(`-# **${part.examplesTitle || 'Examples'}**\n${part.examples.map(([ex, d]) => (ex.startsWith('-# ') ? ex : `-# ${code(ex)}${d ? `  ${d}` : ''}`)).join('\n')}`));
-    out.push(text(`-# Usage: ${code(typed ? `${p} cmd <required> [optional]` : '/cmd <required> [optional]')}${part.legendNote || ''}${part.gate ? `\n${GATE}` : ''}`));
+    out.push(text(`-# Usage: ${code(typed || part.typedLegend ? `${p} cmd <required> [optional]` : '/cmd <required> [optional]')}${part.legendNote || ''}${part.gate ? `\n${GATE}` : ''}`));
     if (part.tail?.length) out.push(line(1), ...part.tail);
     return out;
 }
@@ -481,7 +483,7 @@ function buildHome({ client, view, canSwitch, hero, adminNames = [], prefixes = 
         out.push(...HOME_GROUPS.map(([icon, label, , names]) => text(`**${emojis[icon]} ${label}**\n${names.map(n => slashOrAsIs(client, n)).join(' · ')}`)));
     }
     // A server admin's /admin and a bot admin's tools: slash only, so they read the same on both views.
-    if (adminNames.length) out.push(text(`**${emojis.serverSettings} Admin**${typed ? ' *(slash only)*' : ''}\n${adminNames.map(n => slashMention(client, n)).join(' · ')}`));
+    if (adminNames.length) out.push(text(`**${emojis.serverSettings} Admin**${typed ? ' *(slash only)*' : ''}\n${adminNames.map(n => (n === '/manage' ? code('/manage <section>') : slashMention(client, n))).join(' · ')}`));
     out.push(text(typed ? `-# ${emojis.info} ${code(`${p} help <command>`)} opens its page, such as ${code(`${p} help calc`)}` : `-# ${emojis.info} **/help** ${code('cmd:')} opens one command's page`));
     if (!typed && canSwitch) out.push(line(1), text(`**Text commands**\n-# Or type one in a message, such as ${code(`${p} today`)}. Works where a server hides slash commands`));
     if (canSwitch) out.push({ type: 1, components: [{ type: 2, style: 2, label: typed ? 'Slash Commands' : 'Text Commands', custom_id: `help_view~${typed ? 'slash' : 'text'}~landing`, ...emojiField('command') }] });
@@ -493,7 +495,9 @@ function buildAdminHome({ client, hero, names = [], botSubs = [] }) {
     const m = n => slashMention(client, n);
     const out = [...hero, line(2)];
     const data = ['/manage', '/autobuild'].filter(n => names.includes(n));
-    if (data.length) out.push(text(`**${emojis.database} Data**\n${data.map(m).join(' · ')}\n-# Right-click or tap and hold a message → Apps: **Add to Calendar** · **Add to Draws** · **Add to Patch Notes** · **Autobuild Gunsmith** · **Edit Loadout**`));
+    // A command with subcommands never links as a bare mention (Discord renders it as plain text, found in the 2026-11-09 click-test), so /manage reads as its pattern.
+    const dataName = n => (n === '/manage' ? code('/manage <section>') : m(n));
+    if (data.length) out.push(text(`**${emojis.database} Data**\n${data.map(dataName).join(' · ')}\n-# Right-click or tap and hold a message → Apps: **Add to Calendar** · **Add to Draws** · **Add to Patch Notes** · **Autobuild Gunsmith** · **Edit Loadout**`));
     const bot = names.includes('/bot') ? botSubs.filter(s => s === '/bot analytics') : [];
     if (bot.length) out.push(text(`**${emojis.mngInfo} Bot**\n${bot.map(m).join(' · ')}`));
     const ownerSlash = names.includes('/bot') ? botSubs.filter(s => s !== '/bot analytics') : [];
@@ -512,12 +516,15 @@ function buildSwitcher({ names, current = null, view, client, seasonEmoji = null
         const tc = hasTextView(name) ? textCommandOf(name) : null;
         const emoji = emojis.parseEmoji(pageIcon(name, seasonEmoji) || '');
         // A text-only page has no slash name to show, so it reads as its typed word on both views.
-        const asTyped = tc && (typed || PAGES[name]?.textOnly);
+        const noSlash = Boolean(PAGES[name]?.noSlash);
+        const asTyped = (tc && (typed || PAGES[name]?.textOnly)) || noSlash;
         // The main aliases in the description (2026-11-09 13:16 EST, Harkirat, 2026-11-09 13:10 EST: "in the dropdown list, mention the main aliases for the commands in their desc"): the page's own shown words, at most three. A word that is only the singular or plural of the main one (`draw` beside `draws`) is left out: both always work, so it tells the reader nothing.
         const main = tc?.helpWord;
         const also = tc ? (tc.shown || []).filter(w => w !== main && `${w}s` !== main && `${main}s` !== w).slice(0, 3) : [];
         const typedWords = tc ? [main, ...also] : (PAGES[name]?.typedWords || []);
-        const description = asTyped
+        const description = noSlash
+            ? typedWords.map(w => `${p} ${w}`).join(', ')
+            : asTyped
             ? `${p} ${main}${also.length ? ` · also ${also.join(', ')}` : ''}`
             : `${PAGE_NAMES[name]}${typedWords.length ? ` · typed: ${typedWords.slice(0, 3).map(w => `${p} ${w}`).join(', ')}` : ''}`;
         options.push({ label: asTyped ? PAGE_NAMES[name] : name, value: name, description: description.slice(0, 100), default: name === current, ...(emoji ? { emoji } : {}) });

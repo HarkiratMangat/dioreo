@@ -91,10 +91,10 @@ function postAgainModal(doc) {
 // ---------- drafts ---------- token → { kind: 'post'|'edit', id, userId, values: { text, expiry, starts_at, color }, at }. Only the admin who drafted it can post it.
 const DRAFT_TTL_MS = 15 * 60 * 1000;
 const drafts = new Map();
-function keepDraft(d) {
+function keepDraft(d, reuse = null) {
     const now = Date.now();
     for (const [k, v] of drafts) if (now - v.at > DRAFT_TTL_MS) drafts.delete(k);
-    const token = require('crypto').randomBytes(5).toString('hex');
+    const token = reuse || require('crypto').randomBytes(5).toString('hex');
     drafts.set(token, { ...d, at: now });
     return token;
 }
@@ -193,7 +193,7 @@ async function autocomplete(interaction) {
 
 // ---------- routing ----------
 async function route(interaction) {
-    const [, verb, a] = interaction.customId.split('|');
+    const [, verb, a, b] = interaction.customId.split('|');
 
     // ----- pop-ups first (a pop-up has to be the first answer) -----
     if (verb === 'guide') return runGuide(interaction);
@@ -219,15 +219,18 @@ async function route(interaction) {
 
     // ----- pop-up submits -----
     if (interaction.isModalSubmit?.()) {
+        // A box reopened from a draft's Edit carries that draft's token (`postm|<token>`, `editm|<id>|<token>`): the same draft is updated, its colour kept, so a tweak never repaints the preview (found in the 2026-11-09 13:37 EST click-test: each resubmit drew a new colour).
         if (verb === 'postm') {
             if (!(await gatePost(interaction))) return;
-            const values = { ...readFields(interaction), color: require('../../../utils/announcement').generateAccentColor() };
-            return showDraft(interaction, keepDraft({ kind: 'post', userId: interaction.user.id, values }));
+            const prior = a && drafts.get(a)?.userId === interaction.user.id ? drafts.get(a) : null;
+            const values = { ...readFields(interaction), color: prior?.values.color ?? require('../../../utils/announcement').generateAccentColor() };
+            return showDraft(interaction, keepDraft({ kind: 'post', userId: interaction.user.id, values }, prior ? a : null));
         }
         if (verb === 'editm') {
             if (!(await gateRow(interaction, 'manage.announcementEdit'))) return;
             if (!(await getOne(a))) return gone(interaction);
-            return showDraft(interaction, keepDraft({ kind: 'edit', id: a, userId: interaction.user.id, values: readFields(interaction) }));
+            const prior = b && drafts.get(b)?.userId === interaction.user.id ? b : null;
+            return showDraft(interaction, keepDraft({ kind: 'edit', id: a, userId: interaction.user.id, values: readFields(interaction) }, prior));
         }
     }
 
@@ -240,9 +243,9 @@ async function route(interaction) {
         const gate = () => (d.kind === 'edit' ? gateRow(interaction, 'manage.announcementEdit') : gatePost(interaction));
         if (verb === 'dedit') {
             if (!(await gate())) return;
-            if (d.kind === 'post') return interaction.showModal(fillModal(postModal(), d.values));
+            if (d.kind === 'post') return interaction.showModal({ ...fillModal(postModal(), d.values), custom_id: V.ID('postm', a) });
             const doc = await getOne(d.id);
-            return doc ? interaction.showModal(fillModal(editModal(doc), d.values)) : gone(interaction);
+            return doc ? interaction.showModal({ ...fillModal(editModal(doc), d.values), custom_id: V.ID('editm', d.id, a) }) : gone(interaction);
         }
         if (verb === 'ddisc') {
             drafts.delete(a);
