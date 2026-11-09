@@ -228,6 +228,15 @@ async function route(interaction) {
     if (verb === 'find') return interaction.showModal(V.searchModal());
     if (verb === 'select') return interaction.showModal(V.selectModal());
     if (verb === 'export') return (await gate(interaction, 'exportnew')) && interaction.showModal(V.exportModal());
+    // Check Draw Index reads, never writes: Export's read tier gates it.
+    if (verb === 'check') return (await gate(interaction, 'exportnew')) && interaction.showModal(V.checkModal());
+    if (verb === 'checkm' && interaction.isModalSubmit?.()) {
+        if (!(await gate(interaction, 'exportnew'))) return;
+        const { checkIndex } = require('../../../utils/drawIndexCheck');
+        const entries = await require('../../../utils/drawCatalog').loadCatalog({ force: true });
+        const result = checkIndex(entries, interaction.fields.getTextInputValue('names'), { seasonalDoc: await getDoc(), isSameTitle: require('../../../utils/search').isSameDrawTitle });
+        return show(interaction, V.checkView(result));
+    }
     if (verb === 'guide') return runGuide(interaction);
     if (verb === 'quickadd') return (await gate(interaction, 'quickadd')) && interaction.showModal(m.buildQuickAddModal());
     if (verb === 'addnew' || verb === 'addreturning') return (await gate(interaction, verb)) && interaction.showModal(m.buildAddDrawModal(verb === 'addnew' ? 'new' : 'returning'));

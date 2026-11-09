@@ -86,7 +86,8 @@ async function pageView(doc, note = null, { pageRow = null } = {}) {
         row(btn('quickadd', 'Quick Add', emojis.mngAdd, 3), btn('addnew', 'Add New Draw', emojis.newDraws), btn('addreturning', 'Add Returning Draw', emojis.returningDraws)),
         SMALL(),
         text('-# Find a draw…'),
-        row(btn('find', 'Search Draws', emojis.gunsmithSearch, 1)),
+        // Check Draw Index (2026-11-09 13:57 EST, his ask 13:53 EST): paste names, see what the draw index has and lacks (utils/drawIndexCheck.js).
+        row(btn('find', 'Search Draws', emojis.gunsmithSearch, 1), btn('check', 'Check Draw Index', emojis.search)),
         { type: 1, components: [{ type: 3, custom_id: ID('browse'), placeholder: 'Or browse a list…', options: Object.entries(STATUS).map(([value, s]) => ({ value, label: `${s.label} · ${n(value)}`, emoji: emojis.parseEmoji(s.emoji()) })) }] },
         BIG(),
         text('-# Many draws at once…'),
@@ -206,4 +207,27 @@ function exportModal() {
     };
 }
 
-module.exports = { ID, PAGE, STATUS, row, text, btn, homeBtn, panel, plural, allDraws, splitKey, rowFor, secWord, dot, pageView, listView, cardView, resultView, selectView, searchModal, selectModal, exportModal };
+
+// ---------- Check Draw Index ---------- (2026-11-09 13:57 EST, his ask: "bulk paste draw names or item names and check if we have a draw for that search, if the draw/catalogue contains all the info/needs updating")
+const checkModal = () => ({ custom_id: ID('checkm'), title: 'Check the Draw Index', components: [{ type: 1, components: [{ type: 4, custom_id: 'names', label: 'Draw or item names, one per line (up to 20)', style: 2, required: true, max_length: 4000, placeholder: 'cx9 lethal hollow\nherrscher of reason\nmythic character' }] }] });
+// The result: a count line, then one block per line pasted. Discord holds 4,000 characters of text in a message: blocks past that are dropped and counted, never cut mid-line.
+function checkView({ results, extra = 0, indexSize = 0 }) {
+    const { resultBlock } = require('../../../utils/drawIndexCheck');
+    const c = (s) => results.filter(r => r.status === s).length;
+    const needN = results.filter(r => r.needs?.length).length;
+    const counts = [`${results.length} checked`, `${c('found')} found`, ...(c('maybe') ? [`${c('maybe')} maybe`] : []), ...(c('describes') ? [`${c('describes')} too broad`] : []), ...(c('none') ? [`${c('none')} not indexed`] : []), ...(needN ? [`${emojis.warn} ${needN} need updating`] : [])].join(' · ');
+    const head = text(`${crumb('Check Draw Index')}\n## ${emojis.search} Draw Index Check\n-# ${counts} · ${plural(indexSize, 'draw')} in the index`);
+    const blocks = results.map(r => resultBlock(r, emojis));
+    let budget = 3700 - head.content.length;
+    let shown = 0;
+    while (shown < blocks.length && budget - blocks[shown].length > 0) { budget -= blocks[shown].length + 1; shown++; }
+    const dropped = blocks.length - shown + extra;
+    const components = [head];
+    if (!indexSize) components.push(SMALL(), text(`${emojis.warn} **The draw index is empty here.** Nothing can be found until it is filled.`));
+    components.push(BIG(), ...blocks.slice(0, shown).map(text));
+    if (dropped) components.push(text(`-# …and ${plural(dropped, 'more line')} not checked; paste them again in a second check.`));
+    components.push(BIG(), row(btn('check', 'Check Again', emojis.search, 1), btn('quickadd', 'Quick Add', emojis.mngAdd), homeBtn()));
+    return panel(components);
+}
+module.exports = {
+    checkModal, checkView, ID, PAGE, STATUS, row, text, btn, homeBtn, panel, plural, allDraws, splitKey, rowFor, secWord, dot, pageView, listView, cardView, resultView, selectView, searchModal, selectModal, exportModal };

@@ -13,8 +13,7 @@ const S = require('./emojiSync');
 const PAGE_SIZE = 12; // four marks a row since the status reports (21:16 EDT); 15 rows would pass Discord's 4,000 characters
 const ACCENT = 5793266; // Discord Blurple, the admin surfaces' colour
 
-// appsOfThisProcess lives in utils/emojiSync.js (moved 2026-11-07 19:44 EST): bot/lifecycle.js needs only it, and requiring this panel pulled commands/manage.js and every /manage handler into the restart-only set, so a hotpatch of /draws or /draw prices was refused once the draws panel read commands/draws.js.
-// SHORT moved there with it, and this file kept reading it: `/manage emojis` threw "SHORT is not defined" for everyone the moment the other bot's status report existed, from v3.14.0 (#262) until 2026-11-09 13:49 EST (found by Harkirat on prod). scripts/emojiPanelState.test.js runs loadState with a report.
+// appsOfThisProcess lives in utils/emojiSync.js (moved 2026-11-07 19:44 EST): bot/lifecycle.js needs only it, and requiring this panel pulled commands/manage.js and every /manage handler into the restart-only set, so a hotpatch of /draws or /draw prices was refused once the draws panel read commands/draws.js. SHORT moved there with it, and this file kept reading it: `/manage emojis` threw "SHORT is not defined" for everyone the moment the other bot's status report existed, from v3.14.0 (#262) until 2026-11-09 13:49 EST (found by Harkirat on prod). scripts/emojiPanelState.test.js runs loadState with a report.
 const { appsOfThisProcess, SHORT } = S;
 
 // This process's two apps, live, then the other bot's two from its last status report (utils/emojiSync.js), marked `remote` with the report's time: Sync and Upload never write to those, the other bot fills them itself.
