@@ -268,4 +268,4 @@ function appsOfThisProcess() {
     ].filter(Boolean);
 }
 
-module.exports = { appsOfThisProcess, prodEmojisFromSource, listAppEmojis, buildRows, sourceCandidates, uploadMissing, replaceEmoji, appliedStore, listOriginals, uploadOriginal, safeCloudinaryError, writeStatus, readOtherStatus, runAutoSync, MAX_UPLOAD_BYTES, MAX_ORIGINAL_BYTES, EMOJI_NAME, ORIGINALS_FOLDER };
+module.exports = { SHORT, appsOfThisProcess, prodEmojisFromSource, listAppEmojis, buildRows, sourceCandidates, uploadMissing, replaceEmoji, appliedStore, listOriginals, uploadOriginal, safeCloudinaryError, writeStatus, readOtherStatus, runAutoSync, MAX_UPLOAD_BYTES, MAX_ORIGINAL_BYTES, EMOJI_NAME, ORIGINALS_FOLDER };
