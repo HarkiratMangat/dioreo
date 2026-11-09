@@ -29,11 +29,22 @@ t('the Battle Pass title wins over a stale season title, which is the fallback, 
     assert.strictEqual(seasonCountdownLine(doc({ bpTitle: 'Battle Pass', currentSeasonTitle: 'season9 — Name' }), NOW), 'Season 9 · 21 days left');
     assert.strictEqual(seasonCountdownLine(doc({ currentSeasonTitle: '', bpTitle: '' }), NOW), 'Season · 21 days left');
 });
-t('the presence is ONE Watching card with the install line as its second line', () => {
+t('the presence is ONE card; a countdown carries the /help line second, /help carries the install line second', () => {
     const p = buildPresence('Season 10 · 21 days left');
     assert.strictEqual(p.activities.length, 1, 'a second activity (a custom status) hides the card');
-    assert.deepStrictEqual(p.activities[0], { name: 'Season 10 · 21 days left', state: INSTALL_LINE, type: ActivityType.Watching });
-    assert.strictEqual(buildPresence().activities[0].name, HELP_LINE);
+    assert.deepStrictEqual(p.activities[0], { name: 'Season 10 · 21 days left', state: HELP_LINE, type: ActivityType.Watching });
+    assert.deepStrictEqual(buildPresence().activities[0], { name: HELP_LINE, state: INSTALL_LINE, type: ActivityType.Watching });
+    assert.strictEqual(HELP_LINE, '/help · @dioreo help');
+    assert.strictEqual(INSTALL_LINE, 'Add Dioreo · dioreo.app/invite');
+});
+t('must NOT: the /help turn never shows the /help line twice', async () => {
+    const sent = [];
+    const client = { user: { setPresence: p => sent.push(p.activities[0]) } };
+    const r = startPresenceRotation(client, { loadSeason: async () => null, intervalMs: 60 * 60 * 1000 });
+    await new Promise(res => setImmediate(res));
+    r.stop();
+    assert.strictEqual(sent[0].name, HELP_LINE);
+    assert.notStrictEqual(sent[0].state, HELP_LINE);
 });
 t('ranked reads "Ranked Series N · D days left", and skips like the season line', () => {
     assert.strictEqual(rankedCountdownLine(doc(), NOW), 'Ranked Series 3 · 21 days left');

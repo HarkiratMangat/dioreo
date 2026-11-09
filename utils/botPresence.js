@@ -1,13 +1,14 @@
-// The bot's presence: one activity card whose top line AND verb rotate every minute: "Watching" the season countdown, "Playing" the DMZ countdown (2026-10-21 19:45 EDT, Harkirat: "lets rotate the season countdown, the rank countdown, dmz countdown, and the /help command"; the Playing verb is my pick), "Competing in" the ranked countdown (2026-10-21 19:41 EDT, Harkirat: "can we change the watching and competing in every minute as well?"), then "Listening to" /help. The second line stays the install line. First version (2026-10-21 19:31 EDT, Harkirat: "lets do the season and countdown as the main line and Website: dioreo.app as the second line, make the first line swap between the season countdown and /help").
+// The bot's presence: one activity card whose top line AND verb rotate every minute: "Watching" the season countdown, "Playing" the DMZ countdown (2026-10-21 19:45 EDT, Harkirat: "lets rotate the season countdown, the rank countdown, dmz countdown, and the /help command"; the Playing verb is my pick), "Competing in" the ranked countdown (2026-10-21 19:41 EDT, Harkirat: "can we change the watching and competing in every minute as well?"), then "Listening to" /help. The second line is `/help · @dioreo help` under a countdown and the install line under /help (2026-11-09). First version (2026-10-21 19:31 EDT, Harkirat: "lets do the season and countdown as the main line and Website: dioreo.app as the second line, make the first line swap between the season countdown and /help").
 //
 // Why ONE card with a `state` line and not a custom status beside it: tried on the dev bot 2026-10-21 18:49-19:23 EDT. A custom status (type 4) hid the Watching card whichever order the two were listed in, and a bot cannot set `status_display_type` (Discord allows bots only name, state, type and url), so the member list always shows the top line (`name`) and only the profile card shows `state`.
 //
 // ⚠️ After a restart Discord kept showing the PREVIOUS presence for a few minutes on those runs. A presence that has not changed yet right after a deploy is that lag, not a bug.
 const { ActivityType } = require('discord.js');
 
-const HELP_LINE = '/help';
-// The second line (2026-10-21 19:40 EDT, Harkirat: "instead of website, let's do Add Dioreo · dioreo.app/install"). Not clickable: a bot cannot set `state_url`.
-const INSTALL_LINE = 'Add Dioreo · dioreo.app/install';
+// The /help turn's top line, and the second line under every OTHER turn (Harkirat, 2026-11-09 10:57 EST: "when the presence message switches from listening to /help to something else, then change the 2nd line to "/help · @dioreo help". Also update the /help main line itself"). His wording, lowercase @dioreo included.
+const HELP_LINE = '/help · @dioreo help';
+// The second line under the /help turn, the only turn that does not already name /help (2026-10-21 19:40 EDT, Harkirat: "Add Dioreo · dioreo.app/install"; the path became /invite 2026-11-09 12:03 EST, his "change install to add bot and the url to /invite"). Not clickable: a bot cannot set `state_url`.
+const INSTALL_LINE = 'Add Dioreo · dioreo.app/invite';
 // How long each top line stays up. Discord caps presence updates per gateway session (op 3), so this stays at a minute or more.
 const ROTATE_MS = 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -45,18 +46,19 @@ function countdownLine(label, end, tbd, now) {
 
 // The turns, in order: season, ranked, DMZ, /help. Each returns { name, type } or null to be skipped this round (no date, TBD, over); /help never skips, so a round always lands somewhere.
 const TURNS = [
-    doc => { const name = seasonCountdownLine(doc); return name && { name, type: ActivityType.Watching }; },
-    doc => { const name = rankedCountdownLine(doc); return name && { name, type: ActivityType.Competing }; },
-    doc => { const name = dmzCountdownLine(doc); return name && { name, type: ActivityType.Playing }; },
+    doc => { const name = seasonCountdownLine(doc); return name && { name, type: ActivityType.Watching, state: HELP_LINE }; },
+    doc => { const name = rankedCountdownLine(doc); return name && { name, type: ActivityType.Competing, state: HELP_LINE }; },
+    doc => { const name = dmzCountdownLine(doc); return name && { name, type: ActivityType.Playing, state: HELP_LINE }; },
     // "Listening to /help" (2026-10-21 19:57 EDT, Harkirat: "sure" to my pick): the bot waiting for your command, and a verb no other turn uses.
-    () => ({ name: HELP_LINE, type: ActivityType.Listening }),
+    () => ({ name: HELP_LINE, type: ActivityType.Listening, state: INSTALL_LINE }),
 ];
 
 // The presence for one top line and verb. Also passed to the Client at login (index.js), so the very first IDENTIFY already carries it.
-function buildPresence(topLine = HELP_LINE, type = ActivityType.Watching) {
+// `state` is the second line: the install line under /help, the /help line under a countdown (TURNS above).
+function buildPresence(topLine = HELP_LINE, type = ActivityType.Watching, state = topLine === HELP_LINE ? INSTALL_LINE : HELP_LINE) {
     return {
         status: 'online',
-        activities: [{ name: topLine, state: INSTALL_LINE, type }],
+        activities: [{ name: topLine, state, type }],
     };
 }
 
@@ -72,7 +74,7 @@ function startPresenceRotation(client, { loadSeason, intervalMs = ROTATE_MS } = 
             turn = TURNS[next](doc);
             next = (next + 1) % TURNS.length;
         }
-        try { client.user?.setPresence(buildPresence(turn.name, turn.type)); } catch (err) { console.error('⚠️ Presence update failed:', err.message); }
+        try { client.user?.setPresence(buildPresence(turn.name, turn.type, turn.state)); } catch (err) { console.error('⚠️ Presence update failed:', err.message); }
         return turn;
     };
     tick();
