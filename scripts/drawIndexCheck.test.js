@@ -56,6 +56,11 @@ t('rarity and kind words alone list the draws they fit, never a guess', () => {
     assert.strictEqual(r.status, 'describes'); assert.ok(r.candidates.length >= 3, r.candidates.join(', '));
 });
 t('a name the index lacks is not indexed', () => assert.strictEqual(C.checkLine(INDEX, 'Moonlit Sorrow Draw', ctx).status, 'none'));
+t('a guess that only shares generic words is not indexed, with the closest named', () => {
+    const r = C.checkLine(INDEX, 'Cold Spark Draw', ctx); // Ember Spark Draw shares only "spark" and "draw"
+    assert.strictEqual(r.status, 'none', JSON.stringify(r)); assert.ok(r.closest.includes('Ember Spark Draw'));
+    assert.match(C.resultBlock(r, require('../utils/emojiMap')), /not in the index\n-# Closest: Ember Spark Draw/);
+});
 t('blank and repeated lines are checked once; past the limit the rest are counted', () => {
     const lines = ['lethal hollow draw', '', 'Lethal Hollow Draw', ' lethal hollow draw ', ...Array.from({ length: C.MAX_LINES + 3 }, (_, i) => `name ${i}`)];
     const out = C.checkIndex(INDEX, lines.join('\n'), ctx);

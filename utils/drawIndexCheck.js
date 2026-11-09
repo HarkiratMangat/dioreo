@@ -3,7 +3,7 @@
 // Harkirat, 2026-11-09 13:53 EST: "an admin command that checks the database catalogue if we currently have a draw indexed? probably as part of /manage draws. where i can bulk paste draw names or item names and check if we have a draw for that search, if the draw/catalogue contains all the info/needs updating, etc".
 //
 // Read only: it never writes the index. Each line is matched by Quick Add's own matcher (utils/quickAdd.js findCatalogDraw: the title, another name, then the words of the title and the items, typos forgiven), so a line that finds a draw here finds the same draw in Quick Add. Pure over a list of catalog documents, so scripts/drawIndexCheck.test.js needs no database.
-const { findCatalogDraw, words } = require('./quickAdd');
+const { findCatalogDraw, words, scoreEntry } = require('./quickAdd');
 
 const MAX_LINES = 20;          // checked per paste; checkView shows as many as fit in Discord's 4,000 characters and names the rest
 const MAX_SHOWN_DESCRIBED = 5;
@@ -48,6 +48,8 @@ function checkLine(entries, line, { seasonalDoc = null, isSameTitle } = {}) {
     if (!found) return { line, status: 'none' };
     if (!found.entry) return { line, status: 'describes', candidates: found.candidates.map(e => e.title) };
     const e = found.entry;
+    // A guess that misses a word of the line is not this draw: Quick Add lets it through (half the words may miss) so its Pick box has something to offer, but "Cold Claws Series Armory" landing on "Halloween Series Armory" only shares the generic words. Here that is not indexed, with the closest draws named (2026-11-09 14:09 EST, his first real paste).
+    if (!found.sure && scoreEntry(e, words(line)).misses > 0) return { line, status: 'none', closest: [e.title, ...(found.alternates || [])].slice(0, 3) };
     const item = itemHit(e, line);
     return {
         line,
@@ -76,7 +78,7 @@ const MATCHED_BY = { title: 'by its title', alias: 'by another name it ran under
 // One result as the panel's text block. `E` is the emoji map.
 function resultBlock(r, E) {
     const typed = clean(r.line);
-    if (r.status === 'none') return `${E.cross} **${typed}** → not in the index\n-# Saving the draw with a picture (Add Draw or Quick Add) indexes it`;
+    if (r.status === 'none') return `${E.cross} **${typed}** → not in the index\n-# ${r.closest?.length ? `Closest: ${r.closest.map(t => clean(t, 40)).join(' · ')}` : 'Saving the draw with a picture (Add Draw or Quick Add) indexes it'}`;
     if (r.status === 'describes') {
         const shown = r.candidates.slice(0, MAX_SHOWN_DESCRIBED).map(t => clean(t, 40)).join(' · ');
         return `${E.search} **${typed}** → fits ${r.candidates.length} draws, not one\n-# ${shown}${r.candidates.length > MAX_SHOWN_DESCRIBED ? ' · …' : ''}`;
