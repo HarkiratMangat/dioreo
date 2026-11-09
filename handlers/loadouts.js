@@ -220,7 +220,8 @@ async function route(interaction) {
 
             // .lean() -- these builds are only ever read (rendered into the card or replied with directly), never mutated/saved on this path. Placeholders are dropped here exactly as the card that minted this index dropped them (utils/loadoutLookup.js), or the index would point at a different build.
             const { isPlaceholderBuild, orderedAttachments } = require('../utils/loadoutRender');
-            const matchingBuilds = (await Loadout.find({ weaponKey: gunKey, mode }).lean()).filter(b => !isPlaceholderBuild(b));
+            // Sorted by build number (utils/loadoutForm.js compareBuilds) like the card that minted the index: Mongo's natural order put a build numbered 1 last, so Next/Prev and the number buttons landed on other builds (2026-11-09).
+            const matchingBuilds = (await Loadout.find({ weaponKey: gunKey, mode }).lean()).filter(b => !isPlaceholderBuild(b)).sort(require('../utils/loadoutForm').compareBuilds);
             // Guard BEFORE the modulo/index -- mirrors the gsb~ browse branch's own guard below (v3-pre-release review, finding #6). /manage can purge a weapon's builds between render and click: `(cur ± 1) % matchingBuilds.length` is NaN on an empty array, and matchingBuilds[newIndex] is undefined for copy/copyatt too -- every branch past this point (category lookup, shareCode, attachments) would throw on an already-acked interaction.
             if (!matchingBuilds.length) {
                 try {
