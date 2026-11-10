@@ -121,6 +121,18 @@ function seasonDoc(nNew = 3, nRet = 30) {
         assert.match(JSON.stringify(V.selectView(doc, 'tok12345', sel)), /Edit 7/);
         assert.strictEqual(V.cardView(doc, 'n:doesnotexist'), null);
     });
+    await check('the card walks its list with Prev / Next and links its /calendar row (2026-11-10)', () => {
+        const doc = seasonDoc(2, 3);
+        const ids = (v) => { const out = []; walk(v, c => c.custom_id && out.push(c.custom_id)); return out; };
+        const news = V.allDraws(doc).filter(d => d._sec === 'new').map(d => d._key);
+        const two = ids(V.cardView(doc, news[0], { back: 'new' }));
+        assert.ok(two.includes(`mng_dr|card|${news[1]}|new|p`) && two.includes(`mng_dr|card|${news[1]}|new|x`), 'in a list of two both arrows go to the other draw, with their own ids');
+        limits(V.cardView(doc, news[0], { back: 'new' }), 'card in a list of two');
+        const d = V.allDraws(doc)[0];
+        doc.calendar = [{ _id: oid(77), title: d.title, date: new Date(now), endDate: new Date(now + 3 * DAY), category: 'draw' }];
+        assert.ok(ids(V.cardView(doc, d._key)).includes(`mng_ca|card|c:${oid(77)}`), 'Calendar Entry opens the row in /manage calendar');
+        limits(V.cardView(doc, d._key), 'card with its calendar row');
+    });
     await check('Active Now lists what ends soonest first', () => {
         const doc = seasonDoc(3, 6);
         doc.calendar = V.allDraws(doc).map((d, i) => ({ _id: oid(950 + i), title: d.title, date: new Date(d.startMs), endDate: new Date(now + (20 - i * 2) * DAY), category: 'draw' }));

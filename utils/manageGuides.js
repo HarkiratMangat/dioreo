@@ -98,8 +98,11 @@ function quickaddSections() {
             '• A best guess says so; **Pick** swaps it for another draw or keeps what you typed.'),
         section('➕ Not in the Draw Index',
             'Press **Add Details** to give its items, type and a picture, the same as Add Draw. Without them it is saved as typed, with no items.'),
+        section('✂️ Before Save',
+            '• **Remove lines from the draft…** takes out the lines you pick. **Add More** opens the box again for lines added to the same draft (10 lines fit one draft).\n' +
+            '• Each line links its **Picture** when the draw index has one, or says *no picture*.'),
         section('🏷️ After Save',
-            'If the saved draws carry items the draw index has no kind for, one more message asks: **Set item kinds** gives a dropdown per item (weapon, character, vehicle, other). **Revert All** on the result undoes the save.'),
+            'If the saved draws carry items the draw index has no kind for, one more message asks: **Set item kinds** gives a dropdown per item (weapon, character, vehicle, other). The result has **Open Draw** (or a menu for several), **Quick Add More**, **Draws Home**, and **Revert All**, which undoes the save.'),
         section('🌱 In the Next Season Draft',
             '**Season → Next Season Draft → Edit Draws → Quick Add** stages the draws instead of saving them live. A line takes the tab you opened it from unless it says `new` or `returning`, end dates go on the draft calendar, and a draw with no picture is left out. **Needs a Look → Stage These** fills the box with the draft calendar\'s draws that are not staged yet. Players see nothing until Promote to Live.')
     ];

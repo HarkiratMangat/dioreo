@@ -265,7 +265,8 @@ async function route(interaction) {
     }
     if (verb === 'card') {
         const doc = await getDoc();
-        return show(interaction, V.cardView(doc, a) || await home(doc, `${emojis.cross} That draw no longer exists.`, interaction));
+        // `b` is the list Prev / Next walk (the card's own arrows); a card opened from elsewhere walks its section.
+        return show(interaction, V.cardView(doc, a, { back: b }) || await home(doc, `${emojis.cross} That draw no longer exists.`, interaction));
     }
 
     // ----- one draw -----

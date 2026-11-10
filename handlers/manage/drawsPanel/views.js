@@ -140,9 +140,14 @@ function cardView(doc, key, { header = null, extra = null, back = null } = {}) {
     if (extra) components.push(...extra);
     else {
         const backTo = STATUS[back] ? back : d._sec;
+        // Prev / Next walk the list the card was opened from, in that list's own order (2026-11-10, his ask for QoL buttons), so a run of draws is checked without going back to the list each time. The arrows end in `p` / `x`: in a list of two both point at the same draw, and Discord refuses a message with two equal ids.
+        const list = allDraws(doc).filter(STATUS[backTo].test).sort(ORDER[backTo] || byStart);
+        const at = list.findIndex(x => x._key === key);
+        const near = (step) => (at < 0 || list.length < 2 ? null : list[(at + step + list.length) % list.length]._key);
+        const calBtn = end ? [{ type: 2, style: 2, label: 'Calendar Entry', custom_id: `mng_ca|card|c:${end._id}`, emoji: emojis.parseEmoji(emojis.calendar) }] : [];
         components.push(
-            row(btn(['edit', key], 'Edit', emojis.edit, 1), btn(['end', key], end?.endDate ? 'Change End Date' : 'Set End Date', emojis.edit), btn(['move', key], `Move to ${d._sec === 'new' ? 'Returning' : 'New'}`, d._sec === 'new' ? emojis.returningDraws : emojis.newDraws), btn(['del', key], 'Delete', emojis.deleteBin, 4)),
-            row(btn(['list', backTo, 0], STATUS[backTo].label, emojis.returnArrow), homeBtn()),
+            row(btn(['edit', key], 'Edit', emojis.edit, 1), btn(['end', key], end?.endDate ? 'Change End Date' : 'Set End Date', emojis.edit), btn(['move', key], `Move to ${d._sec === 'new' ? 'Returning' : 'New'}`, d._sec === 'new' ? emojis.returningDraws : emojis.newDraws), ...calBtn, btn(['del', key], 'Delete', emojis.deleteBin, 4)),
+            row(arrow(['card', near(-1) || key, backTo, 'p'], 'left', !near(-1)), counter(['cardn', key], at < 0 ? '–' : `${at + 1} / ${list.length}`), arrow(['card', near(1) || key, backTo, 'x'], 'right', !near(1)), btn(['list', backTo, 0], STATUS[backTo].label, emojis.returnArrow), homeBtn()),
         );
     }
     return panel(components);

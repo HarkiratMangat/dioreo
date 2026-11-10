@@ -153,6 +153,56 @@ const lastToken = () => [...quick.DRAFTS.keys()].at(-1);
         assert.strictEqual(h.state.changes.length, 1, 'the draws change only, no empty calendar change');
         assert.strictEqual(new Date(h.state.doc.draft.calendar[0].endDate).toISOString(), '2027-02-17T00:00:00.000Z');
     });
+    // His QoL asks, 2026-11-10: Remove lines, Add More, pictures as links, and where to go after Save.
+    await check('ten lines fit Discord with the Remove menu and Add More (40 components, own ids)', async () => {
+        h.reset();
+        const lines = Array.from({ length: 10 }, (_, i) => `Draw Number ${i + 1}`).join('\n');
+        await quick.submitQuickAdd(h.modal('modal_quickadd', { lines }));
+        const panel = quick.draftPanel(lastToken(), quick.DRAFTS.get(lastToken()));
+        let n = 0; const ids = [];
+        const walk = c => { if (Array.isArray(c)) return c.forEach(walk); n++; if (c.custom_id) ids.push(c.custom_id); (c.components || []).forEach(walk); if (c.accessory) walk(c.accessory); };
+        walk(panel);
+        assert.ok(n <= 40, `${n} components`);
+        assert.strictEqual(new Set(ids).size, ids.length, 'no duplicate ids');
+        assert.ok(ids.includes(`mng_qa_rm_${lastToken()}`) && ids.includes(`mng_qa_more_${lastToken()}`));
+        assert.ok(panel[0].components.some(c => c.type === 1 && c.components.some(b => b.custom_id === `mng_qa_more_${lastToken()}` && b.disabled)), 'Add More is off once ten lines are in');
+    });
+    await check('Remove takes the picked lines out; removing every line cancels', async () => {
+        h.reset();
+        await quick.submitQuickAdd(h.modal('modal_quickadd', { lines: 'Iron Wolf Draw\nThermal Core Draw\nGhost Draw' }));
+        const token = lastToken();
+        const pick = Object.assign(h.modal(`mng_qa_rm_${token}`, {}, { values: ['0', '2'] }), { isButton: () => false, isModalSubmit: () => false, isStringSelectMenu: () => true });
+        await quick.handleButton(pick);
+        assert.deepStrictEqual(quick.DRAFTS.get(token).drafts.map(d => d.title), ['Thermal Core Draw']);
+        const all = Object.assign(h.modal(`mng_qa_rm_${token}`, {}, { values: ['0'] }), { isButton: () => false, isModalSubmit: () => false, isStringSelectMenu: () => true });
+        await quick.handleButton(all);
+        assert.ok(!quick.DRAFTS.has(token) && /Every line was removed/.test(all.text()), all.text());
+    });
+    await check('Add More opens the box and its lines join the same draft', async () => {
+        h.reset();
+        await quick.submitQuickAdd(h.modal('modal_quickadd', { lines: 'Iron Wolf Draw' }));
+        const token = lastToken();
+        const b = button(`mng_qa_more_${token}`);
+        await quick.handleButton(b);
+        assert.ok(b.sent.some(x => x.modal), 'a pop-up opened');
+        await quick.submitMore(h.modal(`modal_qa_more_${token}`, { lines: 'Thermal Core Draw\nIron Wolf Draw' }));
+        const d = quick.DRAFTS.get(token).drafts;
+        assert.deepStrictEqual(d.map(x => x.title), ['Iron Wolf Draw', 'Thermal Core Draw', 'Iron Wolf Draw']);
+        assert.strictEqual(d[2].duplicateOf, 0, 'the same draw twice is still written once');
+    });
+    await check('the saved card offers Open Draw, Quick Add More and Draws Home', async () => {
+        h.reset();
+        await quick.submitQuickAdd(h.modal('modal_quickadd', { lines: 'Quasar Test Draw' }));
+        const b = button(`mng_qa_save_${lastToken()}`);
+        await quick.handleButton(b);
+        const saved = h.state.doc.returningDraws[0] ? `r:${h.state.doc.returningDraws[0]._id}` : `n:${h.state.doc.newDraws[0]._id}`;
+        assert.ok(b.text().includes(`mng_dr|card|${saved}`) && b.text().includes('mng_dr|quickadd') && b.text().includes('mng_dr|page'), b.text());
+        h.reset();
+        await quick.submitQuickAdd(h.modal('modal_quickadd', { lines: 'Quasar Test Draw\nNimbus Test Draw' }));
+        const b2 = button(`mng_qa_save_${lastToken()}`);
+        await quick.handleButton(b2);
+        assert.ok(b2.text().includes('mng_dr|open|'), 'several saved draws get an Open menu');
+    });
     drawCatalog.loadCatalog = realLoad;
 
     if (failures) { console.error(`\n${failures} failing`); process.exit(1); }
