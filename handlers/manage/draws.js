@@ -47,11 +47,16 @@ async function addDraw(interaction, opts = {}) {
     const dates = parseDrawDates(dateStr);
     if (!dates.ok) return await failWithRetry(interaction, dates.error);
     const parsedSingleDate = dates.start;
+    // A draw is New or Returning, never both, and never twice in one list: a title either list already holds would show twice on /draws and share one /calendar row. Refused before any picture is looked up, with Try Again, the rule Move keeps (2026-11-10 15:50 EST, click test: Add Returning took "Sapphire Winter Draw" while New Draws had it).
+    const seasonalDoc = await loadOrCreateSeasonalDoc();
+    const { isSameDrawTitle } = require('../../utils/search');
+    const twinNew = (seasonalDoc.newDraws || []).find(x => isSameDrawTitle(x.title, title));
+    const twin = twinNew || (seasonalDoc.returningDraws || []).find(x => isSameDrawTitle(x.title, title));
+    if (twin) return await failWithRetry(interaction, `${twinNew ? 'New' : 'Returning'} Draws already has ${twin.title}. Edit that one, or delete it first; nothing was added.`);
 
     // URL is optional -- blank reuses a Cloudinary cache hit for this exact title if one exists. No URL AND no cache hit used to hard-reject the whole submission -- relaxed 2026-08-22 19:40 EDT (click-test fix): a draw's info is sometimes known before any image exists to link/cache. thumbnailUrl has no `required` on the schema (models/SeasonalData.js) -- this was purely an app-level choice. commands/draws.js's render renders a plain no-image row instead of a broken thumbnail when thumbnailUrl is null. The items go along so a draw that comes back under a new name finds its old image by what it contains (utils/cloudinaryCache.js).
     const parsedItems = rawItems.split('\n').filter(l => l.trim().length > 0).map(parseItemLine);
     // A draw added to New that the draw index has never seen is indexed with this season as its release season (utils/drawCatalog.js insertFields).
-    const seasonalDoc = await loadOrCreateSeasonalDoc();
     const releaseSeason = drawType === 'new' ? require('../../utils/quickAdd').seasonNumber(seasonalDoc.currentSeasonTitle) : null;
     const releaseYear = require('../../utils/quickAdd').seasonYear(seasonalDoc);
     const thumbResult = await resolveThumbnail(title, rawUrl, { items: parsedItems, priceType, ...(releaseSeason ? { releaseSeason, ...(releaseYear ? { releaseYear } : {}) } : {}) });
@@ -215,7 +220,7 @@ async function bulkAddOrReplaceDraws(interaction, preset = null, opts = {}) {
         }
         if (endOps.length) {
             const endResult = await commitSet(endOps, { actorId: interaction.user.id });
-            if (endResult.ok) { changeIds.push(...endResult.changeIds); sections.push({ head: 'End dates', lines: [`Set on ${endOps.length} draw${endOps.length === 1 ? '' : 's'} (their /calendar rows)`] }); }
+            if (endResult.ok) { changeIds.push(...endResult.changeIds); sections.push({ head: 'End dates', lines: [`Set on ${endOps.length} draw${endOps.length === 1 ? ' (its /calendar row)' : 's (their /calendar rows)'}`] }); }
             else warnings.push(`End dates were NOT saved (the draws were): ${extractCommitError(endResult)}`);
         }
     }

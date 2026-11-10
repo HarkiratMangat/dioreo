@@ -266,6 +266,18 @@ function seasonDoc(nNew = 3, nRet = 30) {
             assert.ok(JSON.stringify(await P.confirmCard(doc, 'del', d._key, '', 'u1')).includes('Delete + Calendar Row'));
         } finally { Object.assign(A, saved); }
     });
+    await check('a title the other list holds is left out of a paste, and a Move to that list is refused on the question', async () => {
+        const doc = seasonDoc(3, 5);
+        const d = V.allDraws(doc).find(x => x._sec === 'new');
+        const line = `${d.title}, l Grav - Twin Skin, November 7, 2026`;
+        const pv = P.previewDraws(doc, '', line);
+        assert.strictEqual(pv.keepRet.length, 0, 'the twin line is not saved');
+        assert.match(JSON.stringify(pv), /Left out/);
+        doc.returningDraws.push({ ...doc.newDraws.find(x => String(x._id) === String(d._id)), _id: 'twin1' });
+        const card = await P.confirmCard(doc, 'move', d._key, '', null);
+        assert.ok(!JSON.stringify(card).includes('Yes, Move'), 'no Yes on a refused move');
+        assert.match(JSON.stringify(card), /already has/);
+    });
     await check('Select\'s quick picks: within a group they widen, across groups they narrow; titles add on top', () => {
         const doc = seasonDoc(3, 5);
         const all = V.allDraws(doc);

@@ -136,7 +136,7 @@ function matchStored(stored, title) {
 }
 function previewDraws(doc, newText, retText) {
     const { parseBulkDrawList } = require('../../../utils/adminParser');
-    const out = { added: [], changed: [], same: [], keepNew: [], keepRet: [], skipped: [] };
+    const out = { added: [], changed: [], same: [], keepNew: [], keepRet: [], skipped: [], twins: [] };
     // A pasted line carries a day, never a time (Add Multiple reads dates as UTC midnight), so dates are compared by their UTC day.
     const day = (x) => (x ? new Date(x).toISOString().slice(0, 10) : '');
     for (const [sec, raw] of [['new', newText], ['returning', retText]]) {
@@ -147,7 +147,13 @@ function previewDraws(doc, newText, retText) {
             if (!p) { out.skipped.push(line.slice(0, 80)); keep.push(line); continue; }
             const old = matchStored(stored, p.title);
             const label = `${sec === 'new' ? emojis.newDraws : emojis.returningDraws} ${p.title}`;
-            if (!old) { out.added.push(label); keep.push(line); continue; }
+            // A new line whose title the OTHER list holds would put the draw in both (2026-11-10 15:50 EST): left out of the save, and said.
+            if (!old) {
+                const otherKey = sec === 'new' ? 'returningDraws' : 'newDraws';
+                const twin = (doc[otherKey] || []).find(x => require('../../../utils/search').isSameDrawTitle(x.title, p.title));
+                if (twin) { out.twins.push(`${label} · already in ${sec === 'new' ? 'Returning' : 'New'} Draws`); continue; }
+                out.added.push(label); keep.push(line); continue;
+            }
             const diff = [];
             if (old.title !== p.title) diff.push('title');
             if (day(old.date) !== day(p.date)) diff.push('date');
@@ -172,6 +178,7 @@ function previewDraws(doc, newText, retText) {
     if (out.added.length) parts.push(`${emojis.mngAdd} **Added · ${out.added.length}**`, ...cap(out.added.map(x => `- ${x}`)), '');
     if (out.changed.length) parts.push(`${emojis.mngBulkReplace} **Changed · ${out.changed.length}**`, ...cap(out.changed.map(x => `- ${x}`)), '');
     if (out.same.length) parts.push(`-# Unchanged · ${out.same.length}: ${out.same.join(', ').slice(0, 700)}`, '');
+    if (out.twins.length) parts.push(`${emojis.warn} **Left out · ${out.twins.length}**`, ...cap(out.twins.map(x => `- ${x}`), 8), '-# A draw is New or Returning, not both. Move it from its card, or delete one first.', '');
     if (out.skipped.length) parts.push(`${emojis.warn} **Not read · ${out.skipped.length}**`, ...cap(out.skipped.map(x => `- \`${x}\``), 8), '-# A line needs a title, at least one item and a date, split by commas.', '');
     parts.push('-# Nothing is saved until you press Save.');
     return { ...out, parts, count: out.added.length + out.changed.length, total: out.added.length + out.changed.length + out.same.length };
@@ -286,6 +293,12 @@ async function confirmCard(doc, kind, key, back = '', userId = null) {
     const d = V.allDraws(doc).find(x => x._key === key);
     if (!d) return home(doc, `${emojis.cross} That draw no longer exists.`);
     const to = d._sec === 'new' ? 'Returning' : 'New';
+    // The other list already holding this title: said on the question itself, with no Yes, instead of after it (2026-11-10 15:50 EST, click test).
+    if (kind === 'move') {
+        const { isSameDrawTitle } = require('../../../utils/search');
+        const twin = (doc[d._sec === 'new' ? 'returningDraws' : 'newDraws'] || []).find(x => isSameDrawTitle(x.title, d.title));
+        if (twin) return cardFor(doc, key, back, { header: `-# ${emojis.cross} ${to} Draws already has **${twin.title}**, so this one can't move there. Delete one of the two first.` });
+    }
     // "+ Calendar Row" only for someone who may delete /calendar rows; otherwise the whole delete would be refused.
     const rowOk = Boolean(d._row) && kind !== 'move' && await calendarAllowed(userId, [{ type: 'calendar.delete', target: { elementId: String(d._row._id) } }]);
     const q = kind === 'move'

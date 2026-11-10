@@ -269,7 +269,7 @@ function selectView(doc, token, sel, note = null, page = 0) {
         SMALL(),
         { type: 1, components: [{ type: 3, custom_id: ID('flip', token, pg), min_values: 1, max_values: shown.length, placeholder: 'Select or unselect draws…', options: shown.map(k => { const d = byKey.get(k); return { label: d.title.slice(0, 100), value: k, description: `${selected.has(k) ? 'Selected' : 'Not selected'} · ${secWord(d)} · ${stateName(d)}`.slice(0, 100), emoji: emojis.parseEmoji(selected.has(k) ? emojis.check : dot(d)) }; }) }] },
         ...(pages > 1 ? [row(arrow(['slist', token, pg - 1], 'left', pg === 0), counter(['spg', token], `Page ${pg + 1} / ${pages}`), arrow(['slist', token, pg + 1], 'right', pg === pages - 1))] : []),
-        row(btn(['all', token, pg], `Select All ${keys.length}`, emojis.checkmark, 2, n === keys.length), btn(['none', token, pg], 'Clear', emojis.cross, 2, !n)),
+        row(btn(['all', token, pg], keys.length === 1 ? 'Select This One' : `Select All ${keys.length}`, emojis.checkmark, 2, n === keys.length), btn(['none', token, pg], 'Clear', emojis.cross, 2, !n)),
     );
     if (note) components.push(text(note));
     const count = n ? ` ${n}` : '';
