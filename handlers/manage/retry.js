@@ -95,6 +95,11 @@ function specs() {
           rebuild: (id) => { const [, , targetId, drawType] = id.split('_');
                              return m.buildEditDrawModal({ title: '', items: [], date: new Date(), thumbnailUrl: '' }, targetId, drawType); },
           snippet: drawSnippet },
+        // The /manage draws panel's copies of the Add and Edit pop-ups (2026-11-10 11:19 EST): the same fields under `mng_dr|` ids, so Try Again reopens the panel's own pop-up and its submit lands back on the panel. Before this a failed panel Edit had no Try Again at all, and the typed values were lost.
+        { test: (id) => id.startsWith('mng_dr|addm|'),
+          rebuild: (id) => reIdJson(m.buildAddDrawModal(id.split('|')[2] === 'returning' ? 'returning' : 'new'), id), snippet: drawSnippet },
+        { test: (id) => id.startsWith('mng_dr|editm|'),
+          rebuild: (id) => reIdJson(m.buildEditDrawModal({ title: '', items: [], date: new Date(), thumbnailUrl: '' }, 'x', 'new'), id), snippet: drawSnippet },
         { test: (id) => id === 'modal_draws_bulk_add_both' || id === 'modal_draws_bulk_replace_both',
           rebuild: (id) => m.buildBulkBothDrawsModal(id.includes('_replace_') ? 'replace' : 'add'), snippet: drawsBulkSnippet },
 
@@ -113,6 +118,13 @@ function specs() {
         { test: (id) => id.startsWith('modal_loadouts_bulk_add_'),
           rebuild: (id) => m.buildLoadoutsBulkAddModal(id.replace('modal_loadouts_bulk_add_', '')), snippet: passthrough('bulk_text') },
     ];
+}
+
+// A modal under another custom_id, as raw API JSON (the panel's ids above).
+function reIdJson(modal, id) {
+    const json = typeof modal.toJSON === 'function' ? modal.toJSON() : structuredClone(modal);
+    json.custom_id = id;
+    return json;
 }
 
 function specFor(modalCustomId) {

@@ -14,7 +14,7 @@ const {
     thumbnailNote, loadOrCreateSeasonalDoc, registerBulkDelete, extractCommitError, humanCommitError
 } = require('./shared');
 const { failWithRetry } = require('./retry');
-const { drawPanel, resultPanel, notePanel, FAIL_ACCENT } = require('../../utils/managePanels');
+const { drawPanel, resultPanel, notePanel, FAIL_ACCENT, ACCENT } = require('../../utils/managePanels');
 
 // The draw's /calendar row write rides in the draw's own commit, so a draws-only admin (no Calendar tier) had the WHOLE commit refused: they could no longer rename a draw or move its date once it had a row, which they could before #249 (lead review, 2026-11-04 09:26 EST). The row write is checked first and, when refused, dropped with a warning, the way Add and Replace Multiple already treat it. Typing an end still needs the Calendar tier (the lead's call, kept).
 async function gateEndOp(actorId, endOp) {
@@ -24,11 +24,11 @@ async function gateEndOp(actorId, endOp) {
     return { endOp: null, warnings: ['The draw was saved, but its /calendar row (its end date, and its title or start when those changed) was not: that needs the Calendar permission.'] };
 }
 
-// --- SAVE NEW SINGLE DRAW --- custom_id: add_draw_{new|returning}
-async function addDraw(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+// --- SAVE NEW SINGLE DRAW --- custom_id: add_draw_{new|returning} `opts.customId` names the section when the pop-up carried the draws panel's own id, and `opts.quiet` returns the saved draw instead of posting it, so the panel can show it in place (2026-11-10 11:19 EST). Every other caller is unchanged.
+async function addDraw(interaction, opts = {}) {
+    if (!interaction.deferred && !interaction.replied) await interaction.deferReply({ ephemeral: true });
     const { toTitleCase, parseItemLine } = require('../../utils/adminParser');
-    const customId = interaction.customId;
+    const customId = opts.customId || interaction.customId;
     const drawType = customId.replace('add_draw_', '');
 
     // The 5th field is the Draw Type dropdown since 2026-10-18 11:09 EDT (Harkirat's pick, "B sounds fine"); the "Or Paste As One Line" field it replaced lives on as Add Multiple, which takes the same line format and the same `type:` tag.
@@ -80,7 +80,9 @@ async function addDraw(interaction) {
 
     // The saved draw as a panel, beside its picture (2026-10-26 12:52 EDT, the loadout treatment for every /manage page); a missing picture shows on the panel itself, so only a reused or failed upload is a note.
     const notes = [...(thumbResult.url ? [thumbnailNote(thumbResult)] : []), typeNote].filter(Boolean);
-    const sent = await interaction.followUp({ flags: 32768 | 64, components: drawPanel({ draw: { ...newDrawObj, _id: result.results[0].applied.elementId }, category: drawType, changeIds: result.changeIds, notes, warnings, endDate: endOp ? dates.end : (row?.endDate || null) }) });
+    const saved = { ok: true, draw: { ...newDrawObj, _id: result.results[0].applied.elementId }, category: drawType, changeIds: result.changeIds, notes, warnings, endDate: endOp ? dates.end : (row?.endDate || null), titles: [title] };
+    if (opts.quiet) return saved;
+    const sent = await interaction.followUp({ flags: 32768 | 64, components: drawPanel({ draw: saved.draw, category: drawType, changeIds: saved.changeIds, notes, warnings, endDate: saved.endDate }) });
     // Items the draw index has no kind for are asked about, not left blank (handlers/manage/itemKinds.js).
     await require('./itemKinds').askItemKinds(interaction, [title]);
     return sent;
@@ -113,7 +115,14 @@ async function editDraw(interaction, opts = {}) {
         // A New draw's first picture can arrive here rather than in Add Draw: the index gets this season then, if it has never seen the draw.
         const releaseSeason = drawType === 'new' ? require('../../utils/quickAdd').seasonNumber(seasonalDoc.currentSeasonTitle) : null;
         const releaseYear = require('../../utils/quickAdd').seasonYear(seasonalDoc);
-        const thumbResult = await resolveThumbnail(newTitle, rawUrl, { items: parsedItems, priceType: arrayTarget[drawIndex].priceType || '', ...(releaseSeason ? { releaseSeason, ...(releaseYear ? { releaseYear } : {}) } : {}) });
+        // The stored picture is kept as it is when the box still holds it and the title is the same (2026-11-10 11:19 EST): the box is pre-filled with the stored link, so every Edit used to send it through resolveThumbnail again. A blank box still asks the draw index (a picture may have arrived since), and a new link or a new title resolves as before.
+        const storedUrl = arrayTarget[drawIndex].thumbnailUrl || '';
+        // Items edited still go through resolveThumbnail (which no longer uploads the draw's own picture, utils/cloudinaryCache.js isOwnAsset), so the picture's items link follows the new items.
+        const sameItems = parsedItems.map(i => `${i.tier}|${i.name}`).join(';') === (arrayTarget[drawIndex].items || []).map(i => `${i.tier}|${i.name}`).join(';');
+        const keepPicture = Boolean(storedUrl) && String(rawUrl || '').trim() === storedUrl && newTitle === arrayTarget[drawIndex].title && sameItems;
+        const thumbResult = keepPicture
+            ? { url: storedUrl, cached: true, error: null, reused: false, kept: true }
+            : await resolveThumbnail(newTitle, rawUrl, { items: parsedItems, priceType: arrayTarget[drawIndex].priceType || '', ...(releaseSeason ? { releaseSeason, ...(releaseYear ? { releaseYear } : {}) } : {}) });
 
         // Draw Type (2026-10-18 11:06 EDT): the form's dropdown; nothing picked clears it. Sent only when it CHANGED, so an edit that never touches it leaves the stored type, and the op's conflict check, alone. A modal built before this field existed (an old open form) has no dropdown and is read as unchanged.
         let pickedType = null;
@@ -126,6 +135,16 @@ async function editDraw(interaction, opts = {}) {
         const { endOp, warnings } = await gateEndOp(interaction.user.id, planEndRow({
             row, prev: { title: arrayTarget[drawIndex].title, start: arrayTarget[drawIndex].date }, title: newTitle, start: parsedDrawDate, end: dates.end
         }));
+        // Nothing changed, nothing saved (2026-11-10 11:19 EST): an Edit submitted as it was used to write a change row and answer "Updated · Nothing changed".
+        const was = arrayTarget[drawIndex];
+        const itemKey = (list) => (list || []).map(i => `${i.tier}|${i.name}`).join(';');
+        const sameDraw = newTitle === was.title && new Date(parsedDrawDate).getTime() === new Date(was.date).getTime()
+            && itemKey(parsedItems) === itemKey(was.items) && (thumbResult.url || '') === (was.thumbnailUrl || '') && !typeChanged;
+        if (sameDraw && !endOp) {
+            const why = warnings.length ? `Nothing was saved: ${warnings.join(' ')}` : 'Nothing changed, so nothing was saved.';
+            if (opts.quiet) return { ok: true, unchanged: true, note: why };
+            return await interaction.followUp({ flags: 32768 | 64, components: notePanel(`${warnings.length ? BOT_EMOJI.warn : BOT_EMOJI.info} ${why}`, warnings.length ? FAIL_ACCENT : ACCENT.draws) });
+        }
         const result = await commitSet(
             [{ type: 'draw.edit', target: { elementId: targetId, category: drawType },
                payload: { title: newTitle, date: parsedDrawDate, thumbnailUrl: thumbResult.url, items: parsedItems, ...(typeChanged ? { priceType: pickedType } : {}) } },
@@ -140,16 +159,20 @@ async function editDraw(interaction, opts = {}) {
         const before = typeof stored.toObject === 'function' ? stored.toObject() : stored;
         const draw = { _id: targetId, title: newTitle, date: parsedDrawDate, thumbnailUrl: thumbResult.url, items: parsedItems, priceType: typeChanged ? pickedType : storedType };
         const notes = thumbResult.url ? [thumbnailNote(thumbResult)].filter(Boolean) : [];
-        const sent = await interaction.followUp({ flags: 32768 | 64, components: drawPanel({ draw, category: drawType, before, changeIds: result.changeIds, notes, warnings, endDate: endOp ? dates.end : (row?.endDate || null) }) });
+        const endDate = endOp ? (dates.end || null) : (row?.endDate || null);
+        // `opts.quiet`: the saved draw back to the caller instead of a message (the /manage draws panel shows it on the card, 2026-11-10 11:19 EST).
+        if (opts.quiet) return { ok: true, draw, before, category: drawType, changeIds: result.changeIds, notes, warnings, endDate, beforeEnd: row?.endDate || null, endChanged: Boolean(endOp), titles: [newTitle] };
+        const sent = await interaction.followUp({ flags: 32768 | 64, components: drawPanel({ draw, category: drawType, before, changeIds: result.changeIds, notes, warnings, endDate }) });
         await require('./itemKinds').askItemKinds(interaction, [newTitle]);
         return sent;
     }
     // The reply was deferred above, so a draw that is gone by now (deleted or replaced since the search) must still be answered, or the admin sits on "thinking..." until Discord gives up (found 2026-11-04 00:33 EST, /manage audit; the pre-core handler returned silently here and this kept that).
+    if (opts.quiet) return { ok: false, gone: true };
     return await interaction.followUp({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} That draw no longer exists (it may have been deleted or replaced since you opened it), so nothing was saved.`, FAIL_ACCENT) });
 }
 
-// --- BULK ADD/REPLACE BOTH DRAW CATEGORIES AT ONCE --- custom_id: modal_draws_bulk_{add|replace}_both One modal, two independently-optional fields -- only whichever field was actually filled in gets touched. Replace upserts by fuzzy-matched title (update in place, keep _id) rather than wholesale- overwriting the array; Add just appends everything parsed. Both categories commit in ONE changeset (matching the pre-core handler's single seasonalDoc.save() for both). `preset` ({ customId, values: { new_text, returning_text } }) is the /manage draws panel's Save after its preview: the text it previewed, not a pop-up's fields, and the interaction may already be acknowledged (2026-11-07 19:13 EST).
-async function bulkAddOrReplaceDraws(interaction, preset = null) {
+// --- BULK ADD/REPLACE BOTH DRAW CATEGORIES AT ONCE --- custom_id: modal_draws_bulk_{add|replace}_both One modal, two independently-optional fields -- only whichever field was actually filled in gets touched. Replace upserts by fuzzy-matched title (update in place, keep _id) rather than wholesale- overwriting the array; Add just appends everything parsed. Both categories commit in ONE changeset (matching the pre-core handler's single seasonalDoc.save() for both). `preset` ({ customId, values: { new_text, returning_text } }) is the /manage draws panel's Save after its preview: the text it previewed, not a pop-up's fields, and the interaction may already be acknowledged (2026-11-07 19:13 EST). `opts.quiet` returns { ok, sections, warnings, changeIds, titles } instead of posting the result, so the /manage draws panel shows it in place (2026-11-10 11:19 EST).
+async function bulkAddOrReplaceDraws(interaction, preset = null, opts = {}) {
     if (!interaction.deferred && !interaction.replied) await interaction.deferReply({ ephemeral: true });
     const customId = preset ? preset.customId : interaction.customId;
     const mode = customId === 'modal_draws_bulk_add_both' ? 'add' : 'replace';
@@ -159,6 +182,7 @@ async function bulkAddOrReplaceDraws(interaction, preset = null) {
     const returningText = field('returning_text')?.trim();
 
     if (!newText && !returningText) {
+        if (opts.quiet) return { ok: false, error: 'Both fields were left blank, so nothing was changed.' };
         return interaction.followUp({ flags: 32768 | 64, components: notePanel(BOT_EMOJI.cross + ' Both fields were left blank -- nothing was changed.', FAIL_ACCENT) });
     }
 
@@ -169,6 +193,7 @@ async function bulkAddOrReplaceDraws(interaction, preset = null) {
     const result = await commitSet(ops, { actorId: interaction.user.id });
     if (!result.ok) {
         const why = result.failures?.map(f => f.errors.join(' ')).join(' ') || result.error;
+        if (opts.quiet) return { ok: false, error: why };
         return await interaction.followUp({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} ${why}`, FAIL_ACCENT) });
     }
 
@@ -207,6 +232,7 @@ async function bulkAddOrReplaceDraws(interaction, preset = null) {
         // Types the draw index filled in for draws pasted with none (utils/bulkMerge.js fillTypes).
         if (r.applied.typesFilled?.length) sections.push({ head: `${label} · draw type from the draw index`, lines: r.applied.typesFilled.map(t => `- ${t}`) });
     }
+    if (opts.quiet) return { ok: true, mode, sections, warnings, changeIds, titles: pastedTitles(newText, returningText) };
     const sent = await interaction.followUp({ flags: 32768 | 64, components: resultPanel({ page: 'draws', heading: `Bulk ${mode === 'add' ? 'add' : 'replace'} done`, sections, warnings, changeIds }) });
     // Every pasted draw is asked about for items the draw index has no kind for, the same as a single add (handlers/manage/itemKinds.js). The titles come from the pasted text, so Replace's updated draws are covered too.
     await require('./itemKinds').askItemKinds(interaction, pastedTitles(newText, returningText));
@@ -278,14 +304,15 @@ async function bulkDeleteDraws(interaction) {
 async function purgeDraws(scope, actorId) {
     const result = await commitSet([{ type: 'draw.purge', target: { scope } }], { actorId });
     if (!result.ok) {
-        return { confirmMsg: `${BOT_EMOJI.cross} ${extractCommitError(result)}` };
+        return { confirmMsg: `${BOT_EMOJI.cross} ${extractCommitError(result)}`, changeIds: [] };
     }
     const { applied } = result.results[0];
     const removedCounts = [];
     if (scope === 'new' || scope === 'all') removedCounts.push(`${applied.newDraws.length} New`);
     if (scope === 'returning' || scope === 'all') removedCounts.push(`${applied.returningDraws.length} Returning`);
     const confirmMsg = `${BOT_EMOJI.checkmark} Purged ${scope === 'all' ? 'all New and Returning draws' : `all ${scope} draws`} (${removedCounts.join(', ')} removed).`;
-    return { confirmMsg };
+    // changeIds since 2026-11-10 11:19 EST: the draws panel puts a Revert under a purge.
+    return { confirmMsg, changeIds: result.changeIds };
 }
 
 // --- DELETE (draws) --- called from index.js's mng_delconfirm_ dispatch with the resolved match.

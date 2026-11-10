@@ -58,8 +58,26 @@ async function buildDrafts(lines, { zone, now = new Date(), state = null }) {
     if (state?.target === 'draft') state.bpStart = seasonalDoc.bpStart || null;
     const drafts = lines.map(line => applySection(qa.draftFromLine(qa.parseQuickLine(line, { zone, now }), { entries, seasonalDoc, isSameTitle: isSameDrawTitle, zone, now }), state));
     markDuplicates(drafts, isSameDrawTitle);
+    drafts.forEach(d => withExistingEnd(d, seasonalDoc));
     return drafts;
 }
+
+// A draw already listed shows the end it already has when its line gives none (2026-11-10 11:03 EST): the draft read "no end date" for a draw ending Nov 12, as if Save would clear it.
+function withExistingEnd(d, lists) {
+    if (!d?.existing) return d;
+    const r = require('../../utils/drawEndReminder').calendarRowFor(lists, d.existing.title);
+    d.existingEnd = r?.endDate || null;
+    d.existingOngoing = Boolean(r?.isOngoing);
+    d.existingTbd = Boolean(r && !r.endDate && !r.isOngoing);
+    return d;
+}
+
+// The way back from a draft that ends without saving (Cancel, every line removed): the /manage draws home, or the draft's Edit Draws for the draft target, since the draft now replaces the panel it was opened from.
+function backButton(state) {
+    if (state?.target === 'draft') return require('./seasonPanel/views').btn(['dd', state.section === 'r' ? 'r' : 'n', 0], 'Draft Draws', emojis.newDraws, 1);
+    return { type: 2, style: 2, label: 'Draws Home', custom_id: 'mng_dr|page', emoji: emojis.parseEmoji(emojis.returnArrow) };
+}
+const endPanel = (text, state, accent = ACCENT.draws) => [{ type: 17, accent_color: accent, components: [{ type: 10, content: text }, { type: 1, components: [backButton(state)] }] }];
 
 // What Save writes: not a second line for the same draw, not a row still waiting for a pick, and not an already-listed draw the line changes nothing on.
 const willWrite = d => d.duplicateOf === null && !d.needsPick && (!d.existing || d.end || d.startGiven);
@@ -81,7 +99,8 @@ function draftLines(d, i, state = null) {
     const { drawTypeName } = require('../../utils/drawTypes');
     const kind = drawTypeName(d.priceType || '');
     const head = d.needsPick ? `**${i + 1}. Pick a draw**` : `**${i + 1}. ${d.title}**\n-# ${d.category === 'new' ? 'New' : 'Returning'} draw${kind ? ` · ${kind}` : ''}`;
-    const when = `> ${d.existing && !d.startGiven ? 'Started' : 'Starts'} ${stamp(d.start)} · ${d.end ? `ends ${stamp(d.end)}` : 'no end date'}`;
+    const endText = d.end ? `ends ${stamp(d.end)}` : d.existingOngoing ? 'ends with the season (already set)' : d.existingEnd ? `ends ${stamp(d.existingEnd)} (already set)` : d.existingTbd ? 'end TBD (already set)' : 'no end date';
+    const when = `> ${d.existing && !d.startGiven ? 'Started' : 'Starts'} ${stamp(d.start)} · ${endText}`;
     const shown = (d.items || []).filter(it => it.tier !== 'comment');
     // The picture as a link (2026-11-10, his ask for pictures in the preview): a thumbnail would take the row's one accessory, which Edit or Pick needs, and a gallery per row costs two of the 40 components.
     const pic = d.imageUrl && /^https?:\/\//.test(d.imageUrl) ? ` · [Picture](${d.imageUrl})` : d.existing ? '' : ' · no picture';
@@ -107,10 +126,10 @@ function draftPanel(token, state) {
     const writes = drafts.filter(willWrite).length;
     // Pick while the match is a guess (or there is none yet), Edit once it is settled. Add details for a draw the index doesn't know: the same Edit box, which asks for items and a picture like Add Draw (his ask, 2026-11-01 12:41 EDT).
     const accessory = (d, i) => d.candidates?.length && !d.edited
-        ? { type: 2, style: 1, label: 'Pick', custom_id: `mng_qa_pick_${token}_${i}` }
+        ? { type: 2, style: 1, label: 'Pick', emoji: emojis.parseEmoji(emojis.search), custom_id: `mng_qa_pick_${token}_${i}` }
         : !d.matchedBy && !d.existing && !d.edited
             ? { type: 2, style: 1, label: 'Add Details', emoji: emojis.parseEmoji(emojis.mngAdd), custom_id: `mng_qa_edit_${token}_${i}` }
-            : { type: 2, style: 2, label: 'Edit', emoji: emojis.parseEmoji(emojis.mngEdit), custom_id: `mng_qa_edit_${token}_${i}` };
+            : { type: 2, style: 2, label: 'Edit', emoji: emojis.parseEmoji(emojis.edit), custom_id: `mng_qa_edit_${token}_${i}` };
     const components = [
         { type: 10, content: [`### ${emojis.mngAdd} Quick Add${draft ? ' · Next Season Draft' : ''} · ${drafts.length} draw${drafts.length === 1 ? '' : 's'}`,
             draft ? `-# Check each one and Edit what's wrong. Stage puts them in the draft; players see nothing until Promote to Live.` : `-# Check each one and Edit what's wrong. Nothing is saved until Save.`,
@@ -133,14 +152,15 @@ function draftPanel(token, state) {
     return [{ type: 17, accent_color: ACCENT.draws, components }];
 }
 
-const expiredPanel = () => notePanel(`${BOT_EMOJI.cross} This draft has expired (drafts last 30 minutes, and a restart clears them). Open Quick Add again.`, FAIL_ACCENT);
+const expiredPanel = () => endPanel(`${BOT_EMOJI.cross} This draft has expired (drafts last 30 minutes, and a restart clears them). Open Quick Add again.`, null, FAIL_ACCENT);
 
 // ==========================================
 // HANDLERS
 // ==========================================
 // modal_draws_quickadd
 async function submitQuickAdd(interaction, { target = 'live', section = null } = {}) {
-    await interaction.deferReply({ ephemeral: true });
+    // In place when opened from a panel (2026-11-10 11:03 EST): the draft replaces the /manage draws home (or the draft's Edit Draws) it was opened from, as every other panel step does, instead of a second message under a home that has gone stale. From the slash command there is no message, so it is a new one.
+    await (interaction.message ? interaction.deferUpdate() : interaction.deferReply({ ephemeral: true }));
     const { lines, extra } = qa.parseQuickText(interaction.fields.getTextInputValue('lines'));
     if (!lines.length) return interaction.followUp({ flags: 32768 | 64, components: notePanel(`${BOT_EMOJI.cross} The box was empty. Nothing to add.`, FAIL_ACCENT) });
     const zone = qa.TIME_ZONE;
@@ -150,7 +170,7 @@ async function submitQuickAdd(interaction, { target = 'live', section = null } =
     const token = randomBytes(4).toString('hex');
     const state = { ...base, drafts, at: Date.now() }; // base carries bpStart now, set by buildDrafts
     DRAFTS.set(token, state);
-    return interaction.followUp({ flags: 32768 | 64, components: draftPanel(token, state) });
+    return sendV2Payload(interaction, draftPanel(token, state));
 }
 
 // The When box's text for a draft: what was read, in a form the reader reads back the same way.
@@ -182,7 +202,7 @@ async function handleButton(interaction) {
         state.drafts = state.drafts.filter((_, i) => !drop.has(i));
         if (!state.drafts.length) {
             DRAFTS.delete(token);
-            return sendV2Payload(interaction, notePanel(`Every line was removed. Nothing was ${state.target === 'draft' ? 'staged' : 'saved'}.`, ACCENT.draws));
+            return sendV2Payload(interaction, endPanel(`Every line was removed. Nothing was ${state.target === 'draft' ? 'staged' : 'saved'}.`, state));
         }
         markDuplicates(state.drafts, require('../../utils/search').isSameDrawTitle);
         state.at = Date.now();
@@ -197,7 +217,7 @@ async function handleButton(interaction) {
     }
     if (verb === 'cancel') {
         DRAFTS.delete(token);
-        return sendV2Payload(interaction, notePanel(`Quick Add cancelled. Nothing was ${state.target === 'draft' ? 'staged' : 'saved'}.`, ACCENT.draws));
+        return sendV2Payload(interaction, endPanel(`Quick Add cancelled. Nothing was ${state.target === 'draft' ? 'staged' : 'saved'}.`, state));
     }
     if (verb === 'edit') {
         const i = Number(index);
@@ -282,6 +302,7 @@ async function submitEdit(interaction) {
         categoryGiven: Boolean(parsed.category) || Boolean(before.categoryGiven)
     };
     applySection(state.drafts[i], state);
+    withExistingEnd(state.drafts[i], seasonalDoc);
     markDuplicates(state.drafts, isSameDrawTitle);
     state.at = Date.now();
     return sendV2Payload(interaction, draftPanel(token, state));
@@ -324,6 +345,7 @@ async function submitPick(interaction) {
     // The section the row already had stays (a pick changes the draw, not the tab).
     state.drafts[i] = qa.draftFromLine({ ...parsed, category: before.categoryGiven ? before.category : null }, { entries, seasonalDoc, isSameTitle: isSameDrawTitle, zone: state.zone, pick: entry || qa.TYPED });
     applySection(state.drafts[i], state);
+    withExistingEnd(state.drafts[i], seasonalDoc);
     markDuplicates(state.drafts, isSameDrawTitle);
     state.at = Date.now();
     return sendV2Payload(interaction, draftPanel(token, state));
@@ -397,7 +419,9 @@ async function save(interaction, token, state) {
     const sections = [
         { head: `Added to /draws (${added.length})`, lines: added.map(d => `- ${d.title} · ${d.category === 'new' ? 'New' : 'Returning'} · starts ${stamp(d.start)}${d.end ? `, ends ${stamp(d.end)}` : ''}`) },
         { head: `Updated (${updated.length})`, lines: updated.map(d => `- ${d.existing.title}${d.startGiven ? ` · starts ${stamp(d.start)}` : ''}${d.end ? ` · ends ${stamp(d.end)}` : ''}`) },
-        { head: 'Draw type from the draw index', lines: typesFilled.map(t => `- ${t}`) }
+        { head: 'Draw type from the draw index', lines: typesFilled.map(t => `- ${t}`) },
+        // A new draw saved without a picture, items or a draw type is on /manage draws' Needs a Look now (2026-11-10 11:03 EST); the result says so, and its card is one pick away below.
+        { head: `${emojis.warn} Needs a look`, lines: ops.filter(o => o.type === 'draw.add').map(o => ({ t: o.payload.title, g: require('../../utils/drawChecks').gapsOf(o.payload) })).filter(x => x.g.length).map(x => `- ${x.t} · ${x.g.join(', ')}`) }
     ];
     const ends = todo.filter(d => d.end).length;
     const panel = resultPanel({ page: 'draws', heading: 'Quick Add saved', summary: ends ? `-# ${ends} end date${ends === 1 ? '' : 's'} on /calendar too.` : null, sections });

@@ -113,9 +113,15 @@ t('an empty index warns instead of reporting every line not indexed silently', (
     const all = walk(V.checkView(C.checkIndex([], 'anything', ctx)));
     assert.ok(all.some(c => c.type === 10 && /draw index is empty/.test(c.content)));
 });
-t('the pop-up is one paragraph box', () => {
+t('the pop-up is one labelled paragraph box, filled again by Check Again (2026-11-10 11:05 EST)', () => {
     const m = V.checkModal();
-    assert.match(m.custom_id, /checkm/); assert.strictEqual(m.components[0].components[0].style, 2);
+    assert.match(m.custom_id, /checkm/); assert.strictEqual(m.components[0].type, 18); assert.strictEqual(m.components[0].component.style, 2);
+    assert.strictEqual(V.checkModal('herrscher\ncx9', 'tok1').components[0].component.value, 'herrscher\ncx9');
+});
+t('with a token the result offers Quick Add These for the lines it found', () => {
+    const out = C.checkIndex(INDEX, ['Lethal Hollow Draw', 'herrscher of reason'].join('\n'), ctx);
+    const labels = walk(V.checkView(out, 'tok1', 2)).filter(c => c.type === 2).map(b => b.label);
+    assert.deepStrictEqual(labels, ['Check Again', 'Quick Add These 2', 'Home']);
 });
 t('Home carries the Check Draw Index button', () => {
     const src = require('fs').readFileSync(require.resolve('../handlers/manage/drawsPanel/views'), 'utf8');
