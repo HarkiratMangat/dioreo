@@ -44,7 +44,8 @@ const rows = [
     ['dior draws o', { kind: 'run', command: 'draws', values: {} }],   // a stray key is still forgiven
     [`${M} draws pls`, { kind: 'run', command: 'draws', values: {} }],  // the spec's own row: trailing text ignored
     ['d draws pls', { kind: 'run', command: 'draws', values: {} }],    // B6: one more word is ignored after d (his rule, 2026-10-29 14:29 EDT)
-    ['d draws pls now', { kind: null }],
+    // Since 2026-11-10 the words after `d draws` are a draw's name, looked up by bot/textCommands.js resolveRun, which keeps two words that name no draw silent (scripts/textCommandListener.test.js).
+    ['d draws pls now', { kind: 'run', command: 'draws', values: {}, autocomplete: [{ option: 'draw', text: 'pls now' }] }],
     // /draws' status filter (2026-11-01), alone and beside a section.
     ['d draws live', { kind: 'run', command: 'draws', values: { filter: 'live' } }],
     ['d draws leaving soon', { kind: 'run', command: 'draws', values: { filter: 'leaving' } }],

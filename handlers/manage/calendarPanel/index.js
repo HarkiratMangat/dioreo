@@ -216,6 +216,17 @@ async function route(interaction) {
     if (verb === 'guide') return runGuide(interaction);
     if (verb === 'add') return (await gate(interaction, 'add')) && interaction.showModal(m.buildCalendarAddModal());
     if (verb === 'banners') return (await gate(interaction, 'banners')) && interaction.showModal(m.buildCalendarBannersModal(await getDoc()));
+    // Add the Draw on a draw row that has none on /draws (the /manage audit's finding 11): /manage draws' own Quick Add, filled with the row's title and dates, gated as that button is.
+    if (verb === 'qadraw') {
+        const { resolveAction, DENIAL_MESSAGE } = require('../../../utils/manageActions');
+        const g = await resolveAction('draws', 'quickadd', interaction.user.id);
+        if (!g.ok) { require('../../../utils/eventStore').markOutcome('rejected_admin'); return say(interaction, g.message || DENIAL_MESSAGE[g.reason] || `${emojis.accessDenied} You do not have access to that.`); }
+        const e = ((await getDoc())?.calendar || []).find(x => `c:${x._id}` === a);
+        if (!e) return show(interaction, await home(await getDoc(), `${emojis.cross} That entry no longer exists.`, interaction));
+        const day = (x) => { const iso = new Date(x).toISOString(); return iso.slice(11, 16) === '00:00' ? iso.slice(0, 10) : `${iso.slice(0, 10)} ${iso.slice(11, 16)} UTC`; };
+        const line = [e.title, e.date ? `starts ${day(e.date)}` : null, e.endDate ? `ends ${day(e.endDate)}` : null].filter(Boolean).join(', ');
+        return interaction.showModal(m.buildQuickAddModal({ value: line }));
+    }
     if (verb === 'paste') {
         if (!(await gate(interaction, 'replacemultiple'))) return;
         const last = a ? await loadSel(a) : null;

@@ -37,11 +37,11 @@ function editModal(state) {
             { type: 18, label: 'Date and time', description: 'e.g. tomorrow 8pm, sun 4:30pm, nov 5 19:30', component: { type: 4, custom_id: 'when', style: 1, required: true, max_length: 100, ...(state.queryInput ? { value: String(state.queryInput).slice(0, 100) } : {}) } },
             { type: 18, label: 'Timezone', description: 'Common timezones', component: { type: 3, custom_id: 'zone', required: false, placeholder: 'Pick a timezone…', options: zones.map(o => ({ ...o, default: o.value === state.tz })) } },
             { type: 18, label: 'Or type a timezone', description: 'A city, country or abbreviation; wins over the pick', component: { type: 4, custom_id: 'zonequery', style: 1, required: false, max_length: 60, placeholder: 'Toronto, London, Tokyo, PST…' } },
-            { type: 18, label: 'View', component: { type: 3, custom_id: 'view', required: true, options: [
+            { type: 18, label: 'View', component: require('../utils/formChoice').asChoice({ type: 3, custom_id: 'view', required: true, options: [
                 { label: 'Embed', value: 'embed', description: 'The styled panel', default: !state.isTextMode },
                 { label: 'Text', value: 'text', description: 'Plain and copyable', default: state.isTextMode },
-            ] } },
-            { type: 18, label: 'Format', component: { type: 3, custom_id: 'style', required: true, options: STYLE_SELECT_OPTIONS.map(o => ({ ...o, default: o.value === style })) } },
+            ] }) },
+            { type: 18, label: 'Format', component: require('../utils/formChoice').asChoice({ type: 3, custom_id: 'style', required: true, options: STYLE_SELECT_OPTIONS.map(o => ({ ...o, default: o.value === style })) }) },
         ],
     };
 }

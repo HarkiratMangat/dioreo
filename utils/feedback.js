@@ -20,7 +20,7 @@ function feedbackModal() {
     return {
         title: 'Bugs & Suggestions', custom_id: FEEDBACK_MODAL_ID,
         components: [
-            label('What is it?', null, { type: 3, custom_id: 'kind', required: true, min_values: 1, max_values: 1, options: KINDS.map(k => ({ label: k.label, value: k.value })) }),
+            label('What is it?', null, require('../utils/formChoice').asChoice({ type: 3, custom_id: 'kind', required: true, min_values: 1, max_values: 1, options: KINDS.map(k => ({ label: k.label, value: k.value })) })),
             label('Tell us', 'What happened, what you expected, or what you would like to see', { type: 4, custom_id: 'message', style: 2, required: true, min_length: 5, max_length: 2000 }),
             label('Screenshot', 'Optional', { type: 19, custom_id: 'shot', min_values: 0, max_values: 1, required: false }),
         ],
@@ -65,7 +65,7 @@ async function handleFeedbackSave(interaction) {
         }
         await interaction.deferReply({ flags: 64 });
         let kind = 'feedback', message = '';
-        try { kind = interaction.fields.getStringSelectValues('kind')[0] || kind; } catch { /* keeps the default */ }
+        try { kind = require('../utils/formChoice').readChoice(interaction, 'kind')[0] || kind; } catch { /* keeps the default */ }
         try { message = (interaction.fields.getTextInputValue('message') || '').trim(); } catch { message = ''; }
         const shot = await fileFrom(interaction, 'shot');
         try {

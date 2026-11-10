@@ -524,15 +524,16 @@ check('the handler owns news| and nothing else', async () => {
         assert.ok(HB.setKinds.indexOf('resolveAction(') > -1 && HB.setKinds.indexOf('resolveAction(') < HB.setKinds.indexOf('updateOne('), 'the draft tier before the kinds are saved');
         assert.ok(/actorId: interaction\.user\.id/.test(HB.makeCard) && /actorId: interaction\.user\.id/.test(HB.undoDraft), 'a card made, or an Undo pressed, is checked as the clicker');
     });
-    check('the briefing and the promote check name undated rows and a /manage box near its 4,000 characters', () => {
+    // The near-full /manage box warning is retired (2026-11-09): the draft boxes open empty and add or update, so a full box no longer exists.
+    check('the briefing and the promote check name undated rows, and no longer warn about a full /manage box', () => {
         const url = 'https://res.cloudinary.com/dioreo/image/upload/f_auto,q_auto/draws/a-long-draw-image-name-for-the-test.png';
         const draws = Array.from({ length: 18 }, (_, i) => ({ title: `Returning Draw Number ${String.fromCharCode(65 + i)}`, date: D('2026-11-12'), thumbnailUrl: url, items: [{ tier: 'mythic', name: 'A Mythic Weapon Blueprint' }, { tier: 'legendary', name: 'A Legendary Operator Skin' }] }));
         const d = { bpEnd: D('2026-11-12'), draft: { active: true, bpStart: D('2026-11-12'), currentSeasonTitle: 'Season 10 — Test', returningDraws: draws, calendar: [{ title: 'Grim Duo Draw', category: 'draw', date: D('2026-11-12'), newsSource: { rank: 2, dated: false } }] } };
         const rd = pipe.draftReadiness(d);
         assert.deepStrictEqual(rd.undated, ['Grim Duo Draw']);
-        assert.ok(rd.fullBoxes.length === 1 && /^returning draws \(/.test(rd.fullBoxes[0]), JSON.stringify(rd.fullBoxes));
+        assert.strictEqual(rd.fullBoxes, undefined, 'the draft boxes no longer hold the whole list');
         const text = JSON.stringify(require('../utils/newsTriage/card').buildPromoteCheck(rd));
-        assert.ok(/No post ever dated these/.test(text) && /Nearly full in \/manage/.test(text));
+        assert.ok(/No post ever dated these/.test(text) && !/Nearly full in \/manage/.test(text));
     });
     // ---- the fresh review R1 (2026-11-05 20:16 EST): a check per finding fixed ----
     const DM = require('../utils/newsTriage/draftMerge');

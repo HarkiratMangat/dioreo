@@ -184,6 +184,7 @@ async function openFromSlash(interaction) {
     if (act === 'addnew' || act === 'addreturning') return (await gate(interaction, act)) && interaction.showModal(m.buildAddDrawModal(act === 'addnew' ? 'new' : 'returning'));
     if (act === 'paste') return (await gate(interaction, 'bulkadd')) && interaction.showModal(reId(m.buildBulkBothDrawsModal('add'), V.ID('pastem'), 'Paste Draws'));
     if (act === 'export') return (await gate(interaction, 'exportnew')) && interaction.showModal(V.exportModal());
+    if (act === 'check') return (await gate(interaction, 'exportnew')) && interaction.showModal(V.checkModal());
     if (act === 'guide') return runGuide(interaction);
     const doc = await getDoc();
     if (drawValue) {
@@ -264,7 +265,8 @@ async function route(interaction) {
     }
     if (verb === 'card') {
         const doc = await getDoc();
-        return show(interaction, V.cardView(doc, a) || await home(doc, `${emojis.cross} That draw no longer exists.`, interaction));
+        // `b` is the list Prev / Next walk (the card's own arrows); a card opened from elsewhere walks its section.
+        return show(interaction, V.cardView(doc, a, { back: b }) || await home(doc, `${emojis.cross} That draw no longer exists.`, interaction));
     }
 
     // ----- one draw -----

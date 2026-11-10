@@ -25,17 +25,18 @@ const uiSource = fs.readdirSync(path.join(ROOT, 'portal', 'ui'))
 // 🔴 AN ENTRY HERE IS A CLAIM THAT GETS CHECKED, not a suppression. Each names the property that makes a portal button wrong, and the two checks below verify that property against core/ops itself — so an op that gains a /manage action, or an "inverse-only" op that turns out to have no inverting producer, fails rather than sitting quietly on this list forever.
 const NO_SURFACE = {
     // ── Inverse-only: produced by another op's invert() and by nothing else. A button for one of these would let somebody restore a thing nobody removed.
-    'patchnote.removeSeason': { why: 'inverse-only — patchnote.addSeason inverts to it', inverseOnly: true },
+    'patchnote.removeSeason': { why: 'patchnote.addSeason inverts to it; since 2026-11-09 also /manage patch-notes\' Delete Season, from Discord only (the portal is paused)', inverseOnly: true },
     'patchnote.restoreSeason': { why: 'inverse-only — patchnote.removeSeason inverts to it', inverseOnly: true },
     'patchnote.restore': { why: 'inverse-only — patchnote.purge inverts to it', inverseOnly: true },
     'season.restoreSnapshot': { why: 'inverse-only — season.promoteDraft inverts to it', inverseOnly: true },
     'season.restoreDraft': { why: 'inverse-only — season.discardDraft inverts to it', inverseOnly: true },
     // ── Discord-only for now (2026-11-08): armed from /manage's Promote pop-up, which the portal has no counterpart of yet; the portal's own Promote still promotes at once.
+    'season.setDraftBanners': { why: 'the Next Season Draft\'s three /calendar banners, set from /manage season draft\'s Banners pop-up (2026-11-09); the portal\'s draft has no banner field yet (the portal is paused)' },
     'season.setAutoPromote': { why: 'armed from /manage season\'s Promote pop-up only; a portal Auto-promote would be its own design' },
     'season.newsDraft': { why: 'written only by news triage (utils/newsTriage/pipeline.js), never staged by the portal; its own inverse', inverseOnly: true },
     'catalogue.forget': { why: 'inverse-only — catalogue.learn inverts to it', inverseOnly: true },
     // ── Bot-side for now: the CODM catalogue learns a name only alongside a loadout save that met it (/manage Save Anyway, /autobuild Confirm), in the same changeset. The portal sends it once pins2 ports the catalogue warning to the Armory (local/project/proposals in the bot project).
-    'patchnote.setSeasonDates': { why: 'a past season\'s own dates, set once by scripts/setSeasonDates.js for seasons that rotated before Promote to Live saved them (2026-10-28); no editor anywhere yet' },
+    'patchnote.setSeasonDates': { why: 'a past season\'s own dates, set by scripts/setSeasonDates.js (2026-10-28) and, since 2026-11-09, /manage patch-notes\' Season Dates pop-up; no portal editor yet (the portal is paused)' },
     'loadout.credit': { why: 'a build\'s credit is set from Discord (/manage\'s Credit button, /autobuild); the portal Armory has no credit field yet (a pins2 proposal)' },
     'loadout.options': { why: 'a merged build\'s options (1, 1b, 1c) are edited from Discord (/manage Edit, Add option, Delete); the portal Armory does not read variants yet (a pins2 proposal, merged-builds-editor/proposals/pins2-portal-armory-options.md)' },
     'catalogue.learn': { why: 'rides in a loadout save\'s changeset from Discord; the portal Armory has no catalogue warning yet (pins2 Session 5)' },

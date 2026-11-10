@@ -19,14 +19,14 @@ async function addCalendarEvent(interaction) {
     const reminder = require('../../utils/drawEndReminder');
     const fromReminder = reminder.isReminderMessage(interaction.message);
     if (fromReminder) await interaction.deferUpdate(); else await interaction.deferReply({ ephemeral: true });
-    const { parseAdminDate, normalizeCalendarCategory } = require('../../utils/adminParser');
+    const { parseAdminDate, parseAdminEndDate, normalizeCalendarCategory } = require('../../utils/adminParser');
     const title = interaction.fields.getTextInputValue('title').trim();
     const startDateStr = interaction.fields.getTextInputValue('start_date');
     const startDate = parseAdminDate(startDateStr);
     if (!startDate) return await failWithRetry(interaction, `Start date "${startDateStr}" wasn't understood -- nothing was saved.`);
     const endDateStr = interaction.fields.getTextInputValue('end_date')?.trim();
     const isOngoing = !endDateStr;
-    const endDate = isOngoing ? null : parseAdminDate(endDateStr);
+    const endDate = isOngoing ? null : parseAdminEndDate(endDateStr);
     if (!isOngoing && !endDate) return await failWithRetry(interaction, `End date "${endDateStr}" wasn't understood -- nothing was saved.`);
     const category = normalizeCalendarCategory(interaction.fields.getTextInputValue('category'), title);
     // Lenient Y/N parse (added for /draw calculator's 2X detection) -- blank or anything not starting with "y" is No, matching the modal's own "blank = No" placeholder.
@@ -51,7 +51,7 @@ async function editCalendarEvent(interaction, opts = null) {
     const reminder = require('../../utils/drawEndReminder');
     const fromReminder = reminder.isReminderMessage(interaction.message);
     if (!interaction.deferred && !interaction.replied) { if (fromReminder) await interaction.deferUpdate(); else await interaction.deferReply({ ephemeral: true }); }
-    const { parseAdminDate, normalizeCalendarCategory } = require('../../utils/adminParser');
+    const { parseAdminDate, parseAdminEndDate, normalizeCalendarCategory } = require('../../utils/adminParser');
     const targetId = (opts?.customId ?? interaction.customId).replace('edit_calendar_', '');
 
     // Existence pre-check kept exactly as before the refactor -- calendar.edit's op would also report this as `reason: 'missing'`, but the pre-core handler simply returned with no reply at all when the id wasn't found (a stale search result), and this preserves that exact silent behaviour rather than introducing a new error reply where none existed.
@@ -64,7 +64,7 @@ async function editCalendarEvent(interaction, opts = null) {
         if (!parsedStart) return await failWithRetry(interaction, `Start date "${startDateStr}" wasn't understood -- nothing was saved.`);
         const endDateStr = interaction.fields.getTextInputValue('end_date')?.trim();
         const isOngoing = !endDateStr;
-        const parsedEnd = isOngoing ? null : parseAdminDate(endDateStr);
+        const parsedEnd = isOngoing ? null : parseAdminEndDate(endDateStr);
         if (!isOngoing && !parsedEnd) return await failWithRetry(interaction, `End date "${endDateStr}" wasn't understood -- nothing was saved.`);
 
         const title = interaction.fields.getTextInputValue('title').trim();

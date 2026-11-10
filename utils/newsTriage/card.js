@@ -62,7 +62,7 @@ function dateLine(item) {
 // card: { _id, sourceName, jumpUrl, postedAt, items, dismissed, notes }
 function buildCard(card) {
     const id = String(card._id);
-    const head = `### ${emojis.mngInfo} From #${card.sourceName || 'news'}\n-# Posted <t:${ts(card.postedAt)}:R>`;
+    const head = `### ${emojis.news} From #${card.sourceName || 'news'}\n-# Posted <t:${ts(card.postedAt)}:R>`;
     const parts = [{ type: 10, content: head }, { type: 14, spacing: 1, divider: true }];
     // What news triage wrote into the Next Season Draft for this post, with Undo below (2026-11-04 23:59 EST).
     if ((card.draftLines || []).length || (card.draftNotes || []).length) {
@@ -102,7 +102,7 @@ function buildSkippedList(entries, { dayLabel = 'the last day' } = {}) {
     const lines = shown.map(e => `- [${(e.title || 'Untitled post').replace(/[[\]]/g, '').slice(0, 80)}](${e.jumpUrl}) · ${e.reason}`);
     const more = entries.length > shown.length ? `\n-# +${entries.length - shown.length} more` : '';
     const parts = [
-        { type: 10, content: `### ${emojis.mngInfo} Skipped in ${dayLabel}\n-# ${entries.length} post${entries.length === 1 ? '' : 's'} got no card` },
+        { type: 10, content: `### ${emojis.news} Skipped in ${dayLabel}\n-# ${entries.length} post${entries.length === 1 ? '' : 's'} got no card` },
         { type: 14, spacing: 1, divider: true },
         { type: 10, content: (lines.join('\n') + more).slice(0, 3500) || '-# Nothing skipped.' },
     ];
@@ -117,7 +117,7 @@ function buildBriefing(b, { dayLabel } = {}) {
     const ok = emojis.checkmark; const warn = emojis.warn;
     const s = b.stats || {};
     const label = dayLabel || (b.since ? `Since <t:${Math.floor(new Date(b.since).getTime() / 1000)}:R>` : 'Since the last briefing');
-    const parts = [{ type: 10, content: `### ${emojis.mngInfo} News briefing\n-# ${label}: ${s.reads || 0} post${s.reads === 1 ? '' : 's'} read by the AI ($${(s.costUsd || 0).toFixed(3)}) · ${s.carded || 0} card${s.carded === 1 ? '' : 's'} · ${s.drafted || 0} draft row${s.drafted === 1 ? '' : 's'} written${s.failures ? ` · ${warn} ${s.failures} failed read${s.failures === 1 ? '' : 's'}` : ''}` }];
+    const parts = [{ type: 10, content: `### ${emojis.news} News briefing\n-# ${label}: ${s.reads || 0} post${s.reads === 1 ? '' : 's'} read by the AI ($${(s.costUsd || 0).toFixed(3)}) · ${s.carded || 0} card${s.carded === 1 ? '' : 's'} · ${s.drafted || 0} draft row${s.drafted === 1 ? '' : 's'} written${s.failures ? ` · ${warn} ${s.failures} failed read${s.failures === 1 ? '' : 's'}` : ''}` }];
     const r = b.readiness;
     if (r) {
         const mark = (v, label) => `${v ? ok : warn} ${label}`;
@@ -129,7 +129,6 @@ function buildBriefing(b, { dayLabel } = {}) {
         if (r.noEnd.length) lines.push(`- ${warn} No end date: ${listNames(r.noEnd)}`);
         if (r.leakOnly.length) lines.push(`- Expected, not confirmed yet: ${listNames(r.leakOnly)}`);
         if ((r.undated || []).length) lines.push(`- ${warn} No post has dated these yet (they sit on the season start): ${listNames(r.undated)}`);
-        if ((r.fullBoxes || []).length) lines.push(`- ${warn} Nearly full in /manage, whose box holds 4,000 characters: ${r.fullBoxes.join(' · ')}`);
         if ((r.stillRunning || []).length) lines.push(`- ${warn} Live with no end date, may run into next season: ${listNames(r.stillRunning)}`);
         parts.push({ type: 14, spacing: 1, divider: true }, { type: 10, content: lines.join('\n').slice(0, 1400) });
     }
@@ -178,12 +177,11 @@ function buildPromoteCheck(r) {
     if (r.seamGap) bad.push(`The seasons do not meet: ${r.seamGap}`);
     if (r.leakOnly.length) bad.push(`Expected, not confirmed yet: ${listNames(r.leakOnly)}`);
     if ((r.undated || []).length) bad.push(`No post ever dated these; they will show as starting on day one: ${listNames(r.undated)}`);
-    if ((r.fullBoxes || []).length) bad.push(`Nearly full in /manage (its box holds 4,000 characters): ${r.fullBoxes.join(' · ')}`);
     if ((r.stillRunning || []).length) bad.push(`Live with no end date, may run into this season: ${listNames(r.stillRunning)}`);
     const when = r.startsAt ? `<t:${Math.floor(new Date(r.startsAt).getTime() / 1000)}:R>` : 'soon';
     // With auto-promote set (2026-11-08 12:52 EST) the last step is already scheduled, so the card says so instead of asking him to promote by hand.
     const step = r.autoPromote ? `-# Auto-promote is set: the draft goes live ${when}. Cancel it in /manage → Next Season Draft.` : `-# Check, then Promote to Live from /manage → Next Season Draft once it starts.`;
-    const lines = [`### ${emojis.mngInfo} Next season starts ${when}`, step, '',
+    const lines = [`### ${emojis.news} Next season starts ${when}`, step, '',
         ...good.map(g => `${ok} ${g}`), ...bad.map(x => `${warn} ${x}`), '', bad.length ? `**${bad.length} thing${bad.length === 1 ? '' : 's'} to look at before promoting.**` : '**Everything checked is ready.**'];
     return fitText([{ type: 17, accent_color: ACCENT, components: [{ type: 10, content: lines.join('\n') }] }]);
 }

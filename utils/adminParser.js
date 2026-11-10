@@ -70,6 +70,11 @@ function parseAdminDate(dateStr) {
 // A season line's date part as a RANGE ("Aug 6 - Nov 17", "August 6, 2026 to November 17, 2026"), each end normalised like parseAdminDate. A start with "TBD" as its end ("Aug 6 - TBD") gives endTBD. Null when the text is not a range that covers the whole string (2026-10-21 10:17 EDT, the season progress bar's start dates). "July 15-August 20", "Aug 6-Nov 17", "7/15-8/20": a range typed with no spaces round its dash. chrono reads "15-August 20" as ONE date (2020-08-15) and drops the start, so the range was lost and a wrong date saved without a word (found 2026-11-04 09:25 EST, lead review of #249; the draw forms' "Start - End" label invites exactly this). The dash is spaced when a letter touches it or it sits between two slash dates; an ISO date's own dashes (2026-09-10) touch only digits and are left alone.
 const spaceRangeDash = (s) => s.replace(/\s*[–—]\s*/g, ' - ').replace(/\s*-\s*(?=[A-Za-z])|(?<=[A-Za-z.])\s*-\s*/g, ' - ').replace(/(?<=\d\/\d{1,2})-(?=\d{1,2}\/)/g, ' - ');
 
+// An END date box: the game's countdown ("13d 23h", 2026-11-10) is the midnight UTC it ends at, counted from when it is typed (utils/countdown.js); anything else reads as parseAdminDate. Only end boxes call this: a countdown typed as a START stays unreadable (null), as it always was, because a start is never snapped to midnight (draws and seasons start at a set hour). The snap first sat inside parseAdminDate and so reached every start box too (announcement start, calendar start), found by the 2026-11-10 think pass before it shipped.
+function parseAdminEndDate(dateStr, now = new Date()) {
+    const counted = require('./countdown').snapCountdown(String(dateStr || '').trim(), now);
+    return counted || parseAdminDate(String(dateStr || ''));
+}
 function parseAdminDateRange(dateStr) {
     const cleanStr = String(dateStr || '').trim();
     if (!cleanStr) return null;
@@ -85,6 +90,13 @@ function readAdminDateRange(cleanStr) {
     if (tbd) {
         const start = parseAdminDate(tbd[1]);
         return start ? { start, end: null, endTBD: true } : null;
+    }
+    // "Nov 10 - 13d 23h": the end as the game's countdown (2026-11-10, utils/countdown.js).
+    const counted = cleanStr.match(/^(.*?)\s+(?:-|–|—|to)\s+(.+)$/i);
+    if (counted && require('./countdown').parseCountdown(counted[2])) {
+        const start = parseAdminDate(counted[1]);
+        const end = require('./countdown').snapCountdown(counted[2]);
+        return start && end ? { start, end, endTBD: false } : null;
     }
     const r = chrono.parse(cleanStr, new Date(), { timezone: 0 })[0];
     if (!r || !r.end || r.index !== 0 || r.text.trim().length < cleanStr.length) return null;
@@ -279,7 +291,7 @@ function buildCalendarEventFromParts(prefixChar, rawEntry) {
     const isOngoing = /all season/i.test(endStr);
     // "TBD" (or TBA) means the end is not announced yet: no end date and not ongoing, the same row news triage writes for an undated end, which Needs a Look lists as "Calendar rows with no end date" (2026-11-09 14:51 EST). Until then a TBD line was dropped without a word: his Season 10 paste lost "11/12 - TBD | Create Your Truth Playlist (Verdansk Intro)" that way.
     const isTBD = /^(tbd|tba)\.?$/i.test(endStr);
-    const endDate = isOngoing || isTBD ? null : parseAdminDate(endStr);
+    const endDate = isOngoing || isTBD ? null : parseAdminEndDate(endStr);
     if (!isOngoing && !isTBD && !endDate) return null; // Unparseable end date -- same skip
 
     return { title, startDate, endDate, isOngoing, category, isDoubleCP };
@@ -701,4 +713,4 @@ function formatLoadoutsAsBulkText(loadouts) {
     }).join('\n\n');
 }
 
-module.exports = { PLACEHOLDER_IMAGE, gunsmithCodeProblem, toTitleCase, resolveTier, parseAdminDate, parseAdminDateRange, parseReleaseDateTime, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, formatReleaseDateTime, parseLoadoutBadges, loadoutBadgeTokens, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText, formatLoadoutsAsBulkText, correctGunsmithCode, correctAttachmentName, normalizeWeaponName, orderAttachmentsBySlot, normalizeCalendarCategory, guessCalendarCategory };
+module.exports = { PLACEHOLDER_IMAGE, gunsmithCodeProblem, toTitleCase, resolveTier, parseAdminDate, parseAdminEndDate, parseAdminDateRange, parseReleaseDateTime, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, formatReleaseDateTime, parseLoadoutBadges, loadoutBadgeTokens, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText, formatLoadoutsAsBulkText, correctGunsmithCode, correctAttachmentName, normalizeWeaponName, orderAttachmentsBySlot, normalizeCalendarCategory, guessCalendarCategory };

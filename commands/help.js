@@ -112,7 +112,7 @@ const CATEGORY_DEFS = [
         staticCommands: [
             cmd('/draws', {
                 description: "Browse this season's New and Returning lucky draws",
-                options: [{ name: 'page', required: false, desc: 'Jump directly to New Draws or Returning Draws' }]
+                options: [{ name: 'draw', required: false, desc: 'Open one draw on its own panel' }, { name: 'page', required: false, desc: 'Jump directly to New Draws or Returning Draws' }]
             }),
             cmd('/draw prices', {
                 description: 'CP cost breakdown for every draw type, split by CP region',

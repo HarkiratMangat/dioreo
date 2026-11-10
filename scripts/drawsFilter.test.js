@@ -112,13 +112,110 @@ t('the class (14:32 EDT, "Work the class!"): every empty list says it the same w
     assert.strictEqual(emptyNote({ label: 'X', emoji: '', counts: [{ emojiKey: 'greenDotGlow', label: 'live', n: 0 }] }), `${emojis.warn} *Zero (0) **X** this season.*`);
 });
 
-t('Reset Filter sits left of Calculate on any filtered view, and only there', () => {
+t('Reset Filter sits left of Calculate on any filtered view, and only there; Filter opens the pop-up from every view (2026-11-10)', () => {
     const row = out => out[0].components.filter(c => c.type === 1).pop().components;
     const filtered = row(draws.buildContainer(season(), 'new', 0, 1, true, mask('live')));
-    assert.deepStrictEqual(filtered.map(b => b.label), ['Reset Filter', 'Calculate']);
-    assert.strictEqual(filtered[0].custom_id, 'subpage_reset');
-    assert.strictEqual(filtered[0].emoji.name, emojis.parseEmoji(emojis.returnArrow).name);
-    assert.deepStrictEqual(row(draws.buildContainer(season(), 'new', 0, 1, true, 0)).map(b => b.label), ['Calculate']);
+    assert.deepStrictEqual(filtered.map(b => b.label), ['Filter', 'Reset Filter', 'Calculate']);
+    assert.strictEqual(filtered[0].custom_id, 'subpage_filterform_m8');
+    assert.strictEqual(filtered[0].style, 1, 'blue while a filter is on');
+    assert.strictEqual(filtered[1].custom_id, 'subpage_reset');
+    assert.strictEqual(filtered[1].emoji.name, emojis.parseEmoji(emojis.returnArrow).name);
+    const plain = row(draws.buildContainer(season(), 'new', 0, 1, true, 0));
+    assert.deepStrictEqual(plain.map(b => b.label), ['Filter', 'Calculate']);
+    assert.strictEqual(plain[0].custom_id, 'subpage_filterform');
+    assert.strictEqual(plain[0].style, 2);
+    // A search alone counts as filtered.
+    assert.deepStrictEqual(row(draws.buildContainer(season(), 'new', 0, 1, true, 0, { query: 'gun1' })).map(b => b.label), ['Filter', 'Reset Filter', 'Calculate']);
+});
+
+t('the Filter pop-up: five boxes ticked as the view stands, read back into the same mask and search (2026-11-10)', () => {
+    const m = mask('returning', 'live', 'ended') | 64 | 1024;
+    const modal = draws.buildFilterModal(m, 'jupiter');
+    assert.strictEqual(modal.custom_id, 'subpage_filterm');
+    assert.strictEqual(modal.components.length, 5);
+    assert.deepStrictEqual(modal.components.map(c => c.component.type), [22, 22, 22, 22, 4], 'four checkbox groups and a text box');
+    assert.ok(modal.components.every(c => c.label.length <= 45));
+    const ticked = modal.components.slice(0, 4).map(c => c.component.options.filter(o => o.default).map(o => o.value));
+    assert.deepStrictEqual(ticked, [['returning'], ['live', 'ended'], ['mythic'], ['character']]);
+    assert.strictEqual(modal.components[4].component.value, 'jupiter');
+    // Read back through a fake submit, as Discord hands checkbox groups over (getField(...).values).
+    const fields = { section: ['returning'], status: ['live', 'ended'], rarity: ['mythic'], kind: ['character'] };
+    const fake = { fields: { getField: id => (fields[id] ? { values: fields[id] } : null), getTextInputValue: () => ' jupiter ' } };
+    assert.deepStrictEqual(draws.readFilterModal(fake), { mask: m, query: 'jupiter' });
+});
+
+t('rarity, draw type and the search narrow the list; each group widens within itself (2026-11-10)', () => {
+    const doc = season();
+    doc.newDraws[0].items = [{ tier: 'epic', name: 'Sickle - Rust' }];
+    doc.newDraws[1].priceType = 'legendaryCharacterWeapon';
+    doc.newDraws[2].priceType = 'armoryLegendaryCharacter';
+    const shown = (m, query) => texts(draws.buildContainer(doc, 'new', 0, 1, true, m | draws.filterMask('new'), { query })).join('\n');
+    assert.ok(shown(256).includes('New Draw 0') && !shown(256).includes('New Draw 3'), 'Epic: only the draw with an Epic item');
+    assert.ok(shown(1024).includes('New Draw 1') && shown(1024).includes('New Draw 2') && !shown(1024).includes('New Draw 3'), 'Character: both character types');
+    assert.ok(shown(2048).includes('New Draw 2') && !shown(2048).includes('New Draw 1'), 'Armory');
+    assert.ok(shown(256 | 64).includes('New Draw 0') && shown(256 | 64).includes('New Draw 3'), 'two rarities: either');
+    assert.ok(shown(0, 'sickle').includes('New Draw 0') && !shown(0, 'sickle').includes('New Draw 4'), 'the search reads item names');
+    assert.ok(shown(0, 'draw 4').includes('New Draw 4'), 'and titles');
+    assert.match(shown(0, 'nothing like this'), /match this filter/, 'nothing found: the section note, never an empty page');
+    assert.strictEqual(draws.drawKindBits({ title: 'Something', priceType: 'mythicCharacter' }), 1024 | 512, 'Mythic Character + Legendary Weapon is both');
+    assert.strictEqual(draws.drawKindBits({ title: 'Plain Draw' }), 512, 'no type and nothing in the title: a weapon draw');
+});
+
+t('the search rides in every id beside the mask, never past 100 characters, and reads back (2026-11-10)', () => {
+    const long = 'a very long search with spaces_and~symbols ünïcödé that keeps going';
+    const enc = draws.encodeQuery(long);
+    assert.ok(!/[_~ ]/.test(enc), enc);
+    assert.ok(long.startsWith(draws.decodeQuery(enc)), draws.decodeQuery(enc));
+    assert.deepStrictEqual(draws.parseFilterSuffix(`subpage_returning_3_m4095_q${enc}`), { mask: 4095, query: draws.decodeQuery(enc) });
+    assert.deepStrictEqual(draws.parseFilterSuffix('subpage_new_2_m12'), { mask: 12, query: '' }, 'an old id');
+    assert.deepStrictEqual(draws.parseFilterSuffix('subpage_new_2_qhigh+tide'), { mask: 0, query: 'high tide' });
+    const out = draws.buildContainer(season(), 'returning', 1, 1, true, 4095 & ~(64 | 128 | 256 | 512 | 1024 | 2048) | 2, { query: long });
+    const all = ids(out).map(x => x.slice(13, -1));
+    assert.ok(all.length && all.every(id => id.length <= 100), JSON.stringify(all.filter(id => id.length > 100)));
+    const one = draws.buildDrawPanel(season(), 15, 1, true, { back: `returning_12_m4095_q${enc}` });
+    assert.ok(ids(one).map(x => x.slice(13, -1)).every(id => id.length <= 100));
+});
+
+t('Open a draw... lists the draws the view keeps, this page first, and each value opens that draw (2026-11-10)', () => {
+    const doc = season();
+    const out = draws.buildContainer(doc, 'returning', 1, 1, true, 0);
+    const menu = out[0].components.find(c => c.type === 1 && c.components[0].type === 3).components[0];
+    assert.strictEqual(menu.custom_id, 'subpage_open~returning_1');
+    assert.ok(menu.options.length <= 25 && menu.options.length === 16, `${menu.options.length}`);
+    const all = draws.allDraws(doc);
+    const first = all[Number(menu.options[0].value)];
+    assert.strictEqual(first._section, 'returning', 'this page (Returning page 2) first');
+    assert.strictEqual(menu.options[0].label, first.title);
+    // Filtered: only what the filter keeps.
+    const live = draws.buildContainer(doc, 'new', 0, 1, true, mask('ended'));
+    const liveMenu = live[0].components.find(c => c.type === 1 && c.components[0].type === 3).components[0];
+    assert.ok(liveMenu.options.every(o => o.description.endsWith('Ended')), JSON.stringify(liveMenu.options.map(o => o.description)));
+});
+
+t('the single-draw panel: title, dates, the full picture, every item, its type, a pager through every draw and Back (2026-11-10)', () => {
+    const doc = season({ items: 14 });
+    const all = draws.allDraws(doc);
+    const at = all.findIndex(d => d.title === 'Ret Draw 2');
+    const out = draws.buildDrawPanel(doc, at, 1, true, { back: 'returning_1_m8' });
+    const body = texts(out).join('\n');
+    assert.ok(body.includes('### Ret Draw 2'));
+    assert.ok(body.includes('Returning Draw'), 'section in the title');
+    assert.ok(body.includes('Gun13'), 'every item, no …and N more');
+    assert.ok(body.includes('Mythic Weapon Draw'), 'its type');
+    assert.ok(JSON.stringify(out).includes('"type":12'), 'a full-width picture');
+    const json = JSON.stringify(out);
+    assert.ok(json.includes(`"subpage_one_${at - 1}~returning_1_m8"`) && json.includes(`"subpage_one_${at + 1}~returning_1_m8"`), 'arrows to the draws either side, carrying Back');
+    assert.ok(json.includes('"subpage_returning_1_m8"'), 'Back returns to the page it came from');
+    assert.ok(count(out) <= 40 && body.length <= 4000);
+    // Opened by name: Back is the section page that holds it.
+    const byName = JSON.stringify(draws.buildDrawPanel(doc, all.findIndex(d => d.title === 'New Draw 7'), 1, true));
+    assert.ok(/"subpage_new_\d+"/.test(byName));
+    assert.strictEqual(draws.findDrawIndex(doc, 'ret draw 2'), at, 'a title, case aside');
+    assert.strictEqual(draws.findDrawIndex(doc, 'Draw 2'), all.findIndex(d => d.title === 'New Draw 2'), 'or the first title holding it');
+    assert.strictEqual(draws.findDrawIndex(doc, 'nothing'), -1);
+    // No picture: no gallery.
+    doc.returningDraws.find(d => d.title === 'Ret Draw 2').thumbnailUrl = '';
+    assert.ok(!JSON.stringify(draws.buildDrawPanel(doc, at, 1, true)).includes('"type":12'));
 });
 
 t('a draw that started before this season says which season it came from, in either section (2026-11-01 14:36 EDT, his pick)', () => {

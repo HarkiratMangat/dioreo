@@ -60,7 +60,7 @@ async function pageView(mode, note = null, { pageRow = null } = {}) {
     components.push(
         BIG(),
         text('-# Many builds at once…'),
-        row(btn(mode, 'paste', 'Paste Builds', emojis.mngBulkAdd), btn(mode, 'select', 'Select Builds', emojis.filter), btn(mode, 'export', 'Export', emojis.copyExport), btn(mode, 'guide', 'Guide', emojis.guide)),
+        row(btn(mode, 'paste', 'Paste Builds', emojis.pasteImport), btn(mode, 'select', 'Select Builds', emojis.filter), btn(mode, 'export', 'Export', emojis.copyExport), btn(mode, 'guide', 'Guide', emojis.guide)),
     );
     return panel(mode, components, pageRow ? [pageRow] : []);
 }
@@ -231,7 +231,7 @@ function searchModal(mode) {
     return { custom_id: ID(mode, 'findm'), title: `Find a ${mode} Build`, components: [labelled('Weapon, build or label', { type: 4, custom_id: 'q', style: 1, required: true, max_length: 100, placeholder: 'BAL-27 2' }, 'BAL-27 · BAL-27 2 · STATIC-HV 2b · Ranked')] };
 }
 
-const quickPickSelect = (mode) => { const picks = quickPicks(mode); return { type: 3, custom_id: 'picks', required: false, min_values: 0, max_values: picks.length, placeholder: 'Pick any', options: picks.map(([value, label]) => ({ value, label })) }; };
+const quickPickSelect = (mode) => { const picks = quickPicks(mode); return require('../../../utils/formChoice').asChoice({ type: 3, custom_id: 'picks', required: false, min_values: 0, max_values: picks.length, placeholder: 'Pick any', options: picks.map(([value, label]) => ({ value, label })) }); };
 const namesBox = (mode) => labelled('Weapons, builds or classes', { type: 4, custom_id: 'names', style: 2, required: false, max_length: 2000, placeholder: NAMES_PLACEHOLDER[mode] }, 'One per line. Added to the quick picks below.');
 
 function selectModal(mode) {

@@ -17,7 +17,7 @@ function ownsCustomId(customId) {
 
 async function route(interaction) {
         // DRAWS PAGINATION (New vs Returning)
-        if (interaction.customId === 'page_returning_draws' || interaction.customId === 'page_new_draws') {
+        if (interaction.isButton() && (interaction.customId === 'page_returning_draws' || interaction.customId === 'page_new_draws')) {
             // No deferUpdate() here: sendV2Payload() acks with one when the render arrives, so this is two trips like every other click (2026-10-27 20:49 EDT; it was one trip until the v3 launch, and /draws' New/Returning switch and arrows blanked their emojis).
             const targetPage = interaction.customId === 'page_returning_draws' ? 'returning' : 'new';
             const drawsCommand = interaction.client.commands.get('draws');
@@ -28,27 +28,51 @@ async function route(interaction) {
         }
 
         // DRAWS SUB-PAGE PAGINATION (Prev/Next within a category, once it exceeds CHUNK_SIZE) custom_id format: subpage_<new|returning>_<targetIndex>, e.g. "subpage_new_2"
-        if (interaction.customId.startsWith('subpage_new_') || interaction.customId.startsWith('subpage_returning_')) {
+        if (interaction.isButton() && (interaction.customId.startsWith('subpage_new_') || interaction.customId.startsWith('subpage_returning_'))) {
             // No deferUpdate() here: sendV2Payload() acks with one when the render arrives, so this is two trips like every other click (2026-10-27 20:49 EDT; it was one trip until the v3 launch, and /draws' New/Returning switch and arrows blanked their emojis).
             const isNewCategory = interaction.customId.startsWith('subpage_new_');
             const targetPage = isNewCategory ? 'new' : 'returning';
             const targetSubPage = parseInt(interaction.customId.replace(isNewCategory ? 'subpage_new_' : 'subpage_returning_', ''), 10) || 0;
-            // The filter mask, when the panel had one (`subpage_new_2_m12`, 2026-11-01); a panel posted before carries none.
-            const maskMatch = interaction.customId.match(/_m(\d+)$/);
+            // The filter mask, when the panel had one (`subpage_new_2_m12`, 2026-11-01), and the Filter pop-up's search (`_q<text>`, 2026-11-10); a panel posted before carries neither.
             const drawsCommand = interaction.client.commands.get('draws');
+            const { mask, query } = drawsCommand.parseFilterSuffix(interaction.customId);
 
             const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });
-            return await drawsCommand.execute(syntheticInteraction, targetPage, targetSubPage, maskMatch ? Number(maskMatch[1]) : 0);
+            return await drawsCommand.execute(syntheticInteraction, targetPage, targetSubPage, mask, { query });
         }
 
         // DRAWS RESET FILTER (2026-11-01 13:16 EDT, his ask): the button beside Calculate on a filtered /draws (commands/draws.js). Opens the unfiltered view on New Draws' first page.
-        if (interaction.customId === 'subpage_reset') {
+        if (interaction.customId === 'subpage_reset' && interaction.isButton()) {
             const drawsCommand = interaction.client.commands.get('draws');
             const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });
             return await drawsCommand.execute(syntheticInteraction, 'new', 0, 0);
         }
 
-        // DRAWS FILTER (2026-11-01): the multi-select under the pager (commands/draws.js buildFilterRow). Its picks become the mask, and the panel opens on the first page the filter keeps. Shares the `subpage_` prefix, so it needs no new owner here.
+        // DRAWS FILTER POP-UP (2026-11-10, his ask): the Filter button opens it ticked as the panel stands (its id carries the mask and search), a direct response like every showModal; the submit redraws the panel on the first page the filter keeps.
+        if (interaction.customId.startsWith('subpage_filterform') && interaction.isButton()) {
+            const drawsCommand = interaction.client.commands.get('draws');
+            const { mask, query } = drawsCommand.parseFilterSuffix(interaction.customId);
+            return await interaction.showModal(drawsCommand.buildFilterModal(mask, query));
+        }
+        if (interaction.customId === 'subpage_filterm' && interaction.isModalSubmit()) {
+            const drawsCommand = interaction.client.commands.get('draws');
+            const { mask, query } = drawsCommand.readFilterModal(interaction);
+            const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });
+            return await drawsCommand.execute(syntheticInteraction, (mask & 3) === 2 ? 'returning' : 'new', 0, mask, { query });
+        }
+
+        // OPEN ONE DRAW (2026-11-10, his ask): the Open a draw... menu (`subpage_open~<page id>`, value = the draw's place in commands/draws.js allDraws) and the single-draw panel's own arrows (`subpage_one_<n>~<page id>`). The page id after `~` is where Back returns.
+        if ((interaction.customId.startsWith('subpage_open~') && interaction.isStringSelectMenu()) || (interaction.customId.startsWith('subpage_one_') && interaction.isButton())) {
+            const drawsCommand = interaction.client.commands.get('draws');
+            const [head, back] = interaction.customId.split('~');
+            const drawIndex = head === 'subpage_open'
+                ? parseInt((interaction.values || [])[0], 10)
+                : parseInt(head.replace('subpage_one_', ''), 10);
+            const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });
+            return await drawsCommand.execute(syntheticInteraction, null, 0, 0, { drawIndex: Number.isInteger(drawIndex) ? drawIndex : 0, back: back || null });
+        }
+
+        // DRAWS FILTER (2026-11-01): the multi-select under the pager, retired 2026-11-10 for the Filter pop-up above but still answered on panels posted before. Its picks become the mask, and the panel opens on the first page the filter keeps. Shares the `subpage_` prefix, so it needs no new owner here.
         if (interaction.customId === 'subpage_filter' && interaction.isStringSelectMenu()) {
             const drawsCommand = interaction.client.commands.get('draws');
             const mask = interaction.values.reduce((m, v) => m | drawsCommand.filterMask(v), 0);
@@ -57,7 +81,7 @@ async function route(interaction) {
         }
 
         // CALENDAR PAGER (2026-10-21 15:32 EDT; the Draws / Events / Modes buttons before it). custom_id: calpage_<page>_m<filter mask>_<p|n> (see commands/calendar.js buildCalendarPager). Still read: calpage_<page> and calpage_<page>_a from panels posted before, `_a` being the old Active/Upcoming view.
-        if (interaction.customId.startsWith('calpage_')) {
+        if (interaction.customId.startsWith('calpage_') && interaction.isButton()) {
             // REVERTED to two-hop 2026-08-07 17:38 EDT (v2.60.0) -- see the price_region_ branch's comment in handlers/drawprices.js for the full reasoning (the emoji-blank bug + investigation).
             await interaction.deferUpdate();
             const targetPage = parseInt(interaction.customId.replace('calpage_', ''), 10) || 0;

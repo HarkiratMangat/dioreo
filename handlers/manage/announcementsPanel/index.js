@@ -22,11 +22,29 @@ const Announcement = () => require('../../../models/Announcement');
 
 // Every announcement that has not expired (a scheduled one included), newest first, and the few that expired most recently. An expired announcement is never deleted by the bot, so the model keeps them.
 async function loadData(now = new Date()) {
-    const [live, expired] = await Promise.all([
+    const EXPIRED = { expiresAt: { $ne: null, $lte: now } };
+    const [live, expired, expiredCount] = await Promise.all([
         Announcement().find({ $or: [{ expiresAt: null }, { expiresAt: { $gt: now } }] }).sort({ createdAt: -1 }).lean(),
-        Announcement().find({ expiresAt: { $ne: null, $lte: now } }).sort({ expiresAt: -1 }).limit(V.EXPIRED_SHOWN).lean(),
+        Announcement().find(EXPIRED).sort({ expiresAt: -1 }).limit(V.EXPIRED_SHOWN).lean(),
+        Announcement().countDocuments(EXPIRED),
     ]);
-    return { live, expired };
+    return { live, expired, expiredCount };
+}
+// One page of the Expired list, latest-expired first (2026-11-09, the /manage audit's finding 10).
+async function loadExpired(page, now = new Date()) {
+    const EXPIRED = { expiresAt: { $ne: null, $lte: now } };
+    const total = await Announcement().countDocuments(EXPIRED);
+    const pages = Math.max(1, Math.ceil(total / V.EXPIRED_PAGE));
+    const p = Math.min(Math.max(0, Number(page) || 0), pages - 1);
+    const docs = await Announcement().find(EXPIRED).sort({ expiresAt: -1 }).skip(p * V.EXPIRED_PAGE).limit(V.EXPIRED_PAGE).lean();
+    return { docs, page: p, total };
+}
+// Every announcement, active, scheduled or expired, whose text holds every typed word, newest first. The collection is small (an admin writes a few a season), so it is read whole and matched here, the same word rule as resolveTarget.
+async function search(query) {
+    const words = String(query || '').toLowerCase().split(/\s+/).filter(Boolean);
+    if (!words.length) return [];
+    const all = await Announcement().find({}).sort({ createdAt: -1 }).limit(1000).lean();
+    return all.filter(d => words.every(w => String(d.text || '').toLowerCase().includes(w)));
 }
 const getOne = (id) => (/^[a-f0-9]{24}$/i.test(String(id)) ? Announcement().findById(id).lean() : null);
 
@@ -144,18 +162,29 @@ function confirmCard(doc) {
     });
 }
 
+// End Now (2026-11-09, the /manage audit's finding 10): stops a live announcement without deleting it, so it moves to Expired with its text kept for Post Again. A scheduled one is cancelled the same way. Asks first, like Delete.
+function endCard(doc) {
+    const scheduled = V.isScheduled(doc);
+    return V.cardView(doc, {
+        header: `### ${emojis.warn} ${scheduled ? 'Cancel this scheduled announcement?' : 'End this announcement now?'}\n-# Nobody who has not seen it yet will get it. It moves to Expired, where Post Again reuses it. Revert undoes this.`,
+        extra: [V.row(V.btn(['endok', String(doc._id)], scheduled ? 'Yes, Cancel It' : 'Yes, End It', emojis.pending, 4), V.btn(['card', String(doc._id)], 'Cancel', emojis.returnArrow))],
+    });
+}
+
 function revertButton(changeIds) {
     const id = `${PREFIX}revert|${(changeIds || []).join(',')}`;
     return changeIds?.length && id.length <= 100 ? [{ type: 2, style: 4, label: 'Revert', custom_id: id, emoji: emojis.parseEmoji(emojis.keep) }] : [];
 }
 
-// ---------- the slash command ---------- `announcement:` opens one (autocomplete), `do:` an action (on it, at once). A pop-up has to be the first answer, so every path that opens one runs before anything is deferred.
+// ---------- the slash command ---------- `announcement:` opens one (autocomplete), `do:` an action (on it, at once). A pop-up has to be the first answer, so every path that opens one runs before anything is deferred. An id, or typed words: a live match wins over expired ones, so an announcement posted again is the one opened (expired ones are reachable since the /manage audit's finding 10).
 async function resolveTarget(value) {
-    if (await getOne(value)) return { doc: await getOne(value) };
-    const { live } = await loadData();
-    const words = String(value || '').toLowerCase().split(/\s+/).filter(Boolean);
-    const hits = live.filter(d => words.every(w => String(d.text || '').toLowerCase().includes(w)));
-    return hits.length === 1 ? { doc: hits[0] } : { doc: null, count: hits.length };
+    const byId = await getOne(value);
+    if (byId) return { doc: byId };
+    const hits = await search(value);
+    const now = new Date();
+    const live = hits.filter(d => !V.isExpired(d, now));
+    const pool = live.length ? live : hits;
+    return pool.length === 1 ? { doc: pool[0] } : { doc: null, count: pool.length };
 }
 async function openFromSlash(interaction) {
     const o = interaction.options;
@@ -164,6 +193,8 @@ async function openFromSlash(interaction) {
     const view = (components) => show(interaction, components, { ephemeral });
     if (act === 'post') return (await gatePost(interaction)) && interaction.showModal(postModal());
     if (act === 'guide') return runGuide(interaction);
+    if (act === 'find') return interaction.showModal(V.findModal());
+    if (act === 'expired') { const { docs, page, total } = await loadExpired(0); return view(V.expiredView(docs, { page, total })); }
     let doc = null;
     if (target) {
         const r = await resolveTarget(target);
@@ -171,6 +202,8 @@ async function openFromSlash(interaction) {
         doc = r.doc;
         if (act === 'edit') return (await gateRow(interaction, 'manage.announcementEdit')) && interaction.showModal(editModal(doc));
         if (act === 'delete') return (await gateRow(interaction, 'manage.announcementDelete')) && view(confirmCard(doc));
+        if (act === 'again') return (await gatePost(interaction)) && interaction.showModal(postAgainModal(doc));
+        if (act === 'end') return (await gateRow(interaction, 'manage.announcementEdit')) && view(endCard(doc));
         return view(V.cardView(doc));
     }
     if (act) return view(await home(`${emojis.warn} That needs an \`announcement:\` to act on.`, interaction));
@@ -185,10 +218,12 @@ async function runGuide(interaction) {
 }
 
 async function autocomplete(interaction) {
-    const words = String(interaction.options.getFocused() || '').toLowerCase().split(/\s+/).filter(Boolean);
-    const { live } = await loadData();
-    const hits = live.filter(d => words.every(w => String(d.text || '').toLowerCase().includes(w))).slice(0, 25);
-    return interaction.respond(hits.map(d => ({ name: V.plainLabel(V.preview(d)).slice(0, 100), value: String(d._id) })));
+    // Active and scheduled first, then expired ones marked as such (the /manage audit's finding 10: an expired one could not be opened from the slash command).
+    const typed = String(interaction.options.getFocused() || '');
+    const now = new Date();
+    const all = typed.trim() ? await search(typed) : await Announcement().find({}).sort({ createdAt: -1 }).limit(50).lean();
+    const ordered = [...all.filter(d => !V.isExpired(d, now)), ...all.filter(d => V.isExpired(d, now))].slice(0, 25);
+    return interaction.respond(ordered.map(d => ({ name: `${V.isExpired(d, now) ? 'Expired · ' : ''}${V.plainLabel(V.preview(d))}`.slice(0, 100), value: String(d._id) })));
 }
 
 // ---------- routing ----------
@@ -203,14 +238,19 @@ async function route(interaction) {
         const doc = await getOne(a);
         return doc ? interaction.showModal(editModal(doc)) : gone(interaction);
     }
-    if (verb === 'again' && interaction.isStringSelectMenu?.()) {
+    if ((verb === 'again' && interaction.isStringSelectMenu?.()) || verb === 'againid') {
         if (!(await gatePost(interaction))) return;
-        const doc = await getOne(interaction.values[0]);
+        const doc = await getOne(verb === 'againid' ? a : interaction.values[0]);
         return doc ? interaction.showModal(postAgainModal(doc)) : gone(interaction);
     }
+    if (verb === 'find') return interaction.showModal(V.findModal());
 
     // ----- views -----
     if (verb === 'page') return renderHome(interaction);
+    if (verb === 'exp') {
+        const { docs, page, total } = await loadExpired(a);
+        return show(interaction, V.expiredView(docs, { page, total }));
+    }
     if (verb === 'revert') return require('../results').revertChanges(interaction, String(a || '').split(',').filter(Boolean), { doneNote: 'it is back as it was', render: async (note) => home(note, interaction) });
     if ((verb === 'open' && interaction.isStringSelectMenu?.()) || verb === 'card') {
         const doc = await getOne(verb === 'open' ? interaction.values[0] : a);
@@ -225,6 +265,10 @@ async function route(interaction) {
             const prior = a && drafts.get(a)?.userId === interaction.user.id ? drafts.get(a) : null;
             const values = { ...readFields(interaction), color: prior?.values.color ?? require('../../../utils/announcement').generateAccentColor() };
             return showDraft(interaction, keepDraft({ kind: 'post', userId: interaction.user.id, values }, prior ? a : null));
+        }
+        if (verb === 'findm') {
+            const q = interaction.fields.getTextInputValue('q') || '';
+            return show(interaction, V.findView(q, await search(q)));
         }
         if (verb === 'editm') {
             if (!(await gateRow(interaction, 'manage.announcementEdit'))) return;
@@ -265,6 +309,31 @@ async function route(interaction) {
         return show(interaction, (doc && V.cardView(doc, { header })) || await home(header, interaction));
     }
 
+    // ----- end now -----
+    if (verb === 'end') {
+        if (!(await gateRow(interaction, 'manage.announcementEdit'))) return;
+        const doc = await getOne(a);
+        if (!doc) return gone(interaction);
+        if (V.isExpired(doc)) return show(interaction, V.cardView(doc, { header: `-# ${emojis.warn} It has already expired.` }));
+        return show(interaction, endCard(doc));
+    }
+    if (verb === 'endok') {
+        if (!(await gateRow(interaction, 'manage.announcementEdit'))) return;
+        const doc = await getOne(a);
+        if (!doc) return gone(interaction);
+        await interaction.deferUpdate();
+        // The ordinary announcement.edit op with every field as stored and expiresAt = now, so its inverse puts the old expiry back. A scheduled one loses its start too: a start after its expiry is refused by the op, and a cancelled announcement has no start to keep.
+        const now = new Date();
+        const payload = { text: doc.text, expiresAt: now, startsAt: V.isScheduled(doc, now) ? null : (doc.startsAt || null), bannerImageUrl: doc.bannerImageUrl || null, repeatCount: doc.repeatCount ?? null };
+        const result = await require('../../../core/changeset').commitSet([{ type: 'announcement.edit', target: { id: a }, payload }], { actorId: interaction.user.id });
+        if (!result.ok) {
+            if (result.failedAt?.reason === 'missing') return gone(interaction);
+            return show(interaction, V.resultView({ title: 'The announcement was not ended', body: [require('../shared').extractCommitError(result)], ok: false, back: ['card', a], backLabel: 'Back to It' }));
+        }
+        const after = await getOne(a);
+        return show(interaction, V.cardView(after, { header: `-# ${emojis.checkmark} Ended. It is under Expired now.`, extra: [V.row(V.btn(['againid', a], 'Post Again', emojis.mngAdd, 3), ...revertButton(result.changeIds), V.homeBtn())] }) || await home(`-# ${emojis.checkmark} Ended.`, interaction));
+    }
+
     // ----- delete -----
     if (verb === 'del') {
         if (!(await gateRow(interaction, 'manage.announcementDelete'))) return;
@@ -293,4 +362,4 @@ async function handleAnnouncementsPanelInteraction(interaction) {
     return true;
 }
 
-module.exports = { handleAnnouncementsPanelInteraction, openFromSlash, renderHome, autocomplete, loadData, postAgainModal, PREFIX, DRAFT_TTL_MS, _drafts: drafts };
+module.exports = { handleAnnouncementsPanelInteraction, openFromSlash, renderHome, autocomplete, loadData, loadExpired, search, postAgainModal, PREFIX, DRAFT_TTL_MS, _drafts: drafts };

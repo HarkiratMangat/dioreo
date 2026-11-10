@@ -20,6 +20,25 @@ const button = (customId) => Object.assign(h.modal(customId), { isButton: () => 
         assert.strictEqual(h.state.changes.length, 1);
     });
 
+    await check("Titles & Deadlines never renames next season's patch notes entry (2026-11-09, the audit's item 14)", async () => {
+        const pn = (t, o = '') => ({ _id: h.id(), title: t, titleOverride: o, emoji: '', images: [] });
+        h.reset({ currentSeasonTitle: 'Season 9: Old', patchNotes: [pn('Season 9: Old'), pn('Season 9: Old', 'Season 10: New')] });
+        await season.setTitlesDeadlines(h.modal('modal_season_titles', { main_title: 'Season 9: Renamed', bp_line: '', rank_line: '', dmz_line: '' }));
+        assert.strictEqual(h.state.doc.currentSeasonTitle, 'Season 9: Renamed');
+        assert.deepStrictEqual(h.state.doc.patchNotes.map(p => p.title), ['Season 9: Old', 'Season 9: Old'], "next season's entry is left alone");
+        h.reset({ currentSeasonTitle: 'Season 9: Old', patchNotes: [pn('Season 8: Older'), pn('Season 9: Old')] });
+        await season.setTitlesDeadlines(h.modal('modal_season_titles', { main_title: 'Season 9: Renamed', bp_line: '', rank_line: '', dmz_line: '' }));
+        assert.deepStrictEqual(h.state.doc.patchNotes.map(p => p.title), ['Season 8: Older', 'Season 9: Renamed'], "this season's own entry still follows the title");
+    });
+
+    await check("Add New Season keeps a typed title as the entry's own title; blank still means the current season (2026-11-09, the audit's item 14)", async () => {
+        const pn = require('../handlers/manage/patchnotes');
+        h.reset({ currentSeasonTitle: 'Season 9: Old', patchNotes: [] });
+        await pn.addSeason(h.modal('modal_add_season', { season_title: 'Season 10: New', description: '', release_date: '', urls_1: '', urls_2: '' }));
+        await pn.addSeason(h.modal('modal_add_season', { season_title: '', description: '', release_date: '', urls_1: '', urls_2: '' }));
+        assert.deepStrictEqual(h.state.doc.patchNotes.map(p => [p.title, p.titleOverride]), [['Season 10: New', 'Season 10: New'], ['Season 9: Old', '']]);
+    });
+
     await check('Promote puts the draws and calendar live in date order (2026-11-08 11:30 EST)', async () => {
         const d = (t, day) => ({ _id: h.id(), title: t, date: `2026-11-${String(day).padStart(2, '0')}T00:00:00.000Z`, items: [] });
         h.reset({ draft: { active: true, currentSeasonTitle: 'Season 10', newDraws: [d('Late', 20), d('Early', 2)], returningDraws: [d('Ultra Violet', 6), d("Samurai's Soul", 1)], calendar: [{ ...d('B', 9), category: 'event' }, { ...d('A', 3), category: 'event' }] } });
@@ -97,6 +116,17 @@ const button = (customId) => Object.assign(h.modal(customId), { isButton: () => 
         assert.ok(r.ok, JSON.stringify(r.failedAt || r));
         assert.strictEqual(h.state.doc.draft.autoPromote, true);
         assert.strictEqual(h.state.doc.draft.autoPromoteBy, h.OWNER);
+    });
+
+    await check("Promote never renames the outgoing season's patch notes; it renames the new season's own entry (2026-11-09, the audit's finding 6)", async () => {
+        const pn = (t) => ({ _id: h.id(), title: t, emoji: '', images: [] });
+        h.reset({ currentSeasonTitle: 'Season 9: Old', patchNotes: [pn('Season 8: Older'), pn('Season 9: Old')], draft: { active: true, currentSeasonTitle: 'Season 10: New', newDraws: [], returningDraws: [], calendar: [] } });
+        await season.handleDraftButton(button('mng_draftpromoteconfirm'));
+        assert.deepStrictEqual(h.state.doc.patchNotes.map(p => p.title), ['Season 8: Older', 'Season 9: Old'], 'the old season keeps its title');
+        assert.strictEqual(h.state.doc.currentSeasonTitle, 'Season 10: New');
+        h.reset({ currentSeasonTitle: 'Season 9: Old', patchNotes: [pn('Season 9: Old'), pn('Season 10')], draft: { active: true, currentSeasonTitle: 'Season 10: New', newDraws: [], returningDraws: [], calendar: [] } });
+        await season.handleDraftButton(button('mng_draftpromoteconfirm'));
+        assert.deepStrictEqual(h.state.doc.patchNotes.map(p => p.title), ['Season 9: Old', 'Season 10: New'], "the new season's entry follows the title");
     });
 
     if (failures) { console.error(`\n${failures} failing`); process.exit(1); }

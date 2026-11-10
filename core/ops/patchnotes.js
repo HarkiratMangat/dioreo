@@ -110,9 +110,11 @@ registerEntity('patchnotes', {
         apply: async (op, { session }) => {
             const before = await SeasonalData.findOne(DOC).lean().session(session);
             const releaseDate = resolveReleaseDate(op.payload);
+            // The entry's own title is the typed one when there is one (2026-11-09, the /manage audit's item 14): it used to be the live season's title even under a typed override, so next season's entries, added before Promote, carried the outgoing season's name underneath (prod's Season 8 and 9 read "Season 7 — Terminated"). Blank still means the current season.
+            const typedTitle = (op.payload.titleOverride || '').trim();
             const element = {
-                title: before.currentSeasonTitle || 'Untitled Season',
-                titleOverride: (op.payload.titleOverride || '').trim(),
+                title: typedTitle || before.currentSeasonTitle || 'Untitled Season',
+                titleOverride: typedTitle,
                 description: (op.payload.description || '').trim(),
                 releaseDate, images: [], _id: new mongoose.Types.ObjectId()
             };
@@ -136,7 +138,7 @@ registerEntity('patchnotes', {
         invert: (c) => ({ type: 'patchnote.removeSeason', target: { elementId: c.applied.elementId } })
     },
 
-    // Not a registry action -- exists solely as addSeason's inverse (the way core/ops/season.js's season.restoreSnapshot exists solely as promoteDraft's inverse). Not reachable from /manage.
+    // Not a registry action -- addSeason's inverse (the way core/ops/season.js's season.restoreSnapshot is promoteDraft's inverse), and since 2026-11-09 the patch notes panel's Delete Season (handlers/manage/patchnotesPanel/index.js `delok`, gated as the page's purge plus the destructive tier). Its inverse restores the same entry, images included.
     'patchnote.removeSeason': {
         page: 'patchnotes', tier: 2,
         validate: (op) => op.target?.elementId ? { ok: true, errors: [], normalized: op } : { ok: false, errors: ['No entry to remove.'] },

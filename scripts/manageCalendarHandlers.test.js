@@ -20,6 +20,19 @@ const ev = (id, title, date, extra = {}) => ({ _id: id.repeat(24).slice(0, 24), 
         assert.strictEqual(h.state.changes.length, 1);
     });
 
+    // Set End Date on a live draw opens this pop-up, so the game's countdown must work in its end box, and only there (think pass, 2026-11-10).
+    await check('Add Event: a countdown end snaps to midnight UTC; a countdown start is refused', async () => {
+        h.reset();
+        const want = require('../utils/countdown').snapCountdown('13d 23h').toISOString();
+        const i = h.modal('add_calendar', { title: 'Countdown Draw', start_date: 'Nov 6 2026', end_date: '13d 23h', category: 'draw', double_cp: '' });
+        await cal.addCalendarEvent(i);
+        assert.strictEqual(new Date(h.state.doc.calendar[0]?.endDate).toISOString(), want, i.text());
+        h.reset();
+        const j = h.modal('add_calendar', { title: 'Countdown Draw', start_date: '2h', end_date: 'Nov 19 2026', category: 'draw', double_cp: '' });
+        await cal.addCalendarEvent(j);
+        assert.strictEqual(h.state.doc.calendar.length, 0, j.text());
+    });
+
     await check('Add Event with no start date saves nothing', async () => {
         h.reset();
         const i = h.modal('add_calendar', { title: 'Krai BR', start_date: '', category: 'event' });

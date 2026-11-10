@@ -37,13 +37,21 @@ const C = () => {
     return cmd;
 };
 const cat = (e) => e.category || 'event'; // an old row with no category is an event, as /calendar reads it
-function allEntries(doc, nowMs = Date.now()) {
-    return (doc.calendar || []).map(e => ({ ...e, _key: `c:${e._id}`, _cat: cat(e), ...C().entryState(e, doc, nowMs) }));
-}
 const splitKey = (key) => String(key).split(':')[1];
+// The draw a calendar draw row belongs to, on the live /draws (New, then Returning), by the same title rule /calendar itself uses (utils/search.js bestDrawMatch): its key in the draws panel (`n:<id>` / `r:<id>`), or null when /draws has no draw by that title, so the row shows dates with no items, picture or price (2026-11-09, the /manage audit's finding 11).
+function drawKeyFor(doc, e) {
+    if (cat(e) !== 'draw') return null;
+    const { bestDrawMatch } = require('../../../utils/search');
+    const pool = [...(doc.newDraws || []).map(d => ({ d, k: `n:${d._id}` })), ...(doc.returningDraws || []).map(d => ({ d, k: `r:${d._id}` }))];
+    return bestDrawMatch(pool, e.title, x => x.d.title)?.k || null;
+}
+const noDraw = (doc, e) => cat(e) === 'draw' && !drawKeyFor(doc, e);
+function allEntries(doc, nowMs = Date.now()) {
+    return (doc.calendar || []).map(e => ({ ...e, _key: `c:${e._id}`, _cat: cat(e), _noDraw: noDraw(doc, e), ...C().entryState(e, doc, nowMs) }));
+}
 const typeWord = (e) => ({ draw: 'Draw', playlist: 'Playlist' }[e._cat] || 'Event');
 // Something a person would want to look at: no start date, or no end date on a row that is not "All Season", or an end before its start.
-const needsLook = (e) => !Number.isFinite(e.startMs) || (!e.isOngoing && !e.endDate) || (!e.isOngoing && e.endDate && new Date(e.endDate) < new Date(e.date));
+const needsLook = (e) => !Number.isFinite(e.startMs) || (!e.isOngoing && !e.endDate) || (!e.isOngoing && e.endDate && new Date(e.endDate) < new Date(e.date)) || e._noDraw;
 
 // The lists: by type, and by the states /calendar's own entryState gives (over, live, soon, tba), plus Ending Soon (live, with an end within 3 days) and the rows worth a look.
 const STATUS = {
@@ -68,7 +76,7 @@ function stateWords(e) {
     return e.isOngoing ? 'runs all season' : '**no end date**';
 }
 // One entry as a list row: the dot, the title, then its type and when, on a small line padded under the title.
-const listLine = (e, mark = '') => `${mark}${dot(e)} **${e.title}**\n-# ${emojis.blank}${emojis.blank}${mark ? emojis.blank : ''} ${typeWord(e)} · ${stateWords(e)}`;
+const listLine = (e, mark = '') => `${mark}${dot(e)} **${e.title}**\n-# ${emojis.blank}${emojis.blank}${mark ? emojis.blank : ''} ${typeWord(e)} · ${stateWords(e)}${e._noDraw ? ` · ${emojis.warn} no draw on /draws` : ''}`;
 
 async function seasonLine(doc) {
     if (!doc?.currentSeasonTitle) return '';
@@ -87,7 +95,7 @@ async function pageView(doc, note = null, { pageRow = null } = {}) {
     components.push(
         BIG(),
         text('-# Add…'),
-        row(btn('add', 'Add Entry', emojis.mngAdd, 3), btn('paste', 'Paste Entries', emojis.mngBulkAdd)),
+        row(btn('add', 'Add Entry', emojis.mngAdd, 3), btn('paste', 'Paste Entries', emojis.pasteImport)),
         SMALL(),
         text('-# Find an entry…'),
         row(btn('find', 'Search Calendar', emojis.gunsmithSearch, 1)),
@@ -137,12 +145,16 @@ function cardView(doc, key, { header = null, extra = null, back = null } = {}) {
     if (header) components.push(text(header), SMALL());
     // The entry as /calendar shows it (its own renderer, so the card can never drift from the player's view), then the dates in full.
     components.push(text(C().buildEntryLine(e, doc)), text(when));
-    components.push(text(`-# ${typeWord(e)} · ${stateName(e)}${e.isDoubleCP ? ' · 2x CP' : ''}${e._cat === 'draw' ? '\n-# The draw itself (items, picture, type) lives in /manage draws.' : ''}`), BIG());
+    const drawKey = drawKeyFor(doc, e);
+    const drawNote = e._cat !== 'draw' ? '' : drawKey ? '\n-# The draw itself (items, picture, type) lives in /manage draws: Open the Draw.' : `\n${emojis.warn} **No draw on /draws has this title**, so players see the dates with no items, picture or price. Add the Draw opens Quick Add with this row's dates.`;
+    components.push(text(`-# ${typeWord(e)} · ${stateName(e)}${e.isDoubleCP ? ' · 2x CP' : ''}${drawNote}`), BIG());
     if (extra) components.push(...extra);
     else {
         const backTo = STATUS[back] ? back : ({ draw: 'draws', playlist: 'playlists' }[e._cat] || 'events');
+        // A draw row: Open the Draw (its card in /manage draws, `mng_dr|card|<key>`) or, with none, Add the Draw (2026-11-09, the /manage audit's finding 11).
+        const drawBtn = e._cat !== 'draw' ? [] : drawKey ? [{ type: 2, style: 2, label: 'Open the Draw', custom_id: `mng_dr|card|${drawKey}`, emoji: emojis.parseEmoji(emojis.expand) }] : [btn(['qadraw', key], 'Add the Draw', emojis.mngAdd, 3)];
         components.push(
-            row(btn(['edit', key], 'Edit', emojis.edit, 1), btn(['del', key], 'Delete', emojis.deleteBin, 4)),
+            row(btn(['edit', key], 'Edit', emojis.edit, 1), ...drawBtn, btn(['del', key], 'Delete', emojis.deleteBin, 4)),
             row(btn(['list', backTo, 0], STATUS[backTo].label, emojis.returnArrow), homeBtn()),
         );
     }
@@ -198,7 +210,7 @@ function selectView(doc, token, sel, note = null, page = 0) {
 // ---------- pop-ups ----------
 const labelled = (label, component, description) => ({ type: 18, label, ...(description ? { description } : {}), component });
 const QUICK = Object.entries(STATUS).map(([value, s]) => ({ value, label: `All ${s.label}` }));
-const quickSelect = () => ({ type: 3, custom_id: 'picks', required: false, min_values: 0, max_values: QUICK.length, placeholder: 'Pick any', options: QUICK });
+const quickSelect = () => (require('../../../utils/formChoice').asChoice({ type: 3, custom_id: 'picks', required: false, min_values: 0, max_values: QUICK.length, placeholder: 'Pick any', options: QUICK }));
 const titlesBox = () => labelled('Entry titles', { type: 4, custom_id: 'names', style: 2, required: false, max_length: 2000, placeholder: 'Throwable Frenzy\nNuketown Playlist' }, 'One per line; part of a title is enough. Added to the quick picks.');
 const searchModal = () => ({ custom_id: ID('findm'), title: 'Find a Calendar Entry', components: [labelled('Title', { type: 4, custom_id: 'q', style: 1, required: true, max_length: 100, placeholder: 'nuketown' }, 'Part of the title is enough')] });
 const selectModal = () => ({ custom_id: ID('selectm'), title: 'Select Entries', components: [titlesBox(), labelled('Quick picks', quickSelect(), 'Everything picked is included: Events + Ended = both.')] });
@@ -213,4 +225,4 @@ function exportModal() {
     };
 }
 
-module.exports = { ID, PAGE, STATUS, row, text, btn, homeBtn, panel, plural, allEntries, splitKey, typeWord, dot, stateName, pageView, listView, cardView, resultView, selectView, searchModal, selectModal, exportModal };
+module.exports = { drawKeyFor, ID, PAGE, STATUS, row, text, btn, homeBtn, panel, plural, allEntries, splitKey, typeWord, dot, stateName, pageView, listView, cardView, resultView, selectView, searchModal, selectModal, exportModal };

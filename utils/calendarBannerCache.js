@@ -27,16 +27,17 @@ function publicIdFor(page) {
 
 // Uploads a REMOTE url straight into Cloudinary (server-side fetch, the bot never downloads the image itself) -- never throws, a Cloudinary hiccup falls back to the raw URL rather than blocking the admin's save, same philosophy as cacheThumbnail()/cachePatchImage().
 //
-// ⚠️ Discord CDN sources used to skip this upload entirely, on the theory that re-hosting was pure downside (an extra copy of an "already-durable" asset). REVERTED 2026-08-07 21:25 EDT -- that premise was wrong (see the CORRECTED note above: Discord CDN links are signed and expire), so a banner set from a Discord link was silently going dead within ~24-48h with no way to detect or repair it from the stored URL alone. Every source now re-hosts unconditionally, same as every other cached image in this bot. Verified live 2026-08-07: uploading a real Discord CDN banner URL to Cloudinary and capping it with a Cloudinary `c_limit,w_N` derivative correctly returned an aspect-preserved 256x144 derivative from a 2048x1152 source -- Cloudinary's `c_limit` only ever needs ONE dimension to preserve aspect ratio, unlike Discord's proxy.
-async function cacheBannerImage(page, sourceUrl) {
+// ⚠️ Discord CDN sources used to skip this upload entirely, on the theory that re-hosting was pure downside (an extra copy of an "already-durable" asset). REVERTED 2026-08-07 21:25 EDT -- that premise was wrong (see the CORRECTED note above: Discord CDN links are signed and expire), so a banner set from a Discord link was silently going dead within ~24-48h with no way to detect or repair it from the stored URL alone. Every source now re-hosts unconditionally, same as every other cached image in this bot. Verified live 2026-08-07: uploading a real Discord CDN banner URL to Cloudinary and capping it with a Cloudinary `c_limit,w_N` derivative correctly returned an aspect-preserved 256x144 derivative from a 2048x1152 source -- Cloudinary's `c_limit` only ever needs ONE dimension to preserve aspect ratio, unlike Discord's proxy. `draft` (2026-11-09, the /manage audit's finding 5: the Next Season Draft can stage banners): a staged banner gets its own public_id, `calendar_banners/next_<page>_<time>`, never the live one. Promote copies the draft's url onto the live field, so a fixed draft id would let the NEXT season's staged banner overwrite the asset the live page is still showing. It is never archived before writing (the id is new each time).
+async function cacheBannerImage(page, sourceUrl, { draft = false } = {}) {
     if (!VALID_PAGES.includes(page)) throw new Error(`Invalid calendar banner page: ${page}`);
-    if (isCloudinaryWriteBlocked('upload', publicIdFor(page))) {
+    const publicId = draft ? `${FOLDER}/next_${page}_${Date.now()}` : publicIdFor(page);
+    if (isCloudinaryWriteBlocked('upload', publicId)) {
         return { url: sourceUrl, cached: false, error: 'blocked: dev bot may not write to the live Cloudinary account' };
     }
-    await archiveBeforeReplace(publicIdFor(page), sourceUrl, 'calendar_banners');
+    if (!draft) await archiveBeforeReplace(publicIdFor(page), sourceUrl, 'calendar_banners');
     try {
         const result = await cloudinary.uploader.upload(sourceUrl, {
-            public_id: publicIdFor(page),
+            public_id: publicId,
             // Same asset_folder fix as every other Cloudinary module here -- the FOLDER prefix is already baked into the public_id path, but Cloudinary's newer "Folder" UI needs this set separately or the dashboard never groups it visually.
             asset_folder: FOLDER,
             overwrite: true,

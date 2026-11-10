@@ -6,7 +6,7 @@
 //
 // custom_ids: mng_kinds_<token> · modal_kinds_<token>. The router's /manage lock runs on both prefixes first.
 const { randomBytes } = require('crypto');
-const { ModalBuilder, LabelBuilder, StringSelectMenuBuilder } = require('discord.js');
+const { ModalBuilder, LabelBuilder, RadioGroupBuilder } = require('discord.js');
 const emojis = require('../../utils/emojiMap');
 const { sendV2Payload } = require('../../utils/sendV2Payload');
 const { notePanel, ACCENT, FAIL_ACCENT } = require('../../utils/managePanels');
@@ -55,7 +55,8 @@ function buildKindsModal(token, items) {
         ...items.slice(0, PER_BOX).map((item, i) => new LabelBuilder()
             .setLabel(item.name.slice(0, 45))
             .setDescription(`In ${item.title}`.slice(0, 100))
-            .setStringSelectMenuComponent(new StringSelectMenuBuilder().setCustomId(`k${i}`).setRequired(true).setMinValues(1).setMaxValues(1).addOptions(KIND_OPTIONS)))
+            // Radio buttons since 2026-11-10 (four plain choices, utils/formChoice.js); readChoice reads them, and a box opened before as a dropdown.
+            .setRadioGroupComponent(new RadioGroupBuilder().setCustomId(`k${i}`).setRequired(true).addOptions(KIND_OPTIONS)))
     );
 }
 
@@ -81,7 +82,7 @@ async function submit(interaction) {
     const saved = [];
     for (const [i, item] of answered.entries()) {
         let kind = null;
-        try { kind = interaction.fields.getStringSelectValues(`k${i}`)[0]; } catch { kind = null; }
+        try { kind = require('../../utils/formChoice').readChoice(interaction, `k${i}`)[0]; } catch { kind = null; }
         if (kind && await setItemKind(item.slug, item.name, kind)) saved.push(`- ${item.name}: ${KIND_OPTIONS.find(o => o.value === kind).label.split(' (')[0]}`);
     }
     p.items = p.items.slice(PER_BOX);

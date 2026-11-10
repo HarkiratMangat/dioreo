@@ -37,7 +37,7 @@ async function addDraw(interaction) {
     const rawUrl = interaction.fields.getTextInputValue('url');
     const rawItems = interaction.fields.getTextInputValue('items');
     let priceType = '';
-    try { priceType = interaction.fields.getStringSelectValues('price_type')[0] || ''; } catch { priceType = ''; }
+    try { priceType = require('../../utils/formChoice').readChoice(interaction, 'price_type')[0] || ''; } catch { priceType = ''; }
 
     if (!title || !dateStr || !rawItems) {
         return await failWithRetry(interaction, 'Fill in Title, Items, and Release Date.');
@@ -117,7 +117,7 @@ async function editDraw(interaction, opts = {}) {
 
         // Draw Type (2026-10-18 11:06 EDT): the form's dropdown; nothing picked clears it. Sent only when it CHANGED, so an edit that never touches it leaves the stored type, and the op's conflict check, alone. A modal built before this field existed (an old open form) has no dropdown and is read as unchanged.
         let pickedType = null;
-        try { pickedType = interaction.fields.getStringSelectValues('price_type')[0] || ''; } catch { pickedType = null; }
+        try { pickedType = require('../../utils/formChoice').readChoice(interaction, 'price_type')[0] || ''; } catch { pickedType = null; }
         const storedType = arrayTarget[drawIndex].priceType || '';
         const typeChanged = pickedType !== null && pickedType !== storedType;
 

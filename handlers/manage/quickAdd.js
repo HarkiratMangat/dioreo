@@ -8,7 +8,7 @@
 //
 // THE DRAFT TARGET (2026-11-09 14:13 EST, Harkirat: "theres no 'quick add' options in /manage season draft when adding draws"): the Next Season Draft's Draws view opens the same box as modal_draws_quickadd_draft_<n|r>. The state carries target 'draft' and the tab it came from: lines match against the DRAFT's lists (a draw already staged is "already staged", never added twice), a line without new or returning takes that tab, and Save stages everything in one commitSet of season.bulkDraftDraws (and season.bulkDraftCalendar for end dates) instead of draw.add and calendar rows. Nothing reaches players until Promote. A draw with no picture is left out, as the draft's Add Draw and Paste Draws leave it out.
 //
-// custom_ids: modal_draws_quickadd · modal_draws_quickadd_draft_<n|r> · mng_qa_edit_<token>_<i> · modal_qa_edit_<token>_<i> · mng_qa_pick_<token>_<i> · modal_qa_pick_<token>_<i> · mng_qa_save_<token> · mng_qa_cancel_<token> · mng_qa_revert_<token> (after Save). The router's /manage lock runs on the `mng_` and `modal_` prefixes first; commitSet checks the admin's tiers again on Save (draws create, and calendar create for an end date).
+// custom_ids: modal_draws_quickadd · modal_draws_quickadd_draft_<n|r> · mng_qa_rm_<token> (select) · mng_qa_more_<token> → modal_qa_more_<token> · mng_qa_edit_<token>_<i> · modal_qa_edit_<token>_<i> · mng_qa_pick_<token>_<i> · modal_qa_pick_<token>_<i> · mng_qa_save_<token> · mng_qa_cancel_<token> · mng_qa_revert_<token> (after Save). The router's /manage lock runs on the `mng_` and `modal_` prefixes first; commitSet checks the admin's tiers again on Save (draws create, and calendar create for an end date).
 const { randomBytes } = require('crypto');
 const { ModalBuilder, LabelBuilder, StringSelectMenuBuilder } = require('discord.js');
 const BOT_EMOJI = require('../../utils/emojiMap');
@@ -83,7 +83,9 @@ function draftLines(d, i, state = null) {
     const head = d.needsPick ? `**${i + 1}. Pick a draw**` : `**${i + 1}. ${d.title}**\n-# ${d.category === 'new' ? 'New' : 'Returning'} draw${kind ? ` · ${kind}` : ''}`;
     const when = `> ${d.existing && !d.startGiven ? 'Started' : 'Starts'} ${stamp(d.start)} · ${d.end ? `ends ${stamp(d.end)}` : 'no end date'}`;
     const shown = (d.items || []).filter(it => it.tier !== 'comment');
-    const items = shown.length ? `-# ${shown.length} item${shown.length === 1 ? '' : 's'}: ${shown.slice(0, 2).map(it => it.name).join(', ')}${shown.length > 2 ? ', …' : ''}` : '-# No items';
+    // The picture as a link (2026-11-10, his ask for pictures in the preview): a thumbnail would take the row's one accessory, which Edit or Pick needs, and a gallery per row costs two of the 40 components.
+    const pic = d.imageUrl && /^https?:\/\//.test(d.imageUrl) ? ` · [Picture](${d.imageUrl})` : d.existing ? '' : ' · no picture';
+    const items = `${shown.length ? `-# ${shown.length} item${shown.length === 1 ? '' : 's'}: ${shown.slice(0, 2).map(it => it.name).join(', ')}${shown.length > 2 ? ', …' : ''}` : '-# No items'}${pic}`;
     const notes = [];
     if (d.duplicateOf !== null && d.duplicateOf !== undefined) notes.push(`${emojis.warn} Same draw as line ${d.duplicateOf + 1}: skipped on Save.`);
     if (d.existing) notes.push(`${BOT_EMOJI.info} Already ${draft ? 'staged' : 'on /draws'} as **${d.existing.title}**: ${draft ? 'Stage' : 'Save'} ${[d.end && 'sets its end date', d.startGiven && 'moves its start'].filter(Boolean).join(' and ') || 'changes nothing'}.`);
@@ -120,8 +122,11 @@ function draftPanel(token, state) {
             accessory: accessory(d, i)
         })),
         { type: 14, spacing: 1, divider: true },
+        // Remove takes lines out of the draft (2026-11-10, his "Remove per row"): a Section holds one accessory, Edit or Pick, so it is one multi-select under the rows. 10 rows (30) + header + 2 dividers + this (2) + the buttons (4) + the container is exactly 40.
+        { type: 1, components: [{ type: 3, custom_id: `mng_qa_rm_${token}`, placeholder: 'Remove lines from the draft…', min_values: 1, max_values: drafts.length, options: drafts.map((d, i) => ({ label: `${i + 1}. ${d.needsPick ? d.query || 'Pick a draw' : d.title}`.slice(0, 100), value: String(i) })) }] },
         { type: 1, components: [
             { type: 2, style: 3, label: writes ? `${draft ? 'Stage' : 'Save'} ${writes}` : `Nothing to ${draft ? 'Stage' : 'Save'}`, custom_id: `mng_qa_save_${token}`, disabled: !writes },
+            { type: 2, style: 2, label: 'Add More', emoji: emojis.parseEmoji(emojis.mngAdd), custom_id: `mng_qa_more_${token}`, disabled: drafts.length >= qa.MAX_LINES },
             { type: 2, style: 2, label: 'Cancel', custom_id: `mng_qa_cancel_${token}` }
         ] }
     ];
@@ -171,6 +176,25 @@ async function handleButton(interaction) {
     const state = getDraft(token, interaction.user.id);
     if (!state) return sendV2Payload(interaction, expiredPanel());
 
+    // mng_qa_rm_<token>: the picked lines leave the draft; the last one gone cancels it.
+    if (verb === 'rm' && interaction.isStringSelectMenu?.()) {
+        const drop = new Set(interaction.values.map(Number));
+        state.drafts = state.drafts.filter((_, i) => !drop.has(i));
+        if (!state.drafts.length) {
+            DRAFTS.delete(token);
+            return sendV2Payload(interaction, notePanel(`Every line was removed. Nothing was ${state.target === 'draft' ? 'staged' : 'saved'}.`, ACCENT.draws));
+        }
+        markDuplicates(state.drafts, require('../../utils/search').isSameDrawTitle);
+        state.at = Date.now();
+        return sendV2Payload(interaction, draftPanel(token, state));
+    }
+    // mng_qa_more_<token>: the Quick Add box again, for lines added to this same draft (modal_qa_more_<token>).
+    if (verb === 'more') {
+        const room = qa.MAX_LINES - state.drafts.length;
+        if (room <= 0) return interaction.reply({ content: `${BOT_EMOJI.cross} This draft is full: ${qa.MAX_LINES} lines fit one draft. Save it, then Quick Add More.`, ephemeral: true });
+        const modal = require('../../commands/manage').buildQuickAddModal(state.target === 'draft' ? { draftSection: state.section === 'r' ? 'r' : 'n' } : {});
+        return interaction.showModal(modal.setCustomId(`modal_qa_more_${token}`).setTitle(`Add up to ${room} more line${room === 1 ? '' : 's'}`));
+    }
     if (verb === 'cancel') {
         DRAFTS.delete(token);
         return sendV2Payload(interaction, notePanel(`Quick Add cancelled. Nothing was ${state.target === 'draft' ? 'staged' : 'saved'}.`, ACCENT.draws));
@@ -194,6 +218,23 @@ async function handleButton(interaction) {
     return false;
 }
 
+// modal_qa_more_<token>: the new lines join the draft under its own rules (target, section, zone), and the draft panel is drawn again in place.
+async function submitMore(interaction) {
+    const token = interaction.customId.split('_')[3];
+    const state = getDraft(token, interaction.user.id);
+    if (!state) return sendV2Payload(interaction, expiredPanel());
+    const { lines } = qa.parseQuickText(interaction.fields.getTextInputValue('lines'));
+    const room = qa.MAX_LINES - state.drafts.length;
+    if (!lines.length || room <= 0) return sendV2Payload(interaction, draftPanel(token, state));
+    await interaction.deferUpdate();
+    const added = await buildDrafts(lines.slice(0, room), { zone: state.zone, state });
+    state.drafts = [...state.drafts, ...added];
+    state.extra = Math.max(0, lines.length - room);
+    markDuplicates(state.drafts, require('../../utils/search').isSameDrawTitle);
+    state.at = Date.now();
+    return sendV2Payload(interaction, draftPanel(token, state));
+}
+
 // modal_qa_edit_<token>_<i>: the edited draw replaces its row in the draft, and the draft panel is drawn again in place.
 async function submitEdit(interaction) {
     const [, , , token, index] = interaction.customId.split('_');
@@ -210,7 +251,7 @@ async function submitEdit(interaction) {
     let priceType = before.priceType;
     let imageInput = before.imageInput || '';
     try { imageInput = interaction.fields.getTextInputValue('url').trim(); } catch { /* an old box */ }
-    try { priceType = interaction.fields.getStringSelectValues('price_type')[0] ?? priceType; } catch { /* an old box */ }
+    try { priceType = require('../../utils/formChoice').readChoice(interaction, 'price_type')[0] ?? priceType; } catch { /* an old box */ }
 
     // The section and the dates, read with the same reader as a Quick Add line, so one wording works in both places. No section word keeps the row's own.
     const parsed = qa.parseQuickLine(`x, ${when}`, { zone: state.zone });
@@ -271,7 +312,7 @@ async function submitPick(interaction) {
     if (!before) return sendV2Payload(interaction, expiredPanel());
     const { loadCatalog } = require('../../utils/drawCatalog');
     const { isSameDrawTitle } = require('../../utils/search');
-    const value = interaction.fields.getStringSelectValues('pick')[0];
+    const value = require('../../utils/formChoice').readChoice(interaction, 'pick')[0];
     const [entries, seasonalDoc] = await Promise.all([loadCatalog(), listsFor(state)]);
     const entry = value === '__typed__' ? null : entries.find(e => e.slug === value);
     if (value !== '__typed__' && !entry) return sendV2Payload(interaction, expiredPanel());
@@ -286,6 +327,23 @@ async function submitPick(interaction) {
     markDuplicates(state.drafts, isSameDrawTitle);
     state.at = Date.now();
     return sendV2Payload(interaction, draftPanel(token, state));
+}
+
+// The /manage draws card keys (`n:<id>` / `r:<id>`) of the draws a save wrote, each once, read off the season document after the commit: an added draw has no id until then.
+function savedKeys(doc, todo) {
+    const { isSameDrawTitle } = require('../../utils/search');
+    const out = [];
+    for (const d of todo) {
+        let key = null, title = d.existing?.title || d.title;
+        if (d.existing) key = `${d.existing.category === 'new' ? 'n' : 'r'}:${d.existing.elementId}`;
+        else {
+            const list = d.category === 'new' ? doc.newDraws : doc.returningDraws;
+            const hit = (list || []).find(x => isSameDrawTitle(x.title, d.title));
+            if (hit) { key = `${d.category === 'new' ? 'n' : 'r'}:${hit._id}`; title = hit.title; }
+        }
+        if (key && !out.some(o => o.key === key)) out.push({ key, title });
+    }
+    return out;
 }
 
 // mng_qa_save_<token>: one commitSet for the whole draft.
@@ -343,7 +401,19 @@ async function save(interaction, token, state) {
     ];
     const ends = todo.filter(d => d.end).length;
     const panel = resultPanel({ page: 'draws', heading: 'Quick Add saved', summary: ends ? `-# ${ends} end date${ends === 1 ? '' : 's'} on /calendar too.` : null, sections });
-    panel[0].components.push({ type: 14, spacing: 1, divider: false }, { type: 1, components: [{ type: 2, style: 4, label: 'Revert All', custom_id: `mng_qa_revert_${token}`, emoji: BOT_EMOJI.parseEmoji(BOT_EMOJI.keep) }] });
+    // Where to go next (2026-11-10, his ask for QoL buttons): the saved draws' cards in the /manage draws panel, Quick Add again, and the draws home. A click turns this message into that panel (mng_dr|…, handlers/manage/drawsPanel/).
+    const keys = savedKeys(await loadOrCreateSeasonalDoc(), todo);
+    const open = keys.length === 1
+        ? [{ type: 2, style: 1, label: 'Open Draw', custom_id: `mng_dr|card|${keys[0].key}`, emoji: emojis.parseEmoji(emojis.expand) }]
+        : [];
+    panel[0].components.push({ type: 14, spacing: 1, divider: false });
+    if (keys.length > 1) panel[0].components.push({ type: 1, components: [{ type: 3, custom_id: 'mng_dr|open|', placeholder: 'Open a saved draw…', options: keys.slice(0, 25).map(k => ({ label: k.title.slice(0, 100), value: k.key })) }] });
+    panel[0].components.push({ type: 1, components: [
+        ...open,
+        { type: 2, style: 3, label: 'Quick Add More', custom_id: 'mng_dr|quickadd', emoji: emojis.parseEmoji(emojis.mngAdd) },
+        { type: 2, style: 2, label: 'Draws Home', custom_id: 'mng_dr|page', emoji: emojis.parseEmoji(emojis.returnArrow) },
+        { type: 2, style: 4, label: 'Revert All', custom_id: `mng_qa_revert_${token}`, emoji: BOT_EMOJI.parseEmoji(BOT_EMOJI.keep) }
+    ] });
     const sent = await sendV2Payload(interaction, panel);
     // Items the draw index has no kind for are asked about, not left blank (handlers/manage/itemKinds.js).
     await require('./itemKinds').askItemKinds(interaction, added.map(d => d.title));
@@ -424,6 +494,7 @@ async function saveToDraft(interaction, token, state) {
     const SV = require('./seasonPanel/views');
     panel[0].components.push({ type: 14, spacing: 1, divider: false }, { type: 1, components: [
         SV.btn(['dd', state.section === 'r' ? 'r' : 'n', 0], 'Draft Draws', emojis.newDraws, 1),
+        SV.btn(['ddqa', state.section === 'r' ? 'r' : 'n'], 'Quick Add More', emojis.mngAdd, 3),
         { type: 2, style: 4, label: 'Revert All', custom_id: `mng_qa_revert_${token}`, emoji: BOT_EMOJI.parseEmoji(BOT_EMOJI.keep) }
     ] });
     const sent = await sendV2Payload(interaction, panel);
@@ -431,4 +502,4 @@ async function saveToDraft(interaction, token, state) {
     return sent;
 }
 
-module.exports = { submitQuickAdd, handleButton, submitEdit, submitPick, buildPickModal, draftPanel, whenText, listsFor, applySection, saveToDraft, DRAFTS, SAVED, DRAFT_TTL_MS };
+module.exports = { submitQuickAdd, handleButton, submitMore, savedKeys, submitEdit, submitPick, buildPickModal, draftPanel, whenText, listsFor, applySection, saveToDraft, DRAFTS, SAVED, DRAFT_TTL_MS };

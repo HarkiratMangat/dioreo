@@ -621,12 +621,12 @@ function creditModal(doc) {
         custom_id: `mng_ldcreditm_${doc._id}`, title: `Credit: ${doc.weaponName} ${doc.buildName}`.slice(0, 45),
         components: [
             { type: 18, label: 'Show as', description: 'No credit hides the line; a submitted build still reads By anonymous',
-              component: { type: 3, custom_id: 'show', required: true, min_values: 1, max_values: 1, options: [
+              component: require('../../utils/formChoice').asChoice({ type: 3, custom_id: 'show', required: true, min_values: 1, max_values: 1, options: [
                   opt('@user (clickable)', 'user', c?.show === 'user'), opt('Username (plain text)', 'name', c?.show === 'name'),
-                  opt('Hyperlink', 'link', c?.show === 'link'), opt('By anonymous', 'anonymous', c?.show === 'anonymous'), opt('No credit', 'none', !c || c.show === 'none')] } },
+                  opt('Hyperlink', 'link', c?.show === 'link'), opt('By anonymous', 'anonymous', c?.show === 'anonymous'), opt('No credit', 'none', !c || c.show === 'none')] }) },
             { type: 18, label: 'Prefix', description: 'Not used for anonymous',
-              component: { type: 3, custom_id: 'prefix', required: false, min_values: 0, max_values: 1, options: [
-                  opt('Submitted by', 'submitted', !c?.prefix || c.prefix === 'submitted'), opt('Credit:', 'credit', c?.prefix === 'credit'), opt('Build by', 'buildby', c?.prefix === 'buildby')] } },
+              component: require('../../utils/formChoice').asChoice({ type: 3, custom_id: 'prefix', required: false, min_values: 0, max_values: 1, options: [
+                  opt('Submitted by', 'submitted', !c?.prefix || c.prefix === 'submitted'), opt('Credit:', 'credit', c?.prefix === 'credit'), opt('Build by', 'buildby', c?.prefix === 'buildby')] }) },
             { type: 18, label: 'Discord user', description: 'For @user; for Username, their username is used when Name is empty',
               component: { type: 5, custom_id: 'user', required: false, min_values: 0, max_values: 1, ...(userId ? { default_values: [{ id: userId, type: 'user' }] } : {}) } },
             { type: 18, label: 'Name', description: 'The plain-text name, or the hyperlink\'s text',
@@ -645,8 +645,8 @@ async function saveCredit(interaction) {
     const before = await Loadout.findById(id).lean();
     if (!before) return await interaction.followUp({ content: `${BOT_EMOJI.cross} That build no longer exists.` });
     const get = (fn) => { try { return fn(); } catch { return null; } };
-    const show = (get(() => interaction.fields.getStringSelectValues('show')) || [])[0] || 'none';
-    const prefix = (get(() => interaction.fields.getStringSelectValues('prefix')) || [])[0] || 'submitted';
+    const show = (get(() => require('../../utils/formChoice').readChoice(interaction, 'show')) || [])[0] || 'none';
+    const prefix = (get(() => require('../../utils/formChoice').readChoice(interaction, 'prefix')) || [])[0] || 'submitted';
     const user = get(() => interaction.fields.getSelectedUsers('user')?.first()) || null;
     const typed = (get(() => interaction.fields.getTextInputValue('name')) || '').trim();
     const url = (get(() => interaction.fields.getTextInputValue('url')) || '').trim();

@@ -6,7 +6,7 @@
 //
 // ⚠️ A rotation (promoteDraft/startNew) is inverted by a FULL PRE-ROTATION SNAPSHOT via the internal `season.restoreSnapshot` op, never a diff -- a diff of a multi-field, multi-array rotation is not a restore. restoreSnapshot is symmetric (its own apply() snapshots what it's about to overwrite and its invert() returns another restoreSnapshot carrying that snapshot), so it stays revertible indefinitely without needing a second op type for "undo of an undo".
 const { registerEntity } = require('./index');
-const { splitTitleDate, parseAdminDate, parseAdminDateRange, parseBulkDrawList, parseBulkEvents } = require('../../utils/adminParser');
+const { splitTitleDate, parseAdminDate, parseAdminEndDate, parseAdminDateRange, parseBulkDrawList, parseBulkEvents } = require('../../utils/adminParser');
 const { resolveThumbnailsForDraws } = require('../../utils/bulkMerge');
 const { seasonEntryIndex } = require('../../commands/patchnotes');
 const { syncPatchEntryMetadata } = require('../../utils/patchNotesCache');
@@ -28,7 +28,8 @@ function applyLine(current, line, label, skipped, { loneDate = 'end' } = {}) {
         } else if (dateStr.trim().toLowerCase() === 'tbd') {
             result.end = null; result.endTBD = true; result.start = null;
         } else {
-            const parsed = parseAdminDate(dateStr);
+            // A lone END may be the game's countdown; a lone START may not (parseAdminEndDate's header).
+            const parsed = loneDate === 'start' ? parseAdminDate(dateStr) : parseAdminEndDate(dateStr);
             if (parsed && loneDate === 'start') { result.start = parsed; result.end = null; result.endTBD = true; }
             else if (parsed) { result.end = parsed; result.endTBD = false; result.start = null; }
             else skipped.push(label);
@@ -60,7 +61,7 @@ function applyFields(current, payload, prefix, line, label, skipped, opts = {}) 
         const raw = payload[eKey];
         if (!raw) { out.end = null; }
         else {
-            const parsed = parseAdminDate(String(raw));
+            const parsed = parseAdminEndDate(String(raw));
             // An unparseable date is REPORTED, never silently kept as the old one -- that is the failure mode this whole comment is about.
             if (parsed) { out.end = parsed; out.endTBD = false; } else skipped.push(label);
         }
@@ -77,7 +78,8 @@ function readSeasonTitle(payload, currentEmoji) {
 }
 
 function mapParsedEvents(parsed) {
-    return parsed.map(e => ({ title: e.title, date: e.startDate, endDate: e.isOngoing ? null : e.endDate, isOngoing: e.isOngoing, category: e.category }));
+    // isDoubleCP (2026-11-09, the /manage audit): the draft calendar box dropped the 2X CP marker here, so a staged double-CP event went live as a normal one. core/ops/calendar.js's own mapParsedEvents had the same gap fixed 2026-08-22.
+    return parsed.map(e => ({ title: e.title, date: e.startDate, endDate: e.isOngoing ? null : e.endDate, isOngoing: e.isOngoing, category: e.category, isDoubleCP: Boolean(e.isDoubleCP) }));
 }
 
 // An armed auto-promote is bound to the admin who armed it (the commit security review, 2026-11-08 12:12 EST): a draft edit by ANYONE ELSE switches it off, so nobody can change what goes live under another admin's authority. The armer's own edits keep it, and news triage's writes (season.newsDraft) never touch it, because news fills the draft by design right up to the season. Reverting the edit does not re-arm it; arming again is one click.
@@ -115,9 +117,11 @@ registerEntity('season', {
             await SeasonalData.updateOne(DOC, { $set }, { session });
             let patchPrior = null;
             const titleChanged = currentSeasonTitle !== before.currentSeasonTitle;
-            // The emoji rides the same sync as the title, and an emoji-only edit syncs too: the current entry is what /patch notes shows, so it shows this season's emoji.
-            if (before.patchNotes.length > 0 && (titleChanged || currentSeasonEmoji !== (before.currentSeasonEmoji || ''))) {
-                const last = before.patchNotes[before.patchNotes.length - 1];
+            // The emoji rides the same sync as the title, and an emoji-only edit syncs too: the current entry is what /patch notes shows, so it shows this season's emoji. Never onto ANOTHER season's entry (2026-11-09, the /manage audit's item 14): when next season's patch notes are added before Promote, the newest entry is next season's, held under its own title override, and copying this season's title and emoji onto it is how prod's Season 8 and 9 entries came to read "Season 7 — Terminated" underneath (and its emoji would show on /patch notes, which reads the entry's own emoji first). Promote has the same rule.
+            const lastEntry = before.patchNotes[before.patchNotes.length - 1];
+            const lastIsOther = lastEntry && lastEntry.titleOverride && seasonEntryIndex([lastEntry], before.currentSeasonTitle) === -1;
+            if (before.patchNotes.length > 0 && !lastIsOther && (titleChanged || currentSeasonEmoji !== (before.currentSeasonEmoji || ''))) {
+                const last = lastEntry;
                 patchPrior = { elementId: String(last._id), title: last.title, emoji: last.emoji || '' };
                 await SeasonalData.updateOne({ ...DOC, 'patchNotes._id': last._id }, { $set: { 'patchNotes.$.title': currentSeasonTitle, 'patchNotes.$.emoji': currentSeasonEmoji } }, { session });
                 // The pre-core handler always re-synced the latest patch entry's cached-image Cloudinary metadata after a title rename -- missed on a first pass of this op (DB field updates fine; only the Cloudinary-side metadata would have gone stale). Best-effort, matching the original's own no-throw contract.
@@ -207,7 +211,10 @@ registerEntity('season', {
             const newTitle = $set.currentSeasonTitle || before.currentSeasonTitle;
             let patchPrior = null;
             const last = before.patchNotes[before.patchNotes.length - 1];
-            if (draft.currentSeasonTitle && last) {
+            // Only an entry that is not the OUTGOING season's is renamed (2026-11-09, the /manage audit's finding 6): the newest entry is the new season's when its patch notes were added before Promote, and renaming it keeps its title in step. When they were not, the newest entry IS the outgoing season, and renaming it re-titled the old season's notes with the new name (prod's Season 8 and 9 entries read "Season 7" from exactly this). Needs a Look says when the new season has no entry yet.
+            const lastIsNew = last && seasonEntryIndex([last], draft.currentSeasonTitle) === 0;
+            const lastIsOutgoing = last && seasonEntryIndex([last], before.currentSeasonTitle) === 0;
+            if (draft.currentSeasonTitle && last && (lastIsNew || !lastIsOutgoing)) {
                 patchPrior = { elementId: String(last._id), title: last.title, emoji: last.emoji || '' };
                 await SeasonalData.updateOne({ ...DOC, 'patchNotes._id': last._id }, { $set: { 'patchNotes.$.title': newTitle, 'patchNotes.$.emoji': $set.currentSeasonEmoji } }, { session });
             }
@@ -460,6 +467,40 @@ registerEntity('season', {
             };
         },
         invert: (c) => ({ type: 'season.bulkDraftDraws', payload: { parsed: c.applied.prior } })
+    },
+
+    // The draft's /calendar page banners (2026-11-09, the /manage audit's finding 5): Promote to Live already copied draft.*BannerUrl onto the live fields, but nothing could set them. A filled field re-hosts to its own `next_` Cloudinary id (utils/calendarBannerCache.js `draft`), a blank one clears the staged banner; the live banners are untouched until Promote. No /manage registry action of its own: the draft panel's Banners button is gated as the calendar's (seasondraft:bulkcalendar), so `page:` is declared.
+    'season.setDraftBanners': {
+        page: 'seasondraft', tier: 2,
+        validate: (op) => {
+            const bad = Object.keys(op.payload || {}).filter(k => !['draws', 'events', 'playlists'].includes(k));
+            if (bad.length) return { ok: false, errors: [`Unknown banner page: ${bad.join(', ')}`] };
+            const notLink = Object.entries(op.payload || {}).filter(([, v]) => v && !/^https?:\/\/\S+$/i.test(String(v).trim())).map(([k]) => k);
+            return notLink.length ? { ok: false, errors: [`Not an image link: ${notLink.join(', ')}. Paste a link starting with https://, or leave it blank.`] } : { ok: true, errors: [], normalized: op };
+        },
+        preview: (op, live) => ({ before: { draws: live.draft?.drawsBannerUrl || '', events: live.draft?.eventsBannerUrl || '', playlists: live.draft?.playlistsBannerUrl || '' }, after: { ...op.payload } }),
+        apply: async (op, { session, actorId, restoring }) => {
+            await disarmAutoPromote(session, actorId);
+            const { cacheBannerImage } = require('../../utils/calendarBannerCache');
+            const before = await SeasonalData.findOne(DOC).select('draft').lean().session(session);
+            const draft = before.draft || {};
+            const prior = {}; const $set = { 'draft.active': true }; const changes = [];
+            for (const key of ['draws', 'events', 'playlists']) {
+                if (!(key in (op.payload || {}))) continue;
+                const field = `${key}BannerUrl`;
+                prior[key] = draft[field] || '';
+                const raw = String(op.payload[key] || '').trim();
+                if (raw === prior[key]) continue;
+                if (!raw) { $set[`draft.${field}`] = ''; changes.push({ key, action: 'cleared' }); continue; }
+                // A Revert hands back the stored url, already re-hosted: write it as it is.
+                const r = restoring || /res\.cloudinary\.com\//.test(raw) ? { url: raw, cached: true } : await cacheBannerImage(key, raw, { draft: true });
+                $set[`draft.${field}`] = r.url || raw;
+                changes.push({ key, action: 'set', cached: Boolean(r.cached) });
+            }
+            await SeasonalData.updateOne(DOC, { $set }, { session });
+            return { ok: true, change: { action: 'edit', model: 'SeasonalData', target: 'draft banners', summary: 'Staged draft calendar banners' }, applied: { prior, changes } };
+        },
+        invert: (c) => ({ type: 'season.setDraftBanners', payload: c.applied.prior })
     },
 
     // ⚠️ MISSING FROM THE PLAN ENTIRELY -- see the header note. Always replaces the whole draft calendar wholesale (unlike the live calendar's merge-based Replace) -- there is no separate add/replace distinction for the draft, matching the real single bulkDraftCalendar handler.

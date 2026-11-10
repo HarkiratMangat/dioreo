@@ -2167,7 +2167,7 @@
           },
           {
             "type": 10,
-            "content": "### `d draws [new|returning] [filter]`\n`draw` · `ld` · `lucky draws`"
+            "content": "### `d draws [new|returning] [filter] [draw name]`\n`draw` · `ld` · `lucky draws`"
           },
           {
             "type": 10,
@@ -2179,7 +2179,11 @@
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Active now, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
+            "content": "**Draw name**\n-# Any other words open that draw on its own panel"
+          },
+          {
+            "type": 10,
+            "content": "**On the page**\n> -# **Open a draw**  *One draw on its own panel, with its full picture*\n> -# **Filter**  *Section, status, rarity, draw type and a search*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
           },
           {
             "type": 1,
@@ -2204,7 +2208,7 @@
           },
           {
             "type": 10,
-            "content": "-# **Examples**\n-# `d draws`  This season's draws\n-# `d draws returning`  Straight to Returning\n-# `d ld r`  The same, shortest\n-# `d draws leaving`  Draws ending within 3 days"
+            "content": "-# **Examples**\n-# `d draws`  This season's draws\n-# `d draws returning`  Straight to Returning\n-# `d ld r`  The same, shortest\n-# `d draws leaving`  Draws ending within 3 days\n-# `d draws high tide`  One draw on its own panel"
           },
           {
             "type": 10,
@@ -2448,6 +2452,10 @@
           },
           {
             "type": 10,
+            "content": "`[draw]`\n-# Open one draw on its own panel"
+          },
+          {
+            "type": 10,
             "content": "`[page]`\n-# Open on New Draws or Returning Draws"
           },
           {
@@ -2460,7 +2468,7 @@
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Active now, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
+            "content": "**On the page**\n> -# **Open a draw**  *One draw on its own panel, with its full picture*\n> -# **Filter**  *Section, status, rarity, draw type and a search*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
           },
           {
             "type": 1,
@@ -2485,7 +2493,7 @@
           },
           {
             "type": 10,
-            "content": "-# **Examples**\n-# `/draws`\n-# `/draws page:Returning Draws`\n-# `/draws filter:Leaving Soon`"
+            "content": "-# **Examples**\n-# `/draws`\n-# `/draws draw:High Tide`\n-# `/draws page:Returning Draws`\n-# `/draws filter:Leaving Soon`"
           },
           {
             "type": 10,
@@ -12506,7 +12514,7 @@
           },
           {
             "type": 10,
-            "content": "### `d draws [new|returning] [filter]`\n`draw` · `ld` · `lucky draws`"
+            "content": "### `d draws [new|returning] [filter] [draw name]`\n`draw` · `ld` · `lucky draws`"
           },
           {
             "type": 10,
@@ -12518,7 +12526,11 @@
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Active now, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
+            "content": "**Draw name**\n-# Any other words open that draw on its own panel"
+          },
+          {
+            "type": 10,
+            "content": "**On the page**\n> -# **Open a draw**  *One draw on its own panel, with its full picture*\n> -# **Filter**  *Section, status, rarity, draw type and a search*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
           },
           {
             "type": 1,
@@ -12543,7 +12555,7 @@
           },
           {
             "type": 10,
-            "content": "-# **Examples**\n-# `d draws`  This season's draws\n-# `d draws returning`  Straight to Returning\n-# `d ld r`  The same, shortest\n-# `d draws leaving`  Draws ending within 3 days"
+            "content": "-# **Examples**\n-# `d draws`  This season's draws\n-# `d draws returning`  Straight to Returning\n-# `d ld r`  The same, shortest\n-# `d draws leaving`  Draws ending within 3 days\n-# `d draws high tide`  One draw on its own panel"
           },
           {
             "type": 10,
@@ -12798,6 +12810,10 @@
           },
           {
             "type": 10,
+            "content": "`[draw]`\n-# Open one draw on its own panel"
+          },
+          {
+            "type": 10,
             "content": "`[page]`\n-# Open on New Draws or Returning Draws"
           },
           {
@@ -12810,7 +12826,7 @@
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Active now, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
+            "content": "**On the page**\n> -# **Open a draw**  *One draw on its own panel, with its full picture*\n> -# **Filter**  *Section, status, rarity, draw type and a search*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
           },
           {
             "type": 1,
@@ -12835,7 +12851,7 @@
           },
           {
             "type": 10,
-            "content": "-# **Examples**\n-# `/draws`\n-# `/draws page:Returning Draws`\n-# `/draws filter:Leaving Soon`"
+            "content": "-# **Examples**\n-# `/draws`\n-# `/draws draw:High Tide`\n-# `/draws page:Returning Draws`\n-# `/draws filter:Leaving Soon`"
           },
           {
             "type": 10,
@@ -23914,7 +23930,7 @@
           },
           {
             "type": 10,
-            "content": "### `d draws [new|returning] [filter]`\n`draw` · `ld` · `lucky draws`"
+            "content": "### `d draws [new|returning] [filter] [draw name]`\n`draw` · `ld` · `lucky draws`"
           },
           {
             "type": 10,
@@ -23926,7 +23942,11 @@
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Active now, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
+            "content": "**Draw name**\n-# Any other words open that draw on its own panel"
+          },
+          {
+            "type": 10,
+            "content": "**On the page**\n> -# **Open a draw**  *One draw on its own panel, with its full picture*\n> -# **Filter**  *Section, status, rarity, draw type and a search*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
           },
           {
             "type": 1,
@@ -23951,7 +23971,7 @@
           },
           {
             "type": 10,
-            "content": "-# **Examples**\n-# `d draws`  This season's draws\n-# `d draws returning`  Straight to Returning\n-# `d ld r`  The same, shortest\n-# `d draws leaving`  Draws ending within 3 days"
+            "content": "-# **Examples**\n-# `d draws`  This season's draws\n-# `d draws returning`  Straight to Returning\n-# `d ld r`  The same, shortest\n-# `d draws leaving`  Draws ending within 3 days\n-# `d draws high tide`  One draw on its own panel"
           },
           {
             "type": 10,
@@ -24272,6 +24292,10 @@
           },
           {
             "type": 10,
+            "content": "`[draw]`\n-# Open one draw on its own panel"
+          },
+          {
+            "type": 10,
             "content": "`[page]`\n-# Open on New Draws or Returning Draws"
           },
           {
@@ -24284,7 +24308,7 @@
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Active now, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
+            "content": "**On the page**\n> -# **Open a draw**  *One draw on its own panel, with its full picture*\n> -# **Filter**  *Section, status, rarity, draw type and a search*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
           },
           {
             "type": 1,
@@ -24309,7 +24333,7 @@
           },
           {
             "type": 10,
-            "content": "-# **Examples**\n-# `/draws`\n-# `/draws page:Returning Draws`\n-# `/draws filter:Leaving Soon`"
+            "content": "-# **Examples**\n-# `/draws`\n-# `/draws draw:High Tide`\n-# `/draws page:Returning Draws`\n-# `/draws filter:Leaving Soon`"
           },
           {
             "type": 10,
@@ -34257,11 +34281,11 @@
           },
           {
             "type": 10,
-            "content": "`[show]`\n-# Draws and calendar: open a list, such as Upcoming, Active Now or Ended"
+            "content": "`[show]`\n-# Draws and calendar: open a list, such as Upcoming, Active Now, Ended or Needs a Look"
           },
           {
             "type": 10,
-            "content": "`[do]`\n-# What to do with the thing named (Edit, Move, Delete and more), or alone: Add, Paste, Export, Guide. Season titles and draft: their pop-ups, straight away. Purge, Promote and Discard stay on the panel"
+            "content": "`[do]`\n-# What to do with the thing named (Edit, Move, End Now, Delete and more), or alone: Add, Paste, Export, Guide. Draws: Check Draw Index. Patch notes: Upload Images, Season Dates, Delete Season. Draft: Quick Add, Edit Draws, Edit Calendar, Banners, Needs a Look. Announcement: Post Again, Search, Expired. Purge, Promote and Discard stay on the panel"
           },
           {
             "type": 10,
@@ -35442,8 +35466,8 @@
                     "default": false,
                     "emoji": {
                       "animated": true,
-                      "name": "DB_Guide",
-                      "id": "1532894836301238477"
+                      "name": "Guide",
+                      "id": "1569464660179025953"
                     }
                   },
                   {
@@ -35865,8 +35889,8 @@
                     "default": false,
                     "emoji": {
                       "animated": true,
-                      "name": "DB_Guide",
-                      "id": "1532894836301238477"
+                      "name": "Guide",
+                      "id": "1569464660179025953"
                     }
                   },
                   {
@@ -36245,7 +36269,7 @@
         "components": [
           {
             "type": 10,
-            "content": "## <a:DB_Guide:1532894836301238477> Servers\n-# One server's /admin rules, a checkup, reply limits, and leave or block — owner-only"
+            "content": "## <a:Guide:1569464660179025953> Servers\n-# One server's /admin rules, a checkup, reply limits, and leave or block — owner-only"
           },
           {
             "type": 1,
@@ -36284,8 +36308,8 @@
                     "default": true,
                     "emoji": {
                       "animated": true,
-                      "name": "DB_Guide",
-                      "id": "1532894836301238477"
+                      "name": "Guide",
+                      "id": "1569464660179025953"
                     }
                   },
                   {
@@ -36703,8 +36727,8 @@
                     "default": false,
                     "emoji": {
                       "animated": true,
-                      "name": "DB_Guide",
-                      "id": "1532894836301238477"
+                      "name": "Guide",
+                      "id": "1569464660179025953"
                     }
                   },
                   {
@@ -37122,8 +37146,8 @@
                     "default": false,
                     "emoji": {
                       "animated": true,
-                      "name": "DB_Guide",
-                      "id": "1532894836301238477"
+                      "name": "Guide",
+                      "id": "1569464660179025953"
                     }
                   },
                   {
@@ -37537,8 +37561,8 @@
                     "default": false,
                     "emoji": {
                       "animated": true,
-                      "name": "DB_Guide",
-                      "id": "1532894836301238477"
+                      "name": "Guide",
+                      "id": "1569464660179025953"
                     }
                   },
                   {
@@ -37960,8 +37984,8 @@
                     "default": false,
                     "emoji": {
                       "animated": true,
-                      "name": "DB_Guide",
-                      "id": "1532894836301238477"
+                      "name": "Guide",
+                      "id": "1569464660179025953"
                     }
                   },
                   {
@@ -41661,7 +41685,7 @@
           },
           {
             "type": 10,
-            "content": "### `d draws [new|returning] [filter]`\n`draw` · `ld` · `lucky draws`"
+            "content": "### `d draws [new|returning] [filter] [draw name]`\n`draw` · `ld` · `lucky draws`"
           },
           {
             "type": 10,
@@ -41673,7 +41697,11 @@
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Active now, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
+            "content": "**Draw name**\n-# Any other words open that draw on its own panel"
+          },
+          {
+            "type": 10,
+            "content": "**On the page**\n> -# **Open a draw**  *One draw on its own panel, with its full picture*\n> -# **Filter**  *Section, status, rarity, draw type and a search*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
           },
           {
             "type": 1,
@@ -41698,7 +41726,7 @@
           },
           {
             "type": 10,
-            "content": "-# **Examples**\n-# `d draws`  This season's draws\n-# `d draws returning`  Straight to Returning\n-# `d ld r`  The same, shortest\n-# `d draws leaving`  Draws ending within 3 days"
+            "content": "-# **Examples**\n-# `d draws`  This season's draws\n-# `d draws returning`  Straight to Returning\n-# `d ld r`  The same, shortest\n-# `d draws leaving`  Draws ending within 3 days\n-# `d draws high tide`  One draw on its own panel"
           },
           {
             "type": 10,
@@ -41953,6 +41981,10 @@
           },
           {
             "type": 10,
+            "content": "`[draw]`\n-# Open one draw on its own panel"
+          },
+          {
+            "type": 10,
             "content": "`[page]`\n-# Open on New Draws or Returning Draws"
           },
           {
@@ -41965,7 +41997,7 @@
           },
           {
             "type": 10,
-            "content": "**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Active now, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
+            "content": "**On the page**\n> -# **Open a draw**  *One draw on its own panel, with its full picture*\n> -# **Filter**  *Section, status, rarity, draw type and a search*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# <a:AddReminder:1563677562683654214> **Bell**  *Opens your reminders privately*"
           },
           {
             "type": 1,
@@ -41990,7 +42022,7 @@
           },
           {
             "type": 10,
-            "content": "-# **Examples**\n-# `/draws`\n-# `/draws page:Returning Draws`\n-# `/draws filter:Leaving Soon`"
+            "content": "-# **Examples**\n-# `/draws`\n-# `/draws draw:High Tide`\n-# `/draws page:Returning Draws`\n-# `/draws filter:Leaving Soon`"
           },
           {
             "type": 10,

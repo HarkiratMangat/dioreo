@@ -25,15 +25,15 @@ function timestampModal(textCommand) {
             fieldLabel('Date or time', null, { type: 4, custom_id: 'datetime', style: 1, required: true, max_length: 100, placeholder: 'e.g. in 2 days · fri 6pm · dec 25' }),
             fieldLabel('Time zone', 'Whose clock your time is on: “8pm” + UK = 8pm in the UK. Everyone sees it in their own time.', { type: 4, custom_id: 'timezone', style: 1, required: false, max_length: 60, placeholder: 'e.g. Toronto, Tokyo, EST' }),
             fieldLabel('Or pick a time zone', 'Used if none is typed above. Blank = your /settings zone.', select('timezone_pick', 'Quick pick…', require('../utils/timezoneData').quickZoneOptions().slice(0, 25))),
-            fieldLabel('Format', 'Blank = your /settings format', select('style', 'Pick a format…', styles.slice(0, 25).map(c => ({ label: c.name.slice(0, 100), value: c.value })))),
-            fieldLabel('View', 'Blank = Embed', select('view', 'Embed or Text…', [{ label: 'Embed (Styled Panel)', value: 'embed' }, { label: 'Text (Plain, Copyable)', value: 'text' }])),
+            fieldLabel('Format', 'Blank = your /settings format', require('../utils/formChoice').asChoice(select('style', 'Pick a format…', styles.slice(0, 25).map(c => ({ label: c.name.slice(0, 100), value: c.value }))))),
+            fieldLabel('View', 'Blank = Embed', require('../utils/formChoice').asChoice(select('view', 'Embed or Text…', [{ label: 'Embed (Styled Panel)', value: 'embed' }, { label: 'Text (Plain, Copyable)', value: 'text' }]))),
         ],
     };
 }
 
 // One optional dropdown's pick from the submitted pop-up, or null.
 function picked(interaction, id) {
-    try { return interaction.fields.getStringSelectValues(id)[0] ?? null; } catch { return null; }
+    try { return require('../utils/formChoice').readChoice(interaction, id)[0] ?? null; } catch { return null; }
 }
 
 // The private notes a press can get (his wording and icons, B6, 2026-10-29 16:07 EDT).

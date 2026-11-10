@@ -13,6 +13,8 @@ const ACCENT = 0x2b2d31; // the old Announcement page's colour: /manage's flat p
 const LIST_ROWS = 8; // rows written out on the home; the dropdown under them holds up to 25
 const MAX_OPTIONS = 25;
 const EXPIRED_SHOWN = 5;
+const EXPIRED_PAGE = 8; // rows a page of the Expired list (2026-11-09, the /manage audit's finding 10)
+const FIND_SHOWN = 15; // matches a search lists; the dropdown under them opens one
 
 function ID(...parts) {
     const id = ['mng_an', ...parts.map(p => (p === undefined || p === null ? '' : String(p)))].join('|');
@@ -27,7 +29,7 @@ const btn = (parts, label, emojiStr, style = 2, disabled = false) => ({ type: 2,
 const crumb = (...p) => `-# ${['Announcements', ...p].join('  ›  ')}`;
 const panel = (components, after = []) => [{ type: 17, accent_color: ACCENT, components }, ...after];
 const homeBtn = () => btn('page', 'Home', emojis.returnArrow);
-const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+const plural = (n, w) => `${n} ${w}${n === 1 ? '' : /(s|sh|ch|x)$/.test(w) ? 'es' : 's'}`;
 
 const unix = (d) => Math.floor(new Date(d).getTime() / 1000);
 const rel = (d) => `<t:${unix(d)}:R>`;
@@ -39,18 +41,20 @@ function preview(doc, max = 100) {
 }
 // A dropdown label cannot draw a custom emoji, so its `<:name:id>` markup would show as raw text there (the lead, 2026-11-07 21:21 EST, click-testing): labels drop it; text rows keep it.
 const plainLabel = (t) => String(t).replace(/<a?:\w+:\d+>\s*/g, '').trim() || '(emoji only)';
-const expiryWords = (d) => (d.expiresAt ? `expires ${rel(d.expiresAt)}` : 'never expires');
+const isExpired = (d, now = new Date()) => Boolean(d.expiresAt) && new Date(d.expiresAt) <= now;
+const expiryWords = (d, now = new Date()) => (d.expiresAt ? `${isExpired(d, now) ? '**expired**' : 'expires'} ${rel(d.expiresAt)}` : 'never expires');
 // What the row says besides its text, on a small line.
 function factsLine(d, now = new Date()) {
-    return [`posted ${rel(d.createdAt)}`, isScheduled(d, now) ? `**starts ${rel(d.startsAt)}**` : null, expiryWords(d), d.repeatCount ? `repeats up to ${d.repeatCount}×` : null].filter(Boolean).join(' · ');
+    return [`posted ${rel(d.createdAt)}`, isScheduled(d, now) ? `**starts ${rel(d.startsAt)}**` : null, expiryWords(d, now), d.repeatCount ? `repeats up to ${d.repeatCount}×` : null].filter(Boolean).join(' · ');
 }
 
 // ---------- home ---------- `data` is { live, expired }: the announcements that have not expired (newest first, scheduled ones included) and the few that expired most recently.
 function pageView(data, note = null, { pageRow = null, now = new Date() } = {}) {
     const live = data.live || [];
     const expired = (data.expired || []).slice(0, EXPIRED_SHOWN);
+    const expiredCount = data.expiredCount ?? expired.length;
     const scheduled = live.filter(d => isScheduled(d, now)).length;
-    const counts = [`${live.length - scheduled} active`, ...(scheduled ? [`${scheduled} scheduled`] : []), ...(expired.length ? [`${expired.length} recently expired`] : [])].join(' · ');
+    const counts = [`${live.length - scheduled} active`, ...(scheduled ? [`${scheduled} scheduled`] : []), ...(expiredCount ? [`${expiredCount} expired`] : [])].join(' · ');
     const components = [text(`## ${emojis.dbAnnouncement} Announcements\n-# ${counts}`)];
     if (note) components.push(SMALL(), text(note));
     components.push(BIG());
@@ -64,12 +68,13 @@ function pageView(data, note = null, { pageRow = null, now = new Date() } = {}) 
     components.push(
         BIG(),
         text('-# Post…'),
-        row(btn('post', 'Post New', emojis.mngAdd, 3), btn('guide', 'Guide', emojis.guide)),
+        // Search and Expired (2026-11-09, the /manage audit's finding 10): an expired announcement was a read-only line with no card, and nothing found an old one by its words.
+        row(btn('post', 'Post New', emojis.mngAdd, 3), btn('find', 'Search', emojis.search), btn(['exp', 0], `Expired · ${expiredCount}`, emojis.expand, 2, !expiredCount), btn('guide', 'Guide', emojis.guide)),
     );
     if (expired.length) {
         components.push(
             SMALL(),
-            text(`-# Recently expired (read only)\n${expired.map(d => `- ${preview(d, 70)} · expired ${rel(d.expiresAt)}`).join('\n')}`.slice(0, 900)),
+            text(`-# Recently expired\n${expired.map(d => `- ${preview(d, 70)} · expired ${rel(d.expiresAt)}`).join('\n')}`.slice(0, 900)),
             { type: 1, components: [{ type: 3, custom_id: ID('again'), placeholder: 'Post one again…', options: expired.map(d => ({ label: plainLabel(preview(d)).slice(0, 100), value: String(d._id), description: 'Opens Post New with its text filled in' })) }] },
         );
     }
@@ -85,7 +90,9 @@ function cardView(doc, { header = null, extra = null, now = new Date() } = {}) {
     if (header) components.push(text(header), SMALL());
     components.push(text(`-# ${factsLine(doc, now)}${doc.bannerImageUrl ? ' · has a banner image' : ''}\n-# Above: exactly what players get.`), BIG());
     if (extra) components.push(...extra);
-    else components.push(row(btn(['edit', String(doc._id)], 'Edit', emojis.edit, 1), btn(['del', String(doc._id)], 'Delete', emojis.deleteBin, 4)), row(homeBtn()));
+    // A live one: Edit · End Now · Delete. An expired one: Post Again (Post New with its text) · Delete, and back to the Expired list (2026-11-09, the /manage audit's finding 10).
+    else if (isExpired(doc, now)) components.push(row(btn(['againid', String(doc._id)], 'Post Again', emojis.mngAdd, 3), btn(['del', String(doc._id)], 'Delete', emojis.deleteBin, 4)), row(btn(['exp', 0], 'Expired', emojis.returnArrow), homeBtn()));
+    else components.push(row(btn(['edit', String(doc._id)], 'Edit', emojis.edit, 1), btn(['end', String(doc._id)], isScheduled(doc, now) ? 'Cancel It' : 'End Now', emojis.pending), btn(['del', String(doc._id)], 'Delete', emojis.deleteBin, 4)), row(homeBtn()));
     return fitPanel(delivered, components);
 }
 
@@ -118,6 +125,36 @@ function draftView(doc, { token, kind = 'post', header = null, check = { ok: tru
     return fitPanel(delivered, components);
 }
 
+// ---------- a list of announcements ---------- The Expired list (`exp|<page>`) and a search's matches share one shape: numbered rows with their facts, a dropdown that opens one (`open`, the home's own), and the rows the caller passes under it.
+function listBlock(items, start, now) {
+    const lines = items.map((d, i) => `**${start + i + 1}.** ${preview(d, 80)}\n-# ${factsLine(d, now)}`);
+    const pick = { type: 1, components: [{ type: 3, custom_id: ID('open'), placeholder: 'Open one…', options: items.slice(0, MAX_OPTIONS).map((d, i) => ({ label: `${start + i + 1}. ${plainLabel(preview(d))}`.slice(0, 100), value: String(d._id), description: (isExpired(d, now) ? 'Expired' : isScheduled(d, now) ? 'Scheduled' : 'Active').slice(0, 100) })) }] };
+    return [text(lines.join('\n').slice(0, 3000)), pick];
+}
+function expiredView(docs, { page = 0, total = 0, now = new Date() } = {}) {
+    const pages = Math.max(1, Math.ceil(total / EXPIRED_PAGE));
+    const components = [text(crumb('Expired')), text(`### ${emojis.expand} Expired announcements\n-# ${plural(total, 'announcement')} · page ${page + 1} of ${pages}. Open one to post it again or delete it.`), BIG()];
+    if (!docs.length) components.push(text(`${emojis.cross} Nothing has expired.`));
+    else components.push(...listBlock(docs, page * EXPIRED_PAGE, now));
+    components.push(BIG(), row(
+        btn(['exp', Math.max(0, page - 1), 'p'], null, emojis.left, 2, page <= 0),
+        btn(['exp', Math.min(pages - 1, page + 1), 'n'], null, emojis.right, 2, page >= pages - 1),
+        btn('find', 'Search', emojis.search),
+        homeBtn(),
+    ));
+    return panel(components);
+}
+function findView(query, hits, { now = new Date() } = {}) {
+    const shown = hits.slice(0, FIND_SHOWN);
+    const components = [text(crumb('Search')), text(`### ${emojis.search} \`${String(query).slice(0, 60)}\`\n-# ${hits.length ? `${plural(hits.length, 'match')}${hits.length > FIND_SHOWN ? `, the newest ${FIND_SHOWN} shown` : ''}` : 'No announcement has every one of those words.'}`), BIG()];
+    if (shown.length) components.push(...listBlock(shown, 0, now));
+    components.push(BIG(), row(btn('find', 'Search Again', emojis.search, 1), homeBtn()));
+    return panel(components);
+}
+function findModal() {
+    return { title: 'Search announcements', custom_id: ID('findm'), components: [{ type: 18, label: 'Words to find', description: 'Every word must appear. Searches active, scheduled and expired ones.', component: { type: 4, custom_id: 'q', style: 1, required: true, max_length: 100, placeholder: 'double xp' } }] };
+}
+
 function resultView({ crumbs = [], title, body = [], back = 'page', backLabel = 'Back', ok = true, extraButtons = [], extraRows = [] }) {
     const backParts = [].concat(back);
     return panel([
@@ -130,4 +167,4 @@ function resultView({ crumbs = [], title, body = [], back = 'page', backLabel = 
     ]);
 }
 
-module.exports = { ID, ACCENT, LIST_ROWS, MAX_OPTIONS, EXPIRED_SHOWN, row, text, btn, homeBtn, panel, plural, preview, plainLabel, isScheduled, factsLine, pageView, cardView, draftView, resultView };
+module.exports = { ID, ACCENT, LIST_ROWS, MAX_OPTIONS, EXPIRED_SHOWN, EXPIRED_PAGE, FIND_SHOWN, isExpired, expiredView, findView, findModal, row, text, btn, homeBtn, panel, plural, preview, plainLabel, isScheduled, factsLine, pageView, cardView, draftView, resultView };

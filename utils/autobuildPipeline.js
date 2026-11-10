@@ -1,7 +1,7 @@
 // utils/autobuildPipeline.js Shared state + logic for /autobuild, required from BOTH commands/autobuild.js's execute() (initial invocation) and handlers/autobuild.js's button/modal handlers (Confirm/Edit/Cancel/retry, added in Tasks 7/8). Kept out of commands/autobuild.js itself so handlers/autobuild.js can reach the same pendingAutobuilds Map without a circular require -- the router imports handlers, not the reverse; every command file already requires shared logic FROM utils/, never the reverse. Full design: docs/superpowers/specs/2026-07-19-loadout-automation-poc-design.md.
 const BOT_EMOJI = require('./emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const crypto = require('crypto');
-const { ModalBuilder, TextInputBuilder, TextInputStyle, LabelBuilder, StringSelectMenuBuilder } = require('discord.js');
+const { ModalBuilder, TextInputBuilder, TextInputStyle, LabelBuilder, StringSelectMenuBuilder, RadioGroupBuilder } = require('discord.js');
 const Loadout = require('../models/Loadout');
 const { extractLoadoutFromImage } = require('./visionExtract');
 const { correctAttachmentName, correctGunsmithCode, gunsmithCodeProblem, parseLoadoutBadges, normalizeWeaponName, orderAttachmentsBySlot } = require('./adminParser');
@@ -703,8 +703,9 @@ function buildEditModal(token, data, customId = `autobuild_editmodal_${token}`) 
         text('ident', 'Category, build #, gunsmith code', new TextInputBuilder().setStyle(TextInputStyle.Short).setPlaceholder(isDmz ? 'SNIPER, 2   (blank build # = next build)' : 'SNIPER, 2b, 1C2C4A7E8A   (blank build # = next build)').setValue(identValue).setRequired(true)),
         // One per line, then a Comment: line (everything after it is the comment), as on /manage.
         text('attachments', 'Attachments and comment', new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setValue(`${data.attachments.join('\n')}\nComment: ${data.description || ''}`).setRequired(true)),
-        new LabelBuilder().setLabel('Mode').setStringSelectMenuComponent(
-            new StringSelectMenuBuilder().setCustomId('mode').setPlaceholder('MP or DMZ').setRequired(true).setMinValues(1).setMaxValues(1).addOptions(
+        // Radio buttons since 2026-11-10 (Harkirat: "why are we using dropdowns for everything in forms…"): two plain choices. Read back through utils/formChoice.js readChoice, which also reads a form opened before as a dropdown.
+        new LabelBuilder().setLabel('Mode').setRadioGroupComponent(
+            new RadioGroupBuilder().setCustomId('mode').setRequired(true).addOptions(
                 { label: 'MP', value: 'MP', default: data.mode === 'MP' },
                 { label: 'DMZ', value: 'DMZ', default: data.mode === 'DMZ' }
             )
@@ -746,7 +747,7 @@ function parseAdjustFields(values, data) {
 async function applyEditFields(interaction, data) {
     // Same normalizer as the initial extraction: strip a skin suffix + force the all-caps convention, so a manually-typed "Machine Pistol" or "R9-0 - Death's Voice" is stored consistently too.
     const read = (id) => { try { return interaction.fields.getTextInputValue(id); } catch { return ''; } };
-    const pick = (id) => { try { return interaction.fields.getStringSelectValues(id); } catch { return []; } };
+    const pick = (id) => { try { return require('../utils/formChoice').readChoice(interaction, id); } catch { return []; } };
     const parsed = parseAdjustFields({ weapon: read('weapon'), ident: read('ident'), attachments: read('attachments'), mode: pick('mode')[0], badges: pick('badges') }, data);
     if (parsed.error) {
         // Nothing typed is lost to a box that didn't read: the review keeps its values and says what to fix.

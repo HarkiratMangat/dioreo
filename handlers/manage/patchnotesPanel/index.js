@@ -79,16 +79,23 @@ async function editModal(doc, id, userId) {
     return entry ? reId(manageCommand().buildPatchEditSeasonModal(entry, await adminTimezone(userId)), V.ID('editm', id), `Edit ${V.displayTitle(entry)}`) : null;
 }
 
-// One pop-up submit. From the panel the old save runs under a deferUpdate, its own result (with Revert) follows as a message below, and this card is redrawn with a "Saved" header; from the slash command there is no card to redraw, so the old save answers alone.
+// One pop-up submit. From the panel the old save runs under a deferUpdate with `quiet`, and this card is redrawn with the result and its Revert in place (2026-11-09, the /manage audit's finding 9: it used to post the result as a second message below). From the slash command there is no card to redraw, so the old save answers alone.
 async function submit(interaction, save, opts, fallbackId = null) {
     if (!interaction.message) return save(interaction, opts);
     await interaction.deferUpdate();
     let result = null;
-    await save(interaction, { ...opts, onResult: (r) => { result = r; } });
+    await save(interaction, { ...opts, quiet: true, onResult: (r) => { result = r; } });
+    return showResult(interaction, result, fallbackId);
+}
+async function showResult(interaction, result, fallbackId = null) {
     const doc = await getDoc();
     const id = result?.elementId || fallbackId;
-    const header = result?.ok ? `-# ${emojis.checkmark} Saved. The result, with Revert, is in the message below.` : `-# ${emojis.warn} Not saved. The reason is in the message below.`;
-    return show(interaction, (id && V.cardView(doc, id, { header })) || await home(doc, header, interaction));
+    const header = result?.ok ? `### ${emojis.checkmark} ${result.heading || 'Saved'}` : `### ${emojis.cross} Not saved\n${String(result?.why || 'Try again.').slice(0, 1500)}`;
+    const card = id && V.cardView(doc, id, { header, revertIds: result?.ok ? result.changeIds : null });
+    if (card) return show(interaction, card);
+    const out = await home(doc, header, interaction);
+    if (result?.ok && result.changeIds?.length) out[0].components.push(V.row(V.btn(['revert', result.changeIds.join(',')], 'Revert', emojis.keep, 4)));
+    return show(interaction, out);
 }
 
 // ---------- the slash command ---------- `season:` opens a season (autocomplete), `do:` an action (on that season, or on the current one when none is given). A pop-up has to be the first answer, so every path that opens one runs before anything is deferred.
@@ -98,6 +105,14 @@ function resolveSeasonId(doc, value) {
     const hits = V.entries(doc).filter(p => words.every(w => V.displayTitle(p).toLowerCase().includes(w)));
     return hits.length === 1 ? { id: String(hits[0]._id) } : { id: null, count: hits.length };
 }
+// Delete Season's confirm, on the card (the card's Delete and the slash command's do: Delete Season).
+function deleteConfirm(doc, id) {
+    const p = V.findEntry(doc, id);
+    const cur = V.isCurrent(doc, id);
+    const prev = cur ? V.pastEntries(doc)[0] : null;
+    return V.cardView(doc, id, { header: `### ${emojis.warn} Delete ${V.displayTitle(p)}?\n-# Its notes and images leave /patch notes. ${cur ? (prev ? `It is the current season, so /patch notes opens on ${V.displayTitle(prev)} instead.` : 'It is the only season, so /patch notes will have nothing to show.') : 'It leaves the season dropdown.'} Revert brings it back as it was.`, extra: [V.row(V.btn(['delok', id], 'Yes, Delete', emojis.deleteBin, 4), V.btn(['card', id], 'Cancel', emojis.returnArrow))] });
+}
+
 async function openFromSlash(interaction) {
     const o = interaction.options;
     const seasonValue = o.getString('season'), act = o.getString('do');
@@ -122,6 +137,18 @@ async function openFromSlash(interaction) {
         }
         if (!(await gatePastEdit(interaction))) return;
         return interaction.showModal(await editModal(doc, target, interaction.user.id));
+    }
+    // Upload Images, Season Dates and Delete Season (2026-11-09, the /manage audit's finding 12): on the season named, else the current one, the same gates as their card buttons.
+    if (act === 'upload' || act === 'dates' || act === 'delete') {
+        const target = id || (V.currentEntry(doc) ? String(V.currentEntry(doc)._id) : null);
+        if (!target) return view(await home(doc, `${emojis.cross} There is no season yet. Add New Season first.`, interaction));
+        const p = V.findEntry(doc, target);
+        if (act === 'delete') {
+            if (!(await gate(interaction, 'purge'))) return;
+            return view(deleteConfirm(doc, target));
+        }
+        if (!(V.isCurrent(doc, target) ? await gate(interaction, act === 'upload' ? 'urls1' : 'dateinfo') : await gatePastEdit(interaction))) return;
+        return interaction.showModal(act === 'upload' ? V.uploadModal(p) : V.datesModal(p));
     }
     if (id) return view(V.cardView(doc, id));
     return view(await home(doc, null, interaction));
@@ -163,8 +190,18 @@ async function route(interaction) {
         return modal ? interaction.showModal(modal) : show(interaction, await home(doc, `${emojis.cross} That season no longer exists.`, interaction));
     }
 
+    // ----- the card's own pop-ups (2026-11-09, the /manage audit's finding 8) -----
+    if (verb === 'up' || verb === 'dates') {
+        const doc = await getDoc();
+        const p = V.findEntry(doc, a);
+        if (!p) return show(interaction, await home(doc, `${emojis.cross} That season no longer exists.`, interaction));
+        if (!(V.isCurrent(doc, a) ? await gate(interaction, verb === 'up' ? 'urls1' : 'dateinfo') : await gatePastEdit(interaction))) return;
+        return interaction.showModal(verb === 'up' ? V.uploadModal(p) : V.datesModal(p));
+    }
+
     // ----- views -----
     if (verb === 'page') return renderHome(interaction);
+    if (verb === 'revert') return require('../results').revertChanges(interaction, String(a || '').split(',').filter(Boolean), { doneNote: 'it is back as it was', render: async (note) => home(await getDoc(), note, interaction) });
     if ((verb === 'past' && interaction.isStringSelectMenu?.()) || verb === 'card') {
         const doc = await getDoc();
         const id = verb === 'past' ? interaction.values[0] : a;
@@ -184,6 +221,56 @@ async function route(interaction) {
             if (!(await gatePastEdit(interaction))) return;
             return submit(interaction, oldSave().editSeason, { customId: `modal_patch_editseason_${a}` }, a);
         }
+        if (verb === 'upm' || verb === 'datesm') {
+            const doc0 = await getDoc();
+            const p = V.findEntry(doc0, a);
+            if (!(p && V.isCurrent(doc0, a) ? await gate(interaction, verb === 'upm' ? 'urls1' : 'dateinfo') : await gatePastEdit(interaction))) return;
+            if (interaction.message) await interaction.deferUpdate(); else await interaction.deferReply({ flags: 64 });
+            if (!p) return show(interaction, await home(doc0, `${emojis.cross} That season no longer exists.`, interaction));
+            const { commitSet } = require('../../../core/changeset');
+            const why = (r) => require('../shared').extractCommitError(r) || 'Try again.';
+            if (verb === 'upm') {
+                let files = [];
+                try { files = [...(interaction.fields.getUploadedFiles('files')?.values() || [])]; } catch { files = []; }
+                const urls = files.filter(f => !f.contentType || /^image\//.test(f.contentType)).map(f => f.url).filter(Boolean);
+                let how = 'add';
+                try { how = require('../../../utils/formChoice').readChoice(interaction, 'how')[0] || 'add'; } catch { how = 'add'; }
+                if (!urls.length) return showResult(interaction, { ok: false, why: 'None of those files is an image.' }, a);
+                const all = [...(how === 'replace' ? [] : (p.images || []).filter(Boolean)), ...urls];
+                const kept = all.slice(0, 10);
+                // The whole entry is written by editSeason with its own title, info and date kept, so the images land in order (the two URL-slot ops each rewrite half the list and cannot put five new images after three old ones).
+                const r = await commitSet([{ type: 'patchnote.editSeason', target: { elementId: a }, payload: { titleOverride: p.titleOverride || '', description: p.description || '', releaseDate: p.releaseDate ? new Date(p.releaseDate) : '', urls1: kept.slice(0, 5), urls2: kept.slice(5, 10) } }], { actorId: interaction.user.id });
+                const left = all.length - kept.length;
+                return showResult(interaction, r.ok ? { ok: true, elementId: a, changeIds: r.changeIds, heading: `${how === 'replace' ? 'Images replaced' : `${urls.length} image${urls.length === 1 ? '' : 's'} added`} · ${kept.length}/10${left ? ` · ${left} left out (10 is the most)` : ''}` } : { ok: false, why: why(r) }, a);
+            }
+            const field = (k) => { try { return interaction.fields.getTextInputValue(k)?.trim() || ''; } catch { return ''; } };
+            const { parseAdminDate } = require('../../../utils/adminParser');
+            const sRaw = field('start'), eRaw = field('end');
+            const payload = !sRaw && !eRaw ? { seasonStart: null, seasonEnd: null } : { seasonStart: parseAdminDate(sRaw), seasonEnd: parseAdminDate(eRaw) };
+            if ((sRaw || eRaw) && (!payload.seasonStart || !payload.seasonEnd)) return showResult(interaction, { ok: false, why: `A season needs a start and an end I can read${!payload.seasonStart ? ` (start: "${sRaw}")` : ''}${!payload.seasonEnd ? ` (end: "${eRaw}")` : ''}.` }, a);
+            const r = await commitSet([{ type: 'patchnote.setSeasonDates', target: { elementId: a }, payload }], { actorId: interaction.user.id });
+            return showResult(interaction, r.ok ? { ok: true, elementId: a, changeIds: r.changeIds, heading: payload.seasonStart ? 'Season dates saved' : 'Season dates cleared' } : { ok: false, why: why(r) }, a);
+        }
+    }
+
+    // ----- one season's Delete (2026-11-09, the /manage audit's finding 8): patchnote.removeSeason, the op Undo of Add New Season already used; Revert restores the same entry, images included -----
+    if (verb === 'del') {
+        if (!(await gate(interaction, 'purge'))) return;
+        const doc = await getDoc();
+        const p = V.findEntry(doc, a);
+        if (!p) return show(interaction, await home(doc, `${emojis.cross} That season no longer exists.`, interaction));
+        return show(interaction, deleteConfirm(doc, a));
+    }
+    if (verb === 'delok') {
+        if (!(await gate(interaction, 'purge')) || !(await gateDestructive(interaction))) return;
+        await interaction.deferUpdate();
+        const doc = await getDoc();
+        const p = V.findEntry(doc, a);
+        if (!p) return show(interaction, await home(doc, `${emojis.cross} That season no longer exists.`, interaction));
+        const r = await require('../../../core/changeset').commitSet([{ type: 'patchnote.removeSeason', target: { elementId: a } }], { actorId: interaction.user.id });
+        const out = await home(await getDoc(), r.ok ? `### ${emojis.checkmark} Deleted ${V.displayTitle(p)}` : `### ${emojis.cross} Not deleted\n${require('../shared').extractCommitError(r) || 'Try again.'}`, interaction);
+        if (r.ok && r.changeIds?.length) out[0].components.push(V.row(V.btn(['revert', r.changeIds.join(',')], 'Revert', emojis.keep, 4)));
+        return show(interaction, out);
     }
 
     // ----- purge -----
@@ -195,8 +282,11 @@ async function route(interaction) {
     if (verb === 'purgeok') {
         if (!(await gate(interaction, 'purge')) || !(await gateDestructive(interaction))) return;
         await interaction.deferUpdate();
-        const { confirmMsg } = await oldSave().purge(interaction.user.id);
-        return show(interaction, await home(await getDoc(), `${confirmMsg}\n-# Revert it from \`/bot analytics\` › Changes.`, interaction));
+        const { confirmMsg, changeIds } = await oldSave().purge(interaction.user.id);
+        // Revert in place (2026-11-09, the /manage audit's finding 9), as every other save on this panel has.
+        const out = await home(await getDoc(), confirmMsg, interaction);
+        if (changeIds?.length) out[0].components.push(V.row(V.btn(['revert', changeIds.join(',')], 'Revert', emojis.keep, 4)));
+        return show(interaction, out);
     }
 
     return say(interaction, `${emojis.cross} That button is from an older panel. Open \`/manage patch-notes\` again.`);

@@ -66,8 +66,10 @@ function fake({ customId = '', chat = false, modal = false, select = false, mess
     Seasonal.findOne = () => ({ lean: async () => seasonal });
     require('../models/UserPreference').findOne = async () => ({ timezone: 'America/Toronto' });
     const AnnouncementModel = require('../models/Announcement');
-    const chain = (list) => ({ sort() { return this; }, limit() { return this; }, lean: async () => list });
-    AnnouncementModel.find = (q) => chain(q && q.$or ? announcements.live : announcements.expired);
+    const chain = (list) => ({ sort() { return this; }, skip() { return this; }, limit() { return this; }, lean: async () => list });
+    // `$or` reads the live list, an expiry filter the expired one, and `{}` (search, autocomplete) both.
+    AnnouncementModel.find = (q) => chain(q && q.$or ? announcements.live : q && q.expiresAt ? announcements.expired : [...announcements.live, ...announcements.expired]);
+    AnnouncementModel.countDocuments = async () => announcements.expired.length;
     AnnouncementModel.findById = (id) => ({ lean: async () => [...announcements.live, ...announcements.expired].find(d => String(d._id) === String(id)) || null });
 
     const PV = require('../handlers/manage/patchnotesPanel/views');
@@ -99,13 +101,15 @@ function fake({ customId = '', chat = false, modal = false, select = false, mess
         assert.ok(!select.options.some(o => o.value === oid(40)), 'the current season is not a past season');
         assert.match(JSON.stringify(home), /older seasons are not listed/);
     });
-    await check('a past season\'s card offers only the Edit its old pop-up can do; the current one offers the three it has', () => {
+    await check('a past season\'s card offers its Edit, Upload Images, Season Dates and Delete; the current one its three pop-ups, Upload and Delete; both show the images (2026-11-09)', () => {
         const doc = seasonDoc(10);
         const past = idsOf(PV.cardView(doc, oid(3)));
-        assert.deepStrictEqual(past.sort(), [PV.ID('edit', oid(3)), PV.ID('page')].sort());
+        assert.deepStrictEqual(past.sort(), [PV.ID('edit', oid(3)), PV.ID('up', oid(3)), PV.ID('dates', oid(3)), PV.ID('del', oid(3)), PV.ID('page')].sort());
         const cur = idsOf(PV.cardView(doc, oid(10)));
-        assert.deepStrictEqual(cur.sort(), [PV.ID('dateinfo'), PV.ID('urls', 1), PV.ID('urls', 2), PV.ID('page')].sort());
-        assert.match(JSON.stringify(PV.cardView(doc, oid(3))), /one pop-up/);
+        assert.deepStrictEqual(cur.sort(), [PV.ID('dateinfo'), PV.ID('urls', 1), PV.ID('urls', 2), PV.ID('up', oid(10)), PV.ID('del', oid(10)), PV.ID('page')].sort());
+        assert.ok(JSON.stringify(PV.cardView(doc, oid(3))).includes('"type":12'), 'the images as a gallery');
+        assert.ok(idsOf(PV.cardView(doc, oid(3), { revertIds: ['T1'] })).includes(PV.ID('revert', 'T1')), 'a save\'s Revert sits on the card');
+        for (const m of [PV.uploadModal(doc.patchNotes[2]), PV.datesModal(doc.patchNotes[2])]) assert.ok(m.title.length <= 45 && m.custom_id.length <= 100 && m.components.length <= 5);
     });
     await check('the home reads: the current card, its three actions, Add, past seasons, Guide, Purge', async () => {
         const ids = idsOf(await PV.pageView(seasonDoc(3), null, {}));
@@ -167,20 +171,21 @@ function fake({ customId = '', chat = false, modal = false, select = false, mess
         await PP.openFromSlash(miss);
         assert.match(JSON.stringify(sent.at(-1)), /No season matches/);
     });
-    await check('a pop-up submit from the panel defers the update, saves through the OLD handler under its own id, and redraws the card', async () => {
+    await check('a pop-up submit from the panel defers the update, saves through the OLD handler under its own id, and redraws the card with the result and Revert', async () => {
         const old = require('../handlers/manage/patchnotes');
         const real = { setUrls: old.setUrls, setDateInfo: old.setDateInfo, editSeason: old.editSeason };
         try {
             const seen = [];
-            old.setUrls = async (interaction, opts) => { seen.push(['urls', opts.customId]); opts.onResult?.({ ok: true, elementId: oid(10) }); };
+            old.setUrls = async (interaction, opts) => { seen.push(['urls', opts.customId, opts.quiet]); opts.onResult?.({ ok: true, elementId: oid(10), changeIds: ['T9'], heading: 'Patch notes images 6–10 updated' }); };
             old.setDateInfo = async (interaction, opts) => { seen.push(['dateinfo', opts.customId]); opts.onResult?.({ ok: false }); };
             old.editSeason = async (interaction, opts) => { seen.push(['edit', opts.customId]); opts.onResult?.({ ok: true, elementId: oid(3) }); };
             sent.length = 0;
             const a = fake({ customId: 'mng_pn|urlsm|2', modal: true, message: true });
             assert.strictEqual(await PP.handlePatchnotesPanelInteraction(a), true);
             assert.deepStrictEqual(a.calls, ['deferUpdate']);
-            assert.deepStrictEqual(seen.pop(), ['urls', 'modal_patch_urls_2']);
-            assert.match(JSON.stringify(sent.at(-1)), /Saved\. The result, with Revert/);
+            assert.deepStrictEqual(seen.pop(), ['urls', 'modal_patch_urls_2', true], 'quiet: the result is shown in place, not posted below (2026-11-09)');
+            assert.match(JSON.stringify(sent.at(-1)), /images 6–10 updated/);
+            assert.match(JSON.stringify(sent.at(-1)), /mng_pn\|revert\|T9/, 'with its Revert on the card');
             const b = fake({ customId: 'mng_pn|dateinfom', modal: true, message: true });
             await PP.handlePatchnotesPanelInteraction(b);
             assert.match(JSON.stringify(sent.at(-1)), /Not saved/, 'a failed save says so on the redrawn card');
@@ -204,6 +209,22 @@ function fake({ customId = '', chat = false, modal = false, select = false, mess
         }
     });
 
+    await check('slash: Upload Images and Season Dates open their pop-up on the current season; Delete Season confirms on its card', async () => {
+        seasonal = seasonDoc(10);
+        const cur = String(seasonal.patchNotes.at(-1)._id);
+        const up = fake({ chat: true, opts: { do: 'upload' } });
+        await PP.openFromSlash(up);
+        assert.deepStrictEqual(up.calls, [['showModal', `mng_pn|upm|${cur}`]]);
+        const dates = fake({ chat: true, opts: { do: 'dates', season: String(seasonal.patchNotes[2]._id) } });
+        await PP.openFromSlash(dates);
+        assert.deepStrictEqual(dates.calls, [['showModal', `mng_pn|datesm|${seasonal.patchNotes[2]._id}`]]);
+        sent.length = 0;
+        const del = fake({ chat: true, opts: { do: 'delete' } });
+        await PP.openFromSlash(del);
+        assert.match(JSON.stringify(sent.at(-1)), /Delete .*\?/);
+        assert.ok(idsOf(sent.at(-1)).includes(PV.ID('delok', cur)));
+    });
+
     // ---------- announcements ----------
     await check('every announcement view stays inside Discord\'s limits with 8 long announcements', async () => {
         const live = Array.from({ length: 8 }, (_, i) => ann(i + 1));
@@ -225,7 +246,7 @@ function fake({ customId = '', chat = false, modal = false, select = false, mess
         const dump = JSON.stringify(view);
         assert.match(dump, /1 scheduled/);
         assert.match(dump, /starts <t:/);
-        assert.match(dump, /1 recently expired/);
+        assert.match(dump, /1 expired/);
         assert.match(dump, /and 4 more in the dropdown/);
         let open; walk(view, c => { if (c.type === 3 && c.custom_id === AV.ID('open')) open = c; });
         assert.strictEqual(open.options.length, 12);
@@ -238,13 +259,84 @@ function fake({ customId = '', chat = false, modal = false, select = false, mess
         assert.strictEqual(AV.preview({ text: 'x'.repeat(300) }).length, 100);
         assert.strictEqual(AV.preview({ text: '' }), '(no text)');
     });
-    await check('the card shows the text as players get it and offers Edit and Delete only', () => {
+    await check('the card shows the text as players get it and offers Edit, End Now and Delete', () => {
         const d = ann(1, { text: 'Hello players' });
         const view = AV.cardView(d);
         const dump = JSON.stringify(view);
         assert.match(dump, /Hello players/);
         assert.match(dump, /Made with/, 'the permanent footer players get is in the card');
-        assert.deepStrictEqual(idsOf(view).sort(), [AV.ID('edit', d._id), AV.ID('del', d._id), AV.ID('page')].sort());
+        assert.match(dump, /End Now/);
+        assert.deepStrictEqual(idsOf(view).sort(), [AV.ID('edit', d._id), AV.ID('end', d._id), AV.ID('del', d._id), AV.ID('page')].sort());
+        assert.match(JSON.stringify(AV.cardView(ann(2, { startsAt: new Date(now + DAY) }))), /Cancel It/, 'a scheduled one is cancelled, not ended');
+    });
+    await check('an expired card offers Post Again and Delete and goes back to the Expired list; never Edit or End Now', () => {
+        const d = ann(7, { expiresAt: new Date(now - DAY) });
+        const view = AV.cardView(d);
+        assert.match(JSON.stringify(view), /\*\*expired\*\*/);
+        assert.deepStrictEqual(idsOf(view).sort(), [AV.ID('againid', d._id), AV.ID('del', d._id), AV.ID('exp', 0), AV.ID('page')].sort());
+    });
+    await check('the Expired list pages, opens a card from its dropdown, and fits Discord; search finds active and expired by every word', async () => {
+        const expired = Array.from({ length: 20 }, (_, i) => ann(40 + i, { expiresAt: new Date(now - (i + 1) * DAY), text: i % 2 ? `Double XP weekend ${i}` : `Ranked reset ${i}` }));
+        announcements = { live: [ann(1, { text: 'Double XP is live now' })], expired };
+        sent.length = 0;
+        const page = fake({ customId: 'mng_an|exp|1' });
+        await AP.handleAnnouncementsPanelInteraction(page);
+        const view = sent.at(-1);
+        limits(view, 'expired list');
+        assert.match(JSON.stringify(view), /page 2 of 3/);
+        assert.ok(idsOf(view).includes(AV.ID('open')) && idsOf(view).includes(AV.ID('exp', 0, 'p')) && idsOf(view).includes(AV.ID('exp', 2, 'n')));
+        limits(AV.expiredView([], { page: 0, total: 0 }), 'expired list, empty');
+        const find = fake({ customId: 'mng_an|find' });
+        await AP.handleAnnouncementsPanelInteraction(find);
+        assert.deepStrictEqual(find.calls, [['showModal', 'mng_an|findm']]);
+        assert.ok(find.lastModal.title.length <= 45 && find.lastModal.components.length <= 5);
+        sent.length = 0;
+        const sub = fake({ customId: 'mng_an|findm', modal: true, message: true, fieldValues: { q: 'double xp' } });
+        await AP.handleAnnouncementsPanelInteraction(sub);
+        const found = sent.at(-1);
+        limits(found, 'search result');
+        const dump = JSON.stringify(found);
+        assert.match(dump, /11 matches/);
+        assert.match(dump, /Double XP is live now/);
+        assert.match(dump, /Active/); assert.match(dump, /Expired/);
+        const ac = fake({ chat: true, focused: 'double' });
+        await AP.autocomplete(ac);
+        const names = ac.calls.find(c => c[0] === 'respond')[1].map(h => h.name);
+        assert.strictEqual(names[0], 'Double XP is live now', 'a live one first');
+        assert.ok(names.slice(1).every(n => n.startsWith('Expired · ')));
+    });
+    await check('End Now asks first, then commits announcement.edit with expiresAt now and every other field kept, with Revert', async () => {
+        const cs = require('../core/changeset');
+        const real = cs.commitSet;
+        try {
+            const d = ann(1, { text: 'Stop me', repeatCount: 2, bannerImageUrl: 'https://example.com/b.png' });
+            announcements = { live: [d], expired: [] };
+            sent.length = 0;
+            const ask = fake({ customId: `mng_an|end|${d._id}` });
+            await AP.handleAnnouncementsPanelInteraction(ask);
+            assert.match(JSON.stringify(sent.at(-1)), /End this announcement now/);
+            assert.ok(idsOf(sent.at(-1)).includes(AV.ID('endok', d._id)));
+            let ops = null;
+            cs.commitSet = async (o) => { ops = o; d.expiresAt = o[0].payload.expiresAt; return { ok: true, changeIds: ['C1'], results: [{}] }; };
+            const ok = fake({ customId: `mng_an|endok|${d._id}` });
+            await AP.handleAnnouncementsPanelInteraction(ok);
+            assert.strictEqual(ops[0].type, 'announcement.edit');
+            assert.strictEqual(ops[0].target.id, d._id);
+            const p = ops[0].payload;
+            assert.ok(p.expiresAt instanceof Date && Math.abs(p.expiresAt - Date.now()) < 5000);
+            assert.deepStrictEqual([p.text, p.repeatCount, p.bannerImageUrl], ['Stop me', 2, 'https://example.com/b.png']);
+            const dump = JSON.stringify(sent.at(-1));
+            assert.match(dump, /Ended/);
+            assert.ok(idsOf(sent.at(-1)).includes('mng_an|revert|C1') && idsOf(sent.at(-1)).includes(AV.ID('againid', d._id)));
+            // A scheduled one loses its start, or the op would refuse a start after the expiry.
+            const s = ann(2, { startsAt: new Date(now + DAY) });
+            announcements = { live: [s], expired: [] };
+            await AP.handleAnnouncementsPanelInteraction(fake({ customId: `mng_an|endok|${s._id}` }));
+            assert.strictEqual(ops[0].payload.startsAt, null);
+            // The real op accepts the payload End Now builds.
+            const v = cs.validateSet([{ type: 'announcement.edit', target: { id: String(d._id) }, payload: { text: 'x', expiresAt: new Date(), startsAt: null, bannerImageUrl: null, repeatCount: null } }]);
+            assert.ok(v.ok, JSON.stringify(v.failures));
+        } finally { cs.commitSet = real; }
     });
     await check('announcement custom ids are mng_an|… and refuse to pass 100 characters', () => {
         assert.strictEqual(AV.ID('card', oid(1)), `mng_an|card|${oid(1)}`);
@@ -280,6 +372,9 @@ function fake({ customId = '', chat = false, modal = false, select = false, mess
         const none = fake({ chat: true, opts: { do: 'edit' } });
         await AP.openFromSlash(none);
         assert.match(JSON.stringify(sent.at(-1)), /needs an `announcement:`/);
+        const again = fake({ chat: true, opts: { do: 'again', announcement: 'keep me' } });
+        await AP.openFromSlash(again);
+        assert.deepStrictEqual(again.calls, [['showModal', 'mng_an|postm']]);
     });
     await check('Post Again opens Post New with the expired text in the box and the other fields as Post New has them', () => {
         const modal = AP.postAgainModal(ann(5, { text: 'Come back soon' }));

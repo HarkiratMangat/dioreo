@@ -24,8 +24,7 @@ function draftReadiness(d) {
         seamGap: draft.bpStart && d?.bpEnd && !d?.bpEndTBD && Math.abs(new Date(draft.bpStart) - new Date(d.bpEnd)) > DAY_MS / 2 ? `this season ends ${day(d.bpEnd)}, next starts ${day(draft.bpStart)}` : '',
         // Consumer audit (2026-11-05 17:18 EST): Promote to Live drops newsSource, so a row still on its placeholder date (a dateless item sits on the season start) reads on /calendar as starting on day one, with nothing left to say no post ever dated it.
         undated: [...calendar, ...draws].filter(r => r.newsSource && r.newsSource.dated === false).map(r => r.title),
-        // /manage's draft boxes are Discord text inputs, which hold 4,000 characters, and news triage adds rows without looking at the box (prod's 11 returning draws measured 2,690 characters, with their image links).
-        fullBoxes: (() => { try { const ap = require('../adminParser'); const withItems = l => (l || []).map(r => ({ ...r, items: r.items || [] })); return [['calendar', ap.formatCalendarAsBulkText(calendar)], ['new draws', ap.formatDrawsAsBulkText(withItems(draft.newDraws))], ['returning draws', ap.formatDrawsAsBulkText(withItems(draft.returningDraws))]].filter(([, t]) => t.length > 3600).map(([n, t]) => `${n} (${t.length.toLocaleString('en-US')} of 4,000 characters)`); } catch { return []; } })(),
+        // fullBoxes (a /manage box near its 4,000 characters) retired 2026-11-09: the draft boxes open empty and add or update now (utils/draftPaste.js).
         startsAt: draft.bpStart || null,
         autoPromote: Boolean(draft.autoPromote && draft.bpStart),
     };

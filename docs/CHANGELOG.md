@@ -29,7 +29,41 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.17.0 — 2026-11-09 15:56 EST (#267) — Owner delete, an admin /help, announcement drafts, a draw index check and Quick Add for the season draft
+## v3.18.0 — 2026-11-09 18:33 EST (#268) — /manage audit: the season draft adds instead of replacing, a fix button on every Needs a Look line, and the gaps in draws, patch notes, announcements and calendar; /draws opens one draw and filters in a pop-up
+
+From a simulated click-through of every /manage panel (his ask, 2026-11-09). Findings: `/mnt/project-files/manage-audit/findings-2026-11-09.md`.
+
+### Added
+- **The season draft's Paste Draws and Paste Calendar add and update, with a preview** (`utils/draftPaste.js`): a line matching a staged title updates it in place (keeping its id, picture and news tag), a new line is added, and anything not pasted stays staged; nothing is written before **Stage**. The pop-ups open empty, which also ends the "over 4,000 characters" error a prefilled box threw on a large draft.
+- **A draft calendar editor** (Edit Calendar): add, edit or remove one row; `TBD` clears an end, and a second copy of a title is refused.
+- **A draft draw's card** (Open, on Edit Draws): its items and picture, **Set End Date** (on the draft calendar), **Move** between New and Returning (with its id), Edit and Remove.
+- **Draft banners**: the next season's three /calendar page banners, staged and promoted with the rest (`season.setDraftBanners`).
+- **A fix button on each Needs a Look line**: titles, patch notes, a draw's card, Stage These, the draft calendar, the season seam, news items, last season's rows.
+- **Needs a Look on /manage draws**: running draws with no picture, a placeholder, no items, no draw type or no end date; the card lists what each lacks (`utils/drawChecks.js`).
+- **Patch notes**: each season's card shows its pictures; **Upload Images** (up to 10 from the device, added or replacing), **Season Dates** for a past season, and **Delete Season** (asks first). Every save answers on the card with **Revert**, and so does Purge.
+- **Announcements**: **End Now** (or **Cancel It** for a scheduled one) through `announcement.edit`, so Revert restores the old expiry; an **Expired** list with a card per announcement (Post Again, Delete); **Search** over active, scheduled and expired; autocomplete and `announcement:` reach expired ones.
+- **Calendar**: a draw row's card has **Open the Draw** (its card in /manage draws); a draw row with no draw on /draws is marked, listed under Needs a Look, and offers **Add the Draw** (Quick Add with the row's dates).
+- **Slash `do:` choices** for all of these: draws Check Draw Index (and `show:` Needs a Look); patch notes Upload Images, Season Dates, Delete Season; draft Quick Add, Edit Draws, Edit Calendar, Banners, Needs a Look; announcement End Now, Post Again, Search, Expired.
+- **Guides and /help** cover them, plus Expand View, auto-promote and announcement drafts.
+- **The new prod emojis**: Guide (replacing DB_Guide), PasteImport on every paste button, News.
+- **Players' View** on the draft's staged lists uses the Expand emoji.
+- **`/draws` opens one draw on its own panel** (`draw:` with autocomplete, `d draws <name>`, or **Open a draw…** on every page): its dates, picture and items, Prev and Next through every draw, Back to Draws and Calculate.
+- **`/draws` Filter is a pop-up** in place of the dropdown: section, status, rarity (mythic, legendary, epic) and kind (weapon, character, armory) as checkboxes, plus a search box; within a group a tick widens, across groups it narrows. **Reset Filter** clears it.
+- **Radio buttons and checkboxes in forms** wherever a choice has 2 to 10 options and no emoji (`utils/formChoice.js`); a list with emoji stays a dropdown, his call.
+- **An end typed as the game's countdown** (`13d 23h`, `ends 14d`) is saved as the midnight UTC the draw ends at, counted from the time since the daily update; days alone take the rounded reading (`utils/countdown.js`). Works in Quick Add, the end of every Start - End box, and every end-date box (a calendar entry's end, which Set End Date opens, the draft's end dates, a lone date in the live season box). A start date never takes one (`parseAdminEndDate`).
+- **Quick Add**: a Remove lines menu, **Add More** for the same draft, each line's picture as a link, and after Save **Open Draw**, **Quick Add More** and **Draws Home**.
+- **The /manage draws card**: Prev and Next through the list it was opened from, and **Calendar Entry** to its /calendar row.
+
+### Fixed
+- **Promote to Live renamed the OUTGOING season's patch notes** to the new title when the new season had no entry yet; it now renames the last entry only when it is the new season's or no season's (`core/ops/season.js`). Prod's Season 8 and 9 entries, whose own titles read "Season 7 — Terminated" under their overrides, were corrected by hand on 2026-11-09 (his OK).
+- **Titles & Deadlines copied the live season's title and emoji onto next season's patch notes entry** when that entry was already in (held under its own title override); it now leaves another season's entry alone, as Promote does. Its emoji would have shown on /patch notes, which reads the entry's own emoji first.
+- **Add New Season stored the live season's title under a typed one** (`patchnote.addSeason`); a typed title is now the entry's own title too, and blank still means the current season. This and the line above are where the wrong titles came from.
+- **The calendar paste's 2X CP** was dropped when a draft calendar was merged (`mapParsedEvents`).
+- **`helpBodySnapshot`'s fixture** still pinned the retired DB_Guide emoji.
+- **Quick Add and Add to Calendar moved a passed month and day into next year**; they now stay in this year.
+- **The season draft's draws page could not go past page 1**: page 2's left arrow shared a button id with the New Draws tab, so Discord refused it.
+
+## v3.17.0 — 2026-11-09 15:56 EST (#267 · `cbeac22d`) — Owner delete, an admin /help, announcement drafts, a draw index check and Quick Add for the season draft
 
 ### Added
 - **`d owner delete` and `/bot delete`** (owner only; aliases `override`/`dev` and `d`/`purge`): delete Dioreo's or Dioreo Admin's own messages by id, link or last N, in any channel Dioreo can see (`utils/ownerDelete.js`). Each message's author is read first; anyone else gets silence; the owner's note deletes itself after 5 s.

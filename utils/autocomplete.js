@@ -24,6 +24,8 @@ async function runAutocomplete(interaction) {
         return await interaction.respond(filtered.map(p => ({ name: displayTitle(p), value: p._id.toString() })));
     }
 
+    // /draws' draw: option (2026-11-10): this season's draws by title, newest first (commands/draws.js autocomplete).
+    if (commandName === 'draws') return await interaction.client.commands.get('draws').autocomplete(interaction);
     // /remind's set: option -- the categories pinned first, then this season's entries (utils/reminders.js autocompleteChoices).
     if (commandName === 'remind') return await interaction.client.commands.get('remind').autocomplete(interaction);
     // /timestamp's timezone: option -- every zone the runtime knows (utils/timezoneData.js), 2026-10-24 21:16 EDT.

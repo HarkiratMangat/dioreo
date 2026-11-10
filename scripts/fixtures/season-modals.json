@@ -227,7 +227,7 @@
   },
   "draftBulkDraws": {
     "custom_id": "modal_draft_bulk_draws",
-    "title": "Draft: New + Returning Draws",
+    "title": "Draft: Add or Update Draws",
     "components": [
       {
         "type": 1,
@@ -235,10 +235,9 @@
           {
             "type": 4,
             "custom_id": "new_text",
-            "label": "New Draws (leave blank to skip)",
+            "label": "New Draws to add or update (blank = skip)",
             "style": 2,
             "placeholder": "Title, m Item 1, july 10, url.jpg",
-            "value": "",
             "required": false
           }
         ]
@@ -249,10 +248,9 @@
           {
             "type": 4,
             "custom_id": "returning_text",
-            "label": "Returning Draws (leave blank to skip)",
+            "label": "Returning Draws to add or update",
             "style": 2,
             "placeholder": "Title, l Item, aug 5, url.jpg",
-            "value": "",
             "required": false
           }
         ]
@@ -261,7 +259,7 @@
   },
   "draftBulkCalendar": {
     "custom_id": "modal_draft_bulk_calendar",
-    "title": "Draft: Calendar",
+    "title": "Draft: Add or Update Calendar",
     "components": [
       {
         "type": 1,
@@ -269,10 +267,9 @@
           {
             "type": 4,
             "custom_id": "bulk_text",
-            "label": "Events (replaces the whole staged list)",
+            "label": "Events to add or update",
             "style": 2,
             "placeholder": "7/15 - 8/1 | Event Title\n7/20 - All Season | Other Event",
-            "value": "",
             "required": true
           }
         ]

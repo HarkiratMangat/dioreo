@@ -53,6 +53,8 @@ async function routeManage(interaction) {
 
         // MANAGE PANEL DISAMBIGUATION SELECT -- shown by handleSearchSubmit when a search query matched more than one item.
         if (interaction.customId.startsWith('mng_pick_')) return await handlePick(interaction);
+        // Quick Add's Remove lines menu (handlers/manage/quickAdd.js).
+        if (interaction.customId.startsWith('mng_qa_rm_')) return await require('./quickAdd').handleButton(interaction);
 
         // A merged build's saved panel: Edit another option (handlers/manage/loadouts.js handleSavedAction).
         if (interaction.customId.startsWith('mng_ldeditopt_')) return await loadouts.handleSavedAction(interaction);
@@ -278,6 +280,7 @@ async function routeManage(interaction) {
         if (customId === 'modal_draws_bulk_add_both' || customId === 'modal_draws_bulk_replace_both') return await draws.bulkAddOrReplaceDraws(interaction);
         if (customId === 'modal_draws_quickadd') return await require('./quickAdd').submitQuickAdd(interaction);
         if (customId.startsWith('modal_draws_quickadd_draft_')) return await require('./quickAdd').submitQuickAdd(interaction, { target: 'draft', section: customId.endsWith('_r') ? 'r' : 'n' });
+        if (customId.startsWith('modal_qa_more_')) return await require('./quickAdd').submitMore(interaction);
         if (customId.startsWith('modal_qa_edit_')) return await require('./quickAdd').submitEdit(interaction);
         if (customId.startsWith('modal_qa_pick_')) return await require('./quickAdd').submitPick(interaction);
         if (customId.startsWith('modal_kinds_')) return await require('./itemKinds').submit(interaction);

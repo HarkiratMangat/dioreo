@@ -222,5 +222,23 @@ t('a box of lines keeps the first ten', () => {
     assert.strictEqual(r.extra, 3);
 });
 
+t('a month and day already passed stays this year, even after the UTC date rolls over (2026-11-09, his Broken Tides screenshot)', () => {
+    const evening = new Date('2026-11-10T00:18:00Z');   // 7:18 PM Toronto on Nov 9
+    const day = (line, slot) => qa.parseQuickLine(line, { now: evening, zone: 'America/Toronto' })[slot]?.date.toISOString().slice(0, 10);
+    assert.strictEqual(day('tide, starts nov 9', 'start'), '2026-11-09', 'was 2027-11-09');
+    assert.strictEqual(day('tide, starts oct 30, ends nov 23', 'start'), '2026-10-30');
+    assert.strictEqual(day('tide, ends nov 3', 'end'), '2026-11-03');
+    assert.strictEqual(day('tide, starts jan 5', 'start'), '2027-01-05', 'a date months away still moves ahead');
+    assert.strictEqual(day('tide, nov 5 - nov 20', 'start'), '2026-11-05', 'a range fills the start');
+    assert.strictEqual(day('tide, nov 5 - nov 20', 'end'), '2026-11-20', 'and the end, in the same year');
+    assert.strictEqual(day('tide, dec 20 - jan 3', 'end'), '2027-01-03', 'a range over New Year ends next year');
+});
+t('Add to Calendar reads the post\'s dates, skips a bare "now", and keeps a passed date this year', () => {
+    const { calendarPrefill } = require('../commands/addToCalendar');
+    const at = new Date('2026-11-09T20:00:00Z');
+    assert.deepStrictEqual(calendarPrefill({ title: 'X', content: 'live now, 11/5 - 11/19', postedAt: at }), { title: 'X', startDate: 'November 5, 2026', endDate: 'November 19, 2026' });
+    assert.strictEqual(calendarPrefill({ title: 'X', content: 'Event Oct 20 - Nov 2', postedAt: at }).startDate, 'October 20, 2026');
+});
+
 console.log(failed ? `\n${failed} FAILED` : '\nall passed');
 process.exit(failed ? 1 : 0);

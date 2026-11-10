@@ -88,7 +88,7 @@ const OP_TIERS = {
     'patchnote.editSeason': 'create',         // Past Seasons edit, and the Add to Patch Notes right-click
     'patchnote.setSeasonDates': 'create',     // a past season's own dates; scripts/setSeasonDates.js
     'patchnote.purge': 'destructive',
-    'patchnote.removeSeason': 'destructive',  // inverse-only
+    'patchnote.removeSeason': 'destructive',  // Add New Season's inverse, and the panel's Delete Season
     'patchnote.restoreSeason': 'destructive', // inverse-only
     'patchnote.restore': 'destructive',       // inverse-only
     // Season (live)
@@ -99,6 +99,7 @@ const OP_TIERS = {
     'season.setDraftTitlesDeadlines': 'create',
     'season.bulkDraftDraws': 'create',        // replaces the STAGED list only; nothing live changes
     'season.bulkDraftCalendar': 'create',
+    'season.setDraftBanners': 'create',       // the draft's three /calendar banners; staged only
     'season.newsDraft': 'create',             // news triage's automatic Next Season Draft writes; staged only, nothing live changes
     'season.promoteDraft': 'destructive',
     'season.setAutoPromote': 'destructive', // arms a promote (2026-11-08), so it takes the promote's own tier

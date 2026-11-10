@@ -22,7 +22,7 @@ async function fileFrom(interaction, id) {
     if (!res.ok) return null;
     return { data: Buffer.from(await res.arrayBuffer()), mime: (res.headers.get('content-type') || file.contentType || '').split(';')[0], size: file.size };
 }
-const pickOf = (interaction, id) => { try { return interaction.fields.getStringSelectValues(id)[0]; } catch { return null; } };
+const pickOf = (interaction, id) => { try { return require('../utils/formChoice').readChoice(interaction, id)[0]; } catch { return null; } };
 
 async function refuse(interaction, text) {
     try { await interaction.reply({ content: `${emojis.cross} ${text}`, ephemeral: true }); } catch (e) { console.error('Failed to answer a /manage emojis click:', e); }

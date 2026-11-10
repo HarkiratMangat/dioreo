@@ -90,7 +90,7 @@ async function route(interaction) {
             const region = interaction.customId.replace('price_filtersave_', '');
             const { filterToken, JUMP_KEYS, FILTER_GROUPS } = require('../commands/drawprices');
             // One dropdown per kind of draw (normal, armory, advanced); an unanswered one reads as none.
-            const values = FILTER_GROUPS.flatMap(group => { try { return interaction.fields.getStringSelectValues(group.id) || []; } catch { return []; } });
+            const values = FILTER_GROUPS.flatMap(group => { try { return require('../utils/formChoice').readChoice(interaction, group.id) || []; } catch { return []; } });
             const picked = JUMP_KEYS.filter(key => values.includes(key));
             const pricesCommand = interaction.client.commands.get('draw');
             const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });

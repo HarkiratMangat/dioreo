@@ -76,12 +76,35 @@ function seasonDoc() {
         assert.ok(all.every(e => e._key.startsWith('c:')));
     });
 
-    await check('the card for a draw row says the draw itself lives in /manage draws', () => {
+    await check('a draw row with its draw on /draws opens it; one with none is flagged, needs a look, and offers Add the Draw', async () => {
         const doc = seasonDoc();
-        const draw = V.allEntries(doc).find(e => e._cat === 'draw');
-        assert.match(JSON.stringify(V.cardView(doc, draw._key)), /\/manage draws/);
+        const rows = V.allEntries(doc).filter(e => e._cat === 'draw');
+        // Distinct titles: the fixture's numbered titles read as one draw to isSameDrawTitle, which ignores the numbers.
+        doc.calendar.find(c => `c:${c._id}` === rows[0]._key).title = 'Iron Wolf Mythic Draw';
+        doc.calendar.find(c => `c:${c._id}` === rows[1]._key).title = 'Frost Bite Legendary Draw';
+        doc.returningDraws = [{ _id: oid(700), title: 'Iron Wolf Mythic Draw', items: [] }];
+        const withDraw = V.allEntries(doc).find(e => e._key === rows[0]._key);
+        const card = JSON.stringify(V.cardView(doc, withDraw._key));
+        assert.match(card, /\/manage draws/);
+        assert.match(card, new RegExp(`mng_dr\\|card\\|r:${oid(700)}`), 'Open the Draw points at the draws panel card');
+        assert.ok(!withDraw._noDraw);
+        const lone = V.allEntries(doc).find(e => e._key === rows[1]._key);
+        assert.ok(lone._noDraw && V.STATUS.warn.test(lone));
+        const loneCard = V.cardView(doc, lone._key);
+        assert.match(JSON.stringify(loneCard), /No draw on \/draws has this title/);
+        let ids = []; walk(loneCard, c => { if (c.custom_id) ids.push(c.custom_id); });
+        assert.ok(ids.includes(V.ID('qadraw', lone._key)));
+        assert.match(V.listView(doc, 'draws', 0).map(x => JSON.stringify(x)).join(''), /no draw on \/draws/);
         const ev = V.allEntries(doc).find(e => e._cat === 'event');
-        assert.ok(!/\/manage draws/.test(JSON.stringify(V.cardView(doc, ev._key))));
+        assert.ok(!/\/manage draws|qadraw/.test(JSON.stringify(V.cardView(doc, ev._key))));
+        // Add the Draw opens /manage draws' Quick Add with the row's title and dates.
+        require('../models/SeasonalData').findOne = () => ({ lean: async () => doc });
+        const calls = [];
+        const i = { customId: V.ID('qadraw', lone._key), user: { id: require('../utils/owner').ALLOWED_ADMIN_ID }, isButton: () => true, isStringSelectMenu: () => false, isModalSubmit: () => false, showModal: async (m) => calls.push(m.toJSON ? m.toJSON() : m), reply: async () => {}, followUp: async () => {} };
+        await P.handleCalendarPanelInteraction(i);
+        assert.strictEqual(calls[0]?.custom_id, 'modal_draws_quickadd');
+        const box = JSON.stringify(calls[0]);
+        assert.ok(box.includes(lone.title) && /starts \d{4}-\d{2}-\d{2}/.test(box), box.slice(0, 300));
     });
 
     await check('custom ids are mng_ca|… and refuse to pass 100 characters', () => {

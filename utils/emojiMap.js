@@ -46,6 +46,10 @@ const emojis = {
     mngEdit: '<a:DB_Edit:1525262950313623772>',
     mngDelete: '<a:DB_Delete:1525262947532931163>',
     mngBulkAdd: '<a:DB_BulkAdd:1525328428201414761>',
+    // Every Paste button (2026-11-09, Harkirat: "Go ahead with the paste 1-2 and the news 1-2"): his PasteImport upload on prod. Paste Draws, Paste Entries, Paste Builds and the draft's two pastes.
+    pasteImport: '<a:PasteImport:1569464822532280612>',
+    // News triage's cards and the draft's News button (same message): his News upload on prod.
+    news: '<a:News:1569464548421800048>',
     mngBulkReplace: '<a:DB_BulkReplace:1525262944815022170>',
     mngBulkDelete: '<a:DB_BulkDelete:1525262942906482880>',
     mngExport: '<a:DB_Export:1525262952540934264>',
@@ -155,8 +159,8 @@ const emojis = {
     modes: '<a:Modes:1535502470086664252>',
     // /admin's panel headings (added 2026-08-10 17:07 EDT, Harkirat provided it). Prod id as usual, verified present in BOTH apps by a live read of /applications/@me/emojis before writing it -- dev's copy is 1536468996688453752 and refreshEmojiIds() re-points to it by name at boot.
     serverSettings: '<a:ServerSettings:1536468904996774008>',
-    // /manage's Bulk Format Guide headings (added 2026-07-31 17:20 EDT) -- both the rich guide panel's own top header (utils/manageGuides.js) and every page's "Guide" section heading text.
-    guide: '<a:DB_Guide:1532894836301238477>',
+    // /manage's Bulk Format Guide headings (added 2026-07-31 17:20 EDT) -- both the rich guide panel's own top header (utils/manageGuides.js) and every page's "Guide" section heading text. Replaced 2026-11-09 (Harkirat: "you can replace the guide icon if you want"): his new Guide upload on prod. The old DB_Guide stays on the apps, unnamed here.
+    guide: '<a:Guide:1569464660179025953>',
     // The calculator's "covered" and "finished" lines (2026-10-18 13:05 EDT, Harkirat: "swap the icon used beside the 'your balance covers this' line"). /emojis' result messages (2026-10-28, Harkirat uploaded all three to prod): Accept = done now, Pending = the other bot adds it within 10 minutes, Deny = failed.
     accept: '<:Accept:1565022886807208036>',
     pending: '<:Pending:1565022888229339166>',

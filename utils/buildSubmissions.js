@@ -97,7 +97,7 @@ async function fileFrom(interaction, id) {
     } catch { return null; }
 }
 const text = (interaction, id) => { try { return (interaction.fields.getTextInputValue(id) || '').trim(); } catch { return ''; } };
-const pick = (interaction, id) => { try { return interaction.fields.getStringSelectValues(id) || []; } catch { return []; } };
+const pick = (interaction, id) => { try { return require('../utils/formChoice').readChoice(interaction, id) || []; } catch { return []; } };
 
 // ---- SUBMIT ----
 
@@ -111,8 +111,8 @@ function submitModal({ mode = 'MP', weaponName = '', category = '' }) {
             ...(mode === 'DMZ' ? [] : [label('Gunsmith Code', 'Optional', { type: 4, custom_id: 'code', style: 1, required: false, max_length: 30 })]),
             label('Attachments and notes', 'Attachments one per line; anything else after a blank line', { type: 4, custom_id: 'details', style: 2, required: false, max_length: 1500 }),
             // Shown as "Submitted by" @user or username, or "By anonymous" (utils/loadoutCredit.js submissionCredit, Harkirat 2026-11-02 23:10 EST). A link is never offered here: only /manage can put one on a build.
-            label('Credit', 'Your Discord ID is kept privately so disputes can be checked, even if you stay anonymous', { type: 3, custom_id: 'credit', required: true, min_values: 1, max_values: 1,
-                options: [{ label: 'Show my @ (clickable)', value: 'user' }, { label: 'Show my username (plain text)', value: 'name' }, { label: 'Stay anonymous', value: 'no' }] }),
+            label('Credit', 'Your Discord ID is kept privately so disputes can be checked, even if you stay anonymous', require('../utils/formChoice').asChoice({ type: 3, custom_id: 'credit', required: true, min_values: 1, max_values: 1,
+                options: [{ label: 'Show my @ (clickable)', value: 'user' }, { label: 'Show my username (plain text)', value: 'name' }, { label: 'Stay anonymous', value: 'no' }] })),
         ],
     };
 }
@@ -307,7 +307,7 @@ function disputeModal() {
         title: 'Dispute a Build', custom_id: 'gsb~dissave',
         components: [
             label('Which build', 'The weapon and build, e.g. AK117 Build 2', { type: 4, custom_id: 'build', style: 1, required: true, max_length: 60 }),
-            label('What you want', null, { type: 3, custom_id: 'ask', required: true, min_values: 1, max_values: 1, options: [{ label: 'Remove the build', value: 'remove' }, { label: 'Credit me instead', value: 'credit' }] }),
+            label('What you want', null, require('../utils/formChoice').asChoice({ type: 3, custom_id: 'ask', required: true, min_values: 1, max_values: 1, options: [{ label: 'Remove the build', value: 'remove' }, { label: 'Credit me instead', value: 'credit' }] })),
             label('Proof', 'A link to your original post, from before the build went live', { type: 4, custom_id: 'proof', style: 1, required: true, max_length: 300 }),
             label('Your original screenshot', 'Optional', { type: 19, custom_id: 'shot', min_values: 0, max_values: 1, required: false }),
             label('Notes', null, { type: 4, custom_id: 'notes', style: 2, required: false, max_length: 1000 }),

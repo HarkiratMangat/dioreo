@@ -497,7 +497,7 @@ function buildQuickAddModal({ draftSection = null, value = '' } = {}) {
     const draft = draftSection === 'n' || draftSection === 'r';
     return new ModalBuilder().setCustomId(draft ? `modal_draws_quickadd_draft_${draftSection}` : 'modal_draws_quickadd').setTitle(draft ? 'Quick Add to the Draft' : 'Quick Add Draws').addLabelComponents(
         new LabelBuilder().setLabel('One draw per line: name, then dates')
-            .setDescription(draft ? `${draftSection === 'n' ? 'New' : 'Returning'} unless a line says otherwise. e.g. "cx9 mythic, ends Nov 5" · "herrscher, returning"` : 'Returning unless a line says new. e.g. "cx9 mythic, new, ends Nov 5" · "herrscher, ends Nov 12 7pm"')
+            .setDescription(draft ? `${draftSection === 'n' ? 'New' : 'Returning'} unless a line says otherwise. e.g. "cx9 mythic, ends Nov 5" · "herrscher, returning"` : 'Returning unless a line says new. e.g. "cx9 mythic, new, ends Nov 5" · "high tide, 13d 23h"')
             .setTextInputComponent((() => { const t = new TextInputBuilder().setCustomId('lines').setStyle(TextInputStyle.Paragraph).setMaxLength(4000).setPlaceholder('Herrscher of Reason, ends Nov 12 7pm edt'); return value ? t.setValue(String(value).slice(0, 4000)) : t; })())
     );
 }
@@ -814,29 +814,24 @@ function buildDraftTitlesDatesModal(seasonalDoc, override = {}) {
     return modal;
 }
 
-// `append` (2026-11-04 20:06 EST, news-channel triage): a card's "Add to Next Season Draft" opens this box with its line added under what is staged, as `newLine` or `returningLine`. A line that would push the box past Discord's 4,000 characters is left off rather than cutting what is staged.
-const withLine = (text, line) => (line && (text ? text.length + 1 : 0) + line.length <= 4000 ? (text ? `${text}\n${line}` : line) : text);
+// `append` (2026-11-04 20:06 EST, news-channel triage): a card's "Add to Next Season Draft" opens this box with its line in it, as `newLine` or `returningLine`. 🔄 2026-11-09 (the /manage audit's findings 1 and 2): the box opens EMPTY apart from that line and its submit ADDS OR UPDATES the pasted rows (handlers/manage/season.js saveDraftDraws, utils/draftPaste.js). It used to open with the whole staged list and replace it: past 4,000 characters discord.js threw "Invalid string length" building it (Season 10's returning draws alone stood at 3,780), and nothing previewed the replace. `seasonalDoc` is kept in the signature for callers; nothing is read from it now.
+const lineOnly = (line) => String(line || '').slice(0, 4000);
 function buildDraftBulkDrawsModal(seasonalDoc, append = {}) {
-    const draft = seasonalDoc?.draft || {};
-    const { formatDrawsAsBulkText } = require('../utils/adminParser');
-    const modal = new ModalBuilder().setCustomId('modal_draft_bulk_draws').setTitle('Draft: New + Returning Draws');
+    const modal = new ModalBuilder().setCustomId('modal_draft_bulk_draws').setTitle('Draft: Add or Update Draws');
+    const box = (id, label, placeholder, line) => { const t = new TextInputBuilder().setCustomId(id).setLabel(label).setStyle(TextInputStyle.Paragraph).setPlaceholder(placeholder).setRequired(false); if (line) t.setValue(lineOnly(line)); return t; };
     modal.addComponents(
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('new_text').setLabel('New Draws (leave blank to skip)').setStyle(TextInputStyle.Paragraph)
-            .setPlaceholder("Title, m Item 1, july 10, url.jpg").setValue(withLine(formatDrawsAsBulkText(draft.newDraws || []), append.newLine)).setRequired(false)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('returning_text').setLabel('Returning Draws (leave blank to skip)').setStyle(TextInputStyle.Paragraph)
-            .setPlaceholder("Title, l Item, aug 5, url.jpg").setValue(withLine(formatDrawsAsBulkText(draft.returningDraws || []), append.returningLine)).setRequired(false))
+        new ActionRowBuilder().addComponents(box('new_text', 'New Draws to add or update (blank = skip)', 'Title, m Item 1, july 10, url.jpg', append.newLine)),
+        new ActionRowBuilder().addComponents(box('returning_text', 'Returning Draws to add or update', 'Title, l Item, aug 5, url.jpg', append.returningLine))
     );
     return modal;
 }
 
 function buildDraftBulkCalendarModal(seasonalDoc, append = {}) {
-    const draft = seasonalDoc?.draft || {};
-    const { formatCalendarAsBulkText } = require('../utils/adminParser');
-    const modal = new ModalBuilder().setCustomId('modal_draft_bulk_calendar').setTitle('Draft: Calendar');
-    modal.addComponents(
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('bulk_text').setLabel('Events (replaces the whole staged list)').setStyle(TextInputStyle.Paragraph)
-            .setPlaceholder("7/15 - 8/1 | Event Title\n7/20 - All Season | Other Event").setValue(withLine(formatCalendarAsBulkText(draft.calendar || []), append.line)).setRequired(true))
-    );
+    const modal = new ModalBuilder().setCustomId('modal_draft_bulk_calendar').setTitle('Draft: Add or Update Calendar');
+    const t = new TextInputBuilder().setCustomId('bulk_text').setLabel('Events to add or update').setStyle(TextInputStyle.Paragraph)
+        .setPlaceholder("7/15 - 8/1 | Event Title\n7/20 - All Season | Other Event").setRequired(true);
+    if (append.line) t.setValue(lineOnly(append.line));
+    modal.addComponents(new ActionRowBuilder().addComponents(t));
     return modal;
 }
 
@@ -919,10 +914,10 @@ function buildManageCommandData() {
         .addStringOption(o => o.setName('do').setDescription('What to do. With draw: it happens right away').addChoices(
             { name: 'Quick Add', value: 'quickadd' }, { name: 'Add New Draw', value: 'addnew' }, { name: 'Add Returning Draw', value: 'addreturning' },
             { name: 'Edit', value: 'edit' }, { name: 'Set End Date', value: 'end' }, { name: 'Move New/Returning', value: 'move' }, { name: 'Delete', value: 'delete' },
-            { name: 'Paste Draws', value: 'paste' }, { name: 'Export', value: 'export' }, { name: 'Guide', value: 'guide' }))
+            { name: 'Paste Draws', value: 'paste' }, { name: 'Check Draw Index', value: 'check' }, { name: 'Export', value: 'export' }, { name: 'Guide', value: 'guide' }))
         .addStringOption(o => o.setName('show').setDescription('Open a list of draws').addChoices(
             { name: 'New Draws', value: 'new' }, { name: 'Returning Draws', value: 'returning' }, { name: 'Upcoming', value: 'upcoming' },
-            { name: 'Active Now', value: 'live' }, { name: 'Leaving Soon', value: 'leaving' }, { name: 'Ended', value: 'ended' }, { name: 'No End Date', value: 'noend' }))
+            { name: 'Active Now', value: 'live' }, { name: 'Leaving Soon', value: 'leaving' }, { name: 'Ended', value: 'ended' }, { name: 'No End Date', value: 'noend' }, { name: 'Needs a Look', value: 'look' }))
         .addStringOption(visibility);
     // /manage gunsmith mp|dmz go straight to a thing (the gunsmith rehaul, 2026-11-07 14:13 EST; his 13:40 EST ask for slash options that skip walking through the panel). build: one build (autocomplete), do: what to do with it, builds: several as a Select list, weapon: / class: their pages; a target plus do: acts at once (handlers/manage/gunsmith/index.js openFromSlash). Their action: is gone: do: covers every job it had. visibility stays LAST.
     const gunsmith = (name, description) => sub => sub.setName(name).setDescription(description)
@@ -949,7 +944,8 @@ function buildManageCommandData() {
     const patchSub = sub => sub.setName('patch-notes').setDescription('Season patch notes')
         .addStringOption(o => o.setName('season').setDescription('Go to one season\'s patch notes: type part of its title').setAutocomplete(true))
         .addStringOption(o => o.setName('do').setDescription('What to do. With season: it happens to that season').addChoices(
-            { name: 'Add New Season', value: 'add' }, { name: 'Edit Date & Info', value: 'edit' }, { name: 'Images 1-5', value: 'images1' }, { name: 'Images 6-10', value: 'images2' }, { name: 'Guide', value: 'guide' }))
+            { name: 'Add New Season', value: 'add' }, { name: 'Edit Date & Info', value: 'edit' }, { name: 'Images 1-5', value: 'images1' }, { name: 'Images 6-10', value: 'images2' },
+            { name: 'Upload Images', value: 'upload' }, { name: 'Season Dates', value: 'dates' }, { name: 'Delete Season', value: 'delete' }, { name: 'Guide', value: 'guide' }))
         .addStringOption(visibility);
     const titlesSub = sub => sub.setName('titles').setDescription('Season titles and deadlines')
         .addStringOption(o => o.setName('do').setDescription('What to do, right away').addChoices(
@@ -957,12 +953,14 @@ function buildManageCommandData() {
         .addStringOption(visibility);
     const draftSub = sub => sub.setName('draft').setDescription('Stage the next season')
         .addStringOption(o => o.setName('do').setDescription('What to do, right away').addChoices(
-            { name: 'Edit Titles & Deadlines', value: 'titles' }, { name: 'Paste Draws', value: 'draws' }, { name: 'Paste Calendar', value: 'calendar' }, { name: 'Guide', value: 'guide' }))
+            { name: 'Edit Titles & Deadlines', value: 'titles' }, { name: 'Quick Add', value: 'quickadd' }, { name: 'Edit Draws', value: 'editdraws' }, { name: 'Paste Draws', value: 'draws' },
+            { name: 'Edit Calendar', value: 'editcalendar' }, { name: 'Paste Calendar', value: 'calendar' }, { name: 'Banners', value: 'banners' }, { name: 'Needs a Look', value: 'look' }, { name: 'Guide', value: 'guide' }))
         .addStringOption(visibility);
     const announceSub = sub => sub.setName('announcement').setDescription('Announcements')
         .addStringOption(o => o.setName('announcement').setDescription('Go to one announcement: type part of its text').setAutocomplete(true))
         .addStringOption(o => o.setName('do').setDescription('What to do. With announcement: it happens right away').addChoices(
-            { name: 'Post New', value: 'post' }, { name: 'Edit', value: 'edit' }, { name: 'Delete', value: 'delete' }, { name: 'Guide', value: 'guide' }))
+            { name: 'Post New', value: 'post' }, { name: 'Edit', value: 'edit' }, { name: 'End Now', value: 'end' }, { name: 'Post Again', value: 'again' }, { name: 'Delete', value: 'delete' },
+            { name: 'Search', value: 'find' }, { name: 'Expired', value: 'expired' }, { name: 'Guide', value: 'guide' }))
         .addStringOption(visibility);
     const guideSub = sub => sub.setName('guide').setDescription('The bulk format guides')
         .addStringOption(o => o.setName('topic').setDescription('Which guide to open (Draws when left out)').addChoices(

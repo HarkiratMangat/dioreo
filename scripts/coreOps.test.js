@@ -54,7 +54,7 @@ check('every op type maps back to a registry action, except the documented inter
         'season.restoreSnapshot',  // internal -- promoteDraft/startNew's inverse target only
         'season.restoreDraft',     // internal -- discardDraft's inverse target only
         'season.newsDraft',        // internal -- written by news triage (utils/newsTriage/pipeline.js), and its own inverse; no /manage button
-        'patchnote.removeSeason',  // internal -- addSeason's inverse target only
+        'patchnote.removeSeason',  // addSeason's inverse target, and the patch notes panel's Delete Season (not a registry action: it is gated as the page's purge)
         'patchnote.restoreSeason', // internal -- removeSeason's inverse target only
         'patchnote.restore',       // internal -- purge's inverse target only
         'patchnote.editSeason',    // real, but reached via a Mongo-_id-embedding custom_id the
@@ -66,6 +66,7 @@ check('every op type maps back to a registry action, except the documented inter
         'catalogue.forget',        // internal -- catalogue.learn's inverse target only
         'loadout.options',         // a merged build's options (utils/loadoutOptions.js): rides on Add, Edit and Delete by a build # with a letter, never a page action of its own; declares page: per mode
         'season.setAutoPromote',   // rides on the Promote pop-up (gated as seasondraft:promote), never a page action of its own; declares page:
+        'season.setDraftBanners',  // the draft panel's Banners pop-up (gated as seasondraft:bulkcalendar), never a page action of its own; declares page:
         'loadout.credit'           // a per-build button (mng_ldcredit_<_id>, handlers/manage/loadouts.js creditModal), not a page action: its custom_id carries a Mongo _id, like patchnote.editSeason; declares page: per mode
     ]);
     for (const type of ops.listOpTypes()) {
