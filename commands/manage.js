@@ -497,7 +497,7 @@ function buildQuickAddModal({ draftSection = null, value = '' } = {}) {
     const draft = draftSection === 'n' || draftSection === 'r';
     return new ModalBuilder().setCustomId(draft ? `modal_draws_quickadd_draft_${draftSection}` : 'modal_draws_quickadd').setTitle(draft ? 'Quick Add to the Draft' : 'Quick Add Draws').addLabelComponents(
         new LabelBuilder().setLabel('One draw per line: name, then dates')
-            .setDescription(draft ? `${draftSection === 'n' ? 'New' : 'Returning'} unless a line says otherwise. e.g. "cx9 mythic, ends Nov 5" · "herrscher, returning"` : 'Returning unless a line says new. e.g. "cx9 mythic, new, ends Nov 5" · "herrscher, ends Nov 12 7pm"')
+            .setDescription(draft ? `${draftSection === 'n' ? 'New' : 'Returning'} unless a line says otherwise. e.g. "cx9 mythic, ends Nov 5" · "herrscher, returning"` : 'Returning unless a line says new. e.g. "cx9 mythic, new, ends Nov 5" · "high tide, 13d 23h"')
             .setTextInputComponent((() => { const t = new TextInputBuilder().setCustomId('lines').setStyle(TextInputStyle.Paragraph).setMaxLength(4000).setPlaceholder('Herrscher of Reason, ends Nov 12 7pm edt'); return value ? t.setValue(String(value).slice(0, 4000)) : t; })())
     );
 }

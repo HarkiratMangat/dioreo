@@ -58,6 +58,9 @@ function parseItemLine(itemStr) {
 
 function parseAdminDate(dateStr) {
     const cleanStr = dateStr.trim();
+    // The game's countdown ("13d 23h", 2026-11-10): snapped to the midnight UTC it ends at, from the moment it is typed (utils/countdown.js).
+    const counted = require('./countdown').snapCountdown(cleanStr);
+    if (counted) return counted;
     // NOTE (fixed during review — likely cause of the DMZ season-end time showing 1 hour off from the others): this previously let chrono parse using the HOST MACHINE's local system timezone, then reconstructed a "UTC midnight" from the local calendar day it landed on. That roundtrip is fragile — it depends on whatever timezone the bot's machine happens to be configured with, and can drift by an hour across DST boundaries. Passing { timezone: 0 } tells chrono to interpret the input AS IF it's already UTC-0, matching the actual admin workflow (dates are always typed in UTC-0), and removes any dependency on the host machine's local settings.
     const parsedResult = chrono.parseDate(cleanStr, new Date(), { timezone: 0 });
     // Returns null (not a "now" fallback) on unparseable input -- a typo like "TDB" used to silently become the literal current instant, which on 2026-07-31 landed almost exactly on Aug 1 00:00 UTC (Harkirat's local evening crossing the UTC day boundary) and read as a real, intentional date. Every caller must now treat null as "not a valid date" -- either leave the field untouched (same as blank input) or reject the submission, never write it silently.
@@ -85,6 +88,13 @@ function readAdminDateRange(cleanStr) {
     if (tbd) {
         const start = parseAdminDate(tbd[1]);
         return start ? { start, end: null, endTBD: true } : null;
+    }
+    // "Nov 10 - 13d 23h": the end as the game's countdown (2026-11-10, utils/countdown.js).
+    const counted = cleanStr.match(/^(.*?)\s+(?:-|–|—|to)\s+(.+)$/i);
+    if (counted && require('./countdown').parseCountdown(counted[2])) {
+        const start = parseAdminDate(counted[1]);
+        const end = require('./countdown').snapCountdown(counted[2]);
+        return start && end ? { start, end, endTBD: false } : null;
     }
     const r = chrono.parse(cleanStr, new Date(), { timezone: 0 })[0];
     if (!r || !r.end || r.index !== 0 || r.text.trim().length < cleanStr.length) return null;

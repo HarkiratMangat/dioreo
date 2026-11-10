@@ -100,6 +100,14 @@ function parseQuickLine(line, opts = {}) {
         let slot = null, text = part;
         if (START_WORDS.test(part)) { slot = 'start'; text = part.replace(START_WORDS, ''); }
         else if (END_WORDS.test(part)) { slot = 'end'; text = part.replace(END_WORDS, ''); }
+        // The game's countdown ("ends 13d 23h", "13d 23h"): the midnight UTC it ends at (utils/countdown.js, 2026-11-10). A countdown is always an end.
+        const counted = require('./countdown').snapCountdown(text, opts.now || new Date());
+        if (counted) {
+            if (slot === 'start') { out.problems.push(`"${part}" is a countdown, which gives an end, not a start.`); continue; }
+            if (out.end) { out.problems.push('Two end dates; kept the first.'); continue; }
+            out.end = { date: counted, timed: false, countdown: true };
+            continue;
+        }
         const when = readWhen(text, opts);
         if (!when) { out.problems.push(`Couldn't read "${part}" as a date.`); continue; }
         const rangeEnd = when.rangeEnd; delete when.rangeEnd;

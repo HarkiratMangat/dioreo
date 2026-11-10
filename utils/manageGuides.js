@@ -72,7 +72,7 @@ function drawsSections() {
         section('💡 Tips',
             '• Use the draws panel\'s **Export** (or `/manage draws do:Export`) to grab this exact format pre-filled with your real current data — the fastest way to see a live, correct example.\n' +
             '• **Paste Draws**, and **Edit** on Select Draws, update a draw with the same title and add a new one; a preview shows what changes before **Save**. Anything you don\'t mention is left untouched. **Purge Draws** is the full wipe.\n' +
-            '• The date can be **Start - End** (`July 15 - August 20`, or `September 10, 2026 - November 12, 2026`), like the season titles box. The end goes on the draw\'s /calendar row, so `/draws` shows when it ends; it needs the Calendar permission, and **Export** writes it back out. The **Add** and **Edit** forms take the same thing.\n' +
+            '• The date can be **Start - End** (`July 15 - August 20`, or `September 10, 2026 - November 12, 2026`), like the season titles box. The end goes on the draw\'s /calendar row, so `/draws` shows when it ends; it needs the Calendar permission, and **Export** writes it back out. The **Add** and **Edit** forms take the same thing, and the end can be the game\'s countdown (`November 10, 2026 - 13d 23h`), saved as the midnight UTC it ends at.\n' +
             '• **Check Draw Index** (beside Search Draws, or `do:Check Draw Index`) takes up to 20 names, one a line, and says which the draw index has and what each lacks. It changes nothing.\n' +
             '• **Needs a Look** lists the running draws with no picture, a placeholder, no items, no draw type or no end date; each draw\'s card names what it lacks.')
     ];
@@ -89,6 +89,7 @@ function quickaddSections() {
             '-# A new draw the draw index has never seen is filed there as this season\'s draw. One it already has keeps its own season.'),
         section('🕒 Dates and Times',
             '• `starts …` and `ends …` take a date, a weekday or `in 2 days`. No start means today.\n' +
+            '• An end can be the game\'s countdown, as it shows in game (`13d 23h`, `ends 14d`): it is saved as the midnight UTC the draw really ends at, counted from when you type it.\n' +
             '• A date with no time is **midnight UTC**. A time with no zone is **Toronto** time.\n' +
             '• A zone you type wins (`7pm pdt`, `7pm gmt`). `est`/`edt` and the like are read as the region, so the right one is used for that date even if the other was typed.'),
         section(`${emojis.search} Finding the Draw`,
