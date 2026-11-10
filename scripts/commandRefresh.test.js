@@ -117,7 +117,8 @@ t('the pop-up: New Draws, Returning Draws, CP Balance, CP Region, Calculation Vi
     assert.deepStrictEqual(m.components.map(c => c.label), ['New Draws', 'Returning Draws', 'CP Balance', 'CP Region', 'Calculation Visibility']);
     assert.strictEqual(m.components[0].description, 'Select any draws you want to calculate');
     assert.strictEqual(m.components[2].description, 'Set CP you already own or leave it blank');
-    assert.strictEqual(m.components[4].component.placeholder, '(Optional) Choose message visibility...');
+    // Radio buttons since 2026-11-10 (two plain choices, utils/formChoice.js): a radio group has no placeholder.
+    assert.strictEqual(m.components[4].component.type, 21);
     assert.strictEqual(m.components[4].component.required, false);
     assert.deepStrictEqual(m.components[0].component.options.map(o => o.value), ['a', 'b']);
     assert.deepStrictEqual(m.components[1].component.options.map(o => o.value), ['c']);

@@ -391,7 +391,7 @@ function buildFilterModal(regionKey, keys) {
             type: 18,
             label: group.label,
             ...(i === 0 ? { description: 'Leave all three empty to show every draw' } : {}),
-            component: {
+            component: require('../utils/formChoice').asChoice({
                 type: 3,
                 custom_id: group.id,
                 placeholder: `Pick ${group.label.toLowerCase()}...`,
@@ -399,7 +399,7 @@ function buildFilterModal(regionKey, keys) {
                 max_values: group.keys.length,
                 required: false,
                 options: group.keys.map(key => ({ label: jumpMeta(key).name, value: key, emoji: emojis.parseEmoji(tierIcon(jumpMeta(key).tier)), default: keys.includes(key) }))
-            }
+            })
         }))
     };
 }

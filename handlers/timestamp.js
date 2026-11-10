@@ -35,7 +35,7 @@ const zoneSaved = prefs => Boolean(prefs?.timezoneSetAt && prefs?.timezone);
 
 
 const fieldText = (interaction, id) => { try { return (interaction.fields.getTextInputValue(id) || '').trim(); } catch { return ''; } };
-const fieldPick = (interaction, id) => { try { return interaction.fields.getStringSelectValues(id)[0] || null; } catch { return null; } };
+const fieldPick = (interaction, id) => { try { return require('../utils/formChoice').readChoice(interaction, id)[0] || null; } catch { return null; } };
 
 async function privately(interaction, content) {
     try {

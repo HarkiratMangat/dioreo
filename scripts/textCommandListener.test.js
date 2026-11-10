@@ -414,7 +414,9 @@ async function check(name, fn) {
         assert.strictEqual(modal?.custom_id, 'txtrun_timestamp~submit');
         // Five fields, Discord's most: date, typed zone, then the optional quick-pick zone, format and view dropdowns (his ask, 2026-10-29 11:07 EDT).
         assert.deepStrictEqual(modal.components.map(c => c.component.custom_id), ['datetime', 'timezone', 'timezone_pick', 'style', 'view']);
-        assert.ok(modal.components.slice(2).every(c => c.component.type === 3 && c.component.required === false), 'the dropdowns are optional');
+        assert.ok(modal.components.slice(2).every(c => c.component.required === false), 'the choices are optional');
+        // View is two plain choices, so radio buttons since 2026-11-10 (utils/formChoice.js); the zone and format lists stay dropdowns.
+        assert.deepStrictEqual(modal.components.slice(2).map(c => c.component.type), [3, 3, 21]);
         assert.ok(modal.components[3].component.options.some(o => o.value === 'short_list'), 'formats are /timestamp\'s own');
         const submit = click(modal.custom_id, { modal: true, fields: { datetime: 'friday 6pm', timezone: 'Tokyo' }, selects: { timezone_pick: 'Europe/London', style: 'relative', view: 'text' } });
         await handleTextCommandsInteraction(submit.i);

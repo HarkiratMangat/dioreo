@@ -118,7 +118,7 @@ function calendarRemoveModal(doc, page = 0) {
     const all = sortedCal(doc);
     const from = Math.min(Math.max(Number(page) || 0, 0) * DC_PER_PAGE, Math.max(0, all.length - 25));
     const pick = all.slice(from, from + 25);
-    return { title: 'Remove Draft Calendar Rows', custom_id: V.ID('dcrmm'), components: [{ type: 18, label: 'Rows to remove', description: 'Revert brings them back.', component: { type: 3, custom_id: 'pick', required: true, min_values: 1, max_values: Math.max(1, pick.length), options: pick.map(({ r, key }) => ({ label: String(r.title || '(untitled)').slice(0, 100), value: key, description: `${r.category || 'event'} · ${r.date ? new Date(r.date).toISOString().slice(0, 10) : 'no date'}`.slice(0, 100) })) } }] };
+    return { title: 'Remove Draft Calendar Rows', custom_id: V.ID('dcrmm'), components: [{ type: 18, label: 'Rows to remove', description: 'Revert brings them back.', component: require('../../../utils/formChoice').asChoice({ type: 3, custom_id: 'pick', required: true, min_values: 1, max_values: Math.max(1, pick.length), options: pick.map(({ r, key }) => ({ label: String(r.title || '(untitled)').slice(0, 100), value: key, description: `${r.category || 'event'} · ${r.date ? new Date(r.date).toISOString().slice(0, 10) : 'no date'}`.slice(0, 100) })) }) }] };
 }
 // One row from the Add / Edit pop-up (commands/manage.js's calendar boxes: title, start_date, end_date, category, double_cp). Blank end = All Season; TBD = no end yet, as the live calendar box reads it.
 function rowFromFields(interaction) {
@@ -260,7 +260,7 @@ async function route(interaction, verb, a, b, ctx) {
         let next, label;
         if (verb === 'dcrmm') {
             let keys = [];
-            try { keys = interaction.fields.getStringSelectValues('pick'); } catch { keys = []; }
+            try { keys = require('../../../utils/formChoice').readChoice(interaction, 'pick'); } catch { keys = []; }
             const gone = new Set(keys.map(k => findRow(calendar, k)?.index).filter(i => i !== undefined));
             next = calendar.filter((_, i) => !gone.has(i));
             label = `Removed ${plural(gone.size, 'row')}`;

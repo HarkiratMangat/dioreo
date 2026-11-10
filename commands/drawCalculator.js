@@ -240,7 +240,7 @@ function buildUpgradeModal(state, basket, index) {
             } else {
                 for (let w = 0; w <= u.levels.length; w++) options.push({ label: w ? lv(w) : 'No Upgrade', value: `0${w}`, ...(w ? { description: `${fmt(at[w])} Cards` } : {}), ...(st.want[i] === w ? { default: true } : {}) });
             }
-            return { type: 18, label: `Weapon ${i + 1}`, description: i < got ? 'Collected: where it is now, and the level to upgrade it to' : 'Not collected yet: the level to upgrade it to', component: { type: 3, custom_id: `w${i}`, required: false, options } };
+            return { type: 18, label: `Weapon ${i + 1}`, description: i < got ? 'Collected: where it is now, and the level to upgrade it to' : 'Not collected yet: the level to upgrade it to', component: require('../utils/formChoice').asChoice({ type: 3, custom_id: `w${i}`, required: false, options }) };
         });
         return { custom_id: encodeState('upgsavew', { ...state, focus: index }), title: `#${index + 1} ${lineName(b)} Upgrade`.slice(0, 45), components };
     }
@@ -903,14 +903,14 @@ function buildRegionBalanceModal(state, basket, { defaultCurrency = 'USD' } = {}
         .sort((a, b) => currencyLabel(a).localeCompare(currencyLabel(b)));
     const box = (id, label, placeholder, value) => ({ type: 18, label, component: { type: 4, custom_id: id, style: 1, required: false, placeholder, ...(value ? { value: String(value) } : {}) } });
     return { custom_id: encodeState('nums', state), title: 'Set Region & Balance', components: [
-        { type: 18, label: 'CP Region', description: 'Not sure? Help shows how to find yours', component: {
+        { type: 18, label: 'CP Region', description: 'Not sure? Help shows how to find yours', component: require('../utils/formChoice').asChoice({
             type: 3, custom_id: 'region', required: true, min_values: 1, max_values: 1,
             options: REGION_ORDER.map(key => ({ label: regionLabel(key), value: key, emoji: emojis.parseEmoji(emojis[REGION_EMOJI_KEY[key]]), ...(key === region ? { default: true } : {}) }))
-        } },
-        { type: 18, label: 'Currency', description: 'This calculation only; your default is set in /settings', component: {
+        }) },
+        { type: 18, label: 'Currency', description: 'This calculation only; your default is set in /settings', component: require('../utils/formChoice').asChoice({
             type: 3, custom_id: 'currency', required: true, min_values: 1, max_values: 1,
             options: codes.map(code => ({ label: currencyLabel(code), value: code, ...(code === defaultCurrency ? { description: 'Your default' } : {}), ...(code === current ? { default: true } : {}) }))
-        } },
+        }) },
         box('amount', 'CP You Already Have', 'e.g. 3,000 or 3k', basket?.balance),
         box('cards', 'Mythic Cards You Hold', 'e.g. 300 or 2k', basket?.mythicCards),
         box('coins', 'Mythic Coins You Hold', 'e.g. 300 or 2k', basket?.mythicCoins)
@@ -1080,15 +1080,15 @@ function buildAddDrawsModal(state, basket, seasonDraws) {
     const label = (text, description, component) => ({ type: 18, label: text, description, component });
     const components = [];
     if (list.length) {
-        components.push(label("This Season's Draws", 'Pick any number; each adds one selection', {
+        components.push(label("This Season's Draws", 'Pick any number; each adds one selection', require('../utils/formChoice').asChoice({
             type: 3, custom_id: 'season', required: false, min_values: 0, max_values: Math.max(1, Math.min(list.length, room)),
             options: list.map(d => ({ label: String(d.title).slice(0, 100), value: d.id, description: `${shortName(d.drawKey)}${isArmoryKey(d.drawKey) ? ` · ${d.size} ${unitOf(d.drawKey)}` : ''}`.slice(0, 100), emoji: emojis.parseEmoji(emojis[metaOf(d.drawKey).tier]) }))
-        }));
+        })));
     }
-    components.push(label('Draw Types', list.length ? 'For a draw not listed above, or another copy of one' : 'Pick any number; each adds one selection', {
+    components.push(label('Draw Types', list.length ? 'For a draw not listed above, or another copy of one' : 'Pick any number; each adds one selection', require('../utils/formChoice').asChoice({
         type: 3, custom_id: 'types', required: false, min_values: 0, max_values: Math.max(1, Math.min(CALC_KEYS.length, room)),
         options: CALC_KEYS.map(key => ({ label: shortName(key), value: key, description: freshDrawDescription(basket?.region || 'region_10', key), emoji: emojis.parseEmoji(emojis[metaOf(key).tier]) }))
-    }));
+    })));
     return { custom_id: encodeState('addsave', state), title: 'Add Draws', components };
 }
 // PRICE THESE DRAWS (2026-10-21 10:14 EDT, Harkirat: "have the price these draws button open a modal that allows you to select the specific draws ... 2 drops, pick from new draws, pick from returning draws. as well as an input for their CP balance and dropdown for region? and yes, a new calc."). Opened from /draws; handlers/drawCalc.js's `drawspicksave` starts a NEW calculation from it, privately. Only draws with a price type are listed (listSeasonDraws), so every pick can be priced.
@@ -1100,36 +1100,36 @@ function buildPriceDrawsModal(seasonDraws, region = 'region_10') {
     });
     const pick = (id, label, list) => {
         const shown = list.slice(0, 25);
-        return shown.length ? { type: 18, label, description: 'Select any draws you want to calculate', component: { type: 3, custom_id: id, required: false, min_values: 0, max_values: Math.min(shown.length, MAX_LINES), options: shown.map(option) } } : null;
+        return shown.length ? { type: 18, label, description: 'Select any draws you want to calculate', component: require('../utils/formChoice').asChoice({ type: 3, custom_id: id, required: false, min_values: 0, max_values: Math.min(shown.length, MAX_LINES), options: shown.map(option) }) } : null;
     };
     const draws = seasonDraws || [];
     return { custom_id: encodeState('drawspicksave', {}), title: 'Calculate Draws', components: [
         pick('newd', 'New Draws', draws.filter(d => d.kind === 'new')),
         pick('retd', 'Returning Draws', draws.filter(d => d.kind === 'returning')),
         { type: 18, label: 'CP Balance', description: 'Set CP you already own or leave it blank', component: { type: 4, custom_id: 'amount', style: 1, required: false, placeholder: 'e.g. 3,000 or 3k' } },
-        { type: 18, label: 'CP Region', component: {
+        { type: 18, label: 'CP Region', component: require('../utils/formChoice').asChoice({
             type: 3, custom_id: 'region', required: true, min_values: 1, max_values: 1,
             options: REGION_ORDER.map(key => ({ label: regionLabel(key), value: key, emoji: emojis.parseEmoji(emojis[REGION_EMOJI_KEY[key]]), ...(key === region ? { default: true } : {}) }))
-        } },
+        }) },
         // Who sees the new calculation (2026-10-21 10:44 EDT, his wording). Optional: left blank, it follows /settings' Draw Calculator visibility, as /draw calculator does.
-        { type: 18, label: 'Calculation Visibility', description: 'Open the calculation message publicly or ephemeral (only you can see)', component: {
+        { type: 18, label: 'Calculation Visibility', description: 'Open the calculation message publicly or ephemeral (only you can see)', component: require('../utils/formChoice').asChoice({
             type: 3, custom_id: 'visibility', required: false, min_values: 0, max_values: 1, placeholder: '(Optional) Choose message visibility...',
             options: [{ label: 'Public', value: 'public', description: 'Everyone in the chat can see it' }, { label: 'Only You', value: 'ephemeral', description: 'Only you can see it' }]
-        } }
+        }) }
     ].filter(Boolean) };
 }
 // THE REMOVE POP-UP (2026-10-18 13:37 EDT): every selection, pick one or more. Submitting is the confirmation (his "soft confirm"). Each value carries the line's draw too, so a pop-up opened before the list changed cannot remove the wrong line.
 function buildRemoveModal(state, basket) {
     const lines = (basket?.banners || []).slice(0, 25);
     if (!lines.length) return null;
-    return { custom_id: encodeState('rmsave', state), title: 'Remove Selections', components: [{ type: 18, label: 'Selections to Remove', description: 'Pick one or more; any with progress lose it', component: {
+    return { custom_id: encodeState('rmsave', state), title: 'Remove Selections', components: [{ type: 18, label: 'Selections to Remove', description: 'Pick one or more; any with progress lose it', component: require('../utils/formChoice').asChoice({
         type: 3, custom_id: 'lines', required: true, min_values: 1, max_values: lines.length,
         options: lines.map((b, i) => {
             const total = pullCount(basket.region, b.drawKey, b);
             const up = Array.isArray(b.upWant) && b.upWant.some(Boolean) ? ' · Upgrade Set' : '';
             return { label: `#${i + 1} · ${lineName(b)}`.slice(0, 100), value: `${i}:${b.drawKey}`, description: `${b.pullsDone}/${total ?? '?'} ${unitOf(b.drawKey)}${up}`, emoji: emojis.parseEmoji(emojis[metaOf(b.drawKey)?.tier] || emojis.smallDot) };
         })
-    } }] };
+    }) }] };
 }
 // Reads the Remove pop-up back: the indexes whose draw still matches.
 function readRemovePicks(basket, values) {
@@ -1173,16 +1173,16 @@ function buildGoalModal(state, basket, index) {
     const totals = advancedGoalTotals(basket.region, b.drawKey, { ...b, pullsDone: done });
     const current = advancedGoal(b);
     const both = advancedBoth(b, done);
-    const components = [{ type: 18, label: 'Goal', component: {
+    const components = [{ type: 18, label: 'Goal', component: require('../utils/formChoice').asChoice({
         type: 3, custom_id: 'goal', required: true, min_values: 1, max_values: 1,
         options: ADVANCED_GOALS.map(g => ({ label: ADVANCED_GOAL_TEXT[g][b.drawKey], value: g, description: `${ADVANCED_GOAL_TEXT[g].desc ? `${ADVANCED_GOAL_TEXT[g].desc[b.drawKey]} · ` : ''}${ADVANCED_GOAL_TEXT[g].path}${totals ? ` · ${fmt(totals[g])} CP Left` : ''}`, ...(g === current ? { default: true } : {}) }))
-    } }];
+    }) }];
     // Only the sets already spun can hold both items, so a line with none spun has neither field. Split by how the set was finished (2026-10-18 23:24 EDT, his yes) so Spent is exact; a set picked in both counts as Advanced.
     const later = advancedLater(b, done);
-    const setField = (id, label, hint, picked) => ({ type: 18, label, description: `Multiple selections allowed · ${hint}`, component: {
+    const setField = (id, label, hint, picked) => ({ type: 18, label, description: `Multiple selections allowed · ${hint}`, component: require('../utils/formChoice').asChoice({
         type: 3, custom_id: id, required: false, min_values: 0, max_values: done, placeholder: 'Make your selections',
         options: Array.from({ length: done }, (_, i) => ({ label: `Set ${i + 1}`, value: String(i + 1), ...(picked.includes(i + 1) ? { default: true } : {}) }))
-    } });
+    }) });
     if (done > 0) components.push(
         setField('adv', 'Sets You Pulled with Advanced', 'Both items from one Advanced pull.', both.filter(n => !later.includes(n))),
         setField('later', 'Sets You Finished Later', 'A Regular pull, then the other item bought.', later)
@@ -1200,7 +1200,7 @@ function buildSpinsInModal(state, basket, index) {
     const components = [];
     // A Legendary armory picked as a draw type sets its size here, required (his "i think we need a button or something"). A season armory and the Mythic Weapon armory have theirs already.
     if (b.drawKey !== 'armoryMythicWeapon' && !b.title) {
-        components.push({ type: 18, label: `${a.noun}s in the Armory`, description: 'Every armory so far has held 3 to 6', component: { type: 3, custom_id: 'size', required: true, options: ARMORY_SIZES.map(n => ({ label: `${n} ${a.noun}s`, value: String(n), description: `${fmt(n * a.spins)} Spins in Total`, ...(armorySize(b) === n ? { default: true } : {}) })) } });
+        components.push({ type: 18, label: `${a.noun}s in the Armory`, description: 'Every armory so far has held 3 to 6', component: require('../utils/formChoice').asChoice({ type: 3, custom_id: 'size', required: true, options: ARMORY_SIZES.map(n => ({ label: `${n} ${a.noun}s`, value: String(n), description: `${fmt(n * a.spins)} Spins in Total`, ...(armorySize(b) === n ? { default: true } : {}) })) }) });
     }
     components.push({ type: 18, label: `Spins toward the next ${a.noun.toLowerCase()}`, description: `Optional. 0 to ${a.spins - 1}; a ${a.noun.toLowerCase()} is guaranteed at ${a.spins} spins.`,
         component: { type: 4, custom_id: 'spins', style: 1, required: false, max_length: 4, placeholder: 'e.g. 40', ...(b.spinsIn ? { value: String(b.spinsIn) } : {}) } });

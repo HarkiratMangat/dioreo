@@ -212,9 +212,9 @@ async function route(interaction) {
         const index = state.focus;
         const line = index !== null ? basket.banners[index] : null;
         let picked = null;
-        try { picked = readGoal(interaction.fields.getStringSelectValues('goal')[0]); } catch { picked = null; }
+        try { picked = readGoal(require('../utils/formChoice').readChoice(interaction, 'goal')[0]); } catch { picked = null; }
         // The full sets fields exist only once a set is spun; missing fields leave them as they were. 'both' is the single field of a pop-up opened before the split, read as Advanced.
-        const setsPicked = id => { try { return interaction.fields.getStringSelectValues(id); } catch { return null; } };
+        const setsPicked = id => require('../utils/formChoice').readChoice(interaction, id, { absent: null });
         const advPicked = setsPicked('adv') ?? setsPicked('both');
         const laterPicked = setsPicked('later');
         if (!line || !buildGoalModal(state, basket, index) || !picked) { await renderPanel(interaction, { ...state, focus: null }, basket, 'That draw is no longer in this calculation, so nothing changed.'); return true; }
@@ -251,7 +251,7 @@ async function route(interaction) {
         await interaction.deferUpdate();
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
-        const picks = id => { try { return interaction.fields.getStringSelectValues(id) || []; } catch { return []; } };
+        const picks = id => { try { return require('../utils/formChoice').readChoice(interaction, id) || []; } catch { return []; } };
         if (state.verb === 'rmsave') {
             const drop = readRemovePicks(basket, picks('lines'));
             if (!drop.size) { await renderPanel(interaction, state, basket, 'Those selections changed since the pop-up opened, so nothing was removed.'); return true; }
@@ -287,7 +287,7 @@ async function route(interaction) {
         const spinsIn = readSpinsIn(line.drawKey, raw);
         // Set Up Armory's weapon count (2026-10-18 15:17 EDT): present only on a Legendary armory picked as a draw type. Items collected never exceed it.
         let size = null;
-        try { size = Number(interaction.fields.getStringSelectValues('size')[0]) || null; } catch { size = null; }
+        try { size = Number(require('../utils/formChoice').readChoice(interaction, 'size')[0]) || null; } catch { size = null; }
         if (spinsIn === null) {
             const next = size ? basket.banners.map((b, i) => (i === index ? { ...b, size, pullsDone: Math.min(b.pullsDone || 0, size) } : b)) : null;
             const kept = next ? await writeTo(actingUserId, state, basket, { banners: next }) : basket;
@@ -307,7 +307,7 @@ async function route(interaction) {
         const line = index !== null ? basket.banners[index] : null;
         // The line the pop-up was opened for must still be the same kind of Mythic draw; a removed or reordered line is refused rather than given another line's upgrade. A Mythic Weapon armory saves through the Mythic Weapon upgrade (same cards, same ladder).
         if (!line || upgradeKeyOf(line.drawKey) !== (state.verb === 'upgsavew' ? 'mythicWeapon' : 'mythicCharacter')) { await renderPanel(interaction, state, basket, 'That draw is no longer in this calculation, so nothing changed.'); return true; }
-        const get = id => { try { return interaction.fields.getStringSelectValues(id)[0] ?? null; } catch { return null; } };
+        const get = id => { try { return require('../utils/formChoice').readChoice(interaction, id)[0] ?? null; } catch { return null; } };
         const total = pullCount(basket.region, line.drawKey, line);
         // The same "complete" the pop-up was built with: an armory's collected weapons can carry an upgrade already.
         const complete = isArmoryKey(line.drawKey) ? (line.pullsDone || 0) > 0 : total !== null && line.pullsDone >= total;
@@ -331,11 +331,11 @@ async function route(interaction) {
         if (!basket) return true;
         // The region, when the pop-up carried it (Set Region & Balance). A pick outside the known regions changes nothing.
         let region = null;
-        try { region = interaction.fields.getStringSelectValues('region')[0] || null; } catch { region = null; }
+        try { region = require('../utils/formChoice').readChoice(interaction, 'region')[0] || null; } catch { region = null; }
         if (region && REGION_ORDER.includes(region) && region !== basket.region) fields.region = region;
         // The currency, per calculation (2026-10-18 20:00 EDT). Picking the /settings default stores null, so the calculation keeps following the default if it changes later.
         let cur = null;
-        try { cur = interaction.fields.getStringSelectValues('currency')[0] || null; } catch { cur = null; }
+        try { cur = require('../utils/formChoice').readChoice(interaction, 'currency')[0] || null; } catch { cur = null; }
         if (cur && CURRENCIES.includes(cur)) {
             const prefs = await UserPreference.findOne({ discordId: actingUserId });
             const want = cur === (prefs?.cpCurrency || 'USD') ? null : cur;
@@ -380,7 +380,7 @@ async function route(interaction) {
     }
     // Its submit starts a NEW calculation (his "yes, a new calc") as its own private message, the same way Help opens one: deferReply, never deferUpdate, because the pop-up was opened from /draws, which this must not overwrite.
     if (interaction.isModalSubmit() && state.verb === 'drawspicksave') {
-        const picks = id => { try { return interaction.fields.getStringSelectValues(id) || []; } catch { return []; } };
+        const picks = id => { try { return require('../utils/formChoice').readChoice(interaction, id) || []; } catch { return []; } };
         // The pop-up's Calculation Visibility (2026-10-21 10:44 EDT); left blank, /settings' Draw Calculator visibility decides, as for /draw calculator.
         const visPick = picks('visibility')[0];
         const prefsForVis = await UserPreference.findOne({ discordId: actingUserId });

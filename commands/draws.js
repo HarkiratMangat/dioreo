@@ -72,8 +72,7 @@ function carriedFromSeason(draw, seasonalDoc) {
     return n ? `Season ${n}` : 'last season';
 }
 
-// ctx: { seasonalDoc, nowMs } -- the season (for each draw's /calendar end date and its Ongoing since line) and the clock. A caller with no season (/bot analytics' change detail) still gets a labelled start line.
-// One line per item: its tier emoji, the weapon in bold, then the skin. Shared by the list's draw blocks and the single-draw panel (buildDrawPanel).
+// ctx: { seasonalDoc, nowMs } -- the season (for each draw's /calendar end date and its Ongoing since line) and the clock. A caller with no season (/bot analytics' change detail) still gets a labelled start line. One line per item: its tier emoji, the weapon in bold, then the skin. Shared by the list's draw blocks and the single-draw panel (buildDrawPanel).
 function drawItemLines(draw) {
     return (draw.items || []).map(item => {
         // "-# comment" items (2026-07-30 22:24 EDT, adminParser.js's parseItemLine) are a free- text note, not a real tiered item -- render as plain Discord subtext with no tier emoji/bold, matching how the admin typed it in.
@@ -485,8 +484,7 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
     // PRICE THESE DRAWS (2026-10-21 10:14 EDT, Harkirat): Calculate opens /draw calculator's pick-your-draws pop-up (handlers/drawCalc.js `drawspick`), shown only when a draw this season has a price type. A `calc~` id with no author, so whoever presses it gets their own calculation. It shared a row with the New/Returning Draws toggle (CATEGORY TOGGLE, 2026-07-12: one button offering the OTHER section, sized so the pair never wrapped on his iPhone, his option D of 2026-10-21) until 2026-11-01, when the filter above replaced the toggle.
     const priced = [...(seasonalDoc.newDraws || []), ...(seasonalDoc.returningDraws || [])].some(d => d.priceType);
     const { encodeState } = require('./drawCalculator');
-    // RESET FILTER (2026-11-01 13:16 EDT, Harkirat: "when any filter is selected, show a "Reset filter" button to the left of calculate with the "Return" emoji. which wipes the filters and takes you back to the normal /draws view"). `subpage_reset` in handlers/pagination.js; the footer's All Draws does the same, but sits far from the dropdown.
-    // FILTER (2026-11-10): opens the pop-up (buildFilterModal) ticked as this view stands, so its id carries the mask and search.
+    // RESET FILTER (2026-11-01 13:16 EDT, Harkirat: "when any filter is selected, show a "Reset filter" button to the left of calculate with the "Return" emoji. which wipes the filters and takes you back to the normal /draws view"). `subpage_reset` in handlers/pagination.js; the footer's All Draws does the same, but sits far from the dropdown. FILTER (2026-11-10): opens the pop-up (buildFilterModal) ticked as this view stands, so its id carries the mask and search.
     const actions = [
         { type: 2, style: narrowed ? 1 : 2, label: 'Filter', emoji: emojis.parseEmoji(emojis.filter), custom_id: `subpage_filterform${filterSuffix(mask, query)}` },
         ...(narrowed ? [{ type: 2, style: 2, label: 'Reset Filter', emoji: emojis.parseEmoji(emojis.returnArrow), custom_id: 'subpage_reset' }] : []),

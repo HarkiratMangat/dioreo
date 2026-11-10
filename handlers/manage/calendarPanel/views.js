@@ -210,7 +210,7 @@ function selectView(doc, token, sel, note = null, page = 0) {
 // ---------- pop-ups ----------
 const labelled = (label, component, description) => ({ type: 18, label, ...(description ? { description } : {}), component });
 const QUICK = Object.entries(STATUS).map(([value, s]) => ({ value, label: `All ${s.label}` }));
-const quickSelect = () => ({ type: 3, custom_id: 'picks', required: false, min_values: 0, max_values: QUICK.length, placeholder: 'Pick any', options: QUICK });
+const quickSelect = () => (require('../../../utils/formChoice').asChoice({ type: 3, custom_id: 'picks', required: false, min_values: 0, max_values: QUICK.length, placeholder: 'Pick any', options: QUICK }));
 const titlesBox = () => labelled('Entry titles', { type: 4, custom_id: 'names', style: 2, required: false, max_length: 2000, placeholder: 'Throwable Frenzy\nNuketown Playlist' }, 'One per line; part of a title is enough. Added to the quick picks.');
 const searchModal = () => ({ custom_id: ID('findm'), title: 'Find a Calendar Entry', components: [labelled('Title', { type: 4, custom_id: 'q', style: 1, required: true, max_length: 100, placeholder: 'nuketown' }, 'Part of the title is enough')] });
 const selectModal = () => ({ custom_id: ID('selectm'), title: 'Select Entries', components: [titlesBox(), labelled('Quick picks', quickSelect(), 'Everything picked is included: Events + Ended = both.')] });

@@ -210,7 +210,7 @@ async function submitEdit(interaction) {
     let priceType = before.priceType;
     let imageInput = before.imageInput || '';
     try { imageInput = interaction.fields.getTextInputValue('url').trim(); } catch { /* an old box */ }
-    try { priceType = interaction.fields.getStringSelectValues('price_type')[0] ?? priceType; } catch { /* an old box */ }
+    try { priceType = require('../../utils/formChoice').readChoice(interaction, 'price_type')[0] ?? priceType; } catch { /* an old box */ }
 
     // The section and the dates, read with the same reader as a Quick Add line, so one wording works in both places. No section word keeps the row's own.
     const parsed = qa.parseQuickLine(`x, ${when}`, { zone: state.zone });
@@ -271,7 +271,7 @@ async function submitPick(interaction) {
     if (!before) return sendV2Payload(interaction, expiredPanel());
     const { loadCatalog } = require('../../utils/drawCatalog');
     const { isSameDrawTitle } = require('../../utils/search');
-    const value = interaction.fields.getStringSelectValues('pick')[0];
+    const value = require('../../utils/formChoice').readChoice(interaction, 'pick')[0];
     const [entries, seasonalDoc] = await Promise.all([loadCatalog(), listsFor(state)]);
     const entry = value === '__typed__' ? null : entries.find(e => e.slug === value);
     if (value !== '__typed__' && !entry) return sendV2Payload(interaction, expiredPanel());

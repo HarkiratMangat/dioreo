@@ -234,7 +234,7 @@ async function route(interaction) {
                 try { files = [...(interaction.fields.getUploadedFiles('files')?.values() || [])]; } catch { files = []; }
                 const urls = files.filter(f => !f.contentType || /^image\//.test(f.contentType)).map(f => f.url).filter(Boolean);
                 let how = 'add';
-                try { how = interaction.fields.getStringSelectValues('how')[0] || 'add'; } catch { how = 'add'; }
+                try { how = require('../../../utils/formChoice').readChoice(interaction, 'how')[0] || 'add'; } catch { how = 'add'; }
                 if (!urls.length) return showResult(interaction, { ok: false, why: 'None of those files is an image.' }, a);
                 const all = [...(how === 'replace' ? [] : (p.images || []).filter(Boolean)), ...urls];
                 const kept = all.slice(0, 10);

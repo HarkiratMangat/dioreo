@@ -157,8 +157,8 @@ function uploadModal() {
         components: [
             label('Emoji name', '2 to 32 letters, numbers or _, as Discord allows', { type: 4, custom_id: 'name', style: 1, required: true, min_length: 2, max_length: 32, placeholder: 'e.g. DailyUpdate' }),
             label('Image', 'PNG, GIF, WebP or AVIF; up to 10 MB. Sync shrinks it for Discord when needed', { type: 19, custom_id: 'file', min_values: 1, max_values: 1, required: true }),
-            label('If that name is taken', null, { type: 3, custom_id: 'taken', required: true, options: [{ label: "Stop and tell me", value: 'stop', default: true }, { label: 'Replace the original', value: 'replace' }] }),
-            label('Also add it to the bots', null, { type: 3, custom_id: 'bots', required: true, options: [{ label: "Yes, wherever it's missing", value: 'yes', default: true }, { label: 'No, Cloudinary only', value: 'no' }] }),
+            label('If that name is taken', null, require('../utils/formChoice').asChoice({ type: 3, custom_id: 'taken', required: true, options: [{ label: "Stop and tell me", value: 'stop', default: true }, { label: 'Replace the original', value: 'replace' }] })),
+            label('Also add it to the bots', null, require('../utils/formChoice').asChoice({ type: 3, custom_id: 'bots', required: true, options: [{ label: "Yes, wherever it's missing", value: 'yes', default: true }, { label: 'No, Cloudinary only', value: 'no' }] })),
         ],
     };
 }

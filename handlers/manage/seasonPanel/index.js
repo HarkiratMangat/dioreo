@@ -143,7 +143,7 @@ async function saveDraftDraw(interaction, verb, sec, id) {
     let next, title = null, carriedGone = [];
     if (verb === 'ddrmm') {
         let ids = [];
-        try { ids = interaction.fields.getStringSelectValues('pick'); } catch { ids = []; }
+        try { ids = require('../../../utils/formChoice').readChoice(interaction, 'pick'); } catch { ids = []; }
         next = DD.removeDraws(list, ids);
         if (next.length === list.length) return show(interaction, V.draftDrawsView(doc, s, 0, `${emojis.cross} Nothing was removed: those draws are no longer staged.`));
         // A carried draw is still running when the season starts, so the daily carry-over puts it back (2026-11-08 12:52 EST): say so, rather than let it reappear tomorrow unexplained.
@@ -235,7 +235,7 @@ async function route(interaction) {
     if (verb === 'promm' && interaction.isModalSubmit?.()) {
         if (!(await gate(interaction, 'promote')) || !(await gateDestructive(interaction, 'promote'))) return;
         let pick = null;
-        try { pick = interaction.fields.getStringSelectValues('when')[0]; } catch { pick = null; }
+        try { pick = require('../../../utils/formChoice').readChoice(interaction, 'when')[0]; } catch { pick = null; }
         await ack(interaction);
         if (pick === 'auto') {
             const { commitSet } = require('../../../core/changeset');

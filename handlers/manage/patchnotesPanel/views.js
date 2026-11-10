@@ -125,7 +125,7 @@ function uploadModal(p) {
     const n = imageCount(p);
     return { title: `Images: ${displayTitle(p)}`.slice(0, 45), custom_id: ID('upm', String(p._id)), components: [
         { type: 18, label: 'Images (up to 10)', description: `${n}/10 now. PNG, JPG, GIF or WebP.`, component: { type: 19, custom_id: 'files', min_values: 1, max_values: 10, required: true } },
-        { type: 18, label: 'Add or replace', component: { type: 3, custom_id: 'how', required: true, options: [{ label: 'Add after the images it has', value: 'add', default: true, description: n >= 10 ? 'It has 10 already: only Replace can change them' : `Room for ${10 - n} more` }, { label: 'Replace every image', value: 'replace' }] } },
+        { type: 18, label: 'Add or replace', component: require('../../../utils/formChoice').asChoice({ type: 3, custom_id: 'how', required: true, options: [{ label: 'Add after the images it has', value: 'add', default: true, description: n >= 10 ? 'It has 10 already: only Replace can change them' : `Room for ${10 - n} more` }, { label: 'Replace every image', value: 'replace' }] }) },
     ] };
 }
 // Season Dates: a past season's own Battle Pass start and end (patchNotes[].seasonStart/seasonEnd), which /patch notes' season dropdown shows. Promote to Live saves them for the outgoing season; this sets them for one Promote never reached.

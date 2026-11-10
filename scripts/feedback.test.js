@@ -13,7 +13,8 @@ check('the pop-up: three labelled parts, a required kind and message, an optiona
     assert.strictEqual(m.custom_id, fb.FEEDBACK_MODAL_ID);
     assert.ok(m.title.length <= 45);
     const parts = m.components.map(c => c.component);
-    assert.deepStrictEqual(parts.map(p => p.type), [3, 4, 19]);
+    // The kind is radio buttons since 2026-11-10 (three plain choices, utils/formChoice.js).
+    assert.deepStrictEqual(parts.map(p => p.type), [21, 4, 19]);
     assert.strictEqual(parts[0].required, true);
     assert.deepStrictEqual(parts[0].options.map(o => o.value), ['bug', 'feedback', 'idea']);
     assert.strictEqual(parts[1].required, true);

@@ -204,7 +204,7 @@ async function route(interaction) {
         let query = '';
         try { query = (interaction.fields.getTextInputValue('query') || '').trim(); } catch { query = ''; }
         let pick = null;
-        try { pick = interaction.fields.getStringSelectValues('zone')[0] || null; } catch { pick = null; }
+        try { pick = require('../utils/formChoice').readChoice(interaction, 'zone')[0] || null; } catch { pick = null; }
         const found = query ? searchTimezones(query, 24) : [];
         const tz = query ? (found.length === 1 ? found[0].value : null) : pick;
         if (tz) {
@@ -239,7 +239,7 @@ async function route(interaction) {
         let query = '';
         try { query = (interaction.fields.getTextInputValue('query') || '').trim(); } catch { query = ''; }
         let pick = null;
-        try { pick = interaction.fields.getStringSelectValues('zone')[0] || null; } catch { pick = null; }
+        try { pick = require('../utils/formChoice').readChoice(interaction, 'zone')[0] || null; } catch { pick = null; }
         if (!query && pick) {
             await interaction.deferUpdate();
             await saveZone(owner, pick);

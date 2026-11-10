@@ -4,8 +4,7 @@
 //   - pick one of 10 or fewer  -> radio buttons
 //   - pick several of 10 or fewer -> checkboxes
 //   - more than 10, a list that needs search, or options that show emojis -> the dropdown, as before
-// `choiceField` decides; `readChoice` reads any of the three back as an array of values, so a handler never needs to know which control the form showed (and a form opened before a change still reads).
-// ⚠️ Discord's radio and checkbox groups have no emoji field, so any option with an `emoji` keeps the whole list a dropdown. `placeholder` is dropped on a group; a dropdown keeps it.
+// `choiceField` decides; `readChoice` reads any of the three back as an array of values, so a handler never needs to know which control the form showed (and a form opened before a change still reads). ⚠️ Discord's radio and checkbox groups have no emoji field, so any option with an `emoji` keeps the whole list a dropdown. `placeholder` is dropped on a group; a dropdown keeps it.
 
 const MAX_GROUP = 10;
 
@@ -15,7 +14,8 @@ function choiceField({ id, label, description, options = [], multi = false, requ
     const head = { type: 18, label: String(label).slice(0, 45), ...(description ? { description: String(description).slice(0, 100) } : {}) };
     // A list whose options carry emojis stays a dropdown (2026-11-10, Harkirat: "oh then leave it out for items that use emojis"): a radio or checkbox group would drop them.
     const hasEmoji = shown.some(o => o && o.emoji);
-    if (!forceSelect && !hasEmoji && shown.length > 0 && shown.length <= MAX_GROUP) {
+    // A radio group needs two options at least (Discord refuses one), so a lone single choice stays a dropdown.
+    if (!forceSelect && !hasEmoji && shown.length > (multi ? 0 : 1) && shown.length <= MAX_GROUP) {
         const plain = shown.map(o => ({ label: String(o.label).slice(0, 100), value: String(o.value), ...(o.description ? { description: String(o.description).slice(0, 100) } : {}), ...(o.default ? { default: true } : {}) }));
         if (multi) {
             const lo = Math.max(0, Math.min(min ?? (required ? 1 : 0), plain.length));
@@ -32,15 +32,34 @@ function choiceField({ id, label, description, options = [], multi = false, requ
     return { ...head, component: { type: 3, custom_id: id, required: Boolean(required), min_values: Math.min(lo, shown.length), max_values: Math.max(1, hi), ...(placeholder ? { placeholder: String(placeholder).slice(0, 150) } : {}), options: shown } };
 }
 
+// The same decision for a dropdown already written out (`{ type: 3, custom_id, options, min_values, max_values, required, placeholder }`), so a form's existing select can be wrapped where it stands: `component: asChoice({ type: 3, ... })`. Anything that is not a plain select of 10 or fewer emoji-free options comes back unchanged. A dropdown's min_values/max_values decide single or multi; `required` is kept.
+function asChoice(select) {
+    if (!select || select.type !== 3 || !Array.isArray(select.options)) return select;
+    const options = select.options;
+    if (!options.length || options.length > MAX_GROUP || options.some(o => o && o.emoji)) return select;
+    const multi = (select.max_values ?? 1) > 1;
+    if (!multi && options.length < 2) return select; // a radio group needs two options at least
+    const required = select.required !== undefined ? Boolean(select.required) : (select.min_values ?? 1) > 0;
+    const plain = options.map(o => ({ label: String(o.label).slice(0, 100), value: String(o.value), ...(o.description ? { description: String(o.description).slice(0, 100) } : {}), ...(o.default ? { default: true } : {}) }));
+    if (multi) {
+        const lo = Math.max(0, Math.min(select.min_values ?? (required ? 1 : 0), plain.length));
+        const hi = Math.max(lo || 1, Math.min(select.max_values ?? plain.length, plain.length));
+        return { type: 22, custom_id: select.custom_id, required: required && lo > 0, min_values: lo, max_values: hi, options: plain };
+    }
+    let seen = false;
+    const one = plain.map(o => { if (!o.default) return o; if (seen) { const { default: _d, ...rest } = o; return rest; } seen = true; return o; });
+    return { type: 21, custom_id: select.custom_id, required, options: one };
+}
+
 // A single yes/no box (type 23). `value` reads back as true or false.
 function checkboxField({ id, label, description, checked = false }) {
     return { type: 18, label: String(label).slice(0, 45), ...(description ? { description: String(description).slice(0, 100) } : {}), component: { type: 23, custom_id: id, ...(checked ? { default: true } : {}) } };
 }
 
-// The picked values of a choice, whichever control the form held: [] when nothing was picked or the field is absent.
-function readChoice(interaction, id) {
+// The picked values of a choice, whichever control the form held: [] when nothing was picked or the field is absent (`{ absent: null }` tells the two apart).
+function readChoice(interaction, id, { absent = [] } = {}) {
     const f = interaction?.fields;
-    if (!f) return [];
+    if (!f) return absent;
     if (typeof f.getField === 'function') {
         let field = null;
         try { field = f.getField(id); } catch { field = null; }
@@ -51,7 +70,7 @@ function readChoice(interaction, id) {
         }
     }
     // A form the old way, or a test's stand-in that only knows dropdowns.
-    try { return (f.getStringSelectValues(id) || []).map(String); } catch { return []; }
+    try { return (f.getStringSelectValues(id) || []).map(String); } catch { return absent; }
 }
 
 // The one picked value, or null.
@@ -64,4 +83,4 @@ function readCheckbox(interaction, id) {
     return readChoice(interaction, id).some(v => v === 'true' || v === 'yes');
 }
 
-module.exports = { choiceField, checkboxField, readChoice, readOne, readCheckbox, MAX_GROUP };
+module.exports = { choiceField, asChoice, checkboxField, readChoice, readOne, readCheckbox, MAX_GROUP };
