@@ -35,6 +35,9 @@ t('the panel lists the section in date order, each draw with its own Open (its c
     assert.ok(ids.some(x => x.includes('mng_ss|ddc|n|id8')), 'the earliest draw first, with its Open');
     const count = c => Array.isArray(c) ? c.reduce((n, x) => n + count(x), 0) : 1 + (c.components ? count(c.components) : 0) + (c.accessory ? 1 : 0);
     assert.ok(count(out) <= 40 && count(V.draftDrawsView(doc, 'n', 1)) <= 40);
+    // Page 2's left arrow points at page 1 (`dd|n|0`): a tab with that same id made Discord refuse the page, so the right arrow did nothing (2026-11-10).
+    const ids2 = JSON.stringify(V.draftDrawsView(doc, 'n', 1)).match(/"custom_id":"[^"]+"/g);
+    assert.strictEqual(new Set(ids2).size, ids2.length, `page 2 has no duplicate ids: ${ids2.filter((x, i) => ids2.indexOf(x) !== i)}`);
 });
 t('the Add, Edit and Remove pop-ups fit Discord: labels under 45, ids under 100, at most 25 options', () => {
     const d = draw('652f1c2b9e1a4b0012345678', 'A Draw', '2026-11-12');
