@@ -6,6 +6,7 @@
 //
 // DATES (Harkirat, 2026-11-01 11:50 EDT): a date with no time is that day at 00:00 UTC, the admin-date rule (utils/adminParser.js parseAdminDate). A time with no zone is Toronto time. A typed zone is read as that region's own clock, so a wrong summer/winter letter still lands right: "Nov 12 7pm edt" is 7pm Toronto, which is EST by then (his words: "use the correct one, even if the wrong one is typed"). Relative words ("in 2 days", "tomorrow") count from Toronto's day.
 const chrono = require('chrono-node');
+const { pullBackYear } = require('./chronoYear');
 const { zoneReference, componentInstant } = require('./timestampHelper');
 
 const MAX_LINES = 10;
@@ -63,9 +64,20 @@ function readWhen(text, { zone = TIME_ZONE, now = new Date() } = {}) {
     const z = typed ? typed.zone : zone;
     const r = chrono.parse(typed ? typed.rest : String(text || ''), zoneReference(z, now), { forwardDate: true })[0];
     if (!r) return null;
-    const c = r.start;
-    if (c.isCertain('hour')) return { date: componentInstant(c, z).toDate(), timed: true };
-    return { date: new Date(Date.UTC(c.get('year'), c.get('month') - 1, c.get('day'))), timed: false };
+    const one = (c) => {
+        if (!c) return null;
+        // A date already passed stays this year (utils/chronoYear.js): forwardDate alone moved "starts nov 9" typed that evening to 2027.
+        if (c.isCertain('hour')) return { date: pullBackYear(c, componentInstant(c, z).toDate(), now), timed: true };
+        return { date: pullBackYear(c, new Date(Date.UTC(c.get('year'), c.get('month') - 1, c.get('day'))), now), timed: false };
+    };
+    const out = one(r.start);
+    // A range in one part ("nov 5 - nov 20"): its end rides along for parseQuickLine.
+    if (r.end) {
+        out.rangeEnd = one(r.end);
+        // The end of a range inherits the start's implied year, so when the start came back a year the end must too ("nov 5 - nov 20" read Nov 20 2027).
+        if (out.rangeEnd && !r.end.isCertain('year') && out.rangeEnd.date - out.date > 300 * 864e5) { const d = new Date(out.rangeEnd.date); d.setUTCFullYear(d.getUTCFullYear() - 1); out.rangeEnd.date = d; }
+    }
+    return out;
 }
 
 // Today at 00:00 UTC, as the admin's own calendar day: the start a line with no start gets.
@@ -90,6 +102,9 @@ function parseQuickLine(line, opts = {}) {
         else if (END_WORDS.test(part)) { slot = 'end'; text = part.replace(END_WORDS, ''); }
         const when = readWhen(text, opts);
         if (!when) { out.problems.push(`Couldn't read "${part}" as a date.`); continue; }
+        const rangeEnd = when.rangeEnd; delete when.rangeEnd;
+        // "nov 5 - nov 20" with no start/end word fills both (2026-11-09).
+        if (!slot && rangeEnd && !out.start && !out.end) { out.start = when; out.end = rangeEnd; continue; }
         if (!slot) slot = out.start ? 'end' : 'start';
         if (out[slot]) { out.problems.push(`Two ${slot} dates; kept the first.`); continue; }
         out[slot] = when;

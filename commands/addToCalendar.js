@@ -4,17 +4,24 @@
 // Right-click an event post (a post, or a forward of one) and /manage's Add Calendar Event box opens with the post's title and the first date range found in its text (Harkirat, 2026-10-19 11:11 EDT). Built 2026-10-19 11:16 EDT. The submit is /manage's own (`modal_calendar_add`); the right-click is gated here, on the Calendar page.
 const { ContextMenuCommandBuilder, ApplicationCommandType, MessageFlags } = require('discord.js');
 const chrono = require('chrono-node');
+const { pullBackYear } = require('../utils/chronoYear');
 const { canDo, denyDo } = require('../utils/adminAccess');
 const { extractSource } = require('../utils/patchNoteSource');
 const { formatAdminDate } = require('../utils/adminParser');
 
 // The first date or range chrono finds in the post, read relative to when it was posted (so "Oct 20" in an October post means this year's). No end date leaves End Date blank, which the box reads as All Season.
 function calendarPrefill(source) {
-    const found = chrono.parse(source.content, source.postedAt || new Date(), { forwardDate: true })[0];
+    const ref = source.postedAt || new Date();
+    // The first result that names a month: "live now, 11/5 - 11/19" read "now" first and prefilled the post's own time (2026-11-09).
+    const all = chrono.parse(source.content, ref, { forwardDate: true });
+    const found = all.find(r => !/^(right )?now$|^today$|^tonight$/i.test(r.text.trim())) || all[0];
+    // A date already behind the post stays this year (utils/chronoYear.js), as in Quick Add and news triage.
+    const at = (c) => pullBackYear(c, c.date(), ref);
+    const endOf = (r) => { const s = at(r.start); const e = at(r.end); if (!r.end.isCertain('year') && e - s > 300 * 864e5) e.setUTCFullYear(e.getUTCFullYear() - 1); return e; };
     return {
         title: source.title,
-        startDate: found ? formatAdminDate(found.start.date()) : '',
-        endDate: found?.end ? formatAdminDate(found.end.date()) : '',
+        startDate: found ? formatAdminDate(at(found.start)) : '',
+        endDate: found?.end ? formatAdminDate(endOf(found)) : '',
     };
 }
 
