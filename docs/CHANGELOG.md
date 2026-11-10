@@ -47,6 +47,12 @@ From a simulated click-through of every /manage panel (his ask, 2026-11-09). Fin
 - **Guides and /help** cover them, plus Expand View, auto-promote and announcement drafts.
 - **The new prod emojis**: Guide (replacing DB_Guide), PasteImport on every paste button, News.
 - **Players' View** on the draft's staged lists uses the Expand emoji.
+- **`/draws` opens one draw on its own panel** (`draw:` with autocomplete, `d draws <name>`, or **Open a draw…** on every page): its dates, picture and items, Prev and Next through every draw, Back to Draws and Calculate.
+- **`/draws` Filter is a pop-up** in place of the dropdown: section, status, rarity (mythic, legendary, epic) and kind (weapon, character, armory) as checkboxes, plus a search box; within a group a tick widens, across groups it narrows. **Reset Filter** clears it.
+- **Radio buttons and checkboxes in forms** wherever a choice has 2 to 10 options and no emoji (`utils/formChoice.js`); a list with emoji stays a dropdown, his call.
+- **An end typed as the game's countdown** (`13d 23h`, `ends 14d`) is saved as the midnight UTC the draw ends at, counted from the time since the daily update; days alone take the rounded reading (`utils/countdown.js`). Works in Quick Add and every Start - End box.
+- **Quick Add**: a Remove lines menu, **Add More** for the same draft, each line's picture as a link, and after Save **Open Draw**, **Quick Add More** and **Draws Home**.
+- **The /manage draws card**: Prev and Next through the list it was opened from, and **Calendar Entry** to its /calendar row.
 
 ### Fixed
 - **Promote to Live renamed the OUTGOING season's patch notes** to the new title when the new season had no entry yet; it now renames the last entry only when it is the new season's or no season's (`core/ops/season.js`). Prod's Season 8 and 9 entries, whose own titles read "Season 7 — Terminated" under their overrides, were corrected by hand on 2026-11-09 (his OK).
@@ -54,6 +60,8 @@ From a simulated click-through of every /manage panel (his ask, 2026-11-09). Fin
 - **Add New Season stored the live season's title under a typed one** (`patchnote.addSeason`); a typed title is now the entry's own title too, and blank still means the current season. This and the line above are where the wrong titles came from.
 - **The calendar paste's 2X CP** was dropped when a draft calendar was merged (`mapParsedEvents`).
 - **`helpBodySnapshot`'s fixture** still pinned the retired DB_Guide emoji.
+- **Quick Add and Add to Calendar moved a passed month and day into next year**; they now stay in this year.
+- **The season draft's draws page could not go past page 1**: page 2's left arrow shared a button id with the New Draws tab, so Discord refused it.
 
 ## v3.17.0 — 2026-11-09 15:56 EST (#267 · `cbeac22d`) — Owner delete, an admin /help, announcement drafts, a draw index check and Quick Add for the season draft
 
