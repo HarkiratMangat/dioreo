@@ -1,7 +1,7 @@
 // utils/drawDates.js -- a draw's "Start - End" box (2026-11-04 00:58 EST, Harkirat: "do it like how the season title command does start/end dates").
 //
 // A draw's END date is not a field on the draw: it is the end of the draw's /calendar row (category "draw", matched to the draw by title, utils/drawEndReminder.js calendarRowFor). The Add and Edit Draw forms used to hold only the release date, so an end could be set only through Calendar edit, Quick Add or the reminder button. The date box now takes `September 10, 2026 - November 12, 2026` exactly as the season titles box does (core/ops/season.js applyLine): a single date is the release date alone; a range also sets the end. This file is the pure part: reading the box, writing it back, and deciding which calendar write (if any) the submit needs. Pure on purpose: no database, so scripts/drawDates.test.js can fail it.
-const { parseAdminDate, parseAdminDateRange, formatAdminDate } = require('./adminParser');
+const { parseAdminDate, parseAdminEndDate, parseAdminDateRange, formatAdminDate } = require('./adminParser');
 
 const ms = (d) => (d ? new Date(d).getTime() : null);
 const valid = (d) => Boolean(d) && Number.isFinite(new Date(d).getTime());
@@ -34,7 +34,7 @@ function parseDrawDates(text) {
     const start = parseAdminDate(raw);
     if (!start) return { ok: false, error: `Date "${raw}" wasn't understood -- nothing was saved. Type a date, or "start - end".` };
     const after = raw.split(/\s+(?:-|–|—|to)\s+/i)[1];
-    if (after !== undefined && !parseAdminDate(after)) return { ok: false, error: `The end date "${after}" wasn't understood -- nothing was saved.` };
+    if (after !== undefined && !parseAdminEndDate(after)) return { ok: false, error: `The end date "${after}" wasn't understood -- nothing was saved.` };
     // chrono reads the first date it finds and ignores the rest, so "July 15 maybe 20" saved July 15 and dropped the rest without a word (lead review of #249, 2026-11-04 09:26 EST). Text before the date, or a leftover with a digit or a range word in it, is refused; a plain note like "(release)" is not.
     const hit = require('chrono-node').parse(raw, new Date(), { timezone: 0 })[0];
     const leftover = hit ? (raw.slice(0, hit.index) + raw.slice(hit.index + hit.text.length)).trim() : '';

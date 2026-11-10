@@ -58,9 +58,6 @@ function parseItemLine(itemStr) {
 
 function parseAdminDate(dateStr) {
     const cleanStr = dateStr.trim();
-    // The game's countdown ("13d 23h", 2026-11-10): snapped to the midnight UTC it ends at, from the moment it is typed (utils/countdown.js).
-    const counted = require('./countdown').snapCountdown(cleanStr);
-    if (counted) return counted;
     // NOTE (fixed during review — likely cause of the DMZ season-end time showing 1 hour off from the others): this previously let chrono parse using the HOST MACHINE's local system timezone, then reconstructed a "UTC midnight" from the local calendar day it landed on. That roundtrip is fragile — it depends on whatever timezone the bot's machine happens to be configured with, and can drift by an hour across DST boundaries. Passing { timezone: 0 } tells chrono to interpret the input AS IF it's already UTC-0, matching the actual admin workflow (dates are always typed in UTC-0), and removes any dependency on the host machine's local settings.
     const parsedResult = chrono.parseDate(cleanStr, new Date(), { timezone: 0 });
     // Returns null (not a "now" fallback) on unparseable input -- a typo like "TDB" used to silently become the literal current instant, which on 2026-07-31 landed almost exactly on Aug 1 00:00 UTC (Harkirat's local evening crossing the UTC day boundary) and read as a real, intentional date. Every caller must now treat null as "not a valid date" -- either leave the field untouched (same as blank input) or reject the submission, never write it silently.
@@ -73,6 +70,11 @@ function parseAdminDate(dateStr) {
 // A season line's date part as a RANGE ("Aug 6 - Nov 17", "August 6, 2026 to November 17, 2026"), each end normalised like parseAdminDate. A start with "TBD" as its end ("Aug 6 - TBD") gives endTBD. Null when the text is not a range that covers the whole string (2026-10-21 10:17 EDT, the season progress bar's start dates). "July 15-August 20", "Aug 6-Nov 17", "7/15-8/20": a range typed with no spaces round its dash. chrono reads "15-August 20" as ONE date (2020-08-15) and drops the start, so the range was lost and a wrong date saved without a word (found 2026-11-04 09:25 EST, lead review of #249; the draw forms' "Start - End" label invites exactly this). The dash is spaced when a letter touches it or it sits between two slash dates; an ISO date's own dashes (2026-09-10) touch only digits and are left alone.
 const spaceRangeDash = (s) => s.replace(/\s*[–—]\s*/g, ' - ').replace(/\s*-\s*(?=[A-Za-z])|(?<=[A-Za-z.])\s*-\s*/g, ' - ').replace(/(?<=\d\/\d{1,2})-(?=\d{1,2}\/)/g, ' - ');
 
+// An END date box: the game's countdown ("13d 23h", 2026-11-10) is the midnight UTC it ends at, counted from when it is typed (utils/countdown.js); anything else reads as parseAdminDate. Only end boxes call this: a countdown typed as a START stays unreadable (null), as it always was, because a start is never snapped to midnight (draws and seasons start at a set hour). The snap first sat inside parseAdminDate and so reached every start box too (announcement start, calendar start), found by the 2026-11-10 think pass before it shipped.
+function parseAdminEndDate(dateStr, now = new Date()) {
+    const counted = require('./countdown').snapCountdown(String(dateStr || '').trim(), now);
+    return counted || parseAdminDate(String(dateStr || ''));
+}
 function parseAdminDateRange(dateStr) {
     const cleanStr = String(dateStr || '').trim();
     if (!cleanStr) return null;
@@ -289,7 +291,7 @@ function buildCalendarEventFromParts(prefixChar, rawEntry) {
     const isOngoing = /all season/i.test(endStr);
     // "TBD" (or TBA) means the end is not announced yet: no end date and not ongoing, the same row news triage writes for an undated end, which Needs a Look lists as "Calendar rows with no end date" (2026-11-09 14:51 EST). Until then a TBD line was dropped without a word: his Season 10 paste lost "11/12 - TBD | Create Your Truth Playlist (Verdansk Intro)" that way.
     const isTBD = /^(tbd|tba)\.?$/i.test(endStr);
-    const endDate = isOngoing || isTBD ? null : parseAdminDate(endStr);
+    const endDate = isOngoing || isTBD ? null : parseAdminEndDate(endStr);
     if (!isOngoing && !isTBD && !endDate) return null; // Unparseable end date -- same skip
 
     return { title, startDate, endDate, isOngoing, category, isDoubleCP };
@@ -711,4 +713,4 @@ function formatLoadoutsAsBulkText(loadouts) {
     }).join('\n\n');
 }
 
-module.exports = { PLACEHOLDER_IMAGE, gunsmithCodeProblem, toTitleCase, resolveTier, parseAdminDate, parseAdminDateRange, parseReleaseDateTime, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, formatReleaseDateTime, parseLoadoutBadges, loadoutBadgeTokens, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText, formatLoadoutsAsBulkText, correctGunsmithCode, correctAttachmentName, normalizeWeaponName, orderAttachmentsBySlot, normalizeCalendarCategory, guessCalendarCategory };
+module.exports = { PLACEHOLDER_IMAGE, gunsmithCodeProblem, toTitleCase, resolveTier, parseAdminDate, parseAdminEndDate, parseAdminDateRange, parseReleaseDateTime, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, formatReleaseDateTime, parseLoadoutBadges, loadoutBadgeTokens, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText, formatLoadoutsAsBulkText, correctGunsmithCode, correctAttachmentName, normalizeWeaponName, orderAttachmentsBySlot, normalizeCalendarCategory, guessCalendarCategory };

@@ -7,13 +7,15 @@
 // `choiceField` decides; `readChoice` reads any of the three back as an array of values, so a handler never needs to know which control the form showed (and a form opened before a change still reads). ⚠️ Discord's radio and checkbox groups have no emoji field, so any option with an `emoji` keeps the whole list a dropdown. `placeholder` is dropped on a group; a dropdown keeps it.
 
 const MAX_GROUP = 10;
+// An option that shows an emoji: its own `emoji` field, or custom emoji markup typed into its label or description (a season title like `<:Season10:123> Means To An End`). A group has nowhere to draw either (think pass, 2026-11-10).
+const showsEmoji = (o) => Boolean(o && (o.emoji || /<a?:\w+:\d+>/.test(`${o.label || ''} ${o.description || ''}`)));
 
 // opts: { id, label, description, options: [{ label, value, description?, emoji?, default? }], multi = false, required = true, min, max, placeholder, forceSelect = false }
 function choiceField({ id, label, description, options = [], multi = false, required = true, min, max, placeholder, forceSelect = false }) {
     const shown = options.slice(0, 25);
     const head = { type: 18, label: String(label).slice(0, 45), ...(description ? { description: String(description).slice(0, 100) } : {}) };
     // A list whose options carry emojis stays a dropdown (2026-11-10, Harkirat: "oh then leave it out for items that use emojis"): a radio or checkbox group would drop them.
-    const hasEmoji = shown.some(o => o && o.emoji);
+    const hasEmoji = shown.some(showsEmoji);
     // A radio group needs two options at least (Discord refuses one), so a lone single choice stays a dropdown.
     if (!forceSelect && !hasEmoji && shown.length > (multi ? 0 : 1) && shown.length <= MAX_GROUP) {
         const plain = shown.map(o => ({ label: String(o.label).slice(0, 100), value: String(o.value), ...(o.description ? { description: String(o.description).slice(0, 100) } : {}), ...(o.default ? { default: true } : {}) }));
@@ -36,7 +38,7 @@ function choiceField({ id, label, description, options = [], multi = false, requ
 function asChoice(select) {
     if (!select || select.type !== 3 || !Array.isArray(select.options)) return select;
     const options = select.options;
-    if (!options.length || options.length > MAX_GROUP || options.some(o => o && o.emoji)) return select;
+    if (!options.length || options.length > MAX_GROUP || options.some(showsEmoji)) return select;
     const multi = (select.max_values ?? 1) > 1;
     if (!multi && options.length < 2) return select; // a radio group needs two options at least
     const required = select.required !== undefined ? Boolean(select.required) : (select.min_values ?? 1) > 0;

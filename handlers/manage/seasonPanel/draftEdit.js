@@ -122,13 +122,13 @@ function calendarRemoveModal(doc, page = 0) {
 }
 // One row from the Add / Edit pop-up (commands/manage.js's calendar boxes: title, start_date, end_date, category, double_cp). Blank end = All Season; TBD = no end yet, as the live calendar box reads it.
 function rowFromFields(interaction) {
-    const { parseAdminDate, normalizeCalendarCategory } = require('../../../utils/adminParser');
+    const { parseAdminDate, parseAdminEndDate, normalizeCalendarCategory } = require('../../../utils/adminParser');
     const title = field(interaction, 'title').trim();
     const start = parseAdminDate(field(interaction, 'start_date').trim());
     const endRaw = field(interaction, 'end_date').trim();
     const ongoing = !endRaw;
     const tbd = /^(tbd|tba)\.?$/i.test(endRaw);
-    const end = ongoing || tbd ? null : parseAdminDate(endRaw);
+    const end = ongoing || tbd ? null : parseAdminEndDate(endRaw);
     const errors = [!title && 'a title', !start && `a start date I can read ("${field(interaction, 'start_date').trim()}")`, !ongoing && !tbd && !end && `an end date I can read ("${endRaw}"), All Season (blank) or TBD`].filter(Boolean);
     if (errors.length) return { error: `Needs ${errors.join(', ')}.` };
     return { row: { title, date: start, endDate: end, isOngoing: ongoing, category: normalizeCalendarCategory(field(interaction, 'category'), title), isDoubleCP: /^y/i.test(field(interaction, 'double_cp').trim()) } };
@@ -307,7 +307,7 @@ async function route(interaction, verb, a, b, ctx) {
         if (!draw) { await show(interaction, V.draftDrawsView(doc, s, 0, `${emojis.cross} That draw is no longer staged.`)); return true; }
         const raw = field(interaction, 'end').trim();
         const known = raw && !/^(tbd|tba)\.?$/i.test(raw);
-        const end = known ? require('../../../utils/adminParser').parseAdminDate(raw) : null;
+        const end = known ? require('../../../utils/adminParser').parseAdminEndDate(raw) : null;
         if (known && !end) { await show(interaction, drawCardView(doc, s, b, `### ${emojis.cross} Not saved\nI could not read "${raw}" as a date. Try one like December 3, or leave it blank.`)); return true; }
         const { endRowFor } = require('../../../utils/draftPaste');
         const calendar = [...(doc?.draft?.calendar || [])];

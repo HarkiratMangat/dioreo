@@ -11,7 +11,7 @@
 const mongoose = require('mongoose');
 const { registerEntity } = require('./index');
 const { updateElement, appendElement, removeElement, resortByDate } = require('../mongo/positional');
-const { parseBulkEvents, normalizeCalendarCategory, parseAdminDate } = require('../../utils/adminParser');
+const { parseBulkEvents, normalizeCalendarCategory, parseAdminDate, parseAdminEndDate } = require('../../utils/adminParser');
 const { upsertByTitle, restoreSet, addedIds } = require('../../utils/bulkMerge');
 const { fuzzyMatch } = require('../../utils/search');
 const { cacheBannerImage, clearBannerImage } = require('../../utils/calendarBannerCache');
@@ -39,7 +39,7 @@ function validateEvent(payload) {
     const isOngoing = !endDateRaw;
     // "TBD" (or TBA) is an end not announced yet: no end date and not ongoing, as Paste Calendar reads it (2026-11-09 15:14 EST).
     const isTBD = /^(tbd|tba)\.?$/i.test(endDateRaw);
-    const parsedEnd = isOngoing || isTBD ? null : parseAdminDate(endDateRaw);
+    const parsedEnd = isOngoing || isTBD ? null : parseAdminEndDate(endDateRaw);
     if (!isOngoing && !isTBD && !parsedEnd) errors.push(`Could not read the end date "${endDateRaw}".`);
     if (errors.length) return { ok: false, errors };
     const category = normalizeCalendarCategory(payload.category, title);

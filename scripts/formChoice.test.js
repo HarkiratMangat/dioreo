@@ -69,5 +69,12 @@ t('the forms that moved to radio buttons and checkboxes still pass discord.js va
     assert.strictEqual(kinds.components[0].component.type, 21);
 });
 
+t('custom emoji markup in a label or description keeps the dropdown (think pass, 2026-11-10)', () => {
+    const marked = { type: 3, custom_id: 'm', options: [{ label: '<:Season10:1234567890> Means To An End', value: 'a' }, { label: 'B', value: 'b' }] };
+    assert.strictEqual(asChoice(marked), marked);
+    assert.strictEqual(choiceField({ id: 'm', label: 'M', options: [{ label: 'A', value: 'a', description: '<a:Spin:42> live' }, { label: 'B', value: 'b' }] }).component.type, 3);
+    assert.strictEqual(choiceField({ id: 'p', label: 'P', options: [{ label: 'A: plain', value: 'a' }, { label: 'B', value: 'b' }] }).component.type, 21, 'a colon alone is not markup');
+});
+
 console.log(failed ? `\n${failed} FAILED` : '\nall passed');
 process.exit(failed ? 1 : 0);

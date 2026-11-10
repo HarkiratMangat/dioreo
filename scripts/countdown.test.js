@@ -41,4 +41,19 @@ assert.ok(r && day(r.end) === want, 'adminParser range takes a countdown end');
 const dd = parseDrawDates('November 10, 2026 - 13d 23h');
 assert.ok(dd && dd.ok !== false && day(dd.end) === want, 'drawDates takes a countdown end');
 
+// A countdown is only ever an END (think pass, 2026-11-10): a start box refuses it as it always did, and every end box takes it.
+const { parseAdminDate, parseAdminEndDate, parseBulkEvents } = require('../utils/adminParser');
+for (const typed of ['2h', '1d', '13d 23h']) assert.strictEqual(parseAdminDate(typed), null, `start box refuses "${typed}"`);
+assert.strictEqual(day(parseAdminEndDate('13d 23h', AFTER)), '2026-11-24', 'end box takes a countdown');
+assert.strictEqual(day(parseAdminEndDate('November 24, 2026')), '2026-11-24', 'end box still reads a plain date');
+assert.strictEqual(parseAdminDateRange('13d 23h - Nov 30'), null, 'a countdown as a range START is not a range');
+assert.strictEqual(parseDrawDates('13d 23h').ok, false, 'a lone countdown is not a draw release date');
+const ev = parseBulkEvents('11/10 - 13d 23h | Countdown Event');
+assert.ok(ev.length === 1 && day(ev[0].endDate) === want, 'Paste Calendar takes a countdown end');
+const { applyFields } = require('../core/ops/season.js');
+const live = applyFields({}, {}, 'bp', 'Battle Pass, 13d 23h', 'bp', []);
+assert.strictEqual(day(live.end), want, 'live season box: a lone countdown is the end');
+const skipped = [];
+const draft = applyFields({}, {}, 'bp', 'Battle Pass, 13d 23h', 'bp', skipped, { loneDate: 'start' });
+assert.ok(!draft.start && skipped.length === 1, 'draft season box: a lone countdown is not a start, and is reported');
 console.log('countdown: all checks passed');

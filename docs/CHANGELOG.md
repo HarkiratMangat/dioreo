@@ -50,7 +50,7 @@ From a simulated click-through of every /manage panel (his ask, 2026-11-09). Fin
 - **`/draws` opens one draw on its own panel** (`draw:` with autocomplete, `d draws <name>`, or **Open a draw…** on every page): its dates, picture and items, Prev and Next through every draw, Back to Draws and Calculate.
 - **`/draws` Filter is a pop-up** in place of the dropdown: section, status, rarity (mythic, legendary, epic) and kind (weapon, character, armory) as checkboxes, plus a search box; within a group a tick widens, across groups it narrows. **Reset Filter** clears it.
 - **Radio buttons and checkboxes in forms** wherever a choice has 2 to 10 options and no emoji (`utils/formChoice.js`); a list with emoji stays a dropdown, his call.
-- **An end typed as the game's countdown** (`13d 23h`, `ends 14d`) is saved as the midnight UTC the draw ends at, counted from the time since the daily update; days alone take the rounded reading (`utils/countdown.js`). Works in Quick Add and every Start - End box.
+- **An end typed as the game's countdown** (`13d 23h`, `ends 14d`) is saved as the midnight UTC the draw ends at, counted from the time since the daily update; days alone take the rounded reading (`utils/countdown.js`). Works in Quick Add, the end of every Start - End box, and every end-date box (a calendar entry's end, which Set End Date opens, the draft's end dates, a lone date in the live season box). A start date never takes one (`parseAdminEndDate`).
 - **Quick Add**: a Remove lines menu, **Add More** for the same draft, each line's picture as a link, and after Save **Open Draw**, **Quick Add More** and **Draws Home**.
 - **The /manage draws card**: Prev and Next through the list it was opened from, and **Calendar Entry** to its /calendar row.
 

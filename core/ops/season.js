@@ -6,7 +6,7 @@
 //
 // ⚠️ A rotation (promoteDraft/startNew) is inverted by a FULL PRE-ROTATION SNAPSHOT via the internal `season.restoreSnapshot` op, never a diff -- a diff of a multi-field, multi-array rotation is not a restore. restoreSnapshot is symmetric (its own apply() snapshots what it's about to overwrite and its invert() returns another restoreSnapshot carrying that snapshot), so it stays revertible indefinitely without needing a second op type for "undo of an undo".
 const { registerEntity } = require('./index');
-const { splitTitleDate, parseAdminDate, parseAdminDateRange, parseBulkDrawList, parseBulkEvents } = require('../../utils/adminParser');
+const { splitTitleDate, parseAdminDate, parseAdminEndDate, parseAdminDateRange, parseBulkDrawList, parseBulkEvents } = require('../../utils/adminParser');
 const { resolveThumbnailsForDraws } = require('../../utils/bulkMerge');
 const { seasonEntryIndex } = require('../../commands/patchnotes');
 const { syncPatchEntryMetadata } = require('../../utils/patchNotesCache');
@@ -28,7 +28,8 @@ function applyLine(current, line, label, skipped, { loneDate = 'end' } = {}) {
         } else if (dateStr.trim().toLowerCase() === 'tbd') {
             result.end = null; result.endTBD = true; result.start = null;
         } else {
-            const parsed = parseAdminDate(dateStr);
+            // A lone END may be the game's countdown; a lone START may not (parseAdminEndDate's header).
+            const parsed = loneDate === 'start' ? parseAdminDate(dateStr) : parseAdminEndDate(dateStr);
             if (parsed && loneDate === 'start') { result.start = parsed; result.end = null; result.endTBD = true; }
             else if (parsed) { result.end = parsed; result.endTBD = false; result.start = null; }
             else skipped.push(label);
@@ -60,7 +61,7 @@ function applyFields(current, payload, prefix, line, label, skipped, opts = {}) 
         const raw = payload[eKey];
         if (!raw) { out.end = null; }
         else {
-            const parsed = parseAdminDate(String(raw));
+            const parsed = parseAdminEndDate(String(raw));
             // An unparseable date is REPORTED, never silently kept as the old one -- that is the failure mode this whole comment is about.
             if (parsed) { out.end = parsed; out.endTBD = false; } else skipped.push(label);
         }
