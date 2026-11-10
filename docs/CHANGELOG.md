@@ -29,7 +29,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.18.0 — 2026-11-09 18:33 EST — /manage audit: the season draft adds instead of replacing, a fix button on every Needs a Look line, and the gaps in draws, patch notes, announcements and calendar
+## v3.18.0 — 2026-11-09 18:33 EST (#268) — /manage audit: the season draft adds instead of replacing, a fix button on every Needs a Look line, and the gaps in draws, patch notes, announcements and calendar; /draws opens one draw and filters in a pop-up
 
 From a simulated click-through of every /manage panel (his ask, 2026-11-09). Findings: `/mnt/project-files/manage-audit/findings-2026-11-09.md`.
 
