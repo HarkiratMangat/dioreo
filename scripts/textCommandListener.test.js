@@ -22,12 +22,14 @@ const WEAPONS = [
     { name: '[SMG] Fennec', value: 'fennec' },
 ];
 const SEASONS = [{ name: 'Season 9: Haunted', value: 'id9' }, { name: 'Season 8: Terminated', value: 'id8' }];
+// /draws' draw: suggestions (2026-11-10).
+const DRAWS = [{ name: 'High Tide Draw · New', value: 'High Tide Draw' }, { name: 'Jupiter Cannon Draw · Returning', value: 'Jupiter Cannon Draw' }, { name: 'Jupiter Storm Draw · New', value: 'Jupiter Storm Draw' }];
 const autocompleteCalls = [];
 stub('utils/autocomplete', {
     runAutocomplete: async (i) => {
         const text = i.options.getFocused().toLowerCase().replace(/[\s-]/g, '');
         autocompleteCalls.push({ command: i.commandName, text });
-        const pool = i.commandName === 'patch' ? SEASONS : WEAPONS;
+        const pool = i.commandName === 'patch' ? SEASONS : i.commandName === 'draws' ? DRAWS : WEAPONS;
         return i.respond(pool.filter(c => c.value.startsWith('~') ? !text : c.name.toLowerCase().replace(/[\s-]/g, '').includes(text)));
     },
 });
@@ -194,6 +196,23 @@ async function check(name, fn) {
         assert.strictEqual(ran.length, after);
         assert.strictEqual(posts.length, 0);
         assert.strictEqual(after, before + 1);
+    });
+    await check('d draws <name> opens that draw; a stray word still opens /draws; two that name nothing stay silent (2026-11-10)', async () => {
+        const G = { guildId: 'gdraws' }; // its own server, so these runs do not count toward g1's reply limit the checks below measure
+        await onMessage(fakeMessage('d draws high tide', G).message);
+        assert.strictEqual(lastRun().name, 'draws');
+        assert.strictEqual(lastRun().interaction.options.getString('draw'), 'High Tide Draw');
+        await onMessage(fakeMessage('d draws pls', G).message);
+        assert.strictEqual(lastRun().name, 'draws');
+        assert.strictEqual(lastRun().interaction.options.getString('draw'), null);
+        const before = ran.length;
+        const { message, posts } = fakeMessage('d draws pls now', G);
+        await onMessage(message);
+        assert.strictEqual(ran.length, before, 'silent');
+        assert.strictEqual(posts.length, 0);
+        // `d draws jupiter` after `d` names two draws: not addressed, so it opens /draws rather than guessing.
+        await onMessage(fakeMessage('d draws jupiter', G).message);
+        assert.strictEqual(lastRun().interaction.options.getString('draw'), null);
     });
     await check('patch notes latest takes the newest season', async () => {
         await onMessage(fakeMessage('d pn latest').message);

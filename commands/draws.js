@@ -73,18 +73,22 @@ function carriedFromSeason(draw, seasonalDoc) {
 }
 
 // ctx: { seasonalDoc, nowMs } -- the season (for each draw's /calendar end date and its Ongoing since line) and the clock. A caller with no season (/bot analytics' change detail) still gets a labelled start line.
+// One line per item: its tier emoji, the weapon in bold, then the skin. Shared by the list's draw blocks and the single-draw panel (buildDrawPanel).
+function drawItemLines(draw) {
+    return (draw.items || []).map(item => {
+        // "-# comment" items (2026-07-30 22:24 EDT, adminParser.js's parseItemLine) are a free- text note, not a real tiered item -- render as plain Discord subtext with no tier emoji/bold, matching how the admin typed it in.
+        if (item.tier === 'comment') return `-# ${item.name}`;
+        const emoji = emojis[String(item.tier || '').toLowerCase()] || '🔹';
+        // Split once and reuse, instead of re-splitting the same string up to 3 times per item.
+        const nameParts = String(item.name || '').split(' - ');
+        return `${emoji} **${nameParts[0]}**${nameParts.length > 1 ? ` — ${nameParts[1]}` : ''}`;
+    });
+}
+
 function buildDrawSections(drawsArray, ctx = {}) {
     const sections = [];
     drawsArray.forEach(draw => {
-        // Resolve emoji tiers and title casing
-        const itemLines = draw.items.map(item => {
-            // "-# comment" items (2026-07-30 22:24 EDT, adminParser.js's parseItemLine) are a free- text note, not a real tiered item -- render as plain Discord subtext with no tier emoji/bold, matching how the admin typed it in.
-            if (item.tier === 'comment') return `-# ${item.name}`;
-            const emoji = emojis[item.tier.toLowerCase()] || '🔹';
-            // Split once and reuse, instead of re-splitting the same string up to 3 times per item.
-            const nameParts = item.name.split(' - ');
-            return `${emoji} **${nameParts[0]}**${nameParts.length > 1 ? ` — ${nameParts[1]}` : ''}`;
-        });
+        const itemLines = drawItemLines(draw);
 
         const dateLine = drawDateLines(draw, ctx);
         // No "New draw" line under a title in the filtered list (14:46 EDT, his "remove the new draw/returning draw from it"). A draw on since last season says so in its date lines (drawDateLines).
@@ -154,9 +158,93 @@ const LEAVING_SOON_MS = 3 * 24 * 60 * 60 * 1000;
 
 // Every way a filter arrives, as a mask: a number from a custom_id, or one slash/text `filter` value.
 function filterMask(filter) {
-    if (typeof filter === 'number' && Number.isFinite(filter)) return filter & 63;
+    if (typeof filter === 'number' && Number.isFinite(filter)) return filter & MASK_ALL;
     const opt = FILTER_OPTIONS.find(o => o.value === filter);
     return opt ? opt.bit : 0;
+}
+
+// THE FILTER FORM (2026-11-10, Harkirat: "i also want a form for the /draws filter since there's currently 5 pages of draws. with the filters expanded as well for better searching."). The Filter button opens a pop-up of checkboxes (utils/formChoice.js) whose picks extend the mask above: the six FILTER_OPTIONS bits, then rarity (a draw with at least one item of a ticked tier) and draw type (read off its price type's name, utils/drawTypes.js; a draw with no type is read off its title). A text search over the title and the item names rides beside the mask as `_q<text>` (encodeQuery). Within one group, ticks widen (any of them); across groups they narrow (all of them), as the status picks always have.
+const RARITY_OPTIONS = [
+    { value: 'mythic', bit: 64, label: 'Mythic', description: 'Has a Mythic item' },
+    { value: 'legendary', bit: 128, label: 'Legendary', description: 'Has a Legendary item' },
+    { value: 'epic', bit: 256, label: 'Epic', description: 'Has an Epic item' }
+];
+const KIND_OPTIONS = [
+    { value: 'weapon', bit: 512, label: 'Weapon draws', description: 'A weapon is the prize' },
+    { value: 'character', bit: 1024, label: 'Character draws', description: 'An operator is the prize' },
+    { value: 'armory', bit: 2048, label: 'Series Armories', description: 'Armory draws' }
+];
+const RARITY_BITS = 64 | 128 | 256;
+const KIND_BITS = 512 | 1024 | 2048;
+const MASK_ALL = 4095;
+// The search's most characters in a custom_id once encoded (encodeQuery): the longest id that carries it, `subpage_one_<n>~returning_<n>_m4095_q…`, stays under Discord's 100.
+const QUERY_ID_MAX = 44;
+
+function drawRarityBits(draw) {
+    return RARITY_OPTIONS.reduce((m, o) => ((draw.items || []).some(i => String(i.tier || '').toLowerCase() === o.value) ? m | o.bit : m), 0);
+}
+function drawKindBits(draw) {
+    const name = require('../utils/drawTypes').drawTypeName(draw.priceType);
+    const text = name && draw.priceType !== 'unknown' ? name : String(draw.title || '');
+    let bits = 0;
+    if (/armou?ry/i.test(text)) bits |= 2048;
+    if (/character|operator/i.test(text)) bits |= 1024;
+    if (/weapon|gun/i.test(text)) bits |= 512;
+    // A title that names neither (most draws are a weapon's) counts as a weapon draw.
+    if (!(bits & (512 | 1024)) && !(bits & 2048)) bits |= 512;
+    return bits;
+}
+function drawMatches(draw, mask, query) {
+    const r = mask & RARITY_BITS;
+    if (r && !(drawRarityBits(draw) & r)) return false;
+    const k = mask & KIND_BITS;
+    if (k && !(drawKindBits(draw) & k)) return false;
+    if (query) {
+        const { fuzzyMatch } = require('../utils/search');
+        if (![draw.title, ...(draw.items || []).map(i => i.name)].some(n => fuzzyMatch(query, String(n || '')))) return false;
+    }
+    return true;
+}
+
+// The search in a custom_id: no `_` (the id's own separator) and no `~`, spaces as `+`, cut to QUERY_ID_MAX.
+function encodeQuery(query) {
+    let q = String(query || '').trim();
+    const enc = t => encodeURIComponent(t).replace(/_/g, '%5F').replace(/~/g, '%7E').replace(/%20/g, '+');
+    while (q && enc(q).length > QUERY_ID_MAX) q = q.slice(0, -1);
+    return enc(q);
+}
+function decodeQuery(raw) {
+    try { return decodeURIComponent(String(raw || '').replace(/\+/g, ' ')).trim(); } catch { return ''; }
+}
+// What a pager id carries after the section and page: `_m<mask>` and `_q<search>`, each only when set.
+function filterSuffix(mask, query) {
+    return `${mask ? `_m${mask}` : ''}${query ? `_q${encodeQuery(query)}` : ''}`;
+}
+// The mask and search out of any /draws id (handlers/pagination.js).
+function parseFilterSuffix(customId) {
+    const id = String(customId || '');
+    const m = /_m(\d+)(?=_q|$)/.exec(id);
+    const q = /_q([^_~]*)$/.exec(id);
+    return { mask: m ? filterMask(Number(m[1])) : 0, query: q ? decodeQuery(q[1]) : '' };
+}
+
+// Every draw this season in one list, New then Returning, each in release order: the single-draw panel's numbering.
+function allDraws(seasonalDoc) {
+    const { byRelease } = require('../utils/drawDates');
+    return [
+        ...byRelease(seasonalDoc.newDraws || []).map(d => ({ ...d, _section: 'new' })),
+        ...byRelease(seasonalDoc.returningDraws || []).map(d => ({ ...d, _section: 'returning' }))
+    ];
+}
+// A draw by its title: exact first (case aside), then the first whose title holds what was typed.
+function findDrawIndex(seasonalDoc, title) {
+    const list = allDraws(seasonalDoc);
+    const want = String(title || '').trim().toLowerCase();
+    if (!want) return -1;
+    const exact = list.findIndex(d => String(d.title || '').toLowerCase() === want);
+    if (exact >= 0) return exact;
+    const { fuzzyMatch } = require('../utils/search');
+    return list.findIndex(d => fuzzyMatch(want, String(d.title || '')));
 }
 
 // One draw right now: its /calendar state, start and end, and its status bits (FILTER_OPTIONS). Upcoming and no-date-yet both carry Upcoming's bit.
@@ -177,19 +265,34 @@ function drawStateBits(draw, seasonalDoc, nowMs = Date.now()) {
     return drawTiming(draw, seasonalDoc, nowMs).bits;
 }
 
-// The filter dropdown. Its picks are its defaults, so the closed menu shows what is applied.
-function buildFilterRow(mask) {
+// The filter dropdown (`subpage_filter`, 2026-11-01) was retired 2026-11-10 for the Filter button and its pop-up below; handlers/pagination.js still reads it on panels posted before.
+
+// The Filter pop-up, its boxes ticked as the panel stands. Its submit (`subpage_filterm`, handlers/pagination.js) reads them back through readFilterModal.
+function buildFilterModal(mask = 0, query = '') {
+    const { choiceField } = require('../utils/formChoice');
+    const opt = list => list.map(o => ({ label: o.label, value: o.value, description: o.description, ...(mask & o.bit ? { default: true } : {}) }));
     return {
-        type: 1,
-        components: [{
-            type: 3,
-            custom_id: 'subpage_filter',
-            placeholder: 'Filter draws...',
-            min_values: 0,
-            max_values: FILTER_OPTIONS.length,
-            options: FILTER_OPTIONS.map(o => ({ label: o.label, value: o.value, description: o.description, emoji: emojis.parseEmoji(emojis[o.emojiKey]), default: Boolean(mask & o.bit) }))
-        }]
+        custom_id: 'subpage_filterm',
+        title: 'Filter Draws',
+        components: [
+            choiceField({ id: 'section', label: 'Sections', description: 'Tick none to show both', options: opt(FILTER_OPTIONS.slice(0, 2)), multi: true, required: false }),
+            choiceField({ id: 'status', label: 'Status', description: 'Tick none to show every status', options: opt(FILTER_OPTIONS.slice(2)), multi: true, required: false }),
+            choiceField({ id: 'rarity', label: 'Rarity', description: 'Draws with an item of a ticked rarity', options: opt(RARITY_OPTIONS), multi: true, required: false }),
+            choiceField({ id: 'kind', label: 'Draw type', options: opt(KIND_OPTIONS), multi: true, required: false }),
+            { type: 18, label: 'Search', description: 'Words in a draw title or item name', component: { type: 4, custom_id: 'query', style: 1, required: false, max_length: 40, placeholder: 'e.g. Jupiter or AK117', ...(query ? { value: String(query).slice(0, 40) } : {}) } }
+        ]
     };
+}
+function readFilterModal(interaction) {
+    const { readChoice } = require('../utils/formChoice');
+    const all = [...FILTER_OPTIONS, ...RARITY_OPTIONS, ...KIND_OPTIONS];
+    let mask = 0;
+    for (const id of ['section', 'status', 'rarity', 'kind']) {
+        for (const v of readChoice(interaction, id)) mask |= (all.find(o => o.value === v)?.bit || 0);
+    }
+    let query = '';
+    try { query = String(interaction.fields.getTextInputValue('query') || '').trim(); } catch { query = ''; }
+    return { mask: filterMask(mask), query };
 }
 
 // THE FILTERED LIST (2026-11-01 13:16 EDT, Harkirat: "when a view is filtered along with a live, leaving, upcoming, or ended filter, why don't we present it as a collective list with heads for "live", etc similar to /today?"). With a status picked, the draws of the sections the filter keeps are one list under /today's headings and colours, in this order. Leaving soon is the part of Live that ends within LEAVING_SOON_MS, so a draw sits under one heading only, and Live picked alone still shows its Leaving soon draws (Live includes them, FILTER_OPTIONS). The headings are /calendar's Today page's (14:51 EDT, his "the headings should match /calendar and /today"): Active now, not Live. `word` keeps the count line's "live" from his 13:54 EDT template.
@@ -202,18 +305,95 @@ const STATUS_GROUPS = [
 // The filtered list's page size: one heading per group on a page costs a component each, so it holds one draw fewer than CHUNK_SIZE. Measured by scripts/drawsFilter.test.js's worst case (every group on one page, a note, Reset and Calculate) under 40.
 const FILTERED_CHUNK = CHUNK_SIZE - 1;
 
+// The Open a draw… menu: the draws `kept`, the ones on this page first. Each value is the draw's place in allDraws.
+function buildOpenRow(seasonalDoc, kept, onPage, originId) {
+    if (!kept.length || !originId) return null;
+    const all = allDraws(seasonalDoc);
+    const indexOf = d => {
+        const byId = d._id !== undefined ? all.findIndex(x => String(x._id) === String(d._id) && x._section === d._section) : -1;
+        return byId >= 0 ? byId : all.findIndex(x => x.title === d.title && x._section === d._section);
+    };
+    const seen = new Set();
+    const ordered = [...onPage, ...kept].filter(d => { const i = indexOf(d); if (i < 0 || seen.has(i)) return false; seen.add(i); return true; }).slice(0, 25);
+    if (!ordered.length) return null;
+    const dot = { 4: 'lightBlueDotGlow', 8: 'greenDotGlow', 16: 'yellowDotGlow', 32: 'redDotGlow' };
+    const word = { 4: 'Upcoming', 8: 'Active now', 16: 'Leaving soon', 32: 'Ended' };
+    const top = b => (b & 16 ? 16 : b & 8 ? 8 : b & 32 ? 32 : 4);
+    return {
+        type: 1,
+        components: [{
+            type: 3,
+            custom_id: `subpage_open~${originId}`,
+            placeholder: 'Open a draw...',
+            options: ordered.map(d => ({
+                label: String(d.title || 'Untitled draw').slice(0, 100),
+                value: String(indexOf(d)),
+                description: `${d._section === 'returning' ? 'Returning' : 'New'} · ${word[top(d.bits)]}`,
+                emoji: emojis.parseEmoji(emojis[dot[top(d.bits)]])
+            }))
+        }]
+    };
+}
+
+// THE SINGLE-DRAW PANEL (2026-11-10, Harkirat: "jump directly and open a specific draw. like a single panel of that draw"). From `/draws draw:`, `d draws <name>`, or the Open a draw… menu. The draw's title and date lines, its picture full width, every item (no "…and N more": one draw always fits), its type, then a pager through every draw this season (allDraws' order) and Back to the page it was opened from (`back`, a /draws pager id; the draw's own section page when opened by name).
+function buildDrawPanel(seasonalDoc, index, accentColor = PRESET_ACCENT, isEphemeral = false, opts = {}) {
+    const all = allDraws(seasonalDoc);
+    const at = Math.min(Math.max(0, index), all.length - 1);
+    const draw = all[at];
+    const nowMs = opts.nowMs ?? Date.now();
+    const ctx = { seasonalDoc, nowMs };
+    const seasonTitle = seasonalDoc.currentSeasonTitle || 'Current Season';
+    const isNew = draw._section !== 'returning';
+    const sectionList = all.filter(d => d._section === draw._section);
+    // Back: the page it came from, else the section page that holds it.
+    let back = opts.back;
+    if (!back) {
+        const pages = paginateDraws(sectionList, ctx, CHUNK_SIZE);
+        const sub = Math.max(0, pages.findIndex(p => p.some(d => d.title === draw.title)));
+        back = `${draw._section}_${sub}`;
+    }
+    const typeName = require('../utils/drawTypes').drawTypeName(draw.priceType);
+    const itemLines = drawItemLines(draw);
+    const components = [
+        ...require('../utils/reminders').withBell(withCaptionEmoji(buildTitleBlock(seasonTitle, isNew ? emojis.newDraws : emojis.returningDraws, isNew ? 'New Draw' : 'Returning Draw', 2), seasonEmojiFor(seasonalDoc.currentSeasonTitle, seasonalDoc.currentSeasonEmoji))),
+        { type: 14, spacing: 2, divider: true },
+        { type: 10, content: `### ${draw.title}\n${drawDateLines(draw, ctx)}` },
+        ...(draw.thumbnailUrl ? [{ type: 12, items: [{ media: { url: draw.thumbnailUrl } }] }] : []),
+        { type: 10, content: [itemLines.length ? itemLines.join('\n') : '-# No items listed yet.', ...(typeName && draw.priceType !== 'unknown' ? [`-# ${typeName}`] : [])].join('\n').slice(0, 3400) }
+    ];
+    const pager = buildPaginationRow({
+        totalChunks: all.length, currentPage: at,
+        makeCustomId: (p) => `subpage_one_${p}~${back}`,
+        indicatorCustomId: 'subpage_indicator',
+        indicatorLabel: `Draw ${at + 1}/${all.length}`
+    });
+    components.push({ type: 14, spacing: 2, divider: true });
+    if (pager) components.push(pager);
+    const { encodeState } = require('./drawCalculator');
+    const priced = all.some(d => d.priceType);
+    components.push({ type: 1, components: [
+        { type: 2, style: 2, label: 'Back to Draws', emoji: emojis.parseEmoji(emojis.returnArrow), custom_id: `subpage_${back}` },
+        ...(priced ? [{ type: 2, style: 1, label: 'Calculate', emoji: emojis.parseEmoji(emojis.calculator), custom_id: encodeState('drawspick', {}) }] : [])
+    ] });
+    const nav = buildGlobalNavRow('nav_draws', { nav_draws: { label: 'All Draws', custom_id: 'nav_draws', style: 1 } });
+    return withShareButton([{ type: 17, accent_color: accentColor, components }, nav], isEphemeral);
+}
+
 function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PRESET_ACCENT, isEphemeral = false, filter = 0, opts = {}) {
     const seasonTitle = seasonalDoc.currentSeasonTitle || "Current Season";
     const mask = filterMask(filter);
     const states = mask & STATE_BITS;
+    // The search typed in the Filter pop-up (2026-11-10); with the mask it is what `narrowed` means: anything that hides a draw.
+    const query = String(opts.query || '').trim();
+    const narrowed = Boolean(mask || query);
     // `opts.nowMs` draws the page as of another moment: the season panel's staged preview renders the draft as on the day the season starts (2026-11-08).
     const nowMs = opts.nowMs ?? Date.now();
     const ctx = { seasonalDoc, nowMs };
     // In release order (utils/drawDates.js byRelease, 2026-11-08 12:18 EST): the stored order is the paste order, which is not the order players should read.
     const timed = (key) => require('../utils/drawDates').byRelease(seasonalDoc[key === 'new' ? 'newDraws' : 'returningDraws']).map(d => ({ ...d, _section: key, ...drawTiming(d, seasonalDoc, nowMs) }));
     const lists = {
-        new: timed('new').filter(d => !states || (d.bits & states)),
-        returning: timed('returning').filter(d => !states || (d.bits & states))
+        new: timed('new').filter(d => (!states || (d.bits & states)) && drawMatches(d, mask, query)),
+        returning: timed('returning').filter(d => (!states || (d.bits & states)) && drawMatches(d, mask, query))
     };
     // The sections the filter keeps: the picked ones, or both.
     const picked = ['new', 'returning'].filter(k => !(mask & 3) || (mask & SECTION_BIT[k]));
@@ -223,12 +403,12 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
     const sectionNote = (k) => {
         const all = timed(k);
         const counts = STATUS_GROUPS.map(g => ({ emojiKey: g.emojiKey, label: g.word || g.label.toLowerCase(), n: all.filter(d => g.holds(d.bits)).length }));
-        return emptyNote({ label: SECTION_NAME[k], emoji: emojis[k === 'new' ? 'newDraws' : 'returningDraws'], counts, filtered: Boolean(mask) && all.length > 0 });
+        return emptyNote({ label: SECTION_NAME[k], emoji: emojis[k === 'new' ? 'newDraws' : 'returningDraws'], counts, filtered: narrowed && all.length > 0 });
     };
     // Which empty sections get a line at the top: one picked by name under a filter, and, with no filter, a section with no draws at all (it used to get a whole page saying so, the same empty page he asked to retire, 14:32 EDT: "Work the class!"). With nothing to show anywhere, every kept section's line is the page.
-    const notes = picked.filter(k => !lists[k].length && (!anyShown || !mask || (mask & SECTION_BIT[k]))).map(sectionNote);
+    const notes = picked.filter(k => !lists[k].length && (!anyShown || !narrowed || (mask & SECTION_BIT[k]))).map(sectionNote);
 
-    let titleEmoji, titleLabel, body, pager;
+    let titleEmoji, titleLabel, body, pager, originId, kept, onPage;
     if (states) {
         // One list across the kept sections, grouped by state.
         const all = picked.flatMap(k => lists[k]);
@@ -249,10 +429,13 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
         pager = buildPaginationRow({
             totalChunks: pages.length, currentPage: at,
             // The section in the id is a placeholder: handlers/pagination.js reads the page number and the mask, and the filtered list ignores the section.
-            makeCustomId: (p) => `subpage_new_${p}_m${mask}`,
+            makeCustomId: (p) => `subpage_new_${p}${filterSuffix(mask, query)}`,
             indicatorCustomId: 'subpage_indicator',
             indicatorLabel: `${chunk[0]?._group.label || 'Filtered'} · ${at + 1}/${pages.length}`
         });
+        originId = `new_${at}${filterSuffix(mask, query)}`;
+        kept = flat;
+        onPage = chunk;
     } else {
         // A section with nothing in it is skipped (its line sits at the top instead), unless every one is empty.
         const walk = anyShown ? picked.filter(k => lists[k].length) : picked;
@@ -272,10 +455,13 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
         const here = Math.max(0, allPages.findIndex(p => p.key === categoryKey && p.sub === safeSubPage));
         pager = buildPaginationRow({
             totalChunks: allPages.length, currentPage: here,
-            makeCustomId: (p) => `subpage_${allPages[p].key}_${allPages[p].sub}${mask ? `_m${mask}` : ''}`,
+            makeCustomId: (p) => `subpage_${allPages[p].key}_${allPages[p].sub}${filterSuffix(mask, query)}`,
             indicatorCustomId: 'subpage_indicator',
             indicatorLabel: `${categoryKey === 'new' ? 'New' : 'Returning'} · ${here + 1}/${allPages.length}`
         });
+        originId = `${categoryKey}_${safeSubPage}${filterSuffix(mask, query)}`;
+        kept = walk.flatMap(k => lists[k]);
+        onPage = activeList.length ? pages[safeSubPage] : [];
     }
 
     const drawComponents = [
@@ -292,18 +478,22 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
     }
 
     drawComponents.push({ type: 14, spacing: 2, divider: true }); // Divider before the filter
-    drawComponents.push(buildFilterRow(mask));
+    // OPEN A DRAW (2026-11-10, Harkirat: "i want a option in the /draws slash command to jump directly and open a specific draw. like a single panel of that draw."). Every draw the view keeps, this page's first, up to Discord's 25; a pick opens buildDrawPanel, whose Back returns here (`subpage_open~<this page's id>`). It took the filter dropdown's two components when the filter moved into the Filter button's pop-up below.
+    const openRow = buildOpenRow(seasonalDoc, kept || [], onPage || [], originId);
+    if (openRow) drawComponents.push(openRow);
 
     // PRICE THESE DRAWS (2026-10-21 10:14 EDT, Harkirat): Calculate opens /draw calculator's pick-your-draws pop-up (handlers/drawCalc.js `drawspick`), shown only when a draw this season has a price type. A `calc~` id with no author, so whoever presses it gets their own calculation. It shared a row with the New/Returning Draws toggle (CATEGORY TOGGLE, 2026-07-12: one button offering the OTHER section, sized so the pair never wrapped on his iPhone, his option D of 2026-10-21) until 2026-11-01, when the filter above replaced the toggle.
     const priced = [...(seasonalDoc.newDraws || []), ...(seasonalDoc.returningDraws || [])].some(d => d.priceType);
     const { encodeState } = require('./drawCalculator');
     // RESET FILTER (2026-11-01 13:16 EDT, Harkirat: "when any filter is selected, show a "Reset filter" button to the left of calculate with the "Return" emoji. which wipes the filters and takes you back to the normal /draws view"). `subpage_reset` in handlers/pagination.js; the footer's All Draws does the same, but sits far from the dropdown.
+    // FILTER (2026-11-10): opens the pop-up (buildFilterModal) ticked as this view stands, so its id carries the mask and search.
     const actions = [
-        ...(mask ? [{ type: 2, style: 2, label: 'Reset Filter', emoji: emojis.parseEmoji(emojis.returnArrow), custom_id: 'subpage_reset' }] : []),
+        { type: 2, style: narrowed ? 1 : 2, label: 'Filter', emoji: emojis.parseEmoji(emojis.filter), custom_id: `subpage_filterform${filterSuffix(mask, query)}` },
+        ...(narrowed ? [{ type: 2, style: 2, label: 'Reset Filter', emoji: emojis.parseEmoji(emojis.returnArrow), custom_id: 'subpage_reset' }] : []),
         ...(priced ? [{ type: 2, style: 1, label: 'Calculate', emoji: emojis.parseEmoji(emojis.calculator), custom_id: encodeState('drawspick', {}) }] : [])
     ];
     // Its own row since the toggle went. The toggle's ids (`page_new_draws`/`page_returning_draws`) still open their section on panels posted before (handlers/pagination.js).
-    if (actions.length) drawComponents.push({ type: 1, components: actions });
+    drawComponents.push({ type: 1, components: actions });
 
     const containerPayload = {
         type: 17,
@@ -312,7 +502,7 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
     };
 
     // In a filtered view the footer's own Draws slot becomes a live blurple "All Draws" that clears the filter, as /calendar's "Full Calendar" does.
-    const globalNavigationRow = mask
+    const globalNavigationRow = narrowed
         ? buildGlobalNavRow('nav_draws', { nav_draws: { label: 'All Draws', custom_id: 'nav_draws', style: 1 } })
         : buildGlobalNavRow('nav_draws');
 
@@ -324,8 +514,10 @@ module.exports = {
         .setName('draws')
         // Trimmed 2026-07-18 (mobile-width audit, v2 quick-wins batch) -- was truncating on mobile.
         .setDescription('View new and returning draws this season')
+        // draw: (2026-11-10, his ask): opens one draw on its own panel (buildDrawPanel), suggested by title as you type.
+        .addStringOption(option => option.setName('draw').setDescription('Open one draw on its own panel').setAutocomplete(true))
         .addStringOption(option => option.setName('page').setDescription('Jump directly to New Draws or Returning Draws').addChoices({ name: 'New Draws', value: 'new' }, { name: 'Returning Draws', value: 'returning' }))
-        // One status to start with (2026-11-01); the dropdown on the panel picks several.
+        // One status to start with (2026-11-01); the panel's Filter pop-up picks several, and more.
         .addStringOption(option => option.setName('filter').setDescription('Show only upcoming, active, leaving soon or ended draws').addChoices(
             { name: 'Upcoming', value: 'upcoming' }, { name: 'Active Now', value: 'live' }, { name: 'Leaving Soon', value: 'leaving' }, { name: 'Ended', value: 'ended' }
         ))
@@ -333,6 +525,19 @@ module.exports = {
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]), // Guild + user install, all contexts (v3: usable in a server without a user install)
 
     buildContainer,
+    buildDrawPanel,
+    buildFilterModal,
+    readFilterModal,
+    parseFilterSuffix,
+    filterSuffix,
+    encodeQuery,
+    decodeQuery,
+    drawMatches,
+    drawKindBits,
+    allDraws,
+    findDrawIndex,
+    RARITY_OPTIONS,
+    KIND_OPTIONS,
     filterMask,
     drawStateBits,
     drawTiming,
@@ -346,8 +551,20 @@ module.exports = {
     paginateDraws,
     DRAW_TEXT_BUDGET,
 
-    // filterOverride: the filter mask a pager button or the filter dropdown carries; a slash `filter` wins.
-    async execute(interaction, pageOverride = null, subPageOverride = 0, filterOverride = 0) {
+    // draw: suggestions, newest first: this season's draws whose title (or an item) holds what is typed. utils/autocomplete.js routes here; a text command's `d draws <name>` asks the same list (bot/textCommands.js).
+    async autocomplete(interaction) {
+        const typed = String(interaction.options.getFocused() || '').trim();
+        const doc = await SeasonalData.findOne({ docType: 'global' }).lean();
+        if (!doc) return await interaction.respond([]);
+        const list = allDraws(doc).reverse().filter(d => !typed || drawMatches(d, 0, typed));
+        return await interaction.respond(list.slice(0, 25).map(d => ({
+            name: `${String(d.title || 'Untitled draw').slice(0, 80)} · ${d._section === 'returning' ? 'Returning' : 'New'}`.slice(0, 100),
+            value: String(d.title || '').slice(0, 100)
+        })));
+    },
+
+    // filterOverride: the filter mask a pager button or the filter dropdown carries; a slash `filter` wins. extra.query: the Filter pop-up's search. extra.drawIndex / extra.back: open one draw (buildDrawPanel), Back returning to that /draws page.
+    async execute(interaction, pageOverride = null, subPageOverride = 0, filterOverride = 0, extra = {}) {
         const userId = interaction.user.id;
         // NOTE (added during review): kicked off alongside `prefs` instead of after it -- doesn't depend on prefs at all, so it resolves concurrently with the deferReply() ack below rather than only starting once that's done. Only `prefs` is actually awaited before deferReply (keeps the 3-second ack window fast). .lean() since this doc is only ever read here, never saved.
         const prefsPromise = UserPreference.findOne({ discordId: userId });
@@ -365,6 +582,8 @@ module.exports = {
             if (userChoice) activePage = userChoice;
             const filterChoice = interaction.options.getString('filter');
             if (filterChoice) filterOverride = filterMask(filterChoice);
+            const drawChoice = interaction.options.getString('draw');
+            if (drawChoice) extra = { ...extra, drawTitle: drawChoice };
         }
 
         // NOTE: switched from the old per-command `drawsVisibility` field to the shared `seasonalVisibility` field so this respects the single "Seasonal Content" toggle in /settings (Option A).
@@ -379,7 +598,14 @@ module.exports = {
         }
 
         const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);
-        const components = buildContainer(seasonalDoc, activePage, subPageOverride, accentColor, isEphemeral, filterOverride);
+        let drawIndex = Number.isInteger(extra.drawIndex) ? extra.drawIndex : -1;
+        if (extra.drawTitle) {
+            drawIndex = findDrawIndex(seasonalDoc, extra.drawTitle);
+            if (drawIndex < 0) return require('../utils/ephemeral').privateNotice(interaction, `${BOT_EMOJI.cross} No draw this season is called **${String(extra.drawTitle).slice(0, 80)}**. Pick one from the suggestions, or open /draws.`);
+        }
+        const components = drawIndex >= 0 && allDraws(seasonalDoc).length
+            ? buildDrawPanel(seasonalDoc, drawIndex, accentColor, isEphemeral, { back: extra.back })
+            : buildContainer(seasonalDoc, activePage, subPageOverride, accentColor, isEphemeral, filterOverride, { query: extra.query });
 
         return await sendV2Payload(interaction, components);
     }

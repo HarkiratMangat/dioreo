@@ -335,6 +335,13 @@ async function resolveRun(message, verdict) {
         }
         const { hit, several } = pickChoice(await suggest(message, textCommand, ac.option, ac.text), ac.text, ac.first);
         if (hit) { values[ac.option] = String(hit.value); continue; }
+        // A soft option (draws' draw, 2026-11-10): what names nothing is dropped, so `d draws pls` still opens /draws as before; two or more words after `d` that name nothing stay silent, and an addressed message with several matches still gets Did you mean.
+        if ((textCommand.options || []).find(o => o.name === ac.option)?.soft) {
+            const oneWord = !/\s/.test(String(ac.text).trim());
+            if (verdict.addressed && several.length) return { kind: 'pick', textCommand, choices: several.slice(0, 5).map(c => ({ label: String(c.name), values: { ...values, [ac.option]: String(c.value) } })) };
+            if (oneWord || verdict.addressed) continue;
+            return null;
+        }
         if (!verdict.addressed) return null;
         if (several.length) return { kind: 'pick', textCommand, choices: several.slice(0, 5).map(c => ({ label: String(c.name), values: { ...values, [ac.option]: String(c.value) } })) };
         return { kind: 'noMatch', text: ac.text };

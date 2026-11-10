@@ -125,19 +125,20 @@ const PAGES = {
     '/draws': {
         blurb: "This season's new and returning Lucky Draws, with their items",
         page(x) {
-            // The Filter menu replaced the New / Returning Draws button on 2026-11-01 (commands/draws.js FILTER_OPTIONS).
-            const shows = text(`**On the page**\n> -# **Filter menu**  *New or Returning, and Upcoming, Active now, Leaving soon or Ended*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# ${bell()} **Bell**  *Opens your reminders privately*`);
-            if (x.view !== 'text') return { boxes: [text('`[page]`\n-# Open on New Draws or Returning Draws'), text('`[filter]`\n-# Upcoming, Active Now, Leaving Soon or Ended'), VIS, shows], examples: [['/draws'], ['/draws page:Returning Draws'], ['/draws filter:Leaving Soon']] };
+            // The Filter menu replaced the New / Returning Draws button on 2026-11-01 (commands/draws.js FILTER_OPTIONS); the Filter button's pop-up and Open a draw replaced the menu on 2026-11-10.
+            const shows = text(`**On the page**\n> -# **Open a draw**  *One draw on its own panel, with its full picture*\n> -# **Filter**  *Section, status, rarity, draw type and a search*\n> -# **Calculate**  *Price a draw in the calculator*\n> -# ${bell()} **Bell**  *Opens your reminders privately*`);
+            if (x.view !== 'text') return { boxes: [text('`[draw]`\n-# Open one draw on its own panel'), text('`[page]`\n-# Open on New Draws or Returning Draws'), text('`[filter]`\n-# Upcoming, Active Now, Leaving Soon or Ended'), VIS, shows], examples: [['/draws'], ['/draws draw:High Tide'], ['/draws page:Returning Draws'], ['/draws filter:Leaving Soon']] };
             const words = value => valuesOf('/draws', 'page').find(v => v.value === value).aliases.filter(a => a !== 'all');
             const states = value => valuesOf('/draws', 'filter').find(v => v.value === value).aliases.slice(0, 3);
             return {
-                args: '[new|returning] [filter]',
+                args: '[new|returning] [filter] [draw name]',
                 boxes: [
                     text(`**Page**\n-# Open on New or Returning. Blank opens on New\n> -# **New** ${dot(words('new'))}\n> -# **Returning** ${dot(words('returning'))}`),
                     text(`**Filter**\n-# Blank shows every draw\n> -# **Upcoming** ${dot(states('upcoming'))}\n> -# **Active now** ${dot(states('live'))}\n> -# **Leaving soon** ${dot(states('leaving'))}\n> -# **Ended** ${dot(states('ended'))}`),
+                    text(`**Draw name**\n-# Any other words open that draw on its own panel`),
                     shows,
                 ],
-                examples: [[`${x.p} draws`, "This season's draws"], [`${x.p} draws returning`, 'Straight to Returning'], [`${x.p} ld r`, 'The same, shortest'], [`${x.p} draws leaving`, 'Draws ending within 3 days']],
+                examples: [[`${x.p} draws`, "This season's draws"], [`${x.p} draws returning`, 'Straight to Returning'], [`${x.p} ld r`, 'The same, shortest'], [`${x.p} draws leaving`, 'Draws ending within 3 days'], [`${x.p} draws high tide`, 'One draw on its own panel']],
             };
         },
     },

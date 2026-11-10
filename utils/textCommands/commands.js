@@ -12,6 +12,7 @@
 //   multi    several values join into one comma list (draw prices' type: `legendary` is two draws)
 //   keyOnly  reachable only as `key:value` (timestamp's timezone)
 //   mention  takes an @mention (colors' someone)
+//   soft     an autocomplete rest that names nothing is dropped instead of answered: one word is ignored, more stay silent unless Dioreo was addressed (draws' draw)
 //
 // The help pages read their words from here too (B6, his approved pages 2026-10-29 19:02-23:13 EDT), so a page never shows a word the parser does not accept: `helpWord` is the word in a page's usage line and in the command switcher (`d price`, `d end`), and `shown` the aliases listed under it, his picks from `words`. A value's `shown` is the short forms listed beside it, its `group` the Draw Prices group it sits in, and its `label` what a page says it opens.
 //
@@ -62,6 +63,8 @@ const TEXT_COMMANDS = [
                 { value: 'leaving', aliases: ['leaving', 'leaving soon', 'ending', 'ending soon', 'last chance'] },
                 { value: 'ended', aliases: ['ended', 'past', 'over', 'finished'] },
             ] },
+            // `d draws high tide` opens that draw on its own panel (2026-11-10, his ask), through /draws' own draw: suggestions. `soft`: a single word that names no draw is still ignored (`d draws pls` opens /draws, B6), and two words that name none stay silent after `d` (bot/textCommands.js resolveRun).
+            { name: 'draw', rest: 'autocomplete', soft: true, example: 'high tide' },
         ],
     },
     {
