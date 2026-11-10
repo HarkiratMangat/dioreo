@@ -191,7 +191,11 @@ async function handleButton(interaction) {
         const saved = SAVED.get(token);
         if (!saved || saved.userId !== interaction.user.id) return interaction.reply({ content: `${BOT_EMOJI.cross} This Revert has expired (30 minutes, or a restart). Each change can still be reverted from /bot analytics.`, ephemeral: true });
         SAVED.delete(token);
-        return require('./results').revertChanges(interaction, saved.changeIds, saved.target === 'draft' ? 'the draws Quick Add staged in the Next Season Draft are gone, and the draft calendar is as it was' : 'the draws and /calendar rows that Quick Add saved are gone');
+        // The reverted note keeps a way back (Draws Home, or Draft Draws for the draft): it was a bare note with no buttons, a dead end (2026-11-10 13:31 EST).
+        return require('./results').revertChanges(interaction, saved.changeIds, {
+            doneNote: saved.target === 'draft' ? 'the draws Quick Add staged in the Next Season Draft are gone, and the draft calendar is as it was' : 'the draws and /calendar rows that Quick Add saved are gone',
+            render: (note) => endPanel(note, saved.target === 'draft' ? { target: 'draft' } : null),
+        });
     }
     const state = getDraft(token, interaction.user.id);
     if (!state) return sendV2Payload(interaction, expiredPanel());
@@ -404,7 +408,14 @@ async function save(interaction, token, state) {
             ops.push({ type: 'calendar.edit', target: { elementId: String(row._id) }, payload: { title: row.title, date: d.start, endDate: row.endDate || null, isOngoing: Boolean(row.isOngoing), category: 'draw', isDoubleCP: Boolean(row.isDoubleCP) } });
         }
     });
-    if (!ops.length) return sendV2Payload(interaction, notePanel('Nothing in this draft changes anything.', ACCENT.draws));
+    // The /calendar rows ride in the same commit, so without the Calendar tier commitSet refused the WHOLE draft: an admin with Draws access only could not Quick Add a draw with an end date at all. The rows are dropped and the result says so, as handlers/manage/draws.js gateEndOp does for Add and Edit (#249) (2026-11-10 13:20 EST, the "are you sure?" pass).
+    const calOps = ops.filter(o => o.type.startsWith('calendar.'));
+    let calendarSkipped = false;
+    if (calOps.length && !(await require('../../core/changeset').checkOps(interaction.user.id, calOps)).ok) {
+        calendarSkipped = true;
+        ops.splice(0, ops.length, ...ops.filter(o => !o.type.startsWith('calendar.')));
+    }
+    if (!ops.length) return sendV2Payload(interaction, notePanel(calendarSkipped ? `${BOT_EMOJI.cross} Nothing was saved: this draft only changes end dates, which live on /calendar, and you don't have access to change /calendar.` : 'Nothing in this draft changes anything.', calendarSkipped ? FAIL_ACCENT : ACCENT.draws));
 
     const result = await commitSet(ops, { actorId: interaction.user.id });
     if (!result.ok) {
@@ -423,7 +434,8 @@ async function save(interaction, token, state) {
         // A new draw saved without a picture, items or a draw type is on /manage draws' Needs a Look now (2026-11-10 11:03 EST); the result says so, and its card is one pick away below.
         { head: `${emojis.warn} Needs a look`, lines: ops.filter(o => o.type === 'draw.add').map(o => ({ t: o.payload.title, g: require('../../utils/drawChecks').gapsOf(o.payload) })).filter(x => x.g.length).map(x => `- ${x.t} · ${x.g.join(', ')}`) }
     ];
-    const ends = todo.filter(d => d.end).length;
+    const ends = calendarSkipped ? 0 : todo.filter(d => d.end).length;
+    if (calendarSkipped) sections.push({ head: `${emojis.warn} End dates not saved`, lines: [`- They live on /calendar, and you don't have access to change /calendar. The draws were saved without them.`] });
     const panel = resultPanel({ page: 'draws', heading: 'Quick Add saved', summary: ends ? `-# ${ends} end date${ends === 1 ? '' : 's'} on /calendar too.` : null, sections });
     // Where to go next (2026-11-10, his ask for QoL buttons): the saved draws' cards in the /manage draws panel, Quick Add again, and the draws home. A click turns this message into that panel (mng_dr|…, handlers/manage/drawsPanel/).
     const keys = savedKeys(await loadOrCreateSeasonalDoc(), todo);

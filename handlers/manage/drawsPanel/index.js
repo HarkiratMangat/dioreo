@@ -45,6 +45,18 @@ async function gate(interaction, action) {
     await say(interaction, g.message || DENIAL_MESSAGE[g.reason] || `${emojis.accessDenied} You do not have access to that.`);
     return false;
 }
+// End Date and "+ Calendar Row(s)" write /calendar rows, and commitSet refuses the WHOLE save without the Calendar tier for that op (core/changeset.js checkOps). Asked before the pop-up opens or the button is drawn, so an admin with Draws access only is told up front, not after typing a date (2026-11-10 13:20 EST, the "are you sure?" pass: the panel gated these on the draws tier alone).
+async function calendarAllowed(userId, ops) {
+    return (await require('../../../core/changeset').checkOps(userId, ops.filter(Boolean))).ok;
+}
+// The ops an End Date could write for this draw: an edit of its row, or a new row. Two different choices, so at least one differs from what the row holds now.
+const endProbe = (d) => (d ? [planEnd(d, { choice: 'season' }), planEnd(d, { choice: 'tbd' })] : []);
+async function calendarGate(interaction, ops) {
+    if (await calendarAllowed(interaction.user.id, ops)) return true;
+    require('../../../utils/eventStore').markOutcome('rejected_admin');
+    await say(interaction, `${emojis.accessDenied} **A draw's end date lives on its /calendar row, and you don't have access to change /calendar.** Nothing was changed.`);
+    return false;
+}
 async function gateDestructive(interaction) {
     const { can } = require('../../../utils/adminAccess');
     if (await can(interaction.user.id, 'manage.draws', 'destructive')) return true;
@@ -195,6 +207,18 @@ async function previewPanel(token, newText, retText, { isEdit }) {
     });
 }
 
+// The draws a revert put back, found by title. Reverting a delete re-adds each draw with a NEW id (core/ops/draws.js mints one on every add, single or bulk), so the old keys find nothing. A delete or a move's change row names its draw in `target`; a bulk delete's names them in its stored inverse (the removed draws). Only delete rows are read: an edit's inverse holds a whole section, which would match every draw in it. Change ids arrive as `#742`; the store may hold them with or without the mark.
+async function restoredKeys(doc, changeIds) {
+    const ids = changeIds.flatMap(id => [id, String(id).replace(/^#/, ''), `#${String(id).replace(/^#/, '')}`]);
+    const rows = await require('../../../models/ChangeLog').find({ changeId: { $in: [...new Set(ids)] }, model: 'SeasonalData', action: { $in: ['delete', 'bulkDelete'] } }).select('target action inverse').lean();
+    const titles = new Set();
+    for (const r of rows) {
+        if (r.action === 'delete' && r.target) titles.add(String(r.target));
+        for (const op of [r.inverse].flat(3)) for (const p of op?.payload?.parsed || []) if (p?.title) titles.add(p.title);
+    }
+    return V.allDraws(doc).filter(d => titles.has(d.title)).map(d => d._key);
+}
+const restoredKey = async (doc, changeIds) => (await restoredKeys(doc, changeIds))[0] || null;
 // ---------- Revert ---------- The panel's own Revert, so it lands back where the save was made (results.js revertChanges does the reverting and its permission check). `key` and `back` name the draw's card: the card if the draw is still there after the revert, else the list it came from, else Home. A Revert past Discord's 100 characters is left off, and the result says where to revert instead.
 function revertButton(changeIds, key = '', back = '') {
     const id = [`${PREFIX}revert`, (changeIds || []).join(','), key, back].join('|').replace(/\|+$/, '');
@@ -258,16 +282,18 @@ function planEnd(d, { choice, endDate }) {
 const endWords = (calRow) => (!calRow ? 'no end date' : calRow.isOngoing ? 'with the season' : calRow.endDate ? V.stamp(new Date(calRow.endDate)) : 'TBD');
 const wantWords = ({ choice, endDate }) => (choice === 'season' ? 'with the season' : choice === 'tbd' ? 'TBD' : V.stamp(endDate));
 
-async function confirmCard(doc, kind, key, back = '') {
+async function confirmCard(doc, kind, key, back = '', userId = null) {
     const d = V.allDraws(doc).find(x => x._key === key);
     if (!d) return home(doc, `${emojis.cross} That draw no longer exists.`);
     const to = d._sec === 'new' ? 'Returning' : 'New';
+    // "+ Calendar Row" only for someone who may delete /calendar rows; otherwise the whole delete would be refused.
+    const rowOk = Boolean(d._row) && kind !== 'move' && await calendarAllowed(userId, [{ type: 'calendar.delete', target: { elementId: String(d._row._id) } }]);
     const q = kind === 'move'
         ? `### ${emojis.warn} Move ${d.title} to ${to} Draws?\n-# Its items, picture, draw type and end date go with it.`
-        : `### ${emojis.warn} Delete ${d.title}?\n-# ${d._row ? '**Yes, Delete** keeps its /calendar row; **Delete + Calendar Row** removes that too.' : 'It has no /calendar row.'} Every change can be reverted.`;
+        : `### ${emojis.warn} Delete ${d.title}?\n-# ${rowOk ? '**Yes, Delete** keeps its /calendar row; **Delete + Calendar Row** removes that too.' : d._row ? 'Its /calendar row stays.' : 'It has no /calendar row.'} Every change can be reverted.`;
     const buttons = kind === 'move'
         ? [V.btn(['moveok', key, back], 'Yes, Move', emojis.checkmark, 3)]
-        : [V.btn(['delok', key, back], 'Yes, Delete', emojis.deleteBin, 4), ...(d._row ? [V.btn(['delok', key, back, 'r'], 'Delete + Calendar Row', emojis.calendar, 4)] : [])];
+        : [V.btn(['delok', key, back], 'Yes, Delete', emojis.deleteBin, 4), ...(rowOk ? [V.btn(['delok', key, back, 'r'], 'Delete + Calendar Row', emojis.calendar, 4)] : [])];
     return cardFor(doc, key, back, { header: q, extra: [V.row(...buttons, V.btn(['card', key, back], 'Cancel', emojis.returnArrow))] });
 }
 
@@ -293,9 +319,9 @@ async function openFromSlash(interaction) {
             key = keys[0];
         }
         if (act === 'edit') return (await gate(interaction, 'edit')) && interaction.showModal(await editModal(doc, key, V.ID('editm', key)));
-        if (act === 'end') return (await gate(interaction, 'edit')) && interaction.showModal(endModalFor(doc, key));
-        if (act === 'move') return (await gate(interaction, 'edit')) && view(await confirmCard(doc, 'move', key));
-        if (act === 'delete') return (await gate(interaction, 'delete')) && view(await confirmCard(doc, 'del', key));
+        if (act === 'end') return (await gate(interaction, 'edit')) && (await calendarGate(interaction, endProbe(V.allDraws(doc).find(x => x._key === key)))) && interaction.showModal(endModalFor(doc, key));
+        if (act === 'move') return (await gate(interaction, 'edit')) && view(await confirmCard(doc, 'move', key, '', interaction.user.id));
+        if (act === 'delete') return (await gate(interaction, 'delete')) && view(await confirmCard(doc, 'del', key, '', interaction.user.id));
         return view(V.cardView(doc, key));
     }
     if (list) return view(V.listView(doc, list));
@@ -356,6 +382,7 @@ async function route(interaction) {
     if (verb === 'edit' || verb === 'end') {
         if (!(await gate(interaction, 'edit'))) return;
         const doc = await getDoc();
+        if (verb === 'end' && !(await calendarGate(interaction, endProbe(V.allDraws(doc).find(x => x._key === a))))) return;
         const modal = verb === 'edit' ? await editModal(doc, a, V.ID('editm', a, b, c)) : endModalFor(doc, a, b, c);
         return modal ? interaction.showModal(modal) : show(interaction, await gone(doc, interaction));
     }
@@ -364,7 +391,10 @@ async function route(interaction) {
         const sel = await loadSel(a);
         if (!sel) return show(interaction, expired());
         const keys = selectedKeys(sel);
-        if (!keys.length) return show(interaction, V.selectView(await getDoc(), a, sel, null, n(b)));
+        const doc = await getDoc();
+        if (!keys.length) return show(interaction, V.selectView(doc, a, sel, null, n(b)));
+        const picked = V.allDraws(doc).filter(d => keys.includes(d._key));
+        if (!(await calendarGate(interaction, [picked.find(d => d._row), picked.find(d => !d._row)].flatMap(endProbe)))) return;
         return interaction.showModal(V.endModal(V.ID('tendm', a), { count: keys.length }));
     }
 
@@ -377,8 +407,24 @@ async function route(interaction) {
                 const doc = await getDoc();
                 const card = b ? await cardFor(doc, b, c, { header: note }) : null;
                 if (card) return card;
+                // Reverting a Move or a Delete re-adds the draw with a NEW id (core/ops/draws.js mints one on every add), so its old key finds nothing. Its title is on the change rows, so the Revert still lands on the draw's card (2026-11-10 13:22 EST: a Move's Revert landed on the New Draws list).
+                if (b || c === 'new' || c === 'returning') {
+                    const key = await restoredKey(doc, String(a || '').split(',').filter(Boolean));
+                    const back = V.STATUS[c] && c !== 'new' && c !== 'returning' ? c : '';
+                    const again = key ? await cardFor(doc, key, back, { header: note }) : null;
+                    if (again) return again;
+                }
                 // `s:<token>`: a Select list's action, so the Revert lands back on that list (2026-11-10 11:23 EST).
-                if (/^s:/.test(String(c || ''))) { const sel = await loadSel(String(c).slice(2)); if (sel) return V.selectView(doc, String(c).slice(2), sel, note); }
+                if (/^s:/.test(String(c || ''))) {
+                    const tok = String(c).slice(2);
+                    const sel = await loadSel(tok);
+                    if (sel) {
+                        // A reverted Delete N: the draws are back under new ids, so they rejoin the list (2026-11-10 13:27 EST: the list said "No draws found").
+                        const back = (await restoredKeys(doc, String(a || '').split(',').filter(Boolean))).filter(k => !sel.ids.includes(k));
+                        if (back.length) { sel.ids = [...sel.ids, ...back]; await setSel(tok, { ids: sel.ids }); }
+                        return V.selectView(doc, tok, sel, note);
+                    }
+                }
                 return V.STATUS[c] ? V.listView(doc, c, 0, { note }) : home(doc, note, interaction);
             },
         });
@@ -447,7 +493,7 @@ async function route(interaction) {
     }
     if (verb === 'move' || verb === 'del') {
         if (!(await gate(interaction, verb === 'move' ? 'edit' : 'delete'))) return;
-        return show(interaction, await confirmCard(await getDoc(), verb, a, b));
+        return show(interaction, await confirmCard(await getDoc(), verb, a, b, interaction.user.id));
     }
     if (verb === 'moveok') {
         if (!(await gate(interaction, 'edit'))) return;
@@ -703,8 +749,9 @@ async function routeSelection(interaction, verb, a, b, c) {
         const byKey = new Map(V.allDraws(doc).map(d => [d._key, d]));
         const list = keys.filter(k => byKey.has(k)).map(k => byKey.get(k));
         const lines = list.map(d => `- ${V.dot(d)} ${d.title} · ${V.secWord(d)}`);
-        const rows = list.filter(d => d._row).length;
-        return show(interaction, V.resultView({ ok: 'warn', crumbs: ['Select Draws'], title: `Delete ${V.plural(lines.length, 'draw')}?`, body: [...(lines.length > 20 ? [...lines.slice(0, 20), `-# …and ${lines.length - 20} more`] : lines), '', `-# ${rows ? `**Yes, Delete** keeps their /calendar rows; **Delete + Calendar Rows** removes those ${rows} too.` : 'None of them has a /calendar row.'} Every change can be reverted.`], back: ['slist', a, n(b)], backLabel: 'Cancel', extraButtons: [V.btn(['tdelok', a], `Yes, Delete ${lines.length}`, emojis.deleteBin, 4), ...(rows ? [V.btn(['tdelok', a, 'r'], 'Delete + Calendar Rows', emojis.calendar, 4)] : [])] }));
+        const withRow = list.filter(d => d._row);
+        const rows = withRow.length && await calendarAllowed(interaction.user.id, withRow.slice(0, 1).map(d => ({ type: 'calendar.delete', target: { elementId: String(d._row._id) } }))) ? withRow.length : 0;
+        return show(interaction, V.resultView({ ok: 'warn', crumbs: ['Select Draws'], title: `Delete ${V.plural(lines.length, 'draw')}?`, body: [...(lines.length > 20 ? [...lines.slice(0, 20), `-# …and ${lines.length - 20} more`] : lines), '', `-# ${rows ? `**Yes, Delete** keeps their /calendar rows; **Delete + Calendar Rows** removes those ${rows} too.` : withRow.length ? 'Their /calendar rows stay.' : 'None of them has a /calendar row.'} Every change can be reverted.`], back: ['slist', a, n(b)], backLabel: 'Cancel', extraButtons: [V.btn(['tdelok', a], `Yes, Delete ${lines.length}`, emojis.deleteBin, 4), ...(rows ? [V.btn(['tdelok', a, 'r'], 'Delete + Calendar Rows', emojis.calendar, 4)] : [])] }));
     }
     if (verb === 'tdelok') {
         if (!(await gate(interaction, 'bulkdelete')) || !(await gateDestructive(interaction))) return;
@@ -735,4 +782,5 @@ async function handleDrawsPanelInteraction(interaction) {
     return true;
 }
 
-module.exports = { handleDrawsPanelInteraction, renderHome, openFromSlash, autocomplete, previewDraws, exportText, resolveKeys, searchKeys, picksLabel, planEnd, readEnd, withStoredLinks, revertButton, PREFIX };
+module.exports = {
+    calendarAllowed, confirmCard, handleDrawsPanelInteraction, renderHome, openFromSlash, autocomplete, previewDraws, exportText, resolveKeys, searchKeys, picksLabel, planEnd, readEnd, withStoredLinks, revertButton, PREFIX };

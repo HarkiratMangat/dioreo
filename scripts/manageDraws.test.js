@@ -217,16 +217,54 @@ function seasonDoc(nNew = 3, nRet = 30) {
         assert.ok(fix.includes(`mng_dr|edit|${all.find(d => d.title === doc.newDraws[1].title)._key}|look|L`), fix.join(' '));
         limits(v, 'look list');
     });
-    await check('the card names where it came from, carries it through every action, and shows both dates', () => {
+    await check('the card names where it came from, carries it through every action, and shows the date the /draws block does not', () => {
         const doc = seasonDoc(3, 5);
         const d = V.allDraws(doc).find(x => x.bits & 8);
         const card = V.cardView(doc, d._key, { back: 'live' });
         assert.match(texts(card), /Draws {2}› {2}Active Now {2}›/);
         for (const v of ['edit', 'end', 'move', 'del']) assert.ok(ids(card).includes(`mng_dr|${v}|${d._key}|live`), v);
-        assert.match(texts(card), /Started <t:\d+:f> · ends <t:\d+:f>/);
+        // A running draw: /draws' block gives the end, the card's own line gives the start, and the end stamp is not repeated.
+        assert.match(texts(card), /Started <t:\d+:f>/);
+        const endStamp = `<t:${Math.floor(d.endMs / 1000)}:f>`;
+        assert.strictEqual(texts(card).split(endStamp).length - 1, 1, 'the end date shows once');
+        // An upcoming draw: the block gives the start, the card's line gives the end. An ended draw: both, since the block shows neither.
+        const up = V.allDraws(doc).find(x => x.bits & 4 && Number.isFinite(x.endMs));
+        if (up) assert.match(texts(V.cardView(doc, up._key, { back: 'upcoming' })), /-# Ends <t:\d+:f>/);
+        const over = V.allDraws(doc).find(x => x.bits & 32);
+        if (over) assert.match(texts(V.cardView(doc, over._key, { back: 'ended' })), /-# Started <t:\d+:f> · ended <t:\d+:f>/);
         const fromSearch = V.cardView(doc, d._key, { back: 't:tok1', sel: { ids: [d._key, V.allDraws(doc)[0]._key] } });
         assert.match(texts(fromSearch), /Search Results/);
         assert.ok(ids(fromSearch).includes('mng_dr|sres|tok1|0'));
+    });
+    await check('a single draw reads "This One", and the home counts add up to the total (Leaving Soon sits in brackets inside Active)', async () => {
+        const one = seasonDoc(1, 0);
+        const k = V.allDraws(one)[0]._key;
+        const tok = await V.searchView(one, 'tok1', { ids: [k] }, 0);
+        assert.ok(JSON.stringify(tok).includes('"Select This One"'), 'search results with one draw');
+        assert.ok(!JSON.stringify(tok).includes('These 1'));
+        const home = await V.pageView(seasonDoc(3, 5));
+        const line = texts(home).split('\n').find(l => / draws · /.test(l)) || '';
+        assert.doesNotMatch(line, / active · \*\*\d+ leaving soon/, line);
+        const nums = [...line.replace(/\(.*?\)/g, '').matchAll(/(\d+)\*{0,2} (?:active|upcoming|ended)/g)].map(m => Number(m[1]));
+        assert.strictEqual(nums.reduce((x, y) => x + y, 0), V.allDraws(seasonDoc(3, 5)).length, line);
+    });
+    await check('an admin without Calendar access is not offered End Date or "+ Calendar Row" (commitSet would refuse the whole save)', async () => {
+        const A = require('../utils/adminAccess');
+        const saved = { isOwner: A.isOwner, effectiveTiers: A.effectiveTiers };
+        const tiers = (pages) => async () => new Map(pages.map(pg => [require('../core/permissions').manageScope(pg), new Set(['create', 'edit', 'delete', 'destructive'])]));
+        A.isOwner = () => false;
+        try {
+            const doc = seasonDoc(3, 5);
+            const d = V.allDraws(doc).find(x => x._row);
+            assert.ok(d, 'the fixture has a draw with a /calendar row');
+            const del = [{ type: 'calendar.delete', target: { elementId: String(d._row._id) } }];
+            A.effectiveTiers = tiers(['draws']);
+            assert.strictEqual(await P.calendarAllowed('u1', del), false);
+            assert.ok(!JSON.stringify(await P.confirmCard(doc, 'del', d._key, '', 'u1')).includes('Delete + Calendar Row'));
+            A.effectiveTiers = tiers(['draws', 'calendar']);
+            assert.strictEqual(await P.calendarAllowed('u1', del), true);
+            assert.ok(JSON.stringify(await P.confirmCard(doc, 'del', d._key, '', 'u1')).includes('Delete + Calendar Row'));
+        } finally { Object.assign(A, saved); }
     });
     await check('Select\'s quick picks: within a group they widen, across groups they narrow; titles add on top', () => {
         const doc = seasonDoc(3, 5);

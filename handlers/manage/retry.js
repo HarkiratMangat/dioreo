@@ -193,6 +193,9 @@ function buildRetryModal(token) {
             else comp.value = stored;
         }
     }
+    // The draws panel heads its Edit pop-up with the draw's title, but the rebuild starts from a blank draw, so Try Again read "Edit Lucky Draw"; the title the admin typed names it again (2026-11-10 13:25 EST).
+    const typed = String(pending.values?.title || '').trim();
+    if (pending.modalCustomId.startsWith('mng_dr|editm|') && typed) json.title = `Edit ${typed}`.slice(0, 45);
     return json;
 }
 

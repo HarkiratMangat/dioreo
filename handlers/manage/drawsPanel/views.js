@@ -102,9 +102,9 @@ async function pageView(doc, note = null, { pageRow = null, noteRow = null } = {
     const all = allDraws(doc);
     const n = (k) => all.filter(STATUS[k].test).length;
     const look = n('look');
-    // The counts an admin scans for: how many, what is running, what is about to leave, what has ended. Leaving Soon is part of Active (as /draws' filter has it), so the two are not added up.
+    // The counts an admin scans for: how many, what is running, what is about to leave, what has ended. Leaving Soon is part of Active (as /draws' filter has it), so it is written in brackets after Active: a glance that adds the numbers up must reach the total.
     const counts = all.length
-        ? [`**${all.length}** ${all.length === 1 ? 'draw' : 'draws'}`, `${n('live')} active`, ...(n('leaving') ? [`**${n('leaving')} leaving soon**`] : []), ...(n('upcoming') ? [`${n('upcoming')} upcoming`] : []), ...(n('ended') ? [`${n('ended')} ended`] : [])].join(' · ')
+        ? [`**${all.length}** ${all.length === 1 ? 'draw' : 'draws'}`, `${n('live')} active${n('leaving') ? ` (**${n('leaving')} leaving soon**)` : ''}`, ...(n('upcoming') ? [`${n('upcoming')} upcoming`] : []), ...(n('ended') ? [`${n('ended')} ended`] : [])].join(' · ')
         : 'No draws yet this season. Quick Add or Paste Draws to start.';
     const lookLineText = look ? `\n-# ${emojis.warn} **${look}** ${look === 1 ? 'needs' : 'need'} a look` : '';
     const components = [text(`## ${emojis.newDraws}${emojis.returningDraws} Draws${await seasonLine(doc)}\n-# ${counts}${lookLineText}`)];
@@ -164,7 +164,7 @@ function listView(doc, status, page = 0, { note = null, noteRow = null } = {}) {
         components.push({ type: 1, components: [{ type: 3, custom_id: ID('open', key), placeholder: 'Open a draw…', options: shown.map(openOption) }] });
     }
     if (pages > 1) components.push(row(arrow(['list', key, pg - 1], 'left', pg === 0), counter(['pgn', key], `Page ${pg + 1} / ${pages}`), arrow(['list', key, pg + 1], 'right', pg === pages - 1)));
-    components.push(BIG(), row(btn(['sellist', key], `Select These ${list.length}`, emojis.filter, 2, !list.length), homeBtn()));
+    components.push(BIG(), row(btn(['sellist', key], list.length === 1 ? 'Select This One' : `Select These ${list.length}`, emojis.filter, 2, !list.length), homeBtn()));
     return panel(components);
 }
 
@@ -183,7 +183,7 @@ function searchView(doc, token, sel, page = 0) {
         components.push({ type: 1, components: [{ type: 3, custom_id: ID('open', `t:${token}`), placeholder: 'Open a draw…', options: shown.map(openOption) }] });
     }
     if (pages > 1) components.push(row(arrow(['sres', token, pg - 1], 'left', pg === 0), counter(['spgn', token], `Page ${pg + 1} / ${pages}`), arrow(['sres', token, pg + 1], 'right', pg === pages - 1)));
-    components.push(BIG(), row(btn(['slist', token, 0], `Select These ${keys.length}`, emojis.filter, 2, !keys.length), btn('find', 'Search Again', emojis.gunsmithSearch), homeBtn()));
+    components.push(BIG(), row(btn(['slist', token, 0], keys.length === 1 ? 'Select This One' : `Select These ${keys.length}`, emojis.filter, 2, !keys.length), btn('find', 'Search Again', emojis.gunsmithSearch), homeBtn()));
     return panel(components);
 }
 
@@ -191,14 +191,18 @@ function searchView(doc, token, sel, page = 0) {
 const originOf = (back, d) => (STATUS[back] ? back : /^t:/.test(String(back || '')) ? back : d._sec);
 const originLabel = (back) => (STATUS[back] ? STATUS[back].label : 'Search Results');
 const originBtn = (back) => (STATUS[back] ? btn(['list', back, 0], STATUS[back].label, emojis.returnArrow) : btn(['sres', String(back).slice(2), 0], 'Search Results', emojis.returnArrow));
-// The draw's dates in full, start and end: the /draws block shows only the one that matters to a player.
+// The date the /draws block above does not show. That block gives an upcoming draw's start and a running draw's end (and no date once a draw has ended), so this line gives a running draw's start, an upcoming draw's end, and both for an ended one; a missing, TBD or with-the-season end is always named. Showing both every time put the same date on the card twice.
 function datesLine(d) {
     if (d.state === 'tba' || !Number.isFinite(d.startMs)) return '-# Release date TBA';
-    const start = `${d.startMs > Date.now() ? 'Starts' : 'Started'} ${stamp(d.startMs)}`;
-    const end = d._row?.isOngoing && Number.isFinite(d.endMs) ? `ends with the season, ${stamp(d.endMs)}`
-        : Number.isFinite(d.endMs) ? `${d.endMs > Date.now() ? 'ends' : 'ended'} ${stamp(d.endMs)}`
+    const now = Date.now();
+    const upcoming = d.startMs > now;
+    const ended = Number.isFinite(d.endMs) && d.endMs <= now;
+    const start = upcoming ? null : `started ${stamp(d.startMs)}`;
+    const end = d._row?.isOngoing ? 'ends with the season'
+        : Number.isFinite(d.endMs) ? (upcoming || ended ? `${ended ? 'ended' : 'ends'} ${stamp(d.endMs)}` : null)
             : d._tbd ? 'end TBD' : `${emojis.warn} no end date on /calendar`;
-    return `-# ${start} · ${end}`;
+    const line = [start, end].filter(Boolean).join(' · ');
+    return line ? `-# ${line.charAt(0).toUpperCase()}${line.slice(1)}` : '';
 }
 function cardView(doc, key, { header = null, extra = null, back = null, sel = null, resultRow = null } = {}) {
     const all = allDraws(doc);
@@ -253,6 +257,8 @@ function selectView(doc, token, sel, note = null, page = 0) {
     if (sel.unmatched?.length) components.push(text(`-# ${emojis.warn} Nothing matched ${sel.unmatched.map(x => `\`${x}\``).join(', ').slice(0, 500)}`));
     components.push(BIG());
     if (!keys.length) {
+        // A note (a Revert's, a save's) still shows when the list is empty: it said nothing at all after a delete was reverted.
+        if (note) components.push(text(note), SMALL());
         components.push(text(`${emojis.cross} **No draws found.** Try part of a title, or a quick pick.`), BIG(), row(btn('select', 'Select Again', emojis.filter, 1), homeBtn()));
         return panel(components);
     }
@@ -336,7 +342,7 @@ function checkView({ results, extra = 0, indexSize = 0 }, token = null, foundCou
     components.push(BIG(), ...blocks.slice(0, shown).map(text));
     if (dropped) components.push(text(`-# …and ${plural(dropped, 'more line')} not checked; paste them again in a second check.`));
     const quick = token && foundCount
-        ? btn(['qathese', token], `Quick Add These ${Math.min(foundCount, 10)}`, emojis.mngAdd, 3)
+        ? btn(['qathese', token], foundCount === 1 ? 'Quick Add This One' : `Quick Add These ${Math.min(foundCount, 10)}`, emojis.mngAdd, 3)
         : btn('quickadd', 'Quick Add', emojis.mngAdd);
     components.push(BIG(), row(btn(['check', token || ''], 'Check Again', emojis.search, 1), quick, homeBtn()));
     return panel(components);
