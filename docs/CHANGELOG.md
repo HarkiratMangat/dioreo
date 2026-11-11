@@ -29,7 +29,39 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.18.0 — 2026-11-09 18:33 EST (#268) — /manage audit: the season draft adds instead of replacing, a fix button on every Needs a Look line, and the gaps in draws, patch notes, announcements and calendar; /draws opens one draw and filters in a pop-up
+## v3.19.0 — 2026-11-10 21:17 EST (#269) — /manage draws refined: saves answer in the panel, an End Date pop-up, search by item, and the bugs they hid; /draws' single draw shows its picture first
+
+From a full review and click test of `/manage draws` on the dev bot with prod's draws mirrored into dev (his ask, 2026-11-10). What was found, how, and a checklist for the next subcommands: `docs/claude/2026-11-10-manage-draws-refine-lessons.md`.
+
+### Added
+- **Saves answer in the panel.** Edit, Add New, Add Returning, Paste, Edit N, End Date and Purge show the result where the save was made (the card, Needs a Look, the Select list, home) with Revert, instead of a second message. `addDraw`, `editDraw` and `bulkAddOrReplaceDraws` take `{ quiet: true }`; their old callers are unchanged.
+- **End Date pop-up** on the card, on Needs a Look and for every selected draw: on a date (or the game's countdown), with the season, or not announced yet (TBD). It writes the draw's /calendar row. A draw whose row is TBD is listed under No End Date, not Needs a Look.
+- **Needs a Look** has a fix button on each draw (End Date when the end is the only gap, otherwise Edit) and lands back on the list after the fix.
+- **Search** matches item names as well as titles; results are a paged list you can open or select. `draw:` autocomplete matches items too and shows each draw's state.
+- **Check Draw Index** keeps what was pasted: **Check Again** opens it pre-filled, and **Quick Add These N** opens Quick Add with the lines it found.
+- **Delete + Calendar Row(s)** on one draw or many; **Purge** names how many each button removes and adds **Ended Only**.
+
+### Changed
+- **The draw card** keeps where it was opened from through Edit, End Date, Move, Delete and Revert; its breadcrumb names it, and its own date line gives only the date the /draws block above lacks.
+- **Home** counts read `12 active (4 leaving soon)`, so the numbers add up to the total; Needs a Look is a status chip at zero; an empty season says so and disables what needs draws.
+- **Select's quick picks** read like /draws' filter: within a group they widen, across groups they narrow.
+- **Quick Add** opens its draft in place and shows the end a draw already has; Cancel and its Revert All lead back to Draws (or Draft Draws).
+- **Admin panels show date and time** (`<t:f>`): an admin date of Nov 8 00:00 UTC read as "November 7" in Toronto.
+- **Forms** label every field with its format; Edit N leaves picture links out (a line without one keeps the stored picture); the guide's example is drawn by /draws itself, and the guide stays under Discord's 4,000 characters (a test renders every guide).
+- **`/draws`' single-draw panel shows its picture first**, then the name, dates and items (his ask, 2026-11-10 20:02 EST).
+
+### Fixed
+- **Editing a draw on the placeholder picture uploaded the placeholder as its real picture** and recorded it in the draw index, so Needs a Look stopped flagging it. `resolveThumbnail` now passes a placeholder, and the draw's own Cloudinary asset, through without uploading.
+- **Every Edit re-uploaded the draw's unchanged picture**, and **an Edit that changed nothing still wrote a change row.**
+- **The Edit box saved Legacy items as Legendary** (it wrote the tier with `charAt(0)`); it writes `lg` now.
+- **Export wrote `, null`** for a draw with no picture, which the parser then read as the date.
+- **The guide's paste skeleton put the picture link before the dates.**
+- **A failed Edit from the panel had no Try Again**, and Try Again's pop-up read "Edit Lucky Draw".
+- **Reverting a Move or a Delete landed on a list**, or on an empty Select list with no note: a reverted draw comes back under a new id, so it is now found by the title on its change rows.
+- **End Date and "+ Calendar Row" were offered to admins without Calendar access** and refused only on submit; they are now checked first. **Quick Add refused a whole draft for those admins**; it now saves the draws and says their end dates were not saved.
+- **Add New and Add Returning accepted a title the other list already had**, listing the draw twice with one shared /calendar row; Add refuses it with Try Again, a paste leaves such a line out, and Move says so on its question.
+
+## v3.18.0 — 2026-11-09 18:33 EST (#268 · `1d711281`) — /manage audit: the season draft adds instead of replacing, a fix button on every Needs a Look line, and the gaps in draws, patch notes, announcements and calendar; /draws opens one draw and filters in a pop-up
 
 From a simulated click-through of every /manage panel (his ask, 2026-11-09). Findings: `/mnt/project-files/manage-audit/findings-2026-11-09.md`.
 
