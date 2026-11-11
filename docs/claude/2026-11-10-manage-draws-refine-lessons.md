@@ -104,6 +104,10 @@ The click test of round 2 then found four more, each only by doing the thing: a 
 
 ## A checklist for the next subcommand (calendar is next)
 
+- **Build rows with the panel's `row()`** so the way back lands first (`utils/returnFirst.js`), and send a miss or a refusal through a `say()` that answers privately, never the panel (2026-11-11 11:56 EST, round 2).
+- **Two promise checks belong in every panel's test** (2026-11-11 11:56 EST): every verb the panel handles is reached by some button, menu or pop-up, and every example a pop-up shows reads through the reader its save uses. `scripts/manageDraws.test.js` has both; the first caught Purge orphaned by round 2.
+- **A new entry point inherits whatever is behind it.** Round 2's Review Drafted Draws leads to the season draft's draw forms, which still have the old shape.
+
 1. Read this file, the subcommand's section of `.claude/rules/manage-panel.md`, and the savers its buttons call.
 2. Survey prod's data for that page (read-only) and mirror it into dev with a backup and a restore.
 3. Write a limits test that renders every view at 0, 1, 2 and many items.

@@ -433,6 +433,41 @@ function seasonDoc(nNew = 3, nRet = 30) {
         } finally { cloud.uploader.upload = realUpload; catalog.loadCatalog = realLoad; }
     });
 
+    // Two promise checks from the second think pass (2026-11-11 11:55 EST). Every verb the panel handles is reached by some button, menu or pop-up (round 2 took Purge off the landing and left its handler with no way in), and every example a draws pop-up shows parses through the reader its save uses (the Draw box hint promised a countdown the form's reader refused).
+    await check('every verb the draws panel handles is reached from somewhere', () => {
+        const fs = require('fs');
+        const read = (f) => fs.readFileSync(require('path').join(__dirname, '..', f), 'utf8');
+        const handled = read('handlers/manage/drawsPanel/index.js') + read('handlers/manage/drawsPanel/drawIndex.js');
+        const emitters = ['handlers/manage/drawsPanel/views.js', 'handlers/manage/drawsPanel/index.js', 'handlers/manage/drawsPanel/drawIndex.js', 'handlers/manage/quickAdd.js'].map(read).join('\n');
+        const verbs = new Set([...handled.matchAll(/verb === '(\w+)'/g)].map(m => m[1]));
+        const reached = new Set([...emitters.matchAll(/(?:btn\(\s*\[?\s*|ID\(\s*|\$\{PREFIX\})'?(\w+)/g)].map(m => m[1]));
+        const orphans = [...verbs].filter(v => !reached.has(v));
+        assert.deepStrictEqual(orphans, [], `handled but never reached: ${orphans.join(', ')}`);
+    });
+    await check('the Ended list clears its own draws, the way Purge Ended did from the landing', () => {
+        const doc = seasonDoc();
+        const ended = V.listOf(doc, 'ended');
+        assert.ok(ended.length > 0, 'the fixture needs an ended draw');
+        const json = JSON.stringify(V.listView(doc, 'ended'));
+        assert.ok(json.includes(`Delete All Ended · ${ended.length}`) && json.includes('|purge|ended'), 'Delete All Ended on the Ended list');
+        assert.ok(!JSON.stringify(V.listView(doc, 'new')).includes('Delete All Ended'), 'only on the Ended list');
+    });
+    await check('every example a draws pop-up shows reads through its save\'s own reader', () => {
+        const { readDrawBox } = require('../utils/drawForm');
+        const manageCommand = require('../commands/manage');
+        const { parseDrawDates } = require('../utils/drawDates');
+        const { parseItemLine } = require('../utils/adminParser');
+        const comps = (m) => (typeof m.toJSON === 'function' ? m.toJSON() : m).components.map(l => l.component || (l.components || [])[0]).filter(Boolean);
+        for (const type of ['new', 'returning']) {
+            const box = comps(manageCommand.buildAddDrawModal(type)).find(c => c.custom_id === 'draw');
+            const read = readDrawBox(box.placeholder, { allowSeason: type === 'new' });
+            assert.ok(!read.error && read.dates, `Add ${type}: its own placeholder does not read: ${read.error}`);
+            for (const ex of box.placeholder.split('\n').slice(1, 2).concat(['13d 23h'])) assert.ok(parseDrawDates(ex).ok, `"${ex}" from the hint does not read as dates`);
+            const items = comps(manageCommand.buildAddDrawModal(type)).find(c => c.custom_id === 'items');
+            for (const line of items.placeholder.split('\n').filter(l => !l.startsWith('-#'))) assert.ok(parseItemLine(line).name, `item example "${line}" does not read`);
+        }
+    });
+
     console.log(failed ? `\n${failed} check(s) FAILED.` : '\nAll manage draws checks passed.');
     process.exit(failed ? 1 : 0);
 })();

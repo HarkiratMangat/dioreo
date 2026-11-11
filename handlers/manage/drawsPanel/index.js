@@ -572,6 +572,18 @@ async function route(interaction) {
 
     // ----- purge ----- Each button names how many draws it removes (2026-11-10 11:19 EST): the one question a destructive confirm must answer.
     if (verb === 'purge') {
+        // From the Ended list (round 2): only the ended draws, and Cancel goes back to that list.
+        if (a === 'ended') {
+            if (!(await gate(interaction, 'bulkdelete'))) return;
+            const n = V.allDraws(await getDoc()).filter(V.STATUS.ended.test).length;
+            if (!n) return say(interaction, `${emojis.info} No ended draws to delete.`);
+            return show(interaction, V.resultView({
+                ok: 'warn', crumbs: ['Ended', 'Delete All'], title: `Delete all ${V.plural(n, 'ended draw')}?`,
+                body: ['-# Their /calendar rows stay. Recorded, and Revert puts them back.'],
+                back: ['list', 'ended', 0], backLabel: 'Cancel',
+                extraButtons: [V.btn(['purgeok', 'ended'], `Yes, Delete ${n}`, emojis.deleteBin, 4)],
+            }));
+        }
         if (!(await gate(interaction, 'purgeall'))) return;
         const doc = await getDoc();
         const all = V.allDraws(doc);
@@ -602,6 +614,8 @@ async function route(interaction) {
             const result = ended.length ? await require('../../../core/changeset').commitSet([{ type: 'draw.bulkDelete', payload: { ids } }], { actorId: interaction.user.id }) : { ok: true, changeIds: [] };
             note = result.ok ? `${emojis.checkmark} Purged the ${V.plural(ended.length, 'ended draw')}.` : `${emojis.cross} ${require('../shared').extractCommitError(result)}`;
             changeIds = result.ok ? result.changeIds : [];
+            // Lands on the Ended list it was started from, with Revert.
+            return show(interaction, V.listView(await getDoc(), 'ended', 0, { note: note + revertHint(changeIds), noteRow: revertRow(changeIds) }));
         } else ({ confirmMsg: note, changeIds } = await drawsSave().purgeDraws(scope, interaction.user.id));
         return show(interaction, await home(null, note + revertHint(changeIds), interaction, { noteRow: revertRow(changeIds) }));
     }

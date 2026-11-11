@@ -125,7 +125,7 @@ async function pageView(doc, note = null, { pageRow = null, noteRow = null } = {
     components.push(
         BIG(),
         text('-# Add draws…'),
-        row(btn('quickadd', 'Quick Add', emojis.plus, 3), btn('addnew', 'Add New Draw', emojis.newDraws), btn('addreturning', 'Add Returning Draw', emojis.returningDraws), btn('paste', 'Paste Draws', emojis.pasteImport)),
+        row(btn('quickadd', 'Quick Add', emojis.plus, 3), btn('addnew', 'New Draw', emojis.newDraws), btn('addreturning', 'Returning Draw', emojis.returningDraws), btn('paste', 'Paste Draws', emojis.pasteImport)),
         SMALL(),
         text('-# Find a draw…'),
         row(btn('find', 'Search Draws', emojis.search, 1, !all.length), btn('select', 'Select Draws', emojis.filter, 2, !all.length), lookBtn),
@@ -174,7 +174,9 @@ function listView(doc, status, page = 0, { note = null, noteRow = null } = {}) {
         components.push({ type: 1, components: [{ type: 3, custom_id: ID('open', key), placeholder: 'Open a draw…', options: shown.map(openOption) }] });
     }
     if (pages > 1) components.push(row(arrow(['list', key, pg - 1], 'left', pg === 0), counter(['pgn', key], `Page ${pg + 1} / ${pages}`), arrow(['list', key, pg + 1], 'right', pg === pages - 1)));
-    components.push(BIG(), row(btn(['sellist', key], list.length === 1 ? 'Select This One' : `Select These ${list.length}`, emojis.filter, 2, !list.length), homeBtn()));
+    // Ended draws are cleared from their own list (2026-11-11 11:55 EST, the second think pass): Purge left the landing in round 2 and took this with it, though clearing ended draws is mid-season upkeep, not a new-season step.
+    const clearEnded = key === 'ended' && list.length ? [btn(['purge', 'ended'], `Delete All Ended · ${list.length}`, emojis.deleteBin, 4)] : [];
+    components.push(BIG(), row(btn(['sellist', key], list.length === 1 ? 'Select This One' : `Select These ${list.length}`, emojis.filter, 2, !list.length), ...clearEnded, homeBtn()));
     return panel(components);
 }
 

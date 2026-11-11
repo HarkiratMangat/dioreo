@@ -87,9 +87,10 @@ async function addDraw(interaction, opts = {}) {
         return await failWithRetry(interaction, extractCommitError(result));
     }
 
-    // The saved draw as a panel, beside its picture (2026-10-26 12:52 EDT, the loadout treatment for every /manage page); a missing picture shows on the panel itself, so only a reused or failed upload is a note. The draw index records a draw's release season, and it records a draw only once it has a picture, so a season typed with no picture would vanish without a word (2026-11-11 11:42 EST click test). Said, with the way to keep it.
+    // The saved draw as a panel, beside its picture (2026-10-26 12:52 EDT, the loadout treatment for every /manage page); a missing picture shows on the panel itself, so only a reused or failed upload is a note. The draw index records a draw's release season, and it records a draw only once it has a picture, so a season typed with no picture would vanish without a word (2026-11-11 11:42 EST click test). Said, with the way to keep it. A countdown gives the end only, so the start is today (utils/drawDates.js): said, because a draw that began days ago would otherwise show today as its start (2026-11-11 11:55 EST, the second think pass).
+    const startNote = dates.countdown ? `${BOT_EMOJI.info} Start set to today from the countdown. Edit it if the draw began earlier.` : null;
     const seasonNote = form.season && !thumbResult.url ? `${BOT_EMOJI.info} Season ${form.season} is kept once the draw has a picture: Edit, add the picture, and type the Season line again.` : null;
-    const notes = [...(thumbResult.url ? [thumbnailNote(thumbResult)] : []), typeNote, seasonNote].filter(Boolean);
+    const notes = [...(thumbResult.url ? [thumbnailNote(thumbResult)] : []), typeNote, startNote, seasonNote].filter(Boolean);
     const saved = { ok: true, draw: { ...newDrawObj, _id: result.results[0].applied.elementId }, category: drawType, changeIds: result.changeIds, notes, warnings, endDate: endOp ? dates.end : (row?.endDate || null), titles: [title] };
     if (opts.quiet) return saved;
     const sent = await interaction.followUp({ flags: 32768 | 64, components: drawPanel({ draw: saved.draw, category: drawType, changeIds: saved.changeIds, notes, warnings, endDate: saved.endDate }) });
