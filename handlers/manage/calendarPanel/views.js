@@ -53,20 +53,20 @@ const typeWord = (e) => ({ draw: 'Draw', playlist: 'Playlist' }[e._cat] || 'Even
 // Something a person would want to look at: no start date, or no end date on a row that is not "All Season", or an end before its start.
 const needsLook = (e) => !Number.isFinite(e.startMs) || (!e.isOngoing && !e.endDate) || (!e.isOngoing && e.endDate && new Date(e.endDate) < new Date(e.date)) || e._noDraw;
 
-// The lists: by type, and by the states /calendar's own entryState gives (over, live, soon, tba), plus Ending Soon (live, with an end within 3 days) and the rows worth a look.
+// The lists: by type, and by the states /calendar's own entryState gives (over, live, soon, tba), plus Leaving Soon (live, with an end within 3 days; his name for it since 2026-10-23, as on /draws and /today) and the rows worth a look.
 const STATUS = {
     events: { label: 'Events', test: e => e._cat === 'event', emoji: () => emojis.events },
     playlists: { label: 'Playlists', test: e => e._cat === 'playlist', emoji: () => emojis.modes },
     draws: { label: 'Draws', test: e => e._cat === 'draw', emoji: () => emojis.newDraws },
     upcoming: { label: 'Upcoming', test: e => e.state === 'soon' || e.state === 'tba', emoji: () => emojis.lightBlueDotGlow },
     live: { label: 'Active Now', test: e => e.state === 'live', emoji: () => emojis.greenDotGlow },
-    leaving: { label: 'Ending Soon', test: e => e.state === 'live' && Number.isFinite(e.endMs) && e.endMs - Date.now() <= LEAVING_SOON_MS, emoji: () => emojis.yellowDotGlow },
+    leaving: { label: 'Leaving Soon', test: e => e.state === 'live' && Number.isFinite(e.endMs) && e.endMs - Date.now() <= LEAVING_SOON_MS, emoji: () => emojis.yellowDotGlow },
     ended: { label: 'Ended', test: e => e.state === 'over', emoji: () => emojis.redDotGlow },
     warn: { label: 'Needs a Look', test: needsLook, emoji: () => emojis.warn },
 };
 const leaving = (e) => STATUS.leaving.test(e);
 const dot = (e) => (e.state === 'over' ? emojis.redDotGlow : leaving(e) ? emojis.yellowDotGlow : e.state === 'live' ? emojis.greenDotGlow : emojis.lightBlueDotGlow);
-const stateName = (e) => (e.state === 'over' ? 'Ended' : leaving(e) ? 'Ending soon' : e.state === 'live' ? 'Active now' : e.state === 'tba' ? 'Date TBA' : 'Upcoming');
+const stateName = (e) => (e.state === 'over' ? 'Ended' : leaving(e) ? 'Leaving soon' : e.state === 'live' ? 'Active now' : e.state === 'tba' ? 'Date TBA' : 'Upcoming');
 function stateWords(e) {
     const r = (ms) => `<t:${Math.floor(ms / 1000)}:R>`;
     if (e.state === 'tba') return 'date TBA';
@@ -111,7 +111,7 @@ async function pageView(doc, note = null, { pageRow = null } = {}) {
     return panel(components, pageRow ? [pageRow] : []);
 }
 
-// ---------- a list ---------- The order each list reads in: what ends soonest first on Active Now and Ending Soon, the latest ended first on Ended, by start everywhere else.
+// ---------- a list ---------- The order each list reads in: what ends soonest first on Active Now and Leaving Soon, the latest ended first on Ended, by start everywhere else.
 const END = (e) => (Number.isFinite(e.endMs) ? e.endMs : Infinity);
 const byStart = (a, b) => (a.startMs || 0) - (b.startMs || 0);
 const ORDER = { live: (a, b) => END(a) - END(b) || byStart(a, b), leaving: (a, b) => END(a) - END(b) || byStart(a, b), ended: (a, b) => END(b) - END(a) || byStart(a, b) };

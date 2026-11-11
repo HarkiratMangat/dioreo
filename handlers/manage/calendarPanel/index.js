@@ -56,7 +56,6 @@ const newToken = () => require('crypto').randomBytes(6).toString('base64url');
 async function createSelection(data = {}) { const token = newToken(); await ManageSelection().create({ _id: token, mode: 'CALENDAR', ...data }); return token; }
 async function loadSel(token) { const s = token ? await ManageSelection().findById(token).lean() : null; return s && s.mode === 'CALENDAR' ? s : null; }
 const setSel = (token, fields) => ManageSelection().updateOne({ _id: token }, { $set: fields });
-const expired = () => V.resultView({ title: 'That list expired. Select again.', ok: false, back: 'find', backLabel: 'Search Again' });
 const selectedKeys = (sel) => { const on = new Set(sel.selected); return sel.ids.filter(k => on.has(k)); };
 
 // ---------- home ----------
@@ -81,7 +80,7 @@ function resolveKeys(doc, names, picks = []) {
     }
     return { keys: [...keys], unmatched };
 }
-// Search Calendar's matcher (the draws redesign): each line is an entry's words (all in its title), lines widen each other, and lists narrow them: within types (Events, Playlists, Draws) or states (Upcoming, Active Now, Ending Soon, Ended) a pick widens, across them it narrows, Needs a Look narrows on its own. Both blank is every entry.
+// Search Calendar's matcher (the draws redesign): each line is an entry's words (all in its title), lines widen each other, and lists narrow them: within types (Events, Playlists, Draws) or states (Upcoming, Active Now, Leaving Soon, Ended) a pick widens, across them it narrows, Needs a Look narrows on its own. Both blank is every entry.
 const GROUP = { events: 'type', playlists: 'type', draws: 'type', upcoming: 'state', live: 'state', leaving: 'state', ended: 'state', warn: 'look' };
 function findKeys(doc, text, picks = []) {
     const all = V.allEntries(doc);
@@ -139,7 +138,8 @@ function previewCalendar(doc, raw) {
     if (out.changed.length) parts.push(`${emojis.mngBulkReplace} **Changed · ${out.changed.length}**`, ...cap(out.changed.map(x => `- ${x}`)), '');
     if (out.same.length) parts.push(`-# Unchanged · ${out.same.length}: ${out.same.join(', ').slice(0, 700)}`, '');
     if (out.skipped.length) parts.push(`${emojis.warn} **Not read · ${out.skipped.length}**`, ...cap(out.skipped.map(x => `- \`${x}\``), 8), '-# A line looks like `7/2 - 8/5 | Title`; a letter and a bullet before it (`p• …`) sets the type.', '');
-    parts.push('-# Nothing is saved until you press Save.');
+    // A preview where nothing changed says so, and has no Save to press (2026-11-11 17:03 EST: it read "Nothing is saved until you press Save" with no Save button, under a green check).
+    parts.push((out.added.length + out.changed.length) ? '-# Nothing is saved until you press Save.' : '-# Nothing changed, so there is nothing to save.');
     return { ...out, parts, count: out.added.length + out.changed.length, total: out.added.length + out.changed.length + out.same.length };
 }
 
@@ -154,11 +154,11 @@ async function previewPanel(token, text, { isEdit }) {
     const doc = await getDoc();
     const pv = previewCalendar(doc, text);
     return V.resultView({
-        ok: pv.skipped.length ? 'warn' : true, crumbs: isEdit ? ['Selected', 'Edit'] : ['Bulk Paste'],
+        ok: pv.skipped.length || !pv.count ? 'warn' : true, crumbs: isEdit ? ['Selected', 'Edit'] : ['Bulk Paste'],
         title: `${isEdit ? 'Edit' : 'Bulk Paste'} preview · ${pv.count} of ${pv.total} to save`, body: pv.parts,
         back: isEdit ? ['tedit', token, 0, 'again'] : ['paste', token], backLabel: isEdit ? 'Edit Again' : 'Edit Paste',
         extraButtons: pv.count ? [V.btn(['save', token], `Save ${pv.count}`, emojis.checkmark, 3)] : [],
-        extraRows: isEdit ? [V.row(V.btn(['slist', token, 0], 'Back to List', emojis.returnArrow))] : [],
+        extraRows: isEdit ? [V.row(V.btn(['slist', token, 0], 'Back to Selected', emojis.returnArrow))] : [],
     });
 }
 
@@ -263,7 +263,7 @@ async function route(interaction) {
 
     // ----- views -----
     if (verb === 'page') return renderHome(interaction);
-    if (verb === 'revert') return require('../results').revertChanges(interaction, String(a || '').split(',').filter(Boolean), { doneNote: 'it is back as it was', render: async (note) => home(await getDoc(), note, interaction) });
+    if (verb === 'revert') return require('../results').revertChanges(interaction, String(a || '').split(',').filter(Boolean), { doneNote: 'everything is back as it was', render: async (note) => home(await getDoc(), note, interaction) });
     if (verb === 'browse' && interaction.isStringSelectMenu?.()) return show(interaction, V.listView(await getDoc(), interaction.values[0]));
     if (verb === 'list') return show(interaction, V.listView(await getDoc(), a, n(b)));
     if (verb === 'open' && interaction.isStringSelectMenu?.()) {
@@ -376,7 +376,7 @@ async function routeSelection(interaction, verb, a, b, c) {
     }
 
     const sel = await loadSel(a);
-    if (!sel) return show(interaction, expired());
+    if (!sel) return say(interaction, `${emojis.cross} That list expired. Search again.`);
     const keys = selectedKeys(sel);
 
     // The results' Select menu adds; the Selected view's Unselect menu takes away.
@@ -400,7 +400,8 @@ async function routeSelection(interaction, verb, a, b, c) {
         const doc = await getDoc();
         if (!keys.length) return show(interaction, V.selectView(doc, a, sel, null, n(b)));
         const text = c === 'again' && sel.text ? sel.text : exportText(doc, keys);
-        if (text.length > 4000) return show(interaction, V.selectView(doc, a, sel, `${emojis.warn} **Too many entries for one Edit pop-up** (the box holds 4,000 characters). Select fewer.`, n(b)));
+        // A refusal answers privately and leaves the panel as it was (the draws panel's round-2 rule, carried here 2026-11-11 16:46 EST).
+        if (text.length > 4000) return say(interaction, `${emojis.warn} **Too many entries for one Edit pop-up** (the box holds 4,000 characters). Select fewer.`);
         return interaction.showModal(fill(reId(m.buildCalendarBulkModal('replace'), V.ID('teditm', a), `Edit ${keys.length} ${keys.length === 1 ? 'Entry' : 'Entries'}`), { bulk_text: text }));
     }
     if (verb === 'teditm' && interaction.isModalSubmit?.()) {
@@ -413,10 +414,11 @@ async function routeSelection(interaction, verb, a, b, c) {
         const isEdit = sel.ids.length > 0;
         if (!(await gate(interaction, 'replacemultiple'))) return;
         const pv = previewCalendar(await getDoc(), sel.text);
-        if (!pv.count) return show(interaction, V.resultView({ title: 'Nothing to save: every entry is unchanged.', ok: 'warn', back: isEdit ? ['slist', a, 0] : 'page', backLabel: isEdit ? 'Back to List' : 'Home' }));
+        // Misses, refusals and nothing-changed answer privately and leave the panel as it was (round 2's rule; the 2026-11-11 16:46 EST think-pass found these still drawn in the panel).
+        if (!pv.count) return say(interaction, `${emojis.info} Nothing to save: every entry is unchanged.`);
         await interaction.deferUpdate();
         await calendarSave().bulkAddOrReplaceCalendar(interaction, { customId: 'modal_calendar_bulk_replace', values: { bulk_text: pv.keep.join('\n') } });
-        return show(interaction, V.resultView({ crumbs: isEdit ? ['Selected', 'Edit'] : ['Bulk Paste'], title: `Sent ${pv.count} to save`, body: ['-# The result, with Revert, is in the message below.'], back: isEdit ? ['slist', a, 0] : 'page', backLabel: isEdit ? 'Back to List' : 'Home' }));
+        return show(interaction, V.resultView({ crumbs: isEdit ? ['Selected', 'Edit'] : ['Bulk Paste'], title: `Sent ${pv.count} to save`, body: ['-# The result, with Revert, is in the message below.'], back: isEdit ? ['slist', a, 0] : 'page', backLabel: isEdit ? 'Back to Selected' : 'Home' }));
     }
 
     if (verb === 'texp') {
@@ -437,12 +439,12 @@ async function routeSelection(interaction, verb, a, b, c) {
         const ids = keys.map(V.splitKey);
         await interaction.deferUpdate();
         const result = await require('../../../core/changeset').commitSet([{ type: 'calendar.bulkDelete', payload: { ids } }], { actorId: interaction.user.id });
-        if (!result.ok) return show(interaction, V.resultView({ title: 'Nothing was deleted', body: [require('../shared').extractCommitError(result)], ok: false, back: ['slist', a, 0], backLabel: 'Back to List' }));
+        if (!result.ok) return say(interaction, `${emojis.cross} **Nothing was deleted.** ${require('../shared').extractCommitError(result)}`);
         const gone = new Set(keys);
         await setSel(a, { ids: sel.ids.filter(k => !gone.has(k)), selected: [] });
-        return show(interaction, V.resultView({ crumbs: ['Selected'], title: `Deleted ${keys.length} ${keys.length === 1 ? 'entry' : 'entries'}`, body: ['-# Every change is recorded; Revert puts them back.'], back: ['slist', a, 0], backLabel: 'Back to List', extraButtons: revertButton(result.changeIds) }));
+        return show(interaction, V.resultView({ crumbs: ['Selected'], title: `Deleted ${keys.length} ${keys.length === 1 ? 'entry' : 'entries'}`, body: ['-# Every change is recorded; Revert puts them back.'], back: ['slist', a, 0], backLabel: 'Back to Selected', extraButtons: revertButton(result.changeIds) }));
     }
-    return show(interaction, expired());
+    return say(interaction, `${emojis.cross} That list expired. Search again.`);
 }
 
 // The /manage dispatcher's entry (handlers/manage/index.js): TRUE when the id is this panel's.

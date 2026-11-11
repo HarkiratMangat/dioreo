@@ -141,6 +141,33 @@ function walk(components, fn) { for (const c of components || []) { fn(c); walk(
         assert.ok(!/tedit|tdel|texp/.test(view));
     });
 
+    // 2026-11-11 16:52 EST (think-pass): a card opened from one selected build goes back to the results, and keeps that way back through Edit, Move and Delete; opened any other way it goes back to its weapon.
+    await check('a build selected whole drops its own options from the set it acts on', () => {
+        const { collapseKeys } = require('../handlers/manage/gunsmith/search');
+        const id = 'b'.repeat(24), other = 'c'.repeat(24);
+        assert.deepStrictEqual(collapseKeys([id, `${id}~1`, `${other}~1`, `${other}~2`]), [id, `${other}~1`, `${other}~2`]);
+        assert.deepStrictEqual(collapseKeys([`${id}~1`]), [`${id}~1`]);
+    });
+    await check('a card opened from a selection goes back to the results, through Edit, Move and Delete', async () => {
+        const modelPath = require.resolve('../models/Loadout');
+        const saved = require.cache[modelPath];
+        const doc = { _id: 'a'.repeat(24), mode: 'MP', weaponKey: 'fss', weaponName: 'FSS Hurricane', category: 'smg', buildName: 'Build 1', attachments: ['Muzzle: X'], shareCode: '1A2B', variants: [] };
+        const q = (v) => ({ lean: async () => v, select() { return q(v); } });
+        require.cache[modelPath] = { id: modelPath, filename: modelPath, loaded: true, exports: { findById: () => q(doc), find: () => q([doc]) } };
+        try {
+            const V = require('../handlers/manage/gunsmith/views');
+            const ids = async (...args) => JSON.stringify(await V.cardView(...args)).match(/"custom_id":"[^"]+"/g).map(x => x.slice(13, -1));
+            const fromSel = await ids('MP', doc._id, 0, null, null, 'tok1');
+            assert.ok(fromSel.includes('mng_gs|M|list|tok1|0'), fromSel.join(' '));
+            for (const verb of ['edit', 'move', 'del']) assert.ok(fromSel.includes(`mng_gs|M|${verb}|${doc._id}|0|tok1`), verb);
+            assert.ok(!fromSel.some(x => x.includes('|wback|')));
+            const plain = await ids('MP', doc._id, 0);
+            assert.ok(plain.includes('mng_gs|M|wback|fss') && !plain.some(x => x.includes('tok1')));
+            assert.strictEqual(V.moveModal('MP', doc, 0, 'tok1').custom_id, `mng_gs|M|movem|${doc._id}|0|tok1`);
+        } finally {
+            if (saved) require.cache[modelPath] = saved; else delete require.cache[modelPath];
+        }
+    });
     await check('Export writes the fields Include keeps, and the merged-build choices', () => {
         const build = { weaponName: 'BAL-27', category: 'AR', mode: 'MP', buildName: 'Build 2', shareCode: '1A2B3C4D5E', label: 'Ranked', attachments: ['A1', 'A2'], variants: [{ attachments: ['B1'], shareCode: '1B2C3D4E5F', label: 'Pubs' }] };
         const all = B.exportText('MP', [build], { include: ['code', 'label', 'mode'], merged: 'keep' });

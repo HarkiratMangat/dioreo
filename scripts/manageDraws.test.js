@@ -495,6 +495,29 @@ function seasonDoc(nNew = 3, nRet = 30) {
             assert.deepStrictEqual(dead, [], `${name}: emitted with no handler: ${dead.join(', ')}`);
         }
     });
+    // Round 2's rule, held across the three panels (2026-11-11 16:46 EST): a refusal or a "nothing changed" goes in a private message, never drawn into the panel as a note. Three survived in calendar and gunsmith, and one in draws. Scope: every show() in the draws panel, and the results and Selected views of calendar and gunsmith (the round-3 flow). Their older "entry gone" redirects predate the rule and are left as they are.
+    await check('no draws view, and no results or Selected view, draws a refusal or a nothing-changed note into itself', () => {
+        const fs = require('fs');
+        const read = (f) => fs.readFileSync(require('path').join(__dirname, '..', f), 'utf8');
+        const note = '(?:(?!\\)\\))[^\\n])*?`(?:-# )?\\$\\{emojis\\.(?:warn|cross|info)\\}';
+        const scopes = [
+            ['handlers/manage/drawsPanel/index.js', new RegExp(`show\\(interaction, (?:await )?[\\w.]+\\(${note}`, 'g')],
+            ['handlers/manage/calendarPanel/index.js', new RegExp(`show\\(interaction, (?:await )?(?:V\\.selectView|V\\.searchView)\\(${note}`, 'g')],
+            ['handlers/manage/gunsmith/index.js', new RegExp(`(?:show\\(interaction|view\\()(?:, )?(?:await )?(?:selectPanel|V\\.resultsView|V\\.selectView)\\(${note}`, 'g')],
+        ];
+        const hits = [];
+        for (const [f, re] of scopes) for (const m of read(f).matchAll(re)) hits.push(`${f}: ${m[0].slice(0, 90)}`);
+        assert.deepStrictEqual(hits, []);
+        // The result-panel form of the same thing: a failed or empty save drawn as a panel. None in draws; none of the Selected flow's in calendar and gunsmith.
+        const failPanel = /show\(interaction, (?:await )?V\.resultView\((?:mode, )?\{[^\n]*(?:ok: false|Nothing to save|Nothing was deleted|expired)/g;
+        for (const f of ['handlers/manage/drawsPanel/index.js', 'handlers/manage/calendarPanel/index.js', 'handlers/manage/gunsmith/index.js']) for (const m of read(f).matchAll(failPanel)) hits.push(`${f}: ${m[0].slice(0, 90)}`);
+        assert.deepStrictEqual(hits, []);
+        assert.ok(new RegExp(failPanel.source).test("if (!result.ok) return show(interaction, V.resultView({ title: 'Nothing was deleted', body: [x], ok: false, back: ['slist', a, 0] }));"));
+        // Falsifier: the shape the round-3 build shipped must match.
+        assert.ok(scopes[1][1].test('return show(interaction, V.selectView(doc, a, sel, `${emojis.warn} **Too many**`, n(b)));'));
+        scopes[1][1].lastIndex = 0;
+        assert.ok(!scopes[1][1].test('sel ? show(interaction, V.searchView(await getDoc(), a, sel, n(b))) : say(interaction, `${emojis.cross} gone`)'));
+    });
     await check('every example a draws pop-up shows reads through its save\'s own reader', () => {
         const { readDrawBox } = require('../utils/drawForm');
         const manageCommand = require('../commands/manage');

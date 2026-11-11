@@ -100,8 +100,8 @@ async function weaponView(mode, weaponKey, note = null) {
     return panel(mode, components);
 }
 
-// ---------- one build ---------- `header` sits above the card (a confirm question, a saved note); `extra` replaces the action rows (a confirm's buttons, the Expand View pager).
-async function cardView(mode, id, option = 0, header = null, extra = null) {
+// ---------- one build ---------- `header` sits above the card (a confirm question, a saved note); `extra` replaces the action rows (a confirm's buttons, the Expand View pager). `back` is a Select token: the card was opened from a search's selection, so its way back is those results (the draws card's `t:<token>`), carried through the option menu, Edit, Move and Delete's Cancel. Added 2026-11-11 16:52 EST (think-pass: the card opened from one selected build had no way back to the results).
+async function cardView(mode, id, option = 0, header = null, extra = null, back = null) {
     const doc = /^[0-9a-f]{24}$/.test(String(id)) ? await Loadout().findById(id).lean() : null;
     if (!doc || doc.mode !== mode) return pageView(mode, `${emojis.cross} That build no longer exists.`);
     const { buildLoadoutCardBody, variantCount } = require('../../../utils/loadoutRender');
@@ -116,11 +116,11 @@ async function cardView(mode, id, option = 0, header = null, extra = null) {
     components.push(...buildLoadoutCardBody(doc, { variant: opt, index, total: siblings.length }), BIG());
     if (extra) components.push(...extra);
     else {
-        if (count > 1) components.push({ type: 1, components: [{ type: 3, custom_id: ID(mode, 'opt', id), placeholder: 'Pick an option', options: Array.from({ length: count }, (_, i) => ({ label: `Option ${lo.optionLetter(i)}`, value: String(i), default: i === opt })) }] });
+        if (count > 1) components.push({ type: 1, components: [{ type: 3, custom_id: back ? ID(mode, 'opt', id, back) : ID(mode, 'opt', id), placeholder: 'Pick an option', options: Array.from({ length: count }, (_, i) => ({ label: `Option ${lo.optionLetter(i)}`, value: String(i), default: i === opt })) }] });
         const room = count < lo.MAX_OPTIONS;
         components.push(
-            row(btn(mode, ['edit', id, opt], 'Edit', emojis.edit, 1), btn(mode, ['move', id, opt], 'Move', emojis.mngBulkReplace), ...(room ? [btn(mode, ['newopt', id, opt], 'Add Option', emojis.mngAdd)] : []), btn(mode, ['del', id, opt], 'Delete', emojis.deleteBin, 4)),
-            row(btn(mode, ['wback', doc.weaponKey], doc.weaponName, emojis.returnArrow), homeBtn(mode)),
+            row(btn(mode, ['edit', id, opt, ...(back ? [back] : [])], 'Edit', emojis.edit, 1), btn(mode, ['move', id, opt, ...(back ? [back] : [])], 'Move', emojis.mngBulkReplace), ...(room ? [btn(mode, ['newopt', id, opt], 'Add Option', emojis.mngAdd)] : []), btn(mode, ['del', id, opt, ...(back ? [back] : [])], 'Delete', emojis.deleteBin, 4)),
+            row(back ? btn(mode, ['list', back, 0], 'Results', emojis.returnArrow) : btn(mode, ['wback', doc.weaponKey], doc.weaponName, emojis.returnArrow), homeBtn(mode)),
         );
     }
     return panel(mode, components);
@@ -196,13 +196,13 @@ function selectView(mode, token, sel, info, note = null, page = 0) {
 // ---------- Expand View: the selected entries, one card at a time ---------- His idea, 13:05 EST ("select multiple builds and just switch through them like pages"), and 13:17 EST: each Edit saves right away (the saved panel below carries Revert); Finish only says which were edited, read from each build's lastUpdated since the view opened.
 async function stepView(mode, token, sel, i, option = null, header = null) {
     const selected = new Set(sel.selected);
-    const keys = sel.ids.filter(k => selected.has(k));
-    if (!keys.length) return resultView(mode, { title: 'Nothing is selected any more.', ok: false, back: ['list', token, 0], backLabel: 'Back to List' });
+    const keys = require('./search').collapseKeys(sel.ids.filter(k => selected.has(k)));
+    if (!keys.length) return resultView(mode, { title: 'Nothing is selected any more.', ok: false, back: ['slist', token, 0], backLabel: 'Back to Selected' });
     const n = keys.length;
     const at = Math.min(Math.max(Number(i) || 0, 0), n - 1);
     const { id, opt: keyOpt } = splitKey(keys[at]);
     const doc = /^[0-9a-f]{24}$/.test(id) ? await Loadout().findById(id).lean() : null;
-    if (!doc) return resultView(mode, { title: 'That build no longer exists.', ok: false, back: ['list', token, 0], backLabel: 'Back to List' });
+    if (!doc) return resultView(mode, { title: 'That build no longer exists.', ok: false, back: ['slist', token, 0], backLabel: 'Back to Selected' });
     const lo = require('../../../utils/loadoutOptions');
     const count = 1 + (doc.variants || []).length;
     const opt = Math.min(Number(option ?? keyOpt) || 0, count - 1);
@@ -218,7 +218,7 @@ async function stepView(mode, token, sel, i, option = null, header = null) {
             // No n / N counter button: the heading already says "1 of 19", and at phone width a fourth button pushed Finish onto its own line (click-test, 2026-11-07 14:32 EST).
             last ? btn(mode, ['stdone', token], 'Finish', emojis.checkmark, 3) : arrow(mode, ['step', token, at + 1], 'right', false),
         ),
-        row(btn(mode, ['list', token, Math.floor(sel.ids.indexOf(keys[at]) / SELECT_PAGE)], 'Back to List', emojis.returnArrow), homeBtn(mode)),
+        row(btn(mode, ['slist', token, 0], 'Back to Selected', emojis.returnArrow), homeBtn(mode)),
     );
     return cardView(mode, id, opt, header ? `${head}\n${header}` : head, rows);
 }
@@ -265,10 +265,10 @@ function exportModal(mode) {
     };
 }
 
-function moveModal(mode, doc, opt) {
+function moveModal(mode, doc, opt, back = null) {
     const { buildNumberOf } = require('../../../utils/loadoutForm');
     const tag = require('../../../utils/loadoutOptions').optionTag(buildNumberOf(doc.buildName), Number(opt) || 0);
-    return { custom_id: ID(mode, 'movem', doc._id, opt), title: `Move ${doc.weaponName} ${doc.buildName}`.slice(0, 45), components: [labelled('New build #', { type: 4, custom_id: 'to', style: 1, required: true, max_length: 4, value: String(tag), placeholder: '3 · 2b' }, 'A number swaps with that build. A letter makes it an option of that build.')] };
+    return { custom_id: back ? ID(mode, 'movem', doc._id, opt, back) : ID(mode, 'movem', doc._id, opt), title: `Move ${doc.weaponName} ${doc.buildName}`.slice(0, 45), components: [labelled('New build #', { type: 4, custom_id: 'to', style: 1, required: true, max_length: 4, value: String(tag), placeholder: '3 · 2b' }, 'A number swaps with that build. A letter makes it an option of that build.')] };
 }
 
 module.exports = { ID, MODE_OF, SELECT_PAGE, row, text, btn, pageView, classView, weaponView, cardView, resultView, resultsView, selectView, stepView, editedSince, searchModal, exportModal, moveModal, homeBtn };

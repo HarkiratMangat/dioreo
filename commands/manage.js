@@ -950,7 +950,7 @@ function buildManageCommandData() {
             { name: 'Bulk Paste', value: 'paste' }, { name: 'Export', value: 'export' }, { name: 'Banners', value: 'banners' }, { name: 'Guide', value: 'guide' }))
         .addStringOption(o => o.setName('show').setDescription('Open a list of calendar entries').addChoices(
             { name: 'Events', value: 'event' }, { name: 'Playlists', value: 'playlist' }, { name: 'Draws', value: 'draw' },
-            { name: 'Upcoming', value: 'upcoming' }, { name: 'Active Now', value: 'live' }, { name: 'Ending Soon', value: 'leaving' }, { name: 'Ended', value: 'ended' }))
+            { name: 'Upcoming', value: 'upcoming' }, { name: 'Active Now', value: 'live' }, { name: 'Leaving Soon', value: 'leaving' }, { name: 'Ended', value: 'ended' }))
         .addStringOption(visibility);
     const patchSub = sub => sub.setName('patch-notes').setDescription('Season patch notes')
         .addStringOption(o => o.setName('season').setDescription('Go to one season\'s patch notes: type part of its title').setAutocomplete(true))

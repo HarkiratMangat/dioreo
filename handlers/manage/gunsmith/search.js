@@ -149,4 +149,10 @@ function keyInfo(key, d) {
     };
 }
 
-module.exports = { GROUP, splitKey, classOf, classIcon, classWord, categoryOfLine, badgeWord, badgeWords, quickPicks, pickTest, searchBuilds, resolveSet, resolveKeys, infoFor, keyInfo, compare };
+// A merged build selected whole already holds every option, so its option keys are dropped beside it (2026-11-11 17:09 EST, think-pass click test: selecting FSS 1 and FSS 1b put Option B into Edit 3 twice, and Expand View showed the build twice).
+function collapseKeys(keys) {
+    const whole = new Set(keys.filter(k => splitKey(k).opt === null).map(k => splitKey(k).id));
+    return keys.filter(k => { const { id, opt } = splitKey(k); return opt === null || !whole.has(id); });
+}
+
+module.exports = { GROUP, splitKey, collapseKeys, classOf, classIcon, classWord, categoryOfLine, badgeWord, badgeWords, quickPicks, pickTest, searchBuilds, resolveSet, resolveKeys, infoFor, keyInfo, compare };

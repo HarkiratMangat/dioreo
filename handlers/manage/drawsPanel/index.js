@@ -203,7 +203,8 @@ function previewDraws(doc, newText, retText) {
     if (out.same.length) parts.push(`-# Unchanged · ${out.same.length}: ${out.same.join(', ').slice(0, 700)}`, '');
     if (out.twins.length) parts.push(`${emojis.warn} **Left out · ${out.twins.length}**`, ...cap(out.twins.map(x => `- ${x}`), 8), '-# A draw is New or Returning, not both. Move it from its card, or delete one first.', '');
     if (out.skipped.length) parts.push(`${emojis.warn} **Not read · ${out.skipped.length}**`, ...cap(out.skipped.map(x => `- \`${x}\``), 8), '-# A line needs a title, at least one item and a date, split by commas.', '');
-    parts.push('-# Nothing is saved until you press Save.');
+    // A preview where nothing changed says so, and has no Save to press (2026-11-11 17:03 EST: it read "Nothing is saved until you press Save" with no Save button, under a green check).
+    parts.push((out.added.length + out.changed.length) ? '-# Nothing is saved until you press Save.' : '-# Nothing changed, so there is nothing to save.');
     return { ...out, parts, count: out.added.length + out.changed.length, total: out.added.length + out.changed.length + out.same.length };
 }
 // A line with no picture link keeps the stored draw's picture (2026-11-10 11:19 EST): Edit N's box leaves the links out so each line is half as long, and a Paste of an existing draw without a link no longer asks Cloudinary for a near match. The stored link is put back on the line before it saves, so nothing downstream changes.
@@ -229,11 +230,11 @@ async function previewPanel(token, newText, retText, { isEdit }) {
     const doc = await getDoc();
     const pv = previewDraws(doc, newText, retText);
     return V.resultView({
-        ok: pv.skipped.length ? 'warn' : true, crumbs: isEdit ? ['Selected', 'Edit'] : ['Bulk Paste'],
+        ok: pv.skipped.length || !pv.count ? 'warn' : true, crumbs: isEdit ? ['Selected', 'Edit'] : ['Bulk Paste'],
         title: `${isEdit ? 'Edit' : 'Bulk Paste'} preview · ${pv.count} of ${pv.total} to save`, body: pv.parts,
         back: isEdit ? ['tedit', token, 0, 'again'] : ['paste', token], backLabel: isEdit ? 'Edit Again' : 'Edit Paste',
         extraButtons: pv.count ? [V.btn(['save', token], `Save ${pv.count}`, emojis.checkmark, 3)] : [],
-        extraRows: isEdit ? [V.row(V.btn(['slist', token, 0], 'Back to List', emojis.returnArrow))] : [],
+        extraRows: isEdit ? [V.row(V.btn(['slist', token, 0], 'Back to Selected', emojis.returnArrow))] : [],
     });
 }
 
@@ -449,7 +450,7 @@ async function route(interaction) {
     if (verb === 'page') return renderHome(interaction);
     if (verb === 'revert') {
         return require('../results').revertChanges(interaction, String(a || '').split(',').filter(Boolean), {
-            doneNote: 'it is back as it was',
+            doneNote: 'everything is back as it was',
             render: async (note) => {
                 const doc = await getDoc();
                 const card = b ? await cardFor(doc, b, c, { header: note }) : null;
@@ -466,9 +467,9 @@ async function route(interaction) {
                     const tok = String(c).slice(2);
                     const sel = await loadSel(tok);
                     if (sel) {
-                        // A reverted Delete N: the draws are back under new ids, so they rejoin the list (2026-11-10 13:27 EST: the list said "No draws found").
+                        // A reverted Delete N: the draws are back under new ids, so they rejoin the list (2026-11-10 13:27 EST: the list said "No draws found"). And they are selected again, as they were before the Delete (2026-11-11 16:58 EST: the Revert landed on the results with nothing selected).
                         const back = (await restoredKeys(doc, String(a || '').split(',').filter(Boolean))).filter(k => !sel.ids.includes(k));
-                        if (back.length) { sel.ids = [...sel.ids, ...back]; await setSel(tok, { ids: sel.ids }); }
+                        if (back.length) { sel.ids = [...sel.ids, ...back]; sel.selected = [...new Set([...(sel.selected || []), ...back])]; await setSel(tok, { ids: sel.ids, selected: sel.selected }); }
                         return V.selectView(doc, tok, sel, note);
                     }
                 }
@@ -480,7 +481,8 @@ async function route(interaction) {
     if (verb === 'list') return show(interaction, V.listView(await getDoc(), a, n(b)));
     if (verb === 'sres') {
         const sel = await loadSel(a);
-        return show(interaction, sel ? V.searchView(await getDoc(), a, sel, n(b)) : V.resultView({ title: 'Those search results expired. Search again.', ok: false, back: 'find', backLabel: 'Search Again' }));
+        // Misses, refusals and nothing-changed answer privately and leave the panel as it was (round 2's rule; the 2026-11-11 16:46 EST think-pass found these still drawn in the panel).
+        return sel ? show(interaction, V.searchView(await getDoc(), a, sel, n(b))) : say(interaction, `${emojis.cross} Those search results expired. Search again.`);
     }
     if (verb === 'open' && interaction.isStringSelectMenu?.()) {
         const doc = await getDoc();
@@ -536,7 +538,7 @@ async function route(interaction) {
         const want = readEnd(interaction, d);
         if (want.error) return say(interaction, `${emojis.cross} ${want.error} Nothing was saved.`);
         const op = planEnd(d, want);
-        if (!op) return show(interaction, await back(`-# ${emojis.info} It already ends ${endWords(d._row)}. Nothing was saved.`));
+        if (!op) return say(interaction, `${emojis.info} It already ends ${endWords(d._row)}. Nothing was saved.`);
         const result = await require('../../../core/changeset').commitSet([op], { actorId: interaction.user.id });
         if (!result.ok) return say(interaction, `${emojis.cross} Not saved: ${require('../shared').extractCommitError(result)}`);
         const after = await getDoc();
@@ -765,14 +767,15 @@ async function routeSelection(interaction, verb, a, b, c) {
         const doc = await getDoc();
         const pv = previewDraws(doc, newText, retText);
         const backTo = isEdit ? ['slist', a, 0] : 'page';
-        if (!pv.count) return show(interaction, V.resultView({ title: 'Nothing to save: every draw is unchanged.', ok: 'warn', back: backTo, backLabel: isEdit ? 'Back to List' : 'Home' }));
+        // Misses, refusals and nothing-changed answer privately and leave the panel as it was (round 2's rule; the 2026-11-11 16:46 EST think-pass found these still drawn in the panel).
+        if (!pv.count) return say(interaction, `${emojis.info} Nothing to save: every draw is unchanged.`);
         await interaction.deferUpdate();
         const result = await require('../draws').bulkAddOrReplaceDraws(interaction, { customId: 'modal_draws_bulk_replace_both', values: { new_text: withStoredLinks(doc, pv.keepNew, 'new').join('\n'), returning_text: withStoredLinks(doc, pv.keepRet, 'returning').join('\n') } }, { quiet: true });
-        if (!result?.ok) return show(interaction, V.resultView({ crumbs: isEdit ? ['Selected', 'Edit'] : ['Bulk Paste'], title: 'Nothing was saved', body: [result?.error || 'The save was refused.'], ok: false, back: isEdit ? ['tedit', a, 0, 'again'] : ['paste', a], backLabel: isEdit ? 'Edit Again' : 'Edit Paste' }));
+        if (!result?.ok) return say(interaction, `${emojis.cross} **Nothing was saved.** ${String(result?.error || 'The save was refused.').slice(0, 1800)}`);
         // The draws first, then their end dates (the saver lists the end dates first because it writes them second).
         const ordered = [...result.sections.filter(s => s.head !== 'End dates'), ...result.sections.filter(s => s.head === 'End dates')];
         const body = [...ordered.filter(s => s.lines?.length).map(s => `**${s.head}**\n${s.lines.join('\n')}`), ...result.warnings.map(w => `${emojis.warn} ${w}`)];
-        await show(interaction, V.resultView({ ok: result.warnings.length ? 'warn' : true, crumbs: isEdit ? ['Selected', 'Edit'] : ['Bulk Paste'], title: `Saved ${V.plural(pv.count, 'draw')}`, body: [...body, `-# Every change is recorded; Revert puts it back.${revertHint(result.changeIds)}`], back: backTo, backLabel: isEdit ? 'Back to List' : 'Home', extraButtons: revertButton(result.changeIds, '', isEdit ? `s:${a}` : '') }));
+        await show(interaction, V.resultView({ ok: result.warnings.length ? 'warn' : true, crumbs: isEdit ? ['Selected', 'Edit'] : ['Bulk Paste'], title: `Saved ${V.plural(pv.count, 'draw')}`, body: [...body, `-# Every change is recorded; Revert puts it back.${revertHint(result.changeIds)}`], back: backTo, backLabel: isEdit ? 'Back to Selected' : 'Home', extraButtons: revertButton(result.changeIds, '', isEdit ? `s:${a}` : '') }));
         return askKinds(interaction, result.titles);
     }
     // End Date for every selected draw (2026-11-10 11:19 EST): one commit of their calendar rows, skipping any that already read so or that the end would not be after.
@@ -791,10 +794,11 @@ async function routeSelection(interaction, verb, a, b, c) {
             const op = planEnd(d, want);
             if (op) { ops.push(op); done.push(d.title); } else skipped.push(`${d.title} (already so)`);
         }
-        if (!ops.length) return show(interaction, V.selectView(doc, a, sel, `${emojis.info} Nothing changed: ${skipped.join(', ').slice(0, 1500)}`));
+        // A private note, never the panel (round 2's rule; found in the Selected view's End Date by the 2026-11-11 16:46 EST think-pass).
+        if (!ops.length) return say(interaction, `${emojis.info} Nothing changed: ${skipped.join(', ').slice(0, 1500)}`);
         const result = await require('../../../core/changeset').commitSet(ops, { actorId: interaction.user.id });
         if (!result.ok) return say(interaction, `${emojis.cross} Not saved: ${require('../shared').extractCommitError(result)}`);
-        return show(interaction, V.resultView({ crumbs: ['Selected'], title: `End date set on ${V.plural(done.length, 'draw')}: ${wantWords(want)}`, body: [...done.map(t => `- ${t}`), ...(skipped.length ? [`-# Left as they were: ${skipped.join(', ')}`] : []), ...(want.note ? [want.note] : []), `-# Revert puts every one back.${revertHint(result.changeIds)}`], back: ['slist', a, 0], backLabel: 'Back to List', extraButtons: revertButton(result.changeIds, '', `s:${a}`) }));
+        return show(interaction, V.resultView({ crumbs: ['Selected'], title: `End date set on ${V.plural(done.length, 'draw')}: ${wantWords(want)}`, body: [...done.map(t => `- ${t}`), ...(skipped.length ? [`-# Left as they were: ${skipped.join(', ')}`] : []), ...(want.note ? [want.note] : []), `-# Revert puts every one back.${revertHint(result.changeIds)}`], back: ['slist', a, 0], backLabel: 'Back to Selected', extraButtons: revertButton(result.changeIds, '', `s:${a}`) }));
     }
 
     if (verb === 'texp') {
@@ -827,10 +831,10 @@ async function routeSelection(interaction, verb, a, b, c) {
             ops.push(...rowIds.map(id => ({ type: 'calendar.delete', target: { elementId: id } })));
         }
         const result = await require('../../../core/changeset').commitSet(ops, { actorId: interaction.user.id });
-        if (!result.ok) return show(interaction, V.resultView({ title: 'Nothing was deleted', body: [require('../shared').extractCommitError(result)], ok: false, back: ['slist', a, 0], backLabel: 'Back to List' }));
+        if (!result.ok) return say(interaction, `${emojis.cross} **Nothing was deleted.** ${require('../shared').extractCommitError(result)}`);
         const goneKeys = new Set(keys);
         await setSel(a, { ids: sel.ids.filter(k => !goneKeys.has(k)), selected: [] });
-        return show(interaction, V.resultView({ crumbs: ['Selected'], title: `Deleted ${V.plural(keys.length, 'draw')}${b === 'r' ? ' and their /calendar rows' : ''}`, body: [`-# Every change is recorded; Revert puts them back.${revertHint(result.changeIds)}`], back: ['slist', a, 0], backLabel: 'Back to List', extraButtons: revertButton(result.changeIds, '', `s:${a}`) }));
+        return show(interaction, V.resultView({ crumbs: ['Selected'], title: `Deleted ${V.plural(keys.length, 'draw')}${b === 'r' ? ' and their /calendar rows' : ''}`, body: [`-# Every change is recorded; Revert puts them back.${revertHint(result.changeIds)}`], back: ['slist', a, 0], backLabel: 'Back to Selected', extraButtons: revertButton(result.changeIds, '', `s:${a}`) }));
     }
     return say(interaction, EXPIRED);
 }

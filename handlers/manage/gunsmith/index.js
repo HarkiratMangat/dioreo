@@ -78,7 +78,7 @@ async function selectPanel(mode, token, sel, note = null, page = 0, { results = 
     const picked = sel.ids.filter(k => on.has(k));
     if (!results && picked.length === 1) {
         const [id, opt] = picked[0].split('~');
-        const card = await V.cardView(mode, id, Number(opt) || 0, note);
+        const card = await V.cardView(mode, id, Number(opt) || 0, note, null, token);
         if (card) return card;
     }
     const shown = sel.ids.slice(page * V.SELECT_PAGE, page * V.SELECT_PAGE + V.SELECT_PAGE);
@@ -220,7 +220,10 @@ async function openFromSlash(interaction, mode) {
             const modal = keys.length ? B.blocksModal(V.ID(mode, 'teditm', token), `Edit ${keys.length} ${mode} Build${keys.length === 1 ? '' : 's'}`, blocks) : null;
             if (modal) return interaction.showModal(modal);
             const sel = await loadSel(token, mode);
-            return view(await selectPanel(mode, token, sel, keys.length ? `${emojis.warn} **Edit holds about ${B.fitCount(blocks)} of these.** Select fewer, or use Expand View.` : null));
+            // The selection to work from, with the refusal as a private note under it (2026-11-11 16:46 EST).
+            const out = await view(await selectPanel(mode, token, sel));
+            if (keys.length) await say(interaction, `${emojis.warn} **Edit holds about ${B.fitCount(blocks)} of these.** Select fewer, or use Expand View.`);
+            return out;
         }
         if (act === 'export') {
             if (!(await gate(interaction, mode, 'exportall'))) return;
@@ -291,11 +294,11 @@ async function autocomplete(interaction, mode) {
 }
 
 // ---------- confirms ----------
-async function confirmDeleteCard(mode, doc, id, opt) {
+async function confirmDeleteCard(mode, doc, id, opt, back = null) {
     const L = require('../../../utils/loadoutOptions').optionLetter;
     const merged = (doc.variants || []).length > 0;
     const head = `### ${emojis.warn} Delete ${doc.weaponName} ${doc.buildName}${merged ? `, Option ${L(Number(opt) || 0)}` : ''}?\n-# ${merged ? 'Only this option goes; the ones after it move up a letter.' : 'The build goes, and later build numbers move up one.'} Every change can be reverted.`;
-    return V.cardView(mode, id, opt, head, [V.row(V.btn(mode, ['delok', id, opt], 'Yes, Delete', emojis.deleteBin, 4), V.btn(mode, ['card', id, opt], 'Cancel', emojis.returnArrow))]);
+    return V.cardView(mode, id, opt, head, [V.row(V.btn(mode, ['delok', id, opt], 'Yes, Delete', emojis.deleteBin, 4), V.btn(mode, ['card', id, opt, ...(back ? [back] : [])], 'Cancel', emojis.returnArrow))], back);
 }
 async function confirmDeleteMany(mode, token, sel, page) {
     const keys = selectedKeys(sel);
@@ -311,11 +314,11 @@ async function confirmDeleteMany(mode, token, sel, page) {
 async function previewPanel(mode, token, raw, { editAgain, crumbs, title, backToList = null }) {
     const pv = await B.previewBlocks(mode, raw);
     return V.resultView(mode, {
-        ok: pv.problems ? 'warn' : true, crumbs, title: `${title} · ${pv.count} of ${pv.total} to save`, body: pv.parts,
+        ok: pv.problems || !pv.count ? 'warn' : true, crumbs, title: `${title} · ${pv.count} of ${pv.total} to save`, body: pv.parts,
         back: editAgain, backLabel: crumbs[crumbs.length - 1] === 'Bulk Paste' ? 'Edit Paste' : 'Edit Again',
         extraButtons: pv.count ? [V.btn(mode, ['save', token], `Save ${pv.count}`, emojis.checkmark, 3)] : [],
         // Edit N's preview also goes back to its list, so a look that changes nothing is one click from the selection.
-        extraRows: backToList ? [V.row(V.btn(mode, backToList, 'Back to List', emojis.returnArrow))] : [],
+        extraRows: backToList ? [V.row(V.btn(mode, backToList, 'Back to Selected', emojis.returnArrow))] : [],
     });
 }
 
@@ -331,8 +334,8 @@ async function route(interaction) {
     if (verb === 'cls') return show(interaction, await V.classView(mode, a));
     if (verb === 'wpn' && interaction.isStringSelectMenu?.()) return show(interaction, await V.weaponView(mode, interaction.values[0]));
     if (verb === 'wback') return show(interaction, await V.weaponView(mode, a));
-    if (verb === 'card') return show(interaction, await V.cardView(mode, a, n(b)));
-    if (verb === 'opt' && interaction.isStringSelectMenu?.()) return show(interaction, await V.cardView(mode, a, n(interaction.values[0])));
+    if (verb === 'card') return show(interaction, await V.cardView(mode, a, n(b), null, null, c || null));
+    if (verb === 'opt' && interaction.isStringSelectMenu?.()) return show(interaction, await V.cardView(mode, a, n(interaction.values[0]), null, null, b || null));
     if (verb === 'pick' && interaction.isStringSelectMenu?.()) { const [id, opt] = interaction.values[0].split('~'); return show(interaction, await V.cardView(mode, id, n(opt))); }
     if (verb === 'find') return interaction.showModal(V.searchModal(mode));
     if (verb === 'guide') return runGuide(interaction, mode);
@@ -347,10 +350,10 @@ async function route(interaction) {
     if (verb === 'edit' || verb === 'move' || verb === 'newopt' || verb === 'del') {
         const doc = isObjectId(a) ? await Loadout().findById(a).lean() : null;
         if (!doc || doc.mode !== mode) return show(interaction, await home(mode, `${emojis.cross} That build no longer exists.`, interaction));
-        if (verb === 'edit') return (await gate(interaction, mode, 'edit')) && interaction.showModal(await editModal(mode, doc, b, V.ID(mode, 'editm', a, n(b))));
-        if (verb === 'move') return (await gate(interaction, mode, 'edit')) && interaction.showModal(V.moveModal(mode, doc, n(b)));
+        if (verb === 'edit') return (await gate(interaction, mode, 'edit')) && interaction.showModal(await editModal(mode, doc, b, c ? V.ID(mode, 'editm', a, n(b), c) : V.ID(mode, 'editm', a, n(b))));
+        if (verb === 'move') return (await gate(interaction, mode, 'edit')) && interaction.showModal(V.moveModal(mode, doc, n(b), c || null));
         if (verb === 'newopt') return (await gate(interaction, mode, 'add')) && loadouts().showAddOption(interaction, doc, n(b));
-        return (await gate(interaction, mode, 'delete')) && show(interaction, await confirmDeleteCard(mode, doc, a, n(b)));
+        return (await gate(interaction, mode, 'delete')) && show(interaction, await confirmDeleteCard(mode, doc, a, n(b), c || null));
     }
     if (verb === 'delok') {
         if (!(await gate(interaction, mode, 'delete')) || !(await gateDestructive(interaction, mode))) return;
@@ -363,14 +366,15 @@ async function route(interaction) {
         if (!interaction.message) return loadouts().editLoadout(interaction, preset);
         await interaction.deferUpdate();
         await loadouts().editLoadout(interaction, preset);
-        return show(interaction, await V.cardView(mode, a, n(b), `-# ${emojis.checkmark} Saved. The result, with Revert, is in the message below.`));
+        return show(interaction, await V.cardView(mode, a, n(b), `-# ${emojis.checkmark} Saved. The result, with Revert, is in the message below.`, null, c || null));
     }
     if (verb === 'movem' && interaction.isModalSubmit?.()) {
         if (!(await gate(interaction, mode, 'edit'))) return;
         const doc = isObjectId(a) ? await Loadout().findById(a).lean() : null;
         if (!doc || doc.mode !== mode) return show(interaction, await home(mode, `${emojis.cross} That build no longer exists.`, interaction));
         const to = interaction.fields.getTextInputValue('to').trim().toLowerCase();
-        if (!/^\d+[a-z]?$/.test(to)) return show(interaction, await V.cardView(mode, a, n(b), `${emojis.cross} \`${to.slice(0, 10)}\` is not a build number. Use \`3\`, or \`2b\` to make it an option of Build 2.`));
+        // A refusal answers privately and leaves the card as it was (round 2's rule; found by the 2026-11-11 16:46 EST think-pass).
+        if (!/^\d+[a-z]?$/.test(to)) return say(interaction, `${emojis.cross} \`${to.slice(0, 10)}\` is not a build number. Use \`3\`, or \`2b\` to make it an option of Build 2.`);
         // The build's own Edit values with only the build # changed: the save moves it (a taken number swaps; a letter joins that build), exactly as typing the number into Edit does.
         const form = require('../../../utils/loadoutForm');
         const siblings = await Loadout().find({ mode, weaponKey: doc.weaponKey }).lean();
@@ -383,7 +387,7 @@ async function route(interaction) {
         await interaction.deferUpdate();
         await loadouts().editLoadout(interaction, preset);
         const still = await Loadout().findById(a).lean();
-        return show(interaction, still ? await V.cardView(mode, a, 0, `-# ${emojis.checkmark} Moved. The result, with Revert, is in the message below.`) : await V.weaponView(mode, doc.weaponKey, `-# ${emojis.checkmark} Moved. The result, with Revert, is in the message below.`));
+        return show(interaction, still ? await V.cardView(mode, a, 0, `-# ${emojis.checkmark} Moved. The result, with Revert, is in the message below.`, null, c || null) : await V.weaponView(mode, doc.weaponKey, `-# ${emojis.checkmark} Moved. The result, with Revert, is in the message below.`));
     }
 
     // ----- Search ----- One Search (the draws redesign): names, one per line, widen each other; quick picks narrow them; both blank is every build. One match opens its card; none answers privately.
@@ -465,7 +469,7 @@ async function routeSelection(interaction, mode, verb, a, b, c) {
     }
 
     const sel = await loadSel(a, mode);
-    if (!sel) return show(interaction, expired(mode));
+    if (!sel) return say(interaction, `${emojis.cross} That list expired. Search again.`);
     const keys = selectedKeys(sel);
 
     // The results' Select menu adds, the Selected view's Unselect menu takes away (the draws redesign).
@@ -513,7 +517,7 @@ async function routeSelection(interaction, mode, verb, a, b, c) {
         return show(interaction, V.resultView(mode, {
             crumbs: ['Selected', 'Expand View'], title: `Expand View done · ${doneKeys.length} of ${keys.length} edited`,
             body: [...B.capList(keys.map(k => `- ${edited.has(S.splitKey(k).id) ? emojis.checkmark : emojis.smallDot} ${info.get(k)?.title || k}`)), '', '-# Each edit was saved when you made it; its Revert is on its saved message.'],
-            back: ['list', a, 0], backLabel: 'Back to List',
+            back: ['slist', a, 0], backLabel: 'Back to Selected',
         }));
     }
 
@@ -523,23 +527,25 @@ async function routeSelection(interaction, mode, verb, a, b, c) {
         if (!keys.length) return show(interaction, await selectPanel(mode, a, sel, null, n(b)));
         const blocks = c === 'again' && sel.text ? sel.text.split(/\n\s*\n/).filter(x => x.trim()) : await B.keyBlocks(keys);
         const modal = B.blocksModal(V.ID(mode, 'teditm', a), `Edit ${keys.length} ${mode} Build${keys.length === 1 ? '' : 's'}`, blocks);
-        if (!modal) return show(interaction, await selectPanel(mode, a, sel, `${emojis.warn} **Edit holds about ${B.fitCount(blocks)} of these** (one pop-up is 5 boxes of 4,000 characters). Select fewer, or use Expand View.`, n(b)));
+        // A refusal answers privately and leaves the panel as it was (the draws panel's round-2 rule, carried here 2026-11-11 16:46 EST).
+        if (!modal) return say(interaction, `${emojis.warn} **Edit holds about ${B.fitCount(blocks)} of these** (one pop-up is 5 boxes of 4,000 characters). Select fewer, or use Expand View.`);
         return interaction.showModal(modal);
     }
     if (verb === 'teditm' && interaction.isModalSubmit?.()) {
         const raw = B.readBoxes(interaction);
         await setSel(a, { text: raw });
-        return show(interaction, await previewPanel(mode, a, raw, { editAgain: ['tedit', a, 0, 'again'], crumbs: ['Selected', 'Edit'], title: 'Edit preview', backToList: ['list', a, 0] }));
+        return show(interaction, await previewPanel(mode, a, raw, { editAgain: ['tedit', a, 0, 'again'], crumbs: ['Selected', 'Edit'], title: 'Edit preview', backToList: ['slist', a, 0] }));
     }
     // Save for Paste and Edit N: only the blocks that add or change something go to the real bulk save, whose result (with Revert, or a warning to answer) follows this message.
     if (verb === 'save') {
         const isEdit = sel.ids.length > 0;
         if (!(await gate(interaction, mode, isEdit ? 'bulkreplace' : 'bulkadd'))) return;
         const pv = await B.previewBlocks(mode, sel.text);
-        if (!pv.keep) return show(interaction, V.resultView(mode, { title: 'Nothing to save: every build is unchanged.', ok: 'warn', back: isEdit ? ['list', a, 0] : 'page', backLabel: isEdit ? 'Back to List' : 'Home' }));
+        // A refusal or nothing-changed answers privately and leaves the panel as it was (round 2's rule; the 2026-11-11 16:46 EST think-pass).
+        if (!pv.keep) return say(interaction, `${emojis.info} Nothing to save: every build is unchanged.`);
         await interaction.deferUpdate();
         await loadouts().bulkAddLoadouts(interaction, { customId: `modal_loadouts_bulk_add_${mode}`, values: { bulk_text: pv.keep } });
-        return show(interaction, V.resultView(mode, { crumbs: isEdit ? ['Selected', 'Edit'] : ['Bulk Paste'], title: `Sent ${pv.count} build${pv.count === 1 ? '' : 's'} to save`, body: ['-# The result is in the message below. A bulk save is reverted from `/bot analytics` › Changes.'], back: isEdit ? ['list', a, 0] : 'page', backLabel: isEdit ? 'Back to List' : 'Home' }));
+        return show(interaction, V.resultView(mode, { crumbs: isEdit ? ['Selected', 'Edit'] : ['Bulk Paste'], title: `Sent ${pv.count} build${pv.count === 1 ? '' : 's'} to save`, body: ['-# The result is in the message below. A bulk save is reverted from `/bot analytics` › Changes.'], back: isEdit ? ['slist', a, 0] : 'page', backLabel: isEdit ? 'Back to Selected' : 'Home' }));
     }
 
     if (verb === 'texp') {
@@ -557,11 +563,11 @@ async function routeSelection(interaction, mode, verb, a, b, c) {
         if (!(await gate(interaction, mode, 'bulkdelete')) || !(await gateDestructive(interaction, mode))) return;
         await interaction.deferUpdate();
         const r = await deleteMany(interaction, mode, keys);
-        if (!r.ok) return show(interaction, V.resultView(mode, { title: 'Nothing was deleted', body: [r.message], ok: false, back: ['list', a, 0], backLabel: 'Back to List' }));
+        if (!r.ok) return say(interaction, `${emojis.cross} **Nothing was deleted.** ${r.message}`);
         // The deleted entries leave the list, so Back shows what is left.
         const gone = new Set(keys);
         await setSel(a, { ids: sel.ids.filter(k => !gone.has(k)), selected: [] });
-        return show(interaction, V.resultView(mode, { crumbs: ['Selected'], title: `Deleted ${r.count} build${r.count === 1 ? '' : 's'}`, body: [r.changeIds.length && !revertButton(r.changeIds).length ? '-# Too many changes for one Revert button: revert them from `/bot analytics` › Changes.' : '-# Every change is recorded; Revert puts them back.'], back: ['list', a, 0], backLabel: 'Back to List', extraButtons: revertButton(r.changeIds) }));
+        return show(interaction, V.resultView(mode, { crumbs: ['Selected'], title: `Deleted ${r.count} build${r.count === 1 ? '' : 's'}`, body: [r.changeIds.length && !revertButton(r.changeIds).length ? '-# Too many changes for one Revert button: revert them from `/bot analytics` › Changes.' : '-# Every change is recorded; Revert puts them back.'], back: ['slist', a, 0], backLabel: 'Back to Selected', extraButtons: revertButton(r.changeIds) }));
     }
     return show(interaction, expired(mode));
 }
