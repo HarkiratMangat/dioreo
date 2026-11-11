@@ -250,6 +250,10 @@ const emptyDraft = () => ({ ...live(), draft: { active: false, newDraws: [], ret
         const byId = Object.fromEntries(again.components.map(l => [(l.component || {}).custom_id, l.component]));
         assert.strictEqual(again.custom_id, 'mng_ss|ddaddm|n');
         assert.strictEqual(byId.draw.value, 'Zz Draw\nNovember 26', 'the Draw box refills');
+        // A screenshot that did not upload comes back as its own Discord link, which expires: the savers refuse it (2026-11-11 12:43 EST, the draft click test stored one).
+        const { isDiscordAttachment } = require('../utils/drawForm');
+        assert.ok(isDiscordAttachment('https://cdn.discordapp.com/ephemeral-attachments/1/2/a.jpg') && isDiscordAttachment('https://cdn.discordapp.com/attachments/1/2/a.png'));
+        assert.ok(!isDiscordAttachment('https://res.cloudinary.com/x/image/upload/a.jpg') && !isDiscordAttachment('https://cdn.discordapp.com/emojis/1.png'));
     });
 
     console.log(failed ? `\n${failed} check(s) FAILED.` : '\nAll manage season panel checks passed.');

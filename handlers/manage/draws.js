@@ -64,6 +64,8 @@ async function addDraw(interaction, opts = {}) {
     const typedOther = form.season && form.season !== require('../../utils/quickAdd').seasonNumber(seasonalDoc.currentSeasonTitle);
     const releaseYear = typedOther ? null : require('../../utils/quickAdd').seasonYear(seasonalDoc);
     const thumbResult = await resolveThumbnail(title, rawUrl, { items: parsedItems, priceType, ...(releaseSeason ? { releaseSeason, ...(releaseYear ? { releaseYear } : {}) } : {}) });
+    // A screenshot that did not upload comes back as its own expiring Discord link: refused, never stored (utils/drawForm.js).
+    if (require('../../utils/drawForm').isDiscordAttachment(thumbResult.url)) return await failWithRetry(interaction, require('../../utils/drawForm').SHOT_NOT_SAVED);
 
     // No type picked, or Unsure: the draw index's type when it knows this draw for certain (its title, another name, or its items). Said in a note, so a wrong one is seen and edited.
     const { isKnownType } = require('../../utils/drawCatalog');
@@ -138,6 +140,7 @@ async function editDraw(interaction, opts = {}) {
         const thumbResult = keepPicture
             ? { url: storedUrl, cached: true, error: null, reused: false, kept: true }
             : await resolveThumbnail(newTitle, rawUrl, { items: parsedItems, priceType: arrayTarget[drawIndex].priceType || '', ...(releaseSeason ? { releaseSeason, ...(releaseYear ? { releaseYear } : {}) } : {}) });
+        if (require('../../utils/drawForm').isDiscordAttachment(thumbResult.url)) return opts.quiet ? (await failWithRetry(interaction, require('../../utils/drawForm').SHOT_NOT_SAVED), { ok: false }) : await failWithRetry(interaction, require('../../utils/drawForm').SHOT_NOT_SAVED);
 
         // Draw Type (2026-10-18 11:06 EDT): the form's dropdown; nothing picked clears it. Sent only when it CHANGED, so an edit that never touches it leaves the stored type, and the op's conflict check, alone. A modal built before this field existed (an old open form) has no dropdown and is read as unchanged.
         let pickedType = null;

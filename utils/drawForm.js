@@ -45,4 +45,8 @@ function readDrawFields(interaction, { allowSeason = false } = {}) {
     return { title: parsed.title, dateStr: parsed.dates, season: parsed.season, notes: parsed.notes || [], rawUrl: url, fromShot: Boolean(shot), rawItems: field(interaction, 'items') || '' };
 }
 
-module.exports = { readDrawBox, drawBoxValue, readDrawFields, SEASON_RE };
+// A screenshot's own link: Discord's attachment CDN, which expires within a day. resolveThumbnail hands a link back as given when its upload fails (the dev bot refuses every upload to the live picture store), so a saver that got one of these back must refuse rather than store a picture that will vanish (2026-11-11 12:43 EST, the draft click test stored one).
+const isDiscordAttachment = (url) => /^https:\/\/(?:cdn|media)\.discordapp\.(?:com|net)\/(?:ephemeral-)?attachments\//.test(String(url || ''));
+const SHOT_NOT_SAVED = 'The screenshot could not be saved to the picture store, so nothing was saved. Try again, or use a picture link.';
+
+module.exports = { readDrawBox, drawBoxValue, readDrawFields, isDiscordAttachment, SHOT_NOT_SAVED, SEASON_RE };

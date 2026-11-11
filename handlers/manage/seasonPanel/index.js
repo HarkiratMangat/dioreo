@@ -123,7 +123,8 @@ async function autocomplete(interaction) { return interaction.respond([]); }
 
 // The panel's own Revert after Promote or Discard (the lead, 2026-11-07 21:11 EST: the spec asks for Revert wherever a save returns change ids). results.js revertChanges does the reverting and its permission check; render lands back on the live view, or the draft's with `view` 'd' (a draft edit's Revert, 2026-11-09).
 function revertButton(changeIds, view = null) {
-    const id = `${PREFIX}revert|${(changeIds || []).join(',')}${view === 'd' ? '|d' : ''}`;
+    // `dn` / `dr`: a Revert made on the staged draws list lands back on that list (2026-11-11 12:44 EST, the click test: it landed on the draft's home, where Promote to Live sits under the same spot, and a second click there opened Promote).
+    const id = `${PREFIX}revert|${(changeIds || []).join(',')}${['d', 'dn', 'dr'].includes(view) ? `|${view}` : ''}`;
     return changeIds?.length && id.length <= 100 ? [{ type: 2, style: 4, label: 'Revert', custom_id: id, emoji: emojis.parseEmoji(emojis.keep) }] : [];
 }
 
@@ -175,6 +176,8 @@ async function saveDraftDraw(interaction, verb, sec, id) {
         const typedOther = form.season && form.season !== draftSeason;
         const { validDraws } = await require('../../../utils/bulkMerge').resolveThumbnailsForDraws(parsed, s === 'n' ? { releaseSeason: form.season || draftSeason, ...(typedOther ? {} : { releaseYear: q.seasonYear(doc?.draft || {}) }) } : undefined);
         if (!validDraws.length) return retry(interaction, 'Not saved: it needs a picture. Add a picture link or a screenshot; none is cached under that name yet.');
+        // A screenshot that did not upload comes back as its own expiring Discord link: refused, never staged (utils/drawForm.js).
+        if (require('../../../utils/drawForm').isDiscordAttachment(validDraws[0].thumbnailUrl)) return retry(interaction, require('../../../utils/drawForm').SHOT_NOT_SAVED);
         title = validDraws[0].title;
         // A second copy of a staged draw is refused (2026-11-08 12:52 EST): the same draw twice would list twice on /draws after Promote.
         const { isSameDrawTitle } = require('../../../utils/search');
@@ -187,7 +190,7 @@ async function saveDraftDraw(interaction, verb, sec, id) {
     const label = verb === 'ddrmm' ? `Removed ${list.length - next.length}` : verb === 'ddeditm' ? `Saved ${title}` : `Added ${title}`;
     const note = r.ok ? `### ${emojis.checkmark} ${label}\n-# Staged, not live.${carriedGone.length ? `\n${emojis.warn} ${carriedGone.join(', ')} ${carriedGone.length === 1 ? 'is' : 'are'} still running when the season starts, so the daily carry-over adds ${carriedGone.length === 1 ? 'it' : 'them'} back. To drop one for good, end it before the season on the live calendar.` : ''}` : `### ${emojis.cross} Not saved\n${(r.failedAt?.errors || []).join(' ') || 'Try again.'}`;
     const out = V.draftDrawsView(await getDoc(), s, 0, note);
-    if (r.ok) out[0].components.splice(out[0].components.length - 1, 0, V.row(...revertButton(r.changeIds, 'd')));
+    if (r.ok) out[0].components.splice(out[0].components.length - 1, 0, V.row(...revertButton(r.changeIds, `d${s}`)));
     const sent = await show(interaction, out);
     if (r.ok && title) await require('../itemKinds').askItemKinds(interaction, [title]);
     return sent;
@@ -230,7 +233,7 @@ async function route(interaction) {
     }
     if (verb === 'ddrm') { if (await gate(interaction, 'bulkdraws')) return interaction.showModal(V.draftRemoveModal(await getDoc(), a)); return; }
     if ((verb === 'ddaddm' || verb === 'ddeditm' || verb === 'ddrmm') && interaction.isModalSubmit?.()) return saveDraftDraw(interaction, verb, a, b);
-    if (verb === 'revert') return require('../results').revertChanges(interaction, String(a || '').split(',').filter(Boolean), { doneNote: 'it is back as it was', render: async (note) => home(b === 'd' ? 'draft' : 'live', await getDoc(), note, interaction) });
+    if (verb === 'revert') return require('../results').revertChanges(interaction, String(a || '').split(',').filter(Boolean), { doneNote: 'it is back as it was', render: async (note) => (b === 'dn' || b === 'dr') ? show(interaction, V.draftDrawsView(await getDoc(), b[1], 0, note)) : home(b === 'd' ? 'draft' : 'live', await getDoc(), note, interaction) });
 
     // ----- pop-up submits: save through season.js, then redraw the view with a Saved header -----
     if (verb === 'tm' && interaction.isModalSubmit?.()) {
