@@ -17,7 +17,7 @@ const TAGS = {
     // /manage and data
     database: ['database', 'index', 'data', 'storage', 'draw index'], mngAdd: ['add', 'new', 'create'], mngEdit: ['edit', 'change'], mngDelete: ['delete', 'remove'],
     mngBulkAdd: ['bulk add', 'many', 'paste'], mngBulkReplace: ['bulk replace', 'replace'], mngBulkDelete: ['bulk delete', 'remove many'], mngExport: ['export', 'download', 'file'],
-    mngPurge: ['purge', 'wipe', 'clear all'], mngInfo: ['info', 'about', 'help'], mngUrls: ['links', 'urls', 'pictures'], pasteImport: ['paste', 'bulk paste', 'import', 'check again', 'check names'],
+    mngPurge: ['purge', 'wipe', 'clear all'], mngInfo: ['info', 'about', 'help'], mngUrls: ['links', 'urls', 'pictures'], pasteImport: ['paste', 'bulk paste', 'import'], checkIndex: ['check names', 'check again', 'check index', 'draw index check', 'verify', 'look up'],
     copyExport: ['export', 'copy', 'file', 'download'], deleteBin: ['delete', 'remove', 'trash', 'bin'], deleteAll: ['delete all', 'wipe', 'purge'], broom: ['clean', 'tidy', 'clear'],
     plus: ['add', 'quick add', 'new', 'plus', 'create'], edit: ['edit', 'change', 'modify', 'update'], filter: ['filter', 'select', 'narrow', 'funnel', 'view selected'],
     checkmark: ['done', 'saved', 'yes', 'ok', 'select all', 'selected', 'success'], check: ['tick', 'selected', 'yes'], cross: ['no', 'error', 'clear', 'cancel', 'fail', 'miss'],

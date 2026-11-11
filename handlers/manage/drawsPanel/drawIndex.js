@@ -42,13 +42,15 @@ function entryLine(e) {
 // ---------- views ----------
 function homeView(entries, doc, note = null) {
     const n = (k) => entries.filter(GAPS[k].test).length;
-    const gapLine = ['pic', 'ph', 'type', 'kind'].filter(k => n(k)).map(k => `${emojis.warn} ${n(k)} ${GAPS[k].label.toLowerCase()}`);
+    // Counted words that read right at 1 and at many (2026-11-11 17:20 EST: the home said "1 items without a kind").
+    const gapWords = { pic: c => `${c} with no picture`, ph: c => `${c} placeholder picture${c === 1 ? '' : 's'}`, type: c => `${c} with no draw type`, kind: c => `${c} item${c === 1 ? '' : 's'} without a kind` };
+    const gapLine = ['pic', 'ph', 'type', 'kind'].filter(k => n(k)).map(k => `${emojis.warn} ${gapWords[k](n(k))}`);
     const components = [text(`${crumb()}\n## ${V.indexEmoji()} Draw Index\n-# ${plural(entries.length, 'draw')} indexed${gapLine.length ? ` · ${gapLine.join(' · ')}` : ` · ${emojis.checkmark} nothing missing`}\n-# What Quick Add, Add Draw and news triage match a draw against: its picture, items, draw type and other names.`)];
     if (note) components.push(SMALL(), text(note));
     components.push(
         BIG(),
         text('-# Find an entry…'),
-        row(btn('ixcheck', 'Check Names', emojis.pasteImport, 1), btn('ixfind', 'Search the Index', emojis.search, 2, !entries.length)),
+        row(btn('ixcheck', 'Check Names', emojis.checkIndex || emojis.pasteImport, 1), btn('ixfind', 'Search the Index', emojis.search, 2, !entries.length)),
         { type: 1, components: [{ type: 3, custom_id: ID('ixgaps'), placeholder: 'Or list the entries with a gap…', options: Object.entries(GAPS).map(([value, g]) => ({ value, label: `${g.label} · ${n(value)}`, emoji: emojis.parseEmoji(value === 'all' ? V.indexEmoji() : emojis.warn) })) }] },
         BIG(),
         row(V.homeBtn()),

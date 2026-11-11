@@ -349,7 +349,7 @@ function checkView({ results, extra = 0, indexSize = 0 }, token = null, foundCou
     const c = (s) => results.filter(r => r.status === s).length;
     const needN = results.filter(r => r.needs?.length).length;
     const counts = [`${results.length} checked`, `${c('found')} found`, ...(c('maybe') ? [`${c('maybe')} maybe`] : []), ...(c('describes') ? [`${c('describes')} too broad`] : []), ...(c('none') ? [`${c('none')} not indexed`] : []), ...(needN ? [`${emojis.warn} ${needN} need updating`] : [])].join(' · ');
-    const head = text(`-# Draws  ›  Draw Index  ›  Check Names\n## ${indexEmoji()} Check Names\n-# ${counts} · ${plural(indexSize, 'draw')} in the index`);
+    const head = text(`-# Draws  ›  Draw Index  ›  Check Names\n## ${emojis.checkIndex || indexEmoji()} Check Names\n-# ${counts} · ${plural(indexSize, 'draw')} in the index`);
     const blocks = results.map(r => ({ r, t: resultBlock(r, emojis) }));
     // Up to eight found draws get an Open button (a Section each); the rest are text, as many as fit Discord's 4,000 characters.
     let budget = 3600 - head.content.length;
@@ -367,7 +367,7 @@ function checkView({ results, extra = 0, indexSize = 0 }, token = null, foundCou
     const dropped = blocks.length - shown + extra;
     if (dropped) components.push(text(`-# …and ${plural(dropped, 'more line')} not checked; paste them again in a second check.`));
     const quick = token && foundCount ? btn(['qathese', token], foundCount === 1 ? 'Quick Add This One' : `Quick Add These ${Math.min(foundCount, 10)}`, emojis.plus, 3) : null;
-    components.push(BIG(), row(btn('ix', 'Draw Index', emojis.returnArrow), homeBtn(), btn(['check', token || ''], 'Check Again', emojis.pasteImport, 1), quick));
+    components.push(BIG(), row(btn('ix', 'Draw Index', emojis.returnArrow), homeBtn(), btn(['check', token || ''], 'Check Again', emojis.checkIndex || emojis.pasteImport, 1), quick));
     return panel(components);
 }
 
