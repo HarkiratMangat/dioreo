@@ -198,6 +198,8 @@ async function route(interaction, verb, a, b, c, ctx) {
         });
     }
     if (verb === 'ixkinds') {
+        // Setting item kinds writes the index, so it takes the draws edit tier, as Edit Entry does (commit security review, 2026-11-11 11:27 EST).
+        if (!(await gate(interaction, 'edit'))) return;
         const e = await findEntry(a);
         if (!e) return say(interaction, `${emojis.cross} That entry is no longer in the draw index.`);
         await interaction.deferUpdate();
