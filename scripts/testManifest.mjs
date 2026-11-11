@@ -121,6 +121,7 @@ export const TESTS = [
     {"cmd": "node scripts/loadoutOptions.test.js", "lane": "unit"},
     {"cmd": "node scripts/manageGunsmith.test.js", "lane": "unit"},
     {"cmd": "node scripts/manageDraws.test.js", "lane": "unit"},
+    {"cmd": "node scripts/emojiTags.test.js", "lane": "unit"},
     {"cmd": "node scripts/manageCalendarPanel.test.js", "lane": "unit"},
     {"cmd": "node scripts/managePatchAnnounce.test.js", "lane": "unit"},
     {"cmd": "node scripts/manageSeasonPanel.test.js", "lane": "unit"},
