@@ -56,7 +56,7 @@ const newToken = () => require('crypto').randomBytes(6).toString('base64url');
 async function createSelection(data = {}) { const token = newToken(); await ManageSelection().create({ _id: token, mode: 'CALENDAR', ...data }); return token; }
 async function loadSel(token) { const s = token ? await ManageSelection().findById(token).lean() : null; return s && s.mode === 'CALENDAR' ? s : null; }
 const setSel = (token, fields) => ManageSelection().updateOne({ _id: token }, { $set: fields });
-const expired = () => V.resultView({ title: 'That list expired. Select again.', ok: false, back: 'select', backLabel: 'Select Entries' });
+const expired = () => V.resultView({ title: 'That list expired. Select again.', ok: false, back: 'find', backLabel: 'Search Again' });
 const selectedKeys = (sel) => { const on = new Set(sel.selected); return sel.ids.filter(k => on.has(k)); };
 
 // ---------- home ----------
@@ -154,7 +154,7 @@ async function previewPanel(token, text, { isEdit }) {
     const doc = await getDoc();
     const pv = previewCalendar(doc, text);
     return V.resultView({
-        ok: pv.skipped.length ? 'warn' : true, crumbs: isEdit ? ['Select Entries', 'Edit'] : ['Bulk Paste'],
+        ok: pv.skipped.length ? 'warn' : true, crumbs: isEdit ? ['Selected', 'Edit'] : ['Bulk Paste'],
         title: `${isEdit ? 'Edit' : 'Bulk Paste'} preview · ${pv.count} of ${pv.total} to save`, body: pv.parts,
         back: isEdit ? ['tedit', token, 0, 'again'] : ['paste', token], backLabel: isEdit ? 'Edit Again' : 'Edit Paste',
         extraButtons: pv.count ? [V.btn(['save', token], `Save ${pv.count}`, emojis.checkmark, 3)] : [],
@@ -416,7 +416,7 @@ async function routeSelection(interaction, verb, a, b, c) {
         if (!pv.count) return show(interaction, V.resultView({ title: 'Nothing to save: every entry is unchanged.', ok: 'warn', back: isEdit ? ['slist', a, 0] : 'page', backLabel: isEdit ? 'Back to List' : 'Home' }));
         await interaction.deferUpdate();
         await calendarSave().bulkAddOrReplaceCalendar(interaction, { customId: 'modal_calendar_bulk_replace', values: { bulk_text: pv.keep.join('\n') } });
-        return show(interaction, V.resultView({ crumbs: isEdit ? ['Select Entries', 'Edit'] : ['Bulk Paste'], title: `Sent ${pv.count} to save`, body: ['-# The result, with Revert, is in the message below.'], back: isEdit ? ['slist', a, 0] : 'page', backLabel: isEdit ? 'Back to List' : 'Home' }));
+        return show(interaction, V.resultView({ crumbs: isEdit ? ['Selected', 'Edit'] : ['Bulk Paste'], title: `Sent ${pv.count} to save`, body: ['-# The result, with Revert, is in the message below.'], back: isEdit ? ['slist', a, 0] : 'page', backLabel: isEdit ? 'Back to List' : 'Home' }));
     }
 
     if (verb === 'texp') {
@@ -430,7 +430,7 @@ async function routeSelection(interaction, verb, a, b, c) {
         if (!keys.length) return show(interaction, V.selectView(doc, a, sel, null, n(b)));
         const byKey = new Map(V.allEntries(doc).map(e => [e._key, e]));
         const lines = keys.filter(k => byKey.has(k)).map(k => `- ${V.dot(byKey.get(k))} ${byKey.get(k).title} · ${V.typeWord(byKey.get(k))}`);
-        return show(interaction, V.resultView({ ok: 'warn', crumbs: ['Select Entries'], title: `Delete ${lines.length} ${lines.length === 1 ? 'entry' : 'entries'}?`, body: [...(lines.length > 20 ? [...lines.slice(0, 20), `-# …and ${lines.length - 20} more`] : lines), '', '-# Every change is recorded and can be reverted.'], back: ['slist', a, n(b)], backLabel: 'Cancel', extraButtons: [V.btn(['tdelok', a], `Yes, Delete ${lines.length}`, emojis.deleteBin, 4)] }));
+        return show(interaction, V.resultView({ ok: 'warn', crumbs: ['Selected'], title: `Delete ${lines.length} ${lines.length === 1 ? 'entry' : 'entries'}?`, body: [...(lines.length > 20 ? [...lines.slice(0, 20), `-# …and ${lines.length - 20} more`] : lines), '', '-# Every change is recorded and can be reverted.'], back: ['slist', a, n(b)], backLabel: 'Cancel', extraButtons: [V.btn(['tdelok', a], `Yes, Delete ${lines.length}`, emojis.deleteBin, 4)] }));
     }
     if (verb === 'tdelok') {
         if (!(await gate(interaction, 'deletemultiple')) || !(await gateDestructive(interaction))) return;
@@ -440,7 +440,7 @@ async function routeSelection(interaction, verb, a, b, c) {
         if (!result.ok) return show(interaction, V.resultView({ title: 'Nothing was deleted', body: [require('../shared').extractCommitError(result)], ok: false, back: ['slist', a, 0], backLabel: 'Back to List' }));
         const gone = new Set(keys);
         await setSel(a, { ids: sel.ids.filter(k => !gone.has(k)), selected: [] });
-        return show(interaction, V.resultView({ crumbs: ['Select Entries'], title: `Deleted ${keys.length} ${keys.length === 1 ? 'entry' : 'entries'}`, body: ['-# Every change is recorded; Revert puts them back.'], back: ['slist', a, 0], backLabel: 'Back to List', extraButtons: revertButton(result.changeIds) }));
+        return show(interaction, V.resultView({ crumbs: ['Selected'], title: `Deleted ${keys.length} ${keys.length === 1 ? 'entry' : 'entries'}`, body: ['-# Every change is recorded; Revert puts them back.'], back: ['slist', a, 0], backLabel: 'Back to List', extraButtons: revertButton(result.changeIds) }));
     }
     return show(interaction, expired());
 }

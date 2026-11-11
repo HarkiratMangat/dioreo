@@ -480,6 +480,21 @@ function seasonDoc(nNew = 3, nRet = 30) {
         assert.ok(json.includes(`Delete All Ended · ${ended.length}`) && json.includes('|purge|ended'), 'Delete All Ended on the Ended list');
         assert.ok(!JSON.stringify(V.listView(doc, 'new')).includes('Delete All Ended'), 'only on the Ended list');
     });
+    // The other direction, across the three panels the search/select redesign touched (2026-11-11 15:34 EST): a button or menu whose verb no handler takes is a dead control. Removing Select left gunsmith's and calendar's "list expired" Back pointing at the gone `select` verb. Page counters are disabled buttons, and dd/view are the season panel's own ids.
+    await check('every verb the draws, calendar and gunsmith panels emit has a handler', () => {
+        const fs = require('fs');
+        const read = (f) => fs.readFileSync(require('path').join(__dirname, '..', f), 'utf8').replace(/^\s*\/\/.*$/gm, '');
+        const panels = { draws: ['handlers/manage/drawsPanel/views.js', 'handlers/manage/drawsPanel/index.js', 'handlers/manage/drawsPanel/drawIndex.js'], calendar: ['handlers/manage/calendarPanel/views.js', 'handlers/manage/calendarPanel/index.js'], gunsmith: ['handlers/manage/gunsmith/views.js', 'handlers/manage/gunsmith/index.js'] };
+        const NOT_CLICKABLE = new Set(['pgn', 'spgn', 'spg', 'cardn', 'ixpgn', 'dd', 'view']);
+        for (const [name, files] of Object.entries(panels)) {
+            const src = files.map(read).join('\n');
+            const handled = new Set([...src.matchAll(/verb === '(\w+)'/g)].map(m => m[1]));
+            for (const m of src.matchAll(/\[((?:'\w+',\s*)+'\w+')\]\.includes\(verb\)/g)) for (const v of m[1].matchAll(/'(\w+)'/g)) handled.add(v[1]);
+            const emitted = new Set([...src.matchAll(/(?:btn\(\s*(?:mode,\s*)?\[?\s*|ID\(\s*(?:mode,\s*)?|arrow\(\s*(?:mode,\s*)?\[\s*|counter\(\s*(?:mode,\s*)?\[\s*|back: )'(\w+)'/g)].map(m => m[1]));
+            const dead = [...emitted].filter(v => !handled.has(v) && !NOT_CLICKABLE.has(v));
+            assert.deepStrictEqual(dead, [], `${name}: emitted with no handler: ${dead.join(', ')}`);
+        }
+    });
     await check('every example a draws pop-up shows reads through its save\'s own reader', () => {
         const { readDrawBox } = require('../utils/drawForm');
         const manageCommand = require('../commands/manage');

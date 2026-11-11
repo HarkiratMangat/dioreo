@@ -173,8 +173,8 @@ function loadoutsSections() {
         section('🖼️ Example',
             '```\nBAL-27 | AR\nBuild: Build 2\nLabel: Aggro\nCode: 1I2C6B8A9D\nBadges: meta, top3\nComment: Best for close range\n- Monolithic Suppressor\n- FTAC Champion\n```'),
         section('💡 Tips',
-            '• Use the gunsmith panel\'s **Export** (or `do:Export`) to get this format filled in with your real data; **Edit** on Select Builds opens the selected builds in it.\n' +
-            '• **Expand View** on Select Builds walks the selected builds one card at a time, each with its own **Edit** that saves at once; **Finish** says which you edited.\n' +
+            '• Use the gunsmith panel\'s **Export** (or `do:Export`) to get this format filled in with your real data; **Edit N** on selected builds opens the selected builds in it.\n' +
+            '• **Expand View** on selected builds walks the selected builds one card at a time, each with its own **Edit** that saves at once; **Finish** says which you edited.\n' +
             '• The old one-line pipe format (`Weapon | Category | Mode | Build | ...`) is refused with an error naming this format; re-export anything saved in it.\n' +
             '• A build\'s picture is filed under its gunsmith code: the Add and Edit pop-ups take a URL or a screenshot and file it for you, and **/autobuild** does it from a Gunsmith screenshot.')
     ];

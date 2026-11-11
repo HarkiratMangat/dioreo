@@ -229,7 +229,7 @@ async function previewPanel(token, newText, retText, { isEdit }) {
     const doc = await getDoc();
     const pv = previewDraws(doc, newText, retText);
     return V.resultView({
-        ok: pv.skipped.length ? 'warn' : true, crumbs: isEdit ? ['Select Draws', 'Edit'] : ['Bulk Paste'],
+        ok: pv.skipped.length ? 'warn' : true, crumbs: isEdit ? ['Selected', 'Edit'] : ['Bulk Paste'],
         title: `${isEdit ? 'Edit' : 'Bulk Paste'} preview · ${pv.count} of ${pv.total} to save`, body: pv.parts,
         back: isEdit ? ['tedit', token, 0, 'again'] : ['paste', token], backLabel: isEdit ? 'Edit Again' : 'Edit Paste',
         extraButtons: pv.count ? [V.btn(['save', token], `Save ${pv.count}`, emojis.checkmark, 3)] : [],
@@ -768,11 +768,11 @@ async function routeSelection(interaction, verb, a, b, c) {
         if (!pv.count) return show(interaction, V.resultView({ title: 'Nothing to save: every draw is unchanged.', ok: 'warn', back: backTo, backLabel: isEdit ? 'Back to List' : 'Home' }));
         await interaction.deferUpdate();
         const result = await require('../draws').bulkAddOrReplaceDraws(interaction, { customId: 'modal_draws_bulk_replace_both', values: { new_text: withStoredLinks(doc, pv.keepNew, 'new').join('\n'), returning_text: withStoredLinks(doc, pv.keepRet, 'returning').join('\n') } }, { quiet: true });
-        if (!result?.ok) return show(interaction, V.resultView({ crumbs: isEdit ? ['Select Draws', 'Edit'] : ['Bulk Paste'], title: 'Nothing was saved', body: [result?.error || 'The save was refused.'], ok: false, back: isEdit ? ['tedit', a, 0, 'again'] : ['paste', a], backLabel: isEdit ? 'Edit Again' : 'Edit Paste' }));
+        if (!result?.ok) return show(interaction, V.resultView({ crumbs: isEdit ? ['Selected', 'Edit'] : ['Bulk Paste'], title: 'Nothing was saved', body: [result?.error || 'The save was refused.'], ok: false, back: isEdit ? ['tedit', a, 0, 'again'] : ['paste', a], backLabel: isEdit ? 'Edit Again' : 'Edit Paste' }));
         // The draws first, then their end dates (the saver lists the end dates first because it writes them second).
         const ordered = [...result.sections.filter(s => s.head !== 'End dates'), ...result.sections.filter(s => s.head === 'End dates')];
         const body = [...ordered.filter(s => s.lines?.length).map(s => `**${s.head}**\n${s.lines.join('\n')}`), ...result.warnings.map(w => `${emojis.warn} ${w}`)];
-        await show(interaction, V.resultView({ ok: result.warnings.length ? 'warn' : true, crumbs: isEdit ? ['Select Draws', 'Edit'] : ['Bulk Paste'], title: `Saved ${V.plural(pv.count, 'draw')}`, body: [...body, `-# Every change is recorded; Revert puts it back.${revertHint(result.changeIds)}`], back: backTo, backLabel: isEdit ? 'Back to List' : 'Home', extraButtons: revertButton(result.changeIds, '', isEdit ? `s:${a}` : '') }));
+        await show(interaction, V.resultView({ ok: result.warnings.length ? 'warn' : true, crumbs: isEdit ? ['Selected', 'Edit'] : ['Bulk Paste'], title: `Saved ${V.plural(pv.count, 'draw')}`, body: [...body, `-# Every change is recorded; Revert puts it back.${revertHint(result.changeIds)}`], back: backTo, backLabel: isEdit ? 'Back to List' : 'Home', extraButtons: revertButton(result.changeIds, '', isEdit ? `s:${a}` : '') }));
         return askKinds(interaction, result.titles);
     }
     // End Date for every selected draw (2026-11-10 11:19 EST): one commit of their calendar rows, skipping any that already read so or that the end would not be after.
@@ -794,7 +794,7 @@ async function routeSelection(interaction, verb, a, b, c) {
         if (!ops.length) return show(interaction, V.selectView(doc, a, sel, `${emojis.info} Nothing changed: ${skipped.join(', ').slice(0, 1500)}`));
         const result = await require('../../../core/changeset').commitSet(ops, { actorId: interaction.user.id });
         if (!result.ok) return say(interaction, `${emojis.cross} Not saved: ${require('../shared').extractCommitError(result)}`);
-        return show(interaction, V.resultView({ crumbs: ['Select Draws'], title: `End date set on ${V.plural(done.length, 'draw')}: ${wantWords(want)}`, body: [...done.map(t => `- ${t}`), ...(skipped.length ? [`-# Left as they were: ${skipped.join(', ')}`] : []), ...(want.note ? [want.note] : []), `-# Revert puts every one back.${revertHint(result.changeIds)}`], back: ['slist', a, 0], backLabel: 'Back to List', extraButtons: revertButton(result.changeIds, '', `s:${a}`) }));
+        return show(interaction, V.resultView({ crumbs: ['Selected'], title: `End date set on ${V.plural(done.length, 'draw')}: ${wantWords(want)}`, body: [...done.map(t => `- ${t}`), ...(skipped.length ? [`-# Left as they were: ${skipped.join(', ')}`] : []), ...(want.note ? [want.note] : []), `-# Revert puts every one back.${revertHint(result.changeIds)}`], back: ['slist', a, 0], backLabel: 'Back to List', extraButtons: revertButton(result.changeIds, '', `s:${a}`) }));
     }
 
     if (verb === 'texp') {
@@ -811,7 +811,7 @@ async function routeSelection(interaction, verb, a, b, c) {
         const lines = list.map(d => `- ${V.dot(d)} ${d.title} · ${V.secWord(d)}`);
         const withRow = list.filter(d => d._row);
         const rows = withRow.length && await calendarAllowed(interaction.user.id, withRow.slice(0, 1).map(d => ({ type: 'calendar.delete', target: { elementId: String(d._row._id) } }))) ? withRow.length : 0;
-        return show(interaction, V.resultView({ ok: 'warn', crumbs: ['Select Draws'], title: `Delete ${V.plural(lines.length, 'draw')}?`, body: [...(lines.length > 20 ? [...lines.slice(0, 20), `-# …and ${lines.length - 20} more`] : lines), '', `-# ${rows ? `**Yes, Delete** keeps their /calendar rows; **Delete + Calendar Rows** removes those ${rows} too.` : withRow.length ? 'Their /calendar rows stay.' : 'None of them has a /calendar row.'} Every change can be reverted.`], back: ['slist', a, n(b)], backLabel: 'Cancel', extraButtons: [V.btn(['tdelok', a], `Yes, Delete ${lines.length}`, emojis.deleteBin, 4), ...(rows ? [V.btn(['tdelok', a, 'r'], 'Delete + Calendar Rows', emojis.calendar, 4)] : [])] }));
+        return show(interaction, V.resultView({ ok: 'warn', crumbs: ['Selected'], title: `Delete ${V.plural(lines.length, 'draw')}?`, body: [...(lines.length > 20 ? [...lines.slice(0, 20), `-# …and ${lines.length - 20} more`] : lines), '', `-# ${rows ? `**Yes, Delete** keeps their /calendar rows; **Delete + Calendar Rows** removes those ${rows} too.` : withRow.length ? 'Their /calendar rows stay.' : 'None of them has a /calendar row.'} Every change can be reverted.`], back: ['slist', a, n(b)], backLabel: 'Cancel', extraButtons: [V.btn(['tdelok', a], `Yes, Delete ${lines.length}`, emojis.deleteBin, 4), ...(rows ? [V.btn(['tdelok', a, 'r'], 'Delete + Calendar Rows', emojis.calendar, 4)] : [])] }));
     }
     if (verb === 'tdelok') {
         if (!(await gate(interaction, 'bulkdelete')) || !(await gateDestructive(interaction))) return;
@@ -830,7 +830,7 @@ async function routeSelection(interaction, verb, a, b, c) {
         if (!result.ok) return show(interaction, V.resultView({ title: 'Nothing was deleted', body: [require('../shared').extractCommitError(result)], ok: false, back: ['slist', a, 0], backLabel: 'Back to List' }));
         const goneKeys = new Set(keys);
         await setSel(a, { ids: sel.ids.filter(k => !goneKeys.has(k)), selected: [] });
-        return show(interaction, V.resultView({ crumbs: ['Select Draws'], title: `Deleted ${V.plural(keys.length, 'draw')}${b === 'r' ? ' and their /calendar rows' : ''}`, body: [`-# Every change is recorded; Revert puts them back.${revertHint(result.changeIds)}`], back: ['slist', a, 0], backLabel: 'Back to List', extraButtons: revertButton(result.changeIds, '', `s:${a}`) }));
+        return show(interaction, V.resultView({ crumbs: ['Selected'], title: `Deleted ${V.plural(keys.length, 'draw')}${b === 'r' ? ' and their /calendar rows' : ''}`, body: [`-# Every change is recorded; Revert puts them back.${revertHint(result.changeIds)}`], back: ['slist', a, 0], backLabel: 'Back to List', extraButtons: revertButton(result.changeIds, '', `s:${a}`) }));
     }
     return say(interaction, EXPIRED);
 }

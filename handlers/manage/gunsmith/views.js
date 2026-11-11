@@ -60,7 +60,8 @@ async function pageView(mode, note = null, { pageRow = null } = {}) {
     components.push(
         BIG(),
         text('-# Many builds at once…'),
-        row(btn(mode, 'paste', 'Bulk Paste', emojis.pasteImport), btn(mode, 'select', 'Select Builds', emojis.filter), btn(mode, 'export', 'Export', emojis.copyExport), btn(mode, 'guide', 'Guide', emojis.guide)),
+        // Select Builds left (2026-11-11 15:15 EST, his go: the draws redesign carried to gunsmith): Search takes words and quick picks, and selecting happens on the results.
+        row(btn(mode, 'paste', 'Bulk Paste', emojis.pasteImport), btn(mode, 'export', 'Export', emojis.copyExport), btn(mode, 'guide', 'Guide', emojis.guide)),
     );
     return panel(mode, components, pageRow ? [pageRow] : []);
 }
@@ -141,46 +142,53 @@ function resultView(mode, { crumbs = [], title, body = [], back = 'page', backLa
 // ---------- Select ---------- Redesigned 2026-11-07 13:19 EST (his ask to improve this panel's design significantly): the list IS the panel, one short two-line row per entry with its selected mark; the dropdown flips selection; Select All N / Clear; the actions say how many they act on. 10 rows a page (13:30 EST, after his "have you tested the limit"): about one phone screen, well under 40 components and 4,000 characters.
 const SELECT_PAGE = 10;
 
-function selectView(mode, token, sel, info, note = null, page = 0) {
-    const selected = new Set(sel.selected);
+// One build's line for a list, with a tick when it is selected.
+const buildLine = (i, mark) => `${mark}${i.icon} ${i.title}${i.small ? `\n-# ${emojis.blank}${emojis.blank} ${i.small}` : ''}`;
+const buildOption = (i, key) => ({ label: i.plain.slice(0, 100), value: key, ...(i.plainSmall ? { description: i.plainSmall.slice(0, 100) } : {}), ...(i.emojiKey && emojis[i.emojiKey] ? { emoji: emojis.parseEmoji(emojis[i.emojiKey]) } : {}) });
+// The results of a search (the draws redesign): a tick on what is selected, one Select menu, Select All, and View Selected once something is.
+function resultsView(mode, token, sel, info, note = null, page = 0) {
+    const selected = new Set(sel.selected || []);
     const pages = Math.max(1, Math.ceil(sel.ids.length / SELECT_PAGE));
     const pg = Math.min(Math.max(Number(page) || 0, 0), pages - 1);
     const shown = sel.ids.slice(pg * SELECT_PAGE, pg * SELECT_PAGE + SELECT_PAGE);
     const n = sel.ids.filter(k => selected.has(k)).length;
-    const searched = (sel.query || []).map(q => `\`${q}\``).join(' · ');
-    const components = [text(`${crumb(mode, 'Select Builds')}\n## ${emojis.filter} Select Builds${searched ? `\n-# ${searched.slice(0, 600)}` : ''}`)];
+    const searched = (sel.query || []).join(' · ');
+    const components = [text(`${crumb(mode, 'Results')}\n## ${emojis.gunsmithSearch} ${sel.ids.length} build${sel.ids.length === 1 ? '' : 's'}${searched || pages > 1 || n ? `\n-# ${[searched.slice(0, 300), pages > 1 ? `page ${pg + 1} of ${pages}` : '', n ? `${emojis.check} ${n} selected` : ''].filter(Boolean).join(' · ')}` : ''}`)];
     if (sel.unmatched?.length) components.push(text(`-# ${emojis.warn} Nothing matched ${sel.unmatched.map(x => `\`${x}\``).join(', ').slice(0, 600)}`));
     components.push(BIG());
     if (!sel.ids.length) {
-        components.push(text(`${emojis.cross} **No builds found.** Try fewer words, a class like \`smg\`, or a quick pick.`), BIG(), row(btn(mode, 'select', 'Search Again', emojis.gunsmithSearch, 1), homeBtn(mode)));
+        components.push(text(`${emojis.cross} **No builds found.** Try fewer words, a class like \`smg\`, or a quick pick.`), BIG(), row(homeBtn(mode), btn(mode, 'find', 'Search Again', emojis.gunsmithSearch, 1)));
         return panel(mode, components);
     }
-    const lines = [];
-    for (const key of shown) {
-        const i = info.get(key);
-        if (!i) { lines.push(`${emojis.cross} *a build that no longer exists*`); continue; }
-        lines.push(`${selected.has(key) ? emojis.check : emojis.smallDot} ${i.icon} ${i.title}${i.small ? `\n-# ${emojis.blank}${emojis.blank} ${i.small}` : ''}`);
-    }
-    let listText = lines.join('\n');
+    let listText = shown.map(k => (info.get(k) ? buildLine(info.get(k), selected.has(k) ? `${emojis.check} ` : '') : `${emojis.cross} *a build that no longer exists*`)).join('\n');
     if (listText.length > 3900) listText = `${listText.slice(0, 3850)}\n-# …`;
-    const options = shown.filter(k => info.get(k)).map(key => {
-        const i = info.get(key);
-        return { label: i.plain.slice(0, 100), value: key, description: `${selected.has(key) ? 'Selected' : 'Not selected'}${i.plainSmall ? ` · ${i.plainSmall}` : ''}`.slice(0, 100), ...(i.emojiKey && emojis[i.emojiKey] ? { emoji: emojis.parseEmoji(emojis[i.emojiKey]) } : {}) };
-    });
-    components.push(
-        text(`-# **${sel.ids.length}** found · **${n}** selected${pages > 1 ? ` · page ${pg + 1} of ${pages}` : ''}`),
-        text(listText),
-        SMALL(),
-    );
-    if (options.length) components.push({ type: 1, components: [{ type: 3, custom_id: ID(mode, 'flip', token, pg), min_values: 1, max_values: options.length, placeholder: 'Select or unselect builds…', options }] });
+    components.push(text(listText), SMALL());
+    const options = shown.filter(k => info.get(k)).map(k => buildOption(info.get(k), k));
+    if (options.length) components.push({ type: 1, components: [{ type: 3, custom_id: ID(mode, 'spick', token, pg), min_values: 1, max_values: options.length, placeholder: 'Select one to open it, or more to change together…', options }] });
     if (pages > 1) components.push(row(arrow(mode, ['list', token, pg - 1], 'left', pg === 0), counter(mode, ['pgn', token], `Page ${pg + 1} / ${pages}`), arrow(mode, ['list', token, pg + 1], 'right', pg === pages - 1)));
-    components.push(row(btn(mode, ['all', token, pg], `Select All ${sel.ids.length}`, emojis.checkmark, 2, n === sel.ids.length), btn(mode, ['none', token, pg], 'Clear', emojis.cross, 2, !n)));
     if (note) components.push(text(note));
+    components.push(BIG(), row(homeBtn(mode), btn(mode, 'find', 'Search Again', emojis.gunsmithSearch), btn(mode, ['all', token, pg], sel.ids.length === 1 ? 'Select It' : `Select All ${sel.ids.length}`, emojis.checkmark, 2, n === sel.ids.length), ...(n ? [btn(mode, ['slist', token, 0], `View Selected · ${n}`, emojis.filter, 1)] : [])));
+    return panel(mode, components);
+}
+// The Selected view (the draws redesign): none selected is the results; one is that build's card (index.js selectPanel); more are the set, with Edit N, Expand View, Export N and Delete N.
+function selectView(mode, token, sel, info, note = null, page = 0) {
+    const on = new Set(sel.selected || []);
+    const picked = sel.ids.filter(k => on.has(k));
+    if (!picked.length) return resultsView(mode, token, sel, info, note, page);
+    const n = picked.length;
+    const searched = (sel.query || []).join(' · ');
+    const components = [text(`${crumb(mode, 'Results', 'Selected')}\n## ${emojis.checkmark} ${n} selected${searched ? `\n-# From ${searched.slice(0, 300)}` : ''}`)];
+    if (note) components.push(SMALL(), text(note));
+    let listText = picked.slice(0, 25).map(k => (info.get(k) ? buildLine(info.get(k), '') : `${emojis.cross} *a build that no longer exists*`)).join('\n') + (n > 25 ? `\n-# and ${n - 25} more` : '');
+    if (listText.length > 3500) listText = `${listText.slice(0, 3450)}\n-# …`;
+    components.push(BIG(), text(listText));
+    const options = picked.slice(0, 25).filter(k => info.get(k)).map(k => buildOption(info.get(k), k));
+    if (options.length) components.push({ type: 1, components: [{ type: 3, custom_id: ID(mode, 'sunpick', token), min_values: 1, max_values: options.length, placeholder: 'Unselect builds…', options }] });
     components.push(
         BIG(),
-        text(n ? `-# With the **${n}** selected…` : '-# Select builds to edit, export or delete them…'),
-        row(btn(mode, ['tedit', token, pg], `Edit ${n || ''}`.trim(), emojis.edit, 1, !n), btn(mode, ['step', token, 0], 'Expand View', emojis.expand, 2, !n), btn(mode, ['texp', token], `Export ${n || ''}`.trim(), emojis.copyExport, 2, !n), btn(mode, ['tdel', token, pg], `Delete ${n || ''}`.trim(), emojis.deleteBin, 4, !n)),
-        row(btn(mode, 'select', 'Search Again', emojis.gunsmithSearch), homeBtn(mode)),
+        text(`-# With the **${n}** selected…`),
+        row(btn(mode, ['tedit', token, page], `Edit ${n}`, emojis.edit, 1), btn(mode, ['step', token, 0], 'Expand View', emojis.expand, 2), btn(mode, ['texp', token], `Export ${n}`, emojis.copyExport, 2), btn(mode, ['tdel', token, page], `Delete ${n}`, emojis.deleteBin, 4)),
+        row(btn(mode, ['list', token, 0], 'Select More', emojis.returnArrow), homeBtn(mode), btn(mode, ['none', token, 0], 'Clear', emojis.cross)),
     );
     return panel(mode, components);
 }
@@ -227,16 +235,20 @@ async function editedSince(keys, since) {
 const labelled = (label, component, description) => ({ type: 18, label, ...(description ? { description } : {}), component });
 const NAMES_PLACEHOLDER = { MP: 'BAL-27\nHOLGER 26 1b\nSMG', DMZ: 'M4\nKILO 141 2\nSMG' };
 
+const quickPickSelect = (mode) => { const picks = quickPicks(mode); return require('../../../utils/formChoice').asChoice({ type: 3, custom_id: 'picks', required: false, min_values: 0, max_values: picks.length, placeholder: 'Pick any', options: picks.map(([value, label]) => ({ value, label })) }); };
+// Search Builds (the draws redesign): names, one per line, and the quick picks. Lines widen each other, picks narrow them; both blank is every build.
 function searchModal(mode) {
-    return { custom_id: ID(mode, 'findm'), title: `Find a ${mode} Build`, components: [labelled('Weapon, build or label', { type: 4, custom_id: 'q', style: 1, required: true, max_length: 100, placeholder: 'BAL-27 2' }, 'BAL-27 · BAL-27 2 · STATIC-HV 2b · Ranked')] };
+    return {
+        custom_id: ID(mode, 'findm'), title: `Search ${mode} Builds`,
+        components: [
+            labelled('Weapons, builds or labels', { type: 4, custom_id: 'q', style: 2, required: false, max_length: 1000, placeholder: 'BAL-27 2\nSTATIC-HV 2b\nRanked' }, 'One per line: a weapon, a build like BAL-27 2, or a label. Blank: every build.'),
+            labelled('Quick picks', quickPickSelect(mode), 'Picks narrow the names. Both blank: every build.'),
+        ],
+    };
 }
 
-const quickPickSelect = (mode) => { const picks = quickPicks(mode); return require('../../../utils/formChoice').asChoice({ type: 3, custom_id: 'picks', required: false, min_values: 0, max_values: picks.length, placeholder: 'Pick any', options: picks.map(([value, label]) => ({ value, label })) }); };
 const namesBox = (mode) => labelled('Weapons, builds or classes', { type: 4, custom_id: 'names', style: 2, required: false, max_length: 2000, placeholder: NAMES_PLACEHOLDER[mode] }, 'One per line. Added to the quick picks below.');
 
-function selectModal(mode) {
-    return { custom_id: ID(mode, 'selectm'), title: `Select ${mode} Builds`, components: [namesBox(mode), labelled('Quick picks', quickPickSelect(mode), 'Everything picked is included: All AR + All Meta = both.')] };
-}
 
 // One pop-up for every export (his ask, 11:22 EST): names + quick picks as one union, where it goes, what each block carries, and how merged builds are written. Discord's radio group (21) and checkbox group (22) pop-up parts.
 function exportModal(mode) {
@@ -259,4 +271,4 @@ function moveModal(mode, doc, opt) {
     return { custom_id: ID(mode, 'movem', doc._id, opt), title: `Move ${doc.weaponName} ${doc.buildName}`.slice(0, 45), components: [labelled('New build #', { type: 4, custom_id: 'to', style: 1, required: true, max_length: 4, value: String(tag), placeholder: '3 · 2b' }, 'A number swaps with that build. A letter makes it an option of that build.')] };
 }
 
-module.exports = { ID, MODE_OF, SELECT_PAGE, row, text, btn, pageView, classView, weaponView, cardView, resultView, selectView, stepView, editedSince, searchModal, selectModal, exportModal, moveModal, homeBtn };
+module.exports = { ID, MODE_OF, SELECT_PAGE, row, text, btn, pageView, classView, weaponView, cardView, resultView, resultsView, selectView, stepView, editedSince, searchModal, exportModal, moveModal, homeBtn };
