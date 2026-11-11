@@ -226,6 +226,15 @@ async function restoredKeys(doc, changeIds) {
     return V.allDraws(doc).filter(d => titles.has(d.title)).map(d => d._key);
 }
 const restoredKey = async (doc, changeIds) => (await restoredKeys(doc, changeIds))[0] || null;
+// Where an Edit or End Date opened from a list lands (`L`): back on that list, or on the search results it came from (2026-11-11 11:02 EST: every list edits in place now, not only Needs a Look).
+async function listBack(doc, back, note, noteRow = null) {
+    if (/^t:/.test(String(back || ''))) {
+        const tok = String(back).slice(2);
+        const sel = await loadSel(tok);
+        if (sel) return V.searchView(doc, tok, sel, 0, { note, noteRow });
+    }
+    return V.listView(doc, V.STATUS[back] ? back : 'look', 0, { note, noteRow });
+}
 // ---------- Revert ---------- The panel's own Revert, so it lands back where the save was made (results.js revertChanges does the reverting and its permission check). `key` and `back` name the draw's card: the card if the draw is still there after the revert, else the list it came from, else Home. A Revert past Discord's 100 characters is left off, and the result says where to revert instead.
 function revertButton(changeIds, key = '', back = '') {
     const id = [`${PREFIX}revert`, (changeIds || []).join(','), key, back].join('|').replace(/\|+$/, '');
@@ -481,7 +490,7 @@ async function route(interaction) {
         const saved = result?.ok && !result.unchanged;
         const header = saved ? savedHeader(result) + revertHint(result.changeIds, a, b) : result?.unchanged ? `-# ${emojis.info} ${result.note}` : `-# ${emojis.cross} Not saved; the message below says why.`;
         const rrow = saved ? revertRow(result.changeIds, a, b) : null;
-        const viewOut = c === 'L' ? V.listView(doc, 'look', 0, { note: header, noteRow: rrow }) : await cardFor(doc, a, b, { header, resultRow: rrow });
+        const viewOut = c === 'L' ? await listBack(doc, b, header, rrow) : await cardFor(doc, a, b, { header, resultRow: rrow });
         await show(interaction, viewOut || await home(doc, header, interaction));
         if (saved) return askKinds(interaction, result.titles);
         return;
@@ -492,7 +501,7 @@ async function route(interaction) {
         const doc = await getDoc();
         const d = V.allDraws(doc).find(x => x._key === a);
         if (!d) return show(interaction, await gone(doc, interaction));
-        const back = (header, rrow = null) => (c === 'L' ? V.listView(doc, 'look', 0, { note: header, noteRow: rrow }) : cardFor(doc, a, b, { header, resultRow: rrow }));
+        const back = (header, rrow = null) => (c === 'L' ? listBack(doc, b, header, rrow) : cardFor(doc, a, b, { header, resultRow: rrow }));
         const want = readEnd(interaction, d);
         if (want.error) return show(interaction, await back(`-# ${emojis.cross} ${want.error} Nothing was saved.`));
         const op = planEnd(d, want);
@@ -502,7 +511,7 @@ async function route(interaction) {
         const after = await getDoc();
         const header = [`### ${emojis.checkmark} End date saved`, `- **Ends:** ~~${endWords(d._row)}~~ → ${wantWords(want)}`, ...(want.note ? [want.note] : [])].join('\n');
         const rrow = revertRow(result.changeIds, a, b);
-        return show(interaction, c === 'L' ? V.listView(after, 'look', 0, { note: header, noteRow: rrow }) : await cardFor(after, a, b, { header, resultRow: rrow }));
+        return show(interaction, c === 'L' ? await listBack(after, b, header, rrow) : await cardFor(after, a, b, { header, resultRow: rrow }));
     }
     if (verb === 'move' || verb === 'del') {
         if (!(await gate(interaction, verb === 'move' ? 'edit' : 'delete'))) return;

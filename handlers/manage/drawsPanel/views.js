@@ -19,13 +19,15 @@ const ACCENT = 7032445; // /draws' Plum Fortune (commands/draws.js PRESET_ACCENT
 const PAGE = 10;
 // Needs a Look draws one Section per draw (its fix button is the accessory, three components each), so it holds fewer a page: 8 × 3 + the frame stays under 40.
 const LOOK_PAGE = 8;
+const LIST_PAGE = 7;
 
 function ID(...parts) {
     const id = ['mng_dr', ...parts.map(p => (p === undefined || p === null ? '' : String(p)))].join('|');
     if (id.length > 100) throw new Error(`draws custom_id over 100 characters: ${id}`);
     return id;
 }
-const row = (...c) => ({ type: 1, components: c.filter(Boolean) });
+// The way back first in every row (utils/returnFirst.js, his rule 2026-11-11 11:02 EST).
+const row = (...c) => ({ type: 1, components: require('../../../utils/returnFirst').returnFirst(c) });
 const text = (content) => ({ type: 10, content });
 const BIG = () => ({ type: 14, divider: true, spacing: 2 });
 const SMALL = () => ({ type: 14, divider: false, spacing: 1 });
@@ -35,6 +37,8 @@ const counter = (parts, label) => ({ type: 2, style: 2, label, custom_id: ID(...
 const crumb = (...p) => `-# ${['Draws', ...p].join('  ›  ')}`;
 const panel = (components, after = []) => [{ type: 17, accent_color: ACCENT, components }, ...after];
 const homeBtn = () => btn('page', 'Home', emojis.returnArrow);
+// The Draw Index's own emoji: Harkirat is sending one (2026-11-11 11:02 EST); `drawIndex` in utils/emojiMap.js takes over once it is added, DB_Database until then.
+const indexEmoji = () => emojis.drawIndex || emojis.database;
 const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
 // Date and time, as /draws shows them: an admin date is midnight UTC, and a date alone reads as the day before in Toronto.
 const stamp = (ms, f = 'f') => `<t:${Math.floor(Number(ms) / 1000)}:${f}>`;
@@ -103,32 +107,37 @@ async function pageView(doc, note = null, { pageRow = null, noteRow = null } = {
     const n = (k) => all.filter(STATUS[k].test).length;
     const look = n('look');
     // The counts an admin scans for: how many, what is running, what is about to leave, what has ended. Leaving Soon is part of Active (as /draws' filter has it), so it is written in brackets after Active: a glance that adds the numbers up must reach the total.
+    // Each state wears its /draws dot (2026-11-11 11:02 EST, his ask), so the line reads like the lists it counts.
     const counts = all.length
-        ? [`**${all.length}** ${all.length === 1 ? 'draw' : 'draws'}`, `${n('live')} active${n('leaving') ? ` (**${n('leaving')} leaving soon**)` : ''}`, ...(n('upcoming') ? [`${n('upcoming')} upcoming`] : []), ...(n('ended') ? [`${n('ended')} ended`] : [])].join(' · ')
+        ? [`**${all.length}** ${all.length === 1 ? 'draw' : 'draws'}`, `${emojis.greenDotGlow} ${n('live')} active${n('leaving') ? ` (${emojis.yellowDotGlow} **${n('leaving')} leaving soon**)` : ''}`, ...(n('upcoming') ? [`${emojis.lightBlueDotGlow} ${n('upcoming')} upcoming`] : []), ...(n('ended') ? [`${emojis.redDotGlow} ${n('ended')} ended`] : [])].join(' · ')
         : 'No draws yet this season. Quick Add or Paste Draws to start.';
     const lookLineText = look ? `\n-# ${emojis.warn} **${look}** ${look === 1 ? 'needs' : 'need'} a look` : '';
     const components = [text(`## ${emojis.newDraws}${emojis.returningDraws} Draws${await seasonLine(doc)}\n-# ${counts}${lookLineText}`)];
     if (note) components.push(SMALL(), text(note));
     if (noteRow) components.push(noteRow);
-    // Needs a Look is a button only when there is something to look at; with nothing, a disabled chip says so instead of a click that opens an empty list.
-    const lookBtn = look
-        ? btn(['list', 'look', 0], `Needs a Look · ${look}`, emojis.warn, 4)
-        : btn(['list', 'look', 0], all.length ? 'All Checked' : 'Needs a Look', all.length ? emojis.checkmark : emojis.warn, all.length ? 3 : 2, true);
+    // Needs a Look is a button only when there is something to look at. The disabled "All Checked" chip that stood in for it read like a toggle (his question, 2026-11-11 11:02 EST); the counts line already says when nothing needs a look.
+    const lookBtn = look ? btn(['list', 'look', 0], `Needs a Look · ${look}`, emojis.warn, 4) : null;
+    // The season draft, one step away (2026-11-11 11:02 EST, his ask): Promote to Live swaps the whole season, so this row reviews the draft rather than purging the live list. Purge left the landing; Select → Select All → Delete clears live draws.
+    const SV = require('../seasonPanel/views');
+    const draft = doc.draft || {};
+    const staged = (draft.newDraws || []).length + (draft.returningDraws || []).length;
+    const draftBtn = draft.active ? SV.btn(['dd', 'n', 0], `Review Drafted Draws · ${staged}`, emojis.newDraws) : SV.btn(['view', 'draft'], 'Season Draft', emojis.newDraws);
+    // Rows read by what they are for (2026-11-11 11:02 EST, his landing): adding, finding, the index and the files, then the next season.
     components.push(
         BIG(),
         text('-# Add draws…'),
-        row(btn('quickadd', 'Quick Add', emojis.mngAdd, 3), btn('addnew', 'Add New Draw', emojis.newDraws), btn('addreturning', 'Add Returning Draw', emojis.returningDraws)),
+        row(btn('quickadd', 'Quick Add', emojis.plus, 3), btn('addnew', 'Add New Draw', emojis.newDraws), btn('addreturning', 'Add Returning Draw', emojis.returningDraws), btn('paste', 'Paste Draws', emojis.pasteImport)),
         SMALL(),
         text('-# Find a draw…'),
-        // Check Draw Index (2026-11-09 13:57 EST, his ask 13:53 EST): paste names, see what the draw index has and lacks (utils/drawIndexCheck.js).
-        row(btn('find', 'Search Draws', emojis.gunsmithSearch, 1, !all.length), btn('check', 'Check Draw Index', emojis.search), lookBtn),
+        row(btn('find', 'Search Draws', emojis.search, 1, !all.length), btn('select', 'Select Draws', emojis.filter, 2, !all.length), lookBtn),
         ...(all.length ? [{ type: 1, components: [{ type: 3, custom_id: ID('browse'), placeholder: 'Or browse a list…', options: Object.entries(STATUS).map(([value, s]) => ({ value, label: `${s.label} · ${n(value)}`, emoji: emojis.parseEmoji(s.emoji()) })) }] }] : []),
         BIG(),
-        text('-# Many draws at once…'),
-        row(btn('paste', 'Paste Draws', emojis.pasteImport), btn('select', 'Select Draws', emojis.filter, 2, !all.length), btn('export', 'Export', emojis.copyExport, 2, !all.length), btn('guide', 'Guide', emojis.guide)),
+        text('-# The draw index and files…'),
+        // The draw index has its own panel (2026-11-11 11:02 EST, his ask): check names, search it, fix its gaps, edit an entry.
+        row(btn('ix', 'Draw Index', indexEmoji(), 1), btn('export', 'Export', emojis.copyExport, 2, !all.length), btn('guide', 'Guide', emojis.guide)),
         SMALL(),
-        text('-# End of season…'),
-        row(btn('purge', 'Purge Draws', emojis.deleteBin, 4, !all.length)),
+        text(`-# Next season… ${draft.active ? 'Promote to Live in the draft swaps the whole season; nothing needs purging first.' : 'No draft yet: start one to stage next season\'s draws.'}`),
+        row(draftBtn),
     );
     return panel(components, pageRow ? [pageRow] : []);
 }
@@ -143,7 +152,8 @@ function listView(doc, status, page = 0, { note = null, noteRow = null } = {}) {
     const key = STATUS[status] ? status : 'new';
     const s = STATUS[key];
     const list = listOf(doc, key);
-    const size = key === 'look' ? LOOK_PAGE : PAGE;
+    // Every list draws a Section per draw with its own button (2026-11-11 11:02 EST, his ask: edit straight from a list): eight a page on Needs a Look, seven where the Open menu also sits (eight with it measured 41 components, one over Discord's 40).
+    const size = key === 'look' ? LOOK_PAGE : LIST_PAGE;
     const pages = Math.max(1, Math.ceil(list.length / size));
     const pg = Math.min(Math.max(Number(page) || 0, 0), pages - 1);
     const shown = list.slice(pg * size, pg * size + size);
@@ -160,7 +170,8 @@ function listView(doc, status, page = 0, { note = null, noteRow = null } = {}) {
             components.push({ type: 9, components: [text(lookLine(d))], accessory: onlyEnd ? btn(['end', d._key, 'look', 'L'], 'End Date', emojis.timestamp, 1) : btn(['edit', d._key, 'look', 'L'], 'Edit', emojis.edit, 1) });
         }
     } else {
-        components.push(text(shown.map(d => listLine(d)).join('\n').slice(0, 3900)));
+        // Edit straight from the list (his round 2): the pop-up opens from the row, and the save lands back on this list (`L`). The card is still one pick away in the Open menu.
+        for (const d of shown) components.push({ type: 9, components: [text(listLine(d))], accessory: btn(['edit', d._key, key, 'L'], 'Edit', emojis.edit) });
         components.push({ type: 1, components: [{ type: 3, custom_id: ID('open', key), placeholder: 'Open a draw…', options: shown.map(openOption) }] });
     }
     if (pages > 1) components.push(row(arrow(['list', key, pg - 1], 'left', pg === 0), counter(['pgn', key], `Page ${pg + 1} / ${pages}`), arrow(['list', key, pg + 1], 'right', pg === pages - 1)));
@@ -169,21 +180,22 @@ function listView(doc, status, page = 0, { note = null, noteRow = null } = {}) {
 }
 
 // ---------- search results ---------- The matches of a search, kept in a selection token (models/ManageSelection.js) so they page, and a card opened from them walks them and comes back to them.
-function searchView(doc, token, sel, page = 0) {
+function searchView(doc, token, sel, page = 0, { note = null, noteRow = null } = {}) {
     const byKey = new Map(allDraws(doc).map(d => [d._key, d]));
     const keys = (sel.ids || []).filter(k => byKey.has(k));
-    const pages = Math.max(1, Math.ceil(keys.length / PAGE));
+    const pages = Math.max(1, Math.ceil(keys.length / LIST_PAGE));
     const pg = Math.min(Math.max(Number(page) || 0, 0), pages - 1);
-    const shown = keys.slice(pg * PAGE, pg * PAGE + PAGE).map(k => byKey.get(k));
+    const shown = keys.slice(pg * LIST_PAGE, pg * LIST_PAGE + LIST_PAGE).map(k => byKey.get(k));
     const q = (sel.query || []).join(' ').slice(0, 60);
-    const components = [text(`${crumb('Search')}\n## ${emojis.gunsmithSearch} ${plural(keys.length, 'draw')} match \`${q}\`\n-# Words in the title or an item's name${pages > 1 ? ` · page ${pg + 1} of ${pages}` : ''}`), BIG()];
+    const components = [text(`${crumb('Search')}\n## ${emojis.search} ${plural(keys.length, 'draw')} match \`${q}\`\n-# Words in the title or an item's name${pages > 1 ? ` · page ${pg + 1} of ${pages}` : ''}`), BIG()];
+    if (note) components.push(text(note), ...(noteRow ? [noteRow] : []), SMALL());
     if (!shown.length) components.push(text(`${emojis.cross} None of them are on /draws any more.`));
     else {
-        components.push(text(shown.map(d => listLine(d)).join('\n').slice(0, 3900)));
+        for (const d of shown) components.push({ type: 9, components: [text(listLine(d))], accessory: btn(['edit', d._key, `t:${token}`, 'L'], 'Edit', emojis.edit) });
         components.push({ type: 1, components: [{ type: 3, custom_id: ID('open', `t:${token}`), placeholder: 'Open a draw…', options: shown.map(openOption) }] });
     }
     if (pages > 1) components.push(row(arrow(['sres', token, pg - 1], 'left', pg === 0), counter(['spgn', token], `Page ${pg + 1} / ${pages}`), arrow(['sres', token, pg + 1], 'right', pg === pages - 1)));
-    components.push(BIG(), row(btn(['slist', token, 0], keys.length === 1 ? 'Select This One' : `Select These ${keys.length}`, emojis.filter, 2, !keys.length), btn('find', 'Search Again', emojis.gunsmithSearch), homeBtn()));
+    components.push(BIG(), row(btn(['slist', token, 0], keys.length === 1 ? 'Select This One' : `Select These ${keys.length}`, emojis.filter, 2, !keys.length), btn('find', 'Search Again', emojis.search), homeBtn()));
     return panel(components);
 }
 
@@ -349,5 +361,7 @@ function checkView({ results, extra = 0, indexSize = 0 }, token = null, foundCou
 }
 
 module.exports = {
+    LIST_PAGE,
+    indexEmoji,
     checkModal, checkView, endModal, gapsFor, ID, PAGE, LOOK_PAGE, STATUS, row, text, btn, homeBtn, panel, plural, stamp, allDraws, listOf, splitKey, rowFor, secWord, stateName, dot, typeName,
     pageView, listView, searchView, cardView, resultView, selectView, searchModal, selectModal, exportModal, labelled };

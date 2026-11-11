@@ -20,7 +20,7 @@ function ID(mode, ...parts) {
     return id;
 }
 
-const row = (...buttons) => ({ type: 1, components: buttons });
+const row = (...buttons) => ({ type: 1, components: require('../../../utils/returnFirst').returnFirst(buttons) });
 const text = (content) => ({ type: 10, content });
 const BIG = () => ({ type: 14, divider: true, spacing: 2 });
 const SMALL = () => ({ type: 14, divider: false, spacing: 1 });

@@ -4,6 +4,7 @@
 //   - Edit N with nothing changed saves nothing; a changed line, and only it, is kept.
 //   - Every view stays inside Discord's limits (40 components, 4,000 characters, 25 options, custom ids of 100).
 const assert = require('assert');
+const emojis = require('../utils/emojiMap');
 
 let failed = 0;
 async function check(name, fn) {
@@ -18,6 +19,14 @@ function limits(view, name) {
     assert.ok(chars <= 4000, `${name}: ${chars} characters`);
     assert.ok(ids.every(i => i.length <= 100), `${name}: an id over 100`);
     assert.strictEqual(new Set(ids).size, ids.length, `${name}: duplicate ids`);
+    // The consistency rules from his round-2 review (2026-11-11 11:02 EST), held on every view this file renders: the way back is first in its row, Search never wears the gunsmith emoji, and no disabled green button stands in for a status line ("All Checked").
+    const { isReturn } = require('../utils/returnFirst');
+    const gunsmith = emojis.parseEmoji(emojis.gunsmithSearch).id;
+    walk(view, c => {
+        if (c.type === 1) { const kinds = (c.components || []).map(isReturn); assert.ok(kinds.indexOf(false) === -1 || kinds.lastIndexOf(true) < kinds.indexOf(false), `${name}: a way back after another button in a row`); }
+        if (c.emoji) assert.notStrictEqual(String(c.emoji.id), String(gunsmith), `${name}: the gunsmith search emoji`);
+        if (c.type === 2 && c.disabled && c.style === 3) assert.fail(`${name}: a disabled green button used as a status (${c.label})`);
+    });
 }
 
 const DAY = 86400000;
@@ -198,7 +207,10 @@ function seasonDoc(nNew = 3, nRet = 30) {
         // An empty season: Search, Select, Export and Purge are disabled, and Needs a Look is a disabled chip, not a click into an empty list.
         const empty = seasonDoc(0, 0); empty.returningDraws = []; empty.calendar = [];
         const homeIds = []; walk(await V.pageView(empty), c => c.type === 2 && homeIds.push(c));
-        for (const label of ['Search Draws', 'Select Draws', 'Export', 'Purge Draws', 'Needs a Look']) assert.ok(homeIds.find(b => b.label === label)?.disabled, `${label} should be disabled on an empty season`);
+        for (const label of ['Search Draws', 'Select Draws', 'Export']) assert.ok(homeIds.find(b => b.label === label)?.disabled, `${label} should be disabled on an empty season`);
+        // Round 2 (2026-11-11 11:02 EST): no Purge on the landing, no Needs a Look button at zero, and the draft row is there.
+        assert.ok(!homeIds.some(b => /Purge|All Checked/.test(b.label || '')), 'no Purge or All Checked on the landing');
+        assert.ok(homeIds.some(b => /Season Draft|Review Drafted Draws/.test(b.label || '')), 'the draft row');
         assert.match(texts(await V.pageView(empty)), /No draws yet this season/);
     });
     await check('Needs a Look: one Section per draw with its fix (End Date when only the end is missing, else Edit), 8 a page, and a TBD end is no gap', () => {

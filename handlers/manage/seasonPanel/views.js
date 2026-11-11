@@ -19,7 +19,7 @@ function ID(...parts) {
     if (id.length > 100) throw new Error(`season custom_id over 100 characters: ${id}`);
     return id;
 }
-const row = (...c) => ({ type: 1, components: c });
+const row = (...c) => ({ type: 1, components: require('../../../utils/returnFirst').returnFirst(c) });
 const text = (content) => ({ type: 10, content });
 const BIG = () => ({ type: 14, divider: true, spacing: 2 });
 const SMALL = () => ({ type: 14, divider: false, spacing: 1 });
