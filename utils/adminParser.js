@@ -338,7 +338,8 @@ function formatDrawsAsBulkText(draws, rowFor = null) {
         const dateStr = dayjs.utc(draw.date).format('MMMM D, YYYY') + (endRow && endRow.endDate ? ` - ${dayjs.utc(endRow.endDate).format('MMMM D, YYYY')}` : '');
         // The Draw Type tag rides right after the title, so an export pastes straight back with its type (2026-10-18 11:06 EDT).
         const typeStr = drawTypeCode(draw.priceType) ? `, type: ${drawTypeCode(draw.priceType)}` : '';
-        return `${draw.title}${typeStr}, ${itemsStr}, ${dateStr}, ${draw.thumbnailUrl}`;
+        // No picture, no link field (2026-11-10 11:03 EST): a draw with none exported as ", null" (or a bare ", "), and "null" read back as its date, so the line was skipped on paste.
+        return `${draw.title}${typeStr}, ${itemsStr}, ${dateStr}${draw.thumbnailUrl ? `, ${draw.thumbnailUrl}` : ''}`;
     }).join('\n');
 }
 

@@ -444,11 +444,11 @@ function buildSearchModal(group, action) {
 // --- DRAWS modal builders --- NOTE: the old per-category buildBulkDrawsModal(isNew, mode) — one modal for New-only, another for Returning-only — was removed 2026-07-12 when the New/Returning/Either button triplet got condensed to a single button per bulk section (see PAGES.draws above). buildBulkBothDrawsModal below (previously the "Either/Both" option only) is now the ONLY draws bulk add/replace modal — its two independently-optional fields already cover the single-category case by leaving one field blank, so there was nothing the per-category modal did that this one couldn't.
 function buildBulkBothDrawsModal(mode) {
     const modal = new ModalBuilder().setCustomId(`modal_draws_bulk_${mode}_both`).setTitle(`${mode === 'add' ? 'Bulk Add' : 'Bulk Replace'} New + Returning Draws`);
-    modal.addComponents(
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('new_text').setLabel('New Draws (leave blank to skip)').setStyle(TextInputStyle.Paragraph)
-            .setPlaceholder("Title, m Item 1, july 10, url.jpg").setRequired(false)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('returning_text').setLabel('Returning Draws (leave blank to skip)').setStyle(TextInputStyle.Paragraph)
-            .setPlaceholder("Title, l Item, aug 5, url.jpg").setRequired(false))
+    // Labels with the line format under each (2026-11-10 11:03 EST), so the box says what a line is without opening the Guide. The ids are unchanged, so every caller (the draws panel's Paste and Edit N, Try Again) fills them as before.
+    const hint = 'One per line: Title, type: code, items, Start - End, picture link. Blank skips.';
+    modal.addLabelComponents(
+        drawTextLabel('new_text', 'New Draws', new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setPlaceholder('Title, type: lw, l Gun - Skin, Nov 8 - Nov 21').setRequired(false), hint),
+        drawTextLabel('returning_text', 'Returning Draws', new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setPlaceholder('Title, type: lw, l Gun - Skin, Nov 8 - Nov 21').setRequired(false), hint)
     );
     return modal;
 }
@@ -472,8 +472,12 @@ function drawTypeLabel(current = '') {
             .addOptions(drawTypeChoices().map(o => ({ label: o.name, value: o.key, description: o.free ? `Free, not priced. Bulk tag: type: ${o.code}` : o.tier ? `Bulk tag: type: ${o.code}` : 'Flags it to set later. Bulk tag: type: unknown', emoji: o.free ? { name: o.emoji } : o.tier ? emojis.parseEmoji(emojis[o.tier]) : { name: '❓' }, default: o.key === current })))
     );
 }
-// A Label holding a text input. interaction.fields.getTextInputValue() reads it exactly as it read an action row's.
-const drawTextLabel = (id, label, input) => new LabelBuilder().setLabel(label).setTextInputComponent(input.setCustomId(id));
+// A Label holding a text input. interaction.fields.getTextInputValue() reads it exactly as it read an action row's. `description` (2026-11-10 11:03 EST): the format, under the label, so the pop-up teaches it without the Guide.
+const drawTextLabel = (id, label, input, description = null) => { const l = new LabelBuilder().setLabel(label); if (description) l.setDescription(description.slice(0, 100)); return l.setTextInputComponent(input.setCustomId(id)); };
+// The item box's letters, one per tier, as the paste format reads them (utils/adminParser.js resolveTier). `charAt(0)` turned Legacy into `l`, which reads back as Legendary, so an Edit of a draw with a Legacy item saved it as Legendary (found 2026-11-10 11:03 EST).
+const TIER_LETTER = { mythic: 'm', legendary: 'l', legacy: 'lg', epic: 'e' };
+const ITEMS_HINT = 'One per line: m Mythic, l Legendary, lg Legacy, e Epic, then the name. -# for a note.';
+const DATES_HINT = 'Start - End, e.g. Nov 8 - Nov 21. The end is optional; the game\'s countdown works (13d 23h).';
 
 // `prefill` (added 2026-10-19 11:16 EDT, the Add to Draws right-click): title, date and url come from the post. A box gets a value only when there is one, so the blank box /manage opens keeps its exact shape.
 function buildAddDrawModal(drawType, prefill = {}) {
@@ -482,11 +486,11 @@ function buildAddDrawModal(drawType, prefill = {}) {
     // The 5th field was "Or Paste As One Line" (2026-07-12) until 2026-10-18 11:09 EDT: Discord caps a modal at five, and the Draw Type dropdown took its place at Harkirat's pick ("B sounds fine"). A whole draw pasted as one line still goes in through Add Multiple, whose format carries the same `type:` tag. With it gone, Title, Items and Release Date are required again: they were optional only so a one-line paste could submit alone.
     modal.addLabelComponents(
         drawTextLabel('title', 'Draw Title', withValue(new TextInputBuilder().setStyle(TextInputStyle.Short), prefill.title)),
-        drawTextLabel('items', 'Items (Shorthand)', withValue(new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setPlaceholder("m Character Name\nl Gun Name\ne Emote Name\n-# Optional note"), prefill.items)),
+        drawTextLabel('items', 'Items', withValue(new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setPlaceholder("l CX-9 - Lethal Hollow\ne Kestrel - Blessed Hollow\n-# Optional note"), prefill.items), ITEMS_HINT),
         // "Start - End" like the season titles box (utils/drawDates.js): one date is the release, a range also sets the end date on the draw's /calendar row.
-        drawTextLabel('date', 'Dates: Start - End (end is optional)', withValue(new TextInputBuilder().setStyle(TextInputStyle.Short).setPlaceholder("e.g. July 15 - August 20"), prefill.date)),
-        // Optional (2026-07-12, Cloudinary-cache feature): blank reuses whatever's already cached for this exact draw title (utils/cloudinaryCache.js).
-        drawTextLabel('url', 'Thumbnail URL (blank = reuse cached image)', withValue(new TextInputBuilder().setStyle(TextInputStyle.Short).setRequired(false), prefill.url)),
+        drawTextLabel('date', 'Dates', withValue(new TextInputBuilder().setStyle(TextInputStyle.Short).setPlaceholder("e.g. July 15 - August 20"), prefill.date), DATES_HINT),
+        // Optional (2026-07-12, Cloudinary-cache feature): blank reuses whatever's already cached for this exact draw title (utils/cloudinaryCache.js). "Picture Link", the word the rest of /manage uses (2026-11-10 11:03 EST).
+        drawTextLabel('url', 'Picture Link', withValue(new TextInputBuilder().setStyle(TextInputStyle.Short).setRequired(false), prefill.url), 'Optional. Blank uses the draw index\'s picture for this draw, when it has one.'),
         drawTypeLabel()
     );
     return modal;
@@ -518,17 +522,17 @@ function buildQuickEditModal(token, index, draft, { whenText = '', itemsText = '
 
 function buildEditDrawModal(targetDraw, targetId, drawType, row = null) {
     // 'comment' items (2026-07-30 22:24 EDT, "-# note" lines) reconstruct as "-# text", not their first-letter shorthand -- charAt(0) would produce "c", which round-trips through parseItemLine as an unrecognized tier instead of a comment.
-    const itemsText = (targetDraw.items || []).map(i => `${i.tier === 'comment' ? '-#' : i.tier.charAt(0).toLowerCase()} ${i.name}`).join('\n');
+    const itemsText = (targetDraw.items || []).map(i => `${i.tier === 'comment' ? '-#' : (TIER_LETTER[i.tier] || i.tier)} ${i.name}`).join('\n');
     const modal = new ModalBuilder().setCustomId(`edit_draw_${targetId}_${drawType}`).setTitle('Edit Lucky Draw');
     // LABELS (2026-10-18 11:06 EDT): every field is a Label so the Draw Type dropdown can sit beside them (see drawTypeLabel above).
     const text = drawTextLabel;
     modal.addLabelComponents(
         text('title', 'Draw Title', new TextInputBuilder().setStyle(TextInputStyle.Short).setValue(targetDraw.title)),
-        text('items', 'Items (Shorthand)', new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setValue(itemsText)),
+        text('items', 'Items', new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setValue(itemsText), ITEMS_HINT),
         // The draw's end date lives on its /calendar draw row, so the caller passes that row (shared.js, results.js); without one the box holds the release date alone. Empty for a draw with no date (the box is required, so it is filled in on save).
-        text('date', 'Dates: Start - End (end is optional)', new TextInputBuilder().setStyle(TextInputStyle.Short).setValue(require('../utils/drawDates').formatDrawDates(targetDraw.date, row && row.endDate))),
+        text('date', 'Dates', new TextInputBuilder().setStyle(TextInputStyle.Short).setValue(require('../utils/drawDates').formatDrawDates(targetDraw.date, row && row.endDate)), DATES_HINT),
         // Pre-filled with the CURRENT thumbnail (already a Cloudinary URL if this draw was ever cached) — optional so clearing it and resubmitting re-resolves via the cache lookup instead of requiring a re-typed URL just to leave the image unchanged. BUG FIX (2026-07-12): setValue() throws a synchronous validation error if given `undefined`/non-string — discord.js requires a real string, even for an optional field. Any draw doc missing thumbnailUrl (legacy entries from before the Cloudinary-cache feature, or any doc that somehow saved without one) made this throw INSIDE resolveManagePanelAction's showModal() call, before the interaction was ever acknowledged — which is exactly what surfaced as Discord's generic "Something went wrong. Try again." toast on Edit Draws. Fall back to '' like every other optional field already does.
-        text('url', 'Thumbnail URL (blank = reuse cached image)', new TextInputBuilder().setStyle(TextInputStyle.Short).setValue(targetDraw.thumbnailUrl || '').setRequired(false)),
+        text('url', 'Picture Link', new TextInputBuilder().setStyle(TextInputStyle.Short).setValue(targetDraw.thumbnailUrl || '').setRequired(false), 'Keep it to keep the picture. Blank asks the draw index again.'),
         drawTypeLabel(targetDraw.priceType || '')
     );
     return modal;

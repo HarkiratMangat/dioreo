@@ -64,7 +64,7 @@ Runtime dependencies, as declared in package.json:
                                  Copyright (c) Andrew Lisowski
                                  https://github.com/jimp-dev/jimp
 
-  mongoose 9.9.1                 MIT
+  mongoose 9.12.1                MIT
                                  Copyright (c) LearnBoost <dev@learnboost.com>
                                  https://mongoosejs.com
 

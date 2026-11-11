@@ -334,7 +334,7 @@ function buildOpenRow(seasonalDoc, kept, onPage, originId) {
     };
 }
 
-// THE SINGLE-DRAW PANEL (2026-11-10, Harkirat: "jump directly and open a specific draw. like a single panel of that draw"). From `/draws draw:`, `d draws <name>`, or the Open a draw… menu. The draw's title and date lines, its picture full width, every item (no "…and N more": one draw always fits), its type, then a pager through every draw this season (allDraws' order) and Back to the page it was opened from (`back`, a /draws pager id; the draw's own section page when opened by name).
+// THE SINGLE-DRAW PANEL (2026-11-10, Harkirat: "jump directly and open a specific draw. like a single panel of that draw"). From `/draws draw:`, `d draws <name>`, or the Open a draw… menu. Its picture full width on top (since 2026-11-10 20:03 EST, his ask), then the draw's title and date lines, every item (no "…and N more": one draw always fits), its type, then a pager through every draw this season (allDraws' order) and Back to the page it was opened from (`back`, a /draws pager id; the draw's own section page when opened by name).
 function buildDrawPanel(seasonalDoc, index, accentColor = PRESET_ACCENT, isEphemeral = false, opts = {}) {
     const all = allDraws(seasonalDoc);
     const at = Math.min(Math.max(0, index), all.length - 1);
@@ -356,8 +356,9 @@ function buildDrawPanel(seasonalDoc, index, accentColor = PRESET_ACCENT, isEphem
     const components = [
         ...require('../utils/reminders').withBell(withCaptionEmoji(buildTitleBlock(seasonTitle, isNew ? emojis.newDraws : emojis.returningDraws, isNew ? 'New Draw' : 'Returning Draw', 2), seasonEmojiFor(seasonalDoc.currentSeasonTitle, seasonalDoc.currentSeasonEmoji))),
         { type: 14, spacing: 2, divider: true },
-        { type: 10, content: `### ${draw.title}\n${drawDateLines(draw, ctx)}` },
+        // The picture first, then the draw's name, dates and items under it (2026-11-10 20:03 EST, Harkirat: "put the image above the draws info").
         ...(draw.thumbnailUrl ? [{ type: 12, items: [{ media: { url: draw.thumbnailUrl } }] }] : []),
+        { type: 10, content: `### ${draw.title}\n${drawDateLines(draw, ctx)}` },
         { type: 10, content: [itemLines.length ? itemLines.join('\n') : '-# No items listed yet.', ...(typeName && draw.priceType !== 'unknown' ? [`-# ${typeName}`] : [])].join('\n').slice(0, 3400) }
     ];
     const pager = buildPaginationRow({

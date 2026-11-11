@@ -10,7 +10,8 @@ const WARN_ACCENT = 0xF0B232;
 const FAIL_ACCENT = 0xED4245;
 
 const isUrl = (u) => /^https?:\/\//i.test(String(u || ''));
-const stamp = (d, f = 'D') => (d ? `<t:${Math.floor(new Date(d).getTime() / 1000)}:${f}>` : null);
+// Date AND time (2026-11-10 11:19 EST, the /manage draws refinement): an admin date is midnight UTC, and `D` showed Nov 8 as "November 7" in Toronto, contradicting what was typed. /draws shows the time for the same reason.
+const stamp = (d, f = 'f') => (d ? `<t:${Math.floor(new Date(d).getTime() / 1000)}:${f}>` : null);
 const CALENDAR_LABEL = { draw: 'Lucky Draw', event: 'Event', playlist: 'Playlist & Mode' };
 
 // The title and summary lines, with a picture beside them when there is one. `imageUrl` is `false` for a card that never has a picture (calendar, patch notes); a draw passes its own, and one with none gets the "No image yet" placeholder (2026-11-08 11:45 EST).

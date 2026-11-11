@@ -45,11 +45,29 @@ function divider() {
     return { type: 14, spacing: 1, divider: true };
 }
 
+// The draws example, drawn by /draws itself for a draw three days out (2026-11-10 11:03 EST): the old one was a hand-written copy of a layout /draws dropped, with a placeholder date that read "57 years ago". /draws is reached through the public client, never required, as the draws panel does (a require would tie this file into /draws' hotpatch closure); with no client (a test, a script) it falls back to plain lines.
+function drawsExample() {
+    const start = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate() + 3));
+    const end = new Date(start.getTime() + 14 * 864e5);
+    const sample = { title: 'Void Implosion Draw', date: start, items: [{ tier: 'legendary', name: 'M4 - Void Implosion' }, { tier: 'epic', name: 'Dusk - Otherworld Ensemble' }, { tier: 'comment', name: 'Girls Frontline Collab' }] };
+    const dates = require('./drawDates').formatDrawDatesForBulk(start, end);
+    const paste = `Void Implosion Draw, type: lw, l M4 - Void Implosion, e Dusk - Otherworld Ensemble, -# Girls Frontline Collab, ${dates}, https://example.com/image.png`;
+    let rendered = null;
+    try {
+        const draws = require('../bot/clients').publicClient()?.commands?.get('draws');
+        rendered = draws?.buildDrawSections?.([sample], { seasonalDoc: {}, nowMs: Date.now() })?.[0]?.components?.[0]?.content || null;
+    } catch { rendered = null; }
+    return '**Paste this:**\n```\n' + paste + '\n```\n**Renders on /draws as:**\n' +
+        (rendered || `### Void Implosion Draw\n${emojis.legendary} **M4** — Void Implosion\n${emojis.epic} **Dusk** — Otherworld Ensemble\n-# Girls Frontline Collab`) +
+        '\n-# The end goes on its /calendar row; once it is live, the line above reads Live · Ends.';
+}
+
 function drawsSections() {
     return [
+        // The real order (2026-11-10 11:03 EST): the reader takes the link off the END first, then the dates, so the old skeleton (link before the date) made the link an item and lost the date.
         section('📋 Paste Skeleton',
-            '`Title, [tier] Item 1, [tier] Item 2, ..., Thumbnail URL (optional), Date`\n' +
-            '-# One draw per line. Comma-separated.'),
+            '`Title, type: code, [tier] Item 1, [tier] Item 2, …, Start - End, Picture link`\n' +
+            '-# One draw per line, split by commas. A title, one item and a start date are enough; the dates come last, then the link.'),
         section('🏷️ Tier Shorthand',
             `\`m\` ${emojis.mythic} Mythic · \`l\` ${emojis.legendary} Legendary · \`lg\` ${emojis.legacy} Legacy · \`e\` ${emojis.epic} Epic\n` +
             '-# Spell the tier out instead if you\'d rather (`mythic`, `legendary`, etc.) — both work.\n' +
@@ -62,19 +80,16 @@ function drawsSections() {
         section('✨ What Gets Auto-Formatted',
             '• **Title** and every **item name** → auto Title Case (acronyms like `FSS`/`AK`/`MP`/`BR` are preserved, hyphens/slashes capitalize each side independently).\n' +
             '• A `-# note` line is the one exception — kept **exactly as typed**, never title-cased (it\'s free text, not an item name).\n' +
-            '• **Thumbnail URL** is optional. Blank reuses a cached image for that draw automatically — exact title match first, then a close/typo\'d match if nothing exact hits.\n' +
-            '• **Date** is parsed as UTC-0 — `July 15` or `July 15, 2026` both work; a date with its own comma is handled correctly.'),
-        section('🖼️ Example',
-            '**Paste this:**\n' +
-            '```\nVoid Implosion Draw, l M4 - Void Implosion, e Dusk - Otherworld Ensemble, -# Girls Frontline Collab, July 15, URL.com/image.png\n```' +
-            '\n**Renders as:**\n' +
-            `**__Void Implosion Draw__**\n${emojis.legendary} **M4 - Void Implosion**\n${emojis.epic} **Dusk - Otherworld Ensemble**\n-# Girls Frontline Collab\n<t:0:f> (<t:0:R>)\n-# ^ timestamp shown is a placeholder — yours renders with the real date you typed.`),
+            '• **Picture link** is optional. Without one, a draw already on /draws keeps its picture, and a new one takes the draw index\'s: exact title first, then a close match.\n' +
+            '• **Dates** are read as midnight UTC: `July 15`, `July 15 - August 20`, or `September 10, 2026 - November 12, 2026`. The end goes on the draw\'s /calendar row and can be the game\'s countdown (`13d 23h`).'),
+        section('🖼️ Example', drawsExample()),
+        // Tips rewritten 2026-11-10 11:15 EST: one line each, and short enough that the guide with /draws' own example stays under Discord's 4,000 characters (it reached 4,245 and Discord refused it).
         section('💡 Tips',
-            '• Use the draws panel\'s **Export** (or `/manage draws do:Export`) to grab this exact format pre-filled with your real current data — the fastest way to see a live, correct example.\n' +
-            '• **Paste Draws**, and **Edit** on Select Draws, update a draw with the same title and add a new one; a preview shows what changes before **Save**. Anything you don\'t mention is left untouched. **Purge Draws** is the full wipe.\n' +
-            '• The date can be **Start - End** (`July 15 - August 20`, or `September 10, 2026 - November 12, 2026`), like the season titles box. The end goes on the draw\'s /calendar row, so `/draws` shows when it ends; it needs the Calendar permission, and **Export** writes it back out. The **Add** and **Edit** forms take the same thing, and the end can be the game\'s countdown (`November 10, 2026 - 13d 23h`), saved as the midnight UTC it ends at.\n' +
-            '• **Check Draw Index** (beside Search Draws, or `do:Check Draw Index`) takes up to 20 names, one a line, and says which the draw index has and what each lacks. It changes nothing.\n' +
-            '• **Needs a Look** lists the running draws with no picture, a placeholder, no items, no draw type or no end date; each draw\'s card names what it lacks.')
+            '• **Export** (or `do:Export`) writes this format with your real draws: the quickest correct example.\n' +
+            '• **Paste Draws** and Select\'s **Edit** update a draw with the same title and add new ones, after a preview. Edit leaves picture links out: a line with no link keeps its picture.\n' +
+            '• **End Date** (on a card, or on many from Select) sets only the end: a date, a countdown, With the season, or Not announced yet. An end needs the Calendar permission.\n' +
+            '• **Check Draw Index** takes up to 20 names and says what the index has; **Quick Add These** carries the ones it found into Quick Add.\n' +
+            '• **Needs a Look** lists running draws missing a picture, items, a draw type or an end date, each with the button that fixes it.')
     ];
 }
 

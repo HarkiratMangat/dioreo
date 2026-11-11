@@ -61,7 +61,7 @@ const event = { _id: 'e1', title: 'Halloween Event', category: 'event', date: ne
 check('a calendar event shows its dates, All Season and Double CP', () => {
     const panel = p.calendarPanel({ event, changeIds: ['#7'] });
     shapeOk(panel);
-    assert.ok(text(panel).includes('All Season') && text(panel).includes('Double CP') && text(panel).includes(`<t:${Math.floor(event.date.getTime() / 1000)}:D>`));
+    assert.ok(text(panel).includes('All Season') && text(panel).includes('Double CP') && text(panel).includes(`<t:${Math.floor(event.date.getTime() / 1000)}:f>`));
     assert.deepStrictEqual(buttons(panel).map(b => b.custom_id), ['mng_rsopen|calendar', 'mng_rsedit|calendar|e1', 'mng_rsrevert|#7']);
 });
 

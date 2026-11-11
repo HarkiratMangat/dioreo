@@ -49,6 +49,12 @@ function slugify(title) {
 function publicIdFor(title) {
     return `${FOLDER}/${slugify(title)}`;
 }
+
+// Whether a link is this title's own Cloudinary asset, `draws/<slug>.<ext>` under any transformation and version (2026-11-10 11:19 EST). Compared against publicIdFor itself, so a different slug only ever means "upload as before".
+function isOwnAsset(title, url) {
+    const id = publicIdFor(title).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`^https://res\\.cloudinary\\.com/[^/]+/image/upload/(?:[^/]+/)*${id}\\.[a-z0-9]+$`, 'i').test(String(url || ''));
+}
 function legacyPublicIdFor(title) {
     return `${LEGACY_FOLDER}/${slugify(title)}`;
 }
@@ -281,7 +287,15 @@ async function resolveThumbnail(title, providedUrl, draw = null) {
     const found = known ? { slug: known.entry.slug, title: known.entry.title, priceType: known.entry.priceType || '', matchedBy: known.matchedBy } : null;
 
     if (providedUrl && providedUrl.trim()) {
-        const result = await cacheThumbnail(title, providedUrl.trim(), draw);
+        const given = providedUrl.trim();
+        // A placeholder passes through untouched (2026-11-10 11:19 EST, the /manage draws refinement): uploading it filed the "No image yet" picture under the draw's own slug, the draw index recorded it as the draw's picture, and Needs a Look stopped flagging it (utils/placeholders.js isPlaceholder no longer knew the new link).
+        if (require('./placeholders').isPlaceholder(given)) return { url: given, cached: false, error: null, reused: false, kept: true, catalog: found };
+        // A link that is already this title's own asset (draws/<slug>) is not uploaded again: an Edit pre-fills the stored link, so every save re-uploaded and invalidated the same picture. Its items still re-link, as a reuse by title does. Any other link (a new picture, another draw's asset, a renamed draw) uploads as before.
+        if (isOwnAsset(title, given)) {
+            if (draw) await linkDrawMetadata(publicIdFor(title), title, draw);
+            return { url: given, cached: true, error: null, reused: false, kept: true, catalog: found };
+        }
+        const result = await cacheThumbnail(title, given, draw);
         if (result.cached) return { url: result.url, cached: true, error: null, reused: false, catalog: found };
         return { url: providedUrl.trim(), cached: false, error: result.error, reused: false, catalog: found };
     }
@@ -422,6 +436,7 @@ async function closestDrawImage(draw) {
 }
 
 module.exports = {
+    isOwnAsset,
     catalogMirrorPlan, mirrorCatalogToCloudinary,
     slugify, publicIdFor, legacyPublicIdFor, slugOf, cacheThumbnail, getCachedUrl, resolveThumbnail, listCachedAssets,
     itemKeys, drawFingerprint, drawSimilarity, priceTypesAgree, metadataFor, readDrawContext, pickClosest, findByFingerprint, linkDrawMetadata, titleSimilarity,

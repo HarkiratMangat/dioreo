@@ -318,6 +318,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-11-08 11:04 EST — Small fixes, a draft date read backwards, and a bug report that was mine (v3.15.1)
 - 2026-11-08 14:44 EST — Season draft upgrades, draws in release order, and a carry-over that dropped a running draw (v3.16.0)
 - 2026-11-09 15:56 EST — Owner delete, an admin /help, a draw index check, and a TBD that the calendar threw away (v3.17.0)
+- 2026-11-10 21:17 EST — /manage draws refined, and what the review found (v3.19.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -5087,6 +5088,17 @@ The session's useful turn was planning Season 10 against prod's real data. Check
 A think-pass ran the new Check Draw Index against prod's live data and found two defects its green unit tests had passed: a draw staged under another of its names read as not staged, and draw types printed as camel-split keys. The lesson recorded for later sessions: run a read feature's real code against real data before calling it done.
 
 Prod data written on his word along the way (all revertable from /bot analytics): Season 10's draws and schedule in the Next Season Draft, ten draw pictures in the index, placeholders for the three draws with no picture yet, Pop Idol as another name of Starry Symphony, and seven index titles brought to his short-words-lowercase rule.
+
+## 2026-11-10 21:17 EST — /manage draws refined, and what the review found (v3.19.0)
+
+The first of the per-subcommand refinement sessions Harkirat asked for: review `/manage draws` end to end, plan, then build without a checkpoint.
+
+The one cause under most findings: the v3.14 panel was a navigation shell over the old savers, and each saver still answered the old way, with its own follow-up message, calendar's five-field editor for an end date, `<t:D>` dates and a Cloudinary re-upload. Closing those seams (quiet saver modes, a draws-native End Date pop-up, the card carrying its origin) was the spine; the rest rode on top.
+
+The hidden defects came from five places: reading the saver behind each button (the placeholder upload, the re-upload, the empty change row), round-tripping export and paste (Legacy saved as Legendary, `, null`), clicking the undo and failure paths (reverts landing nowhere, a dead-end Revert All, Try Again's title), looking at screenshots the way Harkirat would (counts that did not add up, a date shown twice, "Select These 1"), and asking who else can press a button (calendar writes refused for admins without Calendar access, the #249 class).
+
+### Lesson
+The first report said every item was click-tested; it was false, written from a compaction summary. Harkirat's "are you sure?" led to the transcript's click log, and clicking the unclicked paths found four bugs. Tested claims now come from the click log. The full method, and a checklist for the next subcommand, is `docs/claude/2026-11-10-manage-draws-refine-lessons.md`.
 
 # Part B — Lessons Ledger (thematic)
 

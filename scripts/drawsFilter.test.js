@@ -192,7 +192,7 @@ t('Open a draw... lists the draws the view keeps, this page first, and each valu
     assert.ok(liveMenu.options.every(o => o.description.endsWith('Ended')), JSON.stringify(liveMenu.options.map(o => o.description)));
 });
 
-t('the single-draw panel: title, dates, the full picture, every item, its type, a pager through every draw and Back (2026-11-10)', () => {
+t('the single-draw panel: the full picture, then title, dates, every item, its type, a pager through every draw and Back (2026-11-10)', () => {
     const doc = season({ items: 14 });
     const all = draws.allDraws(doc);
     const at = all.findIndex(d => d.title === 'Ret Draw 2');
@@ -203,6 +203,9 @@ t('the single-draw panel: title, dates, the full picture, every item, its type, 
     assert.ok(body.includes('Gun13'), 'every item, no …and N more');
     assert.ok(body.includes('Mythic Weapon Draw'), 'its type');
     assert.ok(JSON.stringify(out).includes('"type":12'), 'a full-width picture');
+    // The picture sits above the draw's name and dates (2026-11-10 20:03 EST, his ask).
+    const parts = out[0].components;
+    assert.ok(parts.findIndex(c => c.type === 12) < parts.findIndex(c => c.type === 10 && String(c.content).includes('### Ret Draw 2')), 'picture above the info');
     const json = JSON.stringify(out);
     assert.ok(json.includes(`"subpage_one_${at - 1}~returning_1_m8"`) && json.includes(`"subpage_one_${at + 1}~returning_1_m8"`), 'arrows to the draws either side, carrying Back');
     assert.ok(json.includes('"subpage_returning_1_m8"'), 'Back returns to the page it came from');

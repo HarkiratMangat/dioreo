@@ -12,6 +12,12 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.19.0 — November 10, 2026
+- **Improved:** `/manage draws` shows each save's result in the same panel, with Revert, and sets a draw's end date in its own pop-up.
+- **New:** search draws by item name, a fix button on every draw that needs a look, and Quick Add for the lines Check Draw Index found.
+- **Improved:** `/draws` shows a single draw's picture first.
+- **Fixed:** editing a draw that had the placeholder picture no longer saves the placeholder as its picture, and a draw can no longer be in both New and Returning.
+
 ## v3.18.0 — November 9, 2026
 - **Improved:** staging the next season adds and updates draws and calendar rows instead of replacing them, with a preview first, and every staged draw has its own card.
 - **New:** patch notes show their pictures and take uploads; announcements can be ended early, and expired ones found and posted again.

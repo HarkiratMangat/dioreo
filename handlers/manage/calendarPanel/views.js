@@ -128,7 +128,7 @@ function listView(doc, status, page = 0) {
         components.push({ type: 1, components: [{ type: 3, custom_id: ID('open', status), placeholder: 'Open an entry…', options: shown.map(e => ({ label: e.title.slice(0, 100), value: e._key, description: `${typeWord(e)} · ${stateName(e)}` })) }] });
         if (pages > 1) components.push(row(arrow(['list', status, pg - 1], 'left', pg === 0), counter(['pgn', status], `Page ${pg + 1} / ${pages}`), arrow(['list', status, pg + 1], 'right', pg === pages - 1)));
     }
-    components.push(BIG(), row(btn(['sellist', status], `Select These ${list.length}`, emojis.filter, 2, !list.length), homeBtn()));
+    components.push(BIG(), row(btn(['sellist', status], list.length === 1 ? 'Select This One' : `Select These ${list.length}`, emojis.filter, 2, !list.length), homeBtn()));
     return panel(components);
 }
 
