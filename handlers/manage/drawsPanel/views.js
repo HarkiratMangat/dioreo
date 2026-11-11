@@ -109,7 +109,7 @@ async function pageView(doc, note = null, { pageRow = null, noteRow = null } = {
     // The counts an admin scans for: how many, what is running, what is about to leave, what has ended. Leaving Soon is part of Active (as /draws' filter has it), so it is written in brackets after Active: a glance that adds the numbers up must reach the total. Each state wears its /draws dot (2026-11-11 11:02 EST, his ask), so the line reads like the lists it counts.
     const counts = all.length
         ? [`**${all.length}** ${all.length === 1 ? 'draw' : 'draws'}`, `${emojis.greenDotGlow} ${n('live')} active${n('leaving') ? ` (${emojis.yellowDotGlow} **${n('leaving')} leaving soon**)` : ''}`, ...(n('upcoming') ? [`${emojis.lightBlueDotGlow} ${n('upcoming')} upcoming`] : []), ...(n('ended') ? [`${emojis.redDotGlow} ${n('ended')} ended`] : [])].join(' · ')
-        : 'No draws yet this season. Quick Add or Paste Draws to start.';
+        : 'No draws yet this season. Quick Add or Bulk Paste to start.';
     const lookLineText = look ? `\n-# ${emojis.warn} **${look}** ${look === 1 ? 'needs' : 'need'} a look` : '';
     const components = [text(`## ${emojis.newDraws}${emojis.returningDraws} Draws${await seasonLine(doc)}\n-# ${counts}${lookLineText}`)];
     if (note) components.push(SMALL(), text(note));
@@ -120,12 +120,16 @@ async function pageView(doc, note = null, { pageRow = null, noteRow = null } = {
     const SV = require('../seasonPanel/views');
     const draft = doc.draft || {};
     const staged = (draft.newDraws || []).length + (draft.returningDraws || []).length;
-    const draftBtn = draft.active ? SV.btn(['dd', 'n', 0], `Review Drafted Draws · ${staged}`, emojis.bp) : SV.btn(['view', 'draft'], 'Season Draft', emojis.bp);
+    // The next season's own emoji (2026-11-11 14:55 EST, his phone note: "use the next seasons emoji"): the draft's season number, else the live one plus one; the Battle Pass icon when that season has no emoji yet.
+    const q = require('../../../utils/quickAdd');
+    const nextNo = q.seasonNumber(draft.currentSeasonTitle) || ((q.seasonNumber(doc.currentSeasonTitle) || 0) + 1);
+    const nextEmoji = emojis[`season${nextNo}`] || emojis.bp;
+    const draftBtn = draft.active ? SV.btn(['dd', 'n', 0], `Review Drafted Draws · ${staged}`, nextEmoji) : SV.btn(['view', 'draft'], 'Season Draft', nextEmoji);
     // Rows read by what they are for (2026-11-11 11:02 EST, his landing): adding, finding, the index and the files, then the next season.
     components.push(
         BIG(),
         text('-# Add draws…'),
-        row(btn('quickadd', 'Quick Add', emojis.plus, 3), btn('addnew', 'New Draw', emojis.newDraws), btn('addreturning', 'Returning Draw', emojis.returningDraws), btn('paste', 'Paste Draws', emojis.pasteImport)),
+        row(btn('quickadd', 'Quick Add', emojis.plus, 3), btn('addnew', 'New Draw', emojis.newDraws), btn('addreturning', 'Returning Draw', emojis.returningDraws), btn('paste', 'Bulk Paste', emojis.pasteImport)),
         SMALL(),
         text('-# Find a draw…'),
         row(btn('find', 'Search Draws', emojis.search, 1, !all.length), btn('select', 'Select Draws', emojis.filter, 2, !all.length), lookBtn),

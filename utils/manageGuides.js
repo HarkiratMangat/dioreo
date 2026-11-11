@@ -86,9 +86,9 @@ function drawsSections() {
         // Tips rewritten 2026-11-10 11:15 EST: one line each, and short enough that the guide with /draws' own example stays under Discord's 4,000 characters (it reached 4,245 and Discord refused it).
         section('💡 Tips',
             '• **Export** (or `do:Export`) writes this format with your real draws: the quickest correct example.\n' +
-            '• **Paste Draws** and Select\'s **Edit** update a draw with the same title and add new ones, after a preview. Edit leaves picture links out: a line with no link keeps its picture.\n' +
+            '• **Bulk Paste** and Select\'s **Edit** update a draw with the same title and add new ones, after a preview. Edit leaves picture links out: a line with no link keeps its picture.\n' +
             '• **End Date** (on a card, or on many from Select) sets only the end: a date, a countdown, With the season, or Not announced yet. An end needs the Calendar permission.\n' +
-            '• **Check Draw Index** takes up to 20 names and says what the index has; **Quick Add These** carries the ones it found into Quick Add.\n' +
+            '• **Check Names** (in the **Draw Index**) takes up to 20 names and says what the index has; **Quick Add These** carries the ones it found into Quick Add.\n' +
             '• **Needs a Look** lists running draws missing a picture, items, a draw type or an end date, each with the button that fixes it.')
     ];
 }
@@ -147,7 +147,7 @@ function calendarSections() {
             '\n**Renders as:** 3 entries, sorted onto their own pages — "Jupiter Cannon Draw" under **Draws**, "Krai BR" under **Playlists & Modes** (open-ended, tied to the Battle Pass end), "Anniversary Celebration" under **Events**.'),
         section('💡 Tips',
             '• Use the calendar panel\'s **Export** (or `/manage calendar do:Export`) to grab this exact format pre-filled with your real current data.\n' +
-            '• **Paste Entries**, and **Edit** on Select Entries, update an entry with the same title and add a new one; a preview shows what changes before **Save**, and nothing unmentioned is touched. **Purge Calendar** is the full wipe.\n' +
+            '• **Bulk Paste**, and **Edit** on Select Entries, update an entry with the same title and add a new one; a preview shows what changes before **Save**, and nothing unmentioned is touched. **Purge Calendar** is the full wipe.\n' +
             '• A **draw** row\'s card has **Open the Draw**, its card in /manage draws. A draw row with no draw of that title on /draws is marked and listed under **Needs a Look**: players see dates with no items or picture, and **Add the Draw** opens Quick Add with the row\'s dates.')
     ];
 }
@@ -213,7 +213,7 @@ function seasondraftSections() {
             '`Title, End Date` on one line per deadline, e.g. `Battle Pass, August 28`.\n' +
             'Typing `TBD` as the date (case-insensitive) marks that deadline as **not yet announced** instead of parsing it as a real date — shown as "TBD" and treated as running indefinitely until it\'s updated. Same rule as the live Season Titles & Deadlines modal.'),
         section('➕ Paste, Quick Add and the Editors',
-            '• **Paste Draws** and **Paste Calendar** add and update: a line matching a staged title updates it, a new one is added, and rows you leave out stay staged. A preview shows Added and Changed before **Stage**.\n' +
+            '• **Bulk Paste Draws** and **Bulk Paste Calendar** add and update: a line matching a staged title updates it, a new one is added, and rows you leave out stay staged. A preview shows Added and Changed before **Stage**.\n' +
             '• **Edit Draws** opens the staged draws six a page: **Quick Add**, **Add Draw**, and each draw\'s card with **Edit**, **Set End Date** (on the draft calendar) and **Move** between New and Returning. **Edit Calendar** adds, edits and removes one row at a time; **Banners** sets the draft\'s /calendar page banners.\n' +
             '• **Needs a Look** lists what to check before Promote, each line with a button that opens its fix; **Stage These** turns calendar draws with no staged draw into Quick Add lines. **Players\' View** on a staged list draws it as /draws or /calendar will.'),
         section('💡 Tips',

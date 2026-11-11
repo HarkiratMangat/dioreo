@@ -132,8 +132,8 @@ async function previewPanel(token, text, { isEdit }) {
     const doc = await getDoc();
     const pv = previewCalendar(doc, text);
     return V.resultView({
-        ok: pv.skipped.length ? 'warn' : true, crumbs: isEdit ? ['Select Entries', 'Edit'] : ['Paste'],
-        title: `${isEdit ? 'Edit' : 'Paste'} preview · ${pv.count} of ${pv.total} to save`, body: pv.parts,
+        ok: pv.skipped.length ? 'warn' : true, crumbs: isEdit ? ['Select Entries', 'Edit'] : ['Bulk Paste'],
+        title: `${isEdit ? 'Edit' : 'Bulk Paste'} preview · ${pv.count} of ${pv.total} to save`, body: pv.parts,
         back: isEdit ? ['tedit', token, 0, 'again'] : ['paste', token], backLabel: isEdit ? 'Edit Again' : 'Edit Paste',
         extraButtons: pv.count ? [V.btn(['save', token], `Save ${pv.count}`, emojis.checkmark, 3)] : [],
         extraRows: isEdit ? [V.row(V.btn(['slist', token, 0], 'Back to List', emojis.returnArrow))] : [],
@@ -167,7 +167,7 @@ async function openFromSlash(interaction) {
     const view = (components) => show(interaction, components, { ephemeral });
     const m = manageCommand();
     if (act === 'add') return (await gate(interaction, 'add')) && interaction.showModal(m.buildCalendarAddModal());
-    if (act === 'paste') return (await gate(interaction, 'replacemultiple')) && interaction.showModal(reId(m.buildCalendarBulkModal('add'), V.ID('pastem'), 'Paste Entries'));
+    if (act === 'paste') return (await gate(interaction, 'replacemultiple')) && interaction.showModal(reId(m.buildCalendarBulkModal('add'), V.ID('pastem'), 'Bulk Paste'));
     if (act === 'export') return (await gate(interaction, 'export')) && interaction.showModal(V.exportModal());
     if (act === 'banners') return (await gate(interaction, 'banners')) && interaction.showModal(m.buildCalendarBannersModal(await getDoc()));
     if (act === 'guide') return runGuide(interaction);
@@ -230,7 +230,7 @@ async function route(interaction) {
     if (verb === 'paste') {
         if (!(await gate(interaction, 'replacemultiple'))) return;
         const last = a ? await loadSel(a) : null;
-        return interaction.showModal(fill(reId(m.buildCalendarBulkModal('add'), V.ID('pastem'), 'Paste Entries'), { bulk_text: last?.text || '' }));
+        return interaction.showModal(fill(reId(m.buildCalendarBulkModal('add'), V.ID('pastem'), 'Bulk Paste'), { bulk_text: last?.text || '' }));
     }
     if (verb === 'edit') {
         if (!(await gate(interaction, 'edit'))) return;
@@ -402,7 +402,7 @@ async function routeSelection(interaction, verb, a, b, c) {
         if (!pv.count) return show(interaction, V.resultView({ title: 'Nothing to save: every entry is unchanged.', ok: 'warn', back: isEdit ? ['slist', a, 0] : 'page', backLabel: isEdit ? 'Back to List' : 'Home' }));
         await interaction.deferUpdate();
         await calendarSave().bulkAddOrReplaceCalendar(interaction, { customId: 'modal_calendar_bulk_replace', values: { bulk_text: pv.keep.join('\n') } });
-        return show(interaction, V.resultView({ crumbs: isEdit ? ['Select Entries', 'Edit'] : ['Paste'], title: `Sent ${pv.count} to save`, body: ['-# The result, with Revert, is in the message below.'], back: isEdit ? ['slist', a, 0] : 'page', backLabel: isEdit ? 'Back to List' : 'Home' }));
+        return show(interaction, V.resultView({ crumbs: isEdit ? ['Select Entries', 'Edit'] : ['Bulk Paste'], title: `Sent ${pv.count} to save`, body: ['-# The result, with Revert, is in the message below.'], back: isEdit ? ['slist', a, 0] : 'page', backLabel: isEdit ? 'Back to List' : 'Home' }));
     }
 
     if (verb === 'texp') {

@@ -166,7 +166,7 @@ async function deleteMany(interaction, mode, keys) {
 }
 
 // ---------- the slash command ---------- His 13:40 EST ask: more ways for the slash command to go straight to something without walking through the panel. `build:` opens a build (or `＋ New build`), `builds:` a Select list, `weapon:` / `class:` their pages; `do:` with a target acts at once. A pop-up has to be the first answer, so every path that opens one runs before anything is deferred.
-const DO_CHOICES = [['Add Build', 'add'], ['Edit', 'edit'], ['Move', 'move'], ['Add Option', 'newopt'], ['Delete', 'delete'], ['Paste Builds', 'paste'], ['Export', 'export'], ['Guide', 'guide']];
+const DO_CHOICES = [['Add Build', 'add'], ['Edit', 'edit'], ['Move', 'move'], ['Add Option', 'newopt'], ['Delete', 'delete'], ['Bulk Paste', 'paste'], ['Export', 'export'], ['Guide', 'guide']];
 
 async function openFromSlash(interaction, mode) {
     const o = interaction.options;
@@ -303,7 +303,7 @@ async function previewPanel(mode, token, raw, { editAgain, crumbs, title, backTo
     const pv = await B.previewBlocks(mode, raw);
     return V.resultView(mode, {
         ok: pv.problems ? 'warn' : true, crumbs, title: `${title} · ${pv.count} of ${pv.total} to save`, body: pv.parts,
-        back: editAgain, backLabel: crumbs[crumbs.length - 1] === 'Paste' ? 'Edit Paste' : 'Edit Again',
+        back: editAgain, backLabel: crumbs[crumbs.length - 1] === 'Bulk Paste' ? 'Edit Paste' : 'Edit Again',
         extraButtons: pv.count ? [V.btn(mode, ['save', token], `Save ${pv.count}`, emojis.checkmark, 3)] : [],
         // Edit N's preview also goes back to its list, so a look that changes nothing is one click from the selection.
         extraRows: backToList ? [V.row(V.btn(mode, backToList, 'Back to List', emojis.returnArrow))] : [],
@@ -449,7 +449,7 @@ async function routeSelection(interaction, mode, verb, a, b, c) {
     if (verb === 'pastem' && interaction.isModalSubmit?.()) {
         const raw = interaction.fields.getTextInputValue('bulk_text');
         const token = await createSelection(mode, { text: raw });
-        return show(interaction, await previewPanel(mode, token, raw, { editAgain: ['paste', token], crumbs: ['Paste'], title: 'Paste preview' }));
+        return show(interaction, await previewPanel(mode, token, raw, { editAgain: ['paste', token], crumbs: ['Bulk Paste'], title: 'Bulk Paste preview' }));
     }
 
     const sel = await loadSel(a, mode);
@@ -524,7 +524,7 @@ async function routeSelection(interaction, mode, verb, a, b, c) {
         if (!pv.keep) return show(interaction, V.resultView(mode, { title: 'Nothing to save: every build is unchanged.', ok: 'warn', back: isEdit ? ['list', a, 0] : 'page', backLabel: isEdit ? 'Back to List' : 'Home' }));
         await interaction.deferUpdate();
         await loadouts().bulkAddLoadouts(interaction, { customId: `modal_loadouts_bulk_add_${mode}`, values: { bulk_text: pv.keep } });
-        return show(interaction, V.resultView(mode, { crumbs: isEdit ? ['Select Builds', 'Edit'] : ['Paste'], title: `Sent ${pv.count} build${pv.count === 1 ? '' : 's'} to save`, body: ['-# The result is in the message below. A bulk save is reverted from `/bot analytics` › Changes.'], back: isEdit ? ['list', a, 0] : 'page', backLabel: isEdit ? 'Back to List' : 'Home' }));
+        return show(interaction, V.resultView(mode, { crumbs: isEdit ? ['Select Builds', 'Edit'] : ['Bulk Paste'], title: `Sent ${pv.count} build${pv.count === 1 ? '' : 's'} to save`, body: ['-# The result is in the message below. A bulk save is reverted from `/bot analytics` › Changes.'], back: isEdit ? ['list', a, 0] : 'page', backLabel: isEdit ? 'Back to List' : 'Home' }));
     }
 
     if (verb === 'texp') {

@@ -208,8 +208,8 @@ async function previewPanel(token, newText, retText, { isEdit }) {
     const doc = await getDoc();
     const pv = previewDraws(doc, newText, retText);
     return V.resultView({
-        ok: pv.skipped.length ? 'warn' : true, crumbs: isEdit ? ['Select Draws', 'Edit'] : ['Paste'],
-        title: `${isEdit ? 'Edit' : 'Paste'} preview · ${pv.count} of ${pv.total} to save`, body: pv.parts,
+        ok: pv.skipped.length ? 'warn' : true, crumbs: isEdit ? ['Select Draws', 'Edit'] : ['Bulk Paste'],
+        title: `${isEdit ? 'Edit' : 'Bulk Paste'} preview · ${pv.count} of ${pv.total} to save`, body: pv.parts,
         back: isEdit ? ['tedit', token, 0, 'again'] : ['paste', token], backLabel: isEdit ? 'Edit Again' : 'Edit Paste',
         extraButtons: pv.count ? [V.btn(['save', token], `Save ${pv.count}`, emojis.checkmark, 3)] : [],
         extraRows: isEdit ? [V.row(V.btn(['slist', token, 0], 'Back to List', emojis.returnArrow))] : [],
@@ -330,7 +330,7 @@ async function openFromSlash(interaction) {
     const m = manageCommand();
     if (act === 'quickadd') return (await gate(interaction, 'quickadd')) && interaction.showModal(m.buildQuickAddModal());
     if (act === 'addnew' || act === 'addreturning') return (await gate(interaction, act)) && interaction.showModal(reId(m.buildAddDrawModal(act === 'addnew' ? 'new' : 'returning'), V.ID('addm', act === 'addnew' ? 'new' : 'returning')));
-    if (act === 'paste') return (await gate(interaction, 'bulkadd')) && interaction.showModal(reId(m.buildBulkBothDrawsModal('add'), V.ID('pastem'), 'Paste Draws'));
+    if (act === 'paste') return (await gate(interaction, 'bulkadd')) && interaction.showModal(reId(m.buildBulkBothDrawsModal('add'), V.ID('pastem'), 'Bulk Paste'));
     if (act === 'export') return (await gate(interaction, 'exportnew')) && interaction.showModal(V.exportModal());
     if (act === 'check') return (await gate(interaction, 'exportnew')) && interaction.showModal(V.checkModal());
     if (act === 'guide') return runGuide(interaction);
@@ -403,7 +403,7 @@ async function route(interaction) {
         if (!(await gate(interaction, 'bulkadd'))) return;
         const last = a ? await loadSel(a) : null;
         const { newText, retText } = unpackText(last?.text);
-        return interaction.showModal(fill(reId(m.buildBulkBothDrawsModal('add'), V.ID('pastem'), 'Paste Draws'), { new_text: newText, returning_text: retText }));
+        return interaction.showModal(fill(reId(m.buildBulkBothDrawsModal('add'), V.ID('pastem'), 'Bulk Paste'), { new_text: newText, returning_text: retText }));
     }
     // Edit and End Date carry the card's origin (`b`) and `c` = `L` when opened from Needs a Look, so the submit lands back there.
     if (verb === 'edit' || verb === 'end') {
@@ -733,7 +733,8 @@ async function routeSelection(interaction, verb, a, b, c) {
             newText = fmt(pick.filter(d => d._sec === 'new'), V.rowFor(doc));
             retText = fmt(pick.filter(d => d._sec === 'returning'), V.rowFor(doc));
         }
-        if (newText.length > 4000 || retText.length > 4000) return show(interaction, V.selectView(doc, a, sel, `${emojis.warn} **Too many draws for one Edit pop-up** (each box holds 4,000 characters). Select fewer.`, n(b)));
+        // A private note, never the panel (round 2's rule; the one survivor of that sweep, found 2026-11-11 15:02 EST).
+        if (newText.length > 4000 || retText.length > 4000) return say(interaction, `${emojis.warn} **Too many draws for one Edit pop-up** (each box holds 4,000 characters). Select fewer.`);
         return interaction.showModal(fill(reId(m.buildBulkBothDrawsModal('replace'), V.ID('teditm', a), `Edit ${V.plural(keys.length, 'Draw')}`), { new_text: newText, returning_text: retText }));
     }
     if (verb === 'teditm' && interaction.isModalSubmit?.()) {
@@ -752,11 +753,11 @@ async function routeSelection(interaction, verb, a, b, c) {
         if (!pv.count) return show(interaction, V.resultView({ title: 'Nothing to save: every draw is unchanged.', ok: 'warn', back: backTo, backLabel: isEdit ? 'Back to List' : 'Home' }));
         await interaction.deferUpdate();
         const result = await require('../draws').bulkAddOrReplaceDraws(interaction, { customId: 'modal_draws_bulk_replace_both', values: { new_text: withStoredLinks(doc, pv.keepNew, 'new').join('\n'), returning_text: withStoredLinks(doc, pv.keepRet, 'returning').join('\n') } }, { quiet: true });
-        if (!result?.ok) return show(interaction, V.resultView({ crumbs: isEdit ? ['Select Draws', 'Edit'] : ['Paste'], title: 'Nothing was saved', body: [result?.error || 'The save was refused.'], ok: false, back: isEdit ? ['tedit', a, 0, 'again'] : ['paste', a], backLabel: isEdit ? 'Edit Again' : 'Edit Paste' }));
+        if (!result?.ok) return show(interaction, V.resultView({ crumbs: isEdit ? ['Select Draws', 'Edit'] : ['Bulk Paste'], title: 'Nothing was saved', body: [result?.error || 'The save was refused.'], ok: false, back: isEdit ? ['tedit', a, 0, 'again'] : ['paste', a], backLabel: isEdit ? 'Edit Again' : 'Edit Paste' }));
         // The draws first, then their end dates (the saver lists the end dates first because it writes them second).
         const ordered = [...result.sections.filter(s => s.head !== 'End dates'), ...result.sections.filter(s => s.head === 'End dates')];
         const body = [...ordered.filter(s => s.lines?.length).map(s => `**${s.head}**\n${s.lines.join('\n')}`), ...result.warnings.map(w => `${emojis.warn} ${w}`)];
-        await show(interaction, V.resultView({ ok: result.warnings.length ? 'warn' : true, crumbs: isEdit ? ['Select Draws', 'Edit'] : ['Paste'], title: `Saved ${V.plural(pv.count, 'draw')}`, body: [...body, `-# Every change is recorded; Revert puts it back.${revertHint(result.changeIds)}`], back: backTo, backLabel: isEdit ? 'Back to List' : 'Home', extraButtons: revertButton(result.changeIds, '', isEdit ? `s:${a}` : '') }));
+        await show(interaction, V.resultView({ ok: result.warnings.length ? 'warn' : true, crumbs: isEdit ? ['Select Draws', 'Edit'] : ['Bulk Paste'], title: `Saved ${V.plural(pv.count, 'draw')}`, body: [...body, `-# Every change is recorded; Revert puts it back.${revertHint(result.changeIds)}`], back: backTo, backLabel: isEdit ? 'Back to List' : 'Home', extraButtons: revertButton(result.changeIds, '', isEdit ? `s:${a}` : '') }));
         return askKinds(interaction, result.titles);
     }
     // End Date for every selected draw (2026-11-10 11:19 EST): one commit of their calendar rows, skipping any that already read so or that the end would not be after.

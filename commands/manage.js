@@ -925,7 +925,7 @@ function buildManageCommandData() {
         .addStringOption(o => o.setName('do').setDescription('What to do. With draw: it happens right away').addChoices(
             { name: 'Quick Add', value: 'quickadd' }, { name: 'Add New Draw', value: 'addnew' }, { name: 'Add Returning Draw', value: 'addreturning' },
             { name: 'Edit', value: 'edit' }, { name: 'Set End Date', value: 'end' }, { name: 'Move New/Returning', value: 'move' }, { name: 'Delete', value: 'delete' },
-            { name: 'Paste Draws', value: 'paste' }, { name: 'Check Draw Index', value: 'check' }, { name: 'Export', value: 'export' }, { name: 'Guide', value: 'guide' }))
+            { name: 'Bulk Paste', value: 'paste' }, { name: 'Check Names (Draw Index)', value: 'check' }, { name: 'Export', value: 'export' }, { name: 'Guide', value: 'guide' }))
         .addStringOption(o => o.setName('show').setDescription('Open a list of draws').addChoices(
             { name: 'New Draws', value: 'new' }, { name: 'Returning Draws', value: 'returning' }, { name: 'Upcoming', value: 'upcoming' },
             { name: 'Active Now', value: 'live' }, { name: 'Leaving Soon', value: 'leaving' }, { name: 'Ended', value: 'ended' }, { name: 'No End Date', value: 'noend' }, { name: 'Needs a Look', value: 'look' }))
@@ -935,7 +935,7 @@ function buildManageCommandData() {
         .addStringOption(o => o.setName('build').setDescription('Go to one build: a weapon, a number or a label, e.g. fss 1b').setAutocomplete(true))
         .addStringOption(o => o.setName('do').setDescription('What to do. With build: or builds: it happens right away').addChoices(
             { name: 'Add Build', value: 'add' }, { name: 'Edit', value: 'edit' }, { name: 'Move', value: 'move' }, { name: 'Add Option', value: 'newopt' },
-            { name: 'Delete', value: 'delete' }, { name: 'Paste Builds', value: 'paste' }, { name: 'Export', value: 'export' }, { name: 'Guide', value: 'guide' }))
+            { name: 'Delete', value: 'delete' }, { name: 'Bulk Paste', value: 'paste' }, { name: 'Export', value: 'export' }, { name: 'Guide', value: 'guide' }))
         .addStringOption(o => o.setName('builds').setDescription('Several builds, comma-separated: fss 1b, static, smg'))
         .addStringOption(o => o.setName('weapon').setDescription('Go to a weapon and all its builds').setAutocomplete(true))
         .addStringOption(o => o.setName('class').setDescription('Go to a class and pick a weapon').addChoices(
@@ -947,7 +947,7 @@ function buildManageCommandData() {
         .addStringOption(o => o.setName('event').setDescription('Go to one calendar entry: type part of its title').setAutocomplete(true))
         .addStringOption(o => o.setName('do').setDescription('What to do. With event: it happens right away').addChoices(
             { name: 'Add Entry', value: 'add' }, { name: 'Edit', value: 'edit' }, { name: 'Delete', value: 'delete' },
-            { name: 'Paste Entries', value: 'paste' }, { name: 'Export', value: 'export' }, { name: 'Banners', value: 'banners' }, { name: 'Guide', value: 'guide' }))
+            { name: 'Bulk Paste', value: 'paste' }, { name: 'Export', value: 'export' }, { name: 'Banners', value: 'banners' }, { name: 'Guide', value: 'guide' }))
         .addStringOption(o => o.setName('show').setDescription('Open a list of calendar entries').addChoices(
             { name: 'Events', value: 'event' }, { name: 'Playlists', value: 'playlist' }, { name: 'Draws', value: 'draw' },
             { name: 'Upcoming', value: 'upcoming' }, { name: 'Active Now', value: 'live' }, { name: 'Ending Soon', value: 'leaving' }, { name: 'Ended', value: 'ended' }))
@@ -964,8 +964,8 @@ function buildManageCommandData() {
         .addStringOption(visibility);
     const draftSub = sub => sub.setName('draft').setDescription('Stage the next season')
         .addStringOption(o => o.setName('do').setDescription('What to do, right away').addChoices(
-            { name: 'Edit Titles & Deadlines', value: 'titles' }, { name: 'Quick Add', value: 'quickadd' }, { name: 'Edit Draws', value: 'editdraws' }, { name: 'Paste Draws', value: 'draws' },
-            { name: 'Edit Calendar', value: 'editcalendar' }, { name: 'Paste Calendar', value: 'calendar' }, { name: 'Banners', value: 'banners' }, { name: 'Needs a Look', value: 'look' }, { name: 'Guide', value: 'guide' }))
+            { name: 'Edit Titles & Deadlines', value: 'titles' }, { name: 'Quick Add', value: 'quickadd' }, { name: 'Edit Draws', value: 'editdraws' }, { name: 'Bulk Paste Draws', value: 'draws' },
+            { name: 'Edit Calendar', value: 'editcalendar' }, { name: 'Bulk Paste Calendar', value: 'calendar' }, { name: 'Banners', value: 'banners' }, { name: 'Needs a Look', value: 'look' }, { name: 'Guide', value: 'guide' }))
         .addStringOption(visibility);
     const announceSub = sub => sub.setName('announcement').setDescription('Announcements')
         .addStringOption(o => o.setName('announcement').setDescription('Go to one announcement: type part of its text').setAutocomplete(true))

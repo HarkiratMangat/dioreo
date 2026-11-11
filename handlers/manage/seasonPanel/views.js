@@ -205,7 +205,7 @@ function draftDrawsView(doc, sec = 'n', page = 0, note = null) {
     const components = [text(`${crumb('Next Season Draft', 'Draws')}\n## ${SEC[s].emoji()} Draft ${SEC[s].label}\n-# Add, edit or remove one draw at a time, or paste many. Nothing goes live until Promote to Live.`)];
     if (note) components.push(SMALL(), text(note));
     components.push(BIG(), row(btn(['dd', 'n', 0, 't'], `New Draws · ${nN}`, emojis.newDraws, s === 'n' ? 3 : 2, s === 'n'), btn(['dd', 'r', 0, 't'], `Returning Draws · ${nR}`, emojis.returningDraws, s === 'r' ? 3 : 2, s === 'r')), SMALL());
-    if (!shown.length) components.push(text(`-# Nothing staged here yet. Add Draw adds one; Paste Draws adds many.`));
+    if (!shown.length) components.push(text(`-# Nothing staged here yet. Add Draw adds one; Bulk Paste adds many.`));
     for (const d of shown) {
         const tier = topTier(d);
         const items = (d.items || []).filter(i => i.tier !== 'comment').length;
@@ -214,7 +214,7 @@ function draftDrawsView(doc, sec = 'n', page = 0, note = null) {
     // The tabs above end in `t` (2026-11-10, his "i can't go right"): on page 2 the left arrow is `dd|n|0`, and a tab with the same id made Discord refuse the whole page.
     if (pages > 1) components.push(row(arrow(['dd', s, pg - 1], 'left', pg === 0), counter(['ddpg', s], `Page ${pg + 1} / ${pages}`), arrow(['dd', s, pg + 1], 'right', pg === pages - 1)));
     // Quick Add (2026-11-09 14:13 EST, Harkirat: "theres no 'quick add' options in /manage season draft when adding draws"): the /manage draws Quick Add, staging into the draft (handlers/manage/quickAdd.js, target 'draft').
-    components.push(BIG(), row(btn(['ddqa', s], 'Quick Add', emojis.mngAdd, 3), btn(['ddadd', s], 'Add Draw', emojis.mngAdd), btn(['ddrm', s], 'Remove Draws', emojis.deleteBin, 4, !list.length), btn('dr', 'Paste Draws', emojis.pasteImport)), row(btn(['view', 'draft'], 'Back', emojis.returnArrow), liveDrawsBtn()));
+    components.push(BIG(), row(btn(['ddqa', s], 'Quick Add', emojis.mngAdd, 3), btn(['ddadd', s], 'Add Draw', emojis.mngAdd), btn(['ddrm', s], 'Remove Draws', emojis.deleteBin, 4, !list.length), btn('dr', 'Bulk Paste', emojis.pasteImport)), row(btn(['view', 'draft'], 'Back', emojis.returnArrow), liveDrawsBtn()));
     return panel(components);
 }
 // The Add / Edit Draw pop-up, the same shape as /manage draws' own since round 2 (2026-11-11 12:30 EST, his "Review Drafted Draws" lands here): the Draw box (title, the date it comes out, a Season line for a New draw), Items, Picture Link, the Draw Type dropdown, and a Screenshot. Read by saveDraftDraw through utils/drawForm.js readDrawBox, countdowns refused (a staged draw is not running yet).

@@ -34,8 +34,8 @@ function fill(json, values) {
 }
 const field = (interaction, k) => { try { return interaction.fields.getTextInputValue(k) || ''; } catch { return ''; } };
 const manage = () => require('../../../commands/manage');
-const drawsBox = (values = {}) => fill(reId(manage().buildBulkBothDrawsModal('add'), V.ID('drm'), 'Paste Draws: Add or Update'), values);
-const calendarBox = (values = {}) => fill(reId(manage().buildCalendarBulkModal('add'), V.ID('calm'), 'Paste Calendar: Add or Update'), values);
+const drawsBox = (values = {}) => fill(reId(manage().buildBulkBothDrawsModal('add'), V.ID('drm'), 'Bulk Paste Draws: Add or Update'), values);
+const calendarBox = (values = {}) => fill(reId(manage().buildCalendarBulkModal('add'), V.ID('calm'), 'Bulk Paste Calendar: Add or Update'), values);
 
 // ---------- small view pieces ----------
 const { text, row, btn, panel, plural } = V;
@@ -59,7 +59,7 @@ function drawsPreview(plan, token) {
     if (plan.skipped.length) parts.push(`**${emojis.cross} Not read · ${plan.skipped.length}**\n${list(plan.skipped.map(l => `- \`${l.replace(/`/g, "'")}\``), 6)}\n-# A draw line is Title, items, date, image link. The date is required.`);
     if (!parts.length) parts.push(`${emojis.cross} Nothing in the paste read as a draw.`);
     return panel([
-        text(`${crumb('Next Season Draft', 'Draws', 'Paste')}\n## ${emojis.pasteImport} Paste Draws\n-# What Stage would do. Staged rows you did not paste are left as they are. Nothing reaches players until Promote to Live.`),
+        text(`${crumb('Next Season Draft', 'Draws', 'Bulk Paste')}\n## ${emojis.pasteImport} Bulk Paste Draws\n-# What Stage would do. Staged rows you did not paste are left as they are. Nothing reaches players until Promote to Live.`),
         BIG(),
         text(parts.join('\n\n').slice(0, 3700)),
         BIG(),
@@ -75,7 +75,7 @@ function calendarPreview(plan, token) {
     if (plan.skipped.length) parts.push(`**${emojis.cross} Not read · ${plan.skipped.length}**\n${list(plan.skipped.map(l => `- \`${l.replace(/`/g, "'")}\``), 6)}\n-# A calendar line is \`11/12 - 11/26 | Title\`, or \`All Season\` / \`TBD\` for the end.`);
     if (!parts.length) parts.push(`${emojis.cross} Nothing in the paste read as a calendar line.`);
     return panel([
-        text(`${crumb('Next Season Draft', 'Calendar', 'Paste')}\n## ${emojis.pasteImport} Paste Calendar\n-# What Stage would do. Staged rows you did not paste are left as they are. Nothing reaches players until Promote to Live.`),
+        text(`${crumb('Next Season Draft', 'Calendar', 'Bulk Paste')}\n## ${emojis.pasteImport} Bulk Paste Calendar\n-# What Stage would do. Staged rows you did not paste are left as they are. Nothing reaches players until Promote to Live.`),
         BIG(),
         text(parts.join('\n\n').slice(0, 3700)),
         BIG(),
@@ -103,7 +103,7 @@ function draftCalendarView(doc, page = 0, note = null, extraRow = null) {
     const components = [text(`${crumb('Next Season Draft', 'Calendar')}\n## ${emojis.calendar} Draft Calendar\n-# ${plural(all.length, 'row')}. Edit one at a time, add one, remove some, or paste many. Nothing goes live until Promote to Live.`)];
     if (note) components.push(SMALL(), text(note));
     components.push(BIG());
-    if (!shown.length) components.push(text('-# Nothing staged here yet. Add Entry adds one; Paste Calendar adds many.'));
+    if (!shown.length) components.push(text('-# Nothing staged here yet. Add Entry adds one; Bulk Paste adds many.'));
     for (const { r, key } of shown) {
         const orphan = r.category === 'draw' && !draws.some(x => isSameDrawTitle(x.title, r.title));
         components.push({ type: 9, components: [text(`**${r.title || '(untitled)'}**${r.isDoubleCP ? ' · 2X CP' : ''}\n-# ${r.category || 'event'} · ${calWhen(r)} · *${V.origin(r)}*${orphan ? `\n-# ${emojis.warn} No staged draw by this name: /draws will not list it after Promote.` : ''}`)], accessory: btn(['dcedit', key], 'Edit', emojis.edit) });
@@ -111,7 +111,7 @@ function draftCalendarView(doc, page = 0, note = null, extraRow = null) {
     if (pages > 1) components.push(row(arrow(['dc', pg - 1], 'left', pg === 0), counter(['dcpg'], `Page ${pg + 1} / ${pages}`), arrow(['dc', pg + 1], 'right', pg === pages - 1)));
     components.push(BIG());
     if (extraRow) components.push(extraRow);
-    components.push(row(btn('dcadd', 'Add Entry', emojis.mngAdd, 3), btn(['dcrm', pg], 'Remove Entries', emojis.deleteBin, 4, !all.length), btn('cal', 'Paste Calendar', emojis.pasteImport), btn('dbn', 'Banners', emojis.calendar), btn(['view', 'draft'], 'Back', emojis.returnArrow)));
+    components.push(row(btn('dcadd', 'Add Entry', emojis.mngAdd, 3), btn(['dcrm', pg], 'Remove Entries', emojis.deleteBin, 4, !all.length), btn('cal', 'Bulk Paste', emojis.pasteImport), btn('dbn', 'Banners', emojis.calendar), btn(['view', 'draft'], 'Back', emojis.returnArrow)));
     return panel(components);
 }
 function calendarRemoveModal(doc, page = 0) {
@@ -200,7 +200,7 @@ async function route(interaction, verb, a, b, ctx) {
     if (verb === 'dps') {
         if (!(await gate(interaction, 'bulkdraws'))) return true;
         const p = pasteFor(a, user);
-        if (!p) { if (PASTES.has(String(a))) { await say(interaction, `${emojis.cross} That paste is someone else's. Paste your own with Paste Draws.`); return true; } await show(interaction, V.draftDrawsView(await getDoc(), 'n', 0, `${emojis.cross} That paste has expired (they last 30 minutes). Paste it again.`)); return true; }
+        if (!p) { if (PASTES.has(String(a))) { await say(interaction, `${emojis.cross} That paste is someone else's. Paste your own with Bulk Paste.`); return true; } await show(interaction, V.draftDrawsView(await getDoc(), 'n', 0, `${emojis.cross} That paste has expired (they last 30 minutes). Paste it again.`)); return true; }
         await ack(interaction);
         // Planned again against the draft as it is now, so a row staged since the preview is matched rather than added twice.
         const r = await require('../season').saveDraftDraws(user, p.newText, p.retText);
@@ -232,7 +232,7 @@ async function route(interaction, verb, a, b, ctx) {
     if (verb === 'cps') {
         if (!(await gate(interaction, 'bulkcalendar'))) return true;
         const p = pasteFor(a, user);
-        if (!p) { if (PASTES.has(String(a))) { await say(interaction, `${emojis.cross} That paste is someone else's. Paste your own with Paste Calendar.`); return true; } await show(interaction, draftCalendarView(await getDoc(), 0, `${emojis.cross} That paste has expired (they last 30 minutes). Paste it again.`)); return true; }
+        if (!p) { if (PASTES.has(String(a))) { await say(interaction, `${emojis.cross} That paste is someone else's. Paste your own with Bulk Paste.`); return true; } await show(interaction, draftCalendarView(await getDoc(), 0, `${emojis.cross} That paste has expired (they last 30 minutes). Paste it again.`)); return true; }
         await ack(interaction);
         const r = await require('../season').saveDraftCalendar(user, p.text);
         if (r.ok) PASTES.delete(String(a));
