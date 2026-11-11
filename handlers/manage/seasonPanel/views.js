@@ -193,6 +193,8 @@ function listView(doc, kind, page = 0) {
 const DD_PER_PAGE = 6;
 const SEC = { n: { key: 'newDraws', label: 'New Draws', emoji: () => emojis.newDraws }, r: { key: 'returningDraws', label: 'Returning Draws', emoji: () => emojis.returningDraws } };
 const topTier = (d) => { const order = ['mythic', 'legendary', 'epic', 'rare', 'uncommon', 'common']; const tiers = (d.items || []).map(i => String(i.tier || '').toLowerCase()); return order.find(t => tiers.includes(t)) || null; };
+// The way to the live draws from the staged ones (2026-11-11 12:30 EST): /manage draws' Review Drafted Draws lands here, so Back alone (the draft's home) left no way back to where he came from. The draws panel's own Home id.
+const liveDrawsBtn = () => ({ type: 2, style: 2, custom_id: 'mng_dr|page', label: 'Live Draws', emoji: emojis.parseEmoji(emojis.returnArrow) });
 function draftDrawsView(doc, sec = 'n', page = 0, note = null) {
     const s = SEC[sec] ? sec : 'n';
     const list = require('../../../utils/draftDraws').byDate(doc?.draft?.[SEC[s].key] || []);
@@ -212,25 +214,26 @@ function draftDrawsView(doc, sec = 'n', page = 0, note = null) {
     // The tabs above end in `t` (2026-11-10, his "i can't go right"): on page 2 the left arrow is `dd|n|0`, and a tab with the same id made Discord refuse the whole page.
     if (pages > 1) components.push(row(arrow(['dd', s, pg - 1], 'left', pg === 0), counter(['ddpg', s], `Page ${pg + 1} / ${pages}`), arrow(['dd', s, pg + 1], 'right', pg === pages - 1)));
     // Quick Add (2026-11-09 14:13 EST, Harkirat: "theres no 'quick add' options in /manage season draft when adding draws"): the /manage draws Quick Add, staging into the draft (handlers/manage/quickAdd.js, target 'draft').
-    components.push(BIG(), row(btn(['ddqa', s], 'Quick Add', emojis.mngAdd, 3), btn(['ddadd', s], 'Add Draw', emojis.mngAdd), btn(['ddrm', s], 'Remove Draws', emojis.deleteBin, 4, !list.length), btn('dr', 'Paste Draws', emojis.pasteImport), btn(['view', 'draft'], 'Back', emojis.returnArrow)));
+    components.push(BIG(), row(btn(['ddqa', s], 'Quick Add', emojis.mngAdd, 3), btn(['ddadd', s], 'Add Draw', emojis.mngAdd), btn(['ddrm', s], 'Remove Draws', emojis.deleteBin, 4, !list.length), btn('dr', 'Paste Draws', emojis.pasteImport)), row(btn(['view', 'draft'], 'Back', emojis.returnArrow), liveDrawsBtn()));
     return panel(components);
 }
-// The Add / Edit Draw pop-up: Title, Items (one per line, as the bulk format writes them), Release Date, Image Link, Draw Type.
+// The Add / Edit Draw pop-up, the same shape as /manage draws' own since round 2 (2026-11-11 12:30 EST, his "Review Drafted Draws" lands here): the Draw box (title, the date it comes out, a Season line for a New draw), Items, Picture Link, the Draw Type dropdown, and a Screenshot. Read by saveDraftDraw through utils/drawForm.js readDrawBox, countdowns refused (a staged draw is not running yet).
 function draftDrawModal(sec, draw = null) {
     const s = SEC[sec] ? sec : 'n';
+    const m = require('../../../commands/manage');
     const { itemLines } = require('../../../utils/draftDraws');
     const { formatAdminDate } = require('../../../utils/adminParser');
-    const code = draw?.priceType ? (require('../../../utils/drawTypes').drawTypeCode?.(draw.priceType) || '') : '';
-    const input = (id, label, style, value, required, placeholder) => ({ type: 1, components: [{ type: 4, custom_id: id, label, style, required, ...(value ? { value: String(value).slice(0, 4000) } : {}), ...(placeholder ? { placeholder } : {}) }] });
+    const box = require('../../../utils/drawForm').drawBoxValue({ title: draw?.title || '', dates: draw?.date ? formatAdminDate(draw.date) : '' });
+    const label = (id, text, style, value, required, placeholder, description) => ({ type: 18, label: text, ...(description ? { description: description.slice(0, 100) } : {}), component: { type: 4, custom_id: id, style, required, ...(value ? { value: String(value).slice(0, 4000) } : {}), ...(placeholder ? { placeholder } : {}) } });
     return {
         title: draw ? 'Edit Draft Draw' : `Add a ${s === 'n' ? 'New' : 'Returning'} Draw`,
         custom_id: draw ? ID('ddeditm', s, String(draw._id || '')) : ID('ddaddm', s),
         components: [
-            input('title', 'Title', 1, draw?.title, true, 'e.g. Botanist Mythic Drop'),
-            input('items', 'Items, one per line', 2, draw ? itemLines(draw) : '', true, 'm Weapon - Skin\nl Weapon - Skin\n-# a note'),
-            input('date', 'Release Date', 1, draw?.date ? formatAdminDate(draw.date) : '', true, 'e.g. November 26'),
-            input('image', 'Image Link', 1, draw?.thumbnailUrl, false, 'Blank keeps the picture, or finds one by name'),
-            input('type', 'Draw Type (optional)', 1, code, false, 'e.g. 7s, mw, lw'),
+            label('draw', 'Draw', 2, box, true, s === 'n' ? 'Botanist Mythic Drop\nNovember 26\nSeason 10' : 'Botanist Mythic Drop\nNovember 26', s === 'n' ? 'Title, then the date it comes out, then "Season 10" if it first came out in another one.' : 'Title on line 1, the date it comes out on line 2.'),
+            label('items', 'Items', 2, draw ? itemLines(draw) : '', true, 'm Weapon - Skin\nl Weapon - Skin\n-# a note', 'One per line: m Mythic, l Legendary, lg Legacy, e Epic, then the name. -# for a note.'),
+            label('image', 'Picture Link', 1, draw?.thumbnailUrl, false, null, 'Optional. Blank keeps the picture, or finds one by name.'),
+            m.drawTypeLabel(draw?.priceType || '').toJSON(),
+            m.screenshotLabel().toJSON(),
         ],
     };
 }

@@ -5,7 +5,8 @@
 // A pop-up opened before this change still carries the old Title and Dates fields, so readDrawFields reads those when there is no box.
 const SEASON_RE = /^(?:season|s)\s*(\d{1,3})$/i;
 
-function readDrawBox(text, { allowSeason = false } = {}) {
+// `allowCountdown: false` for a staged draw (the season draft): a countdown gives a running draw's end, and a draw not out yet has none, so it is refused by name rather than read as "started today".
+function readDrawBox(text, { allowSeason = false, allowCountdown = true } = {}) {
     const { parseDrawDates } = require('./drawDates');
     const lines = String(text || '').split('\n').map(l => l.trim()).filter(Boolean);
     let season = null, dates = null;
@@ -14,6 +15,7 @@ function readDrawBox(text, { allowSeason = false } = {}) {
     for (const line of lines) {
         const m = line.match(SEASON_RE);
         if (m && season === null) { season = Number(m[1]); continue; }
+        if (!allowCountdown && require('./countdown').parseCountdown(line)) return { error: `"${line.slice(0, 40)}" is a countdown, which only a running draw has. Type the date this draw comes out, e.g. "November 26".` };
         if (!dates && parseDrawDates(line).ok) { dates = line; continue; }
         rest.push(line);
     }

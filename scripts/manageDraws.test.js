@@ -23,6 +23,7 @@ function limits(view, name) {
     const { isReturn } = require('../utils/returnFirst');
     const gunsmith = emojis.parseEmoji(emojis.gunsmithSearch).id;
     walk(view, c => {
+        if (c.type === 1) assert.ok((c.components || []).length <= 5, `${name}: a row of ${(c.components || []).length}, over Discord's five`);
         if (c.type === 1) { const kinds = (c.components || []).map(isReturn); assert.ok(kinds.indexOf(false) === -1 || kinds.lastIndexOf(true) < kinds.indexOf(false), `${name}: a way back after another button in a row`); }
         if (c.emoji) assert.notStrictEqual(String(c.emoji.id), String(gunsmith), `${name}: the gunsmith search emoji`);
         if (c.type === 2 && c.disabled && c.style === 3) assert.fail(`${name}: a disabled green button used as a status (${c.label})`);

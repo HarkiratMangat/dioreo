@@ -109,6 +109,9 @@ function specs() {
           rebuild: (id) => reIdJson(m.buildAddDrawModal(id.split('|')[2] === 'returning' ? 'returning' : 'new'), id), snippet: drawSnippet },
         { test: (id) => id.startsWith('mng_dr|editm|'),
           rebuild: (id) => reIdJson(m.buildEditDrawModal({ title: '', items: [], date: new Date(), thumbnailUrl: '' }, 'x', 'new'), id), snippet: drawSnippet },
+        // The season draft's Add and Edit Draw pop-ups (2026-11-11 12:35 EST), the Draw box shape since round 2: a refused save keeps what was typed, as /manage draws' own do.
+        { test: (id) => /^mng_ss\|dd(?:addm|editm)\|/.test(id),
+          rebuild: (id) => reIdJson(require('./seasonPanel/views').draftDrawModal(id.split('|')[2] === 'r' ? 'r' : 'n'), id), snippet: drawSnippet },
         { test: (id) => id === 'modal_draws_bulk_add_both' || id === 'modal_draws_bulk_replace_both',
           rebuild: (id) => m.buildBulkBothDrawsModal(id.includes('_replace_') ? 'replace' : 'add'), snippet: drawsBulkSnippet },
 

@@ -223,6 +223,35 @@ const emptyDraft = () => ({ ...live(), draft: { active: false, newDraws: [], ret
         for (const f of ['saveTitlesDeadlines', 'saveDraftDraws', 'saveDraftCalendar', 'runPromoteDraft', 'runDiscardDraft', 'readTitleFields', 'setTitlesDeadlines', 'handleDraftButton', 'promptWipeSeason', 'handleWipeButton']) assert.strictEqual(typeof S[f], 'function', f);
     });
 
+    // The draft's draw pop-up has /manage draws' shape since round 2 (2026-11-11 12:30 EST): the Draw box, Items, Picture Link, the Draw Type dropdown, a Screenshot; its own example reads, a countdown is refused, and the draws list has a way back to the live draws.
+    await check('the draft draw pop-up is the Draw box shape, and its list leads back to the live draws', () => {
+        const SV = require('../handlers/manage/seasonPanel/views');
+        const { readDrawBox } = require('../utils/drawForm');
+        for (const sec of ['n', 'r']) {
+            const modal = SV.draftDrawModal(sec, sec === 'r' ? { _id: 'x', title: 'Old Draw', date: new Date('2026-12-01T00:00:00Z'), items: [], priceType: '' } : null);
+            const comps = modal.components.map(l => l.component);
+            assert.deepStrictEqual(comps.map(c => c.custom_id), ['draw', 'items', 'image', 'price_type', 'shot']);
+            assert.ok(modal.components.every(l => !l.description || l.description.length <= 100), 'descriptions fit Discord');
+            const read = readDrawBox(comps[0].placeholder, { allowSeason: sec === 'n', allowCountdown: false });
+            assert.ok(!read.error, `${sec}: its own example does not read: ${read.error}`);
+            if (sec === 'r') assert.ok(comps[0].value.startsWith('Old Draw\n'), 'Edit prefills the box');
+        }
+        assert.ok(readDrawBox('Zz Draw\n13d 23h', { allowCountdown: false }).error.includes('countdown'), 'a staged draw refuses a countdown');
+        const json = JSON.stringify(SV.draftDrawsView({ draft: { active: true, newDraws: [], returningDraws: [] } }, 'n'));
+        assert.ok(json.includes('"custom_id":"mng_dr|page"') && json.includes('Live Draws'), 'a way back to the live draws');
+        // Discord refuses a row of more than five (the Live Draws button made it six on the dev bot, 2026-11-11 12:33 EST).
+        const rowsOver = []; const walk = (c) => { if (!c || typeof c !== 'object') return; if (c.type === 1 && (c.components || []).length > 5) rowsOver.push(c.components.length); for (const k of ['components', 'accessory', 'component']) { const v = c[k]; if (Array.isArray(v)) v.forEach(walk); else if (v) walk(v); } };
+        for (const sec of ['n', 'r']) SV.draftDrawsView({ draft: { active: true, newDraws: [{ _id: 'a', title: 'A', date: new Date(), items: [] }], returningDraws: [] } }, sec).forEach(walk);
+        assert.deepStrictEqual(rowsOver, [], 'a row of more than five buttons');
+        // A refused draft save keeps what was typed: Try Again reopens the draft pop-up, filled in.
+        const retry = require('../handlers/manage/retry');
+        retry.pendingModalRetries.set('tokdd', { modalCustomId: 'mng_ss|ddaddm|n', values: { draw: 'Zz Draw\nNovember 26', items: 'l Gun', image: '' } });
+        const again = retry.buildRetryModal('tokdd');
+        const byId = Object.fromEntries(again.components.map(l => [(l.component || {}).custom_id, l.component]));
+        assert.strictEqual(again.custom_id, 'mng_ss|ddaddm|n');
+        assert.strictEqual(byId.draw.value, 'Zz Draw\nNovember 26', 'the Draw box refills');
+    });
+
     console.log(failed ? `\n${failed} check(s) FAILED.` : '\nAll manage season panel checks passed.');
     process.exit(failed ? 1 : 0);
 })();

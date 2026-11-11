@@ -1004,6 +1004,7 @@ function buildManageCommandData() {
 module.exports = {
     prefillModal,
     drawTypeLabel,
+    screenshotLabel,
     ALLOWED_ADMIN_ID, // Re-exported from utils/owner.js; nothing reads it off this module now (the panel-interaction guard in handlers/router.js gates through hasCommandAccess), so it is kept only as a harmless alias.
     data: buildManageCommandData(),
 
