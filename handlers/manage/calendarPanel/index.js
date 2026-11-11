@@ -81,6 +81,28 @@ function resolveKeys(doc, names, picks = []) {
     }
     return { keys: [...keys], unmatched };
 }
+// Search Calendar's matcher (the draws redesign): each line is an entry's words (all in its title), lines widen each other, and lists narrow them: within types (Events, Playlists, Draws) or states (Upcoming, Active Now, Ending Soon, Ended) a pick widens, across them it narrows, Needs a Look narrows on its own. Both blank is every entry.
+const GROUP = { events: 'type', playlists: 'type', draws: 'type', upcoming: 'state', live: 'state', leaving: 'state', ended: 'state', warn: 'look' };
+function findKeys(doc, text, picks = []) {
+    const all = V.allEntries(doc);
+    const lines = String(text || '').split('\n').map(x => x.trim()).filter(Boolean);
+    const unmatched = [];
+    let pool = all;
+    if (lines.length) {
+        const hit = new Set();
+        for (const line of lines) {
+            const words = wordsOf(line);
+            const found = all.filter(e => words.every(w => e.title.toLowerCase().includes(w)));
+            if (!found.length) unmatched.push(line);
+            found.forEach(e => hit.add(e._key));
+        }
+        pool = all.filter(e => hit.has(e._key));
+    }
+    const groups = {};
+    for (const p of (picks || []).filter(p => V.STATUS[p])) (groups[GROUP[p] || p] ||= []).push(p);
+    pool = pool.filter(e => Object.values(groups).every(g => g.some(p => V.STATUS[p].test(e))));
+    return { keys: pool.map(e => e._key), unmatched };
+}
 const field = (i, id) => { try { const f = i.fields.getField(id); return f?.value ?? f?.values ?? null; } catch { return null; } };
 
 // ---------- paste text ---------- What pasted or edited calendar lines would do, line by line against the rows saved now, matched the way Replace saves them (utils/bulkMerge.js upsertByTitle: the same title, else the best fuzzy match). `keep` is the lines that add or change something, which is all Save sends, so an Edit N left as it was saves nothing. A bulleted paste can carry several entries on one line; the line is kept when any of them changes.
@@ -210,8 +232,8 @@ async function route(interaction) {
     const noEntry = async (doc) => show(interaction, await home(doc, `${emojis.cross} That entry no longer exists.`, interaction));
 
     // ----- pop-ups first (a pop-up has to be the first answer) -----
-    if (verb === 'find') return interaction.showModal(V.searchModal());
-    if (verb === 'select') return interaction.showModal(V.selectModal());
+    if (verb === 'find') return interaction.showModal(V.searchModal(await getDoc()));
+    if (verb === 'sres') { const sel = await loadSel(a); return sel ? show(interaction, V.searchView(await getDoc(), a, sel, n(b))) : say(interaction, `${emojis.cross} Those results expired (lists last a day). Search again.`); }
     if (verb === 'export') return (await gate(interaction, 'export')) && interaction.showModal(V.exportModal());
     if (verb === 'guide') return runGuide(interaction);
     if (verb === 'add') return (await gate(interaction, 'add')) && interaction.showModal(m.buildCalendarAddModal());
@@ -292,35 +314,26 @@ async function route(interaction) {
         return show(interaction, V.resultView({ title: 'Calendar purge', ok: changeIds?.length ? true : false, body: [confirmMsg, '-# Revert it here, or from `/bot analytics` › Changes.'], back: 'page', backLabel: 'Home', extraButtons: revertButton(changeIds) }));
     }
 
-    // ----- search and select -----
+    // ----- search and select ----- One Search (the draws redesign): words, one entry per line, widen each other; lists narrow them; both blank is every entry. One match opens its card; none answers privately.
     if (verb === 'findm' && interaction.isModalSubmit?.()) {
         const doc = await getDoc();
-        const q = interaction.fields.getTextInputValue('q');
-        const { keys } = resolveKeys(doc, q, []);
-        if (!keys.length) return show(interaction, await home(doc, `${emojis.cross} No entry matches \`${q.slice(0, 60)}\`.`, interaction));
+        const q = field(interaction, 'q') || '';
+        const picks = [].concat(field(interaction, 'picks') || []);
+        const { keys, unmatched } = findKeys(doc, q, picks);
+        const what = [...String(q).split('\n').map(x => x.trim()).filter(Boolean).map(x => `\`${x.slice(0, 40)}\``), ...picks.filter(p => V.STATUS[p]).map(p => V.STATUS[p].label)];
+        if (!keys.length) return say(interaction, `${emojis.cross} No entry matches ${what.join(' · ') || 'that'}.`);
         if (keys.length === 1) return show(interaction, V.cardView(doc, keys[0]));
-        const byKey = new Map(V.allEntries(doc).map(e => [e._key, e]));
-        return show(interaction, V.resultView({
-            crumbs: ['Search'], title: `${keys.length} entries match \`${q.slice(0, 60)}\``, back: 'find', backLabel: 'Search Again',
-            extraRows: [{ type: 1, components: [{ type: 3, custom_id: V.ID('open', ''), placeholder: 'Pick an entry', options: keys.slice(0, 25).map(k => ({ label: byKey.get(k).title.slice(0, 100), value: k, description: V.typeWord(byKey.get(k)) })) }] }],
-        }));
+        const token = await createSelection({ ids: keys, selected: [], query: what, unmatched });
+        return show(interaction, V.searchView(doc, token, await loadSel(token)));
     }
-    if (verb === 'selectm' && interaction.isModalSubmit?.()) {
+    // A list made into a selection: its Select menu, or Select All.
+    if ((verb === 'lpick' && interaction.isStringSelectMenu?.()) || verb === 'lall') {
         const doc = await getDoc();
-        const names = field(interaction, 'names') || '';
-        const picks = field(interaction, 'picks') || [];
-        const { keys, unmatched } = resolveKeys(doc, names, picks);
-        const query = [...String(names).split('\n').map(x => x.trim()).filter(Boolean), ...picks.map(p => `All ${V.STATUS[p]?.label || p}`)];
-        const token = await createSelection({ ids: keys, selected: [], query, unmatched });
+        const list = V.listOf(doc, a).map(e => e._key);
+        const token = await createSelection({ ids: list, selected: verb === 'lall' ? list : interaction.values.filter(v => list.includes(v)), query: [V.STATUS[a]?.label || a] });
         return show(interaction, V.selectView(doc, token, await loadSel(token)));
     }
-    if (verb === 'sellist') {
-        const doc = await getDoc();
-        const { keys } = resolveKeys(doc, '', [a]);
-        const token = await createSelection({ ids: keys, selected: [], query: [`All ${V.STATUS[a]?.label || a}`] });
-        return show(interaction, V.selectView(doc, token, await loadSel(token)));
-    }
-    if (['flip', 'all', 'none', 'slist', 'tedit', 'teditm', 'texp', 'tdel', 'tdelok', 'save', 'pastem'].includes(verb)) return routeSelection(interaction, verb, a, b, c);
+    if (['pick', 'unpick', 'all', 'none', 'slist', 'tedit', 'teditm', 'texp', 'tdel', 'tdelok', 'save', 'pastem'].includes(verb)) return routeSelection(interaction, verb, a, b, c);
 
     // ----- export -----
     if (verb === 'exportm' && interaction.isModalSubmit?.()) {
@@ -366,10 +379,11 @@ async function routeSelection(interaction, verb, a, b, c) {
     if (!sel) return show(interaction, expired());
     const keys = selectedKeys(sel);
 
-    if (verb === 'flip' && interaction.isStringSelectMenu?.()) {
+    // The results' Select menu adds; the Selected view's Unselect menu takes away.
+    if ((verb === 'pick' || verb === 'unpick') && interaction.isStringSelectMenu?.()) {
         const on = new Set(sel.selected);
-        for (const v of interaction.values) { if (on.has(v)) on.delete(v); else on.add(v); }
-        sel.selected = [...on];
+        for (const v of interaction.values) { if (verb === 'pick') on.add(v); else on.delete(v); }
+        sel.selected = sel.ids.filter(k => on.has(k));
         await setSel(a, { selected: sel.selected });
         return show(interaction, V.selectView(await getDoc(), a, sel, null, n(b)));
     }
@@ -438,4 +452,4 @@ async function handleCalendarPanelInteraction(interaction) {
     return true;
 }
 
-module.exports = { handleCalendarPanelInteraction, renderHome, openFromSlash, autocomplete, previewCalendar, exportText, resolveKeys, PREFIX };
+module.exports = { handleCalendarPanelInteraction, renderHome, openFromSlash, autocomplete, previewCalendar, exportText, resolveKeys, findKeys, PREFIX };

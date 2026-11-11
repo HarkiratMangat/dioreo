@@ -60,7 +60,7 @@ function seasonDoc() {
         assert.match(JSON.stringify(V.selectView(doc, 'tok12345', sel)), /Edit 7/);
         limits(V.selectView(doc, 'tok12345', { ids: [], selected: [] }), 'select empty');
         assert.strictEqual(V.cardView(doc, 'c:doesnotexist'), null);
-        for (const modal of [V.searchModal(), V.selectModal(), V.exportModal()]) assert.ok(modal.components.length <= 5);
+        for (const modal of [V.searchModal(), V.searchModal(seasonDoc()), V.exportModal()]) assert.ok(modal.components.length <= 5);
     });
 
     await check('the lists sort and filter: Active Now ends soonest first, Ended latest first, the no-end row needs a look', () => {
@@ -70,12 +70,30 @@ function seasonDoc() {
         assert.ok(live.length > 4, 'too few live rows to prove an order');
         const text = JSON.stringify(V.listView(doc, 'live', 0));
         const titles = (text.match(/\*\*Calendar Entry Number \d+ With a Fairly Long Title\*\*/g) || []).map(t => t.replace(/\*/g, ''));
-        assert.deepStrictEqual(titles.slice(0, 10), live.slice(0, 10).map(e => e.title));
+        assert.deepStrictEqual(titles.slice(0, 7), live.slice(0, 7).map(e => e.title), 'seven a page, each with Edit (the draws redesign)');
         assert.ok(all.filter(V.STATUS.warn.test).some(e => e.title === 'A Row With No End Date'));
         assert.ok(all.filter(V.STATUS.leaving.test).length > 0, 'no row ending within 3 days');
         assert.ok(all.every(e => e._key.startsWith('c:')));
     });
 
+    // The draws redesign carried to calendar (2026-11-11 15:15 EST, his go).
+    await check('one Search for calendar: lines widen, lists narrow, the Selected view has three shapes', () => {
+        const doc = seasonDoc();
+        const all = V.allEntries(doc);
+        assert.strictEqual(P.findKeys(doc, '', []).keys.length, all.length, 'both blank: every entry');
+        const playlists = all.filter(V.STATUS.playlists.test).length;
+        assert.strictEqual(P.findKeys(doc, '', ['playlists']).keys.length, playlists);
+        assert.ok(P.findKeys(doc, 'entry number', ['playlists']).keys.length <= playlists, 'a list narrows the words');
+        assert.strictEqual(P.findKeys(doc, '', ['playlists', 'events']).keys.length, playlists + all.filter(V.STATUS.events.test).length, 'two types widen');
+        assert.ok(V.searchModal(doc).components[1].component.options.every(o => / · \d+$/.test(o.label)), 'each list shows its count');
+        const keys = all.map(e => e._key);
+        assert.ok(JSON.stringify(V.selectView(doc, 'tok', { ids: keys, selected: [] })).includes('|pick|tok|'));
+        assert.ok(JSON.stringify(V.selectView(doc, 'tok', { ids: keys, selected: [keys[0]] })).includes('|sres|tok|'), 'one selected is its card, back to the results');
+        const many = JSON.stringify(V.selectView(doc, 'tok', { ids: keys, selected: keys.slice(0, 3) }));
+        for (const want of ['3 selected', 'Edit 3', 'Export 3', 'Delete 3', '|unpick|tok']) assert.ok(many.includes(want), want);
+        const list = JSON.stringify(V.listView(doc, 'events'));
+        assert.ok(list.includes('|lpick|events|') && list.includes('|lall|events'));
+    });
     await check('a draw row with its draw on /draws opens it; one with none is flagged, needs a look, and offers Add the Draw', async () => {
         const doc = seasonDoc();
         const rows = V.allEntries(doc).filter(e => e._cat === 'draw');

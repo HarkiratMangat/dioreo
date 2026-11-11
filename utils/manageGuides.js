@@ -148,7 +148,7 @@ function calendarSections() {
             '\n**Renders as:** 3 entries, sorted onto their own pages — "Jupiter Cannon Draw" under **Draws**, "Krai BR" under **Playlists & Modes** (open-ended, tied to the Battle Pass end), "Anniversary Celebration" under **Events**.'),
         section('💡 Tips',
             '• Use the calendar panel\'s **Export** (or `/manage calendar do:Export`) to grab this exact format pre-filled with your real current data.\n' +
-            '• **Bulk Paste**, and **Edit** on Select Entries, update an entry with the same title and add a new one; a preview shows what changes before **Save**, and nothing unmentioned is touched. **Purge Calendar** is the full wipe.\n' +
+            '• **Bulk Paste**, and **Edit N** on entries you select, update an entry with the same title and add a new one; a preview shows what changes before **Save**, and nothing unmentioned is touched. **Purge Calendar** is the full wipe.\n' +
             '• A **draw** row\'s card has **Open the Draw**, its card in /manage draws. A draw row with no draw of that title on /draws is marked and listed under **Needs a Look**: players see dates with no items or picture, and **Add the Draw** opens Quick Add with the row\'s dates.')
     ];
 }
