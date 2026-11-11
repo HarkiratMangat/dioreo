@@ -128,6 +128,27 @@ function searchKeys(doc, q) {
     const inAny = (d) => { const hay = `${d.title} ${(d.items || []).map(i => i.name).join(' ')}`.toLowerCase(); return words.every(w => hay.includes(w)); };
     return [...all.filter(inTitle), ...all.filter(d => !inTitle(d) && inAny(d))].map(d => d._key);
 }
+// The one Search's matcher (the redesign): each line is a draw's words (title or items, title matches first, searchKeys), lines widen each other, lists narrow them, and both blank is every draw. Before, Select ADDED typed titles to the picked lists, so New Draws + "sapphire" gave every New draw plus every sapphire draw.
+function findKeys(doc, text, picks = []) {
+    const lines = String(text || '').split('\n').map(x => x.trim()).filter(Boolean);
+    const unmatched = [];
+    let keys = null;
+    if (lines.length) {
+        const seen = new Set();
+        keys = [];
+        for (const line of lines) {
+            const hit = searchKeys(doc, line);
+            if (!hit.length) unmatched.push(line);
+            for (const k of hit) if (!seen.has(k)) { seen.add(k); keys.push(k); }
+        }
+    }
+    const valid = (picks || []).filter(p => V.STATUS[p]);
+    if (valid.length) {
+        const inLists = new Set(resolveKeys(doc, '', valid).keys);
+        keys = keys ? keys.filter(k => inLists.has(k)) : V.allDraws(doc).map(d => d._key).filter(k => inLists.has(k));
+    }
+    return { keys: keys || V.allDraws(doc).map(d => d._key), unmatched };
+}
 const field = (i, id) => { try { const f = i.fields.getField(id); return f?.value ?? f?.values ?? null; } catch { return null; } };
 
 // ---------- paste text ---------- What pasted or edited draw lines would do, line by line against the draws saved now, matched the way Replace Multiple saves them (utils/bulkMerge.js upsertByTitle: the same title, else the best fuzzy match). `keepNew` / `keepRet` are the lines that add or change something, which is all Save sends, so an Edit N left as it was saves nothing.
@@ -382,8 +403,7 @@ async function route(interaction) {
     const n = (x) => Number(x) || 0;
 
     // ----- pop-ups first (a pop-up has to be the first answer) -----
-    if (verb === 'find') return interaction.showModal(V.searchModal());
-    if (verb === 'select') return interaction.showModal(V.selectModal());
+    if (verb === 'find') return interaction.showModal(V.drawSearchModal(await getDoc()));
     if (verb === 'export') return (await gate(interaction, 'exportnew')) && interaction.showModal(V.exportModal());
     // Check Draw Index reads, never writes: Export's read tier gates it. `a` is the token of the last check, so Check Again opens with what was pasted.
     if (verb === 'check') {
@@ -620,14 +640,16 @@ async function route(interaction) {
         return show(interaction, await home(null, note + revertHint(changeIds), interaction, { noteRow: revertRow(changeIds) }));
     }
 
-    // ----- search and select -----
+    // ----- search and select ----- One Search (the redesign): words, one draw per line, widen each other; lists narrow them; both blank is every draw. One match opens its card; none answers privately.
     if (verb === 'findm' && interaction.isModalSubmit?.()) {
         const doc = await getDoc();
-        const q = interaction.fields.getTextInputValue('q');
-        const keys = searchKeys(doc, q);
-        if (!keys.length) return say(interaction, `${emojis.cross} No draw matches \`${q.slice(0, 60)}\` in its title or items.`);
+        const q = field(interaction, 'q') || '';
+        const picks = [].concat(field(interaction, 'picks') || []);
+        const { keys, unmatched } = findKeys(doc, q, picks);
+        const what = [...String(q).split('\n').map(x => x.trim()).filter(Boolean).map(x => `\`${x.slice(0, 40)}\``), ...(picksLabel(picks) ? [picksLabel(picks)] : [])];
+        if (!keys.length) return say(interaction, `${emojis.cross} No draw matches ${what.join(' · ') || 'that'}.`);
         if (keys.length === 1) return show(interaction, V.cardView(doc, keys[0]));
-        const token = await createSelection({ ids: keys, selected: [], query: [q.slice(0, 100)] });
+        const token = await createSelection({ ids: keys, selected: [], query: what, unmatched });
         return show(interaction, V.searchView(doc, token, await loadSel(token)));
     }
     if (verb === 'checkm' && interaction.isModalSubmit?.()) {
@@ -638,22 +660,14 @@ async function route(interaction) {
         const token = await createSelection({ text: String(names).slice(0, 4000), query: found });
         return show(interaction, V.checkView(result, token, found.length));
     }
-    if (verb === 'selectm' && interaction.isModalSubmit?.()) {
+    // A list made into a selection (the redesign): the Select menu under a list, or its Select All.
+    if ((verb === 'lpick' && interaction.isStringSelectMenu?.()) || verb === 'lall') {
         const doc = await getDoc();
-        const names = field(interaction, 'names') || '';
-        const picks = [].concat(field(interaction, 'picks') || []);
-        const { keys, unmatched } = resolveKeys(doc, names, picks);
-        const query = [...String(names).split('\n').map(x => x.trim()).filter(Boolean), ...(picksLabel(picks) ? [picksLabel(picks)] : [])];
-        const token = await createSelection({ ids: keys, selected: [], query, unmatched });
+        const list = V.listOf(doc, V.STATUS[a] ? a : 'new').map(d => d._key);
+        const token = await createSelection({ ids: list, selected: verb === 'lall' ? list : interaction.values.filter(v => list.includes(v)), query: [V.STATUS[a]?.label || a] });
         return show(interaction, V.selectView(doc, token, await loadSel(token)));
     }
-    if (verb === 'sellist') {
-        const doc = await getDoc();
-        const { keys } = resolveKeys(doc, '', [a]);
-        const token = await createSelection({ ids: keys, selected: [], query: [V.STATUS[a]?.label || a] });
-        return show(interaction, V.selectView(doc, token, await loadSel(token)));
-    }
-    if (['flip', 'all', 'none', 'slist', 'tedit', 'teditm', 'texp', 'tdel', 'tdelok', 'save', 'pastem', 'tendm'].includes(verb)) return routeSelection(interaction, verb, a, b, c);
+    if (['pick', 'unpick', 'all', 'none', 'slist', 'tedit', 'teditm', 'texp', 'tdel', 'tdelok', 'save', 'pastem', 'tendm'].includes(verb)) return routeSelection(interaction, verb, a, b, c);
 
     // ----- export -----
     if (verb === 'exportm' && interaction.isModalSubmit?.()) {
@@ -705,10 +719,11 @@ async function routeSelection(interaction, verb, a, b, c) {
     if (!sel) return say(interaction, EXPIRED);
     const keys = selectedKeys(sel);
 
-    if (verb === 'flip' && interaction.isStringSelectMenu?.()) {
+    // The results' Select menu adds; the Selected view's Unselect menu takes away (the redesign).
+    if ((verb === 'pick' || verb === 'unpick') && interaction.isStringSelectMenu?.()) {
         const on = new Set(sel.selected);
-        for (const v of interaction.values) { if (on.has(v)) on.delete(v); else on.add(v); }
-        sel.selected = [...on];
+        for (const v of interaction.values) { if (verb === 'pick') on.add(v); else on.delete(v); }
+        sel.selected = sel.ids.filter(k => on.has(k));
         await setSel(a, { selected: sel.selected });
         return show(interaction, V.selectView(await getDoc(), a, sel, null, n(b)));
     }
@@ -828,4 +843,4 @@ async function handleDrawsPanelInteraction(interaction) {
 }
 
 module.exports = {
-    calendarAllowed, confirmCard, handleDrawsPanelInteraction, renderHome, openFromSlash, autocomplete, previewDraws, exportText, resolveKeys, searchKeys, picksLabel, planEnd, readEnd, withStoredLinks, revertButton, PREFIX };
+    calendarAllowed, confirmCard, handleDrawsPanelInteraction, renderHome, openFromSlash, autocomplete, previewDraws, exportText, resolveKeys, searchKeys, findKeys, picksLabel, planEnd, readEnd, withStoredLinks, revertButton, PREFIX };

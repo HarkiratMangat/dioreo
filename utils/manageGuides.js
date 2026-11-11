@@ -86,9 +86,10 @@ function drawsSections() {
         // Tips rewritten 2026-11-10 11:15 EST: one line each, and short enough that the guide with /draws' own example stays under Discord's 4,000 characters (it reached 4,245 and Discord refused it).
         section('💡 Tips',
             '• **Export** (or `do:Export`) writes this format with your real draws: the quickest correct example.\n' +
-            '• **Bulk Paste** and Select\'s **Edit** update a draw with the same title and add new ones, after a preview. Edit leaves picture links out: a line with no link keeps its picture.\n' +
-            '• **End Date** (on a card, or on many from Select) sets only the end: a date, a countdown, With the season, or Not announced yet. An end needs the Calendar permission.\n' +
+            '• **Bulk Paste** and **Edit N** update a draw with the same title and add new ones, after a preview. Edit leaves picture links out: a line with no link keeps its picture.\n' +
+            '• **End Date** (on a card, or on many selected) sets only the end: a date, a countdown, With the season, or Not announced yet. An end needs the Calendar permission.\n' +
             '• **Check Names** (in the **Draw Index**) takes up to 20 names and says what the index has; **Quick Add These** carries the ones it found into Quick Add.\n' +
+            '• **Search Draws** takes words and lists; on any results, select one to open it or more to change together.\n' +
             '• **Needs a Look** lists running draws missing a picture, items, a draw type or an end date, each with the button that fixes it.')
     ];
 }

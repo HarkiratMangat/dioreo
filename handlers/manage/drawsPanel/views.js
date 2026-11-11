@@ -95,6 +95,9 @@ const lookLine = (d) => `${dot(d)} **${d.title}**\n-# ${emojis.blank}${emojis.bl
 // An Open a draw… option: the dot, the title, then what the list row does not say (its draw type).
 const openOption = (d) => ({ label: d.title.slice(0, 100), value: d._key, description: `${secWord(d)} · ${stateName(d)} · ${typeName(d) || 'no draw type'}`.slice(0, 100), emoji: emojis.parseEmoji(dot(d)) });
 
+// One menu per results page (the redesign): it always SELECTS; the Selected view shows one draw's card, or the set with what can be done to many.
+const pickMenu = (id, shown) => ({ type: 1, components: [{ type: 3, custom_id: id, min_values: 1, max_values: Math.max(1, shown.length), placeholder: 'Select one to open it, or more to change together…', options: shown.map(openOption) }] });
+
 async function seasonLine(doc) {
     if (!doc?.currentSeasonTitle) return '';
     const emoji = require('../../../utils/seasonEmoji').seasonEmojiFor(doc.currentSeasonTitle, doc.currentSeasonEmoji);
@@ -132,7 +135,8 @@ async function pageView(doc, note = null, { pageRow = null, noteRow = null } = {
         row(btn('quickadd', 'Quick Add', emojis.plus, 3), btn('addnew', 'New Draw', emojis.newDraws), btn('addreturning', 'Returning Draw', emojis.returningDraws), btn('paste', 'Bulk Paste', emojis.pasteImport)),
         SMALL(),
         text('-# Find a draw…'),
-        row(btn('find', 'Search Draws', emojis.search, 1, !all.length), btn('select', 'Select Draws', emojis.filter, 2, !all.length), lookBtn),
+        // One way to find, one way to act (2026-11-11 15:15 EST, his go on the search/select redesign): Select Draws is gone; Search takes words and lists, and selecting happens on any results.
+        row(btn('find', 'Search Draws', emojis.search, 1, !all.length), lookBtn),
         ...(all.length ? [{ type: 1, components: [{ type: 3, custom_id: ID('browse'), placeholder: 'Or browse a list…', options: Object.entries(STATUS).map(([value, s]) => ({ value, label: `${s.label} · ${n(value)}`, emoji: emojis.parseEmoji(s.emoji()) })) }] }] : []),
         BIG(),
         text('-# The draw index and files…'),
@@ -172,42 +176,48 @@ function listView(doc, status, page = 0, { note = null, noteRow = null } = {}) {
             const onlyEnd = gaps.length === 1 && gaps[0] === 'no end date';
             components.push({ type: 9, components: [text(lookLine(d))], accessory: onlyEnd ? btn(['end', d._key, 'look', 'L'], 'End Date', emojis.timestamp, 1) : btn(['edit', d._key, 'look', 'L'], 'Edit', emojis.edit, 1) });
         }
+        components.push(pickMenu(ID('lpick', key, pg), shown));
     } else {
-        // Edit straight from the list (his round 2): the pop-up opens from the row, and the save lands back on this list (`L`). The card is still one pick away in the Open menu.
+        // Edit straight from the list (his round 2): the pop-up opens from the row, and the save lands back on this list (`L`). Selecting one opens its card; selecting more acts on them together (the redesign).
         for (const d of shown) components.push({ type: 9, components: [text(listLine(d))], accessory: btn(['edit', d._key, key, 'L'], 'Edit', emojis.edit) });
-        components.push({ type: 1, components: [{ type: 3, custom_id: ID('open', key), placeholder: 'Open a draw…', options: shown.map(openOption) }] });
+        components.push(pickMenu(ID('lpick', key, pg), shown));
     }
     if (pages > 1) components.push(row(arrow(['list', key, pg - 1], 'left', pg === 0), counter(['pgn', key], `Page ${pg + 1} / ${pages}`), arrow(['list', key, pg + 1], 'right', pg === pages - 1)));
     // Ended draws are cleared from their own list (2026-11-11 11:55 EST, the second think pass): Purge left the landing in round 2 and took this with it, though clearing ended draws is mid-season upkeep, not a new-season step.
     const clearEnded = key === 'ended' && list.length ? [btn(['purge', 'ended'], `Delete All Ended · ${list.length}`, emojis.deleteBin, 4)] : [];
-    components.push(BIG(), row(btn(['sellist', key], list.length === 1 ? 'Select This One' : `Select These ${list.length}`, emojis.filter, 2, !list.length), ...clearEnded, homeBtn()));
+    components.push(BIG(), row(homeBtn(), btn(['lall', key], list.length === 1 ? 'Select It' : `Select All ${list.length}`, emojis.checkmark, 2, !list.length), ...clearEnded));
     return panel(components);
 }
 
-// ---------- search results ---------- The matches of a search, kept in a selection token (models/ManageSelection.js) so they page, and a card opened from them walks them and comes back to them.
+// ---------- search results ---------- The matches of a search, kept in a selection token (models/ManageSelection.js) so they page, and a card opened from them walks them and comes back to them. The results of a search or a list made into a selection: Edit on every row, a tick on what is selected, and View Selected once something is.
 function searchView(doc, token, sel, page = 0, { note = null, noteRow = null } = {}) {
     const byKey = new Map(allDraws(doc).map(d => [d._key, d]));
     const keys = (sel.ids || []).filter(k => byKey.has(k));
+    const selected = new Set(sel.selected || []);
+    const n = keys.filter(k => selected.has(k)).length;
     const pages = Math.max(1, Math.ceil(keys.length / LIST_PAGE));
     const pg = Math.min(Math.max(Number(page) || 0, 0), pages - 1);
     const shown = keys.slice(pg * LIST_PAGE, pg * LIST_PAGE + LIST_PAGE).map(k => byKey.get(k));
-    const q = (sel.query || []).join(' ').slice(0, 60);
-    const components = [text(`${crumb('Search')}\n## ${emojis.search} ${plural(keys.length, 'draw')} match \`${q}\`\n-# Words in the title or an item's name${pages > 1 ? ` · page ${pg + 1} of ${pages}` : ''}`), BIG()];
+    const q = (sel.query || []).join(' · ').slice(0, 120);
+    const components = [text(`${crumb('Results')}\n## ${emojis.search} ${plural(keys.length, 'draw')}\n-# ${q ? `${q}` : 'Every draw'}${pages > 1 ? ` · page ${pg + 1} of ${pages}` : ''}${n ? ` · ${emojis.check} ${n} selected` : ''}`)];
+    if (sel.unmatched?.length) components.push(text(`-# ${emojis.warn} Nothing matched ${sel.unmatched.map(x => `\`${x}\``).join(', ').slice(0, 300)}`));
+    components.push(BIG());
     if (note) components.push(text(note), ...(noteRow ? [noteRow] : []), SMALL());
     if (!shown.length) components.push(text(`${emojis.cross} None of them are on /draws any more.`));
     else {
-        for (const d of shown) components.push({ type: 9, components: [text(listLine(d))], accessory: btn(['edit', d._key, `t:${token}`, 'L'], 'Edit', emojis.edit) });
-        components.push({ type: 1, components: [{ type: 3, custom_id: ID('open', `t:${token}`), placeholder: 'Open a draw…', options: shown.map(openOption) }] });
+        for (const d of shown) components.push({ type: 9, components: [text(listLine(d, selected.has(d._key) ? `${emojis.check} ` : ''))], accessory: btn(['edit', d._key, `t:${token}`, 'L'], 'Edit', emojis.edit) });
+        components.push(pickMenu(ID('pick', token, pg), shown));
     }
     if (pages > 1) components.push(row(arrow(['sres', token, pg - 1], 'left', pg === 0), counter(['spgn', token], `Page ${pg + 1} / ${pages}`), arrow(['sres', token, pg + 1], 'right', pg === pages - 1)));
-    components.push(BIG(), row(btn(['slist', token, 0], keys.length === 1 ? 'Select This One' : `Select These ${keys.length}`, emojis.filter, 2, !keys.length), btn('find', 'Search Again', emojis.search), homeBtn()));
+    components.push(BIG(), row(homeBtn(), btn('find', 'Search Again', emojis.search), btn(['all', token, pg], keys.length === 1 ? 'Select It' : `Select All ${keys.length}`, emojis.checkmark, 2, !keys.length || n === keys.length), ...(n ? [btn(['slist', token, 0], `View Selected · ${n}`, emojis.filter, 1)] : [])));
     return panel(components);
 }
 
 // ---------- one draw ---------- `back` is where the card was opened from: a STATUS key, or `t:<token>` for search results (pass `sel`, the token's selection, to walk them). `header` sits above the card (a confirm question, a saved note); `extra` replaces the action rows; `resultRow` (a Revert) sits between the actions and the arrows.
 const originOf = (back, d) => (STATUS[back] ? back : /^t:/.test(String(back || '')) ? back : d._sec);
-const originLabel = (back) => (STATUS[back] ? STATUS[back].label : 'Search Results');
-const originBtn = (back) => (STATUS[back] ? btn(['list', back, 0], STATUS[back].label, emojis.returnArrow) : btn(['sres', String(back).slice(2), 0], 'Search Results', emojis.returnArrow));
+// A token's results are "Results" whether they came from a search or a list made into a selection (the redesign).
+const originLabel = (back) => (STATUS[back] ? STATUS[back].label : 'Results');
+const originBtn = (back) => (STATUS[back] ? btn(['list', back, 0], STATUS[back].label, emojis.returnArrow) : btn(['sres', String(back).slice(2), 0], 'Results', emojis.returnArrow));
 // The date the /draws block above does not show. That block gives an upcoming draw's start and a running draw's end (and no date once a draw has ended), so this line gives a running draw's start, an upcoming draw's end, and both for an ended one; a missing, TBD or with-the-season end is always named. Showing both every time put the same date on the card twice.
 function datesLine(d) {
     if (d.state === 'tba' || !Number.isFinite(d.startMs)) return '-# Release date TBA';
@@ -261,62 +271,52 @@ function resultView({ crumbs = [], title, body = [], back = 'page', backLabel = 
     ]);
 }
 
-// ---------- Select ----------
+// ---------- Select ---------- The Selected view (the redesign): nothing selected is the results; one is that draw's card (its Back returns to the results, the selection kept); more are the set, with Edit N, End Date N, Export N and Delete N.
 function selectView(doc, token, sel, note = null, page = 0) {
     const byKey = new Map(allDraws(doc).map(d => [d._key, d]));
-    const keys = sel.ids.filter(k => byKey.has(k));
-    const selected = new Set(sel.selected);
-    const pages = Math.max(1, Math.ceil(keys.length / PAGE));
-    const pg = Math.min(Math.max(Number(page) || 0, 0), pages - 1);
-    const shown = keys.slice(pg * PAGE, pg * PAGE + PAGE);
-    const n = keys.filter(k => selected.has(k)).length;
-    const components = [text(`${crumb('Select Draws')}\n## ${emojis.filter} Select Draws${sel.query?.length ? `\n-# ${sel.query.map(q => `\`${q}\``).join(' · ').slice(0, 500)}` : ''}`)];
-    if (sel.unmatched?.length) components.push(text(`-# ${emojis.warn} Nothing matched ${sel.unmatched.map(x => `\`${x}\``).join(', ').slice(0, 500)}`));
-    components.push(BIG());
-    if (!keys.length) {
-        // A note (a Revert's, a save's) still shows when the list is empty: it said nothing at all after a delete was reverted.
-        if (note) components.push(text(note), SMALL());
-        components.push(text(`${emojis.cross} **No draws found.** Try part of a title, or a quick pick.`), BIG(), row(btn('select', 'Select Again', emojis.filter, 1), homeBtn()));
-        return panel(components);
-    }
-    components.push(
-        text(`-# **${keys.length}** found · **${n}** selected${pages > 1 ? ` · page ${pg + 1} of ${pages}` : ''}`),
-        // A tick for a selected draw, a blank of the same width for the rest, so the rows line up and the status dot stays the one dot on the row.
-        text(shown.map(k => listLine(byKey.get(k), `${selected.has(k) ? emojis.check : emojis.blank} `)).join('\n').slice(0, 3900)),
-        SMALL(),
-        { type: 1, components: [{ type: 3, custom_id: ID('flip', token, pg), min_values: 1, max_values: shown.length, placeholder: 'Select or unselect draws…', options: shown.map(k => { const d = byKey.get(k); return { label: d.title.slice(0, 100), value: k, description: `${selected.has(k) ? 'Selected' : 'Not selected'} · ${secWord(d)} · ${stateName(d)}`.slice(0, 100), emoji: emojis.parseEmoji(selected.has(k) ? emojis.check : dot(d)) }; }) }] },
-        ...(pages > 1 ? [row(arrow(['slist', token, pg - 1], 'left', pg === 0), counter(['spg', token], `Page ${pg + 1} / ${pages}`), arrow(['slist', token, pg + 1], 'right', pg === pages - 1))] : []),
-        row(btn(['all', token, pg], keys.length === 1 ? 'Select This One' : `Select All ${keys.length}`, emojis.checkmark, 2, n === keys.length), btn(['none', token, pg], 'Clear', emojis.cross, 2, !n)),
-    );
-    if (note) components.push(text(note));
-    const count = n ? ` ${n}` : '';
+    const keys = (sel.ids || []).filter(k => byKey.has(k));
+    const on = new Set(sel.selected || []);
+    const picked = keys.filter(k => on.has(k));
+    if (!picked.length) return searchView(doc, token, sel, page, { note });
+    if (picked.length === 1) return cardView(doc, picked[0], { back: `t:${token}`, sel, header: note }) || searchView(doc, token, sel, page, { note });
+    const n = picked.length;
+    const q = (sel.query || []).join(' · ').slice(0, 120);
+    const components = [text(`${crumb('Results', 'Selected')}\n## ${emojis.checkmark} ${n} selected\n-# ${q ? `From ${q}` : 'From every draw'}`)];
+    if (note) components.push(SMALL(), text(note));
+    components.push(BIG(), text(picked.slice(0, 25).map(k => listLine(byKey.get(k))).join('\n').slice(0, 3400) + (n > 25 ? `\n-# and ${n - 25} more` : '')));
+    // Unselect a few without starting again; past 25 selected, Clear and select again.
+    components.push({ type: 1, components: [{ type: 3, custom_id: ID('unpick', token), min_values: 1, max_values: Math.min(25, n), placeholder: 'Unselect draws…', options: picked.slice(0, 25).map(k => openOption(byKey.get(k))) }] });
     components.push(
         BIG(),
-        text(n ? `-# With the **${n}** selected…` : '-# Select draws to edit, end, export or delete them…'),
+        text(`-# With the **${n}** selected…`),
         // End Date for every selected draw (2026-11-10 11:19 EST): at a season's end many draws end together.
-        row(btn(['tedit', token, pg], `Edit${count}`, emojis.edit, 1, !n), btn(['tend', token, pg], `End Date${count}`, emojis.timestamp, 2, !n), btn(['texp', token], `Export${count}`, emojis.copyExport, 2, !n), btn(['tdel', token, pg], `Delete${count}`, emojis.deleteBin, 4, !n)),
-        row(btn('select', 'Select Again', emojis.filter), homeBtn()),
+        row(btn(['tedit', token, page], `Edit ${n}`, emojis.edit, 1), btn(['tend', token, page], `End Date ${n}`, emojis.timestamp, 2), btn(['texp', token], `Export ${n}`, emojis.copyExport, 2), btn(['tdel', token, page], `Delete ${n}`, emojis.deleteBin, 4)),
+        row(btn(['sres', token, 0], 'Select More', emojis.returnArrow), homeBtn(), btn(['none', token, 0], 'Clear', emojis.cross)),
     );
     return panel(components);
 }
 
 // ---------- pop-ups ----------
 const labelled = (label, component, description) => ({ type: 18, label, ...(description ? { description } : {}), component });
-// Named as the lists are, not "All New Draws" (2026-11-10 11:16 EST): with picks that narrow each other, "All" read as every one of them.
-const QUICK = Object.entries(STATUS).map(([value, s]) => ({ value, label: s.label }));
-const quickSelect = () => (require('../../../utils/formChoice').asChoice({ type: 3, custom_id: 'picks', required: false, min_values: 0, max_values: QUICK.length, placeholder: 'Pick any', options: QUICK }));
-const titlesBox = () => labelled('Draw titles', { type: 4, custom_id: 'names', style: 2, required: false, max_length: 2000, placeholder: 'Sapphire Winter\nWhorl of Midnight' }, 'One per line; part of a title is enough. Added to the quick picks.');
 // The pop-up is named after the button that opens it (Search Draws, Search the Index), and says what it searches (2026-11-11 11:40 EST click test: it read "Find a Draw" under a Search Draws button, and the index's pop-up left out other names).
 const searchModal = ({ id = ID('findm'), title = 'Search Draws', hint = 'Words in the title or an item\'s name, in any order' } = {}) => ({ custom_id: id, title, components: [labelled('Words', { type: 4, custom_id: 'q', style: 1, required: true, max_length: 100, placeholder: 'sapphire · kestrel' }, hint)] });
-// The quick picks read like /draws' own filter (2026-11-10 11:19 EST): within a group they widen, across groups they narrow.
-const PICKS_HINT = 'New + Ended = the New draws that ended. Typed titles are added.';
-const selectModal = () => ({ custom_id: ID('selectm'), title: 'Select Draws', components: [titlesBox(), labelled('Quick picks', quickSelect(), PICKS_HINT)] });
+// /manage draws' Search (the redesign, 2026-11-11 15:15 EST): words, one draw per line, and the lists with their counts (his phone note: "show the number beside the 'new draws', etc"). Lists narrow the words; both blank is every draw.
+function drawSearchModal(doc) {
+    const count = (k) => (doc ? allDraws(doc).filter(STATUS[k].test).length : null);
+    const lists = Object.entries(STATUS).map(([value, s]) => ({ value, label: count(value) === null ? s.label : `${s.label} · ${count(value)}` }));
+    return {
+        custom_id: ID('findm'), title: 'Search Draws',
+        components: [
+            labelled('Words', { type: 4, custom_id: 'q', style: 2, required: false, max_length: 1000, placeholder: 'sapphire\nhollow cx9' }, 'One draw per line: words from its title or items. Blank: every draw.'),
+            labelled('Lists', require('../../../utils/formChoice').asChoice({ type: 3, custom_id: 'picks', required: false, min_values: 0, max_values: lists.length, placeholder: 'Any list', options: lists }), 'Lists narrow the words. Both blank: every draw.'),
+        ],
+    };
+}
 function exportModal() {
     return {
         custom_id: ID('exportm'), title: 'Export Draws',
         components: [
-            titlesBox(),
-            labelled('Quick picks', quickSelect(), `${PICKS_HINT} Both empty: every draw.`.slice(0, 100)),
+            // Every draw (the redesign): a few are exported from the Selected view's Export N.
             labelled('Send to', { type: 21, custom_id: 'dest', required: true, options: [{ value: 'file', label: 'A file here', default: true }, { value: 'dm', label: 'A DM to me' }] }),
             labelled('Include', { type: 22, custom_id: 'include', required: false, min_values: 0, max_values: 3, options: [['end', 'End dates'], ['image', 'Image link'], ['type', 'Draw type']].map(([value, label]) => ({ value, label, default: true })) }),
         ],
@@ -375,4 +375,4 @@ module.exports = {
     LIST_PAGE,
     indexEmoji,
     checkModal, checkView, endModal, gapsFor, ID, PAGE, LOOK_PAGE, STATUS, row, text, btn, homeBtn, panel, plural, stamp, allDraws, listOf, splitKey, rowFor, secWord, stateName, dot, typeName,
-    pageView, listView, searchView, cardView, resultView, selectView, searchModal, selectModal, exportModal, labelled };
+    pageView, listView, searchView, cardView, resultView, selectView, searchModal, drawSearchModal, exportModal, labelled, pickMenu, listOf };

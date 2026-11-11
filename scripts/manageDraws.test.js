@@ -208,7 +208,7 @@ function seasonDoc(nNew = 3, nRet = 30) {
         // An empty season: Search, Select, Export and Purge are disabled, and Needs a Look is a disabled chip, not a click into an empty list.
         const empty = seasonDoc(0, 0); empty.returningDraws = []; empty.calendar = [];
         const homeIds = []; walk(await V.pageView(empty), c => c.type === 2 && homeIds.push(c));
-        for (const label of ['Search Draws', 'Select Draws', 'Export']) assert.ok(homeIds.find(b => b.label === label)?.disabled, `${label} should be disabled on an empty season`);
+        for (const label of ['Search Draws', 'Export']) assert.ok(homeIds.find(b => b.label === label)?.disabled, `${label} should be disabled on an empty season`);
         // Round 2 (2026-11-11 11:02 EST): no Purge on the landing, no Needs a Look button at zero, and the draft row is there.
         assert.ok(!homeIds.some(b => /Purge|All Checked/.test(b.label || '')), 'no Purge or All Checked on the landing');
         assert.ok(homeIds.some(b => /Season Draft|Review Drafted Draws/.test(b.label || '')), 'the draft row');
@@ -246,14 +246,14 @@ function seasonDoc(nNew = 3, nRet = 30) {
         const over = V.allDraws(doc).find(x => x.bits & 32);
         if (over) assert.match(texts(V.cardView(doc, over._key, { back: 'ended' })), /-# Started <t:\d+:f> · ended <t:\d+:f>/);
         const fromSearch = V.cardView(doc, d._key, { back: 't:tok1', sel: { ids: [d._key, V.allDraws(doc)[0]._key] } });
-        assert.match(texts(fromSearch), /Search Results/);
+        assert.match(texts(fromSearch), /Results/);
         assert.ok(ids(fromSearch).includes('mng_dr|sres|tok1|0'));
     });
     await check('a single draw reads "This One", and the home counts add up to the total (Leaving Soon sits in brackets inside Active)', async () => {
         const one = seasonDoc(1, 0);
         const k = V.allDraws(one)[0]._key;
         const tok = await V.searchView(one, 'tok1', { ids: [k] }, 0);
-        assert.ok(JSON.stringify(tok).includes('"Select This One"'), 'search results with one draw');
+        assert.ok(JSON.stringify(tok).includes('"Select It"'), 'search results with one draw');
         assert.ok(!JSON.stringify(tok).includes('These 1'));
         const home = await V.pageView(seasonDoc(3, 5));
         const line = texts(home).split('\n').find(l => / draws · /.test(l)) || '';
@@ -441,9 +441,36 @@ function seasonDoc(nNew = 3, nRet = 30) {
         const handled = read('handlers/manage/drawsPanel/index.js') + read('handlers/manage/drawsPanel/drawIndex.js');
         const emitters = ['handlers/manage/drawsPanel/views.js', 'handlers/manage/drawsPanel/index.js', 'handlers/manage/drawsPanel/drawIndex.js', 'handlers/manage/quickAdd.js'].map(read).join('\n');
         const verbs = new Set([...handled.matchAll(/verb === '(\w+)'/g)].map(m => m[1]));
-        const reached = new Set([...emitters.matchAll(/(?:btn\(\s*\[?\s*|ID\(\s*|\$\{PREFIX\})'?(\w+)/g)].map(m => m[1]));
+        const reached = new Set([...emitters.matchAll(/(?:btn\(\s*\[?\s*|ID\(\s*|\$\{PREFIX\}|'mng_dr\|)'?(\w+)/g)].map(m => m[1]));
         const orphans = [...verbs].filter(v => !reached.has(v));
         assert.deepStrictEqual(orphans, [], `handled but never reached: ${orphans.join(', ')}`);
+    });
+    // The search/select redesign (2026-11-11 15:15 EST, his go): one Search, one results screen, one Select menu, and a Selected view.
+    await check('one Search: lines widen, lists narrow, both blank is every draw', () => {
+        const doc = seasonDoc(3, 5);
+        const all = V.allDraws(doc).length;
+        assert.strictEqual(P.findKeys(doc, '', []).keys.length, all, 'both blank: every draw');
+        assert.strictEqual(P.findKeys(doc, 'fresh draw number 1\nfresh draw number 2', []).keys.length, 2, 'two lines widen');
+        assert.strictEqual(P.findKeys(doc, 'draw', ['new']).keys.length, 3, 'a list narrows the words (it used to ADD every New draw to the matches)');
+        assert.strictEqual(P.findKeys(doc, 'fresh', ['returning']).keys.length, 0, 'New words in the Returning list: nothing');
+        assert.deepStrictEqual(P.findKeys(doc, 'nothing like this', []).unmatched, ['nothing like this']);
+        const modal = V.drawSearchModal(doc);
+        const lists = modal.components[1].component.options;
+        assert.ok(lists.every(o => / · \d+$/.test(o.label)), 'each list shows its count');
+    });
+    await check('the Selected view: none is the results, one is its card, more is the set with the bulk actions', async () => {
+        const doc = seasonDoc(3, 5);
+        const keys = V.allDraws(doc).map(d => d._key);
+        const none = JSON.stringify(V.selectView(doc, 'tok', { ids: keys, selected: [] }));
+        assert.ok(none.includes('|pick|tok|') && none.includes('Select All'), 'no selection shows the results with the Select menu');
+        const one = V.selectView(doc, 'tok', { ids: keys, selected: [keys[0]] });
+        assert.ok(JSON.stringify(one).includes('|sres|tok|'), 'one selected is its card, whose way back is the results');
+        const many = JSON.stringify(V.selectView(doc, 'tok', { ids: keys, selected: keys.slice(0, 3) }));
+        for (const want of ['3 selected', 'Edit 3', 'End Date 3', 'Export 3', 'Delete 3', 'Select More', '|unpick|tok']) assert.ok(many.includes(want), `the set shows ${want}`);
+        limits(V.selectView(doc, 'tok', { ids: keys, selected: keys }), 'selected all');
+        const list = JSON.stringify(V.listView(doc, 'returning'));
+        assert.ok(list.includes('|lpick|returning|') && list.includes('|lall|returning'), 'a list has the Select menu and Select All');
+        assert.ok(!JSON.stringify(await V.pageView(doc)).includes('Select Draws'), 'the landing has no Select Draws button');
     });
     await check('the Ended list clears its own draws, the way Purge Ended did from the landing', () => {
         const doc = seasonDoc();
