@@ -120,7 +120,7 @@ async function pageView(doc, note = null, { pageRow = null, noteRow = null } = {
     const SV = require('../seasonPanel/views');
     const draft = doc.draft || {};
     const staged = (draft.newDraws || []).length + (draft.returningDraws || []).length;
-    const draftBtn = draft.active ? SV.btn(['dd', 'n', 0], `Review Drafted Draws · ${staged}`, emojis.newDraws) : SV.btn(['view', 'draft'], 'Season Draft', emojis.newDraws);
+    const draftBtn = draft.active ? SV.btn(['dd', 'n', 0], `Review Drafted Draws · ${staged}`, emojis.bp) : SV.btn(['view', 'draft'], 'Season Draft', emojis.bp);
     // Rows read by what they are for (2026-11-11 11:02 EST, his landing): adding, finding, the index and the files, then the next season.
     components.push(
         BIG(),
@@ -300,7 +300,8 @@ const labelled = (label, component, description) => ({ type: 18, label, ...(desc
 const QUICK = Object.entries(STATUS).map(([value, s]) => ({ value, label: s.label }));
 const quickSelect = () => (require('../../../utils/formChoice').asChoice({ type: 3, custom_id: 'picks', required: false, min_values: 0, max_values: QUICK.length, placeholder: 'Pick any', options: QUICK }));
 const titlesBox = () => labelled('Draw titles', { type: 4, custom_id: 'names', style: 2, required: false, max_length: 2000, placeholder: 'Sapphire Winter\nWhorl of Midnight' }, 'One per line; part of a title is enough. Added to the quick picks.');
-const searchModal = () => ({ custom_id: ID('findm'), title: 'Find a Draw', components: [labelled('Words', { type: 4, custom_id: 'q', style: 1, required: true, max_length: 100, placeholder: 'sapphire · kestrel' }, 'Words in the title or an item\'s name, in any order')] });
+// The pop-up is named after the button that opens it (Search Draws, Search the Index), and says what it searches (2026-11-11 11:40 EST click test: it read "Find a Draw" under a Search Draws button, and the index's pop-up left out other names).
+const searchModal = ({ id = ID('findm'), title = 'Search Draws', hint = 'Words in the title or an item\'s name, in any order' } = {}) => ({ custom_id: id, title, components: [labelled('Words', { type: 4, custom_id: 'q', style: 1, required: true, max_length: 100, placeholder: 'sapphire · kestrel' }, hint)] });
 // The quick picks read like /draws' own filter (2026-11-10 11:19 EST): within a group they widen, across groups they narrow.
 const PICKS_HINT = 'New + Ended = the New draws that ended. Typed titles are added.';
 const selectModal = () => ({ custom_id: ID('selectm'), title: 'Select Draws', components: [titlesBox(), labelled('Quick picks', quickSelect(), PICKS_HINT)] });
@@ -353,7 +354,7 @@ function checkView({ results, extra = 0, indexSize = 0 }, token = null, foundCou
     for (const { r, t } of blocks) {
         if (budget - t.length < 0) break;
         budget -= t.length + 1;
-        if (r.id && sections < 8) { components.push({ type: 9, components: [text(t)], accessory: btn(['ixopen', r.id, 'h'], 'Open', emojis.expand) }); sections++; }
+        if (r.id && sections < 8) { components.push({ type: 9, components: [text(t)], accessory: btn(['ixopen', r.id, token ? `c:${token}` : 'h'], 'Open', emojis.expand) }); sections++; }
         else components.push(text(t));
         shown++;
     }

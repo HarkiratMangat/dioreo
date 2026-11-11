@@ -23,8 +23,8 @@ const walk = (cs, out = []) => { for (const c of cs || []) { out.push(c); walk(c
 t('a title finds its draw, complete, and says it is on /draws', () => {
     const r = C.checkLine(INDEX, 'Lethal Hollow Draw', ctx);
     assert.strictEqual(r.status, 'found'); assert.strictEqual(r.title, 'Lethal Hollow Draw'); assert.strictEqual(r.matchedBy, 'title');
-    assert.deepStrictEqual(r.needs, []); assert.strictEqual(r.onDraws, 'New'); assert.strictEqual(r.season, 'Season 7 2025');
-    assert.match(C.resultBlock(r, require('../utils/emojiMap')), /^\S+ \*\*Lethal Hollow Draw\*\*\n-# Complete · 2 items · Mythic Weapon Draw · Season 7 2025 · on \/draws \(New\)$/);
+    assert.deepStrictEqual(r.needs, []); assert.strictEqual(r.onDraws, 'New'); assert.strictEqual(r.season, 'Season 7 (2025)');
+    assert.match(C.resultBlock(r, require('../utils/emojiMap')), /^\S+ \*\*Lethal Hollow Draw\*\*\n-# Complete · 2 items · Mythic Weapon Draw · Season 7 \(2025\) · on \/draws \(New\)$/);
 });
 t('a draw staged in the Next Season Draft says so, beside /draws', () => {
     const r = C.checkLine(INDEX, 'herrscher of reason', { ...ctx, seasonalDoc: { ...SEASON, draft: { newDraws: [], returningDraws: [{ title: 'Herrscher of Reason Draw' }] } } });
@@ -63,7 +63,7 @@ t('a draw with no items says so once, under Needs', () => {
 });
 t('a typo match reads as a close match, and the typed line shows beside the title', () => {
     const block = C.resultBlock(C.checkLine(INDEX, 'hersher of reason', ctx), require('../utils/emojiMap'));
-    assert.match(block, /\*\*hersher of reason\*\* → \*\*Herrscher of Reason Draw\*\*\n-# close match/);
+    assert.match(block, /\*\*hersher of reason\*\* → \*\*Herrscher of Reason Draw\*\*\n-# Close match/);
 });
 t('a word several draws share is a maybe, with the others named (Quick Add\'s own call)', () => {
     const r = C.checkLine(INDEX, 'ember', ctx);

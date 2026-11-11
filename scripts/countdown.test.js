@@ -47,7 +47,9 @@ for (const typed of ['2h', '1d', '13d 23h']) assert.strictEqual(parseAdminDate(t
 assert.strictEqual(day(parseAdminEndDate('13d 23h', AFTER)), '2026-11-24', 'end box takes a countdown');
 assert.strictEqual(day(parseAdminEndDate('November 24, 2026')), '2026-11-24', 'end box still reads a plain date');
 assert.strictEqual(parseAdminDateRange('13d 23h - Nov 30'), null, 'a countdown as a range START is not a range');
-assert.strictEqual(parseDrawDates('13d 23h').ok, false, 'a lone countdown is not a draw release date');
+// A lone countdown in a draw's dates box is still only an END (2026-11-11 11:45 EST): the start is today at 00:00 UTC, Quick Add's rule, or the start Edit keeps. Until then it was refused while the Add and Edit pop-ups said "the game's countdown works".
+const lone = parseDrawDates('13d 23h', { now: AFTER });
+assert.ok(lone.ok && day(lone.end) === day(parseAdminEndDate('13d 23h', AFTER)), 'a lone countdown is the draw\'s end');
 const ev = parseBulkEvents('11/10 - 13d 23h | Countdown Event');
 assert.ok(ev.length === 1 && day(ev[0].endDate) === want, 'Paste Calendar takes a countdown end');
 const { applyFields } = require('../core/ops/season.js');

@@ -618,12 +618,9 @@ async function route(interaction) {
     }
     if (verb === 'checkm' && interaction.isModalSubmit?.()) {
         if (!(await gate(interaction, 'exportnew'))) return;
-        const { checkIndex } = require('../../../utils/drawIndexCheck');
-        const entries = await require('../../../utils/drawCatalog').loadCatalog({ force: true });
         const names = interaction.fields.getTextInputValue('names');
-        const result = checkIndex(entries, names, { seasonalDoc: await getDoc(), isSameTitle: require('../../../utils/search').isSameDrawTitle });
-        // What was pasted, and the lines that found a draw, kept for Check Again and Quick Add These. Quick Add These takes only the found draws that are not on /draws or in the draft (2026-11-11 11:07 EST, his screenshot: Quick Add was offered for a draw already live).
-        const found = result.results.filter(r => (r.status === 'found' || r.status === 'maybe') && !r.onDraws && !r.inDraft).map(r => r.line);
+        // What was pasted, and the lines that found a draw, kept for Check Again, Quick Add These and the way back from a card (IX.runCheck).
+        const { result, found } = await IX.runCheck(names, await getDoc());
         const token = await createSelection({ text: String(names).slice(0, 4000), query: found });
         return show(interaction, V.checkView(result, token, found.length));
     }

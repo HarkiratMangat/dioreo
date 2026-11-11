@@ -322,6 +322,9 @@ function seasonDoc(nNew = 3, nRet = 30) {
         assert.ok(!JSON.stringify(card).includes('Quick Add This Draw'), 'no Quick Add for a draw already on /draws');
         assert.ok(JSON.stringify(IX.cardView(entries[3], doc, 'h')).includes('Quick Add This Draw'));
         assert.ok(IX.editModal(entries[3], 'h').components.length <= 5);
+        // A card opened from Check Names goes back to those results (2026-11-11 11:40 EST click test).
+        const fromCheck = JSON.stringify(IX.cardView(entries[3], doc, 'c:tok123'));
+        assert.match(fromCheck, /ixcres\|tok123[^"]*","label":"Check Names"|"label":"Check Names"[^}]*ixcres\|tok123/, 'the way back from a checked card is Check Names');
         assert.deepStrictEqual(IX.searchEntries(entries, 'old name').map(e => e.title), [live.title], 'another name finds it');
         assert.ok(IX.searchEntries(entries, 'gun7').some(e => e.title === 'Index Draw 7'), 'an item finds it');
         const op = require('../core/ops').resolveOp('drawindex.edit');
@@ -329,6 +332,21 @@ function seasonDoc(nNew = 3, nRet = 30) {
         const ok = op.validate({ type: 'drawindex.edit', target: { id: 'x' }, payload: { aliases: [' A ', 'A', ''] } });
         assert.deepStrictEqual(ok.normalized.payload.aliases, ['A'], 'names trimmed and de-duplicated');
         assert.deepStrictEqual(op.invert({ applied: { id: 'x', prior: { releaseSeason: 7 } } }), { type: 'drawindex.edit', target: { id: 'x' }, payload: { releaseSeason: 7 } });
+    });
+    await check('every draws pop-up keeps Label descriptions and placeholders inside Discord\'s 100 characters, and holds five fields or fewer (round 2: the Draw box hint was cut on the dev bot)', () => {
+        const m = require('../commands/manage');
+        const doc = seasonDoc(3, 5);
+        const d = V.allDraws(doc)[0];
+        const modals = [m.buildAddDrawModal('new'), m.buildAddDrawModal('returning'), m.buildEditDrawModal(d, String(d._id), d._sec), V.checkModal(), V.searchModal(), V.endModal('x', { title: d.title }), require('../handlers/manage/drawsPanel/drawIndex').editModal({ _id: 'e1', title: 'T', aliases: [], priceType: '' }, 'h')];
+        for (const raw of modals) {
+            const j = raw.toJSON ? raw.toJSON() : raw;
+            assert.ok(j.components.length <= 5, `${j.title}: ${j.components.length} fields`);
+            for (const c of j.components) {
+                if (c.description) assert.ok(c.description.length <= 100, `${j.title} / ${c.label}: description ${c.description.length}`);
+                const inner = c.component || {};
+                if (inner.placeholder) assert.ok(inner.placeholder.length <= 100, `${j.title} / ${c.label}: placeholder ${inner.placeholder.length}`);
+            }
+        }
     });
     await check('Select\'s quick picks: within a group they widen, across groups they narrow; titles add on top', () => {
         const doc = seasonDoc(3, 5);

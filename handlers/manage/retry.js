@@ -44,10 +44,19 @@ function drawSnippet(values) {
     const code = require('../../utils/drawTypes').drawTypeCode(v(values, 'price_type'));
     // The box's "September 10, 2026 - November 12, 2026" is rewritten as ISO dates: its commas would split the line, and Add Multiple reads the first date.
     const drawDates = require('../../utils/drawDates');
-    const parsedDates = drawDates.parseDrawDates(v(values, 'date'));
+    // The Draw box (title, dates, a season, 2026-11-11 11:02 EST) replaced the Title and Dates fields, and the snippet read only those, so it dropped the title and dates (2026-11-11 11:40 EST click test). A box that does not parse still gives its first line as the title and the rest as the dates, so nothing typed is lost.
+    let title = v(values, 'title'), date = v(values, 'date');
+    const box = v(values, 'draw');
+    if (box) {
+        const read = require('../../utils/drawForm').readDrawBox(box, { allowSeason: true });
+        const lines = box.split('\n').map(l => l.trim()).filter(Boolean);
+        title = read.error ? (lines[0] || '') : read.title;
+        date = read.error ? lines.slice(1).join(' ') : read.dates;
+    }
+    const parsedDates = drawDates.parseDrawDates(date);
     // Only a box with an end, or a comma in it, is rewritten; a plain "July 15" stays as typed.
-    const dateText = parsedDates.ok && (parsedDates.end || v(values, 'date').includes(',')) ? drawDates.formatDrawDatesForBulk(parsedDates.start, parsedDates.end) : v(values, 'date');
-    return [v(values, 'title'), code ? `type: ${code}` : '', items, dateText, v(values, 'url')].filter(Boolean).join(', ');
+    const dateText = parsedDates.ok && (parsedDates.end || date.includes(',')) ? drawDates.formatDrawDatesForBulk(parsedDates.start, parsedDates.end) : date;
+    return [title, code ? `type: ${code}` : '', items, dateText, v(values, 'url')].filter(Boolean).join(', ');
 }
 
 // "7/2 - 8/5 | Title" -- parseBulkEvents' format. A blank End Date means All Season, which is what that parser reads "All Season" as, so it is spelled out rather than left empty.

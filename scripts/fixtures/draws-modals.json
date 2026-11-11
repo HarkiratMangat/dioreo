@@ -6,7 +6,7 @@
       {
         "type": 18,
         "label": "Draw",
-        "description": "Title, then the dates (Start - End or 13d 23h). Add \"Season 10\" on its own line if it first came out",
+        "description": "Title, then dates (Start - End or 13d 23h), then \"Season 10\" if it first came out in another one.",
         "component": {
           "type": 4,
           "style": 2,
@@ -253,7 +253,7 @@
       {
         "type": 18,
         "label": "Draw",
-        "description": "The title on the first line, the dates on the next: Start - End, one date, or the game's countdown (",
+        "description": "Title on line 1, dates on line 2: Start - End, one date, or a countdown (13d 23h).",
         "component": {
           "type": 4,
           "style": 2,

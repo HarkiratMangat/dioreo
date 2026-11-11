@@ -163,6 +163,18 @@ check('text the date reader only half understood is refused, not saved as its fi
     assert.ok(parseDrawDates('September 10, 2026').ok && parseDrawDates('today').ok, 'plain dates still read');
 });
 
+check('the game\'s countdown on its own is the end, from today or from the start Edit keeps (2026-11-11 11:40 EST click test)', () => {
+    const now = new Date('2026-11-11T16:40:00Z');
+    const r = parseDrawDates('13d 23h', { now });
+    assert.ok(r.ok, JSON.stringify(r));
+    assert.strictEqual(r.start.toISOString(), '2026-11-11T00:00:00.000Z', 'today at 00:00 UTC, Quick Add\'s rule');
+    assert.strictEqual(r.end.toISOString(), '2026-11-26T00:00:00.000Z', 'the midnight inside the countdown window');
+    const kept = parseDrawDates('13d 23h', { now, start: new Date('2026-11-01T00:00:00Z') });
+    assert.strictEqual(kept.start.toISOString(), '2026-11-01T00:00:00.000Z', 'Edit keeps the draw\'s start');
+    assert.ok(!parseDrawDates('2h', { now, start: new Date('2026-12-01T00:00:00Z') }).ok, 'a countdown ending before the start is refused');
+    assert.ok(require('../utils/drawForm').readDrawBox('Zz Draw\n13d 23h\nSeason 7', { allowSeason: true }).dates === '13d 23h', 'the Draw box takes it as the dates line');
+});
+
 const { calendarRowFor } = require('../utils/drawEndReminder');
 check('a draw never takes a sibling draw\'s /calendar row', () => {
     const champ = "Street Fighter: Champion's Collection Series Armory (Weapons)";

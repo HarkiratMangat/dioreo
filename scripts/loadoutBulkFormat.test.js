@@ -268,6 +268,16 @@ check('the draw retry snippet carries the Draw Type pick as its type: tag, and r
     assert.strictEqual(parsed.items.length, 2);
 });
 
+check('the draw retry snippet reads the Draw box, so the title and dates are not lost (2026-11-11 11:40 EST click test)', () => {
+    const { parseBulkDrawList } = require('../utils/adminParser');
+    const snippet = retry.drawSnippet({ draw: 'Zz Draw\nJuly 15 - July 30\nSeason 7', items: 'l Gun', url: '', price_type: '' });
+    assert.ok(snippet.startsWith('Zz Draw, l Gun, '), snippet);
+    const [parsed] = parseBulkDrawList(snippet);
+    assert.strictEqual(parsed.title, 'Zz Draw');
+    const bad = retry.drawSnippet({ draw: 'Zz Draw\nwhenever', items: 'l Gun', url: '' });
+    assert.ok(bad.includes('Zz Draw') && bad.includes('whenever'), `a box that does not parse is kept as typed: ${bad}`);
+});
+
 check('Try Again refills an Add Draw form built from Labels, the Draw Type dropdown included', () => {
     retry.pendingModalRetries.set('tokd', { modalCustomId: 'add_draw_new', values: { draw: 'Sky Armory\nJuly 15', items: 'l AK', url: '', price_type: 'armoryMythicWeapon' } });
     const json = retry.buildRetryModal('tokd');

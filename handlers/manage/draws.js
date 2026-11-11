@@ -60,7 +60,9 @@ async function addDraw(interaction, opts = {}) {
     const parsedItems = rawItems.split('\n').filter(l => l.trim().length > 0).map(parseItemLine);
     // A draw added to New that the draw index has never seen is indexed with this season as its release season (utils/drawCatalog.js insertFields). A season named in the Draw box wins; otherwise a new draw is this season's.
     const releaseSeason = drawType === 'new' ? (form.season || require('../../utils/quickAdd').seasonNumber(seasonalDoc.currentSeasonTitle)) : null;
-    const releaseYear = require('../../utils/quickAdd').seasonYear(seasonalDoc);
+    // The year is this season's, so it is left off a season typed in the box that is not this one ("Season 7" is not Season 7 of this year).
+    const typedOther = form.season && form.season !== require('../../utils/quickAdd').seasonNumber(seasonalDoc.currentSeasonTitle);
+    const releaseYear = typedOther ? null : require('../../utils/quickAdd').seasonYear(seasonalDoc);
     const thumbResult = await resolveThumbnail(title, rawUrl, { items: parsedItems, priceType, ...(releaseSeason ? { releaseSeason, ...(releaseYear ? { releaseYear } : {}) } : {}) });
 
     // No type picked, or Unsure: the draw index's type when it knows this draw for certain (its title, another name, or its items). Said in a note, so a wrong one is seen and edited.
@@ -85,8 +87,9 @@ async function addDraw(interaction, opts = {}) {
         return await failWithRetry(interaction, extractCommitError(result));
     }
 
-    // The saved draw as a panel, beside its picture (2026-10-26 12:52 EDT, the loadout treatment for every /manage page); a missing picture shows on the panel itself, so only a reused or failed upload is a note.
-    const notes = [...(thumbResult.url ? [thumbnailNote(thumbResult)] : []), typeNote].filter(Boolean);
+    // The saved draw as a panel, beside its picture (2026-10-26 12:52 EDT, the loadout treatment for every /manage page); a missing picture shows on the panel itself, so only a reused or failed upload is a note. The draw index records a draw's release season, and it records a draw only once it has a picture, so a season typed with no picture would vanish without a word (2026-11-11 11:42 EST click test). Said, with the way to keep it.
+    const seasonNote = form.season && !thumbResult.url ? `${BOT_EMOJI.info} Season ${form.season} is kept once the draw has a picture: Edit, add the picture, and type the Season line again.` : null;
+    const notes = [...(thumbResult.url ? [thumbnailNote(thumbResult)] : []), typeNote, seasonNote].filter(Boolean);
     const saved = { ok: true, draw: { ...newDrawObj, _id: result.results[0].applied.elementId }, category: drawType, changeIds: result.changeIds, notes, warnings, endDate: endOp ? dates.end : (row?.endDate || null), titles: [title] };
     if (opts.quiet) return saved;
     const sent = await interaction.followUp({ flags: 32768 | 64, components: drawPanel({ draw: saved.draw, category: drawType, changeIds: saved.changeIds, notes, warnings, endDate: saved.endDate }) });
@@ -107,12 +110,13 @@ async function editDraw(interaction, opts = {}) {
     const drawIndex = arrayTarget.findIndex(d => d._id.toString() === targetId);
 
     if (drawIndex > -1) {
-        const form = require('../../utils/drawForm').readDrawFields(interaction);
+        const form = require('../../utils/drawForm').readDrawFields(interaction, { allowSeason: drawType === 'new' });
         if (form.error) return opts.quiet ? (await failWithRetry(interaction, form.error), { ok: false }) : await failWithRetry(interaction, form.error);
         const drawDateStr = form.dateStr;
         // "Start - End" like the season titles box (utils/drawDates.js): the start is the release date, the end lives on the draw's /calendar row and is written in the same commit.
         const { parseDrawDates, planEndRow } = require('../../utils/drawDates');
-        const dates = parseDrawDates(drawDateStr);
+        // A bare countdown keeps the draw's own start; only the end moves.
+        const dates = parseDrawDates(drawDateStr, { start: arrayTarget[drawIndex].date || null });
         if (!dates.ok) return await failWithRetry(interaction, dates.error);
         const parsedDrawDate = dates.start;
         const newTitle = toTitleCase(form.title);
@@ -122,8 +126,9 @@ async function editDraw(interaction, opts = {}) {
         const rawItems = form.rawItems;
         const parsedItems = rawItems.split('\n').filter(l => l.trim().length > 0).map(parseItemLine);
         // A New draw's first picture can arrive here rather than in Add Draw: the index gets this season then, if it has never seen the draw.
-        const releaseSeason = drawType === 'new' ? require('../../utils/quickAdd').seasonNumber(seasonalDoc.currentSeasonTitle) : null;
-        const releaseYear = require('../../utils/quickAdd').seasonYear(seasonalDoc);
+        const releaseSeason = drawType === 'new' ? (form.season || require('../../utils/quickAdd').seasonNumber(seasonalDoc.currentSeasonTitle)) : null;
+        const typedOther = form.season && form.season !== require('../../utils/quickAdd').seasonNumber(seasonalDoc.currentSeasonTitle);
+        const releaseYear = typedOther ? null : require('../../utils/quickAdd').seasonYear(seasonalDoc);
         // The stored picture is kept as it is when the box still holds it and the title is the same (2026-11-10 11:19 EST): the box is pre-filled with the stored link, so every Edit used to send it through resolveThumbnail again. A blank box still asks the draw index (a picture may have arrived since), and a new link or a new title resolves as before.
         const storedUrl = arrayTarget[drawIndex].thumbnailUrl || '';
         // Items edited still go through resolveThumbnail (which no longer uploads the draw's own picture, utils/cloudinaryCache.js isOwnAsset), so the picture's items link follows the new items.

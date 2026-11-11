@@ -22,9 +22,17 @@ function formatDrawDatesForBulk(start, end) {
 }
 
 // The box's text -> { ok, start, end } or { ok: false, error }. An end of TBD, or none, is "no end". An end that cannot be read is REPORTED, never dropped: the season box's own rule ("an unparseable date is reported, never silently kept").
-function parseDrawDates(text) {
+//
+// The game's countdown on its own ("13d 23h") is the END, snapped to the midnight UTC it really ends at (utils/countdown.js), and the start is `start` when given (Edit keeps the draw's own) or today at 00:00 UTC, Quick Add's rule for a line with no start (utils/quickAdd.js todayUtc). The Add and Edit draw pop-ups had said "the game's countdown works (13d 23h)" since 2026-11-10 01:10 UTC while only "Start - 13d 23h" did; the 2026-11-11 11:40 EST click test typed a bare countdown and got "isn't a date I can read".
+function parseDrawDates(text, { start: keepStart = null, now = new Date() } = {}) {
     const raw = String(text || '').trim();
     if (!raw) return { ok: false, error: 'Fill in the release date.' };
+    if (require('./countdown').parseCountdown(raw)) {
+        const end = require('./countdown').snapCountdown(raw, now);
+        const begin = keepStart ? new Date(keepStart) : require('./quickAdd').todayUtc({ now });
+        if (end <= begin) return { ok: false, error: `The countdown "${raw}" ends before the draw's start -- nothing was saved.` };
+        return { ok: true, start: begin, end, countdown: true };
+    }
     const range = parseAdminDateRange(raw);
     if (range) {
         // A range typed back to front with both years ("November 12, 2026 - September 10, 2026") comes out of the parser in date order, as it does in the season box; a year-less one rolls the end into next year. So there is no end-before-start case to refuse here.

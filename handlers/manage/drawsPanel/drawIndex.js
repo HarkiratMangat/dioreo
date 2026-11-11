@@ -75,6 +75,8 @@ function listView(entries, { title, origin, page = 0, pagerParts, sub = '' }) {
 function backFor(origin) {
     if (/^g:/.test(origin)) { const k = origin.slice(2); return btn(['ixgaps', k, 0], GAPS[k]?.label || 'Back', emojis.returnArrow); }
     if (/^t:/.test(origin)) return btn(['ixres', origin.slice(2), 0], 'Search Results', emojis.returnArrow);
+    // A card opened from Check Names goes back to those results, not to the Draw Index home (2026-11-11 11:40 EST click test: Open, then the way back lost the check).
+    if (/^c:/.test(origin)) return btn(['ixcres', origin.slice(2)], 'Check Names', emojis.returnArrow);
     return indexBack();
 }
 
@@ -84,7 +86,9 @@ function cardView(e, doc, origin = '', { header = null, resultRow = null } = {})
     const place = placeOf(doc, e);
     const gaps = gapsOf(e);
     const items = (e.items || []).map(i => `${emojis[i.tier] || ''} ${String(i.name).slice(0, 80)}${i.kind ? ` · ${i.kind}` : ` · ${emojis.warn} no kind`}`.trim());
-    const components = [text(crumb(String(e.title).slice(0, 80)))];
+    // The breadcrumb names the page the card was opened from, the same page its way back returns to.
+    const from = /^g:/.test(origin) ? GAPS[origin.slice(2)]?.label : /^t:/.test(origin) ? 'Search Results' : /^c:/.test(origin) ? 'Check Names' : null;
+    const components = [text(crumb(...(from ? [from] : []), String(e.title).slice(0, 80)))];
     if (header) components.push(text(header), ...(resultRow ? [resultRow] : []), SMALL());
     if (e.imageUrl) components.push({ type: 12, items: [{ media: { url: e.imageUrl } }] });
     components.push(text([
@@ -127,13 +131,22 @@ function searchEntries(entries, q) {
     return entries.filter(e => w.every(x => hay(e).includes(x))).sort((a, b) => (inTitle(b) - inTitle(a)) || byTitle(a, b));
 }
 
+// Check Names, run on what was pasted. Shared by the pop-up's submit and the way back from a card, so both show the same results. Quick Add These takes only the found draws that are not on /draws or in the draft (2026-11-11 11:07 EST, his screenshot: Quick Add was offered for a draw already live).
+async function runCheck(names, doc) {
+    const { checkIndex } = require('../../../utils/drawIndexCheck');
+    const entries = await require('../../../utils/drawCatalog').loadCatalog({ force: true });
+    const result = checkIndex(entries, names, { seasonalDoc: doc, isSameTitle: require('../../../utils/search').isSameDrawTitle });
+    const found = result.results.filter(r => (r.status === 'found' || r.status === 'maybe') && !r.onDraws && !r.inDraft).map(r => r.line);
+    return { result, found };
+}
+
 // ---------- routing ---------- `ctx` carries the panel's own answering helpers (index.js), so this module shares its lock, tiers and private notes.
 async function route(interaction, verb, a, b, c, ctx) {
     const { show, say, gate, getDoc, createSelection, loadSel } = ctx;
     const findEntry = async (id) => (await loadEntries()).find(e => String(e._id) === String(id)) || null;
     if (verb === 'ix') return show(interaction, homeView(await loadEntries(), await getDoc()));
     if (verb === 'ixcheck') return (await gate(interaction, 'exportnew')) && interaction.showModal(V.checkModal());
-    if (verb === 'ixfind') return interaction.showModal({ ...V.searchModal(), custom_id: ID('ixfindm'), title: 'Search the Draw Index' });
+    if (verb === 'ixfind') return interaction.showModal(V.searchModal({ id: ID('ixfindm'), title: 'Search the Draw Index', hint: 'Words in the title, another name or an item, in any order' }));
     if (verb === 'ixfindm' && interaction.isModalSubmit?.()) {
         const q = interaction.fields.getTextInputValue('q');
         const hits = searchEntries(await loadEntries(), q);
@@ -154,6 +167,13 @@ async function route(interaction, verb, a, b, c, ctx) {
         const g = GAPS[k] || GAPS.all;
         const list = (await loadEntries()).filter(g.test).sort(byTitle);
         return show(interaction, listView(list, { title: g.label, origin: `g:${k}`, page: interaction.isStringSelectMenu?.() ? 0 : b, pagerParts: ['ixgaps', k] }));
+    }
+    if (verb === 'ixcres') {
+        if (!(await gate(interaction, 'exportnew'))) return;
+        const sel = await loadSel(a);
+        if (!sel?.text) return say(interaction, `${emojis.cross} That check expired (checks last a day). Run Check Names again.`);
+        const { result, found } = await runCheck(sel.text, await getDoc());
+        return show(interaction, V.checkView(result, a, found.length));
     }
     if (verb === 'ixopen') {
         const e = await findEntry(a);
@@ -216,4 +236,4 @@ async function route(interaction, verb, a, b, c, ctx) {
 
 const isIndexVerb = (verb) => /^ix/.test(String(verb || ''));
 
-module.exports = { route, isIndexVerb, homeView, listView, cardView, editModal, searchEntries, placeOf, GAPS, PAGE };
+module.exports = { route, runCheck, isIndexVerb, homeView, listView, cardView, editModal, searchEntries, placeOf, GAPS, PAGE };

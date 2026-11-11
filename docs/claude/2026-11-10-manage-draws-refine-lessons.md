@@ -80,6 +80,21 @@ status: frozen
 - The dev bot's Cloudinary writes are blocked, and most dev draw pictures (`temp_draws/...`) answer 404. That is dev data, not a bug.
 - `ManageSelection` tokens last 24 hours. `commitSet` refuses a whole set if any op fails its tier check.
 
+## Round 2: the stranger read (2026-11-11 11:47 EST)
+
+His fifteen points the next morning were all visible on the first screen, and none was a function bug. Round 1 reviewed what each button did and what each save wrote; it never read the landing row by row as someone who had not built it. What that read would have caught, and what now catches it:
+
+| Missed | Why it was missed | What catches it now |
+|---|---|---|
+| Home on the right in some rows | each panel built its own rows | `returnFirst()` in every `row()`, and a test |
+| The gunsmith search emoji on Search Draws | copied from a sibling panel | a test bans it on draws views |
+| A disabled green All Checked button | a state shown as a control | a test bans disabled green buttons |
+| Errors drawn inside the panel | the panel was the only answer path | `say()` for misses and refusals |
+| A list that only opened a card | edit was one level down | Edit on every list row |
+| "Check Draw Index" beside "Search Draws" | two names for neighbouring jobs | the Draw Index panel, one name per job |
+
+The click test of round 2 then found four more, each only by doing the thing: a lone countdown refused while the hint promised it (the hint was written from the parser of Quick Add, not the one the form uses), Try Again's copy line dropping the whole Draw box, a season typed without a picture vanishing, and a card opened from Check Names going back to the Draw Index home instead of the results. **Type what the hint says you can type, then read what comes back.**
+
 ## Still open
 
 - **Phone width**: not checked (see above).

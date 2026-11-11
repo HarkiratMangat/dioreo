@@ -231,7 +231,7 @@ async function routeManage(interaction) {
         if (customId.startsWith('mng_retry_')) {
             const modalJson = buildRetryModal(customId.replace('mng_retry_', ''));
             if (!modalJson) {
-                return await interaction.reply({ content: '⌛ That retry expired (they last 10 minutes). Reopen the action from the `/manage` panel — the text in the message above is still copy-pasteable.', ephemeral: true });
+                return await interaction.reply({ content: '⌛ That retry expired (they last 10 minutes, and a bot restart clears them). Reopen the action from the `/manage` panel — the text in the message above is still copy-pasteable.', ephemeral: true });
             }
             return await interaction.showModal(modalJson);
         }
