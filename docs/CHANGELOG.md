@@ -50,6 +50,9 @@ From a full review and click test of `/manage draws` on the dev bot with prod's 
 - **Forms** label every field with its format; Edit N leaves picture links out (a line without one keeps the stored picture); the guide's example is drawn by /draws itself, and the guide stays under Discord's 4,000 characters (a test renders every guide).
 - **`/draws`' single-draw panel shows its picture first**, then the name, dates and items (his ask, 2026-11-10 20:02 EST).
 
+### Security
+- **mongoose 9.9.1 → 9.12.1** (with its driver: mongodb 7.8.0, bson 7.3.4, kareem 3.4.1, mquery 6.0.1, sift 17.1.4, @mongodb-js/saslprep 1.6.3): new critical advisories against mongoose 9.0.0–9.11.3 (GHSA-gg4r-jv3p-qx3c, GHSA-pcrw-h46h-c93h, GHSA-6972-9mcm-vhwj and two more) failed CI's production audit on this PR. `npm audit fix --omit=dev`, within the existing `^9.7.3` range; NOTICE updated; no licence changed.
+
 ### Fixed
 - **Editing a draw on the placeholder picture uploaded the placeholder as its real picture** and recorded it in the draw index, so Needs a Look stopped flagging it. `resolveThumbnail` now passes a placeholder, and the draw's own Cloudinary asset, through without uploading.
 - **Every Edit re-uploaded the draw's unchanged picture**, and **an Edit that changed nothing still wrote a change row.**
