@@ -290,6 +290,19 @@ function seasonDoc(nNew = 3, nRet = 30) {
         assert.ok(!JSON.stringify(card).includes('Yes, Move'), 'no Yes on a refused move');
         assert.match(JSON.stringify(card), /already has/);
     });
+    await check('the Draw box: title, dates and (new draws only) a season, told apart by what they parse as; a stray line is an error that names it (round 2, 2026-11-11 11:02 EST)', () => {
+        const F = require('../utils/drawForm');
+        let r = F.readDrawBox('Hollow Flight Mythic Drop\nNov 8 - Nov 21\nSeason 10', { allowSeason: true });
+        assert.deepStrictEqual([r.title, r.dates, r.season], ['Hollow Flight Mythic Drop', 'Nov 8 - Nov 21', 10]);
+        r = F.readDrawBox('S12\nNov 8\nSapphire Winter Draw', { allowSeason: true });
+        assert.deepStrictEqual([r.title, r.dates, r.season], ['Sapphire Winter Draw', 'Nov 8', 12], 'any order');
+        assert.match(F.readDrawBox('Only A Title').error, /dates/);
+        assert.match(F.readDrawBox('A Draw\nNov 8\nsomething else').error, /extra/);
+        r = F.readDrawBox('A Draw\nNov 8\nSeason 10');
+        assert.strictEqual(r.season, null, 'a returning draw ignores a season line');
+        assert.ok(r.notes.length, 'and says so');
+        assert.strictEqual(F.drawBoxValue({ title: 'A', dates: 'Nov 8', season: 10 }), 'A\nNov 8\nSeason 10');
+    });
     await check('Select\'s quick picks: within a group they widen, across groups they narrow; titles add on top', () => {
         const doc = seasonDoc(3, 5);
         const all = V.allDraws(doc);

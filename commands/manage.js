@@ -464,6 +464,12 @@ function buildBulkRemoveDrawsModal(drawType) {
 }
 
 // THE DRAW TYPE DROPDOWN, shared by Add and Edit Draw (2026-10-18 11:09 EDT, Harkirat: "a single dropdown for the collective 'draw type' selection and include the armory types within it"). /draw prices' own list in page order (utils/drawTypes.js); the stored type is preselected, and picking nothing leaves it unset. An armory's item count is read off the Items field, so there is no count to pick. A select lives in a modal only inside a Label, which is why both draw forms are built from Labels. REQUIRED, with Unsure / Unknown first (2026-10-18 11:37 EDT, Harkirat: "make it a required field and add the option for 'unsure/unknown' at the top of the list"), on Add and Edit alike so an untyped draw can only come from a bulk paste without a tag. Unknown is a stored flag the portal can list for fixing later.
+const DRAW_BOX_HINT = 'The title on the first line, the dates on the next: Start - End, one date, or the game\'s countdown (13d 23h).';
+const DRAW_BOX_HINT_NEW = 'Title, then the dates (Start - End or 13d 23h). Add "Season 10" on its own line if it first came out in another season.';
+// The 5th field (2026-11-11 11:02 EST): a picture straight from the game. It wins over the Picture Link and is uploaded, never stored as Discord's own link (those expire).
+function screenshotLabel() {
+    return new LabelBuilder().setLabel('Screenshot').setDescription('Optional. Drop the draw\'s picture here instead of a link.').setFileUploadComponent(new (require('discord.js').FileUploadBuilder)().setCustomId('shot').setMinValues(0).setMaxValues(1).setRequired(false));
+}
 function drawTypeLabel(current = '') {
     const { drawTypeChoices } = require('../utils/drawTypes');
     return new LabelBuilder().setLabel('Draw Type').setDescription('How /draw prices and the calculator price this draw').setStringSelectMenuComponent(
@@ -484,14 +490,15 @@ function buildAddDrawModal(drawType, prefill = {}) {
     const withValue = (input, value) => (value ? input.setValue(value) : input);
     const modal = new ModalBuilder().setCustomId(`add_draw_${drawType}`).setTitle(`Add ${drawType === 'new' ? 'New' : 'Returning'} Draw`);
     // The 5th field was "Or Paste As One Line" (2026-07-12) until 2026-10-18 11:09 EDT: Discord caps a modal at five, and the Draw Type dropdown took its place at Harkirat's pick ("B sounds fine"). A whole draw pasted as one line still goes in through Add Multiple, whose format carries the same `type:` tag. With it gone, Title, Items and Release Date are required again: they were optional only so a one-line paste could submit alone.
+    // ONE "Draw" box for the title, the dates and (for a new draw) the season it came out, and a Screenshot upload as the 5th field (Harkirat, 2026-11-11 11:02 EST). utils/drawForm.js reads the box; the old Title and Dates fields are still read for a pop-up opened before this.
+    const box = require('../utils/drawForm').drawBoxValue({ title: prefill.title, dates: prefill.date, season: prefill.season });
     modal.addLabelComponents(
-        drawTextLabel('title', 'Draw Title', withValue(new TextInputBuilder().setStyle(TextInputStyle.Short), prefill.title)),
+        drawTextLabel('draw', 'Draw', withValue(new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setPlaceholder(drawType === 'new' ? 'Hollow Flight Mythic Drop\nNov 8 - Nov 21\nSeason 10' : 'Hollow Flight Mythic Drop\nNov 8 - Nov 21'), box), drawType === 'new' ? DRAW_BOX_HINT_NEW : DRAW_BOX_HINT),
         drawTextLabel('items', 'Items', withValue(new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setPlaceholder("l CX-9 - Lethal Hollow\ne Kestrel - Blessed Hollow\n-# Optional note"), prefill.items), ITEMS_HINT),
-        // "Start - End" like the season titles box (utils/drawDates.js): one date is the release, a range also sets the end date on the draw's /calendar row.
-        drawTextLabel('date', 'Dates', withValue(new TextInputBuilder().setStyle(TextInputStyle.Short).setPlaceholder("e.g. July 15 - August 20"), prefill.date), DATES_HINT),
         // Optional (2026-07-12, Cloudinary-cache feature): blank reuses whatever's already cached for this exact draw title (utils/cloudinaryCache.js). "Picture Link", the word the rest of /manage uses (2026-11-10 11:03 EST).
         drawTextLabel('url', 'Picture Link', withValue(new TextInputBuilder().setStyle(TextInputStyle.Short).setRequired(false), prefill.url), 'Optional. Blank uses the draw index\'s picture for this draw, when it has one.'),
-        drawTypeLabel()
+        drawTypeLabel(),
+        screenshotLabel()
     );
     return modal;
 }
@@ -526,14 +533,14 @@ function buildEditDrawModal(targetDraw, targetId, drawType, row = null) {
     const modal = new ModalBuilder().setCustomId(`edit_draw_${targetId}_${drawType}`).setTitle('Edit Lucky Draw');
     // LABELS (2026-10-18 11:06 EDT): every field is a Label so the Draw Type dropdown can sit beside them (see drawTypeLabel above).
     const text = drawTextLabel;
+    const box = require('../utils/drawForm').drawBoxValue({ title: targetDraw.title, dates: require('../utils/drawDates').formatDrawDates(targetDraw.date, row && row.endDate) });
     modal.addLabelComponents(
-        text('title', 'Draw Title', new TextInputBuilder().setStyle(TextInputStyle.Short).setValue(targetDraw.title)),
+        text('draw', 'Draw', new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setValue(box), DRAW_BOX_HINT),
         text('items', 'Items', new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setValue(itemsText), ITEMS_HINT),
-        // The draw's end date lives on its /calendar draw row, so the caller passes that row (shared.js, results.js); without one the box holds the release date alone. Empty for a draw with no date (the box is required, so it is filled in on save).
-        text('date', 'Dates', new TextInputBuilder().setStyle(TextInputStyle.Short).setValue(require('../utils/drawDates').formatDrawDates(targetDraw.date, row && row.endDate)), DATES_HINT),
         // Pre-filled with the CURRENT thumbnail (already a Cloudinary URL if this draw was ever cached) — optional so clearing it and resubmitting re-resolves via the cache lookup instead of requiring a re-typed URL just to leave the image unchanged. BUG FIX (2026-07-12): setValue() throws a synchronous validation error if given `undefined`/non-string — discord.js requires a real string, even for an optional field. Any draw doc missing thumbnailUrl (legacy entries from before the Cloudinary-cache feature, or any doc that somehow saved without one) made this throw INSIDE resolveManagePanelAction's showModal() call, before the interaction was ever acknowledged — which is exactly what surfaced as Discord's generic "Something went wrong. Try again." toast on Edit Draws. Fall back to '' like every other optional field already does.
         text('url', 'Picture Link', new TextInputBuilder().setStyle(TextInputStyle.Short).setValue(targetDraw.thumbnailUrl || '').setRequired(false), 'Keep it to keep the picture. Blank asks the draw index again.'),
-        drawTypeLabel(targetDraw.priceType || '')
+        drawTypeLabel(targetDraw.priceType || ''),
+        screenshotLabel()
     );
     return modal;
 }

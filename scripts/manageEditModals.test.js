@@ -16,7 +16,7 @@ const valueOf = (modal, id) => {
 
 check('Edit Draw opens on a draw with no date, and leaves the date box empty to be filled in', () => {
     const modal = manage.buildEditDrawModal({ title: 'T', items: [{ tier: 'legendary', name: 'A' }] }, 'abc', 'new');
-    assert.strictEqual(valueOf(modal, 'date'), '', 'a missing date must read as an empty box, not throw');
+    assert.strictEqual(valueOf(modal, 'draw'), 'T', 'a missing date leaves the title alone in the Draw box, not throw');
 });
 
 check('Edit Draw opens on a draw with no items, and leaves the items box empty', () => {
@@ -26,14 +26,14 @@ check('Edit Draw opens on a draw with no items, and leaves the items box empty',
 
 check('Edit Draw still pre-fills a normal draw (the falsifier: the guard did not blank real values)', () => {
     const modal = manage.buildEditDrawModal({ title: 'T', date: new Date('2026-09-10'), items: [{ tier: 'legendary', name: 'Rin Yoshida - Herrscher Of Thunder' }] }, 'abc', 'new');
-    assert.strictEqual(valueOf(modal, 'date'), 'September 10, 2026');
+    assert.strictEqual(valueOf(modal, 'draw'), 'T\nSeptember 10, 2026');
     assert.strictEqual(valueOf(modal, 'items'), 'l Rin Yoshida - Herrscher Of Thunder');
 });
 
 check('Edit Draw shows the end date from the draw\'s calendar row, as the season box does', () => {
     const row = { endDate: new Date('2026-11-12T00:00:00Z') };
     const modal = manage.buildEditDrawModal({ title: 'T', date: new Date('2026-09-10T00:00:00Z'), items: [{ tier: 'legendary', name: 'A' }] }, 'abc', 'new', row);
-    assert.strictEqual(valueOf(modal, 'date'), 'September 10, 2026 - November 12, 2026');
+    assert.strictEqual(valueOf(modal, 'draw'), 'T\nSeptember 10, 2026 - November 12, 2026');
 });
 
 process.exit(failures ? 1 : 0);
