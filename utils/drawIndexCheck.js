@@ -56,6 +56,7 @@ function checkLine(entries, line, { seasonalDoc = null, isSameTitle } = {}) {
     return {
         line,
         status: found.sure ? 'found' : 'maybe',
+        id: e._id ? String(e._id) : null,
         title: e.title,
         matchedBy: found.matchedBy === 'words' && item ? 'item' : found.matchedBy,
         item: item?.name || null,
@@ -76,8 +77,8 @@ function checkIndex(entries, text, ctx = {}) {
     return { results: lines.slice(0, MAX_LINES).map(l => checkLine(entries, l, ctx)), extra: Math.max(0, lines.length - MAX_LINES), indexSize: entries.length };
 }
 
-// How the line found it. `words` is Quick Add's word match, typos forgiven ("hersher of reason"), so it reads as a close match.
-const MATCHED_BY = { title: 'by its title', alias: 'by another name it ran under', item: 'by an item', words: 'close match' };
+// How the line found it. `words` is Quick Add's word match, typos forgiven ("hersher of reason"), so it reads as a close match. How the line found it, said only when it is not simply the title (2026-11-11 11:07 EST, his screenshot: "by its title" told an admin nothing).
+const MATCHED_BY = { title: null, alias: 'by another name it ran under', item: 'by an item', words: 'close match' };
 
 // One result as the panel's text block. `E` is the emoji map.
 function resultBlock(r, E) {
@@ -88,7 +89,7 @@ function resultBlock(r, E) {
         return `${E.search} **${typed}** → fits ${r.candidates.length} draws, not one\n-# ${shown}${r.candidates.length > MAX_SHOWN_DESCRIBED ? ' · …' : ''}`;
     }
     const facts = [
-        `${MATCHED_BY[r.matchedBy] || MATCHED_BY.words}${r.item ? ` (${clean(r.item, 50)})` : ''}`,
+        r.matchedBy === 'title' ? null : `${MATCHED_BY[r.matchedBy] || MATCHED_BY.words}${r.item ? ` (${clean(r.item, 50)})` : ''}`,
         r.items ? `${r.items} item${r.items === 1 ? '' : 's'}` : null, // none is said once, under Needs
         r.priceType ? typeLabel(r.priceType) : null,
         r.season,

@@ -64,6 +64,7 @@ check('every op type maps back to a registry action, except the documented inter
         'catalogue.learn',         // rides in the same changeset as a loadout save (Save Anyway,
                                     // /autobuild Confirm); no page button of its own
         'catalogue.forget',        // internal -- catalogue.learn's inverse target only
+        'drawindex.edit',          // the Draw Index panel's Edit Entry (2026-11-11 11:02 EST): an entry's id rides in the custom_id, like loadout.credit; declares page: draws
         'loadout.options',         // a merged build's options (utils/loadoutOptions.js): rides on Add, Edit and Delete by a build # with a letter, never a page action of its own; declares page: per mode
         'season.setAutoPromote',   // rides on the Promote pop-up (gated as seasondraft:promote), never a page action of its own; declares page:
         'season.setDraftBanners',  // the draft panel's Banners pop-up (gated as seasondraft:bulkcalendar), never a page action of its own; declares page:

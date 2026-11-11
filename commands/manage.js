@@ -489,8 +489,7 @@ const DATES_HINT = 'Start - End, e.g. Nov 8 - Nov 21. The end is optional; the g
 function buildAddDrawModal(drawType, prefill = {}) {
     const withValue = (input, value) => (value ? input.setValue(value) : input);
     const modal = new ModalBuilder().setCustomId(`add_draw_${drawType}`).setTitle(`Add ${drawType === 'new' ? 'New' : 'Returning'} Draw`);
-    // The 5th field was "Or Paste As One Line" (2026-07-12) until 2026-10-18 11:09 EDT: Discord caps a modal at five, and the Draw Type dropdown took its place at Harkirat's pick ("B sounds fine"). A whole draw pasted as one line still goes in through Add Multiple, whose format carries the same `type:` tag. With it gone, Title, Items and Release Date are required again: they were optional only so a one-line paste could submit alone.
-    // ONE "Draw" box for the title, the dates and (for a new draw) the season it came out, and a Screenshot upload as the 5th field (Harkirat, 2026-11-11 11:02 EST). utils/drawForm.js reads the box; the old Title and Dates fields are still read for a pop-up opened before this.
+    // The 5th field was "Or Paste As One Line" (2026-07-12) until 2026-10-18 11:09 EDT: Discord caps a modal at five, and the Draw Type dropdown took its place at Harkirat's pick ("B sounds fine"). A whole draw pasted as one line still goes in through Add Multiple, whose format carries the same `type:` tag. With it gone, Title, Items and Release Date are required again: they were optional only so a one-line paste could submit alone. ONE "Draw" box for the title, the dates and (for a new draw) the season it came out, and a Screenshot upload as the 5th field (Harkirat, 2026-11-11 11:02 EST). utils/drawForm.js reads the box; the old Title and Dates fields are still read for a pop-up opened before this.
     const box = require('../utils/drawForm').drawBoxValue({ title: prefill.title, dates: prefill.date, season: prefill.season });
     modal.addLabelComponents(
         drawTextLabel('draw', 'Draw', withValue(new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setPlaceholder(drawType === 'new' ? 'Hollow Flight Mythic Drop\nNov 8 - Nov 21\nSeason 10' : 'Hollow Flight Mythic Drop\nNov 8 - Nov 21'), box), drawType === 'new' ? DRAW_BOX_HINT_NEW : DRAW_BOX_HINT),
@@ -1003,6 +1002,7 @@ function buildManageCommandData() {
 
 module.exports = {
     prefillModal,
+    drawTypeLabel,
     ALLOWED_ADMIN_ID, // Re-exported from utils/owner.js; nothing reads it off this module now (the panel-interaction guard in handlers/router.js gates through hasCommandAccess), so it is kept only as a harmless alias.
     data: buildManageCommandData(),
 

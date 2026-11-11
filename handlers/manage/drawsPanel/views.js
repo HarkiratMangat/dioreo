@@ -106,8 +106,7 @@ async function pageView(doc, note = null, { pageRow = null, noteRow = null } = {
     const all = allDraws(doc);
     const n = (k) => all.filter(STATUS[k].test).length;
     const look = n('look');
-    // The counts an admin scans for: how many, what is running, what is about to leave, what has ended. Leaving Soon is part of Active (as /draws' filter has it), so it is written in brackets after Active: a glance that adds the numbers up must reach the total.
-    // Each state wears its /draws dot (2026-11-11 11:02 EST, his ask), so the line reads like the lists it counts.
+    // The counts an admin scans for: how many, what is running, what is about to leave, what has ended. Leaving Soon is part of Active (as /draws' filter has it), so it is written in brackets after Active: a glance that adds the numbers up must reach the total. Each state wears its /draws dot (2026-11-11 11:02 EST, his ask), so the line reads like the lists it counts.
     const counts = all.length
         ? [`**${all.length}** ${all.length === 1 ? 'draw' : 'draws'}`, `${emojis.greenDotGlow} ${n('live')} active${n('leaving') ? ` (${emojis.yellowDotGlow} **${n('leaving')} leaving soon**)` : ''}`, ...(n('upcoming') ? [`${emojis.lightBlueDotGlow} ${n('upcoming')} upcoming`] : []), ...(n('ended') ? [`${emojis.redDotGlow} ${n('ended')} ended`] : [])].join(' · ')
         : 'No draws yet this season. Quick Add or Paste Draws to start.';
@@ -336,27 +335,32 @@ function endModal(customId, { title = '', row: calRow = null, count = 0 } = {}) 
 }
 
 // ---------- Check Draw Index ---------- (2026-11-09 13:57 EST, his ask: "bulk paste draw names or item names and check if we have a draw for that search, if the draw/catalogue contains all the info/needs updating")
-const checkModal = (value = '', token = null) => ({ custom_id: ID('checkm', token || ''), title: 'Check the Draw Index', components: [labelled('Draw or item names', { type: 4, custom_id: 'names', style: 2, required: true, max_length: 4000, placeholder: 'cx9 lethal hollow\nherrscher of reason\nmythic character', ...(value ? { value: String(value).slice(0, 4000) } : {}) }, 'One per line, up to 20. Checking changes nothing.')] });
-// The result: a count line, then one block per line pasted. Discord holds 4,000 characters of text in a message: blocks past that are dropped and counted, never cut mid-line. `token` keeps what was pasted (2026-11-10 11:19 EST): Check Again opens it again, and Quick Add These opens Quick Add with the lines that found a draw.
+const checkModal = (value = '', token = null) => ({ custom_id: ID('checkm', token || ''), title: 'Check Names in the Draw Index', components: [labelled('Draw or item names', { type: 4, custom_id: 'names', style: 2, required: true, max_length: 4000, placeholder: 'cx9 lethal hollow\nherrscher of reason\nmythic character', ...(value ? { value: String(value).slice(0, 4000) } : {}) }, 'One per line, up to 20. Checking changes nothing.')] });
+// The result: a count line, then one block per line pasted. Discord holds 4,000 characters of text in a message: blocks past that are dropped and counted, never cut mid-line. `token` keeps what was pasted (2026-11-10 11:19 EST): Check Again opens it again, and Quick Add These opens Quick Add with the lines that found a draw. Check Names, a page of the Draw Index panel (2026-11-11 11:07 EST, his screenshot review): one name for it everywhere, each draw it found opens on its own entry card, Quick Add These counts only the draws not already on /draws or in the draft, and the way back is on the left.
 function checkView({ results, extra = 0, indexSize = 0 }, token = null, foundCount = 0) {
     const { resultBlock } = require('../../../utils/drawIndexCheck');
     const c = (s) => results.filter(r => r.status === s).length;
     const needN = results.filter(r => r.needs?.length).length;
     const counts = [`${results.length} checked`, `${c('found')} found`, ...(c('maybe') ? [`${c('maybe')} maybe`] : []), ...(c('describes') ? [`${c('describes')} too broad`] : []), ...(c('none') ? [`${c('none')} not indexed`] : []), ...(needN ? [`${emojis.warn} ${needN} need updating`] : [])].join(' · ');
-    const head = text(`${crumb('Check Draw Index')}\n## ${emojis.search} Draw Index Check\n-# ${counts} · ${plural(indexSize, 'draw')} in the index`);
-    const blocks = results.map(r => resultBlock(r, emojis));
-    let budget = 3700 - head.content.length;
-    let shown = 0;
-    while (shown < blocks.length && budget - blocks[shown].length > 0) { budget -= blocks[shown].length + 1; shown++; }
-    const dropped = blocks.length - shown + extra;
+    const head = text(`-# Draws  ›  Draw Index  ›  Check Names\n## ${indexEmoji()} Check Names\n-# ${counts} · ${plural(indexSize, 'draw')} in the index`);
+    const blocks = results.map(r => ({ r, t: resultBlock(r, emojis) }));
+    // Up to eight found draws get an Open button (a Section each); the rest are text, as many as fit Discord's 4,000 characters.
+    let budget = 3600 - head.content.length;
     const components = [head];
     if (!indexSize) components.push(SMALL(), text(`${emojis.warn} **The draw index is empty here.** Nothing can be found until it is filled.`));
-    components.push(BIG(), ...blocks.slice(0, shown).map(text));
+    components.push(BIG());
+    let shown = 0, sections = 0;
+    for (const { r, t } of blocks) {
+        if (budget - t.length < 0) break;
+        budget -= t.length + 1;
+        if (r.id && sections < 8) { components.push({ type: 9, components: [text(t)], accessory: btn(['ixopen', r.id, 'h'], 'Open', emojis.expand) }); sections++; }
+        else components.push(text(t));
+        shown++;
+    }
+    const dropped = blocks.length - shown + extra;
     if (dropped) components.push(text(`-# …and ${plural(dropped, 'more line')} not checked; paste them again in a second check.`));
-    const quick = token && foundCount
-        ? btn(['qathese', token], foundCount === 1 ? 'Quick Add This One' : `Quick Add These ${Math.min(foundCount, 10)}`, emojis.mngAdd, 3)
-        : btn('quickadd', 'Quick Add', emojis.mngAdd);
-    components.push(BIG(), row(btn(['check', token || ''], 'Check Again', emojis.search, 1), quick, homeBtn()));
+    const quick = token && foundCount ? btn(['qathese', token], foundCount === 1 ? 'Quick Add This One' : `Quick Add These ${Math.min(foundCount, 10)}`, emojis.plus, 3) : null;
+    components.push(BIG(), row(btn('ix', 'Draw Index', emojis.returnArrow), homeBtn(), btn(['check', token || ''], 'Check Again', emojis.pasteImport, 1), quick));
     return panel(components);
 }
 

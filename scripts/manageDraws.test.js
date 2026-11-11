@@ -303,6 +303,33 @@ function seasonDoc(nNew = 3, nRet = 30) {
         assert.ok(r.notes.length, 'and says so');
         assert.strictEqual(F.drawBoxValue({ title: 'A', dates: 'Nov 8', season: 10 }), 'A\nNov 8\nSeason 10');
     });
+    await check('the Draw Index panel: home counts its gaps, lists page within the limits, an entry card shows the picture first and where its draw is, and Edit Entry is a revertable op (round 2, 2026-11-11 11:02 EST)', async () => {
+        const IX = require('../handlers/manage/drawsPanel/drawIndex');
+        const doc = seasonDoc(3, 5);
+        const live = V.allDraws(doc)[0];
+        const entry = (i, extra = {}) => ({ _id: oid(900 + i), title: `Index Draw ${i}`, aliases: [], items: [{ tier: 'legendary', name: `Gun${i} - Skin`, kind: i % 2 ? 'weapon' : undefined }], imageUrl: i % 3 ? LINK(`d${i}`) : '', priceType: i % 4 ? 'legendaryWeapon' : 'unknown', releaseSeason: 9, ...extra });
+        const entries = [...Array.from({ length: 30 }, (_, i) => entry(i)), entry(99, { title: live.title, aliases: ['Old Name'], imageUrl: LINK('live') })];
+        limits(IX.homeView(entries, doc), 'index home');
+        limits(IX.homeView([], doc), 'index home empty');
+        for (const [k, g] of Object.entries(IX.GAPS)) {
+            const list = entries.filter(g.test);
+            for (let p = 0; p <= Math.ceil(list.length / IX.PAGE); p++) limits(IX.listView(list, { title: g.label, origin: `g:${k}`, page: p, pagerParts: ['ixgaps', k] }), `index ${k} p${p}`);
+        }
+        const card = IX.cardView(entries[30], doc, 'g:all');
+        limits(card, 'index card');
+        assert.strictEqual(card[0].components[1].type, 12, 'the picture first');
+        assert.match(JSON.stringify(card), /On \/draws/);
+        assert.ok(!JSON.stringify(card).includes('Quick Add This Draw'), 'no Quick Add for a draw already on /draws');
+        assert.ok(JSON.stringify(IX.cardView(entries[3], doc, 'h')).includes('Quick Add This Draw'));
+        assert.ok(IX.editModal(entries[3], 'h').components.length <= 5);
+        assert.deepStrictEqual(IX.searchEntries(entries, 'old name').map(e => e.title), [live.title], 'another name finds it');
+        assert.ok(IX.searchEntries(entries, 'gun7').some(e => e.title === 'Index Draw 7'), 'an item finds it');
+        const op = require('../core/ops').resolveOp('drawindex.edit');
+        assert.ok(!op.validate({ type: 'drawindex.edit', target: { id: 'x' }, payload: { releaseSeason: 'ten' } }).ok, 'a season is a number');
+        const ok = op.validate({ type: 'drawindex.edit', target: { id: 'x' }, payload: { aliases: [' A ', 'A', ''] } });
+        assert.deepStrictEqual(ok.normalized.payload.aliases, ['A'], 'names trimmed and de-duplicated');
+        assert.deepStrictEqual(op.invert({ applied: { id: 'x', prior: { releaseSeason: 7 } } }), { type: 'drawindex.edit', target: { id: 'x' }, payload: { releaseSeason: 7 } });
+    });
     await check('Select\'s quick picks: within a group they widen, across groups they narrow; titles add on top', () => {
         const doc = seasonDoc(3, 5);
         const all = V.allDraws(doc);

@@ -269,10 +269,10 @@ check('the draw retry snippet carries the Draw Type pick as its type: tag, and r
 });
 
 check('Try Again refills an Add Draw form built from Labels, the Draw Type dropdown included', () => {
-    retry.pendingModalRetries.set('tokd', { modalCustomId: 'add_draw_new', values: { title: 'Sky Armory', items: 'l AK', date: 'July 15', url: '', price_type: 'armoryMythicWeapon' } });
+    retry.pendingModalRetries.set('tokd', { modalCustomId: 'add_draw_new', values: { draw: 'Sky Armory\nJuly 15', items: 'l AK', url: '', price_type: 'armoryMythicWeapon' } });
     const json = retry.buildRetryModal('tokd');
     const byId = Object.fromEntries(json.components.map(l => [l.component.custom_id, l.component]));
-    assert.strictEqual(byId.title.value, 'Sky Armory');
+    assert.strictEqual(byId.draw.value, 'Sky Armory\nJuly 15', 'the Draw box refills (round 2)');
     assert.strictEqual(byId.items.value, 'l AK');
     assert.deepStrictEqual(byId.price_type.options.filter(o => o.default).map(o => o.value), ['armoryMythicWeapon']);
     assert.ok(!('combined' in byId), 'the one-line field is gone from Add Draw');

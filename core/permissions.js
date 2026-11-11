@@ -112,6 +112,7 @@ const OP_TIERS = {
     // CODM catalogue (core/ops/catalogue.js). A learn rides in the same commit as the loadout add or edit that named the new attachment, so it needs what that add needs; forgetting is its inverse-only undo.
     'catalogue.learn': 'create',
     'catalogue.forget': 'destructive',     // inverse-only
+    'drawindex.edit': 'create',            // the Draw Index panel's Edit Entry, the tier a draw edit has (2026-11-11 11:02 EST), and its own inverse
 };
 
 // DECIDED 2026-10-19 20:17 EDT (Harkirat: "yeah leave it as destructive"; it had been provisional since 2026-10-19 18:33 EDT). Undo and /bot Changes → Revert need this tier on the page the change belongs to, whatever the reverted op's own tier was.

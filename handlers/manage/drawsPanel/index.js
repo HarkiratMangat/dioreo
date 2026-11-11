@@ -375,6 +375,9 @@ async function autocomplete(interaction) {
 // ---------- routing ----------
 async function route(interaction) {
     const [, verb, a, b, c] = interaction.customId.split('|');
+    // The Draw Index panel's own verbs (`ix…`, handlers/manage/drawsPanel/drawIndex.js), answered with this panel's helpers (2026-11-11 11:02 EST).
+    const IX = require('./drawIndex');
+    if (IX.isIndexVerb(verb)) return IX.route(interaction, verb, a, b, c, { show, say, gate, getDoc, createSelection, loadSel });
     const m = manageCommand();
     const n = (x) => Number(x) || 0;
 
@@ -619,8 +622,8 @@ async function route(interaction) {
         const entries = await require('../../../utils/drawCatalog').loadCatalog({ force: true });
         const names = interaction.fields.getTextInputValue('names');
         const result = checkIndex(entries, names, { seasonalDoc: await getDoc(), isSameTitle: require('../../../utils/search').isSameDrawTitle });
-        // What was pasted, and the lines that found a draw, kept for Check Again and Quick Add These.
-        const found = result.results.filter(r => r.status === 'found' || r.status === 'maybe').map(r => r.line);
+        // What was pasted, and the lines that found a draw, kept for Check Again and Quick Add These. Quick Add These takes only the found draws that are not on /draws or in the draft (2026-11-11 11:07 EST, his screenshot: Quick Add was offered for a draw already live).
+        const found = result.results.filter(r => (r.status === 'found' || r.status === 'maybe') && !r.onDraws && !r.inDraft).map(r => r.line);
         const token = await createSelection({ text: String(names).slice(0, 4000), query: found });
         return show(interaction, V.checkView(result, token, found.length));
     }

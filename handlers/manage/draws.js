@@ -31,8 +31,7 @@ async function addDraw(interaction, opts = {}) {
     const customId = opts.customId || interaction.customId;
     const drawType = customId.replace('add_draw_', '');
 
-    // The 5th field is the Draw Type dropdown since 2026-10-18 11:09 EDT (Harkirat's pick, "B sounds fine"); the "Or Paste As One Line" field it replaced lives on as Add Multiple, which takes the same line format and the same `type:` tag.
-    // The Draw box (title, dates, a season for a new draw) and the screenshot, read by utils/drawForm.js (2026-11-11 11:02 EST).
+    // The 5th field is the Draw Type dropdown since 2026-10-18 11:09 EDT (Harkirat's pick, "B sounds fine"); the "Or Paste As One Line" field it replaced lives on as Add Multiple, which takes the same line format and the same `type:` tag. The Draw box (title, dates, a season for a new draw) and the screenshot, read by utils/drawForm.js (2026-11-11 11:02 EST).
     const form = require('../../utils/drawForm').readDrawFields(interaction, { allowSeason: drawType === 'new' });
     if (form.error) return await failWithRetry(interaction, form.error);
     const title = toTitleCase(form.title);
@@ -59,8 +58,7 @@ async function addDraw(interaction, opts = {}) {
 
     // URL is optional -- blank reuses a Cloudinary cache hit for this exact title if one exists. No URL AND no cache hit used to hard-reject the whole submission -- relaxed 2026-08-22 19:40 EDT (click-test fix): a draw's info is sometimes known before any image exists to link/cache. thumbnailUrl has no `required` on the schema (models/SeasonalData.js) -- this was purely an app-level choice. commands/draws.js's render renders a plain no-image row instead of a broken thumbnail when thumbnailUrl is null. The items go along so a draw that comes back under a new name finds its old image by what it contains (utils/cloudinaryCache.js).
     const parsedItems = rawItems.split('\n').filter(l => l.trim().length > 0).map(parseItemLine);
-    // A draw added to New that the draw index has never seen is indexed with this season as its release season (utils/drawCatalog.js insertFields).
-    // A season named in the Draw box wins; otherwise a new draw is this season's.
+    // A draw added to New that the draw index has never seen is indexed with this season as its release season (utils/drawCatalog.js insertFields). A season named in the Draw box wins; otherwise a new draw is this season's.
     const releaseSeason = drawType === 'new' ? (form.season || require('../../utils/quickAdd').seasonNumber(seasonalDoc.currentSeasonTitle)) : null;
     const releaseYear = require('../../utils/quickAdd').seasonYear(seasonalDoc);
     const thumbResult = await resolveThumbnail(title, rawUrl, { items: parsedItems, priceType, ...(releaseSeason ? { releaseSeason, ...(releaseYear ? { releaseYear } : {}) } : {}) });
