@@ -319,6 +319,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-11-08 14:44 EST — Season draft upgrades, draws in release order, and a carry-over that dropped a running draw (v3.16.0)
 - 2026-11-09 15:56 EST — Owner delete, an admin /help, a draw index check, and a TBD that the calendar threw away (v3.17.0)
 - 2026-11-10 21:17 EST — /manage draws refined, and what the review found (v3.19.0)
+- 2026-11-11 22:44 EST — Promote went live and said nothing, and every typed end date was a day early (v3.20.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -5099,6 +5100,14 @@ The hidden defects came from five places: reading the saver behind each button (
 
 ### Lesson
 The first report said every item was click-tested; it was false, written from a compaction summary. Harkirat's "are you sure?" led to the transcript's click log, and clicking the unclicked paths found four bugs. Tested claims now come from the click log. The full method, and a checklist for the next subcommand, is `docs/claude/2026-11-10-manage-draws-refine-lessons.md`.
+
+## 2026-11-11 22:44 EST — Promote went live and said nothing, and every typed end date was a day early (v3.20.0)
+
+Season 10 went live on prod and two things went wrong at once: Promote dropped the Solstice Draw, which was running but had been added after the day's carry-over, and the Promote button then showed nothing at all. The second was a duplicate custom id on the result screen (Back and Home both opened the live view), which Discord refused, so the promote went live and the panel never changed. Reproduced on the dev bot in one click once the log was read.
+
+The fixes: Promote now carries running rows inside its own transaction, and opens a review before anything goes live, built from tonight's real misses (Solstice, the Ford Table Tactics Offer and Event pair, the draw index disagreeing with live). The game also settled a long-standing date bug: a listed end day is inclusive, so every typed end had been stored a day early; reading and writing back were changed together, with a round-trip test, so an untouched save never moves an end.
+
+Lesson: a static test that every button has a handler cannot see a button that two others share. The result-screen bug lived in the one panel whose resultView lacked the guard the other five had; a test now holds all six to it.
 
 # Part B — Lessons Ledger (thematic)
 
