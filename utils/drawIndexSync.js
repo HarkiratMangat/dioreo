@@ -25,6 +25,7 @@ function indexChanges(entry, entries, { items, priceType }, { fillOnly = false }
     return set;
 }
 
+const WRITABLE = ['items', 'fp', 'topTier', 'priceType', 'tags'];
 const connected = () => require('mongoose').connection.readyState === 1;
 const FIELDS = { slug: 1, title: 1, aliases: 1, items: 1, priceType: 1, fp: 1, topTier: 1, tags: 1, publicId: 1, releaseYear: 1 };
 
@@ -50,8 +51,11 @@ async function restoreIndex(restore, session) {
     const DrawCatalog = require('../models/DrawCatalog');
     const cur = await DrawCatalog.findById(restore.id, FIELDS).session(session).lean();
     if (!cur) return null;
-    const prior = Object.fromEntries(Object.keys(restore.prior || {}).map(k => [k, cur[k] === undefined ? null : cur[k]]));
-    await DrawCatalog.updateOne({ _id: cur._id }, { $set: restore.prior }, { session });
+    // Only the fields syncIndex writes: a restore can never reach any other part of an entry.
+    const want = Object.fromEntries(Object.entries(restore.prior || {}).filter(([k]) => WRITABLE.includes(k)));
+    if (!Object.keys(want).length) return null;
+    const prior = Object.fromEntries(Object.keys(want).map(k => [k, cur[k] === undefined ? null : cur[k]]));
+    await DrawCatalog.updateOne({ _id: cur._id }, { $set: want }, { session });
     return { id: String(cur._id), prior, publicId: cur.publicId || '', priorTags: cur.tags || [] };
 }
 
@@ -70,4 +74,4 @@ async function afterSync(written) {
     return null;
 }
 
-module.exports = { indexChanges, syncIndex, restoreIndex, afterSync };
+module.exports = { indexChanges, syncIndex, restoreIndex, afterSync, WRITABLE };

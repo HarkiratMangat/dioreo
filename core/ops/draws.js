@@ -127,12 +127,12 @@ registerEntity('draws', {
             const cur = live[path].find(d => String(d._id) === op.target.elementId);
             return { before: cur, after: { ...cur, ...op.payload } };
         },
-        apply: async (op, { session }) => {
+        apply: async (op, { session, restoring = false }) => {
             const path = pathFor(op.target.category);
             const before = await SeasonalData.findOne(DOC).select(path).lean().session(session);
             const cur = before[path].find(d => String(d._id) === op.target.elementId);
             if (!cur) return { ok: false, reason: 'missing' };
-            // `__indexRestore` rides only on this op's own inverse: the draw index entry's values before the edit synced it (utils/drawIndexSync.js). It is never a draw field.
+            // `__indexRestore` rides only on this op's own inverse, and is honoured only when the op IS a Revert (`restoring`, set by core/changeset.js from a stored change row): a fresh op carrying one from any caller is a plain edit (security review, 2026-11-11 22:38 EST): the draw index entry's values before the edit synced it (utils/drawIndexSync.js). It is never a draw field.
             const { __indexRestore, ...fields } = op.payload;
             op = { ...op, payload: fields };
             // The prior-value assertion IS the conflict check — see core/mongo/positional.js. A field the stored draw has never had reads `undefined` off this lean() fetch; it is asserted as null, which is what MongoDB matches a missing field with. Found 2026-10-18 11:06 EDT adding `priceType`: every draw saved before it lacks the field.
@@ -143,7 +143,7 @@ registerEntity('draws', {
             if ('date' in op.payload) await resortByDate(SeasonalData, DOC, path, session);
             // The draw index follows the edit (2026-11-11 22:33 EST, his "go"): its entry takes the draw's items and draw type, kinds kept; a Revert puts the entry back exactly.
             const sync = require('../../utils/drawIndexSync');
-            const index = __indexRestore ? await sync.restoreIndex(__indexRestore, session)
+            const index = restoring && __indexRestore ? await sync.restoreIndex(__indexRestore, session)
                 : await sync.syncIndex([op.payload.title, cur.title], { items: 'items' in op.payload ? op.payload.items : cur.items, priceType: 'priceType' in op.payload ? op.payload.priceType : cur.priceType }, session);
             return {
                 ok: true,

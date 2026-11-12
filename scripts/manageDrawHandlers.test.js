@@ -54,6 +54,12 @@ async function check(name, fn) {
         const undo = await commitSet([edit.inverse], { actorId: h.OWNER, revertOf: { changeId: edit.changeId, page: 'draws', actorId: h.OWNER } });
         assert.ok(undo.ok, JSON.stringify(undo.failedAt || undo));
         assert.deepStrictEqual(h.collections.DrawCatalog.rows[0].items.map(x => x.name), ['Ak117 - Final'], 'Revert put the entry back');
+        // A fresh edit carrying the field (from any caller) is a plain edit: only a Revert restores, and only the fields the sync writes (security review, 2026-11-11 22:38 EST).
+        const before = JSON.parse(JSON.stringify(h.collections.DrawCatalog.rows[0]));
+        const forged = await commitSet([{ type: 'draw.edit', target: { category: 'new', elementId: 'cccccccccccccccccccccccc' }, payload: { title: 'World Champs Final Draw', items: [{ tier: 'legendary', name: 'Ak117 - Final' }], priceType: 'legendaryGunReactive', __indexRestore: { id: String(before._id), prior: { title: 'Hijacked', slug: 'x', priceType: 'sevenSpinLegendaryWeapon' } } } }], { actorId: h.OWNER });
+        assert.ok(forged.ok, JSON.stringify(forged.failedAt || forged));
+        assert.strictEqual(h.collections.DrawCatalog.rows[0].title, before.title, 'a forged restore never renames the entry');
+        assert.strictEqual(h.collections.DrawCatalog.rows[0].slug, before.slug);
         h.collections.DrawCatalog.seed([]);
     });
 
