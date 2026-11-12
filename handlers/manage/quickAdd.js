@@ -143,11 +143,11 @@ function draftPanel(token, state) {
         { type: 14, spacing: 1, divider: true },
         // Remove takes lines out of the draft (2026-11-10, his "Remove per row"): a Section holds one accessory, Edit or Pick, so it is one multi-select under the rows. 10 rows (30) + header + 2 dividers + this (2) + the buttons (4) + the container is exactly 40.
         { type: 1, components: [{ type: 3, custom_id: `mng_qa_rm_${token}`, placeholder: 'Remove lines from the draft…', min_values: 1, max_values: drafts.length, options: drafts.map((d, i) => ({ label: `${i + 1}. ${d.needsPick ? d.query || 'Pick a draw' : d.title}`.slice(0, 100), value: String(i) })) }] },
-        { type: 1, components: [
+        { type: 1, components: require('../../utils/returnFirst').returnFirst([
             { type: 2, style: 3, label: writes ? `${draft ? 'Stage' : 'Save'} ${writes}` : `Nothing to ${draft ? 'Stage' : 'Save'}`, custom_id: `mng_qa_save_${token}`, disabled: !writes },
             { type: 2, style: 2, label: 'Add More', emoji: emojis.parseEmoji(emojis.mngAdd), custom_id: `mng_qa_more_${token}`, disabled: drafts.length >= qa.MAX_LINES },
             { type: 2, style: 2, label: 'Cancel', custom_id: `mng_qa_cancel_${token}` }
-        ] }
+        ]) }
     ];
     return [{ type: 17, accent_color: ACCENT.draws, components }];
 }
@@ -444,12 +444,12 @@ async function save(interaction, token, state) {
         : [];
     panel[0].components.push({ type: 14, spacing: 1, divider: false });
     if (keys.length > 1) panel[0].components.push({ type: 1, components: [{ type: 3, custom_id: 'mng_dr|open|', placeholder: 'Open a saved draw…', options: keys.slice(0, 25).map(k => ({ label: k.title.slice(0, 100), value: k.key })) }] });
-    panel[0].components.push({ type: 1, components: [
+    panel[0].components.push({ type: 1, components: require('../../utils/returnFirst').returnFirst([
         ...open,
         { type: 2, style: 3, label: 'Quick Add More', custom_id: 'mng_dr|quickadd', emoji: emojis.parseEmoji(emojis.mngAdd) },
         { type: 2, style: 2, label: 'Draws Home', custom_id: 'mng_dr|page', emoji: emojis.parseEmoji(emojis.returnArrow) },
         { type: 2, style: 4, label: 'Revert All', custom_id: `mng_qa_revert_${token}`, emoji: BOT_EMOJI.parseEmoji(BOT_EMOJI.keep) }
-    ] });
+    ]) });
     const sent = await sendV2Payload(interaction, panel);
     // Items the draw index has no kind for are asked about, not left blank (handlers/manage/itemKinds.js).
     await require('./itemKinds').askItemKinds(interaction, added.map(d => d.title));
@@ -528,11 +528,11 @@ async function saveToDraft(interaction, token, state) {
     const ends = todo.filter(d => d.end && !noPicture.includes(d.title)).length;
     const panel = resultPanel({ page: 'draws', heading: 'Quick Add staged', summary: `-# Players see nothing until Promote to Live.${ends ? ` ${ends} end date${ends === 1 ? '' : 's'} on the draft calendar too.` : ''}`, sections });
     const SV = require('./seasonPanel/views');
-    panel[0].components.push({ type: 14, spacing: 1, divider: false }, { type: 1, components: [
+    panel[0].components.push({ type: 14, spacing: 1, divider: false }, { type: 1, components: require('../../utils/returnFirst').returnFirst([
         SV.btn(['dd', state.section === 'r' ? 'r' : 'n', 0], 'Draft Draws', emojis.newDraws, 1),
         SV.btn(['ddqa', state.section === 'r' ? 'r' : 'n'], 'Quick Add More', emojis.mngAdd, 3),
         { type: 2, style: 4, label: 'Revert All', custom_id: `mng_qa_revert_${token}`, emoji: BOT_EMOJI.parseEmoji(BOT_EMOJI.keep) }
-    ] });
+    ]) });
     const sent = await sendV2Payload(interaction, panel);
     await require('./itemKinds').askItemKinds(interaction, staged.map(d => d.title));
     return sent;

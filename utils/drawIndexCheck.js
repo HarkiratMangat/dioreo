@@ -56,12 +56,13 @@ function checkLine(entries, line, { seasonalDoc = null, isSameTitle } = {}) {
     return {
         line,
         status: found.sure ? 'found' : 'maybe',
+        id: e._id ? String(e._id) : null,
         title: e.title,
         matchedBy: found.matchedBy === 'words' && item ? 'item' : found.matchedBy,
         item: item?.name || null,
         items: (e.items || []).length,
         priceType: e.priceType && e.priceType !== 'unknown' ? e.priceType : null,
-        season: e.releaseSeason ? `Season ${e.releaseSeason}${e.releaseYear ? ` ${e.releaseYear}` : ''}` : null,
+        season: e.releaseSeason ? `Season ${e.releaseSeason}${e.releaseYear ? ` (${e.releaseYear})` : ''}` : null, // the entry card's own wording
         needs: needsOf(e),
         alternates: found.alternates || [],
         // A draw can run under another of its names ("Pop Idol Draw" is Starry Symphony's), so the lists are searched by the title, each other name, and the line as typed (2026-11-09 15:17 EST).
@@ -76,8 +77,8 @@ function checkIndex(entries, text, ctx = {}) {
     return { results: lines.slice(0, MAX_LINES).map(l => checkLine(entries, l, ctx)), extra: Math.max(0, lines.length - MAX_LINES), indexSize: entries.length };
 }
 
-// How the line found it. `words` is Quick Add's word match, typos forgiven ("hersher of reason"), so it reads as a close match.
-const MATCHED_BY = { title: 'by its title', alias: 'by another name it ran under', item: 'by an item', words: 'close match' };
+// How the line found it. `words` is Quick Add's word match, typos forgiven ("hersher of reason"), so it reads as a close match. How the line found it, said only when it is not simply the title (2026-11-11 11:07 EST, his screenshot: "by its title" told an admin nothing).
+const MATCHED_BY = { title: null, alias: 'by another name it ran under', item: 'by an item', words: 'close match' };
 
 // One result as the panel's text block. `E` is the emoji map.
 function resultBlock(r, E) {
@@ -88,7 +89,7 @@ function resultBlock(r, E) {
         return `${E.search} **${typed}** → fits ${r.candidates.length} draws, not one\n-# ${shown}${r.candidates.length > MAX_SHOWN_DESCRIBED ? ' · …' : ''}`;
     }
     const facts = [
-        `${MATCHED_BY[r.matchedBy] || MATCHED_BY.words}${r.item ? ` (${clean(r.item, 50)})` : ''}`,
+        r.matchedBy === 'title' ? null : `${MATCHED_BY[r.matchedBy] || MATCHED_BY.words}${r.item ? ` (${clean(r.item, 50)})` : ''}`,
         r.items ? `${r.items} item${r.items === 1 ? '' : 's'}` : null, // none is said once, under Needs
         r.priceType ? typeLabel(r.priceType) : null,
         r.season,
@@ -101,7 +102,9 @@ function resultBlock(r, E) {
     const or = r.status === 'maybe' && r.alternates.length ? `\n-# Or: ${r.alternates.map(t => clean(t, 40)).join(' · ')}` : '';
     // A complete draw is one fact line shorter, so a long paste fits more of them.
     const needs = r.needs.length ? `\n-# ${E.warn} Needs: ${r.needs.join(' · ')}` : '';
-    return `${head}\n-# ${r.needs.length ? '' : 'Complete · '}${facts.join(' · ')}${or}${needs}`;
+    // The fact line starts with a capital whichever fact leads it ("close match" led one line and "Complete" the next, 2026-11-11 11:40 EST click test).
+    const line = `${r.needs.length ? '' : 'Complete · '}${facts.join(' · ')}`;
+    return `${head}\n-# ${line.charAt(0).toUpperCase()}${line.slice(1)}${or}${needs}`;
 }
 
 module.exports = { MAX_LINES, needsOf, itemHit, checkLine, checkIndex, resultBlock, typeLabel };

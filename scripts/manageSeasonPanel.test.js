@@ -64,6 +64,82 @@ const emptyDraft = () => ({ ...live(), draft: { active: false, newDraws: [], ret
     const P = require('../handlers/manage/seasonPanel');
     const pageRow = require('../commands/manage').buildPageSelectRow('seasondraft', { showEmojis: true });
 
+    // 2026-11-11 21:33 EST: Promote's result had Back = Live Season = Home's own id, Discord refused the duplicate custom_id, and the promote went live with nothing drawn. Every panel's result view, with Back set to its own Home, must carry each custom_id once.
+
+    // The review before Promote (2026-11-11 21:40 EST, his ask): a busy review stays inside Discord's limits, every finding sits with its fix, and nothing goes live from it but Promote Now or Auto-Promote.
+
+    await check('the review before Promote stays inside the limits and offers Back, Auto-Promote and Promote Now', () => {
+
+        const V = require('../handlers/manage/seasonPanel/views');
+
+        const later = new Date(Date.now() + 3 * 864e5);
+
+        const many = (n, f) => Array.from({ length: n }, (_, i) => f(i));
+
+        const doc = { currentSeasonTitle: 'Season 9', newDraws: [], returningDraws: [], calendar: [], patchNotes: [], draft: { active: true, currentSeasonTitle: 'Season 10', bpStart: later, newDraws: many(30, i => ({ _id: String(i).padStart(24, '0'), title: `Draw ${i}`, items: [] })), returningDraws: [], calendar: many(40, i => ({ _id: String(100 + i).padStart(24, '0'), title: `Row ${i}`, category: 'event' })) } };
+
+        const review = { carried: many(20, i => ({ list: 'calendar', title: `Carried ${i}` })), twins: many(9, i => [`A ${i} Offer`, `A ${i} Event`]), seam: many(8, i => ({ title: `Seam ${i}`, end: 'Dec 9', bpEnd: 'Dec 10', before: true })), noEnd: many(12, i => `No End ${i}`), index: many(8, i => ({ title: `Idx ${i}`, what: ['items'] })) };
+
+        const view = V.promoteReviewView(doc, review);
+
+        const all = []; const walk = (n) => { if (Array.isArray(n)) return n.forEach(walk); if (n && typeof n === 'object') { if (n.type) all.push(n); Object.values(n).forEach(walk); } }; walk(view);
+
+        const json = JSON.stringify(view);
+
+        assert.ok(all.length <= 40, `components: ${all.length}`);
+
+        const chars = all.filter(c => c.type === 10).reduce((t, c) => t + c.content.length, 0);
+
+        assert.ok(chars <= 4000, `characters: ${chars}`);
+
+        const ids = all.filter(c => c.custom_id).map(c => c.custom_id);
+
+        assert.deepStrictEqual(ids.filter((x, i) => ids.indexOf(x) !== i), [], 'custom ids repeat');
+
+        for (const r of all.filter(c => c.type === 1)) assert.ok(r.components.length <= 5);
+
+        for (const want of ['mng_ss|view|draft', 'mng_ss|autoon', 'mng_ss|promoteok']) assert.ok(ids.includes(want), want);
+
+        assert.ok(/Review before Promote/.test(json) && /Carried over at Promote/.test(json) && /same thing twice/.test(json));
+
+        const clean = V.promoteReviewView({ ...doc, draft: { ...doc.draft, bpStart: new Date(Date.now() - 864e5) } }, { carried: [], twins: [], seam: [], noEnd: [], index: [] });
+
+        assert.ok(!JSON.stringify(clean).includes('mng_ss|autoon'), 'no Auto-Promote once the start has passed');
+
+    });
+
+
+    await check('a result whose Back is Home carries each custom id once, in every /manage panel', () => {
+
+        const ids = (node, out = []) => { if (Array.isArray(node)) node.forEach(n => ids(n, out)); else if (node && typeof node === 'object') { if (node.custom_id) out.push(node.custom_id); Object.values(node).forEach(v => ids(v, out)); } return out; };
+
+        const dupes = (view) => { const all = ids(view); return all.filter((x, i) => all.indexOf(x) !== i); };
+
+        const cases = [
+
+            ['season', require('../handlers/manage/seasonPanel/views').resultView({ title: 'Promoted to live', back: ['view', 'live'], backLabel: 'Live Season' })],
+
+            ['draws', require('../handlers/manage/drawsPanel/views').resultView({ title: 'x', back: 'page' })],
+
+            ['calendar', require('../handlers/manage/calendarPanel/views').resultView({ title: 'x', back: 'page' })],
+
+            ['patch notes', require('../handlers/manage/patchnotesPanel/views').resultView({ title: 'x', back: 'page' })],
+
+            ['announcements', require('../handlers/manage/announcementsPanel/views').resultView({ title: 'x', back: 'page' })],
+
+            ['gunsmith', require('../handlers/manage/gunsmith/views').resultView('MP', { title: 'x', back: 'page' })],
+
+        ];
+
+        for (const [name, view] of cases) assert.deepStrictEqual(dupes(view), [], name);
+
+        // Falsifier: Back elsewhere still offers Home.
+
+        assert.ok(ids(require('../handlers/manage/seasonPanel/views').resultView({ title: 'x', back: ['view', 'draft'] })).includes('mng_ss|view|live'));
+
+    });
+
+
     await check('the live view and both draft views stay inside Discord\'s limits, page dropdown included', () => {
         limits(V.pageView(live(), 'live', 'a note', { pageRow }), 'live');
         limits(V.pageView(live(), 'live', null, { pageRow }), 'live no note');
@@ -104,7 +180,7 @@ const emptyDraft = () => ({ ...live(), draft: { active: false, newDraws: [], ret
         const e = V.pageView(emptyDraft(), 'draft');
         assert.match(allText(e), /Nothing is staged, and nothing goes live until you press Promote to Live/);
         const labels = []; walk(e, c => { if (c.type === 2) labels.push(c.label); });
-        assert.deepStrictEqual(labels.filter(Boolean), ['Edit Titles & Deadlines', 'Draws', 'Calendar', 'Guide', 'Live Season']);
+        assert.deepStrictEqual(labels.filter(Boolean), ['Edit Titles & Deadlines', 'Draws', 'Calendar', 'Live Season', 'Guide'], 'the way back first in its row (round 2, 2026-11-11 11:02 EST)');
         const f = []; walk(V.pageView(fullDraft(), 'draft'), c => { if (c.type === 2) f.push(c.label); });
         for (const want of ['New Draws · 10', 'Returning · 20', 'Calendar · 40', 'News · 5', 'Promote to Live', 'Discard Draft', 'Guide', 'Live Season']) assert.ok(f.includes(want), `missing button ${want}`);
     });
@@ -221,6 +297,39 @@ const emptyDraft = () => ({ ...live(), draft: { active: false, newDraws: [], ret
     await check('the lifted save functions are exported and the old handlers still use them', () => {
         const S = require('../handlers/manage/season');
         for (const f of ['saveTitlesDeadlines', 'saveDraftDraws', 'saveDraftCalendar', 'runPromoteDraft', 'runDiscardDraft', 'readTitleFields', 'setTitlesDeadlines', 'handleDraftButton', 'promptWipeSeason', 'handleWipeButton']) assert.strictEqual(typeof S[f], 'function', f);
+    });
+
+    // The draft's draw pop-up has /manage draws' shape since round 2 (2026-11-11 12:30 EST): the Draw box, Items, Picture Link, the Draw Type dropdown, a Screenshot; its own example reads, a countdown is refused, and the draws list has a way back to the live draws.
+    await check('the draft draw pop-up is the Draw box shape, and its list leads back to the live draws', () => {
+        const SV = require('../handlers/manage/seasonPanel/views');
+        const { readDrawBox } = require('../utils/drawForm');
+        for (const sec of ['n', 'r']) {
+            const modal = SV.draftDrawModal(sec, sec === 'r' ? { _id: 'x', title: 'Old Draw', date: new Date('2026-12-01T00:00:00Z'), items: [], priceType: '' } : null);
+            const comps = modal.components.map(l => l.component);
+            assert.deepStrictEqual(comps.map(c => c.custom_id), ['draw', 'items', 'image', 'price_type', 'shot']);
+            assert.ok(modal.components.every(l => !l.description || l.description.length <= 100), 'descriptions fit Discord');
+            const read = readDrawBox(comps[0].placeholder, { allowSeason: sec === 'n', allowCountdown: false });
+            assert.ok(!read.error, `${sec}: its own example does not read: ${read.error}`);
+            if (sec === 'r') assert.ok(comps[0].value.startsWith('Old Draw\n'), 'Edit prefills the box');
+        }
+        assert.ok(readDrawBox('Zz Draw\n13d 23h', { allowCountdown: false }).error.includes('countdown'), 'a staged draw refuses a countdown');
+        const json = JSON.stringify(SV.draftDrawsView({ draft: { active: true, newDraws: [], returningDraws: [] } }, 'n'));
+        assert.ok(json.includes('"custom_id":"mng_dr|page"') && json.includes('Live Draws'), 'a way back to the live draws');
+        // Discord refuses a row of more than five (the Live Draws button made it six on the dev bot, 2026-11-11 12:33 EST).
+        const rowsOver = []; const walk = (c) => { if (!c || typeof c !== 'object') return; if (c.type === 1 && (c.components || []).length > 5) rowsOver.push(c.components.length); for (const k of ['components', 'accessory', 'component']) { const v = c[k]; if (Array.isArray(v)) v.forEach(walk); else if (v) walk(v); } };
+        for (const sec of ['n', 'r']) SV.draftDrawsView({ draft: { active: true, newDraws: [{ _id: 'a', title: 'A', date: new Date(), items: [] }], returningDraws: [] } }, sec).forEach(walk);
+        assert.deepStrictEqual(rowsOver, [], 'a row of more than five buttons');
+        // A refused draft save keeps what was typed: Try Again reopens the draft pop-up, filled in.
+        const retry = require('../handlers/manage/retry');
+        retry.pendingModalRetries.set('tokdd', { modalCustomId: 'mng_ss|ddaddm|n', values: { draw: 'Zz Draw\nNovember 26', items: 'l Gun', image: '' } });
+        const again = retry.buildRetryModal('tokdd');
+        const byId = Object.fromEntries(again.components.map(l => [(l.component || {}).custom_id, l.component]));
+        assert.strictEqual(again.custom_id, 'mng_ss|ddaddm|n');
+        assert.strictEqual(byId.draw.value, 'Zz Draw\nNovember 26', 'the Draw box refills');
+        // A screenshot that did not upload comes back as its own Discord link, which expires: the savers refuse it (2026-11-11 12:43 EST, the draft click test stored one).
+        const { isDiscordAttachment } = require('../utils/drawForm');
+        assert.ok(isDiscordAttachment('https://cdn.discordapp.com/ephemeral-attachments/1/2/a.jpg') && isDiscordAttachment('https://cdn.discordapp.com/attachments/1/2/a.png'));
+        assert.ok(!isDiscordAttachment('https://res.cloudinary.com/x/image/upload/a.jpg') && !isDiscordAttachment('https://cdn.discordapp.com/emojis/1.png'));
     });
 
     console.log(failed ? `\n${failed} check(s) FAILED.` : '\nAll manage season panel checks passed.');

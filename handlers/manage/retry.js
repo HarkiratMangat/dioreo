@@ -44,10 +44,19 @@ function drawSnippet(values) {
     const code = require('../../utils/drawTypes').drawTypeCode(v(values, 'price_type'));
     // The box's "September 10, 2026 - November 12, 2026" is rewritten as ISO dates: its commas would split the line, and Add Multiple reads the first date.
     const drawDates = require('../../utils/drawDates');
-    const parsedDates = drawDates.parseDrawDates(v(values, 'date'));
+    // The Draw box (title, dates, a season, 2026-11-11 11:02 EST) replaced the Title and Dates fields, and the snippet read only those, so it dropped the title and dates (2026-11-11 11:40 EST click test). A box that does not parse still gives its first line as the title and the rest as the dates, so nothing typed is lost.
+    let title = v(values, 'title'), date = v(values, 'date');
+    const box = v(values, 'draw');
+    if (box) {
+        const read = require('../../utils/drawForm').readDrawBox(box, { allowSeason: true });
+        const lines = box.split('\n').map(l => l.trim()).filter(Boolean);
+        title = read.error ? (lines[0] || '') : read.title;
+        date = read.error ? lines.slice(1).join(' ') : read.dates;
+    }
+    const parsedDates = drawDates.parseDrawDates(date);
     // Only a box with an end, or a comma in it, is rewritten; a plain "July 15" stays as typed.
-    const dateText = parsedDates.ok && (parsedDates.end || v(values, 'date').includes(',')) ? drawDates.formatDrawDatesForBulk(parsedDates.start, parsedDates.end) : v(values, 'date');
-    return [v(values, 'title'), code ? `type: ${code}` : '', items, dateText, v(values, 'url')].filter(Boolean).join(', ');
+    const dateText = parsedDates.ok && (parsedDates.end || date.includes(',')) ? drawDates.formatDrawDatesForBulk(parsedDates.start, parsedDates.end) : date;
+    return [title, code ? `type: ${code}` : '', items, dateText, v(values, 'url')].filter(Boolean).join(', ');
 }
 
 // "7/2 - 8/5 | Title" -- parseBulkEvents' format. A blank End Date means All Season, which is what that parser reads "All Season" as, so it is spelled out rather than left empty.
@@ -100,6 +109,9 @@ function specs() {
           rebuild: (id) => reIdJson(m.buildAddDrawModal(id.split('|')[2] === 'returning' ? 'returning' : 'new'), id), snippet: drawSnippet },
         { test: (id) => id.startsWith('mng_dr|editm|'),
           rebuild: (id) => reIdJson(m.buildEditDrawModal({ title: '', items: [], date: new Date(), thumbnailUrl: '' }, 'x', 'new'), id), snippet: drawSnippet },
+        // The season draft's Add and Edit Draw pop-ups (2026-11-11 12:35 EST), the Draw box shape since round 2: a refused save keeps what was typed, as /manage draws' own do.
+        { test: (id) => /^mng_ss\|dd(?:addm|editm)\|/.test(id),
+          rebuild: (id) => reIdJson(require('./seasonPanel/views').draftDrawModal(id.split('|')[2] === 'r' ? 'r' : 'n'), id), snippet: drawSnippet },
         { test: (id) => id === 'modal_draws_bulk_add_both' || id === 'modal_draws_bulk_replace_both',
           rebuild: (id) => m.buildBulkBothDrawsModal(id.includes('_replace_') ? 'replace' : 'add'), snippet: drawsBulkSnippet },
 
@@ -194,7 +206,7 @@ function buildRetryModal(token) {
         }
     }
     // The draws panel heads its Edit pop-up with the draw's title, but the rebuild starts from a blank draw, so Try Again read "Edit Lucky Draw"; the title the admin typed names it again (2026-11-10 13:25 EST).
-    const typed = String(pending.values?.title || '').trim();
+    const typed = String(pending.values?.draw || pending.values?.title || '').split('\n')[0].trim();
     if (pending.modalCustomId.startsWith('mng_dr|editm|') && typed) json.title = `Edit ${typed}`.slice(0, 45);
     return json;
 }

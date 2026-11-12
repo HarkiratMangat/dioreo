@@ -97,7 +97,7 @@ check('day-first slash dates are read as day/month', () => {
     const sf = r.resolveItem(raw({ name: 'Street Fighter Champion\'s Collection Series Armory', start: '10/16', end: '12/10', season: 'next' }), { ...ctx, postedAt: new Date('2026-10-07T20:00:00Z'), liveEnd: new Date('2026-10-15T00:00:00Z') });
     assert.ok(sf.end > sf.start, 'an end never lands before its start');
     const wrap = r.resolveItem(raw({ name: 'X Draw', start: 'December 20', end: 'January 5', season: 'next' }), { ...ctx, postedAt: new Date('2026-12-01T00:00:00Z'), liveEnd: new Date('2026-12-10T00:00:00Z') });
-    assert.strictEqual(iso(wrap.end), '2027-01-05T00:00:00.000Z', 'an end in January after a December start is next year');
+    assert.strictEqual(iso(wrap.end), '2027-01-06T00:00:00.000Z', 'an end in January after a December start is next year (and the listed day is inclusive)');
 });
 check('a season post becomes a Next Season Draft title-and-start row', () => {
     const it = r.resolveItem(raw({ kind: 'season', change: 'new', name: 'Season 10: 7th Anniversary', start: 'Wednesday, November 11th at 4 PM PT', season: 'next' }), { ...ctx, postedAt: new Date('2026-11-05T02:13:00Z') });
@@ -356,7 +356,7 @@ check('the handler owns news| and nothing else', async () => {
 // ---- From his side: live fixes, season parts, the briefing (2026-11-05) ----
 {
     const D = x => new Date(x);
-    const live = { newDraws: [], returningDraws: [{ _id: 'bh', title: 'Black Hole Draw', date: D('2026-10-25') }], calendar: [{ _id: 'bhc', title: 'Black Hole Draw', date: D('2026-10-25'), endDate: D('2026-11-07'), category: 'draw' }] };
+    const live = { newDraws: [], returningDraws: [{ _id: 'bh', title: 'Black Hole Draw', date: D('2026-10-25') }], calendar: [{ _id: 'bhc', title: 'Black Hole Draw', date: D('2026-10-25'), endDate: D('2026-11-08'), category: 'draw' }] }; // listed through Nov 7: ends Nov 8 00:00 UTC (the inclusive end, 2026-11-11 21:55 EST)
     const lctx = { postedAt: D('2026-10-20'), liveEnd: D('2026-11-12'), draftStart: D('2026-11-12'), catalogue: [], live, draft: { newDraws: [], returningDraws: [], calendar: [] } };
     const bh = o => ({ kind: 'draw', change: 'returning', name: 'Black Hole Draw', rewards: [], start: null, end: null, season: 'current', region: 'global', certainty: 'confirmed', ...o });
     check('a live item whose dates the post moves or completes becomes a fix, never a second Add', () => {
@@ -659,3 +659,15 @@ check('the handler owns news| and nothing else', async () => {
 
     console.log(`✅ newsTriage: ${n + 1} checks passed`);
 })().catch(err => { console.error(err); process.exit(1); });
+
+// 2026-11-11 22:37 EST: a staged near-name ("Ford Table Tactics Offer") beside the post's "Ford Table Tactics Event" is added, with a note on the card.
+{
+    const dm = require('../utils/newsTriage/draftMerge');
+    const draftIn = { active: true, calendar: [{ _id: 'f1', title: 'Ford Table Tactics Offer', date: new Date('2026-11-13T00:00:00Z'), endDate: new Date('2026-11-21T00:00:00Z'), category: 'event' }], newDraws: [], returningDraws: [] };
+    const item = { kind: 'event', change: 'new', name: 'Ford Table Tactics Event', where: 'draft', start: new Date('2026-11-13T00:00:00Z'), end: new Date('2026-11-21T00:00:00Z'), startText: '11/13', certainty: 'confirmed', rewards: [] };
+    const plan = dm.planDraftChanges(draftIn, [item], { channelId: 'c', id: 'm' });
+    assert.ok(plan.changes.some(c => c.type === 'add' && c.name === 'Ford Table Tactics Event'), JSON.stringify(plan.changes.map(c => c.type + ' ' + c.name)));
+    assert.ok(plan.notes.some(n => /Ford Table Tactics Offer/.test(n.why)), JSON.stringify(plan.notes));
+    console.log('  ✓ a staged near-name is added with a note on the card (Offer/Event)');
+}
+

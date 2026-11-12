@@ -119,7 +119,7 @@ async function runPromoteDraft(actorId) {
     const result = await commitSet([{ type: 'season.promoteDraft' }], { actorId });
     if (!result.ok) return { ok: false, missing: result.failedAt?.reason === 'missing', message: result.failedAt?.reason === 'missing' ? 'No draft in progress -- nothing to promote.' : extractCommitError(result) };
     const { change, applied } = result.results[0];
-    return { ok: true, changeIds: result.changeIds, message: `**Draft promoted to live!** "${change.target}" is now the live season (${applied.counts.newDraws} New, ${applied.counts.returningDraws} Returning, ${applied.counts.calendar} calendar event(s)). The draft has been cleared.` };
+    return { ok: true, changeIds: result.changeIds, message: `**Draft promoted to live!** "${change.target}" is now the live season (${applied.counts.newDraws} New, ${applied.counts.returningDraws} Returning, ${applied.counts.calendar} calendar event(s)). The draft has been cleared.${(() => { const c = require('../../utils/promoteSummary').carriedLine(applied.carried); return c ? `\n${c}` : ''; })()}`, carried: applied.carried || [] };
 }
 async function runDiscardDraft(actorId) {
     const result = await commitSet([{ type: 'season.discardDraft' }], { actorId });

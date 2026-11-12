@@ -42,7 +42,7 @@
             "custom_id": "bp_line",
             "label": "Battle Pass: Title, Start - End",
             "style": 1,
-            "value": "Battle Pass, September 4, 2026"
+            "value": "Battle Pass, September 3, 2026"
           }
         ]
       },
@@ -54,7 +54,7 @@
             "custom_id": "rank_line",
             "label": "Ranked Series: Title, Start - End",
             "style": 1,
-            "value": "Ranked Series, September 4, 2026"
+            "value": "Ranked Series, September 3, 2026"
           }
         ]
       },

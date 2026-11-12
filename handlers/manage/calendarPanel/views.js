@@ -18,7 +18,7 @@ function ID(...parts) {
     if (id.length > 100) throw new Error(`calendar custom_id over 100 characters: ${id}`);
     return id;
 }
-const row = (...c) => ({ type: 1, components: c });
+const row = (...c) => ({ type: 1, components: require('../../../utils/returnFirst').returnFirst(c) });
 const text = (content) => ({ type: 10, content });
 const BIG = () => ({ type: 14, divider: true, spacing: 2 });
 const SMALL = () => ({ type: 14, divider: false, spacing: 1 });
@@ -53,20 +53,20 @@ const typeWord = (e) => ({ draw: 'Draw', playlist: 'Playlist' }[e._cat] || 'Even
 // Something a person would want to look at: no start date, or no end date on a row that is not "All Season", or an end before its start.
 const needsLook = (e) => !Number.isFinite(e.startMs) || (!e.isOngoing && !e.endDate) || (!e.isOngoing && e.endDate && new Date(e.endDate) < new Date(e.date)) || e._noDraw;
 
-// The lists: by type, and by the states /calendar's own entryState gives (over, live, soon, tba), plus Ending Soon (live, with an end within 3 days) and the rows worth a look.
+// The lists: by type, and by the states /calendar's own entryState gives (over, live, soon, tba), plus Leaving Soon (live, with an end within 3 days; his name for it since 2026-10-23, as on /draws and /today) and the rows worth a look.
 const STATUS = {
     events: { label: 'Events', test: e => e._cat === 'event', emoji: () => emojis.events },
     playlists: { label: 'Playlists', test: e => e._cat === 'playlist', emoji: () => emojis.modes },
     draws: { label: 'Draws', test: e => e._cat === 'draw', emoji: () => emojis.newDraws },
     upcoming: { label: 'Upcoming', test: e => e.state === 'soon' || e.state === 'tba', emoji: () => emojis.lightBlueDotGlow },
     live: { label: 'Active Now', test: e => e.state === 'live', emoji: () => emojis.greenDotGlow },
-    leaving: { label: 'Ending Soon', test: e => e.state === 'live' && Number.isFinite(e.endMs) && e.endMs - Date.now() <= LEAVING_SOON_MS, emoji: () => emojis.yellowDotGlow },
+    leaving: { label: 'Leaving Soon', test: e => e.state === 'live' && Number.isFinite(e.endMs) && e.endMs - Date.now() <= LEAVING_SOON_MS, emoji: () => emojis.yellowDotGlow },
     ended: { label: 'Ended', test: e => e.state === 'over', emoji: () => emojis.redDotGlow },
     warn: { label: 'Needs a Look', test: needsLook, emoji: () => emojis.warn },
 };
 const leaving = (e) => STATUS.leaving.test(e);
 const dot = (e) => (e.state === 'over' ? emojis.redDotGlow : leaving(e) ? emojis.yellowDotGlow : e.state === 'live' ? emojis.greenDotGlow : emojis.lightBlueDotGlow);
-const stateName = (e) => (e.state === 'over' ? 'Ended' : leaving(e) ? 'Ending soon' : e.state === 'live' ? 'Active now' : e.state === 'tba' ? 'Date TBA' : 'Upcoming');
+const stateName = (e) => (e.state === 'over' ? 'Ended' : leaving(e) ? 'Leaving soon' : e.state === 'live' ? 'Active now' : e.state === 'tba' ? 'Date TBA' : 'Upcoming');
 function stateWords(e) {
     const r = (ms) => `<t:${Math.floor(ms / 1000)}:R>`;
     if (e.state === 'tba') return 'date TBA';
@@ -95,14 +95,15 @@ async function pageView(doc, note = null, { pageRow = null } = {}) {
     components.push(
         BIG(),
         text('-# Add…'),
-        row(btn('add', 'Add Entry', emojis.mngAdd, 3), btn('paste', 'Paste Entries', emojis.pasteImport)),
+        row(btn('add', 'Add Entry', emojis.mngAdd, 3), btn('paste', 'Bulk Paste', emojis.pasteImport)),
         SMALL(),
         text('-# Find an entry…'),
-        row(btn('find', 'Search Calendar', emojis.gunsmithSearch, 1)),
+        // One way to find, one way to act (2026-11-11 15:15 EST, his go: the draws redesign carried to calendar). The normal search emoji, never the gunsmith one (his note on draws).
+        row(btn('find', 'Search Calendar', emojis.search, 1)),
         { type: 1, components: [{ type: 3, custom_id: ID('browse'), placeholder: 'Or browse a list…', options: browse }] },
         BIG(),
-        text('-# Many at once…'),
-        row(btn('select', 'Select Entries', emojis.filter), btn('export', 'Export', emojis.copyExport), btn('banners', 'Banners', emojis.calendar), btn('guide', 'Guide', emojis.guide)),
+        text('-# Files and pictures…'),
+        row(btn('export', 'Export', emojis.copyExport), btn('banners', 'Banners', emojis.calendar), btn('guide', 'Guide', emojis.guide)),
         SMALL(),
         text('-# End of season…'),
         row(btn('purge', 'Purge Calendar', emojis.deleteBin, 4)),
@@ -110,25 +111,32 @@ async function pageView(doc, note = null, { pageRow = null } = {}) {
     return panel(components, pageRow ? [pageRow] : []);
 }
 
-// ---------- a list ---------- The order each list reads in: what ends soonest first on Active Now and Ending Soon, the latest ended first on Ended, by start everywhere else.
+// ---------- a list ---------- The order each list reads in: what ends soonest first on Active Now and Leaving Soon, the latest ended first on Ended, by start everywhere else.
 const END = (e) => (Number.isFinite(e.endMs) ? e.endMs : Infinity);
 const byStart = (a, b) => (a.startMs || 0) - (b.startMs || 0);
 const ORDER = { live: (a, b) => END(a) - END(b) || byStart(a, b), leaving: (a, b) => END(a) - END(b) || byStart(a, b), ended: (a, b) => END(b) - END(a) || byStart(a, b) };
 const entries = (n) => `${n} ${n === 1 ? 'entry' : 'entries'}`;
+// Seven a page, each with Edit (the draws redesign): a Section per entry costs three components, so ten no longer fit beside the Select menu.
+const ROWS = 7;
+const entryOption = (e) => ({ label: e.title.slice(0, 100), value: e._key, description: `${typeWord(e)} · ${stateName(e)}`.slice(0, 100), emoji: emojis.parseEmoji(dot(e)) });
+// One menu per page: it always SELECTS. One selected shows its card; more act on them together.
+const pickMenu = (id, shown) => ({ type: 1, components: [{ type: 3, custom_id: id, min_values: 1, max_values: Math.max(1, shown.length), placeholder: 'Select one to open it, or more to change together…', options: shown.map(entryOption) }] });
+const listOf = (doc, status) => { const s = STATUS[status] || STATUS.events; return allEntries(doc).filter(s.test).sort(ORDER[status] || byStart); };
 function listView(doc, status, page = 0) {
-    const s = STATUS[status] || STATUS.events;
-    const list = allEntries(doc).filter(s.test).sort(ORDER[status] || byStart);
-    const pages = Math.max(1, Math.ceil(list.length / PAGE));
+    const key = STATUS[status] ? status : 'events';
+    const s = STATUS[key];
+    const list = listOf(doc, key);
+    const pages = Math.max(1, Math.ceil(list.length / ROWS));
     const pg = Math.min(Math.max(Number(page) || 0, 0), pages - 1);
-    const shown = list.slice(pg * PAGE, pg * PAGE + PAGE);
+    const shown = list.slice(pg * ROWS, pg * ROWS + ROWS);
     const components = [text(`${crumb(s.label)}\n## ${s.emoji()} ${s.label}\n-# ${entries(list.length)}${pages > 1 ? ` · page ${pg + 1} of ${pages}` : ''}`), BIG()];
     if (!shown.length) components.push(text(`${emojis.cross} Nothing here right now.`));
     else {
-        components.push(text(shown.map(e => listLine(e)).join('\n').slice(0, 3900)));
-        components.push({ type: 1, components: [{ type: 3, custom_id: ID('open', status), placeholder: 'Open an entry…', options: shown.map(e => ({ label: e.title.slice(0, 100), value: e._key, description: `${typeWord(e)} · ${stateName(e)}` })) }] });
-        if (pages > 1) components.push(row(arrow(['list', status, pg - 1], 'left', pg === 0), counter(['pgn', status], `Page ${pg + 1} / ${pages}`), arrow(['list', status, pg + 1], 'right', pg === pages - 1)));
+        for (const e of shown) components.push({ type: 9, components: [text(listLine(e))], accessory: btn(['edit', e._key], 'Edit', emojis.edit) });
+        components.push(pickMenu(ID('lpick', key, pg), shown));
+        if (pages > 1) components.push(row(arrow(['list', key, pg - 1], 'left', pg === 0), counter(['pgn', key], `Page ${pg + 1} / ${pages}`), arrow(['list', key, pg + 1], 'right', pg === pages - 1)));
     }
-    components.push(BIG(), row(btn(['sellist', status], list.length === 1 ? 'Select This One' : `Select These ${list.length}`, emojis.filter, 2, !list.length), homeBtn()));
+    components.push(BIG(), row(homeBtn(), btn(['lall', key], list.length === 1 ? 'Select It' : `Select All ${list.length}`, emojis.checkmark, 2, !list.length)));
     return panel(components);
 }
 
@@ -141,7 +149,8 @@ function cardView(doc, key, { header = null, extra = null, back = null } = {}) {
         Number.isFinite(e.startMs) ? `**Starts** ${ts(e.startMs, 'F')} · ${ts(e.startMs, 'R')}` : '**Starts** date TBA',
         Number.isFinite(e.endMs) ? `**Ends** ${ts(e.endMs, 'F')} · ${ts(e.endMs, 'R')}` : e.isOngoing ? '**Ends** with the season' : `**Ends** ${emojis.warn} no end date`,
     ].join('\n');
-    const components = [text(crumb(STATUS[back]?.label || `${typeWord(e)}s`, e.title))];
+    const fromResults = /^t:/.test(String(back || ''));
+    const components = [text(crumb(fromResults ? 'Results' : STATUS[back]?.label || `${typeWord(e)}s`, e.title))];
     if (header) components.push(text(header), SMALL());
     // The entry as /calendar shows it (its own renderer, so the card can never drift from the player's view), then the dates in full.
     components.push(text(C().buildEntryLine(e, doc)), text(when));
@@ -155,7 +164,7 @@ function cardView(doc, key, { header = null, extra = null, back = null } = {}) {
         const drawBtn = e._cat !== 'draw' ? [] : drawKey ? [{ type: 2, style: 2, label: 'Open the Draw', custom_id: `mng_dr|card|${drawKey}`, emoji: emojis.parseEmoji(emojis.expand) }] : [btn(['qadraw', key], 'Add the Draw', emojis.mngAdd, 3)];
         components.push(
             row(btn(['edit', key], 'Edit', emojis.edit, 1), ...drawBtn, btn(['del', key], 'Delete', emojis.deleteBin, 4)),
-            row(btn(['list', backTo, 0], STATUS[backTo].label, emojis.returnArrow), homeBtn()),
+            row(fromResults ? btn(['sres', String(back).slice(2), 0], 'Results', emojis.returnArrow) : btn(['list', backTo, 0], STATUS[backTo].label, emojis.returnArrow), homeBtn()),
         );
     }
     return panel(components);
@@ -173,56 +182,74 @@ function resultView({ crumbs = [], title, body = [], back = 'page', backLabel = 
     ]);
 }
 
-// ---------- Select ----------
+// ---------- Select ---------- The results of a search or a list made into a selection (the draws redesign): Edit on every row, a tick on what is selected, View Selected once something is.
+function searchView(doc, token, sel, page = 0, { note = null } = {}) {
+    const byKey = new Map(allEntries(doc).map(e => [e._key, e]));
+    const keys = (sel.ids || []).filter(k => byKey.has(k));
+    const selected = new Set(sel.selected || []);
+    const n = keys.filter(k => selected.has(k)).length;
+    const pages = Math.max(1, Math.ceil(keys.length / ROWS));
+    const pg = Math.min(Math.max(Number(page) || 0, 0), pages - 1);
+    const shown = keys.slice(pg * ROWS, pg * ROWS + ROWS).map(k => byKey.get(k));
+    const q = (sel.query || []).join(' · ').slice(0, 120);
+    const components = [text(`${crumb('Results')}\n## ${emojis.search} ${entries(keys.length)}\n-# ${q || 'Every entry'}${pages > 1 ? ` · page ${pg + 1} of ${pages}` : ''}${n ? ` · ${emojis.check} ${n} selected` : ''}`)];
+    if (sel.unmatched?.length) components.push(text(`-# ${emojis.warn} Nothing matched ${sel.unmatched.map(x => `\`${x}\``).join(', ').slice(0, 300)}`));
+    components.push(BIG());
+    if (note) components.push(text(note), SMALL());
+    if (!shown.length) components.push(text(`${emojis.cross} None of them are on the calendar any more.`));
+    else {
+        for (const e of shown) components.push({ type: 9, components: [text(listLine(e, selected.has(e._key) ? `${emojis.check} ` : ''))], accessory: btn(['edit', e._key], 'Edit', emojis.edit) });
+        components.push(pickMenu(ID('pick', token, pg), shown));
+    }
+    if (pages > 1) components.push(row(arrow(['sres', token, pg - 1], 'left', pg === 0), counter(['spgn', token], `Page ${pg + 1} / ${pages}`), arrow(['sres', token, pg + 1], 'right', pg === pages - 1)));
+    components.push(BIG(), row(homeBtn(), btn('find', 'Search Again', emojis.search), btn(['all', token, pg], keys.length === 1 ? 'Select It' : `Select All ${keys.length}`, emojis.checkmark, 2, !keys.length || n === keys.length), ...(n ? [btn(['slist', token, 0], `View Selected · ${n}`, emojis.filter, 1)] : [])));
+    return panel(components);
+}
+// The Selected view (the draws redesign): none selected is the results; one is its card (Back returns to the results); more are the set, with Edit N, Export N and Delete N.
 function selectView(doc, token, sel, note = null, page = 0) {
     const byKey = new Map(allEntries(doc).map(e => [e._key, e]));
-    const keys = sel.ids.filter(k => byKey.has(k));
-    const selected = new Set(sel.selected);
-    const pages = Math.max(1, Math.ceil(keys.length / PAGE));
-    const pg = Math.min(Math.max(Number(page) || 0, 0), pages - 1);
-    const shown = keys.slice(pg * PAGE, pg * PAGE + PAGE);
-    const n = keys.filter(k => selected.has(k)).length;
-    const components = [text(`${crumb('Select Entries')}\n## ${emojis.filter} Select Entries${sel.query?.length ? `\n-# ${sel.query.map(q => `\`${q}\``).join(' · ').slice(0, 500)}` : ''}`)];
-    if (sel.unmatched?.length) components.push(text(`-# ${emojis.warn} Nothing matched ${sel.unmatched.map(x => `\`${x}\``).join(', ').slice(0, 500)}`));
-    components.push(BIG());
-    if (!keys.length) {
-        components.push(text(`${emojis.cross} **No entries found.** Try part of a title, or a quick pick.`), BIG(), row(btn('select', 'Search Again', emojis.gunsmithSearch, 1), homeBtn()));
-        return panel(components);
-    }
-    components.push(
-        text(`-# **${keys.length}** found · **${n}** selected${pages > 1 ? ` · page ${pg + 1} of ${pages}` : ''}`),
-        text(shown.map(k => listLine(byKey.get(k), `${selected.has(k) ? emojis.check : emojis.smallDot} `)).join('\n').slice(0, 3900)),
-        SMALL(),
-        { type: 1, components: [{ type: 3, custom_id: ID('flip', token, pg), min_values: 1, max_values: shown.length, placeholder: 'Select or unselect entries…', options: shown.map(k => { const e = byKey.get(k); return { label: e.title.slice(0, 100), value: k, description: `${selected.has(k) ? 'Selected' : 'Not selected'} · ${typeWord(e)} · ${stateName(e)}`.slice(0, 100) }; }) }] },
-        ...(pages > 1 ? [row(arrow(['slist', token, pg - 1], 'left', pg === 0), counter(['spg', token], `Page ${pg + 1} / ${pages}`), arrow(['slist', token, pg + 1], 'right', pg === pages - 1))] : []),
-        row(btn(['all', token, pg], `Select All ${keys.length}`, emojis.checkmark, 2, n === keys.length), btn(['none', token, pg], 'Clear', emojis.cross, 2, !n)),
-    );
-    if (note) components.push(text(note));
+    const keys = (sel.ids || []).filter(k => byKey.has(k));
+    const on = new Set(sel.selected || []);
+    const picked = keys.filter(k => on.has(k));
+    if (!picked.length) return searchView(doc, token, sel, page, { note });
+    if (picked.length === 1) return cardView(doc, picked[0], { back: `t:${token}`, header: note }) || searchView(doc, token, sel, page, { note });
+    const n = picked.length;
+    const q = (sel.query || []).join(' · ').slice(0, 120);
+    const components = [text(`${crumb('Results', 'Selected')}\n## ${emojis.checkmark} ${n} selected\n-# ${q ? `From ${q}` : 'From every entry'}`)];
+    if (note) components.push(SMALL(), text(note));
+    components.push(BIG(), text(picked.slice(0, 25).map(k => listLine(byKey.get(k))).join('\n').slice(0, 3400) + (n > 25 ? `\n-# and ${n - 25} more` : '')));
+    components.push({ type: 1, components: [{ type: 3, custom_id: ID('unpick', token), min_values: 1, max_values: Math.min(25, n), placeholder: 'Unselect entries…', options: picked.slice(0, 25).map(k => entryOption(byKey.get(k))) }] });
     components.push(
         BIG(),
-        text(n ? `-# With the **${n}** selected…` : '-# Select entries to edit, export or delete them…'),
-        row(btn(['tedit', token, pg], `Edit ${n || ''}`.trim(), emojis.edit, 1, !n), btn(['texp', token], `Export ${n || ''}`.trim(), emojis.copyExport, 2, !n), btn(['tdel', token, pg], `Delete ${n || ''}`.trim(), emojis.deleteBin, 4, !n)),
-        row(btn('select', 'Search Again', emojis.gunsmithSearch), homeBtn()),
+        text(`-# With the **${n}** selected…`),
+        row(btn(['tedit', token, page], `Edit ${n}`, emojis.edit, 1), btn(['texp', token], `Export ${n}`, emojis.copyExport, 2), btn(['tdel', token, page], `Delete ${n}`, emojis.deleteBin, 4)),
+        row(btn(['sres', token, 0], 'Select More', emojis.returnArrow), homeBtn(), btn(['none', token, 0], 'Clear', emojis.cross)),
     );
     return panel(components);
 }
 
 // ---------- pop-ups ----------
 const labelled = (label, component, description) => ({ type: 18, label, ...(description ? { description } : {}), component });
-const QUICK = Object.entries(STATUS).map(([value, s]) => ({ value, label: `All ${s.label}` }));
-const quickSelect = () => (require('../../../utils/formChoice').asChoice({ type: 3, custom_id: 'picks', required: false, min_values: 0, max_values: QUICK.length, placeholder: 'Pick any', options: QUICK }));
-const titlesBox = () => labelled('Entry titles', { type: 4, custom_id: 'names', style: 2, required: false, max_length: 2000, placeholder: 'Throwable Frenzy\nNuketown Playlist' }, 'One per line; part of a title is enough. Added to the quick picks.');
-const searchModal = () => ({ custom_id: ID('findm'), title: 'Find a Calendar Entry', components: [labelled('Title', { type: 4, custom_id: 'q', style: 1, required: true, max_length: 100, placeholder: 'nuketown' }, 'Part of the title is enough')] });
-const selectModal = () => ({ custom_id: ID('selectm'), title: 'Select Entries', components: [titlesBox(), labelled('Quick picks', quickSelect(), 'Everything picked is included: Events + Ended = both.')] });
+// Search Calendar (the draws redesign): words, one entry per line, and the lists with their counts. Within types or states a pick widens, across them it narrows; both blank is every entry.
+function searchModal(doc = null) {
+    const count = (k) => (doc ? allEntries(doc).filter(STATUS[k].test).length : null);
+    const lists = Object.entries(STATUS).map(([value, s]) => ({ value, label: count(value) === null ? s.label : `${s.label} · ${count(value)}` }));
+    return {
+        custom_id: ID('findm'), title: 'Search Calendar',
+        components: [
+            labelled('Words', { type: 4, custom_id: 'q', style: 2, required: false, max_length: 1000, placeholder: 'nuketown\nthrowable frenzy' }, 'One entry per line: words from its title. Blank: every entry.'),
+            labelled('Lists', require('../../../utils/formChoice').asChoice({ type: 3, custom_id: 'picks', required: false, min_values: 0, max_values: lists.length, placeholder: 'Any list', options: lists }), 'Lists narrow the words. Both blank: every entry.'),
+        ],
+    };
+}
 function exportModal() {
     return {
         custom_id: ID('exportm'), title: 'Export Calendar',
         components: [
-            titlesBox(),
-            labelled('Quick picks', quickSelect(), 'Leave both empty for every entry.'),
+            // Every entry (the draws redesign): a few are exported from the Selected view's Export N.
             labelled('Send to', { type: 21, custom_id: 'dest', required: true, options: [{ value: 'file', label: 'A file here', default: true }, { value: 'dm', label: 'A DM to me' }] }),
         ],
     };
 }
 
-module.exports = { drawKeyFor, ID, PAGE, STATUS, row, text, btn, homeBtn, panel, plural, allEntries, splitKey, typeWord, dot, stateName, pageView, listView, cardView, resultView, selectView, searchModal, selectModal, exportModal };
+module.exports = { drawKeyFor, ID, PAGE, STATUS, row, text, btn, homeBtn, panel, plural, allEntries, splitKey, typeWord, dot, stateName, pageView, listView, cardView, resultView, selectView, searchView, listOf, searchModal, exportModal };

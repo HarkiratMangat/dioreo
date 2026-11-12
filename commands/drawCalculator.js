@@ -1467,7 +1467,7 @@ function finishCostPage(state, basket, accentColor, components, liveDoubleCPEntr
         const ends = liveDoubleCPEntry && liveDoubleCPEntry.endDate ? ` (ends <t:${Math.floor(new Date(liveDoubleCPEntry.endDate).getTime() / 1000)}:R>)` : '';
         components.push({ type: 14, spacing: 1, divider: false }, { type: 10, content: liveDoubleCPEntry
             // The whole event line bold (2026-10-19 09:22 EDT, his ask), the ask under it plain.
-            ? `-# 🎉 **Double CP event is live${ends}!**\n-# Select which 2X CP offers are still available for you to purchase.`
+            ? `-# ${emojis.doubleCp || '🎉'} **Double CP event is live${ends}!**\n-# Select which 2X CP offers are still available for you to purchase.`
             : '-# Select which 2X CP offers are still available for you to purchase, if a Double CP event is running.' });
         components.push(entitlementSelectRow(state, basket));
     }

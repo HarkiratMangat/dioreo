@@ -12,6 +12,12 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.20.0 — November 11, 2026
+- **New:** Promote to Live shows a review first, carries over draws still running, and confirms what went live.
+- **Improved:** `/manage` draws, calendar and gunsmith have one Search and a Selected view for acting on many at once.
+- **Fixed:** an end date typed as a day now runs through that day, and Promote's confirmation shows again.
+- **New:** the 2X CP emoji marks Double CP events on `/calendar`.
+
 ## v3.19.0 — November 10, 2026
 - **Improved:** `/manage draws` shows each save's result in the same panel, with Revert, and sets a draw's end date in its own pop-up.
 - **New:** search draws by item name, a fix button on every draw that needs a look, and Quick Add for the lines Check Draw Index found.

@@ -206,7 +206,7 @@
             "custom_id": "end_date",
             "label": "End Date (blank = All Season, or TBD)",
             "style": 1,
-            "value": "August 15, 2026",
+            "value": "August 14, 2026",
             "required": false
           }
         ]

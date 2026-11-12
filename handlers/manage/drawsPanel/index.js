@@ -70,7 +70,7 @@ const newToken = () => require('crypto').randomBytes(6).toString('base64url');
 async function createSelection(data = {}) { const token = newToken(); await ManageSelection().create({ _id: token, mode: 'DRAWS', ...data }); return token; }
 async function loadSel(token) { const s = token ? await ManageSelection().findById(token).lean() : null; return s && s.mode === 'DRAWS' ? s : null; }
 const setSel = (token, fields) => ManageSelection().updateOne({ _id: token }, { $set: fields });
-const expired = () => V.resultView({ title: 'That list expired. Select again.', ok: false, back: 'select', backLabel: 'Select Draws' });
+
 const selectedKeys = (sel) => { const on = new Set(sel.selected); return sel.ids.filter(k => on.has(k)); };
 // Paste / Edit N keep both boxes' text as JSON in the selection's `text`.
 const packText = (newText, retText) => JSON.stringify({ newText: newText || '', retText: retText || '' });
@@ -88,7 +88,9 @@ async function cardFor(doc, key, back, opts = {}) {
     const sel = /^t:/.test(String(back || '')) ? await loadSel(String(back).slice(2)) : null;
     return V.cardView(doc, key, { ...opts, back: sel || !/^t:/.test(String(back || '')) ? back : null, sel });
 }
-const gone = async (doc, interaction) => home(doc, `${emojis.cross} That draw no longer exists.`, interaction);
+// A miss or an error answers in its own private message and leaves the panel as it was (2026-11-11 11:02 EST, his ask: "i don't want confirmations/errors inside of the panel itself ... They should be new private messages"). `say` replies privately, or follows up when the click was already acknowledged.
+const GONE = `${emojis.cross} That draw no longer exists. Open \`/manage draws\` again for the current list.`;
+const EXPIRED = `${emojis.cross} That list expired (lists last a day). Select again.`;
 
 // ---------- finding draws ---------- Titles typed (each line or comma part: every word must be in the title) are ADDED; the quick picks read like /draws' own filter (2026-11-10 10:59 EST): picks in one group widen (New or Returning; Ended or Leaving Soon), and the groups narrow each other (New + Ended = the New draws that ended). A single pick is the list it names, as before.
 function resolveKeys(doc, names, picks = []) {
@@ -125,6 +127,27 @@ function searchKeys(doc, q) {
     const inTitle = (d) => words.every(w => d.title.toLowerCase().includes(w));
     const inAny = (d) => { const hay = `${d.title} ${(d.items || []).map(i => i.name).join(' ')}`.toLowerCase(); return words.every(w => hay.includes(w)); };
     return [...all.filter(inTitle), ...all.filter(d => !inTitle(d) && inAny(d))].map(d => d._key);
+}
+// The one Search's matcher (the redesign): each line is a draw's words (title or items, title matches first, searchKeys), lines widen each other, lists narrow them, and both blank is every draw. Before, Select ADDED typed titles to the picked lists, so New Draws + "sapphire" gave every New draw plus every sapphire draw.
+function findKeys(doc, text, picks = []) {
+    const lines = String(text || '').split('\n').map(x => x.trim()).filter(Boolean);
+    const unmatched = [];
+    let keys = null;
+    if (lines.length) {
+        const seen = new Set();
+        keys = [];
+        for (const line of lines) {
+            const hit = searchKeys(doc, line);
+            if (!hit.length) unmatched.push(line);
+            for (const k of hit) if (!seen.has(k)) { seen.add(k); keys.push(k); }
+        }
+    }
+    const valid = (picks || []).filter(p => V.STATUS[p]);
+    if (valid.length) {
+        const inLists = new Set(resolveKeys(doc, '', valid).keys);
+        keys = keys ? keys.filter(k => inLists.has(k)) : V.allDraws(doc).map(d => d._key).filter(k => inLists.has(k));
+    }
+    return { keys: keys || V.allDraws(doc).map(d => d._key), unmatched };
 }
 const field = (i, id) => { try { const f = i.fields.getField(id); return f?.value ?? f?.values ?? null; } catch { return null; } };
 
@@ -180,7 +203,8 @@ function previewDraws(doc, newText, retText) {
     if (out.same.length) parts.push(`-# Unchanged · ${out.same.length}: ${out.same.join(', ').slice(0, 700)}`, '');
     if (out.twins.length) parts.push(`${emojis.warn} **Left out · ${out.twins.length}**`, ...cap(out.twins.map(x => `- ${x}`), 8), '-# A draw is New or Returning, not both. Move it from its card, or delete one first.', '');
     if (out.skipped.length) parts.push(`${emojis.warn} **Not read · ${out.skipped.length}**`, ...cap(out.skipped.map(x => `- \`${x}\``), 8), '-# A line needs a title, at least one item and a date, split by commas.', '');
-    parts.push('-# Nothing is saved until you press Save.');
+    // A preview where nothing changed says so, and has no Save to press (2026-11-11 17:03 EST: it read "Nothing is saved until you press Save" with no Save button, under a green check).
+    parts.push((out.added.length + out.changed.length) ? '-# Nothing is saved until you press Save.' : '-# Nothing changed, so there is nothing to save.');
     return { ...out, parts, count: out.added.length + out.changed.length, total: out.added.length + out.changed.length + out.same.length };
 }
 // A line with no picture link keeps the stored draw's picture (2026-11-10 11:19 EST): Edit N's box leaves the links out so each line is half as long, and a Paste of an existing draw without a link no longer asks Cloudinary for a near match. The stored link is put back on the line before it saves, so nothing downstream changes.
@@ -206,11 +230,11 @@ async function previewPanel(token, newText, retText, { isEdit }) {
     const doc = await getDoc();
     const pv = previewDraws(doc, newText, retText);
     return V.resultView({
-        ok: pv.skipped.length ? 'warn' : true, crumbs: isEdit ? ['Select Draws', 'Edit'] : ['Paste'],
-        title: `${isEdit ? 'Edit' : 'Paste'} preview · ${pv.count} of ${pv.total} to save`, body: pv.parts,
+        ok: pv.skipped.length || !pv.count ? 'warn' : true, crumbs: isEdit ? ['Selected', 'Edit'] : ['Bulk Paste'],
+        title: `${isEdit ? 'Edit' : 'Bulk Paste'} preview · ${pv.count} of ${pv.total} to save`, body: pv.parts,
         back: isEdit ? ['tedit', token, 0, 'again'] : ['paste', token], backLabel: isEdit ? 'Edit Again' : 'Edit Paste',
         extraButtons: pv.count ? [V.btn(['save', token], `Save ${pv.count}`, emojis.checkmark, 3)] : [],
-        extraRows: isEdit ? [V.row(V.btn(['slist', token, 0], 'Back to List', emojis.returnArrow))] : [],
+        extraRows: isEdit ? [V.row(V.btn(['slist', token, 0], 'Back to Selected', emojis.returnArrow))] : [],
     });
 }
 
@@ -226,6 +250,15 @@ async function restoredKeys(doc, changeIds) {
     return V.allDraws(doc).filter(d => titles.has(d.title)).map(d => d._key);
 }
 const restoredKey = async (doc, changeIds) => (await restoredKeys(doc, changeIds))[0] || null;
+// Where an Edit or End Date opened from a list lands (`L`): back on that list, or on the search results it came from (2026-11-11 11:02 EST: every list edits in place now, not only Needs a Look).
+async function listBack(doc, back, note, noteRow = null) {
+    if (/^t:/.test(String(back || ''))) {
+        const tok = String(back).slice(2);
+        const sel = await loadSel(tok);
+        if (sel) return V.searchView(doc, tok, sel, 0, { note, noteRow });
+    }
+    return V.listView(doc, V.STATUS[back] ? back : 'look', 0, { note, noteRow });
+}
 // ---------- Revert ---------- The panel's own Revert, so it lands back where the save was made (results.js revertChanges does the reverting and its permission check). `key` and `back` name the draw's card: the card if the draw is still there after the revert, else the list it came from, else Home. A Revert past Discord's 100 characters is left off, and the result says where to revert instead.
 function revertButton(changeIds, key = '', back = '') {
     const id = [`${PREFIX}revert`, (changeIds || []).join(','), key, back].join('|').replace(/\|+$/, '');
@@ -262,7 +295,7 @@ function readEnd(interaction, d = null) {
     try { choice = readChoice(interaction, 'when')[0] || 'date'; } catch { choice = 'date'; }
     const typed = String(field(interaction, 'date') || '').trim();
     if (choice !== 'date') {
-        const opened = d?._row?.endDate ? formatAdminDate(new Date(d._row.endDate)) : '';
+        const opened = d?._row?.endDate ? require('../../../utils/adminParser').formatAdminEndDate(new Date(d._row.endDate)) : '';
         const note = typed && typed !== opened ? `-# The date box was left out: ${choice === 'season' ? 'With the season' : 'Not announced yet'} was picked.` : null;
         return { choice, endDate: null, note };
     }
@@ -319,7 +352,7 @@ async function openFromSlash(interaction) {
     const m = manageCommand();
     if (act === 'quickadd') return (await gate(interaction, 'quickadd')) && interaction.showModal(m.buildQuickAddModal());
     if (act === 'addnew' || act === 'addreturning') return (await gate(interaction, act)) && interaction.showModal(reId(m.buildAddDrawModal(act === 'addnew' ? 'new' : 'returning'), V.ID('addm', act === 'addnew' ? 'new' : 'returning')));
-    if (act === 'paste') return (await gate(interaction, 'bulkadd')) && interaction.showModal(reId(m.buildBulkBothDrawsModal('add'), V.ID('pastem'), 'Paste Draws'));
+    if (act === 'paste') return (await gate(interaction, 'bulkadd')) && interaction.showModal(reId(m.buildBulkBothDrawsModal('add'), V.ID('pastem'), 'Bulk Paste'));
     if (act === 'export') return (await gate(interaction, 'exportnew')) && interaction.showModal(V.exportModal());
     if (act === 'check') return (await gate(interaction, 'exportnew')) && interaction.showModal(V.checkModal());
     if (act === 'guide') return runGuide(interaction);
@@ -328,7 +361,7 @@ async function openFromSlash(interaction) {
         let key = drawValue;
         if (!V.allDraws(doc).some(d => d._key === key)) {
             const keys = searchKeys(doc, drawValue);
-            if (keys.length !== 1) return view(await home(doc, `${emojis.cross} ${keys.length ? `${keys.length} draws match` : 'No draw matches'} \`${drawValue.slice(0, 60)}\`. Pick one from the list, or type more of its title.`, interaction));
+            if (keys.length !== 1) return say(interaction, `${emojis.cross} ${keys.length ? `${keys.length} draws match` : 'No draw matches'} \`${drawValue.slice(0, 60)}\`. Pick one from the list, or type more of its title.`);
             key = keys[0];
         }
         if (act === 'edit') return (await gate(interaction, 'edit')) && interaction.showModal(await editModal(doc, key, V.ID('editm', key)));
@@ -364,12 +397,14 @@ async function autocomplete(interaction) {
 // ---------- routing ----------
 async function route(interaction) {
     const [, verb, a, b, c] = interaction.customId.split('|');
+    // The Draw Index panel's own verbs (`ix…`, handlers/manage/drawsPanel/drawIndex.js), answered with this panel's helpers (2026-11-11 11:02 EST).
+    const IX = require('./drawIndex');
+    if (IX.isIndexVerb(verb)) return IX.route(interaction, verb, a, b, c, { show, say, gate, getDoc, createSelection, loadSel });
     const m = manageCommand();
     const n = (x) => Number(x) || 0;
 
     // ----- pop-ups first (a pop-up has to be the first answer) -----
-    if (verb === 'find') return interaction.showModal(V.searchModal());
-    if (verb === 'select') return interaction.showModal(V.selectModal());
+    if (verb === 'find') return interaction.showModal(V.drawSearchModal(await getDoc()));
     if (verb === 'export') return (await gate(interaction, 'exportnew')) && interaction.showModal(V.exportModal());
     // Check Draw Index reads, never writes: Export's read tier gates it. `a` is the token of the last check, so Check Again opens with what was pasted.
     if (verb === 'check') {
@@ -389,7 +424,7 @@ async function route(interaction) {
         if (!(await gate(interaction, 'bulkadd'))) return;
         const last = a ? await loadSel(a) : null;
         const { newText, retText } = unpackText(last?.text);
-        return interaction.showModal(fill(reId(m.buildBulkBothDrawsModal('add'), V.ID('pastem'), 'Paste Draws'), { new_text: newText, returning_text: retText }));
+        return interaction.showModal(fill(reId(m.buildBulkBothDrawsModal('add'), V.ID('pastem'), 'Bulk Paste'), { new_text: newText, returning_text: retText }));
     }
     // Edit and End Date carry the card's origin (`b`) and `c` = `L` when opened from Needs a Look, so the submit lands back there.
     if (verb === 'edit' || verb === 'end') {
@@ -397,12 +432,12 @@ async function route(interaction) {
         const doc = await getDoc();
         if (verb === 'end' && !(await calendarGate(interaction, endProbe(V.allDraws(doc).find(x => x._key === a))))) return;
         const modal = verb === 'edit' ? await editModal(doc, a, V.ID('editm', a, b, c)) : endModalFor(doc, a, b, c);
-        return modal ? interaction.showModal(modal) : show(interaction, await gone(doc, interaction));
+        return modal ? interaction.showModal(modal) : say(interaction, GONE);
     }
     if (verb === 'tend') {
         if (!(await gate(interaction, 'edit'))) return;
         const sel = await loadSel(a);
-        if (!sel) return show(interaction, expired());
+        if (!sel) return say(interaction, EXPIRED);
         const keys = selectedKeys(sel);
         const doc = await getDoc();
         if (!keys.length) return show(interaction, V.selectView(doc, a, sel, null, n(b)));
@@ -415,7 +450,7 @@ async function route(interaction) {
     if (verb === 'page') return renderHome(interaction);
     if (verb === 'revert') {
         return require('../results').revertChanges(interaction, String(a || '').split(',').filter(Boolean), {
-            doneNote: 'it is back as it was',
+            doneNote: 'everything is back as it was',
             render: async (note) => {
                 const doc = await getDoc();
                 const card = b ? await cardFor(doc, b, c, { header: note }) : null;
@@ -432,9 +467,9 @@ async function route(interaction) {
                     const tok = String(c).slice(2);
                     const sel = await loadSel(tok);
                     if (sel) {
-                        // A reverted Delete N: the draws are back under new ids, so they rejoin the list (2026-11-10 13:27 EST: the list said "No draws found").
+                        // A reverted Delete N: the draws are back under new ids, so they rejoin the list (2026-11-10 13:27 EST: the list said "No draws found"). And they are selected again, as they were before the Delete (2026-11-11 16:58 EST: the Revert landed on the results with nothing selected).
                         const back = (await restoredKeys(doc, String(a || '').split(',').filter(Boolean))).filter(k => !sel.ids.includes(k));
-                        if (back.length) { sel.ids = [...sel.ids, ...back]; await setSel(tok, { ids: sel.ids }); }
+                        if (back.length) { sel.ids = [...sel.ids, ...back]; sel.selected = [...new Set([...(sel.selected || []), ...back])]; await setSel(tok, { ids: sel.ids, selected: sel.selected }); }
                         return V.selectView(doc, tok, sel, note);
                     }
                 }
@@ -446,16 +481,19 @@ async function route(interaction) {
     if (verb === 'list') return show(interaction, V.listView(await getDoc(), a, n(b)));
     if (verb === 'sres') {
         const sel = await loadSel(a);
-        return show(interaction, sel ? V.searchView(await getDoc(), a, sel, n(b)) : V.resultView({ title: 'Those search results expired. Search again.', ok: false, back: 'find', backLabel: 'Search Again' }));
+        // Misses, refusals and nothing-changed answer privately and leave the panel as it was (round 2's rule; the 2026-11-11 16:46 EST think-pass found these still drawn in the panel).
+        return sel ? show(interaction, V.searchView(await getDoc(), a, sel, n(b))) : say(interaction, `${emojis.cross} Those search results expired. Search again.`);
     }
     if (verb === 'open' && interaction.isStringSelectMenu?.()) {
         const doc = await getDoc();
-        return show(interaction, await cardFor(doc, interaction.values[0], a) || await gone(doc, interaction));
+        const card = await cardFor(doc, interaction.values[0], a);
+        return card ? show(interaction, card) : say(interaction, GONE);
     }
     if (verb === 'card') {
         const doc = await getDoc();
         // `b` is where the card came from, which its arrows walk; a card opened from elsewhere walks its section.
-        return show(interaction, await cardFor(doc, a, b) || await gone(doc, interaction));
+        const card = await cardFor(doc, a, b);
+        return card ? show(interaction, card) : say(interaction, GONE);
     }
 
     // ----- one draw -----
@@ -465,7 +503,8 @@ async function route(interaction) {
         await deferSubmit(interaction);
         const result = await drawsSave().addDraw(interaction, { customId: `add_draw_${sec}`, quiet: true });
         const doc = await getDoc();
-        if (!result?.ok) return show(interaction, await home(doc, `${emojis.cross} The draw was not added; the message below says why.`, interaction));
+        // The saver's own Try Again message says why; the panel stays as it was.
+        if (!result?.ok) return;
         const key = `${sec[0]}:${result.draw._id}`;
         const header = [`### ${emojis.checkmark} Added to ${sec === 'new' ? 'New' : 'Returning'} Draws`, ...(result.notes || []).filter(Boolean).map(x => `-# ${x}`), ...(result.warnings || []).map(w => `${emojis.warn} ${w}`)].join('\n') + revertHint(result.changeIds, key, sec);
         await show(interaction, V.cardView(doc, key, { back: sec, header, resultRow: revertRow(result.changeIds, key, sec) }) || await home(doc, null, interaction));
@@ -477,11 +516,14 @@ async function route(interaction) {
         await deferSubmit(interaction);
         const result = await drawsSave().editDraw(interaction, { customId: `edit_draw_${id}_${section}`, quiet: true });
         const doc = await getDoc();
-        if (result?.gone) return show(interaction, await gone(doc, interaction));
-        const saved = result?.ok && !result.unchanged;
-        const header = saved ? savedHeader(result) + revertHint(result.changeIds, a, b) : result?.unchanged ? `-# ${emojis.info} ${result.note}` : `-# ${emojis.cross} Not saved; the message below says why.`;
+        if (result?.gone) return say(interaction, GONE);
+        // Nothing changed, or the save failed (its Try Again message says why): a private note, and the panel stays as it was.
+        if (result?.unchanged) return say(interaction, `${emojis.info} ${result.note}`);
+        if (!result?.ok) return;
+        const saved = true;
+        const header = savedHeader(result) + revertHint(result.changeIds, a, b);
         const rrow = saved ? revertRow(result.changeIds, a, b) : null;
-        const viewOut = c === 'L' ? V.listView(doc, 'look', 0, { note: header, noteRow: rrow }) : await cardFor(doc, a, b, { header, resultRow: rrow });
+        const viewOut = c === 'L' ? await listBack(doc, b, header, rrow) : await cardFor(doc, a, b, { header, resultRow: rrow });
         await show(interaction, viewOut || await home(doc, header, interaction));
         if (saved) return askKinds(interaction, result.titles);
         return;
@@ -491,18 +533,18 @@ async function route(interaction) {
         await deferSubmit(interaction);
         const doc = await getDoc();
         const d = V.allDraws(doc).find(x => x._key === a);
-        if (!d) return show(interaction, await gone(doc, interaction));
-        const back = (header, rrow = null) => (c === 'L' ? V.listView(doc, 'look', 0, { note: header, noteRow: rrow }) : cardFor(doc, a, b, { header, resultRow: rrow }));
+        if (!d) return say(interaction, GONE);
+        const back = (header, rrow = null) => (c === 'L' ? listBack(doc, b, header, rrow) : cardFor(doc, a, b, { header, resultRow: rrow }));
         const want = readEnd(interaction, d);
-        if (want.error) return show(interaction, await back(`-# ${emojis.cross} ${want.error} Nothing was saved.`));
+        if (want.error) return say(interaction, `${emojis.cross} ${want.error} Nothing was saved.`);
         const op = planEnd(d, want);
-        if (!op) return show(interaction, await back(`-# ${emojis.info} It already ends ${endWords(d._row)}. Nothing was saved.`));
+        if (!op) return say(interaction, `${emojis.info} It already ends ${endWords(d._row)}. Nothing was saved.`);
         const result = await require('../../../core/changeset').commitSet([op], { actorId: interaction.user.id });
-        if (!result.ok) return show(interaction, await back(`-# ${emojis.cross} Not saved: ${require('../shared').extractCommitError(result)}`));
+        if (!result.ok) return say(interaction, `${emojis.cross} Not saved: ${require('../shared').extractCommitError(result)}`);
         const after = await getDoc();
         const header = [`### ${emojis.checkmark} End date saved`, `- **Ends:** ~~${endWords(d._row)}~~ → ${wantWords(want)}`, ...(want.note ? [want.note] : [])].join('\n');
         const rrow = revertRow(result.changeIds, a, b);
-        return show(interaction, c === 'L' ? V.listView(after, 'look', 0, { note: header, noteRow: rrow }) : await cardFor(after, a, b, { header, resultRow: rrow }));
+        return show(interaction, c === 'L' ? await listBack(after, b, header, rrow) : await cardFor(after, a, b, { header, resultRow: rrow }));
     }
     if (verb === 'move' || verb === 'del') {
         if (!(await gate(interaction, verb === 'move' ? 'edit' : 'delete'))) return;
@@ -512,12 +554,12 @@ async function route(interaction) {
         if (!(await gate(interaction, 'edit'))) return;
         const doc = await getDoc();
         const d = V.allDraws(doc).find(x => x._key === a);
-        if (!d) return show(interaction, await gone(doc, interaction));
+        if (!d) return say(interaction, GONE);
         const to = d._sec === 'new' ? 'returning' : 'new';
         // The other list already holding this title would leave the draw listed twice once moved (2026-11-10 11:19 EST): refused, and the card says which.
         const { isSameDrawTitle } = require('../../../utils/search');
         const twin = (doc[`${to}Draws`] || []).find(x => isSameDrawTitle(x.title, d.title));
-        if (twin) return show(interaction, await cardFor(doc, a, b, { header: `-# ${emojis.cross} ${to === 'new' ? 'New' : 'Returning'} Draws already has **${twin.title}**. Delete one of the two first; nothing was moved.` }));
+        if (twin) return say(interaction, `${emojis.cross} ${to === 'new' ? 'New' : 'Returning'} Draws already has **${twin.title}**. Delete one of the two first; nothing was moved.`);
         const plain = (x) => JSON.parse(JSON.stringify(x));
         const payload = { title: d.title, date: d.date, thumbnailUrl: d.thumbnailUrl || null, items: plain(d.items || []).map(({ _id, ...it }) => it), ...(d.priceType ? { priceType: d.priceType } : {}), category: to };
         // Delete and add in one commit: one Revert puts the draw back where it was. Its /calendar row is keyed by title, so it needs nothing.
@@ -525,7 +567,7 @@ async function route(interaction) {
             { type: 'draw.delete', target: { category: d._sec, elementId: String(d._id) } },
             { type: 'draw.add', payload },
         ], { actorId: interaction.user.id });
-        if (!result.ok) return show(interaction, await cardFor(doc, a, b, { header: `-# ${emojis.cross} The draw was not moved: ${require('../shared').extractCommitError(result)}` }));
+        if (!result.ok) return say(interaction, `${emojis.cross} The draw was not moved: ${require('../shared').extractCommitError(result)}`);
         const newKey = `${to[0]}:${result.results[1].applied.elementId}`;
         const after = await getDoc();
         // The moved draw has a new id, so its card walks its new section; Revert lands on the draw where it was.
@@ -535,7 +577,7 @@ async function route(interaction) {
         if (!(await gate(interaction, 'delete')) || !(await gateDestructive(interaction))) return;
         const doc = await getDoc();
         const d = V.allDraws(doc).find(x => x._key === a);
-        if (!d) return show(interaction, await gone(doc, interaction));
+        if (!d) return say(interaction, GONE);
         let changeIds;
         if (c === 'r' && d._row) {
             // With its /calendar row (2026-11-10 11:19 EST): one commit, so one Revert brings both back. The row's delete needs the Calendar tier, which commitSet checks.
@@ -543,7 +585,7 @@ async function route(interaction) {
                 { type: 'draw.delete', target: { category: d._sec, elementId: String(d._id) } },
                 { type: 'calendar.delete', target: { elementId: String(d._row._id) } },
             ], { actorId: interaction.user.id });
-            if (!result.ok) return show(interaction, await cardFor(doc, a, b, { header: `-# ${emojis.cross} Nothing was deleted: ${require('../shared').extractCommitError(result)}` }));
+            if (!result.ok) return say(interaction, `${emojis.cross} Nothing was deleted: ${require('../shared').extractCommitError(result)}`);
             changeIds = result.changeIds;
         } else changeIds = await drawsSave().deleteDraw({ type: d._sec, id: String(d._id) }, interaction.user.id);
         const listKey = V.STATUS[b] ? b : d._sec;
@@ -552,6 +594,18 @@ async function route(interaction) {
 
     // ----- purge ----- Each button names how many draws it removes (2026-11-10 11:19 EST): the one question a destructive confirm must answer.
     if (verb === 'purge') {
+        // From the Ended list (round 2): only the ended draws, and Cancel goes back to that list.
+        if (a === 'ended') {
+            if (!(await gate(interaction, 'bulkdelete'))) return;
+            const n = V.allDraws(await getDoc()).filter(V.STATUS.ended.test).length;
+            if (!n) return say(interaction, `${emojis.info} No ended draws to delete.`);
+            return show(interaction, V.resultView({
+                ok: 'warn', crumbs: ['Ended', 'Delete All'], title: `Delete all ${V.plural(n, 'ended draw')}?`,
+                body: ['-# Their /calendar rows stay. Recorded, and Revert puts them back.'],
+                back: ['list', 'ended', 0], backLabel: 'Cancel',
+                extraButtons: [V.btn(['purgeok', 'ended'], `Yes, Delete ${n}`, emojis.deleteBin, 4)],
+            }));
+        }
         if (!(await gate(interaction, 'purgeall'))) return;
         const doc = await getDoc();
         const all = V.allDraws(doc);
@@ -582,47 +636,40 @@ async function route(interaction) {
             const result = ended.length ? await require('../../../core/changeset').commitSet([{ type: 'draw.bulkDelete', payload: { ids } }], { actorId: interaction.user.id }) : { ok: true, changeIds: [] };
             note = result.ok ? `${emojis.checkmark} Purged the ${V.plural(ended.length, 'ended draw')}.` : `${emojis.cross} ${require('../shared').extractCommitError(result)}`;
             changeIds = result.ok ? result.changeIds : [];
+            // Lands on the Ended list it was started from, with Revert.
+            return show(interaction, V.listView(await getDoc(), 'ended', 0, { note: note + revertHint(changeIds), noteRow: revertRow(changeIds) }));
         } else ({ confirmMsg: note, changeIds } = await drawsSave().purgeDraws(scope, interaction.user.id));
         return show(interaction, await home(null, note + revertHint(changeIds), interaction, { noteRow: revertRow(changeIds) }));
     }
 
-    // ----- search and select -----
+    // ----- search and select ----- One Search (the redesign): words, one draw per line, widen each other; lists narrow them; both blank is every draw. One match opens its card; none answers privately.
     if (verb === 'findm' && interaction.isModalSubmit?.()) {
         const doc = await getDoc();
-        const q = interaction.fields.getTextInputValue('q');
-        const keys = searchKeys(doc, q);
-        if (!keys.length) return show(interaction, await home(doc, `${emojis.cross} No draw matches \`${q.slice(0, 60)}\` in its title or items.`, interaction));
+        const q = field(interaction, 'q') || '';
+        const picks = [].concat(field(interaction, 'picks') || []);
+        const { keys, unmatched } = findKeys(doc, q, picks);
+        const what = [...String(q).split('\n').map(x => x.trim()).filter(Boolean).map(x => `\`${x.slice(0, 40)}\``), ...(picksLabel(picks) ? [picksLabel(picks)] : [])];
+        if (!keys.length) return say(interaction, `${emojis.cross} No draw matches ${what.join(' · ') || 'that'}.`);
         if (keys.length === 1) return show(interaction, V.cardView(doc, keys[0]));
-        const token = await createSelection({ ids: keys, selected: [], query: [q.slice(0, 100)] });
+        const token = await createSelection({ ids: keys, selected: [], query: what, unmatched });
         return show(interaction, V.searchView(doc, token, await loadSel(token)));
     }
     if (verb === 'checkm' && interaction.isModalSubmit?.()) {
         if (!(await gate(interaction, 'exportnew'))) return;
-        const { checkIndex } = require('../../../utils/drawIndexCheck');
-        const entries = await require('../../../utils/drawCatalog').loadCatalog({ force: true });
         const names = interaction.fields.getTextInputValue('names');
-        const result = checkIndex(entries, names, { seasonalDoc: await getDoc(), isSameTitle: require('../../../utils/search').isSameDrawTitle });
-        // What was pasted, and the lines that found a draw, kept for Check Again and Quick Add These.
-        const found = result.results.filter(r => r.status === 'found' || r.status === 'maybe').map(r => r.line);
+        // What was pasted, and the lines that found a draw, kept for Check Again, Quick Add These and the way back from a card (IX.runCheck).
+        const { result, found } = await IX.runCheck(names, await getDoc());
         const token = await createSelection({ text: String(names).slice(0, 4000), query: found });
         return show(interaction, V.checkView(result, token, found.length));
     }
-    if (verb === 'selectm' && interaction.isModalSubmit?.()) {
+    // A list made into a selection (the redesign): the Select menu under a list, or its Select All.
+    if ((verb === 'lpick' && interaction.isStringSelectMenu?.()) || verb === 'lall') {
         const doc = await getDoc();
-        const names = field(interaction, 'names') || '';
-        const picks = [].concat(field(interaction, 'picks') || []);
-        const { keys, unmatched } = resolveKeys(doc, names, picks);
-        const query = [...String(names).split('\n').map(x => x.trim()).filter(Boolean), ...(picksLabel(picks) ? [picksLabel(picks)] : [])];
-        const token = await createSelection({ ids: keys, selected: [], query, unmatched });
+        const list = V.listOf(doc, V.STATUS[a] ? a : 'new').map(d => d._key);
+        const token = await createSelection({ ids: list, selected: verb === 'lall' ? list : interaction.values.filter(v => list.includes(v)), query: [V.STATUS[a]?.label || a] });
         return show(interaction, V.selectView(doc, token, await loadSel(token)));
     }
-    if (verb === 'sellist') {
-        const doc = await getDoc();
-        const { keys } = resolveKeys(doc, '', [a]);
-        const token = await createSelection({ ids: keys, selected: [], query: [V.STATUS[a]?.label || a] });
-        return show(interaction, V.selectView(doc, token, await loadSel(token)));
-    }
-    if (['flip', 'all', 'none', 'slist', 'tedit', 'teditm', 'texp', 'tdel', 'tdelok', 'save', 'pastem', 'tendm'].includes(verb)) return routeSelection(interaction, verb, a, b, c);
+    if (['pick', 'unpick', 'all', 'none', 'slist', 'tedit', 'teditm', 'texp', 'tdel', 'tdelok', 'save', 'pastem', 'tendm'].includes(verb)) return routeSelection(interaction, verb, a, b, c);
 
     // ----- export -----
     if (verb === 'exportm' && interaction.isModalSubmit?.()) {
@@ -671,13 +718,14 @@ async function routeSelection(interaction, verb, a, b, c) {
     }
 
     const sel = await loadSel(a);
-    if (!sel) return show(interaction, expired());
+    if (!sel) return say(interaction, EXPIRED);
     const keys = selectedKeys(sel);
 
-    if (verb === 'flip' && interaction.isStringSelectMenu?.()) {
+    // The results' Select menu adds; the Selected view's Unselect menu takes away (the redesign).
+    if ((verb === 'pick' || verb === 'unpick') && interaction.isStringSelectMenu?.()) {
         const on = new Set(sel.selected);
-        for (const v of interaction.values) { if (on.has(v)) on.delete(v); else on.add(v); }
-        sel.selected = [...on];
+        for (const v of interaction.values) { if (verb === 'pick') on.add(v); else on.delete(v); }
+        sel.selected = sel.ids.filter(k => on.has(k));
         await setSel(a, { selected: sel.selected });
         return show(interaction, V.selectView(await getDoc(), a, sel, null, n(b)));
     }
@@ -702,7 +750,8 @@ async function routeSelection(interaction, verb, a, b, c) {
             newText = fmt(pick.filter(d => d._sec === 'new'), V.rowFor(doc));
             retText = fmt(pick.filter(d => d._sec === 'returning'), V.rowFor(doc));
         }
-        if (newText.length > 4000 || retText.length > 4000) return show(interaction, V.selectView(doc, a, sel, `${emojis.warn} **Too many draws for one Edit pop-up** (each box holds 4,000 characters). Select fewer.`, n(b)));
+        // A private note, never the panel (round 2's rule; the one survivor of that sweep, found 2026-11-11 15:02 EST).
+        if (newText.length > 4000 || retText.length > 4000) return say(interaction, `${emojis.warn} **Too many draws for one Edit pop-up** (each box holds 4,000 characters). Select fewer.`);
         return interaction.showModal(fill(reId(m.buildBulkBothDrawsModal('replace'), V.ID('teditm', a), `Edit ${V.plural(keys.length, 'Draw')}`), { new_text: newText, returning_text: retText }));
     }
     if (verb === 'teditm' && interaction.isModalSubmit?.()) {
@@ -718,14 +767,15 @@ async function routeSelection(interaction, verb, a, b, c) {
         const doc = await getDoc();
         const pv = previewDraws(doc, newText, retText);
         const backTo = isEdit ? ['slist', a, 0] : 'page';
-        if (!pv.count) return show(interaction, V.resultView({ title: 'Nothing to save: every draw is unchanged.', ok: 'warn', back: backTo, backLabel: isEdit ? 'Back to List' : 'Home' }));
+        // Misses, refusals and nothing-changed answer privately and leave the panel as it was (round 2's rule; the 2026-11-11 16:46 EST think-pass found these still drawn in the panel).
+        if (!pv.count) return say(interaction, `${emojis.info} Nothing to save: every draw is unchanged.`);
         await interaction.deferUpdate();
         const result = await require('../draws').bulkAddOrReplaceDraws(interaction, { customId: 'modal_draws_bulk_replace_both', values: { new_text: withStoredLinks(doc, pv.keepNew, 'new').join('\n'), returning_text: withStoredLinks(doc, pv.keepRet, 'returning').join('\n') } }, { quiet: true });
-        if (!result?.ok) return show(interaction, V.resultView({ crumbs: isEdit ? ['Select Draws', 'Edit'] : ['Paste'], title: 'Nothing was saved', body: [result?.error || 'The save was refused.'], ok: false, back: isEdit ? ['tedit', a, 0, 'again'] : ['paste', a], backLabel: isEdit ? 'Edit Again' : 'Edit Paste' }));
+        if (!result?.ok) return say(interaction, `${emojis.cross} **Nothing was saved.** ${String(result?.error || 'The save was refused.').slice(0, 1800)}`);
         // The draws first, then their end dates (the saver lists the end dates first because it writes them second).
         const ordered = [...result.sections.filter(s => s.head !== 'End dates'), ...result.sections.filter(s => s.head === 'End dates')];
         const body = [...ordered.filter(s => s.lines?.length).map(s => `**${s.head}**\n${s.lines.join('\n')}`), ...result.warnings.map(w => `${emojis.warn} ${w}`)];
-        await show(interaction, V.resultView({ ok: result.warnings.length ? 'warn' : true, crumbs: isEdit ? ['Select Draws', 'Edit'] : ['Paste'], title: `Saved ${V.plural(pv.count, 'draw')}`, body: [...body, `-# Every change is recorded; Revert puts it back.${revertHint(result.changeIds)}`], back: backTo, backLabel: isEdit ? 'Back to List' : 'Home', extraButtons: revertButton(result.changeIds, '', isEdit ? `s:${a}` : '') }));
+        await show(interaction, V.resultView({ ok: result.warnings.length ? 'warn' : true, crumbs: isEdit ? ['Selected', 'Edit'] : ['Bulk Paste'], title: `Saved ${V.plural(pv.count, 'draw')}`, body: [...body, `-# Every change is recorded; Revert puts it back.${revertHint(result.changeIds)}`], back: backTo, backLabel: isEdit ? 'Back to Selected' : 'Home', extraButtons: revertButton(result.changeIds, '', isEdit ? `s:${a}` : '') }));
         return askKinds(interaction, result.titles);
     }
     // End Date for every selected draw (2026-11-10 11:19 EST): one commit of their calendar rows, skipping any that already read so or that the end would not be after.
@@ -735,7 +785,7 @@ async function routeSelection(interaction, verb, a, b, c) {
         const doc = await getDoc();
         const byKey = new Map(V.allDraws(doc).map(d => [d._key, d]));
         const want = readEnd(interaction);
-        if (want.error) return show(interaction, V.selectView(doc, a, sel, `${emojis.cross} ${want.error} Nothing was saved.`));
+        if (want.error) return say(interaction, `${emojis.cross} ${want.error} Nothing was saved.`);
         const ops = [], done = [], skipped = [];
         for (const k of keys) {
             const d = byKey.get(k);
@@ -744,10 +794,11 @@ async function routeSelection(interaction, verb, a, b, c) {
             const op = planEnd(d, want);
             if (op) { ops.push(op); done.push(d.title); } else skipped.push(`${d.title} (already so)`);
         }
-        if (!ops.length) return show(interaction, V.selectView(doc, a, sel, `${emojis.info} Nothing changed: ${skipped.join(', ').slice(0, 1500)}`));
+        // A private note, never the panel (round 2's rule; found in the Selected view's End Date by the 2026-11-11 16:46 EST think-pass).
+        if (!ops.length) return say(interaction, `${emojis.info} Nothing changed: ${skipped.join(', ').slice(0, 1500)}`);
         const result = await require('../../../core/changeset').commitSet(ops, { actorId: interaction.user.id });
-        if (!result.ok) return show(interaction, V.selectView(doc, a, sel, `${emojis.cross} Not saved: ${require('../shared').extractCommitError(result)}`));
-        return show(interaction, V.resultView({ crumbs: ['Select Draws'], title: `End date set on ${V.plural(done.length, 'draw')}: ${wantWords(want)}`, body: [...done.map(t => `- ${t}`), ...(skipped.length ? [`-# Left as they were: ${skipped.join(', ')}`] : []), ...(want.note ? [want.note] : []), `-# Revert puts every one back.${revertHint(result.changeIds)}`], back: ['slist', a, 0], backLabel: 'Back to List', extraButtons: revertButton(result.changeIds, '', `s:${a}`) }));
+        if (!result.ok) return say(interaction, `${emojis.cross} Not saved: ${require('../shared').extractCommitError(result)}`);
+        return show(interaction, V.resultView({ crumbs: ['Selected'], title: `End date set on ${V.plural(done.length, 'draw')}: ${wantWords(want)}`, body: [...done.map(t => `- ${t}`), ...(skipped.length ? [`-# Left as they were: ${skipped.join(', ')}`] : []), ...(want.note ? [want.note] : []), `-# Revert puts every one back.${revertHint(result.changeIds)}`], back: ['slist', a, 0], backLabel: 'Back to Selected', extraButtons: revertButton(result.changeIds, '', `s:${a}`) }));
     }
 
     if (verb === 'texp') {
@@ -764,7 +815,7 @@ async function routeSelection(interaction, verb, a, b, c) {
         const lines = list.map(d => `- ${V.dot(d)} ${d.title} · ${V.secWord(d)}`);
         const withRow = list.filter(d => d._row);
         const rows = withRow.length && await calendarAllowed(interaction.user.id, withRow.slice(0, 1).map(d => ({ type: 'calendar.delete', target: { elementId: String(d._row._id) } }))) ? withRow.length : 0;
-        return show(interaction, V.resultView({ ok: 'warn', crumbs: ['Select Draws'], title: `Delete ${V.plural(lines.length, 'draw')}?`, body: [...(lines.length > 20 ? [...lines.slice(0, 20), `-# …and ${lines.length - 20} more`] : lines), '', `-# ${rows ? `**Yes, Delete** keeps their /calendar rows; **Delete + Calendar Rows** removes those ${rows} too.` : withRow.length ? 'Their /calendar rows stay.' : 'None of them has a /calendar row.'} Every change can be reverted.`], back: ['slist', a, n(b)], backLabel: 'Cancel', extraButtons: [V.btn(['tdelok', a], `Yes, Delete ${lines.length}`, emojis.deleteBin, 4), ...(rows ? [V.btn(['tdelok', a, 'r'], 'Delete + Calendar Rows', emojis.calendar, 4)] : [])] }));
+        return show(interaction, V.resultView({ ok: 'warn', crumbs: ['Selected'], title: `Delete ${V.plural(lines.length, 'draw')}?`, body: [...(lines.length > 20 ? [...lines.slice(0, 20), `-# …and ${lines.length - 20} more`] : lines), '', `-# ${rows ? `**Yes, Delete** keeps their /calendar rows; **Delete + Calendar Rows** removes those ${rows} too.` : withRow.length ? 'Their /calendar rows stay.' : 'None of them has a /calendar row.'} Every change can be reverted.`], back: ['slist', a, n(b)], backLabel: 'Cancel', extraButtons: [V.btn(['tdelok', a], `Yes, Delete ${lines.length}`, emojis.deleteBin, 4), ...(rows ? [V.btn(['tdelok', a, 'r'], 'Delete + Calendar Rows', emojis.calendar, 4)] : [])] }));
     }
     if (verb === 'tdelok') {
         if (!(await gate(interaction, 'bulkdelete')) || !(await gateDestructive(interaction))) return;
@@ -780,12 +831,12 @@ async function routeSelection(interaction, verb, a, b, c) {
             ops.push(...rowIds.map(id => ({ type: 'calendar.delete', target: { elementId: id } })));
         }
         const result = await require('../../../core/changeset').commitSet(ops, { actorId: interaction.user.id });
-        if (!result.ok) return show(interaction, V.resultView({ title: 'Nothing was deleted', body: [require('../shared').extractCommitError(result)], ok: false, back: ['slist', a, 0], backLabel: 'Back to List' }));
+        if (!result.ok) return say(interaction, `${emojis.cross} **Nothing was deleted.** ${require('../shared').extractCommitError(result)}`);
         const goneKeys = new Set(keys);
         await setSel(a, { ids: sel.ids.filter(k => !goneKeys.has(k)), selected: [] });
-        return show(interaction, V.resultView({ crumbs: ['Select Draws'], title: `Deleted ${V.plural(keys.length, 'draw')}${b === 'r' ? ' and their /calendar rows' : ''}`, body: [`-# Every change is recorded; Revert puts them back.${revertHint(result.changeIds)}`], back: ['slist', a, 0], backLabel: 'Back to List', extraButtons: revertButton(result.changeIds, '', `s:${a}`) }));
+        return show(interaction, V.resultView({ crumbs: ['Selected'], title: `Deleted ${V.plural(keys.length, 'draw')}${b === 'r' ? ' and their /calendar rows' : ''}`, body: [`-# Every change is recorded; Revert puts them back.${revertHint(result.changeIds)}`], back: ['slist', a, 0], backLabel: 'Back to Selected', extraButtons: revertButton(result.changeIds, '', `s:${a}`) }));
     }
-    return show(interaction, expired());
+    return say(interaction, EXPIRED);
 }
 
 // The /manage dispatcher's entry (handlers/manage/index.js): TRUE when the id is this panel's.
@@ -796,4 +847,4 @@ async function handleDrawsPanelInteraction(interaction) {
 }
 
 module.exports = {
-    calendarAllowed, confirmCard, handleDrawsPanelInteraction, renderHome, openFromSlash, autocomplete, previewDraws, exportText, resolveKeys, searchKeys, picksLabel, planEnd, readEnd, withStoredLinks, revertButton, PREFIX };
+    calendarAllowed, confirmCard, handleDrawsPanelInteraction, renderHome, openFromSlash, autocomplete, previewDraws, exportText, resolveKeys, searchKeys, findKeys, picksLabel, planEnd, readEnd, withStoredLinks, revertButton, PREFIX };

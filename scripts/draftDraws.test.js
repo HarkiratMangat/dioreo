@@ -31,7 +31,8 @@ t('the panel lists the section in date order, each draw with its own Open (its c
     const doc = { draft: { active: true, newDraws: many, returningDraws: [] } };
     const out = V.draftDrawsView(doc, 'n', 0);
     const ids = JSON.stringify(out).match(/"custom_id":"[^"]+"/g);
-    assert.ok(ids.every(x => x.includes('mng_ss|')) && new Set(ids).size === ids.length, 'own ids, no duplicates');
+    // Live Draws is the draws panel's own Home (2026-11-11 12:30 EST): the one id here that is not the season panel's.
+    assert.ok(ids.every(x => x.includes('mng_ss|') || x.endsWith('"mng_dr|page"')) && new Set(ids).size === ids.length, 'own ids, no duplicates');
     assert.ok(ids.some(x => x.includes('mng_ss|ddc|n|id8')), 'the earliest draw first, with its Open');
     const count = c => Array.isArray(c) ? c.reduce((n, x) => n + count(x), 0) : 1 + (c.components ? count(c.components) : 0) + (c.accessory ? 1 : 0);
     assert.ok(count(out) <= 40 && count(V.draftDrawsView(doc, 'n', 1)) <= 40);
@@ -43,7 +44,8 @@ t('the Add, Edit and Remove pop-ups fit Discord: labels under 45, ids under 100,
     const d = draw('652f1c2b9e1a4b0012345678', 'A Draw', '2026-11-12');
     for (const m of [V.draftDrawModal('n'), V.draftDrawModal('r', d)]) {
         assert.ok(m.custom_id.length <= 100 && m.components.length === 5);
-        assert.ok(m.components.every(r => r.components[0].label.length <= 45));
+        // Labels since round 2 (type 18): the label sits on the Label, the input in `component`.
+        assert.ok(m.components.every(r => (r.label || r.components?.[0]?.label || '').length <= 45 && (r.label || r.components?.[0]?.label)));
     }
     const rm = V.draftRemoveModal({ draft: { newDraws: Array.from({ length: 30 }, (_, i) => draw(`x${i}`, `D ${i}`, '2026-11-12')) } }, 'n');
     assert.ok(rm.components[0].component.options.length === 25 && rm.components[0].label.length <= 45);

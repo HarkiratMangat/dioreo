@@ -4,6 +4,7 @@
 //   - Edit N with nothing changed saves nothing; a changed line, and only it, is kept.
 //   - Every view stays inside Discord's limits (40 components, 4,000 characters, 25 options, custom ids of 100).
 const assert = require('assert');
+const emojis = require('../utils/emojiMap');
 
 let failed = 0;
 async function check(name, fn) {
@@ -18,6 +19,15 @@ function limits(view, name) {
     assert.ok(chars <= 4000, `${name}: ${chars} characters`);
     assert.ok(ids.every(i => i.length <= 100), `${name}: an id over 100`);
     assert.strictEqual(new Set(ids).size, ids.length, `${name}: duplicate ids`);
+    // The consistency rules from his round-2 review (2026-11-11 11:02 EST), held on every view this file renders: the way back is first in its row, Search never wears the gunsmith emoji, and no disabled green button stands in for a status line ("All Checked").
+    const { isReturn } = require('../utils/returnFirst');
+    const gunsmith = emojis.parseEmoji(emojis.gunsmithSearch).id;
+    walk(view, c => {
+        if (c.type === 1) assert.ok((c.components || []).length <= 5, `${name}: a row of ${(c.components || []).length}, over Discord's five`);
+        if (c.type === 1) { const kinds = (c.components || []).map(isReturn); assert.ok(kinds.indexOf(false) === -1 || kinds.lastIndexOf(true) < kinds.indexOf(false), `${name}: a way back after another button in a row`); }
+        if (c.emoji) assert.notStrictEqual(String(c.emoji.id), String(gunsmith), `${name}: the gunsmith search emoji`);
+        if (c.type === 2 && c.disabled && c.style === 3) assert.fail(`${name}: a disabled green button used as a status (${c.label})`);
+    });
 }
 
 const DAY = 86400000;
@@ -198,7 +208,10 @@ function seasonDoc(nNew = 3, nRet = 30) {
         // An empty season: Search, Select, Export and Purge are disabled, and Needs a Look is a disabled chip, not a click into an empty list.
         const empty = seasonDoc(0, 0); empty.returningDraws = []; empty.calendar = [];
         const homeIds = []; walk(await V.pageView(empty), c => c.type === 2 && homeIds.push(c));
-        for (const label of ['Search Draws', 'Select Draws', 'Export', 'Purge Draws', 'Needs a Look']) assert.ok(homeIds.find(b => b.label === label)?.disabled, `${label} should be disabled on an empty season`);
+        for (const label of ['Search Draws', 'Export']) assert.ok(homeIds.find(b => b.label === label)?.disabled, `${label} should be disabled on an empty season`);
+        // Round 2 (2026-11-11 11:02 EST): no Purge on the landing, no Needs a Look button at zero, and the draft row is there.
+        assert.ok(!homeIds.some(b => /Purge|All Checked/.test(b.label || '')), 'no Purge or All Checked on the landing');
+        assert.ok(homeIds.some(b => /Season Draft|Review Drafted Draws/.test(b.label || '')), 'the draft row');
         assert.match(texts(await V.pageView(empty)), /No draws yet this season/);
     });
     await check('Needs a Look: one Section per draw with its fix (End Date when only the end is missing, else Edit), 8 a page, and a TBD end is no gap', () => {
@@ -233,14 +246,14 @@ function seasonDoc(nNew = 3, nRet = 30) {
         const over = V.allDraws(doc).find(x => x.bits & 32);
         if (over) assert.match(texts(V.cardView(doc, over._key, { back: 'ended' })), /-# Started <t:\d+:f> · ended <t:\d+:f>/);
         const fromSearch = V.cardView(doc, d._key, { back: 't:tok1', sel: { ids: [d._key, V.allDraws(doc)[0]._key] } });
-        assert.match(texts(fromSearch), /Search Results/);
+        assert.match(texts(fromSearch), /Results/);
         assert.ok(ids(fromSearch).includes('mng_dr|sres|tok1|0'));
     });
     await check('a single draw reads "This One", and the home counts add up to the total (Leaving Soon sits in brackets inside Active)', async () => {
         const one = seasonDoc(1, 0);
         const k = V.allDraws(one)[0]._key;
         const tok = await V.searchView(one, 'tok1', { ids: [k] }, 0);
-        assert.ok(JSON.stringify(tok).includes('"Select This One"'), 'search results with one draw');
+        assert.ok(JSON.stringify(tok).includes('"Select It"'), 'search results with one draw');
         assert.ok(!JSON.stringify(tok).includes('These 1'));
         const home = await V.pageView(seasonDoc(3, 5));
         const line = texts(home).split('\n').find(l => / draws · /.test(l)) || '';
@@ -277,6 +290,64 @@ function seasonDoc(nNew = 3, nRet = 30) {
         const card = await P.confirmCard(doc, 'move', d._key, '', null);
         assert.ok(!JSON.stringify(card).includes('Yes, Move'), 'no Yes on a refused move');
         assert.match(JSON.stringify(card), /already has/);
+    });
+    await check('the Draw box: title, dates and (new draws only) a season, told apart by what they parse as; a stray line is an error that names it (round 2, 2026-11-11 11:02 EST)', () => {
+        const F = require('../utils/drawForm');
+        let r = F.readDrawBox('Hollow Flight Mythic Drop\nNov 8 - Nov 21\nSeason 10', { allowSeason: true });
+        assert.deepStrictEqual([r.title, r.dates, r.season], ['Hollow Flight Mythic Drop', 'Nov 8 - Nov 21', 10]);
+        r = F.readDrawBox('S12\nNov 8\nSapphire Winter Draw', { allowSeason: true });
+        assert.deepStrictEqual([r.title, r.dates, r.season], ['Sapphire Winter Draw', 'Nov 8', 12], 'any order');
+        assert.match(F.readDrawBox('Only A Title').error, /dates/);
+        assert.match(F.readDrawBox('A Draw\nNov 8\nsomething else').error, /extra/);
+        r = F.readDrawBox('A Draw\nNov 8\nSeason 10');
+        assert.strictEqual(r.season, null, 'a returning draw ignores a season line');
+        assert.ok(r.notes.length, 'and says so');
+        assert.strictEqual(F.drawBoxValue({ title: 'A', dates: 'Nov 8', season: 10 }), 'A\nNov 8\nSeason 10');
+    });
+    await check('the Draw Index panel: home counts its gaps, lists page within the limits, an entry card shows the picture first and where its draw is, and Edit Entry is a revertable op (round 2, 2026-11-11 11:02 EST)', async () => {
+        const IX = require('../handlers/manage/drawsPanel/drawIndex');
+        const doc = seasonDoc(3, 5);
+        const live = V.allDraws(doc)[0];
+        const entry = (i, extra = {}) => ({ _id: oid(900 + i), title: `Index Draw ${i}`, aliases: [], items: [{ tier: 'legendary', name: `Gun${i} - Skin`, kind: i % 2 ? 'weapon' : undefined }], imageUrl: i % 3 ? LINK(`d${i}`) : '', priceType: i % 4 ? 'legendaryWeapon' : 'unknown', releaseSeason: 9, ...extra });
+        const entries = [...Array.from({ length: 30 }, (_, i) => entry(i)), entry(99, { title: live.title, aliases: ['Old Name'], imageUrl: LINK('live') })];
+        limits(IX.homeView(entries, doc), 'index home');
+        limits(IX.homeView([], doc), 'index home empty');
+        for (const [k, g] of Object.entries(IX.GAPS)) {
+            const list = entries.filter(g.test);
+            for (let p = 0; p <= Math.ceil(list.length / IX.PAGE); p++) limits(IX.listView(list, { title: g.label, origin: `g:${k}`, page: p, pagerParts: ['ixgaps', k] }), `index ${k} p${p}`);
+        }
+        const card = IX.cardView(entries[30], doc, 'g:all');
+        limits(card, 'index card');
+        assert.strictEqual(card[0].components[1].type, 12, 'the picture first');
+        assert.match(JSON.stringify(card), /On \/draws/);
+        assert.ok(!JSON.stringify(card).includes('Quick Add This Draw'), 'no Quick Add for a draw already on /draws');
+        assert.ok(JSON.stringify(IX.cardView(entries[3], doc, 'h')).includes('Quick Add This Draw'));
+        assert.ok(IX.editModal(entries[3], 'h').components.length <= 5);
+        // A card opened from Check Names goes back to those results (2026-11-11 11:40 EST click test).
+        const fromCheck = JSON.stringify(IX.cardView(entries[3], doc, 'c:tok123'));
+        assert.match(fromCheck, /ixcres\|tok123[^"]*","label":"Check Names"|"label":"Check Names"[^}]*ixcres\|tok123/, 'the way back from a checked card is Check Names');
+        assert.deepStrictEqual(IX.searchEntries(entries, 'old name').map(e => e.title), [live.title], 'another name finds it');
+        assert.ok(IX.searchEntries(entries, 'gun7').some(e => e.title === 'Index Draw 7'), 'an item finds it');
+        const op = require('../core/ops').resolveOp('drawindex.edit');
+        assert.ok(!op.validate({ type: 'drawindex.edit', target: { id: 'x' }, payload: { releaseSeason: 'ten' } }).ok, 'a season is a number');
+        const ok = op.validate({ type: 'drawindex.edit', target: { id: 'x' }, payload: { aliases: [' A ', 'A', ''] } });
+        assert.deepStrictEqual(ok.normalized.payload.aliases, ['A'], 'names trimmed and de-duplicated');
+        assert.deepStrictEqual(op.invert({ applied: { id: 'x', prior: { releaseSeason: 7 } } }), { type: 'drawindex.edit', target: { id: 'x' }, payload: { releaseSeason: 7 } });
+    });
+    await check('every draws pop-up keeps Label descriptions and placeholders inside Discord\'s 100 characters, and holds five fields or fewer (round 2: the Draw box hint was cut on the dev bot)', () => {
+        const m = require('../commands/manage');
+        const doc = seasonDoc(3, 5);
+        const d = V.allDraws(doc)[0];
+        const modals = [m.buildAddDrawModal('new'), m.buildAddDrawModal('returning'), m.buildEditDrawModal(d, String(d._id), d._sec), V.checkModal(), V.searchModal(), V.endModal('x', { title: d.title }), require('../handlers/manage/drawsPanel/drawIndex').editModal({ _id: 'e1', title: 'T', aliases: [], priceType: '' }, 'h')];
+        for (const raw of modals) {
+            const j = raw.toJSON ? raw.toJSON() : raw;
+            assert.ok(j.components.length <= 5, `${j.title}: ${j.components.length} fields`);
+            for (const c of j.components) {
+                if (c.description) assert.ok(c.description.length <= 100, `${j.title} / ${c.label}: description ${c.description.length}`);
+                const inner = c.component || {};
+                if (inner.placeholder) assert.ok(inner.placeholder.length <= 100, `${j.title} / ${c.label}: placeholder ${inner.placeholder.length}`);
+            }
+        }
     });
     await check('Select\'s quick picks: within a group they widen, across groups they narrow; titles add on top', () => {
         const doc = seasonDoc(3, 5);
@@ -361,6 +432,106 @@ function seasonDoc(nNew = 3, nRet = 30) {
             assert.strictEqual(uploads, 0, 'neither may upload');
             assert.ok(C.isOwnAsset('Ford Draw', own) && !C.isOwnAsset('Other Draw', own));
         } finally { cloud.uploader.upload = realUpload; catalog.loadCatalog = realLoad; }
+    });
+
+    // Two promise checks from the second think pass (2026-11-11 11:55 EST). Every verb the panel handles is reached by some button, menu or pop-up (round 2 took Purge off the landing and left its handler with no way in), and every example a draws pop-up shows parses through the reader its save uses (the Draw box hint promised a countdown the form's reader refused).
+    await check('every verb the draws panel handles is reached from somewhere', () => {
+        const fs = require('fs');
+        const read = (f) => fs.readFileSync(require('path').join(__dirname, '..', f), 'utf8');
+        const handled = read('handlers/manage/drawsPanel/index.js') + read('handlers/manage/drawsPanel/drawIndex.js');
+        const emitters = ['handlers/manage/drawsPanel/views.js', 'handlers/manage/drawsPanel/index.js', 'handlers/manage/drawsPanel/drawIndex.js', 'handlers/manage/quickAdd.js'].map(read).join('\n');
+        const verbs = new Set([...handled.matchAll(/verb === '(\w+)'/g)].map(m => m[1]));
+        const reached = new Set([...emitters.matchAll(/(?:btn\(\s*\[?\s*|ID\(\s*|\$\{PREFIX\}|'mng_dr\|)'?(\w+)/g)].map(m => m[1]));
+        const orphans = [...verbs].filter(v => !reached.has(v));
+        assert.deepStrictEqual(orphans, [], `handled but never reached: ${orphans.join(', ')}`);
+    });
+    // The search/select redesign (2026-11-11 15:15 EST, his go): one Search, one results screen, one Select menu, and a Selected view.
+    await check('one Search: lines widen, lists narrow, both blank is every draw', () => {
+        const doc = seasonDoc(3, 5);
+        const all = V.allDraws(doc).length;
+        assert.strictEqual(P.findKeys(doc, '', []).keys.length, all, 'both blank: every draw');
+        assert.strictEqual(P.findKeys(doc, 'fresh draw number 1\nfresh draw number 2', []).keys.length, 2, 'two lines widen');
+        assert.strictEqual(P.findKeys(doc, 'draw', ['new']).keys.length, 3, 'a list narrows the words (it used to ADD every New draw to the matches)');
+        assert.strictEqual(P.findKeys(doc, 'fresh', ['returning']).keys.length, 0, 'New words in the Returning list: nothing');
+        assert.deepStrictEqual(P.findKeys(doc, 'nothing like this', []).unmatched, ['nothing like this']);
+        const modal = V.drawSearchModal(doc);
+        const lists = modal.components[1].component.options;
+        assert.ok(lists.every(o => / · \d+$/.test(o.label)), 'each list shows its count');
+    });
+    await check('the Selected view: none is the results, one is its card, more is the set with the bulk actions', async () => {
+        const doc = seasonDoc(3, 5);
+        const keys = V.allDraws(doc).map(d => d._key);
+        const none = JSON.stringify(V.selectView(doc, 'tok', { ids: keys, selected: [] }));
+        assert.ok(none.includes('|pick|tok|') && none.includes('Select All'), 'no selection shows the results with the Select menu');
+        const one = V.selectView(doc, 'tok', { ids: keys, selected: [keys[0]] });
+        assert.ok(JSON.stringify(one).includes('|sres|tok|'), 'one selected is its card, whose way back is the results');
+        const many = JSON.stringify(V.selectView(doc, 'tok', { ids: keys, selected: keys.slice(0, 3) }));
+        for (const want of ['3 selected', 'Edit 3', 'End Date 3', 'Export 3', 'Delete 3', 'Select More', '|unpick|tok']) assert.ok(many.includes(want), `the set shows ${want}`);
+        limits(V.selectView(doc, 'tok', { ids: keys, selected: keys }), 'selected all');
+        const list = JSON.stringify(V.listView(doc, 'returning'));
+        assert.ok(list.includes('|lpick|returning|') && list.includes('|lall|returning'), 'a list has the Select menu and Select All');
+        assert.ok(!JSON.stringify(await V.pageView(doc)).includes('Select Draws'), 'the landing has no Select Draws button');
+    });
+    await check('the Ended list clears its own draws, the way Purge Ended did from the landing', () => {
+        const doc = seasonDoc();
+        const ended = V.listOf(doc, 'ended');
+        assert.ok(ended.length > 0, 'the fixture needs an ended draw');
+        const json = JSON.stringify(V.listView(doc, 'ended'));
+        assert.ok(json.includes(`Delete All Ended · ${ended.length}`) && json.includes('|purge|ended'), 'Delete All Ended on the Ended list');
+        assert.ok(!JSON.stringify(V.listView(doc, 'new')).includes('Delete All Ended'), 'only on the Ended list');
+    });
+    // The other direction, across the three panels the search/select redesign touched (2026-11-11 15:34 EST): a button or menu whose verb no handler takes is a dead control. Removing Select left gunsmith's and calendar's "list expired" Back pointing at the gone `select` verb. Page counters are disabled buttons, and dd/view are the season panel's own ids.
+    await check('every verb the draws, calendar and gunsmith panels emit has a handler', () => {
+        const fs = require('fs');
+        const read = (f) => fs.readFileSync(require('path').join(__dirname, '..', f), 'utf8').replace(/^\s*\/\/.*$/gm, '');
+        const panels = { draws: ['handlers/manage/drawsPanel/views.js', 'handlers/manage/drawsPanel/index.js', 'handlers/manage/drawsPanel/drawIndex.js'], calendar: ['handlers/manage/calendarPanel/views.js', 'handlers/manage/calendarPanel/index.js'], gunsmith: ['handlers/manage/gunsmith/views.js', 'handlers/manage/gunsmith/index.js'] };
+        const NOT_CLICKABLE = new Set(['pgn', 'spgn', 'spg', 'cardn', 'ixpgn', 'dd', 'view']);
+        for (const [name, files] of Object.entries(panels)) {
+            const src = files.map(read).join('\n');
+            const handled = new Set([...src.matchAll(/verb === '(\w+)'/g)].map(m => m[1]));
+            for (const m of src.matchAll(/\[((?:'\w+',\s*)+'\w+')\]\.includes\(verb\)/g)) for (const v of m[1].matchAll(/'(\w+)'/g)) handled.add(v[1]);
+            const emitted = new Set([...src.matchAll(/(?:btn\(\s*(?:mode,\s*)?\[?\s*|ID\(\s*(?:mode,\s*)?|arrow\(\s*(?:mode,\s*)?\[\s*|counter\(\s*(?:mode,\s*)?\[\s*|back: )'(\w+)'/g)].map(m => m[1]));
+            const dead = [...emitted].filter(v => !handled.has(v) && !NOT_CLICKABLE.has(v));
+            assert.deepStrictEqual(dead, [], `${name}: emitted with no handler: ${dead.join(', ')}`);
+        }
+    });
+    // Round 2's rule, held across the three panels (2026-11-11 16:46 EST): a refusal or a "nothing changed" goes in a private message, never drawn into the panel as a note. Three survived in calendar and gunsmith, and one in draws. Scope: every show() in the draws panel, and the results and Selected views of calendar and gunsmith (the round-3 flow). Their older "entry gone" redirects predate the rule and are left as they are.
+    await check('no draws view, and no results or Selected view, draws a refusal or a nothing-changed note into itself', () => {
+        const fs = require('fs');
+        const read = (f) => fs.readFileSync(require('path').join(__dirname, '..', f), 'utf8');
+        const note = '(?:(?!\\)\\))[^\\n])*?`(?:-# )?\\$\\{emojis\\.(?:warn|cross|info)\\}';
+        const scopes = [
+            ['handlers/manage/drawsPanel/index.js', new RegExp(`show\\(interaction, (?:await )?[\\w.]+\\(${note}`, 'g')],
+            ['handlers/manage/calendarPanel/index.js', new RegExp(`show\\(interaction, (?:await )?(?:V\\.selectView|V\\.searchView)\\(${note}`, 'g')],
+            ['handlers/manage/gunsmith/index.js', new RegExp(`(?:show\\(interaction|view\\()(?:, )?(?:await )?(?:selectPanel|V\\.resultsView|V\\.selectView)\\(${note}`, 'g')],
+        ];
+        const hits = [];
+        for (const [f, re] of scopes) for (const m of read(f).matchAll(re)) hits.push(`${f}: ${m[0].slice(0, 90)}`);
+        assert.deepStrictEqual(hits, []);
+        // The result-panel form of the same thing: a failed or empty save drawn as a panel. None in draws; none of the Selected flow's in calendar and gunsmith.
+        const failPanel = /show\(interaction, (?:await )?V\.resultView\((?:mode, )?\{[^\n]*(?:ok: false|Nothing to save|Nothing was deleted|expired)/g;
+        for (const f of ['handlers/manage/drawsPanel/index.js', 'handlers/manage/calendarPanel/index.js', 'handlers/manage/gunsmith/index.js']) for (const m of read(f).matchAll(failPanel)) hits.push(`${f}: ${m[0].slice(0, 90)}`);
+        assert.deepStrictEqual(hits, []);
+        assert.ok(new RegExp(failPanel.source).test("if (!result.ok) return show(interaction, V.resultView({ title: 'Nothing was deleted', body: [x], ok: false, back: ['slist', a, 0] }));"));
+        // Falsifier: the shape the round-3 build shipped must match.
+        assert.ok(scopes[1][1].test('return show(interaction, V.selectView(doc, a, sel, `${emojis.warn} **Too many**`, n(b)));'));
+        scopes[1][1].lastIndex = 0;
+        assert.ok(!scopes[1][1].test('sel ? show(interaction, V.searchView(await getDoc(), a, sel, n(b))) : say(interaction, `${emojis.cross} gone`)'));
+    });
+    await check('every example a draws pop-up shows reads through its save\'s own reader', () => {
+        const { readDrawBox } = require('../utils/drawForm');
+        const manageCommand = require('../commands/manage');
+        const { parseDrawDates } = require('../utils/drawDates');
+        const { parseItemLine } = require('../utils/adminParser');
+        const comps = (m) => (typeof m.toJSON === 'function' ? m.toJSON() : m).components.map(l => l.component || (l.components || [])[0]).filter(Boolean);
+        for (const type of ['new', 'returning']) {
+            const box = comps(manageCommand.buildAddDrawModal(type)).find(c => c.custom_id === 'draw');
+            const read = readDrawBox(box.placeholder, { allowSeason: type === 'new' });
+            assert.ok(!read.error && read.dates, `Add ${type}: its own placeholder does not read: ${read.error}`);
+            for (const ex of box.placeholder.split('\n').slice(1, 2).concat(['13d 23h'])) assert.ok(parseDrawDates(ex).ok, `"${ex}" from the hint does not read as dates`);
+            const items = comps(manageCommand.buildAddDrawModal(type)).find(c => c.custom_id === 'items');
+            for (const line of items.placeholder.split('\n').filter(l => !l.startsWith('-#'))) assert.ok(parseItemLine(line).name, `item example "${line}" does not read`);
+        }
     });
 
     console.log(failed ? `\n${failed} check(s) FAILED.` : '\nAll manage draws checks passed.');

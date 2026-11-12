@@ -379,7 +379,10 @@ const { draftReadiness } = require('./readiness');
 
 const promoteDue = (startsAt, now = new Date()) => { const until = new Date(startsAt) - now; return until > 0 && until <= 30 * 60 * 60 * 1000; };
 
-// The promote check (2026-11-05 15:23 EST, his pick 4): once, when the next season starts within two days, a card listing what is ready and what is missing in the Next Season Draft, so a missing end date or image is fixed before Promote to Live puts it in front of players.
+// The promote check (2026-11-05 15:23 EST, his pick 4): once, when the next season starts within two days, a card listing what is ready and what is missing in the Next Season Draft, so a missing end date or image is fixed before Promote to Live puts it in front of players. The review before Promote (utils/promoteReview.js) as lines for the day-before card. A failure drops only the review.
+function reviewLinesFor(d, now) {
+    try { const R = require('../promoteReview'); return R.reviewLines(R.promoteReview(d, { now })); } catch { return []; }
+}
 async function promoteCheck(rest, { env = process.env, appId, now = new Date() } = {}) {
     const cfg = config(env);
     if (!cfg.channel) return null;
@@ -395,7 +398,7 @@ async function promoteCheck(rest, { env = process.env, appId, now = new Date() }
         if (await NewsCard.exists({ sourceChannelId: 'promote-check', sourceMessageId: key })) return null;
         // Claimed before it posts (invariants pass, 2026-11-05 17:07 EST): the start-up check and the 00:05 UTC one could both pass the exists test and post twice; the unique index lets one claim, and a failed post gives the claim back.
         try { await NewsCard.create({ sourceChannelId: 'promote-check', sourceMessageId: key, sourceName: 'Next Season Draft', jumpUrl: '', postedAt: now, cardChannelId: cfg.channel, items: [], expireAt: new Date(now.getTime() + CARD_DAYS * DAY_MS) }); } catch { return null; }
-        try { await rest.post(Routes.channelMessages(cfg.channel), { body: { flags: 32768, components: asApp(appId, () => buildPromoteCheck(r)), allowed_mentions: { parse: [] } } }); }
+        try { await rest.post(Routes.channelMessages(cfg.channel), { body: { flags: 32768, components: asApp(appId, () => buildPromoteCheck(r, reviewLinesFor(d, now))), allowed_mentions: { parse: [] } } }); }
         catch (err) { await NewsCard.deleteOne({ sourceChannelId: 'promote-check', sourceMessageId: key }).catch(() => {}); throw err; }
         return r;
     } catch (err) { console.error('News triage: the promote check failed:', err?.message || err); return null; }

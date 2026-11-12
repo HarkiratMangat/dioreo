@@ -31,11 +31,13 @@ async function addDraw(interaction, opts = {}) {
     const customId = opts.customId || interaction.customId;
     const drawType = customId.replace('add_draw_', '');
 
-    // The 5th field is the Draw Type dropdown since 2026-10-18 11:09 EDT (Harkirat's pick, "B sounds fine"); the "Or Paste As One Line" field it replaced lives on as Add Multiple, which takes the same line format and the same `type:` tag.
-    const title = toTitleCase(interaction.fields.getTextInputValue('title'));
-    const dateStr = interaction.fields.getTextInputValue('date');
-    const rawUrl = interaction.fields.getTextInputValue('url');
-    const rawItems = interaction.fields.getTextInputValue('items');
+    // The 5th field is the Draw Type dropdown since 2026-10-18 11:09 EDT (Harkirat's pick, "B sounds fine"); the "Or Paste As One Line" field it replaced lives on as Add Multiple, which takes the same line format and the same `type:` tag. The Draw box (title, dates, a season for a new draw) and the screenshot, read by utils/drawForm.js (2026-11-11 11:02 EST).
+    const form = require('../../utils/drawForm').readDrawFields(interaction, { allowSeason: drawType === 'new' });
+    if (form.error) return await failWithRetry(interaction, form.error);
+    const title = toTitleCase(form.title);
+    const dateStr = form.dateStr;
+    const rawUrl = form.rawUrl;
+    const rawItems = form.rawItems;
     let priceType = '';
     try { priceType = require('../../utils/formChoice').readChoice(interaction, 'price_type')[0] || ''; } catch { priceType = ''; }
 
@@ -56,10 +58,14 @@ async function addDraw(interaction, opts = {}) {
 
     // URL is optional -- blank reuses a Cloudinary cache hit for this exact title if one exists. No URL AND no cache hit used to hard-reject the whole submission -- relaxed 2026-08-22 19:40 EDT (click-test fix): a draw's info is sometimes known before any image exists to link/cache. thumbnailUrl has no `required` on the schema (models/SeasonalData.js) -- this was purely an app-level choice. commands/draws.js's render renders a plain no-image row instead of a broken thumbnail when thumbnailUrl is null. The items go along so a draw that comes back under a new name finds its old image by what it contains (utils/cloudinaryCache.js).
     const parsedItems = rawItems.split('\n').filter(l => l.trim().length > 0).map(parseItemLine);
-    // A draw added to New that the draw index has never seen is indexed with this season as its release season (utils/drawCatalog.js insertFields).
-    const releaseSeason = drawType === 'new' ? require('../../utils/quickAdd').seasonNumber(seasonalDoc.currentSeasonTitle) : null;
-    const releaseYear = require('../../utils/quickAdd').seasonYear(seasonalDoc);
+    // A draw added to New that the draw index has never seen is indexed with this season as its release season (utils/drawCatalog.js insertFields). A season named in the Draw box wins; otherwise a new draw is this season's.
+    const releaseSeason = drawType === 'new' ? (form.season || require('../../utils/quickAdd').seasonNumber(seasonalDoc.currentSeasonTitle)) : null;
+    // The year is this season's, so it is left off a season typed in the box that is not this one ("Season 7" is not Season 7 of this year).
+    const typedOther = form.season && form.season !== require('../../utils/quickAdd').seasonNumber(seasonalDoc.currentSeasonTitle);
+    const releaseYear = typedOther ? null : require('../../utils/quickAdd').seasonYear(seasonalDoc);
     const thumbResult = await resolveThumbnail(title, rawUrl, { items: parsedItems, priceType, ...(releaseSeason ? { releaseSeason, ...(releaseYear ? { releaseYear } : {}) } : {}) });
+    // A screenshot that did not upload comes back as its own expiring Discord link: refused, never stored (utils/drawForm.js).
+    if (require('../../utils/drawForm').isDiscordAttachment(thumbResult.url)) return await failWithRetry(interaction, require('../../utils/drawForm').SHOT_NOT_SAVED);
 
     // No type picked, or Unsure: the draw index's type when it knows this draw for certain (its title, another name, or its items). Said in a note, so a wrong one is seen and edited.
     const { isKnownType } = require('../../utils/drawCatalog');
@@ -83,8 +89,10 @@ async function addDraw(interaction, opts = {}) {
         return await failWithRetry(interaction, extractCommitError(result));
     }
 
-    // The saved draw as a panel, beside its picture (2026-10-26 12:52 EDT, the loadout treatment for every /manage page); a missing picture shows on the panel itself, so only a reused or failed upload is a note.
-    const notes = [...(thumbResult.url ? [thumbnailNote(thumbResult)] : []), typeNote].filter(Boolean);
+    // The saved draw as a panel, beside its picture (2026-10-26 12:52 EDT, the loadout treatment for every /manage page); a missing picture shows on the panel itself, so only a reused or failed upload is a note. The draw index records a draw's release season, and it records a draw only once it has a picture, so a season typed with no picture would vanish without a word (2026-11-11 11:42 EST click test). Said, with the way to keep it. A countdown gives the end only, so the start is today (utils/drawDates.js): said, because a draw that began days ago would otherwise show today as its start (2026-11-11 11:55 EST, the second think pass).
+    const startNote = dates.countdown ? `${BOT_EMOJI.info} Start set to today from the countdown. Edit it if the draw began earlier.` : null;
+    const seasonNote = form.season && !thumbResult.url ? `${BOT_EMOJI.info} Season ${form.season} is kept once the draw has a picture: Edit, add the picture, and type the Season line again.` : null;
+    const notes = [...(thumbResult.url ? [thumbnailNote(thumbResult)] : []), typeNote, startNote, seasonNote].filter(Boolean);
     const saved = { ok: true, draw: { ...newDrawObj, _id: result.results[0].applied.elementId }, category: drawType, changeIds: result.changeIds, notes, warnings, endDate: endOp ? dates.end : (row?.endDate || null), titles: [title] };
     if (opts.quiet) return saved;
     const sent = await interaction.followUp({ flags: 32768 | 64, components: drawPanel({ draw: saved.draw, category: drawType, changeIds: saved.changeIds, notes, warnings, endDate: saved.endDate }) });
@@ -105,21 +113,25 @@ async function editDraw(interaction, opts = {}) {
     const drawIndex = arrayTarget.findIndex(d => d._id.toString() === targetId);
 
     if (drawIndex > -1) {
-        const drawDateStr = interaction.fields.getTextInputValue('date');
+        const form = require('../../utils/drawForm').readDrawFields(interaction, { allowSeason: drawType === 'new' });
+        if (form.error) return opts.quiet ? (await failWithRetry(interaction, form.error), { ok: false }) : await failWithRetry(interaction, form.error);
+        const drawDateStr = form.dateStr;
         // "Start - End" like the season titles box (utils/drawDates.js): the start is the release date, the end lives on the draw's /calendar row and is written in the same commit.
         const { parseDrawDates, planEndRow } = require('../../utils/drawDates');
-        const dates = parseDrawDates(drawDateStr);
+        // A bare countdown keeps the draw's own start; only the end moves.
+        const dates = parseDrawDates(drawDateStr, { start: arrayTarget[drawIndex].date || null });
         if (!dates.ok) return await failWithRetry(interaction, dates.error);
         const parsedDrawDate = dates.start;
-        const newTitle = toTitleCase(interaction.fields.getTextInputValue('title'));
+        const newTitle = toTitleCase(form.title);
 
         // URL field is optional -- blank reuses whatever's cached in Cloudinary for this draw's (possibly just-renamed) title. No URL AND no cache hit used to be a hard rejection; relaxed 2026-08-22 19:40 EDT (click-test fix) to save without an image instead (matches addDraw's same-day fix) rather than blocking an otherwise-valid edit.
-        const rawUrl = interaction.fields.getTextInputValue('url');
-        const rawItems = interaction.fields.getTextInputValue('items');
+        const rawUrl = form.rawUrl;
+        const rawItems = form.rawItems;
         const parsedItems = rawItems.split('\n').filter(l => l.trim().length > 0).map(parseItemLine);
         // A New draw's first picture can arrive here rather than in Add Draw: the index gets this season then, if it has never seen the draw.
-        const releaseSeason = drawType === 'new' ? require('../../utils/quickAdd').seasonNumber(seasonalDoc.currentSeasonTitle) : null;
-        const releaseYear = require('../../utils/quickAdd').seasonYear(seasonalDoc);
+        const releaseSeason = drawType === 'new' ? (form.season || require('../../utils/quickAdd').seasonNumber(seasonalDoc.currentSeasonTitle)) : null;
+        const typedOther = form.season && form.season !== require('../../utils/quickAdd').seasonNumber(seasonalDoc.currentSeasonTitle);
+        const releaseYear = typedOther ? null : require('../../utils/quickAdd').seasonYear(seasonalDoc);
         // The stored picture is kept as it is when the box still holds it and the title is the same (2026-11-10 11:19 EST): the box is pre-filled with the stored link, so every Edit used to send it through resolveThumbnail again. A blank box still asks the draw index (a picture may have arrived since), and a new link or a new title resolves as before.
         const storedUrl = arrayTarget[drawIndex].thumbnailUrl || '';
         // Items edited still go through resolveThumbnail (which no longer uploads the draw's own picture, utils/cloudinaryCache.js isOwnAsset), so the picture's items link follows the new items.
@@ -128,6 +140,7 @@ async function editDraw(interaction, opts = {}) {
         const thumbResult = keepPicture
             ? { url: storedUrl, cached: true, error: null, reused: false, kept: true }
             : await resolveThumbnail(newTitle, rawUrl, { items: parsedItems, priceType: arrayTarget[drawIndex].priceType || '', ...(releaseSeason ? { releaseSeason, ...(releaseYear ? { releaseYear } : {}) } : {}) });
+        if (require('../../utils/drawForm').isDiscordAttachment(thumbResult.url)) return opts.quiet ? (await failWithRetry(interaction, require('../../utils/drawForm').SHOT_NOT_SAVED), { ok: false }) : await failWithRetry(interaction, require('../../utils/drawForm').SHOT_NOT_SAVED);
 
         // Draw Type (2026-10-18 11:06 EDT): the form's dropdown; nothing picked clears it. Sent only when it CHANGED, so an edit that never touches it leaves the stored type, and the op's conflict check, alone. A modal built before this field existed (an old open form) has no dropdown and is read as unchanged.
         let pickedType = null;

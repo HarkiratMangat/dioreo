@@ -14,9 +14,9 @@ check('the box reads one date, and a range the way the season box does', () => {
     const one = parseDrawDates('September 10, 2026');
     assert.ok(one.ok && iso(one.start) === '2026-09-10' && one.end === null, JSON.stringify(one));
     const range = parseDrawDates('September 10, 2026 - November 12, 2026');
-    assert.ok(range.ok && iso(range.start) === '2026-09-10' && iso(range.end) === '2026-11-12', JSON.stringify(range));
+    assert.ok(range.ok && iso(range.start) === '2026-09-10' && iso(range.end) === '2026-11-13', JSON.stringify(range)); // a listed end day is inclusive (2026-11-11 21:53 EST)
     const shortRange = parseDrawDates('Sep 10 - Nov 12');
-    assert.ok(shortRange.ok && iso(shortRange.end).endsWith('-11-12'), JSON.stringify(shortRange));
+    assert.ok(shortRange.ok && iso(shortRange.end).endsWith('-11-13'), JSON.stringify(shortRange));
     const isoRange = parseDrawDates('2026-09-10 - 2026-11-12');
     assert.ok(isoRange.ok && iso(isoRange.end) === '2026-11-12', JSON.stringify(isoRange));
     assert.ok(parseDrawDates('2026-09-10').ok, 'a bare ISO date (the old pre-fill) still reads');
@@ -34,27 +34,27 @@ check('an end of TBD is no end, and an end that cannot be read is REPORTED, neve
 
 check('a range typed back to front is read in date order, as in the season box, and a year-less one rolls into next year', () => {
     const r = parseDrawDates('November 12, 2026 - September 10, 2026');
-    assert.ok(r.ok && iso(r.start) === '2026-09-10' && iso(r.end) === '2026-11-12', JSON.stringify(r));
+    assert.ok(r.ok && iso(r.start) === '2026-09-10' && iso(r.end) === '2026-11-13', JSON.stringify(r));
     const wrap = parseDrawDates('Dec 20 - Jan 5');
-    assert.ok(wrap.ok && iso(wrap.end).endsWith('-01-05') && wrap.end > wrap.start, JSON.stringify(wrap));
+    assert.ok(wrap.ok && iso(wrap.end).endsWith('-01-06') && wrap.end > wrap.start, JSON.stringify(wrap));
 });
 
 check('the box writes back what it reads, and a draw with no end shows the start alone', () => {
-    assert.strictEqual(formatDrawDates(day('2026-09-10'), day('2026-11-12')), 'September 10, 2026 - November 12, 2026');
+    assert.strictEqual(formatDrawDates(day('2026-09-10'), day('2026-11-13')), 'September 10, 2026 - November 12, 2026', 'a stored Nov 13 00:00 end is the listed day Nov 12');
     assert.strictEqual(formatDrawDates(day('2026-09-10'), null), 'September 10, 2026');
     assert.strictEqual(formatDrawDates(undefined, day('2026-11-12')), '', 'an end with no start is not shown as a start');
     assert.strictEqual(formatDrawDates('garbage', null), '');
-    const back = parseDrawDates(formatDrawDates(day('2026-09-10'), day('2026-11-12')));
-    assert.ok(back.ok && iso(back.start) === '2026-09-10' && iso(back.end) === '2026-11-12', 'round trip');
+    const back = parseDrawDates(formatDrawDates(day('2026-09-10'), day('2026-11-13')));
+    assert.ok(back.ok && iso(back.start) === '2026-09-10' && iso(back.end) === '2026-11-13', 'round trip');
 });
 
 check('the copyable retry line has no comma and reads back, with and without an end', () => {
-    const both = formatDrawDatesForBulk(day('2026-09-10'), day('2026-11-12'));
+    const both = formatDrawDatesForBulk(day('2026-09-10'), day('2026-11-13'));
     assert.strictEqual(both, 'September 10 2026 - November 12 2026');
     assert.strictEqual(formatDrawDatesForBulk(day('2026-09-10'), null), 'September 10 2026');
     assert.ok(!both.includes(','));
     const back = parseDrawDates(both);
-    assert.ok(back.ok && iso(back.start) === '2026-09-10' && iso(back.end) === '2026-11-12', JSON.stringify(back));
+    assert.ok(back.ok && iso(back.start) === '2026-09-10' && iso(back.end) === '2026-11-13', JSON.stringify(back));
     assert.ok(parseDrawDates('September 10 2026').ok);
 });
 
@@ -111,7 +111,8 @@ check('Add Multiple reads a Start - End date in every shape the season box takes
     ]) {
         const d = first(line);
         assert.ok(d, `skipped: ${line}`);
-        assert.deepStrictEqual([iso(d.date), iso(d.endDate)], ['2026-09-10', '2026-11-12'], line);
+        // A typed end day is inclusive (2026-11-11 21:55 EST); an ISO day is read as it is (the portal's own form).
+        assert.deepStrictEqual([iso(d.date), iso(d.endDate)], ['2026-09-10', /2026-11-12, https/.test(line) && /^X Draw, type/.test(line) ? '2026-11-12' : '2026-11-13'], line);
         assert.ok(d.items.length >= 1 && d.items.every(i => i.name), `items kept: ${line}`);
     }
     const one = first('X Draw, l A - B, July 15, 2026');
@@ -130,10 +131,10 @@ check('a range never swallows the title or an item', () => {
 
 check('Export writes a draw\'s end beside its date, and the line reads back to the same dates', () => {
     const draw = { title: 'Row Draw', date: day('2026-09-10'), items: [{ tier: 'legendary', name: 'A - B' }], thumbnailUrl: 'https://x.test/y.jpg', priceType: '' };
-    const withEnd = formatDrawsAsBulkText([draw], () => ({ endDate: day('2026-11-12') }));
+    const withEnd = formatDrawsAsBulkText([draw], () => ({ endDate: day('2026-11-13') }));
     assert.ok(withEnd.includes('September 10, 2026 - November 12, 2026'), withEnd);
     const back = first(withEnd);
-    assert.deepStrictEqual([iso(back.date), iso(back.endDate)], ['2026-09-10', '2026-11-12']);
+    assert.deepStrictEqual([iso(back.date), iso(back.endDate)], ['2026-09-10', '2026-11-13']);
     const without = formatDrawsAsBulkText([draw], () => null);
     assert.ok(!without.includes(' - November'), 'no row, no end');
     assert.strictEqual(formatDrawsAsBulkText([draw]), without, 'callers that pass no lookup are unchanged');
@@ -150,17 +151,30 @@ check('an Add with one date leaves an existing /calendar row alone (it used to c
 check('a dash typed with no spaces is still a range, never a wrong single date', () => {
     for (const [text, start, end] of [['July 15-August 20', '-07-15', '-08-20'], ['Aug 6-Nov 17', '-08-06', '-11-17'], ['7/15-8/20', '-07-15', '-08-20'], ['September 10, 2026-November 12, 2026', '2026-09-10', '2026-11-12'], ['July 15–August 20', '-07-15', '-08-20']]) {
         const r = parseDrawDates(text);
-        assert.ok(r.ok && iso(r.start).endsWith(start) && r.end && iso(r.end).endsWith(end), `${text}: ${JSON.stringify(r)}`);
+        // The listed end day is the day before the stored end (inclusive ends, 2026-11-11 21:56 EST).
+        assert.ok(r.ok && iso(r.start).endsWith(start) && r.end && iso(new Date(r.end - 864e5)).endsWith(end), `${text}: ${JSON.stringify(r)}`);
     }
     assert.strictEqual(iso(parseDrawDates('2026-09-10').start), '2026-09-10', 'an ISO date\'s own dashes are not a range');
     const d = first('X Draw, l A - B, July 15-August 20');
-    assert.ok(d && iso(d.date).endsWith('-07-15') && iso(d.endDate).endsWith('-08-20'), 'Add Multiple reads it too');
+    assert.ok(d && iso(d.date).endsWith('-07-15') && iso(new Date(d.endDate - 864e5)).endsWith('-08-20'), 'Add Multiple reads it too');
 });
 
 check('text the date reader only half understood is refused, not saved as its first date', () => {
     const r = parseDrawDates('July 15 maybe 20');
     assert.ok(!r.ok, JSON.stringify(r));
     assert.ok(parseDrawDates('September 10, 2026').ok && parseDrawDates('today').ok, 'plain dates still read');
+});
+
+check('the game\'s countdown on its own is the end, from today or from the start Edit keeps (2026-11-11 11:40 EST click test)', () => {
+    const now = new Date('2026-11-11T16:40:00Z');
+    const r = parseDrawDates('13d 23h', { now });
+    assert.ok(r.ok, JSON.stringify(r));
+    assert.strictEqual(r.start.toISOString(), '2026-11-11T00:00:00.000Z', 'today at 00:00 UTC, Quick Add\'s rule');
+    assert.strictEqual(r.end.toISOString(), '2026-11-26T00:00:00.000Z', 'the midnight inside the countdown window');
+    const kept = parseDrawDates('13d 23h', { now, start: new Date('2026-11-01T00:00:00Z') });
+    assert.strictEqual(kept.start.toISOString(), '2026-11-01T00:00:00.000Z', 'Edit keeps the draw\'s start');
+    assert.ok(!parseDrawDates('2h', { now, start: new Date('2026-12-01T00:00:00Z') }).ok, 'a countdown ending before the start is refused');
+    assert.ok(require('../utils/drawForm').readDrawBox('Zz Draw\n13d 23h\nSeason 7', { allowSeason: true }).dates === '13d 23h', 'the Draw box takes it as the dates line');
 });
 
 const { calendarRowFor } = require('../utils/drawEndReminder');

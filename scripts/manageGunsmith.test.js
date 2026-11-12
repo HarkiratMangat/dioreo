@@ -113,8 +113,7 @@ function walk(components, fn) { for (const c of components || []) { fn(c); walk(
         const info = new Map(keys.map((k, i) => [k, { icon: '<:wcAR:1234567890123456789>', emojiKey: null, title: `**SOME LONG WEAPON NAME ${i}** · ${i % 9 === 0 ? '2b' : '2'}`, small: 'Ranked · <a:meta:1234567890123456789> Meta <:top3:1234567890123456789> Top 3 · 3 options', plain: `SOME LONG WEAPON NAME ${i} · 2 · Ranked`, plainSmall: 'Ranked · Meta Top 3 · 3 options' }]));
         const sel = { ids: keys, selected: keys.slice(0, 15), query: ['All MP builds', 'fss 1b'], unmatched: ['nothing like this'] };
         const pages = Math.ceil(keys.length / V.SELECT_PAGE);
-        for (let p = 0; p < pages; p++) {
-            const view = V.selectView('MP', 'tok12345', sel, info, null, p);
+        for (let p = 0; p < pages; p++) for (const view of [V.resultsView('MP', 'tok12345', sel, info, null, p), V.selectView('MP', 'tok12345', sel, info, null, p)]) {
             let count = 0, chars = 0; const ids = [];
             walk(view, c => { count += 1; if (c.type === 10) chars += c.content.length; if (c.custom_id) ids.push(c.custom_id); if (c.type === 3) assert.ok(c.options.length <= 25 && c.max_values <= c.options.length); });
             assert.ok(count <= 40, `page ${p + 1}: ${count} components`);
@@ -122,12 +121,18 @@ function walk(components, fn) { for (const c of components || []) { fn(c); walk(
             assert.ok(ids.every(id => id.length <= 100), `page ${p + 1}: an id over 100`);
             assert.strictEqual(new Set(ids).size, ids.length, `page ${p + 1}: duplicate ids`);
         }
-        const first = JSON.stringify(V.selectView('MP', 'tok12345', sel, info, null, 0));
-        assert.match(first, /\*\*134\*\* found · \*\*15\*\* selected · page 1 of 14/);
-        assert.match(first, /Edit 15/);
-        assert.match(first, /Select All 134/);
+        // The search/select redesign (2026-11-11 15:15 EST): the results tick what is selected and offer View Selected; the Selected view acts on the set.
+        const results = JSON.stringify(V.resultsView('MP', 'tok12345', sel, info, null, 0));
+        assert.match(results, /134 builds/);
+        assert.match(results, /page 1 of 14/);
+        assert.match(results, /15 selected/);
+        assert.match(results, /Select All 134/);
+        assert.match(results, /View Selected · 15/);
+        assert.match(results, /\|spick\|tok12345\|0/);
+        const set = JSON.stringify(V.selectView('MP', 'tok12345', sel, info, null, 0));
+        for (const want of ['15 selected', 'Edit 15', 'Expand View', 'Export 15', 'Delete 15', 'Select More', '|sunpick|tok12345']) assert.ok(set.includes(want), want);
         const none = JSON.stringify(V.selectView('MP', 'tok12345', { ...sel, selected: [] }, info, null, 0));
-        assert.match(none, /"label":"Edit","custom_id":"mng_gs\|M\|tedit\|tok12345\|0","disabled":true/);
+        assert.ok(none.includes('|spick|') && !none.includes('|tedit|'), 'nothing selected shows the results, with no bulk actions');
     });
 
     await check('an empty Select list offers Search Again and Home only', () => {
@@ -136,6 +141,33 @@ function walk(components, fn) { for (const c of components || []) { fn(c); walk(
         assert.ok(!/tedit|tdel|texp/.test(view));
     });
 
+    // 2026-11-11 16:52 EST (think-pass): a card opened from one selected build goes back to the results, and keeps that way back through Edit, Move and Delete; opened any other way it goes back to its weapon.
+    await check('a build selected whole drops its own options from the set it acts on', () => {
+        const { collapseKeys } = require('../handlers/manage/gunsmith/search');
+        const id = 'b'.repeat(24), other = 'c'.repeat(24);
+        assert.deepStrictEqual(collapseKeys([id, `${id}~1`, `${other}~1`, `${other}~2`]), [id, `${other}~1`, `${other}~2`]);
+        assert.deepStrictEqual(collapseKeys([`${id}~1`]), [`${id}~1`]);
+    });
+    await check('a card opened from a selection goes back to the results, through Edit, Move and Delete', async () => {
+        const modelPath = require.resolve('../models/Loadout');
+        const saved = require.cache[modelPath];
+        const doc = { _id: 'a'.repeat(24), mode: 'MP', weaponKey: 'fss', weaponName: 'FSS Hurricane', category: 'smg', buildName: 'Build 1', attachments: ['Muzzle: X'], shareCode: '1A2B', variants: [] };
+        const q = (v) => ({ lean: async () => v, select() { return q(v); } });
+        require.cache[modelPath] = { id: modelPath, filename: modelPath, loaded: true, exports: { findById: () => q(doc), find: () => q([doc]) } };
+        try {
+            const V = require('../handlers/manage/gunsmith/views');
+            const ids = async (...args) => JSON.stringify(await V.cardView(...args)).match(/"custom_id":"[^"]+"/g).map(x => x.slice(13, -1));
+            const fromSel = await ids('MP', doc._id, 0, null, null, 'tok1');
+            assert.ok(fromSel.includes('mng_gs|M|list|tok1|0'), fromSel.join(' '));
+            for (const verb of ['edit', 'move', 'del']) assert.ok(fromSel.includes(`mng_gs|M|${verb}|${doc._id}|0|tok1`), verb);
+            assert.ok(!fromSel.some(x => x.includes('|wback|')));
+            const plain = await ids('MP', doc._id, 0);
+            assert.ok(plain.includes('mng_gs|M|wback|fss') && !plain.some(x => x.includes('tok1')));
+            assert.strictEqual(V.moveModal('MP', doc, 0, 'tok1').custom_id, `mng_gs|M|movem|${doc._id}|0|tok1`);
+        } finally {
+            if (saved) require.cache[modelPath] = saved; else delete require.cache[modelPath];
+        }
+    });
     await check('Export writes the fields Include keeps, and the merged-build choices', () => {
         const build = { weaponName: 'BAL-27', category: 'AR', mode: 'MP', buildName: 'Build 2', shareCode: '1A2B3C4D5E', label: 'Ranked', attachments: ['A1', 'A2'], variants: [{ attachments: ['B1'], shareCode: '1B2C3D4E5F', label: 'Pubs' }] };
         const all = B.exportText('MP', [build], { include: ['code', 'label', 'mode'], merged: 'keep' });

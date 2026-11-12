@@ -5,11 +5,13 @@
     "components": [
       {
         "type": 18,
-        "label": "Draw Title",
+        "label": "Draw",
+        "description": "Title, then dates (Start - End or 13d 23h), then \"Season 10\" if it first came out in another one.",
         "component": {
           "type": 4,
-          "style": 1,
-          "custom_id": "title"
+          "style": 2,
+          "placeholder": "Hollow Flight Mythic Drop\nNov 8 - Nov 21\nSeason 10",
+          "custom_id": "draw"
         }
       },
       {
@@ -21,17 +23,6 @@
           "style": 2,
           "placeholder": "l CX-9 - Lethal Hollow\ne Kestrel - Blessed Hollow\n-# Optional note",
           "custom_id": "items"
-        }
-      },
-      {
-        "type": 18,
-        "label": "Dates",
-        "description": "Start - End, e.g. Nov 8 - Nov 21. The end is optional; the game's countdown works (13d 23h).",
-        "component": {
-          "type": 4,
-          "style": 1,
-          "placeholder": "e.g. July 15 - August 20",
-          "custom_id": "date"
         }
       },
       {
@@ -239,6 +230,18 @@
               "default": false
             }
           ]
+        }
+      },
+      {
+        "type": 18,
+        "label": "Screenshot",
+        "description": "Optional. Drop the draw's picture here instead of a link.",
+        "component": {
+          "type": 19,
+          "custom_id": "shot",
+          "min_values": 0,
+          "max_values": 1,
+          "required": false
         }
       }
     ]
@@ -249,11 +252,13 @@
     "components": [
       {
         "type": 18,
-        "label": "Draw Title",
+        "label": "Draw",
+        "description": "Title on line 1, dates on line 2: Start - End, one date, or a countdown (13d 23h).",
         "component": {
           "type": 4,
-          "style": 1,
-          "custom_id": "title"
+          "style": 2,
+          "placeholder": "Hollow Flight Mythic Drop\nNov 8 - Nov 21",
+          "custom_id": "draw"
         }
       },
       {
@@ -265,17 +270,6 @@
           "style": 2,
           "placeholder": "l CX-9 - Lethal Hollow\ne Kestrel - Blessed Hollow\n-# Optional note",
           "custom_id": "items"
-        }
-      },
-      {
-        "type": 18,
-        "label": "Dates",
-        "description": "Start - End, e.g. Nov 8 - Nov 21. The end is optional; the game's countdown works (13d 23h).",
-        "component": {
-          "type": 4,
-          "style": 1,
-          "placeholder": "e.g. July 15 - August 20",
-          "custom_id": "date"
         }
       },
       {
@@ -483,6 +477,18 @@
               "default": false
             }
           ]
+        }
+      },
+      {
+        "type": 18,
+        "label": "Screenshot",
+        "description": "Optional. Drop the draw's picture here instead of a link.",
+        "component": {
+          "type": 19,
+          "custom_id": "shot",
+          "min_values": 0,
+          "max_values": 1,
+          "required": false
         }
       }
     ]

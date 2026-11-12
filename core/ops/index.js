@@ -53,3 +53,4 @@ require('./patchnotes');
 require('./season');
 require('./announcements');
 require('./catalogue');
+require('./drawIndex');

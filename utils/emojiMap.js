@@ -48,6 +48,8 @@ const emojis = {
     mngBulkAdd: '<a:DB_BulkAdd:1525328428201414761>',
     // Every Paste button (2026-11-09, Harkirat: "Go ahead with the paste 1-2 and the news 1-2"): his PasteImport upload on prod. Paste Draws, Paste Entries, Paste Builds and the draft's two pastes.
     pasteImport: '<a:PasteImport:1569464822532280612>',
+    // Check Names in the Draw Index (his icon, 2026-11-11 17:16 EST). Uploaded through /manage emojis' Upload Original; this is the Dioreo Admin (Dev) id, re-pointed by name on every app at start-up. Put prod's id here once its hourly sync has added it.
+    checkIndex: '<a:CheckIndex:1570201045232259244>',
     // News triage's cards and the draft's News button (same message): his News upload on prod.
     news: '<a:News:1569464548421800048>',
     mngBulkReplace: '<a:DB_BulkReplace:1525262944815022170>',

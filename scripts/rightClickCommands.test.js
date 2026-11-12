@@ -37,8 +37,7 @@ check('Add to Draws fills the title, the post date and the first image; the blan
     const prefill = draws.drawPrefill(extractSource(post('**Void Implosion Draw**\nOut now')));
     assert.deepStrictEqual(prefill, { title: 'Void Implosion Draw', date: 'October 19, 2026', url: 'https://cdn.discordapp.com/attachments/1/2/a.png?ex=1' });
     const filled = fieldValues(manage.buildAddDrawModal('new', prefill));
-    assert.strictEqual(filled.title, 'Void Implosion Draw');
-    assert.strictEqual(filled.date, 'October 19, 2026');
+    assert.strictEqual(filled.draw, 'Void Implosion Draw\nOctober 19, 2026', 'the title and post date fill the Draw box (round 2)');
     assert.ok(filled.url.startsWith('https://cdn.discordapp.com/'));
     assert.strictEqual(filled.items, '', 'items stay for him to type');
     const blank = manage.buildAddDrawModal('new').toJSON();

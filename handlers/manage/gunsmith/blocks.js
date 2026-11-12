@@ -14,6 +14,7 @@ const capList = (lines, max = 20) => (lines.length > max ? [...lines.slice(0, ma
 
 // Entry keys as paste blocks, in key order. One database read.
 async function keyBlocks(keys) {
+    keys = require('./search').collapseKeys(keys); // a whole build already writes its options' blocks
     const { buildNumberOf } = require('../../../utils/loadoutForm');
     const { variantView } = require('../../../utils/loadoutRender');
     const fmt = require('../../../utils/adminParser').formatLoadoutsAsBulkText;
@@ -105,7 +106,8 @@ async function previewBlocks(mode, raw) {
     if (changed.length) parts.push(`${emojis.mngBulkReplace} **Changed · ${changed.length}**`, ...capList(changed.map(x => `- ${x}`), 25), '');
     if (same.length) parts.push(`-# Unchanged · ${same.length}: ${same.slice(0, 30).join(', ')}${same.length > 30 ? ` …and ${same.length - 30} more` : ''}`, '');
     if (problems.length) parts.push(`${emojis.warn} **Problems · ${problems.length}**`, ...capList(problems.map(x => `- ${x}`), 10), '');
-    parts.push('-# Nothing is saved until you press Save.');
+    // A preview where nothing changed says so, and has no Save to press (2026-11-11 17:03 EST: it read "Nothing is saved until you press Save" with no Save button, under a green check).
+    parts.push((added.length + changed.length) ? '-# Nothing is saved until you press Save.' : '-# Nothing changed, so there is nothing to save.');
     return { parts, count: added.length + changed.length, problems: problems.length, total, keep: keep.join('\n\n') };
 }
 

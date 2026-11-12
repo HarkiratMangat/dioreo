@@ -133,7 +133,9 @@ check('Edit Draw: five Labels, and the Draw Type dropdown preselects the stored 
     const m = require('../commands/manage').buildEditDrawModal({ title: 'Sky Armory', items: [{ tier: 'legendary', name: 'AK' }], date: new Date('2026-07-15'), thumbnailUrl: '', priceType: 'armoryLegendaryWeapon' }, '65abc', 'new').toJSON();
     assert.strictEqual(m.components.length, 5, 'Discord allows five');
     assert.ok(m.components.every(c => c.type === 18), 'every field is a Label');
-    const sel = m.components[4].component;
+    // Since round 2 (2026-11-11 11:02 EST) the fields are Draw, Items, Picture Link, Draw Type, Screenshot.
+    assert.deepStrictEqual(m.components.map(c => c.component.custom_id), ['draw', 'items', 'url', 'price_type', 'shot']);
+    const sel = m.components[3].component;
     assert.strictEqual(sel.custom_id, 'price_type');
     assert.strictEqual(sel.options.length, 17, 'Unsure / Unknown, the 14 priced types, and the two free ones (Secret Cache, Event)');
     assert.strictEqual(sel.options[0].value, 'unknown', 'Unsure / Unknown sits first');
@@ -141,7 +143,6 @@ check('Edit Draw: five Labels, and the Draw Type dropdown preselects the stored 
     assert.strictEqual(sel.min_values, 1);
     assert.deepStrictEqual(sel.options.filter(o => o.default).map(o => o.value), ['armoryLegendaryWeapon']);
     assert.ok(sel.options.every(o => o.label.length <= 100 && (o.description || '').length <= 100));
-    assert.deepStrictEqual(m.components.slice(0, 4).map(c => c.component.custom_id), ['title', 'items', 'date', 'url'], 'the handler reads these ids');
 });
 
 check('draw.edit validates successfully when payload.date already arrives as a real Date', () => {

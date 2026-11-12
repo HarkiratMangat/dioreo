@@ -35,6 +35,7 @@ const NO_SURFACE = {
     'season.setAutoPromote': { why: 'armed from /manage season\'s Promote pop-up only; a portal Auto-promote would be its own design' },
     'season.newsDraft': { why: 'written only by news triage (utils/newsTriage/pipeline.js), never staged by the portal; its own inverse', inverseOnly: true },
     'catalogue.forget': { why: 'inverse-only — catalogue.learn inverts to it', inverseOnly: true },
+    'drawindex.edit': { why: 'the draw index is edited from /manage draws\' Draw Index panel (2026-11-11); the portal has no draw index surface yet (a pins2 proposal)' },
     // ── Bot-side for now: the CODM catalogue learns a name only alongside a loadout save that met it (/manage Save Anyway, /autobuild Confirm), in the same changeset. The portal sends it once pins2 ports the catalogue warning to the Armory (local/project/proposals in the bot project).
     'patchnote.setSeasonDates': { why: 'a past season\'s own dates, set by scripts/setSeasonDates.js (2026-10-28) and, since 2026-11-09, /manage patch-notes\' Season Dates pop-up; no portal editor yet (the portal is paused)' },
     'loadout.credit': { why: 'a build\'s credit is set from Discord (/manage\'s Credit button, /autobuild); the portal Armory has no credit field yet (a pins2 proposal)' },

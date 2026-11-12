@@ -23,8 +23,8 @@ const walk = (cs, out = []) => { for (const c of cs || []) { out.push(c); walk(c
 t('a title finds its draw, complete, and says it is on /draws', () => {
     const r = C.checkLine(INDEX, 'Lethal Hollow Draw', ctx);
     assert.strictEqual(r.status, 'found'); assert.strictEqual(r.title, 'Lethal Hollow Draw'); assert.strictEqual(r.matchedBy, 'title');
-    assert.deepStrictEqual(r.needs, []); assert.strictEqual(r.onDraws, 'New'); assert.strictEqual(r.season, 'Season 7 2025');
-    assert.match(C.resultBlock(r, require('../utils/emojiMap')), /^\S+ \*\*Lethal Hollow Draw\*\*\n-# Complete · by its title · 2 items · Mythic Weapon Draw · Season 7 2025 · on \/draws \(New\)$/);
+    assert.deepStrictEqual(r.needs, []); assert.strictEqual(r.onDraws, 'New'); assert.strictEqual(r.season, 'Season 7 (2025)');
+    assert.match(C.resultBlock(r, require('../utils/emojiMap')), /^\S+ \*\*Lethal Hollow Draw\*\*\n-# Complete · 2 items · Mythic Weapon Draw · Season 7 \(2025\) · on \/draws \(New\)$/);
 });
 t('a draw staged in the Next Season Draft says so, beside /draws', () => {
     const r = C.checkLine(INDEX, 'herrscher of reason', { ...ctx, seasonalDoc: { ...SEASON, draft: { newDraws: [], returningDraws: [{ title: 'Herrscher of Reason Draw' }] } } });
@@ -63,7 +63,7 @@ t('a draw with no items says so once, under Needs', () => {
 });
 t('a typo match reads as a close match, and the typed line shows beside the title', () => {
     const block = C.resultBlock(C.checkLine(INDEX, 'hersher of reason', ctx), require('../utils/emojiMap'));
-    assert.match(block, /\*\*hersher of reason\*\* → \*\*Herrscher of Reason Draw\*\*\n-# close match/);
+    assert.match(block, /\*\*hersher of reason\*\* → \*\*Herrscher of Reason Draw\*\*\n-# Close match/);
 });
 t('a word several draws share is a maybe, with the others named (Quick Add\'s own call)', () => {
     const r = C.checkLine(INDEX, 'ember', ctx);
@@ -97,7 +97,7 @@ t('the result panel: counts, one block a line, Check Again / Quick Add / Home', 
     const all = walk(cs);
     const head = all.find(c => c.type === 10).content;
     assert.match(head, /4 checked · 2 found · 1 too broad · 1 not indexed · .* 1 need updating · 6 draws in the index/);
-    assert.deepStrictEqual(all.filter(c => c.type === 2).map(b => b.label), ['Check Again', 'Quick Add', 'Home']);
+    assert.deepStrictEqual(all.filter(c => c.type === 2 && c.label !== 'Open').map(b => b.label), ['Draw Index', 'Home', 'Check Again'], 'the way back first; no Quick Add without a token (round 2)');
     assert.strictEqual(all.filter(c => c.type === 10).length, 5);
 });
 t('a full paste of long titles stays under 4,000 characters and 40 components', () => {
@@ -121,11 +121,12 @@ t('the pop-up is one labelled paragraph box, filled again by Check Again (2026-1
 t('with a token the result offers Quick Add These for the lines it found', () => {
     const out = C.checkIndex(INDEX, ['Lethal Hollow Draw', 'herrscher of reason'].join('\n'), ctx);
     const labels = walk(V.checkView(out, 'tok1', 2)).filter(c => c.type === 2).map(b => b.label);
-    assert.deepStrictEqual(labels, ['Check Again', 'Quick Add These 2', 'Home']);
+    assert.deepStrictEqual(labels.filter(l => l !== 'Open'), ['Draw Index', 'Home', 'Check Again', 'Quick Add These 2']);
 });
-t('Home carries the Check Draw Index button', () => {
+t('Home opens the Draw Index panel, which carries Check Names (round 2, 2026-11-11 11:02 EST)', () => {
     const src = require('fs').readFileSync(require.resolve('../handlers/manage/drawsPanel/views'), 'utf8');
-    assert.match(src, /btn\('check', 'Check Draw Index'/);
+    assert.match(src, /btn\('ix', 'Draw Index'/);
+    assert.match(require('fs').readFileSync(require('path').join(__dirname, '../handlers/manage/drawsPanel/drawIndex.js'), 'utf8'), /btn\('ixcheck', 'Check Names'/);
 });
 console.log(`\ndrawIndexCheck: ${passed} passed, ${failed} failed`);
 process.exitCode = failed ? 1 : 0;

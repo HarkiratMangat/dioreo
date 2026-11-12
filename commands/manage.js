@@ -463,7 +463,13 @@ function buildBulkRemoveDrawsModal(drawType) {
     return modal;
 }
 
-// THE DRAW TYPE DROPDOWN, shared by Add and Edit Draw (2026-10-18 11:09 EDT, Harkirat: "a single dropdown for the collective 'draw type' selection and include the armory types within it"). /draw prices' own list in page order (utils/drawTypes.js); the stored type is preselected, and picking nothing leaves it unset. An armory's item count is read off the Items field, so there is no count to pick. A select lives in a modal only inside a Label, which is why both draw forms are built from Labels. REQUIRED, with Unsure / Unknown first (2026-10-18 11:37 EDT, Harkirat: "make it a required field and add the option for 'unsure/unknown' at the top of the list"), on Add and Edit alike so an untyped draw can only come from a bulk paste without a tag. Unknown is a stored flag the portal can list for fixing later.
+// THE DRAW TYPE DROPDOWN, shared by Add and Edit Draw (2026-10-18 11:09 EDT, Harkirat: "a single dropdown for the collective 'draw type' selection and include the armory types within it"). /draw prices' own list in page order (utils/drawTypes.js); the stored type is preselected, and picking nothing leaves it unset. An armory's item count is read off the Items field, so there is no count to pick. A select lives in a modal only inside a Label, which is why both draw forms are built from Labels. REQUIRED, with Unsure / Unknown first (2026-10-18 11:37 EDT, Harkirat: "make it a required field and add the option for 'unsure/unknown' at the top of the list"), on Add and Edit alike so an untyped draw can only come from a bulk paste without a tag. Unknown is a stored flag the portal can list for fixing later. Discord cuts a Label description at 100 characters (seen on the dev bot, 2026-11-11 11:29 EST: the first wording lost its end), so both stay under it; a test holds every draws pop-up to that.
+const DRAW_BOX_HINT = 'Title on line 1, dates on line 2: Start - End, one date, or a countdown (13d 23h).';
+const DRAW_BOX_HINT_NEW = 'Title, then dates (Start - End or 13d 23h), then "Season 10" if it first came out in another one.';
+// The 5th field (2026-11-11 11:02 EST): a picture straight from the game. It wins over the Picture Link and is uploaded, never stored as Discord's own link (those expire).
+function screenshotLabel() {
+    return new LabelBuilder().setLabel('Screenshot').setDescription('Optional. Drop the draw\'s picture here instead of a link.').setFileUploadComponent(new (require('discord.js').FileUploadBuilder)().setCustomId('shot').setMinValues(0).setMaxValues(1).setRequired(false));
+}
 function drawTypeLabel(current = '') {
     const { drawTypeChoices } = require('../utils/drawTypes');
     return new LabelBuilder().setLabel('Draw Type').setDescription('How /draw prices and the calculator price this draw').setStringSelectMenuComponent(
@@ -483,15 +489,15 @@ const DATES_HINT = 'Start - End, e.g. Nov 8 - Nov 21. The end is optional; the g
 function buildAddDrawModal(drawType, prefill = {}) {
     const withValue = (input, value) => (value ? input.setValue(value) : input);
     const modal = new ModalBuilder().setCustomId(`add_draw_${drawType}`).setTitle(`Add ${drawType === 'new' ? 'New' : 'Returning'} Draw`);
-    // The 5th field was "Or Paste As One Line" (2026-07-12) until 2026-10-18 11:09 EDT: Discord caps a modal at five, and the Draw Type dropdown took its place at Harkirat's pick ("B sounds fine"). A whole draw pasted as one line still goes in through Add Multiple, whose format carries the same `type:` tag. With it gone, Title, Items and Release Date are required again: they were optional only so a one-line paste could submit alone.
+    // The 5th field was "Or Paste As One Line" (2026-07-12) until 2026-10-18 11:09 EDT: Discord caps a modal at five, and the Draw Type dropdown took its place at Harkirat's pick ("B sounds fine"). A whole draw pasted as one line still goes in through Add Multiple, whose format carries the same `type:` tag. With it gone, Title, Items and Release Date are required again: they were optional only so a one-line paste could submit alone. ONE "Draw" box for the title, the dates and (for a new draw) the season it came out, and a Screenshot upload as the 5th field (Harkirat, 2026-11-11 11:02 EST). utils/drawForm.js reads the box; the old Title and Dates fields are still read for a pop-up opened before this.
+    const box = require('../utils/drawForm').drawBoxValue({ title: prefill.title, dates: prefill.date, season: prefill.season });
     modal.addLabelComponents(
-        drawTextLabel('title', 'Draw Title', withValue(new TextInputBuilder().setStyle(TextInputStyle.Short), prefill.title)),
+        drawTextLabel('draw', 'Draw', withValue(new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setPlaceholder(drawType === 'new' ? 'Hollow Flight Mythic Drop\nNov 8 - Nov 21\nSeason 10' : 'Hollow Flight Mythic Drop\nNov 8 - Nov 21'), box), drawType === 'new' ? DRAW_BOX_HINT_NEW : DRAW_BOX_HINT),
         drawTextLabel('items', 'Items', withValue(new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setPlaceholder("l CX-9 - Lethal Hollow\ne Kestrel - Blessed Hollow\n-# Optional note"), prefill.items), ITEMS_HINT),
-        // "Start - End" like the season titles box (utils/drawDates.js): one date is the release, a range also sets the end date on the draw's /calendar row.
-        drawTextLabel('date', 'Dates', withValue(new TextInputBuilder().setStyle(TextInputStyle.Short).setPlaceholder("e.g. July 15 - August 20"), prefill.date), DATES_HINT),
         // Optional (2026-07-12, Cloudinary-cache feature): blank reuses whatever's already cached for this exact draw title (utils/cloudinaryCache.js). "Picture Link", the word the rest of /manage uses (2026-11-10 11:03 EST).
         drawTextLabel('url', 'Picture Link', withValue(new TextInputBuilder().setStyle(TextInputStyle.Short).setRequired(false), prefill.url), 'Optional. Blank uses the draw index\'s picture for this draw, when it has one.'),
-        drawTypeLabel()
+        drawTypeLabel(),
+        screenshotLabel()
     );
     return modal;
 }
@@ -526,14 +532,15 @@ function buildEditDrawModal(targetDraw, targetId, drawType, row = null) {
     const modal = new ModalBuilder().setCustomId(`edit_draw_${targetId}_${drawType}`).setTitle('Edit Lucky Draw');
     // LABELS (2026-10-18 11:06 EDT): every field is a Label so the Draw Type dropdown can sit beside them (see drawTypeLabel above).
     const text = drawTextLabel;
+    const box = require('../utils/drawForm').drawBoxValue({ title: targetDraw.title, dates: require('../utils/drawDates').formatDrawDates(targetDraw.date, row && row.endDate) });
     modal.addLabelComponents(
-        text('title', 'Draw Title', new TextInputBuilder().setStyle(TextInputStyle.Short).setValue(targetDraw.title)),
+        // A New draw's box takes a season line too, so a season typed in Add Draw before the draw had a picture can be given again with the picture (2026-11-11 11:42 EST click test).
+        text('draw', 'Draw', new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setValue(box), drawType === 'new' ? DRAW_BOX_HINT_NEW : DRAW_BOX_HINT),
         text('items', 'Items', new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setValue(itemsText), ITEMS_HINT),
-        // The draw's end date lives on its /calendar draw row, so the caller passes that row (shared.js, results.js); without one the box holds the release date alone. Empty for a draw with no date (the box is required, so it is filled in on save).
-        text('date', 'Dates', new TextInputBuilder().setStyle(TextInputStyle.Short).setValue(require('../utils/drawDates').formatDrawDates(targetDraw.date, row && row.endDate)), DATES_HINT),
         // Pre-filled with the CURRENT thumbnail (already a Cloudinary URL if this draw was ever cached) — optional so clearing it and resubmitting re-resolves via the cache lookup instead of requiring a re-typed URL just to leave the image unchanged. BUG FIX (2026-07-12): setValue() throws a synchronous validation error if given `undefined`/non-string — discord.js requires a real string, even for an optional field. Any draw doc missing thumbnailUrl (legacy entries from before the Cloudinary-cache feature, or any doc that somehow saved without one) made this throw INSIDE resolveManagePanelAction's showModal() call, before the interaction was ever acknowledged — which is exactly what surfaced as Discord's generic "Something went wrong. Try again." toast on Edit Draws. Fall back to '' like every other optional field already does.
         text('url', 'Picture Link', new TextInputBuilder().setStyle(TextInputStyle.Short).setValue(targetDraw.thumbnailUrl || '').setRequired(false), 'Keep it to keep the picture. Blank asks the draw index again.'),
-        drawTypeLabel(targetDraw.priceType || '')
+        drawTypeLabel(targetDraw.priceType || ''),
+        screenshotLabel()
     );
     return modal;
 }
@@ -591,7 +598,7 @@ function buildEditCalendarModal(targetEvent, targetId) {
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('title').setLabel('Event Title').setStyle(TextInputStyle.Short).setValue(targetEvent.title)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('start_date').setLabel('Start Date').setStyle(TextInputStyle.Short).setValue(formatAdminDate(targetEvent.date))),
         // A row with no end that is not ongoing prefills "TBD" (2026-11-09 15:14 EST): a blank box saves as All Season, so a TBD row edited for a typo used to become one that runs all season.
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('end_date').setLabel('End Date (blank = All Season, or TBD)').setStyle(TextInputStyle.Short).setValue(targetEvent.isOngoing ? '' : targetEvent.endDate ? formatAdminDate(targetEvent.endDate) : 'TBD').setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('end_date').setLabel('End Date (blank = All Season, or TBD)').setStyle(TextInputStyle.Short).setValue(targetEvent.isOngoing ? '' : targetEvent.endDate ? require('../utils/adminParser').formatAdminEndDate(targetEvent.endDate) : 'TBD').setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('category').setLabel('Section (draw / event / playlist)').setStyle(TextInputStyle.Short).setValue(targetEvent.category || 'event').setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('double_cp').setLabel('Double CP Event? (Y/N)').setStyle(TextInputStyle.Short).setValue(targetEvent.isDoubleCP ? 'Yes' : 'No').setRequired(false))
     );
@@ -759,7 +766,7 @@ function withEmoji(emoji, title) {
 
 // A season line's date part: "start - end" when a start is stored (2026-10-21 10:17 EDT, /season end's progress bar), else the end alone, and "TBD" for a TBD end. core/ops/season.js reads either back.
 function seasonDates(start, end, endTBD) {
-    const endText = endTBD ? 'TBD' : formatAdminDate(end);
+    const endText = endTBD ? 'TBD' : require('../utils/adminParser').formatAdminEndDate(end); // the listed (inclusive) end day
     return start && endText ? `${formatAdminDate(start)} - ${endText}` : endText;
 }
 
@@ -918,7 +925,7 @@ function buildManageCommandData() {
         .addStringOption(o => o.setName('do').setDescription('What to do. With draw: it happens right away').addChoices(
             { name: 'Quick Add', value: 'quickadd' }, { name: 'Add New Draw', value: 'addnew' }, { name: 'Add Returning Draw', value: 'addreturning' },
             { name: 'Edit', value: 'edit' }, { name: 'Set End Date', value: 'end' }, { name: 'Move New/Returning', value: 'move' }, { name: 'Delete', value: 'delete' },
-            { name: 'Paste Draws', value: 'paste' }, { name: 'Check Draw Index', value: 'check' }, { name: 'Export', value: 'export' }, { name: 'Guide', value: 'guide' }))
+            { name: 'Bulk Paste', value: 'paste' }, { name: 'Check Names (Draw Index)', value: 'check' }, { name: 'Export', value: 'export' }, { name: 'Guide', value: 'guide' }))
         .addStringOption(o => o.setName('show').setDescription('Open a list of draws').addChoices(
             { name: 'New Draws', value: 'new' }, { name: 'Returning Draws', value: 'returning' }, { name: 'Upcoming', value: 'upcoming' },
             { name: 'Active Now', value: 'live' }, { name: 'Leaving Soon', value: 'leaving' }, { name: 'Ended', value: 'ended' }, { name: 'No End Date', value: 'noend' }, { name: 'Needs a Look', value: 'look' }))
@@ -928,7 +935,7 @@ function buildManageCommandData() {
         .addStringOption(o => o.setName('build').setDescription('Go to one build: a weapon, a number or a label, e.g. fss 1b').setAutocomplete(true))
         .addStringOption(o => o.setName('do').setDescription('What to do. With build: or builds: it happens right away').addChoices(
             { name: 'Add Build', value: 'add' }, { name: 'Edit', value: 'edit' }, { name: 'Move', value: 'move' }, { name: 'Add Option', value: 'newopt' },
-            { name: 'Delete', value: 'delete' }, { name: 'Paste Builds', value: 'paste' }, { name: 'Export', value: 'export' }, { name: 'Guide', value: 'guide' }))
+            { name: 'Delete', value: 'delete' }, { name: 'Bulk Paste', value: 'paste' }, { name: 'Export', value: 'export' }, { name: 'Guide', value: 'guide' }))
         .addStringOption(o => o.setName('builds').setDescription('Several builds, comma-separated: fss 1b, static, smg'))
         .addStringOption(o => o.setName('weapon').setDescription('Go to a weapon and all its builds').setAutocomplete(true))
         .addStringOption(o => o.setName('class').setDescription('Go to a class and pick a weapon').addChoices(
@@ -940,10 +947,10 @@ function buildManageCommandData() {
         .addStringOption(o => o.setName('event').setDescription('Go to one calendar entry: type part of its title').setAutocomplete(true))
         .addStringOption(o => o.setName('do').setDescription('What to do. With event: it happens right away').addChoices(
             { name: 'Add Entry', value: 'add' }, { name: 'Edit', value: 'edit' }, { name: 'Delete', value: 'delete' },
-            { name: 'Paste Entries', value: 'paste' }, { name: 'Export', value: 'export' }, { name: 'Banners', value: 'banners' }, { name: 'Guide', value: 'guide' }))
+            { name: 'Bulk Paste', value: 'paste' }, { name: 'Export', value: 'export' }, { name: 'Banners', value: 'banners' }, { name: 'Guide', value: 'guide' }))
         .addStringOption(o => o.setName('show').setDescription('Open a list of calendar entries').addChoices(
             { name: 'Events', value: 'event' }, { name: 'Playlists', value: 'playlist' }, { name: 'Draws', value: 'draw' },
-            { name: 'Upcoming', value: 'upcoming' }, { name: 'Active Now', value: 'live' }, { name: 'Ending Soon', value: 'leaving' }, { name: 'Ended', value: 'ended' }))
+            { name: 'Upcoming', value: 'upcoming' }, { name: 'Active Now', value: 'live' }, { name: 'Leaving Soon', value: 'leaving' }, { name: 'Ended', value: 'ended' }))
         .addStringOption(visibility);
     const patchSub = sub => sub.setName('patch-notes').setDescription('Season patch notes')
         .addStringOption(o => o.setName('season').setDescription('Go to one season\'s patch notes: type part of its title').setAutocomplete(true))
@@ -957,8 +964,8 @@ function buildManageCommandData() {
         .addStringOption(visibility);
     const draftSub = sub => sub.setName('draft').setDescription('Stage the next season')
         .addStringOption(o => o.setName('do').setDescription('What to do, right away').addChoices(
-            { name: 'Edit Titles & Deadlines', value: 'titles' }, { name: 'Quick Add', value: 'quickadd' }, { name: 'Edit Draws', value: 'editdraws' }, { name: 'Paste Draws', value: 'draws' },
-            { name: 'Edit Calendar', value: 'editcalendar' }, { name: 'Paste Calendar', value: 'calendar' }, { name: 'Banners', value: 'banners' }, { name: 'Needs a Look', value: 'look' }, { name: 'Guide', value: 'guide' }))
+            { name: 'Edit Titles & Deadlines', value: 'titles' }, { name: 'Quick Add', value: 'quickadd' }, { name: 'Edit Draws', value: 'editdraws' }, { name: 'Bulk Paste Draws', value: 'draws' },
+            { name: 'Edit Calendar', value: 'editcalendar' }, { name: 'Bulk Paste Calendar', value: 'calendar' }, { name: 'Banners', value: 'banners' }, { name: 'Needs a Look', value: 'look' }, { name: 'Guide', value: 'guide' }))
         .addStringOption(visibility);
     const announceSub = sub => sub.setName('announcement').setDescription('Announcements')
         .addStringOption(o => o.setName('announcement').setDescription('Go to one announcement: type part of its text').setAutocomplete(true))
@@ -996,6 +1003,8 @@ function buildManageCommandData() {
 
 module.exports = {
     prefillModal,
+    drawTypeLabel,
+    screenshotLabel,
     ALLOWED_ADMIN_ID, // Re-exported from utils/owner.js; nothing reads it off this module now (the panel-interaction guard in handlers/router.js gates through hasCommandAccess), so it is kept only as a harmless alias.
     data: buildManageCommandData(),
 

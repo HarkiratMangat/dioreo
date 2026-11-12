@@ -19,7 +19,7 @@ function ID(...parts) {
     if (id.length > 100) throw new Error(`season custom_id over 100 characters: ${id}`);
     return id;
 }
-const row = (...c) => ({ type: 1, components: c });
+const row = (...c) => ({ type: 1, components: require('../../../utils/returnFirst').returnFirst(c) });
 const text = (content) => ({ type: 10, content });
 const BIG = () => ({ type: 14, divider: true, spacing: 2 });
 const SMALL = () => ({ type: 14, divider: false, spacing: 1 });
@@ -193,6 +193,8 @@ function listView(doc, kind, page = 0) {
 const DD_PER_PAGE = 6;
 const SEC = { n: { key: 'newDraws', label: 'New Draws', emoji: () => emojis.newDraws }, r: { key: 'returningDraws', label: 'Returning Draws', emoji: () => emojis.returningDraws } };
 const topTier = (d) => { const order = ['mythic', 'legendary', 'epic', 'rare', 'uncommon', 'common']; const tiers = (d.items || []).map(i => String(i.tier || '').toLowerCase()); return order.find(t => tiers.includes(t)) || null; };
+// The way to the live draws from the staged ones (2026-11-11 12:30 EST): /manage draws' Review Drafted Draws lands here, so Back alone (the draft's home) left no way back to where he came from. The draws panel's own Home id.
+const liveDrawsBtn = () => ({ type: 2, style: 2, custom_id: 'mng_dr|page', label: 'Live Draws', emoji: emojis.parseEmoji(emojis.returnArrow) });
 function draftDrawsView(doc, sec = 'n', page = 0, note = null) {
     const s = SEC[sec] ? sec : 'n';
     const list = require('../../../utils/draftDraws').byDate(doc?.draft?.[SEC[s].key] || []);
@@ -203,7 +205,7 @@ function draftDrawsView(doc, sec = 'n', page = 0, note = null) {
     const components = [text(`${crumb('Next Season Draft', 'Draws')}\n## ${SEC[s].emoji()} Draft ${SEC[s].label}\n-# Add, edit or remove one draw at a time, or paste many. Nothing goes live until Promote to Live.`)];
     if (note) components.push(SMALL(), text(note));
     components.push(BIG(), row(btn(['dd', 'n', 0, 't'], `New Draws · ${nN}`, emojis.newDraws, s === 'n' ? 3 : 2, s === 'n'), btn(['dd', 'r', 0, 't'], `Returning Draws · ${nR}`, emojis.returningDraws, s === 'r' ? 3 : 2, s === 'r')), SMALL());
-    if (!shown.length) components.push(text(`-# Nothing staged here yet. Add Draw adds one; Paste Draws adds many.`));
+    if (!shown.length) components.push(text(`-# Nothing staged here yet. Add Draw adds one; Bulk Paste adds many.`));
     for (const d of shown) {
         const tier = topTier(d);
         const items = (d.items || []).filter(i => i.tier !== 'comment').length;
@@ -212,25 +214,26 @@ function draftDrawsView(doc, sec = 'n', page = 0, note = null) {
     // The tabs above end in `t` (2026-11-10, his "i can't go right"): on page 2 the left arrow is `dd|n|0`, and a tab with the same id made Discord refuse the whole page.
     if (pages > 1) components.push(row(arrow(['dd', s, pg - 1], 'left', pg === 0), counter(['ddpg', s], `Page ${pg + 1} / ${pages}`), arrow(['dd', s, pg + 1], 'right', pg === pages - 1)));
     // Quick Add (2026-11-09 14:13 EST, Harkirat: "theres no 'quick add' options in /manage season draft when adding draws"): the /manage draws Quick Add, staging into the draft (handlers/manage/quickAdd.js, target 'draft').
-    components.push(BIG(), row(btn(['ddqa', s], 'Quick Add', emojis.mngAdd, 3), btn(['ddadd', s], 'Add Draw', emojis.mngAdd), btn(['ddrm', s], 'Remove Draws', emojis.deleteBin, 4, !list.length), btn('dr', 'Paste Draws', emojis.pasteImport), btn(['view', 'draft'], 'Back', emojis.returnArrow)));
+    components.push(BIG(), row(btn(['ddqa', s], 'Quick Add', emojis.mngAdd, 3), btn(['ddadd', s], 'Add Draw', emojis.mngAdd), btn(['ddrm', s], 'Remove Draws', emojis.deleteBin, 4, !list.length), btn('dr', 'Bulk Paste', emojis.pasteImport)), row(btn(['view', 'draft'], 'Back', emojis.returnArrow), liveDrawsBtn()));
     return panel(components);
 }
-// The Add / Edit Draw pop-up: Title, Items (one per line, as the bulk format writes them), Release Date, Image Link, Draw Type.
+// The Add / Edit Draw pop-up, the same shape as /manage draws' own since round 2 (2026-11-11 12:30 EST, his "Review Drafted Draws" lands here): the Draw box (title, the date it comes out, a Season line for a New draw), Items, Picture Link, the Draw Type dropdown, and a Screenshot. Read by saveDraftDraw through utils/drawForm.js readDrawBox, countdowns refused (a staged draw is not running yet).
 function draftDrawModal(sec, draw = null) {
     const s = SEC[sec] ? sec : 'n';
+    const m = require('../../../commands/manage');
     const { itemLines } = require('../../../utils/draftDraws');
     const { formatAdminDate } = require('../../../utils/adminParser');
-    const code = draw?.priceType ? (require('../../../utils/drawTypes').drawTypeCode?.(draw.priceType) || '') : '';
-    const input = (id, label, style, value, required, placeholder) => ({ type: 1, components: [{ type: 4, custom_id: id, label, style, required, ...(value ? { value: String(value).slice(0, 4000) } : {}), ...(placeholder ? { placeholder } : {}) }] });
+    const box = require('../../../utils/drawForm').drawBoxValue({ title: draw?.title || '', dates: draw?.date ? formatAdminDate(draw.date) : '' });
+    const label = (id, text, style, value, required, placeholder, description) => ({ type: 18, label: text, ...(description ? { description: description.slice(0, 100) } : {}), component: { type: 4, custom_id: id, style, required, ...(value ? { value: String(value).slice(0, 4000) } : {}), ...(placeholder ? { placeholder } : {}) } });
     return {
         title: draw ? 'Edit Draft Draw' : `Add a ${s === 'n' ? 'New' : 'Returning'} Draw`,
         custom_id: draw ? ID('ddeditm', s, String(draw._id || '')) : ID('ddaddm', s),
         components: [
-            input('title', 'Title', 1, draw?.title, true, 'e.g. Botanist Mythic Drop'),
-            input('items', 'Items, one per line', 2, draw ? itemLines(draw) : '', true, 'm Weapon - Skin\nl Weapon - Skin\n-# a note'),
-            input('date', 'Release Date', 1, draw?.date ? formatAdminDate(draw.date) : '', true, 'e.g. November 26'),
-            input('image', 'Image Link', 1, draw?.thumbnailUrl, false, 'Blank keeps the picture, or finds one by name'),
-            input('type', 'Draw Type (optional)', 1, code, false, 'e.g. 7s, mw, lw'),
+            label('draw', 'Draw', 2, box, true, s === 'n' ? 'Botanist Mythic Drop\nNovember 26\nSeason 10' : 'Botanist Mythic Drop\nNovember 26', s === 'n' ? 'Title, then the date it comes out, then "Season 10" if it first came out in another one.' : 'Title on line 1, the date it comes out on line 2.'),
+            label('items', 'Items', 2, draw ? itemLines(draw) : '', true, 'm Weapon - Skin\nl Weapon - Skin\n-# a note', 'One per line: m Mythic, l Legendary, lg Legacy, e Epic, then the name. -# for a note.'),
+            label('image', 'Picture Link', 1, draw?.thumbnailUrl, false, null, 'Optional. Blank keeps the picture, or finds one by name.'),
+            m.drawTypeLabel(draw?.priceType || '').toJSON(),
+            m.screenshotLabel().toJSON(),
         ],
     };
 }
@@ -305,7 +308,7 @@ function unstagedCalendarLines(doc, max = 10) {
     // A draw still on the LIVE /draws keeps its live section, as the daily carry-over files it (utils/newsTriage/draftMerge.js); any other line takes the tab Quick Add opens in (New).
     const liveSection = (title) => ((doc?.returningDraws || []).some(x => isSameDrawTitle(x.title, title)) ? 'returning' : (doc?.newDraws || []).some(x => isSameDrawTitle(x.title, title)) ? 'new' : null);
     return (d.calendar || []).filter(c => c.category === 'draw' && !draws.some(x => isSameDrawTitle(x.title, c.title)))
-        .slice(0, max).map(c => [c.title, liveSection(c.title), c.date ? `starts ${day(c.date)}` : null, c.endDate ? `ends ${day(c.endDate)}` : null].filter(Boolean).join(', '));
+        .slice(0, max).map(c => [c.title, liveSection(c.title), c.date ? `starts ${day(c.date)}` : null, c.endDate ? `ends ${day(require('../../../utils/adminParser').endDayOf(c.endDate))}` : null].filter(Boolean).join(', '));
 }
 function needsLookView(doc) {
     const items = needsLookItems(doc);
@@ -426,6 +429,37 @@ function promoteModal(doc, nowMs = Date.now()) {
     const what = `${d.currentSeasonTitle || 'Untitled season'} · ${c.nd} New, ${c.rd} Returning, ${c.cal} calendar`;
     return { title: 'Promote to Live', custom_id: ID('promm'), components: [{ type: 18, label: 'When should it go live?', description: what.slice(0, 100), component: require('../../../utils/formChoice').asChoice({ type: 3, custom_id: 'when', required: true, options }) }] };
 }
+// The review before Promote to Live (2026-11-11 21:40 EST, Harkirat: "this is something the season draft should have brought up to me before it went live, for me to review. infact the promote didn't even give ANY confirmation"). Nothing goes live from here until Promote Now (the old promoteok) or Auto-Promote (autoon). `review` is utils/promoteReview.js promoteReview(doc, { catalog }); each finding sits beside its fix, and an empty section is left out.
+function promoteReviewView(doc, review, nowMs = Date.now()) {
+    const d = doc?.draft || {};
+    const c = counts(doc);
+    const r = review || { carried: [], twins: [], seam: [], noEnd: [], index: [] };
+    const look = needsLookItems(doc);
+    const names = (l, max = 6) => (l.length > max ? `${l.slice(0, max).join(', ')} and ${l.length - max} more` : l.join(', '));
+    const start = d.bpStart ? new Date(d.bpStart) : null;
+    const later = start && start.getTime() > nowMs;
+    const ts = start ? Math.floor(start.getTime() / 1000) : null;
+    const section = (line, fix) => (fix ? { type: 9, components: [text(line.slice(0, 900))], accessory: fix } : text(line.slice(0, 900)));
+    const calFix = (n) => btn(['dc', 0, `r${n}`], 'Edit Calendar', emojis.calendar);
+    const body = [];
+    const carriedNames = [...new Set(r.carried.map(x => x.title))];
+    if (carriedNames.length) body.push(text(`${emojis.mngInfo} **Carried over at Promote** · still running when the season starts, so they stay live:\n-# ${names(carriedNames, 12)}`.slice(0, 900)));
+    if (r.twins.length) body.push(section(`${emojis.warn} **Looks like the same thing twice**\n${r.twins.slice(0, 6).map(([a, b]) => `- ${a} · ${b}`).join('\n')}${r.twins.length > 6 ? `\n-# and ${r.twins.length - 6} more` : ''}`, calFix(1)));
+    if (r.seam.length) body.push(section(`${emojis.warn} **Ends a day off the Battle Pass** (${r.seam[0].bpEnd})\n${r.seam.slice(0, 6).map(s => `- ${s.title} · ends ${s.end}`).join('\n')}`, calFix(2)));
+    if (r.noEnd.length) body.push(section(`${emojis.warn} **No end date, not All Season**\n-# ${names(r.noEnd)}`, calFix(3)));
+    if (r.index.length) body.push(section(`${emojis.warn} **Differs from the draw index**\n${r.index.slice(0, 6).map(x => `- ${x.title} · ${x.what.join(' and ')}`).join('\n')}`, { type: 2, style: 2, label: 'Draw Index', custom_id: 'mng_dr|ix', emoji: emojis.parseEmoji(emojis.drawIndex || emojis.database) }));
+    if (look.length) body.push(section(`${emojis.warn} **Needs a Look · ${look.length}**\n-# ${look.slice(0, 3).map(i => i.text).join(' · ').slice(0, 400)}${look.length > 3 ? ' · …' : ''}`, btn('look', 'Needs a Look', emojis.warn)));
+    if (!body.length) body.push(text(`${emojis.checkmark} **Nothing to review.** Everything checked is ready.`));
+    return panel([
+        text(`${crumb('Next Season Draft', 'Review')}\n## ${(carriedNames.length || r.twins.length || r.seam.length || r.noEnd.length || r.index.length || look.length) ? emojis.warn : emojis.checkmark} Review before Promote\n-# ${d.currentSeasonTitle || 'Untitled season'} · ${c.nd} New, ${c.rd} Returning, ${c.cal} calendar${carriedNames.length ? ` · ${carriedNames.length} carried over` : ''}`),
+        ...(ts ? [text(`-# ${later ? 'Battle Pass starts' : 'Battle Pass started'} <t:${ts}:F> · <t:${ts}:R>`)] : []),
+        BIG(),
+        ...body,
+        BIG(),
+        text('-# Nothing goes live until you press Promote Now.'),
+        row(btn(['view', 'draft'], 'Back', emojis.returnArrow), ...(later ? [btn('autoon', 'Auto-Promote at the Start', emojis.timestamp || emojis.mngInfo, 1)] : []), btn('promoteok', 'Promote Now', emojis.checkmark, 3)),
+    ]);
+}
 function discardConfirm(doc) {
     const d = doc?.draft || {};
     const c = counts(doc);
@@ -453,8 +487,9 @@ function resultView({ crumbs = [], title, body = [], ok = true, back = ['view', 
         text(`### ${ok === 'warn' ? emojis.warn : ok ? emojis.checkmark : emojis.cross} ${title}`),
         ...(body.length ? [SMALL(), text(body.join('\n').slice(0, 3800))] : []),
         BIG(),
-        row(...extraButtons, btn([].concat(back), backLabel, emojis.returnArrow), homeBtn()),
+        // Home only when Back is not Home already (2026-11-11 21:33 EST): Promote's result has Back = Live Season = `view|live`, Home's own id, and Discord refused the duplicate custom_id, so the promote went live and its result never drew. Harkirat saw "literally nothing" after Promote on prod; reproduced on the dev bot (50035 COMPONENT_CUSTOM_ID_DUPLICATED). The other panels' resultView already had this guard.
+        row(...extraButtons, btn([].concat(back), backLabel, emojis.returnArrow), ...([].concat(back).join('|') === 'view|live' ? [] : [homeBtn()])),
     ]);
 }
 
-module.exports = { unstagedCalendarLines, needsLookItems, ID, PAGE, row, text, btn, panel, homeBtn, plural, whenLine, stamp, seasonRows, counts, newsRows, calendarDrawsWithoutDraw, isStaged, pageView, listView, botLookView, previewDoc, needsLook, needsLookView, origin, draftDrawsView, draftDrawModal, draftRemoveModal, promoteConfirm, promoteModal, discardConfirm, resultView };
+module.exports = { promoteReviewView, unstagedCalendarLines, needsLookItems, ID, PAGE, row, text, btn, panel, homeBtn, plural, whenLine, stamp, seasonRows, counts, newsRows, calendarDrawsWithoutDraw, isStaged, pageView, listView, botLookView, previewDoc, needsLook, needsLookView, origin, draftDrawsView, draftDrawModal, draftRemoveModal, promoteConfirm, promoteModal, discardConfirm, resultView };

@@ -2490,7 +2490,9 @@
   }
   function calendarBulkText(list){
     return list.map(e => (CAL_PREFIX[e.category] || 'e') + '• ' + shortDate(e.date) + ' - ' +
-      (e.isOngoing ? 'All Season' : shortDate(e.endDate)) + ' | ' + e.title).join('\n');
+      /* The end is written as its listed (inclusive) day, the day before the stored end, as the bot's
+       * formatCalendarAsBulkText does since 2026-11-11 21:57 EST: a typed end day runs through that day. */
+      (e.isOngoing ? 'All Season' : shortDate(new Date(Date.parse(e.endDate) - 864e5).toISOString().slice(0, 10))) + ' | ' + e.title).join('\n');
   }
   /* 🔴 THE SEPARATOR IS `---`, NOT A BLANK LINE, and the title is `title` — never
    * `titleOverride`. Both were caught by diffing this function's output against the bot's

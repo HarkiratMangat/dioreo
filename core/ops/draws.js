@@ -68,8 +68,11 @@ registerEntity('draws', {
             if (!res.ok) return res;
             await resortByDate(SeasonalData, DOC, path, session);
             const created = element;
+            // The draw index fills in what its entry lacks (utils/drawIndexSync.js): an add never overwrites it.
+            const index = await require('../../utils/drawIndexSync').syncIndex([op.payload.title], op.payload, session, { fillOnly: true });
             return {
                 ok: true,
+                ...(index ? { afterCommit: () => require('../../utils/drawIndexSync').afterSync(index) } : {}),
                 change: { action: 'add', model: 'SeasonalData', target: op.payload.title,
                           summary: `Added new draw "${op.payload.title}"` },
                 applied: { category: op.payload.category, elementId: String(created._id), title: op.payload.title }
@@ -124,28 +127,36 @@ registerEntity('draws', {
             const cur = live[path].find(d => String(d._id) === op.target.elementId);
             return { before: cur, after: { ...cur, ...op.payload } };
         },
-        apply: async (op, { session }) => {
+        apply: async (op, { session, restoring = false }) => {
             const path = pathFor(op.target.category);
             const before = await SeasonalData.findOne(DOC).select(path).lean().session(session);
             const cur = before[path].find(d => String(d._id) === op.target.elementId);
             if (!cur) return { ok: false, reason: 'missing' };
+            // `__indexRestore` rides only on this op's own inverse, and is honoured only when the op IS a Revert (`restoring`, set by core/changeset.js from a stored change row): a fresh op carrying one from any caller is a plain edit (security review, 2026-11-11 22:38 EST): the draw index entry's values before the edit synced it (utils/drawIndexSync.js). It is never a draw field.
+            const { __indexRestore, ...fields } = op.payload;
+            op = { ...op, payload: fields };
             // The prior-value assertion IS the conflict check — see core/mongo/positional.js. A field the stored draw has never had reads `undefined` off this lean() fetch; it is asserted as null, which is what MongoDB matches a missing field with. Found 2026-10-18 11:06 EDT adding `priceType`: every draw saved before it lacks the field.
             const expect = Object.fromEntries(Object.keys(op.payload).map(k => [k, cur[k] === undefined ? null : cur[k]]));
             const res = await updateElement({ Model: SeasonalData, docFilter: DOC, arrayPath: path,
                                               elementId: op.target.elementId, expect, set: op.payload, session });
             if (!res.ok) return res;
             if ('date' in op.payload) await resortByDate(SeasonalData, DOC, path, session);
+            // The draw index follows the edit (2026-11-11 22:33 EST, his "go"): its entry takes the draw's items and draw type, kinds kept; a Revert puts the entry back exactly.
+            const sync = require('../../utils/drawIndexSync');
+            const index = restoring && __indexRestore ? await sync.restoreIndex(__indexRestore, session)
+                : await sync.syncIndex([op.payload.title, cur.title], { items: 'items' in op.payload ? op.payload.items : cur.items, priceType: 'priceType' in op.payload ? op.payload.priceType : cur.priceType }, session);
             return {
                 ok: true,
+                ...(index ? { afterCommit: () => sync.afterSync(index) } : {}),
                 change: { action: 'edit', model: 'SeasonalData', target: cur.title,
                           summary: `Edited draw "${cur.title}"` },
-                applied: { category: op.target.category, elementId: op.target.elementId, prior: expect }
+                applied: { category: op.target.category, elementId: op.target.elementId, prior: expect, ...(index ? { index: { id: index.id, prior: index.prior } } : {}) }
             };
         },
         invert: (change) => ({
             type: 'draw.edit',
             target: { category: change.applied.category, elementId: change.applied.elementId },
-            payload: change.applied.prior
+            payload: { ...change.applied.prior, ...(change.applied.index ? { __indexRestore: change.applied.index } : {}) }
         })
     },
 
@@ -223,6 +234,8 @@ registerEntity('draws', {
                 // An UNDO of Replace Multiple or Purge: back to the stored set, the draws the change added taken out (utils/bulkMerge.js restoreSet).
                 const finalArray = restoreSet(replaced, op.payload.parsed, op.payload.insertedIds);
                 await SeasonalData.updateOne(DOC, { $set: { [path]: finalArray } }, { session });
+                // The draw index entries the replace synced go back as they were (utils/drawIndexSync.js).
+                for (const r of op.payload.__indexRestore || []) await require('../../utils/drawIndexSync').restoreIndex(r, session);
                 return {
                     ok: true,
                     change: { action: 'bulkReplace', model: 'SeasonalData', target: `${path}`, summary: `Restored draws (now ${finalArray.length} total)` },
@@ -235,17 +248,26 @@ registerEntity('draws', {
             finalArray.sort((a, b) => new Date(a.date) - new Date(b.date));
             const insertedIds = addedIds(replaced, finalArray);
             await SeasonalData.updateOne(DOC, { $set: { [path]: finalArray } }, { session });
+            // The draw index follows each draw the paste UPDATED (Edit N, Bulk Paste), as a single Edit does (2026-11-11 22:36 EST); a new draw only fills what its entry lacks. Each entry's prior rides on the inverse.
+            const sync = require('../../utils/drawIndexSync');
+            const indexed = [];
+            for (const d of validDraws) {
+                const updated = replaced.some(x => String(x.title).toLowerCase() === String(d.title).toLowerCase());
+                const w = await sync.syncIndex([d.title], d, session, { fillOnly: !updated });
+                if (w) indexed.push(w);
+            }
             return {
                 ok: true,
+                ...(indexed.length ? { afterCommit: async () => { for (const w of indexed) await sync.afterSync(w); return null; } } : {}),
                 change: { action: 'bulkReplace', model: 'SeasonalData', target: `${path}`,
                           summary: `Replaced draws — updated ${updatedCount}, added ${insertedCount} (now ${finalArray.length} total)` },
-                applied: { category: op.target.category, replaced, insertedIds, added: validDraws, updatedCount, insertedCount, typesFilled, total: finalArray.length }
+                applied: { category: op.target.category, replaced, insertedIds, added: validDraws, updatedCount, insertedCount, typesFilled, total: finalArray.length, ...(indexed.length ? { index: indexed.map(w => ({ id: w.id, prior: w.prior })) } : {}) }
             };
         },
         invert: (change) => ({
             type: 'draw.bulkReplace',
             target: { category: change.applied.category },
-            payload: { parsed: change.applied.replaced, insertedIds: change.applied.insertedIds || [] }
+            payload: { parsed: change.applied.replaced, insertedIds: change.applied.insertedIds || [], ...(change.applied.index ? { __indexRestore: change.applied.index } : {}) }
         })
     },
 

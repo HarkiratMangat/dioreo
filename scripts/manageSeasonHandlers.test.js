@@ -49,6 +49,56 @@ const button = (customId) => Object.assign(h.modal(customId), { isButton: () => 
         assert.deepStrictEqual(s.calendar.map(x => x.title), ['A', 'B']);
     });
 
+    // The Solstice Draw case (prod, 2026-11-11 19:35 EST): a live draw still running at the season start, added after the last daily carry-over, vanished at Promote. Promote now carries it itself, inside its own transaction.
+    const solsticeDoc = (draftExtra = {}) => {
+        const at = (s) => new Date(s);
+        const sol = { _id: 'a1'.padEnd(24, '0'), title: 'Solstice Draw', date: at('2026-11-11T00:00:00Z'), thumbnailUrl: 'https://res.cloudinary.com/x/image/upload/draws/solstice.jpg', priceType: 'legendaryGunReactive', items: [{ tier: 'legendary', name: 'Gun - Sun' }] };
+        const hunger = { _id: 'a2'.padEnd(24, '0'), title: 'Hunger Eternal Draw', date: at('2026-10-30T00:00:00Z'), thumbnailUrl: '', priceType: '', items: [{ tier: 'legendary', name: 'Grav - Vitae' }] };
+        const other = { _id: 'a3'.padEnd(24, '0'), title: 'Next Season Draw', date: at('2026-11-12T00:00:00Z'), thumbnailUrl: '', priceType: '', items: [] };
+        return {
+            currentSeasonTitle: 'Season 9', newDraws: [hunger], returningDraws: [sol],
+            calendar: [
+                { _id: 'b1'.padEnd(24, '0'), title: 'Solstice Draw', date: at('2026-11-11T00:00:00Z'), endDate: at('2026-11-25T00:00:00Z'), category: 'draw', isOngoing: false, isDoubleCP: false },
+                { _id: 'b2'.padEnd(24, '0'), title: 'Hunger Eternal Draw', date: at('2026-10-30T00:00:00Z'), endDate: at('2026-11-12T00:00:00Z'), category: 'draw', isOngoing: false, isDoubleCP: false },
+                { _id: 'b3'.padEnd(24, '0'), title: 'Old Event', date: at('2026-10-01T00:00:00Z'), endDate: at('2099-01-01T00:00:00Z'), category: 'event', isOngoing: false, isDoubleCP: false },
+            ],
+            draft: { active: true, currentSeasonTitle: 'Season 10', bpStart: at('2026-11-12T00:00:00Z'), newDraws: [other], returningDraws: [], calendar: [{ _id: 'b4'.padEnd(24, '0'), title: 'Next Season Draw', date: at('2026-11-12T00:00:00Z'), endDate: at('2026-11-26T00:00:00Z'), category: 'draw', isOngoing: false, isDoubleCP: false }], ...draftExtra },
+        };
+    };
+
+    await check('Promote carries a live draw and its row that are still running at the season start (the Solstice Draw)', async () => {
+        h.reset(solsticeDoc());
+        const p = button('mng_draftpromoteconfirm');
+        await season.handleDraftButton(p);
+        const s = h.state.doc;
+        assert.deepStrictEqual(s.returningDraws.map(x => x.title), ['Solstice Draw'], p.text());
+        assert.strictEqual(String(s.returningDraws[0]._id), 'a1'.padEnd(24, '0'), 'the carried draw keeps its live id');
+        assert.ok(s.calendar.some(r => r.title === 'Solstice Draw' && r.category === 'draw'), 'its calendar row too');
+        assert.ok(s.calendar.some(r => r.title === 'Old Event'), 'a running event too');
+        assert.ok(!s.calendar.some(r => r.title === 'Hunger Eternal Draw') && !s.newDraws.some(r => r.title === 'Hunger Eternal Draw'), 'a row ending exactly at the start is not carried');
+        assert.deepStrictEqual(s.newDraws.map(x => x.title), ['Next Season Draw']);
+        assert.ok(/Solstice Draw/.test(p.text()) && /carried/i.test(p.text()), `the result names what was carried: ${p.text()}`);
+    });
+
+    await check('Promote with no Battle Pass start still carries what is running now', async () => {
+        h.reset(solsticeDoc({ bpStart: null }));
+        await season.handleDraftButton(button('mng_draftpromoteconfirm'));
+        assert.ok(h.state.doc.calendar.some(r => r.title === 'Old Event'), JSON.stringify(h.state.doc.calendar.map(r => r.title)));
+    });
+
+    await check('Promote then Revert puts the live season and the draft back exactly', async () => {
+        h.reset(solsticeDoc());
+        const before = JSON.parse(JSON.stringify(h.state.doc));
+        await season.handleDraftButton(button('mng_draftpromoteconfirm'));
+        const promote = h.state.changes.find(c => c.action === 'promote' || /promote/i.test(c.summary || ''));
+        assert.ok(promote && promote.inverse, 'the promote recorded an inverse');
+        const { commitSet } = require('../core/changeset');
+        const undo = await commitSet([promote.inverse], { actorId: h.OWNER, revertOf: { changeId: promote.changeId, page: 'season', actorId: h.OWNER } });
+        assert.ok(undo.ok, JSON.stringify(undo.failedAt || undo));
+        const after = JSON.parse(JSON.stringify(h.state.doc));
+        for (const k of ['currentSeasonTitle', 'newDraws', 'returningDraws', 'calendar', 'draft']) assert.deepStrictEqual(after[k], before[k], k);
+    });
+
     await check('the draft takes pasted draws and events without touching the live season', async () => {
         h.reset({ newDraws: [{ _id: 'a'.repeat(24), title: 'Live Draw', date: '2026-11-01T12:00:00.000Z' }] });
         await season.bulkDraftDraws(h.modal('modal_draft_draws', { new_text: 'Iron Wolf, l AK117, Dec 5 2026, https://img/iw', returning_text: '' }));

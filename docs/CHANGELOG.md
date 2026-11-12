@@ -29,7 +29,33 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.19.0 — 2026-11-10 21:17 EST (#269) — /manage draws refined: saves answer in the panel, an End Date pop-up, search by item, and the bugs they hid; /draws' single draw shows its picture first
+## v3.20.0 — 2026-11-11 22:43 EST (#270) — One search and a Selected view across /manage; a review before Promote, which now carries running draws; a typed end day runs through that day
+
+/manage draws rounds 2 and 3 (his phone intakes, 2026-11-11), and the fixes from Season 10's Promote on prod that night (brief: `local/project/features/promote-carryover/brief.md`, gitignored).
+
+### Added
+- **Promote opens a review first** (`utils/promoteReview.js`): live rows the final carry-over will add, rows that look like the same thing twice ("… Offer" and "… Event"), rows ending a day off the Battle Pass, rows with no end that are not All Season, staged draws that differ from the draw index, and Needs a Look, each beside its fix. Nothing goes live until Promote Now or Auto-Promote at the Start. The same review goes in the auto-promote DM and on the day-before promote check, and a promote by hand now DMs the owner too.
+- **One way to find, one way to act** in /manage draws, calendar and gunsmith: one Search (words widen, lists narrow), one results screen with Edit on each row and a Select menu, and a Selected view (one item is its card, more get Edit N, End Date N, Expand View, Export N, Delete N).
+- **The Draw Index panel**: Check Names, gap lists, the entry card and a revertable entry edit (`drawindex.edit`); the CheckIndex emoji on Check Names.
+- **The draw index follows a /manage edit**: an edit, Edit N or Bulk Paste update gives the matching entry the draw's items and draw type, kinds kept; Revert puts the entry back (`utils/drawIndexSync.js`).
+- **The 2X CP emoji** beside Double CP rows on /calendar and its Today page, and on the calculator's Double CP line.
+- **Emoji tags** (`utils/emojiTags.js`, `findEmoji`).
+
+### Changed
+- **A typed end day is inclusive**: "12/9" ends 12/10 00:00 UTC, as the game's countdown showed. Countdowns, relative ends, typed times and ISO days are read as before; every box and export writes the listed day back, so an untouched save keeps its end (`.claude/rules/design-decisions.md`).
+- **Bulk Paste** is every panel's paste button; misses, refusals and empty saves answer privately; the way back is first in every row and reads Back to Selected in the Selected flow; Review Drafted Draws wears the next season's emoji; calendar's list is Leaving Soon.
+- The season draft's draw pop-ups have the live ones' shape.
+
+### Fixed
+- **Promote showed nothing**: its result had two buttons with the same custom id (Back = Home), which Discord refused, so the promote went live and the panel never changed.
+- **Promote dropped running draws**: a live draw added after the day's carry-over vanished (the Solstice Draw); Promote now carries running rows itself, in its own transaction, and Revert is exact.
+- A reverted Delete N re-selects its draws; the gunsmith card opened from a selection goes back to the results; a merged build selected whole no longer lists its option twice in Edit N.
+- A crafted draw edit could not write a draw index entry: an index restore is honoured only on a Revert, and only for the index fields.
+
+### Records
+- `.claude/rules/manage-panel.md` (rounds 2 and 3, the review, the index sync), `.claude/rules/design-decisions.md` (the inclusive end), CLAUDE.md's owner-DM exceptions (a promote by hand).
+
+## v3.19.0 — 2026-11-10 21:17 EST (#269 · `ab20c489`) — /manage draws refined: saves answer in the panel, an End Date pop-up, search by item, and the bugs they hid; /draws' single draw shows its picture first
 
 From a full review and click test of `/manage draws` on the dev bot with prod's draws mirrored into dev (his ask, 2026-11-10). What was found, how, and a checklist for the next subcommands: `docs/claude/2026-11-10-manage-draws-refine-lessons.md`.
 

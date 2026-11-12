@@ -115,8 +115,12 @@ function parseQuickLine(line, opts = {}) {
         if (!slot && rangeEnd && !out.start && !out.end) { out.start = when; out.end = rangeEnd; continue; }
         if (!slot) slot = out.start ? 'end' : 'start';
         if (out[slot]) { out.problems.push(`Two ${slot} dates; kept the first.`); continue; }
+        // "ends in 28 days" is counted from now, like a countdown, and never shifts (the inclusive rule is for a calendar day).
+        if (slot === 'end' && /\b(in\s+\d+|today|tonight|tomorrow|next|this|from now)\b/i.test(text)) when.relative = true;
         out[slot] = when;
     }
+    // A typed end DAY is inclusive (utils/adminParser.js parseAdminEndDate's header): with no time and no countdown it ends at 00:00 UTC the day after.
+    if (out.end && !out.end.timed && !out.end.countdown && !out.end.relative) out.end = { ...out.end, date: new Date(out.end.date.getTime() + 24 * 60 * 60 * 1000) };
     if (out.start && out.end && out.end.date <= out.start.date) out.problems.push('The end is not after the start.');
     return out;
 }

@@ -119,6 +119,8 @@ function resolveItem(raw, ctx) {
         if (swapped && swapped >= start) end = swapped;
         else if (end.getUTCMonth() < start.getUTCMonth()) end = new Date(Date.UTC(end.getUTCFullYear() + 1, end.getUTCMonth(), end.getUTCDate()));
     }
+    // A listed end day is inclusive (utils/adminParser.js parseAdminEndDate's header, 2026-11-11 21:49 EST): "11/12 - 12/9" ends 12/10 00:00 UTC. From here `end` is the stored end; the boxes it fills write the listed day back (endDayOf).
+    if (end && !end.getUTCHours() && !end.getUTCMinutes() && !end.getUTCSeconds()) end = new Date(end.getTime() + 24 * 60 * 60 * 1000);
     let action = ACTION_OF_KIND[raw.kind] || 'info';
     // Another region is dropped only when the post's own words say so (ctx.namesRegion, from filter.js); a region the AI read off the picture alone is shown with a warning instead, because a wrong drop is silent.
     if (raw.region === 'other' && ctx.namesRegion !== false) return { skip: 'another region' };
@@ -209,7 +211,8 @@ function resolveItem(raw, ctx) {
 
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const short = d => { if (!d) return '?'; const x = new Date(d); return `${MON[x.getUTCMonth()]} ${x.getUTCDate()}`; };
-const span = (a, b) => `${short(a)}${b ? ` – ${short(b)}` : ''}`;
+// An end shows as its listed (inclusive) day, the day before the stored end.
+const span = (a, b) => `${short(a)}${b ? ` – ${short(require('../adminParser').endDayOf(b))}` : ''}`;
 
 // The live row(s) an item names, and whether the post moves or completes their dates. null when the bot does not have it; { skip } when it has it with the same dates.
 function liveFix(raw, start, end, action, live) {
@@ -241,25 +244,27 @@ function resolveItems(rawItems, ctx) {
 
 // ---- what each button fills in ----
 const fmtAdmin = d => (d ? dayjs.utc(d).format('MMMM D, YYYY') : '');
+// An end goes into a box as its listed (inclusive) day; the box reads it back to the same stored end.
+const fmtEnd = d => (d ? fmtAdmin(require('../adminParser').endDayOf(d)) : '');
 const cleanItemName = s => String(s || '').replace(/,/g, ' ').replace(/\s+/g, ' ').trim();
 const TIER_LETTER = { mythic: 'm', legendary: 'l', epic: 'e' };
 const rewardLines = item => (item.rewards || []).filter(r => r && r.name).map(r => `${TIER_LETTER[r.tier] || 'l'} ${cleanItemName(r.name)}`);
 
 // /manage's Add Draw box (commands/manage.js buildAddDrawModal). A returning draw the index knows leaves the image blank, which reuses the index's image.
 function drawPrefill(item, imageUrl) {
-    const range = item.start ? fmtAdmin(item.start) + (item.end ? ` - ${fmtAdmin(item.end)}` : '') : '';
+    const range = item.start ? fmtAdmin(item.start) + (item.end ? ` - ${fmtEnd(item.end)}` : '') : '';
     return { title: item.name, date: range, url: item.catalogueTitle ? '' : (imageUrl || ''), items: rewardLines(item).join('\n') };
 }
 
 // /manage's Add Calendar Event box (commands/manage.js buildCalendarAddModal).
 function calendarPrefill(item) {
-    return { title: item.name, startDate: fmtAdmin(item.start), endDate: fmtAdmin(item.end), category: item.kind === 'mode' ? 'playlist' : 'event' };
+    return { title: item.name, startDate: fmtAdmin(item.start), endDate: fmtEnd(item.end), category: item.kind === 'mode' ? 'playlist' : 'event' };
 }
 
 // One line for the Next Season Draft's draws box, in parseBulkDrawList's format: Title, items…, Date, URL. The parser needs at least one item, so a draw whose rewards the post does not list carries a note line, which he edits before saving.
 function draftDrawLine(item, imageUrl) {
     const items = rewardLines(item);
-    const date = item.start ? fmtAdmin(item.start) + (item.end ? ` - ${fmtAdmin(item.end)}` : '') : 'DATE?';
+    const date = item.start ? fmtAdmin(item.start) + (item.end ? ` - ${fmtEnd(item.end)}` : '') : 'DATE?';
     const url = item.catalogueTitle ? '' : (imageUrl || '');
     return [cleanItemName(item.name), ...(items.length ? items : ['-# Rewards not listed yet']), date, ...(url ? [url] : [])].join(', ');
 }
@@ -268,7 +273,7 @@ function draftDrawLine(item, imageUrl) {
 function draftCalendarLine(item) {
     const md = d => dayjs.utc(d).format('M/D');
     const start = item.start ? md(item.start) : '?';
-    const end = item.end ? md(item.end) : 'All Season';
+    const end = item.end ? md(require('../adminParser').endDayOf(item.end)) : 'All Season';
     return `${item.kind === 'mode' ? 'p' : 'e'} ${start} - ${end} | ${cleanItemName(item.name)}`;
 }
 
