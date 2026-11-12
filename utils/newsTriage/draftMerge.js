@@ -138,6 +138,11 @@ function planDraftChanges(draftIn, items, post, { newId, skipKinds = DEFAULT_SKI
                 // A dateless confirmed item sits on the next season's start as a placeholder (resolve.js); `dated: false` lets any later post that gives a real date replace it, whatever its rank (Grim Duo kept the placeholder in the backtest).
                 row.newsSource = { ...source(rank), dated: Boolean(item.startText), sig: sig(row), ...(w.list === 'calendar' && !row.endDate ? { noEnd: true } : {}) };
                 changes.push({ type: 'add', list: w.list, row, name: row.title });
+                // A near-name already staged ("Ford Table Tactics Offer" beside this "… Event", 2026-11-11 21:25 EST, the same thing twice on prod): added anyway, since the words alone cannot prove it, but the card says so, and the review before Promote lists the pair (utils/promoteReview.js).
+                const { core } = require('../promoteReview');
+                const pool = w.list === 'calendar' ? (draft.calendar || []) : [...(draft.newDraws || []), ...(draft.returningDraws || [])];
+                const twin = core(row.title) && pool.find(x => x && x.title !== row.title && core(x.title) === core(row.title));
+                if (twin) notes.push({ name: row.title, why: `looks like "${twin.title}", already staged: check it is not the same thing` });
                 continue;
             }
             const cur = hit.row;

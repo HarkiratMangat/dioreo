@@ -659,3 +659,15 @@ check('the handler owns news| and nothing else', async () => {
 
     console.log(`✅ newsTriage: ${n + 1} checks passed`);
 })().catch(err => { console.error(err); process.exit(1); });
+
+// 2026-11-11 22:37 EST: a staged near-name ("Ford Table Tactics Offer") beside the post's "Ford Table Tactics Event" is added, with a note on the card.
+{
+    const dm = require('../utils/newsTriage/draftMerge');
+    const draftIn = { active: true, calendar: [{ _id: 'f1', title: 'Ford Table Tactics Offer', date: new Date('2026-11-13T00:00:00Z'), endDate: new Date('2026-11-21T00:00:00Z'), category: 'event' }], newDraws: [], returningDraws: [] };
+    const item = { kind: 'event', change: 'new', name: 'Ford Table Tactics Event', where: 'draft', start: new Date('2026-11-13T00:00:00Z'), end: new Date('2026-11-21T00:00:00Z'), startText: '11/13', certainty: 'confirmed', rewards: [] };
+    const plan = dm.planDraftChanges(draftIn, [item], { channelId: 'c', id: 'm' });
+    assert.ok(plan.changes.some(c => c.type === 'add' && c.name === 'Ford Table Tactics Event'), JSON.stringify(plan.changes.map(c => c.type + ' ' + c.name)));
+    assert.ok(plan.notes.some(n => /Ford Table Tactics Offer/.test(n.why)), JSON.stringify(plan.notes));
+    console.log('  ✓ a staged near-name is added with a note on the card (Offer/Event)');
+}
+
