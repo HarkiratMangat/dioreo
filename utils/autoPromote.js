@@ -8,9 +8,22 @@ function isDue(doc, nowMs = Date.now()) {
     return Boolean(d?.active && d.autoPromote && d.bpStart && new Date(d.bpStart).getTime() <= nowMs);
 }
 
-function card(ok, lines) {
+function card(ok, lines, heading = null) {
     const emojis = require('./emojiMap');
-    return { flags: 32768, components: [{ type: 17, accent_color: ok ? 0x1F8A5E : 0xC0392B, components: [{ type: 10, content: [`### ${ok ? emojis.checkmark : emojis.cross} ${ok ? 'Auto-promoted to live' : 'Auto-promote did not run'}`, ...lines].join('\n').slice(0, 3800) }] }] };
+    return { flags: 32768, components: [{ type: 17, accent_color: ok ? 0x1F8A5E : 0xC0392B, components: [{ type: 10, content: [`### ${ok ? emojis.checkmark : emojis.cross} ${heading || (ok ? 'Auto-promoted to live' : 'Auto-promote did not run')}`, ...lines].join('\n').slice(0, 3800) }] }] };
+}
+
+// The review it went live with, as lines under a label (utils/promoteReview.js), or nothing when it was clean.
+function reviewBlock(review) {
+    const lines = require('./promoteReview').reviewLines(review);
+    return lines.length ? ['', '**Reviewed when it went live:**', ...lines.map(l => `- ${l}`)] : [];
+}
+
+// The owner's record of a promote by hand (2026-11-11 21:40 EST): the same DM an auto-promote sends, so every promote leaves one. Owner only, through dmOwner, no mentions.
+async function notifyPromoted({ message, changeIds = [], review = null, manual = true, actorId = null } = {}) {
+    const { dmOwner } = require('./buildSubmissions');
+    const text = String(message || '').replace(/^\*\*Draft promoted to live!\*\*\s*/, '');
+    return dmOwner(() => card(true, [text, ...(actorId ? [`-# Promoted by <@${actorId}>.`] : []), ...reviewBlock(review), `-# Change ${changeIds.join(', ')} · Revert it from /bot analytics › Changes.`], manual ? 'Promoted to live' : null));
 }
 
 async function runAutoPromote() {
@@ -27,11 +40,14 @@ async function runAutoPromote() {
             await dmOwner(() => card(false, ['The draft was set to auto-promote, but nobody is recorded as setting it. Promote it from `/manage season` › Next Season Draft.'])).catch(e => console.error('autoPromote: owner DM failed:', e.message));
             return { ok: false };
         }
+        // The review is read before the promote, so the DM lists what the final carry-over added and what was worth a look (it cannot ask first).
+        let review = null;
+        try { review = require('./promoteReview').promoteReview(claimed); } catch { review = null; }
         const result = await require('../core/changeset').commitSet([{ type: 'season.promoteDraft' }], { actorId });
         if (result.ok) {
             const { change, applied } = result.results[0];
             console.log(`⏰ Auto-promoted the draft to live: "${change.target}" (${result.changeIds.join(', ')})`);
-            await dmOwner(() => card(true, [`**"${change.target}"** is now the live season: ${applied.counts.newDraws} New, ${applied.counts.returningDraws} Returning, ${applied.counts.calendar} calendar event(s).`, ...(require('./promoteSummary').carriedLine(applied.carried) ? [require('./promoteSummary').carriedLine(applied.carried)] : []), `-# Change ${result.changeIds.join(', ')} · Revert it from /bot analytics › Changes.`])).catch(e => console.error('autoPromote: owner DM failed:', e.message));
+            await dmOwner(() => card(true, [`**"${change.target}"** is now the live season: ${applied.counts.newDraws} New, ${applied.counts.returningDraws} Returning, ${applied.counts.calendar} calendar event(s).`, ...(require('./promoteSummary').carriedLine(applied.carried) ? [require('./promoteSummary').carriedLine(applied.carried)] : []), ...reviewBlock(review), `-# Change ${result.changeIds.join(', ')} · Revert it from /bot analytics › Changes.`])).catch(e => console.error('autoPromote: owner DM failed:', e.message));
             return { ok: true, changeIds: result.changeIds };
         }
         const why = result.failedAt?.reason === 'missing' ? 'The draft was gone by then.' : (result.failedAt?.errors || []).join(' ') || 'The promote was refused.';
@@ -44,4 +60,4 @@ async function runAutoPromote() {
     }
 }
 
-module.exports = { isDue, runAutoPromote };
+module.exports = { isDue, runAutoPromote, notifyPromoted };

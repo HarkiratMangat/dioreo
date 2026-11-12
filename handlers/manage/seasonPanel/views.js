@@ -429,6 +429,37 @@ function promoteModal(doc, nowMs = Date.now()) {
     const what = `${d.currentSeasonTitle || 'Untitled season'} · ${c.nd} New, ${c.rd} Returning, ${c.cal} calendar`;
     return { title: 'Promote to Live', custom_id: ID('promm'), components: [{ type: 18, label: 'When should it go live?', description: what.slice(0, 100), component: require('../../../utils/formChoice').asChoice({ type: 3, custom_id: 'when', required: true, options }) }] };
 }
+// The review before Promote to Live (2026-11-11 21:40 EST, Harkirat: "this is something the season draft should have brought up to me before it went live, for me to review. infact the promote didn't even give ANY confirmation"). Nothing goes live from here until Promote Now (the old promoteok) or Auto-Promote (autoon). `review` is utils/promoteReview.js promoteReview(doc, { catalog }); each finding sits beside its fix, and an empty section is left out.
+function promoteReviewView(doc, review, nowMs = Date.now()) {
+    const d = doc?.draft || {};
+    const c = counts(doc);
+    const r = review || { carried: [], twins: [], seam: [], noEnd: [], index: [] };
+    const look = needsLookItems(doc);
+    const names = (l, max = 6) => (l.length > max ? `${l.slice(0, max).join(', ')} and ${l.length - max} more` : l.join(', '));
+    const start = d.bpStart ? new Date(d.bpStart) : null;
+    const later = start && start.getTime() > nowMs;
+    const ts = start ? Math.floor(start.getTime() / 1000) : null;
+    const section = (line, fix) => (fix ? { type: 9, components: [text(line.slice(0, 900))], accessory: fix } : text(line.slice(0, 900)));
+    const calFix = (n) => btn(['dc', 0, `r${n}`], 'Edit Calendar', emojis.calendar);
+    const body = [];
+    const carriedNames = [...new Set(r.carried.map(x => x.title))];
+    if (carriedNames.length) body.push(text(`${emojis.mngInfo} **Carried over at Promote** · still running when the season starts, so they stay live:\n-# ${names(carriedNames, 12)}`.slice(0, 900)));
+    if (r.twins.length) body.push(section(`${emojis.warn} **Looks like the same thing twice**\n${r.twins.slice(0, 6).map(([a, b]) => `- ${a} · ${b}`).join('\n')}${r.twins.length > 6 ? `\n-# and ${r.twins.length - 6} more` : ''}`, calFix(1)));
+    if (r.seam.length) body.push(section(`${emojis.warn} **Ends a day off the Battle Pass** (${r.seam[0].bpEnd})\n${r.seam.slice(0, 6).map(s => `- ${s.title} · ends ${s.end}`).join('\n')}`, calFix(2)));
+    if (r.noEnd.length) body.push(section(`${emojis.warn} **No end date, not All Season**\n-# ${names(r.noEnd)}`, calFix(3)));
+    if (r.index.length) body.push(section(`${emojis.warn} **Differs from the draw index**\n${r.index.slice(0, 6).map(x => `- ${x.title} · ${x.what.join(' and ')}`).join('\n')}`, { type: 2, style: 2, label: 'Draw Index', custom_id: 'mng_dr|ix', emoji: emojis.parseEmoji(emojis.drawIndex || emojis.database) }));
+    if (look.length) body.push(section(`${emojis.warn} **Needs a Look · ${look.length}**\n-# ${look.slice(0, 3).map(i => i.text).join(' · ').slice(0, 400)}${look.length > 3 ? ' · …' : ''}`, btn('look', 'Needs a Look', emojis.warn)));
+    if (!body.length) body.push(text(`${emojis.checkmark} **Nothing to review.** Everything checked is ready.`));
+    return panel([
+        text(`${crumb('Next Season Draft', 'Review')}\n## ${(carriedNames.length || r.twins.length || r.seam.length || r.noEnd.length || r.index.length || look.length) ? emojis.warn : emojis.checkmark} Review before Promote\n-# ${d.currentSeasonTitle || 'Untitled season'} · ${c.nd} New, ${c.rd} Returning, ${c.cal} calendar${carriedNames.length ? ` · ${carriedNames.length} carried over` : ''}`),
+        ...(ts ? [text(`-# ${later ? 'Battle Pass starts' : 'Battle Pass started'} <t:${ts}:F> · <t:${ts}:R>`)] : []),
+        BIG(),
+        ...body,
+        BIG(),
+        text('-# Nothing goes live until you press Promote Now.'),
+        row(btn(['view', 'draft'], 'Back', emojis.returnArrow), ...(later ? [btn('autoon', 'Auto-Promote at the Start', emojis.timestamp || emojis.mngInfo, 1)] : []), btn('promoteok', 'Promote Now', emojis.checkmark, 3)),
+    ]);
+}
 function discardConfirm(doc) {
     const d = doc?.draft || {};
     const c = counts(doc);
@@ -461,4 +492,4 @@ function resultView({ crumbs = [], title, body = [], ok = true, back = ['view', 
     ]);
 }
 
-module.exports = { unstagedCalendarLines, needsLookItems, ID, PAGE, row, text, btn, panel, homeBtn, plural, whenLine, stamp, seasonRows, counts, newsRows, calendarDrawsWithoutDraw, isStaged, pageView, listView, botLookView, previewDoc, needsLook, needsLookView, origin, draftDrawsView, draftDrawModal, draftRemoveModal, promoteConfirm, promoteModal, discardConfirm, resultView };
+module.exports = { promoteReviewView, unstagedCalendarLines, needsLookItems, ID, PAGE, row, text, btn, panel, homeBtn, plural, whenLine, stamp, seasonRows, counts, newsRows, calendarDrawsWithoutDraw, isStaged, pageView, listView, botLookView, previewDoc, needsLook, needsLookView, origin, draftDrawsView, draftDrawModal, draftRemoveModal, promoteConfirm, promoteModal, discardConfirm, resultView };

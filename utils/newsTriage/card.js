@@ -161,7 +161,7 @@ function buildBriefing(b, { dayLabel } = {}) {
 }
 
 // The promote check (his pick 4). r: pipeline.draftReadiness. A tick for what is set, a warning for what is missing, and the step that remains.
-function buildPromoteCheck(r) {
+function buildPromoteCheck(r, reviewLines = []) {
     const ok = emojis.checkmark; const warn = emojis.warn;
     const good = []; const bad = [];
     (r.title ? good : bad).push(r.title ? `Title: ${r.title}` : 'No season title');
@@ -178,6 +178,8 @@ function buildPromoteCheck(r) {
     if (r.leakOnly.length) bad.push(`Expected, not confirmed yet: ${listNames(r.leakOnly)}`);
     if ((r.undated || []).length) bad.push(`No post ever dated these; they will show as starting on day one: ${listNames(r.undated)}`);
     if ((r.stillRunning || []).length) bad.push(`Live with no end date, may run into this season: ${listNames(r.stillRunning)}`);
+    // The review Promote opens with (utils/promoteReview.js, 2026-11-11 21:40 EST), posted the day before so he sees it in time.
+    for (const line of reviewLines || []) bad.push(line);
     const when = r.startsAt ? `<t:${Math.floor(new Date(r.startsAt).getTime() / 1000)}:R>` : 'soon';
     // With auto-promote set (2026-11-08 12:52 EST) the last step is already scheduled, so the card says so instead of asking him to promote by hand.
     const step = r.autoPromote ? `-# Auto-promote is set: the draft goes live ${when}. Cancel it in /manage → Next Season Draft.` : `-# Check, then Promote to Live from /manage → Next Season Draft once it starts.`;

@@ -24,7 +24,12 @@ const getDoc = async () => (await require('../../../models/SeasonalData').findOn
 const ctx = () => ({ gate, ack, show, say, getDoc, home, revertButton });
 const PAGE_KEY = { live: 'season_titlesdeadlines', draft: 'seasondraft' };
 
-// ---------- answering ----------
+// ---------- answering ---------- The review before Promote: the season document plus the draw index (for the draws whose items or type disagree with it). A missing index only drops that one section.
+async function reviewOf(doc) {
+    let catalog = null;
+    try { catalog = await require('../../../models/DrawCatalog').find({}, { slug: 1, title: 1, aliases: 1, priceType: 1, items: 1 }).lean(); } catch { catalog = null; }
+    return require('../../../utils/promoteReview').promoteReview(doc, { catalog });
+}
 async function ack(interaction, { ephemeral = true } = {}) {
     if (interaction.deferred || interaction.replied) return;
     if (interaction.isChatInputCommand?.() || (interaction.isModalSubmit?.() && !interaction.message)) await interaction.deferReply({ flags: ephemeral ? 64 : 0 });
@@ -248,8 +253,8 @@ async function route(interaction) {
         if (!(await gate(interaction, verb))) return;
         const doc = await getDoc();
         if (!V.isStaged(doc)) return show(interaction, await home('draft', doc, `${emojis.cross} No draft in progress — nothing to ${verb}.`, interaction));
-        // Promote opens a pop-up: now, or at the Battle Pass start (2026-11-08 12:09 EST). The old in-place confirm card (promoteok) still answers a panel drawn before this.
-        if (verb === 'promote') return interaction.showModal(V.promoteModal(doc));
+        // Promote opens the review first (2026-11-11 21:40 EST, his ask): what the final carry-over adds, look-alike rows, ends a day off the Battle Pass, rows with no end, draws that disagree with the draw index, and Needs a Look. Promote Now (promoteok) and Auto-Promote (autoon) are on it. The pop-up (promm) still answers one opened before this.
+        if (verb === 'promote') return show(interaction, V.promoteReviewView(doc, await reviewOf(doc)));
         return show(interaction, V.discardConfirm(doc));
     }
     if (verb === 'promm' && interaction.isModalSubmit?.()) {
@@ -265,13 +270,26 @@ async function route(interaction) {
             const note = r.ok ? `### ${emojis.checkmark} Auto-promote set\nThe draft goes live <t:${at}:F> (<t:${at}:R>), at the Battle Pass start. Moving that start moves the promote with it. You get a DM when it runs.` : `### ${emojis.cross} Not set\n${require('../season').extractCommitError ? require('../season').extractCommitError(r) : (r.failedAt?.errors || []).join(' ')}`;
             return show(interaction, await home('draft', doc, note.slice(0, 1800), interaction));
         }
+        const reviewed = await reviewOf(await getDoc());
         const r = await season().runPromoteDraft(interaction.user.id);
+        // A record of every promote, not only an automatic one (2026-11-11 21:40 EST): the owner DM auto-promote sends goes out for a manual promote too, with what went live and the review it went live with.
+        if (r.ok) require('../../../utils/autoPromote').notifyPromoted({ message: r.message, changeIds: r.changeIds, review: reviewed, manual: true, actorId: interaction.user.id }).catch(e => console.error('promote: owner DM failed:', e.message));
         return show(interaction, V.resultView({
             crumbs: ['Next Season Draft', 'Promote'], ok: r.ok, title: r.ok ? 'Promoted to live' : 'Nothing was promoted',
             body: [r.message],
             back: r.ok ? ['view', 'live'] : ['view', 'draft'], backLabel: r.ok ? 'Live Season' : 'Next Season Draft',
             extraButtons: r.ok ? revertButton(r.changeIds) : [],
         }));
+    }
+    if (verb === 'autoon') {
+        if (!(await gate(interaction, 'promote')) || !(await gateDestructive(interaction, 'promote'))) return;
+        await ack(interaction);
+        const { commitSet } = require('../../../core/changeset');
+        const r = await commitSet([{ type: 'season.setAutoPromote', payload: { on: true, by: interaction.user.id } }], { actorId: interaction.user.id });
+        const doc = await getDoc();
+        const at = doc?.draft?.bpStart ? Math.floor(new Date(doc.draft.bpStart).getTime() / 1000) : null;
+        const note = r.ok ? `### ${emojis.checkmark} Auto-promote set\nThe draft goes live <t:${at}:F> (<t:${at}:R>), at the Battle Pass start. You get a DM when it runs, with this review.` : `### ${emojis.cross} Auto-promote not set\n${(r.failedAt?.errors || []).join(' ') || 'It was refused.'}`;
+        return show(interaction, await home('draft', doc, note.slice(0, 1800), interaction));
     }
     if (verb === 'autooff') {
         if (!(await gate(interaction, 'promote'))) return;
@@ -282,7 +300,10 @@ async function route(interaction) {
     if (verb === 'promoteok') {
         if (!(await gate(interaction, 'promote')) || !(await gateDestructive(interaction, 'promote'))) return;
         await ack(interaction);
+        const reviewed = await reviewOf(await getDoc());
         const r = await season().runPromoteDraft(interaction.user.id);
+        // A record of every promote, not only an automatic one (2026-11-11 21:40 EST): the owner DM auto-promote sends goes out for a manual promote too, with what went live and the review it went live with.
+        if (r.ok) require('../../../utils/autoPromote').notifyPromoted({ message: r.message, changeIds: r.changeIds, review: reviewed, manual: true, actorId: interaction.user.id }).catch(e => console.error('promote: owner DM failed:', e.message));
         return show(interaction, V.resultView({
             crumbs: ['Next Season Draft', 'Promote'], ok: r.ok, title: r.ok ? 'Promoted to live' : 'Nothing was promoted',
             body: [r.message],

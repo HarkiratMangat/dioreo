@@ -66,6 +66,49 @@ const emptyDraft = () => ({ ...live(), draft: { active: false, newDraws: [], ret
 
     // 2026-11-11 21:33 EST: Promote's result had Back = Live Season = Home's own id, Discord refused the duplicate custom_id, and the promote went live with nothing drawn. Every panel's result view, with Back set to its own Home, must carry each custom_id once.
 
+    // The review before Promote (2026-11-11 21:40 EST, his ask): a busy review stays inside Discord's limits, every finding sits with its fix, and nothing goes live from it but Promote Now or Auto-Promote.
+
+    await check('the review before Promote stays inside the limits and offers Back, Auto-Promote and Promote Now', () => {
+
+        const V = require('../handlers/manage/seasonPanel/views');
+
+        const later = new Date(Date.now() + 3 * 864e5);
+
+        const many = (n, f) => Array.from({ length: n }, (_, i) => f(i));
+
+        const doc = { currentSeasonTitle: 'Season 9', newDraws: [], returningDraws: [], calendar: [], patchNotes: [], draft: { active: true, currentSeasonTitle: 'Season 10', bpStart: later, newDraws: many(30, i => ({ _id: String(i).padStart(24, '0'), title: `Draw ${i}`, items: [] })), returningDraws: [], calendar: many(40, i => ({ _id: String(100 + i).padStart(24, '0'), title: `Row ${i}`, category: 'event' })) } };
+
+        const review = { carried: many(20, i => ({ list: 'calendar', title: `Carried ${i}` })), twins: many(9, i => [`A ${i} Offer`, `A ${i} Event`]), seam: many(8, i => ({ title: `Seam ${i}`, end: 'Dec 9', bpEnd: 'Dec 10', before: true })), noEnd: many(12, i => `No End ${i}`), index: many(8, i => ({ title: `Idx ${i}`, what: ['items'] })) };
+
+        const view = V.promoteReviewView(doc, review);
+
+        const all = []; const walk = (n) => { if (Array.isArray(n)) return n.forEach(walk); if (n && typeof n === 'object') { if (n.type) all.push(n); Object.values(n).forEach(walk); } }; walk(view);
+
+        const json = JSON.stringify(view);
+
+        assert.ok(all.length <= 40, `components: ${all.length}`);
+
+        const chars = all.filter(c => c.type === 10).reduce((t, c) => t + c.content.length, 0);
+
+        assert.ok(chars <= 4000, `characters: ${chars}`);
+
+        const ids = all.filter(c => c.custom_id).map(c => c.custom_id);
+
+        assert.deepStrictEqual(ids.filter((x, i) => ids.indexOf(x) !== i), [], 'custom ids repeat');
+
+        for (const r of all.filter(c => c.type === 1)) assert.ok(r.components.length <= 5);
+
+        for (const want of ['mng_ss|view|draft', 'mng_ss|autoon', 'mng_ss|promoteok']) assert.ok(ids.includes(want), want);
+
+        assert.ok(/Review before Promote/.test(json) && /Carried over at Promote/.test(json) && /same thing twice/.test(json));
+
+        const clean = V.promoteReviewView({ ...doc, draft: { ...doc.draft, bpStart: new Date(Date.now() - 864e5) } }, { carried: [], twins: [], seam: [], noEnd: [], index: [] });
+
+        assert.ok(!JSON.stringify(clean).includes('mng_ss|autoon'), 'no Auto-Promote once the start has passed');
+
+    });
+
+
     await check('a result whose Back is Home carries each custom id once, in every /manage panel', () => {
 
         const ids = (node, out = []) => { if (Array.isArray(node)) node.forEach(n => ids(n, out)); else if (node && typeof node === 'object') { if (node.custom_id) out.push(node.custom_id); Object.values(node).forEach(v => ids(v, out)); } return out; };
