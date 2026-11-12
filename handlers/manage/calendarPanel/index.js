@@ -246,7 +246,7 @@ async function route(interaction) {
         const e = ((await getDoc())?.calendar || []).find(x => `c:${x._id}` === a);
         if (!e) return show(interaction, await home(await getDoc(), `${emojis.cross} That entry no longer exists.`, interaction));
         const day = (x) => { const iso = new Date(x).toISOString(); return iso.slice(11, 16) === '00:00' ? iso.slice(0, 10) : `${iso.slice(0, 10)} ${iso.slice(11, 16)} UTC`; };
-        const line = [e.title, e.date ? `starts ${day(e.date)}` : null, e.endDate ? `ends ${day(e.endDate)}` : null].filter(Boolean).join(', ');
+        const line = [e.title, e.date ? `starts ${day(e.date)}` : null, e.endDate ? `ends ${day(require('../../../utils/adminParser').endDayOf(e.endDate))}` : null].filter(Boolean).join(', ');
         return interaction.showModal(m.buildQuickAddModal({ value: line }));
     }
     if (verb === 'paste') {

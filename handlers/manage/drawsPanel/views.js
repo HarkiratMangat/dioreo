@@ -336,7 +336,7 @@ function endModal(customId, { title = '', row: calRow = null, count = 0 } = {}) 
                 { value: 'season', label: 'With the season (All Season)', ...(now === 'season' ? { default: true } : {}) },
                 { value: 'tbd', label: 'Not announced yet (TBD)', ...(now === 'tbd' ? { default: true } : {}) },
             ] }),
-            labelled('Date', { type: 4, custom_id: 'date', style: 1, required: false, max_length: 60, placeholder: 'Nov 20 · Nov 20 7pm edt · 13d 23h', ...(calRow?.endDate ? { value: formatAdminDate(new Date(calRow.endDate)) } : {}) }, 'A date, a time (Toronto unless a zone is typed) or the game\'s countdown'),
+            labelled('Date', { type: 4, custom_id: 'date', style: 1, required: false, max_length: 60, placeholder: 'Nov 20 · Nov 20 7pm edt · 13d 23h', ...(calRow?.endDate ? { value: require('../../../utils/adminParser').formatAdminEndDate(new Date(calRow.endDate)) } : {}) }, 'A date, a time (Toronto unless a zone is typed) or the game\'s countdown'),
         ],
     };
 }

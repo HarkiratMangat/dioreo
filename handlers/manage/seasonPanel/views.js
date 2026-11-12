@@ -308,7 +308,7 @@ function unstagedCalendarLines(doc, max = 10) {
     // A draw still on the LIVE /draws keeps its live section, as the daily carry-over files it (utils/newsTriage/draftMerge.js); any other line takes the tab Quick Add opens in (New).
     const liveSection = (title) => ((doc?.returningDraws || []).some(x => isSameDrawTitle(x.title, title)) ? 'returning' : (doc?.newDraws || []).some(x => isSameDrawTitle(x.title, title)) ? 'new' : null);
     return (d.calendar || []).filter(c => c.category === 'draw' && !draws.some(x => isSameDrawTitle(x.title, c.title)))
-        .slice(0, max).map(c => [c.title, liveSection(c.title), c.date ? `starts ${day(c.date)}` : null, c.endDate ? `ends ${day(c.endDate)}` : null].filter(Boolean).join(', '));
+        .slice(0, max).map(c => [c.title, liveSection(c.title), c.date ? `starts ${day(c.date)}` : null, c.endDate ? `ends ${day(require('../../../utils/adminParser').endDayOf(c.endDate))}` : null].filter(Boolean).join(', '));
 }
 function needsLookView(doc) {
     const items = needsLookItems(doc);

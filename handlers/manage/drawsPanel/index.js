@@ -295,7 +295,7 @@ function readEnd(interaction, d = null) {
     try { choice = readChoice(interaction, 'when')[0] || 'date'; } catch { choice = 'date'; }
     const typed = String(field(interaction, 'date') || '').trim();
     if (choice !== 'date') {
-        const opened = d?._row?.endDate ? formatAdminDate(new Date(d._row.endDate)) : '';
+        const opened = d?._row?.endDate ? require('../../../utils/adminParser').formatAdminEndDate(new Date(d._row.endDate)) : '';
         const note = typed && typed !== opened ? `-# The date box was left out: ${choice === 'season' ? 'With the season' : 'Not announced yet'} was picked.` : null;
         return { choice, endDate: null, note };
     }

@@ -134,12 +134,12 @@ const lastToken = () => [...quick.DRAFTS.keys()].at(-1);
             { title: 'Lunar Festival', category: 'event', date: new Date('2026-12-02T00:00:00Z') },
             { title: 'Night Market Draw', category: 'draw', date: new Date('2026-12-05T19:00:00Z') },
         ] });
-        assert.deepStrictEqual(SV.unstagedCalendarLines(doc), ['Iron Wolf Draw, starts 2026-11-20, ends 2027-02-17', 'Night Market Draw, starts 2026-12-05 19:00 UTC']);
+        assert.deepStrictEqual(SV.unstagedCalendarLines(doc), ['Iron Wolf Draw, starts 2026-11-20, ends 2027-02-16', 'Night Market Draw, starts 2026-12-05 19:00 UTC'] /* the listed (inclusive) end day, which Quick Add reads back to Feb 17 00:00 UTC */);
         const view = JSON.stringify(SV.needsLookView(doc));
         assert.ok(/Stage These · 2/.test(view) && view.includes('ddstage'), 'the button, with its count');
         assert.ok(!/Stage These/.test(JSON.stringify(SV.needsLookView(draftDoc()))), 'no button when nothing is unstaged');
         // A draw still live on /draws keeps its live section, as the carry-over files it.
-        assert.deepStrictEqual(SV.unstagedCalendarLines({ ...doc, returningDraws: [{ title: 'Iron Wolf Draw' }] })[0], 'Iron Wolf Draw, returning, starts 2026-11-20, ends 2027-02-17');
+        assert.deepStrictEqual(SV.unstagedCalendarLines({ ...doc, returningDraws: [{ title: 'Iron Wolf Draw' }] })[0], 'Iron Wolf Draw, returning, starts 2026-11-20, ends 2027-02-16');
     });
 
     await check("Stage These: staging a line copied from its calendar row adds the draw and leaves the row alone", async () => {

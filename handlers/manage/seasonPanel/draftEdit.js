@@ -66,7 +66,7 @@ function drawsPreview(plan, token) {
         row(btn(['dps', token], plan.count ? `Stage ${plan.count}` : 'Nothing to Stage', emojis.checkmark, 3, !plan.count), btn(['dpe', token], 'Edit Paste', emojis.edit), btn(['dd', 'n', 0], 'Back', emojis.returnArrow)),
     ]);
 }
-const calWhen = (r) => `${day(r.date)} › ${r.isOngoing ? 'All Season' : r.endDate ? day(r.endDate) : 'TBD'}`;
+const calWhen = (r) => `${day(r.date)} › ${r.isOngoing ? 'All Season' : r.endDate ? day(require('../../../utils/adminParser').endDayOf(r.endDate)) : 'TBD'}`;
 function calendarPreview(plan, token) {
     const parts = [];
     if (plan.added.length) parts.push(`**${emojis.mngAdd} Added · ${plan.added.length}**\n${list(plan.added.map(a => `- ${a.row.title} · ${a.row.category} · ${calWhen(a.row)}${a.row.isDoubleCP ? ' · 2X CP' : ''}`))}`);
@@ -161,7 +161,7 @@ function drawCardView(doc, sec, id, note = null, extraRow = null) {
 }
 function drawEndModal(sec, draw, cal) {
     const { formatAdminDate } = require('../../../utils/adminParser');
-    const value = cal?.endDate ? formatAdminDate(cal.endDate) : cal && !cal.isOngoing ? 'TBD' : '';
+    const value = cal?.endDate ? require('../../../utils/adminParser').formatAdminEndDate(cal.endDate) : cal && !cal.isOngoing ? 'TBD' : '';
     return { title: 'Draft Draw: End Date', custom_id: V.ID('ddendm', sec, String(draw._id)), components: [{ type: 18, label: 'End date (blank or TBD = not known yet)', description: String(draw.title || '').slice(0, 100), component: { type: 4, custom_id: 'end', style: 1, required: false, placeholder: 'e.g. December 3', ...(value ? { value } : {}) } }] };
 }
 function bannersModal(doc) {

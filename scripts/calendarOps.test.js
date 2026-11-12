@@ -192,7 +192,7 @@ check('a TBD row round-trips through the export, the single Add/Edit validation 
     const blank = ops.resolveOp('calendar.add').validate({ type: 'calendar.add', payload: { title: 'X', startDate: '11/12', endDate: '' } });
     assert.strictEqual(blank.normalized.payload.isOngoing, true, 'blank is still All Season');
     const src = require('fs').readFileSync(require.resolve('../commands/manage.js'), 'utf8');
-    assert.ok(src.includes("targetEvent.endDate ? formatAdminDate(targetEvent.endDate) : 'TBD'"), 'the Edit pop-up prefills TBD for a row with no end that is not ongoing');
+    assert.ok(src.includes("targetEvent.endDate ? require('../utils/adminParser').formatAdminEndDate(targetEvent.endDate) : 'TBD'"), 'the Edit pop-up prefills TBD for a row with no end that is not ongoing');
 });
 
 process.exit(failures ? 1 : 0);

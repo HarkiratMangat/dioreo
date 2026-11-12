@@ -31,7 +31,7 @@ t('a mistyped date is still split off, so it is reported rather than folded into
 t('a range gives a start and an end, each at midnight UTC', () => {
     const r = parseAdminDateRange('August 6, 2026 - November 17, 2026');
     assert.strictEqual(r.start.toISOString(), '2026-08-06T00:00:00.000Z');
-    assert.strictEqual(r.end.toISOString(), '2026-11-17T00:00:00.000Z');
+    assert.strictEqual(r.end.toISOString(), '2026-11-18T00:00:00.000Z', 'the listed end day is inclusive');
     assert.strictEqual(r.endTBD, false);
     assert.ok(parseAdminDateRange('Aug 6 to Nov 17'), '"to" works as the separator');
 });
@@ -53,10 +53,10 @@ t('a season line with a range sets the start; a single date clears it; a blank l
     const skipped = [];
     const ranged = applyFields(current, {}, 'bp', 'Battle Pass, Aug 6, 2026 - Nov 17, 2026', 'Battle Pass', skipped);
     assert.strictEqual(ranged.start.toISOString(), '2026-08-06T00:00:00.000Z');
-    assert.strictEqual(ranged.end.toISOString(), '2026-11-17T00:00:00.000Z');
+    assert.strictEqual(ranged.end.toISOString(), '2026-11-18T00:00:00.000Z');
     const single = applyFields(ranged, {}, 'bp', 'Battle Pass, Nov 20, 2026', 'Battle Pass', skipped);
     assert.strictEqual(single.start, null);
-    assert.strictEqual(single.end.toISOString(), '2026-11-20T00:00:00.000Z');
+    assert.strictEqual(single.end.toISOString(), '2026-11-21T00:00:00.000Z');
     const untouched = applyFields(ranged, {}, 'bp', '', 'Battle Pass', skipped);
     assert.strictEqual(untouched.start, ranged.start);
     assert.deepStrictEqual(skipped, []);

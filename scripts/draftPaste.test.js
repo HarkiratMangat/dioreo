@@ -105,7 +105,7 @@ const tokenIn = (i, verb) => (i.text().match(new RegExp(`mng_ss\\|${verb}\\|([0-
         assert.ok(card.text().includes('Set End Date') && card.text().includes('Move to Returning'), card.text().slice(0, 300));
         await handleSeasonPanelInteraction(h.modal(`mng_ss|ddendm|n|${iw._id}`, { end: 'December 19 2026' }));
         const row = h.state.doc.draft.calendar.find(c => c.category === 'draw');
-        assert.ok(row && new Date(row.endDate).getUTCDate() === 19, JSON.stringify(h.state.doc.draft.calendar));
+        assert.ok(row && new Date(row.endDate).getUTCDate() === 20, JSON.stringify(h.state.doc.draft.calendar)); // December 19 runs through Dec 19: ends Dec 20 00:00 UTC
         await handleSeasonPanelInteraction(button(`mng_ss|ddmv|n|${iw._id}`));
         assert.strictEqual(h.state.doc.draft.newDraws.length, 0);
         assert.deepStrictEqual(h.state.doc.draft.returningDraws.map(d => String(d._id)), [String(iw._id)], 'moved with its _id');

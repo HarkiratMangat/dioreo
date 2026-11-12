@@ -9,7 +9,7 @@ const valid = (d) => Boolean(d) && Number.isFinite(new Date(d).getTime());
 // The box's text for a draw: "September 10, 2026 - November 12, 2026" with an end, "September 10, 2026" without, empty with no date. The season box shows the same long form.
 function formatDrawDates(start, end) {
     const s = valid(start) ? formatAdminDate(start) : '';
-    const e = valid(end) ? formatAdminDate(end) : '';
+    const e = valid(end) ? require('./adminParser').formatAdminEndDate(end) : ''; // the listed (inclusive) end day
     return s && e ? `${s} - ${e}` : s;
 }
 
@@ -18,7 +18,7 @@ function formatDrawDatesForBulk(start, end) {
     // "September 10 2026": no comma to split on, and it has a space, so Add Multiple does not mistake it for an image link when no link follows (an ISO date with no link after it is read as the link).
     const plain = (d) => new Date(d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' }).replace(',', '');
     if (!valid(start)) return '';
-    return valid(end) ? `${plain(start)} - ${plain(end)}` : plain(start);
+    return valid(end) ? `${plain(start)} - ${plain(require('./adminParser').endDayOf(end))}` : plain(start);
 }
 
 // The box's text -> { ok, start, end } or { ok: false, error }. An end of TBD, or none, is "no end". An end that cannot be read is REPORTED, never dropped: the season box's own rule ("an unparseable date is reported, never silently kept").

@@ -144,8 +144,8 @@ function seasonDoc() {
     await check('the preview names Added, Changed (with what), Unchanged and Not read on a crafted paste', () => {
         const doc = seasonDoc();
         doc.calendar = [
-            { _id: oid(1), title: 'Throwable Frenzy MP Mode', category: 'playlist', date: new Date(Date.UTC(2026, 6, 2)), endDate: new Date(Date.UTC(2026, 7, 5)), isOngoing: false },
-            { _id: oid(2), title: 'Nuketown Playlist', category: 'playlist', date: new Date(Date.UTC(2026, 6, 6)), endDate: new Date(Date.UTC(2026, 6, 19)), isOngoing: false },
+            { _id: oid(1), title: 'Throwable Frenzy MP Mode', category: 'playlist', date: new Date(Date.UTC(2026, 6, 2)), endDate: new Date(Date.UTC(2026, 7, 6)), isOngoing: false }, // listed 8/5, inclusive: ends 8/6 00:00 UTC
+            { _id: oid(2), title: 'Nuketown Playlist', category: 'playlist', date: new Date(Date.UTC(2026, 6, 6)), endDate: new Date(Date.UTC(2026, 6, 20)), isOngoing: false },
         ];
         const paste = [
             'p• 7/2 - 8/5 | Throwable Frenzy MP Mode',          // unchanged

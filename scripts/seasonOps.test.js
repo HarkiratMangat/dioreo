@@ -38,7 +38,7 @@ check('a date on its own is the START in the draft box and the END in the live b
     assert.ok(draft.start instanceof Date && draft.start.getUTCDate() === 12, 'the draft reads it as the start');
     assert.strictEqual(draft.end, null); assert.strictEqual(draft.endTBD, true);
     const live = applyFields(cur, {}, 'bp', 'Battle Pass, November 12', 'Battle Pass', []);
-    assert.ok(live.end instanceof Date && live.end.getUTCDate() === 12, 'the live box reads it as the end');
+    assert.ok(live.end instanceof Date && live.end.getUTCDate() === 13, 'the live box reads it as the end, inclusive: Nov 12 runs through Nov 12');
     assert.strictEqual(live.start, null);
     const range = applyFields(cur, {}, 'bp', 'Battle Pass, November 12 - December 10', 'Battle Pass', [], { loneDate: 'start' });
     assert.ok(range.start && range.end, 'a range still sets both');

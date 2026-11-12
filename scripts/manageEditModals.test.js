@@ -31,7 +31,7 @@ check('Edit Draw still pre-fills a normal draw (the falsifier: the guard did not
 });
 
 check('Edit Draw shows the end date from the draw\'s calendar row, as the season box does', () => {
-    const row = { endDate: new Date('2026-11-12T00:00:00Z') };
+    const row = { endDate: new Date('2026-11-13T00:00:00Z') }; // ends 00:00 UTC Nov 13: the listed (inclusive) day is Nov 12
     const modal = manage.buildEditDrawModal({ title: 'T', date: new Date('2026-09-10T00:00:00Z'), items: [{ tier: 'legendary', name: 'A' }] }, 'abc', 'new', row);
     assert.strictEqual(valueOf(modal, 'draw'), 'T\nSeptember 10, 2026 - November 12, 2026');
 });

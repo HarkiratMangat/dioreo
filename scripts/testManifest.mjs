@@ -53,6 +53,7 @@ export const TESTS = [
     {"cmd": "node scripts/drawCatalog.test.js", "lane": "unit"},
     {"cmd": "node scripts/quickAdd.test.js", "lane": "unit"},
     {"cmd": "node scripts/countdown.test.js", "lane": "unit"},
+    {"cmd": "node scripts/inclusiveEnd.test.js", "lane": "unit"},
     {"cmd": "node scripts/drawsFilter.test.js", "lane": "unit"},
     {"cmd": "node scripts/formChoice.test.js", "lane": "unit"},
     {"cmd": "node scripts/botControls.test.js", "lane": "unit"},

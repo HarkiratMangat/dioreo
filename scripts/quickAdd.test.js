@@ -51,7 +51,7 @@ t('his three examples read the dates he meant', () => {
     const a = qa.parseQuickLine('cx9 mythic draw, starts in 2 days, ends Nov 5', opts);
     assert.strictEqual(a.query, 'cx9 mythic draw');
     assert.strictEqual(iso(a.start.date), '2026-11-03T00:00:00.000Z');
-    assert.strictEqual(iso(a.end.date), '2026-11-05T00:00:00.000Z');
+    assert.strictEqual(iso(a.end.date), '2026-11-06T00:00:00.000Z', 'an end day is inclusive (2026-11-11 21:52 EST)');
     assert.strictEqual(a.start.timed, false);
     const b = qa.parseQuickLine('Herrscher armory, ends in 28 days', opts);
     assert.strictEqual(b.start, null);
@@ -74,7 +74,7 @@ t('a time with no zone is Toronto time; a date with none is 00:00 UTC; a typed z
     assert.strictEqual(end('Nov 12 7pm pdt'), '2026-11-13T03:00:00.000Z');
     assert.strictEqual(end('Nov 12 7pm gmt'), '2026-11-12T19:00:00.000Z', 'GMT is UTC, never London summer time');
     assert.strictEqual(end('Nov 12 7pm tokyo'), '2026-11-12T10:00:00.000Z');
-    assert.strictEqual(end('Nov 12'), '2026-11-12T00:00:00.000Z');
+    assert.strictEqual(end('Nov 12'), '2026-11-13T00:00:00.000Z', 'an end day with no time runs through that day');
     const untimed = qa.parseQuickLine('x, until Nov 12', opts).end;
     assert.strictEqual(untimed.timed, false);
 });
@@ -82,7 +82,7 @@ t('a time with no zone is Toronto time; a date with none is 00:00 UTC; a typed z
 t('an unlabelled date is the start and a second one the end; nonsense is reported, not guessed', () => {
     const a = qa.parseQuickLine('x, Nov 3, Nov 10', opts);
     assert.strictEqual(iso(a.start.date), '2026-11-03T00:00:00.000Z');
-    assert.strictEqual(iso(a.end.date), '2026-11-10T00:00:00.000Z');
+    assert.strictEqual(iso(a.end.date), '2026-11-11T00:00:00.000Z', 'the end day is inclusive');
     const b = qa.parseQuickLine('x, ends whenever', opts);
     assert.strictEqual(b.end, null);
     assert.match(b.problems[0], /Couldn't read "ends whenever"/);
@@ -143,7 +143,7 @@ t('Pick: the draw he chooses replaces the guess, with the line’s own dates; ke
     assert.strictEqual(picked.title, 'Hollow Flight Mythic Drop');
     assert.strictEqual(picked.sure, true);
     assert.deepStrictEqual(picked.candidates, []);
-    assert.strictEqual(iso(picked.end), '2026-11-20T00:00:00.000Z');
+    assert.strictEqual(iso(picked.end), '2026-11-21T00:00:00.000Z', 'ends Nov 20 runs through Nov 20');
     const typed = qa.draftFromLine(parsed, { entries: ENTRIES, seasonalDoc: DOC, isSameTitle: isSameDrawTitle, ...opts, pick: qa.TYPED });
     assert.strictEqual(typed.title, 'Cx9');
     assert.strictEqual(typed.matchedBy, null);
@@ -227,11 +227,11 @@ t('a month and day already passed stays this year, even after the UTC date rolls
     const day = (line, slot) => qa.parseQuickLine(line, { now: evening, zone: 'America/Toronto' })[slot]?.date.toISOString().slice(0, 10);
     assert.strictEqual(day('tide, starts nov 9', 'start'), '2026-11-09', 'was 2027-11-09');
     assert.strictEqual(day('tide, starts oct 30, ends nov 23', 'start'), '2026-10-30');
-    assert.strictEqual(day('tide, ends nov 3', 'end'), '2026-11-03');
+    assert.strictEqual(day('tide, ends nov 3', 'end'), '2026-11-04', 'ends Nov 3 runs through Nov 3');
     assert.strictEqual(day('tide, starts jan 5', 'start'), '2027-01-05', 'a date months away still moves ahead');
     assert.strictEqual(day('tide, nov 5 - nov 20', 'start'), '2026-11-05', 'a range fills the start');
-    assert.strictEqual(day('tide, nov 5 - nov 20', 'end'), '2026-11-20', 'and the end, in the same year');
-    assert.strictEqual(day('tide, dec 20 - jan 3', 'end'), '2027-01-03', 'a range over New Year ends next year');
+    assert.strictEqual(day('tide, nov 5 - nov 20', 'end'), '2026-11-21', 'and the end (inclusive), in the same year');
+    assert.strictEqual(day('tide, dec 20 - jan 3', 'end'), '2027-01-04', 'a range over New Year ends next year');
 });
 t('Add to Calendar reads the post\'s dates, skips a bare "now", and keeps a passed date this year', () => {
     const { calendarPrefill } = require('../commands/addToCalendar');

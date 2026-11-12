@@ -70,10 +70,28 @@ function parseAdminDate(dateStr) {
 // A season line's date part as a RANGE ("Aug 6 - Nov 17", "August 6, 2026 to November 17, 2026"), each end normalised like parseAdminDate. A start with "TBD" as its end ("Aug 6 - TBD") gives endTBD. Null when the text is not a range that covers the whole string (2026-10-21 10:17 EDT, the season progress bar's start dates). "July 15-August 20", "Aug 6-Nov 17", "7/15-8/20": a range typed with no spaces round its dash. chrono reads "15-August 20" as ONE date (2020-08-15) and drops the start, so the range was lost and a wrong date saved without a word (found 2026-11-04 09:25 EST, lead review of #249; the draw forms' "Start - End" label invites exactly this). The dash is spaced when a letter touches it or it sits between two slash dates; an ISO date's own dashes (2026-09-10) touch only digits and are left alone.
 const spaceRangeDash = (s) => s.replace(/\s*[–—]\s*/g, ' - ').replace(/\s*-\s*(?=[A-Za-z])|(?<=[A-Za-z.])\s*-\s*/g, ' - ').replace(/(?<=\d\/\d{1,2})-(?=\d{1,2}\/)/g, ' - ');
 
-// An END date box: the game's countdown ("13d 23h", 2026-11-10) is the midnight UTC it ends at, counted from when it is typed (utils/countdown.js); anything else reads as parseAdminDate. Only end boxes call this: a countdown typed as a START stays unreadable (null), as it always was, because a start is never snapped to midnight (draws and seasons start at a set hour). The snap first sat inside parseAdminDate and so reached every start box too (announcement start, calendar start), found by the 2026-11-10 think pass before it shipped.
+// An END date box: the game's countdown ("13d 23h", 2026-11-10) is the midnight UTC it ends at, counted from when it is typed (utils/countdown.js); anything else reads as parseAdminDate. Only end boxes call this: a countdown typed as a START stays unreadable (null), as it always was, because a start is never snapped to midnight (draws and seasons start at a set hour). The snap first sat inside parseAdminDate and so reached every start box too (announcement start, calendar start), found by the 2026-11-10 think pass before it shipped. 🔴 A TYPED END DAY IS INCLUSIVE (2026-11-11 21:48 EST, settled by the game): the official Season 10 calendar lists Super Attack of the Undead 3.0 as 11/12 - 12/9 ("All Dates UTC") and the game counted it down to 12/10 00:00 UTC, so a listed end day runs THROUGH that day and the row ends at 00:00 UTC of the NEXT day. Before this every typed end was stored a day early. A countdown is the exact end and never shifts; a typed TIME keeps today's reading (that day's 00:00 UTC); an ISO day ("2026-12-10", what the portal's date fields send and show) is read as it is, so the portal's own round trip does not move. Everything that writes a stored end back as a day (the boxes, Export, Bulk Paste text) writes `endDayOf(end)`, the day before, so an untouched save reads back the same end.
+const DAY_MS = 24 * 60 * 60 * 1000;
+// A relative end ("in 3 days", "tomorrow") is a moment counted from now, like the game's countdown, so it never shifts; only a CALENDAR day does.
+const RELATIVE_END = /\b(in\s+\d+|ago|today|tonight|tomorrow|yesterday|next|this|from now)\b/i;
+const isIsoDay = (s) => /^\d{4}-\d{2}-\d{2}(?:$|T)/.test(String(s || '').trim());
+// The listed day of a stored end: the day before it, whatever its time, so a box or an export written from it reads back to the same UTC day (a stored 15:00 end written as its own day would read back a day later).
+function endDayOf(date) {
+    if (!date) return date;
+    const d = new Date(date);
+    return Number.isFinite(d.getTime()) ? new Date(d.getTime() - DAY_MS) : date;
+}
+function formatAdminEndDate(date) {
+    return date ? formatAdminDate(endDayOf(date)) : '';
+}
 function parseAdminEndDate(dateStr, now = new Date()) {
-    const counted = require('./countdown').snapCountdown(String(dateStr || '').trim(), now);
-    return counted || parseAdminDate(String(dateStr || ''));
+    const text = String(dateStr || '').trim();
+    const counted = require('./countdown').snapCountdown(text, now);
+    if (counted) return counted;
+    const day = parseAdminDate(text);
+    if (!day || isIsoDay(text) || RELATIVE_END.test(text)) return day;
+    const r = chrono.parse(text, new Date(), { timezone: 0 })[0];
+    return r && r.start && r.start.isCertain('hour') ? day : new Date(day.getTime() + DAY_MS);
 }
 function parseAdminDateRange(dateStr) {
     const cleanStr = String(dateStr || '').trim();
@@ -100,7 +118,10 @@ function readAdminDateRange(cleanStr) {
     }
     const r = chrono.parse(cleanStr, new Date(), { timezone: 0 })[0];
     if (!r || !r.end || r.index !== 0 || r.text.trim().length < cleanStr.length) return null;
-    return { start: utcDay(r.start.date()), end: utcDay(r.end.date()), endTBD: false };
+    // The end is inclusive (parseAdminEndDate's header): a day with no time ends at 00:00 UTC the day after.
+    const endDay = utcDay(r.end.date());
+    const exact = r.end.isCertain('hour') || isIsoDay(String(r.text).split(/\s+(?:-|–|—|to)\s+/i).pop());
+    return { start: utcDay(r.start.date()), end: exact ? endDay : new Date(endDay.getTime() + DAY_MS), endTBD: false };
 }
 
 // True when the WHOLE string reads as a date or a date range, not merely contains one: chrono finds "November 17" inside "Part 2, November 17", which is a title, not a date.
@@ -335,7 +356,7 @@ function formatDrawsAsBulkText(draws, rowFor = null) {
         const itemsStr = draw.items.map(item => `${TIER_SHORTHAND[item.tier] || item.tier} ${item.name}`).join(', ');
         // A draw's end date is its /calendar row's; when the caller can look the row up, the export carries it as "Start - End" so it pastes back with its end (Add Multiple reads the range).
         const endRow = typeof rowFor === 'function' ? rowFor(draw) : null;
-        const dateStr = dayjs.utc(draw.date).format('MMMM D, YYYY') + (endRow && endRow.endDate ? ` - ${dayjs.utc(endRow.endDate).format('MMMM D, YYYY')}` : '');
+        const dateStr = dayjs.utc(draw.date).format('MMMM D, YYYY') + (endRow && endRow.endDate ? ` - ${dayjs.utc(endDayOf(endRow.endDate)).format('MMMM D, YYYY')}` : '');
         // The Draw Type tag rides right after the title, so an export pastes straight back with its type (2026-10-18 11:06 EDT).
         const typeStr = drawTypeCode(draw.priceType) ? `, type: ${drawTypeCode(draw.priceType)}` : '';
         // No picture, no link field (2026-11-10 11:03 EST): a draw with none exported as ", null" (or a bare ", "), and "null" read back as its date, so the line was skipped on paste.
@@ -658,7 +679,7 @@ function formatCalendarAsBulkText(calendar) {
     return calendar.map(event => {
         const startStr = dayjs.utc(event.date).format('M/D');
         // A row with no end writes "All Season", and a 2X CP row its marker, so the box reads back what it showed (the fresh review R1, 2026-11-05 20:14 EST): a null end wrote "Invalid Date", which the parser drops, and the 2X flag was lost on every save. A row with no end that is NOT ongoing writes "TBD" (2026-11-09 15:14 EST): the parser reads TBD back as that same row, where "All Season" would turn a not-yet-announced end into one that runs all season the next time the prefilled box is saved.
-        const endStr = event.isOngoing ? 'All Season' : !event.endDate ? 'TBD' : dayjs.utc(event.endDate).format('M/D');
+        const endStr = event.isOngoing ? 'All Season' : !event.endDate ? 'TBD' : dayjs.utc(endDayOf(event.endDate)).format('M/D');
         const prefix = CALENDAR_CATEGORY_TO_PREFIX[event.category] || 'e';
         return `${prefix}• ${startStr} - ${endStr} | ${event.title}${event.isDoubleCP ? ' 2x CP' : ''}`;
     }).join('\n');
@@ -714,4 +735,4 @@ function formatLoadoutsAsBulkText(loadouts) {
     }).join('\n\n');
 }
 
-module.exports = { PLACEHOLDER_IMAGE, gunsmithCodeProblem, toTitleCase, resolveTier, parseAdminDate, parseAdminEndDate, parseAdminDateRange, parseReleaseDateTime, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, formatReleaseDateTime, parseLoadoutBadges, loadoutBadgeTokens, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText, formatLoadoutsAsBulkText, correctGunsmithCode, correctAttachmentName, normalizeWeaponName, orderAttachmentsBySlot, normalizeCalendarCategory, guessCalendarCategory };
+module.exports = { PLACEHOLDER_IMAGE, gunsmithCodeProblem, toTitleCase, resolveTier, parseAdminDate, parseAdminEndDate, endDayOf, formatAdminEndDate, parseAdminDateRange, parseReleaseDateTime, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, formatReleaseDateTime, parseLoadoutBadges, loadoutBadgeTokens, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText, formatLoadoutsAsBulkText, correctGunsmithCode, correctAttachmentName, normalizeWeaponName, orderAttachmentsBySlot, normalizeCalendarCategory, guessCalendarCategory };

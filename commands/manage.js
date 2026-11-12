@@ -598,7 +598,7 @@ function buildEditCalendarModal(targetEvent, targetId) {
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('title').setLabel('Event Title').setStyle(TextInputStyle.Short).setValue(targetEvent.title)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('start_date').setLabel('Start Date').setStyle(TextInputStyle.Short).setValue(formatAdminDate(targetEvent.date))),
         // A row with no end that is not ongoing prefills "TBD" (2026-11-09 15:14 EST): a blank box saves as All Season, so a TBD row edited for a typo used to become one that runs all season.
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('end_date').setLabel('End Date (blank = All Season, or TBD)').setStyle(TextInputStyle.Short).setValue(targetEvent.isOngoing ? '' : targetEvent.endDate ? formatAdminDate(targetEvent.endDate) : 'TBD').setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('end_date').setLabel('End Date (blank = All Season, or TBD)').setStyle(TextInputStyle.Short).setValue(targetEvent.isOngoing ? '' : targetEvent.endDate ? require('../utils/adminParser').formatAdminEndDate(targetEvent.endDate) : 'TBD').setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('category').setLabel('Section (draw / event / playlist)').setStyle(TextInputStyle.Short).setValue(targetEvent.category || 'event').setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('double_cp').setLabel('Double CP Event? (Y/N)').setStyle(TextInputStyle.Short).setValue(targetEvent.isDoubleCP ? 'Yes' : 'No').setRequired(false))
     );
@@ -766,7 +766,7 @@ function withEmoji(emoji, title) {
 
 // A season line's date part: "start - end" when a start is stored (2026-10-21 10:17 EDT, /season end's progress bar), else the end alone, and "TBD" for a TBD end. core/ops/season.js reads either back.
 function seasonDates(start, end, endTBD) {
-    const endText = endTBD ? 'TBD' : formatAdminDate(end);
+    const endText = endTBD ? 'TBD' : require('../utils/adminParser').formatAdminEndDate(end); // the listed (inclusive) end day
     return start && endText ? `${formatAdminDate(start)} - ${endText}` : endText;
 }
 
