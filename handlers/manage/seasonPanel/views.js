@@ -456,7 +456,8 @@ function resultView({ crumbs = [], title, body = [], ok = true, back = ['view', 
         text(`### ${ok === 'warn' ? emojis.warn : ok ? emojis.checkmark : emojis.cross} ${title}`),
         ...(body.length ? [SMALL(), text(body.join('\n').slice(0, 3800))] : []),
         BIG(),
-        row(...extraButtons, btn([].concat(back), backLabel, emojis.returnArrow), homeBtn()),
+        // Home only when Back is not Home already (2026-11-11 21:33 EST): Promote's result has Back = Live Season = `view|live`, Home's own id, and Discord refused the duplicate custom_id, so the promote went live and its result never drew. Harkirat saw "literally nothing" after Promote on prod; reproduced on the dev bot (50035 COMPONENT_CUSTOM_ID_DUPLICATED). The other panels' resultView already had this guard.
+        row(...extraButtons, btn([].concat(back), backLabel, emojis.returnArrow), ...([].concat(back).join('|') === 'view|live' ? [] : [homeBtn()])),
     ]);
 }
 

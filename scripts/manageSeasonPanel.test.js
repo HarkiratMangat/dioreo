@@ -64,6 +64,39 @@ const emptyDraft = () => ({ ...live(), draft: { active: false, newDraws: [], ret
     const P = require('../handlers/manage/seasonPanel');
     const pageRow = require('../commands/manage').buildPageSelectRow('seasondraft', { showEmojis: true });
 
+    // 2026-11-11 21:33 EST: Promote's result had Back = Live Season = Home's own id, Discord refused the duplicate custom_id, and the promote went live with nothing drawn. Every panel's result view, with Back set to its own Home, must carry each custom_id once.
+
+    await check('a result whose Back is Home carries each custom id once, in every /manage panel', () => {
+
+        const ids = (node, out = []) => { if (Array.isArray(node)) node.forEach(n => ids(n, out)); else if (node && typeof node === 'object') { if (node.custom_id) out.push(node.custom_id); Object.values(node).forEach(v => ids(v, out)); } return out; };
+
+        const dupes = (view) => { const all = ids(view); return all.filter((x, i) => all.indexOf(x) !== i); };
+
+        const cases = [
+
+            ['season', require('../handlers/manage/seasonPanel/views').resultView({ title: 'Promoted to live', back: ['view', 'live'], backLabel: 'Live Season' })],
+
+            ['draws', require('../handlers/manage/drawsPanel/views').resultView({ title: 'x', back: 'page' })],
+
+            ['calendar', require('../handlers/manage/calendarPanel/views').resultView({ title: 'x', back: 'page' })],
+
+            ['patch notes', require('../handlers/manage/patchnotesPanel/views').resultView({ title: 'x', back: 'page' })],
+
+            ['announcements', require('../handlers/manage/announcementsPanel/views').resultView({ title: 'x', back: 'page' })],
+
+            ['gunsmith', require('../handlers/manage/gunsmith/views').resultView('MP', { title: 'x', back: 'page' })],
+
+        ];
+
+        for (const [name, view] of cases) assert.deepStrictEqual(dupes(view), [], name);
+
+        // Falsifier: Back elsewhere still offers Home.
+
+        assert.ok(ids(require('../handlers/manage/seasonPanel/views').resultView({ title: 'x', back: ['view', 'draft'] })).includes('mng_ss|view|live'));
+
+    });
+
+
     await check('the live view and both draft views stay inside Discord\'s limits, page dropdown included', () => {
         limits(V.pageView(live(), 'live', 'a note', { pageRow }), 'live');
         limits(V.pageView(live(), 'live', null, { pageRow }), 'live no note');
