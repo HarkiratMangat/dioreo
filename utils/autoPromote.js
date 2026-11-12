@@ -31,7 +31,7 @@ async function runAutoPromote() {
         if (result.ok) {
             const { change, applied } = result.results[0];
             console.log(`⏰ Auto-promoted the draft to live: "${change.target}" (${result.changeIds.join(', ')})`);
-            await dmOwner(() => card(true, [`**"${change.target}"** is now the live season: ${applied.counts.newDraws} New, ${applied.counts.returningDraws} Returning, ${applied.counts.calendar} calendar event(s).`, `-# Change ${result.changeIds.join(', ')} · Revert it from /bot analytics › Changes.`])).catch(e => console.error('autoPromote: owner DM failed:', e.message));
+            await dmOwner(() => card(true, [`**"${change.target}"** is now the live season: ${applied.counts.newDraws} New, ${applied.counts.returningDraws} Returning, ${applied.counts.calendar} calendar event(s).`, ...(require('./promoteSummary').carriedLine(applied.carried) ? [require('./promoteSummary').carriedLine(applied.carried)] : []), `-# Change ${result.changeIds.join(', ')} · Revert it from /bot analytics › Changes.`])).catch(e => console.error('autoPromote: owner DM failed:', e.message));
             return { ok: true, changeIds: result.changeIds };
         }
         const why = result.failedAt?.reason === 'missing' ? 'The draft was gone by then.' : (result.failedAt?.errors || []).join(' ') || 'The promote was refused.';

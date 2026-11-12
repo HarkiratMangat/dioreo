@@ -198,9 +198,22 @@ registerEntity('season', {
             $set.bpStart = draft.bpStart || null; $set.rankStart = draft.rankStart || null; $set.dmzStart = draft.dmzStart || null;
             // In date order (2026-11-08 11:30 EST, a click-walk of /manage season draft on a copy of prod): /draws shows its lists in stored order and every draw op re-sorts after a write, but the draft is filled by carry-over and news triage in arrival order, so promoting it as it was put Samurai's Soul (Nov 1) after Ultra Violet (Nov 6).
             const byDate = (rows) => [...(rows || [])].sort((x, y) => new Date(x.date || 0) - new Date(y.date || 0));
-            $set.newDraws = byDate(draft.newDraws);
-            $set.returningDraws = byDate(draft.returningDraws);
-            $set.calendar = byDate(draft.calendar);
+            // The final carry-over, in this transaction (2026-11-11 21:36 EST, after Season 10's Promote dropped the running Solstice Draw on prod): the daily carry-over (utils/newsTriage/pipeline.js) runs once a day and only when news triage is set up, so a live row added after its last run vanished here. Carry against the live lists read above, with the cutoff `draft.bpStart || now` (planCarryOver carries nothing without a start). `prior.draft` was taken before this, so a Revert puts back the draft as it was. A carried row keeps its live _id, so it is the same draw and the same /calendar row after the promote.
+            const { planCarryOver, applyDraftChanges } = require('../../utils/newsTriage/draftMerge');
+            const work = { ...draft, bpStart: draft.bpStart || new Date(), newDraws: [...(draft.newDraws || [])], returningDraws: [...(draft.returningDraws || [])], calendar: [...(draft.calendar || [])] };
+            const plan = planCarryOver(work, before);
+            for (const c of plan.changes) {
+                if (c.type !== 'add') continue;
+                const live = c.list === 'calendar'
+                    ? (before.calendar || []).find(r => r.title === c.row.title && (r.category || 'event') === (c.row.category || 'event'))
+                    : (before[c.list] || []).find(r => r.title === c.row.title);
+                if (live?._id) c.row._id = live._id;
+            }
+            const { applied: carriedChanges } = applyDraftChanges(work, plan.changes);
+            const carried = carriedChanges.filter(c => c.type === 'add').map(c => ({ list: c.list, title: c.name }));
+            $set.newDraws = byDate(work.newDraws);
+            $set.returningDraws = byDate(work.returningDraws);
+            $set.calendar = byDate(work.calendar);
             if (draft.drawsBannerUrl) $set.drawsBannerUrl = draft.drawsBannerUrl;
             if (draft.eventsBannerUrl) $set.eventsBannerUrl = draft.eventsBannerUrl;
             if (draft.playlistsBannerUrl) $set.playlistsBannerUrl = draft.playlistsBannerUrl;
@@ -230,7 +243,7 @@ registerEntity('season', {
             return {
                 ok: true,
                 change: { action: 'promote', model: 'SeasonalData', target: newTitle, summary: `Promoted draft to live: "${newTitle}"` },
-                applied: { prior, patchPrior, datesPrior, counts }
+                applied: { prior, patchPrior, datesPrior, counts, carried }
             };
         },
         invert: (c) => ({ type: 'season.restoreSnapshot', payload: { ...c.applied.prior, ...(c.applied.patchPrior ? { __patchTitleRestore: c.applied.patchPrior } : {}), ...(c.applied.datesPrior ? { __patchDatesRestore: c.applied.datesPrior } : {}) } })
