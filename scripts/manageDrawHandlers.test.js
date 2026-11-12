@@ -39,6 +39,24 @@ async function check(name, fn) {
         assert.strictEqual(d.thumbnailUrl, 'https://img/new');
     });
 
+    // 2026-11-11 22:34 EST, his "go": the draw index follows a live edit (utils/drawIndexSync.js), and a Revert puts the entry back exactly.
+    await check('Edit Draw updates the draw index entry with its items and draw type, and Revert puts the entry back', async () => {
+        h.collections.DrawCatalog.seed([{ slug: 'world-champs-final-draw', title: 'World Champs Final Draw', publicId: 'draws/world-champs-final-draw', imageUrl: 'https://x/y.jpg', priceType: 'legendaryGunReactive', items: [{ tier: 'legendary', name: 'Ak117 - Final', kind: 'weapon' }] }]);
+        h.reset({ newDraws: [{ _id: 'cccccccccccccccccccccccc', title: 'World Champs Final Draw', date: '2026-11-10T00:00:00.000Z', items: [{ tier: 'legendary', name: 'Ak117 - Final' }], thumbnailUrl: 'https://x/y.jpg', priceType: 'legendaryGunReactive' }] });
+        const i = h.modal('edit_draw_cccccccccccccccccccccccc_new', { draw: 'World Champs Final Draw\nNovember 10, 2026', items: 'l Ak117 - Final\ne Ghost - Champ', image: 'https://x/y.jpg', price_type: 'sevenSpinLegendaryWeapon' });
+        await draws.editDraw(i);
+        const [entry] = h.collections.DrawCatalog.rows;
+        assert.deepStrictEqual(entry.items.map(x => x.name), ['Ak117 - Final', 'Ghost - Champ'], i.text().slice(0, 400));
+        assert.strictEqual(entry.items[0].kind, 'weapon', 'the kind he set is kept');
+        const edit = h.state.changes.find(c => c.type === 'draw.edit' || /Edited draw/.test(c.summary || ''));
+        assert.ok(edit?.inverse?.payload?.__indexRestore, 'the inverse carries the entry as it was');
+        const { commitSet } = require('../core/changeset');
+        const undo = await commitSet([edit.inverse], { actorId: h.OWNER, revertOf: { changeId: edit.changeId, page: 'draws', actorId: h.OWNER } });
+        assert.ok(undo.ok, JSON.stringify(undo.failedAt || undo));
+        assert.deepStrictEqual(h.collections.DrawCatalog.rows[0].items.map(x => x.name), ['Ak117 - Final'], 'Revert put the entry back');
+        h.collections.DrawCatalog.seed([]);
+    });
+
     await check('Edit Draw on a draw that was deleted meanwhile says so and saves nothing', async () => {
         h.reset();
         const i = h.modal('edit_draw_bbbbbbbbbbbbbbbbbbbbbbbb_new', { title: 'X', date: 'Oct 2 2026', items: 'Epic Fennec' });

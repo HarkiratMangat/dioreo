@@ -139,7 +139,8 @@ function memoryCollection(Model) {
     Object.assign(Model, api);
     return api;
 }
-const collections = Object.fromEntries(['Loadout', 'CatalogueItem', 'VisionRead', 'ReminderSubscription', 'UserPreference', 'DrawBasket'].map(n => [n, memoryCollection(req(`models/${n}`))]));
+// DrawCatalog joined 2026-11-11 22:34 EST: a draw add or edit now syncs the draw index inside its op (utils/drawIndexSync.js).
+const collections = Object.fromEntries(['Loadout', 'CatalogueItem', 'VisionRead', 'ReminderSubscription', 'UserPreference', 'DrawBasket', 'DrawCatalog'].map(n => [n, memoryCollection(req(`models/${n}`))]));
 // Loadout pictures: uploads and copies succeed without Cloudinary, and every key "exists".
 const loadoutImageCache = req('utils/loadoutImageCache');
 loadoutImageCache.uploadLoadoutImage = async () => ({ success: true });
