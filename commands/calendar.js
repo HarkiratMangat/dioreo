@@ -108,7 +108,9 @@ function buildEntryLine(event, seasonalDoc, nowMs = Date.now()) {
     else if (event.dateOnly) text = returning ? `**Back** · returned <t:${s}:R>` : `**Live** · released <t:${s}:R>`;
     else text = `**Live** · ends ${seasonalDoc.bpEndTBD ? 'TBD' : 'with the season'}`;
     const dot = state === 'live' ? emojis.greenDotGlow : state === 'over' ? emojis.redDotGlow : emojis.lightBlueDotGlow;
-    const title = state === 'over' ? `~~**${event.title}**~~` : `**${event.title}**`;
+    // A Double CP row wears the 2X CP emoji (2026-11-11 22:03 EST, Harkirat: "add the emoji beside the calendar event as well"), read at render time so each bot shows its own copy.
+    const cp = event.isDoubleCP && emojis.doubleCp ? ` ${emojis.doubleCp}` : '';
+    const title = state === 'over' ? `~~**${event.title}**~~${cp}` : `**${event.title}**${cp}`;
     return `${dot} ${title}\n-# ${emojis.blank}\u2002${text}`;
 }
 

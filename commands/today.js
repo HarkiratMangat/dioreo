@@ -15,6 +15,8 @@ const { SlashCommandBuilder } = require('discord.js');
 const SeasonalData = require('../models/SeasonalData');
 const UserPreference = require('../models/UserPreference');
 const emojis = require('../utils/emojiMap');
+// An entry's name, with the 2X CP emoji beside a Double CP row (2026-11-11 22:03 EST, his ask), read at render time.
+const named = (e) => `${e.title}${e.isDoubleCP && emojis.doubleCp ? ` ${emojis.doubleCp}` : ''}`;
 const { getAccentColorForCommand } = require('../utils/accentColor');
 const { toBoldItalicUnicode } = require('../utils/titleBlock');
 const { seasonEmojiFor } = require('../utils/seasonEmoji');
@@ -187,7 +189,7 @@ function buildBriefBody(seasonalDoc, { nowMs = Date.now(), mode = 'spaced' } = {
         else if (draws.length) out.push(block(draws.map(e => `${e.icon} ${e.title}`).join('\n')));
         for (const [type, label, key] of BRIEF_KINDS) {
             const items = list.filter(e => e.type === type);
-            if (items.length) out.push(block([`-# ${emojis[key]} **${label}**`, ...items.map(e => `- ${e.title}`)].join('\n')));
+            if (items.length) out.push(block([`-# ${emojis[key]} **${label}**`, ...items.map(e => `- ${named(e)}`)].join('\n')));
         }
         const extra = more(all, list);
         if (extra.length) out.push(block(extra.join('\n')));
@@ -214,7 +216,7 @@ function buildBriefBody(seasonalDoc, { nowMs = Date.now(), mode = 'spaced' } = {
             for (const e of leaving) {
                 const day = Math.floor(e.endMs / DAY_MS);
                 if (day !== lastDay) { groups.push([`-# **Ends ${rel(e.endMs)}**`]); lastDay = day; }
-                groups.at(-1).push(`- ${e.title}`);
+                groups.at(-1).push(`- ${named(e)}`);
             }
             sections.push([block(`## ${emojis.yellowDotGlow} Leaving soon`), ...groups.map(g => block(g.join('\n'))), ...(more(allLeaving, leaving).length ? [block(more(allLeaving, leaving)[0])] : [])]);
         }
@@ -247,7 +249,7 @@ function buildCalendarTodayBody(seasonalDoc, { nowMs = Date.now(), types = null,
         for (const [type, label, emojiKey] of LIVE_KINDS) {
             const items = liveNow.filter(e => e.type === type);
             if (!items.length) continue;
-            const lines = items.map(e => (type === 'draw' ? `${e.icon} ${e.title}` : `- ${e.title}`));
+            const lines = items.map(e => (type === 'draw' ? `${e.icon} ${named(e)}` : `- ${named(e)}`));
             if (live.length) live.push(gap);
             live.push(block([...(live.length ? [] : [`## ${emojis.greenDotGlow} Active now`]), `-# ${emojis[emojiKey]} **${label}**`, ...lines].join('\n')));
         }

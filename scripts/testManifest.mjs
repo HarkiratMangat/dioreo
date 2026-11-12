@@ -183,6 +183,7 @@ export const TESTS = [
     {"cmd": "node scripts/drawIndexCheck.test.js", "lane": "unit"},
     {"cmd": "node scripts/commandRefresh.test.js", "lane": "unit"},
     {"cmd": "node scripts/today.test.js", "lane": "unit"},
+    {"cmd": "node scripts/doubleCpEmoji.test.js", "lane": "unit"},
     {"cmd": "node scripts/reminders.test.js", "lane": "unit"},
     {"cmd": "node scripts/commandOptions.test.js", "lane": "unit"},
     {"cmd": "node scripts/helpSearch.test.js", "lane": "unit"},
