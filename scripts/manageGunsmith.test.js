@@ -168,6 +168,10 @@ function walk(components, fn) { for (const c of components || []) { fn(c); walk(
             const card = JSON.parse(JSON.stringify(await V.cardView('MP', doc._id, 0)));
             const rows = []; const walk = (c) => { if (c?.type === 1) rows.push(c.components.length); (c?.components || []).forEach(walk); }; card.forEach(walk);
             assert.ok(rows.every(n => n <= 5), `a card row holds ${Math.max(...rows)} buttons`);
+            // A save drawn in place puts the panel's own Revert above the card's buttons, inside Discord's rules.
+            const withRevert = await V.cardView('MP', doc._id, 0, '### Saved\n- **Attachments:** ~~a~~ → b', null, 'tok1', { type: 1, components: [{ type: 2, style: 4, label: 'Revert', custom_id: V.ID('MP', 'rev', '#1,#2', doc._id, 0, 'tok1') }] });
+            assert.deepStrictEqual(require('../utils/componentCheck').checkComponents(withRevert), []);
+            assert.ok(JSON.stringify(withRevert).includes(`mng_gs|M|rev|#1,#2|${doc._id}|0|tok1`));
         } finally {
             if (saved) require.cache[modelPath] = saved; else delete require.cache[modelPath];
         }

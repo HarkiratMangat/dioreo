@@ -105,7 +105,8 @@ async function weaponView(mode, weaponKey, note = null, page = 0) {
 }
 
 // ---------- one build ---------- Credit sits on the card (2026-11-12 19:21 EST, Harkirat: "where tf is the credit option/button on the /manage gunsmith mp command?"): the old /manage search answer and every saved panel had it, and the v3.13 card was built without it. `header` sits above the card (a confirm question, a saved note); `extra` replaces the action rows (a confirm's buttons, the Expand View pager). `back` is a Select token: the card was opened from a search's selection, so its way back is those results (the draws card's `t:<token>`), carried through the option menu, Edit, Move and Delete's Cancel. Added 2026-11-11 16:52 EST (think-pass: the card opened from one selected build had no way back to the results).
-async function cardView(mode, id, option = 0, header = null, extra = null, back = null) {
+// `resultRow` (2026-11-12 22:33 EST): a save answered in place puts its Revert above the card's own buttons.
+async function cardView(mode, id, option = 0, header = null, extra = null, back = null, resultRow = null) {
     const doc = /^[0-9a-f]{24}$/.test(String(id)) ? await Loadout().findById(id).lean() : null;
     if (!doc || doc.mode !== mode) return pageView(mode, `${emojis.cross} That build no longer exists.`);
     const { buildLoadoutCardBody, variantCount } = require('../../../utils/loadoutRender');
@@ -120,6 +121,7 @@ async function cardView(mode, id, option = 0, header = null, extra = null, back 
     components.push(...buildLoadoutCardBody(doc, { variant: opt, index, total: siblings.length }), BIG());
     if (extra) components.push(...extra);
     else {
+        if (resultRow) components.push(resultRow);
         if (count > 1) components.push({ type: 1, components: [{ type: 3, custom_id: back ? ID(mode, 'opt', id, back) : ID(mode, 'opt', id), placeholder: 'Pick an option', options: Array.from({ length: count }, (_, i) => ({ label: `Option ${lo.optionLetter(i)}`, value: String(i), default: i === opt })) }] });
         const room = count < lo.MAX_OPTIONS;
         components.push(
