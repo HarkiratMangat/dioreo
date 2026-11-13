@@ -100,7 +100,7 @@ async function weaponView(mode, weaponKey, note = null) {
     return panel(mode, components);
 }
 
-// ---------- one build ---------- `header` sits above the card (a confirm question, a saved note); `extra` replaces the action rows (a confirm's buttons, the Expand View pager). `back` is a Select token: the card was opened from a search's selection, so its way back is those results (the draws card's `t:<token>`), carried through the option menu, Edit, Move and Delete's Cancel. Added 2026-11-11 16:52 EST (think-pass: the card opened from one selected build had no way back to the results).
+// ---------- one build ---------- Credit sits on the card (2026-11-12 19:21 EST, Harkirat: "where tf is the credit option/button on the /manage gunsmith mp command?"): the old /manage search answer and every saved panel had it, and the v3.13 card was built without it. `header` sits above the card (a confirm question, a saved note); `extra` replaces the action rows (a confirm's buttons, the Expand View pager). `back` is a Select token: the card was opened from a search's selection, so its way back is those results (the draws card's `t:<token>`), carried through the option menu, Edit, Move and Delete's Cancel. Added 2026-11-11 16:52 EST (think-pass: the card opened from one selected build had no way back to the results).
 async function cardView(mode, id, option = 0, header = null, extra = null, back = null) {
     const doc = /^[0-9a-f]{24}$/.test(String(id)) ? await Loadout().findById(id).lean() : null;
     if (!doc || doc.mode !== mode) return pageView(mode, `${emojis.cross} That build no longer exists.`);
@@ -119,7 +119,7 @@ async function cardView(mode, id, option = 0, header = null, extra = null, back 
         if (count > 1) components.push({ type: 1, components: [{ type: 3, custom_id: back ? ID(mode, 'opt', id, back) : ID(mode, 'opt', id), placeholder: 'Pick an option', options: Array.from({ length: count }, (_, i) => ({ label: `Option ${lo.optionLetter(i)}`, value: String(i), default: i === opt })) }] });
         const room = count < lo.MAX_OPTIONS;
         components.push(
-            row(btn(mode, ['edit', id, opt, ...(back ? [back] : [])], 'Edit', emojis.edit, 1), btn(mode, ['move', id, opt, ...(back ? [back] : [])], 'Move', emojis.mngBulkReplace), ...(room ? [btn(mode, ['newopt', id, opt], 'Add Option', emojis.mngAdd)] : []), btn(mode, ['del', id, opt, ...(back ? [back] : [])], 'Delete', emojis.deleteBin, 4)),
+            row(btn(mode, ['edit', id, opt, ...(back ? [back] : [])], 'Edit', emojis.edit, 1), btn(mode, ['move', id, opt, ...(back ? [back] : [])], 'Move', emojis.mngBulkReplace), ...(room ? [btn(mode, ['newopt', id, opt], 'Add Option', emojis.mngAdd)] : []), btn(mode, ['credit', id, opt, ...(back ? [back] : [])], 'Credit', emojis.credit), btn(mode, ['del', id, opt, ...(back ? [back] : [])], 'Delete', emojis.deleteBin, 4)),
             row(back ? btn(mode, ['list', back, 0], 'Results', emojis.returnArrow) : btn(mode, ['wback', doc.weaponKey], doc.weaponName, emojis.returnArrow), homeBtn(mode)),
         );
     }

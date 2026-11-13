@@ -120,6 +120,11 @@ function editPreset(interaction, id, opt) {
     return { customId: `edit_loadout_${id}${Number(opt) ? `~${Number(opt)}` : ''}`, values };
 }
 
+// The Credit pop-up is handlers/manage/loadouts.js creditModal, re-addressed so its submit comes back to this panel (`creditm`) with the option and the way back.
+function creditModal(mode, doc, id, opt, back = null) {
+    return { ...loadouts().creditModal(doc), custom_id: back ? V.ID(mode, 'creditm', id, Number(opt) || 0, back) : V.ID(mode, 'creditm', id, Number(opt) || 0) };
+}
+
 // ---------- the home page ----------
 async function home(mode, note = null, interaction = null) {
     const showEmojis = interaction ? require('../../../utils/owner').isOwnerId(interaction.user.id) : false;
@@ -175,7 +180,7 @@ async function deleteMany(interaction, mode, keys) {
 }
 
 // ---------- the slash command ---------- His 13:40 EST ask: more ways for the slash command to go straight to something without walking through the panel. `build:` opens a build (or `＋ New build`), `builds:` a Select list, `weapon:` / `class:` their pages; `do:` with a target acts at once. A pop-up has to be the first answer, so every path that opens one runs before anything is deferred.
-const DO_CHOICES = [['Add Build', 'add'], ['Edit', 'edit'], ['Move', 'move'], ['Add Option', 'newopt'], ['Delete', 'delete'], ['Bulk Paste', 'paste'], ['Export', 'export'], ['Guide', 'guide']];
+const DO_CHOICES = [['Add Build', 'add'], ['Edit', 'edit'], ['Move', 'move'], ['Add Option', 'newopt'], ['Credit', 'credit'], ['Delete', 'delete'], ['Bulk Paste', 'paste'], ['Export', 'export'], ['Guide', 'guide']];
 
 async function openFromSlash(interaction, mode) {
     const o = interaction.options;
@@ -204,6 +209,7 @@ async function openFromSlash(interaction, mode) {
         if (act === 'edit') return (await gate(interaction, mode, 'edit')) && interaction.showModal(await editModal(mode, doc, opt, V.ID(mode, 'editm', id, opt)));
         if (act === 'move') return (await gate(interaction, mode, 'edit')) && interaction.showModal(V.moveModal(mode, doc, opt));
         if (act === 'newopt') return (await gate(interaction, mode, 'add')) && loadouts().showAddOption(interaction, doc, opt);
+        if (act === 'credit') return (await gate(interaction, mode, 'edit')) && interaction.showModal(creditModal(mode, doc, id, opt));
         if (act === 'delete') {
             if (!(await gate(interaction, mode, 'delete'))) return;
             return view(await confirmDeleteCard(mode, doc, id, opt));
@@ -347,12 +353,13 @@ async function route(interaction) {
         const modal = await newBuildModal(mode, a);
         return modal ? interaction.showModal(modal) : show(interaction, await home(mode, `${emojis.cross} That weapon has no ${mode} builds any more.`, interaction));
     }
-    if (verb === 'edit' || verb === 'move' || verb === 'newopt' || verb === 'del') {
+    if (verb === 'edit' || verb === 'move' || verb === 'newopt' || verb === 'credit' || verb === 'del') {
         const doc = isObjectId(a) ? await Loadout().findById(a).lean() : null;
         if (!doc || doc.mode !== mode) return show(interaction, await home(mode, `${emojis.cross} That build no longer exists.`, interaction));
         if (verb === 'edit') return (await gate(interaction, mode, 'edit')) && interaction.showModal(await editModal(mode, doc, b, c ? V.ID(mode, 'editm', a, n(b), c) : V.ID(mode, 'editm', a, n(b))));
         if (verb === 'move') return (await gate(interaction, mode, 'edit')) && interaction.showModal(V.moveModal(mode, doc, n(b), c || null));
         if (verb === 'newopt') return (await gate(interaction, mode, 'add')) && loadouts().showAddOption(interaction, doc, n(b));
+        if (verb === 'credit') return (await gate(interaction, mode, 'edit')) && interaction.showModal(creditModal(mode, doc, a, n(b), c || null));
         return (await gate(interaction, mode, 'delete')) && show(interaction, await confirmDeleteCard(mode, doc, a, n(b), c || null));
     }
     if (verb === 'delok') {
@@ -367,6 +374,14 @@ async function route(interaction) {
         await interaction.deferUpdate();
         await loadouts().editLoadout(interaction, preset);
         return show(interaction, await V.cardView(mode, a, n(b), `-# ${emojis.checkmark} Saved. The result, with Revert, is in the message below.`, null, c || null));
+    }
+    // Credit saves through the old pop-up's own saveCredit (core's loadout.credit, so it carries Revert); from the panel the card refreshes in place and the saved panel follows, exactly as Edit does (2026-11-12 19:21 EST).
+    if (verb === 'creditm' && interaction.isModalSubmit?.()) {
+        if (!(await gate(interaction, mode, 'edit'))) return;
+        if (!interaction.message) return loadouts().saveCredit(interaction, { id: a });
+        await interaction.deferUpdate();
+        await loadouts().saveCredit(interaction, { id: a, deferred: true });
+        return show(interaction, await V.cardView(mode, a, n(b), `-# ${emojis.checkmark} Credit saved. The result, with Revert, is in the message below.`, null, c || null));
     }
     if (verb === 'movem' && interaction.isModalSubmit?.()) {
         if (!(await gate(interaction, mode, 'edit'))) return;

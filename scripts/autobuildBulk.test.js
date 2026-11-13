@@ -268,6 +268,27 @@ const FIVE = ['A', 'B', 'C', 'D', 'E'];
         assert.deepStrictEqual(select.options.filter(o => o.default).map(o => o.value), ['meta', 'top5']);
     });
 
+    // 2026-11-12 19:19 EST: Harkirat saved two GRAV screenshots as Options A and B of one build and the page never updated. Every select on every page carries unique values, at any mix of saved builds.
+    await check('every select menu on a batch page has unique option values, two saves into one build included', () => {
+        const doc = { _id: 'd1', weaponName: 'GRAV', buildName: 'Build 1', category: 'AR', mode: 'MP' };
+        const other = { _id: 'd2', weaponName: 'GRAV', buildName: 'Build 2', category: 'AR', mode: 'MP' };
+        const batch = { items: [
+            { url: 'https://x/a.png', status: 'saved', doc, savedAs: 'Build 1A' },
+            { url: 'https://x/b.png', status: 'saved', doc, savedAs: 'Build 1B' },
+            { url: 'https://x/c.png', status: 'saved', doc: other },
+            { url: 'https://x/d.png', status: 'cancelled', data: mp('GRAV', '1A', ['X']) },
+        ], page: 1, expiresAt: Date.now() + 60000 };
+        for (let i = 0; i < batch.items.length; i++) {
+            const page = renderPage(batch, 'k', i);
+            const walk = (c) => { if (c?.type === 3) { const v = c.options.map(o => o.value); assert.strictEqual(new Set(v).size, v.length, `page ${i + 1} ${c.custom_id}: ${v}`); } (c?.components || []).forEach(walk); };
+            page.forEach(walk);
+        }
+        const open = [];
+        const find = (c) => { if (c?.type === 3 && c.placeholder === 'Open a saved loadout') open.push(c); (c?.components || []).forEach(find); };
+        renderPage(batch, 'k', 0).forEach(find);
+        assert.deepStrictEqual(open[0].options.map(o => o.value), ['d1', 'd2']);
+    });
+
     if (failed) { console.log(`\n${failed} bulk /autobuild check(s) failed.`); process.exit(1); }
     console.log('\nAll bulk /autobuild checks passed.');
     process.exit(0);

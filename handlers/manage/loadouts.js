@@ -637,20 +637,21 @@ function creditModal(doc) {
     };
 }
 
-async function saveCredit(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+// `opts.id` / `opts.deferred`: the /manage gunsmith card's Credit (2026-11-12 19:21 EST) passes the build and has already deferred its update, so every answer here is a private follow-up either way.
+async function saveCredit(interaction, opts = {}) {
+    if (!opts.deferred) await interaction.deferReply({ ephemeral: true });
     const Loadout = require('../../models/Loadout');
     const { normalizeCredit } = require('../../utils/loadoutCredit');
-    const id = interaction.customId.replace('mng_ldcreditm_', '');
+    const id = opts.id || interaction.customId.replace('mng_ldcreditm_', '');
     const before = await Loadout.findById(id).lean();
-    if (!before) return await interaction.followUp({ content: `${BOT_EMOJI.cross} That build no longer exists.` });
+    if (!before) return await interaction.followUp({ content: `${BOT_EMOJI.cross} That build no longer exists.`, ephemeral: true });
     const get = (fn) => { try { return fn(); } catch { return null; } };
     const show = (get(() => require('../../utils/formChoice').readChoice(interaction, 'show')) || [])[0] || 'none';
     const prefix = (get(() => require('../../utils/formChoice').readChoice(interaction, 'prefix')) || [])[0] || 'submitted';
     const user = get(() => interaction.fields.getSelectedUsers('user')?.first()) || null;
     const typed = (get(() => interaction.fields.getTextInputValue('name')) || '').trim();
     const url = (get(() => interaction.fields.getTextInputValue('url')) || '').trim();
-    const fail = (msg) => interaction.followUp({ content: `${BOT_EMOJI.cross} ${msg} Nothing was changed.` });
+    const fail = (msg) => interaction.followUp({ content: `${BOT_EMOJI.cross} ${msg} Nothing was changed.`, ephemeral: true });
     if (user?.bot) return await fail('That is a bot, not a player.');
     if (show === 'user' && !user) return await fail('Pick the Discord user for @user.');
     if (url && show !== 'link') return await fail('A link only shows with **Hyperlink**. Pick Hyperlink, or empty the Link box.');

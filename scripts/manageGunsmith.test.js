@@ -159,11 +159,15 @@ function walk(components, fn) { for (const c of components || []) { fn(c); walk(
             const ids = async (...args) => JSON.stringify(await V.cardView(...args)).match(/"custom_id":"[^"]+"/g).map(x => x.slice(13, -1));
             const fromSel = await ids('MP', doc._id, 0, null, null, 'tok1');
             assert.ok(fromSel.includes('mng_gs|M|list|tok1|0'), fromSel.join(' '));
-            for (const verb of ['edit', 'move', 'del']) assert.ok(fromSel.includes(`mng_gs|M|${verb}|${doc._id}|0|tok1`), verb);
+            // Credit is on the card (2026-11-12, Harkirat: "where tf is the credit option/button"), carrying the way back like Edit.
+            for (const verb of ['edit', 'move', 'credit', 'del']) assert.ok(fromSel.includes(`mng_gs|M|${verb}|${doc._id}|0|tok1`), verb);
             assert.ok(!fromSel.some(x => x.includes('|wback|')));
             const plain = await ids('MP', doc._id, 0);
             assert.ok(plain.includes('mng_gs|M|wback|fss') && !plain.some(x => x.includes('tok1')));
             assert.strictEqual(V.moveModal('MP', doc, 0, 'tok1').custom_id, `mng_gs|M|movem|${doc._id}|0|tok1`);
+            const card = JSON.parse(JSON.stringify(await V.cardView('MP', doc._id, 0)));
+            const rows = []; const walk = (c) => { if (c?.type === 1) rows.push(c.components.length); (c?.components || []).forEach(walk); }; card.forEach(walk);
+            assert.ok(rows.every(n => n <= 5), `a card row holds ${Math.max(...rows)} buttons`);
         } finally {
             if (saved) require.cache[modelPath] = saved; else delete require.cache[modelPath];
         }

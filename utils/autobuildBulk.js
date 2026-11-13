@@ -113,11 +113,12 @@ function batchRows(batch, key, index, heldImages) {
             { type: 2, style: 4, label: `Discard All ${pending}`, custom_id: id('none', key), emoji: icon('deleteAll') },
         ] });
     }
-    const saved = batch.items.filter(it => it.status === 'saved');
+    // One entry per saved BUILD, not per screenshot (2026-11-12 19:19 EST, found from Harkirat's "no confirmation after Save All"): two screenshots saved as Options A and B of one build share one doc, and a menu with the same value twice makes Discord refuse the whole page, so the panel silently stayed on the old one.
+    const saved = [...new Map(batch.items.filter(it => it.status === 'saved').map(it => [String(it.doc._id), it.doc])).values()];
     if (saved.length) {
         inside.push({ type: 1, components: [{
             type: 3, custom_id: id('open', key), placeholder: 'Open a saved loadout',
-            options: saved.map(it => ({ label: `${it.doc.weaponName} — ${it.doc.buildName}`.slice(0, 100), value: String(it.doc._id) })),
+            options: saved.map(doc => ({ label: `${doc.weaponName} — ${doc.buildName}`.slice(0, 100), value: String(doc._id) })),
         }] });
     }
     // Undo a discard (Harkirat, 2026-10-20 12:36 EDT): the build comes back exactly as it was read, with no second vision call.
@@ -216,7 +217,15 @@ async function show(interaction, batch, key) {
     touch(key, batch);
     await refreshForRender(interaction, batch, key);
     await persist(key, batch);
-    return sendV2Payload(interaction, withGlyphs(render(batch, key, heldImagesFor(interaction, batch))), { expiryMs: IDLE_MS });
+    // A page Discord refuses is never silent (2026-11-12 19:19 EST): a component click's error only reaches the log, so the admin saw a panel that did not move after builds had saved. Say so, with what saved.
+    try {
+        return await sendV2Payload(interaction, withGlyphs(render(batch, key, heldImagesFor(interaction, batch))), { expiryMs: IDLE_MS });
+    } catch (err) {
+        console.error('Bulk autobuild: Discord refused the batch page:', err.message);
+        const saved = batch.items.filter(it => it.status === 'saved').map(it => `- ${it.doc.weaponName} — ${it.savedAs || it.doc.buildName}`);
+        await interaction.followUp({ content: emojis.glyphs(`${BOT_EMOJI.warn} **The panel couldn't be updated.**\n> ${String(err.message).slice(0, 150)}${saved.length ? `\n**Saved so far:**\n${saved.join('\n')}` : ''}\n> Run \`/autobuild\` to reopen the batch.`).slice(0, 2000), ephemeral: true }).catch(() => {});
+        return null;
+    }
 }
 
 function touch(key, batch) {
