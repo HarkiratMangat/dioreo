@@ -365,13 +365,23 @@ async function refreshForRender(interaction, batch, key) {
         const allBuilds = await Loadout.find({}).select('weaponKey weaponName category buildName shareCode attachments mode variants').lean();
         const { refreshReviewWarnings } = require('./autobuildPipeline');
         for (const it of pending) refreshReviewWarnings(it.data, allBuilds);
-        // An un-numbered build lands after the batch's earlier un-numbered builds of the same weapon and mode, since Save All saves in order (2026-11-12 19:29 EST): before, two GRAV builds both read "Build 1" until the first was saved.
+        // Builds still waiting earlier in this batch count as builds ahead (2026-11-12 19:46 EST): Save All saves in order. Before, two un-numbered GRAV builds both read "Build 1", and a "5b" beside the "5" it joins warned "There is no Build 5 to add an option to" (click-tested on the dev bot). Only the number and its warning are recounted; the duplicate warnings stay on saved builds, since batchDuplicateNote covers the batch.
+        const { buildTargetProblem } = require('./autobuildPipeline');
+        const { parseBuildTag } = require('./loadoutOptions');
         const ahead = new Map();
         for (const it of pending) {
-            if (it.data.buildTag) continue;
-            const k = `${String(it.data.weaponName || '').toLowerCase().replace(/\s+/g, '')}|${it.data.mode || 'MP'}`;
-            it.data.ordinal = (it.data.ordinal || 1) + (ahead.get(k) || 0);
-            ahead.set(k, (ahead.get(k) || 0) + 1);
+            const wk = String(it.data.weaponName || '').toLowerCase().replace(/\s+/g, '');
+            const mode = it.data.mode || 'MP';
+            const k = `${wk}|${mode}`;
+            const phantoms = ahead.get(k) || [];
+            if (phantoms.length) {
+                const ordered = [...allBuilds.filter(b => b.weaponKey === wk && (b.mode || 'MP') === mode), ...phantoms];
+                it.data.ordinal = ordered.length + 1;
+                it.data.buildWarning = buildTargetProblem(it.data, ordered);
+            }
+            const tag = it.data.buildTag ? parseBuildTag(it.data.buildTag) : null;
+            if (!tag?.lettered) phantoms.push({ _id: `zzzzzzzzzzzz${String(phantoms.length).padStart(12, '0')}`, weaponKey: wk, mode, buildName: `Build ${tag?.number || it.data.ordinal}`, attachments: it.data.attachments || [], variants: [] });
+            ahead.set(k, phantoms);
         }
         const others = await Stored().find({ ownerId: { $ne: batch.adminId }, key: { $ne: key } }).lean();
         for (const it of pending) {

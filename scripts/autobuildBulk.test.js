@@ -290,7 +290,7 @@ const FIVE = ['A', 'B', 'C', 'D', 'E'];
     });
 
     // 2026-11-12 19:30 EST: two un-numbered builds of one weapon both read "Build 1" until the first saved; every page must show where its build will land, and pass Discord's rules.
-    await check('two un-numbered builds of one weapon in a batch read Build 1 and Build 2', async () => {
+    await check('two un-numbered builds of one weapon in a batch read Build 1 and Build 2, and a 1b beside them is not warned', async () => {
         const modelPath = require.resolve('../models/Loadout');
         const saved = require.cache[modelPath];
         const q = (v) => ({ lean: async () => v, select() { return q(v); } });
@@ -304,7 +304,9 @@ const FIVE = ['A', 'B', 'C', 'D', 'E'];
         try {
             const batch = { adminId: 'u', items: [{ status: 'pending', token: 't1', data: mp('GRAV', '1A2B', ['X']) }, { status: 'pending', token: 't2', data: mp('GRAV', '1A3B', ['Y']) }, { status: 'pending', token: 't3', data: { ...mp('GRAV', '1A4B', ['Z']), buildTag: '1b' } }] };
             await bulk._refreshForRender({ client: {} }, batch, 'k');
-            assert.deepStrictEqual(batch.items.map(it => it.data.ordinal), [1, 2, 1]);
+            assert.deepStrictEqual(batch.items.slice(0, 2).map(it => it.data.ordinal), [1, 2]);
+            // #3 joins Build 1, which #1 creates earlier in the same Save All: no "There is no Build 1" warning.
+            assert.strictEqual(batch.items[2].data.buildWarning, null, batch.items[2].data.buildWarning);
             const { checkComponents } = require('../utils/componentCheck');
             batch.expiresAt = Date.now() + 60000;
             for (let i = 0; i < 3; i++) assert.deepStrictEqual(checkComponents(renderPage(batch, 'k', i)), [], `page ${i + 1}`);
