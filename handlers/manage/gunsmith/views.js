@@ -82,8 +82,7 @@ async function classView(mode, category) {
     return panel(mode, components);
 }
 
-// ---------- a weapon: every build ----------
-// Eight builds a page (2026-11-12 19:29 EST): each build is a Section with its Open button (3 components), so an unpaged weapon of 11 builds passed Discord's 40 and the page silently froze.
+// ---------- a weapon: every build ---------- Eight builds a page (2026-11-12 19:29 EST): each build is a Section with its Open button (3 components), so an unpaged weapon of 11 builds passed Discord's 40 and the page silently froze.
 const WEAPON_PAGE = 8;
 async function weaponView(mode, weaponKey, note = null, page = 0) {
     const { compareBuilds } = require('../../../utils/loadoutForm');
