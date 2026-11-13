@@ -95,7 +95,8 @@ async function previewBlocks(mode, raw) {
             if ((e.attachments || []).join('|') !== (cmp.attachments || []).join('|')) diff.push('attachments');
             if (!opt && tok({ ...e, mode }).join(',') !== tok(old).join(',')) diff.push('badges');
             if (!(e.defaulted || []).includes('label') && (e.label || '') !== ((opt ? old.variants[opt - 1]?.label : old.label) || '')) diff.push('label');
-            if (e.comment !== undefined && !(e.defaulted || []).includes('comment') && (e.comment || '') !== (old.comment || '')) diff.push('comment');
+            // The parser and the build both call the comment `description` (2026-11-12 22:42 EST, found click-testing Bulk Paste: this read `comment`, which neither has, so a comment-only change previewed as Unchanged and Save dropped it).
+            if (!(e.defaulted || []).includes('description') && (e.description || '') !== (old.description || '')) diff.push('comment');
             if (diff.length) { changed.push(`${name} · *${diff.join(', ')}*`); moves = true; }
             else same.push(`${e.weaponName} · ${shown}`);
         }

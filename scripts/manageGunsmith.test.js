@@ -176,6 +176,24 @@ function walk(components, fn) { for (const c of components || []) { fn(c); walk(
             if (saved) require.cache[modelPath] = saved; else delete require.cache[modelPath];
         }
     });
+    // 2026-11-12 22:42 EST: a comment-only change previewed as Unchanged, so Bulk Paste and Edit N could not change a comment.
+    await check('a pasted comment change is a change, and a block with no Comment line keeps the stored one', async () => {
+        const modelPath = require.resolve('../models/Loadout');
+        const saved = require.cache[modelPath];
+        const doc = { _id: 'b'.repeat(24), mode: 'MP', weaponKey: require('../utils/adminParser').parseBulkLoadoutList('AK-47 | AR\nBuild: 1\nX').parsed[0].weaponKey, weaponName: 'AK-47', category: 'AR', buildName: 'Build 1', attachments: ['Monolithic Suppressor', 'OWC Ranger'], shareCode: '1C2C4A8B9A', description: 'Old note', variants: [] };
+        const q = (v) => ({ lean: async () => v, select() { return q(v); } });
+        require.cache[modelPath] = { id: modelPath, filename: modelPath, loaded: true, exports: { find: () => q([doc]), findById: () => q(doc) } };
+        try {
+            const base = 'AK-47 | AR\nBuild: 1\nCode: 1C2C4A8B9A\n';
+            const atts = 'Monolithic Suppressor\nOWC Ranger';
+            const changed = await B.previewBlocks('MP', `${base}Comment: New note\n${atts}`);
+            assert.ok(changed.keep && changed.count === 1, JSON.stringify(changed).slice(0, 300));
+            const kept = await B.previewBlocks('MP', `${base}${atts}`);
+            assert.ok(!kept.keep, 'no Comment line leaves the comment alone: ' + JSON.stringify(kept).slice(0, 300));
+        } finally {
+            if (saved) require.cache[modelPath] = saved; else delete require.cache[modelPath];
+        }
+    });
     await check('Export writes the fields Include keeps, and the merged-build choices', () => {
         const build = { weaponName: 'BAL-27', category: 'AR', mode: 'MP', buildName: 'Build 2', shareCode: '1A2B3C4D5E', label: 'Ranked', attachments: ['A1', 'A2'], variants: [{ attachments: ['B1'], shareCode: '1B2C3D4E5F', label: 'Pubs' }] };
         const all = B.exportText('MP', [build], { include: ['code', 'label', 'mode'], merged: 'keep' });
