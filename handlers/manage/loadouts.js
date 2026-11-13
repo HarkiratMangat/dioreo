@@ -350,8 +350,7 @@ async function saveOption(interaction, { plan, picture, fail, unknown, mode, wea
     return interaction.followUp({ flags: 32768 | 64, components: savedPanel(out) });
 }
 
-// Add option's pop-up: Create New, filled with the build's weapon, its next option's tag (`2d`) and the attachments of the option on show, so a variation is a few edits away. The code and the picture are left for the new option's own. Shared by the saved panel's Add option and /manage gunsmith's `build:` with action Add.
-// `opts.customId` re-addresses the pop-up so its submit comes back to the caller (the /manage gunsmith panel's `addm`).
+// Add option's pop-up: Create New, filled with the build's weapon, its next option's tag (`2d`) and the attachments of the option on show, so a variation is a few edits away. The code and the picture are left for the new option's own. Shared by the saved panel's Add option and /manage gunsmith's `build:` with action Add. `opts.customId` re-addresses the pop-up so its submit comes back to the caller (the /manage gunsmith panel's `addm`).
 async function showAddOption(interaction, doc, option = 0, opts = {}) {
     const Loadout = require('../../models/Loadout');
     const form = require('../../utils/loadoutForm');
@@ -443,8 +442,7 @@ async function openFromSlash(interaction, group, value, actionId) {
     return await interaction.showModal(await editLoadoutModal(match.doc, option));
 }
 
-// --- SAVE A LOADOUT (Add or Edit) --- custom_ids: add_loadout_{MP|DMZ} · edit_loadout_{id}. One body for both since the five-field pop-up (2026-10-26 01:19 EDT): the two had drifted into near copies. `preset` is a Save anyway replay (handleCatalogueWarning above): the typed values come from the warning's pending store instead of a pop-up, and the catalogue check is skipped because the admin already saw it.
-// `opts.onSaved(result)` (2026-11-12 22:32 EST): a caller that draws the result itself (the /manage gunsmith panel, whose approved v3.13 spec answers in place) gets the saved panel's values instead of a follow-up message. It runs only on a real save; refusals and the code, catalogue and picture questions still answer privately.
+// --- SAVE A LOADOUT (Add or Edit) --- custom_ids: add_loadout_{MP|DMZ} · edit_loadout_{id}. One body for both since the five-field pop-up (2026-10-26 01:19 EDT): the two had drifted into near copies. `preset` is a Save anyway replay (handleCatalogueWarning above): the typed values come from the warning's pending store instead of a pop-up, and the catalogue check is skipped because the admin already saw it. `opts.onSaved(result)` (2026-11-12 22:32 EST): a caller that draws the result itself (the /manage gunsmith panel, whose approved v3.13 spec answers in place) gets the saved panel's values instead of a follow-up message. It runs only on a real save; refusals and the code, catalogue and picture questions still answer privately.
 async function saveLoadout(interaction, preset, isEdit, opts = {}) {
     // A pop-up opened from Edit's search picker (mng_pick_): acknowledge by updating the picker and draw it again with nothing picked. Discord sends no event when the option already picked is picked again, so without this the same build could not be reopened from the list (click-test 2026-11-06 11:00 EST). Every answer below is a follow-up either way.
     const fromPicker = !preset && interaction.message?.components?.some(row => row.components?.some(c => String(c.customId || '').startsWith('mng_pick_')));
