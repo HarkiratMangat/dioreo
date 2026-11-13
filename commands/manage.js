@@ -935,7 +935,7 @@ function buildManageCommandData() {
         .addStringOption(o => o.setName('build').setDescription('Go to one build: a weapon, a number or a label, e.g. fss 1b').setAutocomplete(true))
         .addStringOption(o => o.setName('do').setDescription('What to do. With build: or builds: it happens right away').addChoices(
             { name: 'Add Build', value: 'add' }, { name: 'Edit', value: 'edit' }, { name: 'Move', value: 'move' }, { name: 'Add Option', value: 'newopt' },
-            { name: 'Delete', value: 'delete' }, { name: 'Bulk Paste', value: 'paste' }, { name: 'Export', value: 'export' }, { name: 'Guide', value: 'guide' }))
+            { name: 'Credit', value: 'credit' }, { name: 'Delete', value: 'delete' }, { name: 'Bulk Paste', value: 'paste' }, { name: 'Export', value: 'export' }, { name: 'Guide', value: 'guide' }))
         .addStringOption(o => o.setName('builds').setDescription('Several builds, comma-separated: fss 1b, static, smg'))
         .addStringOption(o => o.setName('weapon').setDescription('Go to a weapon and all its builds').setAutocomplete(true))
         .addStringOption(o => o.setName('class').setDescription('Go to a class and pick a weapon').addChoices(

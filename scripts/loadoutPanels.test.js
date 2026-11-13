@@ -89,6 +89,12 @@ check('a picture replaced at the same key is listed, and its URL changes with th
     assert.strictEqual(buildImageUrl('https://example.com/x.png', 5), 'https://example.com/x.png');
 });
 
+check('a changed comment is listed under What changed', () => {
+    const before = { weaponName: 'AK-47', attachments: ['A'], description: '' };
+    assert.deepStrictEqual(p.changeLines(before, { ...before, description: 'Close range' }), ['**Comment:** Close range']);
+    assert.deepStrictEqual(p.changeLines({ ...before, description: 'Old' }, { ...before, description: 'Old' }), []);
+});
+
 if (failures) { console.error(`\n${failures} loadout panel check(s) failed.`); process.exit(1); }
 console.log('\nloadoutPanels: all checks passed.');
 process.exit(0);

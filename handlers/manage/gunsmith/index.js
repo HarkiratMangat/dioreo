@@ -109,15 +109,47 @@ async function editModal(mode, doc, opt, customId) {
     return reId(await loadouts().editLoadoutModal(doc, Number(opt) || 0), customId, title);
 }
 
-// What an Edit pop-up's submit holds, as editLoadout's preset values (handlers/manage/loadouts.js fieldReader / shotOf).
-function editPreset(interaction, id, opt) {
+// A save drawn in place (2026-11-12 22:33 EST, his v3.13 spec: "Results: in place"): the build's card with what changed on top and the panel's own Revert, which lands back on it. `r` is what the saver hands onSaved (handlers/manage/loadouts.js).
+async function savedCard(mode, r, back = null) {
+    const { variantView } = require('../../../utils/loadoutRender');
+    const { changeLines } = require('../../../utils/loadoutPanels');
+    const opt = Number(r.option) || 0;
+    const changes = r.before ? changeLines(r.before, variantView(r.doc, opt), { pictureReplaced: r.pictureReplaced }) : [];
+    if (r.moveLine) changes.unshift(`**Option:** ${r.moveLine}`);
+    const lines = [`### ${emojis.checkmark} ${r.before ? 'Saved' : 'Added'}`];
+    if (r.before) lines.push(changes.length ? changes.map(x => `- ${x}`).join('\n') : '-# Nothing changed.');
+    for (const note of r.notes || []) lines.push(`-# ${emojis.info} ${note}`);
+    for (const w of r.warnings || []) lines.push(`${emojis.warn} ${w}`);
+    const row = revertRow(mode, r.changeIds, String(r.doc._id), opt, back);
+    if (!row && (r.changeIds || []).length) lines.push('-# Too many changes for one Revert button: revert them from `/bot analytics` › Changes.');
+    return V.cardView(mode, String(r.doc._id), opt, lines.join('\n').slice(0, 1800), null, back, row);
+}
+function revertRow(mode, changeIds, id, opt, back) {
+    const ids = (changeIds || []).join(',');
+    if (!ids) return null;
+    try { return { type: 1, components: [{ type: 2, style: 4, label: 'Revert', custom_id: V.ID(mode, 'rev', ids, id, Number(opt) || 0, back || ''), emoji: emojis.parseEmoji(emojis.keep) }] }; }
+    catch { return null; } // past Discord's 100 characters
+}
+
+// What a five-field loadout pop-up's submit holds, as the saver's preset values (handlers/manage/loadouts.js fieldReader / shotOf). Edit and Add share the fields.
+function formPreset(interaction, customId) {
     const values = {};
     for (const k of ['weapon', 'build', 'attachments', 'image_url']) { try { values[k] = interaction.fields.getTextInputValue(k) || ''; } catch { values[k] = ''; } }
     try {
         const shot = [...(interaction.fields.getUploadedFiles('image_file')?.values() || [])][0];
         if (shot?.url) values.__shot = shot.url;
     } catch { /* no upload field, or nothing uploaded */ }
-    return { customId: `edit_loadout_${id}${Number(opt) ? `~${Number(opt)}` : ''}`, values };
+    return { customId, values };
+}
+
+// What an Edit pop-up's submit holds, as editLoadout's preset values (handlers/manage/loadouts.js fieldReader / shotOf).
+function editPreset(interaction, id, opt) {
+    return formPreset(interaction, `edit_loadout_${id}${Number(opt) ? `~${Number(opt)}` : ''}`);
+}
+
+// The Credit pop-up is handlers/manage/loadouts.js creditModal, re-addressed so its submit comes back to this panel (`creditm`) with the option and the way back.
+function creditModal(mode, doc, id, opt, back = null) {
+    return { ...loadouts().creditModal(doc), custom_id: back ? V.ID(mode, 'creditm', id, Number(opt) || 0, back) : V.ID(mode, 'creditm', id, Number(opt) || 0) };
 }
 
 // ---------- the home page ----------
@@ -175,7 +207,7 @@ async function deleteMany(interaction, mode, keys) {
 }
 
 // ---------- the slash command ---------- His 13:40 EST ask: more ways for the slash command to go straight to something without walking through the panel. `build:` opens a build (or `＋ New build`), `builds:` a Select list, `weapon:` / `class:` their pages; `do:` with a target acts at once. A pop-up has to be the first answer, so every path that opens one runs before anything is deferred.
-const DO_CHOICES = [['Add Build', 'add'], ['Edit', 'edit'], ['Move', 'move'], ['Add Option', 'newopt'], ['Delete', 'delete'], ['Bulk Paste', 'paste'], ['Export', 'export'], ['Guide', 'guide']];
+const DO_CHOICES = [['Add Build', 'add'], ['Edit', 'edit'], ['Move', 'move'], ['Add Option', 'newopt'], ['Credit', 'credit'], ['Delete', 'delete'], ['Bulk Paste', 'paste'], ['Export', 'export'], ['Guide', 'guide']];
 
 async function openFromSlash(interaction, mode) {
     const o = interaction.options;
@@ -203,7 +235,8 @@ async function openFromSlash(interaction, mode) {
         if (!doc || doc.mode !== mode) return view(await home(mode, `${emojis.cross} That build no longer exists.`, interaction));
         if (act === 'edit') return (await gate(interaction, mode, 'edit')) && interaction.showModal(await editModal(mode, doc, opt, V.ID(mode, 'editm', id, opt)));
         if (act === 'move') return (await gate(interaction, mode, 'edit')) && interaction.showModal(V.moveModal(mode, doc, opt));
-        if (act === 'newopt') return (await gate(interaction, mode, 'add')) && loadouts().showAddOption(interaction, doc, opt);
+        if (act === 'newopt') return (await gate(interaction, mode, 'add')) && loadouts().showAddOption(interaction, doc, opt, { customId: V.ID(mode, 'addm') });
+        if (act === 'credit') return (await gate(interaction, mode, 'edit')) && interaction.showModal(creditModal(mode, doc, id, opt));
         if (act === 'delete') {
             if (!(await gate(interaction, mode, 'delete'))) return;
             return view(await confirmDeleteCard(mode, doc, id, opt));
@@ -241,7 +274,7 @@ async function openFromSlash(interaction, mode) {
     }
     if (weapon) return view(await V.weaponView(mode, weapon));
     if (cls) return view(await V.classView(mode, cls));
-    if (act === 'add') return (await gate(interaction, mode, 'add')) && interaction.showModal(await addModal(mode));
+    if (act === 'add') return (await gate(interaction, mode, 'add')) && interaction.showModal(reId(await addModal(mode), V.ID(mode, 'addm')));
     if (act === 'paste') return (await gate(interaction, mode, 'bulkadd')) && interaction.showModal(reId(manageCommand().buildLoadoutsBulkAddModal(mode), V.ID(mode, 'pastem'), `Paste ${mode} Builds`));
     if (act === 'export') return (await gate(interaction, mode, 'exportall')) && interaction.showModal(V.exportModal(mode));
     if (act === 'guide') return runGuide(interaction, mode);
@@ -324,7 +357,7 @@ async function previewPanel(mode, token, raw, { editAgain, crumbs, title, backTo
 
 // ---------- routing ----------
 async function route(interaction) {
-    const [, modeChar, verb, a, b, c] = interaction.customId.split('|');
+    const [, modeChar, verb, a, b, c, d] = interaction.customId.split('|');
     const mode = V.MODE_OF[modeChar];
     if (!mode) return say(interaction, `${emojis.cross} That button is from an older panel. Open \`/manage gunsmith\` again.`);
     const n = (x) => Number(x) || 0;
@@ -333,7 +366,7 @@ async function route(interaction) {
     if (verb === 'page') return show(interaction, await home(mode, null, interaction));
     if (verb === 'cls') return show(interaction, await V.classView(mode, a));
     if (verb === 'wpn' && interaction.isStringSelectMenu?.()) return show(interaction, await V.weaponView(mode, interaction.values[0]));
-    if (verb === 'wback') return show(interaction, await V.weaponView(mode, a));
+    if (verb === 'wback') return show(interaction, await V.weaponView(mode, a, null, n(b)));
     if (verb === 'card') return show(interaction, await V.cardView(mode, a, n(b), null, null, c || null));
     if (verb === 'opt' && interaction.isStringSelectMenu?.()) return show(interaction, await V.cardView(mode, a, n(interaction.values[0]), null, null, b || null));
     if (verb === 'pick' && interaction.isStringSelectMenu?.()) { const [id, opt] = interaction.values[0].split('~'); return show(interaction, await V.cardView(mode, id, n(opt))); }
@@ -341,18 +374,19 @@ async function route(interaction) {
     if (verb === 'guide') return runGuide(interaction, mode);
 
     // ----- pop-ups that save through the real handlers -----
-    if (verb === 'add') return (await gate(interaction, mode, 'add')) && interaction.showModal(await addModal(mode));
+    if (verb === 'add') return (await gate(interaction, mode, 'add')) && interaction.showModal(reId(await addModal(mode), V.ID(mode, 'addm')));
     if (verb === 'newb') {
         if (!(await gate(interaction, mode, 'add'))) return;
         const modal = await newBuildModal(mode, a);
-        return modal ? interaction.showModal(modal) : show(interaction, await home(mode, `${emojis.cross} That weapon has no ${mode} builds any more.`, interaction));
+        return modal ? interaction.showModal(reId(modal, V.ID(mode, 'addm'))) : show(interaction, await home(mode, `${emojis.cross} That weapon has no ${mode} builds any more.`, interaction));
     }
-    if (verb === 'edit' || verb === 'move' || verb === 'newopt' || verb === 'del') {
+    if (verb === 'edit' || verb === 'move' || verb === 'newopt' || verb === 'credit' || verb === 'del') {
         const doc = isObjectId(a) ? await Loadout().findById(a).lean() : null;
         if (!doc || doc.mode !== mode) return show(interaction, await home(mode, `${emojis.cross} That build no longer exists.`, interaction));
         if (verb === 'edit') return (await gate(interaction, mode, 'edit')) && interaction.showModal(await editModal(mode, doc, b, c ? V.ID(mode, 'editm', a, n(b), c) : V.ID(mode, 'editm', a, n(b))));
         if (verb === 'move') return (await gate(interaction, mode, 'edit')) && interaction.showModal(V.moveModal(mode, doc, n(b), c || null));
-        if (verb === 'newopt') return (await gate(interaction, mode, 'add')) && loadouts().showAddOption(interaction, doc, n(b));
+        if (verb === 'newopt') return (await gate(interaction, mode, 'add')) && loadouts().showAddOption(interaction, doc, n(b), { customId: V.ID(mode, 'addm') });
+        if (verb === 'credit') return (await gate(interaction, mode, 'edit')) && interaction.showModal(creditModal(mode, doc, a, n(b), c || null));
         return (await gate(interaction, mode, 'delete')) && show(interaction, await confirmDeleteCard(mode, doc, a, n(b), c || null));
     }
     if (verb === 'delok') {
@@ -365,8 +399,41 @@ async function route(interaction) {
         // From the panel: the card under the pop-up is refreshed in place and the saved panel (with Revert) follows it. From the slash command there is no card, so the save answers alone.
         if (!interaction.message) return loadouts().editLoadout(interaction, preset);
         await interaction.deferUpdate();
-        await loadouts().editLoadout(interaction, preset);
-        return show(interaction, await V.cardView(mode, a, n(b), `-# ${emojis.checkmark} Saved. The result, with Revert, is in the message below.`, null, c || null));
+        let saved = null;
+        await loadouts().editLoadout(interaction, preset, { onSaved: (r) => { saved = r; } });
+        // Refused, or waiting on a code, catalogue or picture question: that answer is its own private message, and the card stays as it was. Before, the card said "Saved" here either way.
+        if (!saved) return;
+        return show(interaction, await savedCard(mode, saved, c || null));
+    }
+    // An add from the panel (2026-11-12 22:33 EST): Add Build, New Build and Add Option re-address the real add pop-up here so the result is drawn in place, as his v3.13 spec asks. The save is addLoadout, unchanged.
+    if (verb === 'addm' && interaction.isModalSubmit?.()) {
+        if (!(await gate(interaction, mode, 'add'))) return;
+        const preset = formPreset(interaction, `add_loadout_${mode}`);
+        if (!interaction.message) return loadouts().addLoadout(interaction, preset);
+        await interaction.deferUpdate();
+        let saved = null;
+        await loadouts().addLoadout(interaction, preset, { onSaved: (r) => { saved = r; } });
+        if (!saved) return;
+        return show(interaction, await savedCard(mode, saved, a || null));
+    }
+    // The panel's own Revert: revertChanges as everywhere, drawn back on the card it was pressed from, or Home when the build is gone (an add reverted). `a` change ids, `b` build, `c` option, `d` the card's way back.
+    if (verb === 'rev') {
+        const ids = String(a || '').split(',').filter(Boolean);
+        return require('../results').revertChanges(interaction, ids, { doneNote: 'it is back as it was', render: async (note) => {
+            const doc = isObjectId(b) ? await Loadout().findById(b).lean() : null;
+            if (doc && doc.mode === mode) return V.cardView(mode, b, n(c), `-# ${note}`, null, d || null);
+            return home(mode, note, interaction);
+        } });
+    }
+    // Credit saves through the old pop-up's own saveCredit (core's loadout.credit, so it carries Revert); from the panel the card refreshes in place and the saved panel follows, exactly as Edit does (2026-11-12 19:21 EST).
+    if (verb === 'creditm' && interaction.isModalSubmit?.()) {
+        if (!(await gate(interaction, mode, 'edit'))) return;
+        if (!interaction.message) return loadouts().saveCredit(interaction, { id: a });
+        await interaction.deferUpdate();
+        let saved = null;
+        await loadouts().saveCredit(interaction, { id: a, deferred: true, onSaved: (r) => { saved = r; } });
+        if (!saved) return;
+        return show(interaction, await savedCard(mode, { ...saved, option: n(b) }, c || null));
     }
     if (verb === 'movem' && interaction.isModalSubmit?.()) {
         if (!(await gate(interaction, mode, 'edit'))) return;
@@ -385,9 +452,11 @@ async function route(interaction) {
         const preset = { customId: `edit_loadout_${a}${n(b) ? `~${n(b)}` : ''}`, values };
         if (!interaction.message) return loadouts().editLoadout(interaction, preset);
         await interaction.deferUpdate();
-        await loadouts().editLoadout(interaction, preset);
-        const still = await Loadout().findById(a).lean();
-        return show(interaction, still ? await V.cardView(mode, a, 0, `-# ${emojis.checkmark} Moved. The result, with Revert, is in the message below.`, null, c || null) : await V.weaponView(mode, doc.weaponKey, `-# ${emojis.checkmark} Moved. The result, with Revert, is in the message below.`));
+        let saved = null;
+        await loadouts().editLoadout(interaction, preset, { onSaved: (r) => { saved = r; } });
+        if (!saved) return;
+        // A move into another build saves that build: its card shows where this one went.
+        return show(interaction, saved.doc ? await savedCard(mode, saved, c || null) : await V.weaponView(mode, doc.weaponKey, `-# ${emojis.checkmark} Moved.`));
     }
 
     // ----- Search ----- One Search (the draws redesign): names, one per line, widen each other; quick picks narrow them; both blank is every build. One match opens its card; none answers privately.
@@ -544,8 +613,16 @@ async function routeSelection(interaction, mode, verb, a, b, c) {
         // A refusal or nothing-changed answers privately and leaves the panel as it was (round 2's rule; the 2026-11-11 16:46 EST think-pass).
         if (!pv.keep) return say(interaction, `${emojis.info} Nothing to save: every build is unchanged.`);
         await interaction.deferUpdate();
-        await loadouts().bulkAddLoadouts(interaction, { customId: `modal_loadouts_bulk_add_${mode}`, values: { bulk_text: pv.keep } });
-        return show(interaction, V.resultView(mode, { crumbs: isEdit ? ['Selected', 'Edit'] : ['Bulk Paste'], title: `Sent ${pv.count} build${pv.count === 1 ? '' : 's'} to save`, body: ['-# The result is in the message below. A bulk save is reverted from `/bot analytics` › Changes.'], back: isEdit ? ['slist', a, 0] : 'page', backLabel: isEdit ? 'Back to Selected' : 'Home' }));
+        let saved = null;
+        await loadouts().bulkAddLoadouts(interaction, { customId: `modal_loadouts_bulk_add_${mode}`, values: { bulk_text: pv.keep } }, { onSaved: (r) => { saved = r; } });
+        if (!saved) return;
+        const r = saved.bulk;
+        const body = [`**${r.created}** added · **${r.updated}** updated${r.skipped.length ? ` · **${r.skipped.length}** skipped` : ''}`];
+        if (r.learned.length) body.push(`-# Added to the catalogue: ${r.learned.map(x => `\`${x}\``).join(', ')}`);
+        if (r.skipped.length) body.push('', `${emojis.warn} **Skipped**`, ...r.skipped.map(x => `- ${x}`));
+        if (r.missingImages.length) body.push('', `${emojis.warn} **No picture on Cloudinary**`, ...r.missingImages.map(m => `- ${m.label}: \`${m.imageKey}\``));
+        const rev = revertRow(mode, saved.changeIds, '', 0, null);
+        return show(interaction, V.resultView(mode, { crumbs: isEdit ? ['Selected', 'Edit'] : ['Bulk Paste'], title: 'Saved', ok: r.skipped.length ? 'warn' : true, body, back: isEdit ? ['slist', a, 0] : 'page', backLabel: isEdit ? 'Back to Selected' : 'Home', extraButtons: rev ? rev.components : [] }));
     }
 
     if (verb === 'texp') {
@@ -579,4 +656,4 @@ async function handleGunsmithInteraction(interaction) {
     return true;
 }
 
-module.exports = { handleGunsmithInteraction, renderHome, openFromSlash, autocomplete, DO_CHOICES, PREFIX, _test: { show, deleteMany, editPreset, setValue, reId } };
+module.exports = { handleGunsmithInteraction, renderHome, openFromSlash, autocomplete, DO_CHOICES, PREFIX, _test: { show, deleteMany, editPreset, setValue, reId, savedCard, revertRow } };

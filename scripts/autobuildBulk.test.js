@@ -268,6 +268,55 @@ const FIVE = ['A', 'B', 'C', 'D', 'E'];
         assert.deepStrictEqual(select.options.filter(o => o.default).map(o => o.value), ['meta', 'top5']);
     });
 
+    // 2026-11-12 19:19 EST: Harkirat saved two GRAV screenshots as Options A and B of one build and the page never updated. Every select on every page carries unique values, at any mix of saved builds.
+    await check('every select menu on a batch page has unique option values, two saves into one build included', () => {
+        const doc = { _id: 'd1', weaponName: 'GRAV', buildName: 'Build 1', category: 'AR', mode: 'MP' };
+        const other = { _id: 'd2', weaponName: 'GRAV', buildName: 'Build 2', category: 'AR', mode: 'MP' };
+        const batch = { items: [
+            { url: 'https://x/a.png', status: 'saved', doc, savedAs: 'Build 1A' },
+            { url: 'https://x/b.png', status: 'saved', doc, savedAs: 'Build 1B' },
+            { url: 'https://x/c.png', status: 'saved', doc: other },
+            { url: 'https://x/d.png', status: 'cancelled', data: mp('GRAV', '1A', ['X']) },
+        ], page: 1, expiresAt: Date.now() + 60000 };
+        for (let i = 0; i < batch.items.length; i++) {
+            const page = renderPage(batch, 'k', i);
+            const walk = (c) => { if (c?.type === 3) { const v = c.options.map(o => o.value); assert.strictEqual(new Set(v).size, v.length, `page ${i + 1} ${c.custom_id}: ${v}`); } (c?.components || []).forEach(walk); };
+            page.forEach(walk);
+        }
+        const open = [];
+        const find = (c) => { if (c?.type === 3 && c.placeholder === 'Open a saved loadout') open.push(c); (c?.components || []).forEach(find); };
+        renderPage(batch, 'k', 0).forEach(find);
+        assert.deepStrictEqual(open[0].options.map(o => o.value), ['d1', 'd2']);
+    });
+
+    // 2026-11-12 19:30 EST: two un-numbered builds of one weapon both read "Build 1" until the first saved; every page must show where its build will land, and pass Discord's rules.
+    await check('two un-numbered builds of one weapon in a batch read Build 1 and Build 2, and a 1b beside them is not warned', async () => {
+        const modelPath = require.resolve('../models/Loadout');
+        const saved = require.cache[modelPath];
+        const q = (v) => ({ lean: async () => v, select() { return q(v); } });
+        require.cache[modelPath] = { id: modelPath, filename: modelPath, loaded: true, exports: { find: () => q([]) } };
+        const mongoose = require('mongoose');
+        const rs = Object.getOwnPropertyDescriptor(mongoose.connection, 'readyState');
+        Object.defineProperty(mongoose.connection, 'readyState', { value: 1, configurable: true });
+        const stored = require.resolve('../models/AutobuildBatch');
+        const savedStored = require.cache[stored];
+        require.cache[stored] = { id: stored, filename: stored, loaded: true, exports: { find: () => q([]) } };
+        try {
+            const batch = { adminId: 'u', items: [{ status: 'pending', token: 't1', data: mp('GRAV', '1A2B', ['X']) }, { status: 'pending', token: 't2', data: mp('GRAV', '1A3B', ['Y']) }, { status: 'pending', token: 't3', data: { ...mp('GRAV', '1A4B', ['Z']), buildTag: '1b' } }] };
+            await bulk._refreshForRender({ client: {} }, batch, 'k');
+            assert.deepStrictEqual(batch.items.slice(0, 2).map(it => it.data.ordinal), [1, 2]);
+            // #3 joins Build 1, which #1 creates earlier in the same Save All: no "There is no Build 1" warning.
+            assert.strictEqual(batch.items[2].data.buildWarning, null, batch.items[2].data.buildWarning);
+            const { checkComponents } = require('../utils/componentCheck');
+            batch.expiresAt = Date.now() + 60000;
+            for (let i = 0; i < 3; i++) assert.deepStrictEqual(checkComponents(renderPage(batch, 'k', i)), [], `page ${i + 1}`);
+        } finally {
+            if (saved) require.cache[modelPath] = saved; else delete require.cache[modelPath];
+            if (savedStored) require.cache[stored] = savedStored; else delete require.cache[stored];
+            if (rs) Object.defineProperty(mongoose.connection, 'readyState', rs); else delete mongoose.connection.readyState;
+        }
+    });
+
     if (failed) { console.log(`\n${failed} bulk /autobuild check(s) failed.`); process.exit(1); }
     console.log('\nAll bulk /autobuild checks passed.');
     process.exit(0);

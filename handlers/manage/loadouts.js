@@ -258,7 +258,7 @@ function planOptionSave({ existing, targetId, targetOption, ident, weaponKey, si
 }
 
 // Commits an option save planned above, and answers with the build as it now stands, the option on show.
-async function saveOption(interaction, { plan, picture, fail, unknown, mode, weaponName, label, code, attachments, ident, badges, alerts, commentField = {} }) {
+async function saveOption(interaction, { plan, picture, fail, unknown, mode, weaponName, label, code, attachments, ident, badges, alerts, commentField = {}, onSaved = null }) {
     const lo = require('../../utils/loadoutOptions');
     const { variantView } = require('../../utils/loadoutRender');
     const { isRealImageKey } = require('../../utils/loadoutImageCache');
@@ -345,11 +345,13 @@ async function saveOption(interaction, { plan, picture, fail, unknown, mode, wea
     if (!saved) return await interaction.followUp({ content: `${BOT_EMOJI.checkmark} Saved.` });
     const { savedPanel } = require('../../utils/loadoutPanels');
     // `before` is the option as it was (an added option had none), so What changed reads like a build's.
-    return interaction.followUp({ flags: 32768 | 64, components: savedPanel({ doc: saved, option: shown, before: before ? { ...before, buildName: src.buildName } : null, moveLine, changeIds: result.changeIds, notes, warnings: warns, pictureReplaced: Boolean(picture.replaced) }) });
+    const out = { doc: saved, option: shown, before: before ? { ...before, buildName: src.buildName } : null, moveLine, changeIds: result.changeIds, notes, warnings: warns, pictureReplaced: Boolean(picture.replaced) };
+    if (onSaved) return onSaved(out);
+    return interaction.followUp({ flags: 32768 | 64, components: savedPanel(out) });
 }
 
-// Add option's pop-up: Create New, filled with the build's weapon, its next option's tag (`2d`) and the attachments of the option on show, so a variation is a few edits away. The code and the picture are left for the new option's own. Shared by the saved panel's Add option and /manage gunsmith's `build:` with action Add.
-async function showAddOption(interaction, doc, option = 0) {
+// Add option's pop-up: Create New, filled with the build's weapon, its next option's tag (`2d`) and the attachments of the option on show, so a variation is a few edits away. The code and the picture are left for the new option's own. Shared by the saved panel's Add option and /manage gunsmith's `build:` with action Add. `opts.customId` re-addresses the pop-up so its submit comes back to the caller (the /manage gunsmith panel's `addm`).
+async function showAddOption(interaction, doc, option = 0, opts = {}) {
     const Loadout = require('../../models/Loadout');
     const form = require('../../utils/loadoutForm');
     const lo = require('../../utils/loadoutOptions');
@@ -359,11 +361,13 @@ async function showAddOption(interaction, doc, option = 0) {
     const tag = lo.optionTag(form.numberFor(doc, siblings) ?? 1, count);
     const view = require('../../utils/loadoutRender').variantView(doc, option);
     const manage = require('../../commands/manage');
-    return await interaction.showModal(manage.prefillModal(manage.buildAddLoadoutModal(doc.mode || 'MP'), {
+    const modal = manage.prefillModal(manage.buildAddLoadoutModal(doc.mode || 'MP'), {
         weapon: doc.label ? `${doc.weaponName}, ${doc.label}` : doc.weaponName,
         build: doc.mode === 'DMZ' ? `${doc.category}, ${tag}` : `${doc.category}, ${tag}, `,
         attachments: (view.attachments || []).join('\n'),
-    }));
+    });
+    if (opts.customId) { const json = modal.toJSON ? modal.toJSON() : modal; json.custom_id = opts.customId; return await interaction.showModal(json); }
+    return await interaction.showModal(modal);
 }
 
 // --- /manage gunsmith mp|dmz build: --- (Harkirat, 2026-11-06 11:05 EST: "improve/expand the add/edit capabilities to the slash command options itself"). buildChoices is the autocomplete: a build, each option of a merged build (`id~i`), the whole merged build (`id`, for a delete), and a new build of each weapon (`new:weaponKey`). openFromSlash opens what was picked: Edit (the default) its pop-up, Add a new build's or the build's next option's, Delete its confirm. Each is gated by the button it stands for (resolveAction), and a typed value that was not picked from the list goes through Edit's own search.
@@ -438,8 +442,8 @@ async function openFromSlash(interaction, group, value, actionId) {
     return await interaction.showModal(await editLoadoutModal(match.doc, option));
 }
 
-// --- SAVE A LOADOUT (Add or Edit) --- custom_ids: add_loadout_{MP|DMZ} · edit_loadout_{id}. One body for both since the five-field pop-up (2026-10-26 01:19 EDT): the two had drifted into near copies. `preset` is a Save anyway replay (handleCatalogueWarning above): the typed values come from the warning's pending store instead of a pop-up, and the catalogue check is skipped because the admin already saw it.
-async function saveLoadout(interaction, preset, isEdit) {
+// --- SAVE A LOADOUT (Add or Edit) --- custom_ids: add_loadout_{MP|DMZ} · edit_loadout_{id}. One body for both since the five-field pop-up (2026-10-26 01:19 EDT): the two had drifted into near copies. `preset` is a Save anyway replay (handleCatalogueWarning above): the typed values come from the warning's pending store instead of a pop-up, and the catalogue check is skipped because the admin already saw it. `opts.onSaved(result)` (2026-11-12 22:32 EST): a caller that draws the result itself (the /manage gunsmith panel, whose approved v3.13 spec answers in place) gets the saved panel's values instead of a follow-up message. It runs only on a real save; refusals and the code, catalogue and picture questions still answer privately.
+async function saveLoadout(interaction, preset, isEdit, opts = {}) {
     // A pop-up opened from Edit's search picker (mng_pick_): acknowledge by updating the picker and draw it again with nothing picked. Discord sends no event when the option already picked is picked again, so without this the same build could not be reopened from the list (click-test 2026-11-06 11:00 EST). Every answer below is a follow-up either way.
     const fromPicker = !preset && interaction.message?.components?.some(row => row.components?.some(c => String(c.customId || '').startsWith('mng_pick_')));
     if (fromPicker && !interaction.deferred && !interaction.replied) {
@@ -535,7 +539,7 @@ async function saveLoadout(interaction, preset, isEdit) {
     if (picture.error) return await fail(picture.error);
     if (picture.ask) return await warnOldPicture(interaction, { customId, acks: [...acks, 'catalogue'], values: readValues(field, LOADOUT_FIELDS) }, pictureOf.imageKey, pictureOf);
     if (optionPath) {
-        return await saveOption(interaction, { plan, picture, fail, unknown, mode, weaponName, label, code, attachments, ident, commentField,
+        return await saveOption(interaction, { plan, picture, fail, unknown, mode, weaponName, label, code, attachments, ident, commentField, onSaved: opts.onSaved || null,
             badges: { isMeta, categoryRank, dmzRangeRank, isToxic, isAss, rankModes }, alerts: badgeNotes(unrecognized, warnings) });
     }
 
@@ -572,7 +576,9 @@ async function saveLoadout(interaction, preset, isEdit) {
         alerts.push(`**No picture on Cloudinary** at \`${picture.imageKey}\`: the card shows broken until one is added with Edit again.`);
     }
     const { savedPanel } = require('../../utils/loadoutPanels');
-    return interaction.followUp({ flags: 32768 | 64, components: savedPanel({ doc: saved, before: existing, changeIds: result.changeIds, notes, warnings: alerts, pictureReplaced: Boolean(picture.replaced) }) });
+    const out = { doc: saved, before: existing, changeIds: result.changeIds, notes, warnings: alerts, pictureReplaced: Boolean(picture.replaced) };
+    if (opts.onSaved) return opts.onSaved(out);
+    return interaction.followUp({ flags: 32768 | 64, components: savedPanel(out) });
 }
 
 // --- A SAVED LOADOUT'S BUTTONS --- custom_ids: mng_ldopen_{id} · mng_ldedit_{id} · mng_ldrevert|{changeId,...}. Stateless, so they keep working after a restart. The router's /manage lock has already run; Revert is gated per change by the same check /bot analytics' Revert uses (utils/adminAccess.js checkRevert), which core/revert.js runs again.
@@ -637,20 +643,21 @@ function creditModal(doc) {
     };
 }
 
-async function saveCredit(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+// `opts.id` / `opts.deferred`: the /manage gunsmith card's Credit (2026-11-12 19:21 EST) passes the build and has already deferred its update, so every answer here is a private follow-up either way.
+async function saveCredit(interaction, opts = {}) {
+    if (!opts.deferred) await interaction.deferReply({ ephemeral: true });
     const Loadout = require('../../models/Loadout');
     const { normalizeCredit } = require('../../utils/loadoutCredit');
-    const id = interaction.customId.replace('mng_ldcreditm_', '');
+    const id = opts.id || interaction.customId.replace('mng_ldcreditm_', '');
     const before = await Loadout.findById(id).lean();
-    if (!before) return await interaction.followUp({ content: `${BOT_EMOJI.cross} That build no longer exists.` });
+    if (!before) return await interaction.followUp({ content: `${BOT_EMOJI.cross} That build no longer exists.`, ephemeral: true });
     const get = (fn) => { try { return fn(); } catch { return null; } };
     const show = (get(() => require('../../utils/formChoice').readChoice(interaction, 'show')) || [])[0] || 'none';
     const prefix = (get(() => require('../../utils/formChoice').readChoice(interaction, 'prefix')) || [])[0] || 'submitted';
     const user = get(() => interaction.fields.getSelectedUsers('user')?.first()) || null;
     const typed = (get(() => interaction.fields.getTextInputValue('name')) || '').trim();
     const url = (get(() => interaction.fields.getTextInputValue('url')) || '').trim();
-    const fail = (msg) => interaction.followUp({ content: `${BOT_EMOJI.cross} ${msg} Nothing was changed.` });
+    const fail = (msg) => interaction.followUp({ content: `${BOT_EMOJI.cross} ${msg} Nothing was changed.`, ephemeral: true });
     if (user?.bot) return await fail('That is a bot, not a player.');
     if (show === 'user' && !user) return await fail('Pick the Discord user for @user.');
     if (url && show !== 'link') return await fail('A link only shows with **Hyperlink**. Pick Hyperlink, or empty the Link box.');
@@ -660,15 +667,16 @@ async function saveCredit(interaction) {
     if (!result.ok) return await fail(extractCommitError(result));
     const saved = await Loadout.findById(id).lean();
     const { savedPanel } = require('../../utils/loadoutPanels');
+    if (opts.onSaved) return opts.onSaved({ doc: saved, before, changeIds: result.changeIds });
     return interaction.followUp({ flags: 32768 | 64, components: savedPanel({ doc: saved, before, changeIds: result.changeIds }) });
 }
 
 // Declarations, not arrow consts: handleCatalogueWarning above names them, and a const read before its line is a temporal dead zone (scripts/tdzRatchet.mjs).
-function editLoadout(interaction, preset = null) { return saveLoadout(interaction, preset, true); }
-function addLoadout(interaction, preset = null) { return saveLoadout(interaction, preset, false); }
+function editLoadout(interaction, preset = null, opts = {}) { return saveLoadout(interaction, preset, true, opts); }
+function addLoadout(interaction, preset = null, opts = {}) { return saveLoadout(interaction, preset, false, opts); }
 
 // --- BULK ADD/REPLACE LOADOUTS (upsert, never wholesale-replaces) --- custom_id: modal_loadouts_bulk_add_{MP|DMZ}. "Replace" also routes into this exact modal/handler (see manageActions.js's comment on why). Parsing now happens INSIDE the op (core/ops/loadouts.js), which upserts by {weaponKey, mode, buildName} -- this handler just relays the raw pasted text and `mode`.
-async function bulkAddLoadouts(interaction, preset = null) {
+async function bulkAddLoadouts(interaction, preset = null, opts = {}) {
     if (!interaction.deferred && !interaction.replied) await interaction.deferReply({ ephemeral: true });
     const field = fieldReader(interaction, preset);
     const customId = preset ? preset.customId : interaction.customId;
@@ -724,7 +732,9 @@ async function bulkAddLoadouts(interaction, preset = null) {
 
     // Counts first, then what was skipped and what is missing a picture (2026-10-26 11:54 EDT, the panel the single saves use).
     const { bulkPanel } = require('../../utils/loadoutPanels');
-    return interaction.followUp({ flags: 32768 | 64, components: bulkPanel({ mode: pageMode, created: applied.created, updated: applied.updated, learned: learn.map(i => i.name), skipped: applied.parseErrors, missingImages: applied.missingImages }) });
+    const out = { mode: pageMode, created: applied.created, updated: applied.updated, learned: learn.map(i => i.name), skipped: applied.parseErrors, missingImages: applied.missingImages };
+    if (opts.onSaved) return opts.onSaved({ bulk: out, changeIds: result.changeIds });
+    return interaction.followUp({ flags: 32768 | 64, components: bulkPanel(out) });
 }
 
 // --- BULK DELETE LOADOUTS --- custom_id: modal_loadouts_bulk_remove_{MP|DMZ} Lines are "Weapon" (removes every build of that weapon) or "Weapon | Build Name" (removes just that one build). Dry-run only -- the confirmed delete targets the exact ids collected here rather than re-matching titles at commit time, same reasoning as draws.js/calendar.js's bulk-delete routes.

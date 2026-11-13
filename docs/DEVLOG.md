@@ -320,6 +320,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-11-09 15:56 EST — Owner delete, an admin /help, a draw index check, and a TBD that the calendar threw away (v3.17.0)
 - 2026-11-10 21:17 EST — /manage draws refined, and what the review found (v3.19.0)
 - 2026-11-11 22:44 EST — Promote went live and said nothing, and every typed end date was a day early (v3.20.0)
+- 2026-11-12 22:47 EST — Save All said nothing, and the panels that fail in silence (v3.21.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -5108,6 +5109,20 @@ Season 10 went live on prod and two things went wrong at once: Promote dropped t
 The fixes: Promote now carries running rows inside its own transaction, and opens a review before anything goes live, built from tonight's real misses (Solstice, the Ford Table Tactics Offer and Event pair, the draw index disagreeing with live). The game also settled a long-standing date bug: a listed end day is inclusive, so every typed end had been stored a day early; reading and writing back were changed together, with a round-trip test, so an untouched save never moves an end.
 
 Lesson: a static test that every button has a handler cannot see a button that two others share. The result-screen bug lived in the one panel whose resultView lacked the guard the other five had; a test now holds all six to it.
+
+## 2026-11-12 22:47 EST — Save All said nothing, and the panels that fail in silence (v3.21.0)
+
+Harkirat found two things on prod: /autobuild's Save All gave no confirmation, and /manage gunsmith had no Credit button. The first fix was the two symptoms. His "think-pass deeply, why tf did these happen" found the cause under both, and more of the same.
+
+**Save All.** Two GRAV screenshots, the second set to 5b, saved into one build. The batch page's "Open a saved loadout" menu listed one entry per screenshot, so the same build twice, and Discord refuses a whole message for one repeated option value. The page never moved. Proven on the dev bot by putting the old code back for one click: the panel froze and the log read `COMPONENT_OPTION_VALUE_DUPLICATED`. The menu now lists each build once.
+
+**Why nobody saw it.** A refused panel edit only ever reached the log. Promote to Live had frozen the same way the night before (a duplicate custom id), and /help in October (an emoji the app did not own). Each panel's tests carried the rules their author remembered; the batch test checked ids and never option values. `utils/componentCheck.js` is now the one copy of the rules, run on every send and in every /manage panel test, and a refusal tells the person who clicked.
+
+**Credit.** The v3.13 rebuild was specced from a mock-up. The audit before it listed Credit on the old saved panel, and the new card kept Credit only behind a save. The same spec said results answer in place, and gunsmith still posted a second message for every save, so that is fixed too: the card redraws with what changed and its own Revert.
+
+**What clicking found that tests had not:** the weapon page broke at 11 builds; batch builds of one weapon all read "Build N"; a 5b beside its 5 warned "no Build 5"; a comment-only Bulk Paste was dropped because the preview read a field named `comment` that does not exist.
+
+**What I got wrong:** I called the dev bot unable to save pictures from a stale rule line (it saves under DEV- keys since October) and asked him twice about a build he had already explained. Both were one cheap check away.
 
 # Part B — Lessons Ledger (thematic)
 

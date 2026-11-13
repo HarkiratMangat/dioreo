@@ -12,6 +12,11 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.21.0 — November 12, 2026
+- **Fixed:** `/autobuild`'s Save All shows its result again when two screenshots go into one build.
+- **New:** a Credit button on each build in `/manage gunsmith`, and saves there show their result in the same panel, with Revert.
+- **Improved:** if Discord ever refuses to draw a panel, you are told instead of the panel just not changing.
+
 ## v3.20.0 — November 11, 2026
 - **New:** Promote to Live shows a review first, carries over draws still running, and confirms what went live.
 - **Improved:** `/manage` draws, calendar and gunsmith have one Search and a Selected view for acting on many at once.

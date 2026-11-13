@@ -159,11 +159,37 @@ function walk(components, fn) { for (const c of components || []) { fn(c); walk(
             const ids = async (...args) => JSON.stringify(await V.cardView(...args)).match(/"custom_id":"[^"]+"/g).map(x => x.slice(13, -1));
             const fromSel = await ids('MP', doc._id, 0, null, null, 'tok1');
             assert.ok(fromSel.includes('mng_gs|M|list|tok1|0'), fromSel.join(' '));
-            for (const verb of ['edit', 'move', 'del']) assert.ok(fromSel.includes(`mng_gs|M|${verb}|${doc._id}|0|tok1`), verb);
+            // Credit is on the card (2026-11-12, Harkirat: "where tf is the credit option/button"), carrying the way back like Edit.
+            for (const verb of ['edit', 'move', 'credit', 'del']) assert.ok(fromSel.includes(`mng_gs|M|${verb}|${doc._id}|0|tok1`), verb);
             assert.ok(!fromSel.some(x => x.includes('|wback|')));
             const plain = await ids('MP', doc._id, 0);
             assert.ok(plain.includes('mng_gs|M|wback|fss') && !plain.some(x => x.includes('tok1')));
             assert.strictEqual(V.moveModal('MP', doc, 0, 'tok1').custom_id, `mng_gs|M|movem|${doc._id}|0|tok1`);
+            const card = JSON.parse(JSON.stringify(await V.cardView('MP', doc._id, 0)));
+            const rows = []; const walk = (c) => { if (c?.type === 1) rows.push(c.components.length); (c?.components || []).forEach(walk); }; card.forEach(walk);
+            assert.ok(rows.every(n => n <= 5), `a card row holds ${Math.max(...rows)} buttons`);
+            // A save drawn in place puts the panel's own Revert above the card's buttons, inside Discord's rules.
+            const withRevert = await V.cardView('MP', doc._id, 0, '### Saved\n- **Attachments:** ~~a~~ → b', null, 'tok1', { type: 1, components: [{ type: 2, style: 4, label: 'Revert', custom_id: V.ID('MP', 'rev', '#1,#2', doc._id, 0, 'tok1') }] });
+            assert.deepStrictEqual(require('../utils/componentCheck').checkComponents(withRevert), []);
+            assert.ok(JSON.stringify(withRevert).includes(`mng_gs|M|rev|#1,#2|${doc._id}|0|tok1`));
+        } finally {
+            if (saved) require.cache[modelPath] = saved; else delete require.cache[modelPath];
+        }
+    });
+    // 2026-11-12 22:42 EST: a comment-only change previewed as Unchanged, so Bulk Paste and Edit N could not change a comment.
+    await check('a pasted comment change is a change, and a block with no Comment line keeps the stored one', async () => {
+        const modelPath = require.resolve('../models/Loadout');
+        const saved = require.cache[modelPath];
+        const doc = { _id: 'b'.repeat(24), mode: 'MP', weaponKey: require('../utils/adminParser').parseBulkLoadoutList('AK-47 | AR\nBuild: 1\nX').parsed[0].weaponKey, weaponName: 'AK-47', category: 'AR', buildName: 'Build 1', attachments: ['Monolithic Suppressor', 'OWC Ranger'], shareCode: '1C2C4A8B9A', description: 'Old note', variants: [] };
+        const q = (v) => ({ lean: async () => v, select() { return q(v); } });
+        require.cache[modelPath] = { id: modelPath, filename: modelPath, loaded: true, exports: { find: () => q([doc]), findById: () => q(doc) } };
+        try {
+            const base = 'AK-47 | AR\nBuild: 1\nCode: 1C2C4A8B9A\n';
+            const atts = 'Monolithic Suppressor\nOWC Ranger';
+            const changed = await B.previewBlocks('MP', `${base}Comment: New note\n${atts}`);
+            assert.ok(changed.keep && changed.count === 1, JSON.stringify(changed).slice(0, 300));
+            const kept = await B.previewBlocks('MP', `${base}${atts}`);
+            assert.ok(!kept.keep, 'no Comment line leaves the comment alone: ' + JSON.stringify(kept).slice(0, 300));
         } finally {
             if (saved) require.cache[modelPath] = saved; else delete require.cache[modelPath];
         }

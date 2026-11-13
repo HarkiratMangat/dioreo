@@ -59,6 +59,10 @@ paths:
 - **Wording and icons (his):** "select", never "tick"; Expand for Expand View, DeleteBin, CopyExport, Edit, Return for Home and Back. List rows show the weapon and build number, then label · badges · options; no code, no attachments.
 - **The build card uses the /gunsmith card's full-width picture.** A thumbnail beside the attachments squeezed every name onto two lines on a phone (his call, 2026-11-07 15:59 EST).
 - **Click-test in #testing-spam,** never the Dioreo Admin (Dev) DM (his word, 2026-11-07 15:53 EST).
+- **Saves answer in place (2026-11-12 22:45 EST, gunsmith-autobuild-fixes; his v3.13 spec said "Results: in place" and they did not).** Edit, Move, Credit, Add Build, New Build, Add Option and Bulk Paste / Edit N draw their result on the panel: the build's card with what changed on top and the panel's own Revert (`mng_gs|<M|D>|rev|<changeIds>|<id>|<opt>|<back>`, `results.js` `revertChanges` with a `render` back to the card, or Home when the build is gone). The savers (`handlers/manage/loadouts.js` `saveLoadout` / `editLoadout` / `addLoadout` / `saveCredit` / `bulkAddLoadouts`) take `opts.onSaved(result)`, called only on a real save in place of the follow-up; a refusal and the code, catalogue and picture questions still answer privately, and the card is left as it was (it used to say "Saved" either way). The add pop-ups are re-addressed to the panel (`addm`; `showAddOption(…, { customId })`). Save Anyway replays from those private questions still answer with the saved panel.
+- **Credit is on the build card** (beside Edit, `credit` → the old `creditModal` re-addressed as `creditm`) and is a `do:` choice on the slash command; v3.13 left it reachable only after a save.
+- **The weapon page shows eight builds a page** (`WEAPON_PAGE`, arrows `wback|<weapon>|<page>`): 11 builds of one weapon passed Discord's 40.
+- **Bulk Paste and Edit N compare the comment as `description`**, the field the parser and the build both use; it read `comment`, so a comment-only change previewed as Unchanged and was dropped.
 
 ## The draws panel (`handlers/manage/drawsPanel/`, v3.14.0, 2026-11-07 19:38 EST)
 

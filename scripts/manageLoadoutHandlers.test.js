@@ -133,6 +133,25 @@ async function check(name, fn) {
         assert.ok(JSON.stringify(typed.sent[0]?.modal).includes(`edit_loadout_${doc._id}~1`), `a typed tag finds the option: ${typed.text()}`);
     });
 
+    // 2026-11-12 22:34 EST: the /manage gunsmith panel draws a save in place (his v3.13 spec), through onSaved; a refusal still answers privately and never calls it.
+    await check('onSaved replaces the follow-up on a real save, and a refusal never calls it', async () => {
+        h.reset(); Loadout.seed([]); knownCatalogue();
+        let got = null;
+        const i = h.modal('add_loadout_MP', form());
+        await loadouts.addLoadout(i, null, { onSaved: (r) => { got = r; } });
+        assert.ok(got && got.doc && got.doc.weaponName === 'BAL-27' && got.before === null && got.changeIds.length, JSON.stringify(got));
+        assert.ok(!/BAL-27/.test(i.text()), 'no saved panel was posted: ' + i.text());
+        const id = String(Loadout.rows[0]._id);
+        let edited = null;
+        await loadouts.editLoadout(h.modal(`edit_loadout_${id}`, form({ attachments: ATTACH.replace('No Stock', 'MIP Light Barrel') })), null, { onSaved: (r) => { edited = r; } });
+        assert.ok(edited && edited.before && String(edited.doc._id) === id, 'an edit hands back the build as it was');
+        let refused = null;
+        const bad = h.modal('add_loadout_MP', form({ build: 'AR, 2' }));
+        await loadouts.addLoadout(bad, null, { onSaved: (r) => { refused = r; } });
+        assert.strictEqual(refused, null);
+        assert.ok(/gunsmith code/i.test(bad.text()), bad.text());
+    });
+
     if (failures) { console.error(`\n${failures} failing`); process.exit(1); }
     console.log('\n/manage loadout handlers: all checks pass');
     process.exit(0);

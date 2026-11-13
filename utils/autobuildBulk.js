@@ -113,11 +113,12 @@ function batchRows(batch, key, index, heldImages) {
             { type: 2, style: 4, label: `Discard All ${pending}`, custom_id: id('none', key), emoji: icon('deleteAll') },
         ] });
     }
-    const saved = batch.items.filter(it => it.status === 'saved');
+    // One entry per saved BUILD, not per screenshot (2026-11-12 19:19 EST, found from Harkirat's "no confirmation after Save All"): two screenshots saved as Options A and B of one build share one doc, and a menu with the same value twice makes Discord refuse the whole page, so the panel silently stayed on the old one.
+    const saved = [...new Map(batch.items.filter(it => it.status === 'saved').map(it => [String(it.doc._id), it.doc])).values()];
     if (saved.length) {
         inside.push({ type: 1, components: [{
             type: 3, custom_id: id('open', key), placeholder: 'Open a saved loadout',
-            options: saved.map(it => ({ label: `${it.doc.weaponName} — ${it.doc.buildName}`.slice(0, 100), value: String(it.doc._id) })),
+            options: saved.map(doc => ({ label: `${doc.weaponName} — ${doc.buildName}`.slice(0, 100), value: String(doc._id) })),
         }] });
     }
     // Undo a discard (Harkirat, 2026-10-20 12:36 EDT): the build comes back exactly as it was read, with no second vision call.
@@ -216,7 +217,15 @@ async function show(interaction, batch, key) {
     touch(key, batch);
     await refreshForRender(interaction, batch, key);
     await persist(key, batch);
-    return sendV2Payload(interaction, withGlyphs(render(batch, key, heldImagesFor(interaction, batch))), { expiryMs: IDLE_MS });
+    // A page Discord refuses is never silent (2026-11-12 19:19 EST): a component click's error only reaches the log, so the admin saw a panel that did not move after builds had saved. Say so, with what saved.
+    try {
+        return await sendV2Payload(interaction, withGlyphs(render(batch, key, heldImagesFor(interaction, batch))), { expiryMs: IDLE_MS, quietRefusal: true });
+    } catch (err) {
+        console.error('Bulk autobuild: Discord refused the batch page:', err.message);
+        const saved = batch.items.filter(it => it.status === 'saved').map(it => `- ${it.doc.weaponName} — ${it.savedAs || it.doc.buildName}`);
+        await interaction.followUp({ content: emojis.glyphs(`${BOT_EMOJI.warn} **The panel couldn't be updated.**\n> ${String(err.message).slice(0, 150)}${saved.length ? `\n**Saved so far:**\n${saved.join('\n')}` : ''}\n> Run \`/autobuild\` to reopen the batch.`).slice(0, 2000), ephemeral: true }).catch(() => {});
+        return null;
+    }
 }
 
 function touch(key, batch) {
@@ -356,6 +365,24 @@ async function refreshForRender(interaction, batch, key) {
         const allBuilds = await Loadout.find({}).select('weaponKey weaponName category buildName shareCode attachments mode variants').lean();
         const { refreshReviewWarnings } = require('./autobuildPipeline');
         for (const it of pending) refreshReviewWarnings(it.data, allBuilds);
+        // Builds still waiting earlier in this batch count as builds ahead (2026-11-12 19:46 EST): Save All saves in order. Before, two un-numbered GRAV builds both read "Build 1", and a "5b" beside the "5" it joins warned "There is no Build 5 to add an option to" (click-tested on the dev bot). Only the number and its warning are recounted; the duplicate warnings stay on saved builds, since batchDuplicateNote covers the batch.
+        const { buildTargetProblem } = require('./autobuildPipeline');
+        const { parseBuildTag } = require('./loadoutOptions');
+        const ahead = new Map();
+        for (const it of pending) {
+            const wk = String(it.data.weaponName || '').toLowerCase().replace(/\s+/g, '');
+            const mode = it.data.mode || 'MP';
+            const k = `${wk}|${mode}`;
+            const phantoms = ahead.get(k) || [];
+            if (phantoms.length) {
+                const ordered = [...allBuilds.filter(b => b.weaponKey === wk && (b.mode || 'MP') === mode), ...phantoms];
+                it.data.ordinal = ordered.length + 1;
+                it.data.buildWarning = buildTargetProblem(it.data, ordered);
+            }
+            const tag = it.data.buildTag ? parseBuildTag(it.data.buildTag) : null;
+            if (!tag?.lettered) phantoms.push({ _id: `zzzzzzzzzzzz${String(phantoms.length).padStart(12, '0')}`, weaponKey: wk, mode, buildName: `Build ${tag?.number || it.data.ordinal}`, attachments: it.data.attachments || [], variants: [] });
+            ahead.set(k, phantoms);
+        }
         const others = await Stored().find({ ownerId: { $ne: batch.adminId }, key: { $ne: key } }).lean();
         for (const it of pending) {
             it.data.rival = null;
@@ -606,4 +633,5 @@ module.exports = {
     runBulk, handleBatchComponent, showBatchEditModal, applyBatchEdit, resumeOpenBatch, openBatchFor,
     // Exported for scripts/autobuildBulk.test.js.
     batches, withGlyphs, IDLE_MS, toStored, fromStored, isOpen, clashOf, batchDuplicateNote, flagsOf, overview, nextPendingIndex, renderPage, confirmAllItems, unreadImages,
+    _refreshForRender: refreshForRender,
 };

@@ -44,6 +44,8 @@ function changeLines(before, after, { pictureReplaced = false } = {}) {
     was(before.buildName, after.buildName, 'Build #');
     was(before.category, after.category, 'Category');
     was(before.shareCode, after.shareCode, 'Code');
+    // The comment (`description`) is an edited field too (2026-11-12 22:38 EST, found click-testing /manage gunsmith: an Edit that only set a comment listed the picture move and not the comment).
+    was(before.description, after.description, 'Comment');
     const oldA = before.attachments || [], newA = after.attachments || [];
     const added = newA.filter(a => !oldA.includes(a)), removed = oldA.filter(a => !newA.includes(a));
     if (added.length || removed.length) out.push(`**Attachments:** ${[...added.map(a => `+ ${a}`), ...removed.map(a => `− ~~${a}~~`)].join(' · ')}`);
