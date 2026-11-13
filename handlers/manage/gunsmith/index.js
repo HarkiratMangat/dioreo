@@ -656,4 +656,4 @@ async function handleGunsmithInteraction(interaction) {
     return true;
 }
 
-module.exports = { handleGunsmithInteraction, renderHome, openFromSlash, autocomplete, DO_CHOICES, PREFIX, _test: { show, deleteMany, editPreset, setValue, reId } };
+module.exports = { handleGunsmithInteraction, renderHome, openFromSlash, autocomplete, DO_CHOICES, PREFIX, _test: { show, deleteMany, editPreset, setValue, reId, savedCard, revertRow } };
