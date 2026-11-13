@@ -29,7 +29,26 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.20.0 — 2026-11-11 22:43 EST (#270) — One search and a Selected view across /manage; a review before Promote, which now carries running draws; a typed end day runs through that day
+## v3.21.0 — 2026-11-12 22:47 EST (#271) — /autobuild's Save All shows its result, Credit is on the gunsmith card, gunsmith saves answer in place, and every panel is checked before it is sent
+
+His two reports (2026-11-12 19:15 EST): no confirmation after /autobuild's Save All, and no Credit on /manage gunsmith mp. A think-pass on why they happened found the rest (brief: `local/project/features/gunsmith-autobuild-fixes/brief.md`, gitignored).
+
+### Added
+- **Every panel is checked before it is sent** (`utils/componentCheck.js`, run by `sendV2Payload`): duplicate custom ids or select values, too many options or buttons in a row, over 40 components or 4,000 characters are named in the log, and a panel Discord refuses now tells the person who clicked, privately, instead of just not moving. Every /manage panel test runs the same rule set.
+- **Credit on the /manage gunsmith build card**, beside Edit, and as a `do:` choice on the slash command.
+
+### Changed
+- **/manage gunsmith saves answer in place**, as the v3.13 spec said: Edit, Move, Credit, Add Build, New Build, Add Option and Bulk Paste / Edit N draw the card with what changed and the panel's own Revert, which lands back on the card. A refused save leaves the card as it was.
+- **The gunsmith weapon page shows eight builds a page.**
+
+### Fixed
+- **Save All showed nothing** when two screenshots were saved into one build (Options A and B): the batch's saved-builds menu listed that build twice and Discord refused the page. Both builds had saved.
+- An autobuild batch numbered every un-numbered build of one weapon "Build N", and warned "There is no Build 5" beside a `5b` joining the `5` saved before it in the same Save All.
+- Bulk Paste and Edit N dropped a comment-only change (the preview read a field the parser never sets).
+- A changed comment was missing from a save's "What changed".
+- The weapon page passed Discord's 40 components at 11 builds.
+
+## v3.20.0 — 2026-11-11 22:43 EST (#270 · `eaf031f4`) — One search and a Selected view across /manage; a review before Promote, which now carries running draws; a typed end day runs through that day
 
 /manage draws rounds 2 and 3 (his phone intakes, 2026-11-11), and the fixes from Season 10's Promote on prod that night (brief: `local/project/features/promote-carryover/brief.md`, gitignored).
 
