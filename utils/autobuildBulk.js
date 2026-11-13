@@ -219,7 +219,7 @@ async function show(interaction, batch, key) {
     await persist(key, batch);
     // A page Discord refuses is never silent (2026-11-12 19:19 EST): a component click's error only reaches the log, so the admin saw a panel that did not move after builds had saved. Say so, with what saved.
     try {
-        return await sendV2Payload(interaction, withGlyphs(render(batch, key, heldImagesFor(interaction, batch))), { expiryMs: IDLE_MS });
+        return await sendV2Payload(interaction, withGlyphs(render(batch, key, heldImagesFor(interaction, batch))), { expiryMs: IDLE_MS, quietRefusal: true });
     } catch (err) {
         console.error('Bulk autobuild: Discord refused the batch page:', err.message);
         const saved = batch.items.filter(it => it.status === 'saved').map(it => `- ${it.doc.weaponName} — ${it.savedAs || it.doc.buildName}`);
@@ -365,6 +365,14 @@ async function refreshForRender(interaction, batch, key) {
         const allBuilds = await Loadout.find({}).select('weaponKey weaponName category buildName shareCode attachments mode variants').lean();
         const { refreshReviewWarnings } = require('./autobuildPipeline');
         for (const it of pending) refreshReviewWarnings(it.data, allBuilds);
+        // An un-numbered build lands after the batch's earlier un-numbered builds of the same weapon and mode, since Save All saves in order (2026-11-12 19:29 EST): before, two GRAV builds both read "Build 1" until the first was saved.
+        const ahead = new Map();
+        for (const it of pending) {
+            if (it.data.buildTag) continue;
+            const k = `${String(it.data.weaponName || '').toLowerCase().replace(/\s+/g, '')}|${it.data.mode || 'MP'}`;
+            it.data.ordinal = (it.data.ordinal || 1) + (ahead.get(k) || 0);
+            ahead.set(k, (ahead.get(k) || 0) + 1);
+        }
         const others = await Stored().find({ ownerId: { $ne: batch.adminId }, key: { $ne: key } }).lean();
         for (const it of pending) {
             it.data.rival = null;
@@ -615,4 +623,5 @@ module.exports = {
     runBulk, handleBatchComponent, showBatchEditModal, applyBatchEdit, resumeOpenBatch, openBatchFor,
     // Exported for scripts/autobuildBulk.test.js.
     batches, withGlyphs, IDLE_MS, toStored, fromStored, isOpen, clashOf, batchDuplicateNote, flagsOf, overview, nextPendingIndex, renderPage, confirmAllItems, unreadImages,
+    _refreshForRender: refreshForRender,
 };

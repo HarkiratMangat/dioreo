@@ -83,7 +83,9 @@ async function classView(mode, category) {
 }
 
 // ---------- a weapon: every build ----------
-async function weaponView(mode, weaponKey, note = null) {
+// Eight builds a page (2026-11-12 19:29 EST): each build is a Section with its Open button (3 components), so an unpaged weapon of 11 builds passed Discord's 40 and the page silently froze.
+const WEAPON_PAGE = 8;
+async function weaponView(mode, weaponKey, note = null, page = 0) {
     const { compareBuilds } = require('../../../utils/loadoutForm');
     const builds = (await Loadout().find({ mode, weaponKey }).lean()).sort(compareBuilds);
     if (!builds.length) return pageView(mode, `${emojis.cross} That weapon has no ${mode} builds.`);
@@ -91,11 +93,14 @@ async function weaponView(mode, weaponKey, note = null) {
     const components = [text(`${crumb(mode, classWord(w.category), w.weaponName)}\n## ${classIcon(w.category)} ${w.weaponName}\n-# ${plural(builds.length, 'build')}`)];
     if (note) components.push(SMALL(), text(note));
     components.push(BIG());
-    for (const b of builds) {
+    const pages = Math.max(1, Math.ceil(builds.length / WEAPON_PAGE));
+    const pg = Math.min(Math.max(Number(page) || 0, 0), pages - 1);
+    for (const b of builds.slice(pg * WEAPON_PAGE, (pg + 1) * WEAPON_PAGE)) {
         const opts = (b.variants || []).length;
         const sub = [b.label, badgeWords(b).join(' '), opts ? `${opts + 1} options` : null].filter(Boolean).join(' · ');
         components.push({ type: 9, components: [text(sub ? `**${b.buildName}**\n-# ${sub}` : `**${b.buildName}**`)], accessory: btn(mode, ['card', b._id, 0], 'Open', emojis.edit) });
     }
+    if (pages > 1) components.push(row(arrow(mode, ['wback', weaponKey, pg - 1], 'left', pg === 0), counter(mode, ['pgn', weaponKey], `Page ${pg + 1} / ${pages}`), arrow(mode, ['wback', weaponKey, pg + 1], 'right', pg === pages - 1)));
     components.push(BIG(), row(btn(mode, ['newb', weaponKey], 'New Build', emojis.mngAdd, 3)), row(btn(mode, ['cls', w.category], classWord(w.category), emojis.returnArrow), homeBtn(mode)));
     return panel(mode, components);
 }

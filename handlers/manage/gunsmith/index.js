@@ -339,7 +339,7 @@ async function route(interaction) {
     if (verb === 'page') return show(interaction, await home(mode, null, interaction));
     if (verb === 'cls') return show(interaction, await V.classView(mode, a));
     if (verb === 'wpn' && interaction.isStringSelectMenu?.()) return show(interaction, await V.weaponView(mode, interaction.values[0]));
-    if (verb === 'wback') return show(interaction, await V.weaponView(mode, a));
+    if (verb === 'wback') return show(interaction, await V.weaponView(mode, a, null, n(b)));
     if (verb === 'card') return show(interaction, await V.cardView(mode, a, n(b), null, null, c || null));
     if (verb === 'opt' && interaction.isStringSelectMenu?.()) return show(interaction, await V.cardView(mode, a, n(interaction.values[0]), null, null, b || null));
     if (verb === 'pick' && interaction.isStringSelectMenu?.()) { const [id, opt] = interaction.values[0].split('~'); return show(interaction, await V.cardView(mode, id, n(opt))); }

@@ -13,6 +13,8 @@ async function check(name, fn) {
 }
 function walk(cs, fn) { for (const c of cs || []) { fn(c); walk(c.components, fn); if (c.accessory) fn(c.accessory); if (c.component) fn(c.component); } }
 function limits(view, name) {
+    // Discord's whole rule set, once (utils/componentCheck.js, 2026-11-12 19:31 EST): this helper checked ids but never a select's option values, the gap that froze /autobuild's Save All.
+    assert.deepStrictEqual(require('../utils/componentCheck').checkComponents([].concat(view)), [], `${name}: Discord would refuse this`);
     let n = 0, chars = 0; const ids = [];
     walk(view, c => { n += 1; if (c.type === 10) chars += c.content.length; if (c.custom_id) ids.push(c.custom_id); if (c.type === 3) assert.ok(c.options.length <= 25 && (c.max_values || 1) <= c.options.length, `${name}: select over 25`); });
     assert.ok(n <= 40, `${name}: ${n} components`);

@@ -289,6 +289,32 @@ const FIVE = ['A', 'B', 'C', 'D', 'E'];
         assert.deepStrictEqual(open[0].options.map(o => o.value), ['d1', 'd2']);
     });
 
+    // 2026-11-12 19:30 EST: two un-numbered builds of one weapon both read "Build 1" until the first saved; every page must show where its build will land, and pass Discord's rules.
+    await check('two un-numbered builds of one weapon in a batch read Build 1 and Build 2', async () => {
+        const modelPath = require.resolve('../models/Loadout');
+        const saved = require.cache[modelPath];
+        const q = (v) => ({ lean: async () => v, select() { return q(v); } });
+        require.cache[modelPath] = { id: modelPath, filename: modelPath, loaded: true, exports: { find: () => q([]) } };
+        const mongoose = require('mongoose');
+        const rs = Object.getOwnPropertyDescriptor(mongoose.connection, 'readyState');
+        Object.defineProperty(mongoose.connection, 'readyState', { value: 1, configurable: true });
+        const stored = require.resolve('../models/AutobuildBatch');
+        const savedStored = require.cache[stored];
+        require.cache[stored] = { id: stored, filename: stored, loaded: true, exports: { find: () => q([]) } };
+        try {
+            const batch = { adminId: 'u', items: [{ status: 'pending', token: 't1', data: mp('GRAV', '1A2B', ['X']) }, { status: 'pending', token: 't2', data: mp('GRAV', '1A3B', ['Y']) }, { status: 'pending', token: 't3', data: { ...mp('GRAV', '1A4B', ['Z']), buildTag: '1b' } }] };
+            await bulk._refreshForRender({ client: {} }, batch, 'k');
+            assert.deepStrictEqual(batch.items.map(it => it.data.ordinal), [1, 2, 1]);
+            const { checkComponents } = require('../utils/componentCheck');
+            batch.expiresAt = Date.now() + 60000;
+            for (let i = 0; i < 3; i++) assert.deepStrictEqual(checkComponents(renderPage(batch, 'k', i)), [], `page ${i + 1}`);
+        } finally {
+            if (saved) require.cache[modelPath] = saved; else delete require.cache[modelPath];
+            if (savedStored) require.cache[stored] = savedStored; else delete require.cache[stored];
+            if (rs) Object.defineProperty(mongoose.connection, 'readyState', rs); else delete mongoose.connection.readyState;
+        }
+    });
+
     if (failed) { console.log(`\n${failed} bulk /autobuild check(s) failed.`); process.exit(1); }
     console.log('\nAll bulk /autobuild checks passed.');
     process.exit(0);
