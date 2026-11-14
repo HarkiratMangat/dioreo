@@ -232,7 +232,7 @@ function buildHome(settings, client, place = {}, { resetArmed = false, scope = n
                 areaSection(`Commands with their own settings${commands.length ? ` (${commands.length})` : ''}`, commandLines, 'admin_commands'),
                 { type: 14, spacing: 2 },
                 ...(here ? [{ type: 10, content: hereGate
-                    ? `📍 **Here in <#${place.channelId}>** · ${hereGate === 'private' ? `${visText(here)} for @everyone through the server install` : 'no commands for @everyone from the server install'}\n-# ${GATE_TEXT[hereGate]}. To change that, allow it for @everyone in this channel's permissions.`
+                    ? `📍 **Here in <#${place.channelId}>** · ${hereGate === 'private' ? `${visText(here)} for @everyone` : 'No commands for @everyone'}\n-# ${GATE_TEXT[hereGate]}. To change that, allow it for @everyone in this channel's permissions.`
                     : `📍 **Here in <#${place.channelId}>** · ${visText(here)} for members without a role rule` }] : []),
                 ...(staleCount(settings, place) ? [{ type: 10, content: `-# ${BOT_EMOJI.warn} ${staleCount(settings, place)} rule(s) name a deleted role, a channel Dioreo can't see, or a retired command. They do nothing; **Clear** on that tab removes them.` }] : []),
                 ...(lastChangedLine(settings) ? [{ type: 10, content: lastChangedLine(settings) }] : []),
@@ -352,8 +352,8 @@ function buildChannels(settings, place = {}, scope = null) {
     const def = set.defaultVisibility || 'public';
     const ephemeral = rules.filter(r => r.visibility === 'ephemeral').map(r => r.channelId);
     const publicIds = rules.filter(r => r.visibility === 'public').map(r => r.channelId);
-    // Channels this page sets to Public that Discord itself keeps private: the confusion the Discord line exists for. Not on the text view: those gates are about slash commands.
-    const gated = place.discordGate && !isText() ? publicIds.filter(id => place.discordGate(id)) : [];
+    // Rule channels where Discord hides the server's Dioreo (Use Application Commands off for @everyone), so any rule there does nothing. Use External Apps off is not listed: it only makes a member's own install answer privately and the server's Dioreo still follows the rule (re-tested live 2026-11-14 13:10 EST). Not on the text view: those gates are about slash commands.
+    const gated = place.discordGate && !isText() ? [...new Set(rules.map(r => r.channelId))].filter(id => place.discordGate(id) === 'noCommands') : [];
     const lead = scope
         ? `-# Only for ${commandLabel(scope)}. Its default is ${visText(def)}. Pick channels where it answers differently.`
         : `-# Your default is ${visText(def)}. Pick channels that answer differently.`;
@@ -366,7 +366,7 @@ function buildChannels(settings, place = {}, scope = null) {
                 ...header('Channels', place, lead, scope),
                 { type: 14, spacing: 2 },
                 withClear(`${visText('ephemeral')} in${ephemeral.length ? ` (${ephemeral.length})` : ''} · ${channelList(ephemeral)}\n${visText('public')} in${publicIds.length ? ` (${publicIds.length})` : ''} · ${channelList(publicIds)}`, sid('admin_ch_clear', '', scope), rules.length),
-                ...(gated.length ? [{ type: 10, content: `-# ${BOT_EMOJI.warn} Discord's own permissions limit Dioreo in these channels, whatever this page says: ${channelList(gated)}. With **Use External Apps** off, an answer through a member's own install is private (the server's install is not affected); with **Use Application Commands** off, the server's Dioreo shows no commands. Allow them in those channels to change it.` }] : []),
+                ...(gated.length ? [{ type: 10, content: `-# ${BOT_EMOJI.warn} **Use Application Commands** is off for @everyone in these channels, so the server's Dioreo shows no commands there, whatever this page says: ${channelList(gated)}. Allow it in those channels to change it.` }] : []),
                 { type: 10, content: `-# ${BOT_EMOJI.search} Type to search · threads follow their channel` },
             ],
         },
@@ -498,7 +498,6 @@ function checkReason(result, cmd) {
         case 'channel': return `${where(result.rule.channelId)} is set to ${WORDS[VIEW][result.rule.visibility]}`;
         case 'parent': return `this thread follows ${where(result.rule.channelId)}`;
         case 'default': return 'no rule applies, so the server default decides';
-        case 'discord': return `${GATE_TEXT[result.rule].replace(' here', ' in this channel for them')}, before any rule on this panel`;
         default: return 'this server has no rules yet';
     }
 }
@@ -556,7 +555,10 @@ function buildCheck(settings, gateable, { who = null, member = null, error = nul
         blocks.push({ type: 10, content: `**${pic.commands.length ? 'Every other command' : 'Every command'}**\n${pictureLines(pic.server).join('\n')}` });
         for (const c of pic.commands.slice(0, 6)) blocks.push({ type: 10, content: `**${commandText(c.command)}** · its own settings\n${pictureLines(c).join('\n')}` });
         if (pic.commands.length > 6) blocks.push({ type: 10, content: `-# +${pic.commands.length - 6} more commands with their own settings` });
-        if (pic.blocked.length) blocks.push({ type: 10, content: `${BOT_EMOJI.warn} **Discord limits them in** ${channelList(pic.blocked.map(x => x.id))}\n-# With Use External Apps off, their answers through their own install are private there; with Use Application Commands off, the server's Dioreo shows them no commands. Both come before any rule on this panel.` });
+        const hidden = pic.blocked.filter(x => x.g === 'noCommands').map(x => x.id);
+        const ownPrivate = pic.blocked.filter(x => x.g === 'private').map(x => x.id);
+        if (hidden.length) blocks.push({ type: 10, content: `${BOT_EMOJI.warn} **Discord hides the server's Dioreo from them in** ${channelList(hidden)}\n-# Use Application Commands is off for them there, before any rule on this panel.` });
+        if (ownPrivate.length) blocks.push({ type: 10, content: `-# In ${channelList(ownPrivate)}, Use External Apps is off for them, so their own install answers privately; the server's Dioreo follows the rules above.` });
         blocks.push({ type: 10, content: isText() ? '-# Off means Dioreo stays silent for them there. Server admins are never turned off.' : '-# Public only *allows* public: their own `/settings` can still make an answer private.' });
     }
     return [
@@ -628,7 +630,7 @@ function buildHelp(client, place = {}, prefix = 'd') {
                     `### ${BOT_EMOJI.locked} What Private Means`,
                     row('Private', 'only the person who ran the command sees the answer'),
                     row('Public', `allows a public answer; anyone who chose private in ${mentionCommand(client, '/settings')} still gets private`),
-                    row('Not the command', 'it still shows in the list; to block it in a channel or for a role, use **Server Settings → Integrations → Dioreo**'),
+                    row('Not the command', 'it still shows in the list; to block it in a channel or for a role, use **Server Settings → Integrations → Dioreo** (Administrators still see it)'),
                     row('Show Everyone', 'cannot make a private answer public'),
                 ].join('\n') },
                 divider,
@@ -644,7 +646,7 @@ function buildHelp(client, place = {}, prefix = 'd') {
                 divider,
                 { type: 10, content: [
                     '### 🛡️ Good to Know',
-                    row('Discord first', '**Use External Apps** off makes a member\'s own install answer privately (the server\'s Dioreo is not affected); **Use Application Commands** off hides the server\'s Dioreo, and Integrations cannot turn it back on there'),
+                    row('Discord first', '**Use External Apps** off only makes a member\'s own install answer privately; **Use Application Commands** off hides the server\'s Dioreo, and Integrations can\'t override that'),
                     row('Admins', 'skip a command\'s own settings, but follow the server\'s channel and role rules like everyone'),
                     row('Threads', 'follow their channel, unless the thread has its own rule'),
                     row('Menus', 'save when you click outside them; Esc cancels'),
@@ -768,7 +770,7 @@ function placeOf(interaction) {
     };
 }
 
-// WHAT DISCORD ITSELF ALLOWS (Harkirat 2026-10-22 18:21 EDT, "yeah" to showing it). Discord's own permissions are the ceiling under every /admin rule: with Use Application Commands off, Dioreo's commands don't show; with Use External Apps off, Discord forces an answer through a member's OWN install private, and does not touch an app added to the server (2026-11-14 12:27 EST: re-tested as a non-admin member in #bot-spam, which refuted his 2026-08-10 reading; admin-controls rule). Read from the cached guild, for @everyone or one role in one channel (a thread reads its parent). Returns 'noCommands', 'private' or null when Discord allows public answers.
+// WHAT DISCORD ITSELF ALLOWS (Harkirat 2026-10-22 18:21 EDT, "yeah" to showing it). Discord's own permissions are the ceiling under every /admin rule: with Use Application Commands off, the server's Dioreo shows no commands (a member's own install still answers, privately); with Use External Apps off, Discord forces an answer through a member's OWN install private, and does not touch the server's Dioreo (2026-11-14 12:27 EST: re-tested as a non-admin member in #bot-spam, which refuted his 2026-08-10 reading; admin-controls rule). Read from the cached guild, for @everyone or one role in one channel (a thread reads its parent). Returns 'noCommands', 'private' or null when Discord allows public answers.
 function discordGate(guild, channelId, roleId = null) {
     try {
         let channel = guild.channels.cache.get(channelId);
@@ -786,7 +788,7 @@ function discordGate(guild, channelId, roleId = null) {
     }
 }
 
-const GATE_TEXT = { noCommands: "Discord blocks **Use Application Commands** here, so the server's Dioreo shows no commands (a member's own install still answers, privately)", private: "Discord blocks **Use External Apps** here, so an answer through a member's own install is private (the server's install is not affected)" };
+const GATE_TEXT = { noCommands: "Discord blocks **Use Application Commands** here, so the server's Dioreo shows none; a member's own install still answers, privately", private: "Discord blocks **Use External Apps** here, so a member's own install answers privately; the server's Dioreo still follows these rules" };
 
 // The denied panel's small print, shared by the command and a click (Harkirat's wording and layout, 2026-10-25 11:00 EDT: the -# lines in their own text box so Discord leaves a gap; his lock and Access Denied emojis to come). /help and /settings are clickable commands.
 function deniedHints(client) {
