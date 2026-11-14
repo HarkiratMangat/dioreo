@@ -29,7 +29,19 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.21.0 — 2026-11-12 22:47 EST (#271) — /autobuild's Save All shows its result, Credit is on the gunsmith card, gunsmith saves answer in place, and every panel is checked before it is sent
+## v3.21.1 — 2026-11-14 12:12 EST (#272) — News-triage card buttons answer first, a failed click says so, and the card channel is named at every start
+
+His report (2026-11-14 11:54 EST): Undo Draft Changes on a dev card showed "The application didn't respond in time". The dev bot's analytics hold no event at all between 2026-11-12 22:43 EST and the click, so it was most likely not running; the code also had two real weaknesses on the same path (brief: `local/project/features/news-triage-undo/brief.md`, gitignored).
+
+### Fixed
+- **Every news-card button that can be acknowledged now is, before its first database read** (`handlers/news.js`): Undo draft changes, Dismiss, Make a card and Never drafted. A slow read can no longer lose the click. Only the box opener cannot, since a pop-up must be the first answer.
+- **A failure after the acknowledgement is answered**, not left on "thinking…": the card says "That did not finish, and the error is in the bot log", and the error is logged.
+
+### Added
+- **The card channel is named in the log at every start** (`bot/newsWatch.js`), with an alert when Dioreo Admin cannot View or Send there. `NEWS_CHANNEL` stays the one setting.
+- `scripts/newsHandlerAck.test.js`: holds the access check open and asserts the click is already acknowledged; it fails on the old handler.
+
+## v3.21.0 — 2026-11-12 22:47 EST (#271 · `060fe48d`) — /autobuild's Save All shows its result, Credit is on the gunsmith card, gunsmith saves answer in place, and every panel is checked before it is sent
 
 His two reports (2026-11-12 19:15 EST): no confirmation after /autobuild's Save All, and no Credit on /manage gunsmith mp. A think-pass on why they happened found the rest (brief: `local/project/features/gunsmith-autobuild-fixes/brief.md`, gitignored).
 

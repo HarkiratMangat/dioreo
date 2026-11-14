@@ -12,6 +12,9 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.21.1 — November 14, 2026
+- **Fixed:** the owner's news-triage cards answer a button press at once, and say so when something goes wrong instead of freezing.
+
 ## v3.21.0 — November 12, 2026
 - **Fixed:** `/autobuild`'s Save All shows its result again when two screenshots go into one build.
 - **New:** a Credit button on each build in `/manage gunsmith`, and saves there show their result in the same panel, with Revert.
