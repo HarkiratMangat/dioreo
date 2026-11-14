@@ -41,6 +41,7 @@ His report (2026-11-14 11:54 EST): Undo Draft Changes on a dev card showed "The 
 ### Added
 - **The card channel is named in the log at every start** (`bot/newsWatch.js`), with an alert when Dioreo Admin cannot View or Send there. `NEWS_CHANNEL` stays the one setting.
 - `scripts/newsHandlerAck.test.js`: holds the access check open and asserts the click is already acknowledged; it fails on the old handler.
+- **Owner notices can go to a channel** (`utils/ownerInbox.js`, his ask 2026-11-14 13:10 EST): with `OWNER_CHANNEL` set, Submit a Build, Dispute a Build, Bugs & Suggestions, the spam-penalty 6 h / 12 h notes, the promote notes and the draw end-date reminder post into that channel with a ping for the owner alone, and fall back to a DM if the post fails. Prod's value is #needs-my-eyes, added to the VM `.env` at deploy; the dev bot uses #testing-spam. Privacy Policy 1.15 says so.
 
 ## v3.21.0 — 2026-11-12 22:47 EST (#271 · `060fe48d`) — /autobuild's Save All shows its result, Credit is on the gunsmith card, gunsmith saves answer in place, and every panel is checked before it is sent
 
