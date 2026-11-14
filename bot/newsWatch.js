@@ -1,7 +1,7 @@
 // bot/newsWatch.js -- wires news-channel triage onto the Dioreo Admin client (built 2026-11-04 20:02 EST). Listeners, the boot catch-up and the daily skipped list; the work itself is utils/newsTriage/pipeline.js.
 //
 // Off unless NEWS_WATCH (the followed channels' ids) and NEWS_CHANNEL (where cards go) are both set. Prod watches #leaks and #official-codm-news and cards into #news-distill; the dev bot cards into #testing-spam, so the two never post into one channel (Harkirat's setup, 2026-11-04 19:43 EST).
-const { Events, Routes, IntentsBitField, GatewayIntentBits } = require('discord.js');
+const { Events, Routes, IntentsBitField, GatewayIntentBits, PermissionFlagsBits } = require('discord.js');
 const pipeline = require('../utils/newsTriage/pipeline');
 
 // Message Content only when the app's flags grant it (bit 18 or 19): asking for a privileged intent the app lacks makes login fail. Without it Discord sends a crosspost's text empty and every post is skipped as "no text". Same check as bot/textCommands.js's, for the public app.
@@ -78,6 +78,23 @@ async function catchUp(client) {
     }
 }
 
+// WHERE THE CARDS GO, said and checked at every start (2026-11-14 12:04 EST, news-triage-undo: Harkirat asked why dev cards land in #testing-spam, and nothing in the log said where they went or whether Dioreo Admin could post there). The channel is `NEWS_CHANNEL`, read from the env of whichever bot is running: prod's is #news-distill, the dev bot's is whatever `.env.dev` names. It stays one env value on purpose: a runtime setting would be a second place that decides where owner-only posts go, and the invariant in CLAUDE.md names ONE private channel. Pointing the dev bot at a dedicated channel is a one-line `.env.dev` change once the channel exists and Dioreo Admin (Dev) can View and Send there; this check says so at the next start if it cannot. Never throws.
+async function checkCardChannel(client, channelId = pipeline.config().channel) {
+    try {
+        const channel = await client.channels.fetch(channelId);
+        const me = await channel.guild.members.fetchMe();
+        const can = channel.permissionsFor(me);
+        const missing = ['ViewChannel', 'SendMessages'].filter(name => !can?.has(PermissionFlagsBits[name]));
+        console.log(`📰 News triage cards go to #${channel.name} (${channelId}) in ${channel.guild.name}${missing.length ? `: Dioreo Admin cannot ${missing.join(' or ')} there, so no card can post` : ''}`);
+        if (missing.length) require('../utils/alertWebhook').sendAlert('News triage cannot post its cards', `Dioreo Admin lacks ${missing.join(' and ')} in #${channel.name} (${channelId}). Give it View Channel and Send Messages there, or point NEWS_CHANNEL at a channel it can post in.`, 'warn');
+        return { ok: missing.length === 0, name: channel.name, missing };
+    } catch (err) {
+        console.error(`News triage: could not check the card channel ${channelId}:`, err?.message || err);
+        try { require('../utils/alertWebhook').sendAlert('News triage cannot reach its card channel', `NEWS_CHANNEL ${channelId} could not be read by Dioreo Admin (${err?.message || err}). Cards will not post until it is a channel Dioreo Admin can see.`, 'warn'); } catch { /* alerting never breaks start-up */ }
+        return { ok: false, name: null, missing: [] };
+    }
+}
+
 function registerNewsWatch(client) {
     if (!pipeline.enabled()) return false;
     const { watch } = pipeline.config();
@@ -107,8 +124,9 @@ function registerNewsWatch(client) {
             setInterval(daily, 24 * 60 * 60 * 1000).unref();
         }, pipeline.msUntilNextDigest()).unref();
         console.log(`📰 News triage watching ${watch.size} channel(s), cards to ${pipeline.config().channel}`);
+        checkCardChannel(client).catch(() => {});
     });
     return true;
 }
 
-module.exports = { registerNewsWatch, enableNewsMessageContent, catchUp };
+module.exports = { registerNewsWatch, enableNewsMessageContent, catchUp, checkCardChannel };

@@ -6,8 +6,8 @@ published: true
 
 # Privacy Policy — Dioreo
 
-**Effective date:** 4 November 2026
-**Version:** 1.14
+**Effective date:** 14 November 2026
+**Version:** 1.15
 **Applies to:** the Dioreo Discord applications, the public **Dioreo** app and its companion **Dioreo Admin** app (together, the "Bot"), and this documentation website (the "Site")
 
 
@@ -162,20 +162,20 @@ If you turn on a reminder with `/remind` or the bell on a command, the Bot keeps
 
 ### 2.1g Builds you submit or dispute
 
-If you send a build through **Submit a Build** (on `/gunsmith`'s card for a weapon Dioreo has no build for yet), or claim a submitted build through **Dispute a Build** (in `/help`), the Bot keeps what you sent and sends it to Dioreo's developer as a Discord DM. Nothing is stored for anyone who never uses either.
+If you send a build through **Submit a Build** (on `/gunsmith`'s card for a weapon Dioreo has no build for yet), or claim a submitted build through **Dispute a Build** (in `/help`), the Bot keeps what you sent and sends it to Dioreo's developer as a Discord message in a private channel of the developer's own server, or as a DM if that message cannot be sent. Nothing is stored for anyone who never uses either.
 
 | Data | What it is | Why we have it |
 |---|---|---|
 | **Discord user ID** | Your permanent numeric Discord ID | So the developer can DM you the outcome, and so a dispute can be checked. Kept **even if you chose to stay anonymous**: anonymous means your name is not shown on the build, not that the developer cannot see who sent it |
 | **What you sent** | For a submission: the weapon, the Gunsmith Code, the attachments, your notes, how you want to be credited (your @, your username, or anonymous) and, if by username, your Discord username as it was when you sent it, and whether you attached a screenshot. For a dispute: which build, whether you want it removed or credited to you, your proof link, your notes, and whether you attached a screenshot | This IS the submission or dispute |
-| **Your screenshot** | The image you attached, if any | It is sent to the developer inside the DM; the Bot does not keep its own copy. If your build is approved, it becomes the build's image, like any other build's |
+| **Your screenshot** | The image you attached, if any | It is sent to the developer inside that message; the Bot does not keep its own copy. If your build is approved, it becomes the build's image, like any other build's |
 | **Its outcome** | Pending, approved or denied (removed, credited or denied for a dispute), when, and which build it became | So it is acted on once, and so you are told |
 
 **If your submission is approved**, the build keeps your Discord user ID with it (`submittedBy`), and its credit line (`credit`) shows "Submitted by" your @ or your username, as you chose; otherwise it shows "By *anonymous*". You get a DM thanking you; a denied submission sends nothing. For a dispute, you get a DM with every outcome. One submission or dispute per person every 10 minutes. You can read the schemas yourself: [`models/BuildSubmission.js`](../../models/BuildSubmission.js) and [`models/BuildDispute.js`](../../models/BuildDispute.js).
 
 **Credit added by hand.** Dioreo's developer and admins can also credit a build themselves: to a Discord user (shown as their @, or by their username), to a name, or to a link with a name (a creator's channel, say), under "Submitted by", "Credit:" or "Build by", or as "By *anonymous*". It is stored with the build as `credit`: how it shows, and the Discord user ID, name or link it names. This happens without the person credited doing anything, so if a build credits you and you want it changed or removed, use **Dispute a Build** or ask us (§9).
 
-**Bugs & Suggestions.** If you send a note through **Bugs & Suggestions** (under `/help`), the Bot sends it to Dioreo's developer as a Discord DM: what kind of note it is, your words, your Discord user ID and username, when you sent it, and a screenshot if you attached one. The Bot stores none of it; that DM is the only copy, and the developer deletes it if you ask. To stop one person sending many at once, the Bot remembers in memory only when you last sent one, for 10 minutes.
+**Bugs & Suggestions.** If you send a note through **Bugs & Suggestions** (under `/help`), the Bot sends it to Dioreo's developer the same way (that private channel, or a DM): what kind of note it is, your words, your Discord user ID and username, when you sent it, and a screenshot if you attached one. The Bot stores none of it; that message is the only copy, and the developer deletes it if you ask. To stop one person sending many at once, the Bot remembers in memory only when you last sent one, for 10 minutes.
 
 ### 2.1h Text-command spam penalties, and the developer's lists
 
@@ -185,7 +185,7 @@ If someone sends text commands fast enough to flood a channel, the Bot stops ans
 |---|---|---|
 | **A short score, in memory only** | How many text-command replies and "slow down" notes the Bot gave you in the last 60 seconds, and which step of the ladder you reached today. Never written down; cleared at 00:00 UTC and by a restart | To tell a flood from ordinary use |
 | **A penalty record, while one runs** (`TextPenalty`) | Your Discord user ID, the step (1 minute to 12 hours), when it ends, the server and channel where it started, and the ID of the Bot's own countdown message there | So a restart doesn't lift it, and so the countdown message is deleted when it ends. **Deleted when the penalty ends**, and a day later at the latest. Never the words of any message |
-| **A DM to the developer** | At the 6-hour and 12-hour steps: your user ID and the server's name | So a likely hijacked account or bot is looked at by a person |
+| **A note to the developer** (in that private channel, or a DM) | At the 6-hour and 12-hour steps: your user ID and the server's name | So a likely hijacked account or bot is looked at by a person |
 | **The developer's lists** (`BotControls`) | The user IDs the developer has exempted from penalties, and the user IDs the developer has blocked from using the Bot | An exemption for someone wrongly caught; a block for abuse a penalty doesn't stop (Terms §13.2). A blocked person's text commands are ignored, and their slash commands get one private line saying the Bot isn't available to them. Kept until the developer removes them |
 
 You can read the schemas yourself: [`models/TextPenalty.js`](../../models/TextPenalty.js) and [`models/BotControls.js`](../../models/BotControls.js).
@@ -560,6 +560,7 @@ Kept here as well as in git, because the repository's visibility can change and 
 
 | Version | Effective | What changed |
 |---|---|---|
+| 1.15 | 14 November 2026 | **Where notes to the developer go.** Submit a Build, Dispute a Build, Bugs & Suggestions and the spam-penalty note now reach Dioreo's developer as a message in a private channel of the developer's own Discord server instead of a DM, and still as a DM if that message cannot be sent (§2.1g). What is sent, what is stored and for how long are unchanged. |
 | 1.14 | 4 November 2026 | **Game-news drafts.** Dioreo Admin now reads the posts of two Call of Duty: Mobile news channels it follows in the developer's own server, and sends the ones that name a draw, event, mode or patch to the Vertex AI model §5 already lists, to draft entries: the next season's into the staged Next Season Draft, which goes live only when the developer makes it so, and the current season's for the developer to check (§0, §5, §5.1). The posts come from the channels' announcement webhooks, not from users; only game details are kept (cards for 30 days, staged entries until the season goes live), never a post's text. **New recipients:** none. |
 | 1.13 | 3 November 2026 | **Build credit.** A gunsmith build's credit line can now name a Discord user by their @ or their username, a plain name, or a link, under "Submitted by", "Credit:" or "Build by", or read "By *anonymous*" (§2.1g). Submit a Build asks whether to credit you by your @, your username or not at all, and keeps your username only if you chose it. The developer and admins can also credit a build by hand, which stores the credited person's Discord user ID, name or link with the build without their doing anything; §2.1g says how to have it changed or removed. Appendix A lists the new fields (`credit`, `creditAs`, `username`). **New recipients:** none. |
 | 1.12 | 28 October 2026 | **Text commands.** The Bot can now answer a message that starts by addressing it (`@Dioreo today`, or `d today`, `dior today` or `/today`), for servers where its slash commands are hidden. To do that, Discord now tells it when a message is posted in a server it is in, and sends it the text of messages that mention it and, with the Message Content permission Discord granted, of every message in a channel it can see. §0 and §3 say what it does with them: it answers the ones addressed to it, ignores the rest, and stores none. §2.3 lists what it holds in memory to do this; §2.4b and Appendix A say an interaction record now notes a text command and the form used; §3 adds the one direct message it may send when it can't post where you asked; §4 gives the legal basis; §10 and Appendix B are corrected to match. **Then, before publishing:** a server's admins can turn text commands off where they want (by channel, role or command) and set the server's own prefix (§2.1a); someone who floods a channel with text commands is silenced for a while, kept as a short penalty record while it runs, and the developer can exempt or block a person (§2.1h); and the developer keeps daily counts of the Bot's own unused text-command answers per server, a reply limit for a server, and blocked servers, none of which names a person (§2.1a). §4, §7, §9.4 and Appendix A are updated for these. **New records:** `TextPenalty` and `BotControls` (§2.1h), and the misfire counts (§2.1a). **New recipients:** none. |

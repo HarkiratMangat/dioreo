@@ -4,10 +4,37 @@
 const { MessageFlags } = require('discord.js');
 const OWNED_PREFIXES = ['news|'];
 
-async function allowed(interaction) {
+// ACKNOWLEDGE FIRST (2026-11-14 12:02 EST, news-triage-undo: an Undo press showed "The application didn't respond in time"). Discord gives a click 3 seconds to be acknowledged, and every card button used to read the database (the /manage check, the card) before its first answer, so one slow read or one stalled event loop lost the click with nothing logged. Now a button or dropdown that can be deferred is acknowledged BEFORE its first await on anything (handleNewsInteraction), and everything after it answers through speak(). Only `news|go` cannot: showModal must be the first answer, so its reads stay ahead of the box.
+//   'reply'  deferReply, private: later answers are editReply (Undo draft changes, Make a card, Never drafted)
+//   'update' deferUpdate on the card itself: a refusal is a private followUp (Dismiss)
+//   null     not acknowledged yet: a plain private reply (the box buttons)
+async function speak(interaction, ack, content) {
+    try {
+        if (ack === 'reply') await interaction.editReply({ content });
+        else if (ack === 'update') await interaction.followUp({ content, flags: MessageFlags.Ephemeral });
+        else await interaction.reply({ content, flags: MessageFlags.Ephemeral });
+    } catch (e) { console.error('News card: could not answer a click (interaction likely expired):', e); }
+}
+
+async function ackFirst(interaction, ack) {
+    try {
+        if (ack === 'update') await interaction.deferUpdate(); else await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+        return true;
+    } catch (e) { console.error('News card: could not acknowledge a click (interaction likely expired):', e); return false; }
+}
+
+// After an acknowledgement a throw would leave Discord on "thinking..." with nothing to say why (the router's net only logs), so a failure is logged AND answered.
+async function guarded(interaction, ack, work) {
+    try { await work(); } catch (err) {
+        console.error('News card: a click failed after it was acknowledged:', err);
+        await speak(interaction, ack, 'That did not finish, and the error is in the bot log. Press it again to see where it stands.');
+    }
+}
+
+async function allowed(interaction, ack = null) {
     const { hasCommandAccess } = require('../utils/adminAccess');
     if (await hasCommandAccess(interaction.user.id, 'manage')) return true;
-    try { await interaction.reply({ content: '🔒 Only Dioreo\'s admins can use these cards.', flags: MessageFlags.Ephemeral }); } catch (e) { console.error('News card: could not refuse a click:', e); }
+    await speak(interaction, ack, '🔒 Only Dioreo\'s admins can use these cards.');
     return false;
 }
 
@@ -118,8 +145,7 @@ async function dismiss(interaction, cardId) {
     // Closing a card takes a tier that can act on one (the fresh review R1, 2026-11-05 20:14 EST: /manage access alone let a loadouts-only admin dismiss any card).
     const { canDo } = require('../utils/adminAccess');
     const may = (await canDo(interaction.user.id, 'rightclick.addToCalendar')) || (await require('../utils/manageActions').resolveAction('seasondraft', 'bulkcalendar', interaction.user.id)).ok;
-    if (!may) { try { await interaction.reply({ content: 'You do not have access to act on these cards.', flags: MessageFlags.Ephemeral }); } catch (e) { console.error(e); } return; }
-    await interaction.deferUpdate();
+    if (!may) return speak(interaction, 'update', 'You do not have access to act on these cards.');
     await NewsCard.updateOne({ _id: cardId }, { $set: { dismissed: true } }).catch(() => {});
     const card = await NewsCard.findById(cardId).lean().catch(() => null);
     if (card) await require('../utils/newsTriage/pipeline').redrawCard(interaction.client.rest, card, interaction.applicationId);
@@ -128,7 +154,6 @@ async function dismiss(interaction, cardId) {
 // Undo draft changes: reverts the ChangeLog row news triage wrote for this card, through core/revert.js, whose own check needs the Undo tier on the Next Season Draft page.
 async function undoDraft(interaction, cardId) {
     const NewsCard = require('../models/NewsCard');
-    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     const card = await NewsCard.findById(cardId).lean().catch(() => null);
     if (!card?.draftChangeId) return interaction.editReply({ content: 'Nothing on this card was written to the draft.' });
     if (card.draftUndone) return interaction.editReply({ content: 'Already undone.' });
@@ -143,17 +168,16 @@ async function undoDraft(interaction, cardId) {
 // The briefing's "Kinds never drafted" dropdown (2026-11-05 15:23 EST, his pick 3): saved for anyone who can write the Next Season Draft, since it decides what news triage writes there.
 async function setKinds(interaction) {
     const res = await require('../utils/manageActions').resolveAction('seasondraft', 'bulkcalendar', interaction.user.id);
-    if (!res.ok) { try { await interaction.reply({ content: res.message || 'You do not have access to the Next Season Draft.', flags: MessageFlags.Ephemeral }); } catch (e) { console.error(e); } return; }
+    if (!res.ok) return speak(interaction, 'reply', res.message || 'You do not have access to the Next Season Draft.');
     const { KIND_GROUPS } = require('../utils/newsTriage/draftMerge');
     const keys = (interaction.values || []).filter(k => KIND_GROUPS[k]);
     await require('../models/BotControls').updateOne({ _id: 'global' }, { $set: { newsSkipKinds: keys } }, { upsert: true });
-    try { await interaction.reply({ content: keys.length ? `Saved. Never drafted: ${keys.map(k => KIND_GROUPS[k].label).join(' · ')}.` : 'Saved. Every kind is drafted now.', flags: MessageFlags.Ephemeral }); } catch (e) { console.error(e); }
+    await speak(interaction, 'reply', keys.length ? `Saved. Never drafted: ${keys.map(k => KIND_GROUPS[k].label).join(' · ')}.` : 'Saved. Every kind is drafted now.');
 }
 
 // "Make a card from one of these…" on the skipped list: read the post again and card it whatever the filter said.
 async function makeCard(interaction) {
     const [channelId, messageId] = String(interaction.values?.[0] || '').split(':');
-    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     const pipeline = require('../utils/newsTriage/pipeline');
     let message;
     try { message = await (await interaction.client.channels.fetch(channelId)).messages.fetch(messageId); } catch { message = null; }
@@ -172,14 +196,26 @@ async function makeCard(interaction) {
 
 async function handleNewsInteraction(interaction) {
     if (typeof interaction.customId !== 'string' || !interaction.customId.startsWith('news|')) return false;
-    if (!(await allowed(interaction))) return true;
     const [, action, cardId, index] = interaction.customId.split('|');
-    if (interaction.isButton() && action === 'go') { await openItem(interaction, cardId, Number(index)); return true; }
-    if (interaction.isButton() && action === 'dismiss') { await dismiss(interaction, cardId); return true; }
-    if (interaction.isButton() && action === 'undo') { await undoDraft(interaction, cardId); return true; }
-    if (interaction.isStringSelectMenu() && action === 'make') { await makeCard(interaction); return true; }
-    if (interaction.isStringSelectMenu() && action === 'kinds') { await setKinds(interaction); return true; }
-    return false;
+    // A box opener cannot be deferred (showModal must be the first answer), so it checks access and opens as fast as it can.
+    if (interaction.isButton() && action === 'go') {
+        if (!(await allowed(interaction))) return true;
+        await openItem(interaction, cardId, Number(index));
+        return true;
+    }
+    // Everything else is acknowledged first, then checked and run. Each branch names its own interaction type: this module serves buttons and selects (the router's mixed-type rule).
+    let route = null;
+    if (interaction.isButton() && action === 'dismiss') route = { ack: 'update', run: dismiss };
+    else if (interaction.isButton() && action === 'undo') route = { ack: 'reply', run: undoDraft };
+    else if (interaction.isStringSelectMenu() && action === 'make') route = { ack: 'reply', run: makeCard };
+    else if (interaction.isStringSelectMenu() && action === 'kinds') route = { ack: 'reply', run: setKinds };
+    if (!route) return false;
+    if (!(await ackFirst(interaction, route.ack))) return true;
+    await guarded(interaction, route.ack, async () => {
+        if (!(await allowed(interaction, route.ack))) return;
+        await route.run(interaction, cardId);
+    });
+    return true;
 }
 
 module.exports = { handleNewsInteraction, OWNED_PREFIXES };

@@ -1,6 +1,6 @@
 // utils/buildSubmissions.js -- Submit a Build and Dispute a Build (Harkirat's /gunsmith review, 2026-10-25 16:40-17:08 EDT).
 //
-// SUBMIT: the No build yet card's "Submit a Build" opens a pop-up (the weapon, a screenshot (preferred, not required), the Gunsmith Code, attachments and notes, and whether to show their name). Dioreo Admin DMs it to the owner with Read Screenshot (only when one is attached) / Approve / Deny. Read Screenshot opens the usual /autobuild review; Approve opens a pop-up of their fields to fix typos first (his pick). Whichever way the build is saved, utils/autobuildPipeline.js's confirmCore writes it with `submittedBy` and calls onSaved here, which DMs the submitter a thank-you. Deny closes it with no DM.
+// SUBMIT: the No build yet card's "Submit a Build" opens a pop-up (the weapon, a screenshot (preferred, not required), the Gunsmith Code, attachments and notes, and whether to show their name). Dioreo Admin sends it to the owner (OWNER_CHANNEL with a ping, else a DM: utils/ownerInbox.js) with Read Screenshot (only when one is attached) / Approve / Deny. Read Screenshot opens the usual /autobuild review; Approve opens a pop-up of their fields to fix typos first (his pick). Whichever way the build is saved, utils/autobuildPipeline.js's confirmCore writes it with `submittedBy` and calls onSaved here, which DMs the submitter a thank-you. Deny closes it with no DM.
 //
 // DISPUTE: /help's Gunsmith page carries "Dispute a Build" (his "help only"): which build, Remove it or Credit me, a link to their original post, their original screenshot (optional), notes. Dioreo Admin DMs it to the owner with Remove build / Change credit (credits the person disputing, his call) / Deny / More info, and the person disputing is DMed for every outcome he picks (his option C, offered beside /help's "or DM <@owner>").
 //
@@ -36,15 +36,13 @@ function composeAs(client, build) {
     const appId = client?.application?.id ?? client?.user?.id ?? null;
     return runWithContext({ ...(getContext() || {}), appId }, build);
 }
-// Sends a Components V2 card to the owner, from Dioreo Admin, falling back to the public app if Dioreo Admin cannot open the DM. Returns { channelId, message, client }.
+// Sends a Components V2 card to the owner, from Dioreo Admin, falling back to the public app if Dioreo Admin cannot send it. Into OWNER_CHANNEL with a ping when that is set, else a DM (2026-11-14 13:15 EST, utils/ownerInbox.js). The name stays dmOwner: every caller already uses it. Returns { channelId, message, client, where }.
 async function dmOwner(body, files = []) {
     const tried = [adminOrPublic(), publicApp()].filter((c, i, a) => c && a.indexOf(c) === i);
     let lastError;
     for (const client of tried) {
         try {
-            const dm = await dmChannel(client, ALLOWED_ADMIN_ID);
-            const message = await client.rest.post(Routes.channelMessages(dm.id), { body: { ...composeAs(client, body), allowed_mentions: { parse: [] } }, files });
-            return { channelId: dm.id, message, client };
+            return await require('./ownerInbox').postOwnerNotice(client, composeAs(client, body), files);
         } catch (err) { lastError = err; }
     }
     throw lastError || new Error('no client to DM the owner');

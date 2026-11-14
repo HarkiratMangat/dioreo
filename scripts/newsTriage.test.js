@@ -521,6 +521,7 @@ check('the handler owns news| and nothing else', async () => {
         const h = HB.handleNewsInteraction;
         assert.ok(h.includes('allowed(interaction)') && h.indexOf('allowed(interaction)') < h.indexOf('openItem('), '/manage access first');
         assert.ok(HB.openItem.indexOf('mayOpen(') > -1 && HB.openItem.indexOf('mayOpen(') < HB.openItem.indexOf('showModal('), 'the page tier before a box opens');
+        assert.ok(h.includes('ackFirst(interaction, route.ack)') && h.indexOf('ackFirst(') < h.indexOf('allowed(interaction, route.ack)'), 'a deferrable click is acknowledged before any access read (news-triage-undo)');
         assert.ok(HB.setKinds.indexOf('resolveAction(') > -1 && HB.setKinds.indexOf('resolveAction(') < HB.setKinds.indexOf('updateOne('), 'the draft tier before the kinds are saved');
         assert.ok(/actorId: interaction\.user\.id/.test(HB.makeCard) && /actorId: interaction\.user\.id/.test(HB.undoDraft), 'a card made, or an Undo pressed, is checked as the clicker');
     });
@@ -626,7 +627,7 @@ check('the handler owns news| and nothing else', async () => {
         assert.ok(/state\.forced\.get\(post\.id\)/.test(PB.processPost) && /onRetry/.test(PB.aiRead) && /onRetry\(\)/.test(srcOf('../utils/newsTriage/model.js')), 'a repeat pick is refused and a retry counts');
         assert.ok(/persistCalls\(\)/.test(PB.takeReadSlot) && /loadReadCount\(\)\.finally/.test(W), 'the day\'s count survives a restart');
         assert.ok(/catching\.has\(post\.channelId\)/.test(W) && /ordered\.length >= 500/.test(W), 'catch-up holds the cursor and says when it stops');
-        assert.ok(/canDo\(/.test(HB.dismiss) && HB.dismiss.indexOf('canDo(') < HB.dismiss.indexOf('deferUpdate('), 'Dismiss checks a tier first');
+        assert.ok(/canDo\(/.test(HB.dismiss) && HB.dismiss.indexOf('canDo(') < HB.dismiss.indexOf('updateOne('), 'Dismiss checks a tier before it writes (the acknowledgement itself comes first, from the dispatcher)');
     });
     check('rule: the draft holds the next season only, never one past it', () => {
         const base = { postedAt: D('2026-10-08T12:00:00Z'), liveEnd: D('2026-10-15T00:00:00Z'), liveTitle: 'Season 8 — Haunted', live: {}, draft: {}, catalogue: [] };

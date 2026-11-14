@@ -4,7 +4,7 @@
 // ==========================================
 // Harkirat, 2026-10-21 14:39 EDT: "Can you build a system where the bot DMs me to remind me that when a returning draw is live, to go check the game for the end date and update it into the bots data?" A returning draw is stored with its release date only, so /calendar can never show it as finished; a Draws row with an end date (/manage → Calendar, or the portal) is what lets it go red. This tells him the moment one goes live without one.
 //
-// ⚠️ THE ONE PROACTIVE MESSAGE THE BOT SENDS, AND ONLY TO THE OWNER. CLAUDE.md's "answers ONLY through interactions" invariant names it as its second deliberate exception (after utils/discordCdnStorage.js): a DM to ALLOWED_ADMIN_ID, never a channel, never another user. The bot shares Harkirat's server, which is what lets it open the DM.
+// ⚠️ A PROACTIVE MESSAGE, AND ONLY TO THE OWNER (since 2026-11-14 13:16 EST into OWNER_CHANNEL with a ping when that is set, else a DM: utils/ownerInbox.js). CLAUDE.md's "answers ONLY through interactions" invariant names it as its second deliberate exception (after utils/discordCdnStorage.js): a DM to ALLOWED_ADMIN_ID, never a channel, never another user. The bot shares Harkirat's server, which is what lets it open the DM.
 //
 // Runs once a day from bot/lifecycle.js, five minutes after the game's 00:00 UTC update. Each draw is reminded about once: its title goes into SeasonalData.drawEndReminders, trimmed to the titles still in returningDraws so a new season starts clean. Only draws released in the last REMIND_WINDOW_DAYS count, so the first run after a deploy cannot send a backlog of last season's draws.
 const { ALLOWED_ADMIN_ID } = require('./owner');
@@ -124,11 +124,8 @@ async function runDrawEndReminders(client) {
         if (!doc) return;
         const due = drawsNeedingEndDate(doc);
         if (!due.length) return;
-        const owner = await client.users.fetch(ALLOWED_ADMIN_ID);
-        const dm = await owner.createDM();
-        // Raw REST, the same way sendV2Payload sends a Components V2 body: discord.js's own send() does not pass V2 JSON through.
-        const { Routes } = require('discord.js');
-        await client.rest.post(Routes.channelMessages(dm.id), { body: { flags: 32768, allowed_mentions: { parse: [] }, components: reminderComponents(due, doc) } });
+        // Raw REST, the same way sendV2Payload sends a Components V2 body: discord.js's own send() does not pass V2 JSON through. Into OWNER_CHANNEL with a ping when set, else a DM (2026-11-14 13:15 EST, utils/ownerInbox.js).
+        await require('./ownerInbox').postOwnerNotice(client, { flags: 32768, components: reminderComponents(due, doc) });
         const current = new Set((doc.returningDraws || []).map(d => key(d.title)));
         const kept = (doc.drawEndReminders || []).filter(k => current.has(k));
         await SeasonalData.updateOne({ docType: 'global' }, { $set: { drawEndReminders: [...new Set([...kept, ...due.map(d => key(d.title))])] } });
