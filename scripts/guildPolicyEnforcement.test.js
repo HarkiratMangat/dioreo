@@ -514,9 +514,9 @@ t("the panel reads Discord's own block and puts it before any /admin rule", () =
     assert.strictEqual(discordGate(guild, 'NOCMDS'), 'noCommands');
     const place = { discordGate: (c, r) => discordGate(guild, c, r) };
     const check = JSON.stringify(buildCheck({ defaultVisibility: 'public', channelRules: [{ channelId: 'NOAPPS', visibility: 'public' }] }, [], { who: 'r:R', channelIds: ['NOAPPS', 'OPEN'] }, place));
-    assert.ok(check.includes('Discord keeps their answers private in') && check.includes('<#NOAPPS>'), 'Discord blocking apps must show before the rules');
+    assert.ok(check.includes('Discord limits them in') && check.includes('<#NOAPPS>'), 'Discord blocking apps must show before the rules');
     const page = JSON.stringify(buildChannels({ channelRules: [{ channelId: 'NOAPPS', visibility: 'public' }] }, place));
-    assert.ok(page.includes("Discord's own permissions make these private"));
+    assert.ok(page.includes("Discord's own permissions limit Dioreo in these channels") && page.includes("the server's install is not affected"));
 });
 
 // --- 5e. the per-command model (Harkirat 2026-10-22 18:31 EDT) --------------------------------- His own example, 2026-10-22 18:26 EDT, set on /calendar: "hidden everywhere except in channel #a and #b. @roleA is still hidden in channel #a. @roleB is allowed public everywhere. @roleC is public in channel #c but hidden in channel #a." Every cell of the table sent back to him.
@@ -619,7 +619,7 @@ t("Check a Member shows a member's whole picture, no channel needed", () => {
     assert.ok(text({ who: 'u:U', member: member(['MUTED']) }).includes('Private** everywhere'), "the member's own role decides");
     const admin = text({ who: 'u:U', member: member([], true) });
     assert.ok(admin.includes('Server admin') && !admin.includes('`/calendar`'), 'an admin skips command settings');
-    assert.ok(text({ who: 'u:U', member: member([], false, id => (id === 'BLOCKED' ? 'private' : null)) }).includes('Discord keeps their answers private in'));
+    assert.ok(text({ who: 'u:U', member: member([], false, id => (id === 'BLOCKED' ? 'private' : null)) }).includes('Discord limits them in'));
     assert.ok(text({ who: 'r:MUTED' }).includes('A member with'), 'a role works too');
     assert.ok(text({ error: "That member isn't in this server." }).includes("isn't in this server"));
 });

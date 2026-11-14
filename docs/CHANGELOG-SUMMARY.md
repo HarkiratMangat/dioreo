@@ -14,6 +14,7 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ## v3.21.1 — November 14, 2026
 - **Fixed:** the owner's news-triage cards answer a button press at once, and say so when something goes wrong instead of freezing.
+- **Fixed:** `/admin` and its help page no longer say turning off Use External Apps makes every app answer privately; it only affects answers through a member's own install.
 
 ## v3.21.0 — November 12, 2026
 - **Fixed:** `/autobuild`'s Save All shows its result again when two screenshots go into one build.

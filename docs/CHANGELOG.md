@@ -36,6 +36,7 @@ His report (2026-11-14 11:54 EST): Undo Draft Changes on a dev card showed "The 
 ### Fixed
 - **Every news-card button that can be acknowledged now is, before its first database read** (`handlers/news.js`): Undo draft changes, Dismiss, Make a card and Never drafted. A slow read can no longer lose the click. Only the box opener cannot, since a pop-up must be the first answer.
 - **A failure after the acknowledgement is answered**, not left on "thinking…": the card says "That did not finish, and the error is in the bot log", and the error is logged.
+- **`/admin` no longer says Use External Apps makes every app answer privately** (the panel's Here line, the Channels warning, Check a Member, and the `/help` page for `/admin`). Re-tested as a non-admin member in #bot-spam, 2026-11-14: with it off, Carl-bot, NeonUtil and Dioreo, all added to the server, still answered publicly; only an answer through a member's own install was forced private, with Discord's own "You cannot use external apps in this channel." His 2026-08-10 reading did not reproduce; `.claude/rules/admin-controls.md` has the record.
 
 ### Added
 - **The card channel is named in the log at every start** (`bot/newsWatch.js`), with an alert when Dioreo Admin cannot View or Send there. `NEWS_CHANNEL` stays the one setting.
