@@ -321,6 +321,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-11-10 21:17 EST — /manage draws refined, and what the review found (v3.19.0)
 - 2026-11-11 22:44 EST — Promote went live and said nothing, and every typed end date was a day early (v3.20.0)
 - 2026-11-12 22:47 EST — Save All said nothing, and the panels that fail in silence (v3.21.0)
+- 2026-11-14 17:47 EST — An Undo that timed out, and a permissions record that was wrong (v3.21.1)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -5123,6 +5124,20 @@ Harkirat found two things on prod: /autobuild's Save All gave no confirmation, a
 **What clicking found that tests had not:** the weapon page broke at 11 builds; batch builds of one weapon all read "Build N"; a 5b beside its 5 warned "no Build 5"; a comment-only Bulk Paste was dropped because the preview read a field named `comment` that does not exist.
 
 **What I got wrong:** I called the dev bot unable to save pictures from a stale rule line (it saves under DEV- keys since October) and asked him twice about a build he had already explained. Both were one cheap check away.
+
+## 2026-11-14 17:47 EST — An Undo that timed out, and a permissions record that was wrong (v3.21.1)
+
+Harkirat pressed Undo draft changes on a news-triage card on the dev bot and got "The application didn't respond in time". He asked why cards go to #testing-spam, and whether Use External Apps off makes a server-installed app answer privately.
+
+**The timeout.** No analytics event at all between 2026-11-12 22:43 EST and the click, and a database read measured 9 ms: the dev bot was simply not running. The class was real anyway. Every card button read the database before its first answer, so one slow read would lose a click, and a throw after a defer left Discord on "thinking…" with only a log line. Each deferrable button now acknowledges first, and a failure answers the clicker. The new test holds the access check open and fails on the old handler.
+
+**The permissions record was wrong, and I repeated it.** The repo's 2026-08-10 note said Use External Apps off forces a server-installed app private too. I answered from Discord's docs (it does not), then "corrected" myself to the repo note. A live test as his non-admin alt in #bot-spam settled it: Dioreo, Carl-bot and NeonUtil all answered publicly with the permission denied, with and without Administrator on their role, and only a user-install-context command was forced private, with Discord's own line. The same session proved Server Settings → Integrations can block one server-installed app per channel, and that it cannot switch an app back on under Use Application Commands off.
+
+**What the think-pass found.** The strings in /admin had been corrected while the code still followed the old model: the Channels warning flagged channels where Use External Apps was off, which leaves the server's Dioreo on its rules. It now flags only Use Application Commands off, with tests that fail on the previous version.
+
+**Owner notices** (his ask mid-session) now post into #needs-my-eyes with a ping, falling back to a DM. The docs audit then caught the new test missing from the scripts pointer map, which would have failed CI.
+
+**Lesson:** a record that cites a measurement is still one measurement, from one setup. When the docs and the record disagree, re-run the test before choosing either; I chose twice and was wrong once.
 
 # Part B — Lessons Ledger (thematic)
 
