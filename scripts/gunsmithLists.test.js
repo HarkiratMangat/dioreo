@@ -73,6 +73,10 @@ assert.ok(!JSON.stringify(mc.components).includes('BAL-27-1A2B3C4D5E'), 'no weap
 assert.strictEqual(mc.components.find(c => c.type === 10 && c.content.startsWith('**')).content.split('\n').length, 3, 'BAL-27 and ISO HEMLOCK on their own lines, one code each');
 const ordered = L.classBlocks([b('FSS HURRICANE', 'SMG', { isMeta: true, categoryRank: 'top3' }), b('STATIC-HV', 'SMG', { isMeta: true, categoryRank: 'best' }), b('VMP', 'SMG', { isMeta: true })], [['meta', null, null, x => x.isMeta]]);
 assert.deepStrictEqual(ordered[0].content.split('\n').slice(1).map(l => l.match(/\*\*(.+?)\*\*/)[1]), ['STATIC-HV', 'FSS HURRICANE', 'VMP'], 'META names strongest first (his 12:17 EST)');
+// One weapon in two spellings is one weapon on its line (prod, 2026-11-15: d list read "LW3-Tundra · LW3-Tundra" and "ODEN · ODEN").
+const spelled = L.classBlocks([b('LW3-TUNDRA', 'SNIPER', { categoryRank: 'best' }), { ...b('LW3-Tundra', 'SNIPER', { categoryRank: 'best', buildName: 'Build 3' }), weaponKey: 'lw3tundra' }, b('ODEN', 'AR', { categoryRank: 'top5' }), { ...b('Oden', 'AR', { categoryRank: 'top5', buildName: 'Build 2' }), weaponKey: 'oden' }]);
+assert.deepStrictEqual(spelled.map(x => x.content.split('\n')[1].split('**  ')[1]), ['ODEN', 'LW3-TUNDRA'], 'each weapon named once, by weaponKey, whatever its builds\' spelling');
+console.log('  ✓ one weapon in two spellings is named once');
 assert.deepStrictEqual(mc.components.at(-1).components.map(x => x.custom_id), ['gsb~open~MP.*.meta', 'gsb~open~MP.*.best', 'gsb~open~MP.*.top', 'gsb~open~MP.*.hm'], 'every list button on page 2 too');
 assert.ok(!JSON.stringify(mc.components).includes('KOSHKA'), 'no non-META weapon in the META page itself');
 assert.deepStrictEqual(meta.components.filter(c => c.type === 1 && c.components[0].type === 3).map(c => c.components[0].options.map(o => o.label)), selects.map(s => s.options.map(o => o.label)), 'the META page\'s dropdowns hold every listed weapon, as page 2\'s do (his 2026-11-06 22:06 EST)');
