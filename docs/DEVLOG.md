@@ -323,6 +323,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-11-12 22:47 EST — Save All said nothing, and the panels that fail in silence (v3.21.0)
 - 2026-11-14 17:47 EST — An Undo that timed out, and a permissions record that was wrong (v3.21.1)
 - 2026-11-15 02:37 EST — Portal pins batch 2, Session 4 closed: the control standard, Board 4: Final and the bot catch-up drawn (v3.21.2)
+- 2026-11-15 11:39 EST — The 14 LMGs behind mac, and the sweep that found 18 more (v3.21.3)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -5149,6 +5150,16 @@ The last day added the Dioreo-Bot catch-up since v3: badges became the build's o
 **The lesson worth keeping is about instruments.** The first whole-board recipe audit called 73 of 102 controls off, and most of that was the audit's own blind spots: a transition-killing rule that lost to the kit's own `!important`, data colours it could not see, a flag pair it never tried, and the board's furniture counted as controls. Fixing the instrument first, and reading who actually paints each miss before mapping anything, turned 73 into a real list of 59, and naming 17 parts in the kit map plus fourteen exemptions turned that into none. A count from an unproven instrument is a hypothesis, not a finding.
 
 The second lesson is the old one about citations: two of my own notes from earlier in the session placed the portal's bare hover rule in the wrong file, and both were caught only by looking at the file before writing them into §10.6.
+
+## 2026-11-15 11:39 EST — The 14 LMGs behind mac, and the sweep that found 18 more (v3.21.3)
+
+**What he saw:** after the Signal 50 update added an `s50` shorthand and a check that shorthands never collide, the check's first run failed: typing `mac` listed MAC-10 and then all 14 LMGs, because "mac" begins "machine gun". He: *"that \"mac\" showing 14 LMGs is a BIG deal! That's no small issue."*
+
+**What I had done:** fixed `mac` alone, by skipping the class rules once a shorthand matched. That was the instance, not the class.
+
+**What the sweep found:** typing every start of every prod MP weapon name (99 weapons, 479 queries) and diffing what the dropdown listed against what the letters actually reach. 19 queries pulled in a class. Apart from the true class words (`gun`, `rifle`, `ar`, `mg`, `pistol`), every one was a weapon being typed: `mach` and `machine` (10 LMGs above Machine Pistol), `shorty` (9 shotguns, Shorty not first), `lach` (every LMG under Lachmann), `bolt` (every sniper above Kilo Bolt-Action), `asva`. One cause: the class prefix and typo rules answered letters that already named a weapon. The same pass found `pistol`, `rifle` and `gun` opening one weapon each, and four MP class lists sorted alphabetically against the CLASS_ORDER rule.
+
+**The lesson:** a search fix is checked against the whole input space on real data, and that sweep becomes the test. Checking the named examples would have shipped the other 18.
 
 # Part B — Lessons Ledger (thematic)
 

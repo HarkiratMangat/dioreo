@@ -29,7 +29,26 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.21.2 — 2026-11-15 02:37 EST (#196) — Portal pins batch 2, Session 4 closed: the control standard, Board 4: Final, and the records Session 5 ports from
+## v3.21.3 — 2026-11-15 11:39 EST (#273) — `d list` names a weapon once, `s50` finds Signal 50, every weapon shorthand is checked, and the weapon search never pulls in a class
+
+His Signal 50 update (2026-11-15 10:55 EST), then two follow-ups the same morning: a check that shorthands never collide (11:09 EST), and a think-pass after its first run found `mac` listing all 14 LMGs (11:23 EST: "that's no small issue").
+
+### Fixed
+- **`d list` named a weapon twice** (LW3-Tundra · LW3-Tundra, ODEN · ODEN): one weapon's builds carry two spellings of its name on prod, and the lines grouped by name. They group by `weaponKey` now (`utils/gunsmithLists.js`), as every other weapon grouping does.
+- **Typing a weapon no longer pulls in a whole class.** The class prefix and typo rules answered letters that already named a weapon: `mac` listed MAC-10 and all 14 LMGs, `mach` and `machine` 10 LMGs above MACHINE PISTOL, `shorty` 9 shotguns, `lach` every LMG, `bolt` every sniper, `asva` 24 Assault Rifles. A class now comes in by its start or a typo only when no weapon name holds the letters; a class word typed in full still lists its class (`utils/search.js` `weaponQueryClasses`, also used by the /gunsmith suggestions' class rows).
+- **The weapon being typed comes first.** `findWeaponMatches` ranks: shorthand, whole name, a class word's class (members whose name holds the word first), name start, a word's start, anywhere in the name, then a class or every weapon. SHORTY and ISO typed in full listed another weapon first.
+- **A class or generic word no longer opens one weapon**: `pistol` opened MACHINE PISTOL, `rifle` the 3-LINE RIFLE, `gun` the NAIL GUN (`pickWeapon`). A single class word in the Search box or a typed `/gunsmith` opens that class's browse (`utils/loadoutLookup.js` `resolveWeapon`).
+- **MP class lists follow the in-game order**: the suggestions, the scope walk (All MP builds, the lists), the META jump list, the MP export and its no-build list sorted class codes alphabetically, against the CLASS_ORDER rule. The DMZ dropdown keeps his 2026-10-25 alphabetical call (his "keep dmz as-is", 2026-11-15 11:37 EST).
+
+### Added
+- **`s50` opens Signal 50** (`WEAPON_ALIASES`).
+- **`weaponAliasProblems()`** and `scripts/weaponAliases.test.js`: every shorthand is lower-case letters and digits, not a weapon's name or a class word, points at exactly one weapon, opens it first in both lookups, makes the dropdown list nothing its letters don't reach, and is never written twice. `scripts/checkWeaponAliases.js` runs the same check on a live database (dev and prod: no problems).
+- **A sweep test** in `scripts/weaponSearch.test.js`: every catalogue-seed weapon's full name is first and opens, and no start of 3+ letters lists a weapon its letters don't reach. `scripts/gunsmithLists.test.js` fails on any class code sorted alphabetically. Both fail on the previous code.
+
+### Data (prod, his word, before this release)
+- Signal 50 Build 1 (`2D4B5A6D9C`, Sniper, HM, his comment and screenshot), Signal 50 and three attachment names in the catalogue, and the sniper badges he listed (Koshka no badge, Locus Best, LW3-Tundra and 3-Line Rifle Top 3, DL Q33 Top 5): one changeset, #319–#329, revertable from `/bot analytics`.
+
+## v3.21.2 — 2026-11-15 02:37 EST (#196 · `9aa9e440`) — Portal pins batch 2, Session 4 closed: the control standard, Board 4: Final, and the records Session 5 ports from
 
 Session 4 of the batch-2 plan (`docs/pins2/plan/2026-09-13-portal-pins-batch-2.md`) worked out the portal's control standard over Board 4: Collective, drew the Dioreo-Bot catch-up since v3 onto it, and closed by the plan's §13 under Harkirat's delegation of 2026-11-15 00:39 EST. No bot or portal runtime file changes: Session 5 ports the standard into `portal/`.
 

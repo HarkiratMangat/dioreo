@@ -12,6 +12,13 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.21.3 — November 15, 2026
+- **New:** the Signal 50 has a build, and typing `s50` finds it.
+- **Fixed:** `d list` showed some weapons twice (LW3-Tundra, ODEN).
+- **Fixed:** searching for a weapon no longer fills the list with a whole class (typing `mac` showed every LMG), and the weapon you typed comes first.
+- **Fixed:** typing a class word like `pistol` or `smg` opens that class instead of one random weapon.
+- **Changed:** weapon lists follow the game's class order.
+
 ## v3.21.2 — November 15, 2026
 - **Nothing changed in the bot.** The design work for the admin website moved forward: its design standard is finished and written down, ready to be built next.
 
