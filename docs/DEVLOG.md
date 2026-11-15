@@ -322,6 +322,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-11-11 22:44 EST — Promote went live and said nothing, and every typed end date was a day early (v3.20.0)
 - 2026-11-12 22:47 EST — Save All said nothing, and the panels that fail in silence (v3.21.0)
 - 2026-11-14 17:47 EST — An Undo that timed out, and a permissions record that was wrong (v3.21.1)
+- 2026-11-15 02:37 EST — Portal pins batch 2, Session 4 closed: the control standard, Board 4: Final and the bot catch-up drawn (v3.21.2)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -5138,6 +5139,16 @@ Harkirat pressed Undo draft changes on a news-triage card on the dev bot and got
 **Owner notices** (his ask mid-session) now post into #needs-my-eyes with a ping, falling back to a DM. The docs audit then caught the new test missing from the scripts pointer map, which would have failed CI.
 
 **Lesson:** a record that cites a measurement is still one measurement, from one setup. When the docs and the record disagree, re-run the test before choosing either; I chose twice and was wrong once.
+
+## 2026-11-15 02:37 EST — Portal pins batch 2, Session 4 closed: the control standard, Board 4: Final and the bot catch-up drawn (v3.21.2)
+
+Session 4 of the batch-2 plan began on 2026-10-02 to standardise the portal's controls over Board 4: Collective and ended on 2026-11-15 under Harkirat's delegation ("just work autonomously. make the judgement calls. you don't need me."). Its work is the standard itself (the conventions C0–C32, every value read off the spec board's own `recipe()`), Builder-2 drawn to it, and Board 4: Final baked from Builder-2 for Session 5 to port.
+
+The last day added the Dioreo-Bot catch-up since v3: badges became the build's own, Capable reads Honorable Mention, the classes run in the game's order, the New build drawer gained credit, Show on lists, No attachments and the bot's two save checks, and merged builds got their option rows, drawer rail and Compare columns.
+
+**The lesson worth keeping is about instruments.** The first whole-board recipe audit called 73 of 102 controls off, and most of that was the audit's own blind spots: a transition-killing rule that lost to the kit's own `!important`, data colours it could not see, a flag pair it never tried, and the board's furniture counted as controls. Fixing the instrument first, and reading who actually paints each miss before mapping anything, turned 73 into a real list of 59, and naming 17 parts in the kit map plus fourteen exemptions turned that into none. A count from an unproven instrument is a hypothesis, not a finding.
+
+The second lesson is the old one about citations: two of my own notes from earlier in the session placed the portal's bare hover rule in the wrong file, and both were caught only by looking at the file before writing them into §10.6.
 
 # Part B — Lessons Ledger (thematic)
 

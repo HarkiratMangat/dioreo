@@ -12,6 +12,9 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.21.2 — November 15, 2026
+- **Nothing changed in the bot.** The design work for the admin website moved forward: its design standard is finished and written down, ready to be built next.
+
 ## v3.21.1 — November 14, 2026
 - **Fixed:** the owner's news-triage cards answer a button press at once, and say so when something goes wrong instead of freezing.
 - **Changed:** build submissions, disputes and Bugs & Suggestions now reach the developer in a private channel of his own server instead of a DM (Privacy Policy 1.15).

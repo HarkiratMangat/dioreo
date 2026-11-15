@@ -795,3 +795,22 @@ Ten instructions, given as a numbered list against two screenshots and the open 
 | The Armory manifest's By slot view | Retired, with its List / By slot toggle; List is the only view | "retire/remove it from the board (including it's view toggle buttons)" (12:24 EDT); `docs/ideas/2026-10-01-armory-by-slot-view.md` | he takes the ideas doc up again |
 | Windows under ~1,000px wide | Deferred, with the phone, to one responsiveness rework | "a future scoped design fork that'll need dedicated sessions in the future" (12:24 EDT) | that rework is scheduled |
 
+## Decided 2026-11-15 — Session 4's close and the bot catch-up (by delegation)
+
+*Written 2026-11-15 01:56 EST by Session 4's lead. Harkirat handed every judgement in this section to the session in the thread that morning ("just work autonomously. make the judgement calls. you don't need me.", 00:39 EST, and "the fable model also makes the judgement calls and decisions", 00:42 EST, relayed); none of these rows is his ruling. The record is `docs/pins2/handoffs/2026-11-15-bot-catch-up-intake.md` and plan §10.6.*
+
+| Surface | Decision | Why | Reopens if |
+|---|---|---|---|
+| Armory manifest, selection list | Badges are the build's: no badges on a weapon head; every build row opens with a badge cell of compact badges, 80 wide (three across), wrapping freely and never scrolling | his 2026-10-19 15:59 EDT ruling (the bot's #207); a scroll box clipped each badge's pop-up; 80 hides 3 rails of 24 and grows one row, 108 hides 5 | he asks for a weapon-level summary, or a different badge cell width |
+| Every tier badge | Capable reads HONORABLE MENTION (HM where five plates share the drawer's tier rail); stored as `capable` | the bot's 2026-11-02 wording; the rail wrapped under its label with the full words | the bot renames the tier |
+| Every class list | AR, Sniper, LMG, SMG, Shotgun, Marksman, Secondaries | his 2026-11-03 word, the bot's `CLASS_ORDER` | the in-game order changes |
+| New build: Credit | Its own section after Image: two rails (Shows as; Starts with, for @user, name and link only) and the user ID, name or link; the preview footer carries the bot's `creditLine` | `loadout.credit` is its own op; the footer is where a player sees it | the portal gains a Discord user lookup (the field becomes it) |
+| New build: switches | Show on lists on the Label line (off until a label exists); No attachments at the end of the Attachments head, lifting the code and attachment requirement | each sits on the line it governs | the bot moves either flag off the build |
+| New build, Bulk: save checks | A cut-off code and names new to the catalogue warn, never block: New in the field, Looks cut off on the code head, Before staging in the CAUTION tone, and "Stage anyway"; Bulk shows every note | the bot's two save stops; the drawer can show them live, so no second dialog | the bot turns either into a refusal |
+| Both drawers' Before staging | CAUTION: the warn hue with no fill, for what warns and never blocks; warn's tinted fill for what blocks | it was the post drawer's alone; one rule for both | a third severity is needed |
+| Merged builds | Option rows 1b, 1c under their build (no checkbox, badges, share or delete; the picture and code columns held in line; changing slots marked); the drawer's Options rail; one preview section per option; Compare columns per option | the bot's "1, 1b, 1c" and `optionCards`; options differ slot by slot | the bot changes how options show |
+| Season (no Board 4 surface) | Draw type a required `field-L-search.dropdown` in the draw drawer, its name a ghost tag on the row (Unsure / Unknown in warn); TBD a third end choice drawn as Ongoing with a `--pending` end; inclusive end dates; From news a ghost info tag | a named component in an existing control, so Session 5 invents nothing | a Season surface is designed |
+| The queue card's status tag | M 32, corner 8, icon 14 (r38-26b, B) | it stood 24 beside the row's 32-tall controls; his "incorrectly sized and styled" | — |
+| Board 4: Final | Builder-2's board copied whole (its stylesheets already carry the standard); the builder-sheet bake retired | the rework moved every value into Builder-2's own CSS | — |
+| Kit-only tokens | Each token-map row's Portal column by rule: local ports with its rule; top-level takes the same-valued portal token or becomes one; script-set ports with the script; undefined is a dead read | Step 4d; a rule regenerates with the map | — |
+

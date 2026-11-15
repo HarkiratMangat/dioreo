@@ -3,6 +3,8 @@ kind: reference
 status: live
 ---
 
+> 🔁 **SUPERSEDED AS THE DESIGN AUTHORITY 2026-11-15 02:11 EST (portal pins batch 2, Session 4's close).** For every surface Board 4 draws (the Armory manifest, New build, Compare, Repairs, Export, the delivery queue, the Broadcast manifest, History and Admin traffic) the design is Board 4: Final and plan §10.6, recorded in `DESIGN.md`. This companion stays the exhaustive record of the 2026-08-23 package and still describes what Board 4 did not redraw.
+
 # Dioreo web admin portal — the interactive mockup, explained in full
 
 > 🔴 **PACKAGE CORRECTIONS — this mockup's own files were edited during the conformance pass, and this is the list.** COMPANION is MAINTAINED, not frozen, so a divergence it does not record is a defect in it. Each of these is a §0.1a **test 2** correction — the package disagreeing with itself, not a design weakness the portal should have reproduced. None changes a rendered pixel except the first, which restores type the package had been silently dropping.

@@ -83,7 +83,7 @@ const POPREL = [
     if (m && m.day) {
       const w = Math.abs(m.w - 270) <= 1; if (!w) fail++;
       rows.push(`| ${pop.g} | ${pop.state || 'resting'} | the date picker's width | intake:801 | 270 | ${Math.round(m.w)} | ${w ? '✓' : '✗'} |`);
-      if (m.day) { const d = Math.abs(m.day[0] - 36) <= 0.5; if (!d) fail++; rows.push(`| ${pop.g} | ${pop.state || 'resting'} | a day's width | intake:801 | 36 | ${Math.round(m.day[0] * 10) / 10} | ${d ? '✓' : '✗'} |`); }
+      if (m.day) { const d = Math.abs(m.day[0] - 32) <= 0.5; if (!d) fail++; rows.push(`| ${pop.g} | ${pop.state || 'resting'} | a day's width | C30 (his 2026-10-19 Answer Shots answers; intake:801's 36 superseded) | 32 | ${Math.round(m.day[0] * 10) / 10} | ${d ? '✓' : '✗'} |`); }
     }
     await closePop(p);
   }

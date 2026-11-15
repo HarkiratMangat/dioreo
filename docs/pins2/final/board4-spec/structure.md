@@ -3,9 +3,9 @@ kind: reference
 status: live
 ---
 
-# Board 4: Collective — structure, generated
+# Board 4: Final — structure, generated
 
-*Generated 2026-10-01T16:34:01.335Z by `structure.cjs` from the running kit at 1282×888. Every gate's stage as an outline: each line is an element (tag, classes, role, accessible label), siblings with the same classes collapsed to ×N, a leaf's text after the dash. Resting at depth 8; each state or Try at depth 6, printed only where it differs from resting. Read HANDOFF.md's per-gate Structure rows first — they are written from this file.*
+*Generated 2026-11-15T07:31:11.380Z by `structure.cjs` from the running kit at 1282×888. Every gate's stage as an outline: each line is an element (tag, classes, role, accessible label), siblings with the same classes collapsed to ×N, a leaf's text after the dash. Resting at depth 8; each state or Try at depth 6, printed only where it differs from resting. Read HANDOFF.md's per-gate Structure rows first — they are written from this file.*
 
 ## C1 · The Armory manifest
 
@@ -17,7 +17,7 @@ status: live
       - `span.mlabel`
         - `span` — “Manifest”
       - `span.srch`
-        - `svg`
+        - `svg.ic`
         - `label.sr` — “Search builds”
         - `input`
       - `button.pill.lead.madd`
@@ -26,13 +26,14 @@ status: live
       - `span.mt-grp[role=group] “Category”`
         - `span.mlabel`
           - `span` — “Category”
-        - `button.chip`
-          - `span.cl` — “All”
-          - `em` — “24”
-        - `button.chip.topic` ×7
-          - `i`
-          - `span.cl` — “Assault”
-          - `em` — “7”
+        - `span.mt-chips`
+          - `button.chip`
+            - `span.cl` — “All”
+            - `em` — “24”
+          - `button.chip.topic` ×7
+            - `i`
+            - `span.cl` — “Assault”
+            - `em` — “7”
   - `div.wg-wrap`
     - `div.wg-heads`
       - `span.b3-hint`
@@ -40,9 +41,11 @@ status: live
           - `span.cb`
       - `span`
         - `button.wg-sort`
+          - `span.tx-cap` — “Weapon”
           - `svg.ic`
       - `button.wg-fold`
         - `svg.ic.ic-fold`
+        - `span.tx-cap` — “Collapse all”
     - `div.wg` ×10
       - `div.wg-h`
         - `span.wg-cb[role=checkbox] “Select every .50 GS build”`
@@ -51,9 +54,6 @@ status: live
           - `b` — “.50 GS”
           - `small` — “Secondaries”
           - `em.wg-nb.b3-sd-gn` — “2 builds”
-          - `span.b3-bdgs`
-            - `span.b3-bdg “Top 3 in Secondaries”`
-              - `svg.ic`
         - `span.wg-fwrap.b3-fx`
           - `button.b3-fchip`
             - `svg.ic`
@@ -66,53 +66,64 @@ status: live
           - `span.cb`
         - `span.wg-ix` — “1”
         - `div.wg-main`
+          - `span.wg-bdc`
+            - `span.b3-bdgs.bare`
+              - `span.b3-bw`
+                - `span.b3-bdg[role=img] “Top 3 in Secondaries”`
+                - `span.b3-bpop.b3-bdgs.in`
           - `div.wg-rail.b3-fadx`
             - `span.wg-rl`
-              - `span.wg-at` ×4 — “Monolithic Suppressor”
-              - `span.wg-at.nocode.ghost` — “Not listed”
-        - `span.b3-hint.wg-imh`
-          - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
-            - `button.b3-fchip “.50 GS’s build image”`
+              - `span.wg-at` ×4
+                - `span.wg-an` — “Monolithic Suppressor”
+              - `span.wg-at.nocode.ghost`
+                - `span.wg-an` — “Not listed”
+        - `div.wg-end`
+          - `span.b3-hint.wg-imh`
+            - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
+              - `button.b3-fchip “.50 GS’s build image”`
+                - `svg.ic`
+          - `button.wg-code “Copy gunsmith code 1C6C7A8A9A”`
+            - `span.wg-ig`
+              - `span.wg-igf`
+                - `span.wg-ct.bad` — “1C6C7A8A9A”
+              - `span.wg-igb`
+                - `svg.ic`
+          - `div.wg-acts`
+            - `button.wg-ib.wg-share “Copy share command”`
               - `svg.ic`
-        - `button.wg-code “Copy gunsmith code 1C6C7A8A9A”`
-          - `span.wg-ig`
-            - `span.wg-igf`
-              - `span.wg-ct.bad` — “1C6C7A8A9A”
-            - `span.wg-igb`
+            - `i.wg-vr`
+            - `button.wg-ib.wg-del “Stage deletion of .50 GS build 1”`
               - `svg.ic`
-        - `div.wg-acts`
-          - `button.wg-ib.wg-share “Copy share command”`
-            - `svg.ic`
-          - `i.wg-vr`
-          - `button.wg-ib.wg-del “Stage deletion of .50 GS build 1”`
-            - `svg.ic`
       - `div.wg-r`
         - `span.wg-cb[role=checkbox] “Select .50 GS build 2”`
           - `span.cb`
         - `span.wg-ix` — “2”
         - `div.wg-main.named`
+          - `span.wg-bdc`
           - `span.wg-plate`
             - `small` — “Build name”
             - `span` — “Sidearm”
           - `div.wg-rail.b3-fadx.over`
             - `span.wg-rl`
-              - `span.wg-at` ×5 — “Monolithic Suppressor”
-        - `span.b3-hint.wg-imh`
-          - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
-            - `button.b3-fchip “.50 GS’s build image”`
+              - `span.wg-at` ×5
+                - `span.wg-an` — “Monolithic Suppressor”
+        - `div.wg-end`
+          - `span.b3-hint.wg-imh`
+            - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
+              - `button.b3-fchip “.50 GS’s build image”`
+                - `svg.ic`
+          - `button.wg-code “Copy gunsmith code 1C2A7A8A9A”`
+            - `span.wg-ig`
+              - `span.wg-igf`
+                - `span.wg-ct` — “1C2A7A8A9A”
+              - `span.wg-igb`
+                - `svg.ic`
+          - `div.wg-acts`
+            - `button.wg-ib.wg-share “Copy share command”`
               - `svg.ic`
-        - `button.wg-code “Copy gunsmith code 1C2A7A8A9A”`
-          - `span.wg-ig`
-            - `span.wg-igf`
-              - `span.wg-ct` — “1C2A7A8A9A”
-            - `span.wg-igb`
+            - `i.wg-vr`
+            - `button.wg-ib.wg-del “Stage deletion of .50 GS build 2”`
               - `svg.ic`
-        - `div.wg-acts`
-          - `button.wg-ib.wg-share “Copy share command”`
-            - `svg.ic`
-          - `i.wg-vr`
-          - `button.wg-ib.wg-del “Stage deletion of .50 GS build 2”`
-            - `svg.ic`
 
 ### Try · Open a problem
 
@@ -122,7 +133,7 @@ status: live
       - `span.mlabel`
         - `span` — “Manifest”
       - `span.srch`
-        - `svg`
+        - `svg.ic`
         - `label.sr` — “Search builds”
         - `input`
       - `button.pill.lead.madd`
@@ -131,13 +142,14 @@ status: live
       - `span.mt-grp[role=group] “Category”`
         - `span.mlabel`
           - `span` — “Category”
-        - `button.chip`
-          - `span.cl` — “All”
-          - `em` — “24”
-        - `button.chip.topic` ×7
-          - `i`
-          - `span.cl` — “Assault”
-          - `em` — “7”
+        - `span.mt-chips`
+          - `button.chip`
+            - `span.cl` — “All”
+            - `em` — “24”
+          - `button.chip.topic` ×7
+            - `i`
+            - `span.cl` — “Assault”
+            - `em` — “7”
   - `div.wg-wrap`
     - `div.wg-heads`
       - `span.b3-hint`
@@ -145,9 +157,11 @@ status: live
           - `span.cb`
       - `span`
         - `button.wg-sort`
+          - `span.tx-cap` — “Weapon”
           - `svg.ic`
       - `button.wg-fold`
         - `svg.ic.ic-fold`
+        - `span.tx-cap` — “Collapse all”
     - `div.wg` ×10
       - `div.wg-h`
         - `span.wg-cb[role=checkbox] “Select every .50 GS build”`
@@ -156,8 +170,6 @@ status: live
           - `b` — “.50 GS”
           - `small` — “Secondaries”
           - `em.wg-nb.b3-sd-gn` — “2 builds”
-          - `span.b3-bdgs.in`
-            - `span.b3-bdg “Top 3 in Secondaries”`
         - `span.wg-fwrap.b3-fx`
           - `button.b3-fchip`
             - `svg.ic`
@@ -175,44 +187,39 @@ status: live
           - `span.cb`
         - `span.wg-ix` — “1”
         - `div.wg-main`
+          - `span.wg-bdc`
+            - `span.b3-bdgs.in.bare`
           - `div.wg-rail.b3-fadx`
             - `span.wg-rl`
-        - `span.b3-hint.wg-imh`
-          - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
-            - `button.b3-fchip “.50 GS’s build image”`
-        - `button.wg-code “Copy gunsmith code 1C6C7A8A9A”`
-          - `span.wg-ig`
-            - `span.wg-igf`
-            - `span.wg-igb`
-        - `div.wg-acts`
-          - `button.wg-ib.wg-share “Copy share command”`
-            - `svg.ic`
-          - `i.wg-vr`
-          - `button.wg-ib.wg-del “Stage deletion of .50 GS build 1”`
-            - `svg.ic`
+        - `div.wg-end`
+          - `span.b3-hint.wg-imh`
+            - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
+          - `button.wg-code “Copy gunsmith code 1C6C7A8A9A”`
+            - `span.wg-ig`
+          - `div.wg-acts`
+            - `button.wg-ib.wg-share “Copy share command”`
+            - `i.wg-vr`
+            - `button.wg-ib.wg-del “Stage deletion of .50 GS build 1”`
       - `div.wg-r`
         - `span.wg-cb[role=checkbox] “Select .50 GS build 2”`
           - `span.cb`
         - `span.wg-ix` — “2”
         - `div.wg-main.named`
+          - `span.wg-bdc`
           - `span.wg-plate`
             - `small` — “Build name”
             - `span` — “Sidearm”
           - `div.wg-rail.b3-fadx.over`
             - `span.wg-rl`
-        - `span.b3-hint.wg-imh`
-          - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
-            - `button.b3-fchip “.50 GS’s build image”`
-        - `button.wg-code “Copy gunsmith code 1C2A7A8A9A”`
-          - `span.wg-ig`
-            - `span.wg-igf`
-            - `span.wg-igb`
-        - `div.wg-acts`
-          - `button.wg-ib.wg-share “Copy share command”`
-            - `svg.ic`
-          - `i.wg-vr`
-          - `button.wg-ib.wg-del “Stage deletion of .50 GS build 2”`
-            - `svg.ic`
+        - `div.wg-end`
+          - `span.b3-hint.wg-imh`
+            - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
+          - `button.wg-code “Copy gunsmith code 1C2A7A8A9A”`
+            - `span.wg-ig`
+          - `div.wg-acts`
+            - `button.wg-ib.wg-share “Copy share command”`
+            - `i.wg-vr`
+            - `button.wg-ib.wg-del “Stage deletion of .50 GS build 2”`
 
 ### Try · Open another
 
@@ -222,7 +229,7 @@ status: live
       - `span.mlabel`
         - `span` — “Manifest”
       - `span.srch`
-        - `svg`
+        - `svg.ic`
         - `label.sr` — “Search builds”
         - `input`
       - `button.pill.lead.madd`
@@ -231,13 +238,14 @@ status: live
       - `span.mt-grp[role=group] “Category”`
         - `span.mlabel`
           - `span` — “Category”
-        - `button.chip`
-          - `span.cl` — “All”
-          - `em` — “24”
-        - `button.chip.topic` ×7
-          - `i`
-          - `span.cl` — “Assault”
-          - `em` — “7”
+        - `span.mt-chips`
+          - `button.chip`
+            - `span.cl` — “All”
+            - `em` — “24”
+          - `button.chip.topic` ×7
+            - `i`
+            - `span.cl` — “Assault”
+            - `em` — “7”
   - `div.wg-wrap`
     - `div.wg-heads`
       - `span.b3-hint`
@@ -245,9 +253,11 @@ status: live
           - `span.cb`
       - `span`
         - `button.wg-sort`
+          - `span.tx-cap` — “Weapon”
           - `svg.ic`
       - `button.wg-fold`
         - `svg.ic.ic-fold`
+        - `span.tx-cap` — “Collapse all”
     - `div.wg` ×10
       - `div.wg-h`
         - `span.wg-cb[role=checkbox] “Select every .50 GS build”`
@@ -256,8 +266,6 @@ status: live
           - `b` — “.50 GS”
           - `small` — “Secondaries”
           - `em.wg-nb.b3-sd-gn` — “2 builds”
-          - `span.b3-bdgs.in`
-            - `span.b3-bdg “Top 3 in Secondaries”`
         - `span.wg-fwrap.b3-fx`
           - `button.b3-fchip`
             - `svg.ic`
@@ -270,48 +278,40 @@ status: live
           - `span.cb`
         - `span.wg-ix` — “1”
         - `div.wg-main`
+          - `span.wg-bdc`
+            - `span.b3-bdgs.in.bare`
           - `div.wg-rail.b3-fadx`
             - `span.wg-rl`
-        - `span.b3-hint.wg-imh.pinned`
-          - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
-            - `button.b3-fchip “.50 GS’s build image”`
-          - `span.b3-hc.pop-s2.in.has-media.t-ok[role=tooltip]`
-            - `svg.b3-pc-edge`
-            - `svg.b3-pc-edge.b3-pc-line`
-            - `span.b3-hc-media`
-        - `button.wg-code “Copy gunsmith code 1C6C7A8A9A”`
-          - `span.wg-ig`
-            - `span.wg-igf`
-            - `span.wg-igb`
-        - `div.wg-acts`
-          - `button.wg-ib.wg-share “Copy share command”`
-            - `svg.ic`
-          - `i.wg-vr`
-          - `button.wg-ib.wg-del “Stage deletion of .50 GS build 1”`
-            - `svg.ic`
+        - `div.wg-end`
+          - `span.b3-hint.wg-imh.pinned`
+            - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
+            - `span.b3-hc.pop-s2.in.has-media.t-ok[role=tooltip]`
+          - `button.wg-code “Copy gunsmith code 1C6C7A8A9A”`
+            - `span.wg-ig`
+          - `div.wg-acts`
+            - `button.wg-ib.wg-share “Copy share command”`
+            - `i.wg-vr`
+            - `button.wg-ib.wg-del “Stage deletion of .50 GS build 1”`
       - `div.wg-r`
         - `span.wg-cb[role=checkbox] “Select .50 GS build 2”`
           - `span.cb`
         - `span.wg-ix` — “2”
         - `div.wg-main.named`
+          - `span.wg-bdc`
           - `span.wg-plate`
             - `small` — “Build name”
             - `span` — “Sidearm”
           - `div.wg-rail.b3-fadx.over`
             - `span.wg-rl`
-        - `span.b3-hint.wg-imh`
-          - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
-            - `button.b3-fchip “.50 GS’s build image”`
-        - `button.wg-code “Copy gunsmith code 1C2A7A8A9A”`
-          - `span.wg-ig`
-            - `span.wg-igf`
-            - `span.wg-igb`
-        - `div.wg-acts`
-          - `button.wg-ib.wg-share “Copy share command”`
-            - `svg.ic`
-          - `i.wg-vr`
-          - `button.wg-ib.wg-del “Stage deletion of .50 GS build 2”`
-            - `svg.ic`
+        - `div.wg-end`
+          - `span.b3-hint.wg-imh`
+            - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
+          - `button.wg-code “Copy gunsmith code 1C2A7A8A9A”`
+            - `span.wg-ig`
+          - `div.wg-acts`
+            - `button.wg-ib.wg-share “Copy share command”`
+            - `i.wg-vr`
+            - `button.wg-ib.wg-del “Stage deletion of .50 GS build 2”`
 
 ### Try · Pick one build
 
@@ -321,7 +321,7 @@ status: live
       - `span.mlabel`
         - `span` — “Manifest”
       - `span.srch`
-        - `svg`
+        - `svg.ic`
         - `label.sr` — “Search builds”
         - `input`
       - `button.pill.lead.madd`
@@ -330,13 +330,14 @@ status: live
       - `span.mt-grp[role=group] “Category”`
         - `span.mlabel`
           - `span` — “Category”
-        - `button.chip`
-          - `span.cl` — “All”
-          - `em` — “24”
-        - `button.chip.topic` ×7
-          - `i`
-          - `span.cl` — “Assault”
-          - `em` — “7”
+        - `span.mt-chips`
+          - `button.chip`
+            - `span.cl` — “All”
+            - `em` — “24”
+          - `button.chip.topic` ×7
+            - `i`
+            - `span.cl` — “Assault”
+            - `em` — “7”
   - `div.wg-wrap`
     - `div.wg-heads`
       - `span.b3-hint`
@@ -344,9 +345,11 @@ status: live
           - `span.cb`
       - `span`
         - `button.wg-sort`
+          - `span.tx-cap` — “Weapon”
           - `svg.ic`
       - `button.wg-fold`
         - `svg.ic.ic-fold`
+        - `span.tx-cap` — “Collapse all”
     - `div.wg` ×10
       - `div.wg-h`
         - `span.wg-cb[role=checkbox] “Select every .50 GS build”`
@@ -355,8 +358,6 @@ status: live
           - `b` — “.50 GS”
           - `small` — “Secondaries”
           - `em.wg-nb.b3-sd-gn` — “2 builds”
-          - `span.b3-bdgs.in`
-            - `span.b3-bdg “Top 3 in Secondaries”`
         - `span.wg-fwrap.b3-fx`
           - `button.b3-fchip`
             - `svg.ic`
@@ -369,48 +370,40 @@ status: live
           - `span.cb`
         - `span.wg-ix` — “1”
         - `div.wg-main`
+          - `span.wg-bdc`
+            - `span.b3-bdgs.in.bare`
           - `div.wg-rail.b3-fadx`
             - `span.wg-rl`
-        - `span.b3-hint.wg-imh.pinned`
-          - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
-            - `button.b3-fchip “.50 GS’s build image”`
-          - `span.b3-hc.pop-s2.in.has-media.t-ok[role=tooltip]`
-            - `svg.b3-pc-edge`
-            - `svg.b3-pc-edge.b3-pc-line`
-            - `span.b3-hc-media`
-        - `button.wg-code “Copy gunsmith code 1C6C7A8A9A”`
-          - `span.wg-ig`
-            - `span.wg-igf`
-            - `span.wg-igb`
-        - `div.wg-acts`
-          - `button.wg-ib.wg-share “Copy share command”`
-            - `svg.ic`
-          - `i.wg-vr`
-          - `button.wg-ib.wg-del “Stage deletion of .50 GS build 1”`
-            - `svg.ic`
+        - `div.wg-end`
+          - `span.b3-hint.wg-imh.pinned`
+            - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
+            - `span.b3-hc.pop-s2.in.has-media.t-ok[role=tooltip]`
+          - `button.wg-code “Copy gunsmith code 1C6C7A8A9A”`
+            - `span.wg-ig`
+          - `div.wg-acts`
+            - `button.wg-ib.wg-share “Copy share command”`
+            - `i.wg-vr`
+            - `button.wg-ib.wg-del “Stage deletion of .50 GS build 1”`
       - `div.wg-r`
         - `span.wg-cb[role=checkbox] “Select .50 GS build 2”`
           - `span.cb`
         - `span.wg-ix` — “2”
         - `div.wg-main.named`
+          - `span.wg-bdc`
           - `span.wg-plate`
             - `small` — “Build name”
             - `span` — “Sidearm”
           - `div.wg-rail.b3-fadx.over`
             - `span.wg-rl`
-        - `span.b3-hint.wg-imh`
-          - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
-            - `button.b3-fchip “.50 GS’s build image”`
-        - `button.wg-code “Copy gunsmith code 1C2A7A8A9A”`
-          - `span.wg-ig`
-            - `span.wg-igf`
-            - `span.wg-igb`
-        - `div.wg-acts`
-          - `button.wg-ib.wg-share “Copy share command”`
-            - `svg.ic`
-          - `i.wg-vr`
-          - `button.wg-ib.wg-del “Stage deletion of .50 GS build 2”`
-            - `svg.ic`
+        - `div.wg-end`
+          - `span.b3-hint.wg-imh`
+            - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
+          - `button.wg-code “Copy gunsmith code 1C2A7A8A9A”`
+            - `span.wg-ig`
+          - `div.wg-acts`
+            - `button.wg-ib.wg-share “Copy share command”`
+            - `i.wg-vr`
+            - `button.wg-ib.wg-del “Stage deletion of .50 GS build 2”`
   - `div.selbar.on.b3-selbar[role=region] “Actions for the selected builds”`
     - `div.b3-sd.mesh`
       - `div.b3-sd-fold`
@@ -424,11 +417,9 @@ status: live
             - `div.b3-sd-g`
       - `div.b3-sd-bar`
         - `span.b3-sd-count “1 selected”` — “1”
-        - `div.b3-sd-chips`
-          - `span.b3-sc`
-            - `i`
-            - `span.b3-nw`
-            - `button “Deselect PP19 BIZON”`
+        - `div.b3-sd-chips.b3-fadx`
+          - `div.b3-sd-chl`
+            - `span.b3-sc`
         - `button.b3-btn2.ghost.b3-sd-tog`
           - `svg.ic.ic-fold`
         - `i.b3-vr`
@@ -450,7 +441,7 @@ status: live
       - `span.mlabel`
         - `span` — “Manifest”
       - `span.srch`
-        - `svg`
+        - `svg.ic`
         - `label.sr` — “Search builds”
         - `input`
       - `button.pill.lead.madd`
@@ -459,13 +450,14 @@ status: live
       - `span.mt-grp[role=group] “Category”`
         - `span.mlabel`
           - `span` — “Category”
-        - `button.chip`
-          - `span.cl` — “All”
-          - `em` — “24”
-        - `button.chip.topic` ×7
-          - `i`
-          - `span.cl` — “Assault”
-          - `em` — “7”
+        - `span.mt-chips`
+          - `button.chip`
+            - `span.cl` — “All”
+            - `em` — “24”
+          - `button.chip.topic` ×7
+            - `i`
+            - `span.cl` — “Assault”
+            - `em` — “7”
   - `div.wg-wrap`
     - `div.wg-heads`
       - `span.b3-hint`
@@ -473,9 +465,11 @@ status: live
           - `span.cb`
       - `span`
         - `button.wg-sort`
+          - `span.tx-cap` — “Weapon”
           - `svg.ic`
       - `button.wg-fold`
         - `svg.ic.ic-fold`
+        - `span.tx-cap` — “Collapse all”
     - `div.wg` ×10
       - `div.wg-h`
         - `span.wg-cb[role=checkbox] “Select every .50 GS build”`
@@ -484,8 +478,6 @@ status: live
           - `b` — “.50 GS”
           - `small` — “Secondaries”
           - `em.wg-nb.b3-sd-gn` — “2 builds”
-          - `span.b3-bdgs.in`
-            - `span.b3-bdg “Top 3 in Secondaries”`
         - `span.wg-fwrap.b3-fx`
           - `button.b3-fchip`
             - `svg.ic`
@@ -498,48 +490,40 @@ status: live
           - `span.cb`
         - `span.wg-ix` — “1”
         - `div.wg-main`
+          - `span.wg-bdc`
+            - `span.b3-bdgs.in.bare`
           - `div.wg-rail.b3-fadx`
             - `span.wg-rl`
-        - `span.b3-hint.wg-imh.pinned`
-          - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
-            - `button.b3-fchip “.50 GS’s build image”`
-          - `span.b3-hc.pop-s2.in.has-media.t-ok[role=tooltip]`
-            - `svg.b3-pc-edge`
-            - `svg.b3-pc-edge.b3-pc-line`
-            - `span.b3-hc-media`
-        - `button.wg-code “Copy gunsmith code 1C6C7A8A9A”`
-          - `span.wg-ig`
-            - `span.wg-igf`
-            - `span.wg-igb`
-        - `div.wg-acts`
-          - `button.wg-ib.wg-share “Copy share command”`
-            - `svg.ic`
-          - `i.wg-vr`
-          - `button.wg-ib.wg-del “Stage deletion of .50 GS build 1”`
-            - `svg.ic`
+        - `div.wg-end`
+          - `span.b3-hint.wg-imh.pinned`
+            - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
+            - `span.b3-hc.pop-s2.in.has-media.t-ok[role=tooltip]`
+          - `button.wg-code “Copy gunsmith code 1C6C7A8A9A”`
+            - `span.wg-ig`
+          - `div.wg-acts`
+            - `button.wg-ib.wg-share “Copy share command”`
+            - `i.wg-vr`
+            - `button.wg-ib.wg-del “Stage deletion of .50 GS build 1”`
       - `div.wg-r`
         - `span.wg-cb[role=checkbox] “Select .50 GS build 2”`
           - `span.cb`
         - `span.wg-ix` — “2”
         - `div.wg-main.named`
+          - `span.wg-bdc`
           - `span.wg-plate`
             - `small` — “Build name”
             - `span` — “Sidearm”
           - `div.wg-rail.b3-fadx.over`
             - `span.wg-rl`
-        - `span.b3-hint.wg-imh`
-          - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
-            - `button.b3-fchip “.50 GS’s build image”`
-        - `button.wg-code “Copy gunsmith code 1C2A7A8A9A”`
-          - `span.wg-ig`
-            - `span.wg-igf`
-            - `span.wg-igb`
-        - `div.wg-acts`
-          - `button.wg-ib.wg-share “Copy share command”`
-            - `svg.ic`
-          - `i.wg-vr`
-          - `button.wg-ib.wg-del “Stage deletion of .50 GS build 2”`
-            - `svg.ic`
+        - `div.wg-end`
+          - `span.b3-hint.wg-imh`
+            - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
+          - `button.wg-code “Copy gunsmith code 1C2A7A8A9A”`
+            - `span.wg-ig`
+          - `div.wg-acts`
+            - `button.wg-ib.wg-share “Copy share command”`
+            - `i.wg-vr`
+            - `button.wg-ib.wg-del “Stage deletion of .50 GS build 2”`
   - `div.selbar.on.b3-selbar[role=region] “Actions for the selected builds”`
     - `div.b3-sd.mesh`
       - `div.b3-sd-fold`
@@ -553,11 +537,9 @@ status: live
             - `div.b3-sd-g`
       - `div.b3-sd-bar`
         - `span.b3-sd-count “3 selected”` — “3”
-        - `div.b3-sd-chips`
-          - `span.b3-sc`
-            - `i`
-            - `span.b3-nw`
-            - `button “Deselect PP19 BIZON”`
+        - `div.b3-sd-chips.b3-fadx`
+          - `div.b3-sd-chl`
+            - `span.b3-sc`
         - `button.b3-btn2.ghost.b3-sd-tog`
           - `svg.ic.ic-fold`
         - `i.b3-vr`
@@ -579,7 +561,7 @@ status: live
       - `span.mlabel`
         - `span` — “Manifest”
       - `span.srch`
-        - `svg`
+        - `svg.ic`
         - `label.sr` — “Search builds”
         - `input`
       - `button.pill.lead.madd`
@@ -588,13 +570,14 @@ status: live
       - `span.mt-grp[role=group] “Category”`
         - `span.mlabel`
           - `span` — “Category”
-        - `button.chip`
-          - `span.cl` — “All”
-          - `em` — “24”
-        - `button.chip.topic` ×7
-          - `i`
-          - `span.cl` — “Assault”
-          - `em` — “7”
+        - `span.mt-chips`
+          - `button.chip`
+            - `span.cl` — “All”
+            - `em` — “24”
+          - `button.chip.topic` ×7
+            - `i`
+            - `span.cl` — “Assault”
+            - `em` — “7”
   - `div.wg-wrap`
     - `div.wg-heads`
       - `span.b3-hint`
@@ -602,9 +585,11 @@ status: live
           - `span.cb`
       - `span`
         - `button.wg-sort`
+          - `span.tx-cap` — “Weapon”
           - `svg.ic`
       - `button.wg-fold`
         - `svg.ic.ic-fold`
+        - `span.tx-cap` — “Collapse all”
     - `div.wg` ×10
       - `div.wg-h`
         - `span.wg-cb[role=checkbox] “Select every .50 GS build”`
@@ -613,8 +598,6 @@ status: live
           - `b` — “.50 GS”
           - `small` — “Secondaries”
           - `em.wg-nb.b3-sd-gn` — “2 builds”
-          - `span.b3-bdgs.in`
-            - `span.b3-bdg “Top 3 in Secondaries”`
         - `span.wg-fwrap.b3-fx`
           - `button.b3-fchip`
             - `svg.ic`
@@ -627,48 +610,40 @@ status: live
           - `span.cb`
         - `span.wg-ix` — “1”
         - `div.wg-main`
+          - `span.wg-bdc`
+            - `span.b3-bdgs.in.bare`
           - `div.wg-rail.b3-fadx`
             - `span.wg-rl`
-        - `span.b3-hint.wg-imh.pinned`
-          - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
-            - `button.b3-fchip “.50 GS’s build image”`
-          - `span.b3-hc.pop-s2.in.has-media.t-ok[role=tooltip]`
-            - `svg.b3-pc-edge`
-            - `svg.b3-pc-edge.b3-pc-line`
-            - `span.b3-hc-media`
-        - `button.wg-code “Copy gunsmith code 1C6C7A8A9A”`
-          - `span.wg-ig`
-            - `span.wg-igf`
-            - `span.wg-igb`
-        - `div.wg-acts`
-          - `button.wg-ib.wg-share “Copy share command”`
-            - `svg.ic`
-          - `i.wg-vr`
-          - `button.wg-ib.wg-del “Stage deletion of .50 GS build 1”`
-            - `svg.ic`
+        - `div.wg-end`
+          - `span.b3-hint.wg-imh.pinned`
+            - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
+            - `span.b3-hc.pop-s2.in.has-media.t-ok[role=tooltip]`
+          - `button.wg-code “Copy gunsmith code 1C6C7A8A9A”`
+            - `span.wg-ig`
+          - `div.wg-acts`
+            - `button.wg-ib.wg-share “Copy share command”`
+            - `i.wg-vr`
+            - `button.wg-ib.wg-del “Stage deletion of .50 GS build 1”`
       - `div.wg-r`
         - `span.wg-cb[role=checkbox] “Select .50 GS build 2”`
           - `span.cb`
         - `span.wg-ix` — “2”
         - `div.wg-main.named`
+          - `span.wg-bdc`
           - `span.wg-plate`
             - `small` — “Build name”
             - `span` — “Sidearm”
           - `div.wg-rail.b3-fadx.over`
             - `span.wg-rl`
-        - `span.b3-hint.wg-imh`
-          - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
-            - `button.b3-fchip “.50 GS’s build image”`
-        - `button.wg-code “Copy gunsmith code 1C2A7A8A9A”`
-          - `span.wg-ig`
-            - `span.wg-igf`
-            - `span.wg-igb`
-        - `div.wg-acts`
-          - `button.wg-ib.wg-share “Copy share command”`
-            - `svg.ic`
-          - `i.wg-vr`
-          - `button.wg-ib.wg-del “Stage deletion of .50 GS build 2”`
-            - `svg.ic`
+        - `div.wg-end`
+          - `span.b3-hint.wg-imh`
+            - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
+          - `button.wg-code “Copy gunsmith code 1C2A7A8A9A”`
+            - `span.wg-ig`
+          - `div.wg-acts`
+            - `button.wg-ib.wg-share “Copy share command”`
+            - `i.wg-vr`
+            - `button.wg-ib.wg-del “Stage deletion of .50 GS build 2”`
   - `div.selbar.on.b3-selbar[role=region] “Actions for the selected builds”`
     - `div.b3-sd.mesh`
       - `div.b3-sd-fold`
@@ -682,11 +657,9 @@ status: live
             - `div.b3-sd-g` ×5
       - `div.b3-sd-bar`
         - `span.b3-sd-count “8 selected”` — “8”
-        - `div.b3-sd-chips`
-          - `span.b3-sc` ×5
-            - `i`
-            - `span.b3-nw`
-            - `button “Deselect BAL-27”`
+        - `div.b3-sd-chips.b3-fadx.over`
+          - `div.b3-sd-chl`
+            - `span.b3-sc` ×5
         - `button.b3-btn2.ghost.b3-sd-tog`
           - `svg.ic.ic-fold`
         - `i.b3-vr`
@@ -708,7 +681,7 @@ status: live
       - `span.mlabel`
         - `span` — “Manifest”
       - `span.srch`
-        - `svg`
+        - `svg.ic`
         - `label.sr` — “Search builds”
         - `input`
       - `button.pill.lead.madd`
@@ -717,13 +690,14 @@ status: live
       - `span.mt-grp[role=group] “Category”`
         - `span.mlabel`
           - `span` — “Category”
-        - `button.chip`
-          - `span.cl` — “All”
-          - `em` — “24”
-        - `button.chip.topic` ×7
-          - `i`
-          - `span.cl` — “Assault”
-          - `em` — “7”
+        - `span.mt-chips`
+          - `button.chip`
+            - `span.cl` — “All”
+            - `em` — “24”
+          - `button.chip.topic` ×7
+            - `i`
+            - `span.cl` — “Assault”
+            - `em` — “7”
   - `div.wg-wrap`
     - `div.wg-heads`
       - `span.b3-hint`
@@ -731,9 +705,11 @@ status: live
           - `span.cb`
       - `span`
         - `button.wg-sort`
+          - `span.tx-cap` — “Weapon”
           - `svg.ic`
       - `button.wg-fold`
         - `svg.ic.ic-fold`
+        - `span.tx-cap` — “Collapse all”
     - `div.wg` ×10
       - `div.wg-h`
         - `span.wg-cb[role=checkbox] “Select every .50 GS build”`
@@ -742,8 +718,6 @@ status: live
           - `b` — “.50 GS”
           - `small` — “Secondaries”
           - `em.wg-nb.b3-sd-gn` — “2 builds”
-          - `span.b3-bdgs.in`
-            - `span.b3-bdg “Top 3 in Secondaries”`
         - `span.wg-fwrap.b3-fx`
           - `button.b3-fchip`
             - `svg.ic`
@@ -756,48 +730,40 @@ status: live
           - `span.cb`
         - `span.wg-ix` — “1”
         - `div.wg-main`
+          - `span.wg-bdc`
+            - `span.b3-bdgs.in.bare`
           - `div.wg-rail.b3-fadx`
             - `span.wg-rl`
-        - `span.b3-hint.wg-imh.pinned`
-          - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
-            - `button.b3-fchip “.50 GS’s build image”`
-          - `span.b3-hc.pop-s2.in.has-media.t-ok[role=tooltip]`
-            - `svg.b3-pc-edge`
-            - `svg.b3-pc-edge.b3-pc-line`
-            - `span.b3-hc-media`
-        - `button.wg-code “Copy gunsmith code 1C6C7A8A9A”`
-          - `span.wg-ig`
-            - `span.wg-igf`
-            - `span.wg-igb`
-        - `div.wg-acts`
-          - `button.wg-ib.wg-share “Copy share command”`
-            - `svg.ic`
-          - `i.wg-vr`
-          - `button.wg-ib.wg-del “Stage deletion of .50 GS build 1”`
-            - `svg.ic`
+        - `div.wg-end`
+          - `span.b3-hint.wg-imh.pinned`
+            - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
+            - `span.b3-hc.pop-s2.in.has-media.t-ok[role=tooltip]`
+          - `button.wg-code “Copy gunsmith code 1C6C7A8A9A”`
+            - `span.wg-ig`
+          - `div.wg-acts`
+            - `button.wg-ib.wg-share “Copy share command”`
+            - `i.wg-vr`
+            - `button.wg-ib.wg-del “Stage deletion of .50 GS build 1”`
       - `div.wg-r`
         - `span.wg-cb[role=checkbox] “Select .50 GS build 2”`
           - `span.cb`
         - `span.wg-ix` — “2”
         - `div.wg-main.named`
+          - `span.wg-bdc`
           - `span.wg-plate`
             - `small` — “Build name”
             - `span` — “Sidearm”
           - `div.wg-rail.b3-fadx.over`
             - `span.wg-rl`
-        - `span.b3-hint.wg-imh`
-          - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
-            - `button.b3-fchip “.50 GS’s build image”`
-        - `button.wg-code “Copy gunsmith code 1C2A7A8A9A”`
-          - `span.wg-ig`
-            - `span.wg-igf`
-            - `span.wg-igb`
-        - `div.wg-acts`
-          - `button.wg-ib.wg-share “Copy share command”`
-            - `svg.ic`
-          - `i.wg-vr`
-          - `button.wg-ib.wg-del “Stage deletion of .50 GS build 2”`
-            - `svg.ic`
+        - `div.wg-end`
+          - `span.b3-hint.wg-imh`
+            - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
+          - `button.wg-code “Copy gunsmith code 1C2A7A8A9A”`
+            - `span.wg-ig`
+          - `div.wg-acts`
+            - `button.wg-ib.wg-share “Copy share command”`
+            - `i.wg-vr`
+            - `button.wg-ib.wg-del “Stage deletion of .50 GS build 2”`
 
 ## C2 · New build
 
@@ -828,7 +794,7 @@ status: live
           - `div.f-form.b3-fady`
             - `section.f-card “Build 1 of 1”`
               - `div.f-card-b`
-                - `section.f-sec` ×5
+                - `section.f-sec` ×7
             - `button.f-more`
               - `svg.ic`
               - `span` — “Add another build”
@@ -846,7 +812,8 @@ status: live
                 - `li`
   - `footer.dw-f`
     - `button.b3-btn2` — “Cancel”
-    - `button.b3-btn2.go` — “Stage this MP build”
+    - `button.b3-btn2.go`
+      - `svg.ic`
 
 ### State · Add · filled
 
@@ -880,7 +847,148 @@ status: live
             - `div.f-stage[role=status]`
   - `footer.dw-f`
     - `button.b3-btn2` — “Cancel”
-    - `button.b3-btn2.go` — “Stage this MP build”
+    - `button.b3-btn2.go`
+      - `svg.ic`
+
+### State · Add · checks
+
+- `div.scrim.on`
+- `aside.drawer.open.wide[role=dialog] “New MP build”`
+  - `header.dw-h`
+    - `div.dw-ttl`
+      - `span.dw-eye` — “Create a loadout”
+      - `h2` — “New MP build”
+    - `div.dw-nav`
+      - `button.x “Close”`
+        - `svg.ic.sm`
+        - `b` — “Close”
+  - `div.dw-b`
+    - `div.b3-nb`
+      - `div.pb-bar`
+        - `div.mh-mode.b3-xt-mode[role=radiogroup] “Which armory”`
+          - `button[role=radio]` ×2 — “MP”
+        - `span.pb-div`
+        - `div.seg.pb-seg[role=group] “One build or many”`
+          - `span.pb-thumb`
+          - `button` ×2
+            - `svg.ic`
+      - `div.pb-view.pb-in`
+        - `div.f-add`
+          - `div.f-form.b3-fady`
+            - `section.f-card “Build 1 of 1”`
+            - `button.f-more`
+          - `aside.f-side`
+            - `div.f-prev`
+            - `div.f-stage[role=status]`
+  - `footer.dw-f`
+    - `button.b3-btn2` — “Cancel”
+    - `button.b3-btn2.go`
+      - `svg.ic`
+
+### State · Add · credit
+
+- `div.scrim.on`
+- `aside.drawer.open.wide[role=dialog] “New MP build”`
+  - `header.dw-h`
+    - `div.dw-ttl`
+      - `span.dw-eye` — “Create a loadout”
+      - `h2` — “New MP build”
+    - `div.dw-nav`
+      - `button.x “Close”`
+        - `svg.ic.sm`
+        - `b` — “Close”
+  - `div.dw-b`
+    - `div.b3-nb`
+      - `div.pb-bar`
+        - `div.mh-mode.b3-xt-mode[role=radiogroup] “Which armory”`
+          - `button[role=radio]` ×2 — “MP”
+        - `span.pb-div`
+        - `div.seg.pb-seg[role=group] “One build or many”`
+          - `span.pb-thumb`
+          - `button` ×2
+            - `svg.ic`
+      - `div.pb-view.pb-in`
+        - `div.f-add`
+          - `div.f-form.b3-fady`
+            - `section.f-card “Build 1 of 1”`
+            - `button.f-more`
+          - `aside.f-side`
+            - `div.f-prev`
+            - `div.f-stage[role=status]`
+  - `footer.dw-f`
+    - `button.b3-btn2` — “Cancel”
+    - `button.b3-btn2.go`
+      - `svg.ic`
+
+### State · Add · no attachments
+
+- `div.scrim.on`
+- `aside.drawer.open.wide[role=dialog] “New MP build”`
+  - `header.dw-h`
+    - `div.dw-ttl`
+      - `span.dw-eye` — “Create a loadout”
+      - `h2` — “New MP build”
+    - `div.dw-nav`
+      - `button.x “Close”`
+        - `svg.ic.sm`
+        - `b` — “Close”
+  - `div.dw-b`
+    - `div.b3-nb`
+      - `div.pb-bar`
+        - `div.mh-mode.b3-xt-mode[role=radiogroup] “Which armory”`
+          - `button[role=radio]` ×2 — “MP”
+        - `span.pb-div`
+        - `div.seg.pb-seg[role=group] “One build or many”`
+          - `span.pb-thumb`
+          - `button` ×2
+            - `svg.ic`
+      - `div.pb-view.pb-in`
+        - `div.f-add`
+          - `div.f-form.b3-fady`
+            - `section.f-card “Build 1 of 1”`
+            - `button.f-more`
+          - `aside.f-side`
+            - `div.f-prev`
+            - `div.f-stage[role=status]`
+  - `footer.dw-f`
+    - `button.b3-btn2` — “Cancel”
+    - `button.b3-btn2.go`
+      - `svg.ic`
+
+### State · Add · options
+
+- `div.scrim.on`
+- `aside.drawer.open.wide[role=dialog] “New MP build”`
+  - `header.dw-h`
+    - `div.dw-ttl`
+      - `span.dw-eye` — “Create a loadout”
+      - `h2` — “New MP build”
+    - `div.dw-nav`
+      - `button.x “Close”`
+        - `svg.ic.sm`
+        - `b` — “Close”
+  - `div.dw-b`
+    - `div.b3-nb`
+      - `div.pb-bar`
+        - `div.mh-mode.b3-xt-mode[role=radiogroup] “Which armory”`
+          - `button[role=radio]` ×2 — “MP”
+        - `span.pb-div`
+        - `div.seg.pb-seg[role=group] “One build or many”`
+          - `span.pb-thumb`
+          - `button` ×2
+            - `svg.ic`
+      - `div.pb-view.pb-in`
+        - `div.f-add`
+          - `div.f-form.b3-fady`
+            - `section.f-card “Build 1 of 1”`
+            - `button.f-more`
+          - `aside.f-side`
+            - `div.f-prev`
+            - `div.f-stage[role=status]`
+  - `footer.dw-f`
+    - `button.b3-btn2` — “Cancel”
+    - `button.b3-btn2.go`
+      - `svg.ic`
 
 ### State · Add · three
 
@@ -915,7 +1023,8 @@ status: live
             - `div.f-stage[role=status]`
   - `footer.dw-f`
     - `button.b3-btn2` — “Cancel”
-    - `button.b3-btn2.go` — “Stage 2 MP + 1 DMZ”
+    - `button.b3-btn2.go`
+      - `svg.ic`
 
 ### State · Bulk · empty
 
@@ -949,7 +1058,8 @@ status: live
             - `div.bk-list.b3-fady[role=list]`
   - `footer.dw-f`
     - `button.b3-btn2` — “Cancel”
-    - `button.b3-btn2.go` — “Nothing to stage yet”
+    - `button.b3-btn2.go`
+      - `svg.ic`
 
 ### State · Bulk · one
 
@@ -983,7 +1093,8 @@ status: live
             - `div.bk-list.b3-fady[role=list]`
   - `footer.dw-f`
     - `button.b3-btn2` — “Cancel”
-    - `button.b3-btn2.go` — “Stage this MP build”
+    - `button.b3-btn2.go`
+      - `svg.ic`
 
 ### State · Bulk · several
 
@@ -1017,7 +1128,8 @@ status: live
             - `div.bk-list.b3-fady[role=list]`
   - `footer.dw-f`
     - `button.b3-btn2` — “Cancel”
-    - `button.b3-btn2.go` — “Stage 2 MP + 1 DMZ”
+    - `button.b3-btn2.go`
+      - `svg.ic`
 
 ### State · Bulk · typing
 
@@ -1051,7 +1163,8 @@ status: live
             - `div.bk-list.b3-fady[role=list]`
   - `footer.dw-f`
     - `button.b3-btn2` — “Cancel”
-    - `button.b3-btn2.go` — “Nothing to stage yet”
+    - `button.b3-btn2.go`
+      - `svg.ic`
 
 ### State · Bulk · warning
 
@@ -1085,7 +1198,8 @@ status: live
             - `div.bk-list.b3-fady[role=list]`
   - `footer.dw-f`
     - `button.b3-btn2` — “Cancel”
-    - `button.b3-btn2.go` — “Stage 2 MP builds”
+    - `button.b3-btn2.go`
+      - `svg.ic`
 
 ### State · Bulk · can’t read
 
@@ -1119,7 +1233,8 @@ status: live
             - `div.bk-list.b3-fady[role=list]`
   - `footer.dw-f`
     - `button.b3-btn2` — “Cancel”
-    - `button.b3-btn2.go` — “Stage this MP build”
+    - `button.b3-btn2.go`
+      - `svg.ic`
 
 ### State · Bulk · pasted
 
@@ -1153,7 +1268,8 @@ status: live
             - `div.bk-list.b3-fady[role=list]`
   - `footer.dw-f`
     - `button.b3-btn2` — “Cancel”
-    - `button.b3-btn2.go` — “Stage 1 MP + 1 DMZ”
+    - `button.b3-btn2.go`
+      - `svg.ic`
 
 ### State · Bulk · duplicate
 
@@ -1187,7 +1303,8 @@ status: live
             - `div.bk-list.b3-fady[role=list]`
   - `footer.dw-f`
     - `button.b3-btn2` — “Cancel”
-    - `button.b3-btn2.go` — “Stage this MP build”
+    - `button.b3-btn2.go`
+      - `svg.ic`
 
 ### State · DMZ
 
@@ -1221,7 +1338,8 @@ status: live
             - `div.f-stage[role=status]`
   - `footer.dw-f`
     - `button.b3-btn2` — “Cancel”
-    - `button.b3-btn2.go` — “Stage this DMZ build”
+    - `button.b3-btn2.go`
+      - `svg.ic`
 
 ### State · Edit 3 builds
 
@@ -1256,7 +1374,8 @@ status: live
             - `div.bk-list.b3-fady[role=list]`
   - `footer.dw-f`
     - `button.b3-btn2` — “Cancel”
-    - `button.b3-btn2.go` — “No changes to stage”
+    - `button.b3-btn2.go`
+      - `svg.ic`
 
 ## C3 · Compare
 
@@ -1302,11 +1421,13 @@ status: live
       - `span.cx-bn` — “Same on all 5”
       - `div.cx-bv.cx-same.b3-fadx`
         - `div.cx-bvl`
-          - `span.cx-sv.wg-at` — “60 Round Reload”
+          - `span.cx-sv.wg-at`
+            - `span.wg-an` — “60 Round Reload”
       - `span.cx-bn` — “Shared”
       - `div.cx-bv.cx-same.b3-fadx`
         - `div.cx-bvl`
           - `span.wg-at.cx-shc “Barrel: Crown-H3 Barrel, shared by BAL-2”` ×2
+            - `span.wg-an` — “Crown-H3 Barrel”
             - `span.cx-shb`
               - `i` ×3 — “1”
     - `div.cx-tw`
@@ -1413,11 +1534,13 @@ status: live
       - `span.cx-bn` — “Same on all 6”
       - `div.cx-bv.cx-same.b3-fadx`
         - `div.cx-bvl`
-          - `span.cx-sv.wg-at` — “Assault rifle”
+          - `span.cx-sv.wg-at`
+            - `span.wg-an` — “Assault rifle”
       - `span.cx-bn` — “Shared”
       - `div.cx-bv.cx-same.b3-fadx`
         - `div.cx-bvl`
           - `span.wg-at.cx-shc “Muzzle: Agency Suppressor, shared by FFA”` ×7
+            - `span.wg-an` — “Agency Suppressor”
             - `span.cx-shb`
     - `div.cx-tw`
       - `table.cx-t`
@@ -1500,7 +1623,7 @@ status: live
             - `button.cx-k “Build 1, Quickscope: Take Build 1 out of”`
     - `div.cx-tw`
       - `table.cx-t`
-        - `caption.sr` — “DL Q33, M21 EBR, slot by slo”
+        - `caption.sr` — “DL Q33, KOSHKA, slot by slot”
         - `colgroup`
           - `col.cx-c0`
           - `col`
@@ -1544,6 +1667,81 @@ status: live
           - `div.cx-emb`
             - `figure.cx-cc`
 
+### State · Options
+
+- `section.pb-panel`
+  - `div.cx`
+    - `div.cx-top`
+      - `div.cx-pick`
+        - `div.f-pick`
+          - `div.f-fld`
+            - `span.f-pre.f-ic`
+            - `input.f-in[role=combobox]`
+            - `button.f-suf.f-caret “Open the list”`
+      - `span.cx-seats.full`
+        - `span.cx-sts`
+          - `i.on` ×6
+        - `span.cx-stt`
+          - `b` — “6”
+      - `div.cx-tools`
+        - `button.b3-btn2.quiet.cx-tb.cx-clr`
+          - `svg.ic`
+        - `button.b3-btn2.go.dang.cx-tb`
+          - `svg.ic`
+    - `div.cx-tiles.b3-fadx`
+      - `div.cx-tl`
+        - `div.cx-w[role=group] “SKS, 6 of 6 builds in the table”`
+          - `div.cx-wh`
+            - `span.cx-wn`
+            - `button.b3-x.cx-wx “Remove SKS from the comparison”`
+          - `div.cx-keys`
+            - `button.cx-k “Build 1: Take Build 1 out of the table”` ×6
+    - `div.cx-band`
+      - `span.cx-bn` — “Shared”
+      - `div.cx-bv.cx-same.b3-fadx`
+        - `div.cx-bvl`
+          - `span.wg-at.cx-shc “Muzzle: Tactical Suppressor, shared by S”` ×7
+            - `span.wg-an` — “Tactical Suppressor”
+            - `span.cx-shb`
+    - `div.cx-tw`
+      - `table.cx-t`
+        - `caption.sr` — “SKS, slot by slot. A tinted ”
+        - `colgroup`
+          - `col.cx-c0`
+          - `col` ×6
+        - `thead`
+          - `tr.cx-gr`
+            - `th.cx-k0`
+            - `th.cx-g`
+          - `tr`
+            - `th.cx-k0`
+            - `th.cx-h.cx-hj` ×5
+            - `th.cx-h`
+        - `tbody`
+          - `tr` ×7
+            - `th.cx-k0` — “Muzzle”
+            - `td.cx-c.s-n`
+            - `td.cx-c.s-d`
+            - `td.cx-c.s-n.merged`
+        - `tfoot`
+          - `tr.cx-ft`
+            - `th.cx-k0`
+            - `td.cx-fa` ×6
+    - `div.cx-dc`
+      - `button.cx-dcb`
+        - `span.cx-dcf`
+          - `i` ×6
+            - `b` ×3
+        - `span.cx-dct`
+          - `b` — “Discord preview”
+          - `small` — “Preview the builds as Discor”
+        - `span.cx-dcp`
+          - `svg.ic.ic-fold`
+      - `div.cx-dcw`
+        - `div.cx-dcin`
+          - `div.cx-emb`
+            - `figure.cx-cc` ×6
+
 ### State · Empty
 
 - `section.pb-panel`
@@ -1558,7 +1756,7 @@ status: live
             - `tr.cx-gr`
             - `tr`
           - `tbody`
-            - `tr` ×7
+            - `tr` ×6
       - `div.cx-over`
         - `div.cx-pick.big`
           - `div.f-pick`
@@ -1576,7 +1774,7 @@ status: live
             - `i`
             - `span` — “to set them side by side”
         - `div.cx-shelf`
-          - `div.cx-w.cx-wl[role=group] “CX-9, 3 builds”` ×16
+          - `div.cx-w.cx-wl[role=group] “MACHINE PISTOL, 1 build”` ×16
             - `div.cx-wh`
             - `div.cx-keys`
 
@@ -1637,28 +1835,29 @@ status: live
               - `svg.ic`
             - `button.b3-btn2.sm.go`
               - `svg.ic`
-    - `h4.b3-tk-sh.b3-tk-okh`
-      - `i`
-        - `svg.ic`
-      - `b` — “Pass every check”
-      - `em` — “120 builds”
-    - `article.b3-tk.b3-tk-pass`
-      - `header.b3-tk-h`
-        - `span.b3-tk-id`
-          - `span.b3-tk-shield`
-            - `svg.ic`
-          - `b` — “The checks every one of them”
-      - `div.b3-tk-cks`
-        - `span.b3-tk-ck` ×5
-          - `span.b3-tk-ic`
-            - `svg.ic`
-          - `b` — “Has an image”
-      - `footer.b3-tk-ft`
-        - `span.pb-pill.b3-tk-agec`
+    - `section.b3-tk-oks`
+      - `h4.b3-tk-sh.b3-tk-okh`
+        - `i`
           - `svg.ic`
-        - `button.b3-btn2.ghost.sm`
-          - `svg.ic`
-          - `span.lbl` — “Show them”
+        - `b` — “Pass every check”
+        - `em` — “120 builds”
+      - `article.b3-tk.b3-tk-pass`
+        - `header.b3-tk-h`
+          - `span.b3-tk-id`
+            - `span.b3-tk-shield`
+              - `svg.ic`
+            - `b` — “The checks every one of them”
+        - `div.b3-tk-cks`
+          - `span.b3-tk-ck` ×5
+            - `span.b3-tk-ic`
+              - `svg.ic`
+            - `b` — “Has an image”
+        - `footer.b3-tk-ft`
+          - `span.pb-pill.b3-tk-agec`
+            - `svg.ic`
+          - `button.b3-btn2.ghost.sm`
+            - `svg.ic`
+            - `span.lbl` — “Show them”
 
 ### State · A clean day
 
@@ -1675,23 +1874,6 @@ status: live
         - `span.b3-rv-w` — “Repairs”
         - `span.b3-rv-s` — “all pass”
   - `div.b3-rp`
-    - `article.b3-tk.b3-tk-pass`
-      - `header.b3-tk-h`
-        - `span.b3-tk-id`
-          - `span.b3-tk-shield`
-            - `svg.ic`
-          - `b` — “All 125 builds pass every ch”
-      - `div.b3-tk-cks`
-        - `span.b3-tk-ck` ×5
-          - `span.b3-tk-ic`
-            - `svg.ic`
-          - `b` — “Has an image”
-      - `footer.b3-tk-ft`
-        - `span.pb-pill.b3-tk-agec`
-          - `svg.ic`
-        - `button.b3-btn2.ghost.sm`
-          - `svg.ic`
-          - `span.lbl` — “Show them”
 
 ## C5 · Export
 
@@ -1721,8 +1903,8 @@ status: live
           - `div.exs-t`
             - `b` — “MP builds”
             - `div.b3-xf-fid`
-              - `button.b3-xf-fn “Rename dioreo-mp-builds-2026-10-01.txt”`
-                - `span.b3-xf-nm` — “dioreo-mp-builds-2026-10-01”
+              - `button.b3-xf-fn “Rename dioreo-mp-builds-2026-11-15.txt”`
+                - `span.b3-xf-nm` — “dioreo-mp-builds-2026-11-15”
                 - `span.b3-xf-ext` — “.txt”
                 - `svg.ic`
           - `button.b3-btn2.sm.go`
@@ -1761,7 +1943,7 @@ status: live
             - `section.b3-xt-sec` ×7
         - `section.b3-xt-side “The files”`
           - `div.b3-xt-files.b3-fady`
-            - `section.b3-xf.b3-xf-none “dioreo-mp-2026-10-01.txt”`
+            - `section.b3-xf.b3-xf-none “dioreo-mp-2026-11-15.txt”`
           - `div.b3-xt-peek`
 
 ### State · Three picked
@@ -1789,7 +1971,7 @@ status: live
             - `section.b3-xt-sec` ×7
         - `section.b3-xt-side “The files”`
           - `div.b3-xt-files.b3-fady`
-            - `section.b3-xf “dioreo-mp-2026-10-01.txt”`
+            - `section.b3-xf “dioreo-mp-2026-11-15.txt”`
           - `div.b3-xt-peek`
 
 ## C6 · The delivery queue
@@ -1809,8 +1991,9 @@ status: live
           - `b` — “1”
       - `span.g-status`
         - `svg.ic`
-        - `span.cmeter.b4-segs`
-          - `i`
+        - `span.b4-cells`
+          - `i.on` ×2
+          - `i` ×8
         - `span.b3-nw`
           - `b` — “2”
       - `span.g-status.g-budget`
@@ -1927,11 +2110,11 @@ status: live
                 - `button.pb-ib.pb-del “Discard the staged post”`
     - `div.pb-cg`
       - `h5` — “Changes ahead”
-      - `div.pb-cgi` ×4
+      - `div.pb-cgi`
         - `time`
-          - `small` — “OCT”
+          - `small` — “DEC”
         - `div`
-          - `b` — “Double XP weekend — Oct 3 to”
+          - `b` — “Ranked Series 8 rewards are ”
           - `em`
             - `svg.ic`
 
@@ -1946,7 +2129,7 @@ status: live
         - `span.mlabel`
           - `span` — “Manifest”
         - `span.srch`
-          - `svg`
+          - `svg.ic`
           - `label.sr` — “Search announcements”
           - `input`
         - `button.pill.lead.madd`
@@ -1955,13 +2138,14 @@ status: live
         - `span.mt-grp[role=group] “State”`
           - `span.mlabel`
             - `span` — “State”
-          - `button.chip`
-            - `span.cl` — “All”
-            - `em` — “6”
-          - `button.chip.topic` ×3
-            - `svg.ic`
-            - `span.cl` — “Live now”
-            - `em` — “2”
+          - `span.mt-chips`
+            - `button.chip`
+              - `span.cl` — “All”
+              - `em` — “6”
+            - `button.chip.topic` ×3
+              - `svg.ic`
+              - `span.cl` — “Live now”
+              - `em` — “2”
     - `div.mscroll`
       - `table.mtable`
         - `colgroup`
@@ -1984,7 +2168,7 @@ status: live
                 - `span`
             - `td.nums` ×3
               - `span.bcdt`
-                - `small` — “78 days ago”
+                - `small` — “123 days ago”
             - `td`
               - `span.btab`
                 - `svg.ic`
@@ -2002,7 +2186,7 @@ status: live
         - `span.mlabel`
           - `span` — “Manifest”
         - `span.srch`
-          - `svg`
+          - `svg.ic`
           - `label.sr` — “Search announcements”
           - `input`
         - `button.pill.lead.madd`
@@ -2011,13 +2195,9 @@ status: live
         - `span.mt-grp[role=group] “State”`
           - `span.mlabel`
             - `span` — “State”
-          - `button.chip`
-            - `span.cl` — “All”
-            - `em` — “6”
-          - `button.chip.topic` ×3
-            - `svg.ic`
-            - `span.cl` — “Live now”
-            - `em` — “2”
+          - `span.mt-chips`
+            - `button.chip`
+            - `button.chip.topic` ×3
     - `div.mscroll`
       - `table.mtable`
         - `colgroup`
@@ -2045,7 +2225,7 @@ status: live
         - `span.mlabel`
           - `span` — “Manifest”
         - `span.srch`
-          - `svg`
+          - `svg.ic`
           - `label.sr` — “Search announcements”
           - `input`
         - `button.pill.lead.madd`
@@ -2054,13 +2234,9 @@ status: live
         - `span.mt-grp[role=group] “State”`
           - `span.mlabel`
             - `span` — “State”
-          - `button.chip`
-            - `span.cl` — “All”
-            - `em` — “6”
-          - `button.chip.topic` ×3
-            - `svg.ic`
-            - `span.cl` — “Live now”
-            - `em` — “2”
+          - `span.mt-chips`
+            - `button.chip`
+            - `button.chip.topic` ×3
     - `div.mscroll`
       - `table.mtable`
         - `colgroup`
@@ -2156,15 +2332,16 @@ status: live
       - `span.mlabel`
         - `span` — “Events”
       - `span.srch`
-        - `svg`
+        - `svg.ic`
         - `label.sr` — “Search events”
         - `input`
     - `div.mt-r2.b3-hi-f`
       - `div.b3-fg` ×6
         - `span.b3-fgl` — “Kind”
-        - `button.b3-fc` ×3
-          - `svg.ic`
-          - `em` — “27”
+        - `div.b3-fgc`
+          - `button.b3-fc` ×3
+            - `svg.ic`
+            - `em` — “27”
   - `div.b3-hi-list.b3-fady`
     - `div.b3-hi-h`
       - `span` ×5 — “Time”
@@ -2261,7 +2438,7 @@ status: live
       - `span.mlabel`
         - `span` — “Events”
       - `span.srch`
-        - `svg`
+        - `svg.ic`
         - `label.sr` — “Search events”
         - `input`
       - `button.b3-btn2.ghost.sm`
@@ -2269,9 +2446,10 @@ status: live
     - `div.mt-r2.b3-hi-f`
       - `div.b3-fg` ×6
         - `span.b3-fgl` — “Kind”
-        - `button.b3-fc` ×3
-          - `svg.ic`
-          - `em` — “27”
+        - `div.b3-fgc`
+          - `button.b3-fc` ×3
+            - `svg.ic`
+            - `em` — “27”
   - `div.b3-hi-list.b3-fady`
     - `div.b3-hi-h`
       - `span` ×5 — “Time”
@@ -2366,7 +2544,7 @@ status: live
       - `span.mlabel`
         - `span` — “Events”
       - `span.srch`
-        - `svg`
+        - `svg.ic`
         - `label.sr` — “Search events”
         - `input`
       - `button.b3-btn2.ghost.sm`
@@ -2374,9 +2552,10 @@ status: live
     - `div.mt-r2.b3-hi-f`
       - `div.b3-fg` ×6
         - `span.b3-fgl` — “Kind”
-        - `button.b3-fc` ×3
-          - `svg.ic`
-          - `em` — “27”
+        - `div.b3-fgc`
+          - `button.b3-fc` ×3
+            - `svg.ic`
+            - `em` — “27”
   - `div.b3-hi-list.b3-fady`
     - `div.b3-hi-h`
       - `span` ×5 — “Time”
@@ -2471,7 +2650,7 @@ status: live
       - `span.mlabel`
         - `span` — “Events”
       - `span.srch`
-        - `svg`
+        - `svg.ic`
         - `label.sr` — “Search events”
         - `input.has-hits`
         - `span.mhits` — “0 matches”
@@ -2480,12 +2659,13 @@ status: live
     - `div.mt-r2.b3-hi-f`
       - `div.b3-fg` ×6
         - `span.b3-fgl` — “Kind”
-        - `button.b3-fc` ×2
-          - `svg.ic`
-          - `em` — “25”
-        - `button.b3-fc.none`
-          - `svg.ic`
-          - `em` — “0”
+        - `div.b3-fgc`
+          - `button.b3-fc` ×2
+            - `svg.ic`
+            - `em` — “25”
+          - `button.b3-fc.none`
+            - `svg.ic`
+            - `em` — “0”
   - `div.b3-hi-list.b3-fady`
   - `p.b3-hi-empty`
     - `b` — “No event matches these filte”
@@ -2512,4 +2692,4 @@ status: live
 
 *same outline as resting*
 
-*30 states and Try steps walked. Page errors: 0.*
+*35 states and Try steps walked. Page errors: 0.*

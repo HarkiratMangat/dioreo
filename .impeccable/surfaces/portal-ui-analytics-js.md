@@ -23,7 +23,7 @@ Nothing here is authored. The realm succeeds when a reader understands a number 
 
 ## What must stay untouched
 
-- **Conformance is measured, not judged.** The design authority is `docs/superpowers/mockups/2026-08-23-portal-interactive/`, and this realm closes on the ENUMERATION of cited differences, never on a percentage.
+- **Conformance is measured, not judged.** The design authority is Board 4: Final (plan `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §10.6, `DESIGN.md`) wherever Board 4 draws this realm, and `docs/superpowers/mockups/2026-08-23-portal-interactive/` elsewhere (since 2026-11-15 02:28 EST); this realm closes on the ENUMERATION of cited differences, never on a percentage.
 - Colour carries topic; shape carries state. A new state gets a new shape, never a new hue.
 - The dev database carries synthetic traffic from `scripts/seedAnalyticsTraffic.js` since 2026-09-13 18:59 EDT; judge populated layouts on it, never real usage.
 

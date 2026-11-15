@@ -46,7 +46,7 @@ Several statements below copy something the codebase already states authoritativ
 - `validate()` on any op runs on **both** a fresh submission and a replayed inverse, so the UI must not assume its own field shapes survive a round trip.
 - Permission scoping is per-page, not per-user-role: an op with no `/manage` action must declare `page:`, and that column is the scope permission is checked against.
 - The frontend is **Preact + htm** in `portal/ui/`, deliberately buildless-adjacent — no JSX compile step in the authoring path.
-- **The design authority is a set of mockups, and conformance to them is measured, not judged.** `npm run portal:audit` and the overlay tooling produce a numeric difference against the mockup; a realm is closed when that number is small, not when it looks right. ⚠️ **That was true until 2026-08-31, when the two rendering modes collapsed into one.** There is no stand-down flag any more: the portal renders one thing, which is what is measured and what ships. Where the design was wrong — a promise of a safeguard that does not exist, a status line that would assert a broken image was healthy, a keyboard path the design omits — the portal's version was kept and says so in a comment. **So the number has a floor made of those decisions, and a realm closes when the remaining regions are exactly them.**
+- **The design authority is Board 4: Final, and conformance to it is measured, not judged.** Since 2026-11-15 02:11 EST (portal pins batch 2, Session 4's close) the standard is Board 4: Final, recorded in plan §10.6, `DESIGN.md` and `docs/pins2/final/board4-spec/`; Session 5 ports it and measures each surface against Final at 1282×888. Where a board is wrong, the portal's version is kept only with a ledger row that says why. Before that the authority was the 2026-08-23 mockup package, measured by `npm run portal:audit` and the overlay tooling, and the rule from then carries over: a surface closes when the remaining differences are exactly its cited decisions.
 - **Undecided:** whether the portal ever serves a non-admin reader. Nothing in the current record answers this and future work must not assume either way.
 
 ## Brand Commitments
@@ -58,7 +58,7 @@ Several statements below copy something the codebase already states authoritativ
 ## Evidence on Hand
 
 - **Real content and real data.** Every realm edits live production records; there is no seeded demo dataset. Screens should be designed against real season/draw/loadout shapes, not invented ones.
-- **The mockups are the design evidence** and take precedence over inference from the built portal — with the standing caveat (memory `feedback_read_the_already_built_layer`) that `portal/ui/*` has at times been *ahead* of the mockup that specifies it, so a mismatch is a question, not automatically a defect in the code.
+- **Board 4: Final is the design evidence** and takes precedence over inference from the built portal, with the standing caveat (memory `feedback_read_the_already_built_layer`) that `portal/ui/*` has at times been *ahead* of the board that specifies it, so a mismatch is a question, not automatically a defect in the code.
 - **No testimonials, customers, benchmarks, pricing, or user counts exist.** Future work must not fabricate any of these; the product has one confirmed user.
 
 ## Product Principles

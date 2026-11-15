@@ -60,7 +60,9 @@ function judge(file, a, b, toks) {
 function check(doc, text) {
   const res = [];
   for (const m of text.matchAll(RE)) {
-    const [whole, p, a, b] = m; const hits = resolve(p, doc);
+    const [whole, p, a, b] = m; let hits = resolve(p, doc);
+    // 2026-11-15 (Session 4's close): a bare name a doc cites from its own folder means its sibling, so a frozen copy of a folder (board4-spec-collective/) cannot make the live folder's cites ambiguous
+    if (new Set(hits).size > 1) { const dir = doc.slice(0, doc.lastIndexOf('/') + 1); const own = [...new Set(hits)].filter((h) => h.startsWith(dir) && !h.slice(dir.length).includes('/')); if (own.length === 1) hits = own; }
     const toks = tokensNear(text, m.index, whole.length).filter((t) => !t.includes(p));
     const line = text.slice(0, m.index).split('\n').length;
     if (!hits.length) { res.push({ doc, line, cite: whole, v: 'missing' }); continue; }

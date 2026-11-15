@@ -3,7 +3,7 @@ kind: reference
 status: live
 ---
 
-# Board 4: Collective resolved values · Tokens as resolved on `:root`
+# Board 4: Final resolved values · Tokens as resolved on `:root`
 
 *Part of the generated spec; read `README.md` in this folder first.*
 
@@ -13,16 +13,15 @@ Every custom property the kit's four stylesheets read. **Scope** says where it i
 
 | token | value on :root | scope |
 |---|---|---|
+| `--RL` | — | component |
+| `--RWb` | — | component |
+| `--UW` | — | component |
+| `--W` | — | component |
 | `--a` | — | fallback only |
+| `--ar` | `#FF3B5C` | :root |
 | `--atbg` | — | component |
-| `--atink` | — | component |
-| `--atlit` | — | component |
-| `--atlit-hi` | — | component |
-| `--atring` | — | component |
-| `--atring-hi` | — | component |
 | `--atts-l` | `0px` | :root |
 | `--atts-r` | `34px` | :root |
-| `--atw` | — | component |
 | `--av-src` | — | fallback only |
 | `--avatar-a` | `#3A4C5A` | :root |
 | `--b` | — | component |
@@ -45,8 +44,6 @@ Every custom property the kit's four stylesheets read. **Scope** says where it i
 | `--b3-plus` | `url("data:image/svg+xml,%3Csvg xmlns='http:/…")` | :root |
 | `--b3-plusdk` | `url("data:image/svg+xml,%3Csvg xmlns='http:/…")` | :root |
 | `--b3-repeat` | `url("data:image/svg+xml,%3Csvg xmlns='http:/…")` | :root |
-| `--b3-reveal` | `260ms` | :root |
-| `--b3-reveal-ease` | `cubic-bezier(.22, .61, .36, 1)` | :root |
 | `--b3-ring` | `inset 0 0 0 1px #3A4752` | :root |
 | `--b3-speck` | — | component |
 | `--b3-text` | `url("data:image/svg+xml,%3Csvg xmlns='http:/…")` | :root |
@@ -62,23 +59,34 @@ Every custom property the kit's four stylesheets read. **Scope** says where it i
 | `--b3-tr-wide` | `.14em` | :root |
 | `--b3-under` | — | component |
 | `--b4-imgoff` | — | component |
+| `--band` | — | component |
 | `--bc` | — | component |
-| `--box-inset` | `5px` | :root |
+| `--bdc-w` | — | component |
+| `--bgap` | — | component |
+| `--box-inset` | `calc((44px - 32px) / 2)` | :root |
+| `--box-size` | `32px` | :root |
 | `--c` | — | component |
+| `--c-k` | — | component |
 | `--cc-edge` | — | component |
+| `--cg` | — | component |
 | `--ci` | — | fallback only |
 | `--ci-bg` | — | component |
+| `--clear` | — | component |
 | `--code-js` | — | fallback only |
 | `--code-w` | — | component |
+| `--cols` | — | component |
 | `--colsc` | — | component |
 | `--ctl-min` | `auto` | :root |
 | `--ctl-pad` | `1px 6px` | :root |
 | `--ctl-pl` | — | component |
 | `--ctl-rad` | `0` | :root |
-| `--d` | — | fallback only |
+| `--cur` | — | fallback only |
+| `--d` | — | component |
+| `--d3` | — | component |
 | `--danger-edge` | `#54322F` | :root |
 | `--danger-ink` | `#FF8A85` | :root |
 | `--data` | `"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace` | :root |
+| `--dc` | — | component |
 | `--dc-bg` | `#2B2D31` | :root |
 | `--dc-body` | `#DBDEE1` | :root |
 | `--dc-code` | `#A8B0B8` | :root |
@@ -103,22 +111,32 @@ Every custom property the kit's four stylesheets read. **Scope** says where it i
 | `--ease-soft` | `cubic-bezier(.22,1,.36,1)` | :root |
 | `--ed` | — | fallback only |
 | `--edge` | `22px` | :root |
+| `--eio` | — | component |
 | `--ev` | `#4A90D9` | :root |
 | `--ev-ink` | `#25A570` | :root |
 | `--f` | — | fallback only |
+| `--f-bg` | — | component |
+| `--f-ch` | — | fallback only |
+| `--f-edge` | — | component |
+| `--f-hue` | — | fallback only |
+| `--f-lw` | — | component |
+| `--f-sidew` | — | component |
 | `--fb` | `0px` | :root |
 | `--fc` | — | component |
 | `--fdy` | — | component |
+| `--fh` | — | component |
 | `--fill` | — | component |
 | `--fl` | — | fallback only |
-| `--fn-edge` | — | component |
+| `--fld-rad` | — | component |
 | `--fo` | — | fallback only |
 | `--focus` | `#5FD4E8` | :root |
 | `--focus-07` | `rgba(95,212,232,.07)` | :root |
 | `--focus-13` | `rgba(95,212,232,.13)` | :root |
 | `--fr` | — | fallback only |
+| `--frad` | — | component |
 | `--from` | — | fallback only |
 | `--ft` | `0px` | :root |
+| `--fth` | — | fallback only |
 | `--fx-l` | — | component |
 | `--fx-r` | — | component |
 | `--gap` | `14px` | :root |
@@ -133,33 +151,30 @@ Every custom property the kit's four stylesheets read. **Scope** says where it i
 | `--glo` | — | component |
 | `--gut` | `24px` | :root |
 | `--gutter` | `138px` | :root |
-| `--h1-cell` | `22px` | JS · `b3/state.js` stamp() |
-| `--h1-chip` | `6px` | JS · `b3/state.js` stamp() |
-| `--h1-col` | `36px` | JS · `b3/state.js` stamp() |
+| `--gw` | — | component |
+| `--h1-cell` | `24px` | JS · `b3/state.js` stamp() |
 | `--h1-day` | `52px` | JS · `b3/state.js` stamp() |
-| `--h1-head` | `16px` | JS · `b3/state.js` stamp() |
 | `--h1-kind` | `110px` | JS · `b3/state.js` stamp() |
-| `--h1-l` | `22px` | JS · `b3/state.js` stamp() |
-| `--h1-lab` | `16px` | JS · `b3/state.js` stamp() |
-| `--h1-labw` | `56px` | JS · `b3/state.js` stamp() |
-| `--h1-r` | `22px` | JS · `b3/state.js` stamp() |
-| `--h1-row` | `10px` | JS · `b3/state.js` stamp() |
+| `--h1-l` | `24px` | JS · `b3/state.js` stamp() |
+| `--h1-r` | `24px` | JS · `b3/state.js` stamp() |
 | `--h1-rowh` | `44px` | JS · `b3/state.js` stamp() |
-| `--h1-rowp` | `11px` | JS · `b3/state.js` stamp() |
-| `--h1-srchh` | `44px` | JS · `b3/state.js` stamp() |
-| `--h1-srchw` | `340px` | JS · `b3/state.js` stamp() |
-| `--h1-top` | `16px` | JS · `b3/state.js` stamp() |
+| `--h1-rowp` | `12px` | JS · `b3/state.js` stamp() |
 | `--h1-undo` | `90px` | JS · `b3/state.js` stamp() |
 | `--h1-who` | `100px` | JS · `b3/state.js` stamp() |
+| `--hc` | — | fallback only |
 | `--hc-c` | — | component |
 | `--hdr-h` | `52px` | :root |
 | `--hi` | `#232C34` | :root |
-| `--hi-gut` | — | component |
 | `--hi-head` | — | component |
 | `--hi-l` | — | component |
 | `--hi-r` | — | component |
+| `--hi-rule` | — | component |
+| `--hueh` | — | component |
+| `--huer` | — | component |
+| `--huet` | — | component |
 | `--info` | `#409AD0` | :root |
 | `--ink` | `#E8EDF1` | :root |
+| `--ink1` | — | fallback only |
 | `--ink2` | `#9DAAB4` | :root |
 | `--ink3` | `#85939F` | :root |
 | `--ink4` | `#5C6A75` | :root |
@@ -169,12 +184,33 @@ Every custom property the kit's four stylesheets read. **Scope** says where it i
 | `--inset-16` | `rgba(255,255,255,.16)` | :root |
 | `--inset-22` | `rgba(255,255,255,.22)` | :root |
 | `--inset-35` | `rgba(255,255,255,.35)` | :root |
+| `--ir` | — | component |
 | `--k` | — | component |
+| `--k-c32` | `32px` | :root |
+| `--k-c44` | `44px` | :root |
+| `--k-cb` | `18px` | :root |
+| `--k-g10` | `10px` | :root |
+| `--k-g14` | `14px` | :root |
+| `--k-g20` | `20px` | :root |
+| `--k-g26` | `26px` | :root |
+| `--k-g32` | `32px` | :root |
+| `--k-g6` | `6px` | :root |
+| `--k-hit` | `calc((18px - 44px) / 2)` | :root |
+| `--k-ix` | `9px` | :root |
+| `--k-lab` | `64px` | :root |
+| `--k-r11` | `11px` | :root |
+| `--k-r8` | `8px` | :root |
+| `--k-ring` | `calc(-1 * calc((44px - 32px) / 2))` | :root |
+| `--k-t11` | `11px` | :root |
+| `--k-t13` | `13px` | :root |
+| `--k-t15` | `15px` | :root |
+| `--k-t9` | `9px` | :root |
 | `--kg` | — | component |
+| `--kw` | — | fallback only |
 | `--lab-bg` | — | component |
 | `--lab-div` | — | component |
 | `--lab-fam` | `"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace` | :root |
-| `--lab-gap` | `1.1ch` | :root |
+| `--lab-gap` | `6px` | :root |
 | `--lab-ink` | — | component |
 | `--lab-ml` | — | component |
 | `--lab-order` | — | component |
@@ -182,11 +218,13 @@ Every custom property the kit's four stylesheets read. **Scope** says where it i
 | `--lab-rad` | — | component |
 | `--lab-ring` | — | component |
 | `--lab-sep` | `""` | :root |
-| `--lab-size` | `9.5px` | :root |
+| `--lab-size` | `9px` | :root |
 | `--lab-tr` | `.11em` | :root |
 | `--lab-tt` | `uppercase` | :root |
 | `--lab-w` | `700` | :root |
 | `--lc` | — | component |
+| `--lg` | — | component |
+| `--lh-1` | `round(up, 1em, 2px)` | :root |
 | `--lh-body` | `1.5` | :root |
 | `--lh-ic-n` | — | fallback only |
 | `--lh-n-w` | — | fallback only |
@@ -197,6 +235,20 @@ Every custom property the kit's four stylesheets read. **Scope** says where it i
 | `--lift` | `2px` | :root |
 | `--lit` | `0.06` | :root |
 | `--live` | — | component |
+| `--lk-bg` | — | component |
+| `--lk-fg` | — | component |
+| `--lk-glow` | — | component |
+| `--lk-hbg` | — | component |
+| `--lk-hfg` | — | component |
+| `--lk-hring` | — | component |
+| `--lk-ring` | — | component |
+| `--lk-sbg` | — | component |
+| `--lk-sfg` | — | component |
+| `--lk-shbg` | — | component |
+| `--lk-shfg` | — | component |
+| `--lk-shring` | — | component |
+| `--lk-sring` | — | component |
+| `--lk-w` | — | component |
 | `--m` | — | fallback only |
 | `--m1` | — | component |
 | `--m2` | — | component |
@@ -205,32 +257,58 @@ Every custom property the kit's four stylesheets read. **Scope** says where it i
 | `--marks-w` | — | component |
 | `--mc` | — | component |
 | `--meshGold` | `#F2C230` | :root |
+| `--mi` | — | fallback only |
 | `--mk` | — | component |
 | `--mode-dmz` | `#3DA5F5` | :root |
 | `--mode-mp` | `#FF3430` | :root |
 | `--mono` | `"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace` | :root |
+| `--mt-lab-after` | — | component |
 | `--mw` | — | fallback only |
 | `--n` | — | fallback only |
 | `--nw` | — | component |
 | `--o` | — | component |
+| `--oc` | — | component |
 | `--ok` | `#7BDB63` | :root |
 | `--on-accent` | `#07090A` | :root |
+| `--on-cur` | — | fallback only |
 | `--on-ok` | `#07130A` | :root |
 | `--on-staged` | `#1A2000` | :root |
+| `--on-sw` | — | fallback only |
+| `--or` | — | component |
 | `--overlay-62` | `rgba(6,9,11,.62)` | :root |
 | `--overlay-66` | `rgba(6,9,11,.66)` | :root |
 | `--ow-c-min` | `88px` | :root |
 | `--ow-pill-min` | `126px` | :root |
+| `--ox` | — | component |
+| `--oy` | — | component |
 | `--p` | — | fallback only |
+| `--pad` | — | component |
 | `--paper` | `#171E24` | :root |
-| `--pb-inset` | `5px` | :root |
+| `--pb-inset` | `calc((44px - 32px) / 2)` | :root |
 | `--pcb` | — | component |
 | `--pcbg` | — | component |
+| `--pct` | — | component |
 | `--ph` | — | fallback only |
 | `--pk` | — | fallback only |
 | `--plot-l` | `138px` | :root |
 | `--pn` | `#F2C230` | :root |
+| `--pop` | — | component |
+| `--pop1-arc` | `600ms` | :root |
+| `--pop1-fadeIn` | `140ms` | :root |
+| `--pop1-fadeOut` | `180ms` | :root |
+| `--pop1-grow` | `600ms` | :root |
+| `--pop1-shrink` | `220ms` | :root |
+| `--pop2-arc` | `600ms` | :root |
+| `--pop2-fadeIn` | `220ms` | :root |
+| `--pop2-fadeOut` | `180ms` | :root |
+| `--pop3-arc` | `600ms` | :root |
+| `--pop3-fadeIn` | `200ms` | :root |
+| `--pop3-fadeOut` | `180ms` | :root |
+| `--pp` | — | component |
+| `--pr` | — | component |
 | `--press` | `1px` | :root |
+| `--pu` | — | component |
+| `--pw` | — | component |
 | `--r-access` | `#6C8AF7` | :root |
 | `--r-analytics` | `#9CC85A` | :root |
 | `--r-armory` | `#EF4444` | :root |
@@ -260,6 +338,7 @@ Every custom property the kit's four stylesheets read. **Scope** says where it i
 | `--reach` | — | fallback only |
 | `--realm-c` | — | component |
 | `--rec-x` | — | component |
+| `--rg` | — | component |
 | `--row-selected` | `#20303B` | :root |
 | `--rowcols` | — | component |
 | `--rule` | `#2A343D` | :root |
@@ -288,10 +367,18 @@ Every custom property the kit's four stylesheets read. **Scope** says where it i
 | `--smg` | `#FFD23F` | :root |
 | `--stage-h` | — | fallback only |
 | `--staged` | `#D8F24A` | :root |
+| `--stc` | — | component |
 | `--stem` | — | component |
+| `--step-bg` | — | component |
+| `--step-c` | — | component |
+| `--step-r` | — | component |
 | `--sunk` | `#0B0F12` | :root |
 | `--sv` | — | fallback only |
+| `--svh` | — | component |
 | `--sw` | — | fallback only |
+| `--swg` | — | component |
+| `--swr` | — | component |
+| `--sww` | — | fallback only |
 | `--sx` | `50%` | :root |
 | `--sy` | `50%` | :root |
 | `--t` | — | fallback only |
@@ -306,9 +393,9 @@ Every custom property the kit's four stylesheets read. **Scope** says where it i
 | `--t-h1` | `22px` | :root |
 | `--t-hero` | `26px` | :root |
 | `--t-img-x` | — | fallback only |
-| `--t-lg` | `16.5px` | :root |
-| `--t-md` | `14.5px` | :root |
-| `--t-micro` | `9.5px` | :root |
+| `--t-lg` | `17px` | :root |
+| `--t-md` | `14px` | :root |
+| `--t-micro` | `9px` | :root |
 | `--t-mythic` | `#E254DE` | :root |
 | `--t-mythic-edge` | `rgba(226,84,222,.35)` | :root |
 | `--t-mythic-wash` | `rgba(226,84,222,.15)` | :root |
@@ -320,7 +407,7 @@ Every custom property the kit's four stylesheets read. **Scope** says where it i
 | `--t-w-att` | — | fallback only |
 | `--t-warn-img` | — | fallback only |
 | `--t-xl` | `19px` | :root |
-| `--t-xs` | `10.5px` | :root |
+| `--t-xs` | `11px` | :root |
 | `--tap` | `44px` | :root |
 | `--tc` | — | component |
 | `--th-in` | — | fallback only |
@@ -349,7 +436,6 @@ Every custom property the kit's four stylesheets read. **Scope** says where it i
 | `--v-head-h` | — | fallback only |
 | `--v-head-row` | — | fallback only |
 | `--v-row-h` | — | fallback only |
-| `--v-tag` | — | fallback only |
 | `--v2-accent` | — | fallback only |
 | `--warn` | `#FF7A45` | :root |
 | `--warn-ink` | `#FF9E72` | :root |

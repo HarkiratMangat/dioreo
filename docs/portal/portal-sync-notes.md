@@ -171,6 +171,8 @@ do you notice how in the artifact, the permissions toggles interface and the leg
 shouldn't the "new build" be using the Review realm's accent color? should be a simple variable hex code change.
 
 > 📌 Planned 2026-09-16 09:48 EDT — row 1 · S4 — the element system → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2b
+>
+> 📌 Planned 2026-11-15 02:11 EST — §10.6 row S6 · Board 4: Final → Session 5 **(Claude)** → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §10.6
 
 ## armory — 2026-09-15 11:17 EDT · pmu2tg0ye · from the dev-portal overlay
 **Element:** `#app > div.app > aside.drawer.open.wide` · 880×746 at 201,71
@@ -201,6 +203,8 @@ HOLY SHIT WTF IS THIS NEW BUILD DRAWER??? This looks NOTHING like the Design Boa
 The manifest header's "add build" button should be using the same styling and design as the masthead's "add build" button.
 
 > 📌 Planned 2026-09-16 09:48 EDT — row 4 · B3 E1 → S4 applies → S5 → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2b
+>
+> 📌 Planned 2026-11-15 02:11 EST — §10.6 row S6 · Board 4: Final → Session 5 **(Claude)** → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §10.6
 
 ## armory — 2026-09-15 11:27 EDT · pmu2tsu0p · from the dev-portal overlay
 **Element:** `#manifest > div.wg-wrap:nth-of-type(2) > div.wg-heads:nth-of-type(1) > button.wg-fold` · 111×44 at 1132,279
@@ -261,6 +265,8 @@ hovering over the buttons also needs fixing. Notice in the screenshot how the en
 the mouse pointer needs to be fixed to the approperiate style when hovering over the gunsmith copy button. Currently it shows this green + style
 
 > 📌 Planned 2026-09-16 09:48 EDT — row 10 · B3 E2 → S4 applies → S5 → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2b
+>
+> 📌 Planned 2026-11-15 02:11 EST — §10.6 row S14 · Board 4: Final → Session 5 **(Claude)** → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §10.6
 
 ## armory — 2026-09-15 11:42 EDT · pmu2ucb5m · from the dev-portal overlay
 **Element:** `div.wg:nth-of-type(2) > div.wg-r:nth-of-type(3) > div.wg-acts:nth-of-type(6) > button.wg-ib:nth-of-type(1)` · 44×44 at 1135,291
@@ -270,6 +276,8 @@ the mouse pointer needs to be fixed to the approperiate style when hovering over
 Can you also add some sort of color tint or something to the Share and Copy gunsmith code buttons when hovering over them (such as how the delete button gets it's red tint)?
 
 > 📌 Planned 2026-09-16 09:48 EDT — row 11 · B3 E2 → S4 applies → S5 → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2b
+>
+> 📌 Planned 2026-11-15 02:11 EST — §10.6 row S6 · Board 4: Final → Session 5 **(Claude)** → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §10.6
 
 ## armory — 2026-09-15 11:44 EDT · pmu2ueblq · from the dev-portal overlay
 **Element:** `div.wg-wrap:nth-of-type(2) > div.wg:nth-of-type(3) > div.wg-h > button.wg-ib.wg-fbtn` · 44×44 at 1204,360
@@ -279,6 +287,8 @@ Can you also add some sort of color tint or something to the Share and Copy guns
 when hovering over the weapon row's collapse button, can you make the icon's container smoothly expand/animate and show the Collapse/expand text alonside it?
 
 > 📌 Planned 2026-09-16 09:48 EDT — row 12 · B3 E2 → S4 applies → S5 → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2b
+>
+> 📌 Planned 2026-11-15 02:11 EST — §10.6 row S14 · Board 4: Final → Session 5 **(Claude)** → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §10.6
 
 ## armory — 2026-09-15 11:46 EDT · pmu2uhe9d · from the dev-portal overlay
 **Element:** `div.wg:nth-of-type(2) > div.wg-h:nth-of-type(1) > span.wg-fwrap:nth-of-type(3) > button.wg-fsum` · 114×34 at 1060,246
@@ -301,6 +311,8 @@ the pop-up msg/hint that appears to state exactly what's wrong/needs fixing, whe
 Increase the size of the top/main manifest column label/header text size? It looks tiny and feels like "hint" text meanwhile the "collapse all" button within it's row is cramped in. So 2 things: increase label size (and maybe weight? you decide) and SLIGHTLY instead vertical padding within the row.
 
 > 📌 Planned 2026-09-16 09:48 EDT — row 14 · B3 E4 → S4 applies → S5 → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2b
+>
+> 📌 Planned 2026-11-15 02:11 EST — §10.6 row S12 · Board 4: Final → Session 5 **(Claude)** → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §10.6
 
 ## armory — 2026-09-15 11:51 EDT · pmu2umvur · from the dev-portal overlay
 **Element:** `#manifest > div.wg-wrap:nth-of-type(2) > div.wg:nth-of-type(5) > div.wg-r:nth-of-type(2)` · 1148×52 at 111,304
@@ -374,6 +386,8 @@ I just realized, why isn't there a checkbox to select ALL the builds?
 Can the portal's outer/panel border's use the more rounded design that was used in the design boarder, or the amount used by the staged/selected weapon pop-up, as seen in the bottom of the screenshot
 
 > 📌 Planned 2026-09-16 09:48 EDT — row 21 · S4 — the element system → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2b
+>
+> 📌 Planned 2026-11-15 02:11 EST — §10.6 row S12 · Board 4: Final → Session 5 **(Claude)** → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §10.6
 
 ## armory — 2026-09-15 12:21 EDT · pmu2vqjau · from the dev-portal overlay
 **Element:** `#manifest > div.selbar.on:nth-of-type(3) > div.selbar-in` · 1060×68 at 155,446
@@ -438,6 +452,8 @@ the export panel was folded into the "export" button drawer but one of it's core
 also, i thought the small hint texts across the portal were improved... yet i still see shit like "tier board 5/8". What does that text imply to you? "5 out of 8", correct? yet what does it apparently actually represent? "5 categories · 8 builds" (whatever tf that even means??).
 
 > 📌 Planned 2026-09-16 09:48 EDT — row 27 · S4 — the element system → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2b
+>
+> 📌 Planned 2026-11-15 02:11 EST — §10.6 row S13 · Board 4: Final → Session 5 **(Claude)** → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §10.6
 
 ## armory — 2026-09-15 12:42 EDT · pmu2whbom · from the dev-portal overlay
 **Element:** `#rack > div.racktools:nth-of-type(1) > span.rkt-n` · 461×18 at 782,378
@@ -447,6 +463,8 @@ also, i thought the small hint texts across the portal were improved... yet i st
 Like honestly, wtf is this hint text? how is this not literally the same issue repeated? The bloated hint which i'll just skip over because it *looks* like it provided no useful knowledge or help to me and id just waste my time if i read it. That's how my mind sees it.
 
 > 📌 Planned 2026-09-16 09:48 EDT — row 28 · S4 — the element system → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2b
+>
+> 📌 Planned 2026-11-15 02:11 EST — §10.6 row S13 · Board 4: Final → Session 5 **(Claude)** → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §10.6
 
 ## armory — 2026-09-15 12:45 EDT · pmu2wkuqb · from the dev-portal overlay
 **Element:** `#rack > div.racktools:nth-of-type(1) > button.chip:nth-of-type(1)` · 84×32 at 127,288
@@ -458,6 +476,8 @@ Like honestly, wtf is this hint text? how is this not literally the same issue r
 Why not just use the "collapse/expand all" new design created in the manifest's redesign?? This is exactly why we have SOO many elements across the portal that differ in style, size, etc etc. Shit like this needs a major tokenization so they're all connected. This is literally why we have to go and review EVERY panel and element on EVERY realm separately because the uniformity is lacking across the portal's codebase.
 
 > 📌 Planned 2026-09-16 09:48 EDT — row 29 · B3 E1 → S4 applies → S5 → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2b
+>
+> 📌 Planned 2026-11-15 02:11 EST — §10.6 row S10 · Board 4: Final → Session 5 **(Claude)** → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §10.6
 
 ## armory — 2026-09-15 12:50 EDT · pmu2wr697 · from the dev-portal overlay
 **Element:** `main > section.panel:nth-of-type(2) > div.ph:nth-of-type(1) > div.seg` · 279×40 at 181,228
@@ -467,6 +487,8 @@ Why not just use the "collapse/expand all" new design created in the manifest's 
 like honestly, i want a fresh session after this one, and still part of this overall plan (so add it into the plan fully and properly as a proper addition, not a slapped on 1 liner), where we go and audit elements accross the portal and actually generalize and standardize element designs and tokens. Literally everything from corner radius, buttons, toggles, icons, alignment, spacing, headers, text, etc etc and also considering which elements specifically need their unique styling set apart or ignored from the generalization (and ofc realm specific tweaks would sit on top of those tokens but the core element should still be generalized yk?). I believe impeccable also has a specific verb skill that assists with this.
 
 > 📌 Planned 2026-09-16 09:48 EDT — row 30 · S4 — this pin is the session → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2b
+>
+> 📌 Planned 2026-11-15 02:11 EST — §10.6 row S10 · Board 4: Final → Session 5 **(Claude)** → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §10.6
 
 ## armory — 2026-09-15 12:52 EDT · pmu2wtq39 · from the dev-portal overlay
 **Element:** `main > div.masthead > div.mh-take:nth-of-type(4) > span.mh-take-n` · 172×12 at 1087,267
@@ -478,6 +500,8 @@ like honestly, i want a fresh session after this one, and still part of this ove
 wtf even is the purpose and helpfulness of the "4 formats" hint? it's just confusing. Like do you see what i mean when i say that hint/small text needs improvement and refinement and better ux-copy or ui styling?? Wasn't this stuff all supposed to be caught by this plan's "small text review"?
 
 > 📌 Planned 2026-09-16 09:48 EDT — row 31 · S4 — the element system → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2b
+>
+> 📌 Planned 2026-11-15 02:11 EST — §10.6 row S13 · Board 4: Final → Session 5 **(Claude)** → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §10.6
 
 ## broadcast — 2026-09-15 12:54 EDT · pmu2wvtb5 · from the dev-portal overlay
 **Element:** `div.bqueue:nth-of-type(2) > div.bqcol:nth-of-type(1) > div.bqlist:nth-of-type(2) > div.qcard` · 798×223 at 127,269
@@ -507,6 +531,8 @@ Lazy ass request fufillment. I asked for the "heads up" to be moved to the top. 
 I want hint text like this to have some sort of soft, subtle container that they sit within. This follows upon on my earlier comment of how things needs their distinct design to state their purpose at a glance.
 
 > 📌 Planned 2026-09-16 09:48 EDT — row 34 · S4 — the element system → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2b
+>
+> 📌 Planned 2026-11-15 02:11 EST — §10.6 row S13 · Board 4: Final → Session 5 **(Claude)** → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §10.6
 
 ## broadcast — 2026-09-15 13:07 EDT · pmu2xd88t · from the dev-portal overlay
 **Element:** `section.panel:nth-of-type(3) > div.bqueue:nth-of-type(2) > div.bqcol:nth-of-type(1) > div.bqhead:nth-of-type(1)` · 798×10 at 127,224
@@ -518,6 +544,8 @@ I want hint text like this to have some sort of soft, subtle container that they
 similar issue here in a way... so this is what? a sub-section heading? What about this looks and implies that? To me it looks like any other bloated hint text or prose thrown around the portal. Same with the "Changes ahead" to it's right. This is exactly why that generalization, standardization, and redesign of elements to serve a purpose is so important (that's basically the idea of what the next session needs to do — discuss, propose, show, then build. Note: Your design work and proposals are still to be done this session, while that next session has it's own set of designs and proposals. THEN a follow-up session is what will actually take everything and write it into the code — ACCCURATELY AND CORRECTLY, i don't want to have to go through another pin phase!).
 
 > 📌 Planned 2026-09-16 09:48 EDT — row 35 · S4 — the element system → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2b
+>
+> 📌 Planned 2026-11-15 02:11 EST — §10.6 row S12 · Board 4: Final → Session 5 **(Claude)** → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §10.6
 
 ## broadcast — 2026-09-15 13:09 EDT · pmu2xfhq1 · from the dev-portal overlay
 **Element:** `div.bqcol:nth-of-type(1) > div.bqlist:nth-of-type(2) > div.qcard > span.bnum:nth-of-type(1)` · 14×46 at 166,341
@@ -552,6 +580,8 @@ instead of fading to black, shouldn't it be fading to full transparency?
 2. labels are missing icons.
 
 > 📌 Planned 2026-09-16 09:48 EDT — row 38 · S4 — the element system → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2b
+>
+> 📌 Planned 2026-11-15 02:11 EST — §10.6 row S10 · Board 4: Final → Session 5 **(Claude)** → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §10.6
 
 ## broadcast — 2026-09-15 13:13 EDT · pmu2xk8uw · from the dev-portal overlay
 **Element:** `div.qcard > div.bbody > div.benc:nth-of-type(1) > p` · 676×60 at 217,369
@@ -577,6 +607,8 @@ Fix the spacing inside of the container. These refinements should already have b
 4. "126 characters", another prime example of "hint text *that* looks skipable/ignorable".
 
 > 📌 Planned 2026-09-16 09:48 EDT — row 40 · S3 port table → S5 · B3 E6 → S4 rewrites → S5 → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2b
+>
+> 📌 Planned 2026-11-15 02:11 EST — §10.6 row S13 · Board 4: Final → Session 5 **(Claude)** → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §10.6
 
 ## broadcast — 2026-09-15 13:19 EDT · pmu2xt57m · from the dev-portal overlay
 **Element:** `main > section.panel:nth-of-type(3) > div.ph:nth-of-type(1) > span.t:nth-of-type(1)` · 63×14 at 125,322
@@ -588,6 +620,8 @@ Fix the spacing inside of the container. These refinements should already have b
 Why does this "broadcast" toggles label text use a different font than the similar purpose "Attachments", "Category", etc text in the Armory realm? Do you see what i mean when i say designs, elements, etc are scattered all over the place in the portal? Like this text is serving the same purpose yet is designed differently here.
 
 > 📌 Planned 2026-09-16 09:48 EDT — row 41 · S4 — the element system → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2b
+>
+> 📌 Planned 2026-11-15 02:11 EST — §10.6 row S3 · Board 4: Final → Session 5 **(Claude)** → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §10.6
 
 ## broadcast — 2026-09-15 13:21 EDT · pmu2xuzh9 · from the dev-portal overlay
 **Element:** `main > section.panel:nth-of-type(3) > div.ph:nth-of-type(1) > span.t:nth-of-type(1)` · 63×14 at 125,378
@@ -599,6 +633,8 @@ Why does this "broadcast" toggles label text use a different font than the simil
 Oh actually look, you can literally scroll down the same realm's page and see it designed differently. Same Realm, same purpose for the text/label, yet different designs. (look at the "manifest" and "state" label in the screenshot).
 
 > 📌 Planned 2026-09-16 09:48 EDT — row 42 · S4 — the element system → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2b
+>
+> 📌 Planned 2026-11-15 02:11 EST — §10.6 row S3 · Board 4: Final → Session 5 **(Claude)** → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §10.6
 
 ## broadcast — 2026-09-15 13:22 EDT · pmu2xw2ik · from the dev-portal overlay
 **Element:** `div.bbody > div.benc:nth-of-type(1) > div.bencf > button.bexp` · 94×44 at 795,279
@@ -610,6 +646,8 @@ Oh actually look, you can literally scroll down the same realm's page and see it
 WTF is this terrible highlight hover event???
 
 > 📌 Planned 2026-09-16 09:48 EDT — row 43 · B3 E2 → S4 applies → S5 → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2b
+>
+> 📌 Planned 2026-11-15 02:11 EST — §10.6 row S6 · Board 4: Final → Session 5 **(Claude)** → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §10.6
 
 ## broadcast — 2026-09-15 13:23 EDT · pmu2xxevn · from the dev-portal overlay
 **Element:** `#manifest > div.mtools:nth-of-type(1)` · 1148×117 at 111,145
@@ -656,6 +694,8 @@ Can the background color of this div sit on the same #161E24 color as it's botto
 Same outside border highlight issue with these buttons as well. And same style request, add some colorization to them.
 
 > 📌 Planned 2026-09-16 09:48 EDT — row 47 · B3 E2 → S4 applies → S5 → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2b
+>
+> 📌 Planned 2026-11-15 02:11 EST — §10.6 row S6 · Board 4: Final → Session 5 **(Claude)** → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §10.6
 
 ## broadcast — 2026-09-15 13:40 EDT · pmu2yjko1 · from the dev-portal overlay
 **Element:** `#app > div.app > aside.drawer.open.wide` · 880×447 at 201,43
@@ -707,6 +747,8 @@ Why are these texts italic?
 Tf even is this random hint or prose or whatever? i literally skipped it entirely. Even now, I'm creating this pin and still haven't read it because that's how much of a "waste of time" it looks and feels like from it's design.
 
 > 📌 Planned 2026-09-16 09:48 EDT — row 52 · B3 E6 → S4 rewrites → S5 → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2b
+>
+> 📌 Planned 2026-11-15 02:11 EST — §10.6 row S13 · Board 4: Final → Session 5 **(Claude)** → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §10.6
 
 ## history — 2026-09-15 14:07 EDT · pmu2zi05y · from the dev-portal overlay
 **Element:** `tbody > tr:nth-of-type(1) > td:nth-of-type(3) > span.rivk.change` · 58×18 at 311,261

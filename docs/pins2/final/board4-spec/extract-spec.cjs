@@ -44,7 +44,9 @@ const CFG = {
   // 🔴 BOARD 4: COLLECTIVE (2026-09-21 13:33 EDT). Every finished surface of boards 1–3 on one page in the kit's portal code — the one board Session 4
   // standardizes from and Session 5 ports once Board 4: Final supersedes it. Sections are `#c-<id>`; each stage is its `.g-stage`.
   '4': { url: KITC.URL, wait: '#c-admin .b4-vb .incchip', title: KITC.TITLE, out: 'b4-spec.md', stageAll: '.b4g',
-    css: ['b3/board.css', 'gates.css', 'app.css', 'b2.css', 'b1.css', 'b4.css'].map((f) => path.join(KITC.DIR, f)),
+    // every stylesheet the page loads, in its order (2026-11-15): Builder-2 and Final carry b4/*.css (form, bulk, compare, classes, components, library, kit),
+    // and a winning declaration in one of them read as unattributed while this list named six
+    css: (() => { try { return [...fs.readFileSync(path.join(KITC.DIR, 'board4.html'), 'utf8').matchAll(/<link rel="stylesheet" href="([^"]+\.css)"/g)].map((m) => m[1]).filter((f) => !/^https?:/.test(f)).map((f) => path.join(KITC.DIR, f)); } catch (e) { return ['b3/board.css', 'gates.css', 'app.css', 'b2.css', 'b1.css', 'b4.css'].map((f) => path.join(KITC.DIR, f)); } })(),
     gates: [['C1', 'c-manifest', 'The Armory manifest'], ['C2', 'c-new-build', 'New build'], ['C3', 'c-compare', 'Compare'], ['C4', 'c-repairs', 'Repairs'],
       ['C5', 'c-export', 'Export'], ['C6', 'c-queue', 'The delivery queue'], ['C7', 'c-broadcast', 'The Broadcast manifest, and posting'], ['C8', 'c-history', 'History'],
       ['C9', 'c-admin', 'Admin traffic']] },

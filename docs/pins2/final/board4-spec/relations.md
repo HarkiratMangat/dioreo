@@ -3,9 +3,9 @@ kind: reference
 status: live
 ---
 
-# Board 4: Collective — relations, measured
+# Board 4: Final — relations, measured
 
-*Generated 2026-10-01T16:35:29.630Z by `relations.cjs` from the running kit at 1282×888. Each row is one of his rulings that is a RELATION (a size, a gap, a distance, a count), with where he ruled it; the value is read off the page. 37 of 37 hold. Page errors: 0. Session 5 reruns this against Board 4: Final and reads the same numbers off the portal.*
+*Generated 2026-11-15T07:34:23.415Z by `relations.cjs` from the running kit at 1282×888. Each row is one of his rulings that is a RELATION (a size, a gap, a distance, a count), with where he ruled it; the value is read off the page. 37 of 37 hold. Page errors: 0. Session 5 reruns this against Board 4: Final and reads the same numbers off the portal.*
 
 | Gate | State | Relation | Ruled | Expect | Measured | |
 |---|---|---|---|---|---|---|
@@ -15,8 +15,8 @@ status: live
 | C3 | Two weapons | build heads within a weapon, apart | Version 41 AG | 6 | 6 | ✓ |
 | C3 | Two weapons | build heads between weapons, apart | Version 41 AG | 16 | 16 | ✓ |
 | C3 | Two weapons | the table scrolls sideways (px of overflow) | Version 40 G | 0 | 0 | ✓ |
-| C3 | Two weapons | narrowest weapon tile (≥ 120) | Version 40 N | ≥120 | 134 | ✓ |
-| C3 | Two weapons | widest weapon tile (≤ 260) | Version 40 N | ≤260 | 214 | ✓ |
+| C3 | Two weapons | narrowest weapon tile (≥ 120) | Version 40 N | ≥120 | 128 | ✓ |
+| C3 | Two weapons | widest weapon tile (≤ 260) | Version 40 N | ≤260 | 204 | ✓ |
 | C3 | Two weapons | a build chip's corner mark | Version 40 C | 18 | 18 | ✓ |
 | C3 | Two weapons | the search field | Version 42 AI (560 → slightly narrower) | 480 | 480 | ✓ |
 | C3 | Two weapons | the seats chip against the search, height difference | Version 42 AP | 0 | 0 | ✓ |
@@ -34,15 +34,15 @@ status: live
 | C2 | Add build | the build drawer | intake:703 (2026-09-24 22:30) | 980 | 980 | ✓ |
 | C7 | Posting | the post drawer's height, min(84vh, 860px) | Frame (2026-09-27 16:09 EDT) | 746 | 745.9 | ✓ |
 | C3 | Two weapons | 22 real hovers across the table (weapon heads, build heads, slot names, cells, band chips, tile chips): the most a cell moves, plus cells that stop being cells | Version 44 AU | 0 | 0 | ✓ |
-| C7 | Posting | the date picker, from Starts: the pop-up's distance from its trigger's visible box | CI, his Version 68 round: the arc's tip 4px off the trigger (was 10, 2026-09-28 14:25 EDT) | 4 | 4.5 | ✓ |
+| C7 | Posting | the date picker, from Starts: the pop-up's distance from its trigger's visible box | CI, his Version 68 round: the arc's tip 4px off the trigger (was 10, 2026-09-28 14:25 EDT) | 4 | 4.2 | ✓ |
 | C7 | Posting | the date picker's width | intake:801 | 270 | 270 | ✓ |
-| C7 | Posting | a day's width | intake:801 | 36 | 36 | ✓ |
-| C6 | resting | a card's End chip: the pop-up's distance from its trigger's visible box | CI, his Version 68 round: the arc's tip 4px off the trigger (was 10, 2026-09-28 14:25 EDT) | 4 | 3.7 | ✓ |
+| C7 | Posting | a day's width | C30 (his 2026-10-19 Answer Shots answers; intake:801's 36 superseded) | 32 | 32 | ✓ |
+| C6 | resting | a card's End chip: the pop-up's distance from its trigger's visible box | CI, his Version 68 round: the arc's tip 4px off the trigger (was 10, 2026-09-28 14:25 EDT) | 4 | 4.2 | ✓ |
 | C6 | resting | the date picker's width | intake:801 | 270 | 270 | ✓ |
-| C6 | resting | a day's width | intake:801 | 36 | 36 | ✓ |
-| C6 | resting | Set end date: the pop-up's distance from its trigger's visible box | CI, his Version 68 round: the arc's tip 4px off the trigger (was 10, 2026-09-28 14:25 EDT) | 4 | 3.7 | ✓ |
+| C6 | resting | a day's width | C30 (his 2026-10-19 Answer Shots answers; intake:801's 36 superseded) | 32 | 32 | ✓ |
+| C6 | resting | Set end date: the pop-up's distance from its trigger's visible box | CI, his Version 68 round: the arc's tip 4px off the trigger (was 10, 2026-09-28 14:25 EDT) | 4 | 4.2 | ✓ |
 | C6 | resting | the date picker's width | intake:801 | 270 | 270 | ✓ |
-| C6 | resting | a day's width | intake:801 | 36 | 36 | ✓ |
-| C6 | resting | the showings chip: the pop-up's distance from its trigger's visible box | CI, his Version 68 round: the arc's tip 4px off the trigger (was 10, 2026-09-28 14:25 EDT) | 4 | 3.7 | ✓ |
-| C2 | Add build | the weapon list: the pop-up's distance from its trigger's visible box | his rule of 2026-10-01 11:32 EDT: a list the field opens is a dropdown, 10px below, no arc | 10 | 9.9 | ✓ |
-| C3 | Two weapons | the search list: the pop-up's distance from its trigger's visible box | his rule of 2026-10-01 11:32 EDT: a list the field opens is a dropdown, 10px below, no arc | 10 | 10.2 | ✓ |
+| C6 | resting | a day's width | C30 (his 2026-10-19 Answer Shots answers; intake:801's 36 superseded) | 32 | 32 | ✓ |
+| C6 | resting | the showings chip: the pop-up's distance from its trigger's visible box | CI, his Version 68 round: the arc's tip 4px off the trigger (was 10, 2026-09-28 14:25 EDT) | 4 | 4.2 | ✓ |
+| C2 | Add build | the weapon list: the pop-up's distance from its trigger's visible box | his rule of 2026-10-01 11:32 EDT: a list the field opens is a dropdown, 10px below, no arc | 10 | 10 | ✓ |
+| C3 | Two weapons | the search list: the pop-up's distance from its trigger's visible box | his rule of 2026-10-01 11:32 EDT: a list the field opens is a dropdown, 10px below, no arc | 10 | 10 | ✓ |
