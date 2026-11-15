@@ -3,9 +3,9 @@ kind: reference
 status: live
 ---
 
-# Board 4: Collective — every kit file, and what a port does with it
+# Board 4: Final — every kit file, and what a port does with it
 
-*Generated 2026-10-01T16:33:49.480Z by `maps.cjs` from `docs/pins2/kit/` at repo commit `14d7594 (the kit's own local repo, on this Mac only since 2026-09-30 21:16 EDT) plus its working tree`. A file Board 3-E already labelled keeps Board 3-E's reviewed label (`../../../superpowers/mockups/2026-09-15-pins2-board-3/3e/file-map.md`, including its 2026-09-21 correction that `ui/app.js`, `ui/httpClient.js` and `ui/conform.js` are board chrome); a file new since then carries the rule that labelled it, marked "labelled by rule, not reviewed".*
+*Generated 2026-11-15T07:35:23.634Z by `maps.cjs` from `local/pins2/s4/board4-final/` at repo commit `a82c4e6 (Board 4: Final's own local repo, on this Mac only) plus its working tree`. A file Board 3-E already labelled keeps Board 3-E's reviewed label (`../../../superpowers/mockups/2026-09-15-pins2-board-3/3e/file-map.md`, including its 2026-09-21 correction that `ui/app.js`, `ui/httpClient.js` and `ui/conform.js` are board chrome); a file new since then carries the rule that labelled it, marked "labelled by rule, not reviewed".*
 
 | File | Label | Goes to | Note |
 |---|---|---|---|
@@ -37,20 +37,18 @@ status: live
 | `b4/bulk.js` | **DESIGN-CODE** | the portal file named in HANDOFF.md for its gate | Board 4's own design code (the build form, Bulk, Compare and their styles) · labelled by rule, not reviewed |
 | `b4/bulkformat.js` | **DESIGN-CODE** | the portal file named in HANDOFF.md for its gate | Board 4's own design code (the build form, Bulk, Compare and their styles) · labelled by rule, not reviewed |
 | `b4/bulkformat.test.mjs` | **CHROME** | — | a test of the design code; ports with it as a test, never as UI · labelled by rule, not reviewed |
+| `b4/c1-states.js` | **DESIGN-CODE** | the portal file named in HANDOFF.md for its gate | Board 4's own design code (the build form, Bulk, Compare and their styles) · labelled by rule, not reviewed |
 | `b4/classes.css` | **DESIGN-CODE** | the portal file named in HANDOFF.md for its gate | Board 4's own design code (the build form, Bulk, Compare and their styles) · labelled by rule, not reviewed |
 | `b4/compare.css` | **DESIGN-CODE** | the portal file named in HANDOFF.md for its gate | Board 4's own design code (the build form, Bulk, Compare and their styles) · labelled by rule, not reviewed |
 | `b4/compare.js` | **DESIGN-CODE** | the portal file named in HANDOFF.md for its gate | Board 4's own design code (the build form, Bulk, Compare and their styles) · labelled by rule, not reviewed |
+| `b4/components.css` | **DESIGN-CODE** | the portal file named in HANDOFF.md for its gate | Board 4's own design code (the build form, Bulk, Compare and their styles) · labelled by rule, not reviewed |
 | `b4/form.css` | **DESIGN-CODE** | the portal file named in HANDOFF.md for its gate | Board 4's own design code (the build form, Bulk, Compare and their styles) · labelled by rule, not reviewed |
 | `b4/form.js` | **DESIGN-CODE** | the portal file named in HANDOFF.md for its gate | Board 4's own design code (the build form, Bulk, Compare and their styles) · labelled by rule, not reviewed |
-| `badge-lab.html` | **CHROME** | — | An earlier board version, a lab or a comparison page |
-| `badge-playground.html` | **CHROME** | — | An earlier board version, a lab or a comparison page |
-| `badges-compare.html` | **CHROME** | — | An earlier board version, a lab or a comparison page |
-| `board3.html` | **CHROME** | — | An earlier board version, a lab or a comparison page |
-| `board3c.html` | **CHROME** | — | An earlier board version, a lab or a comparison page |
-| `board3d.html` | **CHROME** | — | An earlier board version, a lab or a comparison page |
-| `board3e.html` | **CHROME** | — | The page |
+| `b4/kit.css` | **DESIGN-CODE** | the portal file named in HANDOFF.md for its gate | Board 4's own design code (the build form, Bulk, Compare and their styles) · labelled by rule, not reviewed |
+| `b4/library.css` | **DESIGN-CODE** | the portal file named in HANDOFF.md for its gate | Board 4's own design code (the build form, Bulk, Compare and their styles) · labelled by rule, not reviewed |
+| `b4/specimen.js` | **DESIGN-CODE** | the portal file named in HANDOFF.md for its gate | Board 4's own design code (the build form, Bulk, Compare and their styles) · labelled by rule, not reviewed |
 | `board4.html` | **CHROME** | — | a board page, a lab or a comparison page · labelled by rule, not reviewed |
-| `class-sweep.cjs` | **CHROME** | — | a board instrument · labelled by rule, not reviewed |
+| `builder-sheet.css` | **UNLABELLED** | — | no rule covers it: decide before porting · labelled by rule, not reviewed |
 | `cmp/badges.js` | **CHROME** | — | A badge comparison page from round 4a |
 | `data/analytics.js` | **CHROME** | — | The dev-database fixture the board renders. Never ships; the portal reads the API |
 | `data/analytics300.js` | **CHROME** | — | The dev-database fixture the board renders. Never ships; the portal reads the API |
@@ -71,16 +69,8 @@ status: live
 | `gates/shared.js` | **CHROME** | — | Gate controls (`Seg`, `segOpts`) and the E4 type roles, which went to Session 4 |
 | `gates4/main.js` | **CHROME** | — | Board 4's own page: the sections, their state switches and forks · labelled by rule, not reviewed |
 | `gates4/surfaces.js` | **CHROME** | — | Board 4's own page: the sections, their state switches and forks · labelled by rule, not reviewed |
-| `hdr.html` | **CHROME** | — | An earlier board version, a lab or a comparison page |
-| `index.html` | **CHROME** | — | An earlier board version, a lab or a comparison page |
 | `ref/board1-g8.html` | **CHROME** | — | An earlier board version, a lab or a comparison page |
 | `ref/board1-g9.html` | **CHROME** | — | An earlier board version, a lab or a comparison page |
-| `retitle-a.html` | **CHROME** | — | An earlier board version, a lab or a comparison page |
-| `retitle-b.html` | **CHROME** | — | An earlier board version, a lab or a comparison page |
-| `shot-el.cjs` | **CHROME** | — | a board instrument · labelled by rule, not reviewed |
-| `shot-lab.cjs` | **CHROME** | — | a board instrument · labelled by rule, not reviewed |
-| `shot-volt.cjs` | **CHROME** | — | a board instrument · labelled by rule, not reviewed |
-| `sweep-screens.cjs` | **CHROME** | — | a board instrument · labelled by rule, not reviewed |
 | `thumbs/50GS-2.webp` | **CHROME** | — | bundled images for the seven named builds, so the board shows real pictures offline; the portal reads Cloudinary · labelled by rule, not reviewed |
 | `thumbs/BAL-27-2.webp` | **CHROME** | — | bundled images for the seven named builds, so the board shows real pictures offline; the portal reads Cloudinary · labelled by rule, not reviewed |
 | `thumbs/DL-Q33-1.webp` | **CHROME** | — | bundled images for the seven named builds, so the board shows real pictures offline; the portal reads Cloudinary · labelled by rule, not reviewed |
@@ -134,4 +124,3 @@ status: live
 | `ui/useMeasured.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunks by `HANDOFF.md` § *How to apply portal-diff.md*: every `useB3()` branch collapses to the arm `switches.md` names, and no `../b3/` import is ever carried. Never copy the whole file · **identical to the portal now** — nothing to apply |
 | `ui/v2Render.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunks by `HANDOFF.md` § *How to apply portal-diff.md*: every `useB3()` branch collapses to the arm `switches.md` names, and no `../b3/` import is ever carried. Never copy the whole file · **identical to the portal now** — nothing to apply |
 | `ui/v2Render.logic.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunks by `HANDOFF.md` § *How to apply portal-diff.md*: every `useB3()` branch collapses to the arm `switches.md` names, and no `../b3/` import is ever carried. Never copy the whole file · **identical to the portal now** — nothing to apply |
-| `verify.cjs` | **CHROME** | — | a board instrument · labelled by rule, not reviewed |

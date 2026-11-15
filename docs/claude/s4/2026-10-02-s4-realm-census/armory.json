@@ -1,0 +1,8275 @@
+{
+ "realm": "armory",
+ "census": "2026-10-02T00:55:41.825Z",
+ "families": [
+  {
+   "id": "Ffb67843",
+   "kind": "button",
+   "n": 4176,
+   "fp": {
+    "kind": "button",
+    "h": 44,
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 16.5,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 25,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · color: rgb(232, 237, 241) · outline-color: rgb(232, 237, 241)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(95, 212, 232)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.wg-ib.wg-fbtn ‹ .wg-h",
+     "n": 884,
+     "text": ""
+    },
+    {
+     "sel": "button.wg-ib ‹ .wg-acts",
+     "n": 1625,
+     "text": ""
+    },
+    {
+     "sel": "button.wg-ib.wg-del ‹ .wg-acts",
+     "n": 1625,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F4d9b595",
+   "kind": "box",
+   "n": 3575,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 0 0 0",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.cb ‹ .wg-cb",
+     "n": 2509,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F3db274b",
+   "kind": "box",
+   "n": 1645,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--rule2)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "i.wg-vr ‹ .wg-acts",
+     "n": 1625,
+     "text": ""
+    },
+    {
+     "sel": "span.nb-rule ‹ .nb-toolbar",
+     "n": 3,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fbd60418",
+   "kind": "box",
+   "n": 1625,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 16 0 20",
+    "bw": 1,
+    "bc": "var(--rule3)",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.wg-r.bad ‹ .wg",
+     "n": 130,
+     "text": ""
+    },
+    {
+     "sel": "div.wg-r ‹ .wg",
+     "n": 1495,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fd93058d",
+   "kind": "text",
+   "n": 1625,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 21,
+    "fw": "500",
+    "ff": "Big Shoulders Display",
+    "lh": 21,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-ix ‹ .wg-r",
+     "n": 1625,
+     "text": "1"
+    }
+   ]
+  },
+  {
+   "id": "Ff3dfdf6",
+   "kind": "button",
+   "n": 1599,
+   "fp": {
+    "kind": "button",
+    "h": 44,
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 16.5,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 25,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · border-top-color: rgb(133, 147, 159)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(95, 212, 232)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.wg-code ‹ .wg-r",
+     "n": 1599,
+     "text": "1C6C7A8A9A"
+    }
+   ]
+  },
+  {
+   "id": "F03dfddb",
+   "kind": "box",
+   "n": 1599,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 6,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "var(--desk)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-ig ‹ .wg-code",
+     "n": 1599,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F1de7e8d",
+   "kind": "box",
+   "n": 1599,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 6,
+    "pad": "0 12 0 12",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "none",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-igf ‹ .wg-ig",
+     "n": 1599,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fde7336d",
+   "kind": "box",
+   "n": 1599,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "var(--raised)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-igb ‹ .wg-ig",
+     "n": 1599,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F73e3813",
+   "kind": "text",
+   "n": 1573,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 12,
+    "ls": "0.96px",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-ct ‹ .wg-igf",
+     "n": 1573,
+     "text": "1C2A7A8A9A"
+    }
+   ]
+  },
+  {
+   "id": "Ffc24327",
+   "kind": "text",
+   "n": 1242,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 9.5,
+    "ls": "1.33px",
+    "tt": "uppercase",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "em.wg-nb",
+     "n": 884,
+     "text": "2 builds"
+    },
+    {
+     "sel": "span ‹ .wg-slots",
+     "n": 358,
+     "text": "Muzzle"
+    }
+   ]
+  },
+  {
+   "id": "F99ad942",
+   "kind": "text",
+   "n": 1236,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 6,
+    "pad": "0 10 0 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "color(srgb 0.125579 0.125905 0.123583)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-at ‹ .wg-rail",
+     "n": 1236,
+     "text": "MIP Extended Light Barrel"
+    }
+   ]
+  },
+  {
+   "id": "F964e2b3",
+   "kind": "text",
+   "n": 1200,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 6,
+    "pad": "0 10 0 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "color(srgb 0.128997 0.123166 0.131665)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-at ‹ .wg-rail",
+     "n": 1200,
+     "text": "Monolithic Suppressor"
+    }
+   ]
+  },
+  {
+   "id": "F1017f14",
+   "kind": "text",
+   "n": 1152,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 6,
+    "pad": "0 10 0 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "color(srgb 0.116802 0.129816 0.122888)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-at ‹ .wg-rail",
+     "n": 1152,
+     "text": "ZAC Custom MZ"
+    }
+   ]
+  },
+  {
+   "id": "Fed696b7",
+   "kind": "text",
+   "n": 1080,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 6,
+    "pad": "0 10 0 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "color(srgb 0.12547 0.123084 0.143988)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-at ‹ .wg-rail",
+     "n": 1080,
+     "text": "Extended Mag A"
+    }
+   ]
+  },
+  {
+   "id": "Fee24353",
+   "kind": "text",
+   "n": 1068,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 6,
+    "pad": "0 10 0 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "color(srgb 0.106109 0.129259 0.154581)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-at ‹ .wg-rail",
+     "n": 1068,
+     "text": "Granulated Grip Tape"
+    }
+   ]
+  },
+  {
+   "id": "F2367594",
+   "kind": "text",
+   "n": 1054,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 16,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.why ‹ .dw-f",
+     "n": 1,
+     "text": "Stages one operation. Nothing reaches a "
+    }
+   ]
+  },
+  {
+   "id": "Feb16b0e",
+   "kind": "box",
+   "n": 940,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "image"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.glyph ‹ .mk",
+     "n": 77,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F495e282",
+   "kind": "text",
+   "n": 896,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "400",
+    "ff": "JetBrains Mono",
+    "lh": 12,
+    "ls": "0.24px",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "code.brow-c ‹ .brow",
+     "n": 896,
+     "text": "1I2C6B8A9D"
+    }
+   ]
+  },
+  {
+   "id": "F152a5a9",
+   "kind": "button",
+   "n": 896,
+   "fp": {
+    "kind": "button",
+    "h": 14,
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 16.5,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 25,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61)",
+    "focus-visible": "color: rgb(157, 170, 180) · border-top-color: rgb(157, 170, 180) · box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.brow-cp ‹ .brow",
+     "n": 896,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Febaa920",
+   "kind": "box",
+   "n": 884,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 1,
+    "bc": "var(--rule)",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.wg ‹ .wg-wrap",
+     "n": 884,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fff0e4f5",
+   "kind": "box",
+   "n": 884,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 16 0 20",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--raised)",
+    "bgi": "image"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.wg-h ‹ .wg",
+     "n": 884,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F5b42956",
+   "kind": "text",
+   "n": 884,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 14.5,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 14.5,
+    "ls": "0.0725px",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "b ‹ .wg-line",
+     "n": 884,
+     "text": ".50 GS"
+    }
+   ]
+  },
+  {
+   "id": "F0fce030",
+   "kind": "button",
+   "n": 836,
+   "fp": {
+    "kind": "button",
+    "h": 29,
+    "rad": 0,
+    "pad": "7 8 7 10",
+    "bw": 1,
+    "bc": "var(--rule3)",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 16.5,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 25,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(35, 44, 52) · box-shadow: rgb(255, 59, 92) 2px 0px 0px 0px inset",
+    "focus-visible": "background-color: rgb(35, 44, 52) · box-shadow: rgb(255, 59, 92) 2px 0px 0px 0px inset · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "—"
+   },
+   "where": [
+    {
+     "sel": "div.brow ‹ .bgrp",
+     "n": 117,
+     "text": "1I2C6B8A9D5Edit"
+    },
+    {
+     "sel": "div.brow.aged ‹ .bgrp",
+     "n": 719,
+     "text": "1A2B4D8C9A5Edit"
+    }
+   ]
+  },
+  {
+   "id": "Fd6b9d87",
+   "kind": "text",
+   "n": 836,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "400",
+    "ff": "JetBrains Mono",
+    "lh": 9.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.brow-a ‹ .brow",
+     "n": 836,
+     "text": "5"
+    }
+   ]
+  },
+  {
+   "id": "Fe89dbd2",
+   "kind": "text",
+   "n": 612,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 6,
+    "pad": "0 10 0 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "color(srgb 0.116915 0.125571 0.152347)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-at ‹ .wg-rail",
+     "n": 612,
+     "text": "FMJ"
+    }
+   ]
+  },
+  {
+   "id": "F51ad13a",
+   "kind": "box",
+   "n": 519,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 16",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "none",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.mt-grp ‹ .mt-r2",
+     "n": 44,
+     "text": ""
+    },
+    {
+     "sel": "span.wg-tags ‹ .wg-line",
+     "n": 468,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F2adc498",
+   "kind": "text",
+   "n": 493,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "JetBrains Mono",
+    "lh": 12,
+    "ls": "0.96px",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.bgrp-n ‹ .bgrp-m",
+     "n": 493,
+     "text": "5 builds"
+    }
+   ]
+  },
+  {
+   "id": "Fd127d0e",
+   "kind": "box",
+   "n": 443,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 6,
+    "pad": "0 0 0 0",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "none",
+    "bg": "var(--raised)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.bgrp.t-top3 ‹ .trow-body",
+     "n": 99,
+     "text": ""
+    },
+    {
+     "sel": "div.bgrp.t-top4 ‹ .trow-body",
+     "n": 8,
+     "text": ""
+    },
+    {
+     "sel": "div.bgrp.t-top5 ‹ .trow-body",
+     "n": 73,
+     "text": ""
+    },
+    {
+     "sel": "div.bgrp.t-unranked ‹ .trow-body",
+     "n": 263,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F8a55dc5",
+   "kind": "button",
+   "n": 443,
+   "fp": {
+    "kind": "button",
+    "h": 32.5,
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 16.5,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 25,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · border-top-color: rgb(133, 147, 159)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.bgrp-w ‹ .bgrp-h",
+     "n": 443,
+     "text": "DR-H"
+    }
+   ]
+  },
+  {
+   "id": "F12dd69c",
+   "kind": "text",
+   "n": 443,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 16.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "b ‹ .bgrp-w",
+     "n": 443,
+     "text": "DR-H"
+    }
+   ]
+  },
+  {
+   "id": "F3ea72d7",
+   "kind": "link",
+   "n": 424,
+   "fp": {
+    "kind": "link",
+    "h": 63,
+    "rad": 0,
+    "pad": "12 4 12 4",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 10.5,
+    "fw": "700",
+    "ff": "Space Grotesk",
+    "lh": 16,
+    "ls": "1.26px",
+    "tt": "uppercase",
+    "col": "var(--ink3)"
+   },
+   "forced": {
+    "hover": "color: rgb(232, 237, 241) · border-top-color: rgb(232, 237, 241) · outline-color: rgb(232, 237, 241)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "—"
+   },
+   "where": [
+    {
+     "sel": "a.realm ‹ .rail",
+     "n": 397,
+     "text": "Season"
+    }
+   ]
+  },
+  {
+   "id": "Fac5c30f",
+   "kind": "text",
+   "n": 414,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.tcat-top ‹ .trow-h",
+     "n": 63,
+     "text": "Best in category · BAL-27 · Build 1"
+    },
+    {
+     "sel": "span ‹ .wsrch-opt",
+     "n": 1,
+     "text": "5 builds · Assault"
+    },
+    {
+     "sel": "span ‹ .cmpstat",
+     "n": 4,
+     "text": "builds"
+    },
+    {
+     "sel": "span ‹ .cmpsame",
+     "n": 1,
+     "text": "Same on all 6"
+    },
+    {
+     "sel": "span ‹ .repbar",
+     "n": 1,
+     "text": "builds have something actually wrong wit"
+    }
+   ]
+  },
+  {
+   "id": "F9d23bf5",
+   "kind": "text",
+   "n": 396,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 6,
+    "pad": "0 10 0 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "color(srgb 0.104352 0.133213 0.131384)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-at ‹ .wg-rail",
+     "n": 396,
+     "text": "Lightweight Trigger"
+    }
+   ]
+  },
+  {
+   "id": "F4df7e98",
+   "kind": "text",
+   "n": 360,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 6,
+    "pad": "0 10 0 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "color(srgb 0.0986365 0.132199 0.150675)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-at ‹ .wg-rail",
+     "n": 360,
+     "text": "OWC Laser - Tactical"
+    }
+   ]
+  },
+  {
+   "id": "F9e48812",
+   "kind": "button",
+   "n": 353,
+   "fp": {
+    "kind": "button",
+    "h": 32,
+    "rad": 999,
+    "pad": "6 11 6 11",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": {
+    "hover": "background-color: color(srgb 0.682353 0.447059 0.878431 / 0.09) · color: rgb(232, 237, 241) · border-top-color: rgb(174, 114, 224) · outline-color: rgb(232, 237, 241) · transform: matrix(1, 0, 0, 1, 0, -1)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.chip.topic ‹ .mt-grp",
+     "n": 288,
+     "text": "New draws"
+    },
+    {
+     "sel": "button.chip ‹ .racktools",
+     "n": 18,
+     "text": "Expand all"
+    },
+    {
+     "sel": "button.chip ‹ .cmpfold",
+     "n": 1,
+     "text": "Show cards"
+    }
+   ]
+  },
+  {
+   "id": "F5100e40",
+   "kind": "text",
+   "n": 313,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 6,
+    "pad": "0 10 0 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "none",
+    "bgi": "image",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-at ‹ .wg-rail",
+     "n": 313,
+     "text": "270mm VOZ Carbine"
+    }
+   ]
+  },
+  {
+   "id": "Fe6ffe59",
+   "kind": "text",
+   "n": 234,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 8 0 8",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "color(srgb 0.94902 0.760784 0.188235 / 0.08)",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 9.5,
+    "ls": "0.95px",
+    "tt": "none",
+    "col": "var(--patch|--pn)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-tag ‹ .wg-tags",
+     "n": 234,
+     "text": "BEST"
+    }
+   ]
+  },
+  {
+   "id": "Fbd258ad",
+   "kind": "text",
+   "n": 230,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 3,
+    "pad": "2 5 2 5",
+    "bw": 1,
+    "bc": "rgba(64, 154, 208, 0.4)",
+    "ring": "none",
+    "bg": "rgba(64, 154, 208, 0.14)",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "700",
+    "ff": "JetBrains Mono",
+    "lh": 12.5,
+    "ls": "0.57px",
+    "tt": "none",
+    "col": "var(--info)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "b.bdg.rank ‹ .bgrp-m",
+     "n": 230,
+     "text": "BEST"
+    }
+   ]
+  },
+  {
+   "id": "F4d6ff27",
+   "kind": "text",
+   "n": 221,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 9.5,
+    "ls": "1.52px",
+    "tt": "uppercase",
+    "col": "var(--ar)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "small ‹ .wg-line",
+     "n": 221,
+     "text": "Assault1 build"
+    }
+   ]
+  },
+  {
+   "id": "F3024753",
+   "kind": "text",
+   "n": 195,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 9.5,
+    "ls": "1.52px",
+    "tt": "uppercase",
+    "col": "var(--smg)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "small ‹ .wg-line",
+     "n": 195,
+     "text": "SMG2 builds"
+    }
+   ]
+  },
+  {
+   "id": "Fef4a38c",
+   "kind": "text",
+   "n": 182,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 8 0 8",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "color(srgb 0.25098 0.603922 0.815686 / 0.08)",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 9.5,
+    "ls": "0.95px",
+    "tt": "none",
+    "col": "var(--info)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-tag ‹ .wg-tags",
+     "n": 182,
+     "text": "TOP 3"
+    }
+   ]
+  },
+  {
+   "id": "Fb00971d",
+   "kind": "label",
+   "n": 181,
+   "fp": {
+    "kind": "label",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "label.sr ‹ .srch",
+     "n": 52,
+     "text": "Search this season"
+    },
+    {
+     "sel": "label.sr ‹ .atr",
+     "n": 15,
+     "text": "Attachment 1"
+    },
+    {
+     "sel": "label.dwfield ‹ .imgdrop",
+     "n": 3,
+     "text": "Paste a link"
+    },
+    {
+     "sel": "label.dwfield ‹ .wsrch",
+     "n": 3,
+     "text": "Add a weapon"
+    }
+   ]
+  },
+  {
+   "id": "F6ce7721",
+   "kind": "text",
+   "n": 174,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 10.5,
+    "fw": "400",
+    "ff": "JetBrains Mono",
+    "lh": 16,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.rk-clean ‹ .key",
+     "n": 13,
+     "text": "clean"
+    },
+    {
+     "sel": "span.rk-bad ‹ .key",
+     "n": 13,
+     "text": "needs repair"
+    },
+    {
+     "sel": "span.rk-age ‹ .key",
+     "n": 13,
+     "text": "stale"
+    },
+    {
+     "sel": "span.sp ‹ .ph",
+     "n": 11,
+     "text": "BAL-27 · FFAR 1 — 8 builds"
+    }
+   ]
+  },
+  {
+   "id": "Fd88f249",
+   "kind": "box",
+   "n": 145,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--ar)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "i.catdot ‹ .trow-k",
+     "n": 9,
+     "text": ""
+    },
+    {
+     "sel": "i ‹ .bgrp-w",
+     "n": 136,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F9ea89f1",
+   "kind": "text",
+   "n": 140,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "700",
+    "ff": "JetBrains Mono",
+    "lh": 14.5,
+    "ls": "0.95px",
+    "tt": "uppercase",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.k ‹ .stat",
+     "n": 140,
+     "text": "announcements live"
+    }
+   ]
+  },
+  {
+   "id": "F19fd96e",
+   "kind": "box",
+   "n": 136,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "8 11 8 11",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "color(srgb 1 0.231373 0.360784 / 0.07)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.bgrp-h ‹ .bgrp",
+     "n": 136,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F6abddea",
+   "kind": "text",
+   "n": 135,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 9.5,
+    "ls": "1.52px",
+    "tt": "uppercase",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span ‹ .mlabel",
+     "n": 121,
+     "text": "Manifest"
+    }
+   ]
+  },
+  {
+   "id": "Fb8e9458",
+   "kind": "box",
+   "n": 133,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 6,
+    "pad": "0 0 0 0",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "shadow",
+    "bg": "var(--paper)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "section.panel",
+     "n": 47,
+     "text": ""
+    },
+    {
+     "sel": "div.tray.collapsed ‹ .app",
+     "n": 38,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F1028c8b",
+   "kind": "button",
+   "n": 130,
+   "fp": {
+    "kind": "button",
+    "h": 34,
+    "rad": 6,
+    "pad": "0 5 0 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "color(srgb 0.129255 0.0965882 0.0885882)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--warn-ink)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · border-top-color: rgb(133, 147, 159)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(95, 212, 232)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.wg-fsum ‹ .wg-fwrap",
+     "n": 130,
+     "text": "Fix build1"
+    }
+   ]
+  },
+  {
+   "id": "Fc0cf576",
+   "kind": "text",
+   "n": 130,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 4 0 4",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "color(srgb 1 0.478431 0.270588 / 0.18)",
+    "bgi": "none",
+    "fs": 10.5,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 10.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--warn-ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "i ‹ .wg-fnos",
+     "n": 130,
+     "text": "1"
+    }
+   ]
+  },
+  {
+   "id": "F401fcf2",
+   "kind": "text",
+   "n": 130,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 9.5,
+    "ls": "1.52px",
+    "tt": "uppercase",
+    "col": "var(--sn)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "small ‹ .wg-line",
+     "n": 130,
+     "text": "Sniper2 builds"
+    }
+   ]
+  },
+  {
+   "id": "F0154854",
+   "kind": "text",
+   "n": 130,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 8 0 8",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "color(srgb 0.415098 0.632157 0.766275 / 0.08)",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 9.5,
+    "ls": "0.95px",
+    "tt": "none",
+    "col": "color(srgb 0.415098 0.632157 0.766275)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-tag ‹ .wg-tags",
+     "n": 130,
+     "text": "TOP 5"
+    }
+   ]
+  },
+  {
+   "id": "F8aed270",
+   "kind": "button",
+   "n": 129,
+   "fp": {
+    "kind": "button",
+    "h": 32,
+    "rad": 999,
+    "pad": "6 13 6 13",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · color: rgb(157, 170, 180) · outline-color: rgb(157, 170, 180) · transform: matrix(1, 0, 0, 1, 0, -1)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button ‹ .seg",
+     "n": 129,
+     "text": "Board"
+    }
+   ]
+  },
+  {
+   "id": "Fa660ea1",
+   "kind": "text",
+   "n": 115,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 14.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "em ‹ .chip",
+     "n": 115,
+     "text": "35"
+    }
+   ]
+  },
+  {
+   "id": "Ff3d62c0",
+   "kind": "box",
+   "n": 114,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--smg)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "i.catdot ‹ .trow-k",
+     "n": 9,
+     "text": ""
+    },
+    {
+     "sel": "i ‹ .bgrp-w",
+     "n": 105,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F43e4aea",
+   "kind": "box",
+   "n": 105,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "8 11 8 11",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "color(srgb 1 0.823529 0.247059 / 0.07)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.bgrp-h ‹ .bgrp",
+     "n": 105,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fbab3be6",
+   "kind": "text",
+   "n": 104,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 9.5,
+    "ls": "1.52px",
+    "tt": "uppercase",
+    "col": "var(--lmg)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "small ‹ .wg-line",
+     "n": 104,
+     "text": "LMG1 build"
+    }
+   ]
+  },
+  {
+   "id": "F4bb2c23",
+   "kind": "text",
+   "n": 103,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 6,
+    "pad": "4 10 4 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "color(srgb 0.103095 0.10761 0.10913)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 15,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-sc ‹ .wg-slots",
+     "n": 103,
+     "text": "MIP Extended Light Barrel"
+    }
+   ]
+  },
+  {
+   "id": "Fe20343c",
+   "kind": "text",
+   "n": 100,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 6,
+    "pad": "4 10 4 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "color(srgb 0.10558 0.105618 0.115008)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 15,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-sc ‹ .wg-slots",
+     "n": 100,
+     "text": "Monolithic Suppressor"
+    }
+   ]
+  },
+  {
+   "id": "F0266699",
+   "kind": "text",
+   "n": 96,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 6,
+    "pad": "4 10 4 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "color(srgb 0.0967118 0.110455 0.108625)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 15,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-sc ‹ .wg-slots",
+     "n": 96,
+     "text": "ZAC Custom MZ"
+    }
+   ]
+  },
+  {
+   "id": "F3b9591c",
+   "kind": "box",
+   "n": 95,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--rule)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.rail-rule ‹ .rail",
+     "n": 77,
+     "text": ""
+    },
+    {
+     "sel": "span.bf-rule ‹ .bf-h",
+     "n": 18,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F7374bfa",
+   "kind": "text",
+   "n": 95,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 6,
+    "pad": "34 16 34 16",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 14.5,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-sc.empty ‹ .wg-slots",
+     "n": 95,
+     "text": "—"
+    }
+   ]
+  },
+  {
+   "id": "Fc804a89",
+   "kind": "text",
+   "n": 91,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 9.5,
+    "ls": "1.52px",
+    "tt": "uppercase",
+    "col": "var(--sg)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "small ‹ .wg-line",
+     "n": 91,
+     "text": "Shotgun1 build"
+    }
+   ]
+  },
+  {
+   "id": "Fc16a625",
+   "kind": "text",
+   "n": 90,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 6,
+    "pad": "4 10 4 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "color(srgb 0.103016 0.105558 0.12397)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 15,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-sc ‹ .wg-slots",
+     "n": 90,
+     "text": "Extended Mag A"
+    }
+   ]
+  },
+  {
+   "id": "Ff823e0c",
+   "kind": "text",
+   "n": 89,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 6,
+    "pad": "4 10 4 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "color(srgb 0.0889346 0.110049 0.131674)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 15,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-sc ‹ .wg-slots",
+     "n": 89,
+     "text": "Granulated Grip Tape"
+    }
+   ]
+  },
+  {
+   "id": "Fc16fde4",
+   "kind": "text",
+   "n": 88,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "700",
+    "ff": "Space Grotesk",
+    "lh": 14.5,
+    "ls": "0.95px",
+    "tt": "uppercase",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.t ‹ .ph",
+     "n": 88,
+     "text": "Season"
+    }
+   ]
+  },
+  {
+   "id": "Fd1d9ad5",
+   "kind": "text",
+   "n": 86,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 14.5,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "b ‹ .bgrp-w",
+     "n": 50,
+     "text": "BAL-27"
+    }
+   ]
+  },
+  {
+   "id": "F5f08f25",
+   "kind": "text",
+   "n": 84,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "b ‹ .tcat-top",
+     "n": 63,
+     "text": "BAL-27 · Build 1"
+    },
+    {
+     "sel": "span ‹ .dwfield",
+     "n": 3,
+     "text": "Paste a link"
+    },
+    {
+     "sel": "span.sr ‹ .dwfield",
+     "n": 3,
+     "text": "Add a weapon"
+    }
+   ]
+  },
+  {
+   "id": "Fb11cbd9",
+   "kind": "box",
+   "n": 81,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "10 14 10 14",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--raised)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.ph ‹ .panel",
+     "n": 81,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F3a442e1",
+   "kind": "text",
+   "n": 81,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 3,
+    "pad": "2 4 2 4",
+    "bw": 1,
+    "bc": "rgba(242, 194, 48, 0.45)",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "700",
+    "ff": "JetBrains Mono",
+    "lh": 9.5,
+    "ls": "0.855px",
+    "tt": "none",
+    "col": "var(--patch|--pn)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.bc-meta ‹ .bgrp-m",
+     "n": 81,
+     "text": "META"
+    }
+   ]
+  },
+  {
+   "id": "Fc353e09",
+   "kind": "box",
+   "n": 79,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--sn)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "i.catdot ‹ .trow-k",
+     "n": 9,
+     "text": ""
+    },
+    {
+     "sel": "i ‹ .bgrp-w",
+     "n": 70,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fa062a2a",
+   "kind": "text",
+   "n": 78,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 9.5,
+    "ls": "1.52px",
+    "tt": "uppercase",
+    "col": "var(--sec)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "small ‹ .wg-line",
+     "n": 78,
+     "text": "Secondaries2 builds"
+    }
+   ]
+  },
+  {
+   "id": "F0331c23",
+   "kind": "text",
+   "n": 78,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 8 0 8",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "color(srgb 1 0.541176 0.521569 / 0.08)",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 9.5,
+    "ls": "0.95px",
+    "tt": "none",
+    "col": "var(--danger-ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-tag ‹ .wg-tags",
+     "n": 78,
+     "text": "TOXIC"
+    }
+   ]
+  },
+  {
+   "id": "Ff760777",
+   "kind": "box",
+   "n": 77,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 16 0 16",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--paper)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "header ‹ .app",
+     "n": 77,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F4d083c5",
+   "kind": "button",
+   "n": 77,
+   "fp": {
+    "kind": "button",
+    "h": 34,
+    "rad": 6,
+    "pad": "5 8 5 8",
+    "bw": 1,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 18,
+    "ls": "1.92px",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · border-top-color: rgb(133, 147, 159)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.mk",
+     "n": 77,
+     "text": "DIOREO/PORTAL"
+    }
+   ]
+  },
+  {
+   "id": "F1471b74",
+   "kind": "text",
+   "n": 77,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 18,
+    "ls": "1.92px",
+    "tt": "none",
+    "col": "var(--patch|--pn)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "b ‹ .mk",
+     "n": 77,
+     "text": "/"
+    }
+   ]
+  },
+  {
+   "id": "F59a9ddb",
+   "kind": "box",
+   "n": 77,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 10,
+    "pad": "0 11 0 11",
+    "bw": 1,
+    "bc": "var(--rule)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.cmdbar",
+     "n": 77,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F53c5ac5",
+   "kind": "box",
+   "n": 77,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 50,
+    "pad": "0 0 0 0",
+    "bw": 1,
+    "bc": "var(--ink4)",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.cb-mag ‹ .cmdbar",
+     "n": 77,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fa099d01",
+   "kind": "field:text",
+   "n": 77,
+   "fp": {
+    "kind": "field:text",
+    "h": 17,
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 13,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "—",
+    "focus-visible": "outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "—"
+   },
+   "where": [
+    {
+     "sel": "input.cb-in ‹ .cmdbar",
+     "n": 77,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F1b4153e",
+   "kind": "text",
+   "n": 77,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 6,
+    "pad": "4 6 4 6",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "0.48px",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "kbd ‹ .cmdbar",
+     "n": 77,
+     "text": "⌘/"
+    }
+   ]
+  },
+  {
+   "id": "F82c1c99",
+   "kind": "button",
+   "n": 77,
+   "fp": {
+    "kind": "button",
+    "h": 34,
+    "rad": 6,
+    "pad": "4 8 4 5",
+    "bw": 1,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · border-top-color: rgb(133, 147, 159)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.whobtn ‹ .who",
+     "n": 77,
+     "text": "DDior"
+    }
+   ]
+  },
+  {
+   "id": "F27134f6",
+   "kind": "text",
+   "n": 77,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 50,
+    "pad": "0 0 0 0",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "image",
+    "fs": 10.5,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": "normal",
+    "ls": "normal",
+    "tt": "uppercase",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.av ‹ .whobtn",
+     "n": 77,
+     "text": "D"
+    }
+   ]
+  },
+  {
+   "id": "Fa2279f1",
+   "kind": "text",
+   "n": 77,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.id ‹ .whobtn",
+     "n": 77,
+     "text": "Dior"
+    }
+   ]
+  },
+  {
+   "id": "Fedfea79",
+   "kind": "box",
+   "n": 77,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 10 0 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.cv ‹ .whobtn",
+     "n": 77,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F1919cf8",
+   "kind": "button",
+   "n": 77,
+   "fp": {
+    "kind": "button",
+    "h": 32,
+    "rad": 6,
+    "pad": "0 0 0 0",
+    "bw": 1,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · color: rgb(255, 107, 107) · border-top-color: rgb(133, 147, 159) · outline-color: rgb(255, 107, 107)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(255, 107, 107)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.hdr-out",
+     "n": 77,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fbf371a3",
+   "kind": "box",
+   "n": 77,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "8 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "nav.rail ‹ .app",
+     "n": 77,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F36686b1",
+   "kind": "text",
+   "n": 77,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 14.5,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 22,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.job ‹ .mh-id",
+     "n": 77,
+     "text": "Dioreo admin"
+    }
+   ]
+  },
+  {
+   "id": "F5341929",
+   "kind": "heading",
+   "n": 77,
+   "fp": {
+    "kind": "heading",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 34,
+    "fw": "700",
+    "ff": "Big Shoulders Display",
+    "lh": 34,
+    "ls": "1.87px",
+    "tt": "uppercase",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "h1 ‹ .mh-id",
+     "n": 77,
+     "text": "What needs you"
+    }
+   ]
+  },
+  {
+   "id": "F80737e7",
+   "kind": "text",
+   "n": 76,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 22,
+    "fw": "700",
+    "ff": "Big Shoulders Display",
+    "lh": 22,
+    "ls": "-0.33px",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.v ‹ .stat",
+     "n": 76,
+     "text": "2"
+    }
+   ]
+  },
+  {
+   "id": "F0e85d08",
+   "kind": "text",
+   "n": 75,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 15.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.trow-t ‹ .trow-h",
+     "n": 63,
+     "text": "Assault"
+    }
+   ]
+  },
+  {
+   "id": "Fd79712e",
+   "kind": "box",
+   "n": 74,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "30 23 20 23",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "image"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.masthead",
+     "n": 47,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F1bf2c91",
+   "kind": "text",
+   "n": 74,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "400",
+    "ff": "JetBrains Mono",
+    "lh": 9.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--del)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.brow-a ‹ .brow",
+     "n": 74,
+     "text": "5"
+    }
+   ]
+  },
+  {
+   "id": "F833be93",
+   "kind": "box",
+   "n": 70,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "8 11 8 11",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "color(srgb 0.262745 0.380392 0.933333 / 0.07)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.bgrp-h ‹ .bgrp",
+     "n": 70,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Ffaa8762",
+   "kind": "box",
+   "n": 68,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 999,
+    "pad": "3 3 3 3",
+    "bw": 1,
+    "bc": "var(--rule)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.seg ‹ .ph",
+     "n": 55,
+     "text": ""
+    },
+    {
+     "sel": "span.seg ‹ .mt-grp",
+     "n": 13,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F10b61d4",
+   "kind": "button",
+   "n": 68,
+   "fp": {
+    "kind": "button",
+    "h": 32,
+    "rad": 999,
+    "pad": "6 13 6 13",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--hi)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "color: rgb(157, 170, 180) · border-top-color: rgb(133, 147, 159) · outline-color: rgb(157, 170, 180) · transform: matrix(1, 0, 0, 1, 0, -1)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button ‹ .seg",
+     "n": 68,
+     "text": "Track"
+    }
+   ]
+  },
+  {
+   "id": "F32cb333",
+   "kind": "box",
+   "n": 67,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 16 0 20",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.wg-strip ‹ .wg",
+     "n": 67,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F7150569",
+   "kind": "link",
+   "n": 65,
+   "fp": {
+    "kind": "link",
+    "h": 63,
+    "rad": 0,
+    "pad": "12 4 12 4",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 10.5,
+    "fw": "700",
+    "ff": "Space Grotesk",
+    "lh": 16,
+    "ls": "1.26px",
+    "tt": "uppercase",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "—",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "—"
+   },
+   "where": [
+    {
+     "sel": "a.realm ‹ .rail",
+     "n": 65,
+     "text": "Season"
+    }
+   ]
+  },
+  {
+   "id": "F6e986fd",
+   "kind": "button",
+   "n": 65,
+   "fp": {
+    "kind": "button",
+    "h": 26,
+    "rad": 999,
+    "pad": "5 12 5 12",
+    "bw": 1,
+    "bc": "var(--rule)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · color: rgb(232, 237, 241) · border-top-color: rgb(133, 147, 159) · outline-color: rgb(232, 237, 241) · transform: matrix(1, 0, 0, 1, 0, -1)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.pill.sm ‹ .mh-take",
+     "n": 65,
+     "text": "Export…"
+    }
+   ]
+  },
+  {
+   "id": "F8390c3c",
+   "kind": "text",
+   "n": 65,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "400",
+    "ff": "JetBrains Mono",
+    "lh": 12,
+    "ls": "0.6px",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.mh-take-n ‹ .mh-take",
+     "n": 65,
+     "text": "39 items · 5 formats"
+    }
+   ]
+  },
+  {
+   "id": "F7b42c0b",
+   "kind": "box",
+   "n": 65,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--lmg)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "i.catdot ‹ .trow-k",
+     "n": 9,
+     "text": ""
+    },
+    {
+     "sel": "i ‹ .bgrp-w",
+     "n": 56,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F07902bc",
+   "kind": "text",
+   "n": 65,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 9.5,
+    "ls": "1.52px",
+    "tt": "uppercase",
+    "col": "var(--mm)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "small ‹ .wg-line",
+     "n": 65,
+     "text": "Marksman3 builds"
+    }
+   ]
+  },
+  {
+   "id": "Fd070eda",
+   "kind": "box",
+   "n": 63,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 6,
+    "pad": "0 0 0 0",
+    "bw": 1,
+    "bc": "var(--rule)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.trow.tcat.tclosed ‹ .rack",
+     "n": 13,
+     "text": ""
+    },
+    {
+     "sel": "div.trow.tcat ‹ .rack",
+     "n": 50,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F6fa2208",
+   "kind": "button",
+   "n": 63,
+   "fp": {
+    "kind": "button",
+    "h": 44,
+    "rad": 0,
+    "pad": "10 13 10 13",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 16.5,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 25,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(35, 44, 52) · border-top-color: rgb(133, 147, 159)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(95, 212, 232)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.trow-h ‹ .trow",
+     "n": 63,
+     "text": "Assault Best in category · BAL-27 · Buil"
+    }
+   ]
+  },
+  {
+   "id": "Fb02ed4c",
+   "kind": "text",
+   "n": 63,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 999,
+    "pad": "3 8 3 8",
+    "bw": 1,
+    "bc": "var(--rule)",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "400",
+    "ff": "JetBrains Mono",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.trow-n ‹ .trow-h",
+     "n": 63,
+     "text": "35"
+    }
+   ]
+  },
+  {
+   "id": "Faf02e4a",
+   "kind": "button",
+   "n": 61,
+   "fp": {
+    "kind": "button",
+    "h": 32,
+    "rad": 999,
+    "pad": "6 11 6 11",
+    "bw": 1,
+    "bc": "var(--ink4)",
+    "ring": "none",
+    "bg": "var(--hi)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · border-top-color: rgb(133, 147, 159) · transform: matrix(1, 0, 0, 1, 0, -1)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.chip ‹ .mt-grp",
+     "n": 54,
+     "text": "All"
+    },
+    {
+     "sel": "button.chip ‹ .cmpbrow",
+     "n": 6,
+     "text": "1"
+    }
+   ]
+  },
+  {
+   "id": "Fc219709",
+   "kind": "button",
+   "n": 60,
+   "fp": {
+    "kind": "button",
+    "h": 29,
+    "rad": 0,
+    "pad": "7 8 7 10",
+    "bw": 1,
+    "bc": "var(--rule3)",
+    "ring": "shadow",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 16.5,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 25,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(35, 44, 52)",
+    "focus-visible": "background-color: rgb(35, 44, 52) · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "—"
+   },
+   "where": [
+    {
+     "sel": "div.brow.bad.aged ‹ .bgrp",
+     "n": 53,
+     "text": "1A2B4A8C9A5Edit"
+    },
+    {
+     "sel": "div.brow.bad ‹ .bgrp",
+     "n": 7,
+     "text": "1C6C7A8A9A4Edit"
+    }
+   ]
+  },
+  {
+   "id": "F8826183",
+   "kind": "box",
+   "n": 58,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--sg)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "i.catdot ‹ .trow-k",
+     "n": 9,
+     "text": ""
+    },
+    {
+     "sel": "i ‹ .bgrp-w",
+     "n": 49,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fae09ede",
+   "kind": "box",
+   "n": 56,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "8 11 8 11",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "color(srgb 0.517647 0.368627 0.760784 / 0.07)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.bgrp-h ‹ .bgrp",
+     "n": 56,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F9d67097",
+   "kind": "box",
+   "n": 54,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 6,
+    "pad": "0 0 0 0",
+    "bw": 1,
+    "bc": "var(--rule)",
+    "ring": "shadow",
+    "bg": "none",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "section.panel",
+     "n": 27,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Ff988791",
+   "kind": "text",
+   "n": 52,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 6,
+    "pad": "0 10 0 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--warn-ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-at.gap ‹ .wg-rail",
+     "n": 52,
+     "text": "Empty"
+    }
+   ]
+  },
+  {
+   "id": "Fd58c5ff",
+   "kind": "box",
+   "n": 51,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--sec)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "i.catdot ‹ .trow-k",
+     "n": 9,
+     "text": ""
+    },
+    {
+     "sel": "i ‹ .bgrp-w",
+     "n": 42,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F000cec3",
+   "kind": "text",
+   "n": 51,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 6,
+    "pad": "4 10 4 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "color(srgb 0.096794 0.107367 0.130049)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 15,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-sc ‹ .wg-slots",
+     "n": 51,
+     "text": "FMJ"
+    }
+   ]
+  },
+  {
+   "id": "F70f9f91",
+   "kind": "link",
+   "n": 50,
+   "fp": {
+    "kind": "link",
+    "h": 30,
+    "rad": 999,
+    "pad": "0 0 0 0",
+    "bw": 1,
+    "bc": "color(srgb 0.506275 0.580196 0.307451)",
+    "ring": "none",
+    "bg": "color(srgb 0.847059 0.94902 0.290196 / 0.12)",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 19.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "background-color: color(srgb 0.847059 0.94902 0.290196 / 0.2)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "—"
+   },
+   "where": [
+    {
+     "sel": "a.hdr-commit",
+     "n": 50,
+     "text": "4 staged · review"
+    }
+   ]
+  },
+  {
+   "id": "Ff6fc99f",
+   "kind": "text",
+   "n": 50,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 10 0 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "color(srgb 0.847059 0.94902 0.290196 / 0.14)",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "700",
+    "ff": "Big Shoulders Display",
+    "lh": 13,
+    "ls": "0.052px",
+    "tt": "none",
+    "col": "var(--staged|--r-review)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "b ‹ .hdr-commit",
+     "n": 50,
+     "text": "4"
+    }
+   ]
+  },
+  {
+   "id": "Fa5a252c",
+   "kind": "text",
+   "n": 50,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 12 0 12",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 19.5,
+    "ls": "0.26px",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span ‹ .hdr-commit",
+     "n": 50,
+     "text": "staged · review"
+    }
+   ]
+  },
+  {
+   "id": "F63fa87f",
+   "kind": "link",
+   "n": 50,
+   "fp": {
+    "kind": "link",
+    "h": 63,
+    "rad": 0,
+    "pad": "12 4 12 4",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 10.5,
+    "fw": "700",
+    "ff": "Space Grotesk",
+    "lh": 16,
+    "ls": "1.26px",
+    "tt": "uppercase",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": {
+    "hover": "—",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "—"
+   },
+   "where": [
+    {
+     "sel": "a.realm.out.has ‹ .rail",
+     "n": 50,
+     "text": "Review4"
+    }
+   ]
+  },
+  {
+   "id": "Fa481ee0",
+   "kind": "text",
+   "n": 50,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "700",
+    "ff": "JetBrains Mono",
+    "lh": 14.5,
+    "ls": "1.26px",
+    "tt": "uppercase",
+    "col": "var(--staged|--r-review)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.cnt ‹ .realm",
+     "n": 50,
+     "text": "4"
+    }
+   ]
+  },
+  {
+   "id": "Fad934ef",
+   "kind": "text",
+   "n": 50,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "700",
+    "ff": "JetBrains Mono",
+    "lh": 14.5,
+    "ls": "0.95px",
+    "tt": "uppercase",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.k ‹ .stat",
+     "n": 50,
+     "text": "needs you"
+    }
+   ]
+  },
+  {
+   "id": "F6184bf3",
+   "kind": "field:text",
+   "n": 50,
+   "fp": {
+    "kind": "field:text",
+    "h": 44,
+    "rad": 6,
+    "pad": "8 10 8 40",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none",
+    "fs": 16.5,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": "normal",
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "—",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "—"
+   },
+   "where": [
+    {
+     "sel": "input ‹ .srch",
+     "n": 50,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F25f76cc",
+   "kind": "box",
+   "n": 50,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 6,
+    "pad": "0 0 0 0",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "shadow",
+    "bg": "var(--raised)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.bgrp.t-best ‹ .trow-body",
+     "n": 50,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F2b3b731",
+   "kind": "button",
+   "n": 50,
+   "fp": {
+    "kind": "button",
+    "h": 36.5,
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 16.5,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 25,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · border-top-color: rgb(133, 147, 159)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.bgrp-w ‹ .bgrp-h",
+     "n": 50,
+     "text": "BAL-27"
+    }
+   ]
+  },
+  {
+   "id": "Fbb509b1",
+   "kind": "box",
+   "n": 49,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "8 11 8 11",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "color(srgb 0.964706 0.662745 0.231373 / 0.07)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.bgrp-h ‹ .bgrp",
+     "n": 49,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F750e288",
+   "kind": "button",
+   "n": 47,
+   "fp": {
+    "kind": "button",
+    "h": 44,
+    "rad": 6,
+    "pad": "9 9 9 9",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "700",
+    "ff": "Space Grotesk",
+    "lh": 19.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · color: rgb(157, 170, 180) · border-top-color: rgb(133, 147, 159) · outline-color: rgb(157, 170, 180)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.btn.no ‹ .tray-f",
+     "n": 38,
+     "text": "Discard all"
+    }
+   ]
+  },
+  {
+   "id": "F7f00faf",
+   "kind": "text",
+   "n": 45,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 16.5,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 25,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.sr ‹ .cmp",
+     "n": 1,
+     "text": "6 builds · 7 slots used · 10 differ · 2 "
+    }
+   ]
+  },
+  {
+   "id": "F789f9f3",
+   "kind": "box",
+   "n": 44,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--mm)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "i.catdot ‹ .trow-k",
+     "n": 9,
+     "text": ""
+    },
+    {
+     "sel": "i ‹ .bgrp-w",
+     "n": 35,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fc2f6b15",
+   "kind": "text",
+   "n": 43,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 22,
+    "fw": "700",
+    "ff": "Big Shoulders Display",
+    "lh": 22,
+    "ls": "-0.33px",
+    "tt": "none",
+    "col": "var(--warn)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.v ‹ .stat",
+     "n": 42,
+     "text": "10"
+    }
+   ]
+  },
+  {
+   "id": "F18c384a",
+   "kind": "box",
+   "n": 42,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "8 11 8 11",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "color(srgb 0.243137 0.431373 0.556863 / 0.07)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.bgrp-h ‹ .bgrp",
+     "n": 42,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fe17f7e0",
+   "kind": "text",
+   "n": 39,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "400",
+    "ff": "JetBrains Mono",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.rkt-n ‹ .racktools",
+     "n": 9,
+     "text": "7 categories · 125 builds · all closed —"
+    }
+   ]
+  },
+  {
+   "id": "F386ad45",
+   "kind": "label",
+   "n": 39,
+   "fp": {
+    "kind": "label",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 14.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "label ‹ .dwfield",
+     "n": 38,
+     "text": "Weapon name *"
+    }
+   ]
+  },
+  {
+   "id": "Fed4a505",
+   "kind": "button",
+   "n": 38,
+   "fp": {
+    "kind": "button",
+    "h": 35,
+    "rad": 0,
+    "pad": "8 22 8 12",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 16.5,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 25,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "—",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(95, 212, 232)",
+    "active": "—"
+   },
+   "where": [
+    {
+     "sel": "div.tray-h ‹ .tray",
+     "n": 38,
+     "text": "Staged 4 changes"
+    }
+   ]
+  },
+  {
+   "id": "F5525e52",
+   "kind": "text",
+   "n": 38,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 10.5,
+    "fw": "700",
+    "ff": "Space Grotesk",
+    "lh": 16,
+    "ls": "1.47px",
+    "tt": "uppercase",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.t ‹ .tray-h",
+     "n": 38,
+     "text": "Staged"
+    }
+   ]
+  },
+  {
+   "id": "Fb50defd",
+   "kind": "text",
+   "n": 38,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "400",
+    "ff": "JetBrains Mono",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--staged|--r-review)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.n ‹ .tray-h",
+     "n": 38,
+     "text": "4 changes"
+    }
+   ]
+  },
+  {
+   "id": "Fce289f9",
+   "kind": "box",
+   "n": 38,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "8 12 8 12",
+    "bw": 1,
+    "bc": "var(--rule)",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.tray-f ‹ .tray",
+     "n": 38,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F03f4966",
+   "kind": "link",
+   "n": 38,
+   "fp": {
+    "kind": "link",
+    "h": 44,
+    "rad": 6,
+    "pad": "9 9 9 9",
+    "bw": 1,
+    "bc": "var(--ok)",
+    "ring": "none",
+    "bg": "var(--ok)",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "700",
+    "ff": "Space Grotesk",
+    "lh": 19.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--on-ok)"
+   },
+   "forced": {
+    "hover": "—",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "a.btn.go ‹ .tray-f",
+     "n": 38,
+     "text": "Review & commit"
+    }
+   ]
+  },
+  {
+   "id": "Fbe5c4d0",
+   "kind": "field:text",
+   "n": 37,
+   "fp": {
+    "kind": "field:text",
+    "h": 44,
+    "rad": 6,
+    "pad": "8 10 8 10",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 13,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "—",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "—"
+   },
+   "where": [
+    {
+     "sel": "input ‹ .dwfield",
+     "n": 19,
+     "text": ""
+    },
+    {
+     "sel": "input.ati ‹ .atr",
+     "n": 15,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F0f3c731",
+   "kind": "box",
+   "n": 35,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "8 11 8 11",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "color(srgb 0.239216 0.862745 0.592157 / 0.07)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.bgrp-h ‹ .bgrp",
+     "n": 35,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fa1d8dfd",
+   "kind": "text",
+   "n": 35,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "700",
+    "ff": "Space Grotesk",
+    "lh": 20,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "b ‹ .callout",
+     "n": 19,
+     "text": "Badges are per weapon, not per build."
+    }
+   ]
+  },
+  {
+   "id": "F1f243f4",
+   "kind": "text",
+   "n": 33,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 6,
+    "pad": "4 10 4 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "color(srgb 0.0876573 0.112925 0.114803)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 15,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-sc ‹ .wg-slots",
+     "n": 33,
+     "text": "Lightweight Trigger"
+    }
+   ]
+  },
+  {
+   "id": "F172a66a",
+   "kind": "text",
+   "n": 31,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.atn ‹ .atr",
+     "n": 15,
+     "text": "1"
+    }
+   ]
+  },
+  {
+   "id": "F0234ad9",
+   "kind": "text",
+   "n": 30,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 6,
+    "pad": "4 10 4 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "color(srgb 0.0835003 0.112188 0.128833)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 15,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-sc ‹ .wg-slots",
+     "n": 30,
+     "text": "OWC Laser - Tactical"
+    }
+   ]
+  },
+  {
+   "id": "F764ce70",
+   "kind": "box",
+   "n": 29,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 6,
+    "pad": "0 0 0 0",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.dwfield.code-field ‹ .bf-sec",
+     "n": 3,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fd2564dd",
+   "kind": "text",
+   "n": 28,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 13,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.mh-plus ‹ .pill",
+     "n": 27,
+     "text": "+"
+    }
+   ]
+  },
+  {
+   "id": "F08dc502",
+   "kind": "box",
+   "n": 27,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 6,
+    "pad": "14 16 14 16",
+    "bw": 1,
+    "bc": "var(--rule)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.covfacts",
+     "n": 1,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F4672a20",
+   "kind": "button",
+   "n": 27,
+   "fp": {
+    "kind": "button",
+    "h": 40.5,
+    "rad": 10,
+    "pad": "10 15 10 15",
+    "bw": 1,
+    "bc": "var(--patch|--pn)",
+    "ring": "none",
+    "bg": "color(srgb 0.94902 0.760784 0.188235 / 0.14)",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 13,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "background-color: color(srgb 0.94902 0.760784 0.188235 / 0.24) · border-top-color: rgb(133, 147, 159) · transform: matrix(1, 0, 0, 1, 0, -1)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.pill.lead.mh-new ‹ .masthead",
+     "n": 27,
+     "text": "+ New build N"
+    }
+   ]
+  },
+  {
+   "id": "F88a8d79",
+   "kind": "text",
+   "n": 27,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 6,
+    "pad": "3 6 3 6",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 10.5,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 10.5,
+    "ls": "0.42px",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "kbd ‹ .pill",
+     "n": 27,
+     "text": "N"
+    }
+   ]
+  },
+  {
+   "id": "F460a95f",
+   "kind": "text",
+   "n": 26,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 10.5,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 16,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "em.segn",
+     "n": 26,
+     "text": "64/125"
+    }
+   ]
+  },
+  {
+   "id": "F01f8df2",
+   "kind": "text",
+   "n": 26,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 12,
+    "ls": "0.96px",
+    "tt": "none",
+    "col": "var(--warn-ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-ct.bad ‹ .wg-igf",
+     "n": 26,
+     "text": "1C6C7A8A9A"
+    }
+   ]
+  },
+  {
+   "id": "Fa4a79bc",
+   "kind": "box",
+   "n": 26,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 6,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "none",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-ig.none ‹ .wg-r",
+     "n": 26,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F38c1a19",
+   "kind": "text",
+   "n": 26,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--warn-ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-cnone ‹ .wg-ig",
+     "n": 26,
+     "text": "No code"
+    }
+   ]
+  },
+  {
+   "id": "Ff2b26f1",
+   "kind": "text",
+   "n": 25,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 14.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span",
+     "n": 19,
+     "text": "Weapon name *"
+    }
+   ]
+  },
+  {
+   "id": "F9d2f19e",
+   "kind": "text",
+   "n": 24,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 6,
+    "pad": "0 10 0 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "color(srgb 0.0972773 0.133792 0.142501)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-at ‹ .wg-rail",
+     "n": 24,
+     "text": "3X Tactical Scope C"
+    }
+   ]
+  },
+  {
+   "id": "Fdc23934",
+   "kind": "heading",
+   "n": 21,
+   "fp": {
+    "kind": "heading",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 9.5,
+    "ls": "0.95px",
+    "tt": "uppercase",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "h5 ‹ .bed-sec",
+     "n": 4,
+     "text": "In Discord"
+    },
+    {
+     "sel": "h5 ‹ .covfacts",
+     "n": 1,
+     "text": "True of the collection, not of any one b"
+    }
+   ]
+  },
+  {
+   "id": "F644884f",
+   "kind": "button",
+   "n": 21,
+   "fp": {
+    "kind": "button",
+    "h": 44,
+    "rad": 6,
+    "pad": "9 9 9 9",
+    "bw": 1,
+    "bc": "var(--ok)",
+    "ring": "none",
+    "bg": "var(--ok)",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "700",
+    "ff": "Space Grotesk",
+    "lh": 19.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--on-ok)"
+   },
+   "forced": {
+    "hover": "color: rgb(157, 170, 180) · border-top-color: rgb(58, 71, 82) · outline-color: rgb(157, 170, 180)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.btn.go ‹ .dw-f",
+     "n": 12,
+     "text": "Stage draw"
+    }
+   ]
+  },
+  {
+   "id": "Ff1d3e24",
+   "kind": "button",
+   "n": 21,
+   "fp": {
+    "kind": "button",
+    "h": 44,
+    "rad": 999,
+    "pad": "0 18 0 18",
+    "bw": 1,
+    "bc": "var(--staged|--r-review)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--staged|--r-review)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(216, 242, 74) · color: rgb(7, 9, 10) · border-top-color: rgb(133, 147, 159) · outline-color: rgb(7, 9, 10) · transform: matrix(1, 0, 0, 1, 0, -1)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.chip.go.madd ‹ .mt-r1",
+     "n": 21,
+     "text": "Add build"
+    }
+   ]
+  },
+  {
+   "id": "F110f7a1",
+   "kind": "text",
+   "n": 21,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 10 0 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "var(--raised)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 14.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.cv.d",
+     "n": 21,
+     "text": "Polarfire-S differs"
+    }
+   ]
+  },
+  {
+   "id": "F70c2611",
+   "kind": "text",
+   "n": 21,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 14.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.sr ‹ .cv",
+     "n": 21,
+     "text": "differs"
+    }
+   ]
+  },
+  {
+   "id": "F2487fd1",
+   "kind": "button",
+   "n": 19,
+   "fp": {
+    "kind": "button",
+    "h": 44,
+    "rad": 6,
+    "pad": "9 9 9 9",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "none",
+    "bg": "var(--raised)",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "700",
+    "ff": "Space Grotesk",
+    "lh": 19.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · color: rgb(232, 237, 241) · border-top-color: rgb(133, 147, 159) · outline-color: rgb(232, 237, 241)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.btn ‹ .dw-f",
+     "n": 19,
+     "text": "Cancel"
+    }
+   ]
+  },
+  {
+   "id": "F6e4feca",
+   "kind": "box",
+   "n": 19,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--warn)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "i ‹ .cmeter",
+     "n": 4,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F17c26a5",
+   "kind": "heading",
+   "n": 18,
+   "fp": {
+    "kind": "heading",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "h4.bf-h ‹ .bf-sec",
+     "n": 18,
+     "text": "Build"
+    }
+   ]
+  },
+  {
+   "id": "Ff40828b",
+   "kind": "text",
+   "n": 18,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 10 0 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 14.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.cv ‹ .base",
+     "n": 7,
+     "text": "Gauge-9 Mono"
+    },
+    {
+     "sel": "span.cv",
+     "n": 11,
+     "text": "Crown-H3 Barrel"
+    }
+   ]
+  },
+  {
+   "id": "Fabe8348",
+   "kind": "box",
+   "n": 17,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--overlay-66)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.scrim.on ‹ .app",
+     "n": 17,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fbbe2ee2",
+   "kind": "box",
+   "n": 17,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 10,
+    "pad": "0 0 0 0",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "shadow",
+    "bg": "var(--raised)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "aside.drawer.open.wide ‹ .app",
+     "n": 7,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fe5e2e2d",
+   "kind": "box",
+   "n": 17,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "16 24 12 24",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "image"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "header.dw-h ‹ .drawer",
+     "n": 17,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F01c6388",
+   "kind": "text",
+   "n": 17,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "400",
+    "ff": "JetBrains Mono",
+    "lh": 14.5,
+    "ls": "0.855px",
+    "tt": "uppercase",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.dw-eye ‹ .dw-ttl",
+     "n": 17,
+     "text": "draw.add · tier 1"
+    }
+   ]
+  },
+  {
+   "id": "Fb3aa911",
+   "kind": "heading",
+   "n": 17,
+   "fp": {
+    "kind": "heading",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 22,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 27.5,
+    "ls": "-0.33px",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "h2 ‹ .dw-ttl",
+     "n": 17,
+     "text": "Add to the season"
+    }
+   ]
+  },
+  {
+   "id": "F9bde0a1",
+   "kind": "box",
+   "n": 17,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "12 24 12 24",
+    "bw": 1,
+    "bc": "var(--rule)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "footer.dw-f ‹ .drawer",
+     "n": 17,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Ffc3076d",
+   "kind": "box",
+   "n": 17,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "var(--warn)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "i ‹ .rk-bad",
+     "n": 13,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fd641ac6",
+   "kind": "button",
+   "n": 15,
+   "fp": {
+    "kind": "button",
+    "h": 28,
+    "rad": 6,
+    "pad": "1 6 1 6",
+    "bw": 1,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · color: rgb(255, 138, 133) · border-top-color: rgb(133, 147, 159) · outline-color: rgb(255, 138, 133)",
+    "focus-visible": "border-top-color: rgb(58, 71, 82) · box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.atx ‹ .atr",
+     "n": 15,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fc6df779",
+   "kind": "button",
+   "n": 14,
+   "fp": {
+    "kind": "button",
+    "h": 28,
+    "rad": 6,
+    "pad": "1 6 1 6",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "shadow",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(35, 44, 52) · color: rgb(232, 237, 241) · border-top-color: rgb(92, 106, 117)",
+    "focus-visible": "—",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.x ‹ .dw-h",
+     "n": 14,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F911fc4a",
+   "kind": "button",
+   "n": 14,
+   "fp": {
+    "kind": "button",
+    "h": 29.5,
+    "rad": 0,
+    "pad": "7 8 7 10",
+    "bw": 1,
+    "bc": "var(--rule3)",
+    "ring": "shadow",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 16.5,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 25,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(35, 44, 52)",
+    "focus-visible": "background-color: rgb(35, 44, 52) · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "—"
+   },
+   "where": [
+    {
+     "sel": "div.brow.bad.nocode ‹ .bgrp",
+     "n": 14,
+     "text": "no code1C2B5B6D7O5Edit"
+    }
+   ]
+  },
+  {
+   "id": "Fe1ec054",
+   "kind": "text",
+   "n": 14,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "400",
+    "ff": "JetBrains Mono",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--warn)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.brow-none ‹ .brow",
+     "n": 14,
+     "text": "no code"
+    }
+   ]
+  },
+  {
+   "id": "F555a9d8",
+   "kind": "text",
+   "n": 14,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 14.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.brow-n.sec ‹ .brow",
+     "n": 14,
+     "text": "1C2B5B6D7O"
+    }
+   ]
+  },
+  {
+   "id": "Fd135cd7",
+   "kind": "text",
+   "n": 13,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 44,
+    "fw": "700",
+    "ff": "Big Shoulders Display",
+    "lh": 44,
+    "ls": "-1.232px",
+    "tt": "none",
+    "col": "var(--r-armory)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.v ‹ .stat",
+     "n": 13,
+     "text": "125"
+    }
+   ]
+  },
+  {
+   "id": "Ff731057",
+   "kind": "text",
+   "n": 13,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 22,
+    "fw": "700",
+    "ff": "Big Shoulders Display",
+    "lh": 22,
+    "ls": "-0.33px",
+    "tt": "none",
+    "col": "var(--staged|--r-review)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.v ‹ .stat",
+     "n": 13,
+     "text": "1"
+    }
+   ]
+  },
+  {
+   "id": "F27244dd",
+   "kind": "button",
+   "n": 13,
+   "fp": {
+    "kind": "button",
+    "h": 44,
+    "rad": 6,
+    "pad": "0 24 0 24",
+    "bw": 1,
+    "bc": "var(--ar)",
+    "ring": "shadow",
+    "bg": "var(--hi)",
+    "bgi": "none",
+    "fs": 16.5,
+    "fw": "700",
+    "ff": "JetBrains Mono",
+    "lh": 25,
+    "ls": "1.98px",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "—",
+    "focus-visible": "outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button ‹ .mh-mode",
+     "n": 13,
+     "text": "MP"
+    }
+   ]
+  },
+  {
+   "id": "Fa542efe",
+   "kind": "button",
+   "n": 13,
+   "fp": {
+    "kind": "button",
+    "h": 44,
+    "rad": 6,
+    "pad": "0 24 0 24",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 16.5,
+    "fw": "700",
+    "ff": "JetBrains Mono",
+    "lh": 25,
+    "ls": "1.98px",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · color: rgb(157, 170, 180) · border-top-color: rgb(92, 106, 117) · outline-color: rgb(157, 170, 180)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button ‹ .mh-mode",
+     "n": 13,
+     "text": "DMZ"
+    }
+   ]
+  },
+  {
+   "id": "F17ec0a0",
+   "kind": "box",
+   "n": 13,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "none",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "i ‹ .rk-clean",
+     "n": 13,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F6bf9d39",
+   "kind": "box",
+   "n": 13,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "var(--ink4)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "i ‹ .rk-age",
+     "n": 13,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F53048c1",
+   "kind": "box",
+   "n": 13,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "var(--ar)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "i ‹ .chip",
+     "n": 13,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fb80a152",
+   "kind": "box",
+   "n": 13,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "var(--smg)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "i ‹ .chip",
+     "n": 13,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fef281d0",
+   "kind": "box",
+   "n": 13,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "var(--lmg)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "i ‹ .chip",
+     "n": 13,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fdae2299",
+   "kind": "box",
+   "n": 13,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "var(--mm)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "i ‹ .chip",
+     "n": 13,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F9abe22b",
+   "kind": "box",
+   "n": 13,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "var(--sn)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "i ‹ .chip",
+     "n": 13,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F88bc0a4",
+   "kind": "box",
+   "n": 13,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "var(--sg)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "i ‹ .chip",
+     "n": 13,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F46ff8c0",
+   "kind": "box",
+   "n": 13,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "var(--sec)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "i ‹ .chip",
+     "n": 13,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F3f73489",
+   "kind": "box",
+   "n": 13,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 16 0 16",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.wg-heads ‹ .wg-wrap",
+     "n": 13,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F2622202",
+   "kind": "button",
+   "n": 13,
+   "fp": {
+    "kind": "button",
+    "h": 44,
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 9.5,
+    "ls": "1.33px",
+    "tt": "uppercase",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · border-top-color: rgb(133, 147, 159)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(95, 212, 232)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.wg-sort",
+     "n": 13,
+     "text": "Weapon"
+    }
+   ]
+  },
+  {
+   "id": "F528a55b",
+   "kind": "button",
+   "n": 13,
+   "fp": {
+    "kind": "button",
+    "h": 44,
+    "rad": 0,
+    "pad": "0 12 0 12",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · color: rgb(232, 237, 241) · border-top-color: rgb(133, 147, 159) · outline-color: rgb(232, 237, 241)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.wg-fold ‹ .wg-heads",
+     "n": 13,
+     "text": "Collapse all"
+    }
+   ]
+  },
+  {
+   "id": "Ffd7a3ce",
+   "kind": "text",
+   "n": 13,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 8 0 8",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "color(srgb 0.331216 0.617725 0.791529 / 0.08)",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 9.5,
+    "ls": "0.95px",
+    "tt": "none",
+    "col": "color(srgb 0.331216 0.617725 0.791529)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-tag ‹ .wg-tags",
+     "n": 13,
+     "text": "TOP 4"
+    }
+   ]
+  },
+  {
+   "id": "Ffddada2",
+   "kind": "box",
+   "n": 13,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 6,
+    "pad": "7 12 8 12",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "none",
+    "bgi": "image"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-plate ‹ .wg-main",
+     "n": 13,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F1ddfeda",
+   "kind": "text",
+   "n": 13,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 9.5,
+    "ls": "1.52px",
+    "tt": "uppercase",
+    "col": "color(srgb 0.884706 0.776471 0.384706)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "small ‹ .wg-plate",
+     "n": 13,
+     "text": "Build name"
+    }
+   ]
+  },
+  {
+   "id": "F79c0c1b",
+   "kind": "text",
+   "n": 13,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 15,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span ‹ .wg-plate",
+     "n": 13,
+     "text": "Coming Soon"
+    }
+   ]
+  },
+  {
+   "id": "Fe4a6bf7",
+   "kind": "text",
+   "n": 13,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 18.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.why ‹ .ccard",
+     "n": 6,
+     "text": "The card renders with a dashed placehold"
+    },
+    {
+     "sel": "span ‹ .covfact",
+     "n": 7,
+     "text": "AR — have something wrong that is not ag"
+    }
+   ]
+  },
+  {
+   "id": "F1486d57",
+   "kind": "box",
+   "n": 12,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 6,
+    "pad": "0 0 0 0",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.modesw ‹ .nb-toolbar",
+     "n": 3,
+     "text": ""
+    },
+    {
+     "sel": "div.segsw ‹ .nb-toolbar",
+     "n": 3,
+     "text": ""
+    },
+    {
+     "sel": "div.modesw ‹ .bf-sec",
+     "n": 3,
+     "text": ""
+    },
+    {
+     "sel": "div.segsw ‹ .bf-sec",
+     "n": 3,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F01ec779",
+   "kind": "text",
+   "n": 12,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 10 0 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 14.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.cv.x ‹ .base",
+     "n": 2,
+     "text": "—"
+    },
+    {
+     "sel": "span.cv.x",
+     "n": 10,
+     "text": "—"
+    }
+   ]
+  },
+  {
+   "id": "Ff1d473d",
+   "kind": "box",
+   "n": 12,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--rule)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.cmeter.bad ‹ .ccard",
+     "n": 4,
+     "text": ""
+    },
+    {
+     "sel": "span.cmeter.age ‹ .ccard",
+     "n": 1,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F60d42e4",
+   "kind": "box",
+   "n": 10,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "3 4 3 4",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "var(--sunk)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "td.base",
+     "n": 10,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fe14eb6b",
+   "kind": "text",
+   "n": 9,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 4 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 14.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "th.k",
+     "n": 9,
+     "text": "Muzzle"
+    }
+   ]
+  },
+  {
+   "id": "Fc6ce2d1",
+   "kind": "text",
+   "n": 7,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "12 16 12 16",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "rgba(242, 153, 74, 0.05)",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 20,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.callout",
+     "n": 1,
+     "text": "Badges are per weapon, not per build. A "
+    }
+   ]
+  },
+  {
+   "id": "F2582753",
+   "kind": "text",
+   "n": 7,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 14.5,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 14.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "b ‹ .covfact",
+     "n": 7,
+     "text": "4 of 35"
+    }
+   ]
+  },
+  {
+   "id": "Ff03e05b",
+   "kind": "box",
+   "n": 6,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--ink4)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "i ‹ .cmeter",
+     "n": 1,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F3a12a6a",
+   "kind": "button",
+   "n": 6,
+   "fp": {
+    "kind": "button",
+    "h": 34,
+    "rad": 0,
+    "pad": "8 15 8 15",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--mode-mp)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "700",
+    "ff": "JetBrains Mono",
+    "lh": 12,
+    "ls": "0.96px",
+    "tt": "none",
+    "col": "var(--on-accent)"
+   },
+   "forced": {
+    "hover": "border-top-color: rgb(133, 147, 159)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(95, 212, 232)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button ‹ .modesw",
+     "n": 6,
+     "text": "MP"
+    }
+   ]
+  },
+  {
+   "id": "Fd41cc01",
+   "kind": "button",
+   "n": 6,
+   "fp": {
+    "kind": "button",
+    "h": 34,
+    "rad": 0,
+    "pad": "8 15 8 15",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "700",
+    "ff": "JetBrains Mono",
+    "lh": 12,
+    "ls": "0.96px",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(35, 44, 52) · color: rgb(232, 237, 241) · outline-color: rgb(232, 237, 241)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(95, 212, 232)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button ‹ .modesw",
+     "n": 6,
+     "text": "DMZ"
+    }
+   ]
+  },
+  {
+   "id": "F1704a2e",
+   "kind": "button",
+   "n": 6,
+   "fp": {
+    "kind": "button",
+    "h": 44,
+    "rad": 0,
+    "pad": "0 14 0 14",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--raised)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "border-top-color: rgb(133, 147, 159)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button ‹ .segsw",
+     "n": 6,
+     "text": "Add build"
+    }
+   ]
+  },
+  {
+   "id": "F76b5e35",
+   "kind": "button",
+   "n": 6,
+   "fp": {
+    "kind": "button",
+    "h": 44,
+    "rad": 0,
+    "pad": "0 14 0 14",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · color: rgb(157, 170, 180) · outline-color: rgb(157, 170, 180)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button ‹ .segsw",
+     "n": 6,
+     "text": "Bulk create"
+    }
+   ]
+  },
+  {
+   "id": "F5a97a72",
+   "kind": "text",
+   "n": 6,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "700",
+    "ff": "Space Grotesk",
+    "lh": 14.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--patch|--pn)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.req",
+     "n": 6,
+     "text": "*"
+    }
+   ]
+  },
+  {
+   "id": "F707ef87",
+   "kind": "text",
+   "n": 6,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 999,
+    "pad": "4 8 4 8",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "JetBrains Mono",
+    "lh": 12,
+    "ls": "0.96px",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.bf-n",
+     "n": 3,
+     "text": "0 / 32"
+    },
+    {
+     "sel": "span.bf-n ‹ .bf-h",
+     "n": 3,
+     "text": "0 of 5 — flagged"
+    }
+   ]
+  },
+  {
+   "id": "F877f089",
+   "kind": "field:select-one",
+   "n": 6,
+   "fp": {
+    "kind": "field:select-one",
+    "h": 37,
+    "rad": 6,
+    "pad": "8 10 8 10",
+    "bw": 1,
+    "bc": "var(--rule)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": "normal",
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "border-top-color: rgb(133, 147, 159)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "—"
+   },
+   "where": [
+    {
+     "sel": "select ‹ .dwfield",
+     "n": 6,
+     "text": "AR — Assault RifleSMG — Submachine GunSN"
+    }
+   ]
+  },
+  {
+   "id": "F6ea2238",
+   "kind": "label",
+   "n": 6,
+   "fp": {
+    "kind": "label",
+    "h": "-",
+    "rad": 10,
+    "pad": "10 13 10 13",
+    "bw": 1,
+    "bc": "var(--rule)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 13,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "label.bf-tog ‹ .bf-badges",
+     "n": 6,
+     "text": "Meta"
+    }
+   ]
+  },
+  {
+   "id": "F812f763",
+   "kind": "field:checkbox",
+   "n": 6,
+   "fp": {
+    "kind": "field:checkbox",
+    "h": 15,
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": "normal",
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "—",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "—"
+   },
+   "where": [
+    {
+     "sel": "input ‹ .bf-tog",
+     "n": 6,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fb4a42ac",
+   "kind": "text",
+   "n": 6,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 13,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span ‹ .bf-tog",
+     "n": 6,
+     "text": "Meta"
+    }
+   ]
+  },
+  {
+   "id": "F438767f",
+   "kind": "button",
+   "n": 6,
+   "fp": {
+    "kind": "button",
+    "h": 173.5,
+    "rad": 6,
+    "pad": "13 14 13 14",
+    "bw": 1,
+    "bc": "var(--rule)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none",
+    "fs": 16.5,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 25,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · border-top-color: rgb(133, 147, 159) · box-shadow: rgb(0, 0, 0) 0px 10px 26px -14px, color(srgb 0.94902 0.76078 · transform: matrix(1, 0, 0, 1, 0, -2)",
+    "focus-visible": "background-color: color(srgb 0.210431 0.207686 0.147765) · border-top-color: color(srgb 0.53051 0.48102 0.265569) · box-shadow: rgb(0, 0, 0) 0px 10px 26px -14px, color(srgb 0.94902 0.76078 · outline-style: solid · outline-color: rgb(242, 194, 48) · transform: matrix(1, 0, 0, 1, 0, -2)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.ccard.clean ‹ .cols",
+     "n": 1,
+     "text": "0Missing imageThe card renders with a da"
+    },
+    {
+     "sel": "button.ccard ‹ .cols",
+     "n": 5,
+     "text": "12 or fewer attachmentsTwo slots filled "
+    }
+   ]
+  },
+  {
+   "id": "Fd8d0416",
+   "kind": "text",
+   "n": 6,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 17,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.cname ‹ .ccard",
+     "n": 6,
+     "text": "Missing image"
+    }
+   ]
+  },
+  {
+   "id": "Fdda3e28",
+   "kind": "text",
+   "n": 5,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "34 16 34 16",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 14.5,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 22,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "p.empty ‹ .bed-sec",
+     "n": 2,
+     "text": "Type a weapon name and the card builds i"
+    }
+   ]
+  },
+  {
+   "id": "F4b42e74",
+   "kind": "text",
+   "n": 5,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 16.5,
+    "fw": "700",
+    "ff": "Space Grotesk",
+    "lh": 25,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "b ‹ .empty",
+     "n": 5,
+     "text": "Nothing matches that."
+    }
+   ]
+  },
+  {
+   "id": "F8121996",
+   "kind": "text",
+   "n": 5,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "10 12 8 12",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 15.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "th",
+     "n": 5,
+     "text": "BAL-27 · 2"
+    }
+   ]
+  },
+  {
+   "id": "Fad7eea6",
+   "kind": "text",
+   "n": 5,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 10 0 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "var(--raised)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 12,
+    "ls": "0.48px",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.cv.m.d",
+     "n": 5,
+     "text": "1C2C4A6A8A differs"
+    }
+   ]
+  },
+  {
+   "id": "F17f02d7",
+   "kind": "text",
+   "n": 5,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 12,
+    "ls": "0.48px",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.sr ‹ .cv",
+     "n": 5,
+     "text": "differs"
+    }
+   ]
+  },
+  {
+   "id": "Fe5ae6ad",
+   "kind": "text",
+   "n": 4,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 19.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "b ‹ .cmpstat",
+     "n": 4,
+     "text": "6"
+    }
+   ]
+  },
+  {
+   "id": "F6686bb2",
+   "kind": "text",
+   "n": 4,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 16.5,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 25,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--warn)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.cn.bad ‹ .ccard",
+     "n": 4,
+     "text": "1"
+    }
+   ]
+  },
+  {
+   "id": "F5af47c6",
+   "kind": "button",
+   "n": 3,
+   "fp": {
+    "kind": "button",
+    "h": 28,
+    "rad": 6,
+    "pad": "1 6 1 6",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(35, 44, 52) · color: rgb(232, 237, 241) · border-top-color: rgb(92, 106, 117) · outline-color: rgb(232, 237, 241)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.x ‹ .dw-h",
+     "n": 3,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fb50968f",
+   "kind": "text",
+   "n": 3,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "700",
+    "ff": "JetBrains Mono",
+    "lh": 12,
+    "ls": "0.72px",
+    "tt": "none",
+    "col": "var(--r-armory)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.bf-buildno ‹ .bf-buildno-wrap",
+     "n": 3,
+     "text": "BUILD 1"
+    }
+   ]
+  },
+  {
+   "id": "Fa8f7399",
+   "kind": "field:text",
+   "n": 3,
+   "fp": {
+    "kind": "field:text",
+    "h": 44,
+    "rad": 6,
+    "pad": "8 10 8 76",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 13,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "—",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "—"
+   },
+   "where": [
+    {
+     "sel": "input ‹ .bf-buildno-wrap",
+     "n": 3,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F0396553",
+   "kind": "field:text",
+   "n": 3,
+   "fp": {
+    "kind": "field:text",
+    "h": 44,
+    "rad": 6,
+    "pad": "8 10 8 10",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 12,
+    "ls": "0.72px",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "—",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "—"
+   },
+   "where": [
+    {
+     "sel": "input ‹ .dwfield",
+     "n": 3,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fe69ec7e",
+   "kind": "button",
+   "n": 3,
+   "fp": {
+    "kind": "button",
+    "h": 44,
+    "rad": 0,
+    "pad": "6 11 6 11",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": {
+    "hover": "border-top-color: rgb(58, 71, 82) · transform: matrix(1, 0, 0, 1, 0, -1)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.chip ‹ .dwfield",
+     "n": 3,
+     "text": "Copy"
+    }
+   ]
+  },
+  {
+   "id": "F19c5341",
+   "kind": "label",
+   "n": 3,
+   "fp": {
+    "kind": "label",
+    "h": "-",
+    "rad": 999,
+    "pad": "6 11 6 11",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "label.chip.filedrop ‹ .imgdrop",
+     "n": 3,
+     "text": "Or drop a screenshot"
+    }
+   ]
+  },
+  {
+   "id": "Fb453ec4",
+   "kind": "field:textarea",
+   "n": 3,
+   "fp": {
+    "kind": "field:textarea",
+    "h": 88,
+    "rad": 6,
+    "pad": "8 10 8 10",
+    "bw": 1,
+    "bc": "var(--rule)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "JetBrains Mono",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "border-top-color: rgb(133, 147, 159)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "—"
+   },
+   "where": [
+    {
+     "sel": "textarea ‹ .dwfield",
+     "n": 3,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F268a2fa",
+   "kind": "text",
+   "n": 3,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 16,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--warn)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.why.blocked ‹ .dw-f",
+     "n": 3,
+     "text": "Still needs a weapon name."
+    }
+   ]
+  },
+  {
+   "id": "Fe8274f7",
+   "kind": "box",
+   "n": 3,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 999,
+    "pad": "7 13 7 13",
+    "bw": 1,
+    "bc": "var(--rule)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.cmpstat ‹ .cmpstats",
+     "n": 3,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F0b88623",
+   "kind": "text",
+   "n": 3,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 10 0 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 14.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--warn)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.cv.rm",
+     "n": 3,
+     "text": "Not equipped"
+    }
+   ]
+  },
+  {
+   "id": "F3625ddf",
+   "kind": "box",
+   "n": 3,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "14 0 0 0",
+    "bw": 1,
+    "bc": "var(--rule3)",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.cmpfold ‹ .cmp",
+     "n": 1,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F08d21ab",
+   "kind": "field:text",
+   "n": 2,
+   "fp": {
+    "kind": "field:text",
+    "h": 44,
+    "rad": 6,
+    "pad": "8 10 8 10",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "shadow",
+    "bg": "var(--sunk)",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 13,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "—",
+    "focus-visible": "—",
+    "active": "—"
+   },
+   "where": [
+    {
+     "sel": "input ‹ .dwfield",
+     "n": 2,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F563f423",
+   "kind": "text",
+   "n": 2,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "700",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--dc-ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.lc-h ‹ .dcard",
+     "n": 2,
+     "text": "Attachments"
+    }
+   ]
+  },
+  {
+   "id": "Feb2ec08",
+   "kind": "text",
+   "n": 2,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "24 16 12 16",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 19.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "p.empty ‹ .cmp",
+     "n": 2,
+     "text": "Pick a weapon Its builds line up slot by"
+    }
+   ]
+  },
+  {
+   "id": "F5615a8f",
+   "kind": "button",
+   "n": 2,
+   "fp": {
+    "kind": "button",
+    "h": 35,
+    "rad": 10,
+    "pad": "10 15 10 15",
+    "bw": 1,
+    "bc": "var(--patch|--pn)",
+    "ring": "none",
+    "bg": "color(srgb 0.94902 0.760784 0.188235 / 0.14)",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 13,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "background-color: color(srgb 0.94902 0.760784 0.188235 / 0.24) · border-top-color: rgb(133, 147, 159) · transform: matrix(1, 0, 0, 1, 0, -1)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.pill.lead ‹ .racktools",
+     "n": 2,
+     "text": "Compare BAL-27 against FFAR 1"
+    }
+   ]
+  },
+  {
+   "id": "F1f430bd",
+   "kind": "button",
+   "n": 2,
+   "fp": {
+    "kind": "button",
+    "h": 31,
+    "rad": 999,
+    "pad": "8 13 8 13",
+    "bw": 1,
+    "bc": "var(--rule)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 13,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · color: rgb(232, 237, 241) · border-top-color: rgb(133, 147, 159) · outline-color: rgb(232, 237, 241) · transform: matrix(1, 0, 0, 1, 0, -1)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.pill ‹ .racktools",
+     "n": 2,
+     "text": "Or just BAL-27"
+    }
+   ]
+  },
+  {
+   "id": "Ff544853",
+   "kind": "field:search",
+   "n": 2,
+   "fp": {
+    "kind": "field:search",
+    "h": 44,
+    "rad": 6,
+    "pad": "8 10 8 10",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 13,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "—",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "—"
+   },
+   "where": [
+    {
+     "sel": "input ‹ .dwfield",
+     "n": 2,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F06667dd",
+   "kind": "box",
+   "n": 2,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 999,
+    "pad": "4 6 4 4",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.cmppick ‹ .cmpbar",
+     "n": 2,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fb6534f5",
+   "kind": "button",
+   "n": 2,
+   "fp": {
+    "kind": "button",
+    "h": 32,
+    "rad": 999,
+    "pad": "6 11 6 11",
+    "bw": 1,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--hi)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "transform: matrix(1, 0, 0, 1, 0, -1)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.chip.on ‹ .cmppick",
+     "n": 2,
+     "text": "BAL-27"
+    }
+   ]
+  },
+  {
+   "id": "Fe9033f2",
+   "kind": "button",
+   "n": 2,
+   "fp": {
+    "kind": "button",
+    "h": 32,
+    "rad": 999,
+    "pad": "6 11 6 11",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": {
+    "hover": "transform: matrix(1, 0, 0, 1, 0, -1)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.chip.cut ‹ .cmpbrow",
+     "n": 2,
+     "text": "4"
+    }
+   ]
+  },
+  {
+   "id": "Fdfdd422",
+   "kind": "text",
+   "n": 2,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 14.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.sr ‹ .k",
+     "n": 2,
+     "text": "Slot"
+    }
+   ]
+  },
+  {
+   "id": "F09c789c",
+   "kind": "text",
+   "n": 2,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 999,
+    "pad": "6 12 6 12",
+    "bw": 1,
+    "bc": "var(--rule)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.pill ‹ .cmpsame",
+     "n": 2,
+     "text": "ToxicNo"
+    }
+   ]
+  },
+  {
+   "id": "Fa987f73",
+   "kind": "text",
+   "n": 2,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "b ‹ .pill",
+     "n": 2,
+     "text": "No"
+    }
+   ]
+  },
+  {
+   "id": "F381a3cc",
+   "kind": "box",
+   "n": 2,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--rule2)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.cmeter.clean ‹ .ccard",
+     "n": 1,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F7dbdeeb",
+   "kind": "text",
+   "n": 2,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 6,
+    "pad": "4 10 4 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "color(srgb 0.0825118 0.113346 0.122888)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 15,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.wg-sc ‹ .wg-slots",
+     "n": 2,
+     "text": "3X Tactical Scope C"
+    }
+   ]
+  },
+  {
+   "id": "Fe989861",
+   "kind": "box",
+   "n": 1,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 8,
+    "pad": "11 13 11 13",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--dc-bg)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.dcard.lc ‹ .bed-sec",
+     "n": 1,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F5ca02fe",
+   "kind": "heading",
+   "n": 1,
+   "fp": {
+    "kind": "heading",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 14,
+    "fw": "700",
+    "ff": "Space Grotesk",
+    "lh": 21,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--dc-ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "h6 ‹ .dcard",
+     "n": 1,
+     "text": "AK117"
+    }
+   ]
+  },
+  {
+   "id": "Faf8b2a3",
+   "kind": "box",
+   "n": 1,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--dc-rule)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.lc-rule ‹ .dcard",
+     "n": 1,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F61e62f2",
+   "kind": "text",
+   "n": 1,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--dc-dim)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "li.none ‹ .lc-att",
+     "n": 1,
+     "text": "none recorded"
+    }
+   ]
+  },
+  {
+   "id": "F259a9d2",
+   "kind": "text",
+   "n": 1,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 6,
+    "pad": "7 9 7 9",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--dc-sunk)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "400",
+    "ff": "JetBrains Mono",
+    "lh": 18,
+    "ls": "0.72px",
+    "tt": "none",
+    "col": "var(--dc-body)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.lc-code ‹ .dcard",
+     "n": 1,
+     "text": "Build 2"
+    }
+   ]
+  },
+  {
+   "id": "F33b5741",
+   "kind": "text",
+   "n": 1,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 6,
+    "pad": "12 12 12 12",
+    "bw": 1,
+    "bc": "var(--dc-rule)",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--dc-dim)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.lc-noimg ‹ .dcard",
+     "n": 1,
+     "text": "No image on this build, so the card omit"
+    }
+   ]
+  },
+  {
+   "id": "F4892004",
+   "kind": "text",
+   "n": 1,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 14.5,
+    "ls": "0.38px",
+    "tt": "none",
+    "col": "var(--dc-dim)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.lc-foot ‹ .dcard",
+     "n": 1,
+     "text": "AR • Build 1 of 1"
+    }
+   ]
+  },
+  {
+   "id": "Ff63137f",
+   "kind": "field:search",
+   "n": 1,
+   "fp": {
+    "kind": "field:search",
+    "h": 44,
+    "rad": 6,
+    "pad": "8 10 8 10",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "shadow",
+    "bg": "var(--sunk)",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 13,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "—",
+    "focus-visible": "—",
+    "active": "—"
+   },
+   "where": [
+    {
+     "sel": "input ‹ .dwfield",
+     "n": 1,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F80800be",
+   "kind": "box",
+   "n": 1,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 6,
+    "pad": "4 4 4 4",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "shadow",
+    "bg": "var(--raised)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "ul.wsrch-list ‹ .wsrch",
+     "n": 1,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fb20fd77",
+   "kind": "button",
+   "n": 1,
+   "fp": {
+    "kind": "button",
+    "h": 32,
+    "rad": 3,
+    "pad": "7 9 7 9",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--hi)",
+    "bgi": "none",
+    "fs": 16.5,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 25,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "—",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "—"
+   },
+   "where": [
+    {
+     "sel": "li.wsrch-opt.on ‹ .wsrch-list",
+     "n": 1,
+     "text": "BAL-27 5 builds · Assault"
+    }
+   ]
+  },
+  {
+   "id": "Fc81c3a1",
+   "kind": "text",
+   "n": 1,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 15.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--patch|--pn)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "b ‹ .wsrch-opt",
+     "n": 1,
+     "text": "BAL-27"
+    }
+   ]
+  },
+  {
+   "id": "Fe518f4d",
+   "kind": "box",
+   "n": 1,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 999,
+    "pad": "7 13 7 13",
+    "bw": 1,
+    "bc": "color(srgb 1 0.478431 0.270588 / 0.45)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.cmpstat.over ‹ .cmpstats",
+     "n": 1,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fdbc1e9b",
+   "kind": "text",
+   "n": 1,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 14.5,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 22,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "caption.sr ‹ .cmpt",
+     "n": 1,
+     "text": "BAL-27 and FFAR 1 builds, compared slot "
+    }
+   ]
+  },
+  {
+   "id": "Fb18c3c5",
+   "kind": "text",
+   "n": 1,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 6,
+    "pad": "10 12 8 12",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "var(--sunk)",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 15.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "th.base",
+     "n": 1,
+     "text": "BAL-27 · 1baseline"
+    }
+   ]
+  },
+  {
+   "id": "Fc860729",
+   "kind": "text",
+   "n": 1,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "JetBrains Mono",
+    "lh": 14.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "small ‹ .base",
+     "n": 1,
+     "text": "baseline"
+    }
+   ]
+  },
+  {
+   "id": "Fa423f30",
+   "kind": "text",
+   "n": 1,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "14 0 2 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "th ‹ .gap",
+     "n": 1,
+     "text": "Code"
+    }
+   ]
+  },
+  {
+   "id": "F206efd3",
+   "kind": "text",
+   "n": 1,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 10 0 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 12,
+    "ls": "0.48px",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.cv.m ‹ .base",
+     "n": 1,
+     "text": "1I2C4A8A9D"
+    }
+   ]
+  },
+  {
+   "id": "F909d97b",
+   "kind": "box",
+   "n": 1,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 6,
+    "pad": "13 16 13 16",
+    "bw": 1,
+    "bc": "var(--rule)",
+    "ring": "none",
+    "bg": "var(--raised)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.repbar",
+     "n": 1,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fb15a15a",
+   "kind": "text",
+   "n": 1,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 14.5,
+    "fw": "700",
+    "ff": "Space Grotesk",
+    "lh": 22,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "b ‹ .repbar",
+     "n": 1,
+     "text": "10"
+    }
+   ]
+  },
+  {
+   "id": "F9b2219d",
+   "kind": "text",
+   "n": 1,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 16.5,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 25,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ok)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.cn.ok ‹ .ccard",
+     "n": 1,
+     "text": "0"
+    }
+   ]
+  },
+  {
+   "id": "Ff0722a1",
+   "kind": "text",
+   "n": 1,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 16.5,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 25,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.cn ‹ .ccard",
+     "n": 1,
+     "text": "106"
+    }
+   ]
+  },
+  {
+   "id": "F92dff67",
+   "kind": "text",
+   "n": 1,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 3,
+    "pad": "2 5 2 5",
+    "bw": 1,
+    "bc": "var(--ok)",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 12.5,
+    "ls": "0.95px",
+    "tt": "uppercase",
+    "col": "var(--ok)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "i.mechtag ‹ .cname",
+     "n": 1,
+     "text": "age, not a fault"
+    }
+   ]
+  }
+ ]
+}

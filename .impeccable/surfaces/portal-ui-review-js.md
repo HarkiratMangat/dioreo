@@ -23,7 +23,7 @@ Every mutation is a `core/ops` value — validate, preview, apply, invert. The r
 
 ## What must stay untouched
 
-- **Conformance is measured, not judged.** The design authority is `docs/superpowers/mockups/2026-08-23-portal-interactive/`, and this realm closes on the ENUMERATION of cited differences, never on a percentage.
+- **Conformance is measured, not judged.** The design authority is Board 4: Final (plan `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §10.6, `DESIGN.md`) wherever Board 4 draws this realm, and `docs/superpowers/mockups/2026-08-23-portal-interactive/` elsewhere (since 2026-11-15 02:28 EST); this realm closes on the ENUMERATION of cited differences, never on a percentage.
 - Colour carries topic; shape carries state. A new state gets a new shape, never a new hue.
 - ⚠️ Four realm accents are aliases of state colours in `tokens.css`. Whether that is a defect or a deliberate pun is recorded as undecided in DESIGN.md and must not be silently resolved here.
 

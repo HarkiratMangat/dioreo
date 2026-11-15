@@ -2,6 +2,7 @@
 // repeats collapsed. Written 2026-09-29 19:13 EDT: HANDOFF.md's Structure rows pointed at handoffs written for boards 1–3, so no file said
 // what Board 4 itself is made of. The per-gate summaries in HANDOFF.md are authored FROM this file; this file is the evidence.
 // Usage (the kit served on :8900): node structure.cjs  → writes structure.md beside it.
+const KITC = require('./kit.cjs'); // which board: Collective's kit, or Final after a bake (kit.cjs)
 const fs = require('fs'); const path = require('path');
 const { GATES, STAGE, sleep, open, actions, act } = require('./board4-walk.cjs');
 const outline = (p, scope, depth, cap) => p.evaluate((scope, depth, cap) => {
@@ -27,7 +28,7 @@ const outline = (p, scope, depth, cap) => p.evaluate((scope, depth, cap) => {
 }, scope, depth, cap);
 (async () => {
   const { b, p, errs } = await open();
-  const out = ['---', 'kind: reference', 'status: live', '---', '', '# Board 4: Collective — structure, generated', '',
+  const out = ['---', 'kind: reference', 'status: live', '---', '', '# ' + KITC.TITLE + ' — structure, generated', '',
     `*Generated ${new Date().toISOString()} by \`structure.cjs\` from the running kit at 1282×888. Every gate's stage as an outline: each line is an element (tag, classes, role, accessible label), siblings with the same classes collapsed to ×N, a leaf's text after the dash. Resting at depth 8; each state or Try at depth 6, printed only where it differs from resting. Read HANDOFF.md's per-gate Structure rows first — they are written from this file.*`, ''];
   let states = 0;
   for (const [g, id, title] of GATES) {

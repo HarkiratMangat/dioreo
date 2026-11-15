@@ -1070,6 +1070,7 @@ const FM_RULE = [
   ["docs/pins2/README.md", "reference"],
   ["docs/pins2/plan/", "plan"],
   ["docs/pins2/spec/", "spec"],
+  ["docs/pins2/final/board4-spec-collective/", "record"],   // Board 4: Collective's spec as he signed it off, frozen at Session 4's close (2026-11-15): a record, never regenerated
   ["docs/pins2/final/", "reference"],
   ["docs/pins2/instruments/", "reference"],
   ["docs/pins2/kit/", "reference"],

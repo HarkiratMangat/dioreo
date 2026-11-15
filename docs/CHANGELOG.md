@@ -29,7 +29,25 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.21.1 — 2026-11-14 12:12 EST (#272) — News-triage card buttons answer first, a failed click says so, the card channel is named at every start, and `/admin` explains Discord's permissions correctly
+## v3.21.2 — 2026-11-15 02:37 EST (#196) — Portal pins batch 2, Session 4 closed: the control standard, Board 4: Final, and the records Session 5 ports from
+
+Session 4 of the batch-2 plan (`docs/pins2/plan/2026-09-13-portal-pins-batch-2.md`) worked out the portal's control standard over Board 4: Collective, drew the Dioreo-Bot catch-up since v3 onto it, and closed by the plan's §13 under Harkirat's delegation of 2026-11-15 00:39 EST. No bot or portal runtime file changes: Session 5 ports the standard into `portal/`.
+
+### Added
+- **Plan §10.6, the standardization table:** the conventions C0–C32 (sizes, corners, type, icons, gaps, the style recipes, names, fields, pop-ups and drawers, tags and badges, meters, tiles, pickers, rows), the small-text table, the hover rule at its source, the exemptions E1–E14, round 4's calls and the bot catch-up; §5d item 10 for Session 5.
+- **`docs/pins2/handoffs/2026-11-15-bot-catch-up-intake.md`:** every catch-up item checked against `main` and routed (six drawn, three specified as components, eight straight to Session 5, five filed).
+- **`docs/pins2/final/board4-spec-collective/`:** Board 4: Collective's spec as he signed it off, frozen.
+- The decision ledger's 2026-11-15 section, and the catch-up's five filed items in `docs/db-deferred-list.md`.
+- Session 4's working records under `docs/claude/s4/` (the handoff, the conventions, the small-text draft, the realm census) and its pins2 handoffs.
+
+### Changed
+- **`DESIGN.md` describes Board 4: Final,** the standard Session 5 ports: the control grammar, sizes and style recipes, one corner scale, C5's type and C7's gaps, the retired `--patch`; the portal is behind it until Session 5. `PRODUCT.md`, `CLAUDE.md`'s DESIGN.md and mockups rows, the seven `.impeccable/surfaces` briefs and the 2026-08-23 package's `COMPANION.md` name Board 4: Final as the authority wherever it draws.
+- **`docs/pins2/final/board4-spec/` regenerated over Board 4: Final.** Its token map gains a Portal column decided by rule (never onto the retired `--patch`; `--meshGold` its own token), `extract-spec.cjs` reads the board's stylesheet list from the board, and `relations.cjs` holds the date picker's day at C30's 32.
+- **The plan points at `main`** now that `v3-pre-release` is gone: Session 4's and 5's branches and §13's version, merge and tag steps.
+- Hooks and tooling carried on the branch: `self-check.sh` reads only what follows the last compact and allows a mid-session effort step; Haiku 5.5 sidekicks need no approval; the portal fixture harness serves on a threaded server and registers 31 more census surfaces; `Logos-&-Emojis/` is ignored.
+- 21 of Session 4's pins in `docs/portal/portal-sync-notes.md` marked with their §10.6 rows.
+
+## v3.21.1 — 2026-11-14 12:12 EST (#272 · `bbd78362`) — News-triage card buttons answer first, a failed click says so, the card channel is named at every start, and `/admin` explains Discord's permissions correctly
 
 His report (2026-11-14 11:54 EST): Undo Draft Changes on a dev card showed "The application didn't respond in time". The dev bot's analytics hold no event at all between 2026-11-12 22:43 EST and the click, so it was most likely not running; the code also had two real weaknesses on the same path (brief: `local/project/features/news-triage-undo/brief.md`, gitignored).
 

@@ -3,15 +3,15 @@ kind: reference
 status: live
 ---
 
-# Board 4: Collective — the exact changes to PORTAL code
+# Board 4: Final — the exact changes to PORTAL code
 
-*Generated 2026-10-01T16:33:49.480Z by `maps.cjs` from `docs/pins2/kit/` at repo commit `14d7594 (the kit's own local repo, on this Mac only since 2026-09-30 21:16 EDT) plus its working tree`. The kit's copies of portal files (`ui/*.js` against `portal/ui/`, `app.css` against the built `portal/public/app.css`), as unified diffs: 14 files differ. Board chrome copies (`ui/app.js`, `ui/httpClient.js`, `ui/conform.js`) are left out — applying them would break the portal (Board 3-E's file-map). A `useB3()` branch collapses to the arm the board holds (`switches.md`).*
+*Generated 2026-11-15T07:35:23.634Z by `maps.cjs` from `local/pins2/s4/board4-final/` at repo commit `a82c4e6 (Board 4: Final's own local repo, on this Mac only) plus its working tree`. The kit's copies of portal files (`ui/*.js` against `portal/ui/`, `app.css` against the built `portal/public/app.css`), as unified diffs: 14 files differ. Board chrome copies (`ui/app.js`, `ui/httpClient.js`, `ui/conform.js`) are left out — applying them would break the portal (Board 3-E's file-map). A `useB3()` branch collapses to the arm the board holds (`switches.md`).*
 
 ## `app.css` → `portal/public/app.css`
 
 ```diff
 diff --git aportal/public/app.css bkit/app.css
-index 85107e32..91579bed 100644
+index 7baf6ba4..2bda95fa 100644
 --- aportal/public/app.css	
 +++ bkit/app.css	
 @@ -55,7 +55,9 @@
@@ -33,15 +33,30 @@ index 85107e32..91579bed 100644
    /* the three season deadlines are distinct TOPICS, so each gets its own hue;
       they read as vertical dashed markers, never as lane bars */
    --bp:#FFCE3A; --rank:#5FA8FF; --dmz:#FF9F45;
-@@ -268,7 +271,7 @@
-   --win-18:rgba(31,138,94,.18); --win-20:rgba(31,138,94,.20); --win-45:rgba(31,138,94,.45);
+@@ -233,7 +236,7 @@
+   --sl-underbarrel:oklch(76% .055 150); --sl-optic:oklch(76% .055 190); --sl-laser:oklch(76% .055 225);
+   --sl-rear-grip:oklch(76% .055 260); --sl-perk:oklch(76% .055 300); --sl-ammunition:oklch(76% .055 340);
+   /* A boxed icon button draws its visible box this far inside its 44px target, so one at a container's edge hangs its target out by exactly this much and lands its VISIBLE edge on the padding line (contract C4). Was --pb-inset on the board. */
+-  --box-inset:5px;
++  --box-size:32px; --box-inset:calc((var(--tap) - var(--box-size)) / 2);
+   /* The boxed icon button's own radius: 8px on the board, 2px from --rad-2 and 2px from --rad-3, so it is its own step rather than a rounding. */
+   --rad-box:8px;
+   /* The Best tier's legendary gold (plan §10.1 row 18): the hex .t-legendary already uses. The same hex as --patch, but a different meaning, so it is its own name and a later retune of one never moves the other. */
+@@ -304,11 +307,11 @@
+    * 12.5/13→base · 13.5/14/14.5→md · 15/16→lg · 19→xl · 24→hero; 17 and 20 stay literal — two display
+    * one-offs on the Armory rank column). ⚠️ The mockup package keeps the OLD values on purpose: it is
+    * the design as approved, and the build-out moved past it (ledger, "Superseded 2026-09-06"). */
+-  --t-micro:9.5px; --t-xs:10.5px; --t-sm:12px; --t-base:13px;
+-  --t-md:14.5px; --t-lg:16.5px; --t-xl:19px; --t-hero:26px;
++  --t-micro:9px; --t-xs:11px; --t-sm:12px; --t-base:13px;
++  --t-md:14px; --t-lg:17px; --t-xl:19px; --t-hero:26px;
+   /* line-height as three jobs, not per-rule taste: a figure sits tight, a control sits on its
+    * own line, a paragraph breathes. */
+-  --lh-tight:1.15; --lh-ui:1.35; --lh-body:1.5;
++  --lh-tight:1.15; --lh-ui:1.35; --lh-body:1.5; --lh-1:round(up, 1em, 2px);
  
-   --row-selected:#20303B;    /* the Manifest's tbody tr.on, one step past --hi */
--  --on-staged:#1A2000;       /* ink ON --staged's lime fill (13.4:1), re-derived 2026-09-13 17:32 EDT when --staged left cyan */
-+  --on-staged:#1A2000;       /* ink ON --staged's fill, the staged yellow #D8F24A (13.4:1), re-derived 2026-09-13 17:32 EDT when --staged left cyan */
-   --on-ok:#07130A;           /* ink ON --ok's green fill (11.0:1) — confirm buttons fill with --ok since 2026-09-13 17:32 EDT */
- 
-   /* the scrim behind the preview drawer and the command palette — a colder base than --scrim-* */
+   --ui:"Space Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+   --data:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
 @@ -439,7 +442,18 @@ button {
      cursor: pointer;
      transition: background .12s ease, border-color .12s ease, color .12s ease;
@@ -107,7 +122,20 @@ index 85107e32..91579bed 100644
  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
  /* ⚠️ `padding`, `margin` and `border` ARE PART OF THE RECIPE, not padding of the rule. They came from
     tokens.css's `.sr-only`, which was deleted on 2026-08-26 as "the same rule declared twice" — without
-@@ -652,7 +666,7 @@ input:not([type=checkbox]):not([type=radio]):not([type=range]):not([data-bare]){
+@@ -637,10 +651,10 @@ button{cursor:pointer;background:none;border:0;color:inherit;font:inherit}
+  * and never measured whether it was now enough. It was not.
+  * An opt-out cannot lose an argument it is not having: a `[data-bare]` input never matches here,
+  * so no future rule ordering can revive the box. Audit rule 12 asserts it stays that way. */
+-input:not([type=checkbox]):not([type=radio]):not([type=range]):not([data-bare]),
++input:where(:not([type=checkbox]):not([type=radio]):not([type=range]):not([data-bare])),
+ select:not([data-bare]),textarea:not([data-bare]){
+   background:var(--sunk);border:1px solid var(--rule2);border-radius:var(--rad-2);padding:8px 10px;min-height:var(--tap)}
+-input:not([type=checkbox]):not([type=radio]):not([type=range]):not([data-bare]){padding-left:var(--ctl-pl,10px)}
++input:where(:not([type=checkbox]):not([type=radio]):not([type=range]):not([data-bare])){padding-left:var(--ctl-pl,10px)}
+ /* FIX THE CLASS, NOT THE INSTANCE (2026-09-10): this rule's own padding SHORTHAND is exactly the
+    specificity trap documented three lines above for .cmdbar's search bar -- any `.foo input{padding-
+    left:Npx}` anywhere in this file loses to this rule's 0,4,1 no matter what specificity it tries to
+@@ -652,10 +666,10 @@ input:not([type=checkbox]):not([type=radio]):not([type=range]):not([data-bare]){
     declared AFTER the shorthand in this SAME rule, means any future component sets one custom
     property instead of re-fighting a specificity war it cannot see coming. */
  input:hover,select:hover,textarea:hover{border-color:var(--ink4)}
@@ -115,7 +143,11 @@ index 85107e32..91579bed 100644
 +input:focus,select:focus,textarea:focus{border-color:var(--staged);outline:none}
  input::placeholder{color:var(--ink3)}
  input:disabled,select:disabled{opacity:.45;cursor:not-allowed}
- label{font-size:var(--t-sm);color:var(--ink2);font-weight:600;display:block;margin-bottom:5px}
+-label{font-size:var(--t-sm);color:var(--ink2);font-weight:600;display:block;margin-bottom:5px}
++label{font-size:var(--t-sm);color:var(--ink2);font-weight:600;display:block;margin-bottom:4px}
+ 
+ /* ═══ SHELL ═══ */
+ .app{display:grid;grid-template-columns:var(--rail-w) 1fr;grid-template-rows:var(--hdr-h) 1fr;height:100vh}
 @@ -671,7 +685,7 @@ main .panel, main section{min-width:0}
  header{grid-column:1/-1;display:flex;align-items:center;gap:14px;padding:0 16px;background:var(--paper);
    border-bottom:1px solid var(--rule);position:sticky;top:0;z-index:40}
@@ -175,18 +207,64 @@ index 85107e32..91579bed 100644
  .col h4{margin:0 0 10px;font-size:var(--t-micro);letter-spacing:.13em;text-transform:uppercase;color:var(--ink3);font-weight:700;
    display:flex;align-items:center;gap:7px}
  .col h4 .ct{margin-left:auto;font-family:var(--data);color:var(--ink3)}
-@@ -955,6 +969,10 @@ main{overflow:auto;padding-bottom:140px}
+@@ -928,11 +942,16 @@ main{overflow:auto;padding-bottom:140px}
+ 
+ /* ═══ MANIFEST — always present, never switches ═══ */
+ /* ── The Manifest tools row — plan pins batch 2 §10.4 C1 C2 C5 C6, 2026-09-15 00:07 EDT ── Two rows: the Manifest's name, its search and the create verb; then the filter groups, each inline behind one divider with 16px on both sides (10px row gap + 6px margin, then 16px padding). Label to control is 12px everywhere: the row gap on row one, and the group gap plus 4px on row two. The first label on each row is 84px and right-aligned, so stacked rows start their controls on one line. */
+-.mtools{display:grid;gap:var(--s3);padding:14px var(--s4);border-bottom:1px solid var(--rule)}
+-.mt-r1{display:flex;align-items:center;gap:var(--s3);min-width:0}
+-.mt-r2{display:flex;align-items:center;flex-wrap:wrap;column-gap:10px;row-gap:var(--s2);min-width:0}
+-.mt-grp{display:inline-flex;align-items:center;flex-wrap:wrap;gap:var(--s2)}
+-.mt-grp .mlabel{margin-right:var(--s1)}
++.mtools{border-bottom:1px solid var(--rule)}
++
++.mt-r2{flex-wrap:wrap;}
++/* 2026-10-03 21:49 EDT (Session 4): the label and its chips are two boxes. --chip-gap is the space between chips; the group's gap is the space after the
++   label, which used to be the chip gap plus a margin on the label, so it starts as exactly that sum and nothing moves at rest. */
++/* 2026-10-04 00:17 EDT (Session 4, R1): the space after the label was calc(--chip-gap + --s1), so setting the chips' gap moved the label's too, and
++   --lab-gap was also the slot labels' own variable (b3/board.css). It is --mt-lab-gap now, set as its own value wherever --chip-gap is. */
++.mt-grp{--chip-gap:var(--s2);--mt-lab-gap:var(--s3);}
++
++
+ .mt-grp + .mt-grp{margin-left:6px;padding-left:var(--s4);box-shadow:inset 1px 0 0 var(--rule2)}
+ .mt-grp + .mt-grp .mlabel{min-width:0}
+ /* A typed search's match count, a soft rectangle inside the field (C1, C2) — never a readout beside the table. */
+@@ -955,18 +974,21 @@ main{overflow:auto;padding-bottom:140px}
  .mtable col.c-bc-text{width:auto}
  .mtable col.c-bc-date{width:120px}
  .mtable col.c-bc-state{width:140px}
 +/* V47 BH: a repeat is a chip inline after the announcement's text; the text gives way (ellipsis), the chip never does */
 +.bc-tt{display:flex;align-items:center;gap:10px;min-width:0}
-+.bc-tt > b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
++.bc-tt > b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-box:trim-both cap alphabetic;line-height:var(--lh-1);padding-block:4px;margin-block:-4px}
 +.bc-tt > .bc-rep{flex:none}
  .app[data-realm=broadcast] .mtable td,.app[data-realm=broadcast] .mtable th{padding-left:var(--s2);padding-right:var(--s2)}
- .app[data-realm=broadcast] .mtable td{height:64px}
- .app[data-realm=broadcast] .mtable td:first-child,.app[data-realm=broadcast] .mtable th:first-child{position:relative;padding-left:22px;padding-right:20px}
-@@ -1048,7 +1066,7 @@ main{overflow:auto;padding-bottom:140px}
+-.app[data-realm=broadcast] .mtable td{height:64px}
+-.app[data-realm=broadcast] .mtable td:first-child,.app[data-realm=broadcast] .mtable th:first-child{position:relative;padding-left:22px;padding-right:20px}
++.app[data-realm=broadcast] .mtable td:first-child,.app[data-realm=broadcast] .mtable th:first-child{position:relative;padding-left:24px;padding-right:20px}
+ .app[data-realm=broadcast] .mtable td.ra,.app[data-realm=broadcast] .mtable th.ra{padding-right:var(--s4)}
+ .app[data-realm=broadcast] .mtable .ncell > span{min-width:0}
+ .mtable .ncell .bcbar{position:absolute;left:0;top:10px;bottom:10px;width:4px;border-radius:0 3px 3px 0;background:var(--c)}
+-.app[data-realm=broadcast] .mtable td:first-child b{display:block;font:600 var(--t-base)/1.35 var(--ui);color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
++.app[data-realm=broadcast] .mtable td:first-child b{display:block;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .bcdt{display:grid;gap:var(--s1);font:500 var(--t-sm)/1 var(--data);color:var(--ink2);white-space:nowrap}
+ .bcdt small{font:500 var(--t-xs)/1 var(--ui);color:var(--ink3)}
+ .bcdt.dim{font-family:var(--ui);color:var(--ink3)}
+ .bcdt.never{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--warn-ink)}
+-.btab{display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 11px 0 12px;border-radius:var(--rad-1);background:color-mix(in srgb,var(--lc) 9%,transparent);box-shadow:inset 3px 0 0 var(--lc),inset 0 0 0 1px color-mix(in srgb,var(--lc) 22%,transparent);font:600 var(--t-sm)/1 var(--ui);color:var(--lc);white-space:nowrap}
++.btab{display:inline-flex;align-items:center;gap:8px;height:28px;padding:0 12px 0 12px;border-radius:var(--rad-1);background:color-mix(in srgb,var(--lc) 9%,transparent);box-shadow:inset 3px 0 0 var(--lc),inset 0 0 0 1px color-mix(in srgb,var(--lc) 22%,transparent);font:600 var(--t-sm)/1 var(--ui);color:var(--lc);white-space:nowrap}
+ .btab.staged{background:none;box-shadow:inset 3px 0 0 color-mix(in srgb,var(--lc) 55%,transparent);outline:1.5px dashed var(--lc);outline-offset:-1.5px}
+ .btab .ic{width:14px;height:14px}
+ /* ── Armory's weapon groups — design board 2 G4 (plan pins batch 2 §10.4), 2026-09-15 00:23 EDT ── Ported from resolved-spec.md, never the board's CSS; its 5px/6px/7px radii land on --rad-1/--rad-2 and its 8px button boxes on --rad-box. The refinement contract: 34px boxed controls on one centre line (C3), visible edges on the padding line (C4), 22px between action boxes and 17px either side of the divider (C9), information left and actions right (C10), faults as shape on the faulty cell (C11). */
+@@ -1029,7 +1051,7 @@ main{overflow:auto;padding-bottom:140px}
+ }
+ /* ── Analytics' Include · Admin traffic — design board 2 G2 ── */
+ .incg{display:inline-flex;align-items:center;gap:10px;padding-left:var(--s4);box-shadow:inset 1px 0 0 var(--rule2)}
+-.incg > span{font:600 var(--t-micro)/1 var(--data);letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)}
++.incg > span{font:600 var(--t-micro)/var(--lh-1) var(--data);letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)}
+ .chip.incchip{gap:var(--s2);min-height:var(--tap);padding:0 var(--s4)}
+ .chip.incchip .ic{width:14px;height:14px}
+ .chip.incchip[aria-pressed=true]{background:color-mix(in srgb,var(--r-analytics) 14%,transparent);border-color:color-mix(in srgb,var(--r-analytics) 45%,transparent);color:var(--ink)}
+@@ -1048,7 +1070,7 @@ main{overflow:auto;padding-bottom:140px}
  .cmpt td.base{padding:3px 4px}
  .cmpt tr.gap th{padding:14px 0 2px;font:600 var(--t-sm)/1 var(--ui);color:var(--ink2);text-align:left}
  .cv{display:flex;align-items:center;height:36px;padding:0 10px;border-radius:var(--rad-1);font:500 var(--t-sm)/1.2 var(--ui);color:var(--ink2);white-space:nowrap}
@@ -195,20 +273,43 @@ index 85107e32..91579bed 100644
  .cv.rm{color:var(--warn);outline:1px dashed color-mix(in srgb,var(--warn) 60%,transparent);outline-offset:-1px}
  .cv.x{color:var(--ink3)}
  .cv.m{font:600 var(--t-sm)/1 var(--data);letter-spacing:.04em}
-@@ -1108,10 +1126,10 @@ main{overflow:auto;padding-bottom:140px}
+@@ -1094,24 +1116,26 @@ main{overflow:auto;padding-bottom:140px}
+ .lp h2 a.hlink:hover{color:var(--ink)}
+ .chip.lmorechip{align-self:flex-start;margin-top:var(--s2)}
+ .dchips{display:inline-flex;flex-wrap:wrap;gap:6px}
+-.wg-heads{display:grid;grid-template-columns:32px minmax(0,1fr) auto;column-gap:var(--s4);align-items:center;min-height:44px;padding:0 var(--s4);background:var(--sunk);font:600 var(--t-micro)/1 var(--data);letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
+-.wg-sort{all:unset;display:inline-flex;align-items:center;gap:5px;min-height:44px;cursor:pointer;color:var(--ink);font:inherit;letter-spacing:inherit;text-transform:inherit}
++.wg-heads{display:grid;grid-template-columns:var(--tap) minmax(0,1fr) auto;column-gap:var(--s4);align-items:center;min-height:var(--tap);padding:0 var(--s4) 0 4px;background:var(--sunk);font:600 var(--t-micro)/1 var(--data);letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
++.wg-sort{all:unset;display:inline-flex;align-items:center;gap:4px;min-height:var(--tap);cursor:pointer;color:var(--ink);font:inherit;letter-spacing:inherit;text-transform:inherit}
+ .wg-sort .ic{width:14px;height:14px}
+ .wg-sort:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:var(--rad-1)}
+-.wg-fold{position:relative;isolation:isolate;display:inline-flex;align-items:center;gap:var(--s2);min-height:var(--tap);padding:0 var(--s3);border:0;background:none;color:var(--ink2);font:600 var(--t-sm)/1 var(--ui);letter-spacing:normal;text-transform:none;cursor:pointer}
++.wg-fold{position:relative;isolation:isolate;display:inline-flex;align-items:center;min-height:var(--tap);border:0;background:none;color:var(--ink2);letter-spacing:normal;text-transform:none;cursor:pointer}
+ .wg-fold::before{content:"";position:absolute;inset:var(--box-inset) 0;z-index:-1;border-radius:var(--rad-box);background:var(--raised);box-shadow:inset 0 0 0 1px var(--rule2)}
+ .wg-fold:hover{color:var(--ink)}
+-.wg-fold .ic{width:14px;height:14px}
++
+ .wg{--c:var(--ink3);border-top:1px solid var(--rule)}
+-.wg-h{position:relative;display:grid;grid-template-columns:32px auto minmax(0,1fr) auto;column-gap:var(--s3);align-items:center;min-height:52px;padding:0 var(--s4) 0 20px;background:linear-gradient(90deg,color-mix(in srgb,var(--c) 8%,transparent),transparent 34%),var(--raised);cursor:pointer}
++.wg-h{position:relative;display:grid;align-items:center;min-height:52px;background:linear-gradient(90deg,color-mix(in srgb,var(--c) 8%,transparent),transparent 34%),var(--raised);cursor:pointer}
+ .wg-h::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c)}
  .wg-h:focus-visible,.wg-r:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
- .wg-cb{display:grid;place-items:center;width:var(--tap);height:var(--tap);margin-left:-12px;cursor:pointer}
+-.wg-cb{display:grid;place-items:center;width:var(--tap);height:var(--tap);margin-left:-12px;cursor:pointer}
++/* 2026-10-04 00:03 EDT (Session 4, Builder-2): the checkbox is a --tap box in a --tap first track. It used to sit in a 32px track pulled 12px left, so the row's
++   20px padding was really 8px before the box; the rows (.wg-heads, .wg-h, .wg-r) now say 8px and the track says 44px, and nothing moves. */
++.wg-cb{display:grid;place-items:center;width:var(--tap);height:var(--tap);cursor:pointer}
  .wg-cb:focus-visible{outline:2px solid var(--focus);outline-offset:-8px;border-radius:var(--rad-2)}
 -.wg-cb[aria-checked=mixed] .cb{background:color-mix(in srgb,var(--patch) 40%,var(--sunk));border-color:var(--patch)}
 +.wg-cb[aria-checked=mixed] .cb{background:color-mix(in srgb,var(--staged) 40%,var(--sunk));border-color:var(--staged)}
  .wg-line{display:flex;align-items:center;min-width:0;gap:var(--s3)}
- .wg-line b{font:600 var(--t-md)/1 var(--ui);letter-spacing:.005em;color:var(--ink);white-space:nowrap}
+-.wg-line b{font:600 var(--t-md)/1 var(--ui);letter-spacing:.005em;color:var(--ink);white-space:nowrap}
 -.wg-line small{font:600 var(--t-micro)/1 var(--data);letter-spacing:.16em;text-transform:uppercase;color:var(--c);white-space:nowrap}
++.wg-line b{letter-spacing:.005em;color:var(--ink);white-space:nowrap}
 +.wg-line small,.f-menu .f-om{font:600 var(--t-micro)/1 var(--data);letter-spacing:.16em;text-transform:uppercase;color:var(--c);white-space:nowrap}
  .wg-nb{font-style:normal;letter-spacing:.14em;color:var(--ink3)}
  .wg-nb::before{content:"";display:inline-block;width:3px;height:3px;margin:0 9px 2px;border-radius:var(--rad-round);background:var(--ink4)}
  .wg-tags{display:flex;align-items:center;gap:6px;min-height:22px;padding-left:var(--s4);margin-left:var(--s2);box-shadow:inset 1px 0 0 var(--rule2)}
-@@ -1120,7 +1138,7 @@ main{overflow:auto;padding-bottom:140px}
+@@ -1120,7 +1144,7 @@ main{overflow:auto;padding-bottom:140px}
  .wg-tag[data-t=top3]{--tc:var(--info)}
  .wg-tag[data-t=top4]{--tc:color-mix(in srgb,var(--info) 78%,var(--ink2))}
  .wg-tag[data-t=top5]{--tc:color-mix(in srgb,var(--info) 55%,var(--ink2))}
@@ -217,7 +318,32 @@ index 85107e32..91579bed 100644
  .wg-tag[data-t=toxic]{--tc:var(--danger-ink)}
  .wg-tag[data-t=dmz]{--tc:var(--mode-dmz,var(--info))}
  .wg-fwrap{position:relative;display:inline-flex;align-self:center;justify-self:end;margin-right:18px}
-@@ -1148,8 +1166,8 @@ main{overflow:auto;padding-bottom:140px}
+@@ -1136,84 +1160,94 @@ main{overflow:auto;padding-bottom:140px}
+ .wg-fpr > span{display:grid;gap:6px;font:500 var(--t-sm)/1.3 var(--ui);color:var(--ink);white-space:nowrap}
+ .wg-ib{position:relative;isolation:isolate;display:grid;place-items:center;flex:none;width:var(--tap);height:var(--tap);min-height:0;padding:0;border:0;background:none;color:var(--ink3);cursor:pointer}
+ .wg-ib::before{content:"";position:absolute;inset:var(--box-inset);z-index:-1;border-radius:var(--rad-box);background:var(--raised);box-shadow:inset 0 0 0 1px var(--rule2);transition:background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)}
+-.wg-ib .ic{width:16px;height:16px}
++
+ .wg-ib:hover{color:var(--ink)}
+ .wg-ib:hover::before{background:var(--hi);box-shadow:inset 0 0 0 1px var(--ink4)}
+ .wg-ib.wg-del:hover{color:var(--danger-ink)}
+-.wg-ib.wg-del:hover::before{background:color-mix(in srgb,var(--danger-ink) 10%,var(--raised));box-shadow:inset 0 0 0 1px var(--danger-edge)}
++/* .wg-ib.wg-del:hover::before: the delete hover is paint's, in b4/library.css (round 3 of his v35 review (2026-10-21 17:42 EDT, his r36 answers)) */
+ .wg-ib:focus-visible{outline:2px solid var(--focus);outline-offset:-3px}
+-.wg-fbtn{margin-right:calc(-1 * var(--box-inset))}
+-.wg-r{position:relative;display:grid;grid-template-columns:32px 28px minmax(0,1fr) 28px 144px 113px;column-gap:var(--s3);align-items:center;min-height:52px;padding:0 var(--s4) 0 20px;border-top:1px solid var(--rule3);cursor:pointer;transition:background .18s}
+-.wg-r.dmz{grid-template-columns:32px 28px minmax(0,1fr) 28px 113px}
++/* 2026-10-04 00:30 EDT (Session 4, R1): the fold button draws its box --box-inset inside its hit box, and it was pulled that far into the row's padding
++   so the drawn box met the 16px line. The row's right padding is measured to that drawn edge now, s4 minus the inset, and the button sits plain. */
++.wg-r{position:relative;display:grid;align-items:center;min-height:52px;border-top:1px solid var(--rule3);cursor:pointer;transition:background .18s}
++.wg-r.dmz{grid-template-columns:var(--tap) 28px minmax(0,1fr) auto}
++/* Builder-2, 2026-10-06 12:35 EDT (Harkirat 12:28 EDT: "a main container/row, which holds components ... with sub-containers inside for each"):
++   the build row is four components, its checkbox, its number, the build, and the buttons on its right, which were three loose grid columns
++   (image, code, share | delete) and are one container now, laid out as before: 28, 144 and 114 + the box inset, 12 apart, the last set at its end */
++.wg-end{display:flex;align-items:center;}
++
++
++.wg-end > .wg-acts{justify-content:flex-end}
  .wg-r::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c);opacity:0;transition:opacity .18s}
  .wg-r:hover{background:radial-gradient(360px 80px at 14% 40%,color-mix(in srgb,var(--c) 16%,transparent),transparent 72%),radial-gradient(420px 100px at 76% 70%,color-mix(in srgb,var(--c) 7%,transparent),transparent 70%),radial-gradient(260px 70px at 46% 0,color-mix(in srgb,var(--realm-c) 6%,transparent),transparent 70%),var(--paper)}
  .wg-r:hover::before,.wg-r.open::before{opacity:1}
@@ -228,18 +354,61 @@ index 85107e32..91579bed 100644
  .wg-r.bad::after{content:"";position:absolute;right:0;top:0;bottom:0;width:4px;background:repeating-linear-gradient(-45deg,var(--warn) 0 3px,transparent 3px 6px)}
  /* Not drawn on the board and required (§10.4): a build staged for deletion carries the shipped staged shape, a dashed edge, on its own row. */
  .wg-r.staged{outline:1.5px dashed var(--staged);outline-offset:-1.5px}
-@@ -1163,7 +1181,7 @@ main{overflow:auto;padding-bottom:140px}
+-.wg-ix{display:grid;align-items:center;justify-self:start;height:32px;font:500 21px/1 var(--display);color:var(--ink3)}
++.wg-ix{display:grid;align-items:center;justify-self:start;height:32px;font:500 20px/20px var(--display);color:var(--ink3)}
+ .wg-r:hover .wg-ix{color:var(--c)}
+-.wg-main{display:grid;gap:6px;align-self:center;min-width:0;padding:11px 0}
+-.wg-main.named{grid-template-columns:auto minmax(0,1fr);column-gap:20px;align-items:center}
+-.wg-plate{position:relative;display:grid;gap:3px;align-self:center;max-width:156px;padding:7px 12px 8px;border-radius:var(--rad-2);background:linear-gradient(100deg,color-mix(in srgb,var(--c) 22%,var(--raised)),color-mix(in srgb,var(--c) 7%,var(--raised)));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 38%,transparent);font:600 var(--t-sm)/1.25 var(--ui);color:var(--ink)}
+-.wg-plate::after{content:"";position:absolute;top:0;bottom:0;right:-10px;width:1px;background:var(--rule2)}
+-.wg-plate small{font:600 var(--t-micro)/1 var(--data);letter-spacing:.16em;text-transform:uppercase;color:color-mix(in srgb,var(--c) 70%,var(--ink2))}
++.wg-main{display:grid;align-self:center;min-width:0;}
++.wg-main.named{grid-template-columns:auto minmax(0,1fr);align-items:center}
++.wg-plate{position:relative;display:grid;align-self:center;max-width:156px;border-radius:var(--rad-2);background:linear-gradient(100deg,color-mix(in srgb,var(--c) 22%,var(--raised)),color-mix(in srgb,var(--c) 7%,var(--raised)));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 38%,transparent);color:var(--ink)}
++.wg-plate::after{content:"";position:absolute;top:0;bottom:0;width:1px;background:var(--rule2)}
++.wg-plate small{font:600 var(--t-micro)/var(--lh-1) var(--data);letter-spacing:.16em;text-transform:uppercase;color:color-mix(in srgb,var(--c) 70%,var(--ink2))}
  .wg-plate span{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
  .wg-rail{display:flex;flex-wrap:wrap;align-items:center;gap:6px;min-width:0}
- .wg-at{display:inline-flex;align-items:center;min-width:0;height:28px;padding:0 10px;border-radius:var(--rad-2);background:linear-gradient(180deg,color-mix(in srgb,var(--ink) 4%,var(--sunk)),var(--sunk));box-shadow:inset 0 0 0 1px var(--rule2),inset 0 1px 0 color-mix(in srgb,var(--ink) 6%,transparent);font:500 var(--t-sm)/1 var(--ui);color:var(--ink);white-space:nowrap}
+-.wg-at{display:inline-flex;align-items:center;min-width:0;height:28px;padding:0 10px;border-radius:var(--rad-2);background:linear-gradient(180deg,color-mix(in srgb,var(--ink) 4%,var(--sunk)),var(--sunk));box-shadow:inset 0 0 0 1px var(--rule2),inset 0 1px 0 color-mix(in srgb,var(--ink) 6%,transparent);font:500 var(--t-sm)/1 var(--ui);color:var(--ink);white-space:nowrap}
 -.wg-at[style]{background:color-mix(in srgb,var(--sl) 11%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--sl) 30%,transparent),inset 0 1px 0 color-mix(in srgb,var(--sl) 14%,transparent)}
-+.wg-at[style],.b4 .cx-same .cx-sv.wg-at{background:color-mix(in srgb,var(--sl) 11%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--sl) 30%,transparent),inset 0 1px 0 color-mix(in srgb,var(--sl) 14%,transparent)}
- .wg-r:hover .wg-at[style]{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--sl) 48%,transparent),inset 0 1px 0 color-mix(in srgb,var(--sl) 20%,transparent)}
- .wg-at.gap{background:none;box-shadow:none;outline:1px dashed color-mix(in srgb,var(--warn) 55%,transparent);outline-offset:-1px;color:var(--warn-ink)}
+-.wg-r:hover .wg-at[style]{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--sl) 48%,transparent),inset 0 1px 0 color-mix(in srgb,var(--sl) 20%,transparent)}
+-.wg-at.gap{background:none;box-shadow:none;outline:1px dashed color-mix(in srgb,var(--warn) 55%,transparent);outline-offset:-1px;color:var(--warn-ink)}
++.wg-at{display:inline-flex;align-items:center;min-width:0;height:28px;padding:0 10px;border-radius:var(--rad-2);background:linear-gradient(180deg,color-mix(in srgb,var(--ink) 4%,var(--sunk)),var(--sunk));box-shadow:inset 0 0 0 1px var(--rule2),inset 0 1px 0 color-mix(in srgb,var(--ink) 6%,transparent);color:var(--ink);white-space:nowrap}
++/* The name sits in its own box, trimmed to its capitals, so the chip centres the capitals themselves at every size. As bare text it was
++   centred by its line box and sat up to 1.1px high, growing only upward (Harkirat 2026-10-05 19:41 EDT: "if it only grows upward, then
++   it's not truly centered"). */
++.wg-at > .wg-an{display:block;min-width:0;text-box:trim-both cap alphabetic}
++/* The same for any control's own words: a text in a flex control sits in .tx-cap (a name no other rule uses), trimmed to its capitals, so the control centres them exactly
++   (the manifest's sort and fold labels sat 0.35–0.85px off, more at bigger sizes; 2026-10-05 20:05 EDT). */
++.tx-cap{display:block;min-width:0;text-box:trim-both cap alphabetic}
  .wg-im{display:grid;place-items:center;width:28px;height:28px;color:color-mix(in srgb,var(--ok) 80%,var(--ink3))}
-@@ -1184,11 +1202,6 @@ main{overflow:auto;padding-bottom:140px}
+ .wg-im.no{color:var(--warn-ink)}
+ .wg-im .ic{width:16px;height:16px}
+-.wg-code{all:unset;box-sizing:border-box;display:flex;align-items:center;width:100%;min-height:var(--tap);cursor:copy}
++.wg-code{all:unset;box-sizing:border-box;display:flex;align-items:center;min-height:var(--tap);cursor:copy}
+ .wg-code:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:var(--rad-2)}
+-.wg-ig{display:flex;align-items:stretch;width:100%;height:34px;border-radius:var(--rad-2);background:var(--desk);box-shadow:inset 0 0 0 1px var(--rule2)}
+-.wg-igf{display:flex;align-items:center;flex:1;min-width:0;padding:0 var(--s3);border-radius:var(--rad-2) 0 0 var(--rad-2);box-shadow:inset 0 2px 4px color-mix(in srgb,var(--sunk) 45%,black)}
+-.wg-ct{font:600 var(--t-sm)/1 var(--data);letter-spacing:.08em;color:var(--ink);white-space:nowrap}
++.wg-ig{display:flex;align-items:stretch;width:100%;height:32px;background:var(--desk);box-shadow:inset 0 0 0 1px var(--rule2)}
++.wg-igf{display:flex;align-items:center;min-width:0;border-radius: var(--k-r8, 8px) 0 0 var(--k-r8, 8px);box-shadow:inset 0 2px 4px color-mix(in srgb,var(--sunk) 45%,black)}
++.wg-ct{font:600 11px/var(--lh-1) var(--data);letter-spacing:.08em;color:var(--ink);white-space:nowrap}
+ .wg-ct.bad{color:var(--warn-ink);text-decoration:underline wavy var(--warn);text-underline-offset:5px}
+-.wg-igb{display:grid;place-items:center;flex:none;width:38px;border-radius:0 var(--rad-2) var(--rad-2) 0;background:var(--raised);box-shadow:inset 0 0 0 1px var(--rule2);color:var(--ink2)}
+-.wg-igb .ic{width:14px;height:14px}
++.wg-igb{display:grid;place-items:center;flex:none;width:36px;border-radius:0 var(--rad-2) var(--rad-2) 0;background:var(--raised);box-shadow:inset 0 0 0 1px var(--rule2);color:var(--ink2)}
++
+ .wg-code:hover .wg-ig{box-shadow:inset 0 0 0 1px var(--ink4)}
+ .wg-code:hover .wg-igb{background:var(--hi);color:var(--ink)}
+-.wg-ig.none{align-items:center;justify-content:center;background:none;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--warn) 35%,transparent)}
++.wg-ig.none{align-items:center;background:none;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--warn) 35%,transparent)}
+ .wg-cnone{display:inline-flex;align-items:center;gap:6px;font:600 var(--t-sm)/1 var(--ui);color:var(--warn-ink)}
  .wg-cnone .ic{width:14px;height:14px}
- .wg-acts{display:flex;align-items:center;gap:var(--s3);justify-self:end;margin-right:calc(-1 * var(--box-inset))}
+-.wg-acts{display:flex;align-items:center;gap:var(--s3);justify-self:end;margin-right:calc(-1 * var(--box-inset))}
++/* 2026-10-04 02:11 EDT (Session 4, R1): the row's buttons draw their boxes --box-inset inside their hit boxes, and the set was pulled that far into the row's
++   padding so the drawn edge met the 16px line. The row's right padding is measured to that drawn edge now (s4 minus the inset) and the last track is
++   the set's full width (113px + the inset), so every other track keeps its place; Compare's cell does the same (b4/compare.css). */
++.wg-acts{display:flex;align-items:center;gap:var(--s3);justify-self:end}
  .wg-vr{flex:none;width:1px;height:24px;background:var(--rule2)}
 -.wg-strip{display:grid;grid-template-columns:32px 28px minmax(0,1fr) 28px 144px 113px;column-gap:var(--s3);align-items:center;min-height:26px;padding:0 var(--s4) 0 20px;background:var(--sunk);font:600 var(--t-micro)/1 var(--data);letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
 -.wg-strip.dmz{grid-template-columns:32px 28px minmax(0,1fr) 28px 113px}
@@ -249,30 +418,53 @@ index 85107e32..91579bed 100644
  /* C14 (plan pins batch 2 §10.4, 2026-09-15 08:56 EDT): at a phone's width nothing may clip a control, though a phone layout itself stays not a priority. Measured before this: at 390px the build row's delete button ended at 443 of a 390 viewport, on every row. The row keeps its first line (checkbox, number, content) and moves the image mark, the code and the actions onto a second line; the weapon header lets its tags wrap and drops the Fix chip under the name; the tools row lets its search shrink. */
  @media (max-width:640px){
    .mt-r1{flex-wrap:wrap}
-@@ -1204,12 +1217,11 @@ main{overflow:auto;padding-bottom:140px}
+   .srch{flex:1 1 180px;min-width:0;max-width:none}
+   .mtools .mlabel{min-width:0;text-align:left}
+-  .wg-heads{padding:0 var(--s3)}
+-  .wg-h{grid-template-columns:32px minmax(0,1fr) auto;row-gap:6px;padding:8px var(--s3) 8px 14px}
++  .wg-heads{padding:0 var(--s3) 0 0}
++  .wg-h{grid-template-columns:var(--tap) minmax(0,1fr) auto;row-gap:6px;padding:8px calc(var(--s3) - var(--box-inset)) 8px 2px}
+   .wg-h > .wg-line{flex-wrap:wrap;row-gap:4px;column-gap:var(--s2)}
+   .wg-h > .wg-fwrap{grid-column:2;grid-row:2;justify-self:start;margin-right:0}
+   .wg-h > .wg-fbtn{grid-column:3;grid-row:1}
+   .wg-tags{margin-left:0;padding-left:0;box-shadow:none;flex-wrap:wrap}
+   .wg-fpop{right:auto;left:0;min-width:0;width:min(320px,calc(100vw - 48px))}
    .wg-fpr > span{white-space:normal}
-   .wg-r,.wg-r.dmz{grid-template-columns:32px 22px minmax(0,1fr) auto;row-gap:4px;padding:6px var(--s3) 6px 14px}
+-  .wg-r,.wg-r.dmz{grid-template-columns:32px 22px minmax(0,1fr) auto;row-gap:4px;padding:6px var(--s3) 6px 14px}
++  .wg-r,.wg-r.dmz{grid-template-columns:var(--tap) 22px minmax(0,1fr) auto;row-gap:4px;padding:6px calc(var(--s3) - var(--box-inset)) 6px 2px}
    .wg-r > .wg-main{grid-column:3 / 5;grid-row:1}
 -  .wg-r > .wg-im{grid-column:2;grid-row:2}
-+  .wg-r > :is(.wg-im,.wg-imh){grid-column:2;grid-row:2}
-   .wg-r > .wg-code,.wg-r > .wg-ig.none{grid-column:3;grid-row:2;max-width:144px}
-   .wg-r > .wg-acts{grid-column:4;grid-row:2}
+-  .wg-r > .wg-code,.wg-r > .wg-ig.none{grid-column:3;grid-row:2;max-width:144px}
+-  .wg-r > .wg-acts{grid-column:4;grid-row:2}
++  .wg-end{display:contents}
++  .wg-end > :is(.wg-im,.wg-imh){grid-column:2;grid-row:2}
++  .wg-end > .wg-code,.wg-end > .wg-ig.none{grid-column:3;grid-row:2;max-width:144px}
++  .wg-end > .wg-acts{grid-column:4;grid-row:2}
    .wg-main.named{grid-template-columns:minmax(0,1fr);row-gap:6px}
    .wg-plate::after{display:none}
 -  .wg-strip{display:none}
  }
- .srch{position:relative;display:flex;align-items:center;flex:0 1 340px;max-width:340px}
- .srch input{width:100%;--ctl-pl:40px}
-@@ -1241,7 +1253,7 @@ th{text-align:left;font-size:var(--t-micro);letter-spacing:.12em;text-transform:
+-.srch{position:relative;display:flex;align-items:center;flex:0 1 340px;max-width:340px}
+-.srch input{width:100%;--ctl-pl:40px}
+-.srch svg{position:absolute;left:13px;top:50%;margin-top:-8px;width:16px;height:16px;stroke:var(--ink3);fill:none;stroke-width:2;pointer-events:none}
++.srch{position:relative;display:flex;align-items:center;flex:0 1 340px;}
++.srch input{width:100%;}
++.srch > svg{position:absolute;top:50%;stroke:var(--ink3);fill:none;stroke-width:2;pointer-events:none}   /* 2026-10-07 16:40 EDT (his: the clear x "is broken"): was `.srch svg`, which also reached the clear button's own icon, set it absolute at half its button's height (low) and fixed its stroke at ink3 (no hover colour). The glass is the field's only direct svg */
+ /* 🔴 ONE .srch BLOCK NOW, NOT TWO (2026-09-10 10:51 EDT). A second copy sat ~1300 lines below this one
+    carrying a 32px control padding and a 14px icon, and won on source order -- so raising the
+    padding HERE changed the file and not the page, which is how a verified-looking fix ships and
+@@ -1240,8 +1274,8 @@ th{text-align:left;font-size:var(--t-micro);letter-spacing:.12em;text-transform:
+    was mouse-only sorting on four realms — invisible to a keyboard pass that selects by role. */
  th.sortable{user-select:none;padding:0}
  th.sortable .sortbtn{all:unset;display:block;width:100%;box-sizing:border-box;cursor:pointer;
-   padding:inherit;font:inherit;color:inherit;letter-spacing:inherit;text-transform:inherit}
+-  padding:inherit;font:inherit;color:inherit;letter-spacing:inherit;text-transform:inherit}
 -th.sortable .sortbtn:focus-visible{outline:2px solid var(--patch);outline-offset:-2px;border-radius:var(--rad-1)}
++  padding:inherit;font:inherit;color:inherit;letter-spacing:inherit;text-transform:inherit;line-height:var(--lh-1)}
 +th.sortable .sortbtn:focus-visible{outline:2px solid var(--staged);outline-offset:-2px;border-radius:var(--rad-1)}
  /* 🔴 THE SORT INDICATOR WAS A TYPED CHARACTER, WHICH THIS REPO BANS BY NAME (2026-09-10 10:48 EDT).
     Harkirat, 2026-08-25: "NEVER USE TEXT GLYPHS FOR ICONS. ICONS ARE ICONS." A pseudo-element fed a
     double-headed arrow character, bumped 12px -> 16px by an earlier pass and reported not fixed
-@@ -1258,16 +1270,16 @@ th.sortable .sortbtn:hover .sortic{color:var(--ink2)}
+@@ -1258,16 +1292,16 @@ th.sortable .sortbtn:hover .sortic{color:var(--ink2)}
     original pin needed more than one token step. A literal 16px here, matching the header text's
     own size rather than a smaller data-scale token. */
  /* Was --t-xs -- "the sort icons are SOOO tiny, i could barely tell what they were" (Harkirat, pin pmtuwz0d6, 2026-09-09). */
@@ -293,7 +485,7 @@ index 85107e32..91579bed 100644
  .cb.on::after{content:"";position:absolute;left:4.5px;top:1px;width:4px;height:9px;border:solid var(--on-accent);border-width:0 2px 2px 0;transform:rotate(42deg)}
  .dot{display:inline-block;width:9px;height:9px;border-radius:var(--rad-1);margin-right:8px;vertical-align:-1px;background:var(--c)}
  .stt{font-family:var(--data);font-size:var(--t-micro);letter-spacing:.08em;padding:2px 7px;border-radius:var(--rad-1);font-weight:600;white-space:nowrap}
-@@ -1276,7 +1288,7 @@ td.d{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3);white-space
+@@ -1276,7 +1310,7 @@ td.d{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3);white-space
  .stt.conflict{border:1.5px dashed var(--warn);color:var(--warn);
    background-image:repeating-linear-gradient(45deg,transparent 0 3px,rgba(255,122,69,.5) 3px 4px)}
  .bulk{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--hi);border-top:1px solid var(--rule2);flex-wrap:wrap}
@@ -302,7 +494,61 @@ index 85107e32..91579bed 100644
  .bulk button{background:var(--sunk);border:1px solid var(--rule2);color:var(--ink2);font-size:var(--t-sm);font-weight:600;
    padding:7px 11px;border-radius:var(--rad-2);min-height:36px}
  .bulk button:hover{color:var(--ink);border-color:var(--ink3)}
-@@ -1396,7 +1408,7 @@ main a:not([class]):hover{text-decoration-color:var(--ink3)}
+@@ -1285,7 +1319,7 @@ td.d{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3);white-space
+ /* 🔴 NOTHING IN THIS FILE STYLED A BARE `<a>`, so three links on HOME rendered the browser default `#0000EE` on a dark panel — **1.79:1**, on the arrival surface, and every gate was green because the contrast gate walked a fixture that has no unclassed link in it (2026-09-09 21:11 EDT). `home.js:203`, `:208` and `:255` all read "open the Track". A base rule rather than a class on those three: the next unclassed anchor anyone writes is covered too, which is the difference between fixing an instance and fixing the class. */
+ main a:not([class]){color:var(--ink);text-decoration:underline;text-decoration-color:var(--rule2);text-underline-offset:2px}
+ main a:not([class]):hover{text-decoration-color:var(--ink3)}
+-.empty{padding:34px 16px;text-align:center;color:var(--ink3);font-size:var(--t-md)}
++.empty{line-height:round(1.5em, 4px);padding:32px 16px;text-align:center;color:var(--ink3);font-size:var(--t-md)}
+ .empty b{display:block;color:var(--ink2);font-size:var(--t-lg);margin-bottom:6px}
+ /* The one action an empty state may carry (today: Sign in again, on an expired session). --s3 rather than a literal: Harkirat chose snap-to-the-nearest-step on 2026-09-09 20:26 EDT, and a NEW gap is the one case with no argument for adding another literal. */
+ .empty .pill{margin-top:var(--s3)}
+@@ -1325,10 +1359,10 @@ main a:not([class]):hover{text-decoration-color:var(--ink3)}
+ /* The Manifest's own name. Same eyebrow treatment as every other section label, and it sits
+  * INSIDE the tools row rather than above it, so naming the component costs no vertical space
+  * on three already-dense pages. */
+-.mtools .mlabel{font:600 var(--t-micro)/1 var(--data);letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);flex:none;min-width:84px;text-align:right}
++.mtools .mlabel{flex:none;}
+ @media (max-width:768px){ .mtools .mlabel{display:none} }
+ .tray-f{display:flex;gap:var(--s2);padding:var(--s2) var(--s3);border-top:1px solid var(--rule)}
+-.btn{flex:1;border-radius:var(--rad-2);font-size:var(--t-base);font-weight:700;padding:9px;min-height:var(--tap);
++.btn{line-height:round(1.5em, 2px);flex:1;border-radius:var(--rad-2);font-size:var(--t-base);font-weight:700;padding:8px;min-height:var(--tap);
+   background:var(--raised);color:var(--ink2);border:1px solid var(--rule2);
+   transition:background var(--dur-1) var(--ease),color var(--dur-1) var(--ease),
+   border-color var(--dur-1) var(--ease)}
+@@ -1352,7 +1386,7 @@ main a:not([class]):hover{text-decoration-color:var(--ink3)}
+   background:var(--raised);border:1px solid var(--rule2);border-radius:var(--rad-3);z-index:45;overflow:hidden;
+   opacity:0;pointer-events:none;transition:opacity .18s,transform .18s cubic-bezier(.2,.8,.3,1);
+   box-shadow:0 40px 90px -20px var(--scrim-90),0 0 0 1px rgba(255,255,255,.04)}
+-.drawer.open{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
++.drawer.open{opacity:1;pointer-events:auto;transform:translate(round(-50%, 1px), round(-50%, 1px)) scale(1)}
+ .drawer.wide{width:min(880px,calc(100vw - 40px))}
+ /* ⚠️ RESERVED, NOT DEAD — do not let a reverse-orphan sweep delete this (2026-09-09 20:52 EDT). `Drawer`'s `side` prop is passed by ZERO call sites today, which is exactly what an orphan looks like. It is the alternative the ledger's Season-composer row keeps open: the composer is a wide centred drawer BECAUSE `side` is 420px and the tier preview wants to sit beside the items box, and that row's reopens-if is "he wants the form beside the Track rather than over it". Deleting it turns a one-prop reversal into a rebuild. */
+ .drawer.side{left:auto;right:0;top:var(--hdr-h);bottom:0;transform:translateX(100%);
+@@ -1364,9 +1398,9 @@ main a:not([class]):hover{text-decoration-color:var(--ink3)}
+ .dw-h{display:flex;align-items:flex-start;gap:14px;padding:var(--s4) var(--s5) var(--s3);flex:none;
+   border-bottom:1px solid var(--rule);background:linear-gradient(180deg,rgba(255,255,255,.03),transparent)}
+ .dw-ttl{min-width:0;display:flex;flex-direction:column;gap:6px}
+-.dw-eye{font-family:var(--data);font-size:var(--t-micro);letter-spacing:.09em;color:var(--ink3);
++.dw-eye{line-height:round(1.5em, 2px);font-family:var(--data);font-size:var(--t-micro);letter-spacing:.09em;color:var(--ink3);
+   text-transform:uppercase}
+-.dw-h h2{margin:0;font:600 var(--t-xl)/1.25 var(--ui);color:var(--ink);letter-spacing:-.015em}
++.dw-h h2{margin:0;font:600 var(--t-xl)/round(1.25em, 4px) var(--ui);color:var(--ink);letter-spacing:-.015em}
+ /* 🔴 THE HIT AREA REACHES `--tap`; THE MARK DOES NOT GROW (2026-09-09 20:55 EDT). Measured across nine live drawer instances on five realms, this rendered 28×28 against a `--tap` of 44 — on the close control of every drawer in the product, `overlay.js`'s `Drawer` being imported by six of seven realms. Two things made it a defect rather than a preference: Season's typed-confirm renders its OWN controls at exactly 44, so the rule is live where someone thought about it, and `app.css`'s 32px bypass elsewhere carries a dated comment saying why — so the convention is honour it or document it, and this did neither.
+    ⚠️ THE BOX IS NOT RESIZED, DELIBERATELY. A 44px square in a header padded 16/12 grows the header on every drawer, which is a density change and therefore Harkirat's. `layout.md`'s own line is "keep touch targets usable even when their visible marks are small" — the transparent ::after extends the target 8px past a 28px mark in every direction, which is 44. */
+ .dw-h .x{margin-left:auto;flex:none;background:transparent;border:1px solid var(--rule2);position:relative;
+@@ -1385,8 +1419,8 @@ main a:not([class]):hover{text-decoration-color:var(--ink3)}
+   display:flex;align-items:center;gap:8px}
+ .drawer h5 em{font-style:normal;font-family:var(--data);font-size:var(--t-micro);color:var(--ink3);margin-left:auto}
+ .drawer .x{background:none;border:1px solid var(--rule2);color:var(--ink3);border-radius:var(--rad-2);width:28px;height:28px}
+-.dcard{background:var(--dc-bg);border-radius:8px/* foreign-radius: Discord's own corner, like --dc-*. The preview must look like Discord, not like the portal. */;border-left:4px solid var(--c);padding:11px 13px;color:var(--dc-body);font-size:12.5px}
+-.dcard h6{margin:0 0 3px;font-size:14px;color:var(--dc-ink);font-weight:700}
++.dcard{background:var(--dc-bg);border-radius:8px/* foreign-radius: Discord's own corner, like --dc-*. The preview must look like Discord, not like the portal. */;border-left:4px solid var(--c);padding:12px 12px;color:var(--dc-body);font-size:12.5px}
++.dcard h6{margin:0 0 4px;font-size:13px;line-height:round(1.5em, 4px);color:var(--dc-ink);font-weight:700}
+ .dcard .sub{font-size:11px;color:var(--dc-mute);margin-bottom:8px}
+ .dcard .row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--dc-rule);font-size:11.5px}
+ .dcard .row:last-of-type{border:0}
+@@ -1396,7 +1430,7 @@ main a:not([class]):hover{text-decoration-color:var(--ink3)}
  /* toast */
  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--raised);border:1px solid var(--rule2);
    border-radius:var(--rad-2);padding:10px 16px;font-size:var(--t-base);z-index:80;box-shadow:0 12px 32px -12px #000;display:flex;align-items:center;gap:12px}
@@ -311,7 +557,7 @@ index 85107e32..91579bed 100644
  
  /* ═══ RESPONSIVE — two breakpoints, exactly ═══ */
  /* 🔴 The page-level horizontal overflow at 390px was the HEADER, not the table.
-@@ -1451,7 +1463,7 @@ header{min-width:0}
+@@ -1451,7 +1485,7 @@ header{min-width:0}
  /* logo is a control, not a wordmark */
  .mk{background:none;border:1px solid transparent;border-radius:var(--rad-2);padding:5px 8px;min-height:34px;display:flex;align-items:center;gap:7px}
  .mk:hover{border-color:var(--rule2);background:var(--sunk)}
@@ -320,7 +566,7 @@ index 85107e32..91579bed 100644
  
  /* ═══ SEASON IDENTITY — the editor that was missing entirely ═══ */
  .identity{margin:0 22px var(--s5);border:1px solid var(--rule);border-radius:var(--rad-2);background:var(--paper);overflow:hidden}
-@@ -1467,7 +1479,7 @@ header{min-width:0}
+@@ -1467,7 +1501,7 @@ header{min-width:0}
  .scrub .mini{position:absolute;height:4px;min-width:3px;border-radius:var(--rad-1);background:var(--c);opacity:.72}
  .scrub .season-end{position:absolute;top:0;bottom:0;width:1px;background:var(--warn);opacity:.7}
  .scrub .winbox:active{cursor:grabbing}
@@ -329,7 +575,7 @@ index 85107e32..91579bed 100644
  .scrub .wh:hover{opacity:1}
  .scrub .wh.l{left:-1px;border-radius:var(--rad-1) 0 0 var(--rad-1)} .scrub .wh.r{right:-1px;border-radius:0 var(--rad-1) var(--rad-1) 0}
  
-@@ -1477,7 +1489,7 @@ header{min-width:0}
+@@ -1477,7 +1511,7 @@ header{min-width:0}
  
  /* ═══ INTERACTIVE TRACK ELEMENTS ═══ */
  .bar{touch-action:none}
@@ -338,7 +584,7 @@ index 85107e32..91579bed 100644
  .bar .gr{opacity:0;transition:opacity .1s}
  .bar:hover .gr,.bar:focus-visible .gr{opacity:1}
  .lane .tk{cursor:crosshair}
-@@ -1494,9 +1506,9 @@ header{min-width:0}
+@@ -1494,9 +1528,9 @@ header{min-width:0}
     window.frames, and now .ghost. ⚠️ `.pill.ghost` itself was REMOVED 2026-08-31: its only emitter was
     oneway.js's "Export first →" button, refused in the mode collapse because it gates on an export
     interlock this console does not have. */
@@ -351,7 +597,7 @@ index 85107e32..91579bed 100644
  
  /* markers are draggable controls, not decoration */
  .now{touch-action:none}
-@@ -1511,7 +1523,7 @@ header{min-width:0}
+@@ -1511,7 +1545,7 @@ header{min-width:0}
  .tip{position:fixed;z-index:90;background:var(--raised);border:1px solid var(--rule2);border-radius:var(--rad-2);
    padding:6px 10px;font-family:var(--data);font-size:var(--t-sm);color:var(--ink);pointer-events:none;white-space:nowrap;
    box-shadow:0 8px 24px -10px #000}
@@ -360,7 +606,7 @@ index 85107e32..91579bed 100644
  .tip .sub{display:block;color:var(--ink3);font-size:var(--t-xs);margin-top:2px}
  
  /* ═══ BOARD v2 — content state, not pipeline state ═══ */
-@@ -1551,12 +1563,12 @@ header{min-width:0}
+@@ -1551,12 +1585,12 @@ header{min-width:0}
     choice rather than as one rule missing. Copied from the design's sheet, where it has always been. */
  .rephits button{display:flex;align-items:baseline;gap:10px;width:100%;text-align:left;
    background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer}
@@ -375,7 +621,7 @@ index 85107e32..91579bed 100644
  
  
  /* ═══════════════════════════════════════════════════════════════════════════
-@@ -1573,7 +1585,7 @@ header{min-width:0}
+@@ -1573,7 +1607,7 @@ header{min-width:0}
  /* loading — the control keeps its width so the row does not reflow */
  .is-loading{position:relative;color:transparent!important;pointer-events:none}
  .is-loading::after{content:"";position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;
@@ -384,7 +630,7 @@ index 85107e32..91579bed 100644
  @keyframes spin{to{transform:rotate(360deg)}}
  @media (prefers-reduced-motion:reduce){.is-loading::after{animation:none;border-top-color:var(--ink2)}}
  
-@@ -1603,7 +1615,7 @@ td,.lane{border-bottom-color:var(--rule3)}
+@@ -1603,7 +1637,7 @@ td,.lane{border-bottom-color:var(--rule3)}
  
  /* ambient: one soft light source behind the masthead, nothing else glows */
  body::before{content:"";position:fixed;inset:0 0 auto;height:420px;pointer-events:none;z-index:0;
@@ -393,7 +639,7 @@ index 85107e32..91579bed 100644
               radial-gradient(700px 260px at 78% -12%,rgba(95,212,232,.05),transparent 60%)}
  main{position:relative;z-index:1}
  /* Paired with overlay.js's applyInert: while a modal is open main must not be a stacking context, or
-@@ -1640,10 +1652,10 @@ main[data-modal]{z-index:auto}
+@@ -1640,10 +1674,10 @@ main[data-modal]{z-index:auto}
  .lanes{position:relative;display:flex;flex-direction:column;gap:7px;background-image:none}
  
  /* the NOW line is the instrument's needle — it glows and breathes */
@@ -407,7 +653,7 @@ index 85107e32..91579bed 100644
  @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.55);opacity:.55}}
  
  /* bars become objects: elevation, a light top edge, and a real lift on hover */
-@@ -1675,14 +1687,14 @@ main[data-modal]{z-index:auto}
+@@ -1675,14 +1709,14 @@ main[data-modal]{z-index:auto}
  }
  
  /* rail items get a considered active treatment rather than a bare bar */
@@ -425,7 +671,7 @@ index 85107e32..91579bed 100644
  
  /* ═══ MARKER LABELS — measured collision fix ═══════════════════════════════
     At 1440px the NOW, BP END and 2XCP captions were rendering INTO the ruler
-@@ -1697,7 +1709,7 @@ main[data-modal]{z-index:auto}
+@@ -1697,7 +1731,7 @@ main[data-modal]{z-index:auto}
  .now::after{
    top:-2px;background:var(--sunk);border:1px solid currentColor;border-radius:var(--rad-1);
    padding:1px 5px;line-height:14px;z-index:4;letter-spacing:.09em}
@@ -434,7 +680,7 @@ index 85107e32..91579bed 100644
  /* the BP END chip would clip off the right edge when the marker sits near 100% */
  .now::before{top:14px}
  
-@@ -1730,8 +1742,8 @@ main[data-modal]{z-index:auto}
+@@ -1730,8 +1764,8 @@ main[data-modal]{z-index:auto}
  .spark i.staged{background:transparent;box-shadow:inset 0 0 0 1.5px var(--c)}
  .spark i.conflict{background:repeating-linear-gradient(45deg,transparent 0 3px,var(--warn) 3px 4px);
    box-shadow:inset 0 0 0 1.5px var(--warn)}
@@ -445,7 +691,7 @@ index 85107e32..91579bed 100644
  .spark .done{position:absolute;top:0;bottom:0;background:var(--inset-22);border-radius:var(--rad-1) 0 0 var(--rad-1)}
  
  /* 🗑 `td .wincell` deleted 2026-08-28 — a second name for the manifest's WINDOW cell. manifest.js
-@@ -1741,12 +1753,12 @@ main[data-modal]{z-index:auto}
+@@ -1741,12 +1775,12 @@ main[data-modal]{z-index:auto}
  /* ═══ MANIFEST depth ═══ */
  tbody tr{transition:background .12s,box-shadow .12s}
  tbody tr td:first-child{position:relative}
@@ -460,7 +706,7 @@ index 85107e32..91579bed 100644
  .rowmeta{font-family:var(--data);font-size:var(--t-micro);color:var(--ink3);letter-spacing:.06em}
  
  /* ═══ BOARD depth ═══ */
-@@ -1796,7 +1808,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
+@@ -1796,7 +1830,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    color:var(--ink3);margin-bottom:5px;font-weight:600}
  .f-main input{width:100%;background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad-2);
    color:var(--ink);font:600 17px/1.3 var(--ui);padding:10px 12px;letter-spacing:-.01em}
@@ -469,7 +715,16 @@ index 85107e32..91579bed 100644
  
  .dlines{display:flex;flex-direction:column;gap:7px;margin-top:12px}
  .dline{display:grid;grid-template-columns:106px minmax(140px,1fr) 148px 84px 104px;gap:12px;align-items:center;
-@@ -1931,7 +1943,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
+@@ -1887,7 +1921,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
+ .diff-h span+span{border-left:1px solid var(--rule)}
+ .diff-r{display:grid;grid-template-columns:112px 1fr 1fr;font-size:var(--t-base);border-top:1px solid var(--rule3)}
+ .diff-r:first-child{border-top:none}
+-.diff-r>span{padding:9px 12px;min-width:0;overflow:hidden;text-overflow:ellipsis}
++.diff-r>span{padding:8px 12px;min-width:0;overflow:hidden;text-overflow:ellipsis}
+ .diff-r>span+span{border-left:1px solid var(--rule3)}
+ .diff-none{padding:18px 14px;text-align:center;font-size:var(--t-sm);color:var(--ink3)}
+ 
+@@ -1931,7 +1965,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    border:1px solid var(--rule);border-radius:var(--rad-2);padding:9px 11px;margin-bottom:9px;
    cursor:pointer;text-align:left;color:inherit;transition:border-color .14s,background .14s}
  .bcol-h:hover{border-color:var(--rule2);background:var(--hi)}
@@ -478,7 +733,16 @@ index 85107e32..91579bed 100644
  .chev{width:0;height:0;flex:none;border:4px solid transparent;border-left-color:var(--ink4);
    margin-left:1px;transition:transform .2s}
  .bcol-h[aria-expanded=true] .chev{transform:rotate(90deg) translateX(-1px)}
-@@ -2005,7 +2017,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
+@@ -1973,7 +2007,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
+ .opline{font-family:var(--data);font-size:var(--t-micro);letter-spacing:.06em;color:var(--ink3);
+   border:1px solid var(--rule);border-radius:var(--rad-1);padding:3px 8px;display:inline-block;margin-bottom:12px}
+ .opline b{color:var(--ink3);font-weight:600}
+-.dwbody{font-size:var(--t-base);line-height:1.6;color:var(--ink2)}
++.dwbody{font-size:var(--t-base);line-height:round(1.6em, 2px);color:var(--ink2)}
+ .dw-p{margin:0 0 10px}
+ .dw-p b{color:var(--ink);font-weight:600}
+ .dwact{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--rule)}
+@@ -2005,7 +2039,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
     rules in this sheet, twelve substitute a border, a box-shadow or a background; `.cb-in` is compensated by
     `.cmdbar:focus-within` on its parent; this one had neither, and it is the input you land in when the command
     bar opens. Two reviewers argued about `.cb-in` and neither looked here. */
@@ -487,7 +751,7 @@ index 85107e32..91579bed 100644
  .plist{max-height:min(52vh,420px);overflow:auto;padding:6px}
  .pitem{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--rad-2);cursor:pointer;
    font-size:var(--t-base);color:var(--ink2)}
-@@ -2164,14 +2176,14 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
+@@ -2164,14 +2198,14 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
  .smask{position:absolute;top:0;bottom:0;background:rgba(8,11,14,.72);pointer-events:none;z-index:3}
  .smask.l{left:0}
  .winbox{position:absolute;top:0;bottom:0;z-index:4;cursor:grab;
@@ -505,7 +769,7 @@ index 85107e32..91579bed 100644
    box-shadow:0 0 0 1px var(--scrim-50)}
  .winbox .wh:hover::before,.winbox .wh:active::before{height:22px;background:#FFDF6B}
  .winbox .wh.l{left:-6px}
-@@ -2281,7 +2293,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
+@@ -2281,12 +2315,12 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
  /* "Today" is context, not the subject — it was the single most dominant element on the
     track and washed out the bar it crossed. A thin line and a chip, no column of glow. */
  .now{box-shadow:none !important}
@@ -514,7 +778,22 @@ index 85107e32..91579bed 100644
  
  /* ══════════ MANIFEST — the row is one line, and it carries what it knows ══════════
     The wrapper added to keep the <td> a table-cell was left as display:block, so the colour
-@@ -2353,8 +2365,8 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
+    dot and the name landed on separate lines and every row cost 60px for ~36px of content. */
+-.mtable .ncell{display:flex;align-items:center;gap:9px;min-width:0}
++.mtable .ncell{display:flex;align-items:center;gap:8px;min-width:0}
+ /* 🔴 THE DOT WAS INVISIBLE ON EVERY ROW OF EVERY REALM, and the cause is a producer and a consumer naming two
+    different variables. `.dot` paints `background:var(--c)`; manifest.js's dotAccent() writes `--topic-accent`,
+    which is the token tokens.css uses everywhere else for a topic colour. Nothing set `--c`, so the element
+@@ -2296,7 +2330,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
+ .mtable .ncell .dot{flex:none;background:var(--topic-accent, var(--c, var(--ink3)))}
+ .mtable .ncell .edit{flex:1 1 auto;min-width:0}
+ .mtable td{padding:6px 12px}
+-.mtable tbody tr{border-bottom:1px solid var(--rule3)}
++.mtable tbody tr:not(:last-child){border-bottom:1px solid var(--rule3)}.mtable tbody tr:last-child > :is(td,th){border-bottom:0;position:relative} .mtable tbody tr:last-child > :is(td,th)::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--rule3);pointer-events:none}
+ 
+ /* Detail was an em-dash or a bare count. Tiers and thumbnail state are already in the data. */
+ .mtable .det{white-space:normal}
+@@ -2353,8 +2387,8 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    box-shadow:0 6px 18px -8px var(--scrim-90);display:flex;align-items:baseline;gap:8px}
  .xd b{font-family:var(--data);font-size:var(--t-xs);color:var(--ink);font-weight:600;letter-spacing:.03em}
  .xd i{font-style:normal;font-size:var(--t-xs);color:var(--ink3)}
@@ -525,7 +804,7 @@ index 85107e32..91579bed 100644
  .tk-wrap{position:relative}
  
  /* ══════════════════ ACCOUNT MENU ══════════════════
-@@ -2368,8 +2380,8 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
+@@ -2368,8 +2402,8 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
  .uav{position:relative;width:38px;height:38px;border-radius:var(--rad-round);flex:none;display:grid;place-items:center;
    background:linear-gradient(140deg,var(--avatar-a),var(--sunk));
    box-shadow:inset 0 0 0 1px var(--inset-09)}
@@ -536,7 +815,7 @@ index 85107e32..91579bed 100644
  .usec{padding:5px;border-top:1px solid var(--rule)}
  .usec.last{background:rgba(255,107,107,.03)}
  .umenu .mi{display:flex;align-items:center;gap:10px;width:100%;background:transparent;border:none;
-@@ -2392,10 +2404,10 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
+@@ -2392,10 +2426,10 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
  /* 1. FOCUS. Every interactive element gets a visible ring. Not one had been checked all
        session, which means the page was unusable by keyboard and nobody would have known. */
  :where(button,a,input,select,[tabindex]):focus-visible{
@@ -551,7 +830,7 @@ index 85107e32..91579bed 100644
  
  /* 2. NUMBERS. Dates and counts sit in columns, so they need tabular figures or the digits
        shimmy from row to row and the column stops reading as a column. */
-@@ -2411,8 +2423,8 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
+@@ -2411,8 +2445,8 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
  /* 4. LINKED HOVER. The Track and the Manifest are two views of one dataset; hovering either
        lights the other, which is what makes them read as one instrument rather than two lists. */
  .mtable tbody tr.lit{background:var(--hi)}
@@ -562,7 +841,7 @@ index 85107e32..91579bed 100644
  
  /* ══════════════════ ARMORY ══════════════════
     No dates, so no Track. Rack answers "what exists" by category in the bot's own
-@@ -2440,7 +2452,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
+@@ -2440,7 +2474,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
  .rfoot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-family:var(--data);font-size:var(--t-micro);
    color:var(--ink3);letter-spacing:.04em}
  .rfoot b{color:var(--ink2);font-weight:600;font-variant-numeric:tabular-nums}
@@ -571,7 +850,7 @@ index 85107e32..91579bed 100644
  .rbad{color:var(--warn)}
  
  /* Was 14px bottom -- a deliberate breathing-room increase, not a bug fix (Harkirat, pin pmtuwu4fo,
-@@ -2491,7 +2503,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
+@@ -2491,7 +2525,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
     The audit caught it on the same run that proved the badge split worked. */
  .bc-age{font:700 var(--t-base)/1 var(--data);color:var(--ink3);padding:0 3px;cursor:default}
  /* A table row that IS the control needs a focus ring the eye can find across a full-width row. */
@@ -580,7 +859,7 @@ index 85107e32..91579bed 100644
  .ccard[aria-pressed=true] .cmeter i{background:var(--warn)}
  .cfoot{font-family:var(--data);font-size:var(--t-micro);color:var(--ink3);letter-spacing:.04em;
    font-variant-numeric:tabular-nums}
-@@ -2514,7 +2526,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+@@ -2514,7 +2548,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
  .wname{font-weight:500;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
  .mtable .code{font-size:var(--t-sm);color:var(--ink3);letter-spacing:.03em}
  .mtable .none{color:var(--ink3);font-style:italic}
@@ -589,7 +868,7 @@ index 85107e32..91579bed 100644
    font-size:var(--t-micro);letter-spacing:.08em}
  .health{font-family:var(--data);font-size:var(--t-xs);letter-spacing:.04em;padding:3px 8px;border-radius:var(--rad-1);
    white-space:nowrap}
-@@ -2533,7 +2545,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+@@ -2533,7 +2567,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
  .dwfield label{font:600 var(--t-sm)/1.2 var(--ui);color:var(--ink3);letter-spacing:0;text-transform:none}
  .dwfield input{background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad-2);color:var(--ink);
    font:500 var(--t-base)/1 var(--ui);padding:9px 11px}
@@ -598,7 +877,7 @@ index 85107e32..91579bed 100644
  .dwcheck{display:flex;align-items:flex-start;gap:9px;font-size:var(--t-base);color:var(--ink2);cursor:pointer}
  .bulkbar{display:flex;align-items:center;gap:9px;padding:10px 13px;border-top:1px solid var(--rule);
    background:var(--sunk);font-size:var(--t-base);color:var(--ink2)}
-@@ -2552,8 +2564,8 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+@@ -2552,8 +2586,8 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
  .tbcat i{width:8px;height:8px;border-radius:var(--rad-1);background:var(--c);flex:none}
  .tbcat b{font-family:var(--data);font-size:var(--t-xs);color:var(--ink3);font-variant-numeric:tabular-nums}
  .tbcat:hover{color:var(--ink);border-color:var(--rule2)}
@@ -609,7 +888,7 @@ index 85107e32..91579bed 100644
  .tbcat.on b{color:var(--ink2)}
  
  .trows{display:flex;flex-direction:column;gap:9px;padding:13px 16px}
-@@ -2565,7 +2577,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+@@ -2565,7 +2599,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
  .trow-note{font-size:var(--t-sm);color:var(--ink3)}
  /* S reads as the top of a podium, not merely the first row of a list. */
  .t-S{background:linear-gradient(90deg,rgba(242,194,48,.09),transparent 42%)}
@@ -618,7 +897,7 @@ index 85107e32..91579bed 100644
  .t-A .trow-k{color:#9BE8C0} .t-B .trow-k{color:var(--ink3)}
  .t-none{opacity:.86} .t-none .trow-k{color:var(--ink3);font-size:var(--t-sm);width:auto;letter-spacing:.1em}
  .trow-body{display:flex;flex-wrap:wrap;gap:8px;padding:11px 12px;min-height:58px;
-@@ -2574,8 +2586,8 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+@@ -2574,8 +2608,8 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
  .trow-empty{margin:0;align-self:center;font-size:var(--t-sm);color:var(--ink3);font-style:italic}
  
  .bc-top{display:flex;align-items:center;gap:7px}
@@ -629,7 +908,7 @@ index 85107e32..91579bed 100644
  .bc-dmz{color:#5FA8D8}
  .bc-bad{margin-left:auto;color:var(--warn);border:1px solid var(--danger-edge);border-radius:var(--rad-3);
    padding:1px 6px;font-variant-numeric:tabular-nums;cursor:help}
-@@ -2646,7 +2658,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+@@ -2646,7 +2680,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
     NOT on the column it appears to define. Measured across six realms: title left edge 99–100, panel edge 98. */
  .masthead{padding:36px 22px 26px;max-width:none}
  .masthead .job{display:block;font-family:var(--data);font-size:var(--t-micro);
@@ -638,7 +917,7 @@ index 85107e32..91579bed 100644
  /* A realm title is a LABEL, not a hero. It sits one step below the lead figure on purpose:
   * the figure is the realm's defining number and is the thing worth reading first. Uppercase
   * because a condensed grotesque is built for it and because the portal's own vernacular is a
-@@ -2730,7 +2742,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+@@ -2730,7 +2764,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
     would be a regression dressed as feedback. */
  .is-refreshing{position:relative}
  .is-refreshing::after{content:"";position:absolute;left:0;right:0;top:0;height:2px;
@@ -647,7 +926,7 @@ index 85107e32..91579bed 100644
    animation:refl 1.1s var(--ease) infinite;pointer-events:none;z-index:6}
  @keyframes refl{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
  
-@@ -2766,7 +2778,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+@@ -2766,7 +2800,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
     ellipse that grows as the bar fills. Translating a full-width child inside the `overflow:hidden`
     parent moves the SAME rounded leading edge across, so the pixels are the ones this rule already
     drew. `--p` is the percentage; at 0% the child sits entirely left of the clip. */
@@ -656,7 +935,7 @@ index 85107e32..91579bed 100644
    transform:translateX(calc(var(--p,0%) - 100%));
    transition:transform var(--dur-2) var(--ease)}
  .prog.bad .prog-b i{background:var(--danger-ink)}
-@@ -2779,7 +2791,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+@@ -2779,7 +2813,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
  .netbar{display:flex;align-items:center;gap:11px;flex-wrap:wrap;padding:10px 22px;
    border-bottom:1px solid var(--rule2);background:var(--raised);font-size:var(--t-base)}
  .netbar.offline{background:color-mix(in srgb,var(--warn) 9%,var(--raised))}
@@ -665,7 +944,13 @@ index 85107e32..91579bed 100644
  .net-k{font:700 var(--t-micro)/1 var(--data);letter-spacing:.16em;color:var(--ink2);
    border:1px solid var(--rule2);border-radius:var(--rad-1);padding:4px 6px}
  .netbar b{color:var(--ink)}
-@@ -2851,7 +2863,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+@@ -2846,12 +2880,12 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+ .panel + .panel > .ph,.panel + .panel > .mtools{background:transparent}
+ 
+ /* ── 10.2 TYPE: panel and dialog headings step up ── */
+-.ph .t{font-size:var(--t-micro);letter-spacing:var(--tr-micro)}
++.ph .t{font-size:var(--t-micro);line-height:round(1.5em, 2px);letter-spacing:var(--tr-micro)}
+ .dw-h h2{font-size:var(--t-h1);letter-spacing:var(--tr-h1)}
  
  /* ── 10.3 MOTION: three choreographed moments, everything else stays a fade ── */
  @keyframes viewIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
@@ -674,7 +959,7 @@ index 85107e32..91579bed 100644
  @keyframes stagePulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--staged) 55%,transparent)}100%{box-shadow:0 0 0 14px color-mix(in srgb,var(--staged) 0%,transparent)}}
  @keyframes countBump{0%{transform:scale(1)}40%{transform:scale(1.32)}100%{transform:scale(1)}}
  @keyframes settle{0%{transform:scale(1.06)}60%{transform:scale(.985)}100%{transform:scale(1)}}
-@@ -2955,9 +2967,9 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+@@ -2955,9 +2989,9 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
    border-right:1px dashed var(--warn);pointer-events:none}
  .atgap b{position:absolute;top:4px;left:50%;transform:translateX(-50%);font:600 var(--t-micro)/1 var(--ui);
    letter-spacing:var(--tr-micro);text-transform:uppercase;color:var(--warn);white-space:nowrap}
@@ -686,7 +971,16 @@ index 85107e32..91579bed 100644
  
  /* ── ACCESS · the scope matrix ─────────────────────────────────────────────
   * Access is the one ACHROMATIC realm on purpose: its subject is the other
-@@ -3063,7 +3075,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+@@ -3049,7 +3083,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+ /* 2026-09-11 09:08 EDT: no top margin when it sits inside the action row (.mh-add) beside the create button --
+    the s3 above is for its old position directly under the masthead's job line. */
+ .mh-add .mh-mode{margin-top:0}
+-.mh-mode button{min-height:var(--tap);padding:0 var(--s5);border:1px solid var(--rule2);
++.mh-mode button{line-height:round(1.5em, 4px);min-height:var(--tap);padding:0 var(--s5);border:1px solid var(--rule2);
+   border-radius:var(--rad-2);background:transparent;color:var(--ink3);font-family:var(--data);
+   font-size:var(--t-lg);font-weight:700;letter-spacing:.12em;cursor:pointer;
+   transition:color .14s,border-color .14s,background .14s}
+@@ -3063,7 +3097,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
  .mh-mode button[data-arm="DMZ"][aria-checked="true"]{color:var(--ink);background:var(--hi);
    border-color:#3DA5F5;box-shadow:inset 0 -3px 0 0 #3DA5F5}
  .mh-mode button:hover:not([aria-checked="true"]){color:var(--ink2);border-color:var(--ink4)}
@@ -695,7 +989,7 @@ index 85107e32..91579bed 100644
  .mxkey{display:flex;flex-wrap:wrap;gap:var(--s2) var(--s4);align-items:center;
    font-family:var(--data);font-size:var(--t-micro);letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
  .mxfoot{display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--rule);
-@@ -3200,7 +3212,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+@@ -3200,7 +3234,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
    cursor:pointer;transition:filter var(--dur-1) var(--ease)}
  .timb:hover{filter:brightness(1.3)}
  .timb:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
@@ -704,7 +998,7 @@ index 85107e32..91579bed 100644
  .timax{display:flex;gap:3px;margin-top:7px}
  .timax span{flex:1;text-align:center;font:500 var(--t-micro)/1 var(--data);color:var(--ink3)}
  .timleg{display:flex;gap:16px;align-items:center;margin-top:13px;font-size:var(--t-sm);color:var(--ink3)}
-@@ -3219,7 +3231,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+@@ -3219,7 +3253,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
  .home{max-width:1080px;margin:0 auto;padding:34px 24px 60px}
  .hmast{margin-bottom:28px}
  .hmast .job{display:block;font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
@@ -713,7 +1007,7 @@ index 85107e32..91579bed 100644
  .hmast h1{font:700 var(--t-figure)/1 var(--display);letter-spacing:.055em;text-transform:uppercase;color:var(--ink);margin:0}
  .hmast p{font:400 var(--t-lg)/1.55 var(--ui);color:var(--ink3);margin:12px 0 0;max-width:56ch}
  /* Five cards into `auto-fit` leaves a hole at three-across. Six columns divide by both 2
-@@ -3340,7 +3352,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+@@ -3340,7 +3374,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
    border-radius:var(--rad-3);padding:36px 34px 30px;text-align:center}
  .doormk{display:inline-flex;align-items:center;gap:9px;font:700 var(--t-md)/1 var(--ui);
    letter-spacing:.13em;color:var(--ink2);text-transform:uppercase;margin-bottom:26px}
@@ -722,7 +1016,7 @@ index 85107e32..91579bed 100644
  .doormk b{color:var(--ink3);font-weight:400}
  .doorcard h1{font:700 var(--t-hero)/1.2 var(--ui);letter-spacing:var(--tr-h1);color:var(--ink);margin:0}
  .doorcard p{font:400 var(--t-md)/1.6 var(--ui);color:var(--ink3);margin:11px 0 26px}
-@@ -3462,7 +3474,7 @@ button.ub:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+@@ -3462,7 +3496,7 @@ button.ub:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
     reason to keep dead CSS whose subject cannot occur. */
  /* 🔴 THE ROW WHOSE DETAILS PANEL IS OPEN, and it is the portal ahead of the design on purpose. The mockup marks nothing here; Harkirat chose this on 2026-09-09 14:59 EDT from three options RENDERED SIDE BY SIDE — no mark, this edge, or a full row tint — and took the edge because --c is already how this page says "this one", where a tint reads as the bulk-selection state. ⚠️ AN INSET SHADOW, NOT border-left: a real border on one <tr> shifts every cell in that row by its width and the table stops aligning with its own header. An inset shadow paints inside the box and moves nothing. */
  .mx tbody tr.preview-sel td:first-child,
@@ -731,7 +1025,37 @@ index 85107e32..91579bed 100644
  
  .mxlegend{display:inline-block;width:13px;height:13px;border-radius:var(--rad-2);border:1px solid var(--ink3);
    vertical-align:-2px;margin-right:5px;position:relative}
-@@ -3587,7 +3599,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+@@ -3521,16 +3555,16 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+ .lc-desc{margin:0 0 10px;padding:2px 0 2px 10px;border-left:3px solid var(--dc-rule);
+   color:var(--dc-body);font-size:var(--t-sm);line-height:1.5}
+ .lc-h{font:700 var(--t-sm)/1 var(--ui);color:var(--dc-ink);margin:10px 0 6px}
+-.lc-att{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px}
++.lc-att{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+ .lc-att li{display:flex;align-items:baseline;gap:8px;font-size:var(--t-sm);color:var(--dc-body)}
+ .lc-att li::before{content:"•";color:var(--dc-dim)}
+-.lc-att code{font-family:var(--data);font-size:var(--t-xs);background:var(--dc-sunk);
++.lc-att code{line-height:round(1.5em, 2px);font-family:var(--data);font-size:var(--t-xs);background:var(--dc-sunk);
+   border-radius:var(--rad-1);padding:2px 6px;color:var(--dc-body)}
+-.lc-att li em{font-style:normal;font-size:var(--t-micro);color:var(--dc-dim);letter-spacing:.06em;
++.lc-att li em{line-height:round(1.5em, 2px);font-style:normal;font-size:var(--t-micro);color:var(--dc-dim);letter-spacing:.06em;
+   text-transform:uppercase}
+ .lc-att li.none{color:var(--dc-dim);font-style:italic}
+ .lc-code{font-family:var(--data);font-size:var(--t-sm);background:var(--dc-sunk);border-radius:var(--rad-2);
+-  padding:7px 9px;color:var(--dc-body);letter-spacing:.06em}
++  padding:8px 8px;color:var(--dc-body);letter-spacing:.06em}
+ .lc-img{margin:10px 0 0;border-radius:var(--rad-2);overflow:hidden;background:var(--dc-sunk);position:relative}
+ .lc-img img{display:block;width:100%;height:auto}
+ .lc-imgfail{display:none;padding:14px;font-size:var(--t-sm);color:var(--dc-dim);text-align:center}
+@@ -3539,7 +3573,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+ .lc-img.failed .lc-imgfail{display:block}
+ .lc-noimg{margin:10px 0 0;padding:12px;border:1px dashed var(--dc-rule);border-radius:var(--rad-2);
+   font-size:var(--t-sm);color:var(--dc-dim);text-align:center}
+-.lc-foot{margin-top:10px;font-size:var(--t-micro);color:var(--dc-dim);letter-spacing:.04em}
++.lc-foot{line-height:round(1.5em, 2px);margin-top:10px;font-size:var(--t-micro);color:var(--dc-dim);letter-spacing:.04em}
+ 
+ /* ── The build editor: two columns, the document on the left, the image and the
+  * live Discord render on the right. */
+@@ -3587,7 +3621,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    background:var(--raised);transition:all var(--dur-1) var(--ease);min-height:32px}
  .bgt:hover{border-color:var(--ink3);color:var(--ink)}
  .bgt:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
@@ -740,7 +1064,7 @@ index 85107e32..91579bed 100644
  .bgt.tox.on{background:var(--del);border-color:var(--del)}
  .bgt.rank.on{background:var(--info);border-color:var(--info);color:var(--on-accent)}
  .bgnote{font-size:var(--t-sm);color:var(--ink2);line-height:1.6;background:var(--sunk);
-@@ -3621,8 +3633,8 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+@@ -3621,8 +3655,8 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    max-width:150px;overflow:hidden;text-overflow:ellipsis}
  .attpeek em.more{color:var(--ink3)}
  .bdg{display:inline-block;font-family:var(--data);font-size:var(--t-micro);letter-spacing:.06em;font-weight:700;border-radius:var(--rad-1);
@@ -751,7 +1075,7 @@ index 85107e32..91579bed 100644
  .bdg.rank{background:rgba(64,154,208,.14);color:var(--info);border-color:rgba(64,154,208,.4)}
  .bdg.dmz{background:rgba(51,123,166,.16);color:#6FB6DD;border-color:rgba(51,123,166,.45)}
  .bdg.toxic{background:rgba(255,107,107,.14);color:var(--danger-ink);border-color:var(--danger-edge)}
-@@ -3790,11 +3802,11 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+@@ -3790,11 +3824,11 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
  .ackrow .at i,.durrow .dt2 i{display:block;height:100%;background:var(--ev);border-radius:var(--rad-1)}
  .ackrow.danger .at i{background:var(--del)}
  .durrow.slow .dt2 i{background:var(--warn)}
@@ -765,16 +1089,18 @@ index 85107e32..91579bed 100644
    margin-right:5px;border-radius:var(--rad-1)}
  
  /* Reach — donuts and install-type bars. */
-@@ -3953,7 +3965,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+@@ -3952,8 +3986,8 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+ .modesw button[data-arm=DMZ][aria-pressed=true],.modesw button[data-arm=DMZ][aria-selected=true]{background:var(--mode-dmz)}
  .modesw button:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
  .chip.topic em{font-style:normal;font-family:var(--data);font-size:var(--t-micro);color:var(--ink3);
-   margin-left:5px}
+-  margin-left:5px}
 -.chip.topic[aria-pressed=true] em{color:var(--on-accent);opacity:.75;background:var(--c,var(--patch))}
++  margin-left:4px}
 +.chip.topic[aria-pressed=true] em{color:var(--on-accent);opacity:.75;background:var(--c,var(--staged))}
  .modetag{font-style:normal;font-family:var(--data);font-size:var(--t-xs);letter-spacing:.08em;
    color:var(--ink3);border:1px solid var(--rule2);border-radius:var(--rad-1);padding:2px 6px;margin-left:8px;
    vertical-align:2px}
-@@ -4429,7 +4441,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+@@ -4429,7 +4463,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
     square diamond belonged: higher-specificity rules only win the properties they SET. Deleted
     rather than left to lose that argument again. */
  .ptc{cursor:zoom-in;z-index:4}
@@ -783,16 +1109,22 @@ index 85107e32..91579bed 100644
  
  /* Deadline flags: same-date flags MERGE, and a flag near an edge flips rather than clipping.
     🔴 THIS SELECTOR WAS `.dend .dflag.flip` AND MATCHED NOTHING, EVER — and `.dend` itself was removed with the mode collapse on 2026-08-31, when the design's day-notches replaced the portal's battle-pass marker. The flags live in
-@@ -4519,7 +4531,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+@@ -4515,11 +4549,11 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+ /* ── .pill — ONE interactive chip. Every filter, type selector and inline action. ── */
+ .pill{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:var(--rad-pill);
+   border:1px solid var(--rule);background:var(--sunk);color:var(--ink2);cursor:pointer;
+-  font:500 var(--t-base)/1 var(--ui);white-space:nowrap;
++  font:500 var(--t-base)/var(--lh-1) var(--ui);white-space:nowrap;
    transition:border-color .14s,color .14s,background .14s,transform .14s}
- .pill:hover{border-color:var(--rule2);color:var(--ink);transform:translateY(-1px)}
+-.pill:hover{border-color:var(--rule2);color:var(--ink);transform:translateY(-1px)}
++.pill:hover{border-color:var(--rule2);color:var(--ink)}
  .pill:active{transform:none}
 -.pill:focus-visible{outline:2px solid var(--patch);outline-offset:2px}
 +.pill:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
  .pill .dot{width:9px;height:9px;border-radius:var(--rad-1);background:var(--c,var(--ink4));flex:none}
  /* --ink3, not --ink4: this is 10px uppercase TEXT, and #5C6A75 scores 3.02:1 on --paper. It was declared
     TWICE — here and again in the orphaned stand-down block deleted above — so the failing value won on source
-@@ -4527,11 +4539,14 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+@@ -4527,11 +4561,14 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
  .pill .sub{font:400 var(--t-xs)/1 var(--data);letter-spacing:.09em;text-transform:uppercase;color:var(--ink3)}
  .pill kbd{font:500 var(--t-xs)/1 var(--ui);letter-spacing:.04em;color:var(--ink3);
    border:1px solid var(--rule2);border-radius:var(--rad-2);padding:3px 6px}
@@ -800,17 +1132,18 @@ index 85107e32..91579bed 100644
 +.pill.on{border-color:var(--c,var(--staged));background:color-mix(in srgb,var(--c,var(--staged)) 13%,transparent);color:var(--ink)}
  .pill.on .sub{color:var(--ink3)}
 -.pill.lead{border-color:var(--patch);background:color-mix(in srgb,var(--patch) 14%,transparent);color:var(--ink);
+-  font-weight:600;font-size:var(--t-base);padding:10px 15px}
+-.pill.lead:hover{background:color-mix(in srgb,var(--patch) 24%,transparent)}
 +/* 2026-09-30 (his: "#D8F24A for things such as the `Pick` button, the edit buttons, the 'post announcement' 'new build' buttons, the checkmark selection buttons";
 +   #7BDB63 for 'stage this mp builds', 'Repair build', 'download'): a lead action and a selection mark are STAGED/PROVISIONAL, so they read --staged; a
 +   confirm reads --ok. The lead pill and every checkbox were still on --patch, the portal's old global yellow — measured on the kit, swept by selector. */
 +.pill.lead{border-color:var(--staged);background:color-mix(in srgb,var(--staged) 14%,transparent);color:var(--ink);
-   font-weight:600;font-size:var(--t-base);padding:10px 15px}
--.pill.lead:hover{background:color-mix(in srgb,var(--patch) 24%,transparent)}
++  font-weight:600;font-size:var(--t-sm);padding:10px 15px}
 +.pill.lead:hover{background:color-mix(in srgb,var(--staged) 24%,transparent)}
  /* 🔴 A BUTTON IS A HIT AREA, NOT A FONT SIZE. `.pill.sm` set padding and type and nothing else, so it
     rendered 24px tall against `.btn`'s var(--tap) -- measured on the one-way list at 131x24 (pin
     pmtvq210l, 2026-09-10 12:20 EDT). Harkirat: "SO many of the buttons across various surfaces of the
-@@ -4596,7 +4611,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+@@ -4596,7 +4633,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    background:none;border:0;cursor:pointer;color:var(--ink3);text-align:left;
    font:700 var(--t-xs)/1.15 var(--data);letter-spacing:.1em;text-transform:uppercase}
  .lnh:hover{color:var(--ink2)}
@@ -819,7 +1152,7 @@ index 85107e32..91579bed 100644
  /* The lane disclosure is a drawn .pm now - see DISCLOSURE, DRAWN NOT TYPED. */
  .lnh .pm{color:var(--ink3);opacity:.75}
  .lnh:hover .pm{opacity:1;color:var(--ink2)}
-@@ -4670,13 +4685,13 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+@@ -4670,13 +4707,13 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
     which turns the best idea in the design back into the mini-axis it replaced. */
  
  /* ── the ghost the composer draws on the REAL Track ── */
@@ -837,7 +1170,7 @@ index 85107e32..91579bed 100644
  
  @media (max-width:820px){
    :root{--gutter:96px}
-@@ -4692,11 +4707,11 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+@@ -4692,11 +4729,11 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
  /* Centred on the header, not between its neighbours (batch-2 spec §8, 2026-09-13 17:49 EDT). With the crumb gone the flex spacers put the bar halfway between the wordmark and the account cluster, which are different widths, so it sat off-centre. Out of flow only where the header is wide enough that the right cluster cannot reach it; below 1200px it stays a flex item. The header is sticky, so it is the containing block. */
  @media (min-width:1200px){header > .cmdbar{position:absolute;left:50%;transform:translateX(-50%);width:520px}}
  .cmdbar:hover{border-color:var(--rule2)}
@@ -851,16 +1184,23 @@ index 85107e32..91579bed 100644
  .cmdbar:focus-within .cb-mag{background:none}
  .cb-in{flex:1 1 auto;min-width:0;background:none;border:0;color:var(--ink);font:400 var(--t-base)/1 var(--ui)}
  .cb-in::placeholder{color:var(--ink3)}
-@@ -4753,7 +4768,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
- .chip:hover,.seg button:hover{transform:translateY(-1px)}
- .chip:active,.seg button:active{transform:none}
+@@ -4750,12 +4787,10 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+ /* ══════════ COMPONENT ADOPTION — the existing names, the .pill language ══════════ */
+ .chip,.seg button,.tbdsw button{border-radius:var(--rad-pill);
+   transition:border-color .14s,color .14s,background .14s,transform .14s}
+-.chip:hover,.seg button:hover{transform:translateY(-1px)}
+-.chip:active,.seg button:active{transform:none}
  .chip:focus-visible,.seg button:focus-visible,.tbdsw button:focus-visible{
 -  outline:2px solid var(--patch);outline-offset:2px}
+-.seg{border-radius:var(--rad-pill);padding:3px}
+-.seg button{border-radius:var(--rad-pill);padding:6px 13px}
 +  outline:2px solid var(--staged);outline-offset:2px}
- .seg{border-radius:var(--rad-pill);padding:3px}
- .seg button{border-radius:var(--rad-pill);padding:6px 13px}
++.seg{border-radius:var(--rad-pill);padding:4px}
++.seg button{border-radius:var(--rad-pill);padding:6px 12px}
  .tbdsw{border-radius:var(--rad-pill)}
-@@ -4782,7 +4797,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+ .tbdsw button{border-radius:var(--rad-pill)}
+ 
+@@ -4782,7 +4817,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
  .att-row.s-conflict{--sev:var(--warn)}
  .att-row.s-spof    {--sev:var(--del)}
  .att-row.s-error   {--sev:var(--del)}
@@ -869,7 +1209,7 @@ index 85107e32..91579bed 100644
  .att-row.s-forever {--sev:var(--ink4)}
  .att-row.s-conflict .att-i,.att-row.s-spof .att-i,.att-row.s-error .att-i{color:var(--ink3)}
  .att-row.clear{grid-template-columns:34px 3px 1fr}
-@@ -5111,7 +5126,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+@@ -5111,7 +5146,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
     and when a later rule removes that absence, the fallback has to move with it. */
  .stt.saved{color:var(--ci,var(--on-accent))}
  /* a filled state badge (Season passes --c) still takes the ink its fill can carry */
@@ -878,7 +1218,16 @@ index 85107e32..91579bed 100644
  
  
  /* ══════════════════════════════════════════════════════════════════════════════
-@@ -5151,7 +5166,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+@@ -5139,7 +5174,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+   min-width:30px;text-align:center;flex:none}
+ .selbar-t{min-width:0;display:flex;flex-direction:column;gap:2px}
+ .selbar-t b{font:600 var(--t-base)/1 var(--ui);color:var(--ink)}
+-.selbar-t span{font-size:var(--t-sm);color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
++.selbar-t span{font-size:var(--t-sm);line-height:round(1.5em, 2px);color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ /* The badge answers "can I take this back?" at the moment of deciding. */
+ .selbar-rev{font:600 var(--t-micro)/1 var(--data);letter-spacing:.13em;text-transform:uppercase;
+   padding:6px 10px;border-radius:var(--rad-pill);border:1px solid var(--rule2);color:var(--ink3);white-space:nowrap;flex:none}
+@@ -5151,7 +5186,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
  .selbar-x{background:none;border:none;color:var(--ink3);font:600 var(--t-sm)/1 var(--ui);
    padding:8px 6px;cursor:pointer;min-height:var(--tap);flex:none}
  .selbar-x:hover{color:var(--ink)}
@@ -887,9 +1236,32 @@ index 85107e32..91579bed 100644
  /* The tray is a persistent status object and the bar is a momentary action object; they
     share the bottom edge, so the tray steps up rather than either one hiding the other. */
  body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur-2) var(--ease)}
-@@ -5242,12 +5257,19 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
+@@ -5170,14 +5205,17 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
+    ring never touches the rule. */
+ .mtable td.ra,.mtable th.ra{width:60px;padding-right:var(--s4);text-align:right}
+ .mtable td.ra,.mtable th.ra{padding-left:0}
++/* 2026-10-04 02:29 EDT (Session 4, R1): the remove button draws its box --box-inset inside its hit box and was pulled that far into the cell's padding;
++   the cell's right padding is measured to the drawn edge instead (the header cell keeps its 16px) */
++.mtable td.ra,.app[data-realm=broadcast] .mtable td.ra{padding-right:calc(var(--s4) - var(--box-inset))}
+ .mtable td.ra{padding-top:0;padding-bottom:0}
+ .mtable col.c-ra{width:64px}
+ /* 32px, not 28 — 2026-09-04 22:43 EDT. `--tap:44px` is honoured by nine rules and bypassed here, on the one control in
+    Access's ACTION column that destroys. `.mxcell` is also under the floor and has a written exception (a 44px
+    cell in a twelve-column matrix fits on no laptop); this had none. 32 is what the row height allows without
+    reflowing the table, and it is a floor rather than a target. */
+-/* A BOXED ICON BUTTON (plan pins batch 2 §10.4 C3 C4 C9, 2026-09-15 00:07 EDT): a 44px target that draws its visible 34px box --box-inset inside itself, so at a container's edge the BOX lands on the padding line and the target hangs out by the inset. Was a bare 32px bordered square whose visible edge sat 4px inside every other right edge. */
+-.rmv{position:relative;isolation:isolate;display:inline-grid;place-items:center;width:var(--tap);height:var(--tap);margin-right:calc(-1 * var(--box-inset));padding:0;border:0;background:none;color:var(--ink3);cursor:pointer}
++/* A BOXED ICON BUTTON (plan pins batch 2 §10.4 C3 C4 C9, 2026-09-15 00:07 EDT): a 44px target that draws its visible --box-size (32px) box --box-inset inside itself, so at a container's edge the BOX lands on the padding line and the target hangs out by the inset. Was a bare 32px bordered square whose visible edge sat 4px inside every other right edge. */
++.rmv{position:relative;isolation:isolate;display:inline-grid;place-items:center;width:var(--tap);height:var(--tap);padding:0;border:0;background:none;color:var(--ink3);cursor:pointer}
+ .rmv::before{content:"";position:absolute;inset:var(--box-inset);z-index:-1;border-radius:var(--rad-box);background:var(--raised);box-shadow:inset 0 0 0 1px var(--rule2);transition:background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)}
+ .rmv svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+ .rmv:hover{color:var(--danger-ink)}
+@@ -5240,14 +5278,21 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
+ 
+ /* ── THE EXPORT PANEL ── */
  .exs{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
- .exs-i{display:flex;align-items:center;gap:13px;padding:12px 13px;border:1px solid var(--rule);
+-.exs-i{display:flex;align-items:center;gap:13px;padding:12px 13px;border:1px solid var(--rule);
++.exs-i{display:flex;align-items:center;gap:12px;padding:12px 13px;border:1px solid var(--rule);
    border-radius:var(--rad-2);background:var(--sunk);flex-wrap:wrap}
 -.exs-i.focus{border-color:var(--patch);box-shadow:0 0 0 3px color-mix(in srgb,var(--patch) 16%,transparent)}
 +.exs-i.focus{border-color:var(--staged);box-shadow:0 0 0 3px color-mix(in srgb,var(--staged) 16%,transparent)}
@@ -898,7 +1270,7 @@ index 85107e32..91579bed 100644
  .exs-t{flex:1 1 200px;min-width:0}
 -.exs-t b{font:600 var(--t-base)/1.35 var(--ui);color:var(--ink);display:block}
 -.exs-t span{font-size:var(--t-sm);color:var(--ink3)}
-+.exs-t b{font:600 var(--t-lg)/1.35 var(--ui);color:var(--ink);display:block}
++.exs-t b{font:600 var(--t-lg)/round(1.35em, 4px) var(--ui);color:var(--ink);display:block}
 +/* 2026-09-20 22:26 EDT — A DESCENDANT SELECTOR REACHED INSIDE A COMPONENT IT KNOWS NOTHING ABOUT.
 +   This was written for the row's own subtitle span and it is a descendant, not a child, so the
 +   moment the landing's filename became the picker's rename chip it also restyled that chip's
@@ -910,7 +1282,7 @@ index 85107e32..91579bed 100644
  .exs-c{font:500 var(--t-sm)/1 var(--data);color:var(--ink2);white-space:nowrap}
  .exs-c em{font-style:normal;color:var(--ink3);font-size:var(--t-xs);letter-spacing:.08em;text-transform:uppercase}
  
-@@ -5398,7 +5420,7 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
+@@ -5398,7 +5443,7 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
     the two facts (what this line is, what time it is) stack instead of colliding with the
     ruler's own dates. Tabular figures, or the minute changing shifts the whole string. */
  .nowt{position:absolute;top:-9px;left:6px;font:500 var(--t-micro)/1 var(--data);letter-spacing:.06em;
@@ -919,7 +1291,7 @@ index 85107e32..91579bed 100644
    pointer-events:none}
  
  /* A staged item ARRIVES. Without this it simply exists on the next frame, which is the one
-@@ -5442,7 +5464,7 @@ tr.rowin > td{background:color-mix(in srgb,var(--staged) 9%,transparent)}
+@@ -5442,7 +5487,7 @@ tr.rowin > td{background:color-mix(in srgb,var(--staged) 9%,transparent)}
    border-bottom:1px solid var(--rule)}
  /* 🔴 REQUIRED IS MARKED, AND THE MARK IS EXPLAINED IN THE SAME PANEL. An asterisk with no
     legend is a convention the reader has to already know; the legend costs one line. */
@@ -928,7 +1300,7 @@ index 85107e32..91579bed 100644
  .bf-sec{margin-bottom:20px;padding-bottom:18px;border-bottom:1px solid var(--rule3)}
  .bf-sec:last-child{border-bottom:none;padding-bottom:0;margin-bottom:0}
  .bf-h{font:600 var(--t-sm)/1 var(--ui);color:var(--ink);margin:0 0 4px;display:flex;align-items:center;gap:9px}
-@@ -5494,7 +5516,7 @@ tr.rowin > td{background:color-mix(in srgb,var(--staged) 9%,transparent)}
+@@ -5494,7 +5539,7 @@ tr.rowin > td{background:color-mix(in srgb,var(--staged) 9%,transparent)}
     header keeps its count while closed, so collapsing hides the cards and never the fact. */
  .trow-h{cursor:pointer;user-select:none}
  .trow-h:hover .trow-t{color:var(--ink)}
@@ -937,7 +1309,7 @@ index 85107e32..91579bed 100644
  .trow .pm{grid-area:n;justify-self:end;align-self:center;margin-left:8px;color:var(--ink3)}
  .trow-h{grid-template-areas:"k t n" ". note note";grid-template-columns:18px 1fr auto}
  .trow-h .trow-n{margin-right:20px}
-@@ -5552,8 +5574,8 @@ button:active:not(:disabled),.pill:active,.chip:active,.btn:active,.mi:active{
+@@ -5552,8 +5597,8 @@ button:active:not(:disabled),.pill:active,.chip:active,.btn:active,.mi:active{
   * topic hover says "this is a control FOR THAT". One rule, because every filter, lane and
   * category chip in the portal already declares --c. */
  .tint{transition:background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease)}
@@ -948,7 +1320,7 @@ index 85107e32..91579bed 100644
  
  /* ── 4 · CARDS LIFT — AND THE LIFTED STATE CARRIES COLOUR ──────────────────
   * ⚠️ Harkirat: "cards lift needs some kind of colour even on the lifted card." A coloured
-@@ -5568,9 +5590,9 @@ button:active:not(:disabled),.pill:active,.chip:active,.btn:active,.mi:active{
+@@ -5568,9 +5613,9 @@ button:active:not(:disabled),.pill:active,.chip:active,.btn:active,.mi:active{
    box-shadow var(--dur-2) var(--ease),border-color var(--dur-2) var(--ease)}
  .lift:hover,.lift:focus-visible{
    transform:translateY(calc(var(--lift) * -1));
@@ -961,7 +1333,7 @@ index 85107e32..91579bed 100644
  
  /* ── 5 · FIGURES ROLL, AND SHOW THE DELTA ──────────────────────────────────
   * You see the number CHANGE rather than a re-render. The delta ghost is the half that
-@@ -5597,10 +5619,10 @@ button:active:not(:disabled),.pill:active,.chip:active,.btn:active,.mi:active{
+@@ -5597,10 +5642,10 @@ button:active:not(:disabled),.pill:active,.chip:active,.btn:active,.mi:active{
   * about to be. --c is set per item by Shell.mountRail from the realm accent tokens. */
  .realm{transition:color var(--dur-1) var(--ease),background var(--dur-2) var(--ease)}
  .realm:hover{color:var(--ink);background:linear-gradient(90deg,
@@ -976,7 +1348,7 @@ index 85107e32..91579bed 100644
  
  /* ── 7 · TOASTS SETTLE ─────────────────────────────────────────────────────
   * ⚠️ Harkirat: "toasts settle needs a MUCH smoother animation." The old one was
-@@ -5696,9 +5718,9 @@ button:active:not(:disabled),.pill:active,.chip:active,.btn:active,.mi:active{
+@@ -5696,9 +5741,9 @@ button:active:not(:disabled),.pill:active,.chip:active,.btn:active,.mi:active{
  a.att-row{display:grid;grid-template-columns:34px 3px 1fr auto;align-items:center;gap:14px;
    padding:16px 20px;text-decoration:none;color:inherit;border:1px solid var(--rule);
    border-radius:var(--rad-2);background:var(--paper);margin-bottom:8px}
@@ -989,7 +1361,7 @@ index 85107e32..91579bed 100644
  a.att-row .att-b{background:var(--sev,var(--ink4));border-radius:var(--rad-1);align-self:stretch;margin:2px 0}
  a.att-row .att-go{display:inline-flex;align-items:center;gap:7px;font-family:var(--data);
    font-size:var(--t-micro);letter-spacing:var(--tr-micro);text-transform:uppercase;color:var(--ink3)}
-@@ -5979,7 +6001,7 @@ a.att-row .att-i{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3)
+@@ -5979,7 +6024,7 @@ a.att-row .att-i{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3)
   * are enumerated once here. */
  .pill[style*="--c"]:not(.on):hover,.chip[style*="--c"]:not(.on):hover,
  .nw-chip:not(.on):hover,.lane .nm:hover,button[data-lane]:not(.on):hover{
@@ -998,7 +1370,7 @@ index 85107e32..91579bed 100644
  /* The card shapes, named once. Each already carries a topic colour or falls back to the
   * signal yellow, and the lifted state gets COLOUR — a tint in the plane and a hairline top
   * edge — not just a shadow underneath it. */
-@@ -5988,9 +6010,9 @@ a.att-row .att-i{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3)
+@@ -5988,9 +6033,9 @@ a.att-row .att-i{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3)
  .wcard:hover,.ccard:hover,.tile:hover,.dcard:hover,
  .wcard:focus-visible,.ccard:focus-visible{
    transform:translateY(calc(var(--lift) * -1));
@@ -1011,7 +1383,7 @@ index 85107e32..91579bed 100644
  /* 8 · SELECTION MOVES — the checkbox says "is this one ticked" one row at a time; the eye
   * wants the SHAPE of a selection down a 39-row table without reading any of it. */
  tbody tr:has(.cb.on){transform:translateX(3px);
-@@ -6174,7 +6196,7 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
+@@ -6174,7 +6219,7 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
  .sc-none{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3)}
  
  /* ── the five tiers. Each REMOVES, it does not shout. ───────────────────── */
@@ -1020,7 +1392,16 @@ index 85107e32..91579bed 100644
  .sclock[data-tier="closing"] .sc-u:first-child b{font-size:calc(var(--t-display) * 1.18)}
  .sclock[data-tier="final"] .sc-u:first-child b{color:var(--warn-ink);font-size:calc(var(--t-display) * 1.34)}
  .sclock[data-tier="final"] .sc-then{display:none}          /* later stops mattering */
-@@ -6528,7 +6550,7 @@ button .ic,a .ic{pointer-events:none}
+@@ -6440,7 +6485,7 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
+   stroke:currentColor;fill:none}
+ /* Controls want a slightly heavier stroke than body text or they read as grey
+    at small sizes; the sprite ships at 2 and this trims for the tiny cases. */
+-.ic.sm{width:.85em;height:.85em;stroke-width:2.4}
++.ic.sm{width:round(.85em, 2px);height:round(.85em, 2px);stroke-width:2.4}
+ .ic.lg{width:1.35em;height:1.35em;stroke-width:1.75}
+ .ic.xl{width:2.2em;height:2.2em;stroke-width:1.5}
+ button .ic,a .ic{pointer-events:none}
+@@ -6528,7 +6573,7 @@ button .ic,a .ic{pointer-events:none}
  .rec-n{font-size:var(--t-sm);color:var(--ink3)}
  .rec-cta{margin-left:auto;background:none;border:1px dashed var(--rule2);color:var(--ink3);border-radius:var(--rad-2);
    padding:0 12px;min-height:30px;display:inline-flex;align-items:center;gap:6px;font:500 var(--t-sm)/1 var(--ui);cursor:pointer}
@@ -1029,7 +1410,16 @@ index 85107e32..91579bed 100644
  .rec-list{list-style:none;margin:0;padding:0;position:relative;--rec-x:10px}
  /* 🔴 THE SPINE AND THE MARKERS DID NOT SHARE AN X in the mockup's own first pass: the rail was drawn
     at a hardcoded left:5px while each marker sat centred in a 20px grid column, so the line entered
-@@ -6549,15 +6571,15 @@ button .ic,a .ic{pointer-events:none}
+@@ -6536,7 +6581,7 @@ button .ic,a .ic{pointer-events:none}
+    the FIRST marker to the LAST rather than from an arbitrary inset — a spine that starts above its
+    first bead is a line pointing at nothing. */
+ .rec-list::before{content:"";position:absolute;left:calc(var(--rec-x) + 4px);top:22px;bottom:22px;width:1px;
+-  background:var(--rule2);transform:translateX(-.5px)}
++  background:var(--rule2)}
+ /* +4px -- the spine is positioned relative to .rec-list, but .rec-row (each marker's actual
+    container) carries its own padding:9px 4px, so a marker centred at --rec-x WITHIN its row
+    sits 4px to the right of a spine drawn at --rec-x from .rec-list's edge. Measured live via
+@@ -6549,15 +6594,15 @@ button .ic,a .ic{pointer-events:none}
  /* justify-self:center (pin 9): the column is calc(--rec-x*2) and the spine runs at --rec-x, so an 11px marker
     left-aligned in it sat 4.5px off the line it was supposed to thread. Centring is the whole fix. */
  .rec-mk{width:11px;height:11px;border-radius:var(--rad-1);transform:rotate(45deg) scale(.82);justify-self:center;
@@ -1048,7 +1438,7 @@ index 85107e32..91579bed 100644
  .rec-empty{list-style:none;font-size:var(--t-base);color:var(--ink3);padding:8px 0}
  @media (max-width:820px){.rec-row{grid-template-columns:20px 1fr auto}.rec-meta,.rec-d{display:none}}
  
-@@ -6618,7 +6640,7 @@ button .ic,a .ic{pointer-events:none}
+@@ -6618,7 +6663,7 @@ button .ic,a .ic{pointer-events:none}
  /* 🗑 `.cbl` deleted 2026-08-29 00:5x EDT — it styled a label wrapping a visually-hidden checkbox, and
     the row control is the design's own `span[role=checkbox]` now, which needs neither. Its focus ring
     moved onto that element's own rule. */
@@ -1057,7 +1447,7 @@ index 85107e32..91579bed 100644
  /* The door's one line of state, above the heading. It is deliberately quiet — a stranger is being
   * told a fact about the session, not warned about anything. */
  .doorstate{margin:0 0 4px;font:500 var(--t-sm)/1 var(--data);letter-spacing:.08em;color:var(--ink3);text-transform:uppercase}
-@@ -6689,7 +6711,7 @@ button .ic,a .ic{pointer-events:none}
+@@ -6689,7 +6734,7 @@ button .ic,a .ic{pointer-events:none}
  .sc-when b{color:var(--ink);font-weight:500}
  .sc-then{gap:normal;align-items:normal;justify-content:normal;flex-wrap:nowrap;font-family:var(--data);font-size:var(--t-xs);letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);display:block}
  .sc-then b{color:var(--ink2);font-weight:500}
@@ -1066,7 +1456,7 @@ index 85107e32..91579bed 100644
  .sclock[data-tier="final"] .sc-u:first-child b{color:var(--warn-ink);font-size:calc(var(--t-display) * 1.34)}
  .sclock[data-tier="final"] .sc-then{display:none}
  .sclock[data-tier="today"] .sc-u:first-child b{color:var(--del);font-size:calc(var(--t-display) * 1.34)}
-@@ -6794,7 +6816,7 @@ button .ic,a .ic{pointer-events:none}
+@@ -6794,7 +6839,7 @@ button .ic,a .ic{pointer-events:none}
  .dwfield textarea,.dwfield select{background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad-2);
    color:var(--ink);padding:8px 10px;font:500 var(--t-base)/var(--lh-ui) var(--ui);min-height:36px}
  .dwfield textarea{min-height:88px;resize:vertical;font-family:var(--data);font-size:var(--t-sm);line-height:var(--lh-body)}
@@ -1075,7 +1465,16 @@ index 85107e32..91579bed 100644
  .dwfield .hint{padding:0;font-size:var(--t-xs);color:var(--ink3);line-height:var(--lh-ui)}
  
  /* ══ THE GRANT / EDIT DRAWER — 2026-09-11 16:40 EDT ══════════════════════════════════════════════════ */
-@@ -6840,7 +6862,7 @@ button .ic,a .ic{pointer-events:none}
+@@ -6815,7 +6860,7 @@ button .ic,a .ic{pointer-events:none}
+    place: swapping the footer's text read as a button that had not registered the click. The body is
+    replaced by exactly what is about to be written, so the thing being confirmed is legible at the moment
+    of confirming it. Harkirat, 2026-09-11 17:10 EDT. */
+-.dw-lead{margin:0 0 var(--s4);font:500 var(--t-md)/1.45 var(--ui);color:var(--ink)}
++.dw-lead{margin:0 0 var(--s4);font:500 var(--t-md)/round(1.45em, 2px) var(--ui);color:var(--ink)}
+ .cfm{display:flex;flex-direction:column;border:1px solid var(--rule);border-radius:var(--rad-2);
+   background:var(--sunk);overflow:hidden}
+ .cfmrow{display:flex;gap:16px;padding:11px 14px;border-top:1px solid var(--rule)}
+@@ -6840,7 +6885,7 @@ button .ic,a .ic{pointer-events:none}
  .dwfield .bf-hint{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;
    clip:rect(0 0 0 0);white-space:nowrap;border:0}
  .dwfield:focus-within .bf-hint{position:static;width:auto;height:auto;overflow:visible;clip:auto;
@@ -1084,7 +1483,7 @@ index 85107e32..91579bed 100644
    border-radius:0 var(--rad-1) var(--rad-1) 0;padding:6px 9px;margin-top:var(--s1);
    font-family:var(--data);font-size:var(--t-micro);font-style:normal;color:var(--ink3);line-height:1.6}
  .dw-grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 var(--s3)}
-@@ -7022,7 +7044,7 @@ button .ic,a .ic{pointer-events:none}
+@@ -7022,7 +7067,7 @@ button .ic,a .ic{pointer-events:none}
  .wsrch-opt b{font:600 var(--t-base)/1.2 var(--ui);color:var(--ink)}
  .wsrch-opt span{font-size:var(--t-sm);color:var(--ink3)}
  .wsrch-opt.on{background:var(--hi)}
@@ -1093,7 +1492,18 @@ index 85107e32..91579bed 100644
  .wsrch-none{margin:6px 0 0;font-size:var(--t-sm);color:var(--ink3)}
  /* The picked-weapon chips sit beside the field, so the bar has to align them to its bottom edge rather than centre
   * them against a two-line labelled input. */
-@@ -7196,7 +7218,7 @@ button .ic,a .ic{pointer-events:none}
+@@ -7187,8 +7232,8 @@ button .ic,a .ic{pointer-events:none}
+    The Manifest's create verb leaves the filter set (pin pmtvqhfxh). `.mtools` wraps, so
+    margin-left:auto pushes it to the trailing edge on a wide toolbar and it simply starts
+    the next line when the chips fill the row — no fixed position to break at 820px. */
+-.mtools .madd{margin-left:auto;min-height:var(--tap);padding:0 18px;gap:var(--s2);background:var(--sunk);color:var(--staged)}
+-.mtools .madd .ic{width:14px;height:14px}
++.mtools .madd{margin-left:auto;background:var(--sunk);}
++
+ 
+ /* The tier board's weapon name is a real <button> now (pin 60): it had no handler at all, so a
+    reader clicking the most obvious target on the card got nothing. It must look exactly as it
+@@ -7196,7 +7241,7 @@ button .ic,a .ic{pointer-events:none}
     the whole rack — so this strips those and nothing else. `text-align:left` because a button
     centres by default and the header is a left-aligned grid area. */
  button.bgrp-w{background:none;border:0;padding:0;margin:0;font:inherit;color:inherit;text-align:left;cursor:pointer}
@@ -1102,7 +1512,7 @@ index 85107e32..91579bed 100644
  
  /* 🔴 COMPARE'S EMPTY STATE WAS THREE ALIGNMENTS IN ONE PANEL, and the useful control was stranded.
     Harkirat, pin pmtvqdnb3, 2026-09-10 12:21 EDT — "is the compare sub-panel correct? this looks broken
-@@ -7262,7 +7284,7 @@ button.bgrp-w:focus-visible{outline:2px solid var(--patch);outline-offset:2px;bo
+@@ -7262,7 +7307,7 @@ button.bgrp-w:focus-visible{outline:2px solid var(--patch);outline-offset:2px;bo
  .brow{display:flex;align-items:center;gap:7px;padding:7px 8px 7px 10px;border-top:1px solid var(--rule3);
    cursor:pointer;background:none;transition:background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)}
  .brow:hover,.brow:focus-visible{background:var(--hi);box-shadow:inset 2px 0 0 var(--c,var(--ink3));outline:none}
@@ -1111,7 +1521,7 @@ index 85107e32..91579bed 100644
  .brow-c{flex:1;min-width:0;font:400 var(--t-sm)/1 var(--data);color:var(--ink2);letter-spacing:.02em;
    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
  .brow-c.ok{color:var(--ok)}
-@@ -7325,8 +7347,8 @@ button.bgrp-w:focus-visible{outline:2px solid var(--patch);outline-offset:2px;bo
+@@ -7325,8 +7370,8 @@ button.bgrp-w:focus-visible{outline:2px solid var(--patch);outline-offset:2px;bo
  .code-field .chip{border:0;border-left:1px solid var(--rule2);border-radius:0;min-height:var(--tap)}
  
  /* A code-filled attachment row (row 15) — a small patch-coloured dot beside the slot label. */
@@ -1122,7 +1532,7 @@ index 85107e32..91579bed 100644
    flex:none}
  
  /* The Image section's upload-or-link path (row 14). */
-@@ -7354,17 +7376,17 @@ button.bgrp-w:focus-visible{outline:2px solid var(--patch);outline-offset:2px;bo
+@@ -7354,17 +7399,17 @@ button.bgrp-w:focus-visible{outline:2px solid var(--patch);outline-offset:2px;bo
  .bulkrow{display:grid;grid-template-columns:64px 1fr;gap:10px;align-items:baseline;padding:7px 0;
    border-bottom:1px solid var(--rule);border-left:3px solid transparent;padding-left:8px}
  .bulkrow.new{border-left-color:var(--ok)}
@@ -1149,27 +1559,27 @@ index 85107e32..91579bed 100644
 
 ```diff
 diff --git aportal/ui/armory.js bkit/ui/armory.js
-index fe9fc32d..2109a50c 100644
+index fe9fc32d..096b28c5 100644
 --- aportal/ui/armory.js	
 +++ bkit/ui/armory.js	
-@@ -14,8 +14,14 @@ import { renderV2 } from './v2Render.js';
+@@ -14,16 +14,22 @@ import { renderV2 } from './v2Render.js';
  import { useOverlay, Drawer } from './overlay.js';
  import { reportFailure } from './async.js';
  import { downloadText } from './download.js';
--
--const MODES = ['MP', 'DMZ'];
 +// Board 3 v2 — the proposals, mounted into the real Armory.
 +import { useB3, hooks } from '../b3/state.js';
-+import { B3Badges, ProblemChip, SelectAllBox, SelectionDock, MODE_ICON, Hint, BuildImage } from '../b3/armory-parts.js';
++import { B3Badges, ProblemChip, SelectAllBox, SelectionDock, MODE_ICON, Hint, BuildImage, optionView, swapSlots } from '../b3/armory-parts.js';
 +import { modesOf } from '../b4/bulkformat.js';
 +import { B3BuildDrawer } from '../b3/drawer.js';
 +import { RepairsPanel, repairsStatus } from '../b3/repairs.js';
-+
+ 
+-const MODES = ['MP', 'DMZ'];
+-const CATEGORIES = ['AR', 'SMG', 'SNIPER', 'LMG', 'SHOTGUN', 'MARKSMAN', 'SECONDARIES', 'MELEE'];
 +export const MODES = ['MP', 'DMZ'];
- const CATEGORIES = ['AR', 'SMG', 'SNIPER', 'LMG', 'SHOTGUN', 'MARKSMAN', 'SECONDARIES', 'MELEE'];
++const CATEGORIES = ['AR', 'SNIPER', 'LMG', 'SMG', 'SHOTGUN', 'MARKSMAN', 'SECONDARIES', 'MELEE'];
  
  // 🔴 THE MANIFEST NAMED EVERY BUILD AND SHOWED WHAT WAS IN NONE OF THEM. Weapon, build, category, mode and a comma-joined list of defect keys — so the one question you open a build list to answer, *what does this build actually run*, needed a click per row. The attachments peek and the badge chips are what the adopted table was styled for.
-@@ -23,7 +29,7 @@ const CATEGORIES = ['AR', 'SMG', 'SNIPER', 'LMG', 'SHOTGUN', 'MARKSMAN', 'SECOND
+ //
  // ⚠️ THE PEEK SHOWS TWO AND COUNTS THE REST. Five attachment names is a paragraph in a table cell; two plus "+3" is the shape of the thing, and the editor is one click away for the rest.
  //
  // ⚠️ CATEGORY_CHIP_LABEL / CATEGORY_CHIP_ORDER LIVE IN armory.logic.js NOW, as bare globals the same way DMZ_RANGE_TOKENS always has — they are read by rackCategories(), which is arithmetic over the build list and therefore belongs somewhere a test can reach without a browser. They are still distinct from CATEGORY_LABEL below, which is verbose on purpose for the edit form's dropdown.
@@ -1200,7 +1610,7 @@ index fe9fc32d..2109a50c 100644
  // Attachments in Harkirat's display order (utils/adminParser.js CANONICAL_SLOT_ORDER, 2026-07-21), never the code's digit order; a name with no recorded slot keeps its stored position after the known ones.
  function orderedAttachments(b) {
      const slots = b.attachmentSlots || [];
-@@ -85,13 +93,14 @@ function weaponTags(b) {
+@@ -85,13 +93,44 @@ function weaponTags(b) {
      if (b.mode === 'DMZ' && b.dmzRangeRank) tags.push({ t: 'dmz', label: String(b.dmzRangeRank).replace(/-/g, ' ').toUpperCase() });
      if (b.isMeta) tags.push({ t: 'meta', label: 'META' });
      if (b.isToxic) tags.push({ t: 'toxic', label: 'TOXIC' });
@@ -1212,11 +1622,41 @@ index fe9fc32d..2109a50c 100644
  }
  
 -function ArmoryGroups({ api, builds, mode, attView, collapsed, onToggleGroup, onCollapseAll }) {
++// ── C1's inline buttons as their own components (Harkirat 2026-10-06 20:49 EDT: "that's literally what you should have done"). ArmoryGroups
++// draws these exact components, and the C1 buttons container (b4/specimen.js) draws each one alone with the same code, so there is one
++// button and nowhere for a copy to drift. The markup is what ArmoryGroups wrote inline; the board was diffed pixel for pixel against it.
++const cbKeyOf = (fn) => (e) => { if (e.key !== ' ' && e.key !== 'Enter') return; e.preventDefault(); e.stopPropagation(); fn(); };
++export function SortButton({ dir, onSort }) {
++    return html`<button type="button" class="wg-sort" aria-sort=${dir === 'asc' ? 'ascending' : 'descending'} onClick=${onSort}><span class="tx-cap">Weapon</span><${Icon} name=${dir === 'asc' ? 'chevron-up' : 'chevron-down'} /></button>`;
++}
++export function CollapseAllButton({ allShut, onToggle }) {
++    return html`<button type="button" class="wg-fold" onClick=${onToggle}><${Fold} open=${!allShut} /><span class="tx-cap">${allShut ? 'Expand all' : 'Collapse all'}</span></button>`;
++}
++export function RowCheck({ state, on, label, onToggle }) {
++    return html`<span class="wg-cb" role="checkbox" tabIndex="0" aria-checked=${state} aria-label=${label} onClick=${(e) => { e.stopPropagation(); onToggle(); }} onKeyDown=${cbKeyOf(onToggle)}><span class=${'cb' + (on ? ' on' : '')}></span></span>`;
++}
++export function CollapseButton({ name, shut, onToggle }) {
++    return html`<button type="button" class="wg-ib wg-fbtn" aria-expanded=${shut ? 'false' : 'true'} aria-label=${`${shut ? 'Expand' : 'Collapse'} ${name}`} onClick=${(e) => { e.stopPropagation(); onToggle(); }}><${Fold} open=${!shut} /></button>`;
++}
++export function ImageChip({ b }) {
++    return html`<${Hint} pin cls="wg-imh" tone=${b.imageKey ? 'ok' : 'warn'} media=${html`<${BuildImage} b=${b} />`}><span class=${'wg-fwrap b3-fx b3-fx-sm cx-imx wg-imx' + (b.imageKey ? ' b3-okx' : '')}><button type="button" class="b3-fchip" aria-label=${b.imageKey ? `${b.weaponName}’s build image` : `${b.weaponName} has no build image`}><${Icon} name=${b.imageKey ? 'image' : 'image-off'} /></button></span></${Hint}>`;
++}
++export function CodeChip({ b, copied, onCopy }) {
++    const codeBad = (b.coverage || []).includes('code-length-mismatch');
++    return html`<button type="button" class="wg-code" aria-label=${`Copy gunsmith code ${b.shareCode}`} onClick=${(e) => { e.stopPropagation(); onCopy(); }}><span class="wg-ig"><span class="wg-igf"><span class=${'wg-ct' + (codeBad ? ' bad' : '')} title=${codeBad ? FAULT_TEXT['code-length-mismatch'](b) : null}>${b.shareCode}</span></span><span class="wg-igb"><${Icon} name=${copied ? 'check' : 'copy'} /></span></span></button>`;
++}
++export function ShareButton({ copied, onCopy }) {
++    return html`<button type="button" class=${'wg-ib wg-share' + (copied ? ' is-done' : '')} aria-label="Copy share command" data-tip="Copy share command" onClick=${onCopy}><${Icon} name=${copied ? 'check' : 'share-2'} /></button>`;
++}
++export function DeleteButton({ label, onRemove }) {
++    return html`<button type="button" class="wg-ib wg-del" aria-label=${label} onClick=${onRemove}><${Icon} name="trash-2" /></button>`;
++}
++
 +export function ArmoryGroups({ api, builds, mode, attView, collapsed, onToggleGroup, onCollapseAll }) {
      const { visible, selected, sort, setSort, onRowClick, selectedRowId, onRemove, stateOf, toggle, setMany } = api;
      const [flash, setFlash] = useState(null);
      const [openFix, setOpenFix] = useState(null);
-@@ -108,11 +117,12 @@ function ArmoryGroups({ api, builds, mode, attView, collapsed, onToggleGroup, on
+@@ -108,14 +147,14 @@ function ArmoryGroups({ api, builds, mode, attView, collapsed, onToggleGroup, on
      const keyAct = (fn) => (e) => { if (e.target !== e.currentTarget) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(); } };
      const cbKey = (fn) => (e) => { if (e.key !== ' ' && e.key !== 'Enter') return; e.preventDefault(); e.stopPropagation(); fn(); };
      const dmz = mode === 'DMZ';
@@ -1226,37 +1666,45 @@ index fe9fc32d..2109a50c 100644
          <div class="wg-wrap">
              <div class="wg-heads">
 -                <span></span>
+-                <span><button type="button" class="wg-sort" aria-sort=${dir === 'asc' ? 'ascending' : 'descending'}
+-                              onClick=${() => setSort({ column: 'weaponName', direction: dir === 'asc' ? 'desc' : 'asc' })}>Weapon<${Icon} name=${dir === 'asc' ? 'chevron-up' : 'chevron-down'} /></button></span>
+-                <button type="button" class="wg-fold" onClick=${() => onCollapseAll(allShut ? [] : groups.map((g) => g.name))}><${Fold} open=${!allShut} />${allShut ? 'Expand all' : 'Collapse all'}</button>
 +                ${p4 !== 'now' ? html`<${SelectAllBox} ids=${visible.map((b) => b.id)} selected=${selected} setMany=${setMany} />` : html`<span></span>`}
-                 <span><button type="button" class="wg-sort" aria-sort=${dir === 'asc' ? 'ascending' : 'descending'}
-                               onClick=${() => setSort({ column: 'weaponName', direction: dir === 'asc' ? 'desc' : 'asc' })}>Weapon<${Icon} name=${dir === 'asc' ? 'chevron-up' : 'chevron-down'} /></button></span>
-                 <button type="button" class="wg-fold" onClick=${() => onCollapseAll(allShut ? [] : groups.map((g) => g.name))}><${Fold} open=${!allShut} />${allShut ? 'Expand all' : 'Collapse all'}</button>
-@@ -125,21 +135,19 @@ function ArmoryGroups({ api, builds, mode, attView, collapsed, onToggleGroup, on
++                <span><${SortButton} dir=${dir} onSort=${() => setSort({ column: 'weaponName', direction: dir === 'asc' ? 'desc' : 'asc' })} /></span>
++                <${CollapseAllButton} allShut=${allShut} onToggle=${() => onCollapseAll(allShut ? [] : groups.map((g) => g.name))} />
+             </div>
+             ${groups.map((g) => {
+                 const first = g.builds[0].b;
+@@ -125,21 +164,19 @@ function ArmoryGroups({ api, builds, mode, attView, collapsed, onToggleGroup, on
                  const shut = collapsed.has(g.name);
                  const faulty = g.builds.map((x) => ({ ...x, f: faultsOf(x.b) })).filter((x) => x.f.length);
                  const tags = weaponTags(first);
 -                const slotsHere = SLOT_ORDER.filter((s) => g.builds.some((x) => (x.b.attachmentSlots || []).includes(s)));
++                // Badges are per build (his 2026-10-19 15:59 EDT ruling, the bot's #207): the head no longer echoes the first build's badges, which read as the
++                // weapon's own claim; each build row carries its own in its badge cell (.wg-bdc), the compact badges Compare's heads use.
                  return html`
 -                <div class="wg" key=${g.name} style=${`--c:${first.accentHex || 'var(--ink3)'}`}>
 +                <div class="wg" key=${g.name} data-w=${g.name} style=${`--c:${first.accentHex || 'var(--ink3)'}`}>
                      <div class="wg-h" tabIndex="0" aria-expanded=${shut ? 'false' : 'true'} onClick=${() => onToggleGroup(g.name)} onKeyDown=${keyAct(() => onToggleGroup(g.name))}>
-                         <span class="wg-cb" role="checkbox" tabIndex="0" aria-checked=${allSel ? 'true' : someSel ? 'mixed' : 'false'} aria-label=${`Select every ${g.name} build`}
+-                        <span class="wg-cb" role="checkbox" tabIndex="0" aria-checked=${allSel ? 'true' : someSel ? 'mixed' : 'false'} aria-label=${`Select every ${g.name} build`}
 -                              onClick=${(e) => { e.stopPropagation(); setMany(ids, !allSel); }} onKeyDown=${cbKey(() => setMany(ids, !allSel))}><span class=${'cb' + (allSel ? ' on' : '')}></span></span>
 -                        <div class="wg-line"><b>${g.name}</b><small>${CATEGORY_CHIP_LABEL[first.category] || first.category}<em class="wg-nb">${g.builds.length} build${g.builds.length === 1 ? '' : 's'}</em></small>${tags.length ? html`<span class="wg-tags">${tags.map((t) => html`<span class="wg-tag" data-t=${t.t} key=${t.t}>${t.label}</span>`)}</span>` : null}</div>
 -                        ${faulty.length ? html`<span class="wg-fwrap" onClick=${(e) => e.stopPropagation()}>
-+                              onClick=${(e) => { e.stopPropagation(); setMany(ids, !allSel && !someSel); }} onKeyDown=${cbKey(() => setMany(ids, !allSel && !someSel))}><span class=${'cb' + (allSel ? ' on' : '')}></span></span>
-+                        <div class="wg-line"><b>${g.name}</b><small>${CATEGORY_CHIP_LABEL[first.category] || first.category}${(typeof window !== 'undefined' && window.B4_COLLECTIVE) ? null : html`<em class="wg-nb">${g.builds.length} build${g.builds.length === 1 ? '' : 's'}</em>`}</small>${(typeof window !== 'undefined' && window.B4_COLLECTIVE) ? html`<em class="wg-nb b3-sd-gn">${g.builds.length} build${g.builds.length === 1 ? '' : 's'}</em>` : null}${p1 !== 'now' ? html`<${B3Badges} b=${first} />` : tags.length ? html`<span class="wg-tags">${tags.map((t) => html`<span class="wg-tag" data-t=${t.t} key=${t.t}>${t.label}</span>`)}</span>` : null}</div>
++                        <${RowCheck} state=${allSel ? 'true' : someSel ? 'mixed' : 'false'} on=${allSel} label=${`Select every ${g.name} build`} onToggle=${() => setMany(ids, !allSel && !someSel)} />
++                        <div class="wg-line"><b>${g.name}</b><small>${CATEGORY_CHIP_LABEL[first.category] || first.category}${(typeof window !== 'undefined' && window.B4_COLLECTIVE) ? null : html`<em class="wg-nb">${g.builds.length} build${g.builds.length === 1 ? '' : 's'}</em>`}</small>${(typeof window !== 'undefined' && window.B4_COLLECTIVE) ? html`<em class="wg-nb b3-sd-gn">${g.builds.length} build${g.builds.length === 1 ? '' : 's'}</em>` : null}${p1 !== 'now' ? null : tags.length ? html`<span class="wg-tags">${tags.map((t) => html`<span class="wg-tag" data-t=${t.t} key=${t.t}>${t.label}</span>`)}</span>` : null}</div>
 +                        ${faulty.length && p3 !== 'now' ? html`<${ProblemChip} weapon=${g.name} faulty=${faulty} builds=${builds} onOpen=${(b) => onRowClick(b)} />` : faulty.length ? html`<span class="wg-fwrap" onClick=${(e) => e.stopPropagation()}>
                              <button type="button" class="wg-fsum" aria-expanded=${openFix === g.name ? 'true' : 'false'} onClick=${() => setOpenFix(openFix === g.name ? null : g.name)}><${Icon} name="triangle-alert" />${faulty.length === 1 ? 'Fix build' : 'Fix builds'}<span class="wg-fnos">${faulty.map((x) => html`<i key=${x.n}>${x.n}</i>`)}</span></button>
                              <span class="wg-fpop" role="tooltip">${faulty.map((x) => html`<span class="wg-fpr" key=${x.n}><i>${x.n}</i><span>${x.f.map((f) => html`<span key=${f}>${FAULT_TEXT[f](x.b)}</span>`)}</span></span>`)}</span>
                          </span>` : html`<span></span>`}
-                         <button type="button" class="wg-ib wg-fbtn" aria-expanded=${shut ? 'false' : 'true'} aria-label=${`${shut ? 'Expand' : 'Collapse'} ${g.name}`}
-                                 onClick=${(e) => { e.stopPropagation(); onToggleGroup(g.name); }}><${Fold} open=${!shut} /></button>
+-                        <button type="button" class="wg-ib wg-fbtn" aria-expanded=${shut ? 'false' : 'true'} aria-label=${`${shut ? 'Expand' : 'Collapse'} ${g.name}`}
+-                                onClick=${(e) => { e.stopPropagation(); onToggleGroup(g.name); }}><${Fold} open=${!shut} /></button>
++                        <${CollapseButton} name=${g.name} shut=${shut} onToggle=${() => onToggleGroup(g.name)} />
                      </div>
 -                    ${!shut && attView === 'slot' && slotsHere.length ? html`<div class=${'wg-strip' + (dmz ? ' dmz' : '')}><span></span><span></span><div class="wg-slots" style=${`--n:${slotsHere.length}`}>${slotsHere.map((s) => html`<span key=${s}>${s}</span>`)}</div><span></span>${dmz ? null : html`<span></span>`}<span></span></div>` : null}
                      ${shut ? null : g.builds.map(({ b, n }) => {
                          const f = faultsOf(b);
                          const label = displayBuildLabel(b);
-@@ -148,6 +156,10 @@ function ArmoryGroups({ api, builds, mode, attView, collapsed, onToggleGroup, on
+@@ -148,30 +185,49 @@ function ArmoryGroups({ api, builds, mode, attView, collapsed, onToggleGroup, on
                          const atts = orderedAttachments(b);
                          const empties = (b.attachments || []).length <= 2 ? Math.max(0, 5 - atts.length) : 0;
                          const codeBad = (b.coverage || []).includes('code-length-mismatch');
@@ -1264,32 +1712,61 @@ index fe9fc32d..2109a50c 100644
 +                        const pairs = codeBad ? Math.floor(String(b.shareCode || '').length / 2) : Infinity;
 +                        // V47 BE: the slots the code carries past the build's own list, drawn as chips that say so (the counterpart of the hatched extra chip)
 +                        const ghosts = codeBad ? Math.max(0, pairs - atts.length) : 0; const ord = (k) => k + (k === 1 ? 'st' : k === 2 ? 'nd' : k === 3 ? 'rd' : 'th');
++                        const swap = swapSlots(b); const isSw = (x) => swap.has(x.slot || `#${x.i}`);
                          return html`
                          <div key=${b.id} class=${'wg-r' + (f.length ? ' bad' : '') + (stateOf(b) === 'staged' ? ' staged' : '') + (sel ? ' sel' : '') + (open ? ' open' : '') + (dmz ? ' dmz' : '')}
                               tabIndex="0" onClick=${() => onRowClick(b)} onKeyDown=${keyAct(() => onRowClick(b))}>
-@@ -156,18 +168,14 @@ function ArmoryGroups({ api, builds, mode, attView, collapsed, onToggleGroup, on
+-                            <span class="wg-cb" role="checkbox" tabIndex="0" aria-checked=${sel ? 'true' : 'false'} aria-label=${`Select ${b.weaponName} build ${n}`}
+-                                  onClick=${(e) => { e.stopPropagation(); toggle(b.id); }} onKeyDown=${cbKey(() => toggle(b.id))}><span class=${'cb' + (sel ? ' on' : '')}></span></span>
++                            <${RowCheck} state=${sel ? 'true' : 'false'} on=${sel} label=${`Select ${b.weaponName} build ${n}`} onToggle=${() => toggle(b.id)} />
                              <span class="wg-ix" title=${f.includes('near-duplicate') ? FAULT_TEXT['near-duplicate']() : null}>${n}</span>
                              <div class=${'wg-main' + (label ? ' named' : '')}>
++                                <span class="wg-bdc"><${B3Badges} b=${b} bare /></span>
                                  ${label ? html`<span class="wg-plate"><small>Build name</small><span>${label}</span></span>` : null}
 -                                ${attView === 'slot' && slotsHere.length
 -                                    ? html`<div class="wg-slots" style=${`--n:${slotsHere.length}`}>${slotsHere.map((s) => { const at = (b.attachmentSlots || []).indexOf(s); return at >= 0
 -                                        ? html`<span class="wg-sc" key=${s} style=${`--sl:${slotVar(s)}`}>${b.attachments[at]}</span>`
 -                                        : html`<span class="wg-sc empty" key=${s}>—</span>`; })}</div>`
 -                                    : html`<div class="wg-rail">${atts.map((x) => html`<span class="wg-at" key=${x.i} title=${x.slot || null} style=${SLOT_ORDER.includes(x.slot) ? `--sl:${slotVar(x.slot)}` : null}>${x.name}</span>`)}${Array.from({ length: empties }, (_, i) => html`<span class="wg-at gap" key=${'e' + i}>Empty</span>`)}</div>`}
-+                                ${html`<div class="wg-rail b3-fadx" data-rows="2"><span class="wg-rl">${atts.map((x) => html`<span class=${'wg-at' + (x.i >= pairs ? ' nocode' : '')} key=${x.i} data-slot=${x.slot || null} title=${x.i >= pairs ? `${x.slot ? x.slot + ' — ' : ''}not in the gunsmith code` : x.slot || null} style=${`--sl:${slotVar(x.slot)}`}>${x.name}</span>`)}${Array.from({ length: ghosts }, (_, i) => html`<span class="wg-at nocode ghost" key=${'g' + i} data-slot=${ord(atts.length + i + 1) + ' slot'} title="In the gunsmith code, but not listed on this build">Not listed</span>`)}${Array.from({ length: Math.max(0, empties - ghosts) }, (_, i) => html`<span class="wg-at gap" key=${'e' + i}>Empty</span>`)}</span></div>`}
++                                ${html`<div class="wg-rail b3-fadx" data-rows="2"><span class="wg-rl">${atts.map((x) => html`<span class=${'wg-at' + (x.i >= pairs ? ' nocode' : '') + (isSw(x) ? ' swap' : '')} key=${x.i} data-slot=${x.slot || null} title=${x.i >= pairs ? `${x.slot ? x.slot + ' — ' : ''}not in the gunsmith code` : isSw(x) ? `${x.slot || 'This slot'} changes between the options` : x.slot || null} style=${`--sl:${slotVar(x.slot)}`}>${isSw(x) ? html`<${Icon} name="shuffle" />` : null}<span class="wg-an">${x.name}</span></span>`)}${Array.from({ length: ghosts }, (_, i) => html`<span class="wg-at nocode ghost" key=${'g' + i} data-slot=${ord(atts.length + i + 1) + ' slot'} title="In the gunsmith code, but not listed on this build"><span class="wg-an">Not listed</span></span>`)}${Array.from({ length: Math.max(0, empties - ghosts) }, (_, i) => html`<span class="wg-at gap" key=${'e' + i}><span class="wg-an">Empty</span></span>`)}</span></div>`}
                              </div>
 -                            <span class=${'wg-im' + (b.imageKey ? '' : ' no')} role="img" aria-label=${b.imageKey ? 'Image uploaded' : 'No image uploaded'} title=${b.imageKey ? 'Image uploaded' : 'No image uploaded'}><${Icon} name=${b.imageKey ? 'image' : 'image-off'} /></span>
-+                            <${Hint} pin cls="wg-imh" tone=${b.imageKey ? 'ok' : 'warn'} media=${html`<${BuildImage} b=${b} />`}><span class=${'wg-fwrap b3-fx b3-fx-sm cx-imx wg-imx' + (b.imageKey ? ' b3-okx' : '')}><button type="button" class="b3-fchip" aria-label=${b.imageKey ? `${b.weaponName}’s build image` : `${b.weaponName} has no build image`}><${Icon} name=${b.imageKey ? 'image' : 'image-off'} /></button></span></${Hint}>
++                            <div class="wg-end">
++                            <${ImageChip} b=${b} />
                              ${dmz ? null : b.shareCode
-                                 ? html`<button type="button" class="wg-code" aria-label=${`Copy gunsmith code ${b.shareCode}`} onClick=${(e) => { e.stopPropagation(); copy(b.id + ':code', copyCodeText(b)); }}><span class="wg-ig"><span class="wg-igf"><span class=${'wg-ct' + (codeBad ? ' bad' : '')} title=${codeBad ? FAULT_TEXT['code-length-mismatch'](b) : null}>${b.shareCode}</span></span><span class="wg-igb"><${Icon} name=${flash === b.id + ':code' ? 'check' : 'copy'} /></span></span></button>`
+-                                ? html`<button type="button" class="wg-code" aria-label=${`Copy gunsmith code ${b.shareCode}`} onClick=${(e) => { e.stopPropagation(); copy(b.id + ':code', copyCodeText(b)); }}><span class="wg-ig"><span class="wg-igf"><span class=${'wg-ct' + (codeBad ? ' bad' : '')} title=${codeBad ? FAULT_TEXT['code-length-mismatch'](b) : null}>${b.shareCode}</span></span><span class="wg-igb"><${Icon} name=${flash === b.id + ':code' ? 'check' : 'copy'} /></span></span></button>`
++                                ? html`<${CodeChip} b=${b} copied=${flash === b.id + ':code'} onCopy=${() => copy(b.id + ':code', copyCodeText(b))} />`
                                  : html`<span class="wg-ig none"><span class="wg-cnone"><${Icon} name="triangle-alert" />No code</span></span>`}
                              <div class="wg-acts" onClick=${(e) => e.stopPropagation()}>
 -                                <button type="button" class="wg-ib" aria-label="Copy share command" data-tip="Copy share command" onClick=${() => copy(b.id + ':share', shareCommandText(b, n))}><${Icon} name=${flash === b.id + ':share' ? 'check' : 'share-2'} /></button>
-+                                <button type="button" class=${'wg-ib wg-share' + (flash === b.id + ':share' ? ' is-done' : '')} aria-label="Copy share command" data-tip="Copy share command" onClick=${() => copy(b.id + ':share', shareCommandText(b, n))}><${Icon} name=${flash === b.id + ':share' ? 'check' : 'share-2'} /></button>
++                                <${ShareButton} copied=${flash === b.id + ':share'} onCopy=${() => copy(b.id + ':share', shareCommandText(b, n))} />
                                  <i class="wg-vr" aria-hidden="true"></i>
-                                 <button type="button" class="wg-ib wg-del" aria-label=${`Stage deletion of ${b.weaponName} build ${n}`} onClick=${() => onRemove(b)}><${Icon} name="trash-2" /></button>
+-                                <button type="button" class="wg-ib wg-del" aria-label=${`Stage deletion of ${b.weaponName} build ${n}`} onClick=${() => onRemove(b)}><${Icon} name="trash-2" /></button>
++                                <${DeleteButton} label=${`Stage deletion of ${b.weaponName} build ${n}`} onRemove=${() => onRemove(b)} />
                              </div>
-@@ -179,7 +187,7 @@ function ArmoryGroups({ api, builds, mode, attView, collapsed, onToggleGroup, on
+-                        </div>`;
++                            </div>
++                        </div>${(b.variants || []).map((v, k) => { const o = optionView(b, k + 1); const L = String.fromCharCode(98 + k); return html`
++                        <div key=${b.id + '-' + L} class=${'wg-r wg-opt' + (sel ? ' sel' : '') + (open ? ' open' : '') + (dmz ? ' dmz' : '') + (k === b.variants.length - 1 ? ' last' : '')} onClick=${() => onRowClick(b)}>
++                            <span class="wg-cbx" aria-hidden="true"></span>
++                            <span class="wg-ix wg-oix" title=${`Build ${n}, option ${L.toUpperCase()}`}>${n}<b>${L}</b></span>
++                            <div class=${'wg-main' + (o.optLabel ? ' named' : '')}>
++                                <span class="wg-bdc"></span>
++                                ${o.optLabel ? html`<span class="wg-plate"><small>Option ${L.toUpperCase()}</small><span>${o.optLabel}</span></span>` : null}
++                                <div class="wg-rail b3-fadx" data-rows="2"><span class="wg-rl">${orderedAttachments(o).map((x) => html`<span class=${'wg-at' + (isSw(x) ? ' swap' : '')} key=${x.i} data-slot=${x.slot || null} title=${isSw(x) ? `${x.slot || 'This slot'} changes between the options` : x.slot || null} style=${`--sl:${slotVar(x.slot)}`}>${isSw(x) ? html`<${Icon} name="shuffle" />` : null}<span class="wg-an">${x.name}</span></span>`)}</span></div>
++                            </div>
++                            <div class="wg-end">
++                            <${ImageChip} b=${o} />
++                            ${dmz ? null : o.shareCode
++                                ? html`<${CodeChip} b=${o} copied=${flash === b.id + ':code' + L} onCopy=${() => copy(b.id + ':code' + L, copyCodeText(o))} />`
++                                : html`<span class="wg-ig none"><span class="wg-cnone"><${Icon} name="triangle-alert" />No code</span></span>`}
++                            <div class="wg-acts wg-optacts" aria-hidden="true"></div>
++                            </div>
++                        </div>`; })}`;
+                     })}
+                 </div>`;
+             })}
+@@ -179,7 +235,7 @@ function ArmoryGroups({ api, builds, mode, attView, collapsed, onToggleGroup, on
  }
  
  // 🔴 'no-badges' and 'wrong-attachment-count' RETIRED 2026-09-13 17:36 EDT (pins batch 2, pin pmtylf7gz) -- see portal/api/armory.js's coverageFlags for why neither was a real defect. 'few-attachments' and 'code-length-mismatch' are their replacements, not renames: the flag KEYS changed, not just the label text.
@@ -1298,7 +1775,7 @@ index fe9fc32d..2109a50c 100644
      'missing-image': 'Missing image', 'few-attachments': '2 or fewer attachments',
      'stale-90d': 'Not updated in 90 days', 'near-duplicate': 'Near-duplicate code',
      'no-code': 'No gunsmith code', 'code-length-mismatch': 'Code length doesn’t match attachments',
-@@ -203,7 +211,7 @@ export function splitCoverage(b) {
+@@ -203,7 +259,7 @@ export function splitCoverage(b) {
  }
  
  // ⚠️ BOTH NOTES READ FROM THE SAME DERIVATION THE MASTHEAD DOES, so a panel and the figures above it cannot disagree -- the failure this realm has already had twice. Each says what its own view is for and nothing the masthead has already said.
@@ -1307,7 +1784,7 @@ index fe9fc32d..2109a50c 100644
      const ranked = builds.filter((b) => b.categoryRank || b.dmzRangeRank).length;
      return html`<span class="rt">${ranked} of ${builds.length} ranked</span>`;
  }
-@@ -289,6 +297,7 @@ function Rack({ builds, onPick, onAdd, onEdit }) {
+@@ -289,6 +345,7 @@ function Rack({ builds, onPick, onAdd, onEdit }) {
          setCOpen(next);
      };
      const openCount = cats.filter((c) => copen.has(c.category)).length;
@@ -1315,7 +1792,7 @@ index fe9fc32d..2109a50c 100644
  
      // An empty armory is not an error and it is not a table with no rows: it is a page whose only useful content is the way out of it, so it carries the button rather than describing one.
      if (!builds.length) {
-@@ -309,7 +318,7 @@ function Rack({ builds, onPick, onAdd, onEdit }) {
+@@ -309,7 +366,7 @@ function Rack({ builds, onPick, onAdd, onEdit }) {
              <div class="racktools">
                  <button class="chip" disabled=${openCount === cats.length} onClick=${() => setAll(true)}>Expand all</button>
                  <button class="chip" disabled=${openCount === 0} onClick=${() => setAll(false)}>Collapse all</button>
@@ -1324,7 +1801,7 @@ index fe9fc32d..2109a50c 100644
              </div>
              <div class="rack">
                  ${cats.map((c) => {
-@@ -356,7 +365,7 @@ const COVERAGE_WHY = {
+@@ -356,7 +413,7 @@ const COVERAGE_WHY = {
      'code-length-mismatch': 'A real code pairs two characters per attachment; this one’s length disagrees with its own build.',
  };
  
@@ -1333,7 +1810,7 @@ index fe9fc32d..2109a50c 100644
      const flags = Object.keys(COVERAGE_LABEL);
      const total = Math.max(1, builds.length);
      const hitsFor = (f) => builds.filter((b) => (b.coverage || []).includes(f));
-@@ -599,7 +608,7 @@ function AddBuildPanel({ f, setF, atts, setAtts, filledFromCode, builds, weaponN
+@@ -599,7 +656,7 @@ function AddBuildPanel({ f, setF, atts, setAtts, filledFromCode, builds, weaponN
          </div>`;
  }
  
@@ -1342,7 +1819,7 @@ index fe9fc32d..2109a50c 100644
      const [badges, setBadges] = useState('');
      return html`
          <div style="display:flex;gap:8px;align-items:center;padding:10px 14px;border-top:1px dashed var(--rule)">
-@@ -661,7 +670,7 @@ function BuildIssues({ build }) {
+@@ -661,7 +718,7 @@ function BuildIssues({ build }) {
          </div>`;
  }
  
@@ -1351,7 +1828,7 @@ index fe9fc32d..2109a50c 100644
      const [draft, setDraft] = useState({ ...build, attachments: [...(build.attachments || [])] });
      const [card, setCard] = useState(null);
      const [imgFailed, setImgFailed] = useState(false);
-@@ -828,16 +837,31 @@ const COMPARE_FIELDS = [
+@@ -828,16 +885,43 @@ const COMPARE_FIELDS = [
  // 🔴 `.cmpcards` EXPECTED `.dcard` CHILDREN AND GOT BARE DIVS, so the column layout, the dividers and every rule under `.dcard.lc` styled nothing — twelve classes with rules and no markup. The card is the RECORD, laid out so two of them line up field for field: the attachment list is the thing you actually compare, and reading it out of two Discord renders means reading two pictures.
  //
  // ⚠️ THE DISCORD RENDER MOVED OUT OF COMPARE, not away. It lives in the build editor's own side column under "What Discord sends", where it sits beside the fields that produce it. Here it cost one request per picked build to show two images you cannot align, while the table below already reports every field that differs.
@@ -1360,11 +1837,23 @@ index fe9fc32d..2109a50c 100644
 +    const r = b.mode === 'DMZ' ? b.dmzRangeRank : b.categoryRank;
 +    const m = /^(best|top(\d+)|capable)/.exec(String(r || ''));
 +    if (!m) return null;
-+    const head = m[1] === 'best' ? 'BEST' : m[1] === 'capable' ? 'CAPABLE' : `TOP ${m[2]}`;
++    const head = m[1] === 'best' ? 'BEST' : m[1] === 'capable' ? 'HONORABLE MENTION' : `TOP ${m[2]}`;
++    if (m[1] === 'capable' && b.mode !== 'DMZ') return head;   // the bot's words: Honorable Mention carries no class name
 +    if (b.mode !== 'DMZ') return `${head} ${b.category === 'SECONDARIES' ? 'SECONDARY' : b.category}`;
 +    return `${head} ${r.includes('-close') ? 'CLOSE RANGE' : r.includes('-midlong') ? 'MID-LONG RANGE' : 'DMZ'}`;
 +}
 +
++// The card footer's credit, as utils/loadoutCredit.js creditLine writes it (2026-11-15, the bot catch-up). A mention is drawn as Discord draws one.
++const CREDIT_PREFIX = { submitted: 'Submitted by', credit: 'Credit:', buildby: 'Build by' };
++function creditOf(c) {
++    if (!c || !c.show || c.show === 'none') return null;
++    if (c.show === 'anonymous') return html`By <em>anonymous</em>`;
++    const p = CREDIT_PREFIX[c.prefix] || CREDIT_PREFIX.submitted;
++    if (c.show === 'user') return /^\d{15,22}$/.test(String(c.discordId || '')) ? html`${p} <span class="lc-mention">@${c.discordId}</span>` : null;
++    if (c.show === 'name') return c.name && c.name.trim() ? html`${p} <b>${c.name.trim()}</b>` : null;
++    if (c.show === 'link') return c.name && c.name.trim() && /^https:\/\//.test(c.url || '') ? html`${p} <span class="lc-link">${c.name.trim()}</span>` : null;
++    return null;
++}
 +export function LoadoutCard({ build, siblings }) {
      const b = build;
      const idx = siblings.findIndex((s) => String(s._id) === String(b._id)) + 1;
@@ -1387,16 +1876,18 @@ index fe9fc32d..2109a50c 100644
      const [failed, setFailed] = useState(false);
      const atts = b.attachments || [];
      const slots = b.attachmentSlots || [];
-@@ -845,16 +869,17 @@ function LoadoutCard({ build, siblings }) {
+@@ -845,24 +929,26 @@ function LoadoutCard({ build, siblings }) {
      return html`
          <div class="dcard lc" style=${`--c:${b.accent || 'var(--r-armory)'}`}>
              <h6 role="heading" aria-level="3">${b.weaponName}</h6>
 -            ${badges.length ? html`<div class="lc-badges">${badges.map((x) => html`<span key=${x}>${x}</span>`)}</div>` : null}
-+            ${badges.length ? html`<div class="lc-badges">${badges.map((x) => html`<span key=${x} data-k=${x === 'META' ? 'meta' : x === 'TOXIC' ? 'toxic' : x === 'ASS' ? 'ass' : /^CAPABLE/i.test(x) ? 'capable' : /^BEST/i.test(x) ? 'best' : /^TOP\s*(\d)/i.test(x) ? `top${/^TOP\s*(\d)/i.exec(x)[1]}` : 'tier'}>${x}</span>`)}</div>` : null}
++            ${badges.length ? html`<div class="lc-badges">${badges.map((x) => html`<span key=${x} data-k=${x === 'META' ? 'meta' : x === 'TOXIC' ? 'toxic' : x === 'ASS' ? 'ass' : /^(CAPABLE|HONORABLE)/i.test(x) ? 'capable' : /^BEST/i.test(x) ? 'best' : /^TOP\s*(\d)/i.test(x) ? `top${/^TOP\s*(\d)/i.exec(x)[1]}` : 'tier'}>${x}</span>`)}</div>` : null}
 +            ${modes.length ? html`<div class="lc-modes"><b>Recommended Rank Mode:</b>${modes.map((m, i) => html`${i ? html`<i aria-hidden="true">|</i>` : null}<span key=${m} data-m=${m}><${Icon} name=${MODE_ICON[m]} />${m}</span>`)}</div>` : null}
              <div class="lc-rule"></div>
              ${b.description ? html`<blockquote class="lc-desc">${b.description}</blockquote>` : null}
-             <div class="lc-h">Attachments</div>
+-            <div class="lc-h">Attachments</div>
++            ${b.options && b.options.length > 1 ? html`<div class="lc-opts">${b.options.map((o, i) => html`<div class="lc-opt" key=${i}><div class="lc-optt"><b>Option ${String.fromCharCode(65 + i)}</b>${o.label ? html`<span> · ${o.label}</span>` : null}${o.code ? html`<span> · <code>${o.code}</code></span>` : null}<ol>${o.attachments.map((a, k) => html`<li key=${k}>${a}</li>`)}</ol></div><span class=${'lc-optimg' + (o.image ? '' : ' none')}>${o.image ? html`<img src=${o.image} alt="" />` : html`<${Icon} name="image-off" />`}</span></div>`)}</div>`
++            : b.noAttachments ? html`<p class="lc-noatt">This weapon has no attachments or gunsmith code.</p>` : html`<div class="lc-h">Attachments</div>
              <ul class="lc-att">
                  ${atts.length
 -                    ? atts.map((a, i) => html`<li key=${i}><code>${a}</code>${slots[i] ? html`<em>${slots[i]}</em>` : null}</li>`)
@@ -1404,11 +1895,30 @@ index fe9fc32d..2109a50c 100644
                      : html`<li class="none">none recorded</li>`}
              </ul>
 -            ${code ? html`<div class="lc-h">Gunsmith Code</div><div class="lc-code">${code}</div>` : null}
-+            ${b.mode !== 'DMZ' ? html`<div class="lc-h">Gunsmith Code</div><div class=${'lc-code' + (code ? '' : ' none')}>${code || 'no code'}</div>` : null}
-             ${b.imageKey && b.imageUrl
+-            ${b.imageKey && b.imageUrl
++            ${b.mode !== 'DMZ' ? html`<div class="lc-h">Gunsmith Code</div><div class=${'lc-code' + (code ? '' : ' none')}>${code || 'no code'}</div>` : null}`}
++            ${b.options && b.options.length > 1 ? null : b.imageKey && b.imageUrl
                  ? html`
                      <div class=${'lc-img' + (failed ? ' failed' : '')}>
-@@ -915,9 +940,14 @@ function WeaponSearch({ options, picked, roomLeft, onPick }) {
+                         <img src=${b.imageUrl} alt=${`${b.weaponName} ${b.buildName || ''}`} loading="lazy" onError=${() => setFailed(true)} />
+                         <span class="lc-imgfail">Cloudinary did not return this image — <code>${b.imageKey}</code></span>
+                     </div>`
+                 : html`<div class="lc-noimg">No image on this build, so the card omits the gallery entirely.</div>`}
+-            <div class="lc-foot">${b.category} • Build ${idx || 1} of ${siblings.length || 1}${b.lastUpdated ? ` • Updated ${String(b.lastUpdated).slice(0, 10)}` : ''}</div>
++            <div class="lc-foot">${b.category} • Build ${idx || 1} of ${siblings.length || 1}${b.lastUpdated ? ` • Updated ${String(b.lastUpdated).slice(0, 10)}` : ''}${creditOf(b.credit) ? html` • ${creditOf(b.credit)}` : null}</div>
+         </div>
+     `;
+ }
+@@ -874,7 +960,7 @@ function LoadoutCard({ build, siblings }) {
+ const MAX_COMPARE_COLUMNS = 6;
+ 
+ // ⚠️ A COMBOBOX, NOT AN INPUT WITH A LIST UNDER IT. `aria-expanded`/`aria-controls`/`aria-activedescendant` are what make the arrow keys mean anything to a screen reader: without them the highlighted row is a class name and the reader is told nothing has changed. The list is filtered on every keystroke rather than on a debounce, because the corpus is the weapons in one armory — tens, not thousands — and a debounce would only add lag to a local filter.
+-function WeaponSearch({ options, picked, roomLeft, onPick }) {
++export function WeaponSearch({ options, picked, roomLeft, onPick }) {
+     const [q, setQ] = useState('');
+     const [hi, setHi] = useState(0);
+     const full = !roomLeft;
+@@ -915,9 +1001,14 @@ function WeaponSearch({ options, picked, roomLeft, onPick }) {
  }
  
  // ⚠️ THE SAME ROWS ARE DRAWN WHETHER THEY MATCH OR NOT. Showing only the differences would be shorter and would answer a different question: "these two are identical apart from the image" is a conclusion you can only reach by seeing the fields that agree. `.cmptab tr.same` is the adopted sheet's own class for exactly that. 2026-09-11 09:15 EDT -- every build of both picked weapons used to auto-fill the columns; Harkirat, direct: "what if i only want to compare AK117 build 1 vs AS VAL build 2? why does it force load both AS VAL builds?" Picking a WEAPON and picking WHICH of its builds are two different acts, so a weapon with more than one build now gets its own row of toggle chips -- the same `.chip` control already used to remove a whole weapon, one level down. Unchecked means excluded, not deleted. 🔴 COMPARE AS THE DESIGN BOARD DRAWS IT (plan pins batch 2 §10.2, G10 answered 2026-09-14 01:18 EDT; built 2026-09-15 08:37 EDT). One row per attachment SLOT in Harkirat's display order, never one comma-joined cell — two builds that differ by one attachment could not be told apart. The first column is the baseline, tinted and headed so; a value that differs from it is raised with a --patch ring and carries a visually hidden "differs" (colour is never the only signal); a slot the baseline has and a build lacks is a dashed Not equipped cell; a slot neither uses is a dash. Fields identical on every shown build fold into one "Same on all N" row. The table comes first and the Discord cards wait behind Show cards, closed on every open (Harkirat, 2026-09-13 20:52 EDT). Two weapons split the six columns between them rather than the first filling them, and a build that did not fit says so on its own chip.
@@ -1424,7 +1934,7 @@ index fe9fc32d..2109a50c 100644
      const toggleBuild = (id) => setExcluded((prev) => {
          const next = new Set(prev);
          if (next.has(id)) next.delete(id); else next.add(id);
-@@ -952,7 +982,7 @@ function Compare({ builds, weapons, onSetWeapons, onOpenRack, onAdd }) {
+@@ -952,7 +1043,7 @@ function Compare({ builds, weapons, onSetWeapons, onOpenRack, onAdd }) {
  
      if (!options.length) {
          return html`
@@ -1433,7 +1943,7 @@ index fe9fc32d..2109a50c 100644
                  <p class="empty"><b>Nothing to compare yet.</b>${' '}Add a build and its slots line up here.</p>
                  <div class="racktools"><button class="pill lead" onClick=${onAdd}>Add a build</button></div>
              </div>`;
-@@ -973,10 +1003,11 @@ function Compare({ builds, weapons, onSetWeapons, onOpenRack, onAdd }) {
+@@ -973,10 +1064,11 @@ function Compare({ builds, weapons, onSetWeapons, onOpenRack, onAdd }) {
              rows.push({ key: 'Attachments', vals: chosen.map((b) => ((b.attachmentSlots || []).some(Boolean) ? null : (b.attachments || []).join(', ') || null)), slot: false });
          }
          const fields = [
@@ -1449,7 +1959,7 @@ index fe9fc32d..2109a50c 100644
          ];
          for (const [k, read] of fields) {
              const vals = chosen.map(read);
-@@ -985,84 +1016,88 @@ function Compare({ builds, weapons, onSetWeapons, onOpenRack, onAdd }) {
+@@ -985,84 +1077,88 @@ function Compare({ builds, weapons, onSetWeapons, onOpenRack, onAdd }) {
          }
      }
      const codeVals = chosen.map((b) => (b.mode === 'DMZ' ? null : b.shareCode || null));
@@ -1590,7 +2100,7 @@ index fe9fc32d..2109a50c 100644
          </div>
      `;
  }
-@@ -1070,7 +1105,7 @@ function Compare({ builds, weapons, onSetWeapons, onOpenRack, onAdd }) {
+@@ -1070,7 +1166,7 @@ function Compare({ builds, weapons, onSetWeapons, onOpenRack, onAdd }) {
  // ── THE ACTIVE FILTER BAR ─────────────────────────────────────────────────────────────────────
  //
  // 🔴 THE FILTER WAS INVISIBLE FROM THE TABLE IT FILTERED. Clicking a Coverage card narrowed the Manifest and said so only in the Manifest's header-right corner, as a bare string with no way back — so a reader who scrolled past it saw a short table and no reason for it, which reads as missing data rather than as a filter. The bar states every active narrowing, in the words the control used, with the count it produced and one control that undoes all of it.
@@ -1599,7 +2109,7 @@ index fe9fc32d..2109a50c 100644
      if (!weapon && !flag) return null;
      return html`
          <div class="afbar">
-@@ -1194,7 +1229,7 @@ function BulkCreatePanel({ builds, mode, csrfToken, overlay, onStaged, busy, set
+@@ -1194,7 +1290,7 @@ function BulkCreatePanel({ builds, mode, csrfToken, overlay, onStaged, busy, set
  // ── THE DRAWER ITSELF ────────────────────────────────────────────────────────────────────────
  //
  // Row 2 (G9): the header holds only eyebrow/title/×; a toolbar under it carries the MP/DMZ switch (unchanged look), a rule, then Add build · Bulk create. Row 5: Esc/scrim on a dirty draft asks first. Row 11/12 (harden): handleAdd's stageOps() result is checked rather than assumed, and Stage shows a busy state so a double click cannot stage the same build twice.
@@ -1608,7 +2118,7 @@ index fe9fc32d..2109a50c 100644
      const [panel, setPanel] = useState(initialPanel);
      const [f, setF] = useState({
          weaponName: '', category: 'AR', mode, buildName: '', imageKey: '', imageSourceUrl: '', imageLinkText: '',
-@@ -1318,11 +1353,11 @@ function NewBuildDrawer({ builds, mode, onSubmit, onStaged, onCancel, csrfToken,
+@@ -1318,11 +1414,11 @@ function NewBuildDrawer({ builds, mode, onSubmit, onStaged, onCancel, csrfToken,
  
  
  // 🔴 THE VIEW NAMES LIVE IN ONE TABLE so the tab strip, the command palette and every branch below read the same strings. They were four bare literals in five places, which is how a rename becomes a silent dead branch: `view === 'Rack'` against a strip offering `Tier board` compiles, runs, and renders the fallback view forever.
@@ -1623,7 +2133,7 @@ index fe9fc32d..2109a50c 100644
      const bad = split.filter((c) => c.faults.length).length;
      const age = split.filter((c) => c.aged && !c.faults.length).length;
      const clean = split.length - bad - age;
-@@ -1356,10 +1391,23 @@ export function ArmoryRealm({ session }) {
+@@ -1356,10 +1452,23 @@ export function ArmoryRealm({ session }) {
      const [editingId, setEditingId] = useState(null);
      // The weapon groups' own view state (plan §10.4 G4): which groups are shut and List or By slot. In memory only — see ArmoryGroups' header.
      const [collapsedWeapons, setCollapsedWeapons] = useState(new Set());
@@ -1648,7 +2158,7 @@ index fe9fc32d..2109a50c 100644
  
      // ⚠️ `builds` DEFAULTED TO [] AND THE PAGE RENDERED IMMEDIATELY, so the first frame of every visit was a complete, confident, empty Armory — "0 builds · 0 weapons · 0 flagged" over an empty rack, which is a statement about the data rather than about the request. An empty state and an unanswered request must never look the same.
  // 🔴 TWO REALMS COULD STAGE WORK AND NEITHER COULD TELL YOU IT HAD ANY. Season and Home both read /api/review to say how much is waiting — that is what feeds the rail's badge and the masthead's staged figure — and Armory and Broadcast, which stage on every edit, said nothing anywhere. You staged four builds, navigated away, and the console had no memory of it outside the Review screen.
-@@ -1412,6 +1460,7 @@ export function ArmoryRealm({ session }) {
+@@ -1412,6 +1521,7 @@ export function ArmoryRealm({ session }) {
      const rows = inMode
          .filter((b) => !coverageFilter || (b.coverage || []).includes(coverageFilter.flag))
          .filter((b) => !weaponFilter || b.weaponName === weaponFilter)
@@ -1656,7 +2166,7 @@ index fe9fc32d..2109a50c 100644
          .map((b) => ({ ...b, id: b._id, topicVar: null, accentHex: b.accent, state: stagedTargets.has(String(b._id)) ? 'staged' : b.state }));
  
      // 🔴 A DRAWER OVER A ROW THAT NO LONGER EXISTS. The editor used to be handed `builds.find(...)` inline, so a staged bulk deletion followed by a refresh could hand it `undefined` and the first field read would throw inside a modal with the page behind it inert — a dead screen with no way out but Escape. Resolved once here, and the drawer is simply not rendered when the build it was opened for has gone.
-@@ -1486,7 +1535,7 @@ export function ArmoryRealm({ session }) {
+@@ -1486,7 +1596,7 @@ export function ArmoryRealm({ session }) {
      const rankedNow = inMode.filter((b) => b.categoryRank || b.dmzRangeRank).length;
      // G1 (§10.4, board row armory.js:1315): Tier board's and Repairs' counts moved onto their tabs (viewCounts below); Compare lost its "type a weapon name" instruction and names the weapons only once there are some.
      const failingChecks = Object.keys(COVERAGE_LABEL).filter((f) => inMode.some((b) => (b.coverage || []).includes(f))).length;
@@ -1665,7 +2175,7 @@ index fe9fc32d..2109a50c 100644
      const viewMeta = view === VIEWS.compare && comparedWeapons.length
              ? `${comparedWeapons.join(' · ')} — ${inMode.filter((b) => comparedWeapons.includes(b.weaponName)).length} builds`
          : view === VIEWS.bulk ? `${inMode.length} ${armMode} builds · pipe format, lossless round trip` : null;
-@@ -1532,7 +1581,7 @@ export function ArmoryRealm({ session }) {
+@@ -1532,7 +1642,7 @@ export function ArmoryRealm({ session }) {
                    stagedOps=${load.data.stagedUnknown ? null : load.data.stagedOps}
                    overlaySlot=${html`
                        ${overlay.render()}
@@ -1674,7 +2184,7 @@ index fe9fc32d..2109a50c 100644
                                                          onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)}
                                                          onStaged=${(s) => {
                                                              setShowAdd(false);
-@@ -1540,6 +1589,10 @@ export function ArmoryRealm({ session }) {
+@@ -1540,6 +1650,10 @@ export function ArmoryRealm({ session }) {
                                                                  'Review →', () => { location.hash = '#/review'; });
                                                              refresh();
                                                          }} />` : null}
@@ -1685,7 +2195,7 @@ index fe9fc32d..2109a50c 100644
                        ${editingBuild ? html`
                            <${BuildEditor} build=${editingBuild} csrfToken=${session.csrfToken}
                                            onStage=${async (op) => {
-@@ -1591,7 +1644,10 @@ export function ArmoryRealm({ session }) {
+@@ -1591,7 +1705,10 @@ export function ArmoryRealm({ session }) {
                                ? html`<${Compare} builds=${rows} weapons=${comparedWeapons} onSetWeapons=${setComparedWeapons}
                                                   onOpenRack=${(w) => { setWeaponFilter(w); setView(VIEWS.rack); }}
                                                   onAdd=${() => { setAddMode(armMode); setShowAdd(true); setAddPanel('add'); }} />`
@@ -1697,7 +2207,7 @@ index fe9fc32d..2109a50c 100644
                    `}
                    manifestSlot=${html`
                        <!-- 🔴 THE HINT USED TO RENDER HERE, AND IT COST THE WHOLE TABLE ITS DEPTH. Both stylesheets carry
-@@ -1601,9 +1657,9 @@ export function ArmoryRealm({ session }) {
+@@ -1601,9 +1718,9 @@ export function ArmoryRealm({ session }) {
                             instead: measured #171E24 against the design's #0F1418, on every row of a 125-row table, with
                             both stylesheets carrying the identical rule. The hint is a caption for the Manifest, so it
                             renders INSIDE it now. FilterBar returns null at rest and never broke anything. -->
@@ -1709,7 +2219,7 @@ index fe9fc32d..2109a50c 100644
                        <${Manifest} rows=${rows} columns=${ARMORY_COLUMNS} searchableFields=${['weaponName', 'buildName']}
                                     label="Manifest" filterGroups=${[...ARMORY_FILTERS, { key: 'category', label: 'Category', topic: true, options: categoryOptions }]}
                                     headerRight=${weaponFilter || (coverageFilter ? COVERAGE_LABEL[coverageFilter.flag] : '')}
-@@ -1616,12 +1672,13 @@ export function ArmoryRealm({ session }) {
+@@ -1616,12 +1733,13 @@ export function ArmoryRealm({ session }) {
                                     onEditError=${(msg) => setNotice(msg)}
                                     onFiltersChange=${setManifestFilters}
                                     defaultSort="weaponName"
@@ -1732,10 +2242,10 @@ index fe9fc32d..2109a50c 100644
 
 ```diff
 diff --git aportal/ui/armory.logic.js bkit/ui/armory.logic.js
-index 9fd1fbd9..ad67927e 100644
+index 9fd1fbd9..8ba9c53b 100644
 --- aportal/ui/armory.logic.js	
 +++ bkit/ui/armory.logic.js	
-@@ -1,26 +1,35 @@
+@@ -1,26 +1,36 @@
  // portal/ui/armory.logic.js — CommonJS, imports nothing. Pure op-builders + the badges-token parser for the Armory realm, tested directly by scripts/portalRealms.test.js.
  //
  // parseBadgesToken() is a client-side port of utils/adminParser.js's parseLoadoutBadges() -- that function lives in a Node-only module (chrono-node/dayjs deps) the browser bundle never loads, so this reproduces its exact grammar rather than reaching across the server boundary. Any change to the real parser's token vocabulary must be mirrored here.
@@ -1759,10 +2269,12 @@ index 9fd1fbd9..ad67927e 100644
 +        if (token === 'ass') { isAss = true; continue; }
 +        // 2026-09-25 23:19 EDT (his 23:12 EDT, the Modes family): the Modes family, MP only — the bot's parser (utils/adminParser.js) takes the same tokens in Session 5
 +        if (RANK_MODE_TOKENS[token]) { if (mode === 'DMZ') unrecognized.push(token); else modes.add(RANK_MODE_TOKENS[token]); continue; }
-+        if (token === 'capable') { categoryRank = 'capable'; continue; }
-+        const rangeMatch = token.match(/^(best|top\s*\d+|capable)-?(close|midlong)$/);
++        if (['capable', 'hm', 'honorable', 'honorablemention'].includes(token)) { categoryRank = 'capable'; continue; }   // Honorable Mention, stored as `capable` (the bot's parseLoadoutBadges, 2026-11-02)
++        if (token === 'mention') continue;
++        const rangeMatch = token.match(/^(best|top\s*\d+|capable|hm)-?(close|midlong)$/);
          if (rangeMatch) {
-             const tier = rangeMatch[1].replace(/\s+/g, '');
+-            const tier = rangeMatch[1].replace(/\s+/g, '');
++            const tier = rangeMatch[1] === 'hm' ? 'capable' : rangeMatch[1].replace(/\s+/g, '');
              dmzRangeRank = `${tier}-${rangeMatch[2]}`;
              continue;
          }
@@ -1773,7 +2285,7 @@ index 9fd1fbd9..ad67927e 100644
          unrecognized.push(token);
      }
      // DMZ never uses the per-category Best/TopN system -- same swap handlers/manage/loadouts.js applies server-side (a bare "best"/"topN" token doesn't know the mode on its own, so it moves over to dmzRangeRank here instead once the mode is known).
-@@ -28,7 +37,8 @@ function parseBadgesToken(badgesStr, mode) {
+@@ -28,7 +38,8 @@ function parseBadgesToken(badgesStr, mode) {
          dmzRangeRank = categoryRank;
          categoryRank = null;
      }
@@ -1783,7 +2295,7 @@ index 9fd1fbd9..ad67927e 100644
  }
  
  // core/ops/loadouts.js's loadout.add/loadout.edit both run every payload field through validateBuild(), which REQUIRES weaponName + a valid mode and recomputes weaponKey itself -- callers never need to derive it. loadout.edit's real target shape is { id } (confirmed reading core/ops/loadouts.js's 'loadout.edit' entry in full: `Loadout.findById(op.target.id)`), matching loadout.delete/bulkDelete's own `{ id }`/`{ ids }` shapes. ⚠️ shareCode is NOT collected here, and this Armory form is now BEHIND Discord's own /manage on this front (reversed 2026-08-22 20:18 EDT -- this comment used to say "the real /manage add-loadout modal has no field for it either", which was true when written but is no longer true: Discord's Add/Edit Loadout modal now accepts "Build Name | Share Code" as a pipe-delimited convention on its existing `build` field, precisely because Discord modals cap at 5 fields with all 5 already used, so a real 6th field was never possible there -- see commands/manage.js/handlers/manage/loadouts.js. THIS form has no such 5-field constraint (it's a web form), so adding a real, dedicated Share Code input here would be more straightforward than the Discord workaround, not blocked by it. Filed as a follow-up in docs/db-deferred-list.md, not built here. Until then: on EDIT, this form still cannot show or change an existing (possibly /autobuild-set) shareCode at all -- the op-layer contract this comment originally described still holds and is still correct: see core/ops/loadouts.js's own header for why an always-present '' payload key would silently wipe a real gunsmith code on an EDIT (add is unaffected -- there is nothing yet to wipe on a new build). ⚠️ BADGES ARRIVE TWO WAYS NOW, and the token path stays because it is what a paste and a bulk apply speak. The add FORM sets the four fields directly — it has real controls, so making it serialise `meta, top3` into a string for this function to parse back would be a round trip through a grammar that exists for text input. An explicit field wins over the token when both are present.
-@@ -48,15 +58,17 @@ function buildArmoryAddOp(fields) {
+@@ -48,15 +59,17 @@ function buildArmoryAddOp(fields) {
              ...(shareCode ? { shareCode } : {}),
              isMeta: Boolean(pick(fields.isMeta, token.isMeta)),
              isToxic: Boolean(pick(fields.isToxic, token.isToxic)),
@@ -1802,7 +2314,7 @@ index 9fd1fbd9..ad67927e 100644
  
  // Edits one field of an existing row, preserving the rest -- loadout.edit's validate() needs the full build (weaponName/mode/etc), not a partial patch, same contract as every other entity's edit op in this portal.
  function buildArmoryEditOp(row, columnKey, newValue) {
-@@ -94,10 +106,10 @@ function armoryExportQuery({ scope, mode, category, ids }) {
+@@ -94,10 +107,10 @@ function armoryExportQuery({ scope, mode, category, ids }) {
  // 🔴 "UPDATE" IS NOT A PREVIEW. The bulk paste told you a block would update an existing build and stopped there — so a paste that silently rewrote a category, dropped a share code or changed a rank looked exactly like one that changed nothing, and the only way to find out was to stage it and read the diff on the Review screen. These are the fields the upsert actually writes.
  //
  // ⚠️ THE MATCH IS THE CLIENT'S, THE VERDICT IS THE SERVER'S. /api/parse-bulk/loadout decides update-or-new on `weaponKey` — a normalised form this browser does not compute — so `existing` is taken from the reply and never re-derived here. This only names the CHANGING FIELDS, and when it cannot find the local record it says so rather than reporting "no change", because a silent empty diff over a real update is the exact failure it exists to prevent.
@@ -1815,21 +2327,26 @@ index 9fd1fbd9..ad67927e 100644
  };
  
  const sameish = (a, b) => String(a ?? '').trim().toLowerCase() === String(b ?? '').trim().toLowerCase();
-@@ -165,10 +177,10 @@ function displayBuildLabel(build) {
+@@ -165,14 +178,14 @@ function displayBuildLabel(build) {
  // 🔴 THE RACK IS GROUPED BY CATEGORY AND OPENS CLOSED — Harkirat, Pin 21: "WHY do I have to scroll all the way". Grouped by rank tier it was five permanently-open rows over the whole catalogue, so every visit began by scrolling past everything to reach the one weapon class you came for. Category is the axis a reader arrives with ("show me the SMGs"); rank has not been lost, it has moved one level down — the weapon groups inside a category are ordered best-first and each carries its tier as a badge, so the board still answers "what is ranked where" once it is open.
  //
  // ⚠️ THIS LIVES IN THE LOGIC FILE RATHER THAN IN armory.js BECAUSE EVERY FACT ON A CATEGORY HEADER IS ARITHMETIC — the count, the ordering, the teaser — and arithmetic that only a browser can run is arithmetic nothing checks. ORDER_STAMP is deliberately absent: the display order is a constant below, not a date.
 -const RANK_ORDER = ['best', 'top3', 'top4', 'top5', null];
 -const RANK_LABEL = { best: 'Best in category', top3: 'Top 3', top4: 'Top 4', top5: 'Top 5', null: 'Unranked' };
 +const RANK_ORDER = ['best', 'top3', 'top5', 'capable', null];
-+const RANK_LABEL = { best: 'Best in category', top3: 'Top 3', top5: 'Top 5', capable: 'Capable', null: 'Unranked' };
++const RANK_LABEL = { best: 'Best in category', top3: 'Top 3', top5: 'Top 5', capable: 'Honorable Mention', null: 'Unranked' };
  // 🔴 THESE STRINGS ARE CSS CLASS NAMES. app.css's `.t-best/.t-top3/.t-top4/.t-top5/.t-unranked` are what grade a tier visually, and this map once emitted `t-t3`/`t-t4`/`t-t5`/`t-none` — four selectors that named nothing while every gate stayed green. They now ride on the WEAPON GROUP rather than on a tier row, because the tier row is gone.
 -const RANK_KEY = { best: 'best', top3: 'top3', top4: 'top4', top5: 'top5', null: 'unranked' };
 +const RANK_KEY = { best: 'best', top3: 'top3', top5: 'top5', capable: 'capable', null: 'unranked' };
  
  // The mockup's own chip vocabulary and display order (armory.html's `renderCatChips`) — short labels, distinct from the precise CATEGORY_LABEL the edit form's dropdown uses, which is verbose on purpose.
  const CATEGORY_CHIP_LABEL = { AR: 'Assault', SMG: 'SMG', LMG: 'LMG', MARKSMAN: 'Marksman', SNIPER: 'Sniper', SHOTGUN: 'Shotgun', SECONDARIES: 'Secondaries' };
-@@ -259,7 +271,7 @@ function addFormBlockers(f) {
+-const CATEGORY_CHIP_ORDER = ['AR', 'SMG', 'LMG', 'MARKSMAN', 'SNIPER', 'SHOTGUN', 'SECONDARIES'];
++const CATEGORY_CHIP_ORDER = ['AR', 'SNIPER', 'LMG', 'SMG', 'SHOTGUN', 'MARKSMAN', 'SECONDARIES'];   // the in-game class order, the bot's CLASS_ORDER (utils/loadoutRender.js); his 2026-11-03 word
+ 
+ // A DMZ build ranks on dmzRangeRank, which also encodes a combat range (`best-close`, `best-midlong`) — the tier is the part before the hyphen. An MP build ranks on categoryRank. Reading the wrong field is how DMZ builds all pile into Unranked while looking correct.
+ function rankOf(b) {
+@@ -259,7 +272,7 @@ function addFormBlockers(f) {
  
  // The fields loadout.edit actually writes, which is what makes "nothing has changed" answerable. `attachments` is compared as a LIST rather than a count: two five-attachment lists that differ in one string are a real edit, and a count comparison would call them equal.
  const EDIT_DIRTY_FIELDS = ['weaponName', 'buildName', 'category', 'mode', 'shareCode', 'imageKey',
@@ -1838,7 +2355,7 @@ index 9fd1fbd9..ad67927e 100644
  
  function editedFields(build, draft) {
      const before = build || {};
-@@ -350,18 +362,22 @@ function codeFill(builds, weaponKey, mode, code) {
+@@ -350,18 +363,22 @@ function codeFill(builds, weaponKey, mode, code) {
  
  
  // deriveNextImageKey(builds, weaponName, mode): client-side mirror of utils/loadoutImageCache.js's deriveImageKey -- same convention (WEAPON-NAME-N, DMZ- prefixed for DMZ), computed against every imageKey already IN the loaded catalogue rather than a server round trip, so the New Build drawer can show the real next key ("AK117-6") live as the weapon name is typed. Server-side deriveImageKey stays the one place the ACTUAL upload uses (core/ops/loadouts.js, at commit) -- this is a preview only.
@@ -2569,10 +3086,10 @@ index eac81261..9b70cc1b 100644
 
 ```diff
 diff --git aportal/ui/icons.js bkit/ui/icons.js
-index 70aca763..97ed1396 100644
+index 70aca763..fb6a0651 100644
 --- aportal/ui/icons.js	
 +++ bkit/ui/icons.js	
-@@ -7,9 +7,44 @@
+@@ -7,12 +7,48 @@
  // Every icon inherits currentColor and is 1em square (see .ic in shell.css), so it sits in text without a fight. Decorative by default — an icon beside a word is not read twice; pass `label` only when the icon is the ONLY thing carrying the meaning.
  import { h } from '../vendor/preact.mjs';
  import { html } from '../vendor/htm-preact.mjs';
@@ -2617,7 +3134,11 @@ index 70aca763..97ed1396 100644
      'check':        '<path d="M20 6 9 17l-5-5"/>',
      'x':            '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
      'plus':         '<path d="M5 12h14"/><path d="M12 5v14"/>',
-@@ -39,14 +74,56 @@ const PATHS = {
++    'list-plus':    '<path d="M11 12H3"/><path d="M16 6H3"/><path d="M16 18H3"/><path d="M18 9v6"/><path d="M21 12h-6"/>',   /* 2026-10-11 18:36 EDT: Stage build's icon, his "list-plus." */
+     'minus':        '<path d="M5 12h14"/>',
+     'chevron-down':  '<path d="m6 9 6 6 6-6"/>',
+     'chevron-right': '<path d="m9 18 6-6-6-6"/>',
+@@ -39,14 +75,56 @@ const PATHS = {
      'radio':        '<path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/>',
      'calendar':     '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/>',
      'circle-check': '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
@@ -2674,7 +3195,7 @@ index 70aca763..97ed1396 100644
  export const ICON_NAMES = Object.keys(PATHS);
  
  // 🔴 THE SPRITE IS INJECTED AT MODULE EVALUATION, not on DOMContentLoaded. `<use href="#i-…">` resolves against the document, and an element already in the DOM when its symbol arrives is not guaranteed to re-resolve — so waiting can leave icons permanently blank on a page whose markup rendered during parsing. documentElement always exists by the time a module body runs.
-@@ -86,6 +163,9 @@ const FOLD_CLOSED = 'M6 9 L12 15 L18 9';
+@@ -86,6 +164,9 @@ const FOLD_CLOSED = 'M6 9 L12 15 L18 9';
  const FOLD_OPEN = 'M6 15 L12 9 L18 15';
  
  export function Fold({ open, cls }) {
@@ -2690,18 +3211,49 @@ index 70aca763..97ed1396 100644
 
 ```diff
 diff --git aportal/ui/manifest.js bkit/ui/manifest.js
-index 467a2f2b..39dc6c4a 100644
+index 467a2f2b..893c089d 100644
 --- aportal/ui/manifest.js	
 +++ bkit/ui/manifest.js	
-@@ -6,6 +6,7 @@ import { html } from '../vendor/htm-preact.mjs';
- import { useState, useMemo, useEffect } from '../vendor/preact-hooks.mjs';
+@@ -3,9 +3,10 @@
+ // filterRows/sortRows/toggleSelection come from manifest.logic.js, loaded as a classic script — see track.js's header comment for why that is the real cross-runtime resolution here.
+ import { h } from '../vendor/preact.mjs';
+ import { html } from '../vendor/htm-preact.mjs';
+-import { useState, useMemo, useEffect } from '../vendor/preact-hooks.mjs';
++import { useState, useMemo, useEffect, useRef, useLayoutEffect } from '../vendor/preact-hooks.mjs';
  import { stageAndCommit } from './composeClient.js';
  import { Icon } from './icons.js';
 +import { b3, useB3, hooks } from '../b3/state.js';
  
  // `filterGroups` is [{key, label, options:[{value,label}]}]. One CHIP PER GROUP that cycles through its own options, not one chip per option: 03-three-surfaces.html renders exactly two chips ("Type: all ×", "State: staged ×") for a table with five types and four states, so the chip shows the current value rather than enumerating every possible one. `all` is always the first option and is what the × returns to. The state pill's own class comes from the state VALUE, so a realm reporting 'scheduled' or 'expired' gets the right shape without this component learning its vocabulary. Anything unrecognised falls to the conflict shape, which is the safe default: an unknown state should look like something to look at, never like a confirmed live row. 🔴 EXPORTED, because a realm that needs to add something BESIDE the state (Season's outlives-the-season warning) used to supply its own `render` and lose the pill entirely — the column whose whole job is state, drawn as a bare word, on every row. ⚠️ `live` MAPS TO `saved`. The stylesheet fills `.stt.saved`; `.stt.live` has no rule, so the one column whose job is to carry state as a filled chip rendered as plain text on every live row. The stored value and the class are different vocabularies and this is where they meet. 🔴 FOUR OF THESE SIX EMITTED A CLASS NEITHER STYLESHEET DEFINES, AND TWO OF THE FOUR WERE REACHABLE. Measured 2026-09-01 from Broadcast's pass: `.stt.stag`, `.stt.sched`, `.stt.exp` and `.stt.conf` have ZERO rules in `portal/ui/app.css` AND zero in the design's — only `.stt.saved`, `.stt.staged` and `.stt.conflict` exist. `season.logic.js`'s `stateForElement` returns exactly live | staged | conflict, so every STAGED and every CONFLICT row on Season had been rendering its state chip with no shape at all — bare 9px mono text — against COMPANION §0.0's law that SHAPE carries state (solid live, dashed staged, hatched conflict). Same defect as Armory's `RANK_KEY` emitting `t-t3` against `.t-top3`, in the same component, and `portalReverseOrphans` carried it in its accepted-debt baseline for the same reason. ⚠️ `scheduled` and `expired` are UNREACHABLE today — Broadcast is the only realm with those states and it renders its own chip. They map the way Broadcast's own renderer maps them (anything not staged is solid), so the two vocabularies cannot drift apart if a realm ever does route them through here. ⚠️ `scheduled`/`expired` map to `saved` because Broadcast's own hand-rolled renderer does (anything not staged is solid) and they are unreachable through this component today. 🔴 A LATER SELF-REVIEW CAUGHT THE HAZARD IN THAT CHOICE: if a realm ever DOES route a scheduled row through here it renders a solid green SAVED chip, which claims a not-yet-live thing is live — a wrong render, worse than the no-shape defect this map was fixed to remove. The comment above already names the safe answer (*anything unrecognised falls to the conflict shape… an unknown state should look like something to look at, never like a confirmed live row*), so the two are listed explicitly and everything else falls there.
  const PILL = { live: 'saved', saved: 'saved', staged: 'staged', conflict: 'conflict' };
-@@ -34,7 +35,9 @@ function FilterChips({ groups, filters, onChange }) {
+@@ -29,21 +30,46 @@ export function StatePill({ state, accent }) {
+     return html`<span class=${'stt ' + (PILL[state] || 'conflict')} style=${accent ? `--c:${accent}` + (ink ? `;--ci:${ink}` : '') : null}>${STATE_LABEL[key] || key.toUpperCase()}</span>`;
+ }
+ 
+-function FilterChips({ groups, filters, onChange }) {
++// New build, as its own component (2026-10-06 20:49 EDT): the toolbar and the C1 buttons container draw this one button
++// The Manifest's search (field-L-search.filter): the glass, the field, the live match count, and (2026-10-07 15:50 EDT, his) a clear button.
++// It filters in place and opens nothing. The × is an M icon button (button-M-icon.paint) sitting 6 inside the L field, the nested rule
++// the rails and the BAL-27 chip use; Escape clears too, and clearing hands the caret back to the field.
++export function SearchField({ id = 'manifest-search', label, placeholder = 'Search…', query, setQuery, hits = 0 }) {
++    const ref = useRef(null);
++    const clear = () => { setQuery(''); if (ref.current) ref.current.focus(); };
++    // 2026-10-07 17:10 EDT: the count and the x are one suffix group, and the words stop where it starts: the input's right padding is the group's
++    // measured width plus its 6 inset and a 6 gap (it was a fixed 146px, too wide for 5 matches and too narrow for 1,234 matches)
++    const suf = useRef(null);
++    useLayoutEffect(() => { const i = ref.current; if (i) i.style.paddingRight = query && suf.current ? `${Math.ceil(suf.current.getBoundingClientRect().width) + 12}px` : ''; }, [query, hits]);
++    return html`<span class=${'srch' + (query ? ' has-q' : '')}>
++        <${Icon} name="search" />
++        <label class="sr" for=${id}>${label}</label>
++        <input ref=${ref} id=${id} value=${query} placeholder=${placeholder} onInput=${(e) => setQuery(e.target.value)} onKeyDown=${(e) => { if (e.key === 'Escape' && query) { e.preventDefault(); clear(); } }} />
++        ${query ? html`<span class="srch-suf" ref=${suf}><span class="mhits" aria-live="polite">${hits.toLocaleString()} ${hits === 1 ? 'match' : 'matches'}</span><button type="button" class="srch-x" aria-label="Clear the search" onClick=${clear}><${Icon} name="x" /></button></span>` : null}
++    </span>`;
++}
++export function NewBuildButton({ onAdd, addLabel = '+ Add' }) {
++    return html`<button class="pill lead madd" onClick=${onAdd}><${Icon} name="plus" />${String(addLabel).replace(/^\+\s*/, '')}</button>`;
++}
++export function FilterChips({ groups, filters, onChange }) {
+     // 🔴 ONE CHIP PER VALUE, NOT ONE CHIP PER GROUP THAT CYCLES. This rendered a single chip reading "Type: all" which advanced through its options on each click, cited to 03-three-surfaces.html. That citation is the 2026-08-20 package; the 2026-08-23 package supersedes it and draws every value as its own chip — `All · New draws · Returning · Draw windows · Events · Playlists · Patch notes` on Season, `All · live · scheduled · expired` on Broadcast — and on 2026-08-27 Harkirat wrote that the mockup IS the design. Same failure as the Board: a real quotation from a retired document, checked for existence and never for currency.
      //
      // It is also the better control on its own merits, which is worth saying so nobody re-litigates it from taste: a cycling chip hides the vocabulary until you click it, gives no way to reach the third option except by passing through the second, and cannot show which values EXIST. A row of chips is the filter and the legend at once. 🔴 EACH GROUP IS ITS OWN WRAPPER NOW (plan pins batch 2 §10.4 C5 C6, 2026-09-15 00:07 EDT). The label and its chips sit in one inline group, and a second group follows behind one divider with 16px either side — so a toolbar reads as sets, and the label-to-control gap is one number on every realm. The group's own name still reaches the reader (pin pmtvr01ji: two identical All chips with nothing saying what either governs). A topic chip carries its swatch; a severity chip carries a four-bar meter (board 2 G11 row 4) whose lit count is the option's `bars`, in the option's `sv` ink.
      return groups.map((g) => {
@@ -2712,16 +3264,20 @@ index 467a2f2b..39dc6c4a 100644
          const current = filters[g.key] || 'all';
          return html`<span class="mt-grp" key=${g.key} role="group" aria-label=${g.label || g.key}>
              ${g.label ? html`<span class="mlabel"><span>${g.label}</span></span>` : null}
-@@ -43,7 +46,7 @@ function FilterChips({ groups, filters, onChange }) {
+-            ${options.map((o) => html`<button key=${g.key + ':' + o.value}
++            ${''/* 2026-10-03 21:49 EDT (Session 4, his 2026-10-03 21:39 EDT): the chips are a box of their own, so the space after the label (the group's gap) and the
++                 space between the chips (.mt-chips' gap) are two settings. Before, one gap set both and a margin on the label made up the difference. */}
++            <span class="mt-chips">${options.map((o) => html`<button key=${g.key + ':' + o.value}
+                     aria-pressed=${o.value === current}
                      class=${'chip' + (g.topic && o.value !== 'all' ? ' topic' : '') + (o.bars ? ' lvchip' : '')}
                      style=${o.hex ? `--c:${o.hex}` : (o.sv ? `--sv:${o.sv}` : null)}
                      title=${o.value === 'all' ? `All ${String(g.label || '').toLowerCase()}` : `Only ${o.label}`}
 -                    onClick=${() => onChange({ ...filters, [g.key]: o.value })}>${g.topic && o.value !== 'all' ? html`<i></i>` : null}${o.bars ? html`<span class="msev" data-n=${o.bars} aria-hidden="true"><i></i><i></i><i></i><i></i></span>` : null}${o.label}${o.count == null ? null : html` <em>${o.count}</em>`}</button>`)}
-+                    onClick=${() => onChange({ ...filters, [g.key]: o.value })}>${g.topic && o.value !== 'all' ? (o.icon ? html`<${Icon} name=${o.icon} />` : html`<i></i>`) : null}${o.bars ? html`<span class="msev" data-n=${o.bars} aria-hidden="true"><i></i><i></i><i></i><i></i></span>` : null}<span class="cl">${o.label}</span>${o.count == null ? null : html` <em>${o.count}</em>`}</button>`)}
++                    onClick=${() => onChange({ ...filters, [g.key]: o.value })}>${g.topic && o.value !== 'all' ? (o.icon ? html`<${Icon} name=${o.icon} />` : html`<i></i>`) : null}${o.bars ? html`<span class="msev" data-n=${o.bars} aria-hidden="true"><i></i><i></i><i></i><i></i></span>` : null}<span class="cl">${o.label}</span>${o.count == null ? null : html` <em>${o.count}</em>`}</button>`)}</span>
          </span>`;
      });
  }
-@@ -86,11 +89,14 @@ export function SelectionBar({ count, noun, summary, badge, tier, actions, onCle
+@@ -86,11 +112,14 @@ export function SelectionBar({ count, noun, summary, badge, tier, actions, onCle
  // 🔴 THE CONFORMANCE REGISTER, AND EVERY ENTRY IS A DELIBERATE ADVANCE PAST THE DESIGN. Broadcast's mockup draws no checkbox column at all; the portal grew one because Broadcast gained bulk actions the design never specified. That is a real capability and it is NOT reverted — but in an overlay run it shifts every column of a four-column table by 40px, which reads as a page of differences rather than as one decision. Reading a dataset flag rather than a build define, so nothing about this can ship enabled: only a page that asks for conformance in its URL ever sets it, and the server never serves that page.
  
  
@@ -2737,7 +3293,7 @@ index 467a2f2b..39dc6c4a 100644
      // The size of the collection this table is a view OF, when the realm narrowed it before handing it over.
      totalRows = null,
      // 🔴 THE ROWS ARE A WINDOW AND EVERY NUMBER BESIDE THEM WAS NOT. Analytics' river is the newest 100 of each of three collections; `totalRows` is all of them, all time. So the count read "2 of 1,307" under a filter -- a numerator drawn from a population the denominator does not describe -- and at the cap it read "100 of 100", which is indistinguishable from "you are seeing everything" and is the precise lie `totalRows` was added to prevent. A realm that hands over a WINDOW says so, and the line states the window instead of implying its absence. A realm that hands over a WINDOW says so, and the line then states three separate quantities instead of implying they are one: how many you can see, how big the window is, and how big the collection is. Left null, nothing changes. ⚠️ AND IT ALWAYS SAYS IT, NOT ONLY AT THE CAP -- the first version triggered on `rows.length >= pageCap`, which is the same lie one state over: an eleven-row window out of 1,323 reads "11 of 1,323" and invites the reader to scroll for the rest. The shape it lands on, `N shown · newest M of T`, is the design's own ("12 shown · 1323 recorded").
-@@ -98,7 +104,7 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
+@@ -98,7 +127,7 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
      // A line under the toolbar, which is where the design puts its own (armory.html's activeFilter sits in exactly this slot). A PROP rather than something a realm renders beside the Manifest, because any sibling element between the two panels breaks the .panel + .panel selector that gives the table its ground.
      caption = null,
      // 🔴 THE ONE OPTIONAL BODY PROP (plan pins batch 2 §10.4 Architecture, 2026-09-15 00:23 EDT). Armory's weapon groups cannot be column renderers, so a realm may render the body itself from the rows this component has already searched, filtered, sorted and marked selected. The Manifest keeps its tools row, search, chips, selection, bulk bar, sort persistence, empty states and SelectionBar; only Armory passes this, and every other realm renders exactly as before.
@@ -2746,7 +3302,7 @@ index 467a2f2b..39dc6c4a 100644
      const [query, setQuery] = useState('');
      const [filters, setFilters] = useState({});
      useEffect(() => { if (filterSignal && filterSignal.filters) setFilters(filterSignal.filters); }, [filterSignal && filterSignal.seq]);
-@@ -117,6 +123,10 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
+@@ -117,6 +146,10 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
          try { localStorage.setItem(sortKey, JSON.stringify(sort)); } catch { /* nothing to do; the sort still works for this visit */ }
      }, [sortKey, sort.column, sort.direction]);
      const [selected, setSelected] = useState(new Set());
@@ -2757,7 +3313,7 @@ index 467a2f2b..39dc6c4a 100644
      const [editingCell, setEditingCell] = useState(null); // {rowId, columnKey} | null
      const [editValue, setEditValue] = useState('');
  
-@@ -128,7 +138,13 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
+@@ -128,7 +161,13 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
  
      // One function for the select-all, because the click path and the key path must not be two implementations of one act — that divergence is what let the keyboard path be missing entirely. Added 2026-09-04 22:43 EDT.
      const allShown = () => visible.length > 0 && visible.every((r) => selected.has(r.id));
@@ -2772,16 +3328,31 @@ index 467a2f2b..39dc6c4a 100644
  
      async function commitEdit(row, columnKey) {
          const op = buildEditOp(row, columnKey, editValue);
-@@ -172,7 +188,7 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
-                         <input id="manifest-search" class=${query ? 'has-hits' : ''} value=${query} placeholder=${searchPlaceholder || 'Search…'} onInput=${(e) => setQuery(e.target.value)} />
-                         ${query ? html`<span class="mhits" aria-live="polite">${visible.length.toLocaleString()} ${visible.length === 1 ? 'match' : 'matches'}</span>` : null}
-                     </span>
+@@ -166,18 +205,15 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
+                 ${''/* 🔴 TWO ROWS, AND NO COUNT READOUT (plan pins batch 2 §10.4 C1 C2 C5 C6 and G4 row 11, 2026-09-15 00:07 EDT). Row one is the Manifest's name, its search and the create verb at the row's right end; row two holds the filter groups. The trailing count line is gone on every realm — counts ride on the chips, a typed search says how many matched inside its own field, and History's window moves to a Load older events button under its rows. The create verb is still its own control and never a filter (pin pmtvqhfxh); it no longer floats because the row it sits in has nothing else that wraps. */}
+                 <div class="mt-r1">
+                     <span class="mlabel"><span>${label || 'Rows'}</span></span>
+-                    <span class="srch">
+-                        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+-                        <label class="sr" for="manifest-search">${searchLabel || `Search ${(rowNoun[1] || 'rows').toLowerCase()}`}</label>
+-                        <input id="manifest-search" class=${query ? 'has-hits' : ''} value=${query} placeholder=${searchPlaceholder || 'Search…'} onInput=${(e) => setQuery(e.target.value)} />
+-                        ${query ? html`<span class="mhits" aria-live="polite">${visible.length.toLocaleString()} ${visible.length === 1 ? 'match' : 'matches'}</span>` : null}
+-                    </span>
 -                    ${onAdd ? html`<button class="chip go madd" onClick=${onAdd}><${Icon} name="plus" />${String(addLabel).replace(/^\+\s*/, '')}</button>` : null}
-+                    ${onAdd ? html`<button class="pill lead madd" onClick=${onAdd}><${Icon} name="plus" />${String(addLabel).replace(/^\+\s*/, '')}</button>` : null}
++                    <${SearchField} id="manifest-search" label=${searchLabel || `Search ${(rowNoun[1] || 'rows').toLowerCase()}`} placeholder=${searchPlaceholder || 'Search…'} query=${query} setQuery=${setQuery} hits=${visible.length} />
++                    ${onAdd ? html`<${NewBuildButton} onAdd=${onAdd} addLabel=${addLabel} />` : null}
                  </div>
                  ${filterGroups.length || extraChips ? html`<div class="mt-r2">
                      ${filterGroups.length ? html`<${FilterChips} groups=${filterGroups} filters=${filters}
-@@ -234,6 +250,7 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
+                         onChange=${(f) => { setFilters(f); onFiltersChange?.(f); }} />` : null}
+-                    ${extraChips ? html`<span class="mt-grp" role="group" aria-label="More filters">${extraChips}</span>` : null}
++                    ${''/* 2026-10-04 01:58 EDT (Session 4, R1; the lead's ruling on V1 #4): a chip set always has its own box, so .mt-grp's gap always means the space after a
++                         label. This group has no label, and its chips sat in .mt-grp directly, spaced by the label's gap (3px became 7px through 1c925bc). */}
++                    ${extraChips ? html`<span class="mt-grp" role="group" aria-label="More filters"><span class="mt-chips">${extraChips}</span></span>` : null}
+                 </div>` : null}
+             </div>
+             ${caption ? html`<p class="hint">${caption}</p>` : null}
+@@ -234,6 +270,7 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                  </tr></thead>
                  <tbody>
                      ${visible.map(row => html`
@@ -2789,7 +3360,7 @@ index 467a2f2b..39dc6c4a 100644
                          <tr class=${(selected.has(row.id) ? 'sel' : '') + (selectedRowId != null && String(row.id) === String(selectedRowId) ? ' preview-sel' : '')}
                              ${''/* 🔴 `preview-sel` IS BACK AND IT HAS A RULE NOW — restored 2026-09-09 14:58 EDT, and the history is the point. It was emitted here for the life of the branch and painted by NOTHING on either side, so the one row a reader most needs to find looked exactly like its neighbours; it was then deleted rather than styled, because §0.6a said the portal renders the mockup's version until every realm matches and the mockup marks nothing here. **Conformance ended with the build-out**, and the state was always real: close the details panel on a 133-build rack or a 1,394-row river and nothing says which row you had open. ⚠️ **THIS IS A DELIBERATE DIVERGENCE, CHOSEN BY HARKIRAT** from three rendered options — no mark, a left edge, a tinted row — and he picked the edge because it reuses the accent language already on the page where a tint would read as the bulk-selection state. The design still marks nothing; that is a ledger row, not a defect here.
                                   ⚠️ AND IT CANNOT BE AN HTML COMMENT: this sits inside a tag's PROP LIST, where htm swallows every prop after an `<!-- -->`. The first version of this note did exactly that and would have killed `tabIndex`, `onKeyDown` and `onClick` on every manifest row on every realm. The `${''\/* *\/}` form two lines down is the file's own idiom for the same reason. */}
-@@ -241,11 +258,13 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
+@@ -241,11 +278,13 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                              ${''/* 🔴 NO `role` ON A REAL TABLE ROW, AND THE KEY HANDLER MUST IGNORE ITS OWN CONTENTS. The first version of this copied `analytics.html:540` wholesale, and that note is about the design's DIV-based event table. This is a real `<table>`: `role="button"` on a `<tr>` replaces its implicit `row` role and orphans every `<td>`, whose required parent is a row. `tabIndex` + `onKeyDown` gives the same keyboard reach with no ARIA damage.
                                   🔴 AND THE GUARD IS NOT COSMETIC -- IT WAS BREAKING A SHIPPED REALM. Armory passes `onRowClick` (armory.js:1245) and declares `weaponName`/`buildName` editable, so its rows contain `<input class="edit">`. The `<td>` stops `onClick` and NOT `onKeyDown`, so this handler's `preventDefault()` on Space swallowed the space bar inside every Armory rename field -- on names that contain spaces on essentially every row -- and Enter both committed the edit and re-opened the row editor behind it. The checkbox cell got this right at :240 and the row handler did not. */}
                              tabIndex=${onRowClick ? 0 : null}
@@ -2804,7 +3375,7 @@ index 467a2f2b..39dc6c4a 100644
                              <!-- 🔴 THE ONLY BROWSER-DEFAULT CONTROL LEFT IN THE PORTAL, on the row of every table.
                                   The adopted sheet has drawn a checkbox since it was adopted — a 16px sunk square that
                                   fills with the accent and strokes a tick — and the Manifest rendered a UA checkbox
-@@ -337,13 +356,12 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
+@@ -337,13 +376,12 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                                   takes the destructive colour only on hover and focus. -->
                              ${onRemove ? html`
                                  <td class="ra" onClick=${(e) => e.stopPropagation()}>
@@ -2823,7 +3394,7 @@ index 467a2f2b..39dc6c4a 100644
                                  </td>` : null}
                          </tr>
                      `)}
-@@ -361,7 +379,7 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
+@@ -361,7 +399,7 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                   one here on Season — a name, a type, two dates and a button — as the fast path beside the
                   composer above, and the portal had only the composer. -->
              ${footRow || null}

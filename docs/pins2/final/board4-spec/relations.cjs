@@ -3,6 +3,7 @@
 // relation between elements (a gap, a column, a pop-up's distance from its trigger). Written 2026-09-29 19:14 EDT. Session 5 reruns it
 // against Board 4: Final, then reads the same numbers off the portal.
 // Usage (the kit served on :8900): node relations.cjs  → writes relations.md beside it; exits 1 when a relation fails.
+const KITC = require('./kit.cjs'); // which board: Collective's kit, or Final after a bake (kit.cjs)
 const fs = require('fs'); const path = require('path');
 const { POPS, POP_SEL, sleep, open, setState, openPop, closePop } = require('./board4-walk.cjs');
 const R = (g, state, what, source, expect, fn, tol = 0.5) => ({ g, state, what, source, expect, fn, tol });
@@ -82,11 +83,11 @@ const POPREL = [
     if (m && m.day) {
       const w = Math.abs(m.w - 270) <= 1; if (!w) fail++;
       rows.push(`| ${pop.g} | ${pop.state || 'resting'} | the date picker's width | intake:801 | 270 | ${Math.round(m.w)} | ${w ? '✓' : '✗'} |`);
-      if (m.day) { const d = Math.abs(m.day[0] - 36) <= 0.5; if (!d) fail++; rows.push(`| ${pop.g} | ${pop.state || 'resting'} | a day's width | intake:801 | 36 | ${Math.round(m.day[0] * 10) / 10} | ${d ? '✓' : '✗'} |`); }
+      if (m.day) { const d = Math.abs(m.day[0] - 32) <= 0.5; if (!d) fail++; rows.push(`| ${pop.g} | ${pop.state || 'resting'} | a day's width | C30 (his 2026-10-19 Answer Shots answers; intake:801's 36 superseded) | 32 | ${Math.round(m.day[0] * 10) / 10} | ${d ? '✓' : '✗'} |`); }
     }
     await closePop(p);
   }
-  const head = ['---', 'kind: reference', 'status: live', '---', '', '# Board 4: Collective — relations, measured', '',
+  const head = ['---', 'kind: reference', 'status: live', '---', '', '# ' + KITC.TITLE + ' — relations, measured', '',
     `*Generated ${new Date().toISOString()} by \`relations.cjs\` from the running kit at 1282×888. Each row is one of his rulings that is a RELATION (a size, a gap, a distance, a count), with where he ruled it; the value is read off the page. ${rows.length - fail} of ${rows.length} hold. Page errors: ${errs.length}. Session 5 reruns this against Board 4: Final and reads the same numbers off the portal.*`, '',
     '| Gate | State | Relation | Ruled | Expect | Measured | |', '|---|---|---|---|---|---|---|'];
   fs.writeFileSync(path.join(__dirname, 'relations.md'), head.concat(rows).join('\n') + '\n');

@@ -7,13 +7,14 @@
 //   portal-diff.md the kit's copies of portal files, as unified diffs against the portal (the exact change, not a description of it)
 //   class-map.md   every class the Board 4 spec renders that no portal stylesheet defines, with the kit file:line that does
 //   token-map.md   every custom property the Board 4 spec reads that the portal does not define, with the kit's definition
+const KITC = require('./kit.cjs'); // which board: Collective's kit, or Final after a bake (kit.cjs)
 const fs = require('fs'); const path = require('path'); const { execFileSync } = require('child_process');
 // docs/pins2/final/board4-spec since 2026-09-28 23:16 EDT (it was one level deeper under docs/superpowers/mockups/) const KIT = path.join(ROOT, 'docs/pins2/kit'); const PORTAL = path.join(ROOT, 'portal');
-const ROOT = path.resolve(__dirname, '../../../..'); const KIT = path.join(ROOT, 'docs/pins2/kit'); const PORTAL = path.join(ROOT, 'portal');
+const ROOT = path.resolve(__dirname, '../../../..'); const KIT = KITC.DIR; const PORTAL = path.join(ROOT, 'portal');
 const MAP3E = path.join(ROOT, 'docs/superpowers/mockups/2026-09-15-pins2-board-3/3e/file-map.md');
 const STAMP = new Date().toISOString();
-const kitHead = (() => { try { return require('child_process').execSync('git rev-parse --short HEAD', { cwd: path.join(ROOT, 'docs/pins2/kit') }).toString().trim() + ' (the kit\'s own local repo, on this Mac only since 2026-09-30 21:16 EDT) plus its working tree'; } catch (e) { return 'unknown'; } })();
-const fm = (title, lead) => ['---', 'kind: reference', 'status: live', '---', '', `# Board 4: Collective — ${title}`, '', `*Generated ${STAMP} by \`maps.cjs\` from \`docs/pins2/kit/\` at repo commit \`${kitHead}\`. ${lead}*`, ''];
+const kitHead = (() => { try { return require('child_process').execSync('git rev-parse --short HEAD', { cwd: KIT }).toString().trim() + (KITC.REL === 'docs/pins2/kit' ? ' (the kit\'s own local repo, on this Mac only since 2026-09-30 21:16 EDT)' : ' (Board 4: Final\'s own local repo, on this Mac only)') + ' plus its working tree'; } catch (e) { return 'unknown'; } })();
+const fm = (title, lead) => ['---', 'kind: reference', 'status: live', '---', '', `# ${KITC.TITLE} — ${title}`, '', `*Generated ${STAMP} by \`maps.cjs\` from \`${KITC.REL}/\` at repo commit \`${kitHead}\`. ${lead}*`, ''];
 const walk = (d, skip) => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => { const p = path.join(d, e.name); const r = path.relative(KIT, p);
   if (e.name.startsWith('.') || skip.some((s) => r === s || r.startsWith(s + '/'))) return []; return e.isDirectory() ? walk(p, skip) : [r]; });
 const files = walk(KIT, ['vendor', 'node_modules', 'shots']).sort();
@@ -76,6 +77,25 @@ const kitAll = files.filter((f) => /\.(css|js)$/.test(f) && !/^(data|ref|cmp)\//
 const tdef = (t) => { const esc = t.replace(/[-]/g, '\\-'); const decl = new RegExp(esc + '\\s*:'); const any = new RegExp(esc + '(?![\\w-])');
   for (const re of [decl, any]) for (const f of kitCss.concat(kitAll.filter((x) => !kitCss.includes(x)))) { const L = fs.readFileSync(path.join(KIT, f), 'utf8').split('\n'); const i = L.findIndex((l) => re.test(l) && !/var\(\s*$/.test(l.split(t)[0]) && !(re === any && l.includes('var(' + t))); if (i >= 0) return [`\`${f}:${i + 1}\`${re === any ? ' (set by script)' : ''}`, L[i].trim().slice(0, 140).replace(/\|/g, '\\|')]; }
   return ['— **not defined anywhere in the kit**', '']; };
-fs.writeFileSync(path.join(__dirname, 'token-map.md'), [...fm('the custom properties the portal does not have', `${missing.length} of the ${tokUsed.size} custom properties this folder's spec reads are defined nowhere in the portal (\`portal/ui/tokens.css\`, \`app.css\`, \`v2card.css\`). A declaration that reads one ports as \`var()\` of nothing — silently. Session 4 maps each onto a portal token or defines it.`),
-  '| Token | Defined in the kit | The definition |', '|---|---|---|', ...missing.map((t) => { const [w, d] = tdef(t); return `| \`${t}\` | ${w} | \`${d}\` |`; }), ''].join('\n'));
+// THE PORTAL COLUMN (plan §5c Step 4d, Session 4's close, 2026-11-15): what Session 5 does with each token, decided by a stated rule so the column
+// regenerates with the map. A token every declaring rule scopes to a component is LOCAL and ports with that rule; one declared only at the top
+// (:root, html, body, .b4, #board) is GLOBAL and takes the portal token whose definition is the same, else a new portal token of that name;
+// one set only by a script ports with the script; one defined nowhere is a dead read, whose declaration Session 5 drops or gives its fallback.
+const blocks = []; for (const f of kitCss) { const css = fs.readFileSync(path.join(KIT, f), 'utf8').replace(/\/\*[\s\S]*?\*\//g, ''); for (const m of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) blocks.push({ f, sel: m[1].trim().replace(/\s+/g, ' '), body: m[2] }); }
+const pVal = new Map(); for (const m of portalCss.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/(--[\w-]+)\s*:\s*([^;}]+)/g)) if (!pVal.has(m[1])) pVal.set(m[1], m[2].trim().replace(/\s+/g, ' '));
+const GLOBAL = /^(:root(:not\([^)]*\))*|html(\[[^\]]*\])?|body|\.b4|#board|:root\[[^\]]*\])$/;
+const portalCol = (t, where) => {
+  const decl = blocks.filter((k) => new RegExp('(^|[;\\s{])' + t.replace(/[-]/g, '\\-') + '\\s*:').test(k.body));
+  if (!decl.length) return /set by script/.test(where) ? 'set by its script: ports with that file' : /not defined/.test(where) ? 'dead read: drop it, or keep its var() fallback' : 'ports with its rule';
+  const sels = decl.flatMap((k) => k.sel.split(',').map((x) => x.trim()));
+  if (!sels.every((x) => GLOBAL.test(x))) return `local: ports with its rule (\`${sels.find((x) => !GLOBAL.test(x)).slice(0, 60)}\`)`;
+  const v = ((decl[0].body.match(new RegExp(t.replace(/[-]/g, '\\-') + '\\s*:\\s*([^;]+)')) || [])[1] || '').trim().replace(/\s+/g, ' ');
+  const RETIRED = new Set(['--patch']);   // his 2026-09-30 17:27 EDT: --patch is retired (staged work is --staged, the gold is --meshGold), so no kit token ports onto it
+  const OWN = new Set(['--meshGold']);   // his same message: "give it a better variable than `--patch`", so it is its own token, never another one of equal value (`--pn` is the patch-notes lane)
+  if (OWN.has(t)) return `new portal token: \`${t}\` in \`portal/ui/tokens.css\` (his own name for it)`;
+  const same = [...pVal.entries()].find(([pt, pv]) => pv === v && !RETIRED.has(pt));
+  return same ? `= \`${same[0]}\` (same value)` : `new portal token: \`${t}\` in \`portal/ui/tokens.css\``;
+};
+fs.writeFileSync(path.join(__dirname, 'token-map.md'), [...fm('the custom properties the portal does not have', `${missing.length} of the ${tokUsed.size} custom properties this folder's spec reads are defined nowhere in the portal (\`portal/ui/tokens.css\`, \`app.css\`, \`v2card.css\`). A declaration that reads one ports as \`var()\` of nothing — silently. **The Portal column is what Session 5 does with each (plan §5c Step 4d, decided by rule in maps.cjs):** a token its own component rule declares ports with that rule; a top-level one takes the portal token of the same value or becomes a new portal token; one a script sets ports with the script; one defined nowhere is a dead read.`),
+  '| Token | Defined in the kit | The definition | Portal |', '|---|---|---|---|', ...missing.map((t) => { const [w, d] = tdef(t); return `| \`${t}\` | ${w} | \`${d}\` | ${portalCol(t, w)} |`; }), ''].join('\n'));
 console.log(JSON.stringify({ files: files.length, relabelled: fmRows.filter((r) => /by rule/.test(r)).length, unlabelled: fmRows.filter((r) => /UNLABELLED/.test(r)).length, portalDiffs: nd, boardClasses: board.length, missingTokens: missing.length, kit: kitHead }));
