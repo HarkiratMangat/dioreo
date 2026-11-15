@@ -119,11 +119,9 @@ async function runAutocomplete(interaction) {
         }
     }
 
-    // BUG FIX (2026-07-12, found live): this list had no sort at all -- Mongo returns docs in natural/insertion order, so whichever weapon happened to be migrated/added FIRST (LOCUS, from the original builds.xlsx migration) always showed up first regardless of category or alphabetical order. Originally sorted by a hand-confirmed CATEGORY_SORT_ORDER list (AR/SMG/LMG only, pending Harkirat confirming the rest); per his 2026-07-12 follow-up request, dropped that in favor of just sorting category alphabetically too, then weapon name alphabetically within each category. Only affects display order -- doesn't change which weapons match the typed query.
-    distinctChoices.sort((a, b) => {
-        if (a.category !== b.category) return a.category.localeCompare(b.category);
-        return a.weaponName.localeCompare(b.weaponName);
-    });
+    // BUG FIX (2026-07-12, found live): this list had no sort at all -- Mongo returns docs in natural/insertion order, so whichever weapon happened to be migrated/added FIRST (LOCUS, from the original builds.xlsx migration) always showed up first regardless of category or alphabetical order. Originally sorted by a hand-confirmed CATEGORY_SORT_ORDER list (AR/SMG/LMG only, pending Harkirat confirming the rest); per his 2026-07-12 follow-up request, dropped that in favor of just sorting category alphabetically too, then weapon name alphabetically within each category. Only affects display order -- doesn't change which weapons match the typed query. In the in-game class order (utils/loadoutRender.js CLASS_ORDER: AR, Sniper, LMG, SMG, Shotgun, Marksman, Secondaries), then A-Z. It sorted the class codes alphabetically until 2026-11-15 11:28 EST, against the rule that no class list does (.claude/rules/loadouts.md); findWeaponMatches ranks the matches and keeps this order within a rank.
+    const { byClassOrder } = require('./loadoutRender');
+    distinctChoices.sort((a, b) => byClassOrder(a.category, b.category) || a.weaponName.localeCompare(b.weaponName));
 
     const { displayCategoryLabel } = require('../utils/loadoutRender');
 
@@ -133,8 +131,9 @@ async function runAutocomplete(interaction) {
         const mode = queryFilter.mode;
         const cats = mode === 'MP' ? [...new Set(distinctChoices.map(w => w.category))].sort(require('./loadoutRender').byClassOrder) : [];
         // A row shows when its own words match, or when the query names its class ("assault" shows All AR builds, as findWeaponMatches shows the AR weapons beside it).
-        const { resolveCategorySynonyms, isGenericWeaponQuery, typoDistance } = require('../utils/search');
-        const synonyms = resolveCategorySynonyms(focusedValue);
+        const { weaponQueryClasses, isGenericWeaponQuery, typoDistance } = require('../utils/search');
+        // The same classes findWeaponMatches brings in, so a class row never shows for letters that name a weapon (`mach` showed All LMG builds beside MACHINE PISTOL until 2026-11-15 11:28 EST).
+        const synonyms = weaponQueryClasses(focusedValue, distinctChoices);
         const generic = isGenericWeaponQuery(focusedValue);
         const rows = browseRows(mode, cats, { hasMeta: matchingWeapons.some(w => w.isMeta) })
             .filter(r => !focusedValue || generic || fuzzyMatch(focusedValue, r.label) || synonyms.some(c => r.value === `MP.${c}.std`) || (!synonyms.length && /^(META|MP|DMZ)$/.test(r.label.split(' ')[1]) && typoDistance(focusedValue, r.label.split(' ')[1]) !== Infinity))

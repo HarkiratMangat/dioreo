@@ -378,7 +378,8 @@ function mpSwitchRows(category, classBuilds, weaponSelectId, activeKey, missing 
     return [classRow, weaponRow];
 }
 function metaJumpRow(metaBuilds, selectId, activeKey, listLabel = 'META') {
-    const groups = weaponGroups(metaBuilds).sort((a, b) => a[0].category.localeCompare(b[0].category) || a[0].weaponName.localeCompare(b[0].weaponName));
+    // In the in-game class order (his CLASS_ORDER rule: never sort class codes alphabetically; fixed 2026-11-15 11:32 EST).
+    const groups = weaponGroups(metaBuilds).sort((a, b) => byClassOrder(a[0].category, b[0].category) || a[0].weaponName.localeCompare(b[0].weaponName));
     if (groups.length < 2) return null;
     const options = windowAround(groups.map(list => ({ label: list[0].weaponName, value: list[0].weaponKey, description: weaponSummary(list, { metaList: true }) })), activeKey, 25);
     return { type: 1, components: [{ type: 3, custom_id: selectId, placeholder: `Jump to another ${listLabel} weapon...`, options }] }; // names the list (his 2026-10-25 23:32 EDT ask; META in capitals, 23:35 EDT)

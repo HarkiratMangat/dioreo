@@ -119,26 +119,82 @@ function foldLookalikes(str) {
     return normalizeForSearch(String(str || '')).replace(/[015i]/g, ch => LOOKALIKE[ch]);
 }
 
-// The names players actually type for a weapon whose letters never spell it (Harkirat, 2026-11-06 11:41 EST: "does 'shv' work if someone typed that as 'd gs shv' or '/gunsmith mp shv'? If not, then it needs to be added as an alias, along with other common aliases such as sx9 for switchblade x9"). Squashed alias -> the catalogue's weapon name, squashed. Only shorthands no letter, word or typo rule below reaches (measured against the 129 catalogue weapons the same day: shv, sx9, t19, t25 and t63 found nothing); a fragment that already works needs no entry. An alias whose weapon is not among the candidates matches nothing.
-const WEAPON_ALIASES = { '3lr': '3linerifle', kba: 'kiloboltaction', k141: 'kilo141', mkg: 'mxguardian', mxg: 'mxguardian', xbow: 'crossbow', mac: 'mac10', shv: 'statichv', sx9: 'switchbladex9', sbx9: 'switchbladex9', t19: 'type19', t25: 'type25', t63: 'type63', deagle: '50gs', mow: 'manowar' };
+// The names players actually type for a weapon whose letters never spell it (Harkirat, 2026-11-06 11:41 EST: "does 'shv' work if someone typed that as 'd gs shv' or '/gunsmith mp shv'? If not, then it needs to be added as an alias, along with other common aliases such as sx9 for switchblade x9"). Squashed alias -> the catalogue's weapon name, squashed. Only shorthands no letter, word or typo rule below reaches (measured against the 129 catalogue weapons the same day: shv, sx9, t19, t25 and t63 found nothing); a fragment that already works needs no entry. `s50` for Signal 50 (Harkirat, 2026-11-15 10:55 EST: "make sure that \"s50\" works as an alias to the new Signal 50 weapon"; measured that day, s50 found nothing). An alias whose weapon is not among the candidates matches nothing.
+const WEAPON_ALIASES = { '3lr': '3linerifle', kba: 'kiloboltaction', k141: 'kilo141', mkg: 'mxguardian', mxg: 'mxguardian', xbow: 'crossbow', mac: 'mac10', shv: 'statichv', sx9: 'switchbladex9', sbx9: 'switchbladex9', t19: 'type19', t25: 'type25', t63: 'type63', deagle: '50gs', mow: 'manowar', s50: 'signal50' };
 function aliasMatches(query, candidates) {
     const target = WEAPON_ALIASES[String(query || '').toLowerCase().replace(/[^a-z0-9]/g, '')];
     return target ? candidates.filter(c => String(c.weaponName || '').toLowerCase().replace(/[^a-z0-9]/g, '') === target) : [];
 }
 
-function findWeaponMatches(query, candidates) {
-    const synonymCategories = resolveCategorySynonyms(query);
-    const seen = new Set();
-    const results = [];
-    // An alias first (shv -> STATIC-HV), then the letter rules for anything else the query also reaches.
-    for (const c of aliasMatches(query, candidates)) { seen.add(c.weaponKey); results.push(c); }
-    for (const c of candidates) {
-        const isMatch = isGenericWeaponQuery(query) || fuzzyMatch(query, c.weaponName) || synonymCategories.includes(c.category);
-        if (isMatch && !seen.has(c.weaponKey)) {
-            seen.add(c.weaponKey);
-            results.push(c);
-        }
+// Every way a shorthand can go wrong, against a list of weapons `{ weaponName, weaponKey?, category? }` (Harkirat, 2026-11-15 11:09 EST: "add some sort of internal check to verify that aliases never interact with each other ... that the alias is available"). Empty means every shorthand is safe. scripts/weaponAliases.test.js runs it on the tracked catalogue seed in npm test; scripts/checkWeaponAliases.js runs it on a live catalogue and its builds.
+//   - the key is not lower-case letters and digits (aliasMatches squashes the query, so such a key never matches)
+//   - the key is taken: it is a weapon's own name or key, or a class word
+//   - the target is not exactly one weapon (none: the shorthand finds nothing; two: pickWeapon falls through)
+//   - the shorthand does not open its weapon first in both lookups (/gunsmith's pick and the dropdown), or the dropdown lists a weapon its letters do not reach
+function weaponAliasProblems(weapons, aliases = WEAPON_ALIASES) {
+    const problems = [];
+    for (const [key, target] of Object.entries(aliases)) {
+        if (!/^[a-z0-9]+$/.test(key)) problems.push(`${key}: not lower-case letters and digits`);
+        const owner = weapons.find(w => squashAll(w.weaponName) === key || squashAll(w.weaponKey) === key);
+        if (owner) problems.push(`${key}: already the name of ${owner.weaponName}`);
+        // A class word itself (`smg`, `mr`): the shorthand would take it from the class. A key that only BEGINS one (`mac`, "machine gun") is fine, because findWeaponMatches skips the class rules once a shorthand matches.
+        if (CATEGORY_SEARCH_SYNONYMS[normalizeForSearch(key)]) problems.push(`${key}: is a class word`);
+        const targets = weapons.filter(w => squashAll(w.weaponName) === target);
+        if (targets.length !== 1) { problems.push(`${key}: its weapon ${target} matches ${targets.length} weapons, not 1`); continue; }
+        const want = targets[0].weaponName;
+        const picked = pickWeapon(key, weapons).hit?.weaponName;
+        if (picked !== want) problems.push(`${key}: /gunsmith opens ${picked || 'nothing'}, not ${want}`);
+        const listed = findWeaponMatches(key, weapons)[0]?.weaponName;
+        if (listed !== want) problems.push(`${key}: the dropdown lists ${listed || 'nothing'} first, not ${want}`);
+        // Anything else the dropdown lists must be reached by the letters themselves, never pulled in by a class.
+        const strays = findWeaponMatches(key, weapons).slice(1).filter(w => !fuzzyMatch(key, w.weaponName)).map(w => w.weaponName);
+        if (strays.length) problems.push(`${key}: the dropdown also lists ${strays.slice(0, 3).join(', ')}${strays.length > 3 ? ` and ${strays.length - 3} more` : ''}`);
     }
+    return problems;
+}
+
+// The classes a typed query brings into the weapon lists (findWeaponMatches, and the /gunsmith suggestions' class rows in utils/autocomplete.js). Found 2026-11-15 11:23 EST sweeping every start of every prod weapon name: the class rules answered letters that were already naming a weapon, so `mac` listed all 14 LMGs ("machine gun"), `mach` and `machine` listed 10 LMGs above MACHINE PISTOL, `shorty` 9 shotguns above SHORTY, `lach` every LMG under LACHMANN-556, `bolt` every sniper above KILO BOLT-ACTION, `asva` 24 Assault Rifles beside AS VAL (Harkirat: "that \"mac\" showing 14 LMGs is a BIG deal!"). So:
+//   - a shorthand (WEAPON_ALIASES) names a weapon, never a class: none
+//   - a class word typed in full (`smg`, `pistol`, `rifle`): its classes, even when a name also holds the word (MACHINE PISTOL is still listed, first among the Secondaries)
+//   - the start of a class word, or one a typo away (`snipe`, `shoty`): its classes only when no weapon name holds the letters
+function weaponQueryClasses(query, candidates) {
+    if (!query || aliasMatches(query, candidates).length) return [];
+    const exact = CATEGORY_SEARCH_SYNONYMS[normalizeForSearch(query)];
+    if (exact) return Array.isArray(exact) ? exact : [exact];
+    if (candidates.some(c => fuzzyMatch(query, c.weaponName))) return [];
+    return resolveCategorySynonyms(query);
+}
+
+function findWeaponMatches(query, candidates) {
+    const aliased = new Set(aliasMatches(query, candidates).map(c => c.weaponKey));
+    const classes = weaponQueryClasses(query, candidates);
+    const classWord = Boolean(CATEGORY_SEARCH_SYNONYMS[normalizeForSearch(query || '')]);
+    const generic = isGenericWeaponQuery(query);
+    const q = normalizeForSearch(query || '');
+    // Ranked, so the weapon a person is typing is at the top (2026-11-15 11:28 EST: typing SHORTY or ISO in full listed another weapon first, because results came out in the candidates' own order). Within a rank the candidates' order stands. A shorthand, then the whole name, then a class typed as a class word, then a name that starts with the letters, a word of a name that does, a name that holds them anywhere, a class reached by its start or a typo, and last the generic words' every weapon.
+    const rankOf = c => {
+        if (aliased.has(c.weaponKey)) return 0;
+        const name = normalizeForSearch(c.weaponName || '');
+        if (q && name === q) return 1;
+        const inClass = classes.includes(c.category);
+        if (classWord && inClass) return fuzzyMatch(query, c.weaponName) ? 2 : 2.5; // `mg`: MG42, RAAL MG and MG 82 before the other LMGs; `pistol`: MACHINE PISTOL first
+        if (q && name.startsWith(q)) return 3;
+        if (q && String(c.weaponName || '').toLowerCase().split(/[^a-z0-9.]+/).some(w => normalizeForSearch(w).startsWith(q))) return 4;
+        if (fuzzyMatch(query, c.weaponName)) return 5;
+        if (inClass) return 6;
+        if (generic) return 7;
+        return null;
+    };
+    const seen = new Set();
+    const ranked = [];
+    candidates.forEach((c, i) => {
+        if (seen.has(c.weaponKey)) return;
+        const rank = rankOf(c);
+        if (rank === null) return;
+        seen.add(c.weaponKey);
+        ranked.push([rank, i, c]);
+    });
+    const results = ranked.sort((a, b) => a[0] - b[0] || a[1] - b[1]).map(r => r[2]);
     if (results.length) return results;
     // Then the same letters with look-alikes folded ("hso" -> HS0405), before the typo distance below, which needs four letters.
     const folded = foldLookalikes(query);
@@ -200,6 +256,8 @@ function pickWeapon(query, candidates) {
     const whole = candidates.filter(c => squashAll(c.weaponName) === sq || squashAll(c.weaponKey) === sq || foldLookalikes(c.weaponName) === foldLookalikes(query));
     if (whole.length === 1) return { ...none, hit: whole[0] };
     if (whole.length > 1) return { ...none, several: whole };
+    // A class or a generic word typed alone asks for many weapons, never the one whose name happens to hold it (2026-11-15 11:28 EST: `pistol` opened MACHINE PISTOL, `rifle` the 3-LINE RIFLE, `gun` the NAIL GUN). It is listed instead; text commands open a class word's class before reaching here (utils/textCommands/commands.js CLASS_WORDS), and resolveWeapon opens a single class's browse.
+    if (CATEGORY_SEARCH_SYNONYMS[normalizeForSearch(query)] || isGenericWeaponQuery(query)) return { ...none, loose: findWeaponMatches(query, candidates) };
     let words = wordsOf(query);
     // Typed as ONE run of characters (no space): the start of exactly one name, first as typed, then with look-alikes folded. Harkirat, 2026-11-05 14:06 EST: `d gs hs0`, `d gs hso` and `d build hs0` got nothing on prod while /gunsmith opened the HS0405. This used to require one WORD after wordsOf's letter/digit split, so any start with a digit in it (hs0, ak1, m21e, j35: `hs` + `0`) skipped it, and no look-alike was ever folded here (the dropdown's findWeaponMatches has folded them since 2026-10-25, his "hso"). Measured on prod's 129 MP + 7 DMZ weapons: 567 of 1,188 starts and one-look-alike starts fell through to `loose`, which is silence after `d`. Several look-alike starts (`k1lo`) are several weapons, so Did you mean. A start of two or more names falls through to the word rules below, which settle `cro` and `kilo`.
     if (!/\s/.test(String(query).trim()) && sq.length >= 3) {
@@ -237,4 +295,4 @@ function pickWeapon(query, candidates) {
     return { ...none, loose: findWeaponMatches(query, candidates) };
 }
 
-module.exports = { WEAPON_ALIASES, pickWeapon, featuredWeapons, fuzzyMatch, normalizeForSearch, foldLookalikes, findWeaponMatches, resolveCategorySynonyms, categoryByExactAlias, isGenericWeaponQuery, typoDistance, isSameDrawTitle, bestDrawMatch, CATEGORY_SEARCH_SYNONYMS, GENERIC_WEAPON_WORDS };
+module.exports = { WEAPON_ALIASES, weaponAliasProblems, weaponQueryClasses, pickWeapon, featuredWeapons, fuzzyMatch, normalizeForSearch, foldLookalikes, findWeaponMatches, resolveCategorySynonyms, categoryByExactAlias, isGenericWeaponQuery, typoDistance, isSameDrawTitle, bestDrawMatch, CATEGORY_SEARCH_SYNONYMS, GENERIC_WEAPON_WORDS };

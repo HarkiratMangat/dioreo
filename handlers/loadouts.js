@@ -137,7 +137,7 @@ async function route(interaction) {
             await interaction.deferUpdate();
             const { resolveWeapon, renderResolved, notFoundText } = require('../utils/loadoutLookup');
             const found = await resolveWeapon(mode, query);
-            if (found.builds || found.missing) {
+            if (found.builds || found.missing || found.category) {
                 const isEphemeral = Boolean(interaction.message?.flags?.bitfield & 64);
                 return await renderResolved(interaction, mode, found, { isEphemeral });
             }

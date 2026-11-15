@@ -164,7 +164,7 @@ const loadoutsActions = () => [
           const { formatLoadoutsAsBulkText } = require('./adminParser');
           const mode = loadoutModeFor(page);
           // In the order /gunsmith shows them (class, weapon, build number), so the file reads like the bot.
-          const loadouts = (await Loadout.find({ mode }).lean()).sort((a, b) => String(a.category).localeCompare(String(b.category)) || a.weaponName.localeCompare(b.weaponName) || require('./loadoutForm').compareBuilds(a, b));
+          const loadouts = (await Loadout.find({ mode }).lean()).sort((a, b) => require('./loadoutRender').byClassOrder(a.category, b.category) || a.weaponName.localeCompare(b.weaponName) || require('./loadoutForm').compareBuilds(a, b));
           // MP also gets the weapons with no build (ROADMAP "Export of every loadout, and a list of weapons that have none").
           const lookup = require('./loadoutLookup');
           const missing = mode === 'MP' ? await lookup.missingWeaponsAll() : null;

@@ -64,8 +64,10 @@ function classBlocks(builds, lines = TIER_LINES) {
 const tierRank = list => { const i = RANK_ORDER.findIndex(r => list.some(b => b.categoryRank === r)); return i === -1 ? RANK_ORDER.length : i; };
 function weaponNames(lineBuilds, { codes = false } = {}) {
     const byWeapon = new Map();
-    for (const b of lineBuilds) { if (!byWeapon.has(b.weaponName)) byWeapon.set(b.weaponName, []); byWeapon.get(b.weaponName).push(b); }
-    return [...byWeapon.entries()].sort(([, a], [, b]) => tierRank(a) - tierRank(b)).map(([name, list]) => {
+    // Keyed by weaponKey, as every other weapon grouping is (utils/loadoutRender.js weaponGroups, jumpRows below): one weapon's builds can carry its name in two spellings ("LW3-TUNDRA" and "LW3-Tundra", "ODEN" and "Oden" on prod), and keyed by the name each spelling was a separate weapon on the line, so d list read "LW3-Tundra · LW3-Tundra" (Harkirat, 2026-11-15 10:53 EST).
+    for (const b of lineBuilds) { const k = b.weaponKey || b.weaponName; if (!byWeapon.has(k)) byWeapon.set(k, []); byWeapon.get(k).push(b); }
+    return [...byWeapon.values()].sort((a, b) => tierRank(a) - tierRank(b)).map(list => {
+        const name = list[0].weaponName;
         const labels = [...new Set(list.filter(b => b.showLabelOnLists).map(b => String(b.label || '').trim()).filter(Boolean))];
         const named = labels.length ? `${realName(name)} (${labels.join(' / ')})` : realName(name);
         const code = codes && list.find(b => b.shareCode)?.shareCode;
