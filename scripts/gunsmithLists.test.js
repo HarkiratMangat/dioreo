@@ -153,5 +153,21 @@ console.log('  ✓ list scope tokens, old tokens unchanged, strongest list');
 // An empty set says the lists are pending; no season leaves the line out.
 const empty = L.buildListsPage([]);
 assert.ok(JSON.stringify(empty.components).includes('pending an update'));
-assert.ok(!empty.components[0].components[0].components[0].content.includes('\n'), 'no season line without a season');
+assert.ok(!empty.components[0].components[0].components[0].content.includes('\n'), 'no season line without a season');// No MP class list is sorted by its class codes' alphabet (his CLASS_ORDER rule, utils/loadoutRender.js): four were, found 2026-11-15 11:32 EST (the /gunsmith suggestions, the scope walk, the META jump list, the MP export and its no-build list). dmzBrowseRow is his own earlier call (2026-10-25 23:47 EDT, "organized by class alphabetically") and is the one exception.
+{
+    const fs = require('fs'), path = require('path');
+    const offenders = [];
+    for (const dir of ['utils', 'commands', 'handlers']) {
+        const walk = d => fs.readdirSync(d, { withFileTypes: true }).flatMap(e => e.isDirectory() ? walk(path.join(d, e.name)) : e.name.endsWith('.js') ? [path.join(d, e.name)] : []);
+        for (const f of walk(path.join(__dirname, '..', dir))) {
+            fs.readFileSync(f, 'utf8').split('\n').forEach((line, i) => {
+                if (/\.category\)?\.localeCompare\(|String\(a\.category\)\.localeCompare/.test(line) && !/displayCategoryLabel\(a\[0\]\.category\)\.localeCompare/.test(line)) offenders.push(`${path.relative(path.join(__dirname, '..'), f)}:${i + 1}`);
+            });
+        }
+    }
+    assert.deepStrictEqual(offenders, [], 'class codes sorted with byClassOrder, never alphabetically');
+    console.log('  ✓ no MP class list sorted alphabetically');
+}
+
+
 console.log('\ngunsmithLists: all checks passed.');

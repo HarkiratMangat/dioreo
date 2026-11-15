@@ -107,6 +107,42 @@ check('pickWeapon opens the one weapon a typed start names, look-alikes folded',
     for (const q of ['lol', 'the', 'real', 'hs 0', 'is broken']) assert.strictEqual(hit(q), null, q);
 });
 
+// Every weapon in the tracked catalogue seed, every way of typing it (Harkirat, 2026-11-15 11:23 EST, after `mac` listed 14 LMGs: "that's no small issue ... make sure there aren't other poor things"). The sweep that found mach, shorty, lach, bolt and asva pulling in whole classes, SHORTY and ISO not first, and pistol, rifle and gun opening one weapon.
+check('typing a weapon never pulls in a class, and a class word never opens one weapon (the 2026-11-15 sweep)', () => {
+    const { pickWeapon, fuzzyMatch, CATEGORY_SEARCH_SYNONYMS } = require('../utils/search');
+    const CLASS = { 'Assault Rifles': 'AR', 'Sniper Rifles': 'SNIPER', 'Light Machine Guns': 'LMG', 'Submachine Guns': 'SMG', Shotguns: 'SHOTGUN', 'Marksman Rifles': 'MARKSMAN', Pistols: 'SECONDARIES', Launchers: 'SECONDARIES', Melee: 'SECONDARIES' };
+    const pool = require('../docs/pins2/data/2026-09-25-codm-weapons-attachments.json').weapons
+        .map(w => ({ weaponName: w.name, weaponKey: w.name.toLowerCase().replace(/\s+/g, ''), category: CLASS[w.category] || w.category }))
+        .filter((w, i, all) => all.findIndex(o => o.weaponName.toLowerCase() === w.weaponName.toLowerCase()) === i);
+    for (const extra of [{ weaponName: 'Lachmann-556', weaponKey: 'lachmann-556', category: 'LMG' }, { weaponName: 'Nail Gun', weaponKey: 'nailgun', category: 'SECONDARIES' }]) if (!pool.some(o => o.weaponName.toLowerCase() === extra.weaponName.toLowerCase())) pool.push(extra);
+    const sq = x => x.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const problems = [];
+    for (const w of pool) {
+        if (pool.filter(o => sq(o.weaponName) === sq(w.weaponName)).length > 1) continue;
+        // The full name: first in the dropdown, and it opens.
+        if (findWeaponMatches(w.weaponName, pool)[0]?.weaponKey !== w.weaponKey) problems.push(`${w.weaponName}: not first in the dropdown`);
+        if (pickWeapon(w.weaponName, pool).hit?.weaponKey !== w.weaponKey) problems.push(`${w.weaponName}: does not open`);
+        // Each start of 3+ letters lists only weapons its letters reach, unless it is itself a class or generic word.
+        const name = sq(w.weaponName);
+        for (let i = 3; i <= name.length; i++) {
+            const q = name.slice(0, i);
+            if (CATEGORY_SEARCH_SYNONYMS[q] || isGenericWeaponQuery(q)) continue;
+            const strays = findWeaponMatches(q, pool).filter(o => !fuzzyMatch(q, o.weaponName));
+            if (strays.length) { problems.push(`${q}: also lists ${strays.slice(0, 2).map(o => o.weaponName).join(', ')}${strays.length > 2 ? ` and ${strays.length - 2} more` : ''}`); break; }
+        }
+    }
+    assert.deepStrictEqual(problems, [], 'every weapon reachable by its own name, with nothing else pulled in');
+    const names = q => findWeaponMatches(q, pool).map(o => o.weaponName);
+    assert.deepStrictEqual(names('mach'), ['Machine Pistol'], 'mach: Machine Pistol, no LMGs');
+    assert.deepStrictEqual(names('lach'), ['Lachmann-556'], 'lach: only Lachmann-556');
+    assert.strictEqual(names('pistol')[0], 'Machine Pistol', 'pistol: the Secondaries, the one named for it first');
+    assert.ok(names('pistol').length > 1 && names('pistol').every(n => pool.find(o => o.weaponName === n).category === 'SECONDARIES'), 'pistol: every Secondary');
+    assert.ok(names('snipe').length > 1, 'snipe: still the sniper class, no name holds it');
+    for (const q of ['pistol', 'rifle', 'gun', 'smg', 'mg']) assert.strictEqual(pickWeapon(q, pool).hit, null, `${q} opens no single weapon`);
+    assert.strictEqual(pickWeapon('nail gun', pool).hit?.weaponName, 'Nail Gun', 'the whole name still opens');
+    assert.strictEqual(require('../utils/search').weaponQueryClasses('mach', pool).length, 0, 'no class for letters that name a weapon');
+});
+
 check('a player shorthand names its weapon: shv, sx9, t63 (Harkirat, 2026-11-06 11:41 EST)', () => {
     const { pickWeapon } = require('../utils/search');
     const w = (weaponName, category) => ({ weaponName, weaponKey: weaponName.toLowerCase(), category });

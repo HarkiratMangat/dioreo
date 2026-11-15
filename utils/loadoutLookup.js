@@ -25,7 +25,13 @@ async function resolveWeapon(mode, rawQuery) {
         }
     }
 
-    // Short/partial-query fallback (2026-07-18, v2 quick-wins batch) -- the exact weaponKey lookup above only reliably matches when the option came from an actual autocomplete pick, so a short/partial free-typed query (e.g. "loc") used to just fail with no explanation. Fuzzy- match the raw query against every candidate weapon's real name in this mode before giving up -- an unambiguous single match auto-resolves, 2+ matches asks the user to pick one instead of silently guessing which they meant. A free-typed name opens a build only when utils/search.js pickWeapon is sure of the weapon (words, not fragments: 2026-10-29 11:05 EDT; a single fragment match used to open, so `lol` opened the KILO 141). Anything less is listed, never opened.
+    // Short/partial-query fallback (2026-07-18, v2 quick-wins batch) -- the exact weaponKey lookup above only reliably matches when the option came from an actual autocomplete pick, so a short/partial free-typed query (e.g. "loc") used to just fail with no explanation. Fuzzy- match the raw query against every candidate weapon's real name in this mode before giving up -- an unambiguous single match auto-resolves, 2+ matches asks the user to pick one instead of silently guessing which they meant. A free-typed name opens a build only when utils/search.js pickWeapon is sure of the weapon (words, not fragments: 2026-10-29 11:05 EDT; a single fragment match used to open, so `lol` opened the KILO 141). Anything less is listed, never opened. A class word typed into the search box or the slash option (`smg`, `pistol`, `sniper rifle`) opens that class's browse (2026-11-15 11:28 EST). It answered "not specific enough" with ten of the class's names, or opened a weapon whose name held the word (`pistol` opened MACHINE PISTOL). Text commands already open a class word's class (utils/textCommands/args.js). MP only: DMZ has no class browse.
+    if (!builds.length && mode === 'MP') {
+        const { categoryByExactAlias } = require('./search');
+        const category = categoryByExactAlias(rawQuery);
+        if (category) return { category };
+    }
+
     if (!builds.length) {
         const { pickWeapon } = require('./search');
         const allCandidates = await Loadout.find({ mode }).select('weaponKey weaponName category').lean();
@@ -75,7 +81,7 @@ async function missingWeaponsAll() {
     return (await CatalogueItem.find({ kind: 'weapon', dmzOnly: { $ne: true } }).lean())
         .filter(w => !built.has(w.key || normKey(w.name)))
         .map(w => ({ name: w.name.toUpperCase(), category: w.category || '?' }))
-        .sort((a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name));
+        .sort((a, b) => require('./loadoutRender').byClassOrder(a.category, b.category) || a.name.localeCompare(b.name)); // in-game class order (his CLASS_ORDER rule: never sort class codes alphabetically; fixed 2026-11-15 11:32 EST)
 }
 
 // The no-build list as a text file: the count first, so it can be checked at a glance, then the weapons by class.
@@ -92,6 +98,7 @@ function formatMissingWeapons(missing) {
 // Draws what resolveWeapon found onto the interaction's message, which the caller has already deferred (a reply for the slash command, an update for the card's Search).
 async function renderResolved(interaction, mode, found, { isEphemeral, buildIndex = 0 }) {
     const idPrefix = mode === 'DMZ' ? 'dmz' : 'mp';
+    if (found.category) return await require('../commands/gunsmith').renderScopeBrowse(interaction, { mode: 'MP', category: found.category, metaOnly: false }, 0, { deferred: true, isEphemeral });
     if (found.missing) {
         const { weaponName, category } = found.missing;
         const categoryBuilds = mode === 'DMZ' ? await Loadout.find({ mode: 'DMZ' }).lean() : await Loadout.find({ category, mode: 'MP' }).lean();

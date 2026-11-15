@@ -22,7 +22,8 @@ async function resolveScopeBuilds({ mode, category, metaOnly, list }) {
     const { isPlaceholderBuild } = require('./loadoutRender');
     const builds = (await Loadout.find(filter).lean()).filter(b => !isPlaceholderBuild(b));
     return builds.sort((a, b) =>
-        a.category.localeCompare(b.category) ||
+        // In the in-game class order (his CLASS_ORDER rule: never sort class codes alphabetically; fixed 2026-11-15 11:32 EST), so All MP builds and the lists walk AR, Sniper, LMG, SMG, Shotgun, Marksman, Secondaries.
+        require('./loadoutRender').byClassOrder(a.category, b.category) ||
         a.weaponName.localeCompare(b.weaponName) ||
         // A weapon's builds by build number, then by _id (utils/loadoutForm.js compareBuilds, 2026-10-26 01:19 EDT). Text order put Build 10 before Build 2.
         require('./loadoutForm').compareBuilds(a, b) ||

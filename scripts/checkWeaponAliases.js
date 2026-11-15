@@ -1,6 +1,4 @@
-// Checks the weapon shorthands (utils/search.js WEAPON_ALIASES) against a LIVE database: every weapon in its catalogue and on its builds, MP and DMZ. Read-only.
-// npm test checks them against the tracked catalogue seed (scripts/weaponAliases.test.js); this catches what the seed cannot: a weapon added or renamed since.
-// Usage: node --env-file=.env.dev scripts/checkWeaponAliases.js      (exits 1 and lists each problem when any shorthand is unsafe)
+// Checks the weapon shorthands (utils/search.js WEAPON_ALIASES) against a LIVE database: every weapon in its catalogue and on its builds, MP and DMZ. Read-only. npm test checks them against the tracked catalogue seed (scripts/weaponAliases.test.js); this catches what the seed cannot: a weapon added or renamed since. Usage: node --env-file=.env.dev scripts/checkWeaponAliases.js      (exits 1 and lists each problem when any shorthand is unsafe)
 const mongoose = require('mongoose');
 const { weaponAliasProblems } = require('../utils/search');
 
