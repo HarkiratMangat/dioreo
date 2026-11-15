@@ -126,12 +126,41 @@ function aliasMatches(query, candidates) {
     return target ? candidates.filter(c => String(c.weaponName || '').toLowerCase().replace(/[^a-z0-9]/g, '') === target) : [];
 }
 
+// Every way a shorthand can go wrong, against a list of weapons `{ weaponName, weaponKey?, category? }` (Harkirat, 2026-11-15 11:09 EST: "add some sort of internal check to verify that aliases never interact with each other ... that the alias is available"). Empty means every shorthand is safe. scripts/weaponAliases.test.js runs it on the tracked catalogue seed in npm test; scripts/checkWeaponAliases.js runs it on a live catalogue and its builds.
+//   - the key is not lower-case letters and digits (aliasMatches squashes the query, so such a key never matches)
+//   - the key is taken: it is a weapon's own name or key, or a class word
+//   - the target is not exactly one weapon (none: the shorthand finds nothing; two: pickWeapon falls through)
+//   - the shorthand does not open its weapon first in both lookups (/gunsmith's pick and the dropdown), or the dropdown lists a weapon its letters do not reach
+function weaponAliasProblems(weapons, aliases = WEAPON_ALIASES) {
+    const problems = [];
+    for (const [key, target] of Object.entries(aliases)) {
+        if (!/^[a-z0-9]+$/.test(key)) problems.push(`${key}: not lower-case letters and digits`);
+        const owner = weapons.find(w => squashAll(w.weaponName) === key || squashAll(w.weaponKey) === key);
+        if (owner) problems.push(`${key}: already the name of ${owner.weaponName}`);
+        // A class word itself (`smg`, `mr`): the shorthand would take it from the class. A key that only BEGINS one (`mac`, "machine gun") is fine, because findWeaponMatches skips the class rules once a shorthand matches.
+        if (CATEGORY_SEARCH_SYNONYMS[normalizeForSearch(key)]) problems.push(`${key}: is a class word`);
+        const targets = weapons.filter(w => squashAll(w.weaponName) === target);
+        if (targets.length !== 1) { problems.push(`${key}: its weapon ${target} matches ${targets.length} weapons, not 1`); continue; }
+        const want = targets[0].weaponName;
+        const picked = pickWeapon(key, weapons).hit?.weaponName;
+        if (picked !== want) problems.push(`${key}: /gunsmith opens ${picked || 'nothing'}, not ${want}`);
+        const listed = findWeaponMatches(key, weapons)[0]?.weaponName;
+        if (listed !== want) problems.push(`${key}: the dropdown lists ${listed || 'nothing'} first, not ${want}`);
+        // Anything else the dropdown lists must be reached by the letters themselves, never pulled in by a class.
+        const strays = findWeaponMatches(key, weapons).slice(1).filter(w => !fuzzyMatch(key, w.weaponName)).map(w => w.weaponName);
+        if (strays.length) problems.push(`${key}: the dropdown also lists ${strays.slice(0, 3).join(', ')}${strays.length > 3 ? ` and ${strays.length - 3} more` : ''}`);
+    }
+    return problems;
+}
+
 function findWeaponMatches(query, candidates) {
-    const synonymCategories = resolveCategorySynonyms(query);
+    // A shorthand names a weapon, never a class: `mac` begins "machine gun", so until 2026-11-15 the dropdown listed MAC-10 and then all 14 LMGs (found by weaponAliasProblems below the day it was written).
+    const aliased = aliasMatches(query, candidates);
+    const synonymCategories = aliased.length ? [] : resolveCategorySynonyms(query);
     const seen = new Set();
     const results = [];
     // An alias first (shv -> STATIC-HV), then the letter rules for anything else the query also reaches.
-    for (const c of aliasMatches(query, candidates)) { seen.add(c.weaponKey); results.push(c); }
+    for (const c of aliased) { seen.add(c.weaponKey); results.push(c); }
     for (const c of candidates) {
         const isMatch = isGenericWeaponQuery(query) || fuzzyMatch(query, c.weaponName) || synonymCategories.includes(c.category);
         if (isMatch && !seen.has(c.weaponKey)) {
@@ -237,4 +266,4 @@ function pickWeapon(query, candidates) {
     return { ...none, loose: findWeaponMatches(query, candidates) };
 }
 
-module.exports = { WEAPON_ALIASES, pickWeapon, featuredWeapons, fuzzyMatch, normalizeForSearch, foldLookalikes, findWeaponMatches, resolveCategorySynonyms, categoryByExactAlias, isGenericWeaponQuery, typoDistance, isSameDrawTitle, bestDrawMatch, CATEGORY_SEARCH_SYNONYMS, GENERIC_WEAPON_WORDS };
+module.exports = { WEAPON_ALIASES, weaponAliasProblems, pickWeapon, featuredWeapons, fuzzyMatch, normalizeForSearch, foldLookalikes, findWeaponMatches, resolveCategorySynonyms, categoryByExactAlias, isGenericWeaponQuery, typoDistance, isSameDrawTitle, bestDrawMatch, CATEGORY_SEARCH_SYNONYMS, GENERIC_WEAPON_WORDS };
