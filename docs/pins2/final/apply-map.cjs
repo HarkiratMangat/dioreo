@@ -26,7 +26,8 @@ for (const f of CSS) {
     if (!buf) bufLine = line; buf += ch;
   }
 }
-const sitesFor = (cls) => { const re = new RegExp(`\\.${cls.replace(/[-]/g, '\\-')}(?![\\w-])`); return rules.filter((r) => re.test(r.sel)); };
+// every regex metacharacter in a class name is escaped, not only the hyphen (CodeQL js/incomplete-sanitization, 2026-11-15 02:47 EST)
+const sitesFor = (cls) => { const re = new RegExp(`\\.${cls.replace(/[.*+?^${}()|[\]\\-]/g, '\\$&')}(?![\\w-])`); return rules.filter((r) => re.test(r.sel)); };
 
 // ── the standards on the tuner ──
 const STD = {
@@ -98,7 +99,7 @@ const drift = new Map(); C.drift.forEach((g, i) => g.forEach((id) => drift.set(i
 
 // ── write ──
 const stamp = new Date().toLocaleString('sv-SE', { timeZone: 'America/New_York' }).slice(0, 16) + ' ' + (new Date().toLocaleString('en-US', { timeZone: 'America/New_York', timeZoneName: 'short' }).split(' ').pop());
-const esc = (s) => String(s).replace(/\|/g, '\\|');
+const esc = (s) => String(s).replace(/\\/g, '\\\\').replace(/\|/g, '\\|');   // a backslash first, then the pipe a table cell cannot hold (CodeQL js/incomplete-sanitization, 2026-11-15)
 const byBucket = new Map(); rows.forEach((r) => { if (!byBucket.has(r.bucket)) byBucket.set(r.bucket, []); byBucket.get(r.bucket).push(r); });
 const order = ['Key labels', 'Column heads', 'Category word', 'Group headings', 'Headings', 'Filter chip', 'View switch', 'Action: delete', 'Action: edit', 'Action: share, copy, export', 'Deselect ×', 'Close and back', 'New button', 'Go button', 'Neutral button', 'Row', 'Fields', 'Menu item', 'Link', 'Panels and cards', 'Dark grounds', 'Drawer', 'Small text (Step 3)', 'Content text', 'Layout boxes', 'EXEMPT', 'UNASSIGNED'];
 const pick = (code) => { if (!PICKS || !PICKS.f || !PICKS.f[code] || PICKS.f[code].status === 'none') return 'not set'; const p = PICKS.f[code]; return p.status === 'preset' ? p.base : `mix from ${p.base}`; };
