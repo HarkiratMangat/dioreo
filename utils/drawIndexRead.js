@@ -214,8 +214,7 @@ function seasonYearFor(season, doc, now = new Date()) {
     return now.getUTCFullYear();
 }
 
-// ---------- the call ----------
-// Only Discord's own hosts are fetched (an uploaded file is a cdn.discordapp.com link): the same rule as news triage's image fetch.
+// ---------- the call ---------- Only Discord's own hosts are fetched (an uploaded file is a cdn.discordapp.com link): the same rule as news triage's image fetch.
 async function fetchImage(url) {
     const { allowedImageUrl } = require('./newsTriage/model');
     if (!allowedImageUrl(url)) throw new Error('That picture is not a Discord upload.');

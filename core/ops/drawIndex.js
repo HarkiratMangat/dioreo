@@ -7,8 +7,7 @@
 //   drawindex.update  picture, items, title, other names, draw type, season, comments; and it re-points the staged or live draws of this entry whose picture was a placeholder or the entry's old link (`rows`). NOT through draw.edit: draw.edit runs utils/drawIndexSync.js, whose mergeItems REPLACES the index's items with the draw row's list. Tier 1.
 //   drawindex.delete  removes an entry; its inverse puts the same document back. Tier 2, because it takes a live draw's picture lookup with it.
 //
-// Page 'draws' (an op with no /manage action declares its page: .claude/rules/operation-core.md). Who may press the owner's buttons is checked at the route (utils/adminAccess.js isOwner).
-// 🔒 add, update and delete are OWNER ONLY INSIDE apply() too (commit security review, 2026-11-16 12:27 EST): a Revert replays an op's inverse as whoever pressed Revert (/bot analytics' Changes, or the panel's own Revert), and checkRevert checks only the page's tier, so an admin with the draws tier could otherwise delete an owner-uploaded entry by reverting its add, or re-add a deleted one. apply() runs on every path, fresh or Revert, so the check sits there once.
+// Page 'draws' (an op with no /manage action declares its page: .claude/rules/operation-core.md). Who may press the owner's buttons is checked at the route (utils/adminAccess.js isOwner). 🔒 add, update and delete are OWNER ONLY INSIDE apply() too (commit security review, 2026-11-16 12:27 EST): a Revert replays an op's inverse as whoever pressed Revert (/bot analytics' Changes, or the panel's own Revert), and checkRevert checks only the page's tier, so an admin with the draws tier could otherwise delete an owner-uploaded entry by reverting its add, or re-add a deleted one. apply() runs on every path, fresh or Revert, so the check sits there once.
 const { registerEntity } = require('./index');
 const DrawCatalog = require('../../models/DrawCatalog');
 

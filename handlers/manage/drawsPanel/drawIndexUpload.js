@@ -8,8 +8,7 @@
 //   3. A review, one draw per screen, keeps the batch in models/DrawIndexUpload.js (a day, like the upload links).
 //   4. Save uploads each picture to Cloudinary (utils/drawIndexPicture.js), then commits every entry in ONE set (core/ops/drawIndex.js), so one Revert takes the whole upload back. A replaced picture is not kept (his 2026-10-30 rule), and the review says so.
 //
-// ⚠️ OWNER ONLY, at every route (utils/adminAccess.js isOwner), not by tier: the buttons are drawn only for the owner, and a click from anyone else (an admin on /manage draws' Draw Index) gets a private refusal and changes nothing.
-// Ids: `mng_dr|ixup` / `ixupm` (the pop-up) and `mng_dr|ixv…` (the review), so they reach this module through drawIndex.js's route. Replace Picture (`ixpic`) and Delete Entry (`ixdel`) live in drawIndex.js, owner-checked there.
+// ⚠️ OWNER ONLY, at every route (utils/adminAccess.js isOwner), not by tier: the buttons are drawn only for the owner, and a click from anyone else (an admin on /manage draws' Draw Index) gets a private refusal and changes nothing. Ids: `mng_dr|ixup` / `ixupm` (the pop-up) and `mng_dr|ixv…` (the review), so they reach this module through drawIndex.js's route. Replace Picture (`ixpic`) and Delete Entry (`ixdel`) live in drawIndex.js, owner-checked there.
 const emojis = require('../../../utils/emojiMap');
 const V = require('./views');
 const { row, text, btn, panel, plural, ID } = V;
@@ -139,8 +138,7 @@ function toPicture(base, d) {
     };
 }
 
-// ---------- what a picture still needs before it can be saved ---------- Pure. `doc` (the batch) adds the cross-picture check.
-// Two included pictures that land on the same entry or the same new title would write one draw twice in one commit (two adds of one slug fail the whole save), so that blocks until one is skipped (think-pass before the full click test, 2026-11-16 13:11 EST: Include on a skipped duplicate, or a "Same Draw" yes onto an entry another picture updates, reached it).
+// ---------- what a picture still needs before it can be saved ---------- Pure. `doc` (the batch) adds the cross-picture check. Two included pictures that land on the same entry or the same new title would write one draw twice in one commit (two adds of one slug fail the whole save), so that blocks until one is skipped (think-pass before the full click test, 2026-11-16 13:11 EST: Include on a skipped duplicate, or a "Same Draw" yes onto an entry another picture updates, reached it).
 function targetKey(p) {
     if (p.matchStatus === 'sure' && p.matchId) return `id:${p.matchId}`;
     if (p.matchStatus === 'maybe' && p.sameDraw === true && p.matchId) return `id:${p.matchId}`;
@@ -179,8 +177,7 @@ function reviewView(doc, n = 0, note = null, { mediaUrl = null } = {}) {
     if (note) components.push(text(note), SMALL());
     if (p.status === 'failed') {
         components.push(text(`### ${emojis.cross} Picture ${i + 1} couldn't be read\n-# ${p.filename || 'upload'} · ${p.error || 'unknown error'}`));
-        // A file that is not a picture has nothing to show (the click test: Discord drew "Image failed to load").
-        // Nor anything to read again: Read Again is only offered where a second read could succeed.
+        // A file that is not a picture has nothing to show (the click test: Discord drew "Image failed to load"). Nor anything to read again: Read Again is only offered where a second read could succeed.
         const notPicture = /not a picture/i.test(p.error || '');
         if (!notPicture) components.push({ type: 12, items: [{ media: { url: p.url } }] });
         components.push(row(...(notPicture ? [] : [btn(['ixvretry', t, i], 'Read Again', emojis.search, 1)]), btn(['ixvskip', t, i], p.skip ? 'Include' : 'Skip', p.skip ? emojis.plus : emojis.diffMinus)));
@@ -285,8 +282,7 @@ function saveLine(doc) {
     return `-# ${parts.join(' · ')}${needs.length ? `\n-# ${emojis.warn} Before saving: ${needs.join('; ').slice(0, 600)}` : ''}`;
 }
 
-// ---------- saving ----------
-// The staged or live draws of an entry whose picture should follow a new one: those whose picture is a placeholder, empty, or the entry's old link. Pure over the SeasonalData doc.
+// ---------- saving ---------- The staged or live draws of an entry whose picture should follow a new one: those whose picture is a placeholder, empty, or the entry's old link. Pure over the SeasonalData doc.
 function rowsToRepoint(seasonDoc, entry, newUrl) {
     const { isSameDrawTitle } = require('../../../utils/search');
     const { isPlaceholder } = require('../../../utils/placeholders');
@@ -370,8 +366,7 @@ async function saveUpload(doc, actorId) {
     return { plans, ops, result };
 }
 
-// ---------- the panel's routes ----------
-// Upload Draws (`ixup`, `ixupm`) and its review (`ixv…`). The card's Replace Picture and Delete Entry stay in drawIndex.js.
+// ---------- the panel's routes ---------- Upload Draws (`ixup`, `ixupm`) and its review (`ixv…`). The card's Replace Picture and Delete Entry stay in drawIndex.js.
 const isUploadVerb = (verb) => /^ix(up|v)/.test(String(verb || ''));
 
 async function route(interaction, verb, a, b, c, ctx) {

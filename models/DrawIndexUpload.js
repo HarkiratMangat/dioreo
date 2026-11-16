@@ -2,8 +2,7 @@
 //
 // Built 2026-11-16 12:15 EST for owner-draws-index (Harkirat 2026-11-16 11:11 EST: "an owner only command where i can upload and check the draws index"). The review pages through up to ten pictures, each with what Gemini read and what the bot decided, and Harkirat's own changes (a draw type, an edit, a skip); that has to outlive one click and a bot restart, and a custom_id holds 100 characters. So the batch lives here, under a random token its buttons carry.
 //
-// ⚠️ NO USER ID IS STORED, as models/ManageSelection.js: who may act is checked on every click (owner only, utils/adminAccess.js isOwner), so the token only says WHICH batch.
-// ⚠️ Rows expire after 24 hours (TTL on createdAt): an uploaded file's Discord link lasts about a day too, so an older batch could not upload its pictures anyway.
+// ⚠️ NO USER ID IS STORED, as models/ManageSelection.js: who may act is checked on every click (owner only, utils/adminAccess.js isOwner), so the token only says WHICH batch. ⚠️ Rows expire after 24 hours (TTL on createdAt): an uploaded file's Discord link lasts about a day too, so an older batch could not upload its pictures anyway.
 const mongoose = require('mongoose');
 
 const itemSchema = new mongoose.Schema({
