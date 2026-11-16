@@ -142,7 +142,8 @@ function editModal(e, origin, { owner = false } = {}) {
                 label('Title', { type: 4, custom_id: 'title', style: 1, required: true, max_length: 90, value: String(e.title).slice(0, 90) }),
                 label('Items', { type: 4, custom_id: 'items', style: 2, required: false, max_length: 2000, ...((e.items || []).length ? { value: require('./drawIndexUpload').itemsToText(e.items).slice(0, 2000) } : {}), placeholder: 'Legendary QQ9 - Moonlight (weapon)' }, 'One per line: rarity, name, (kind). Blank keeps them.'),
             ] : []),
-        ],
+        // The owner's Title and Items lead (the click test, 2026-11-16 13:02 EST: they sat under the other three, so the box opened on the other names).
+        ].sort((x, y) => (owner ? ['title', 'items'].includes(y.component.custom_id) - ['title', 'items'].includes(x.component.custom_id) : 0)),
     };
 }
 
@@ -297,7 +298,9 @@ async function route(interaction, verb, a, b, c, ctx) {
         const rev = ID('ixrevert', result.changeIds.join(','), '', '');
         const note = `### ${emojis.checkmark} Deleted ${String(e.title).slice(0, 80)} from the draw index`;
         const comps = homeView(await loadEntries(), await getDoc(), note, { owner });
-        if (rev.length <= 100) comps[0].components.splice(2, 0, row({ type: 2, style: 4, label: 'Revert', custom_id: rev, emoji: emojis.parseEmoji(emojis.keep) }));
+        // Revert goes under the note it reverts (the click test, 2026-11-16 13:03 EST: spliced at 2 it sat above the note).
+        const at = comps[0].components.findIndex(c => c.type === 10 && String(c.content || '').includes('Deleted '));
+        if (rev.length <= 100) comps[0].components.splice(at === -1 ? 2 : at + 1, 0, row({ type: 2, style: 4, label: 'Revert', custom_id: rev, emoji: emojis.parseEmoji(emojis.keep) }));
         return show(interaction, comps);
     }
     if (verb === 'ixkinds') {

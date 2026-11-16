@@ -401,7 +401,6 @@ function resultView(doc, plans, ops, result) {
     else {
         const added = ops.filter(x => x.op.type === 'drawindex.add').length;
         lines.push(`### ${emojis.checkmark} Saved ${plural(ops.length, 'draw')}${ops.length ? ` · ${added} new, ${ops.length - added} updated` : ''}`);
-        if (ops.length) lines.push(ops.map(x => `${x.op.type === 'drawindex.add' ? emojis.plus : emojis.edit} ${String(x.title).slice(0, 80)}${x.op.payload?.rows?.length ? ` · ${plural(x.op.payload.rows.length, 'draw')} now use the new picture` : ''}`).join('\n'));
     }
     if (failed.length) lines.push(`${emojis.warn} Not saved:\n${failed.map(x => `-# Picture ${x.i + 1}: ${x.error}`).join('\n')}`);
     if (skipped.length) lines.push(`-# ${skipped.map(x => `Picture ${x.i + 1}: ${x.skip}`).join(' · ')}`);
@@ -409,8 +408,12 @@ function resultView(doc, plans, ops, result) {
     // The batch stays a day so Revert can find its changes; the change ids ride on it, not in the custom_id (ten of them would pass 100 characters).
     require('../../../models/DrawIndexUpload').updateOne({ _id: doc._id }, { $set: { savedChangeIds: changeIds } }).catch(() => {});
     const IX = require('./drawIndex');
+    // Each saved draw with Open, which lands on its entry card (the click test, 2026-11-16 13:02 EST: the result named the draws with no way to look at them). The entry id is the add's applied id or the update's target; ten pictures at most is ten sections.
+    const ids = result.ok ? ops.map((x, k) => x.op.target?.id || result.results?.[k]?.applied?.id || null) : [];
+    const savedRows = result.ok ? ops.map((x, k) => ({ type: 9, components: [text(`${x.op.type === 'drawindex.add' ? emojis.plus : emojis.edit} ${String(x.title).slice(0, 80)}${x.op.payload?.rows?.length ? `\n-# ${plural(x.op.payload.rows.length, 'draw')} now use the new picture` : ''}`)], accessory: ids[k] ? btn(['ixopen', ids[k], ''], 'Open', emojis.expand) : { type: 2, style: 2, label: 'Open', custom_id: ID('ixvpg', doc._id, k), disabled: true } })) : [];
     return panel([
         text(`-# Draws  ›  Draw Index  ›  Upload\n${lines.join('\n').slice(0, 3800)}`),
+        ...savedRows,
         BIG(),
         row(IX.indexBack(), btn('ixup', 'Upload More', emojis.plus, 1), ...(changeIds.length ? [{ type: 2, style: 4, label: 'Revert', custom_id: ID('ixvrev', doc._id), emoji: emojis.parseEmoji(emojis.keep) }] : [])),
     ]);
