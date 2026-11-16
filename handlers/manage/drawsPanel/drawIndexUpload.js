@@ -423,7 +423,11 @@ async function route(interaction, verb, a, b, c, ctx) {
     if (verb === 'ixvrev') {
         return require('../results').revertChanges(interaction, doc.savedChangeIds || [], {
             doneNote: 'the draw index is back as it was (pictures that were replaced stay replaced)',
-            render: async (note) => require('./drawIndex').homeView(await loadEntries(), await ctx.getDoc(), note, { owner: true }),
+            render: async (note) => {
+                // An upload started from a news card put that card's lines right when it saved; a Revert must put them back the other way, or the card keeps saying the draw is indexed.
+                if (doc.newsCard) await require('../../../utils/newsTriage/indexStatus').refreshIndexStatus(doc.newsCard, { rest: interaction.client.rest, appId: interaction.applicationId });
+                return require('./drawIndex').homeView(await loadEntries(), await ctx.getDoc(), note, { owner: true });
+            },
         });
     }
     return false;

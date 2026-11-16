@@ -283,7 +283,7 @@ async function route(interaction, verb, a, b, c, ctx) {
         if (!result.ok) return say(interaction, `${emojis.cross} The picture uploaded, but the index was not updated: ${require('../shared').extractCommitError(result)}`);
         const rev = ID('ixrevert', result.changeIds.join(','), a, b || '');
         const resultRow = rev.length <= 100 ? row({ type: 2, style: 4, label: 'Revert', custom_id: rev, emoji: emojis.parseEmoji(emojis.keep) }) : null;
-        return show(interaction, cardView(await findEntry(a) || e, await getDoc(), b || '', { header: `### ${emojis.checkmark} Picture replaced${rows.length ? ` · ${plural(rows.length, 'draw')} now use it` : ''}${crop ? ` · logo bar cropped (${crop.bar}px)` : ''}\n-# Revert puts the index back; the old picture itself is not kept.`, resultRow, owner }));
+        return show(interaction, cardView(await findEntry(a) || e, await getDoc(), b || '', { header: `### ${emojis.checkmark} Picture replaced${rows.length ? ` · ${plural(rows.length, 'draw')} now ${rows.length === 1 ? 'uses' : 'use'} it` : ''}${crop ? ` · logo bar cropped (${crop.bar}px)` : ''}\n-# Revert puts the index back; the old picture itself is not kept.`, resultRow, owner }));
     }
     if (verb === 'ixdel') {
         const e = await findEntry(a);

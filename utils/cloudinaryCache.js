@@ -126,10 +126,11 @@ function catalogMirrorPlan(doc, { previousTags = [], inserted = false, year = ne
     return { context, addTags, removeTags };
 }
 
-// Writes catalogMirrorPlan() to the asset. Never throws (a failure only leaves the asset as it was, for scripts/syncDrawCatalog.js to report), never logs a raw Cloudinary error, and is blocked on the dev bot like every other write to the shared account.
+// Writes catalogMirrorPlan() to the asset. Never throws (a failure only leaves the asset as it was, for scripts/syncDrawCatalog.js to report), never logs a raw Cloudinary error, and is blocked on the dev bot like every other write to the shared account, except onto the dev bot's own `dev_draws/` pictures.
 async function mirrorCatalogToCloudinary(publicId, plan) {
     if (!publicId || !plan) return false;
-    if (isCloudinaryWriteBlocked('draw index mirror', publicId)) return false;
+    // A picture the dev bot uploaded lives under its own `dev_draws/` folder (utils/drawIndexPicture.js), so mirroring onto it cannot touch a live asset; every other id stays blocked on dev.
+    if (isCloudinaryWriteBlocked('draw index mirror', publicId, { devNamespaceSafe: publicId.startsWith('dev_draws/') })) return false;
     try {
         if (plan.removeTags.length) await cloudinary.uploader.remove_tag(plan.removeTags.join(','), [publicId]);
         if (plan.addTags.length) await cloudinary.uploader.add_tag(plan.addTags.join(','), [publicId]);

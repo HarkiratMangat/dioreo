@@ -118,7 +118,7 @@ Measured live on the Season 9 calendar image (22 rows) and a one-draw text post,
 
 ## Is the draw in the draw index? (2026-11-16 13:08 EST, owner-draws-index)
 
-Harkirat 2026-11-16 12:05 EST: never the leak channel's posters, "just detecting the draw name/title/items (if its cheap) and checking if that draw is already indexed". `utils/newsTriage/indexStatus.js` matches each draw item the read already returned (name and rewards, no extra AI call) with Upload Draws' matcher and stores `NewsCard.index`; the card lists indexed / maybe / not indexed with what each lacks, and an owner-only **Add to Draw Index** (`news|ixadd|<card>`) opens Upload Draws with those names in its Names box (his own pictures). The daily briefing lists the last week's draws still missing, re-checked against the index each time. `resolve.js` `catalogueMatch` is unchanged: it names drafted rows.
+Harkirat 2026-11-16 12:05 EST: never the leak channel's posters, "just detecting the draw name/title/items (if its cheap) and checking if that draw is already indexed". `utils/newsTriage/indexStatus.js` matches each draw item the read already returned (name and rewards, no extra AI call) with Upload Draws' matcher and stores `NewsCard.index`; the card lists indexed / maybe / not indexed with what each lacks, and an owner-only **Add to Draw Index** (`news|ixadd|<card>`) opens Upload Draws with those names in its Names box (his own pictures). A save from it redraws the card with the new lines, and a Revert of that upload redraws it back (`refreshIndexStatus`, click-tested 2026-11-16 13:35 EST). The daily briefing lists the last week's draws still missing, re-checked against the index each time. `resolve.js` `catalogueMatch` is unchanged: it names drafted rows.
 
 ## Limits, on purpose
 
