@@ -311,6 +311,16 @@ function limits(view, label) {
         assert.ok(U.blockers(upd.pictures[1], upd).length, 'a Same Draw yes onto an entry another picture updates blocks');
     });
 
+    await check('/bot drawindex carries entry (autocomplete), do, show and visibility last, and show: is the panel\'s gap list', () => {
+        const sub = require('../commands/bot').data.toJSON().options.find(o => o.name === 'drawindex');
+        assert.deepStrictEqual(sub.options.map(o => [o.name, !!o.autocomplete]), [['entry', true], ['do', false], ['show', false], ['visibility', false]]);
+        assert.deepStrictEqual(sub.options[1].choices.map(c => c.value), ['upload', 'check']);
+        const { GAPS } = require('../handlers/manage/drawsPanel/drawIndex');
+        assert.deepStrictEqual(sub.options[2].choices.map(c => [c.value, c.name]), Object.entries(GAPS).map(([v, g]) => [v, g.label]), 'show: must list the GAPS the panel lists');
+        assert.deepStrictEqual(sub.options[3].choices.map(c => c.value), ['hidden', 'public']);
+        assert.ok(U.uploadModal({ origin: 'P' }).custom_id.includes('|ixupm|P|'), 'a public do:Upload Draws carries P in its pop-up id');
+    });
+
     console.log(failed ? `\n${failed} check(s) FAILED.` : '\nAll draw index upload checks passed.');
     process.exit(failed ? 1 : 0);
 })();

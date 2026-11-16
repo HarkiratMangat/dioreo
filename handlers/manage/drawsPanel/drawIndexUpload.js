@@ -336,8 +336,9 @@ async function route(interaction, verb, a, b, c, ctx) {
         const s = seasonOf(get('season'));
         if (s.error) return say(interaction, `${emojis.cross} ${s.error} Nothing was read.`);
         if (!files.length) return say(interaction, `${emojis.cross} No pictures came through. Upload at least one.`);
-        // From the panel the answer replaces the panel; from a news card it is a new private message, never the card itself.
-        if (a === 'n' || !interaction.message) await interaction.deferReply({ flags: 64 });
+        // From the panel the answer replaces the panel; from a news card it is a new private message, never the card itself. From `/bot drawindex do:Upload Draws` there is no panel: 'P' (visibility Public) answers publicly, 'p' privately.
+        if (a === 'P' && !interaction.message) await interaction.deferReply({ flags: 0 });
+        else if (a === 'n' || !interaction.message) await interaction.deferReply({ flags: 64 });
         else await interaction.deferUpdate();
         const { sendV2Payload } = require('../../../utils/sendV2Payload');
         await sendV2Payload(interaction, panel([text(`-# Draws  ›  Draw Index  ›  Upload\n### ${emojis.search} Reading ${plural(files.length, 'picture')}…\n-# One read each. The index decides the rest.`)]), { skipExpiry: true });
