@@ -1322,7 +1322,7 @@ module.exports = {
         // Its options follow /manage's (the rehaul, 2026-11-07): entry: a target (autocomplete) opens its card, do: an action, show: a list, visibility LAST (Hidden by default, as analytics and access). Added 2026-11-16 14:13 EST after Harkirat found visibility missing ("one of the most SIMPLE thing, \"visibility\" option in the slash command, wasn't even added").
         .addSubcommand(sub => sub.setName('drawindex').setDescription('Upload, check and edit the draw index (owner-only)')
             .addStringOption(o => o.setName('entry').setDescription('Go to one entry: type part of its title, another name or an item').setAutocomplete(true).setMaxLength(100))
-            .addStringOption(o => o.setName('do').setDescription('Open a pop-up straight away').addChoices({ name: 'Upload Draws', value: 'upload' }, { name: 'Check Names', value: 'check' }))
+            .addStringOption(o => o.setName('do').setDescription('Open a pop-up straight away').addChoices({ name: 'Upload Draws', value: 'upload' }, { name: 'Find Draws', value: 'check' }))
             .addStringOption(o => o.setName('show').setDescription('Open a list of entries').addChoices(  // the Draw Index panel's GAPS (handlers/manage/drawsPanel/drawIndex.js), written out so this builder requires no handler; scripts/drawIndexUpload.test.js fails if the two differ
                 { name: 'No Picture', value: 'pic' }, { name: 'Placeholder Picture', value: 'ph' }, { name: 'No Draw Type', value: 'type' }, { name: 'Items Without a Kind', value: 'kind' }, { name: 'No Items', value: 'items' }, { name: 'Every Entry', value: 'all' }))
             .addStringOption(o => o.setName('visibility').setDescription('Show this panel only to you, or publicly to everyone in the chat. (Defaults to only you.)').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' })))
@@ -1405,17 +1405,8 @@ module.exports = {
                 const list = entries.filter(IX.GAPS[gap].test).sort((x, y) => String(x.title).localeCompare(String(y.title)));
                 return sendV2Payload(interaction, IX.listView(list, { title: IX.GAPS[gap].label, origin: `g:${gap}`, page: 0, pagerParts: ['ixgaps', gap] }), { skipExpiry: true });
             }
-            if (q) {
-                const hits = IX.searchEntries(entries, q);
-                if (hits.length === 1) return sendV2Payload(interaction, IX.cardView(hits[0], doc, '', { owner: true }), { skipExpiry: true });
-                if (hits.length > 1) {
-                    // The same results list the panel's Search the Index draws, under a ManageSelection token, so its pager and each card's way back work.
-                    const token = require('crypto').randomBytes(6).toString('base64url');
-                    await require('../models/ManageSelection').create({ _id: token, mode: 'DRAWS', ids: hits.map(e => `x:${e._id}`), selected: [], query: [q.slice(0, 100)] });
-                    return sendV2Payload(interaction, IX.listView(hits, { title: 'Search Results', origin: `t:${token}`, pagerParts: ['ixres', token], sub: ` match \`${q.slice(0, 40)}\`` }), { skipExpiry: true });
-                }
-                return sendV2Payload(interaction, IX.homeView(entries, doc, `${emojis.cross} Nothing in the draw index matches \`${q.slice(0, 60)}\`.`, { owner: true }), { skipExpiry: true });
-            }
+            // Typed words that were not a picked suggestion are a Find Draws search: a card, a list, or the not-found result with Upload Draws (handlers/manage/drawsPanel/drawIndex.js findView).
+            if (q) return sendV2Payload(interaction, await IX.findView(q, { owner: true, doc }), { skipExpiry: true });
             return sendV2Payload(interaction, IX.homeView(entries, doc, null, { owner: true }), { skipExpiry: true });
         }
 

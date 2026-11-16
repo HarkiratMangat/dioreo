@@ -338,17 +338,29 @@ async function route(interaction, verb, a, b, c, ctx) {
     const { show, say } = ctx;
     if (!isOwner(interaction.user.id)) return say(interaction, OWNER_ONLY);
     const load = async (token) => (token ? Upload().findById(token).lean() : null);
-    const expired = () => say(interaction, `${emojis.cross} That upload expired (uploads last a day). Upload the pictures again.`);
+    // Pressed on the review itself, the note replaces it with the Draw Index home, in the same panel (his 16:51 EST finding 1).
+    const expired = async () => (interaction.message ? ctx.show(interaction, require('./drawIndex').homeView(await loadEntries(), await ctx.getDoc(), `${emojis.cross} That upload expired (uploads last a day). Upload the pictures again.`, { owner: true })) : say(interaction, `${emojis.cross} That upload expired (uploads last a day). Upload the pictures again.`));
     const save = (token, fields) => Upload().updateOne({ _id: token }, { $set: fields });
 
-    if (verb === 'ixup') return interaction.showModal(uploadModal({ origin: 'p' }));
+    // From Find Draws' results `a` is the find's token: the names it did not find go into the Names box (his 16:51 EST finding 3).
+    if (verb === 'ixup') {
+        let names = '';
+        if (a) {
+            const sel = await require('../../../models/ManageSelection').findById(a).lean().catch(() => null);
+            const found = new Set((sel?.query || []).map(x => String(x).trim().toLowerCase()));
+            names = String(sel?.text || '').split('\n').map(x => x.trim()).filter(x => x && !found.has(x.toLowerCase())).join('\n');
+        }
+        return interaction.showModal(uploadModal({ origin: 'p', names }));
+    }
     if (verb === 'ixupm' && interaction.isModalSubmit?.()) {
         let files = [];
         try { files = [...(interaction.fields.getUploadedFiles('pics')?.values() || [])]; } catch { files = []; }
         const get = (id) => { try { return interaction.fields.getTextInputValue(id) || ''; } catch { return ''; } };
         const s = seasonOf(get('season'));
-        if (s.error) return say(interaction, `${emojis.cross} ${s.error} Nothing was read.`);
-        if (!files.length) return say(interaction, `${emojis.cross} No pictures came through. Upload at least one.`);
+        // From a panel the note shows on the Draw Index home in that panel, never as a separate message.
+        const bad = async (note) => (interaction.message && a !== 'n' ? ctx.show(interaction, require('./drawIndex').homeView(await loadEntries(), await ctx.getDoc(), note, { owner: true })) : say(interaction, note));
+        if (s.error) return bad(`${emojis.cross} ${s.error} Nothing was read.`);
+        if (!files.length) return bad(`${emojis.cross} No pictures came through. Upload at least one.`);
         // From the panel the answer replaces the panel; from a news card it is a new private message, never the card itself. From `/bot drawindex do:Upload Draws` there is no panel: 'P' (visibility Public) answers publicly, 'p' privately.
         if (a === 'P' && !interaction.message) await interaction.deferReply({ flags: 0 });
         else if (a === 'n' || !interaction.message) await interaction.deferReply({ flags: 64 });

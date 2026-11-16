@@ -327,7 +327,7 @@ function seasonDoc(nNew = 3, nRet = 30) {
         assert.ok(IX.editModal(entries[3], 'h').components.length <= 5);
         // A card opened from Check Names goes back to those results (2026-11-11 11:40 EST click test).
         const fromCheck = JSON.stringify(IX.cardView(entries[3], doc, 'c:tok123'));
-        assert.match(fromCheck, /ixcres\|tok123[^"]*","label":"Check Names"|"label":"Check Names"[^}]*ixcres\|tok123/, 'the way back from a checked card is Check Names');
+        assert.match(fromCheck, /ixcres\|tok123[^"]*","label":"Results"|"label":"Results"[^}]*ixcres\|tok123/, 'the way back from a found card is Results');
         assert.deepStrictEqual(IX.searchEntries(entries, 'old name').map(e => e.title), [live.title], 'another name finds it');
         assert.ok(IX.searchEntries(entries, 'gun7').some(e => e.title === 'Index Draw 7'), 'an item finds it');
         const op = require('../core/ops').resolveOp('drawindex.edit');

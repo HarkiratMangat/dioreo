@@ -342,14 +342,15 @@ function endModal(customId, { title = '', row: calRow = null, count = 0 } = {}) 
 }
 
 // ---------- Check Draw Index ---------- (2026-11-09 13:57 EST, his ask: "bulk paste draw names or item names and check if we have a draw for that search, if the draw/catalogue contains all the info/needs updating")
-const checkModal = (value = '', token = null) => ({ custom_id: ID('checkm', token || ''), title: 'Check Names in the Draw Index', components: [labelled('Draw or item names', { type: 4, custom_id: 'names', style: 2, required: true, max_length: 4000, placeholder: 'cx9 lethal hollow\nherrscher of reason\nmythic character', ...(value ? { value: String(value).slice(0, 4000) } : {}) }, 'One per line, up to 20. Checking changes nothing.')] });
+const checkModal = (value = '', token = null) => ({ custom_id: ID('checkm', token || ''), title: 'Find Draws', components: [labelled('Names', { type: 4, custom_id: 'names', style: 2, required: true, max_length: 4000, placeholder: 'cx9 lethal hollow\nherrscher of reason\nmythic character', ...(value ? { value: String(value).slice(0, 4000) } : {}) }, 'A draw or item name, or several, one per line (up to 20)')] });
 // The result: a count line, then one block per line pasted. Discord holds 4,000 characters of text in a message: blocks past that are dropped and counted, never cut mid-line. `token` keeps what was pasted (2026-11-10 11:19 EST): Check Again opens it again, and Quick Add These opens Quick Add with the lines that found a draw. Check Names, a page of the Draw Index panel (2026-11-11 11:07 EST, his screenshot review): one name for it everywhere, each draw it found opens on its own entry card, Quick Add These counts only the draws not already on /draws or in the draft, and the way back is on the left.
-function checkView({ results, extra = 0, indexSize = 0 }, token = null, foundCount = 0) {
+function checkView({ results, extra = 0, indexSize = 0 }, token = null, foundCount = 0, { owner = false } = {}) {
     const { resultBlock } = require('../../../utils/drawIndexCheck');
     const c = (s) => results.filter(r => r.status === s).length;
     const needN = results.filter(r => r.needs?.length).length;
     const counts = [`${results.length} checked`, `${c('found')} found`, ...(c('maybe') ? [`${c('maybe')} maybe`] : []), ...(c('describes') ? [`${c('describes')} too broad`] : []), ...(c('none') ? [`${c('none')} not indexed`] : []), ...(needN ? [`${emojis.warn} ${needN} need updating`] : [])].join(' · ');
-    const head = text(`-# Draws  ›  Draw Index  ›  Check Names\n## ${emojis.checkIndex || indexEmoji()} Check Names\n-# ${counts} · ${plural(indexSize, 'draw')} in the index`);
+    // Find Draws' results (the Draw Index's one finder since 2026-11-16 16:51 EST): no breadcrumb, one way back, and the names not found can be uploaded from right here.
+    const head = text(`## ${emojis.search} Results\n-# ${counts} · ${plural(indexSize, 'draw')} in the index`);
     const blocks = results.map(r => ({ r, t: resultBlock(r, emojis) }));
     // Up to eight found draws get an Open button (a Section each); the rest are text, as many as fit Discord's 4,000 characters.
     let budget = 3600 - head.content.length;
@@ -367,7 +368,10 @@ function checkView({ results, extra = 0, indexSize = 0 }, token = null, foundCou
     const dropped = blocks.length - shown + extra;
     if (dropped) components.push(text(`-# …and ${plural(dropped, 'more line')} not checked; paste them again in a second check.`));
     const quick = token && foundCount ? btn(['qathese', token], foundCount === 1 ? 'Quick Add This One' : `Quick Add These ${Math.min(foundCount, 10)}`, emojis.plus, 3) : null;
-    components.push(BIG(), row(btn('ix', 'Draw Index', emojis.returnArrow), homeBtn(), btn(['check', token || ''], 'Check Again', emojis.checkIndex || emojis.pasteImport, 1), quick));
+    // The owner adds what was not found without leaving: Upload Draws opens with those names already in its Names box (handlers/manage/drawsPanel/drawIndexUpload.js `ixup`).
+    const missing = c('none');
+    if (owner && token && missing) components.push(row(btn(['ixup', token], missing === 1 ? 'Upload This Draw' : `Upload ${missing} Draws`, emojis.plus, 1)));
+    components.push(BIG(), row(btn('ix', 'Draw Index', emojis.returnArrow), btn(['check', token || ''], 'Find Again', emojis.search), quick));
     return panel(components);
 }
 
