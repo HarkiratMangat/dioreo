@@ -13,7 +13,7 @@ const IMAGE_TIMEOUT_MS = 30 * 1000;
 const PROMPT = `This picture should be a Call of Duty Mobile lucky draw poster or screenshot (a Draw, Mythic Drop, Series Armory or "It Goes Two" draw). Copy what is PRINTED on it. Do not guess anything that is not visible, and do not use outside knowledge.
 - title: the draw's title as printed, in Title Case, or "" when the picture prints no title (a slogan or tagline is not a title).
 - items: every Mythic, Legendary and Epic reward whose name is printed, highest rarity first, as "WEAPON - Skin Name" or "Character - Skin Name" when both are printed, spelled as printed but in Title Case (keep weapon model names the way the game writes them: AK117, M4, Krig 6, Type 25, DL Q33, MG82). tier: "mythic" (red frame or badge), "legendary" (orange or gold), "epic" (purple), or "none" when the picture shows no frame or badge for that reward. kind: "weapon", "character" (an operator), "vehicle", or "other" (an emote, a charm), from what the reward is.
-- comments: condition lines the picture prints about the draw ("Acquire Both ... to Unlock ..."), else [].
+- comments: only a CONDITION line the picture prints about getting the rewards ("Acquire Both ... to Unlock ..."), else []. A slogan or tagline ("Lady Boss Is Here", "Get not one, but two legendary weapons") is not a comment.
 - printed: true for each of these words the picture prints: seriesArmory ("Series Armory" or "Armory"), itGoesTwo ("It Goes Two" or "Advanced"), sevenSpins ("7 Spins"), pickYourReward ("Pick Your Reward"), mythicDrop ("Mythic Drop").
 - draws: how many different draws the picture shows (1 for a normal poster; more for a calendar or a collage).
 - notDraw: true when the picture is not a lucky draw at all.`;
@@ -52,7 +52,8 @@ function shapeRead(parsed) {
     return {
         title: clean(p.title, 90),
         items,
-        comments: (Array.isArray(p.comments) ? p.comments : []).map(c => clean(c, 150)).filter(Boolean).slice(0, 3),
+        // A condition line names a way to get something; a slogan does not (the dev probe, 2026-11-16 12:59 EST: Lethal Pair's "Get not one, but two legendary weapons in one draw!" came back as a comment despite the prompt). Only lines with a condition word are kept.
+        comments: (Array.isArray(p.comments) ? p.comments : []).map(c => clean(c, 150)).filter(c => c && /\b(acquire|unlock|obtain|collect|guarantee[ds]?|both|all \d|aka|exclusive|bonus|free)\b/i.test(c)).slice(0, 3),
         printed: Object.fromEntries(['seriesArmory', 'itGoesTwo', 'sevenSpins', 'pickYourReward', 'mythicDrop'].map(k => [k, printed[k] === true])),
         draws: Number.isInteger(p.draws) && p.draws > 0 ? p.draws : 1,
         notDraw: p.notDraw === true,

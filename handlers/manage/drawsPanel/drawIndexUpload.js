@@ -48,7 +48,8 @@ function parseItemsText(textIn) {
 
 // ---------- the pop-ups ----------
 function uploadModal({ origin = 'p', card = '', names = '' } = {}) {
-    const label = (lab, component, description) => ({ type: 18, label: lab, ...(description ? { description } : {}), component });
+    // (label, description, component): the description second, as every call below writes it.
+    const label = (lab, description, component) => ({ type: 18, label: lab, ...(description ? { description } : {}), component });
     return {
         custom_id: ID('ixupm', origin, card), title: 'Upload Draws',
         components: [
@@ -59,14 +60,15 @@ function uploadModal({ origin = 'p', card = '', names = '' } = {}) {
     };
 }
 function editModal(p, token, n) {
-    const label = (lab, component, description) => ({ type: 18, label: lab, ...(description ? { description } : {}), component });
+    // (label, description, component): the description second, as every call below writes it.
+    const label = (lab, description, component) => ({ type: 18, label: lab, ...(description ? { description } : {}), component });
     return {
         custom_id: ID('ixvem', token, n), title: `Edit Picture ${n + 1}`,
         components: [
             label('Title', null, { type: 4, custom_id: 'title', style: 1, required: true, max_length: 90, value: String(p.title || '').slice(0, 90) || undefined }),
             label('Items', 'One per line: rarity, name, (kind). Legendary QQ9 - Moonlight (weapon)', { type: 4, custom_id: 'items', style: 2, required: true, max_length: 2000, value: itemsToText(p.items).slice(0, 2000) || undefined }),
             label('Other names', 'One per line', { type: 4, custom_id: 'aka', style: 2, required: false, max_length: 800, ...(p.aliases?.length ? { value: p.aliases.join('\n') } : {}) }),
-        ].map(c => (c.description === undefined ? (delete c.description, c) : c)),
+        ],
     };
 }
 function replaceModal(id, origin) {

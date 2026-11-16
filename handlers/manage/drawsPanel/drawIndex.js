@@ -52,8 +52,9 @@ function homeView(entries, doc, note = null, { owner = false } = {}) {
     if (note) components.push(SMALL(), text(note));
     components.push(
         BIG(),
+        // The owner's upload sits above the finders, under its own line (the click test, 2026-11-16 12:58 EST: below "Find an entry…" it read as one of the finders).
+        ...(owner ? [text('-# Add or update draws from their posters. The bot reads each one and tags it; you check it before it saves.'), row(btn('ixup', 'Upload Draws', emojis.plus, 1)), BIG()] : []),
         text('-# Find an entry…'),
-        ...(owner ? [text('-# Add or update draws from their posters. The bot reads each one and tags it; you check it before it saves.'), row(btn('ixup', 'Upload Draws', emojis.plus, 1)), SMALL()] : []),
         row(btn('ixcheck', 'Check Names', emojis.checkIndex || emojis.pasteImport, 1), btn('ixfind', 'Search the Index', emojis.search, 2, !entries.length)),
         { type: 1, components: [{ type: 3, custom_id: ID('ixgaps'), placeholder: 'Or list the entries with a gap…', options: Object.entries(GAPS).map(([value, g]) => ({ value, label: `${g.label} · ${n(value)}`, emoji: emojis.parseEmoji(value === 'all' ? V.indexEmoji() : emojis.warn) })) }] },
         BIG(),

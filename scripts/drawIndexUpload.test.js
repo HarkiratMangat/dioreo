@@ -285,6 +285,20 @@ function limits(view, label) {
         assert.ok(JSON.stringify(U.reviewView(doc, 0)).includes('Crop Bottom Bar'));
     });
 
+    await check('every pop-up is a shape Discord accepts: each Label holds a component object and a text description of 100 characters at most', () => {
+        const pic = { title: 'T', items: [{ tier: 'mythic', kind: 'weapon', name: 'A - B' }], aliases: ['X'] };
+        const modals = { upload: U.uploadModal({ origin: 'n', card: 'c'.repeat(24), names: 'A\nB' }), edit: U.editModal(pic, 'tok', 0), replace: U.replaceModal('i'.repeat(24), 'g:all'), entry: IX.editModal(INDEX[0], '', { owner: true }) };
+        for (const [name, m] of Object.entries(modals)) {
+            assert.ok(m.custom_id.length <= 100, `${name}: custom_id`);
+            assert.ok(m.components.length >= 1 && m.components.length <= 5, `${name}: 1-5 fields`);
+            for (const c of m.components) {
+                assert.strictEqual(c.type, 18, `${name}: a Label`);
+                assert.ok(c.component && typeof c.component === 'object' && typeof c.component.type === 'number', `${name}: "${c.label}" holds a component object (Discord refused one holding a string, 2026-11-16 12:58 EST)`);
+                assert.ok(c.description === undefined || (typeof c.description === 'string' && c.description.length <= 100), `${name}: "${c.label}" description is text of 100 characters at most`);
+            }
+        }
+    });
+
     console.log(failed ? `\n${failed} check(s) FAILED.` : '\nAll draw index upload checks passed.');
     process.exit(failed ? 1 : 0);
 })();
