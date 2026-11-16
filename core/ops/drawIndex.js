@@ -7,7 +7,8 @@
 //   drawindex.update  picture, items, title, other names, draw type, season, comments; and it re-points the staged or live draws of this entry whose picture was a placeholder or the entry's old link (`rows`). NOT through draw.edit: draw.edit runs utils/drawIndexSync.js, whose mergeItems REPLACES the index's items with the draw row's list. Tier 1.
 //   drawindex.delete  removes an entry; its inverse puts the same document back. Tier 2, because it takes a live draw's picture lookup with it.
 //
-// Page 'draws' (an op with no /manage action declares its page: .claude/rules/operation-core.md). Who may press the owner's buttons is checked at the route (utils/adminAccess.js isOwner); these tiers are what commitSet and /bot analytics' Revert check.
+// Page 'draws' (an op with no /manage action declares its page: .claude/rules/operation-core.md). Who may press the owner's buttons is checked at the route (utils/adminAccess.js isOwner).
+// 🔒 add, update and delete are OWNER ONLY INSIDE apply() too (commit security review, 2026-11-16 12:27 EST): a Revert replays an op's inverse as whoever pressed Revert (/bot analytics' Changes, or the panel's own Revert), and checkRevert checks only the page's tier, so an admin with the draws tier could otherwise delete an owner-uploaded entry by reverting its add, or re-add a deleted one. apply() runs on every path, fresh or Revert, so the check sits there once.
 const { registerEntity } = require('./index');
 const DrawCatalog = require('../../models/DrawCatalog');
 
@@ -18,6 +19,8 @@ const DOC = { docType: 'global' };
 const ROW_PATHS = ['newDraws', 'returningDraws', 'draft.newDraws', 'draft.returningDraws'];
 const UPDATE_FIELDS = ['imageUrl', 'publicId', 'items', 'title', 'aliases', 'priceType', 'releaseSeason', 'releaseYear', 'comments'];
 
+const isOwner = (id) => require('../../utils/adminAccess').isOwner(id);
+const OWNER_ONLY = { ok: false, reason: 'only the bot owner can change the draw index this way' };
 const cleanAliases = (list) => [...new Set((list || []).map(a => String(a).trim()).filter(Boolean))].slice(0, 20);
 function seasonOk(n) { return n === null || (Number.isInteger(Number(n)) && Number(n) >= 1 && Number(n) <= 999); }
 const TIERS = new Set(['mythic', 'legendary', 'epic']);
@@ -100,7 +103,8 @@ registerEntity('drawindex', {
             return errors.length ? { ok: false, errors } : { ok: true, errors: [], normalized: { ...op, payload: { ...p, aliases: cleanAliases(p.aliases) } } };
         },
         preview: async (op) => ({ before: null, after: op.payload.restore || op.payload }),
-        apply: async (op, { session }) => {
+        apply: async (op, { session, actorId }) => {
+            if (!isOwner(actorId)) return OWNER_ONLY;
             const p = op.payload;
             const slug = p.restore ? p.restore.slug : p.slug;
             if (await DrawCatalog.findOne({ slug }).session(session).lean()) return { ok: false, reason: `the draw index already has an entry at "${slug}"` };
@@ -145,7 +149,8 @@ registerEntity('drawindex', {
             const cur = await DrawCatalog.findById(op.target.id).lean();
             return { before: cur ? Object.fromEntries(Object.keys(op.payload.set).map(k => [k, cur[k]])) : null, after: op.payload.set };
         },
-        apply: async (op, { session }) => {
+        apply: async (op, { session, actorId }) => {
+            if (!isOwner(actorId)) return OWNER_ONLY;
             const cur = await DrawCatalog.findById(op.target.id).session(session).lean();
             if (!cur) return { ok: false, reason: 'missing' };
             const set = { ...op.payload.set };
@@ -171,7 +176,8 @@ registerEntity('drawindex', {
         page: 'draws', tier: 2,
         validate: (op) => (op.target?.id ? { ok: true, errors: [], normalized: op } : { ok: false, errors: ['No draw index entry was picked.'] }),
         preview: async (op) => ({ before: await DrawCatalog.findById(op.target.id).lean(), after: null }),
-        apply: async (op, { session }) => {
+        apply: async (op, { session, actorId }) => {
+            if (!isOwner(actorId)) return OWNER_ONLY;
             const cur = await DrawCatalog.findById(op.target.id).session(session).lean();
             if (!cur) return { ok: false, reason: 'missing' };
             await DrawCatalog.deleteOne({ _id: cur._id }, { session });
