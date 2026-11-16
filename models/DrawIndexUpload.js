@@ -41,6 +41,11 @@ const pictureSchema = new mongoose.Schema({
     flags: { type: [String], default: [] },
     skip: { type: Boolean, default: false },
     keepOldPicture: { type: Boolean, default: false },
+    // The black logo bar at the bottom (utils/drawPictureBar.js): its height in pixels on the uploaded picture (0 = none found), the picture's size, and whether Save crops it (on when found; Keep Bottom Bar turns it off). Harkirat 2026-11-16 12:47 EST: "some do, some don't but it is common".
+    barPx: { type: Number, default: 0 },
+    imgWidth: { type: Number, default: 0 },
+    imgHeight: { type: Number, default: 0 },
+    cropBar: { type: Boolean, default: false },
     savedTitle: { type: String, default: '' },
 }, { _id: false });
 

@@ -271,14 +271,17 @@ async function route(interaction, verb, a, b, c, ctx) {
         try { file = [...(interaction.fields.getUploadedFiles('pic')?.values() || [])][0] || null; } catch { file = null; }
         if (!file?.url) return say(interaction, `${emojis.cross} No picture came through. Nothing was changed.`);
         await interaction.deferUpdate();
-        const up = await require('../../../utils/drawIndexPicture').uploadPicture({ slug: e.slug, sourceUrl: file.url, doc: e, previousTags: e.tags || [] });
+        // The logo bar is found and cropped here too (utils/drawPictureBar.js); a picture that cannot be read has none.
+        let crop = null;
+        try { const img = await require('../../../utils/drawIndexRead').fetchImage(file.url); const m = await require('../../../utils/drawPictureBar').measure(img.buffer); if (m.bar) crop = m; } catch { crop = null; }
+        const up = await require('../../../utils/drawIndexPicture').uploadPicture({ slug: e.slug, sourceUrl: file.url, doc: e, previousTags: e.tags || [], crop });
         if (!up.ok) return say(interaction, `${emojis.cross} The picture didn't upload (${up.error}). Nothing was changed.`);
         const rows = require('./drawIndexUpload').rowsToRepoint(await getDoc(), e, up.url);
         const result = await require('../../../core/changeset').commitSet([{ type: 'drawindex.update', target: { id: String(e._id) }, payload: { set: { imageUrl: up.url, publicId: up.publicId }, rows } }], { actorId: interaction.user.id });
         if (!result.ok) return say(interaction, `${emojis.cross} The picture uploaded, but the index was not updated: ${require('../shared').extractCommitError(result)}`);
         const rev = ID('ixrevert', result.changeIds.join(','), a, b || '');
         const resultRow = rev.length <= 100 ? row({ type: 2, style: 4, label: 'Revert', custom_id: rev, emoji: emojis.parseEmoji(emojis.keep) }) : null;
-        return show(interaction, cardView(await findEntry(a) || e, await getDoc(), b || '', { header: `### ${emojis.checkmark} Picture replaced${rows.length ? ` · ${plural(rows.length, 'draw')} now use it` : ''}\n-# Revert puts the index back; the old picture itself is not kept.`, resultRow, owner }));
+        return show(interaction, cardView(await findEntry(a) || e, await getDoc(), b || '', { header: `### ${emojis.checkmark} Picture replaced${rows.length ? ` · ${plural(rows.length, 'draw')} now use it` : ''}${crop ? ` · logo bar cropped (${crop.bar}px)` : ''}\n-# Revert puts the index back; the old picture itself is not kept.`, resultRow, owner }));
     }
     if (verb === 'ixdel') {
         const e = await findEntry(a);

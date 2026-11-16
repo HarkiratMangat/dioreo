@@ -223,13 +223,15 @@ async function fetchImage(url) {
     if (!/^image\//i.test(type)) throw new Error('That file is not a picture.');
     const buf = Buffer.from(await res.arrayBuffer());
     if (buf.length > MAX_IMAGE_BYTES) throw new Error('That picture is over 15 MB.');
-    return { type, data: buf.toString('base64'), bytes: buf.length };
+    return { type, data: buf.toString('base64'), bytes: buf.length, buffer: buf };
 }
 
 // One picture -> { read, usage } or throws. One retry after a timeout, a 429 or a 5xx, as news triage does.
 async function readPicture(url, { generate } = {}) {
     const vertexGenerate = generate || require('./visionExtract').vertexGenerate;
     const img = await fetchImage(url);
+    // The logo bar many posters carry at the bottom (utils/drawPictureBar.js), measured on the same bytes, so Save can crop it off.
+    const picture = await require('./drawPictureBar').measure(img.buffer);
     const parts = [{ text: PROMPT }, { inline_data: { mime_type: img.type, data: img.data } }];
     const call = () => vertexGenerate(parts, { taskName: 'draw_index_upload', timeoutMs: 120 * 1000, thinkingLevel: 'low', responseSchema: SCHEMA, withUsage: true });
     let res;
@@ -239,7 +241,7 @@ async function readPicture(url, { generate } = {}) {
         await new Promise(r => setTimeout(r, 3000));
         res = await call();
     }
-    return { read: shapeRead(res.parsed), usage: res.usage || {}, location: res.location };
+    return { read: shapeRead(res.parsed), usage: res.usage || {}, location: res.location, picture };
 }
 
 // Dollars for the reads, from the token counts (utils/visionExtract.js's own price table). `reads` is [{ usage, location }].

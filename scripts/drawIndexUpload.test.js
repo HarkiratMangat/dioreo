@@ -254,6 +254,37 @@ function limits(view, label) {
         }
     });
 
+    await check('the logo bar: found and measured on the template, never on dark art or a clean bottom', () => {
+        const { bottomBar } = require('../utils/drawPictureBar');
+        // A 1080x1350 poster drawn in memory: art (mid grey) everywhere, then optionally an 89-row black bar with a lit strip in its middle where the logos sit.
+        const make = ({ bar = 0, logo = true, darkArt = false } = {}) => {
+            const width = 1080, height = 1350, data = Buffer.alloc(width * height * 4);
+            for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+                const i = (y * width + x) * 4; const k = height - 1 - y;
+                let v = darkArt && k < 200 ? 10 : 90;
+                if (k < bar) v = 4;
+                if (k < bar && logo && k >= 28 && k <= 56 && x > 420 && x < 660 && (x % 7 === 0)) v = 230;
+                data[i] = data[i + 1] = data[i + 2] = v; data[i + 3] = 255;
+            }
+            return { width, height, data };
+        };
+        assert.strictEqual(bottomBar(make({ bar: 89 })), 89, 'the bar is found at its real height');
+        assert.strictEqual(bottomBar(make({ bar: 89, darkArt: true })), 89, 'dark art above the bar is not cut with it');
+        assert.strictEqual(bottomBar(make()), 0, 'a clean bottom has no bar');
+        assert.strictEqual(bottomBar(make({ darkArt: true })), 0, 'dark art at the bottom is not a bar');
+        assert.strictEqual(bottomBar(make({ bar: 89, logo: false, darkArt: false })), 0, 'a black band with no logos is not the bar');
+    });
+
+    await check('the review shows the bar, crops it by default and offers Keep Bottom Bar; the save crops only when on', () => {
+        const pic = { url: 'https://cdn.discordapp.com/x.png', status: 'read', title: 'X', items: [{ tier: 'legendary', name: 'A', kind: 'weapon' }], priceType: 'mythicWeapon', matchStatus: 'none', flags: [], barPx: 89, imgWidth: 1080, imgHeight: 1350, cropBar: true };
+        const doc = { _id: 'tok', pictures: [pic] };
+        const w = walk(U.reviewView(doc, 0));
+        assert.ok(w.ids.some(id => /\|ixvbar\|/.test(id)));
+        assert.ok(JSON.stringify(U.reviewView(doc, 0)).includes('cropped off on save'));
+        doc.pictures[0].cropBar = false;
+        assert.ok(JSON.stringify(U.reviewView(doc, 0)).includes('Crop Bottom Bar'));
+    });
+
     console.log(failed ? `\n${failed} check(s) FAILED.` : '\nAll draw index upload checks passed.');
     process.exit(failed ? 1 : 0);
 })();

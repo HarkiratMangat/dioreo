@@ -106,10 +106,10 @@ async function readAll(files, { names, season, year }) {
     const pictures = await Promise.all(files.map(async (f, i) => {
         const base = { url: f.url, filename: String(f.name || '').slice(0, 100) };
         try {
-            const { read, usage, location } = await R().readPicture(f.url);
+            const { read, usage, location, picture } = await R().readPicture(f.url);
             usages.push({ usage, location });
             const d = R().decideDraw(read, { entries, weaponNames, name: names[i] || '', season, year });
-            return toPicture(base, d);
+            return { ...toPicture(base, d), barPx: picture?.bar || 0, imgWidth: picture?.width || 0, imgHeight: picture?.height || 0, cropBar: Boolean(picture?.bar) };
         } catch (err) {
             return { ...base, status: 'failed', error: String(err?.message || err).slice(0, 200) };
         }
@@ -174,6 +174,7 @@ function reviewView(doc, n = 0, note = null) {
             itemsTxt.length ? itemsTxt.join('\n') : `-# ${emojis.warn} No items read.`,
             ...(p.comments?.length ? [p.comments.map(c => `-# ${String(c).slice(0, 150)}`).join('\n')] : []),
             `-# ${[p.priceType ? typeName(p.priceType) : `${emojis.warn} Pick its draw type`, season].filter(Boolean).join(' · ')}${p.snapped?.length ? `\n-# Names matched to the index: ${p.snapped.join(', ').slice(0, 200)}` : ''}`,
+            ...(p.barPx ? [`-# ${p.cropBar ? `${emojis.checkmark} The logo bar at the bottom (${p.barPx}px) is cropped off on save` : 'The logo bar at the bottom is kept'}`] : []),
         ].join('\n').slice(0, 3800)));
         if (!p.skip) {
             const { DRAW_TYPES } = require('../../../utils/drawTypes');
@@ -183,6 +184,7 @@ function reviewView(doc, n = 0, note = null) {
         components.push(row(
             btn(['ixvedit', t, i], 'Edit', emojis.edit),
             ...(isUpdate(p) && !p.skip ? [btn(['ixvkeep', t, i], p.keepOldPicture ? 'Use This Picture' : 'Keep Old Picture', emojis.keep)] : []),
+            ...(p.barPx && !p.skip && !p.keepOldPicture ? [btn(['ixvbar', t, i], p.cropBar ? 'Keep Bottom Bar' : 'Crop Bottom Bar', emojis.edit)] : []),
             btn(['ixvskip', t, i], p.skip ? 'Include' : 'Skip', emojis.collapse),
         ));
     }
@@ -231,6 +233,8 @@ function rowsToRepoint(seasonDoc, entry, newUrl) {
     return out;
 }
 
+const cropOf = (p) => (p.cropBar && p.barPx ? { width: p.imgWidth, height: p.imgHeight, bar: p.barPx } : null);
+
 // One picture -> its op (or { error }). Uploads the picture first unless it keeps the old one. Never throws.
 async function planPicture(p, doc, entries, seasonDoc) {
     const { slugify } = require('../../../utils/cloudinaryCache');
@@ -253,7 +257,7 @@ async function planPicture(p, doc, entries, seasonDoc) {
         let rows = [];
         if (!p.keepOldPicture) {
             const merged = { ...entry, ...set, items: set.items || entry.items };
-            const up = await uploadPicture({ slug: entry.slug, sourceUrl: p.url, doc: merged, previousTags: entry.tags || [] });
+            const up = await uploadPicture({ slug: entry.slug, sourceUrl: p.url, doc: merged, previousTags: entry.tags || [], crop: cropOf(p) });
             if (!up.ok) return { error: `the picture didn't upload (${up.error})` };
             set.imageUrl = up.url; set.publicId = up.publicId;
             rows = rowsToRepoint(seasonDoc, entry, up.url);
@@ -264,7 +268,7 @@ async function planPicture(p, doc, entries, seasonDoc) {
     const slug = slugify(p.title);
     if (entries.some(e => e.slug === slug)) return { error: `the index already has an entry named "${p.title}"; answer Same Draw on it or rename this one` };
     const base = { title: p.title, items: p.items, priceType: p.priceType, comments: p.comments || [], tags: [], ...(doc.season ? { releaseSeason: doc.season, releaseYear: doc.year || new Date().getUTCFullYear() } : {}) };
-    const up = await uploadPicture({ slug, sourceUrl: p.url, doc: base, inserted: true });
+    const up = await uploadPicture({ slug, sourceUrl: p.url, doc: base, inserted: true, crop: cropOf(p) });
     if (!up.ok) return { error: `the picture didn't upload (${up.error})` };
     return {
         op: { type: 'drawindex.add', payload: { slug, title: p.title, publicId: up.publicId, imageUrl: up.url, items: p.items.map(({ tier, kind, name, baseName, skinName }) => ({ tier, kind, name, baseName, skinName })), comments: p.comments || [], aliases: p.aliases || [], priceType: p.priceType, ...(doc.season ? { releaseSeason: doc.season, releaseYear: doc.year || undefined } : {}) } },
@@ -335,6 +339,7 @@ async function route(interaction, verb, a, b, c, ctx) {
     }
     if (verb === 'ixvskip') { await save(a, { [`pictures.${n}.skip`]: !p?.skip }); return redraw(); }
     if (verb === 'ixvkeep') { await save(a, { [`pictures.${n}.keepOldPicture`]: !p?.keepOldPicture }); return redraw(); }
+    if (verb === 'ixvbar') { await save(a, { [`pictures.${n}.cropBar`]: !p?.cropBar }); return redraw(); }
     if (verb === 'ixvsame') { await save(a, { [`pictures.${n}.sameDraw`]: c === 'y' }); return redraw(); }
     if (verb === 'ixvedit') return p ? interaction.showModal(editModal(p, a, n)) : expired();
     if (verb === 'ixvem' && interaction.isModalSubmit?.()) {
