@@ -51,7 +51,8 @@ function uploadModal({ origin = 'p', card = '', names = '' } = {}) {
     // (label, description, component): the description second, as every call below writes it.
     const label = (lab, description, component) => ({ type: 18, label: lab, ...(description ? { description } : {}), component });
     return {
-        custom_id: ID('ixupm', origin, card), title: 'Upload Draws',
+        // A fresh id each time it opens: Discord keeps what was typed into a pop-up closed with Esc and refills the next one with the same id, which put one search's names into an unrelated upload (the click test, 2026-11-16 17:18 EST).
+        custom_id: ID('ixupm', origin, card, Date.now().toString(36)), title: 'Upload Draws',
         components: [
             label('Pictures', `Up to ${MAX_PICTURES} draw posters or screenshots, one draw each`, { type: 19, custom_id: 'pics', min_values: 1, max_values: MAX_PICTURES, required: true }),
             label('Season', 'Only for draws NEW this season: their release season. Blank leaves it unset.', { type: 4, custom_id: 'season', style: 1, required: false, max_length: 12, placeholder: 'Season 10' }),
