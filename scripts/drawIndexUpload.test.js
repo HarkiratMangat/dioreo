@@ -321,6 +321,14 @@ function limits(view, label) {
         assert.ok(U.uploadModal({ origin: 'P' }).custom_id.includes('|ixupm|P|'), 'a public do:Upload Draws carries P in its pop-up id');
     });
 
+    await check('the result names every picture that was not saved, including the ones the plans never saw', () => {
+        const doc = { _id: 't', pictures: [{ status: 'read', title: 'A' }, { status: 'failed', error: 'That file is not a picture.' }, { status: 'read', skip: true, sameAs: 0 }, { status: 'read', skip: true, flags: ['notDraw'] }] };
+        const json = JSON.stringify(U.resultView(doc, [{ i: 0, op: { type: 'drawindex.add', payload: {} }, title: 'A' }], [{ op: { type: 'drawindex.add', payload: {} }, title: 'A' }], { ok: true, changeIds: [] }));
+        assert.ok(/Picture 2: couldn't be read/.test(json), 'a failed read is named');
+        assert.ok(/Picture 3: skipped, the same draw as picture 1/.test(json), 'a duplicate skip is named with its reason');
+        assert.ok(/Picture 4: skipped, this doesn't look like a draw/.test(json), 'a not-a-draw skip is named with its reason');
+    });
+
     console.log(failed ? `\n${failed} check(s) FAILED.` : '\nAll draw index upload checks passed.');
     process.exit(failed ? 1 : 0);
 })();

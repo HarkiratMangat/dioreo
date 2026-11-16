@@ -56,7 +56,8 @@ function homeView(entries, doc, note = null, { owner = false } = {}) {
         ...(owner ? [text('-# Add or update draws from their posters. The bot reads each one and tags it; you check it before it saves.'), row(btn('ixup', 'Upload Draws', emojis.plus, 1)), BIG()] : []),
         text('-# Find an entry…'),
         row(btn('ixcheck', 'Check Names', emojis.checkIndex || emojis.pasteImport, 1), btn('ixfind', 'Search the Index', emojis.search, 2, !entries.length)),
-        { type: 1, components: [{ type: 3, custom_id: ID('ixgaps'), placeholder: 'Or list the entries with a gap…', options: Object.entries(GAPS).map(([value, g]) => ({ value, label: `${g.label} · ${n(value)}`, emoji: emojis.parseEmoji(value === 'all' ? V.indexEmoji() : emojis.warn) })) }] },
+        // A warning only where something is missing; a gap list with nothing in it gets a checkmark.
+        { type: 1, components: [{ type: 3, custom_id: ID('ixgaps'), placeholder: 'Or list the entries with a gap…', options: Object.entries(GAPS).map(([value, g]) => ({ value, label: `${g.label} · ${n(value)}`, emoji: emojis.parseEmoji(value === 'all' ? V.indexEmoji() : n(value) ? emojis.warn : emojis.checkmark) })) }] },
         BIG(),
         row(V.homeBtn()),
     );
@@ -111,7 +112,7 @@ function cardView(e, doc, origin = '', { header = null, resultRow = null, owner 
         ...((e.items || []).some(i => !i.kind) ? [btn(['ixkinds', String(e._id)], 'Set Item Kinds', emojis.edit)] : []),
         ...(!place.live && !place.draft ? [btn(['ixqa', String(e._id)], 'Quick Add This Draw', emojis.plus, 3)] : []),
     ));
-    if (owner) components.push(row(btn(['ixpic', String(e._id), origin], 'Replace Picture', emojis.edit), btn(['ixdel', String(e._id), origin], 'Delete Entry', emojis.deleteBin, 4)));
+    if (owner) components.push(row(btn(['ixpic', String(e._id), origin], 'Replace Picture', emojis.mngBulkReplace), btn(['ixdel', String(e._id), origin], 'Delete Entry', emojis.deleteBin, 4)));
     return panel(components);
 }
 

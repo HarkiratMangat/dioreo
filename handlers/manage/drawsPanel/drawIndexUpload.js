@@ -66,8 +66,9 @@ function editModal(p, token, n) {
         custom_id: ID('ixvem', token, n), title: `Edit Picture ${n + 1}`,
         components: [
             label('Title', null, { type: 4, custom_id: 'title', style: 1, required: true, max_length: 90, value: String(p.title || '').slice(0, 90) || undefined }),
-            label('Items', 'One per line: rarity, name, (kind). Legendary QQ9 - Moonlight (weapon)', { type: 4, custom_id: 'items', style: 2, required: true, max_length: 2000, value: itemsToText(p.items).slice(0, 2000) || undefined }),
-            label('Other names', 'One per line', { type: 4, custom_id: 'aka', style: 2, required: false, max_length: 800, ...(p.aliases?.length ? { value: p.aliases.join('\n') } : {}) }),
+            // The same words and examples as the card's Edit Entry (handlers/manage/drawsPanel/drawIndex.js editModal), so the two pop-ups read alike.
+            label('Items', 'One per line: rarity, name, (kind).', { type: 4, custom_id: 'items', style: 2, required: true, max_length: 2000, value: itemsToText(p.items).slice(0, 2000) || undefined, placeholder: 'Legendary QQ9 - Moonlight (weapon)' }),
+            label('Other names', 'One per line: names this draw also ran under. Quick Add and Check Names find it by these.', { type: 4, custom_id: 'aka', style: 2, required: false, max_length: 800, ...(p.aliases?.length ? { value: p.aliases.join('\n') } : {}), placeholder: 'Pop Idol Draw' }),
         ],
     };
 }
@@ -177,15 +178,17 @@ function reviewView(doc, n = 0, note = null) {
     if (p.status === 'failed') {
         components.push(text(`### ${emojis.cross} Picture ${i + 1} couldn't be read\n-# ${p.filename || 'upload'} · ${p.error || 'unknown error'}`));
         // A file that is not a picture has nothing to show (the click test: Discord drew "Image failed to load").
-        if (!/not a picture/i.test(p.error || '')) components.push({ type: 12, items: [{ media: { url: p.url } }] });
-        components.push(row(btn(['ixvretry', t, i], 'Read Again', emojis.search, 1), btn(['ixvskip', t, i], p.skip ? 'Include' : 'Skip', p.skip ? emojis.plus : emojis.diffMinus)));
+        // Nor anything to read again: Read Again is only offered where a second read could succeed.
+        const notPicture = /not a picture/i.test(p.error || '');
+        if (!notPicture) components.push({ type: 12, items: [{ media: { url: p.url } }] });
+        components.push(row(...(notPicture ? [] : [btn(['ixvretry', t, i], 'Read Again', emojis.search, 1)]), btn(['ixvskip', t, i], p.skip ? 'Include' : 'Skip', p.skip ? emojis.plus : emojis.diffMinus)));
     } else if (p.status === 'saved') {
         components.push(text(`### ${emojis.checkmark} Saved: ${p.savedTitle || p.title}`));
         components.push({ type: 12, items: [{ media: { url: p.url } }] });
     } else {
         components.push({ type: 12, items: [{ media: { url: p.url } }] });
         const what = p.skip
-            ? (p.sameAs !== null && p.sameAs !== undefined ? `Skipped: the same draw as picture ${p.sameAs + 1}` : p.flags?.includes('notDraw') ? `Skipped: this doesn't look like a draw` : p.flags?.includes('manyDraws') ? 'Skipped: this picture shows more than one draw. Upload one draw per picture' : 'Skipped')
+            ? `Skipped${skipReason(p) ? `: ${skipReason(p)}` : ''}`
             : isUpdate(p) ? `Updates **${p.matchTitle}**${p.added ? ` · +${plural(p.added, 'item')}` : ''}${p.keepOldPicture ? ' · keeps its picture' : ' · replaces its picture (the old one is not kept)'}`
                 : p.matchStatus === 'maybe' && p.sameDraw === null ? `${emojis.warn} Maybe the same draw as **${p.matchTitle}**`
                     : 'New entry';
@@ -211,7 +214,7 @@ function reviewView(doc, n = 0, note = null) {
         components.push(row(
             btn(['ixvedit', t, i], 'Edit', emojis.edit),
             ...(isUpdate(p) && !p.skip ? [btn(['ixvkeep', t, i], p.keepOldPicture ? 'Use This Picture' : 'Keep Old Picture', emojis.keep)] : []),
-            ...(p.barPx && !p.skip && !p.keepOldPicture ? [btn(['ixvbar', t, i], p.cropBar ? 'Keep Bottom Bar' : 'Crop Bottom Bar', emojis.edit)] : []),
+            ...(p.barPx && !p.skip && !p.keepOldPicture ? [btn(['ixvbar', t, i], p.cropBar ? 'Keep Bottom Bar' : 'Crop Bottom Bar', p.cropBar ? emojis.expand : emojis.collapse)] : []),
             btn(['ixvskip', t, i], p.skip ? 'Include' : 'Skip', p.skip ? emojis.plus : emojis.diffMinus),
         ));
     }
@@ -434,9 +437,18 @@ async function route(interaction, verb, a, b, c, ctx) {
     return false;
 }
 
+// Why a picture was skipped, shared by its review page and the result screen.
+function skipReason(p) {
+    if (p.sameAs !== null && p.sameAs !== undefined) return `the same draw as picture ${p.sameAs + 1}`;
+    if (p.flags?.includes('notDraw')) return "this doesn't look like a draw";
+    if (p.flags?.includes('manyDraws')) return 'this picture shows more than one draw. Upload one draw per picture';
+    return '';
+}
+
 function resultView(doc, plans, ops, result) {
-    const failed = plans.filter(x => x.error);
-    const skipped = plans.filter(x => x.skip);
+    // Every picture that did not become a save is named after the list: failed uploads and "nothing new" from the plans, and the pictures the plans never saw (a read that failed, a skip on the review). The click test, 2026-11-16 14:54 EST: the plans alone held only the included pictures, so a batch of seven reported "Saved 3" and said nothing about the other four.
+    const failed = [...plans.filter(x => x.error), ...(doc.pictures || []).map((p, i) => ({ i, p })).filter(({ p }) => p.status === 'failed' && !p.skip).map(({ i, p }) => ({ i, error: `couldn't be read (${p.error || 'unknown error'})` }))].sort((x, y) => x.i - y.i);
+    const skipped = [...plans.filter(x => x.skip), ...(doc.pictures || []).map((p, i) => ({ i, p })).filter(({ p }) => p.skip).map(({ i, p }) => ({ i, skip: `skipped${skipReason(p) ? `, ${skipReason(p)}` : ''}` }))].sort((x, y) => x.i - y.i);
     const lines = [];
     if (!result.ok) lines.push(`### ${emojis.cross} Nothing was saved\n-# ${require('../shared').extractCommitError(result)}${ops.length ? '\n-# The pictures were already uploaded; a replaced picture stays replaced.' : ''}`);
     else {
@@ -445,7 +457,7 @@ function resultView(doc, plans, ops, result) {
     }
     const after = [];
     if (failed.length) after.push(`${emojis.warn} Not saved:\n${failed.map(x => `-# Picture ${x.i + 1}: ${x.error}`).join('\n')}`);
-    if (skipped.length) after.push(`-# ${skipped.map(x => `Picture ${x.i + 1}: ${x.skip}`).join(' · ')}`);
+    if (skipped.length) after.push(skipped.map(x => `-# Picture ${x.i + 1}: ${x.skip}`).join('\n'));
     const changeIds = result.changeIds || [];
     // The batch stays a day so Revert can find its changes; the change ids ride on it, not in the custom_id (ten of them would pass 100 characters).
     require('../../../models/DrawIndexUpload').updateOne({ _id: doc._id }, { $set: { savedChangeIds: changeIds } }).catch(() => {});
