@@ -299,6 +299,16 @@ function limits(view, label) {
         }
     });
 
+    await check('two included pictures of one draw block the save until one is skipped (two adds of one title would fail the whole commit)', () => {
+        const pic = (over) => ({ status: 'read', title: 'Augmented Eclipse Draw', items: [{ tier: 'legendary', name: 'A' }], priceType: 'mythicWeapon', matchStatus: 'none', flags: [], ...over });
+        const doc = { pictures: [pic({}), pic({ skip: true, sameAs: 0 })] };
+        assert.deepStrictEqual(U.blockers(doc.pictures[0], doc), [], 'a skipped duplicate blocks nothing');
+        doc.pictures[1].skip = false;
+        assert.ok(U.blockers(doc.pictures[1], doc).some(b => /same draw as picture 1/.test(b)), 'Include on the duplicate blocks');
+        const upd = { pictures: [pic({ matchStatus: 'sure', matchId: 'e1', title: 'Lethal Pair Draw' }), pic({ matchStatus: 'maybe', matchId: 'e1', sameDraw: true, title: 'Pair Lethal Draw' })] };
+        assert.ok(U.blockers(upd.pictures[1], upd).length, 'a Same Draw yes onto an entry another picture updates blocks');
+    });
+
     console.log(failed ? `\n${failed} check(s) FAILED.` : '\nAll draw index upload checks passed.');
     process.exit(failed ? 1 : 0);
 })();

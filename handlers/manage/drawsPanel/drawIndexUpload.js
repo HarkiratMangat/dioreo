@@ -130,10 +130,22 @@ function toPicture(base, d) {
     };
 }
 
-// ---------- what a picture still needs before it can be saved ---------- Pure.
-function blockers(p) {
+// ---------- what a picture still needs before it can be saved ---------- Pure. `doc` (the batch) adds the cross-picture check.
+// Two included pictures that land on the same entry or the same new title would write one draw twice in one commit (two adds of one slug fail the whole save), so that blocks until one is skipped (think-pass before the full click test, 2026-11-16 13:11 EST: Include on a skipped duplicate, or a "Same Draw" yes onto an entry another picture updates, reached it).
+function targetKey(p) {
+    if (p.matchStatus === 'sure' && p.matchId) return `id:${p.matchId}`;
+    if (p.matchStatus === 'maybe' && p.sameDraw === true && p.matchId) return `id:${p.matchId}`;
+    return p.title ? `slug:${require('../../../utils/cloudinaryCache').slugify(p.title)}` : null;
+}
+function blockers(p, doc = null) {
     if (p.skip || p.status !== 'read') return [];
     const out = [];
+    if (doc) {
+        const me = doc.pictures.indexOf(p);
+        const key = targetKey(p);
+        const twin = key ? doc.pictures.findIndex((q, j) => j !== me && q.status === 'read' && !q.skip && targetKey(q) === key) : -1;
+        if (twin !== -1) out.push(`a skip: it is the same draw as picture ${twin + 1}`);
+    }
     if (!String(p.title || '').trim()) out.push('a title');
     if (!(p.items || []).length) out.push('its items');
     if (p.matchStatus === 'maybe' && p.sameDraw === null) out.push(`an answer to "Same draw as ${p.matchTitle}?"`);
@@ -196,8 +208,8 @@ function reviewView(doc, n = 0, note = null) {
         { type: 2, style: 2, custom_id: ID('ixvv', t, i + 1), emoji: emojis.parseEmoji(emojis.right), disabled: i === total - 1 },
     ));
     components.push(BIG(), text(saveLine(doc)));
-    const ready = included(doc).filter(x => !blockers(x).length);
-    const anyBlocked = included(doc).some(x => blockers(x).length);
+    const ready = included(doc).filter(x => !blockers(x, doc).length);
+    const anyBlocked = included(doc).some(x => blockers(x, doc).length);
     components.push(row(
         btn(['ixvcancel', t], 'Cancel', emojis.returnArrow),
         // A button that can't act yet is not drawn as a disabled green one (2026-11-11 round-2 rule); the line above says what is missing.
@@ -212,7 +224,7 @@ function saveLine(doc) {
     const skipped = doc.pictures.filter(p => p.status === 'read' && p.skip).length;
     const failed = doc.pictures.filter(p => p.status === 'failed').length;
     const parts = [inc.length ? `${plural(inc.length, 'draw')} to save (${fresh} new, ${upd} updated)` : 'Nothing to save yet', skipped ? `${skipped} skipped` : null, failed ? `${emojis.warn} ${failed} not read` : null, doc.costUsd ? `read for $${doc.costUsd.toFixed(3)}` : null].filter(Boolean);
-    const blocked = doc.pictures.map((p, i) => ({ i, b: blockers(p) })).filter(x => x.b.length);
+    const blocked = doc.pictures.map((p, i) => ({ i, b: blockers(p, doc) })).filter(x => x.b.length);
     return `-# ${parts.join(' · ')}${blocked.length ? `\n-# ${emojis.warn} Before saving: ${blocked.map(x => `picture ${x.i + 1} needs ${x.b.join(' and ')}`).join('; ').slice(0, 600)}` : ''}`;
 }
 
@@ -374,8 +386,8 @@ async function route(interaction, verb, a, b, c, ctx) {
         return show(interaction, IX.homeView(await loadEntries(), await ctx.getDoc(), `${emojis.info} Upload cancelled. Nothing was saved.`, { owner: true }));
     }
     if (verb === 'ixvsave') {
-        const blockedAt = doc.pictures.findIndex(x => blockers(x).length);
-        if (blockedAt !== -1) return redraw(`${emojis.warn} Picture ${blockedAt + 1} still needs ${blockers(doc.pictures[blockedAt]).join(' and ')}.`, blockedAt);
+        const blockedAt = doc.pictures.findIndex(x => blockers(x, doc).length);
+        if (blockedAt !== -1) return redraw(`${emojis.warn} Picture ${blockedAt + 1} still needs ${blockers(doc.pictures[blockedAt], doc).join(' and ')}.`, blockedAt);
         await interaction.deferUpdate();
         const { sendV2Payload } = require('../../../utils/sendV2Payload');
         await sendV2Payload(interaction, panel([text(`-# Draws  ›  Draw Index  ›  Upload\n### ${emojis.plus} Saving ${plural(included(doc).length, 'draw')}…\n-# Uploading the pictures, then the index.`)]), { skipExpiry: true });
