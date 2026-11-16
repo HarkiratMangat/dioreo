@@ -26,6 +26,8 @@ async function uploadPicture({ slug, sourceUrl, doc, previousTags = [], inserted
             overwrite: true,
             invalidate: true,
             resource_type: 'image',
+            // Stored at most 2048px on its long side (2026-11-16 12:41 EST, his question "what about the image that's stored and presented? its file size"): measured over the 106 pictures already in draws/, the median is 1080 wide and 296 KB, the 90th percentile 2048 wide, and the largest 3840 wide at 2.8 MB. Discord never shows a draw wider than about 550px, and players get it through f_auto,q_auto (WebP or AVIF, compressed) whatever is stored, so the cap only stops a 4K screenshot sitting in the account at full size. The format is kept.
+            transformation: [{ width: 2048, height: 2048, crop: 'limit' }],
             tags: [...new Set([...meta.tags, ...plan.addTags])],
             context: contextPairs,
         });
