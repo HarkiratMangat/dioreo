@@ -1,4 +1,4 @@
-// utils/drawPictureHold.js -- keeps a draw index picture for 7 days when Upload Draws or Replace Picture overwrites it, so a Revert can put it back.
+// utils/drawPictureHold.js -- keeps a draw picture for 7 days when Upload Draws, Replace Picture or a /manage draws save overwrites it, so a Revert can put it back.
 //
 // Harkirat 2026-11-16 15:04 EST, "sure go ahead" to holding the old picture (his 2026-10-30 rule was "a new image overrides the previous one, no copy kept"; for the draw index it is now "no copy kept after 7 days"). A replaced picture is overwritten in place at `draws/<slug>`, and Cloudinary keeps no old version: measured 2026-11-16 15:06 EST on the dev namespace, a link carrying the old version number serves the NEW bytes once the CDN fetches it again. So the bytes are copied aside first, to `draws_hold/<slug>-<stamp>` (dev: `dev_draws_hold/`), and a Revert copies them back.
 //
@@ -72,4 +72,31 @@ async function pruneHeld(now = new Date()) {
     }
 }
 
-module.exports = { holdAsset, restorePicture, pruneHeld, holdIdFor, holdFolder, HOLD_DAYS, HOLD_TAG };
+// /manage draws' own overwrite (utils/cloudinaryCache.js cacheThumbnail) runs before the change is saved, sometimes several per save, so its holds wait on the interaction's context until core/changeset.js commitSet writes them onto the change's row (Harkirat, 2026-11-16 18:35 EST: "yes" to the same 7-day hold for /manage draws). The FIRST hold per picture wins: a retried transaction uploads again and would otherwise hold the new picture instead of the old one. No context (a script, the portal) records nothing.
+function noteHold(hold) {
+    const ctx = require('./requestContext').getContext();
+    if (!ctx || !hold?.id || !hold.publicId) return false;
+    ctx.pictureHolds = ctx.pictureHolds || [];
+    if (!ctx.pictureHolds.some(h => h.publicId === hold.publicId)) ctx.pictureHolds.push({ id: hold.id, publicId: hold.publicId });
+    return true;
+}
+function takeHolds() {
+    const ctx = require('./requestContext').getContext();
+    const out = ctx?.pictureHolds || [];
+    if (ctx) ctx.pictureHolds = [];
+    return out;
+}
+// A Revert puts each held picture back, holding the current one first so reverting the Revert works too (core/revert.js). Returns { holds: the new holds, failed: a line per picture that could not come back }.
+async function restoreHolds(holds = []) {
+    const next = [];
+    const failed = [];
+    for (const h of holds) {
+        const now = holdIdFor(h.publicId);
+        const r = await module.exports.restorePicture({ from: h.id, to: h.publicId, holdCurrentAs: now });
+        if (r.ok) next.push({ id: now, publicId: h.publicId });
+        else failed.push(`${String(h.publicId).split('/').pop()}: ${r.error}`);
+    }
+    return { holds: next, failed };
+}
+
+module.exports = { holdAsset, restorePicture, pruneHeld, holdIdFor, holdFolder, noteHold, takeHolds, restoreHolds, HOLD_DAYS, HOLD_TAG };

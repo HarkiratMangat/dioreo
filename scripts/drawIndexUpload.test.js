@@ -362,6 +362,58 @@ function limits(view, label) {
         } finally { catalog.loadCatalog = realLoad; Sel.create = realCreate; }
     });
 
+    await check('/manage draws holds: the first hold per picture wins inside one interaction, takeHolds empties it, and no context records nothing', async () => {
+        const H = require('../utils/drawPictureHold');
+        const { runWithContext } = require('../utils/requestContext');
+        assert.strictEqual(H.noteHold({ id: 'h/a', publicId: 'draws/a' }), false, 'no context, nothing recorded');
+        await runWithContext({}, async () => {
+            H.noteHold({ id: 'h/a-1', publicId: 'draws/a' });
+            H.noteHold({ id: 'h/b-1', publicId: 'draws/b' });
+            H.noteHold({ id: 'h/a-2', publicId: 'draws/a' });
+            assert.deepStrictEqual(H.takeHolds(), [{ id: 'h/a-1', publicId: 'draws/a' }, { id: 'h/b-1', publicId: 'draws/b' }], 'a retried upload does not replace the first hold');
+            assert.deepStrictEqual(H.takeHolds(), [], 'taken once');
+        });
+    });
+
+    await check('/manage draws holds: a Revert restores each held picture, holding the current one, and names one that is gone', async () => {
+        const H = require('../utils/drawPictureHold');
+        const real = H.restorePicture;
+        const calls = [];
+        H.restorePicture = async (a) => { calls.push(a); return a.to === 'draws/gone' ? { ok: false, error: 'kept 7 days and gone now' } : { ok: true }; };
+        try {
+            const r = await H.restoreHolds([{ id: 'draws_hold/a-1', publicId: 'draws/a' }, { id: 'draws_hold/gone-1', publicId: 'draws/gone' }]);
+            assert.strictEqual(calls.length, 2);
+            assert.ok(calls[0].holdCurrentAs && calls[0].from === 'draws_hold/a-1' && calls[0].to === 'draws/a', 'the current picture is held before the old one goes back');
+            assert.deepStrictEqual(r.holds.map(h => h.publicId), ['draws/a'], 'only the restored one carries a new hold');
+            assert.ok(/gone: kept 7 days/.test(r.failed[0]), 'the one past its days is named');
+        } finally { H.restorePicture = real; }
+    });
+
+    await check('the review shows the picture that will be saved: cropped as an attachment, the entry\'s own for Keep Old Picture, the upload otherwise', async () => {
+        const R2 = require('../utils/drawIndexRead');
+        const catalog = require('../utils/drawCatalog');
+        const realFetch = R2.fetchImage, realLoad = catalog.loadCatalog;
+        const { Jimp } = require('jimp');
+        const png = await new Jimp({ width: 40, height: 100, color: 0xffffffff }).getBuffer('image/png');
+        R2.fetchImage = async () => ({ buffer: png });
+        catalog.loadCatalog = async () => [{ _id: 'e1', imageUrl: 'https://res.cloudinary.com/x/image/upload/draws/old.jpg' }];
+        try {
+            const base = { status: 'read', title: 'A Draw', items: [{ tier: 'legendary', name: 'X', kind: 'weapon' }], priceType: 'mythicWeapon', matchStatus: 'sure', matchId: 'e1', matchTitle: 'A Draw', url: 'https://cdn.discordapp.com/attachments/1/2/a.png', barPx: 30 };
+            const doc = (p) => ({ _id: 'tok', pictures: [{ ...base, ...p }] });
+            const crop = await U.reviewPanel(doc({ cropBar: true }));
+            assert.strictEqual(crop.files.length, 1);
+            assert.strictEqual((await Jimp.read(crop.files[0].data)).bitmap.height, 70, 'the bar is cut off');
+            assert.ok(JSON.stringify(crop.components).includes('attachment://crop-0.jpg'));
+            const keep = await U.reviewPanel(doc({ cropBar: true, keepOldPicture: true }));
+            assert.ok(JSON.stringify(keep.components).includes('draws/old.jpg') && !keep.files.length, 'Keep Old Picture shows the entry\'s picture');
+            const plain = await U.reviewPanel(doc({ cropBar: false }));
+            assert.ok(JSON.stringify(plain.components).includes('a.png') && Array.isArray(plain.files) && !plain.files.length, 'Keep Bottom Bar shows the upload, and clears an earlier crop');
+            R2.fetchImage = async () => { throw new Error('expired'); };
+            const fell = await U.reviewPanel(doc({ cropBar: true }));
+            assert.ok(JSON.stringify(fell.components).includes('a.png') && !fell.files.length, 'a failed preview falls back to the upload');
+        } finally { R2.fetchImage = realFetch; catalog.loadCatalog = realLoad; }
+    });
+
     console.log(failed ? `\n${failed} check(s) FAILED.` : '\nAll draw index upload checks passed.');
     process.exit(failed ? 1 : 0);
 })();

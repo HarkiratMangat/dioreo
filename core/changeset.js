@@ -147,6 +147,11 @@ async function commitSet(ops, { actorId, source = 'discord', revertOf = null }) 
             await ChangeLog.updateOne({ changeId: job.changeId }, { $set: { detail: [row && row.detail, detail].filter(Boolean).join(' ') } });
         } catch (e) { console.error(`Could not record a post-commit message on ${job.changeId}: ${e && e.message}`); }
     }
+    // Pictures this save overwrote before committing (utils/cloudinaryCache.js cacheThumbnail holds each for 7 days) go on its first change row, where core/revert.js finds them. A Revert records its own (core/revert.js), so it takes nothing here.
+    const holds = require('../utils/drawPictureHold').takeHolds();
+    if (holds.length && changeIds[0] && !revertOf) {
+        try { await ChangeLog.updateOne({ changeId: changeIds[0] }, { $set: { pictureHolds: holds } }); } catch (e) { console.error(`Could not record the held pictures on ${changeIds[0]}: ${e && e.message}`); }
+    }
     return { ok: true, changeIds, results };
 }
 

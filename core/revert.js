@@ -37,6 +37,16 @@ async function revertChange(changeId, { actorId, source = 'discord' }) {
         await releaseUndo(changeId);
         return { ok: false, reason: result.error || 'The revert could not be applied.' };
     }
+    // Pictures the change overwrote come back (core/changeset.js recorded them). The ones replaced now are held in turn and recorded on this Revert's row, so reverting the Revert restores them again. A picture past its 7 days is named in the row's detail.
+    if (row.pictureHolds?.length && result.changeIds[0]) {
+        const { holds, failed } = await require('../utils/drawPictureHold').restoreHolds(row.pictureHolds);
+        try {
+            const ChangeLog = require('../models/ChangeLog');
+            const mine = await ChangeLog.findOne({ changeId: result.changeIds[0] }).lean();
+            const note = failed.length ? `Picture not restored: ${failed.join('; ')}.` : null;
+            await ChangeLog.updateOne({ changeId: result.changeIds[0] }, { $set: { pictureHolds: holds, ...(note ? { detail: [mine && mine.detail, note].filter(Boolean).join(' ') } : {}) } });
+        } catch (e) { console.error(`Could not record the restored pictures on ${result.changeIds[0]}: ${e && e.message}`); }
+    }
     return { ok: true, changeId: result.changeIds[0] };
 }
 

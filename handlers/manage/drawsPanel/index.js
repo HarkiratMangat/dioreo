@@ -20,12 +20,13 @@ const ManageSelection = () => require('../../../models/ManageSelection');
 const getDoc = () => require('../../../models/SeasonalData').findOne({ docType: 'global' }).lean();
 
 // ---------- answering ----------
-async function show(interaction, components, { ephemeral = true } = {}) {
+// `files`: attachments the panel shows (the upload review's cropped picture); passing it also clears the message's earlier ones (utils/sendV2Payload.js).
+async function show(interaction, components, { ephemeral = true, files } = {}) {
     if (!interaction.deferred && !interaction.replied) {
         if (interaction.isChatInputCommand?.() || (interaction.isModalSubmit?.() && !interaction.message)) await interaction.deferReply({ flags: ephemeral ? 64 : 0 });
         else await interaction.deferUpdate();
     }
-    return sendV2Payload(interaction, components, { skipExpiry: true });
+    return sendV2Payload(interaction, components, { skipExpiry: true, ...(files ? { files } : {}) });
 }
 async function say(interaction, content) {
     try {

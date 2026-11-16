@@ -168,7 +168,7 @@ const isUpdate = (p) => p.matchStatus === 'sure' || (p.matchStatus === 'maybe' &
 const included = (doc) => doc.pictures.filter(p => p.status === 'read' && !p.skip);
 
 // ---------- the review ----------
-function reviewView(doc, n = 0, note = null) {
+function reviewView(doc, n = 0, note = null, { mediaUrl = null } = {}) {
     const pics = doc.pictures;
     const total = pics.length;
     const i = Math.min(Math.max(Number(n) || 0, 0), total - 1);
@@ -188,7 +188,7 @@ function reviewView(doc, n = 0, note = null) {
         components.push(text(`### ${emojis.checkmark} Saved: ${p.savedTitle || p.title}`));
         components.push({ type: 12, items: [{ media: { url: p.url } }] });
     } else {
-        components.push({ type: 12, items: [{ media: { url: p.url } }] });
+        components.push({ type: 12, items: [{ media: { url: mediaUrl || p.url } }] });
         const what = p.skip
             ? `Skipped${skipReason(p) ? `: ${skipReason(p)}` : ''}`
             : isUpdate(p) ? `Updates **${p.matchTitle}**${p.added ? ` · +${plural(p.added, 'item')}` : ''}${p.keepOldPicture ? ' · keeps its picture' : ' · new picture'}`
@@ -244,6 +244,34 @@ function needText(i, b) {
     if (twin) { const j = Number(twin.slice(5)); out.push(`pictures ${Math.min(i, j) + 1} and ${Math.max(i, j) + 1} are the same draw: skip one`); }
     if (rest.length) out.push(`picture ${i + 1} needs ${rest.join(' and ')}`);
     return out;
+}
+// The review with the picture that will be SAVED (Harkirat via the coordinator, 2026-11-16 18:48 EST: "show the cropped picture"). Crop Bottom Bar shows the poster without its bar, sent as an attachment: a Discord upload cannot be cropped by link, and Cloudinary's fetch delivery is off on this account (measured: HTTP 401). Keep Old Picture shows the entry's own picture. A preview that fails falls back to the upload as it came. `files` is always set, so a crop drawn for one page never stays on the message for the next.
+async function reviewPanel(doc, n = 0, note = null) {
+    const i = Math.min(Math.max(Number(n) || 0, 0), doc.pictures.length - 1);
+    const p = doc.pictures[i] || {};
+    let mediaUrl = null;
+    const files = [];
+    if (p.status === 'read' && !p.skip) {
+        try {
+            if (p.keepOldPicture && p.matchId) {
+                const e = (await require('../../../utils/drawCatalog').loadCatalog()).find(x => String(x._id) === String(p.matchId));
+                if (e?.imageUrl) mediaUrl = e.imageUrl;
+            } else if (p.cropBar && p.barPx) {
+                const { buffer } = await require('../../../utils/drawIndexRead').fetchImage(p.url);
+                const { Jimp } = require('jimp');
+                const img = await Jimp.read(buffer);
+                const h = img.bitmap.height - p.barPx;
+                if (h > 0) {
+                    img.crop({ x: 0, y: 0, w: img.bitmap.width, h });
+                    if (img.bitmap.width > 1280) img.resize({ w: 1280 });
+                    const name = `crop-${i}.jpg`;
+                    files.push({ name, data: await img.getBuffer('image/jpeg', { quality: 85 }) });
+                    mediaUrl = `attachment://${name}`;
+                }
+            }
+        } catch (e) { console.error(`draw index review: no preview for picture ${i + 1}: ${e.message}`); }
+    }
+    return { components: reviewView(doc, i, note, { mediaUrl }), files };
 }
 function saveLine(doc) {
     const inc = included(doc);
@@ -384,14 +412,15 @@ async function route(interaction, verb, a, b, c, ctx) {
         const { pictures, costUsd } = await readAll(files.slice(0, MAX_PICTURES), { names, season: s.season, year });
         const token = newToken();
         await Upload().create({ _id: token, season: s.season, year, origin: a === 'n' ? 'news' : 'panel', newsCard: a === 'n' ? String(b || '') : '', pictures, costUsd });
-        return sendV2Payload(interaction, reviewView(await load(token), 0), { skipExpiry: true });
+        const first = await reviewPanel(await load(token), 0);
+        return sendV2Payload(interaction, first.components, { skipExpiry: true, files: first.files });
     }
 
     const doc = await load(a);
     if (/^ixv/.test(verb) && !doc) return expired();
     const n = Number(b) || 0;
     const p = doc?.pictures?.[n];
-    const redraw = async (note = null, at = n) => show(interaction, reviewView(await load(a), at, note));
+    const redraw = async (note = null, at = n) => { const r = await reviewPanel(await load(a), at, note); return show(interaction, r.components, { files: r.files }); };
 
     if (verb === 'ixvv') return redraw(null, n);
     if (verb === 'ixvtype') {
@@ -509,4 +538,4 @@ function resultView(doc, plans, ops, result) {
 }
 
 // `__test`: the read and the save, for the dev probe (local/project/features/owner-draws-index/probes/e2e.js) and nothing else.
-module.exports = { __test: { readAll, saveUpload }, route, isUploadVerb, uploadModal, editModal, replaceModal, reviewView, resultView, blockers, saveLine, needText, markSameDraws, rowsToRepoint, parseItemsText, itemsToText, seasonOf, toPicture, planPicture, isUpdate, OWNER_ONLY, MAX_PICTURES, TIERS, KINDS };
+module.exports = { __test: { readAll, saveUpload }, route, isUploadVerb, uploadModal, editModal, replaceModal, reviewView, reviewPanel, resultView, blockers, saveLine, needText, markSameDraws, rowsToRepoint, parseItemsText, itemsToText, seasonOf, toPicture, planPicture, isUpdate, OWNER_ONLY, MAX_PICTURES, TIERS, KINDS };
