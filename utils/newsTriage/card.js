@@ -146,7 +146,6 @@ function buildBriefing(b, { dayLabel } = {}) {
     if ((b.unindexed || []).length) {
         const lines = [`**Not in the draw index yet** (${b.unindexed.length})`, ...b.unindexed.slice(0, 8).map(x => `- ${x.name}${x.status === 'maybe' ? ` · maybe ${x.title}` : ''}`)];
         if (b.unindexed.length > 8) lines.push(`-# +${b.unindexed.length - 8} more`);
-        lines.push('-# Add them from their posters with /bot drawindex › Upload Draws.');
         parts.push({ type: 14, spacing: 1, divider: true }, { type: 10, content: lines.join('\n').slice(0, 900) });
     }
     if ((b.channels || []).length) {

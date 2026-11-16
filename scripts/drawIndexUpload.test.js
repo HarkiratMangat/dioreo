@@ -280,7 +280,7 @@ function limits(view, label) {
         const doc = { _id: 'tok', pictures: [pic] };
         const w = walk(U.reviewView(doc, 0));
         assert.ok(w.ids.some(id => /\|ixvbar\|/.test(id)));
-        assert.ok(JSON.stringify(U.reviewView(doc, 0)).includes('cropped off on save'));
+        assert.ok(JSON.stringify(U.reviewView(doc, 0)).includes('Logo bar cropped'));
         doc.pictures[0].cropBar = false;
         assert.ok(JSON.stringify(U.reviewView(doc, 0)).includes('Crop Bottom Bar'));
     });

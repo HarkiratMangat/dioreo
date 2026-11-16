@@ -172,8 +172,8 @@ function reviewView(doc, n = 0, note = null) {
     const i = Math.min(Math.max(Number(n) || 0, 0), total - 1);
     const p = pics[i];
     const t = doc._id;
-    const crumb = `-# Draws  ›  Draw Index  ›  Upload  ›  Picture ${i + 1} of ${total}`;
-    const components = [text(crumb)];
+    // No breadcrumb (his 2026-11-16 15:52 EST screenshot); the pager says which picture this is.
+    const components = [];
     if (note) components.push(text(note), SMALL());
     if (p.status === 'failed') {
         components.push(text(`### ${emojis.cross} Picture ${i + 1} couldn't be read\n-# ${p.filename || 'upload'} · ${p.error || 'unknown error'}`));
@@ -189,10 +189,10 @@ function reviewView(doc, n = 0, note = null) {
         components.push({ type: 12, items: [{ media: { url: p.url } }] });
         const what = p.skip
             ? `Skipped${skipReason(p) ? `: ${skipReason(p)}` : ''}`
-            : isUpdate(p) ? `Updates **${p.matchTitle}**${p.added ? ` · +${plural(p.added, 'item')}` : ''}${p.keepOldPicture ? ' · keeps its picture' : ' · replaces its picture (the old one is not kept)'}`
+            : isUpdate(p) ? `Updates **${p.matchTitle}**${p.added ? ` · +${plural(p.added, 'item')}` : ''}${p.keepOldPicture ? ' · keeps its picture' : ' · new picture'}`
                 : p.matchStatus === 'maybe' && p.sameDraw === null ? `${emojis.warn} Maybe the same draw as **${p.matchTitle}**`
                     : 'New entry';
-        const itemsTxt = (p.items || []).map(it => `${emojis[it.tier] || ''} ${String(it.name).slice(0, 70)}${it.kind ? ` · ${it.kind}` : ` · ${emojis.warn} no kind`}${it.guessed ? ` · ${emojis.warn} rarity guessed` : ''}${it.newToIndex ? ' · new to the index' : ''}`.trim());
+        const itemsTxt = (p.items || []).map(it => `${emojis[it.tier] || ''} ${String(it.name).slice(0, 70)}${it.kind ? ` · ${it.kind}` : ` · ${emojis.warn} no kind`}${it.guessed ? ` · ${emojis.warn} rarity guessed` : ''}${it.newToIndex && isUpdate(p) ? ' · new' : ''}`.trim());
         const season = doc.season && !isUpdate(p) ? `Season ${doc.season}${doc.year ? ` (${doc.year})` : ''}` : null;
         components.push(text([
             `### ${String(p.title || 'No title').slice(0, 100)}`,
@@ -200,9 +200,10 @@ function reviewView(doc, n = 0, note = null) {
             ...(p.aliases?.length ? [`-# Also: ${p.aliases.slice(0, 6).join(' · ').slice(0, 300)}`] : []),
             itemsTxt.length ? itemsTxt.join('\n') : `-# ${emojis.warn} No items read.`,
             ...(p.comments?.length ? [p.comments.map(c => `-# ${String(c).slice(0, 150)}`).join('\n')] : []),
-            ...((() => { const t = [p.priceType ? typeName(p.priceType) : (p.skip ? null : `${emojis.warn} Pick its draw type`), season].filter(Boolean).join(' · '); return t ? [`-# ${t}`] : []; })()),
-            ...(p.snapped?.length ? [`-# Names matched to the index: ${p.snapped.join(', ').slice(0, 200)}`] : []),
-            ...(p.barPx && !p.keepOldPicture && !p.skip ? [`-# ${p.cropBar ? `${emojis.checkmark} The logo bar at the bottom (${p.barPx}px) is cropped off on save` : 'The logo bar at the bottom is kept'}`] : []),
+            // The draw type shows once, in its menu right below; only the release season is a line.
+            ...(season ? [`-# ${season}`] : []),
+            ...(p.snapped?.length ? [`-# Matched: ${p.snapped.join(', ').slice(0, 200)}`] : []),
+            ...(p.barPx && !p.keepOldPicture && !p.skip ? [`-# ${p.cropBar ? `${emojis.checkmark} Logo bar cropped (${p.barPx}px)` : 'Logo bar kept'}`] : []),
             // Which file this is, so a batch can be matched to what was picked (Discord reorders them).
             ...(p.filename ? [`-# ${String(p.filename).slice(0, 80)}`] : []),
         ].join('\n').slice(0, 3800)));
@@ -353,7 +354,7 @@ async function route(interaction, verb, a, b, c, ctx) {
         else if (a === 'n' || !interaction.message) await interaction.deferReply({ flags: 64 });
         else await interaction.deferUpdate();
         const { sendV2Payload } = require('../../../utils/sendV2Payload');
-        await sendV2Payload(interaction, panel([text(`-# Draws  ›  Draw Index  ›  Upload\n### ${emojis.search} Reading ${plural(files.length, 'picture')}…\n-# One read each. The index decides the rest.`)]), { skipExpiry: true });
+        await sendV2Payload(interaction, panel([text(`### ${emojis.search} Reading ${plural(files.length, 'picture')}…`)]), { skipExpiry: true });
         const seasonDoc = await require('../../../models/SeasonalData').findOne({ docType: 'global' }).lean();
         const year = R().seasonYearFor(s.season, seasonDoc);
         const names = get('names').split('\n').map(x => x.trim());
@@ -427,7 +428,7 @@ async function route(interaction, verb, a, b, c, ctx) {
         if (blockedAt !== -1) return redraw(`${emojis.warn} Picture ${blockedAt + 1} still needs ${blockers(doc.pictures[blockedAt], doc).join(' and ')}.`, blockedAt);
         await interaction.deferUpdate();
         const { sendV2Payload } = require('../../../utils/sendV2Payload');
-        await sendV2Payload(interaction, panel([text(`-# Draws  ›  Draw Index  ›  Upload\n### ${emojis.plus} Saving ${plural(included(doc).length, 'draw')}…\n-# Uploading the pictures, then the index.`)]), { skipExpiry: true });
+        await sendV2Payload(interaction, panel([text(`### ${emojis.plus} Saving ${plural(included(doc).length, 'draw')}…`)]), { skipExpiry: true });
         const { plans, ops, result } = await saveUpload(doc, interaction.user.id);
         // Opened from a news card: its index lines are worked out again, so it stops saying "not in the draw index".
         if (result.ok && ops.length && doc.newsCard) require('../../../utils/newsTriage/indexStatus').refreshIndexStatus(doc.newsCard, { rest: interaction.client.rest, appId: interaction.applicationId }).catch(() => {});
@@ -450,7 +451,7 @@ async function route(interaction, verb, a, b, c, ctx) {
 function skipReason(p) {
     if (p.sameAs !== null && p.sameAs !== undefined) return `the same draw as picture ${p.sameAs + 1}`;
     if (p.flags?.includes('notDraw')) return "this doesn't look like a draw";
-    if (p.flags?.includes('manyDraws')) return 'this picture shows more than one draw. Upload one draw per picture';
+    if (p.flags?.includes('manyDraws')) return 'more than one draw in it';
     return '';
 }
 
@@ -476,7 +477,7 @@ function resultView(doc, plans, ops, result) {
     const ids = result.ok ? ops.map((x, k) => x.op.target?.id || result.results?.[k]?.applied?.id || null) : [];
     const savedRows = result.ok ? ops.map((x, k) => ({ type: 9, components: [text(`${x.op.type === 'drawindex.add' ? emojis.plus : emojis.edit} ${String(x.title).slice(0, 80)}${x.op.payload?.rows?.length ? `\n-# ${plural(x.op.payload.rows.length, 'draw')} now ${x.op.payload.rows.length === 1 ? 'uses' : 'use'} the new picture` : ''}`)], accessory: ids[k] ? btn(['ixopen', ids[k], ''], 'Open', emojis.expand) : { type: 2, style: 2, label: 'Open', custom_id: ID('ixvpg', doc._id, k), disabled: true } })) : [];
     return panel([
-        text(`-# Draws  ›  Draw Index  ›  Upload\n${lines.join('\n').slice(0, 3800)}`),
+        text(lines.join('\n').slice(0, 3800)),
         ...savedRows,
         ...(after.length ? [text(after.join('\n').slice(0, 1500))] : []),
         BIG(),

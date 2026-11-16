@@ -320,7 +320,7 @@ function seasonDoc(nNew = 3, nRet = 30) {
         }
         const card = IX.cardView(entries[30], doc, 'g:all');
         limits(card, 'index card');
-        assert.strictEqual(card[0].components[1].type, 12, 'the picture first');
+        assert.strictEqual(card[0].components[0].type, 12, 'the picture first (no breadcrumb above it since 2026-11-16 15:52 EST)');
         assert.match(JSON.stringify(card), /On \/draws/);
         assert.ok(!JSON.stringify(card).includes('Quick Add This Draw'), 'no Quick Add for a draw already on /draws');
         assert.ok(JSON.stringify(IX.cardView(entries[3], doc, 'h')).includes('Quick Add This Draw'));

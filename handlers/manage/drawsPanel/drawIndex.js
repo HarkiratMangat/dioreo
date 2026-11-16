@@ -20,7 +20,6 @@ const GAPS = {
     items: { label: 'No Items', test: (e) => !(e.items || []).length },
     all: { label: 'Every Entry', test: () => true },
 };
-const crumb = (...parts) => `-# ${['Draws', 'Draw Index', ...parts].join('  ›  ')}`;
 const indexBack = () => btn('ix', 'Draw Index', emojis.returnArrow);
 const isOwner = (id) => require('../../../utils/adminAccess').isOwner(id);
 const loadEntries = () => require('../../../utils/drawCatalog').loadCatalog({ force: true });
@@ -48,16 +47,16 @@ function homeView(entries, doc, note = null, { owner = false } = {}) {
     // Counted words that read right at 1 and at many (2026-11-11 17:20 EST: the home said "1 items without a kind").
     const gapWords = { pic: c => `${c} with no picture`, ph: c => `${c} placeholder picture${c === 1 ? '' : 's'}`, type: c => `${c} with no draw type`, kind: c => `${c} item${c === 1 ? '' : 's'} without a kind` };
     const gapLine = ['pic', 'ph', 'type', 'kind'].filter(k => n(k)).map(k => `${emojis.warn} ${gapWords[k](n(k))}`);
-    const components = [text(`${crumb()}\n## ${V.indexEmoji()} Draw Index\n-# ${plural(entries.length, 'draw')} indexed${gapLine.length ? ` · ${gapLine.join(' · ')}` : ` · ${emojis.checkmark} nothing missing`}\n-# What Quick Add, Add Draw and news triage match a draw against: its picture, items, draw type and other names.`)];
+    // No breadcrumb and no explaining lines on any Draw Index screen (Harkirat 2026-11-16 15:52 EST, his phone screenshot: "So much prose" and "why tf do you have a 'draws > draw index' eye brow at the top of the panel"). A heading, the facts, the controls.
+    const components = [text(`## ${V.indexEmoji()} Draw Index\n-# ${plural(entries.length, 'draw')} indexed${gapLine.length ? ` · ${gapLine.join(' · ')}` : ` · ${emojis.checkmark} nothing missing`}`)];
     if (note) components.push(SMALL(), text(note));
     components.push(
         BIG(),
-        // The owner's upload sits above the finders, under its own line (the click test, 2026-11-16 12:58 EST: below "Find an entry…" it read as one of the finders).
-        ...(owner ? [text('-# Add or update draws from their posters. The bot reads each one and tags it; you check it before it saves.'), row(btn('ixup', 'Upload Draws', emojis.plus, 1)), BIG()] : []),
-        text('-# Find an entry…'),
+        // The owner's upload sits above the finders, divided from them (the click test, 2026-11-16 12:58 EST: in one block it read as one of the finders).
+        ...(owner ? [row(btn('ixup', 'Upload Draws', emojis.plus, 1)), BIG()] : []),
         row(btn('ixcheck', 'Check Names', emojis.checkIndex || emojis.pasteImport, 1), btn('ixfind', 'Search the Index', emojis.search, 2, !entries.length)),
         // A warning only where something is missing; a gap list with nothing in it gets a checkmark.
-        { type: 1, components: [{ type: 3, custom_id: ID('ixgaps'), placeholder: 'Or list the entries with a gap…', options: Object.entries(GAPS).map(([value, g]) => ({ value, label: `${g.label} · ${n(value)}`, emoji: emojis.parseEmoji(value === 'all' ? V.indexEmoji() : n(value) ? emojis.warn : emojis.checkmark) })) }] },
+        { type: 1, components: [{ type: 3, custom_id: ID('ixgaps'), placeholder: 'Entries with a gap…', options: Object.entries(GAPS).map(([value, g]) => ({ value, label: `${g.label} · ${n(value)}`, emoji: emojis.parseEmoji(value === 'all' ? V.indexEmoji() : n(value) ? emojis.warn : emojis.checkmark) })) }] },
         BIG(),
         row(V.homeBtn()),
     );
@@ -69,7 +68,7 @@ function listView(entries, { title, origin, page = 0, pagerParts, sub = '' }) {
     const pages = Math.max(1, Math.ceil(entries.length / PAGE));
     const pg = Math.min(Math.max(Number(page) || 0, 0), pages - 1);
     const shown = entries.slice(pg * PAGE, pg * PAGE + PAGE);
-    const components = [text(`${crumb(title)}\n## ${V.indexEmoji()} ${title}\n-# ${plural(entries.length, 'draw')}${sub}${pages > 1 ? ` · page ${pg + 1} of ${pages}` : ''}`), BIG()];
+    const components = [text(`## ${V.indexEmoji()} ${title}\n-# ${plural(entries.length, 'draw')}${sub}${pages > 1 ? ` · page ${pg + 1} of ${pages}` : ''}`), BIG()];
     if (!shown.length) components.push(text(`${emojis.checkmark} Nothing here.`));
     for (const e of shown) components.push({ type: 9, components: [text(entryLine(e))], accessory: btn(['ixopen', String(e._id), origin], 'Open', emojis.expand) });
     if (pages > 1) components.push(row(
@@ -94,9 +93,8 @@ function cardView(e, doc, origin = '', { header = null, resultRow = null, owner 
     const place = placeOf(doc, e);
     const gaps = gapsOf(e);
     const items = (e.items || []).map(i => `${emojis[i.tier] || ''} ${String(i.name).slice(0, 80)}${i.kind ? ` · ${i.kind}` : ` · ${emojis.warn} no kind`}`.trim());
-    // The breadcrumb names the page the card was opened from, the same page its way back returns to.
-    const from = /^g:/.test(origin) ? GAPS[origin.slice(2)]?.label : /^t:/.test(origin) ? 'Search Results' : /^c:/.test(origin) ? 'Check Names' : null;
-    const components = [text(crumb(...(from ? [from] : []), String(e.title).slice(0, 80)))];
+    // The way back (backFor) names the page the card was opened from; there is no breadcrumb.
+    const components = [];
     if (header) components.push(text(header), ...(resultRow ? [resultRow] : []), SMALL());
     if (e.imageUrl) components.push({ type: 12, items: [{ media: { url: e.imageUrl } }] });
     components.push(text([
@@ -121,7 +119,7 @@ function deleteView(e, doc, origin) {
     const place = placeOf(doc, e);
     const where = [place.live ? `on /draws (${place.live})` : null, place.draft ? `in the draft (${place.draft})` : null].filter(Boolean);
     return panel([
-        text(`${crumb(String(e.title).slice(0, 80))}\n### ${emojis.warn} Delete ${String(e.title).slice(0, 80)} from the draw index?\n-# ${where.length ? `It is ${where.join(' and ')}; those draws keep their picture, but Quick Add, Add Draw and news triage will no longer find this entry.` : 'Quick Add, Add Draw and news triage will no longer find it.'} Every change can be reverted.`),
+        text(`### ${emojis.warn} Delete ${String(e.title).slice(0, 80)}?\n-# ${where.length ? `${where.join(' · ')} · they keep their picture · ` : ''}Every change can be reverted.`),
         BIG(),
         // The same words and emoji as /manage draws' own delete confirm; row() puts Cancel first, as it puts every way back (utils/returnFirst.js).
         row(btn(['ixdelok', String(e._id), origin], 'Yes, Delete', emojis.deleteBin, 4), btn(['ixopen', String(e._id), origin], 'Cancel', emojis.returnArrow)),
@@ -290,7 +288,7 @@ async function route(interaction, verb, a, b, c, ctx) {
         }
         const rev = ID('ixrevert', result.changeIds.join(','), a, b || '');
         const resultRow = rev.length <= 100 ? row({ type: 2, style: 4, label: 'Revert', custom_id: rev, emoji: emojis.parseEmoji(emojis.keep) }) : null;
-        return show(interaction, cardView(await findEntry(a) || e, await getDoc(), b || '', { header: `### ${emojis.checkmark} Picture replaced${rows.length ? ` · ${plural(rows.length, 'draw')} now ${rows.length === 1 ? 'uses' : 'use'} it` : ''}${crop ? ` · logo bar cropped (${crop.bar}px)` : ''}\n-# Revert puts the old picture back (it is kept ${require('../../../utils/drawPictureHold').HOLD_DAYS} days).`, resultRow, owner }));
+        return show(interaction, cardView(await findEntry(a) || e, await getDoc(), b || '', { header: `### ${emojis.checkmark} Picture replaced${rows.length ? ` · ${plural(rows.length, 'draw')} now ${rows.length === 1 ? 'uses' : 'use'} it` : ''}${crop ? ` · logo bar cropped (${crop.bar}px)` : ''}`, resultRow, owner }));
     }
     if (verb === 'ixdel') {
         const e = await findEntry(a);
