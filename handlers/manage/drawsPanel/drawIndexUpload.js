@@ -165,7 +165,7 @@ function reviewView(doc, n = 0, note = null) {
             : isUpdate(p) ? `Updates **${p.matchTitle}**${p.added ? ` · +${plural(p.added, 'item')}` : ''}${p.keepOldPicture ? ' · keeps its picture' : ' · replaces its picture (the old one is not kept)'}`
                 : p.matchStatus === 'maybe' && p.sameDraw === null ? `${emojis.warn} Maybe the same draw as **${p.matchTitle}**`
                     : 'New entry';
-        const itemsTxt = (p.items || []).map(it => `${emojis[it.tier] || ''} ${String(it.name).slice(0, 70)}${it.kind ? ` · ${it.kind}` : ` · ${emojis.warn} no kind`}${it.guessed ? ` · ${emojis.warn} rarity guessed` : ''}${it.isNew ? ' · new to the index' : ''}`.trim());
+        const itemsTxt = (p.items || []).map(it => `${emojis[it.tier] || ''} ${String(it.name).slice(0, 70)}${it.kind ? ` · ${it.kind}` : ` · ${emojis.warn} no kind`}${it.guessed ? ` · ${emojis.warn} rarity guessed` : ''}${it.newToIndex ? ' · new to the index' : ''}`.trim());
         const season = doc.season && !isUpdate(p) ? `Season ${doc.season}${doc.year ? ` (${doc.year})` : ''}` : null;
         components.push(text([
             `### ${String(p.title || 'No title').slice(0, 100)}`,
@@ -349,7 +349,7 @@ async function route(interaction, verb, a, b, c, ctx) {
         const entries = await loadEntries();
         const m = R().matchEntry(entries, title, parsed.items);
         await save(a, {
-            [`pictures.${n}.title`]: title, [`pictures.${n}.readTitle`]: title, [`pictures.${n}.items`]: parsed.items.map(i => ({ ...i, guessed: false, isNew: false })), [`pictures.${n}.aliases`]: aliases,
+            [`pictures.${n}.title`]: title, [`pictures.${n}.readTitle`]: title, [`pictures.${n}.items`]: parsed.items.map(i => ({ ...i, guessed: false, newToIndex: false })), [`pictures.${n}.aliases`]: aliases,
             [`pictures.${n}.matchStatus`]: m.status, [`pictures.${n}.matchId`]: m.entry ? String(m.entry._id) : null, [`pictures.${n}.matchTitle`]: m.entry?.title || null, [`pictures.${n}.sameDraw`]: null,
         });
         return redraw(`${emojis.checkmark} Picture ${n + 1} edited.`);
@@ -409,4 +409,5 @@ function resultView(doc, plans, ops, result) {
     ]);
 }
 
-module.exports = { route, isUploadVerb, uploadModal, editModal, replaceModal, reviewView, resultView, blockers, markSameDraws, rowsToRepoint, parseItemsText, itemsToText, seasonOf, toPicture, planPicture, isUpdate, OWNER_ONLY, MAX_PICTURES, TIERS, KINDS };
+// `__test`: the read and the save, for the dev probe (local/project/features/owner-draws-index/probes/e2e.js) and nothing else.
+module.exports = { __test: { readAll, saveUpload }, route, isUploadVerb, uploadModal, editModal, replaceModal, reviewView, resultView, blockers, markSameDraws, rowsToRepoint, parseItemsText, itemsToText, seasonOf, toPicture, planPicture, isUpdate, OWNER_ONLY, MAX_PICTURES, TIERS, KINDS };

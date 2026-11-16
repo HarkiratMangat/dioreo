@@ -180,7 +180,7 @@ function decideDraw(read, ctx = {}) {
         let tier = it.tier;
         let guessed = false;
         if (!tier) { tier = read.printed.mythicDrop && kind === 'weapon' ? 'mythic' : 'legendary'; guessed = !read.printed.mythicDrop || kind !== 'weapon'; }
-        return { tier, kind, name: it.name, baseName: k.baseName || '', skinName: k.skinName || '', guessed, isNew: !it.fromIndex };
+        return { tier, kind, name: it.name, baseName: k.baseName || '', skinName: k.skinName || '', guessed, newToIndex: !it.fromIndex };
     }).sort((a, b) => (RANK[b.tier] || 0) - (RANK[a.tier] || 0));
     const match = matchEntry(entries, title, items);
     const target = match.status === 'sure' ? match.entry : null;

@@ -13,7 +13,7 @@ const itemSchema = new mongoose.Schema({
     baseName: { type: String, default: '' },
     skinName: { type: String, default: '' },
     guessed: { type: Boolean, default: false },   // the tier was not printed and nothing in the index knew it
-    isNew: { type: Boolean, default: false },     // the index has never seen this item
+    newToIndex: { type: Boolean, default: false },     // the index has never seen this item
 }, { _id: false });
 
 const pictureSchema = new mongoose.Schema({

@@ -148,7 +148,7 @@ function limits(view, label) {
     });
 
     await check('the review stays inside Discord\'s limits at 1, 2 and 10 pictures, long titles, twelve items, a failed read and a maybe', () => {
-        const longItem = (i) => ({ tier: ['mythic', 'legendary', 'epic'][i % 3], kind: i % 2 ? 'weapon' : '', name: `Very Long Weapon Name ${i} - An Extremely Long Skin Name That Goes On And On`, guessed: i % 4 === 0, isNew: true });
+        const longItem = (i) => ({ tier: ['mythic', 'legendary', 'epic'][i % 3], kind: i % 2 ? 'weapon' : '', name: `Very Long Weapon Name ${i} - An Extremely Long Skin Name That Goes On And On`, guessed: i % 4 === 0, newToIndex: true });
         const pic = (i, over = {}) => ({ url: `https://cdn.discordapp.com/attachments/1/2/p${i}.png`, filename: `p${i}.png`, status: 'read', title: 'A'.repeat(90), items: Array.from({ length: 12 }, (_, k) => longItem(k)), comments: ['Acquire Both To Unlock '.repeat(5)], aliases: ['Other Name'], priceType: '', typeSettled: false, matchStatus: 'none', snapped: ['MG42 → MG82'], flags: [], ...over });
         for (const count of [1, 2, 10]) {
             const pictures = Array.from({ length: count }, (_, i) => pic(i, i === 1 ? { status: 'failed', error: 'timeout' } : i === 2 ? { matchStatus: 'maybe', matchTitle: 'B'.repeat(80), sameDraw: null } : i === 3 ? { matchStatus: 'sure', matchTitle: 'C', priceType: 'mythicWeapon' } : {}));
