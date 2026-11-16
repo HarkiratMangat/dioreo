@@ -169,21 +169,28 @@ async function runCheck(names, doc) {
     return { result, found };
 }
 
-// Find Draws, one place for every way of looking a draw up (the finder button, /bot drawindex entry: typed words, /manage draws do: Check Names). The answer is always this panel, never a separate message (his 16:51 EST finding 1). One line: a single match opens its card, several are a list. Nothing found, or several lines: the check, where every name not found carries Upload Draws with the names already filled in (finding 3: "to add that item i now need to navigate to a different page").
-async function findView(text, { owner = false, doc = null } = {}) {
+// Find Draws, one place for every way of looking a draw up (the finder button, /bot drawindex entry: typed words, /manage draws do: Check Names). Returns { view } for the panel, or { note } for a private message: one name, a single match opens its card and several are a list; one name with no match is a miss, so it answers privately (his rule, 2026-11-11 11:56 EST) with Upload This Draw on the note; several lines are the check, a result on the panel, with Upload for the names not found (his finding 3, 2026-11-16 16:51 EST: "to add that item i now need to navigate to a different page").
+async function findView(input, { owner = false, doc = null } = {}) {  // `input`, not `text`: text() builds the note below
     const newSel = async (data) => { const t = require('crypto').randomBytes(6).toString('base64url'); await require('../../../models/ManageSelection').create({ _id: t, mode: 'DRAWS', ...data }); return t; };
-    const lines = String(text || '').split('\n').map(x => x.trim()).filter(Boolean);
+    const lines = String(input || '').split('\n').map(x => x.trim()).filter(Boolean);
     if (lines.length === 1) {
         const hits = searchEntries(await loadEntries(), lines[0]);
-        if (hits.length === 1) return cardView(hits[0], doc, '', { owner });
+        if (hits.length === 1) return { view: cardView(hits[0], doc, '', { owner }) };
         if (hits.length > 1) {
             const token = await newSel({ ids: hits.map(e => `x:${e._id}`), selected: [], query: [lines[0].slice(0, 100)] });
-            return listView(hits, { title: 'Results', origin: `t:${token}`, pagerParts: ['ixres', token], sub: ` match \`${lines[0].slice(0, 40)}\``, again: token });
+            return { view: listView(hits, { title: 'Results', origin: `t:${token}`, pagerParts: ['ixres', token], sub: ` match \`${lines[0].slice(0, 40)}\``, again: token }) };
+        }
+        const { result } = await runCheck(lines[0], doc);
+        const r = result.results[0] || {};
+        if (r.status === 'none' || !r.id) {
+            const token = await newSel({ text: lines[0].slice(0, 200), query: [] });
+            const closest = r.closest?.length ? `\n-# Closest: ${r.closest.slice(0, 3).map(t => String(t).slice(0, 40)).join(' · ')}` : '';
+            return { note: panel([text(`${emojis.cross} Nothing in the draw index matches \`${lines[0].slice(0, 60)}\`.${closest}`), ...(owner ? [row(btn(['ixup', token], 'Upload This Draw', emojis.plus, 1))] : [])]) };
         }
     }
     const { result, found } = await runCheck(lines.join('\n'), doc);
     const token = await newSel({ text: lines.join('\n').slice(0, 4000), query: found });
-    return V.checkView(result, token, found.length, { owner });
+    return { view: V.checkView(result, token, found.length, { owner }) };
 }
 
 // ---------- routing ---------- `ctx` carries the panel's own answering helpers (index.js), so this module shares its lock, tiers and private notes.
@@ -193,9 +200,9 @@ async function route(interaction, verb, a, b, c, ctx) {
     const owner = isOwner(interaction.user.id);
     // The owner's Upload Draws and its review (handlers/manage/drawsPanel/drawIndexUpload.js), owner-checked there.
     const U = require('./drawIndexUpload');
-    // A note lands in the panel, never as a separate message (his 16:51 EST finding 1): a gone entry shows the Draw Index home, a problem with an edit shows on the card.
-    const gone = async () => show(interaction, homeView(await loadEntries(), await getDoc(), `${emojis.cross} That entry is no longer in the draw index.`, { owner }));
-    const onCard = async (e, note) => show(interaction, cardView(e, await getDoc(), b || '', { header: note, owner }));
+    // Misses and refusals answer privately and leave the panel as it was; saves and results answer on the panel (his rule, 2026-11-11 11:56 EST, docs/claude/2026-11-10-manage-draws-refine-lessons.md; restored 2026-11-16 18:04 EST after a pass drew them in the panel).
+    const gone = () => say(interaction, `${emojis.cross} That entry is no longer in the draw index.`);
+    const onCard = (e, note) => say(interaction, note);
     if (U.isUploadVerb(verb)) return U.route(interaction, verb, a, b, c, ctx);
     if (verb === 'ix') return show(interaction, homeView(await loadEntries(), await getDoc(), null, { owner }));
     // Find Draws. `ixfind` is an older panel's Search the Index button (before 2026-11-16 16:51 EST), which now opens the same one finder.
@@ -254,9 +261,6 @@ async function route(interaction, verb, a, b, c, ctx) {
             if (titleIn && titleIn !== e.title) { payload.title = require('../../../utils/adminParser').toTitleCase(titleIn.slice(0, 90)); payload.aliases = [...new Set([...(payload.aliases || e.aliases || []), e.title])]; opType = 'drawindex.update'; }
             if (itemsIn) {
                 const U = require('./drawIndexUpload');
-    // A note lands in the panel, never as a separate message (his 16:51 EST finding 1): a gone entry shows the Draw Index home, a problem with an edit shows on the card.
-    const gone = async () => show(interaction, homeView(await loadEntries(), await getDoc(), `${emojis.cross} That entry is no longer in the draw index.`, { owner }));
-    const onCard = async (e, note) => show(interaction, cardView(e, await getDoc(), b || '', { header: note, owner }));
                 const parsed = U.parseItemsText(itemsIn);
                 if (parsed.errors.length) return onCard(e, `${emojis.cross} These lines need a rarity word first (Mythic, Legendary or Epic): ${parsed.errors.slice(0, 3).map(x => `\`${x}\``).join(', ')}. Nothing was saved.`);
                 if (U.itemsToText(parsed.items) !== U.itemsToText(e.items)) { payload.items = parsed.items; opType = 'drawindex.update'; }
@@ -346,4 +350,12 @@ async function route(interaction, verb, a, b, c, ctx) {
 
 const isIndexVerb = (verb) => /^ix/.test(String(verb || ''));
 
-module.exports = { route, runCheck, findView, isIndexVerb, homeView, listView, cardView, editModal, deleteView, searchEntries, placeOf, indexBack, GAPS, PAGE };
+// Sends a findView answer: { view } on the panel, { note } as a private message (a miss).
+async function answerFind(interaction, found, show) {
+    if (found.view) return show(interaction, found.view);
+    const body = { flags: 64 | 32768, components: found.note, allowed_mentions: { parse: [] } };
+    try { return (interaction.deferred || interaction.replied) ? await interaction.followUp(body) : await interaction.reply(body); }
+    catch (e) { console.error('draw index: could not answer the find (interaction likely expired):', e.message); }
+}
+
+module.exports = { route, runCheck, findView, answerFind, isIndexVerb, homeView, listView, cardView, editModal, deleteView, searchEntries, placeOf, indexBack, GAPS, PAGE };

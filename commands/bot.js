@@ -1406,7 +1406,7 @@ module.exports = {
                 return sendV2Payload(interaction, IX.listView(list, { title: IX.GAPS[gap].label, origin: `g:${gap}`, page: 0, pagerParts: ['ixgaps', gap] }), { skipExpiry: true });
             }
             // Typed words that were not a picked suggestion are a Find Draws search: a card, a list, or the not-found result with Upload Draws (handlers/manage/drawsPanel/drawIndex.js findView).
-            if (q) return sendV2Payload(interaction, await IX.findView(q, { owner: true, doc }), { skipExpiry: true });
+            if (q) { const f = await IX.findView(q, { owner: true, doc }); return sendV2Payload(interaction, f.view || f.note, { skipExpiry: true }); }
             return sendV2Payload(interaction, IX.homeView(entries, doc, null, { owner: true }), { skipExpiry: true });
         }
 

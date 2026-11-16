@@ -659,7 +659,7 @@ async function route(interaction) {
         if (!(await gate(interaction, 'exportnew'))) return;
         const names = interaction.fields.getTextInputValue('names');
         // Find Draws (the Draw Index's one finder): one line searches, several lines are checked, and the answer is always this panel (IX.findView).
-        return show(interaction, await IX.findView(names, { owner: require('../../../utils/adminAccess').isOwner(interaction.user.id), doc: await getDoc() }));
+        return IX.answerFind(interaction, await IX.findView(names, { owner: require('../../../utils/adminAccess').isOwner(interaction.user.id), doc: await getDoc() }), show);
     }
     // A list made into a selection (the redesign): the Select menu under a list, or its Select All.
     if ((verb === 'lpick' && interaction.isStringSelectMenu?.()) || verb === 'lall') {

@@ -343,6 +343,24 @@ function limits(view, label) {
         assert.strictEqual(H.HOLD_DAYS, 7);
     });
 
+    await check('Find Draws: a one-name miss is a private note with Upload This Draw; a match is the panel; several lines are the check on the panel', async () => {
+        const catalog = require('../utils/drawCatalog');
+        const Sel = require('../models/ManageSelection');
+        const realLoad = catalog.loadCatalog, realCreate = Sel.create;
+        catalog.loadCatalog = async () => [{ _id: 'e1', title: 'Lethal Pair Draw', slug: 'lethal-pair-draw', aliases: [], items: [{ tier: 'legendary', name: 'QQ9 - Moonlight', kind: 'weapon' }], priceType: 'double_legendary', imageUrl: 'https://x/y.jpg' }];
+        Sel.create = async () => ({});
+        try {
+            const IX = require('../handlers/manage/drawsPanel/drawIndex');
+            const miss = await IX.findView('augmented', { owner: true });
+            assert.ok(miss.note && !miss.view, 'a one-name miss answers privately (his rule, 2026-11-11 11:56 EST)');
+            assert.ok(/Upload This Draw/.test(JSON.stringify(miss.note)), 'and carries Upload This Draw');
+            assert.ok(!/Upload This Draw/.test(JSON.stringify((await IX.findView('augmented', { owner: false })).note)), 'not for someone who is not the owner');
+            assert.ok((await IX.findView('lethal pair', { owner: true })).view, 'a match is the panel');
+            const several = await IX.findView('lethal pair draw\nnot a real draw', { owner: true });
+            assert.ok(several.view && /Upload This Draw/.test(JSON.stringify(several.view)), 'several lines are the check, on the panel, with Upload for the missing one');
+        } finally { catalog.loadCatalog = realLoad; Sel.create = realCreate; }
+    });
+
     console.log(failed ? `\n${failed} check(s) FAILED.` : '\nAll draw index upload checks passed.');
     process.exit(failed ? 1 : 0);
 })();

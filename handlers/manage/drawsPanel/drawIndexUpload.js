@@ -339,8 +339,7 @@ async function route(interaction, verb, a, b, c, ctx) {
     const { show, say } = ctx;
     if (!isOwner(interaction.user.id)) return say(interaction, OWNER_ONLY);
     const load = async (token) => (token ? Upload().findById(token).lean() : null);
-    // Pressed on the review itself, the note replaces it with the Draw Index home, in the same panel (his 16:51 EST finding 1).
-    const expired = async () => (interaction.message ? ctx.show(interaction, require('./drawIndex').homeView(await loadEntries(), await ctx.getDoc(), `${emojis.cross} That upload expired (uploads last a day). Upload the pictures again.`, { owner: true })) : say(interaction, `${emojis.cross} That upload expired (uploads last a day). Upload the pictures again.`));
+    const expired = () => say(interaction, `${emojis.cross} That upload expired (uploads last a day). Upload the pictures again.`);
     const save = (token, fields) => Upload().updateOne({ _id: token }, { $set: fields });
 
     // From Find Draws' results `a` is the find's token: the names it did not find go into the Names box (his 16:51 EST finding 3).
@@ -358,8 +357,8 @@ async function route(interaction, verb, a, b, c, ctx) {
         try { files = [...(interaction.fields.getUploadedFiles('pics')?.values() || [])]; } catch { files = []; }
         const get = (id) => { try { return interaction.fields.getTextInputValue(id) || ''; } catch { return ''; } };
         const s = seasonOf(get('season'));
-        // From a panel the note shows on the Draw Index home in that panel, never as a separate message.
-        const bad = async (note) => (interaction.message && a !== 'n' ? ctx.show(interaction, require('./drawIndex').homeView(await loadEntries(), await ctx.getDoc(), note, { owner: true })) : say(interaction, note));
+        // A refusal answers privately and leaves the panel as it was (his rule, 2026-11-11 11:56 EST).
+        const bad = (note) => say(interaction, note);
         if (s.error) return bad(`${emojis.cross} ${s.error} Nothing was read.`);
         if (!files.length) return bad(`${emojis.cross} No pictures came through. Upload at least one.`);
         // From the panel the answer replaces the panel; from a news card it is a new private message, never the card itself. From `/bot drawindex do:Upload Draws` there is no panel: 'P' (visibility Public) answers publicly, 'p' privately.
