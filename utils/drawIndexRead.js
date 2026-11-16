@@ -169,7 +169,8 @@ function decideDraw(read, ctx = {}) {
     const snapped = [];
     const staged = read.items.map(it => {
         const s = snapName(it.name, known);
-        if (s.snapped) snapped.push(`${it.name} → ${s.name}`);
+        // Only a real change is listed (MG42 → MG82); a casing or dash difference is applied without a line (the click test: "HBRA3 → HBRA3" read as noise).
+        if (s.snapped && norm(s.name) !== norm(it.name)) snapped.push(`${it.name} → ${s.name}`);
         const had = known.items.get(norm(s.name));
         return { name: s.name, tier: had?.tier || it.tier || '', readKind: it.kind || '', fromIndex: Boolean(had) };
     });

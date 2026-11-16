@@ -55,7 +55,7 @@ function uploadModal({ origin = 'p', card = '', names = '' } = {}) {
         components: [
             label('Pictures', `Up to ${MAX_PICTURES} draw posters or screenshots, one draw each`, { type: 19, custom_id: 'pics', min_values: 1, max_values: MAX_PICTURES, required: true }),
             label('Season', 'Only for draws NEW this season: their release season. Blank leaves it unset.', { type: 4, custom_id: 'season', style: 1, required: false, max_length: 12, placeholder: 'Season 10' }),
-            label('Names', 'Optional, one per line in picture order: a title for a poster that prints none.', { type: 4, custom_id: 'names', style: 2, required: false, max_length: 1000, ...(names ? { value: String(names).slice(0, 1000) } : {}), placeholder: 'Herrscher of Thunder Draw' }),
+            label('Names', 'Optional: titles for posters that print none, one per line, in order. Fix any title on the review.', { type: 4, custom_id: 'names', style: 2, required: false, max_length: 1000, ...(names ? { value: String(names).slice(0, 1000) } : {}), placeholder: 'Herrscher of Thunder Draw' }),
         ],
     };
 }
@@ -105,17 +105,24 @@ async function readAll(files, { names, season, year }) {
     const entries = await loadEntries();
     const weaponNames = await C.knownWeaponNames();
     const usages = [];
-    const pictures = await Promise.all(files.map(async (f, i) => {
+    const reads = await Promise.all(files.map(async (f) => {
         const base = { url: f.url, filename: String(f.name || '').slice(0, 100) };
         try {
             const { read, usage, location, picture } = await R().readPicture(f.url);
             usages.push({ usage, location });
-            const d = R().decideDraw(read, { entries, weaponNames, name: names[i] || '', season, year });
-            return { ...toPicture(base, d), barPx: picture?.bar || 0, imgWidth: picture?.width || 0, imgHeight: picture?.height || 0, cropBar: Boolean(picture?.bar) };
+            return { base, read, picture };
         } catch (err) {
-            return { ...base, status: 'failed', error: String(err?.message || err).slice(0, 200) };
+            return { base, error: String(err?.message || err).slice(0, 200) };
         }
     }));
+    // The Names box gives titles to the posters that print NONE, in order (the click test, 2026-11-16 13:16 EST: Discord does not hand files back in the order they were picked, and it trims leading blank lines, so "line 7 is picture 7" landed on picture 1). A poster that prints its own title keeps it; a wrong one is fixed with Edit.
+    const queue = (names || []).map(n => String(n || '').trim()).filter(Boolean);
+    const pictures = reads.map(({ base, read, picture, error }) => {
+        if (error) return { ...base, status: 'failed', error };
+        const name = !read.title && queue.length ? queue.shift() : '';
+        const d = R().decideDraw(read, { entries, weaponNames, name, season, year });
+        return { ...toPicture(base, d), barPx: picture?.bar || 0, imgWidth: picture?.width || 0, imgHeight: picture?.height || 0, cropBar: Boolean(picture?.bar) };
+    });
     return { pictures: markSameDraws(pictures), costUsd: R().readCost(usages) };
 }
 function toPicture(base, d) {
@@ -143,8 +150,10 @@ function blockers(p, doc = null) {
     if (doc) {
         const me = doc.pictures.indexOf(p);
         const key = targetKey(p);
-        const twin = key ? doc.pictures.findIndex((q, j) => j !== me && q.status === 'read' && !q.skip && targetKey(q) === key) : -1;
-        if (twin !== -1) out.push(`a skip: it is the same draw as picture ${twin + 1}`);
+        // The same items on two new pictures are one draw under two titles, so they count too.
+        const fp = (x) => (isUpdate(x) ? null : require('../../../utils/cloudinaryCache').drawFingerprint({ items: x.items }));
+        const twin = doc.pictures.findIndex((q, j) => j !== me && q.status === 'read' && !q.skip && ((key && targetKey(q) === key) || (fp(p) && fp(q) === fp(p))));
+        if (twin !== -1) out.push(`one of it and picture ${twin + 1} skipped (the same draw)`);
     }
     if (!String(p.title || '').trim()) out.push('a title');
     if (!(p.items || []).length) out.push('its items');
@@ -167,7 +176,8 @@ function reviewView(doc, n = 0, note = null) {
     if (note) components.push(text(note), SMALL());
     if (p.status === 'failed') {
         components.push(text(`### ${emojis.cross} Picture ${i + 1} couldn't be read\n-# ${p.filename || 'upload'} · ${p.error || 'unknown error'}`));
-        components.push({ type: 12, items: [{ media: { url: p.url } }] });
+        // A file that is not a picture has nothing to show (the click test: Discord drew "Image failed to load").
+        if (!/not a picture/i.test(p.error || '')) components.push({ type: 12, items: [{ media: { url: p.url } }] });
         components.push(row(btn(['ixvretry', t, i], 'Read Again', emojis.search, 1), btn(['ixvskip', t, i], p.skip ? 'Include' : 'Skip', emojis.collapse)));
     } else if (p.status === 'saved') {
         components.push(text(`### ${emojis.checkmark} Saved: ${p.savedTitle || p.title}`));
@@ -187,8 +197,11 @@ function reviewView(doc, n = 0, note = null) {
             ...(p.aliases?.length ? [`-# Also: ${p.aliases.slice(0, 6).join(' · ').slice(0, 300)}`] : []),
             itemsTxt.length ? itemsTxt.join('\n') : `-# ${emojis.warn} No items read.`,
             ...(p.comments?.length ? [p.comments.map(c => `-# ${String(c).slice(0, 150)}`).join('\n')] : []),
-            `-# ${[p.priceType ? typeName(p.priceType) : `${emojis.warn} Pick its draw type`, season].filter(Boolean).join(' · ')}${p.snapped?.length ? `\n-# Names matched to the index: ${p.snapped.join(', ').slice(0, 200)}` : ''}`,
-            ...(p.barPx ? [`-# ${p.cropBar ? `${emojis.checkmark} The logo bar at the bottom (${p.barPx}px) is cropped off on save` : 'The logo bar at the bottom is kept'}`] : []),
+            ...((() => { const t = [p.priceType ? typeName(p.priceType) : (p.skip ? null : `${emojis.warn} Pick its draw type`), season].filter(Boolean).join(' · '); return t ? [`-# ${t}`] : []; })()),
+            ...(p.snapped?.length ? [`-# Names matched to the index: ${p.snapped.join(', ').slice(0, 200)}`] : []),
+            ...(p.barPx && !p.keepOldPicture && !p.skip ? [`-# ${p.cropBar ? `${emojis.checkmark} The logo bar at the bottom (${p.barPx}px) is cropped off on save` : 'The logo bar at the bottom is kept'}`] : []),
+            // Which file this is, so a batch can be matched to what was picked (Discord reorders them).
+            ...(p.filename ? [`-# ${String(p.filename).slice(0, 80)}`] : []),
         ].join('\n').slice(0, 3800)));
         if (!p.skip) {
             const { DRAW_TYPES } = require('../../../utils/drawTypes');
@@ -354,7 +367,15 @@ async function route(interaction, verb, a, b, c, ctx) {
     if (verb === 'ixvskip') { await save(a, { [`pictures.${n}.skip`]: !p?.skip }); return redraw(); }
     if (verb === 'ixvkeep') { await save(a, { [`pictures.${n}.keepOldPicture`]: !p?.keepOldPicture }); return redraw(); }
     if (verb === 'ixvbar') { await save(a, { [`pictures.${n}.cropBar`]: !p?.cropBar }); return redraw(); }
-    if (verb === 'ixvsame') { await save(a, { [`pictures.${n}.sameDraw`]: c === 'y' }); return redraw(); }
+    if (verb === 'ixvsame') {
+        // A yes makes this an update of that entry, so its own draw type comes with it, as for a sure match (the click test, 2026-11-16 13:17 EST: a yes still asked for the type).
+        const fields = { [`pictures.${n}.sameDraw`]: c === 'y' };
+        if (c === 'y' && p?.matchId) {
+            const entry = (await loadEntries()).find(e => String(e._id) === String(p.matchId));
+            if (entry && require('../../../utils/drawCatalog').isKnownType(entry.priceType) && !p.typeChanged) Object.assign(fields, { [`pictures.${n}.priceType`]: entry.priceType, [`pictures.${n}.typeSettled`]: true });
+        }
+        await save(a, fields); return redraw();
+    }
     if (verb === 'ixvedit') return p ? interaction.showModal(editModal(p, a, n)) : expired();
     if (verb === 'ixvem' && interaction.isModalSubmit?.()) {
         if (!p) return expired();
@@ -367,7 +388,10 @@ async function route(interaction, verb, a, b, c, ctx) {
         // A new title re-runs the match, so a renamed draw can find (or leave) its entry.
         const entries = await loadEntries();
         const m = R().matchEntry(entries, title, parsed.items);
+        // A new title that lands on an entry takes that entry's draw type, unless he picked one himself.
+        const typeFields = m.status === 'sure' && require('../../../utils/drawCatalog').isKnownType(m.entry.priceType) && !p.typeChanged ? { [`pictures.${n}.priceType`]: m.entry.priceType, [`pictures.${n}.typeSettled`]: true } : {};
         await save(a, {
+            ...typeFields,
             [`pictures.${n}.title`]: title, [`pictures.${n}.readTitle`]: title, [`pictures.${n}.items`]: parsed.items.map(i => ({ ...i, guessed: false, newToIndex: false })), [`pictures.${n}.aliases`]: aliases,
             [`pictures.${n}.matchStatus`]: m.status, [`pictures.${n}.matchId`]: m.entry ? String(m.entry._id) : null, [`pictures.${n}.matchTitle`]: m.entry?.title || null, [`pictures.${n}.sameDraw`]: null,
         });
@@ -414,8 +438,9 @@ function resultView(doc, plans, ops, result) {
         const added = ops.filter(x => x.op.type === 'drawindex.add').length;
         lines.push(`### ${emojis.checkmark} Saved ${plural(ops.length, 'draw')}${ops.length ? ` · ${added} new, ${ops.length - added} updated` : ''}`);
     }
-    if (failed.length) lines.push(`${emojis.warn} Not saved:\n${failed.map(x => `-# Picture ${x.i + 1}: ${x.error}`).join('\n')}`);
-    if (skipped.length) lines.push(`-# ${skipped.map(x => `Picture ${x.i + 1}: ${x.skip}`).join(' · ')}`);
+    const after = [];
+    if (failed.length) after.push(`${emojis.warn} Not saved:\n${failed.map(x => `-# Picture ${x.i + 1}: ${x.error}`).join('\n')}`);
+    if (skipped.length) after.push(`-# ${skipped.map(x => `Picture ${x.i + 1}: ${x.skip}`).join(' · ')}`);
     const changeIds = result.changeIds || [];
     // The batch stays a day so Revert can find its changes; the change ids ride on it, not in the custom_id (ten of them would pass 100 characters).
     require('../../../models/DrawIndexUpload').updateOne({ _id: doc._id }, { $set: { savedChangeIds: changeIds } }).catch(() => {});
@@ -426,6 +451,7 @@ function resultView(doc, plans, ops, result) {
     return panel([
         text(`-# Draws  ›  Draw Index  ›  Upload\n${lines.join('\n').slice(0, 3800)}`),
         ...savedRows,
+        ...(after.length ? [text(after.join('\n').slice(0, 1500))] : []),
         BIG(),
         row(IX.indexBack(), btn('ixup', 'Upload More', emojis.plus, 1), ...(changeIds.length ? [{ type: 2, style: 4, label: 'Revert', custom_id: ID('ixvrev', doc._id), emoji: emojis.parseEmoji(emojis.keep) }] : [])),
     ]);
