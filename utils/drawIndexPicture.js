@@ -1,8 +1,8 @@
 // utils/drawIndexPicture.js -- puts an uploaded draw poster into Cloudinary for the owner's Upload Draws and Replace Picture (/bot drawindex).
 //
-// Prod writes `draws/<slug>`, the one permanent folder (utils/cloudinaryCache.js FOLDER; his rule 2026-10-30: a new image overrides the previous one, no copy kept). The dev bot shares prod's Cloudinary account (utils/cloudinaryDevGuard.js), so on dev the picture goes to `dev_draws/<slug>`, a namespace no prod asset lives in, and the guard lets it through (devNamespaceSafe). Cloudinary fetches the Discord link itself; the bot never holds the bytes.
+// Prod writes `draws/<slug>`, the one permanent folder (utils/cloudinaryCache.js FOLDER; his rule 2026-10-30: a new image overrides the previous one). A picture it overwrites is first held for 7 days (utils/drawPictureHold.js, his 2026-11-16 15:04 EST "sure go ahead"), so a Revert can put it back; if it cannot be held, nothing is replaced. The dev bot shares prod's Cloudinary account (utils/cloudinaryDevGuard.js), so on dev the picture goes to `dev_draws/<slug>`, a namespace no prod asset lives in, and the guard lets it through (devNamespaceSafe). Cloudinary fetches the Discord link itself; the bot never holds the bytes.
 //
-// Tags and context are written WITH the upload (catalogMirrorPlan's shape), so a new asset is complete without a second call. Never throws: { ok, url, publicId } or { ok: false, error }.
+// Tags and context are written WITH the upload (catalogMirrorPlan's shape), so a new asset is complete without a second call. Never throws: { ok, url, publicId, hold } (hold: the held copy's id, or null when nothing was overwritten) or { ok: false, error }.
 const { isCloudinaryWriteBlocked, IS_DEV } = require('./cloudinaryDevGuard');
 
 const folder = () => (IS_DEV ? 'dev_draws' : require('./cloudinaryCache').FOLDER);
@@ -18,7 +18,16 @@ async function uploadPicture({ slug, sourceUrl, doc, previousTags = [], inserted
         const plan = cc.catalogMirrorPlan(doc, { previousTags, inserted, year: doc.releaseYear || new Date().getUTCFullYear() });
         const meta = cc.metadataFor(doc.title, { items: doc.items, priceType: doc.priceType });
         // A replaced picture that carried another fingerprint: its old fp_ tag goes, or the old items would still find this asset (the same rule as cacheThumbnail).
-        const old = await cloudinary.api.resource(publicId, { context: true }).then(cc.readDrawContext).catch(() => null);
+        const res = await cloudinary.api.resource(publicId, { context: true, tags: true }).catch(() => null);
+        const old = res ? cc.readDrawContext(res) : null;
+        // The picture about to be overwritten is held first; without that copy a Revert could not bring it back, so a failed hold replaces nothing.
+        let hold = null;
+        if (res) {
+            const H = require('./drawPictureHold');
+            const h = await H.holdAsset(publicId, H.holdIdFor(publicId), res);
+            if (!h.ok) return { ok: false, error: `the old picture could not be kept for Revert (${h.error}), so it was not replaced` };
+            hold = h.held;
+        }
         if (old?.fp && old.fp !== meta.fp) await cloudinary.uploader.remove_tag(`${cc.FP_TAG_PREFIX}${old.fp}`, [publicId]).catch(() => {});
         const contextPairs = { ...meta.context, ...Object.fromEntries(String(plan.context || '').split('|').filter(Boolean).map(p => { const i = p.indexOf('='); return [p.slice(0, i), p.slice(i + 1)]; })) };
         const result = await cloudinary.uploader.upload(sourceUrl, {
@@ -35,7 +44,7 @@ async function uploadPicture({ slug, sourceUrl, doc, previousTags = [], inserted
             tags: [...new Set([...meta.tags, ...plan.addTags])],
             context: contextPairs,
         });
-        return { ok: true, url: require('./cloudinaryDeliveryUrl').withDeliveryDefaults(result.secure_url), publicId };
+        return { ok: true, url: require('./cloudinaryDeliveryUrl').withDeliveryDefaults(result.secure_url), publicId, hold };
     } catch (err) {
         return { ok: false, error: require('./cloudinaryErrors').safeErrorMessage(err) };
     }

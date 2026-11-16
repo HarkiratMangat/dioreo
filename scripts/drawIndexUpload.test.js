@@ -329,6 +329,20 @@ function limits(view, label) {
         assert.ok(/Picture 4: skipped, this doesn't look like a draw/.test(json), 'a not-a-draw skip is named with its reason');
     });
 
+    await check('a replaced picture is held: the update keeps hold and restore through validate, and its inverse restores the held copy', () => {
+        const upd = require('../core/ops').resolveOp('drawindex.update');
+        const v = upd.validate({ type: 'drawindex.update', target: { id: 'x' }, payload: { set: { imageUrl: 'u2', publicId: 'draws/a' }, rows: [], hold: { id: 'draws_hold/a-1', publicId: 'draws/a' } } });
+        assert.ok(v.ok && v.normalized.payload.hold?.id === 'draws_hold/a-1', 'hold survives validate');
+        const r = upd.validate({ type: 'drawindex.update', target: { id: 'x' }, payload: { set: { imageUrl: 'u1' }, rows: [], restore: { from: 'draws_hold/a-1', to: 'draws/a' } } });
+        assert.ok(r.ok && r.normalized.payload.restore?.from === 'draws_hold/a-1', 'restore survives validate');
+        const inv = upd.invert({ applied: { id: 'x', prior: { imageUrl: 'u1' }, rows: [], hold: { id: 'draws_hold/a-1', publicId: 'draws/a' } } });
+        assert.deepStrictEqual(inv.payload.restore, { from: 'draws_hold/a-1', to: 'draws/a' });
+        assert.ok(!upd.invert({ applied: { id: 'x', prior: { title: 'T' }, rows: [] } }).payload.restore, 'no hold, no restore');
+        const H = require('../utils/drawPictureHold');
+        assert.ok(/_hold\/a-\d{14}$/.test(H.holdIdFor('draws/a', new Date('2026-11-16T20:00:00Z'))), 'a held copy is <hold folder>/<name>-<stamp>');
+        assert.strictEqual(H.HOLD_DAYS, 7);
+    });
+
     console.log(failed ? `\n${failed} check(s) FAILED.` : '\nAll draw index upload checks passed.');
     process.exit(failed ? 1 : 0);
 })();

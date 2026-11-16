@@ -285,15 +285,17 @@ async function planPicture(p, doc, entries, seasonDoc) {
         const comments = [...new Set([...(entry.comments || []), ...(p.comments || [])])];
         if (comments.length !== (entry.comments || []).length) set.comments = comments;
         let rows = [];
+        let hold = null;
         if (!p.keepOldPicture) {
             const merged = { ...entry, ...set, items: set.items || entry.items };
             const up = await uploadPicture({ slug: entry.slug, sourceUrl: p.url, doc: merged, previousTags: entry.tags || [], crop: cropOf(p) });
             if (!up.ok) return { error: `the picture didn't upload (${up.error})` };
             set.imageUrl = up.url; set.publicId = up.publicId;
             rows = rowsToRepoint(seasonDoc, entry, up.url);
+            if (up.hold) hold = { id: up.hold, publicId: up.publicId };
         }
         if (!Object.keys(set).length && !rows.length) return { skip: 'nothing new for this entry' };
-        return { op: { type: 'drawindex.update', target: { id: String(entry._id) }, payload: { set, rows } }, title: entry.title };
+        return { op: { type: 'drawindex.update', target: { id: String(entry._id) }, payload: { set, rows, ...(hold ? { hold } : {}) } }, title: entry.title, hold };
     }
     const slug = slugify(p.title);
     if (entries.some(e => e.slug === slug)) return { error: `the index already has an entry named "${p.title}"; answer Same Draw on it or rename this one` };
@@ -301,6 +303,8 @@ async function planPicture(p, doc, entries, seasonDoc) {
     const up = await uploadPicture({ slug, sourceUrl: p.url, doc: base, inserted: true, crop: cropOf(p) });
     if (!up.ok) return { error: `the picture didn't upload (${up.error})` };
     return {
+        // A new entry can still overwrite a picture left at its slug by an older draw; that one is held too, and put back if the save fails.
+        hold: up.hold ? { id: up.hold, publicId: up.publicId } : null,
         op: { type: 'drawindex.add', payload: { slug, title: p.title, publicId: up.publicId, imageUrl: up.url, items: p.items.map(({ tier, kind, name, baseName, skinName }) => ({ tier, kind, name, baseName, skinName })), comments: p.comments || [], aliases: p.aliases || [], priceType: p.priceType, ...(doc.season ? { releaseSeason: doc.season, releaseYear: doc.year || undefined } : {}) } },
         title: p.title,
     };
@@ -317,6 +321,11 @@ async function saveUpload(doc, actorId) {
     const ops = plans.filter(x => x.op);
     let result = { ok: true, changeIds: [] };
     if (ops.length) result = await require('../../../core/changeset').commitSet(ops.map(x => x.op), { actorId });
+    // Nothing was saved, but the pictures were already uploaded: every overwritten one goes back now, from its held copy.
+    if (!result.ok) {
+        const H = require('../../../utils/drawPictureHold');
+        for (const x of plans) if (x.hold) x.restored = (await H.restorePicture({ from: x.hold.id, to: x.hold.publicId })).ok;
+    }
     return { plans, ops, result };
 }
 
@@ -426,7 +435,7 @@ async function route(interaction, verb, a, b, c, ctx) {
     }
     if (verb === 'ixvrev') {
         return require('../results').revertChanges(interaction, doc.savedChangeIds || [], {
-            doneNote: 'the draw index is back as it was (pictures that were replaced stay replaced)',
+            doneNote: `the draw index and any replaced pictures are back as they were (an old picture is kept ${require('../../../utils/drawPictureHold').HOLD_DAYS} days)`,
             render: async (note) => {
                 // An upload started from a news card put that card's lines right when it saved; a Revert must put them back the other way, or the card keeps saying the draw is indexed.
                 if (doc.newsCard) await require('../../../utils/newsTriage/indexStatus').refreshIndexStatus(doc.newsCard, { rest: interaction.client.rest, appId: interaction.applicationId });
@@ -450,7 +459,8 @@ function resultView(doc, plans, ops, result) {
     const failed = [...plans.filter(x => x.error), ...(doc.pictures || []).map((p, i) => ({ i, p })).filter(({ p }) => p.status === 'failed' && !p.skip).map(({ i, p }) => ({ i, error: `couldn't be read (${p.error || 'unknown error'})` }))].sort((x, y) => x.i - y.i);
     const skipped = [...plans.filter(x => x.skip), ...(doc.pictures || []).map((p, i) => ({ i, p })).filter(({ p }) => p.skip).map(({ i, p }) => ({ i, skip: `skipped${skipReason(p) ? `, ${skipReason(p)}` : ''}` }))].sort((x, y) => x.i - y.i);
     const lines = [];
-    if (!result.ok) lines.push(`### ${emojis.cross} Nothing was saved\n-# ${require('../shared').extractCommitError(result)}${ops.length ? '\n-# The pictures were already uploaded; a replaced picture stays replaced.' : ''}`);
+    const notRestored = plans.filter(x => x.hold && x.restored === false).length;
+    if (!result.ok) lines.push(`### ${emojis.cross} Nothing was saved\n-# ${require('../shared').extractCommitError(result)}${plans.some(x => x.hold) ? (notRestored ? `\n-# ${emojis.warn} ${plural(notRestored, 'replaced picture')} could not be put back.` : '\n-# Every replaced picture was put back.') : ''}`);
     else {
         const added = ops.filter(x => x.op.type === 'drawindex.add').length;
         lines.push(`### ${emojis.checkmark} Saved ${plural(ops.length, 'draw')}${ops.length ? ` · ${added} new, ${ops.length - added} updated` : ''}`);

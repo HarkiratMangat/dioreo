@@ -16,6 +16,9 @@ const { registerApplicationCommands } = require('./registry');
 
 // --- CLOUDINARY CLEANUP (patch notes only since 2026-10-30 16:17 EDT) --- Draw images are permanent now (Harkirat: they "will remain forever in a draws/ folder"), so there is no 45-day draw prune and nothing is archived to archive/draws/ any more: utils/cloudinaryCache.js overwrites a replaced image in place. Cloudinary has no native per-asset TTL, so the only cleanup left is the patch-notes one below, which this runs on boot and then every 24 h. Wrapped in its own try/catch since this runs unawaited from the ClientReady handler and a failure here must never be able to crash the bot (matches the crash-resilience convention documented in CLAUDE.md).
 async function runCloudinaryCleanup() {
+    // Draw index pictures held for Revert (utils/drawPictureHold.js) are deleted once they pass 7 days. First, and on its own: it needs no SeasonalData, and it never throws.
+    const held = await require('../utils/drawPictureHold').pruneHeld();
+    if (held) console.log(`🧹 Cloudinary cleanup: deleted ${held} held draw index picture(s) older than 7 days.`);
     try {
         const SeasonalData = require('../models/SeasonalData');
         const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();

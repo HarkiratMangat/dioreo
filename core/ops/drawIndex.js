@@ -143,7 +143,11 @@ registerEntity('drawindex', {
             if ('title' in set && !String(set.title || '').trim()) return { ok: false, errors: ['A draw needs a title.'] };
             if ('aliases' in set) set.aliases = cleanAliases(set.aliases);
             if ('releaseSeason' in set && !seasonOk(set.releaseSeason)) return { ok: false, errors: ['A release season is a whole number, like 10.'] };
-            return { ok: true, errors: [], normalized: { ...op, payload: { set, rows } } };
+            // `hold` (a forward picture replace: the old picture's held copy and where it lived) and `restore` (its Revert: copy `from` back onto `to`) ride through, or a rebuilt payload would drop them (.claude/rules/operation-core.md).
+            const pair = (x, a, b) => (x && typeof x[a] === 'string' && typeof x[b] === 'string' ? { [a]: x[a], [b]: x[b] } : null);
+            const hold = pair(op.payload?.hold, 'id', 'publicId');
+            const restore = pair(op.payload?.restore, 'from', 'to');
+            return { ok: true, errors: [], normalized: { ...op, payload: { set, rows, ...(hold ? { hold } : {}), ...(restore ? { restore } : {}) } } };
         },
         preview: async (op) => {
             const cur = await DrawCatalog.findById(op.target.id).lean();
@@ -162,14 +166,23 @@ registerEntity('drawindex', {
                 const res = await setRowPicture(row, session);
                 if (res.ok) moved.push({ path: row.path, id: row.id, from: row.to, to: row.from ?? '' });
             }
+            // A Revert of a picture replace copies the held old picture back after the commit, holding the current one first so reverting the Revert works too (utils/drawPictureHold.js). The links in the index and the rows are the ones they had; Cloudinary serves an asset's current bytes under any version number.
+            const H = require('../../utils/drawPictureHold');
+            const restore = op.payload.restore || null;
+            const nextHold = restore ? { id: H.holdIdFor(restore.to), publicId: restore.to } : (op.payload.hold || null);
+            const write = afterWrite(String(cur._id), cur.tags || [], false);
             return {
                 ok: true,
-                afterCommit: afterWrite(String(cur._id), cur.tags || [], false),
+                afterCommit: restore ? async () => {
+                    const r = await H.restorePicture({ from: restore.from, to: restore.to, holdCurrentAs: nextHold.id });
+                    const note = await write();
+                    return r.ok ? note : `The index is back, but the picture was not: ${r.error}.`;
+                } : write,
                 change: { action: 'edit', model: 'DrawCatalog', target: cur.title, summary: `Updated the draw index entry "${cur.title}"${moved.length ? ` and ${moved.length} draw picture${moved.length === 1 ? '' : 's'}` : ''}` },
-                applied: { id: String(cur._id), prior: Object.fromEntries(Object.entries(prior).filter(([k]) => UPDATE_FIELDS.includes(k))), rows: moved }
+                applied: { id: String(cur._id), prior: Object.fromEntries(Object.entries(prior).filter(([k]) => UPDATE_FIELDS.includes(k))), rows: moved, ...(nextHold ? { hold: nextHold } : {}) }
             };
         },
-        invert: (c) => ({ type: 'drawindex.update', target: { id: c.applied.id }, payload: { set: c.applied.prior, rows: c.applied.rows || [] } })
+        invert: (c) => ({ type: 'drawindex.update', target: { id: c.applied.id }, payload: { set: c.applied.prior, rows: c.applied.rows || [], ...(c.applied.hold ? { restore: { from: c.applied.hold.id, to: c.applied.hold.publicId } } : {}) } })
     },
 
     'drawindex.delete': {

@@ -281,11 +281,16 @@ async function route(interaction, verb, a, b, c, ctx) {
         const up = await require('../../../utils/drawIndexPicture').uploadPicture({ slug: e.slug, sourceUrl: file.url, doc: e, previousTags: e.tags || [], crop });
         if (!up.ok) return say(interaction, `${emojis.cross} The picture didn't upload (${up.error}). Nothing was changed.`);
         const rows = require('./drawIndexUpload').rowsToRepoint(await getDoc(), e, up.url);
-        const result = await require('../../../core/changeset').commitSet([{ type: 'drawindex.update', target: { id: String(e._id) }, payload: { set: { imageUrl: up.url, publicId: up.publicId }, rows } }], { actorId: interaction.user.id });
-        if (!result.ok) return say(interaction, `${emojis.cross} The picture uploaded, but the index was not updated: ${require('../shared').extractCommitError(result)}`);
+        const hold = up.hold ? { id: up.hold, publicId: up.publicId } : null;
+        const result = await require('../../../core/changeset').commitSet([{ type: 'drawindex.update', target: { id: String(e._id) }, payload: { set: { imageUrl: up.url, publicId: up.publicId }, rows, ...(hold ? { hold } : {}) } }], { actorId: interaction.user.id });
+        if (!result.ok) {
+            // The upload overwrote the old picture before the save failed: put it back from its held copy.
+            const back = hold ? (await require('../../../utils/drawPictureHold').restorePicture({ from: hold.id, to: hold.publicId })).ok : true;
+            return say(interaction, `${emojis.cross} The index was not updated: ${require('../shared').extractCommitError(result)}${back ? ' The old picture is back.' : ` ${emojis.warn} The old picture could not be put back.`}`);
+        }
         const rev = ID('ixrevert', result.changeIds.join(','), a, b || '');
         const resultRow = rev.length <= 100 ? row({ type: 2, style: 4, label: 'Revert', custom_id: rev, emoji: emojis.parseEmoji(emojis.keep) }) : null;
-        return show(interaction, cardView(await findEntry(a) || e, await getDoc(), b || '', { header: `### ${emojis.checkmark} Picture replaced${rows.length ? ` · ${plural(rows.length, 'draw')} now ${rows.length === 1 ? 'uses' : 'use'} it` : ''}${crop ? ` · logo bar cropped (${crop.bar}px)` : ''}\n-# Revert puts the index back; the old picture itself is not kept.`, resultRow, owner }));
+        return show(interaction, cardView(await findEntry(a) || e, await getDoc(), b || '', { header: `### ${emojis.checkmark} Picture replaced${rows.length ? ` · ${plural(rows.length, 'draw')} now ${rows.length === 1 ? 'uses' : 'use'} it` : ''}${crop ? ` · logo bar cropped (${crop.bar}px)` : ''}\n-# Revert puts the old picture back (it is kept ${require('../../../utils/drawPictureHold').HOLD_DAYS} days).`, resultRow, owner }));
     }
     if (verb === 'ixdel') {
         const e = await findEntry(a);
