@@ -116,6 +116,10 @@ Measured live on the Season 9 calendar image (22 rows) and a one-draw text post,
 - **The model is told which channel a post came from** (official, or the leaks channel that reposts official calendars and also posts datamines). Only 5 official posts existed in the window (followed 2026-10-29), so official-vs-leak was judged mostly from reposts.
 - **A Discord image link expires** (signed, about a day), so a draw box re-reads the source post for its image at click time; /manage re-hosts it to Cloudinary on save. A trailer post's attachment is a video, so its box has no image.
 
+## Is the draw in the draw index? (2026-11-16 13:08 EST, owner-draws-index)
+
+Harkirat 2026-11-16 12:05 EST: never the leak channel's posters, "just detecting the draw name/title/items (if its cheap) and checking if that draw is already indexed". `utils/newsTriage/indexStatus.js` matches each draw item the read already returned (name and rewards, no extra AI call) with Upload Draws' matcher and stores `NewsCard.index`; the card lists indexed / maybe / not indexed with what each lacks, and an owner-only **Add to Draw Index** (`news|ixadd|<card>`) opens Upload Draws with those names in its Names box (his own pictures). The daily briefing lists the last week's draws still missing, re-checked against the index each time. `resolve.js` `catalogueMatch` is unchanged: it names drafted rows.
+
 ## Limits, on purpose
 
 - One card per post, at most 8 items shown (`card.js` `MAX_ITEMS`, pinned under 40 components and 4,000 characters by the test), the rest counted in a note. Five hid three playlists of CODM's own season post.

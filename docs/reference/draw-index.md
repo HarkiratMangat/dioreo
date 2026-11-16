@@ -72,6 +72,10 @@ MONGODB_URI=<uri> node scripts/syncDrawCatalog.js --write
 
 **Release season from a save.** A document the bot creates (`insertFields`, under `$setOnInsert`) gets `releaseSeason` = the current season's number only when the draw was saved into New (Add or Edit Draw's New box, a Quick Add line with `new`, Add or Replace Multiple's New box), or the draft's own season for a draw staged for next season. Quick Add's draft says which season each New row is filed under. It is never written to a document that already exists, so a returning draw marked New on `/draws` keeps its real season. The draft, Edit and Save are `handlers/manage/quickAdd.js`; the matcher's cases are `scripts/quickAdd.test.js`.
 
+## The owner's Upload Draws (2026-11-16 13:08 EST, branch feat/owner-draws-index)
+
+`/bot drawindex` on Dioreo Admin, owner only. Gemini only transcribes a poster (title, printed item names, a tier only where a frame shows, condition lines, a few printed words); the index's own items, the gunsmith's weapon names and fixed rules decide the rest, because the 2026-10-31 runs flipped on unframed rarities, draw types and near-miss names until the costly web search. Measured on five posters read twice: identical both times, about $0.002 a read. An update only adds items; a replaced picture re-points staged or live draws on a placeholder or the old link inside `drawindex.update`. The bottom logo bar (one design, 89px at 1080 wide) is found by `utils/drawPictureBar.js`: 61 of 61 of the first import's barred posters, none of its 14 clean ones and none of 89 already-cropped. Stored pictures are capped at 2048px.
+
 ## Open
 
 - The Advanced Character wording in `/draw prices` (`docs/db-deferred-list.md`).
