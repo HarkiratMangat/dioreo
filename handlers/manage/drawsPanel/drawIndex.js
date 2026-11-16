@@ -123,7 +123,7 @@ function deleteView(e, doc, origin) {
     const place = placeOf(doc, e);
     const where = [place.live ? `on /draws (${place.live})` : null, place.draft ? `in the draft (${place.draft})` : null].filter(Boolean);
     return panel([
-        text(`### ${emojis.warn} Delete ${String(e.title).slice(0, 80)}?\n-# ${where.length ? `${where.join(' · ')} · they keep their picture · ` : ''}Every change can be reverted.`),
+        text(`### ${emojis.warn} Delete ${String(e.title).slice(0, 80)}?\n-# ${where.length ? `Used ${where.join(' · ')} · those draws keep their picture · ` : ''}Every change can be reverted.`),
         BIG(),
         // The same words and emoji as /manage draws' own delete confirm; row() puts Cancel first, as it puts every way back (utils/returnFirst.js).
         row(btn(['ixdelok', String(e._id), origin], 'Yes, Delete', emojis.deleteBin, 4), btn(['ixopen', String(e._id), origin], 'Cancel', emojis.returnArrow)),

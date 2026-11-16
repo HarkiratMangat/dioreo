@@ -76,7 +76,7 @@ function editModal(p, token, n) {
 function replaceModal(id, origin) {
     return {
         custom_id: ID('ixpicm', id, origin), title: 'Replace Picture',
-        components: [{ type: 18, label: 'Picture', description: 'The old picture is not kept. Draws using it follow the new one.', component: { type: 19, custom_id: 'pic', min_values: 1, max_values: 1, required: true } }],
+        components: [{ type: 18, label: 'Picture', description: 'The old picture is kept 7 days, so Revert can bring it back. Draws using it show the new one.', component: { type: 19, custom_id: 'pic', min_values: 1, max_values: 1, required: true } }],
     };
 }
 
@@ -155,7 +155,8 @@ function blockers(p, doc = null) {
         // The same items on two new pictures are one draw under two titles, so they count too.
         const fp = (x) => (isUpdate(x) ? null : require('../../../utils/cloudinaryCache').drawFingerprint({ items: x.items }));
         const twin = doc.pictures.findIndex((q, j) => j !== me && q.status === 'read' && !q.skip && ((key && targetKey(q) === key) || (fp(p) && fp(q) === fp(p))));
-        if (twin !== -1) out.push(`one of it and picture ${twin + 1} skipped (the same draw)`);
+        // Kept as a token, not a phrase: needText() words the clash once for the pair (the 2026-11-16 18:41 EST click test read "picture 2 needs one of it and picture 4 skipped… ; picture 4 needs one of it and picture 2…").
+        if (twin !== -1) out.push(`twin:${twin}`);
     }
     if (!String(p.title || '').trim()) out.push('a title');
     if (!(p.items || []).length) out.push('its items');
@@ -235,6 +236,15 @@ function reviewView(doc, n = 0, note = null) {
     ));
     return panel(components);
 }
+// What still stops a Save, one phrase per fix: a same-draw pair once ("pictures 2 and 4 are the same draw: skip one"), then each picture's own needs.
+function needText(i, b) {
+    const twin = b.find(x => String(x).startsWith('twin:'));
+    const rest = b.filter(x => !String(x).startsWith('twin:'));
+    const out = [];
+    if (twin) { const j = Number(twin.slice(5)); out.push(`pictures ${Math.min(i, j) + 1} and ${Math.max(i, j) + 1} are the same draw: skip one`); }
+    if (rest.length) out.push(`picture ${i + 1} needs ${rest.join(' and ')}`);
+    return out;
+}
 function saveLine(doc) {
     const inc = included(doc);
     const fresh = inc.filter(p => !isUpdate(p)).length;
@@ -243,7 +253,8 @@ function saveLine(doc) {
     const failed = doc.pictures.filter(p => p.status === 'failed').length;
     const parts = [inc.length ? `${plural(inc.length, 'draw')} to save (${fresh} new, ${upd} updated)` : 'Nothing to save yet', skipped ? `${skipped} skipped` : null, failed ? `${emojis.warn} ${failed} not read` : null, doc.costUsd ? `read for $${doc.costUsd.toFixed(3)}` : null].filter(Boolean);
     const blocked = doc.pictures.map((p, i) => ({ i, b: blockers(p, doc) })).filter(x => x.b.length);
-    return `-# ${parts.join(' · ')}${blocked.length ? `\n-# ${emojis.warn} Before saving: ${blocked.map(x => `picture ${x.i + 1} needs ${x.b.join(' and ')}`).join('; ').slice(0, 600)}` : ''}`;
+    const needs = [...new Set(blocked.flatMap(x => needText(x.i, x.b)))];
+    return `-# ${parts.join(' · ')}${needs.length ? `\n-# ${emojis.warn} Before saving: ${needs.join('; ').slice(0, 600)}` : ''}`;
 }
 
 // ---------- saving ----------
@@ -437,7 +448,7 @@ async function route(interaction, verb, a, b, c, ctx) {
     }
     if (verb === 'ixvsave') {
         const blockedAt = doc.pictures.findIndex(x => blockers(x, doc).length);
-        if (blockedAt !== -1) return redraw(`${emojis.warn} Picture ${blockedAt + 1} still needs ${blockers(doc.pictures[blockedAt], doc).join(' and ')}.`, blockedAt);
+        if (blockedAt !== -1) { const why = needText(blockedAt, blockers(doc.pictures[blockedAt], doc)).join('; '); return redraw(`${emojis.warn} ${why.charAt(0).toUpperCase()}${why.slice(1)}.`, blockedAt); }
         await interaction.deferUpdate();
         const { sendV2Payload } = require('../../../utils/sendV2Payload');
         await sendV2Payload(interaction, panel([text(`### ${emojis.plus} Saving ${plural(included(doc).length, 'draw')}…`)]), { skipExpiry: true });
@@ -498,4 +509,4 @@ function resultView(doc, plans, ops, result) {
 }
 
 // `__test`: the read and the save, for the dev probe (local/project/features/owner-draws-index/probes/e2e.js) and nothing else.
-module.exports = { __test: { readAll, saveUpload }, route, isUploadVerb, uploadModal, editModal, replaceModal, reviewView, resultView, blockers, markSameDraws, rowsToRepoint, parseItemsText, itemsToText, seasonOf, toPicture, planPicture, isUpdate, OWNER_ONLY, MAX_PICTURES, TIERS, KINDS };
+module.exports = { __test: { readAll, saveUpload }, route, isUploadVerb, uploadModal, editModal, replaceModal, reviewView, resultView, blockers, saveLine, needText, markSameDraws, rowsToRepoint, parseItemsText, itemsToText, seasonOf, toPicture, planPicture, isUpdate, OWNER_ONLY, MAX_PICTURES, TIERS, KINDS };

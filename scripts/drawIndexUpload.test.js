@@ -304,7 +304,8 @@ function limits(view, label) {
         const doc = { pictures: [pic({}), pic({ skip: true, sameAs: 0 })] };
         assert.deepStrictEqual(U.blockers(doc.pictures[0], doc), [], 'a skipped duplicate blocks nothing');
         doc.pictures[1].skip = false;
-        assert.ok(U.blockers(doc.pictures[1], doc).some(b => /picture 1 skipped \(the same draw\)/.test(b)), 'Include on the duplicate blocks');
+        assert.ok(U.blockers(doc.pictures[1], doc).some(b => b === 'twin:0'), 'Include on the duplicate blocks');
+        assert.ok(U.saveLine(doc).includes('pictures 1 and 2 are the same draw: skip one') && !U.saveLine(doc).includes('twin:') && (U.saveLine(doc).match(/same draw/g) || []).length === 1, 'the clash is worded once for the pair');
         const twoTitles = { pictures: [pic({}), pic({ title: 'Pair Lethal Draw' })] };
         assert.ok(U.blockers(twoTitles.pictures[1], twoTitles).length, 'the same items under two new titles are one draw');
         const upd = { pictures: [pic({ matchStatus: 'sure', matchId: 'e1', title: 'Lethal Pair Draw' }), pic({ matchStatus: 'maybe', matchId: 'e1', sameDraw: true, title: 'Pair Lethal Draw' })] };
