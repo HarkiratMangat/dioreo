@@ -87,6 +87,12 @@ function buildCard(card) {
         if (i < items.length - 1 && items.length <= SPACERS_UP_TO) parts.push({ type: 14, spacing: 1, divider: false });
     });
     for (const note of card.notes || []) parts.push({ type: 10, content: `-# ${note}` });
+    // The draw index (indexStatus.js): which of the post's draws are indexed, and one button to add the rest from their posters (the owner's Upload Draws, his own pictures, never the post's).
+    const indexLines = require('./indexStatus').indexLines(card.index, emojis);
+    if (indexLines.length) {
+        parts.push({ type: 14, spacing: 1, divider: true }, { type: 10, content: indexLines.slice(0, 8).join('\n').slice(0, 1200) });
+        if (require('./indexStatus').needsAdding(card.index).length && !card.dismissed) parts.push({ type: 1, components: [{ type: 2, style: 2, label: 'Add to Draw Index', custom_id: `news|ixadd|${id}`, emoji: emojis.parseEmoji(emojis.plus) }] });
+    }
     parts.push({ type: 14, spacing: 2, divider: true });
     if (card.dismissed) parts.push({ type: 10, content: `-# ${emojis.cross} **Dismissed**` });
     const row = card.jumpUrl ? [{ type: 2, style: 5, label: 'Open Post', url: card.jumpUrl }] : [];
@@ -136,6 +142,12 @@ function buildBriefing(b, { dayLabel } = {}) {
         const lines = [`**The bot may be wrong about** (${b.fixes.length})`, ...b.fixes.slice(0, 6).map(f => `- ${f.name}: ${f.text}`)];
         if (b.fixes.length > 6) lines.push(`-# +${b.fixes.length - 6} more on their cards`);
         parts.push({ type: 14, spacing: 1, divider: true }, { type: 10, content: lines.join('\n').slice(0, 1000) });
+    }
+    if ((b.unindexed || []).length) {
+        const lines = [`**Not in the draw index yet** (${b.unindexed.length})`, ...b.unindexed.slice(0, 8).map(x => `- ${x.name}${x.status === 'maybe' ? ` · maybe ${x.title}` : ''}`)];
+        if (b.unindexed.length > 8) lines.push(`-# +${b.unindexed.length - 8} more`);
+        lines.push('-# Add them from their posters with /bot drawindex › Upload Draws.');
+        parts.push({ type: 14, spacing: 1, divider: true }, { type: 10, content: lines.join('\n').slice(0, 900) });
     }
     if ((b.channels || []).length) {
         const lines = ['**Watching**', ...b.channels.map(c => `- ${c.stale ? `${warn} ` : ''}#${c.name}: last post ${c.lastAt ? `<t:${Math.floor(new Date(c.lastAt).getTime() / 1000)}:R>` : 'unknown'}`)];

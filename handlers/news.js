@@ -203,6 +203,18 @@ async function handleNewsInteraction(interaction) {
         await openItem(interaction, cardId, Number(index));
         return true;
     }
+    // Add to Draw Index (2026-11-16 12:23 EST): the owner's Upload Draws pop-up, with the draws the index lacks named in its Names box. Owner only, like /bot drawindex; the pictures are his own uploads, never the post's. It opens a box, so it cannot defer.
+    if (interaction.isButton() && action === 'ixadd') {
+        if (!(await allowed(interaction))) return true;
+        if (!require('../utils/adminAccess').isOwner(interaction.user.id)) {
+            try { await interaction.reply({ content: require('./manage/drawsPanel/drawIndexUpload').OWNER_ONLY, flags: MessageFlags.Ephemeral }); } catch (e) { console.error(e); }
+            return true;
+        }
+        const card = await require('../models/NewsCard').findById(cardId, { index: 1 }).lean().catch(() => null);
+        const names = require('../utils/newsTriage/indexStatus').needsAdding(card?.index).map(x => x.name).join('\n');
+        await interaction.showModal(require('./manage/drawsPanel/drawIndexUpload').uploadModal({ origin: 'n', card: cardId, names }));
+        return true;
+    }
     // Everything else is acknowledged first, then checked and run. Each branch names its own interaction type: this module serves buttons and selects (the router's mixed-type rule).
     let route = null;
     if (interaction.isButton() && action === 'dismiss') route = { ack: 'update', run: dismiss };

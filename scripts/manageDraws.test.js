@@ -440,8 +440,8 @@ function seasonDoc(nNew = 3, nRet = 30) {
     await check('every verb the draws panel handles is reached from somewhere', () => {
         const fs = require('fs');
         const read = (f) => fs.readFileSync(require('path').join(__dirname, '..', f), 'utf8');
-        const handled = read('handlers/manage/drawsPanel/index.js') + read('handlers/manage/drawsPanel/drawIndex.js');
-        const emitters = ['handlers/manage/drawsPanel/views.js', 'handlers/manage/drawsPanel/index.js', 'handlers/manage/drawsPanel/drawIndex.js', 'handlers/manage/quickAdd.js'].map(read).join('\n');
+        const handled = read('handlers/manage/drawsPanel/index.js') + read('handlers/manage/drawsPanel/drawIndex.js') + read('handlers/manage/drawsPanel/drawIndexUpload.js');
+        const emitters = ['handlers/manage/drawsPanel/views.js', 'handlers/manage/drawsPanel/index.js', 'handlers/manage/drawsPanel/drawIndex.js', 'handlers/manage/drawsPanel/drawIndexUpload.js', 'handlers/manage/quickAdd.js'].map(read).join('\n');
         const verbs = new Set([...handled.matchAll(/verb === '(\w+)'/g)].map(m => m[1]));
         const reached = new Set([...emitters.matchAll(/(?:btn\(\s*\[?\s*|ID\(\s*|\$\{PREFIX\}|'mng_dr\|)'?(\w+)/g)].map(m => m[1]));
         const orphans = [...verbs].filter(v => !reached.has(v));
@@ -486,8 +486,8 @@ function seasonDoc(nNew = 3, nRet = 30) {
     await check('every verb the draws, calendar and gunsmith panels emit has a handler', () => {
         const fs = require('fs');
         const read = (f) => fs.readFileSync(require('path').join(__dirname, '..', f), 'utf8').replace(/^\s*\/\/.*$/gm, '');
-        const panels = { draws: ['handlers/manage/drawsPanel/views.js', 'handlers/manage/drawsPanel/index.js', 'handlers/manage/drawsPanel/drawIndex.js'], calendar: ['handlers/manage/calendarPanel/views.js', 'handlers/manage/calendarPanel/index.js'], gunsmith: ['handlers/manage/gunsmith/views.js', 'handlers/manage/gunsmith/index.js'] };
-        const NOT_CLICKABLE = new Set(['pgn', 'spgn', 'spg', 'cardn', 'ixpgn', 'dd', 'view']);
+        const panels = { draws: ['handlers/manage/drawsPanel/views.js', 'handlers/manage/drawsPanel/index.js', 'handlers/manage/drawsPanel/drawIndex.js', 'handlers/manage/drawsPanel/drawIndexUpload.js'], calendar: ['handlers/manage/calendarPanel/views.js', 'handlers/manage/calendarPanel/index.js'], gunsmith: ['handlers/manage/gunsmith/views.js', 'handlers/manage/gunsmith/index.js'] };
+        const NOT_CLICKABLE = new Set(['pgn', 'spgn', 'spg', 'cardn', 'ixpgn', 'ixvpg', 'dd', 'view']);
         for (const [name, files] of Object.entries(panels)) {
             const src = files.map(read).join('\n');
             const handled = new Set([...src.matchAll(/verb === '(\w+)'/g)].map(m => m[1]));

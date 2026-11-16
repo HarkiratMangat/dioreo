@@ -1318,6 +1318,9 @@ module.exports = {
         .addSubcommand(sub => sub.setName('delete').setDescription("Delete Dioreo's own messages by ID, link or count (owner-only)")
             .addStringOption(o => o.setName('messages').setDescription('Message IDs or links, or a number for the last N (blank: the last one)'))
             .addStringOption(o => o.setName('channel').setDescription('Channel ID (blank: this channel)')))
+        // `/bot drawindex` (2026-11-16 12:22 EST, Harkirat 11:11 EST: "an owner only command where i can upload and check the draws index", and 12:05 EST "bot drawindex is fine"): opens the Draw Index panel with the owner's Upload Draws (handlers/manage/drawsPanel/drawIndex.js, drawIndexUpload.js).
+        .addSubcommand(sub => sub.setName('drawindex').setDescription('Upload, check and edit the draw index (owner-only)')
+            .addStringOption(o => o.setName('search').setDescription('Words in a draw\'s title, other names or items (blank: the Draw Index home)').setMaxLength(100)))
         .addSubcommand(sub => sub.setName('hotpatch').setDescription('Reload changed files without a restart')
             .addBooleanOption(o => o.setName('pull').setDescription('git pull first (default: yes)'))
             .addBooleanOption(o => o.setName('dry_run').setDescription('Show the plan and change nothing'))
@@ -1371,6 +1374,30 @@ module.exports = {
             }
             await interaction.deferReply({ flags: 64 });
             return require('../utils/ownerDelete').runFromSlash(interaction);
+        }
+
+        if (sub === 'drawindex') {
+            // Owner-only, never grantable: it writes the draw index and Cloudinary. Always private. The panel is /manage draws' own Draw Index, so its buttons route through the same `mng_dr|` handlers and lock.
+            if (!isOwner(interaction.user.id)) {
+                return interaction.reply({ content: `${BOT_EMOJI.accessDenied} **Only the bot owner can use this.**`, ephemeral: true });
+            }
+            await interaction.deferReply({ flags: 64 });
+            const IX = require('../handlers/manage/drawsPanel/drawIndex');
+            const entries = await require('../utils/drawCatalog').loadCatalog({ force: true });
+            const doc = await require('../models/SeasonalData').findOne({ docType: 'global' }).lean();
+            const q = (interaction.options.getString('search') || '').trim();
+            if (q) {
+                const hits = IX.searchEntries(entries, q);
+                if (hits.length === 1) return sendV2Payload(interaction, IX.cardView(hits[0], doc, '', { owner: true }), { skipExpiry: true });
+                if (hits.length > 1) {
+                    // The same results list the panel's Search the Index draws, under a ManageSelection token, so its pager and each card's way back work.
+                    const token = require('crypto').randomBytes(6).toString('base64url');
+                    await require('../models/ManageSelection').create({ _id: token, mode: 'DRAWS', ids: hits.map(e => `x:${e._id}`), selected: [], query: [q.slice(0, 100)] });
+                    return sendV2Payload(interaction, IX.listView(hits, { title: 'Search Results', origin: `t:${token}`, pagerParts: ['ixres', token], sub: ` match \`${q.slice(0, 40)}\`` }), { skipExpiry: true });
+                }
+                return sendV2Payload(interaction, IX.homeView(entries, doc, `${emojis.cross} Nothing in the draw index matches \`${q.slice(0, 60)}\`.`, { owner: true }), { skipExpiry: true });
+            }
+            return sendV2Payload(interaction, IX.homeView(entries, doc, null, { owner: true }), { skipExpiry: true });
         }
 
         if (sub === 'hotpatch') {
