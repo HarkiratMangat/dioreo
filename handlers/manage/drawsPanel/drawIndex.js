@@ -111,7 +111,7 @@ function cardView(e, doc, origin = '', { header = null, resultRow = null, owner 
         ...((e.items || []).some(i => !i.kind) ? [btn(['ixkinds', String(e._id)], 'Set Item Kinds', emojis.edit)] : []),
         ...(!place.live && !place.draft ? [btn(['ixqa', String(e._id)], 'Quick Add This Draw', emojis.plus, 3)] : []),
     ));
-    if (owner) components.push(row(btn(['ixpic', String(e._id), origin], 'Replace Picture', emojis.edit), btn(['ixdel', String(e._id), origin], 'Delete Entry', emojis.collapse, 4)));
+    if (owner) components.push(row(btn(['ixpic', String(e._id), origin], 'Replace Picture', emojis.edit), btn(['ixdel', String(e._id), origin], 'Delete Entry', emojis.deleteBin, 4)));
     return panel(components);
 }
 
@@ -120,9 +120,10 @@ function deleteView(e, doc, origin) {
     const place = placeOf(doc, e);
     const where = [place.live ? `on /draws (${place.live})` : null, place.draft ? `in the draft (${place.draft})` : null].filter(Boolean);
     return panel([
-        text(`${crumb(String(e.title).slice(0, 80))}\n### ${emojis.warn} Delete ${String(e.title).slice(0, 80)} from the draw index?\n-# ${where.length ? `It is ${where.join(' and ')}; those draws keep their picture, but Quick Add, Add Draw and news triage will no longer find this entry.` : 'Quick Add, Add Draw and news triage will no longer find it.'} Revert brings it back.`),
+        text(`${crumb(String(e.title).slice(0, 80))}\n### ${emojis.warn} Delete ${String(e.title).slice(0, 80)} from the draw index?\n-# ${where.length ? `It is ${where.join(' and ')}; those draws keep their picture, but Quick Add, Add Draw and news triage will no longer find this entry.` : 'Quick Add, Add Draw and news triage will no longer find it.'} Every change can be reverted.`),
         BIG(),
-        row(btn(['ixopen', String(e._id), origin], 'Keep It', emojis.returnArrow), btn(['ixdelok', String(e._id), origin], 'Delete Entry', emojis.collapse, 4)),
+        // The same words and emoji as /manage draws' own delete confirm; row() puts Cancel first, as it puts every way back (utils/returnFirst.js).
+        row(btn(['ixdelok', String(e._id), origin], 'Yes, Delete', emojis.deleteBin, 4), btn(['ixopen', String(e._id), origin], 'Cancel', emojis.returnArrow)),
     ]);
 }
 

@@ -178,7 +178,7 @@ function reviewView(doc, n = 0, note = null) {
         components.push(text(`### ${emojis.cross} Picture ${i + 1} couldn't be read\n-# ${p.filename || 'upload'} · ${p.error || 'unknown error'}`));
         // A file that is not a picture has nothing to show (the click test: Discord drew "Image failed to load").
         if (!/not a picture/i.test(p.error || '')) components.push({ type: 12, items: [{ media: { url: p.url } }] });
-        components.push(row(btn(['ixvretry', t, i], 'Read Again', emojis.search, 1), btn(['ixvskip', t, i], p.skip ? 'Include' : 'Skip', emojis.collapse)));
+        components.push(row(btn(['ixvretry', t, i], 'Read Again', emojis.search, 1), btn(['ixvskip', t, i], p.skip ? 'Include' : 'Skip', p.skip ? emojis.plus : emojis.diffMinus)));
     } else if (p.status === 'saved') {
         components.push(text(`### ${emojis.checkmark} Saved: ${p.savedTitle || p.title}`));
         components.push({ type: 12, items: [{ media: { url: p.url } }] });
@@ -212,7 +212,7 @@ function reviewView(doc, n = 0, note = null) {
             btn(['ixvedit', t, i], 'Edit', emojis.edit),
             ...(isUpdate(p) && !p.skip ? [btn(['ixvkeep', t, i], p.keepOldPicture ? 'Use This Picture' : 'Keep Old Picture', emojis.keep)] : []),
             ...(p.barPx && !p.skip && !p.keepOldPicture ? [btn(['ixvbar', t, i], p.cropBar ? 'Keep Bottom Bar' : 'Crop Bottom Bar', emojis.edit)] : []),
-            btn(['ixvskip', t, i], p.skip ? 'Include' : 'Skip', emojis.collapse),
+            btn(['ixvskip', t, i], p.skip ? 'Include' : 'Skip', p.skip ? emojis.plus : emojis.diffMinus),
         ));
     }
     if (total > 1) components.push(row(
@@ -452,7 +452,7 @@ function resultView(doc, plans, ops, result) {
     const IX = require('./drawIndex');
     // Each saved draw with Open, which lands on its entry card (the click test, 2026-11-16 13:02 EST: the result named the draws with no way to look at them). The entry id is the add's applied id or the update's target; ten pictures at most is ten sections.
     const ids = result.ok ? ops.map((x, k) => x.op.target?.id || result.results?.[k]?.applied?.id || null) : [];
-    const savedRows = result.ok ? ops.map((x, k) => ({ type: 9, components: [text(`${x.op.type === 'drawindex.add' ? emojis.plus : emojis.edit} ${String(x.title).slice(0, 80)}${x.op.payload?.rows?.length ? `\n-# ${plural(x.op.payload.rows.length, 'draw')} now use the new picture` : ''}`)], accessory: ids[k] ? btn(['ixopen', ids[k], ''], 'Open', emojis.expand) : { type: 2, style: 2, label: 'Open', custom_id: ID('ixvpg', doc._id, k), disabled: true } })) : [];
+    const savedRows = result.ok ? ops.map((x, k) => ({ type: 9, components: [text(`${x.op.type === 'drawindex.add' ? emojis.plus : emojis.edit} ${String(x.title).slice(0, 80)}${x.op.payload?.rows?.length ? `\n-# ${plural(x.op.payload.rows.length, 'draw')} now ${x.op.payload.rows.length === 1 ? 'uses' : 'use'} the new picture` : ''}`)], accessory: ids[k] ? btn(['ixopen', ids[k], ''], 'Open', emojis.expand) : { type: 2, style: 2, label: 'Open', custom_id: ID('ixvpg', doc._id, k), disabled: true } })) : [];
     return panel([
         text(`-# Draws  ›  Draw Index  ›  Upload\n${lines.join('\n').slice(0, 3800)}`),
         ...savedRows,
