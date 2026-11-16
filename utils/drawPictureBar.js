@@ -64,7 +64,9 @@ function bottomBar(bitmap) {
     // The edge: the row above the bar must be art, not more black.
     const above = height - rows - 1;
     if (above < 0 || rowStats(bitmap, above).edgeShare >= 0.6) return 0;
-    return rows;
+    // The bar is the same size on every poster that has it (Harkirat, 2026-11-16 12:48 EST: "its usually the same size on all the images if it's present"), so the scan only confirms the template's height, give or take the JPEG edge, and never crops a band of another height.
+    const want = Math.round(bitmap.width * BAR_PER_WIDTH);
+    return Math.abs(rows - want) <= 4 ? want : 0;
 }
 
 // Bytes -> { width, height, bar }. Never throws: a picture it cannot decode has no bar.
