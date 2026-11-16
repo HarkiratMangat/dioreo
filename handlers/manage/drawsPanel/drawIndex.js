@@ -52,11 +52,12 @@ function homeView(entries, doc, note = null, { owner = false } = {}) {
     if (note) components.push(SMALL(), text(note));
     components.push(
         BIG(),
-        // The owner's upload sits above the finders, divided from them (the click test, 2026-11-16 12:58 EST: in one block it read as one of the finders).
-        ...(owner ? [row(btn('ixup', 'Upload Draws', emojis.plus, 1)), BIG()] : []),
+        // A small label over each group, the way /manage draws' home does it (Harkirat picked this, "a", 2026-11-16 16:24 EST, after the cut-down home read as too bare). The owner's upload sits above the finders, divided from them.
+        ...(owner ? [text('-# Add draws…'), row(btn('ixup', 'Upload Draws', emojis.plus, 1)), BIG()] : []),
+        text('-# Find an entry…'),
         row(btn('ixcheck', 'Check Names', emojis.checkIndex || emojis.pasteImport, 1), btn('ixfind', 'Search the Index', emojis.search, 2, !entries.length)),
         // A warning only where something is missing; a gap list with nothing in it gets a checkmark.
-        { type: 1, components: [{ type: 3, custom_id: ID('ixgaps'), placeholder: 'Entries with a gap…', options: Object.entries(GAPS).map(([value, g]) => ({ value, label: `${g.label} · ${n(value)}`, emoji: emojis.parseEmoji(value === 'all' ? V.indexEmoji() : n(value) ? emojis.warn : emojis.checkmark) })) }] },
+        { type: 1, components: [{ type: 3, custom_id: ID('ixgaps'), placeholder: 'Or list the entries with a gap…', options: Object.entries(GAPS).map(([value, g]) => ({ value, label: `${g.label} · ${n(value)}`, emoji: emojis.parseEmoji(value === 'all' ? V.indexEmoji() : n(value) ? emojis.warn : emojis.checkmark) })) }] },
         BIG(),
         row(V.homeBtn()),
     );
