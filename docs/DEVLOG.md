@@ -324,6 +324,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-11-14 17:47 EST — An Undo that timed out, and a permissions record that was wrong (v3.21.1)
 - 2026-11-15 02:37 EST — Portal pins batch 2, Session 4 closed: the control standard, Board 4: Final and the bot catch-up drawn (v3.21.2)
 - 2026-11-15 11:39 EST — The 14 LMGs behind mac, and the sweep that found 18 more (v3.21.3)
+- 2026-11-16 19:02 EST — The owner's draw index: upload, find, and a picture kept 7 days (v3.22.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -5160,6 +5161,19 @@ The second lesson is the old one about citations: two of my own notes from earli
 **What the sweep found:** typing every start of every prod MP weapon name (99 weapons, 479 queries) and diffing what the dropdown listed against what the letters actually reach. 19 queries pulled in a class. Apart from the true class words (`gun`, `rifle`, `ar`, `mg`, `pistol`), every one was a weapon being typed: `mach` and `machine` (10 LMGs above Machine Pistol), `shorty` (9 shotguns, Shorty not first), `lach` (every LMG under Lachmann), `bolt` (every sniper above Kilo Bolt-Action), `asva`. One cause: the class prefix and typo rules answered letters that already named a weapon. The same pass found `pistol`, `rifle` and `gun` opening one weapon each, and four MP class lists sorted alphabetically against the CLASS_ORDER rule.
 
 **The lesson:** a search fix is checked against the whole input space on real data, and that sweep becomes the test. Checking the named examples would have shipped the other 18.
+
+## 2026-11-16 19:02 EST — The owner's draw index: upload, find, and a picture kept 7 days (v3.22.0)
+
+Harkirat asked for an owner-only command to upload and check the draw index, one that "handle[s] most of the work itself such as tagging". It shipped as `/bot drawindex` on Dioreo Admin: Gemini reads up to ten posters at a time and matches each against the index, and a review page per picture lets him skip one, keep the old picture, crop the logo bar or fix the type before anything is saved. Find Draws checks one name or a whole list, and a draw it can't find can be uploaded from that same result.
+
+**What his click tests changed.** Most of the design came from his critiques of what he saw on the dev bot, not from the spec:
+- **A breadcrumb has no place on a Discord panel.** A web-style "Draws › Draw Index" eyebrow and a line of explanation under every heading read as prose. Taking them all out went too far the other way. He picked a middle version: short group labels, the pattern `/manage draws` already uses.
+- **Two finders and a dead-end miss became one finder.** "Check Names" and "Search the Index" did nearly the same thing, and a miss gave no way to add the missing draw. Find Draws now opens a card, a list or the index check depending on what is typed, and a miss offers Upload This Draw.
+- **Where an answer goes was already decided.** His 2026-11-11 rule (results on the panel, a miss or a refusal as a private note) was in the /manage draws lessons file. The redesign broke it because I searched his rules only after he pointed it out. Searching first is now a linksee caveat.
+
+**Revert could not bring back a replaced picture.** Cloudinary keeps no old version of an overwritten picture (measured: the old version's link serves the new bytes once the cache clears). With his "sure go ahead", the old picture is now copied to `draws_hold/` before it is overwritten and kept for 7 days, both for the draw index and, on his later "yes", for `/manage draws`. A `/manage` overwrite happens before its change is saved, so the copy waits on the interaction's context until the change row exists.
+
+**The review now shows the picture that will be saved.** Cloudinary's fetch delivery is off on the account (HTTP 401), so the cropped preview is cut locally and sent as an attachment.
 
 # Part B — Lessons Ledger (thematic)
 

@@ -29,7 +29,24 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.21.3 — 2026-11-15 11:39 EST (#273) — `d list` names a weapon once, `s50` finds Signal 50, every weapon shorthand is checked, and the weapon search never pulls in a class
+## v3.22.0 — 2026-11-16 19:01 EST (#274) — `/bot drawindex`: the owner uploads and checks the draw index, and a replaced draw picture is kept 7 days for Revert
+
+His ask (2026-11-16 11:11 EST): "an owner only command where i can upload and check the draws index. adding more draws, editing, etc. I need the process to be seamless and easy for me for it to handle most of the work itself such as tagging". Built and redesigned over the day from his click tests and critiques; his picks and rules are quoted beside each part in the code.
+
+### Added
+- **`/bot drawindex`** on Dioreo Admin, owner only (`commands/bot.js`, `handlers/manage/drawsPanel/drawIndex.js`, `drawIndexUpload.js`): `entry:` (autocomplete), `do:` Upload Draws or Find Draws, `show:` a gap list, `visibility`. The same panel opens from `/manage draws` for admins, who get Find Draws only.
+- **Upload Draws:** up to 10 posters per pop-up, read by Gemini on Vertex (`utils/drawIndexRead.js`). Each poster gets a title, items with rarity and kind, aliases and a match against the index (new, update, maybe, the same draw as another picture, not a draw, couldn't be read). The review is one page per picture: Skip/Include, Keep Old Picture, Crop/Keep Bottom Bar (the logo bar is measured, `utils/drawPictureBar.js`), the draw type, Edit and Read Again. It shows the picture that will be saved: cropped (as an attachment), or the entry's own for Keep Old Picture. Save writes through the operation core (`core/ops/drawIndex.js`), re-points staged and live draws at the new picture, and offers Revert. The Names box titles posters that print none, and the Season box sets the release season only for draws new this season.
+- **Find Draws:** one finder. One name opens its card or a results list, several names (one per line) run the index check (`utils/drawIndexCheck.js`), and a miss offers Upload This Draw with the name filled in.
+- **The card:** Edit Entry (title, aliases, items, type, season), Replace Picture and Delete Entry, each with Revert.
+- **A replaced picture is kept 7 days** (`utils/drawPictureHold.js`): Upload Draws, Replace Picture and every `/manage draws` save that overwrites a picture (`utils/cloudinaryCache.js` `cacheThumbnail`) copy the old one to `draws_hold/` first. Revert puts it back, holding the current one so reverting the Revert works, and the daily Cloudinary cleanup deletes copies older than 7 days. `/manage` holds ride on the change row (`ChangeLog.pictureHolds`, written by `core/changeset.js`, restored by `core/revert.js`).
+- **News triage:** a card names which of its draws are in the index and offers Add to Draw Index for the rest; the daily briefing lists draws not in the index yet.
+- `models/DrawIndexUpload.js` (a review in progress), `NewsCard.index`, tests in `scripts/drawIndexUpload.test.js` and updates to `drawIndexCheck`, `manageDraws`, `commandOptions` and `coreOps`.
+
+### Changed
+- Misses and refusals answer in a private note and results answer on the panel, following his 2026-11-11 rule.
+- `drawindex.add/update/delete` refuse anyone but the owner inside `apply()`, because a Revert runs as whoever presses it.
+
+## v3.21.3 — 2026-11-15 11:39 EST (#273 · `688ba171`) — `d list` names a weapon once, `s50` finds Signal 50, every weapon shorthand is checked, and the weapon search never pulls in a class
 
 His Signal 50 update (2026-11-15 10:55 EST), then two follow-ups the same morning: a check that shorthands never collide (11:09 EST), and a think-pass after its first run found `mac` listing all 14 LMGs (11:23 EST: "that's no small issue").
 
