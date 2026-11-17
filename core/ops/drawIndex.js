@@ -11,7 +11,8 @@
 const { registerEntity } = require('./index');
 const DrawCatalog = require('../../models/DrawCatalog');
 
-const FIELDS = ['aliases', 'releaseSeason', 'priceType'];
+// `items` only to set a kind: apply() refuses a change to the items' names (Set Item Kinds from the card, 2026-11-16 22:27 EST); anything more is the owner's drawindex.update.
+const FIELDS = ['aliases', 'releaseSeason', 'priceType', 'items'];
 const pick = (src) => Object.fromEntries(FIELDS.filter(f => f in (src || {})).map(f => [f, src[f] === undefined ? null : src[f]]));
 const refresh = async () => { require('../../utils/drawCatalog').invalidateCatalog(); return null; };
 const DOC = { docType: 'global' };
@@ -76,6 +77,10 @@ registerEntity('drawindex', {
         apply: async (op, { session }) => {
             const cur = await DrawCatalog.findById(op.target.id).session(session).lean();
             if (!cur) return { ok: false, reason: 'missing' };
+            if ('items' in op.payload) {
+                const names = (list) => JSON.stringify((list || []).map(i => String(i.name)));
+                if (names(op.payload.items) !== names(cur.items)) return { ok: false, reason: 'Only the items\' kinds can change here.' };
+            }
             const prior = Object.fromEntries(Object.keys(op.payload).map(k => [k, cur[k] === undefined ? null : cur[k]]));
             await DrawCatalog.updateOne({ _id: cur._id }, { $set: op.payload }, { session });
             return {

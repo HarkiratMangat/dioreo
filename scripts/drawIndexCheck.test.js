@@ -97,17 +97,24 @@ t('the result panel: counts, one block a line, Check Again / Quick Add / Home', 
     const all = walk(cs);
     const head = all.find(c => c.type === 10).content;
     assert.match(head, /4 checked · 2 found · 1 too broad · 1 not indexed · .* 1 need updating · 6 draws in the index/);
-    assert.deepStrictEqual(all.filter(c => c.type === 2 && c.label !== 'Open').map(b => b.label), ['Draw Index', 'Find Again'], 'one way back first (no Home on a sub-page since 2026-11-16 16:51 EST); no Quick Add without a token');
+    assert.deepStrictEqual(all.filter(c => c.type === 2 && c.label !== 'View').map(b => b.label), ['Draw Index', 'Search Again'], 'one way back first (no Home on a sub-page since 2026-11-16 16:51 EST); no Quick Add without a token');
     assert.strictEqual(all.filter(c => c.type === 10).length, 5);
 });
 t('a full paste of long titles stays under 4,000 characters and 40 components', () => {
     const long = Array.from({ length: 30 }, (_, i) => ({ slug: `l${i}`, title: `Extraordinarily Long Title Number ${i} Of The Very Long Draw Series Collection`, imageUrl: '', priceType: 'unknown', items: Array.from({ length: 4 }, (_, j) => item(`Weapon${i}x${j} - Skin`, null)) }));
-    const text = long.slice(0, 20).map(e => e.title).join('\n');
-    const cs = V.checkView(C.checkIndex(long, text, ctx));
-    const all = walk(cs);
-    const chars = all.filter(c => c.type === 10).reduce((n, c) => n + c.content.length, 0);
-    assert.ok(chars <= 4000, `${chars} characters`); assert.ok(all.length <= 40, `${all.length} components`);
-    assert.ok(all.some(c => c.type === 10 && /not checked; paste them again/.test(c.content)), 'says what it left out');
+    // 50 lines are checked and paged eight a page (2026-11-16 22:27 EST); every page holds the limits, and the pager walks them.
+    const res = C.checkIndex(long, long.map(e => e.title).join('\n'), ctx);
+    assert.strictEqual(res.results.length, 30);
+    for (const page of [0, 1, 3]) {
+        const all = walk(V.checkView(res, 'tok', 0, { page }));
+        const chars = all.filter(c => c.type === 10).reduce((n, c) => n + c.content.length, 0);
+        assert.ok(chars <= 4000, `${chars} characters`); assert.ok(all.length <= 40, `${all.length} components`);
+        assert.ok(all.some(c => c.type === 2 && String(c.custom_id).startsWith('mng_dr|ixcres|tok|')), `page ${page} has the pager`);
+    }
+    const over = Array.from({ length: 60 }, (_, i) => `line number ${i}`).join('\n');
+    const r60 = C.checkIndex(long, over, ctx);
+    assert.strictEqual(r60.results.length, 50); assert.strictEqual(r60.extra, 10);
+    assert.ok(walk(V.checkView(r60, 'tok', 0, { page: 0 })).some(c => c.type === 10 && /10 more lines not checked/.test(c.content)), 'says what it left out past 50');
 });
 t('an empty index warns instead of reporting every line not indexed silently', () => {
     const all = walk(V.checkView(C.checkIndex([], 'anything', ctx)));
@@ -121,12 +128,12 @@ t('the pop-up is one labelled paragraph box, filled again by Check Again (2026-1
 t('with a token the result offers Quick Add These for the lines it found', () => {
     const out = C.checkIndex(INDEX, ['Lethal Hollow Draw', 'herrscher of reason'].join('\n'), ctx);
     const labels = walk(V.checkView(out, 'tok1', 2)).filter(c => c.type === 2).map(b => b.label);
-    assert.deepStrictEqual(labels.filter(l => l !== 'Open'), ['Draw Index', 'Find Again', 'Quick Add These 2']);
+    assert.deepStrictEqual(labels.filter(l => l !== 'View'), ['Draw Index', 'Search Again', 'Quick Add These 2']);
 });
 t('Home opens the Draw Index panel, which carries Check Names (round 2, 2026-11-11 11:02 EST)', () => {
     const src = require('fs').readFileSync(require.resolve('../handlers/manage/drawsPanel/views'), 'utf8');
     assert.match(src, /btn\('ix', 'Draw Index'/);
-    assert.match(require('fs').readFileSync(require('path').join(__dirname, '../handlers/manage/drawsPanel/drawIndex.js'), 'utf8'), /btn\('ixcheck', 'Find Draws'/);
+    assert.match(require('fs').readFileSync(require('path').join(__dirname, '../handlers/manage/drawsPanel/drawIndex.js'), 'utf8'), /btn\('ixcheck', 'Search Index'/);
 });
 console.log(`\ndrawIndexCheck: ${passed} passed, ${failed} failed`);
 process.exitCode = failed ? 1 : 0;

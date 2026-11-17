@@ -315,7 +315,7 @@ function limits(view, label) {
     await check('/bot drawindex carries entry (autocomplete), do, show and visibility last, and show: is the panel\'s gap list', () => {
         const sub = require('../commands/bot').data.toJSON().options.find(o => o.name === 'drawindex');
         assert.deepStrictEqual(sub.options.map(o => [o.name, !!o.autocomplete]), [['entry', true], ['do', false], ['show', false], ['visibility', false]]);
-        assert.deepStrictEqual(sub.options[1].choices.map(c => c.value), ['upload', 'check']);
+        assert.deepStrictEqual(sub.options[1].choices.map(c => c.value), ['upload1', 'upload', 'check']);
         const { GAPS } = require('../handlers/manage/drawsPanel/drawIndex');
         assert.deepStrictEqual(sub.options[2].choices.map(c => [c.value, c.name]), Object.entries(GAPS).map(([v, g]) => [v, g.label]), 'show: must list the GAPS the panel lists');
         assert.deepStrictEqual(sub.options[3].choices.map(c => c.value), ['hidden', 'public']);
@@ -412,6 +412,60 @@ function limits(view, label) {
             const fell = await U.reviewPanel(doc({ cropBar: true }));
             assert.ok(JSON.stringify(fell.components).includes('a.png') && !fell.files.length, 'a failed preview falls back to the upload');
         } finally { R2.fetchImage = realFetch; catalog.loadCatalog = realLoad; }
+    });
+
+    await check('his 2026-11-16 22:27 EST list: two uploads on the home, Needs My Eyes with its filter, one action row on the card, Upload Draw\'s five fields', async () => {
+        const walk = (x, out = []) => { if (Array.isArray(x)) x.forEach(y => walk(y, out)); else if (x && typeof x === 'object') { out.push(x); for (const v of Object.values(x)) if (v && typeof v === 'object') walk(v, out); } return out; };
+        const ents = [
+            { _id: 'a', title: 'A Draw', items: [{ tier: 'legendary', name: 'X', kind: 'weapon' }], priceType: 'mythicWeapon', imageUrl: 'https://res.cloudinary.com/x/image/upload/draws/a.jpg' },
+            { _id: 'b', title: 'B Draw', items: [], priceType: '', imageUrl: '' },
+            { _id: 'c', title: 'C Draw', items: [{ tier: 'epic', name: 'Y', kind: '' }], priceType: 'mythicWeapon', imageUrl: 'https://res.cloudinary.com/x/image/upload/draws/c.jpg' },
+        ];
+        const labels = (v) => walk(v).filter(c => c.type === 2 && c.label).map(c => c.label);
+        const home = labels(IX.homeView(ents, {}, null, { owner: true }));
+        for (const l of ['Upload Draw', 'Bulk Upload', 'View Indexed Draws', 'Search Index', 'Needs My Eyes · 2']) assert.ok(home.includes(l), `home has ${l}`);
+        assert.ok(!labels(IX.homeView(ents, {}, null, { owner: false })).includes('Upload Draw'), 'no upload for an admin');
+        const eyes = walk(IX.gapView(ents, 'eyes', 0));
+        const rows = eyes.filter(c => c.type === 9).map(c => c.components[0].content);
+        assert.ok(/B Draw/.test(rows[0]) && /C Draw/.test(rows[1]) && rows.length === 2, 'the most gaps first, only entries with a gap');
+        assert.ok(eyes.some(c => c.type === 3 && c.custom_id === 'mng_dr|ixgaps'), 'the filter menu');
+        assert.ok(!walk(IX.gapView(ents, 'all', 0)).some(c => c.type === 3), 'Indexed Draws has no filter');
+        const card = (e, doc, owner) => walk(IX.cardView(e, doc, '', { owner }));
+        const actionRow = (all) => all.filter(c => c.type === 1).map(r => r.components.map(b => b.label)).find(r => r.includes('Edit'));
+        assert.deepStrictEqual(actionRow(card(ents[0], {}, true)), ['Draw Index', 'Edit', 'Delete', 'Picture', 'Add'], 'his order, the way back first');
+        assert.deepStrictEqual(actionRow(card(ents[0], {}, false)), ['Draw Index', 'Edit', 'Add'], 'an admin has Edit and Add');
+        const onLive = { returningDraws: [{ title: 'A Draw' }] };
+        assert.ok(!actionRow(card(ents[0], onLive, true)).includes('Add'), 'no Add when on /draws and no draft is open');
+        assert.ok(actionRow(card(ents[0], { ...onLive, draft: { currentSeasonTitle: 'Season 11' } }, true)).includes('Add'), 'Add for the draft');
+        assert.ok(card(ents[2], {}, true).some(c => c.type === 2 && c.label === 'Set Item Kinds'), 'Set Item Kinds when an item has no kind');
+        const adding = walk(IX.cardView(ents[0], { draft: { currentSeasonTitle: 'Season 11' } }, '', { owner: true, adding: true }));
+        assert.deepStrictEqual(adding.filter(c => c.type === 2).map(b => b.label), ['Cancel', 'Add to Live', 'Add to Draft']);
+        const kinds = IX.kindsModal(ents[2], '');
+        assert.strictEqual(kinds.components.length, 1); assert.ok(kinds.custom_id.startsWith('mng_dr|ixkindsm|c'));
+        const one = U.uploadOneModal({ origin: 'p', title: 'Something' });
+        assert.ok(one.components.length <= 5 && one.components.every(c => !c.description || c.description.length <= 100), 'five fields, descriptions within 100');
+        assert.strictEqual(one.components.find(c => c.component?.custom_id === 'title').component.value, 'Something');
+        assert.ok(one.custom_id.startsWith('mng_dr|ixup1m|p|'), 'its own submit');
+    });
+
+    await check('the saved screen: one draw shows itself with View; several show a row each with the picture and a View menu; no zero counts', async () => {
+        const walk = (x, out = []) => { if (Array.isArray(x)) x.forEach(y => walk(y, out)); else if (x && typeof x === 'object') { out.push(x); for (const v of Object.values(x)) if (v && typeof v === 'object') walk(v, out); } return out; };
+        const Up = require('../models/DrawIndexUpload'); const realUpd = Up.updateOne; Up.updateOne = () => ({ catch: () => {} });
+        try {
+            const e1 = { _id: 'e1', title: 'Augmented Eclipse Draw', items: [{ tier: 'legendary', name: 'KN-44 - Augmented Atomizer', kind: 'weapon' }], priceType: 'mythicWeapon', imageUrl: 'https://res.cloudinary.com/x/image/upload/draws/e1.jpg' };
+            const e2 = { _id: 'e2', title: 'Lethal Pair Draw', items: [], priceType: 'doubleLegendaryWeapons', imageUrl: 'https://res.cloudinary.com/x/image/upload/draws/e2.jpg' };
+            const doc = { _id: 'tok', pictures: [] };
+            const single = walk(U.resultView(doc, [], [{ op: { type: 'drawindex.add', payload: { rows: [] } }, title: e1.title }], { ok: true, changeIds: ['#1'], results: [{ applied: { id: 'e1' } }] }, [e1]));
+            const head = single.find(c => c.type === 10).content;
+            assert.ok(/Saved · new entry/.test(head) && !/0 updated/.test(head));
+            assert.ok(single.some(c => c.type === 12), 'its picture');
+            assert.ok(single.some(c => c.type === 2 && c.label === 'View') && single.some(c => c.type === 2 && c.label === 'Revert'));
+            const many = walk(U.resultView(doc, [], [{ op: { type: 'drawindex.add', payload: { rows: [] } }, title: e1.title }, { op: { type: 'drawindex.update', target: { id: 'e2' }, payload: { rows: [{}] } }, title: e2.title }], { ok: true, changeIds: ['#1', '#2'], results: [{ applied: { id: 'e1' } }, {}] }, [e1, e2]));
+            assert.ok(/Saved 2 draws\n-# 1 new · 1 updated/.test(many.find(c => c.type === 10).content));
+            assert.strictEqual(many.filter(c => c.type === 9 && c.accessory?.type === 11).length, 2, 'a picture beside each');
+            assert.ok(many.some(c => c.type === 3 && c.custom_id === 'mng_dr|ixopen' && c.options.length === 2), 'the View menu');
+            assert.ok(many.length <= 40);
+        } finally { Up.updateOne = realUpd; }
     });
 
     console.log(failed ? `\n${failed} check(s) FAILED.` : '\nAll draw index upload checks passed.');

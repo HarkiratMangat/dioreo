@@ -322,8 +322,8 @@ function seasonDoc(nNew = 3, nRet = 30) {
         limits(card, 'index card');
         assert.strictEqual(card[0].components[0].type, 12, 'the picture first (no breadcrumb above it since 2026-11-16 15:52 EST)');
         assert.match(JSON.stringify(card), /On \/draws/);
-        assert.ok(!JSON.stringify(card).includes('Quick Add This Draw'), 'no Quick Add for a draw already on /draws');
-        assert.ok(JSON.stringify(IX.cardView(entries[3], doc, 'h')).includes('Quick Add This Draw'));
+        assert.ok(!JSON.stringify(card).includes('|ixadd|'), 'no Add for a draw already on /draws while no draft is open');
+        assert.ok(JSON.stringify(IX.cardView(entries[3], doc, 'h')).includes('|ixadd|'), 'Add for a draw that is not on /draws');
         assert.ok(IX.editModal(entries[3], 'h').components.length <= 5);
         // A card opened from Check Names goes back to those results (2026-11-11 11:40 EST click test).
         const fromCheck = JSON.stringify(IX.cardView(entries[3], doc, 'c:tok123'));

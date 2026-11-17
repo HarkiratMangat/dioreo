@@ -18,8 +18,13 @@ const GAPS = {
     type: { label: 'No Draw Type', test: (e) => !e.priceType || e.priceType === 'unknown' },
     kind: { label: 'Items Without a Kind', test: (e) => (e.items || []).some(i => !i.kind) },
     items: { label: 'No Items', test: (e) => !(e.items || []).length },
-    all: { label: 'Every Entry', test: () => true },
+    // Needs My Eyes is every entry with any gap above, and Indexed Draws every entry (Harkirat 2026-11-16 22:27 EST: "view indexed draws (changes to a paginated view)" and "a 'needs my eyes' button for the draws such as no items, placeholder image, etc.").
+    eyes: { label: 'Needs My Eyes', test: (e) => gapsOf(e).length > 0 },
+    all: { label: 'Indexed Draws', test: () => true },
 };
+// The gaps the Needs My Eyes page filters by, and the lists that page covers.
+const EYE_GAPS = ['pic', 'ph', 'type', 'kind', 'items'];
+const isEyes = (k) => k === 'eyes' || EYE_GAPS.includes(k);
 const indexBack = () => btn('ix', 'Draw Index', emojis.returnArrow);
 const isOwner = (id) => require('../../../utils/adminAccess').isOwner(id);
 const loadEntries = () => require('../../../utils/drawCatalog').loadCatalog({ force: true });
@@ -34,7 +39,9 @@ function placeOf(doc, e) {
     const draft = hit(doc?.draft?.newDraws) ? 'New' : hit(doc?.draft?.returningDraws) ? 'Returning' : null;
     return { live, draft };
 }
-const gapsOf = (e) => Object.entries(GAPS).filter(([k, g]) => k !== 'all' && g.test(e)).map(([, g]) => g.label.toLowerCase());
+function gapsOf(e) { return EYE_GAPS.filter(k => GAPS[k].test(e)).map(k => GAPS[k].label.toLowerCase()); }
+// A draft exists when the next season has been started in it (a title, a start or staged draws).
+const hasDraft = (doc) => Boolean(doc?.draft && (doc.draft.currentSeasonTitle || doc.draft.bpStart || (doc.draft.newDraws || []).length || (doc.draft.returningDraws || []).length));
 function entryLine(e) {
     const gaps = gapsOf(e);
     const tier = emojis[require('../../../utils/drawCatalog').topTierOf(e.items || [])] || '';
@@ -52,13 +59,15 @@ function homeView(entries, doc, note = null, { owner = false } = {}) {
     if (note) components.push(SMALL(), text(note));
     components.push(
         BIG(),
-        // A small label over each group, the way /manage draws' home does it (Harkirat picked this, "a", 2026-11-16 16:24 EST, after the cut-down home read as too bare). The owner's upload sits above the finders, divided from them.
-        ...(owner ? [text('-# Add draws…'), row(btn('ixup', 'Upload Draws', emojis.plus, 1)), BIG()] : []),
-        // ONE finder (Harkirat 2026-11-16 16:51 EST: Check Names beside Search the Index was "not naturally intuitive"). Find Draws takes one name or many lines; findView decides how to answer.
+        // A small label over each group, the way /manage draws' home does it (Harkirat picked this, "a", 2026-11-16 16:24 EST, after the cut-down home read as too bare). The owner's upload sits above the finders, divided from them. Two uploads with their own pop-ups (Harkirat 2026-11-16 22:27 EST: "upload draw (single draw) and a 2nd button 'bulk upload' (with different forms)").
+        ...(owner ? [text('-# Add draws…'), row(btn('ixup1', 'Upload Draw', emojis.plus, 1), btn('ixup', 'Bulk Upload', emojis.mngBulkAdd)), BIG()] : []),
+        // His three finders (same message): every entry paged, Search Index (one name or many lines; findView decides how to answer), and Needs My Eyes, which replaced the gap dropdown (that is a filter on its page now).
         text('-# Find draws…'),
-        row(btn('ixcheck', 'Find Draws', emojis.search, 1, !entries.length)),
-        // A warning only where something is missing; a gap list with nothing in it gets a checkmark.
-        { type: 1, components: [{ type: 3, custom_id: ID('ixgaps'), placeholder: 'Or list the entries with a gap…', options: Object.entries(GAPS).map(([value, g]) => ({ value, label: `${g.label} · ${n(value)}`, emoji: emojis.parseEmoji(value === 'all' ? V.indexEmoji() : n(value) ? emojis.warn : emojis.checkmark) })) }] },
+        row(
+            btn(['ixgaps', 'all', 0], 'View Indexed Draws', V.indexEmoji(), 2, !entries.length),
+            btn('ixcheck', 'Search Index', emojis.search, 1, !entries.length),
+            btn(['ixgaps', 'eyes', 0], n('eyes') ? `Needs My Eyes · ${n('eyes')}` : 'Needs My Eyes', n('eyes') ? emojis.warn : emojis.checkmark, 2, !entries.length),
+        ),
         BIG(),
         row(V.homeBtn()),
     );
@@ -66,25 +75,36 @@ function homeView(entries, doc, note = null, { owner = false } = {}) {
 }
 
 // A paged list of entries, each with Open. `origin` is how its cards come back: `g:<gap>` or `t:<token>`.
-function listView(entries, { title, origin, page = 0, pagerParts, sub = '', again = null }) {
+function listView(entries, { title, origin, page = 0, pagerParts, sub = '', again = null, filterRow = null }) {
     const pages = Math.max(1, Math.ceil(entries.length / PAGE));
     const pg = Math.min(Math.max(Number(page) || 0, 0), pages - 1);
     const shown = entries.slice(pg * PAGE, pg * PAGE + PAGE);
     // A Find Draws result list reads like the check's results: the search emoji and Find Again beside the way back.
-    const components = [text(`## ${again ? emojis.search : V.indexEmoji()} ${title}\n-# ${plural(entries.length, 'draw')}${sub}${pages > 1 ? ` · page ${pg + 1} of ${pages}` : ''}`), BIG()];
+    const components = [text(`## ${again ? emojis.search : V.indexEmoji()} ${title}\n-# ${plural(entries.length, 'draw')}${sub}${pages > 1 ? ` · page ${pg + 1} of ${pages}` : ''}`), ...(filterRow ? [filterRow] : []), BIG()];
     if (!shown.length) components.push(text(`${emojis.checkmark} Nothing here.`));
-    for (const e of shown) components.push({ type: 9, components: [text(entryLine(e))], accessory: btn(['ixopen', String(e._id), origin], 'Open', emojis.expand) });
+    // "View", his word (2026-11-16 22:27 EST: "reword open to 'view'").
+    for (const e of shown) components.push({ type: 9, components: [text(entryLine(e))], accessory: btn(['ixopen', String(e._id), origin], 'View', emojis.expand) });
     if (pages > 1) components.push(row(
         { type: 2, style: 2, custom_id: ID(...pagerParts, pg - 1), emoji: emojis.parseEmoji(emojis.left), disabled: pg === 0 },
         { type: 2, style: 2, custom_id: ID('ixpgn', origin), label: `${pg + 1} / ${pages}`, disabled: true },
         { type: 2, style: 2, custom_id: ID(...pagerParts, pg + 1), emoji: emojis.parseEmoji(emojis.right), disabled: pg === pages - 1 }));
     // One way back on a sub-page (his 16:51 EST screenshot: Draw Index and Home, two ↩ buttons side by side); Home is on the Draw Index home only.
-    components.push(BIG(), row(indexBack(), ...(again ? [btn(['check', again], 'Find Again', emojis.search)] : [])));
+    components.push(BIG(), row(indexBack(), ...(again ? [btn(['check', again], 'Search Again', emojis.search)] : [])));
     return panel(components);
 }
 
+// One gap list as a page: Needs My Eyes and its filters sort the entries with the most gaps first and carry the filter menu; Indexed Draws and the rest go by title.
+function gapView(entries, k, page = 0) {
+    const key = GAPS[k] ? k : 'all';
+    const g = GAPS[key];
+    const list = entries.filter(g.test).sort((a, b) => (isEyes(key) ? gapsOf(b).length - gapsOf(a).length : 0) || byTitle(a, b));
+    const count = (x) => entries.filter(GAPS[x].test).length;
+    const filterRow = isEyes(key) ? { type: 1, components: [{ type: 3, custom_id: ID('ixgaps'), placeholder: 'Show one gap…', options: ['eyes', ...EYE_GAPS].map(v => ({ value: v, label: `${v === 'eyes' ? 'Everything that needs a look' : GAPS[v].label} · ${count(v)}`, default: v === key, emoji: emojis.parseEmoji(count(v) ? emojis.warn : emojis.checkmark) })) }] } : null;
+    return listView(list, { title: g.label, origin: `g:${key}`, page, pagerParts: ['ixgaps', key], filterRow });
+}
+
 function backFor(origin) {
-    if (/^g:/.test(origin)) { const k = origin.slice(2); return btn(['ixgaps', k, 0], GAPS[k]?.label || 'Back', emojis.returnArrow); }
+    if (/^g:/.test(origin)) { const k = origin.slice(2); return btn(['ixgaps', k, 0], isEyes(k) ? 'Needs My Eyes' : GAPS[k]?.label || 'Back', emojis.returnArrow); }
     if (/^t:/.test(origin)) return btn(['ixres', origin.slice(2), 0], 'Results', emojis.returnArrow);
     // A card opened from Check Names goes back to those results, not to the Draw Index home (2026-11-11 11:40 EST click test: Open, then the way back lost the check).
     if (/^c:/.test(origin)) return btn(['ixcres', origin.slice(2)], 'Results', emojis.returnArrow);
@@ -92,7 +112,7 @@ function backFor(origin) {
 }
 
 // One entry: its picture on top, then everything the index holds for it, and where its draw is.
-function cardView(e, doc, origin = '', { header = null, resultRow = null, owner = false } = {}) {
+function cardView(e, doc, origin = '', { header = null, resultRow = null, owner = false, adding = false } = {}) {
     const typeName = require('../../../utils/drawTypes').drawTypeName(e.priceType);
     const place = placeOf(doc, e);
     const gaps = gapsOf(e);
@@ -108,13 +128,22 @@ function cardView(e, doc, origin = '', { header = null, resultRow = null, owner 
         items.length ? items.join('\n') : `-# ${emojis.warn} No items yet.`,
         `-# ${[place.live ? `On /draws (${place.live})` : 'Not on /draws', place.draft ? `in the draft (${place.draft})` : null].filter(Boolean).join(' · ')}${gaps.length ? `\n-# ${emojis.warn} Needs: ${gaps.join(', ')}` : ''}`,
     ].join('\n').slice(0, 3600)));
-    components.push(BIG(), row(
+    const id = String(e._id);
+    const canLive = !place.live;
+    const canDraft = hasDraft(doc) && !place.draft;
+    components.push(BIG());
+    // Items with no kind get their fix on its own row above the actions; it saves on this card with Revert (handled by `ixkinds`).
+    if ((e.items || []).some(i => !i.kind)) components.push(row(btn(['ixkinds', id, origin], 'Set Item Kinds', emojis.edit)));
+    // Add asks where, when both are open: the row turns into the two targets (`ixadd`).
+    if (adding) components.push(row(btn(['ixopen', id, origin], 'Cancel', emojis.returnArrow), btn(['ixaddl', id, origin], 'Add to Live', emojis.plus, 3), btn(['ixaddd', id, origin], 'Add to Draft', emojis.plus, 3)));
+    // One action row, in his order (2026-11-16 22:27 EST: "an action row below to edit, delete, picture, add (to either add to live or to draft)"). Delete and Picture are the owner's; Add only while the draw is missing from /draws or the draft.
+    else components.push(row(
         backFor(origin),
-        btn(['ixedit', String(e._id), origin], 'Edit Entry', emojis.edit, 1),
-        ...((e.items || []).some(i => !i.kind) ? [btn(['ixkinds', String(e._id)], 'Set Item Kinds', emojis.edit)] : []),
-        ...(!place.live && !place.draft ? [btn(['ixqa', String(e._id)], 'Quick Add This Draw', emojis.plus, 3)] : []),
+        btn(['ixedit', id, origin], 'Edit', emojis.edit, 1),
+        ...(owner ? [btn(['ixdel', id, origin], 'Delete', emojis.deleteBin, 4)] : []),
+        ...(owner ? [btn(['ixpic', id, origin], 'Picture', emojis.mngBulkReplace)] : []),
+        ...(canLive || canDraft ? [btn(['ixadd', id, origin], 'Add', emojis.plus, 3)] : []),
     ));
-    if (owner) components.push(row(btn(['ixpic', String(e._id), origin], 'Replace Picture', emojis.mngBulkReplace), btn(['ixdel', String(e._id), origin], 'Delete Entry', emojis.deleteBin, 4)));
     return panel(components);
 }
 
@@ -182,10 +211,12 @@ async function findView(input, { owner = false, doc = null } = {}) {  // `input`
         }
         const { result } = await runCheck(lines[0], doc);
         const r = result.results[0] || {};
+        // One result is its card, never a results page of one (Harkirat 2026-11-16 22:27 EST: "if it's only 1 result then just show me the expanded view of the draw"). A "maybe" stays a page: it is a choice between draws.
+        if (r.status === 'found' && r.id) { const e = (await loadEntries()).find(x => String(x._id) === String(r.id)); if (e) return { view: cardView(e, doc, '', { owner }) }; }
         if (r.status === 'none' || !r.id) {
             const token = await newSel({ text: lines[0].slice(0, 200), query: [] });
             const closest = r.closest?.length ? `\n-# Closest: ${r.closest.slice(0, 3).map(t => String(t).slice(0, 40)).join(' · ')}` : '';
-            return { note: panel([text(`${emojis.cross} Nothing in the draw index matches \`${lines[0].slice(0, 60)}\`.${closest}`), ...(owner ? [row(btn(['ixup', token], 'Upload This Draw', emojis.plus, 1))] : [])]) };
+            return { note: panel([text(`${emojis.cross} Nothing in the draw index matches \`${lines[0].slice(0, 60)}\`.${closest}`), ...(owner ? [row(btn(['ixup1', token], 'Upload This Draw', emojis.plus, 1))] : [])]) };
         }
     }
     const { result, found } = await runCheck(lines.join('\n'), doc);
@@ -216,19 +247,18 @@ async function route(interaction, verb, a, b, c, ctx) {
     }
     if (verb === 'ixgaps') {
         const k = interaction.isStringSelectMenu?.() ? interaction.values[0] : a;
-        const g = GAPS[k] || GAPS.all;
-        const list = (await loadEntries()).filter(g.test).sort(byTitle);
-        return show(interaction, listView(list, { title: g.label, origin: `g:${k}`, page: interaction.isStringSelectMenu?.() ? 0 : b, pagerParts: ['ixgaps', k] }));
+        return show(interaction, gapView(await loadEntries(), k, interaction.isStringSelectMenu?.() ? 0 : b));
     }
     if (verb === 'ixcres') {
         if (!(await gate(interaction, 'exportnew'))) return;
         const sel = await loadSel(a);
         if (!sel?.text) return say(interaction, `${emojis.cross} That check expired (checks last a day). Run Check Names again.`);
         const { result, found } = await runCheck(sel.text, await getDoc());
-        return show(interaction, V.checkView(result, a, found.length, { owner }));
+        return show(interaction, V.checkView(result, a, found.length, { owner, page: Number(b) || 0 }));
     }
     if (verb === 'ixopen') {
-        const e = await findEntry(a);
+        // A button carries the entry in its id; the saved screen's View menu carries it in the value.
+        const e = await findEntry(interaction.isStringSelectMenu?.() ? interaction.values[0] : a);
         return e ? show(interaction, cardView(e, await getDoc(), b || '', { owner })) : gone();
     }
     if (verb === 'ixedit') {
@@ -332,23 +362,66 @@ async function route(interaction, verb, a, b, c, ctx) {
         return show(interaction, comps);
     }
     if (verb === 'ixkinds') {
-        // Setting item kinds writes the index, so it takes the draws edit tier, as Edit Entry does (commit security review, 2026-11-11 11:27 EST).
+        // Setting item kinds writes the index, so it takes the draws edit tier, as Edit Entry does (commit security review, 2026-11-11 11:27 EST). From the card it is this card's own pop-up, saved here with Revert: the shared question (handlers/manage/itemKinds.js) answered in a message of its own, his 8:29 PM screenshot (2026-11-16 22:27 EST: "i want a better 'saved' confirmation screen").
         if (!(await gate(interaction, 'edit'))) return;
         const e = await findEntry(a);
         if (!e) return gone();
-        await interaction.deferUpdate();
-        return require('../itemKinds').askItemKinds(interaction, [e.title]);
+        if (!(e.items || []).some(i => !i.kind)) return say(interaction, `${emojis.info} Every item in this draw already has a kind.`);
+        return interaction.showModal(kindsModal(e, b || ''));
     }
-    if (verb === 'ixqa') {
-        if (!(await gate(interaction, 'quickadd'))) return;
+    if (verb === 'ixkindsm' && interaction.isModalSubmit?.()) {
+        if (!(await gate(interaction, 'edit'))) return;
         const e = await findEntry(a);
         if (!e) return gone();
-        return interaction.showModal(require('../../../commands/manage').buildQuickAddModal({ value: e.title }));
+        const missing = (e.items || []).map((it, i) => ({ it, i })).filter(x => !x.it.kind).slice(0, 5);
+        const items = (e.items || []).map(it => ({ ...it }));
+        const set = [];
+        missing.forEach(({ it, i }, k) => {
+            let kind = null;
+            try { kind = require('../../../utils/formChoice').readChoice(interaction, `k${k}`)[0] || null; } catch { kind = null; }
+            if (['weapon', 'character', 'vehicle', 'other'].includes(kind)) { items[i].kind = kind; set.push(`-# ${String(it.name).slice(0, 70)}: ${kind}`); }
+        });
+        if (!set.length) return onCard(e, `${emojis.info} No kind was picked, so nothing was saved.`);
+        await interaction.deferUpdate();
+        const result = await require('../../../core/changeset').commitSet([{ type: 'drawindex.edit', target: { id: String(e._id) }, payload: { items } }], { actorId: interaction.user.id });
+        if (!result.ok) return onCard(e, `${emojis.cross} Not saved: ${require('../shared').extractCommitError(result)}`);
+        const rev = ID('ixrevert', result.changeIds.join(','), a, b || '');
+        const resultRow = rev.length <= 100 ? row({ type: 2, style: 4, label: 'Revert', custom_id: rev, emoji: emojis.parseEmoji(emojis.keep) }) : null;
+        return show(interaction, cardView(await findEntry(a) || e, await getDoc(), b || '', { header: `### ${emojis.checkmark} Saved ${set.length === 1 ? 'an item kind' : `${set.length} item kinds`}\n${set.join('\n')}`, resultRow, owner }));
+    }
+    // Add: straight to the one Quick Add box that can take this draw, or a choice when both live and the draft can (`adding`).
+    if (['ixadd', 'ixaddl', 'ixaddd'].includes(verb)) {
+        const e = await findEntry(a);
+        if (!e) return gone();
+        const doc = await getDoc();
+        const place = placeOf(doc, e);
+        const canLive = !place.live;
+        const canDraft = hasDraft(doc) && !place.draft;
+        const target = verb === 'ixaddl' ? 'live' : verb === 'ixaddd' ? 'draft' : canLive && canDraft ? null : canLive ? 'live' : canDraft ? 'draft' : 'none';
+        if (target === 'none') return say(interaction, `${emojis.info} This draw is already on /draws and in the draft.`);
+        if (!target) return show(interaction, cardView(e, doc, b || '', { owner, adding: true }));
+        if ((target === 'live' && !canLive) || (target === 'draft' && !canDraft)) return say(interaction, `${emojis.info} This draw is already ${target === 'live' ? 'on /draws' : 'in the draft'}.`);
+        if (!(await gate(interaction, 'quickadd'))) return;
+        // The draft's box gives an unlabelled line the New list when the draw is first out in the draft's season, else Returning; the line can still say `new` or `returning`.
+        let draftSection = 'r';
+        try { const sn = require('../../../utils/quickAdd').seasonNumber(doc?.draft?.currentSeasonTitle); if (sn && e.releaseSeason === sn) draftSection = 'n'; } catch { draftSection = 'r'; }
+        return interaction.showModal(require('../../../commands/manage').buildQuickAddModal({ value: e.title, ...(target === 'draft' ? { draftSection } : {}) }));
     }
     return false;
 }
 
 const isIndexVerb = (verb) => /^ix/.test(String(verb || ''));
+
+// The card's Set Item Kinds pop-up: one choice per item with no kind, five at most, with the shared question's own kinds (handlers/manage/itemKinds.js KIND_OPTIONS) drawn as radio buttons by utils/formChoice.js.
+function kindsModal(e, origin) {
+    const { KIND_OPTIONS } = require('../itemKinds');
+    const { choiceField } = require('../../../utils/formChoice');
+    const missing = (e.items || []).filter(i => !i.kind).slice(0, 5);
+    return {
+        custom_id: ID('ixkindsm', String(e._id), origin), title: 'Set Item Kinds',
+        components: missing.map((it, k) => choiceField({ id: `k${k}`, label: it.name, description: `In ${e.title}`, options: KIND_OPTIONS, required: false })),
+    };
+}
 
 // Sends a findView answer: { view } on the panel, { note } as a private message (a miss).
 async function answerFind(interaction, found, show) {
@@ -358,4 +431,4 @@ async function answerFind(interaction, found, show) {
     catch (e) { console.error('draw index: could not answer the find (interaction likely expired):', e.message); }
 }
 
-module.exports = { route, runCheck, findView, answerFind, isIndexVerb, homeView, listView, cardView, editModal, deleteView, searchEntries, placeOf, indexBack, GAPS, PAGE };
+module.exports = { route, runCheck, findView, answerFind, isIndexVerb, homeView, listView, gapView, cardView, editModal, kindsModal, deleteView, searchEntries, placeOf, hasDraft, gapsOf, indexBack, GAPS, EYE_GAPS, PAGE };
