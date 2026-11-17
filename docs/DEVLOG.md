@@ -325,6 +325,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-11-15 02:37 EST — Portal pins batch 2, Session 4 closed: the control standard, Board 4: Final and the bot catch-up drawn (v3.21.2)
 - 2026-11-15 11:39 EST — The 14 LMGs behind mac, and the sweep that found 18 more (v3.21.3)
 - 2026-11-16 19:02 EST — The owner's draw index: upload, find, and a picture kept 7 days (v3.22.0)
+- 2026-11-17 01:16 EST — Draw Index round 3: his list, then the twins a rename leaves behind (v3.23.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -5174,6 +5175,16 @@ Harkirat asked for an owner-only command to upload and check the draw index, one
 **Revert could not bring back a replaced picture.** Cloudinary keeps no old version of an overwritten picture (measured: the old version's link serves the new bytes once the cache clears). With his "sure go ahead", the old picture is now copied to `draws_hold/` before it is overwritten and kept for 7 days, both for the draw index and, on his later "yes", for `/manage draws`. A `/manage` overwrite happens before its change is saved, so the copy waits on the interaction's context until the change row exists.
 
 **The review now shows the picture that will be saved.** Cloudinary's fetch delivery is off on the account (HTTP 401), so the cropped preview is cut locally and sent as an attachment.
+
+## 2026-11-17 01:16 EST — Draw Index round 3: his list, then the twins a rename leaves behind (v3.23.0)
+
+The night after v3.22.0 shipped, Harkirat sent a list. He wanted a single-draw upload beside the bulk one, a paged view of every indexed draw, a Needs My Eyes list, a search that opens the card when there is only one result, one row of actions on the card (Edit, Delete, Picture, Add to live or the draft), "View" in place of "Open", and a better saved screen. He also asked why search capped at 20 lines and whether "read for $0.002" was true.
+
+**The answers first.** The 20 was a display limit: the results page could hold only about that many within Discord's message size. It now takes 50 names and pages them. The read cost is an estimate, not the bill: Google's own token counts multiplied by Gemini 3.8 Flash's published rates. It now says "read cost about". He then asked whether a newer Google model should replace 3.8 Flash. The new Gemini 4 models are frontier or mid-price tiers at 4 to 10 times the cost, and the read only transcribes text, so it stays on 3.8 Flash.
+
+**What a rename leaves behind.** The think-pass before merge found four places still on the old shape. The bulk pop-up was still titled "Upload Draws". "Check Names" survived in an expiry note, a form hint and /help. A news card's single missing draw still opened the bulk form. And View on the saved screen dropped the Revert. Each was the same miss: a control renamed or split in one place while its copies elsewhere kept the old version. The fix was a sweep for the old words after every rename, now a linksee caveat. Before that, Upload This Draw had filled in a draw the search *had* found, because a stored field (`query`, the drafts Quick Add could take) was read as "everything found". Read where a field is written before reusing it.
+
+**A security review caught one real hole.** Set Item Kinds first sent the whole item list through the edit op, guarded only by matching names, so an admin with the edit tier could have rewritten an item's tier. It now sends `kinds: [{ index, kind }]`, and the op copies the stored items and changes only the kinds.
 
 # Part B — Lessons Ledger (thematic)
 
