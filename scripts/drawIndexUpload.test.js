@@ -448,6 +448,17 @@ function limits(view, label) {
         assert.ok(one.custom_id.startsWith('mng_dr|ixup1m|p|'), 'its own submit');
     });
 
+    await check('drawindex.edit takes kinds only as { index, kind }: never raw items, never another kind word', async () => {
+        const op = require('../core/ops').resolveOp('drawindex.edit');
+        assert.ok(op.validate({ target: { id: 'x' }, payload: { kinds: [{ index: 0, kind: 'weapon' }] } }).ok);
+        assert.ok(op.validate({ target: { id: 'x' }, payload: { kinds: [{ index: 0, kind: '' }] } }).ok, 'a Revert can put a missing kind back');
+        assert.ok(!op.validate({ target: { id: 'x' }, payload: { kinds: [{ index: 0, kind: 'mythic' }] } }).ok, 'not a kind');
+        assert.ok(!op.validate({ target: { id: 'x' }, payload: { kinds: [{ index: -1, kind: 'weapon' }] } }).ok, 'not an index');
+        const raw = op.validate({ target: { id: 'x' }, payload: { items: [{ tier: 'mythic', name: 'Anything', kind: 'weapon' }] } });
+        assert.ok(!raw.ok, 'raw items are not an edit field');
+        assert.deepStrictEqual(op.invert({ applied: { id: 'x', prior: { kinds: [{ index: 0, kind: '' }] } } }).payload, { kinds: [{ index: 0, kind: '' }] }, 'the inverse restores only the kinds');
+    });
+
     await check('the saved screen: one draw shows itself with View; several show a row each with the picture and a View menu; no zero counts', async () => {
         const walk = (x, out = []) => { if (Array.isArray(x)) x.forEach(y => walk(y, out)); else if (x && typeof x === 'object') { out.push(x); for (const v of Object.values(x)) if (v && typeof v === 'object') walk(v, out); } return out; };
         const Up = require('../models/DrawIndexUpload'); const realUpd = Up.updateOne; Up.updateOne = () => ({ catch: () => {} });

@@ -374,16 +374,16 @@ async function route(interaction, verb, a, b, c, ctx) {
         const e = await findEntry(a);
         if (!e) return gone();
         const missing = (e.items || []).map((it, i) => ({ it, i })).filter(x => !x.it.kind).slice(0, 5);
-        const items = (e.items || []).map(it => ({ ...it }));
+        const kinds = [];
         const set = [];
         missing.forEach(({ it, i }, k) => {
             let kind = null;
             try { kind = require('../../../utils/formChoice').readChoice(interaction, `k${k}`)[0] || null; } catch { kind = null; }
-            if (['weapon', 'character', 'vehicle', 'other'].includes(kind)) { items[i].kind = kind; set.push(`-# ${String(it.name).slice(0, 70)}: ${kind}`); }
+            if (['weapon', 'character', 'vehicle', 'other'].includes(kind)) { kinds.push({ index: i, kind }); set.push(`-# ${String(it.name).slice(0, 70)}: ${kind}`); }
         });
         if (!set.length) return onCard(e, `${emojis.info} No kind was picked, so nothing was saved.`);
         await interaction.deferUpdate();
-        const result = await require('../../../core/changeset').commitSet([{ type: 'drawindex.edit', target: { id: String(e._id) }, payload: { items } }], { actorId: interaction.user.id });
+        const result = await require('../../../core/changeset').commitSet([{ type: 'drawindex.edit', target: { id: String(e._id) }, payload: { kinds } }], { actorId: interaction.user.id });
         if (!result.ok) return onCard(e, `${emojis.cross} Not saved: ${require('../shared').extractCommitError(result)}`);
         const rev = ID('ixrevert', result.changeIds.join(','), a, b || '');
         const resultRow = rev.length <= 100 ? row({ type: 2, style: 4, label: 'Revert', custom_id: rev, emoji: emojis.parseEmoji(emojis.keep) }) : null;
