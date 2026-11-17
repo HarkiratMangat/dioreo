@@ -44,7 +44,7 @@ His ask (2026-11-16 11:11 EST): "an owner only command where i can upload and ch
 
 ### Changed
 - Misses and refusals answer in a private note and results answer on the panel, following his 2026-11-11 rule.
-- `drawindex.add/update/delete` refuse anyone but the owner inside `apply()`, because a Revert runs as whoever presses it.
+- `drawindex.add/update/delete` refuse anyone but the owner inside `apply()`, because a Revert runs as whoever presses it. They are tiered like the draws they describe (`core/permissions.js`: add and update `create`, delete `destructive`), and `scripts/portalOpsReach.test.js` lists them as having no portal surface.
 
 ## v3.21.3 — 2026-11-15 11:39 EST (#273 · `688ba171`) — `d list` names a weapon once, `s50` finds Signal 50, every weapon shorthand is checked, and the weapon search never pulls in a class
 

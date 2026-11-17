@@ -162,7 +162,8 @@ function blockers(p, doc = null) {
     if (!p.priceType) out.push('a draw type');
     return out;
 }
-const isUpdate = (p) => p.matchStatus === 'sure' || (p.matchStatus === 'maybe' && p.sameDraw === true);
+// A declaration, not a const arrow: blockers() above reads it (scripts/tdzRatchet.mjs).
+function isUpdate(p) { return p.matchStatus === 'sure' || (p.matchStatus === 'maybe' && p.sameDraw === true); }
 const included = (doc) => doc.pictures.filter(p => p.status === 'read' && !p.skip);
 
 // ---------- the review ----------
