@@ -252,14 +252,20 @@ async function route(interaction, verb, a, b, c, ctx) {
     if (verb === 'ixcres') {
         if (!(await gate(interaction, 'exportnew'))) return;
         const sel = await loadSel(a);
-        if (!sel?.text) return say(interaction, `${emojis.cross} That check expired (checks last a day). Run Check Names again.`);
+        if (!sel?.text) return say(interaction, `${emojis.cross} That search expired (searches last a day). Search the index again.`);
         const { result, found } = await runCheck(sel.text, await getDoc());
         return show(interaction, V.checkView(result, a, found.length, { owner, page: Number(b) || 0 }));
     }
     if (verb === 'ixopen') {
         // A button carries the entry in its id; the saved screen's View menu carries it in the value.
         const e = await findEntry(interaction.isStringSelectMenu?.() ? interaction.values[0] : a);
-        return e ? show(interaction, cardView(e, await getDoc(), b || '', { owner })) : gone();
+        if (!e) return gone();
+        // Opened from the saved screen (`v:<upload token>`): the batch's Revert stays on the card, so looking at a save never costs the way to undo it (think-pass, 2026-11-17 00:11 EST).
+        if (/^v:/.test(b || '')) {
+            const rev = { type: 2, style: 4, label: 'Revert', custom_id: ID('ixvrev', b.slice(2)), emoji: emojis.parseEmoji(emojis.keep) };
+            return show(interaction, cardView(e, await getDoc(), '', { owner, header: `-# ${emojis.checkmark} Just saved`, resultRow: row(rev) }));
+        }
+        return show(interaction, cardView(e, await getDoc(), b || '', { owner }));
     }
     if (verb === 'ixedit') {
         if (!(await gate(interaction, 'edit'))) return;

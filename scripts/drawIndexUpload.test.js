@@ -474,7 +474,9 @@ function limits(view, label) {
             const many = walk(U.resultView(doc, [], [{ op: { type: 'drawindex.add', payload: { rows: [] } }, title: e1.title }, { op: { type: 'drawindex.update', target: { id: 'e2' }, payload: { rows: [{}] } }, title: e2.title }], { ok: true, changeIds: ['#1', '#2'], results: [{ applied: { id: 'e1' } }, {}] }, [e1, e2]));
             assert.ok(/Saved 2 draws\n-# 1 new · 1 updated/.test(many.find(c => c.type === 10).content));
             assert.strictEqual(many.filter(c => c.type === 9 && c.accessory?.type === 11).length, 2, 'a picture beside each');
-            assert.ok(many.some(c => c.type === 3 && c.custom_id === 'mng_dr|ixopen' && c.options.length === 2), 'the View menu');
+            assert.ok(many.some(c => c.type === 3 && c.custom_id === 'mng_dr|ixopen||v:tok' && c.options.length === 2), 'the View menu, carrying the batch so the card keeps its Revert');
+            assert.ok(single.some(c => c.type === 2 && c.custom_id === 'mng_dr|ixopen|e1|v:tok'), 'View carries the batch too');
+            assert.ok(U.uploadOneModal({ origin: 'n', card: 'card1', title: 'X' }).custom_id.startsWith('mng_dr|ixup1m|n|card1|'), 'a news card\'s single upload keeps its card');
             assert.ok(many.length <= 40);
         } finally { Up.updateOne = realUpd; }
     });

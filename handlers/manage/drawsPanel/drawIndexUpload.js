@@ -50,8 +50,8 @@ function uploadModal({ origin = 'p', card = '', names = '' } = {}) {
     // (label, description, component): the description second, as every call below writes it.
     const label = (lab, description, component) => ({ type: 18, label: lab, ...(description ? { description } : {}), component });
     return {
-        // A fresh id each time it opens: Discord keeps what was typed into a pop-up closed with Esc and refills the next one with the same id, which put one search's names into an unrelated upload (the click test, 2026-11-16 17:18 EST).
-        custom_id: ID('ixupm', origin, card, Date.now().toString(36)), title: 'Upload Draws',
+        // A fresh id each time it opens: Discord keeps what was typed into a pop-up closed with Esc and refills the next one with the same id, which put one search's names into an unrelated upload (the click test, 2026-11-16 17:18 EST). Named after its button, Bulk Upload (his /manage rule: a pop-up is named after the button that opens it).
+        custom_id: ID('ixupm', origin, card, Date.now().toString(36)), title: 'Bulk Upload',
         components: [
             label('Pictures', `Up to ${MAX_PICTURES} draw posters or screenshots, one draw each`, { type: 19, custom_id: 'pics', min_values: 1, max_values: MAX_PICTURES, required: true }),
             label('Season', 'Only for draws NEW this season: their release season. Blank leaves it unset.', { type: 4, custom_id: 'season', style: 1, required: false, max_length: 12, placeholder: 'Season 10' }),
@@ -60,13 +60,13 @@ function uploadModal({ origin = 'p', card = '', names = '' } = {}) {
     };
 }
 // Upload Draw: one poster, and what Dioreo should not have to guess typed in (Harkirat 2026-11-16 22:27 EST: "upload draw (single draw) and a 2nd button 'bulk upload' (with different forms)"). A typed title or draw type wins over the read; `title` fills the box when it comes from a search that found nothing.
-function uploadOneModal({ origin = 'p', title = '' } = {}) {
+function uploadOneModal({ origin = 'p', card = '', title = '' } = {}) {
     const label = (lab, description, component) => ({ type: 18, label: lab, ...(description ? { description } : {}), component });
     const typeLabel = require('../../../commands/manage').drawTypeLabel('').toJSON();
     typeLabel.component.required = false;
     typeLabel.component.min_values = 0;
     return {
-        custom_id: ID('ixup1m', origin, '', Date.now().toString(36)), title: 'Upload Draw',
+        custom_id: ID('ixup1m', origin, card, Date.now().toString(36)), title: 'Upload Draw',
         components: [
             label('Picture', 'One draw poster or screenshot', { type: 19, custom_id: 'pics', min_values: 1, max_values: 1, required: true }),
             label('Title', 'Optional: blank reads it off the poster', { type: 4, custom_id: 'title', style: 1, required: false, max_length: 90, ...(title ? { value: String(title).slice(0, 90) } : {}), placeholder: 'Herrscher of Thunder Draw' }),
@@ -85,7 +85,7 @@ function editModal(p, token, n) {
             label('Title', null, { type: 4, custom_id: 'title', style: 1, required: true, max_length: 90, value: String(p.title || '').slice(0, 90) || undefined }),
             // The same words and examples as the card's Edit Entry (handlers/manage/drawsPanel/drawIndex.js editModal), so the two pop-ups read alike.
             label('Items', 'One per line: rarity, name, (kind).', { type: 4, custom_id: 'items', style: 2, required: true, max_length: 2000, value: itemsToText(p.items).slice(0, 2000) || undefined, placeholder: 'Legendary QQ9 - Moonlight (weapon)' }),
-            label('Other names', 'One per line: names this draw also ran under. Quick Add and Check Names find it by these.', { type: 4, custom_id: 'aka', style: 2, required: false, max_length: 800, ...(p.aliases?.length ? { value: p.aliases.join('\n') } : {}), placeholder: 'Pop Idol Draw' }),
+            label('Other names', 'One per line: names this draw also ran under. Quick Add and Search Index find it by these.', { type: 4, custom_id: 'aka', style: 2, required: false, max_length: 800, ...(p.aliases?.length ? { value: p.aliases.join('\n') } : {}), placeholder: 'Pop Idol Draw' }),
         ],
     };
 }
@@ -590,7 +590,7 @@ function resultView(doc, plans, ops, result, entries = []) {
             text([`### ${x.title}`, ...([seasonOfEntry(x.e), typeOf(x.e)].filter(Boolean).length ? [`-# ${[seasonOfEntry(x.e), typeOf(x.e)].filter(Boolean).join(' · ')}`] : []), ...items, ...(repointed(x.rows) ? [`-# ${repointed(x.rows)}`] : [])].join('\n').slice(0, 3000)),
             ...(after.length ? [SMALL(), text(after.join('\n').slice(0, 1500))] : []),
             BIG(),
-            row(IX.indexBack(), ...(x.id ? [btn(['ixopen', x.id, ''], 'View', emojis.expand)] : []), ...uploads, ...revert),
+            row(IX.indexBack(), ...(x.id ? [btn(['ixopen', x.id, `v:${doc._id}`], 'View', emojis.expand)] : []), ...uploads, ...revert),
         ]);
     }
     // Eight rows fit Discord's 40 components with the menu; a ninth and tenth are named on one line.
@@ -600,7 +600,7 @@ function resultView(doc, plans, ops, result, entries = []) {
         const facts = [x.isAdd ? 'New' : 'Updated', typeOf(x.e), seasonOfEntry(x.e)].filter(Boolean).join(' · ');
         const more = [x.e ? plural((x.e.items || []).length, 'item') : null, repointed(x.rows)].filter(Boolean).join(' · ');
         const body = text(`${tier ? `${tier} ` : ''}**${x.title}**\n-# ${facts}${more ? `\n-# ${more}` : ''}`);
-        return { type: 9, components: [body], accessory: x.e?.imageUrl ? { type: 11, media: { url: x.e.imageUrl } } : btn(['ixopen', x.id || '', ''], 'View', emojis.expand) };
+        return { type: 9, components: [body], accessory: x.e?.imageUrl ? { type: 11, media: { url: x.e.imageUrl } } : btn(['ixopen', x.id || '', `v:${doc._id}`], 'View', emojis.expand) };
     });
     const withIds = saved.filter(x => x.id);
     return panel([
@@ -608,7 +608,7 @@ function resultView(doc, plans, ops, result, entries = []) {
         ...rows,
         ...(saved.length > shown.length ? [text(`-# …and ${saved.slice(shown.length).map(x => x.title).join(', ').slice(0, 300)}`)] : []),
         ...(after.length ? [SMALL(), text(after.join('\n').slice(0, 1500))] : []),
-        ...(withIds.length ? [{ type: 1, components: [{ type: 3, custom_id: ID('ixopen'), placeholder: 'View a saved draw…', options: withIds.slice(0, 25).map(x => ({ value: String(x.id), label: x.title.slice(0, 100), description: x.isAdd ? 'New entry' : 'Updated', emoji: emojis.parseEmoji(emojis.expand) })) }] }] : []),
+        ...(withIds.length ? [{ type: 1, components: [{ type: 3, custom_id: ID('ixopen', '', `v:${doc._id}`), placeholder: 'View a saved draw…', options: withIds.slice(0, 25).map(x => ({ value: String(x.id), label: x.title.slice(0, 100), description: x.isAdd ? 'New entry' : 'Updated', emoji: emojis.parseEmoji(emojis.expand) })) }] }] : []),
         BIG(),
         row(IX.indexBack(), ...uploads, ...revert),
     ]);
