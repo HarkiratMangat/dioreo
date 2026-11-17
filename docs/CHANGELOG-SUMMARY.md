@@ -12,6 +12,11 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.23.0 — November 17, 2026
+- **Changed (owner):** the Draw Index home has Upload Draw (one poster, with its title and type typed in) and Bulk Upload, plus View Indexed Draws, Search Index and Needs My Eyes.
+- **Changed (owner):** a search with one result opens that draw, and each draw has one row of actions: Edit, Delete, Picture, Add.
+- **Changed (owner):** the saved screen shows what was saved, with its pictures.
+
 ## v3.22.0 — November 16, 2026
 - **New (owner):** `/bot drawindex` reads draw posters and adds or updates them in the draw index by itself, with a review before anything is saved.
 - **New (owner):** Find Draws checks one name or a whole list against the draw index, and a missing draw can be uploaded straight from the result.

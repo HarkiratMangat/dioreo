@@ -1321,9 +1321,9 @@ module.exports = {
         // `/bot drawindex` (2026-11-16 12:22 EST, Harkirat 11:11 EST: "an owner only command where i can upload and check the draws index", and 12:05 EST "bot drawindex is fine"): opens the Draw Index panel with the owner's Upload Draws (handlers/manage/drawsPanel/drawIndex.js, drawIndexUpload.js). Its options follow /manage's (the rehaul, 2026-11-07): entry: a target (autocomplete) opens its card, do: an action, show: a list, visibility LAST (Hidden by default, as analytics and access). Added 2026-11-16 14:13 EST after Harkirat found visibility missing ("one of the most SIMPLE thing, \"visibility\" option in the slash command, wasn't even added").
         .addSubcommand(sub => sub.setName('drawindex').setDescription('Upload, check and edit the draw index (owner-only)')
             .addStringOption(o => o.setName('entry').setDescription('Go to one entry: type part of its title, another name or an item').setAutocomplete(true).setMaxLength(100))
-            .addStringOption(o => o.setName('do').setDescription('Open a pop-up straight away').addChoices({ name: 'Upload Draws', value: 'upload' }, { name: 'Find Draws', value: 'check' }))
+            .addStringOption(o => o.setName('do').setDescription('Open a pop-up straight away').addChoices({ name: 'Upload Draw', value: 'upload1' }, { name: 'Bulk Upload', value: 'upload' }, { name: 'Search Index', value: 'check' }))
             .addStringOption(o => o.setName('show').setDescription('Open a list of entries').addChoices(  // the Draw Index panel's GAPS (handlers/manage/drawsPanel/drawIndex.js), written out so this builder requires no handler; scripts/drawIndexUpload.test.js fails if the two differ
-                { name: 'No Picture', value: 'pic' }, { name: 'Placeholder Picture', value: 'ph' }, { name: 'No Draw Type', value: 'type' }, { name: 'Items Without a Kind', value: 'kind' }, { name: 'No Items', value: 'items' }, { name: 'Every Entry', value: 'all' }))
+                { name: 'No Picture', value: 'pic' }, { name: 'Placeholder Picture', value: 'ph' }, { name: 'No Draw Type', value: 'type' }, { name: 'Items Without a Kind', value: 'kind' }, { name: 'No Items', value: 'items' }, { name: 'Needs My Eyes', value: 'eyes' }, { name: 'Indexed Draws', value: 'all' }))
             .addStringOption(o => o.setName('visibility').setDescription('Show this panel only to you, or publicly to everyone in the chat. (Defaults to only you.)').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' })))
         .addSubcommand(sub => sub.setName('hotpatch').setDescription('Reload changed files without a restart')
             .addBooleanOption(o => o.setName('pull').setDescription('git pull first (default: yes)'))
@@ -1390,6 +1390,7 @@ module.exports = {
             const act = interaction.options.getString('do');
             // A pop-up has to be the first answer, so do: runs before anything is deferred. Upload carries the visibility in its pop-up id ('p' hidden, 'P' public), so the review it opens follows it.
             if (act === 'upload') return interaction.showModal(require('../handlers/manage/drawsPanel/drawIndexUpload').uploadModal({ origin: isEphemeral ? 'p' : 'P' }));
+            if (act === 'upload1') return interaction.showModal(require('../handlers/manage/drawsPanel/drawIndexUpload').uploadOneModal({ origin: isEphemeral ? 'p' : 'P' }));
             if (act === 'check') return interaction.showModal(require('../handlers/manage/drawsPanel/views').checkModal());
             await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
             const IX = require('../handlers/manage/drawsPanel/drawIndex');
@@ -1400,10 +1401,7 @@ module.exports = {
             const picked = q && entries.find(e => String(e._id) === q);
             if (picked) return sendV2Payload(interaction, IX.cardView(picked, doc, '', { owner: true }), { skipExpiry: true });
             const gap = interaction.options.getString('show');
-            if (!q && gap && IX.GAPS[gap]) {
-                const list = entries.filter(IX.GAPS[gap].test).sort((x, y) => String(x.title).localeCompare(String(y.title)));
-                return sendV2Payload(interaction, IX.listView(list, { title: IX.GAPS[gap].label, origin: `g:${gap}`, page: 0, pagerParts: ['ixgaps', gap] }), { skipExpiry: true });
-            }
+            if (!q && gap && IX.GAPS[gap]) return sendV2Payload(interaction, IX.gapView(entries, gap, 0), { skipExpiry: true });
             // Typed words that were not a picked suggestion are a Find Draws search: a card, a list, or the not-found result with Upload Draws (handlers/manage/drawsPanel/drawIndex.js findView).
             if (q) { const f = await IX.findView(q, { owner: true, doc }); return sendV2Payload(interaction, f.view || f.note, { skipExpiry: true }); }
             return sendV2Payload(interaction, IX.homeView(entries, doc, null, { owner: true }), { skipExpiry: true });

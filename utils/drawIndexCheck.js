@@ -5,7 +5,7 @@
 // Read only: it never writes the index. Each line is matched by Quick Add's own matcher (utils/quickAdd.js findCatalogDraw: the title, another name, then the words of the title and the items, typos forgiven), so a line that finds a draw here finds the same draw in Quick Add. Pure over a list of catalog documents, so scripts/drawIndexCheck.test.js needs no database.
 const { findCatalogDraw, words, scoreEntry } = require('./quickAdd');
 
-const MAX_LINES = 20;          // checked per paste; checkView shows as many as fit in Discord's 4,000 characters and names the rest
+const MAX_LINES = 50;          // checked per paste (20 until 2026-11-16 22:27 EST); checkView pages them, eight a page
 const MAX_SHOWN_DESCRIBED = 5;
 
 const clean = (s, max = 80) => String(s || '').replace(/[*_`~|>]/g, '').replace(/\s+/g, ' ').trim().slice(0, max);

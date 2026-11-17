@@ -50,12 +50,29 @@ function uploadModal({ origin = 'p', card = '', names = '' } = {}) {
     // (label, description, component): the description second, as every call below writes it.
     const label = (lab, description, component) => ({ type: 18, label: lab, ...(description ? { description } : {}), component });
     return {
-        // A fresh id each time it opens: Discord keeps what was typed into a pop-up closed with Esc and refills the next one with the same id, which put one search's names into an unrelated upload (the click test, 2026-11-16 17:18 EST).
-        custom_id: ID('ixupm', origin, card, Date.now().toString(36)), title: 'Upload Draws',
+        // A fresh id each time it opens: Discord keeps what was typed into a pop-up closed with Esc and refills the next one with the same id, which put one search's names into an unrelated upload (the click test, 2026-11-16 17:18 EST). Named after its button, Bulk Upload (his /manage rule: a pop-up is named after the button that opens it).
+        custom_id: ID('ixupm', origin, card, Date.now().toString(36)), title: 'Bulk Upload',
         components: [
             label('Pictures', `Up to ${MAX_PICTURES} draw posters or screenshots, one draw each`, { type: 19, custom_id: 'pics', min_values: 1, max_values: MAX_PICTURES, required: true }),
             label('Season', 'Only for draws NEW this season: their release season. Blank leaves it unset.', { type: 4, custom_id: 'season', style: 1, required: false, max_length: 12, placeholder: 'Season 10' }),
             label('Names', 'Optional: titles for posters that print none, one per line, in order. Fix any title on the review.', { type: 4, custom_id: 'names', style: 2, required: false, max_length: 1000, ...(names ? { value: String(names).slice(0, 1000) } : {}), placeholder: 'Herrscher of Thunder Draw' }),
+        ],
+    };
+}
+// Upload Draw: one poster, and what Dioreo should not have to guess typed in (Harkirat 2026-11-16 22:27 EST: "upload draw (single draw) and a 2nd button 'bulk upload' (with different forms)"). A typed title or draw type wins over the read; `title` fills the box when it comes from a search that found nothing.
+function uploadOneModal({ origin = 'p', card = '', title = '' } = {}) {
+    const label = (lab, description, component) => ({ type: 18, label: lab, ...(description ? { description } : {}), component });
+    const typeLabel = require('../../../commands/manage').drawTypeLabel('').toJSON();
+    typeLabel.component.required = false;
+    typeLabel.component.min_values = 0;
+    return {
+        custom_id: ID('ixup1m', origin, card, Date.now().toString(36)), title: 'Upload Draw',
+        components: [
+            label('Picture', 'One draw poster or screenshot', { type: 19, custom_id: 'pics', min_values: 1, max_values: 1, required: true }),
+            label('Title', 'Optional: blank reads it off the poster', { type: 4, custom_id: 'title', style: 1, required: false, max_length: 90, ...(title ? { value: String(title).slice(0, 90) } : {}), placeholder: 'Herrscher of Thunder Draw' }),
+            typeLabel,
+            label('Season', 'Only for a draw NEW this season: its release season. Blank leaves it unset.', { type: 4, custom_id: 'season', style: 1, required: false, max_length: 12, placeholder: 'Season 10' }),
+            label('Other names', 'Optional, one per line: names this draw also ran under', { type: 4, custom_id: 'aka', style: 2, required: false, max_length: 800, placeholder: 'Pop Idol Draw' }),
         ],
     };
 }
@@ -68,7 +85,7 @@ function editModal(p, token, n) {
             label('Title', null, { type: 4, custom_id: 'title', style: 1, required: true, max_length: 90, value: String(p.title || '').slice(0, 90) || undefined }),
             // The same words and examples as the card's Edit Entry (handlers/manage/drawsPanel/drawIndex.js editModal), so the two pop-ups read alike.
             label('Items', 'One per line: rarity, name, (kind).', { type: 4, custom_id: 'items', style: 2, required: true, max_length: 2000, value: itemsToText(p.items).slice(0, 2000) || undefined, placeholder: 'Legendary QQ9 - Moonlight (weapon)' }),
-            label('Other names', 'One per line: names this draw also ran under. Quick Add and Check Names find it by these.', { type: 4, custom_id: 'aka', style: 2, required: false, max_length: 800, ...(p.aliases?.length ? { value: p.aliases.join('\n') } : {}), placeholder: 'Pop Idol Draw' }),
+            label('Other names', 'One per line: names this draw also ran under. Quick Add and Search Index find it by these.', { type: 4, custom_id: 'aka', style: 2, required: false, max_length: 800, ...(p.aliases?.length ? { value: p.aliases.join('\n') } : {}), placeholder: 'Pop Idol Draw' }),
         ],
     };
 }
@@ -277,7 +294,9 @@ function saveLine(doc) {
     const upd = inc.length - fresh;
     const skipped = doc.pictures.filter(p => p.status === 'read' && p.skip).length;
     const failed = doc.pictures.filter(p => p.status === 'failed').length;
-    const parts = [inc.length ? `${plural(inc.length, 'draw')} to save (${fresh} new, ${upd} updated)` : 'Nothing to save yet', skipped ? `${skipped} skipped` : null, failed ? `${emojis.warn} ${failed} not read` : null, doc.costUsd ? `read for $${doc.costUsd.toFixed(3)}` : null].filter(Boolean);
+    // No zero parts (his 2026-11-16 22:25 EST screenshot: "1 draw to save (1 new, 0 updated)").
+    const split = [fresh ? `${fresh} new` : null, upd ? `${upd} updated` : null].filter(Boolean).join(', ');
+    const parts = [inc.length ? `${plural(inc.length, 'draw')} to save · ${split}` : 'Nothing to save yet', skipped ? `${skipped} skipped` : null, failed ? `${emojis.warn} ${failed} not read` : null, doc.costUsd ? `read cost about $${doc.costUsd.toFixed(3)}` : null].filter(Boolean);
     const blocked = doc.pictures.map((p, i) => ({ i, b: blockers(p, doc) })).filter(x => x.b.length);
     const needs = [...new Set(blocked.flatMap(x => needText(x.i, x.b)))];
     return `-# ${parts.join(' · ')}${needs.length ? `\n-# ${emojis.warn} Before saving: ${needs.join('; ').slice(0, 600)}` : ''}`;
@@ -370,6 +389,15 @@ async function saveUpload(doc, actorId) {
 // ---------- the panel's routes ---------- Upload Draws (`ixup`, `ixupm`) and its review (`ixv…`). The card's Replace Picture and Delete Entry stay in drawIndex.js.
 const isUploadVerb = (verb) => /^ix(up|v)/.test(String(verb || ''));
 
+// The names a search did NOT find, worked out again from what was pasted. The selection's `query` holds only the found draws Quick Add could take, so "not in query" also caught a found draw already on /draws or in the draft (the click test, 2026-11-16 22:51 EST: Upload This Draw opened on "lethal pair").
+async function notFoundNames(token) {
+    const sel = await require('../../../models/ManageSelection').findById(token).lean().catch(() => null);
+    if (!sel?.text) return [];
+    const doc = await require('../../../models/SeasonalData').findOne({ docType: 'global' }).lean();
+    const { result } = await require('./drawIndex').runCheck(sel.text, doc);
+    return result.results.filter(r => r.status === 'none').map(r => String(r.line).trim()).filter(Boolean);
+}
+
 async function route(interaction, verb, a, b, c, ctx) {
     const { show, say } = ctx;
     if (!isOwner(interaction.user.id)) return say(interaction, OWNER_ONLY);
@@ -377,17 +405,17 @@ async function route(interaction, verb, a, b, c, ctx) {
     const expired = () => say(interaction, `${emojis.cross} That upload expired (uploads last a day). Upload the pictures again.`);
     const save = (token, fields) => Upload().updateOne({ _id: token }, { $set: fields });
 
-    // From Find Draws' results `a` is the find's token: the names it did not find go into the Names box (his 16:51 EST finding 3).
+    // From Find Draws' results `a` is the find's token: the names it did not find go into the Names box (his 16:51 EST finding 3). Upload Draw. From a search that found nothing, `a` is that search's token and its one name fills the Title box.
+    if (verb === 'ixup1') {
+        const title = a ? (await notFoundNames(a))[0] || '' : '';
+        return interaction.showModal(uploadOneModal({ origin: 'p', title }));
+    }
     if (verb === 'ixup') {
-        let names = '';
-        if (a) {
-            const sel = await require('../../../models/ManageSelection').findById(a).lean().catch(() => null);
-            const found = new Set((sel?.query || []).map(x => String(x).trim().toLowerCase()));
-            names = String(sel?.text || '').split('\n').map(x => x.trim()).filter(x => x && !found.has(x.toLowerCase())).join('\n');
-        }
+        const names = a ? (await notFoundNames(a)).join('\n') : '';
         return interaction.showModal(uploadModal({ origin: 'p', names }));
     }
-    if (verb === 'ixupm' && interaction.isModalSubmit?.()) {
+    if ((verb === 'ixupm' || verb === 'ixup1m') && interaction.isModalSubmit?.()) {
+        const single = verb === 'ixup1m';
         let files = [];
         try { files = [...(interaction.fields.getUploadedFiles('pics')?.values() || [])]; } catch { files = []; }
         const get = (id) => { try { return interaction.fields.getTextInputValue(id) || ''; } catch { return ''; } };
@@ -404,8 +432,23 @@ async function route(interaction, verb, a, b, c, ctx) {
         await sendV2Payload(interaction, panel([text(`### ${emojis.search} Reading ${plural(files.length, 'picture')}…`)]), { skipExpiry: true });
         const seasonDoc = await require('../../../models/SeasonalData').findOne({ docType: 'global' }).lean();
         const year = R().seasonYearFor(s.season, seasonDoc);
-        const names = get('names').split('\n').map(x => x.trim());
-        const { pictures, costUsd } = await readAll(files.slice(0, MAX_PICTURES), { names, season: s.season, year });
+        const names = single ? [] : get('names').split('\n').map(x => x.trim());
+        const { pictures, costUsd } = await readAll(files.slice(0, single ? 1 : MAX_PICTURES), { names, season: s.season, year });
+        // Upload Draw's typed fields win over the read: a title (matched again, as Edit does), the draw type (his pick, kept over an entry's), other names. A typed title says it is a draw, so a "doesn't look like a draw" skip is lifted.
+        if (single && pictures[0]?.status === 'read') {
+            const p0 = pictures[0];
+            const typed = require('../../../utils/adminParser').toTitleCase(get('title').trim().slice(0, 90));
+            if (typed) {
+                const m = R().matchEntry(await loadEntries(), typed, p0.items);
+                Object.assign(p0, { title: typed, readTitle: typed, matchStatus: m.status, matchId: m.entry ? String(m.entry._id) : null, matchTitle: m.entry?.title || null, sameDraw: null, skip: false });
+                if (m.status === 'sure' && require('../../../utils/drawCatalog').isKnownType(m.entry.priceType)) Object.assign(p0, { priceType: m.entry.priceType, typeSettled: true });
+            }
+            let picked = null;
+            try { picked = require('../../../utils/formChoice').readChoice(interaction, 'price_type')[0] || null; } catch { picked = null; }
+            if (picked && require('../../../utils/drawTypes').DRAW_TYPES.some(t => t.key === picked)) Object.assign(p0, { priceType: picked, typeSettled: true, typeChanged: true });
+            const aka = get('aka').split('\n').map(x => x.trim()).filter(Boolean);
+            if (aka.length) p0.aliases = aka.slice(0, 8);
+        }
         const token = newToken();
         await Upload().create({ _id: token, season: s.season, year, origin: a === 'n' ? 'news' : 'panel', newsCard: a === 'n' ? String(b || '') : '', pictures, costUsd });
         const first = await reviewPanel(await load(token), 0);
@@ -480,7 +523,7 @@ async function route(interaction, verb, a, b, c, ctx) {
         const { plans, ops, result } = await saveUpload(doc, interaction.user.id);
         // Opened from a news card: its index lines are worked out again, so it stops saying "not in the draw index".
         if (result.ok && ops.length && doc.newsCard) require('../../../utils/newsTriage/indexStatus').refreshIndexStatus(doc.newsCard, { rest: interaction.client.rest, appId: interaction.applicationId }).catch(() => {});
-        return show(interaction, resultView(doc, plans, ops, result));
+        return show(interaction, resultView(doc, plans, ops, result, result.ok ? await loadEntries() : []));
     }
     if (verb === 'ixvrev') {
         return require('../results').revertChanges(interaction, doc.savedChangeIds || [], {
@@ -503,17 +546,12 @@ function skipReason(p) {
     return '';
 }
 
-function resultView(doc, plans, ops, result) {
-    // Every picture that did not become a save is named after the list: failed uploads and "nothing new" from the plans, and the pictures the plans never saw (a read that failed, a skip on the review). The click test, 2026-11-16 14:54 EST: the plans alone held only the included pictures, so a batch of seven reported "Saved 3" and said nothing about the other four.
+// The saved screen (Harkirat 2026-11-16 22:27 EST: "i want a better 'saved' confirmation screen", with his 10:25 PM screenshot of "Saved 1 draw · 1 new, 0 updated" and a lone Open row). One draw shows as saved: its picture, title, season and type, its items, and View. Several show one row each with the picture beside it, and a View menu. Nothing is said in zeros. `entries` is the index after the save; without it the rows fall back to the titles.
+function resultView(doc, plans, ops, result, entries = []) {
+    // Every picture that did not become a save is named after the list: failed uploads and "nothing new" from the plans, and the pictures the plans never saw (a read that failed, a skip on the review). The click test, 2026-11-16 14:54 EST: the plans alone held only the included pictures, so a batch of seven reported only what it saved.
     const failed = [...plans.filter(x => x.error), ...(doc.pictures || []).map((p, i) => ({ i, p })).filter(({ p }) => p.status === 'failed' && !p.skip).map(({ i, p }) => ({ i, error: `couldn't be read (${p.error || 'unknown error'})` }))].sort((x, y) => x.i - y.i);
     const skipped = [...plans.filter(x => x.skip), ...(doc.pictures || []).map((p, i) => ({ i, p })).filter(({ p }) => p.skip).map(({ i, p }) => ({ i, skip: `skipped${skipReason(p) ? `, ${skipReason(p)}` : ''}` }))].sort((x, y) => x.i - y.i);
-    const lines = [];
     const notRestored = plans.filter(x => x.hold && x.restored === false).length;
-    if (!result.ok) lines.push(`### ${emojis.cross} Nothing was saved\n-# ${require('../shared').extractCommitError(result)}${plans.some(x => x.hold) ? (notRestored ? `\n-# ${emojis.warn} ${plural(notRestored, 'replaced picture')} could not be put back.` : '\n-# Every replaced picture was put back.') : ''}`);
-    else {
-        const added = ops.filter(x => x.op.type === 'drawindex.add').length;
-        lines.push(`### ${emojis.checkmark} Saved ${plural(ops.length, 'draw')}${ops.length ? ` · ${added} new, ${ops.length - added} updated` : ''}`);
-    }
     const after = [];
     if (failed.length) after.push(`${emojis.warn} Not saved:\n${failed.map(x => `-# Picture ${x.i + 1}: ${x.error}`).join('\n')}`);
     if (skipped.length) after.push(skipped.map(x => `-# Picture ${x.i + 1}: ${x.skip}`).join('\n'));
@@ -521,17 +559,60 @@ function resultView(doc, plans, ops, result) {
     // The batch stays a day so Revert can find its changes; the change ids ride on it, not in the custom_id (ten of them would pass 100 characters).
     require('../../../models/DrawIndexUpload').updateOne({ _id: doc._id }, { $set: { savedChangeIds: changeIds } }).catch(() => {});
     const IX = require('./drawIndex');
-    // Each saved draw with Open, which lands on its entry card (the click test, 2026-11-16 13:02 EST: the result named the draws with no way to look at them). The entry id is the add's applied id or the update's target; ten pictures at most is ten sections.
-    const ids = result.ok ? ops.map((x, k) => x.op.target?.id || result.results?.[k]?.applied?.id || null) : [];
-    const savedRows = result.ok ? ops.map((x, k) => ({ type: 9, components: [text(`${x.op.type === 'drawindex.add' ? emojis.plus : emojis.edit} ${String(x.title).slice(0, 80)}${x.op.payload?.rows?.length ? `\n-# ${plural(x.op.payload.rows.length, 'draw')} now ${x.op.payload.rows.length === 1 ? 'uses' : 'use'} the new picture` : ''}`)], accessory: ids[k] ? btn(['ixopen', ids[k], ''], 'Open', emojis.expand) : { type: 2, style: 2, label: 'Open', custom_id: ID('ixvpg', doc._id, k), disabled: true } })) : [];
+    const revert = changeIds.length ? [{ type: 2, style: 4, label: 'Revert', custom_id: ID('ixvrev', doc._id), emoji: emojis.parseEmoji(emojis.keep) }] : [];
+    const uploads = [btn('ixup1', 'Upload Draw', emojis.plus, 1), btn('ixup', 'Bulk Upload', emojis.mngBulkAdd)];
+    if (!result.ok) {
+        return panel([
+            text(`### ${emojis.cross} Nothing was saved\n-# ${require('../shared').extractCommitError(result)}${plans.some(x => x.hold) ? (notRestored ? `\n-# ${emojis.warn} ${plural(notRestored, 'replaced picture')} could not be put back.` : '\n-# Every replaced picture was put back.') : ''}`),
+            ...(after.length ? [text(after.join('\n').slice(0, 1500))] : []),
+            BIG(), row(IX.indexBack(), ...uploads),
+        ]);
+    }
+    // The entry id is the add's applied id or the update's target; each saved draw is read back from the index for its picture, type and items.
+    const byId = new Map((entries || []).map(e => [String(e._id), e]));
+    const saved = ops.map((x, k) => {
+        const id = x.op.target?.id || result.results?.[k]?.applied?.id || null;
+        const e = id ? byId.get(String(id)) : null;
+        return { id, e, isAdd: x.op.type === 'drawindex.add', title: String(e?.title || x.title || 'Draw').slice(0, 80), rows: x.op.payload?.rows?.length || 0 };
+    });
+    const added = saved.filter(x => x.isAdd).length;
+    const split = [added ? `${added} new` : null, saved.length - added ? `${saved.length - added} updated` : null].filter(Boolean).join(' · ');
+    const C = require('../../../utils/drawCatalog');
+    const typeOf = (e) => (e?.priceType && e.priceType !== 'unknown' ? require('../../../utils/drawTypes').drawTypeName(e.priceType) : null);
+    const seasonOfEntry = (e) => (e?.releaseSeason ? `Season ${e.releaseSeason}${e.releaseYear ? ` (${e.releaseYear})` : ''}` : null);
+    const repointed = (n) => (n ? `${plural(n, 'draw')} now ${n === 1 ? 'uses' : 'use'} the new picture` : null);
+    if (saved.length === 1) {
+        const x = saved[0];
+        const items = (x.e?.items || []).map(i => `${emojis[i.tier] || ''} ${String(i.name).slice(0, 70)}${i.kind ? ` · ${i.kind}` : ''}`.trim());
+        return panel([
+            text(`### ${emojis.checkmark} Saved · ${x.isAdd ? 'new entry' : 'entry updated'}`),
+            ...(x.e?.imageUrl ? [{ type: 12, items: [{ media: { url: x.e.imageUrl } }] }] : []),
+            text([`### ${x.title}`, ...([seasonOfEntry(x.e), typeOf(x.e)].filter(Boolean).length ? [`-# ${[seasonOfEntry(x.e), typeOf(x.e)].filter(Boolean).join(' · ')}`] : []), ...items, ...(repointed(x.rows) ? [`-# ${repointed(x.rows)}`] : [])].join('\n').slice(0, 3000)),
+            ...(after.length ? [SMALL(), text(after.join('\n').slice(0, 1500))] : []),
+            BIG(),
+            row(IX.indexBack(), ...(x.id ? [btn(['ixopen', x.id, `v:${doc._id}`], 'View', emojis.expand)] : []), ...uploads, ...revert),
+        ]);
+    }
+    // Eight rows fit Discord's 40 components with the menu; a ninth and tenth are named on one line.
+    const shown = saved.slice(0, 8);
+    const rows = shown.map(x => {
+        const tier = emojis[C.topTierOf(x.e?.items || [])] || '';
+        const facts = [x.isAdd ? 'New' : 'Updated', typeOf(x.e), seasonOfEntry(x.e)].filter(Boolean).join(' · ');
+        const more = [x.e ? plural((x.e.items || []).length, 'item') : null, repointed(x.rows)].filter(Boolean).join(' · ');
+        const body = text(`${tier ? `${tier} ` : ''}**${x.title}**\n-# ${facts}${more ? `\n-# ${more}` : ''}`);
+        return { type: 9, components: [body], accessory: x.e?.imageUrl ? { type: 11, media: { url: x.e.imageUrl } } : btn(['ixopen', x.id || '', `v:${doc._id}`], 'View', emojis.expand) };
+    });
+    const withIds = saved.filter(x => x.id);
     return panel([
-        text(lines.join('\n').slice(0, 3800)),
-        ...savedRows,
-        ...(after.length ? [text(after.join('\n').slice(0, 1500))] : []),
+        text(`### ${emojis.checkmark} Saved ${plural(saved.length, 'draw')}\n-# ${split}`),
+        ...rows,
+        ...(saved.length > shown.length ? [text(`-# …and ${saved.slice(shown.length).map(x => x.title).join(', ').slice(0, 300)}`)] : []),
+        ...(after.length ? [SMALL(), text(after.join('\n').slice(0, 1500))] : []),
+        ...(withIds.length ? [{ type: 1, components: [{ type: 3, custom_id: ID('ixopen', '', `v:${doc._id}`), placeholder: 'View a saved draw…', options: withIds.slice(0, 25).map(x => ({ value: String(x.id), label: x.title.slice(0, 100), description: x.isAdd ? 'New entry' : 'Updated', emoji: emojis.parseEmoji(emojis.expand) })) }] }] : []),
         BIG(),
-        row(IX.indexBack(), btn('ixup', 'Upload More', emojis.plus, 1), ...(changeIds.length ? [{ type: 2, style: 4, label: 'Revert', custom_id: ID('ixvrev', doc._id), emoji: emojis.parseEmoji(emojis.keep) }] : [])),
+        row(IX.indexBack(), ...uploads, ...revert),
     ]);
 }
 
 // `__test`: the read and the save, for the dev probe (local/project/features/owner-draws-index/probes/e2e.js) and nothing else.
-module.exports = { __test: { readAll, saveUpload }, route, isUploadVerb, uploadModal, editModal, replaceModal, reviewView, reviewPanel, resultView, blockers, saveLine, needText, markSameDraws, rowsToRepoint, parseItemsText, itemsToText, seasonOf, toPicture, planPicture, isUpdate, OWNER_ONLY, MAX_PICTURES, TIERS, KINDS };
+module.exports = { __test: { readAll, saveUpload }, route, isUploadVerb, uploadModal, uploadOneModal, editModal, replaceModal, reviewView, reviewPanel, resultView, blockers, saveLine, needText, markSameDraws, rowsToRepoint, parseItemsText, itemsToText, seasonOf, toPicture, planPicture, isUpdate, OWNER_ONLY, MAX_PICTURES, TIERS, KINDS };

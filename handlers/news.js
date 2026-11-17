@@ -211,8 +211,10 @@ async function handleNewsInteraction(interaction) {
             return true;
         }
         const card = await require('../models/NewsCard').findById(cardId, { index: 1 }).lean().catch(() => null);
-        const names = require('../utils/newsTriage/indexStatus').needsAdding(card?.index).map(x => x.name).join('\n');
-        await interaction.showModal(require('./manage/drawsPanel/drawIndexUpload').uploadModal({ origin: 'n', card: cardId, names }));
+        const missing = require('../utils/newsTriage/indexStatus').needsAdding(card?.index).map(x => x.name);
+        // One missing draw opens Upload Draw with its title; several open Bulk Upload with their names (the same split as a search's not-found result, 2026-11-17 00:11 EST).
+        const U = require('./manage/drawsPanel/drawIndexUpload');
+        await interaction.showModal(missing.length === 1 ? U.uploadOneModal({ origin: 'n', card: cardId, title: missing[0] }) : U.uploadModal({ origin: 'n', card: cardId, names: missing.join('\n') }));
         return true;
     }
     // Everything else is acknowledged first, then checked and run. Each branch names its own interaction type: this module serves buttons and selects (the router's mixed-type rule).

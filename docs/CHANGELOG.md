@@ -29,7 +29,24 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.22.0 — 2026-11-16 19:01 EST (#274) — `/bot drawindex`: the owner uploads and checks the draw index, and a replaced draw picture is kept 7 days for Revert
+## v3.23.0 — 2026-11-17 01:16 EST (#275) — Draw Index: two uploads, three finders, one card action row, and a saved screen worth reading
+
+His list of 2026-11-16 22:27 EST ("need these buttons…", the saved screen, the 20-line cap, the read cost), then a think-pass before merge.
+
+### Added
+- **Upload Draw** (`ixup1` → `ixup1m`): one poster, with Title, Draw Type, Season and Other names typed in; a typed title or type wins over the read. **Bulk Upload** is the old form, titled after its button.
+- **View Indexed Draws** (every entry, paged) and **Needs My Eyes · N** (every entry with a gap, most gaps first, a menu that shows one gap); the home's gap dropdown is gone.
+- **Add** on the card opens Quick Add for live or the draft, or asks with Add to Live / Add to Draft when both are open.
+- The saved screen shows one draw whole (picture, season, type, items, View) and several as rows with their pictures and a View menu; the card opened from it keeps the batch's Revert.
+
+### Changed
+- **Search Index** (was Find Draws) takes 50 names and pages the results eight at a time (20 before); one found line opens its card. Rows say **View**, the way back says **Search Again**.
+- The card's actions are one row in his order: Edit · Delete · Picture · Add (Delete and Picture owner-only).
+- **Set Item Kinds** from the card is its own pop-up and saves on the card with Revert, through `drawindex.edit` `kinds: [{ index, kind }]` (never raw items: the edit tier cannot rewrite a name or tier).
+- A search's or a news card's one missing draw opens Upload Draw with its title; several open Bulk Upload.
+- No zero counts ("0 updated") on the review or the saved screen; the read's cost reads "read cost about $…" (an estimate from Google's token counts and published rates).
+
+## v3.22.0 — 2026-11-16 19:01 EST (#274 · `495c28b0`) — `/bot drawindex`: the owner uploads and checks the draw index, and a replaced draw picture is kept 7 days for Revert
 
 His ask (2026-11-16 11:11 EST): "an owner only command where i can upload and check the draws index. adding more draws, editing, etc. I need the process to be seamless and easy for me for it to handle most of the work itself such as tagging". Built and redesigned over the day from his click tests and critiques; his picks and rules are quoted beside each part in the code.
 

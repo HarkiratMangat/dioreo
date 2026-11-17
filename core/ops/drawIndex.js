@@ -12,6 +12,13 @@ const { registerEntity } = require('./index');
 const DrawCatalog = require('../../models/DrawCatalog');
 
 const FIELDS = ['aliases', 'releaseSeason', 'priceType'];
+// Set Item Kinds from the card (2026-11-16 22:27 EST) sends `kinds: [{ index, kind }]`, never items: apply() copies the stored items and changes only each named item's kind, so an admin with the edit tier cannot rewrite an item's name, tier or anything else through this op (commit security review, 2026-11-16 22:54 EST). '' is allowed so a Revert can put a missing kind back.
+const KINDS = new Set(['weapon', 'character', 'vehicle', 'other', '']);
+function cleanKinds(list) {
+    if (!Array.isArray(list) || !list.length || list.length > 30) return null;
+    const out = list.map(k => ({ index: Number(k?.index), kind: String(k?.kind ?? '') }));
+    return out.every(k => Number.isInteger(k.index) && k.index >= 0 && k.index < 30 && KINDS.has(k.kind)) ? out : null;
+}
 const pick = (src) => Object.fromEntries(FIELDS.filter(f => f in (src || {})).map(f => [f, src[f] === undefined ? null : src[f]]));
 const refresh = async () => { require('../../utils/drawCatalog').invalidateCatalog(); return null; };
 const DOC = { docType: 'global' };
@@ -60,6 +67,11 @@ registerEntity('drawindex', {
         validate: (op) => {
             if (!op.target?.id) return { ok: false, errors: ['No draw index entry was picked.'] };
             const payload = pick(op.payload);
+            if (op.payload && 'kinds' in op.payload) {
+                const kinds = cleanKinds(op.payload.kinds);
+                if (!kinds) return { ok: false, errors: ['An item kind is weapon, character, vehicle or other.'] };
+                payload.kinds = kinds;
+            }
             if (!Object.keys(payload).length) return { ok: false, errors: ['Nothing to change.'] };
             if ('aliases' in payload) payload.aliases = cleanAliases(payload.aliases);
             if ('releaseSeason' in payload && payload.releaseSeason !== null) {
@@ -76,8 +88,17 @@ registerEntity('drawindex', {
         apply: async (op, { session }) => {
             const cur = await DrawCatalog.findById(op.target.id).session(session).lean();
             if (!cur) return { ok: false, reason: 'missing' };
-            const prior = Object.fromEntries(Object.keys(op.payload).map(k => [k, cur[k] === undefined ? null : cur[k]]));
-            await DrawCatalog.updateOne({ _id: cur._id }, { $set: op.payload }, { session });
+            const { kinds, ...fields } = op.payload;
+            const prior = Object.fromEntries(Object.keys(fields).map(k => [k, cur[k] === undefined ? null : cur[k]]));
+            const set = { ...fields };
+            if (kinds) {
+                const items = (cur.items || []).map(i => ({ ...i }));
+                if (kinds.some(k => k.index >= items.length)) return { ok: false, reason: 'That item is no longer in this entry.' };
+                prior.kinds = kinds.map(k => ({ index: k.index, kind: items[k.index].kind || '' }));
+                for (const k of kinds) items[k.index].kind = k.kind;
+                set.items = items;
+            }
+            await DrawCatalog.updateOne({ _id: cur._id }, { $set: set }, { session });
             return {
                 ok: true,
                 afterCommit: refresh,

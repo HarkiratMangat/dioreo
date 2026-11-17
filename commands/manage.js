@@ -925,7 +925,7 @@ function buildManageCommandData() {
         .addStringOption(o => o.setName('do').setDescription('What to do. With draw: it happens right away').addChoices(
             { name: 'Quick Add', value: 'quickadd' }, { name: 'Add New Draw', value: 'addnew' }, { name: 'Add Returning Draw', value: 'addreturning' },
             { name: 'Edit', value: 'edit' }, { name: 'Set End Date', value: 'end' }, { name: 'Move New/Returning', value: 'move' }, { name: 'Delete', value: 'delete' },
-            { name: 'Bulk Paste', value: 'paste' }, { name: 'Find in the Draw Index', value: 'check' }, { name: 'Export', value: 'export' }, { name: 'Guide', value: 'guide' }))
+            { name: 'Bulk Paste', value: 'paste' }, { name: 'Search the Draw Index', value: 'check' }, { name: 'Export', value: 'export' }, { name: 'Guide', value: 'guide' }))
         .addStringOption(o => o.setName('show').setDescription('Open a list of draws').addChoices(
             { name: 'New Draws', value: 'new' }, { name: 'Returning Draws', value: 'returning' }, { name: 'Upcoming', value: 'upcoming' },
             { name: 'Active Now', value: 'live' }, { name: 'Leaving Soon', value: 'leaving' }, { name: 'Ended', value: 'ended' }, { name: 'No End Date', value: 'noend' }, { name: 'Needs a Look', value: 'look' }))
