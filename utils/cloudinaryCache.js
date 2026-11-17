@@ -126,10 +126,11 @@ function catalogMirrorPlan(doc, { previousTags = [], inserted = false, year = ne
     return { context, addTags, removeTags };
 }
 
-// Writes catalogMirrorPlan() to the asset. Never throws (a failure only leaves the asset as it was, for scripts/syncDrawCatalog.js to report), never logs a raw Cloudinary error, and is blocked on the dev bot like every other write to the shared account.
+// Writes catalogMirrorPlan() to the asset. Never throws (a failure only leaves the asset as it was, for scripts/syncDrawCatalog.js to report), never logs a raw Cloudinary error, and is blocked on the dev bot like every other write to the shared account, except onto the dev bot's own `dev_draws/` pictures.
 async function mirrorCatalogToCloudinary(publicId, plan) {
     if (!publicId || !plan) return false;
-    if (isCloudinaryWriteBlocked('draw index mirror', publicId)) return false;
+    // A picture the dev bot uploaded lives under its own `dev_draws/` folder (utils/drawIndexPicture.js), so mirroring onto it cannot touch a live asset; every other id stays blocked on dev.
+    if (isCloudinaryWriteBlocked('draw index mirror', publicId, { devNamespaceSafe: publicId.startsWith('dev_draws/') })) return false;
     try {
         if (plan.removeTags.length) await cloudinary.uploader.remove_tag(plan.removeTags.join(','), [publicId]);
         if (plan.addTags.length) await cloudinary.uploader.add_tag(plan.addTags.join(','), [publicId]);
@@ -223,9 +224,17 @@ async function cacheThumbnail(title, sourceUrl, draw = null) {
     try {
         const meta = draw ? metadataFor(title, draw) : null;
         // Replacing an image that carries another fingerprint: its old tag must go, or the old items would still find this image.
+        const existing = await cloudinary.api.resource(publicId, { context: true, tags: true }).catch(() => null);
         if (meta) {
-            const old = await cloudinary.api.resource(publicId, { context: true }).then(readDrawContext).catch(() => null);
+            const old = existing ? readDrawContext(existing) : null;
             if (old?.fp && old.fp !== meta.fp) await cloudinary.uploader.remove_tag(`${FP_TAG_PREFIX}${old.fp}`, [publicId]).catch(() => {});
+        }
+        // The picture this replaces is held for 7 days first, and the hold rides on the save's change row, so its Revert brings the picture back (utils/drawPictureHold.js; Harkirat, 2026-11-16 18:35 EST). A failed hold does not stop the save: the draw would otherwise keep Discord's link, which expires within a day.
+        if (existing) {
+            const H = require('./drawPictureHold');
+            const h = await H.holdAsset(publicId, H.holdIdFor(publicId), existing);
+            if (h.ok && h.held) H.noteHold({ id: h.held, publicId });
+            else if (!h.ok) console.error(`Cloudinary: the old picture of "${title}" could not be kept for Revert: ${h.error}`);
         }
         const result = await cloudinary.uploader.upload(sourceUrl, {
             public_id: publicId, // the folder is baked into this path (draws/{slug})

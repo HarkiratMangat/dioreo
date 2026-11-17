@@ -28,6 +28,13 @@ check('visibility is the last option wherever a command has it', () => {
     assert.deepStrictEqual(wrong, []);
 });
 
+// 3. A command or subcommand that opens a panel takes `visibility` (Hidden/Public). The ones below are owner tools whose code says why they stay private (servers changes another server's settings; penalties and freeze silence people and commands bot-wide; delete removes messages in any server; hotpatch reloads code); a new leaf without visibility fails here until it is added to the command or to this list on purpose. Added 2026-11-16 14:14 EST after /bot drawindex shipped without it and the click test never noticed.
+const NO_VISIBILITY = ['/bot servers', '/bot penalties', '/bot freeze', '/bot delete', '/bot hotpatch'];
+check('every leaf without visibility was left without it on purpose', () => {
+    const missing = [...leaves].filter(([leaf, names]) => !names.includes('visibility') && !NO_VISIBILITY.includes(leaf)).map(([leaf]) => leaf);
+    assert.deepStrictEqual(missing, []);
+});
+
 check("/help lists only real options, in the command's order", () => {
     const { CATEGORY_DEFS } = require('../commands/help');
     const bad = [];

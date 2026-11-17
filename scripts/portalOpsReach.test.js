@@ -30,6 +30,10 @@ const NO_SURFACE = {
     'patchnote.restore': { why: 'inverse-only — patchnote.purge inverts to it', inverseOnly: true },
     'season.restoreSnapshot': { why: 'inverse-only — season.promoteDraft inverts to it', inverseOnly: true },
     'season.restoreDraft': { why: 'inverse-only — season.discardDraft inverts to it', inverseOnly: true },
+    // ── Owner-only Discord tools (2026-11-16, /bot drawindex): the portal has no draw index realm, and these ops refuse anyone but the owner inside apply().
+    'drawindex.add': { why: 'owner-only /bot drawindex on Dioreo Admin (Upload Draws); no portal surface by design, the portal is paused' },
+    'drawindex.update': { why: 'owner-only /bot drawindex on Dioreo Admin (Edit Entry, Replace Picture, an Upload update); no portal surface by design' },
+    'drawindex.delete': { why: 'owner-only /bot drawindex on Dioreo Admin (Delete Entry); no portal surface by design' },
     // ── Discord-only for now (2026-11-08): armed from /manage's Promote pop-up, which the portal has no counterpart of yet; the portal's own Promote still promotes at once.
     'season.setDraftBanners': { why: 'the Next Season Draft\'s three /calendar banners, set from /manage season draft\'s Banners pop-up (2026-11-09); the portal\'s draft has no banner field yet (the portal is paused)' },
     'season.setAutoPromote': { why: 'armed from /manage season\'s Promote pop-up only; a portal Auto-promote would be its own design' },

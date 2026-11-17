@@ -283,7 +283,11 @@ async function processPost(post, { rest, selfId, appId, force = false, env = pro
             noteSkipped(post, reason);
             return { status: 'no card', reason, skipped };
         }
+        // Whether each draw the post names is in the draw index (indexStatus.js): no extra AI call, the read already holds names and rewards. Every draw item, drafted or not.
+        let index = [];
+        try { index = require('./indexStatus').indexStatusForItems(card, await require('../drawCatalog').loadCatalog()); } catch (err) { console.error('News card index check failed:', err?.message || err); }
         const doc = await storeCard({
+            index,
             sourceChannelId: post.channelId, sourceMessageId: post.id, sourceName: post.channelName, jumpUrl: post.jumpUrl,
             postedAt: post.createdAt, cardChannelId: cfg.channel, items: fresh.slice(0, MAX_ITEMS),
             notes: fresh.length > MAX_ITEMS ? [`${fresh.length - MAX_ITEMS} more items in the post are not shown.`] : [],
@@ -404,7 +408,7 @@ async function promoteCheck(rest, { env = process.env, appId, now = new Date() }
     } catch (err) { console.error('News triage: the promote check failed:', err?.message || err); return null; }
 }
 async function gatherBriefing(rest, cfg, now = new Date()) {
-    const out = { stats: { ...state.stats }, since: state.statsSince, readiness: null, fixes: [], channels: [] };
+    const out = { stats: { ...state.stats }, since: state.statsSince, readiness: null, fixes: [], channels: [], unindexed: [] };
     let liveDoc = null;
     try { liveDoc = await require('../../models/SeasonalData').findOne({ docType: 'global' }).lean(); out.readiness = draftReadiness(liveDoc); } catch { /* no database */ }
     try {
@@ -413,6 +417,11 @@ async function gatherBriefing(rest, cfg, now = new Date()) {
         const recent = await NewsCard.find({ createdAt: { $gte: new Date(now - 7 * DAY_MS) }, 'items.action': 'fix', dismissed: { $ne: true } }, { items: 1 }).lean();
         // Each fix is checked against the live row as it is NOW, not against whether its button was clicked (2026-11-05 15:34 EST): opening the box and cancelling used to hide it, and a fix made by hand in /manage stayed listed.
         for (const c of recent) for (const it of c.items) if (it.action === 'fix' && fixStillWrong(it, liveDoc)) out.fixes.push({ name: it.name, text: (it.warnings || []).find(w => /^On the bot/.test(w)) || 'dates changed' });
+    } catch { /* no database */ }
+    // Draws the last week's posts named that are still not in the draw index, checked against it now (indexStatus.js), so one added since drops off.
+    try {
+        const cards = await require('../../models/NewsCard').find({ createdAt: { $gte: new Date(now - 7 * DAY_MS) }, 'index.0': { $exists: true } }, { index: 1 }).lean();
+        if (cards.length) out.unindexed = require('./indexStatus').stillMissing(cards, await require('../drawCatalog').loadCatalog({ force: true }));
     } catch { /* no database */ }
     try {
         const cursors = await require('../../models/NewsCursor').find({}).lean();

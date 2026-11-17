@@ -12,6 +12,11 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.22.0 — November 16, 2026
+- **New (owner):** `/bot drawindex` reads draw posters and adds or updates them in the draw index by itself, with a review before anything is saved.
+- **New (owner):** Find Draws checks one name or a whole list against the draw index, and a missing draw can be uploaded straight from the result.
+- **New:** a draw picture that gets replaced is kept for 7 days, so Revert brings it back.
+
 ## v3.21.3 — November 15, 2026
 - **New:** the Signal 50 has a build, and typing `s50` finds it.
 - **Fixed:** `d list` showed some weapons twice (LW3-Tundra, ODEN).

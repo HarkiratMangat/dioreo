@@ -19,13 +19,13 @@ const drawsSave = () => require('../draws');
 const ManageSelection = () => require('../../../models/ManageSelection');
 const getDoc = () => require('../../../models/SeasonalData').findOne({ docType: 'global' }).lean();
 
-// ---------- answering ----------
-async function show(interaction, components, { ephemeral = true } = {}) {
+// ---------- answering ---------- `files`: attachments the panel shows (the upload review's cropped picture); passing it also clears the message's earlier ones (utils/sendV2Payload.js).
+async function show(interaction, components, { ephemeral = true, files } = {}) {
     if (!interaction.deferred && !interaction.replied) {
         if (interaction.isChatInputCommand?.() || (interaction.isModalSubmit?.() && !interaction.message)) await interaction.deferReply({ flags: ephemeral ? 64 : 0 });
         else await interaction.deferUpdate();
     }
-    return sendV2Payload(interaction, components, { skipExpiry: true });
+    return sendV2Payload(interaction, components, { skipExpiry: true, ...(files ? { files } : {}) });
 }
 async function say(interaction, content) {
     try {
@@ -410,7 +410,8 @@ async function route(interaction) {
     if (verb === 'check') {
         if (!(await gate(interaction, 'exportnew'))) return;
         const last = a ? await loadSel(a) : null;
-        return interaction.showModal(V.checkModal(last?.text || '', last ? a : null));
+        // A word search keeps its words in `query`, a check its pasted lines in `text`: Find Again opens with whichever it was.
+        return interaction.showModal(V.checkModal(last?.text || (last?.query || []).join('\n'), last ? a : null));
     }
     if (verb === 'qathese') {
         if (!(await gate(interaction, 'quickadd'))) return;
@@ -657,10 +658,8 @@ async function route(interaction) {
     if (verb === 'checkm' && interaction.isModalSubmit?.()) {
         if (!(await gate(interaction, 'exportnew'))) return;
         const names = interaction.fields.getTextInputValue('names');
-        // What was pasted, and the lines that found a draw, kept for Check Again, Quick Add These and the way back from a card (IX.runCheck).
-        const { result, found } = await IX.runCheck(names, await getDoc());
-        const token = await createSelection({ text: String(names).slice(0, 4000), query: found });
-        return show(interaction, V.checkView(result, token, found.length));
+        // Find Draws (the Draw Index's one finder): one line searches, several lines are checked, and the answer is always this panel (IX.findView).
+        return IX.answerFind(interaction, await IX.findView(names, { owner: require('../../../utils/adminAccess').isOwner(interaction.user.id), doc: await getDoc() }), show);
     }
     // A list made into a selection (the redesign): the Select menu under a list, or its Select All.
     if ((verb === 'lpick' && interaction.isStringSelectMenu?.()) || verb === 'lall') {

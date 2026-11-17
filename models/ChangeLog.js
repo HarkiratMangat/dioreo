@@ -21,6 +21,8 @@ const ChangeLogSchema = new mongoose.Schema({
     //
     // ⚠️ PRIVACY: today every op payload here describes CONTENT (a draw, an event, a build), so the only per-user field on this model is still `actorId`, already inventoried in PRIVACY.md §2.1b and Appendix A. THAT CHANGES the moment an admin-grant op is stored, because its payload carries a third party's Discord id — update the policy in the SAME change that adds one.
     inverse: { type: mongoose.Schema.Types.Mixed, default: null },
+    // Pictures this change overwrote in Cloudinary, each held for 7 days (utils/drawPictureHold.js): [{ id: the held copy, publicId: where it goes back }]. core/revert.js puts them back and records the new holds on the Revert's own row.
+    pictureHolds: { type: [{ id: String, publicId: String, _id: false }], default: undefined },
     // Authoritative ordering + retention key, same convention as AlertLog: explicit createdAt only, no updatedAt (Mongoose `timestamps` would add one nothing here ever needs).
     createdAt: { type: Date, default: Date.now, index: true },
 });

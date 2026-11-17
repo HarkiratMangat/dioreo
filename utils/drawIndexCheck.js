@@ -83,7 +83,7 @@ const MATCHED_BY = { title: null, alias: 'by another name it ran under', item: '
 // One result as the panel's text block. `E` is the emoji map.
 function resultBlock(r, E) {
     const typed = clean(r.line);
-    if (r.status === 'none') return `${E.cross} **${typed}** → not in the index\n-# ${r.closest?.length ? `Closest: ${r.closest.map(t => clean(t, 40)).join(' · ')}` : 'Saving the draw with a picture (Add Draw or Quick Add) indexes it'}`;
+    if (r.status === 'none') return `${E.cross} **${typed}** → not in the index${r.closest?.length ? `\n-# Closest: ${r.closest.map(t => clean(t, 40)).join(' · ')}` : ''}`;
     if (r.status === 'describes') {
         const shown = r.candidates.slice(0, MAX_SHOWN_DESCRIBED).map(t => clean(t, 40)).join(' · ');
         return `${E.search} **${typed}** → fits ${r.candidates.length} draws, not one\n-# ${shown}${r.candidates.length > MAX_SHOWN_DESCRIBED ? ' · …' : ''}`;

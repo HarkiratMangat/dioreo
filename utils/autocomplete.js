@@ -62,6 +62,17 @@ async function runAutocomplete(interaction) {
         return await interaction.respond(filtered.map(a => ({ name: a.label, value: a.id })));
     }
 
+    // /bot drawindex entry: the draw index's own entries, matched on title, other names and items as Search the Index does (handlers/manage/drawsPanel/drawIndex.js searchEntries). The value is the entry's id; the in-memory catalog, so a keystroke reads no database.
+    if (interaction.commandName === 'bot' && interaction.options.getSubcommand() === 'drawindex') {
+        const { isOwner } = require('../utils/adminAccess');
+        if (!isOwner(interaction.user.id)) return await interaction.respond([]);
+        const IX = require('../handlers/manage/drawsPanel/drawIndex');
+        const entries = await require('../utils/drawCatalog').loadCatalog();
+        const typed = String(interaction.options.getFocused() || '').trim();
+        const list = typed ? IX.searchEntries(entries, typed) : [...entries].sort((a, b) => String(a.title).localeCompare(String(b.title)));
+        return await interaction.respond(list.slice(0, 25).map(e => ({ name: `${e.title} · ${(e.items || []).length} item${(e.items || []).length === 1 ? '' : 's'}`.slice(0, 100), value: String(e._id) })));
+    }
+
     if (interaction.commandName === 'bot' && interaction.options.getSubcommand() === 'hotpatch') {
         const { isOwner } = require('../utils/adminAccess');
         if (!isOwner(interaction.user.id)) return await interaction.respond([]);

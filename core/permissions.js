@@ -58,6 +58,10 @@ const OP_TIERS = {
     'draw.add': 'create',
     'draw.edit': 'create',
     'draw.delete': 'destructive',
+    // The draw index's own ops (/bot drawindex, owner only; core/ops/drawIndex.js refuses anyone else inside apply()). Tiered like the draws they describe, so a Revert of one is gated by the same Undo rule as a draw's.
+    'drawindex.add': 'create',
+    'drawindex.update': 'create',
+    'drawindex.delete': 'destructive',
     'draw.bulkAdd': 'create',
     'draw.bulkReplace': 'create',             // add-or-update by title, deletes nothing (core/ops/draws.js)
     'draw.bulkDelete': 'destructive',

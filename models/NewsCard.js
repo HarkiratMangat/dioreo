@@ -50,6 +50,8 @@ const newsCardSchema = new mongoose.Schema({
     // Who the draft write ran as (the watcher's own reads: '' = the owner; Make a card: the admin who picked it), so a re-read after an edit writes as the same person; and how many times an edit was re-read (at most 2), so a post edited over and over cannot spend reads (2026-11-05 15:42 EST, commit security review).
     draftActorId: { type: String, default: '' },
     rereads: { type: Number, default: 0 },
+    // Whether each draw the post names is in the draw index (2026-11-16 12:23 EST, Harkirat: "detecting the draw name/title/items (if its cheap) and checking if that draw is already indexed"; utils/newsTriage/indexStatus.js). Every draw item of the post, drafted or not; game data only, never the post's picture.
+    index: [{ name: { type: String }, status: { type: String }, title: { type: String, default: '' }, needs: [{ type: String }], rewards: [{ tier: { type: String }, name: { type: String } }] }],
     expireAt: { type: Date, required: true, expires: 0 },
 }, { timestamps: true });
 newsCardSchema.index({ sourceChannelId: 1, sourceMessageId: 1 }, { unique: true });

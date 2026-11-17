@@ -320,14 +320,14 @@ function seasonDoc(nNew = 3, nRet = 30) {
         }
         const card = IX.cardView(entries[30], doc, 'g:all');
         limits(card, 'index card');
-        assert.strictEqual(card[0].components[1].type, 12, 'the picture first');
+        assert.strictEqual(card[0].components[0].type, 12, 'the picture first (no breadcrumb above it since 2026-11-16 15:52 EST)');
         assert.match(JSON.stringify(card), /On \/draws/);
         assert.ok(!JSON.stringify(card).includes('Quick Add This Draw'), 'no Quick Add for a draw already on /draws');
         assert.ok(JSON.stringify(IX.cardView(entries[3], doc, 'h')).includes('Quick Add This Draw'));
         assert.ok(IX.editModal(entries[3], 'h').components.length <= 5);
         // A card opened from Check Names goes back to those results (2026-11-11 11:40 EST click test).
         const fromCheck = JSON.stringify(IX.cardView(entries[3], doc, 'c:tok123'));
-        assert.match(fromCheck, /ixcres\|tok123[^"]*","label":"Check Names"|"label":"Check Names"[^}]*ixcres\|tok123/, 'the way back from a checked card is Check Names');
+        assert.match(fromCheck, /ixcres\|tok123[^"]*","label":"Results"|"label":"Results"[^}]*ixcres\|tok123/, 'the way back from a found card is Results');
         assert.deepStrictEqual(IX.searchEntries(entries, 'old name').map(e => e.title), [live.title], 'another name finds it');
         assert.ok(IX.searchEntries(entries, 'gun7').some(e => e.title === 'Index Draw 7'), 'an item finds it');
         const op = require('../core/ops').resolveOp('drawindex.edit');
@@ -440,8 +440,8 @@ function seasonDoc(nNew = 3, nRet = 30) {
     await check('every verb the draws panel handles is reached from somewhere', () => {
         const fs = require('fs');
         const read = (f) => fs.readFileSync(require('path').join(__dirname, '..', f), 'utf8');
-        const handled = read('handlers/manage/drawsPanel/index.js') + read('handlers/manage/drawsPanel/drawIndex.js');
-        const emitters = ['handlers/manage/drawsPanel/views.js', 'handlers/manage/drawsPanel/index.js', 'handlers/manage/drawsPanel/drawIndex.js', 'handlers/manage/quickAdd.js'].map(read).join('\n');
+        const handled = read('handlers/manage/drawsPanel/index.js') + read('handlers/manage/drawsPanel/drawIndex.js') + read('handlers/manage/drawsPanel/drawIndexUpload.js');
+        const emitters = ['handlers/manage/drawsPanel/views.js', 'handlers/manage/drawsPanel/index.js', 'handlers/manage/drawsPanel/drawIndex.js', 'handlers/manage/drawsPanel/drawIndexUpload.js', 'handlers/manage/quickAdd.js'].map(read).join('\n');
         const verbs = new Set([...handled.matchAll(/verb === '(\w+)'/g)].map(m => m[1]));
         const reached = new Set([...emitters.matchAll(/(?:btn\(\s*\[?\s*|ID\(\s*|\$\{PREFIX\}|'mng_dr\|)'?(\w+)/g)].map(m => m[1]));
         const orphans = [...verbs].filter(v => !reached.has(v));
@@ -486,8 +486,8 @@ function seasonDoc(nNew = 3, nRet = 30) {
     await check('every verb the draws, calendar and gunsmith panels emit has a handler', () => {
         const fs = require('fs');
         const read = (f) => fs.readFileSync(require('path').join(__dirname, '..', f), 'utf8').replace(/^\s*\/\/.*$/gm, '');
-        const panels = { draws: ['handlers/manage/drawsPanel/views.js', 'handlers/manage/drawsPanel/index.js', 'handlers/manage/drawsPanel/drawIndex.js'], calendar: ['handlers/manage/calendarPanel/views.js', 'handlers/manage/calendarPanel/index.js'], gunsmith: ['handlers/manage/gunsmith/views.js', 'handlers/manage/gunsmith/index.js'] };
-        const NOT_CLICKABLE = new Set(['pgn', 'spgn', 'spg', 'cardn', 'ixpgn', 'dd', 'view']);
+        const panels = { draws: ['handlers/manage/drawsPanel/views.js', 'handlers/manage/drawsPanel/index.js', 'handlers/manage/drawsPanel/drawIndex.js', 'handlers/manage/drawsPanel/drawIndexUpload.js'], calendar: ['handlers/manage/calendarPanel/views.js', 'handlers/manage/calendarPanel/index.js'], gunsmith: ['handlers/manage/gunsmith/views.js', 'handlers/manage/gunsmith/index.js'] };
+        const NOT_CLICKABLE = new Set(['pgn', 'spgn', 'spg', 'cardn', 'ixpgn', 'ixvpg', 'dd', 'view']);
         for (const [name, files] of Object.entries(panels)) {
             const src = files.map(read).join('\n');
             const handled = new Set([...src.matchAll(/verb === '(\w+)'/g)].map(m => m[1]));
