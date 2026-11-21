@@ -1,7 +1,4 @@
-// scripts/webhookAuth.test.js
-// Every raw call on an INTERACTION webhook route (Routes.webhook / Routes.webhookMessage with an interaction token) must send `auth: false`.
-// Why (2026-11-21 11:45 EST): with the bot token attached, a 401 for an expired interaction token ("Invalid Webhook Token") reads to @discordjs/rest as a bad BOT token, and it calls setToken(null) on the whole client. On prod that morning one idle panel's expiry edit did exactly that, and every panel reply after it failed with "Expected token to be set for this request, but none was present" until a restart (Harkirat's /timestamp in a DM was the first report; the DM had nothing to do with it).
-// Two halves: a source scan so a new call site cannot forget it, and the two hot paths (sendV2Payload, passive expiry) run with a fake REST that records what was sent.
+// scripts/webhookAuth.test.js Every raw call on an INTERACTION webhook route (Routes.webhook / Routes.webhookMessage with an interaction token) must send `auth: false`. Why (2026-11-21 11:45 EST): with the bot token attached, a 401 for an expired interaction token ("Invalid Webhook Token") reads to @discordjs/rest as a bad BOT token, and it calls setToken(null) on the whole client. On prod that morning one idle panel's expiry edit did exactly that, and every panel reply after it failed with "Expected token to be set for this request, but none was present" until a restart (Harkirat's /timestamp in a DM was the first report; the DM had nothing to do with it). Two halves: a source scan so a new call site cannot forget it, and the two hot paths (sendV2Payload, passive expiry) run with a fake REST that records what was sent.
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
