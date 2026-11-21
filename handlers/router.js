@@ -342,7 +342,7 @@ async function handleInteractionInner(interaction) {
                 markOutcome('error');
                 require('../utils/interactionContext').reportCommandError(interaction, `/${commandName}`, error);
                 // What the person sees: utils/commandError.js (since 2026-11-21, it was the bare "There was an error executing this command!"). NOTE (fixed during review): this used to `return interaction.reply(...)` unawaited. A `return <promise>` inside a try block exits the try/catch synchronously -- if that returned promise rejects later (e.g. the interaction token is ALSO already expired, which is exactly what happens after a 10062 on the original deferReply), nothing is listening for it anymore, not even the outer try/catch around this whole handler. That turned into a raw unhandled promise rejection and crashed the entire Node process (seen on Railway: 10062 Unknown interaction -> fallback reply -> 40060 already acknowledged -> process exit). Awaiting + catching here keeps a doubly-failed fallback reply from ever being able to crash the bot.
-                await require('../utils/commandError').tellUserItFailed(interaction, `/${commandName}`);
+                await require('../utils/commandError').tellUserItFailed(interaction, `/${commandName}`, error);
                 return;
             }
         }
@@ -367,7 +367,7 @@ async function handleInteractionInner(interaction) {
                 console.error(`Error executing context menu command ${interaction.commandName} ${require('../utils/interactionContext').whereLabel(interaction)}:`, error);
                 markOutcome('error');
                 require('../utils/interactionContext').reportCommandError(interaction, interaction.commandName, error);
-                await require('../utils/commandError').tellUserItFailed(interaction, interaction.commandName);
+                await require('../utils/commandError').tellUserItFailed(interaction, interaction.commandName, error);
             }
             return;
         }
@@ -385,7 +385,7 @@ async function handleInteractionInner(interaction) {
     if (interaction && !interaction.isAutocomplete?.()) {
         const what = interaction.customId ? `${interaction.isModalSubmit?.() ? 'form' : 'button'} ${String(interaction.customId).split(/[_|:~]/)[0]}` : (interaction.commandName ? `/${interaction.commandName}` : 'interaction');
         require('../utils/interactionContext').reportCommandError(interaction, what, err);
-        await require('../utils/commandError').tellUserItFailed(interaction, interaction.customId ? null : what).catch(() => {});
+        await require('../utils/commandError').tellUserItFailed(interaction, interaction.customId ? null : what, err).catch(() => {});
     }
   }
 }

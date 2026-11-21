@@ -51,6 +51,18 @@ function fake({ deferred = false, editFails = false, id = '1234567890123456789' 
     assert.strictEqual(await tellUserItFailed(ix, 'that'), 'followup');
     assert.ok(!ix.calls.some(c => c[0] === 'edit'), 'the panel is left alone');
 
+    // A command whose answer already went out (sendV2Payload marked it): never overwrite it, follow up privately.
+    ix = fake({ deferred: true }); Object.defineProperty(ix, '__dioreoAnswered', { value: true });
+    assert.strictEqual(await tellUserItFailed(ix, '/draws'), 'followup');
+    assert.ok(!ix.calls.some(c => c[0] === 'edit'), 'the working answer is left alone');
+    ix = fake({ deferred: true }); ix.replied = true;
+    assert.strictEqual(await tellUserItFailed(ix, '/draws'), 'followup');
+
+    // An interaction Discord already closed is not answered at all.
+    ix = fake({ deferred: true });
+    assert.strictEqual(await tellUserItFailed(ix, 'that', { code: 10062 }), null);
+    assert.strictEqual(ix.calls.length, 0);
+
     // Autocomplete is never answered this way.
     assert.strictEqual(await tellUserItFailed({ isAutocomplete: () => true }, 'x'), null);
 

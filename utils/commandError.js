@@ -22,13 +22,16 @@ function reportRow() {
 }
 
 // Answers in the reply when it can (a deferred command), privately otherwise, and falls back to a private follow-up when the reply cannot take plain text (a Components V2 message already went out). Never throws. Returns how it answered, or null.
-async function tellUserItFailed(interaction, label) {
+async function tellUserItFailed(interaction, label, error = null) {
     if (!interaction || interaction.isAutocomplete?.()) return null;
+    // Discord already closed this interaction (10062 too slow, 40060 already answered): nothing can reach the person, so don't try (2026-11-21 13:14 EST).
+    if (expiredError(error)) return null;
     let trouble = false;
     try { trouble = require('./restGuard').inTrouble(); } catch { /* no state yet */ }
     const payload = { content: failureText(label, errorRef(interaction), { trouble }), components: [reportRow()], allowedMentions: { parse: [] } };
     // A button, menu or form: never edit — its "reply" is the panel itself, and the note would wipe the panel out. A private follow-up (or reply) sits under it instead.
-    const onPanel = Boolean(interaction.isMessageComponent?.() || interaction.isModalSubmit?.());
+    // And a command whose answer already went out (discord.js `replied`, or sendV2Payload's raw send marking `__dioreoAnswered`) is treated the same way (2026-11-21 13:14 EST): something failing after the answer must not replace a working answer with "didn't work".
+    const onPanel = Boolean(interaction.isMessageComponent?.() || interaction.isModalSubmit?.() || interaction.replied || interaction.__dioreoAnswered);
     try {
         if (onPanel) {
             if (interaction.deferred || interaction.replied) { await interaction.followUp({ ...payload, flags: 64 }); return 'followup'; }
@@ -44,10 +47,13 @@ async function tellUserItFailed(interaction, label) {
     }
 }
 
+// Discord's own "this interaction is closed" codes: 10062 (not answered within 3 seconds) and 40060 (already answered). Expected now and then, never a reason to alert or to try another reply.
+const expiredError = (err) => Boolean(err && (err.code === 10062 || err.code === 40060));
+
 // The Ref a Report button's message carries, so the owner's feedback card can name the failure it came from.
 function refFromMessage(message) {
     const m = /Ref `([A-Za-z0-9]{1,20})`/.exec(String(message?.content || ''));
     return m ? m[1] : null;
 }
 
-module.exports = { errorRef, failureText, reportRow, tellUserItFailed, refFromMessage };
+module.exports = { errorRef, failureText, reportRow, tellUserItFailed, refFromMessage, expiredError };

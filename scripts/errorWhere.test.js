@@ -47,3 +47,11 @@ assert.strictEqual(storm.filter(t => t.startsWith('Command failed')).length, 5);
 assert.deepStrictEqual(storm.filter(t => t === 'Many commands failing').length, 1);
 assert.ok(storm[0].includes('/c0'));
 console.log('ok: past 5 command alerts in 10 minutes, one summary stands in for the rest');
+
+// An interaction Discord already closed (10062, 40060) never alerts: expected now and then, and not a broken command.
+_resetCommandAlerts();
+const quiet = [];
+assert.strictEqual(reportCommandError(ix, 'button x', Object.assign(new Error('Unknown interaction'), { code: 10062 }), { alert: (t) => quiet.push(t), now: t0 }), false);
+assert.strictEqual(reportCommandError(ix, 'button y', Object.assign(new Error('already acknowledged'), { code: 40060 }), { alert: (t) => quiet.push(t), now: t0 }), false);
+assert.strictEqual(quiet.length, 0);
+console.log('ok: an expired or already-answered interaction does not alert');

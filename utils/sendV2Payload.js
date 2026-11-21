@@ -17,7 +17,7 @@ async function sendV2Payload(interaction, components, { content = '', flags = 32
         );
     }
 
-    // Discord's component rules, checked here for every panel (2026-11-12 19:29 EST, utils/componentCheck.js): a break is named in the log (prod tees errors to the alerts webhook) before Discord refuses the send without saying which component.
+    // Discord's component rules, checked here for every panel (2026-11-12 19:29 EST, utils/componentCheck.js): a break is named in the log (it reaches Cloud Logging, not the alerts webhook: corrected 2026-11-21 13:16 EST, when that morning's two-hour outage posted no alert; a failed command alerts through `reportCommandError` since) before Discord refuses the send without saying which component.
     const problems = require('./componentCheck').checkComponents(outgoing);
     if (problems.length) console.error(`sendV2Payload: Discord will refuse this panel: ${problems.slice(0, 5).join('; ')}`);
 
@@ -69,6 +69,8 @@ async function sendV2Payload(interaction, components, { content = '', flags = 32
         if (err?.code === 50035 && !quietRefusal) await tellRefused(interaction, problems, err);
         throw err;
     });
+    // This raw send leaves discord.js's `replied` false, so mark the answer as delivered (2026-11-21 13:14 EST): utils/commandError.js reads it so a failure AFTER the panel went out adds a private note under it instead of overwriting the person's working answer with "didn't work".
+    try { Object.defineProperty(interaction, '__dioreoAnswered', { value: true, configurable: true }); } catch { /* a frozen stand-in */ }
     // response?.id first, not knownMessageId first -- see this function's header comment above (finding #15).
     maybeSchedule(response?.id || knownMessageId);
     return response;

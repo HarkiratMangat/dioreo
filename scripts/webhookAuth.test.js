@@ -45,6 +45,7 @@ console.log(`ok: ${sites} interaction-webhook call sites all set auth`);
     assert.strictEqual(calls[0].route, require('discord.js').Routes.webhookMessage('app', 'tok', '@original'));
     assert.strictEqual(calls[0].opts.auth, false, 'sendV2Payload must send auth: false');
     assert.ok(calls[0].opts.body, 'the body still goes out');
+    assert.strictEqual(interaction.__dioreoAnswered, true, 'a delivered answer is marked, so a later failure follows up instead of overwriting it');
     console.log('ok: sendV2Payload sends auth: false');
 
     // 3. Passive expiry: the webhook edit sends auth: false; a text command's channel-message edit keeps the bot token.

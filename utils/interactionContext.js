@@ -47,6 +47,8 @@ let stormSent = [];
 let stormNoticeAt = 0;
 function reportCommandError(interaction, name, error, { alert, now = Date.now() } = {}) {
     const send = alert || require('./alertWebhook').sendAlert;
+    // An interaction Discord already closed (10062 too slow, 40060 answered twice) is not a broken command. The outer catch's own comment calls these expected under normal use; alerting each would ping the owner for nothing (2026-11-21 13:14 EST). Slowness has its own alert (utils/healthWatch.js).
+    if (error && (error.code === 10062 || error.code === 40060)) return false;
     if (now - (lastCommandAlert.get(name) || 0) < COMMAND_ALERT_MS) return false;
     lastCommandAlert.set(name, now);
     stormSent = stormSent.filter(t => now - t < COMMAND_ALERT_MS);
