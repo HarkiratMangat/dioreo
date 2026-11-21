@@ -7,14 +7,13 @@ function errorRef(interaction) {
     return id ? id.slice(-6) : null;
 }
 
-// `name` is what they used, plain: `/timestamp`, `Convert Times`, or null for a button, menu or form ("That"). Layout A, my recommendation of the two shown to Harkirat in #testing-spam (waiting on his pick) (2026-11-21 12:33 EST: "they seem very long as 1 line... structure them better?"): a bold title naming what failed, one line on whose fault it is, a small hint line, then the Ref.
+// `name` is what they used, plain: `/timestamp`, `Convert Times`, or null for a button, menu or form ("That"). Layout A, his pick of two shown in #testing-spam (2026-11-21 12:36 EST), with the Ref on the hint line (his "A but put the Ref 456789 line with the report line"): a bold title naming what failed, one line on whose fault it is, and a small line with what to try and the Ref. The first round, a single long line, was "very long as 1 line".
 function failureText(name, ref, { trouble = false } = {}) {
     const lines = [
         `${emojis.warn} **${name || 'That'} didn't work**`,
         trouble ? 'Dioreo is having trouble reaching Discord right now.' : 'Something went wrong on our side, not yours.',
-        trouble ? "-# It's on our side. Try again in a few minutes." : '-# Try again in a minute. Still failing? Tap **Report**.',
+        (trouble ? "-# It's on our side. Try again in a few minutes." : '-# Try again in a minute. Still failing? Tap **Report**.') + (ref ? ` · Ref \`${ref}\`` : ''),
     ];
-    if (ref) lines.push(`-# Ref \`${ref}\``);
     return lines.join('\n');
 }
 

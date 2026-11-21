@@ -19,13 +19,12 @@ function fake({ deferred = false, editFails = false, id = '1234567890123456789' 
     guard._resetTrouble();
     const text = failureText('/timestamp', 'abc123');
     const lines = text.split('\n');
-    assert.strictEqual(lines.length, 4, 'title, whose fault, hint, Ref');
+    assert.strictEqual(lines.length, 3, 'title, whose fault, then the hint with the Ref on it');
     assert.ok(/^<a?:\w+:\d+> \*\*\/timestamp didn't work\*\*$/.test(lines[0]) || lines[0].endsWith("**/timestamp didn't work**"), lines[0]);
     assert.strictEqual(lines[1], 'Something went wrong on our side, not yours.');
-    assert.ok(lines[2].startsWith('-# ') && lines[2].includes('**Report**'));
-    assert.strictEqual(lines[3], '-# Ref `abc123`');
+    assert.strictEqual(lines[2], '-# Try again in a minute. Still failing? Tap **Report**. · Ref `abc123`');
     assert.ok(failureText(null, null).includes("**That didn't work**"));
-    assert.strictEqual(failureText(null, null).split('\n').length, 3, 'no Ref line without a Ref');
+    assert.ok(!failureText(null, null).includes('Ref'), 'no Ref without one');
     assert.ok(!/There was an error executing/.test(text));
 
     // Deferred: the reply itself becomes the note, with the Report button and the Ref.
