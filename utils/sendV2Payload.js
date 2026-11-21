@@ -59,7 +59,7 @@ async function sendV2Payload(interaction, components, { content = '', flags = 32
     }
 
     const { timeDependency, noteResponseFailure } = require('./eventStore');
-    // auth: false: an interaction token is its own credential, so the bot token must not ride along. Sent with it, a 401 for an expired interaction token ("Invalid Webhook Token") reads to @discordjs/rest as a bad BOT token and it wipes the token for the whole client: on 2026-11-21 one idle panel's expiry did that and every panel reply failed for two hours (scripts/webhookAuth.test.js). discord.js's own interaction methods send auth: false for the same reason.
+    // auth: false: an interaction token is its own credential, so the bot token must not ride along. Sent with it, a 401 for an expired interaction token ("Invalid Webhook Token") reads to @discordjs/rest as a bad BOT token and it wipes the token for the whole client: on 2026-11-21 09:52 EST one idle panel's expiry did that and every panel reply failed for two hours (scripts/webhookAuth.test.js). discord.js's own interaction methods send auth: false for the same reason.
     const response = await timeDependency('discord_rest', () => interaction.client.rest.patch(
         Routes.webhookMessage(interaction.applicationId, interaction.token, '@original'),
         { ...options, auth: false }
