@@ -47,7 +47,9 @@ function schedulePanelExpiry(interaction, messageId, components, timeoutMs = IDL
         try {
             // `allowed_mentions` with nothing allowed: an edit that names no rules gets Discord's default, which re-applies every <@id> in the message as a ping, so an expired /colors panel lit up yellow for the person it names (Harkirat, 2026-10-25 12:27 EDT: "don't have that yellow ping highlight (it happens when the message expires)"). The mention stays clickable; only the ping goes. Every expiring panel goes through here. A text command's reply (utils/textCommands/adapter.js) is an ordinary message with no interaction token, so it is edited with the bot token instead, which never expires.
             const route = interaction.__dioreoText ? Routes.channelMessage(interaction.channelId, messageId) : Routes.webhookMessage(applicationId, token, '@original');
+            // The webhook edit sends auth: false; a text command's channel edit needs the bot token. auth: false: an interaction token is its own credential, so the bot token must not ride along. Sent with it, a 401 for an expired interaction token ("Invalid Webhook Token") reads to @discordjs/rest as a bad BOT token and it wipes the token for the whole client: on 2026-11-21 one idle panel's expiry did that and every panel reply failed for two hours (scripts/webhookAuth.test.js). discord.js's own interaction methods send auth: false for the same reason.
             await client.rest.patch(route, {
+                auth: Boolean(interaction.__dioreoText),
                 body: { components: expiredComponents(components), allowed_mentions: { parse: [] } }
             });
         } catch (err) {

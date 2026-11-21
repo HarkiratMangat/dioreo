@@ -164,6 +164,7 @@ export const TESTS = [
     {"cmd": "node scripts/autobuildDmz.test.js", "lane": "unit"},
     {"cmd": "node scripts/autobuildBulk.test.js", "lane": "unit"},
     {"cmd": "node scripts/componentCheck.test.js", "lane": "unit"},
+    {"cmd": "node scripts/webhookAuth.test.js", "lane": "unit"},
     {"cmd": "node scripts/autobuildStart.test.js", "lane": "unit"},
     {"cmd": "node scripts/visionReads.test.js", "lane": "unit"},
     {"cmd": "node scripts/autobuildResume.test.js", "lane": "unit"},
