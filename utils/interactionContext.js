@@ -23,4 +23,17 @@ async function resolvePanelActor(interaction, targetUserId) {
     return interaction.client.users.fetch(targetUserId);
 }
 
-module.exports = { buildSyntheticInteraction, resolvePanelActor };
+// Where an interaction came from, for error lines: the server id (or "DM"), how Dioreo was installed for it, and which app answered. Added 2026-11-21 12:03 EST (Harkirat: "yeah go with your pick"): the 2026-11-21 09:52 EST outage's only error line said "timestamp failed", and finding the server took a database read. Server ids and the app name are not personal data; no user id is written here, because PRIVACY §2.4a says no log statement writes one deliberately (the keyed hash already rides on every structured line, utils/logger.js).
+function whereLabel(interaction) {
+    if (!interaction) return '(no interaction)';
+    const place = interaction.guildId ? `server ${interaction.guildId}` : 'DM';
+    const owners = interaction.authorizingIntegrationOwners || {};
+    const guildOwner = owners.guildId ?? owners[0] ?? owners['0'] ?? null;
+    const userOwner = owners.userId ?? owners[1] ?? owners['1'] ?? null;
+    const install = guildOwner && guildOwner === interaction.guildId ? 'server install' : (userOwner ? 'user install' : 'install unknown');
+    let app = 'public app';
+    try { if (interaction.client && interaction.client === require('../bot/clients').clients.admin) app = 'admin app'; } catch { /* clients not set up (tests) */ }
+    return `(${place}, ${install}, ${app})`;
+}
+
+module.exports = { buildSyntheticInteraction, resolvePanelActor, whereLabel };

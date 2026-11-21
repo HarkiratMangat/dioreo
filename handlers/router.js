@@ -303,7 +303,7 @@ async function handleInteractionInner(interaction) {
         try {
             return await require('../utils/autocomplete').runAutocomplete(interaction);
         } catch (error) {
-            console.error('Autocomplete Error:', error);
+            console.error(`Autocomplete Error ${require('../utils/interactionContext').whereLabel(interaction)}:`, error);
             return await interaction.respond([]);
         }
     }
@@ -337,7 +337,7 @@ async function handleInteractionInner(interaction) {
                 }
                 return;
             } catch (error) {
-                console.error(`Error executing modular slash command ${commandName}:`, error);
+                console.error(`Error executing modular slash command ${commandName} ${require('../utils/interactionContext').whereLabel(interaction)}:`, error);
                 // NOTE (fixed during review): this used to `return interaction.reply(...)` unawaited. A `return <promise>` inside a try block exits the try/catch synchronously -- if that returned promise rejects later (e.g. the interaction token is ALSO already expired, which is exactly what happens after a 10062 on the original deferReply), nothing is listening for it anymore, not even the outer try/catch around this whole handler. That turned into a raw unhandled promise rejection and crashed the entire Node process (seen on Railway: 10062 Unknown interaction -> fallback reply -> 40060 already acknowledged -> process exit). Awaiting + catching here keeps a doubly-failed fallback reply from ever being able to crash the bot.
                 try {
                     if (interaction.deferred || interaction.replied) {
@@ -369,7 +369,7 @@ async function handleInteractionInner(interaction) {
                 require('../utils/userStats').noteOwnCommandSafely(interaction);
                 await require('../utils/reminders').maybeShowReminderNote(interaction);
             } catch (error) {
-                console.error(`Error executing context menu command ${interaction.commandName}:`, error);
+                console.error(`Error executing context menu command ${interaction.commandName} ${require('../utils/interactionContext').whereLabel(interaction)}:`, error);
                 try {
                     if (interaction.deferred || interaction.replied) {
                         await interaction.editReply({ content: 'There was an error running this!' });
@@ -391,7 +391,7 @@ async function handleInteractionInner(interaction) {
   } catch (err) {
     // Any uncaught rejection in this handler (e.g. a button/select interaction whose token already expired -- Discord error 10062 "Unknown interaction") used to bubble up as an unhandled 'error' event and crash the entire process, taking the bot offline until a manual restart. Discord interaction tokens are only valid for a few seconds/minutes, so this is expected to happen occasionally under normal use, not just as a bug symptom -- log it and keep the bot alive instead of crashing.
     markOutcome('error');
-    console.error('Unhandled error in interactionCreate:', err);
+    console.error(`Unhandled error in interactionCreate ${require('../utils/interactionContext').whereLabel(interaction)}:`, err);
   }
 }
 
