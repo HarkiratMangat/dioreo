@@ -29,7 +29,25 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.23.0 — 2026-11-17 01:16 EST (#275) — Draw Index: two uploads, three finders, one card action row, and a saved screen worth reading
+## v3.24.0 — 2026-11-21 13:27 EST (#276) — An expired panel's 401 can no longer switch the bot off, and a failure is seen, explained and reportable
+
+His report: `/timestamp` in a DM said "There was an error executing this command". The DM was a coincidence: at 09:52 EST an idle /admin panel's expiry edit got a 401 from Discord, the raw call carried the bot token, `@discordjs/rest` read that as a bad bot token and wiped it, and every panel reply failed for two hours with no alert until a restart at 11:50 EST. Then his "what should we change so we're not in the dark next time", a think-pass, a click test in Discord and a line-by-line review.
+
+### Fixed
+- All five raw interaction-webhook calls (`sendV2Payload`, passive expiry, `/manage emojis`' result card, the draw end-date reminder, `/timestamp`'s parse error) send `auth: false`, so a 401 for an expired interaction token never touches the bot token. `scripts/webhookAuth.test.js` fails on any `Routes.webhook*` or hand-written `/webhooks/` call without it.
+- A command that fails after its answer went out no longer has that answer replaced by the failure note; a text command that answered and then failed keeps its answer.
+
+### Added
+- **Self-heal** (`utils/restGuard.js`): a wiped token is checked with Discord and put back when it still works (at most 5 times an hour), or left off with an alert when Discord rejects it. A 5-minute check alerts when Discord calls fail twice in a row, and says when they recover.
+- **Failure alerts**: a failed slash command, right-click, button, form or text command alerts once per command every 10 minutes, with one "Many commands failing" summary in a storm; expired or double-answered clicks do not alert. Every new alert says whether it fixes itself and what to do.
+- **What the person sees** (`utils/commandError.js`, his layout A): "**/x didn't work** · on our side, not yours · try again, Report · Ref", privately under a panel, never over it; "having trouble reaching Discord" while calls are failing. Report opens **Report a problem** and the Ref reaches the owner's card.
+- Error lines and failure alerts name the user, the server or DM, the install, the app and the Ref. Analytics marks a caught failure `error` (it said `ok`).
+- The daily health check counts the last 24 hours (interactions, failed, too slow); 3 replies in 10 minutes that miss Discord's 3 seconds alert; a red or orange alert whose webhook fails is re-sent as an owner notice.
+
+### Changed
+- PRIVACY v1.16 (§2.4, §2.4a): error lines and failure alerts deliberately name the user ID of the person whose command failed; both still purge after 30 days.
+
+## v3.23.0 — 2026-11-17 01:16 EST (#275 · `0ab1ec89`) — Draw Index: two uploads, three finders, one card action row, and a saved screen worth reading
 
 His list of 2026-11-16 22:27 EST ("need these buttons…", the saved screen, the 20-line cap, the read cost), then a think-pass before merge.
 

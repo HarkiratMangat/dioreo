@@ -326,6 +326,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-11-15 11:39 EST — The 14 LMGs behind mac, and the sweep that found 18 more (v3.21.3)
 - 2026-11-16 19:02 EST — The owner's draw index: upload, find, and a picture kept 7 days (v3.22.0)
 - 2026-11-17 01:16 EST — Draw Index round 3: his list, then the twins a rename leaves behind (v3.23.0)
+- 2026-11-21 13:27 EST — The 401 that switched the bot off for two hours, and what now catches it (v3.24.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -5185,6 +5186,16 @@ The night after v3.22.0 shipped, Harkirat sent a list. He wanted a single-draw u
 **What a rename leaves behind.** The think-pass before merge found four places still on the old shape. The bulk pop-up was still titled "Upload Draws". "Check Names" survived in an expiry note, a form hint and /help. A news card's single missing draw still opened the bulk form. And View on the saved screen dropped the Revert. Each was the same miss: a control renamed or split in one place while its copies elsewhere kept the old version. The fix was a sweep for the old words after every rename, now a linksee caveat. Before that, Upload This Draw had filled in a draw the search *had* found, because a stored field (`query`, the drafts Quick Add could take) was read as "everything found". Read where a field is written before reusing it.
 
 **A security review caught one real hole.** Set Item Kinds first sent the whole item list through the edit op, guarded only by matching names, so an admin with the edit tier could have rewritten an item's tier. It now sends `kinds: [{ index, kind }]`, and the op copies the stored items and changes only the kinds.
+
+## 2026-11-21 13:27 EST — The 401 that switched the bot off for two hours, and what now catches it (v3.24.0)
+
+**What happened.** Harkirat ran `/timestamp` in a DM and got "There was an error executing this command". It looked like a DM bug. It was not: prod's log showed the bot had lost its login token two hours earlier. A brand-new user had opened `/admin` in a server Dioreo is not in (a user install), clicked once, and moved on. Ten minutes later the passive expiry tried to grey that panel out, Discord answered 401 "Invalid Webhook Token", and because our raw call had attached the bot token too, `@discordjs/rest` concluded the bot token was bad and set it to null. Nothing ever set it back. Every panel reply, the emoji sync and every later expiry failed with "Expected token to be set for this request" until a restart.
+
+**Why nobody knew.** Command errors went to the server log only. A code comment even claimed they reached the alerts channel; they never had. Analytics recorded the one failed command as `ok`. The only signal was the owner hitting it himself.
+
+**What changed.** The cause is one option: interaction-webhook calls carry their own token, so they send `auth: false`, as discord.js's own methods do. Around it: a guard that notices a wiped token and checks it with Discord before putting it back, a 5-minute Discord check, an alert for every failing command (rate-limited, with a storm summary, silent for the normal expired clicks), alerts that explain themselves, a Ref that ties the user's note, the log line, the alert and a Report together, and a note to the user that says whose fault it was and what to do next.
+
+**What it taught.** "Verify" kept meaning "re-run what I built". Each time Harkirat asked "are you sure?", a new pass found more, and the last one, reading every changed line for what could break, found three bugs I had written that day, including one where the failure note would have overwritten a working answer. The useful question was not "does it pass" but "what would this do to someone it was not written for". Why Discord rejected a 10-minute-old token in the first place is still unconfirmed and filed with a test.
 
 # Part B — Lessons Ledger (thematic)
 
