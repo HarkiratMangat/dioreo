@@ -37,15 +37,28 @@ function whereLabel(interaction) {
     return `(${who}${place}, ${install}, ${app})`;
 }
 
-// A failed command, to the alerts channel (added 2026-11-21 12:12 EST): the 2026-11-21 outage failed every reply for two hours and posted nothing there, because a command's error was only ever written to the server log. One alert per command every 10 minutes, so a burst cannot flood the channel; the log still gets every one.
+// A failed command, to the alerts channel (added 2026-11-21 12:12 EST): the 2026-11-21 outage failed every reply for two hours and posted nothing there, because a command's error was only ever written to the server log. One alert per command every 10 minutes, so a burst cannot flood the channel; the log still gets every one. And a storm cap: past 5 such alerts in 10 minutes (an outage fails every command at once), ONE "many commands failing" alert stands in for the rest of that window.
 const lastCommandAlert = new Map();
 const COMMAND_ALERT_MS = 10 * 60 * 1000;
+const STORM_LIMIT = 5;
+let stormSent = [];
+let stormNoticeAt = 0;
 function reportCommandError(interaction, name, error, { alert, now = Date.now() } = {}) {
     const send = alert || require('./alertWebhook').sendAlert;
     if (now - (lastCommandAlert.get(name) || 0) < COMMAND_ALERT_MS) return false;
     lastCommandAlert.set(name, now);
-    send(`Command failed: /${name}`, `${whereLabel(interaction)}\n${error?.stack || error?.message || error}`, 'error');
+    stormSent = stormSent.filter(t => now - t < COMMAND_ALERT_MS);
+    if (stormSent.length >= STORM_LIMIT) {
+        if (now - stormNoticeAt >= COMMAND_ALERT_MS) {
+            stormNoticeAt = now;
+            send('Many commands failing', `${STORM_LIMIT}+ different commands failed in 10 minutes; the rest of this window is in the log only. Latest: ${name} ${whereLabel(interaction)}\n${error?.message || error}`, 'error');
+        }
+        return false;
+    }
+    stormSent.push(now);
+    const ref = interaction?.id ? ` · Ref ${String(interaction.id).slice(-6)} · interaction ${interaction.id}` : '';
+    send(`Command failed: ${name}`, `${whereLabel(interaction)}${ref}\n${error?.stack || error?.message || error}`, 'error');
     return true;
 }
 
-module.exports = { buildSyntheticInteraction, resolvePanelActor, whereLabel, reportCommandError };
+module.exports = { buildSyntheticInteraction, resolvePanelActor, whereLabel, reportCommandError, _resetCommandAlerts: () => { lastCommandAlert.clear(); stormSent = []; stormNoticeAt = 0; } };

@@ -48,6 +48,24 @@ const settle = () => new Promise(r => setTimeout(r, 20));
         assert.strictEqual(checked, false); assert.strictEqual(c.rest.token, null);
         console.log('ok: a real shutdown is left alone');
     }
+    // 4b. A token wiped again and again: restored 5 times in an hour, then left off with an alert.
+    {
+        const c = fakeClient(); const alerts = [];
+        guardRestToken(c, 'Dioreo', { fetchImpl: respond(200), alert: (t) => alerts.push(t) });
+        for (let i = 0; i < 6; i++) { c.rest.setToken(null); await settle(); }
+        assert.strictEqual(c.rest.token, null, 'the 6th wipe is not restored');
+        assert.strictEqual(alerts.filter(x => x.includes('restored')).length, 5);
+        assert.ok(alerts[5].includes('keeps getting wiped'));
+        console.log('ok: a token wiped over and over is restored 5 times an hour, then left off');
+    }
+    // 4c. Trouble state: set by a wipe, read by the failure note, clears after 15 minutes.
+    {
+        const g = require('../utils/restGuard'); g._resetTrouble();
+        assert.strictEqual(g.inTrouble(), false);
+        g.noteTrouble(1000); assert.strictEqual(g.inTrouble(1000 + 60_000), true); assert.strictEqual(g.inTrouble(1000 + 16 * 60_000), false);
+        g._resetTrouble();
+        console.log('ok: the trouble state clears 15 minutes after the last trouble');
+    }
     // 5. Probe: alerts on the 2nd failure, once, then on recovery.
     {
         const alerts = []; let fail = true;

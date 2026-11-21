@@ -28,11 +28,12 @@ function feedbackModal() {
 }
 
 // The owner's DM card: what kind, who sent it and when, then their words as a quote. `imageUrl` is the screenshot re-sent with the DM.
-function feedbackCard({ kind, message, userId, username, sentAt = new Date() }, imageUrl = null) {
+function feedbackCard({ kind, message, userId, username, sentAt = new Date(), ref = null }, imageUrl = null) {
     const k = KINDS.find(x => x.value === kind) || KINDS[1];
     const when = Math.floor(new Date(sentAt).getTime() / 1000);
     const parts = [
-        { type: 10, content: `## ${k.heading}\n-# From <@${userId}> · \`${username}\` · <t:${when}:R>` },
+        // `ref`: sent from the Report button under a failed command (utils/commandError.js), so the note names the failure it is about.
+        { type: 10, content: `## ${k.heading}\n-# From <@${userId}> · \`${username}\` · <t:${when}:R>${ref ? `\n-# About a failed command · Ref \`${ref}\`` : ''}` },
         { type: 14, spacing: 1, divider: true },
         { type: 10, content: String(message).split('\n').map(l => `> ${l}`).join('\n') },
     ];
@@ -69,7 +70,7 @@ async function handleFeedbackSave(interaction) {
         try { message = (interaction.fields.getTextInputValue('message') || '').trim(); } catch { message = ''; }
         const shot = await fileFrom(interaction, 'shot');
         try {
-            const card = { kind, message, userId: interaction.user.id, username: interaction.user.username };
+            const card = { kind, message, userId: interaction.user.id, username: interaction.user.username, ref: require('./commandError').refFromMessage(interaction.message) };
             await dmOwner(() => ({ flags: 32768, components: feedbackCard(card, shot ? `attachment://${shot.name}` : null) }), shot ? [shot] : []);
         } catch (err) {
             console.error('Could not DM the owner a feedback note:', err?.message || err);

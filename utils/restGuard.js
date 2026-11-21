@@ -10,6 +10,13 @@ const VERIFY_URL = 'https://discord.com/api/v10/users/@me';
 const RETRY_MS = 30 * 1000;
 const MAX_TRIES = 5;
 const PROBE_MS = 5 * 60 * 1000;
+const MAX_RESTORES_PER_HOUR = 5;
+
+// Set while a wipe is being checked or the probe is failing, read by utils/commandError.js so a failed command says "having trouble reaching Discord" rather than suggesting a retry. Clears 15 minutes after the last trouble.
+const TROUBLE_MS = 15 * 60 * 1000;
+let lastTroubleAt = 0;
+const noteTrouble = (now = Date.now()) => { lastTroubleAt = now; };
+const inTrouble = (now = Date.now()) => lastTroubleAt > 0 && now - lastTroubleAt < TROUBLE_MS;
 
 // The token check, separate so the test can stand in for Discord. Resolves 'valid' | 'revoked' | 'unknown'.
 async function checkToken(token, fetchImpl = globalThis.fetch) {
@@ -28,12 +35,23 @@ function guardRestToken(client, label, { fetchImpl, retryMs = RETRY_MS, alert = 
     if (!rest || rest.__dioreoGuarded) return;
     const original = rest.setToken.bind(rest);
     let checking = false;
+    // Restores in the last hour. More than MAX_RESTORES_PER_HOUR means something keeps provoking 401s: restoring again would keep feeding Discord invalid requests (10,000 in 10 minutes gets the bot's IP blocked), so it stops and says so.
+    const restores = [];
 
     async function recover(tries = 1) {
         const token = client.token;
         if (!token) { checking = false; return; } // shut down meanwhile
         const verdict = await checkToken(token, fetchImpl);
         if (verdict === 'valid') {
+            const now = Date.now();
+            while (restores.length && now - restores[0] > 60 * 60 * 1000) restores.shift();
+            if (restores.length >= MAX_RESTORES_PER_HOUR) {
+                checking = false;
+                console.error(`🔑 ${label}: token wiped ${restores.length + 1} times in an hour; not restoring again.`);
+                alert(`${label}: bot token keeps getting wiped`, `Wiped and restored ${restores.length} times in the last hour. Something keeps getting a 401; it was left off this time so Discord is not flooded with invalid requests. Find the 401 in the log, then restart.`, 'error');
+                return;
+            }
+            restores.push(now);
             original(token);
             checking = false;
             console.error(`🔑 ${label}: the REST token was wiped and Discord still accepts it, so it is back.`);
@@ -58,6 +76,7 @@ function guardRestToken(client, label, { fetchImpl, retryMs = RETRY_MS, alert = 
         const result = original(token);
         if (token == null && client.token && !checking) {
             checking = true;
+            noteTrouble();
             recover();
         }
         return result;
@@ -79,6 +98,7 @@ function startRestProbe(client, label, { everyMs = PROBE_MS, alert = sendAlert, 
             alerted = false;
         } catch (err) {
             failures += 1;
+            if (failures >= 2) noteTrouble();
             if (failures >= 2 && !alerted) {
                 alerted = true;
                 alert(`${label}: Discord calls failing`, `The 5-minute check failed ${failures} times in a row: ${err?.message || err}`, 'error');
@@ -90,4 +110,4 @@ function startRestProbe(client, label, { everyMs = PROBE_MS, alert = sendAlert, 
     return { tick, stop: () => clearInterval(timer) };
 }
 
-module.exports = { guardRestToken, startRestProbe, checkToken };
+module.exports = { guardRestToken, startRestProbe, checkToken, inTrouble, noteTrouble, _resetTrouble: () => { lastTroubleAt = 0; } };

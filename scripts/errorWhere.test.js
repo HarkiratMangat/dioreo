@@ -21,18 +21,29 @@ for (const [interaction, want] of cases) {
 console.log(`ok: whereLabel gives user, server, install and app for ${cases.length} cases`);
 
 // reportCommandError: the first failure of a command alerts, a repeat inside 10 minutes does not, another command does, and the same command alerts again after 10 minutes.
-const { reportCommandError } = require('../utils/interactionContext');
+const { reportCommandError, _resetCommandAlerts } = require('../utils/interactionContext');
+_resetCommandAlerts();
 const sent = [];
 const alert = (title, detail, level) => sent.push({ title, detail, level });
 const ix = cases[0][0];
 const t0 = 1_000_000;
-assert.strictEqual(reportCommandError(ix, 'timestamp', new Error('boom'), { alert, now: t0 }), true);
-assert.strictEqual(reportCommandError(ix, 'timestamp', new Error('boom'), { alert, now: t0 + 60_000 }), false);
-assert.strictEqual(reportCommandError(ix, 'draws', new Error('x'), { alert, now: t0 + 60_000 }), true);
-assert.strictEqual(reportCommandError(ix, 'timestamp', new Error('boom'), { alert, now: t0 + 10 * 60_000 }), true);
+assert.strictEqual(reportCommandError(ix, '/timestamp', new Error('boom'), { alert, now: t0 }), true);
+assert.strictEqual(reportCommandError(ix, '/timestamp', new Error('boom'), { alert, now: t0 + 60_000 }), false);
+assert.strictEqual(reportCommandError(ix, '/draws', new Error('x'), { alert, now: t0 + 60_000 }), true);
+assert.strictEqual(reportCommandError(ix, '/timestamp', new Error('boom'), { alert, now: t0 + 10 * 60_000 }), true);
 assert.strictEqual(sent.length, 3);
 assert.strictEqual(sent[0].title, 'Command failed: /timestamp');
 assert.strictEqual(sent[0].level, 'error');
 assert.ok(sent[0].detail.startsWith('(user 42, server 333, user install, public app)'), sent[0].detail);
 assert.ok(sent[0].detail.includes('boom'));
 console.log('ok: reportCommandError alerts once per command per 10 minutes, with who and where');
+
+// The storm cap: 5 different commands alert, the 6th and later in the same 10 minutes send ONE "Many commands failing" between them.
+_resetCommandAlerts();
+const storm = [];
+const salert = (title) => storm.push(title);
+for (let i = 0; i < 8; i++) reportCommandError({ ...ix, id: `10000${i}` }, `/c${i}`, new Error('down'), { alert: salert, now: t0 + i });
+assert.strictEqual(storm.filter(t => t.startsWith('Command failed')).length, 5);
+assert.deepStrictEqual(storm.filter(t => t === 'Many commands failing').length, 1);
+assert.ok(storm[0].includes('/c0'));
+console.log('ok: past 5 command alerts in 10 minutes, one summary stands in for the rest');
