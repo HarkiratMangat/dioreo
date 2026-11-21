@@ -17,14 +17,20 @@ function fake({ deferred = false, editFails = false, id = '1234567890123456789' 
 
 (async () => {
     guard._resetTrouble();
-    const text = failureText('`/timestamp`', 'abc123');
-    assert.ok(text.includes('on our side') && text.includes('Try again') && text.includes('**Report**'));
-    assert.ok(text.endsWith('-# Ref `abc123`'));
+    const text = failureText('/timestamp', 'abc123');
+    const lines = text.split('\n');
+    assert.strictEqual(lines.length, 4, 'title, whose fault, hint, Ref');
+    assert.ok(/^<a?:\w+:\d+> \*\*\/timestamp didn't work\*\*$/.test(lines[0]) || lines[0].endsWith("**/timestamp didn't work**"), lines[0]);
+    assert.strictEqual(lines[1], 'Something went wrong on our side, not yours.');
+    assert.ok(lines[2].startsWith('-# ') && lines[2].includes('**Report**'));
+    assert.strictEqual(lines[3], '-# Ref `abc123`');
+    assert.ok(failureText(null, null).includes("**That didn't work**"));
+    assert.strictEqual(failureText(null, null).split('\n').length, 3, 'no Ref line without a Ref');
     assert.ok(!/There was an error executing/.test(text));
 
     // Deferred: the reply itself becomes the note, with the Report button and the Ref.
     let ix = fake({ deferred: true });
-    assert.strictEqual(await tellUserItFailed(ix, '`/timestamp`'), 'edited');
+    assert.strictEqual(await tellUserItFailed(ix, '/timestamp'), 'edited');
     const [kind, p] = ix.calls[0];
     assert.strictEqual(kind, 'edit');
     assert.strictEqual(p.components[0].components[0].custom_id, FEEDBACK_BUTTON_ID);
@@ -52,7 +58,7 @@ function fake({ deferred = false, editFails = false, id = '1234567890123456789' 
     // While Discord calls are failing, the note says so instead of suggesting a quick retry.
     guard.noteTrouble();
     ix = fake({ deferred: true });
-    await tellUserItFailed(ix, '`/draws`');
+    await tellUserItFailed(ix, '/draws');
     assert.ok(ix.calls[0][1].content.includes('trouble reaching Discord'));
     guard._resetTrouble();
 

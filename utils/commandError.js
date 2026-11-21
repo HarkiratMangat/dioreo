@@ -7,12 +7,15 @@ function errorRef(interaction) {
     return id ? id.slice(-6) : null;
 }
 
-// `label` is how the thing they used is named: `/timestamp`, `Convert Times`, or "that button".
-function failureText(label, ref, { trouble = false } = {}) {
-    const what = trouble
-        ? `Dioreo is having trouble reaching Discord right now, so ${label} didn't work. It's on our side; try again in a few minutes.`
-        : `Something went wrong on our side with ${label}. Try again in a minute. If it keeps failing, tap **Report** so we can look.`;
-    return `${emojis.warn} ${what}${ref ? `\n-# Ref \`${ref}\`` : ''}`;
+// `name` is what they used, plain: `/timestamp`, `Convert Times`, or null for a button, menu or form ("That"). Layout A, my recommendation of the two shown to Harkirat in #testing-spam (waiting on his pick) (2026-11-21 12:33 EST: "they seem very long as 1 line... structure them better?"): a bold title naming what failed, one line on whose fault it is, a small hint line, then the Ref.
+function failureText(name, ref, { trouble = false } = {}) {
+    const lines = [
+        `${emojis.warn} **${name || 'That'} didn't work**`,
+        trouble ? 'Dioreo is having trouble reaching Discord right now.' : 'Something went wrong on our side, not yours.',
+        trouble ? "-# It's on our side. Try again in a few minutes." : '-# Try again in a minute. Still failing? Tap **Report**.',
+    ];
+    if (ref) lines.push(`-# Ref \`${ref}\``);
+    return lines.join('\n');
 }
 
 function reportRow() {
