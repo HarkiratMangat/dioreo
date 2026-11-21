@@ -67,5 +67,13 @@ function fake({ deferred = false, editFails = false, id = '1234567890123456789' 
     const card = feedbackCard({ kind: 'bug', message: 'it broke', userId: '42', username: 'u', ref: 'abc123' });
     assert.ok(JSON.stringify(card).includes('About a failed command · Ref'));
     assert.ok(!JSON.stringify(feedbackCard({ kind: 'bug', message: 'x', userId: '42', username: 'u' })).includes('failed command'));
+    // From a failure, the form is "Report a problem" without the What is it? question; the ordinary form is unchanged.
+    const { feedbackModal } = require('../utils/feedback');
+    const fromFailure = feedbackModal({ fromFailure: true });
+    assert.strictEqual(fromFailure.title, 'Report a problem');
+    assert.ok(!JSON.stringify(fromFailure).includes('"kind"'));
+    assert.ok(JSON.stringify(fromFailure).includes('What were you doing?'));
+    assert.strictEqual(feedbackModal().title, 'Bugs & Suggestions');
+    assert.ok(JSON.stringify(feedbackModal()).includes('"kind"'));
     console.log('ok: the failure note says whose fault, what to try, Report and Ref, in every reply state, and carries the Ref to the feedback card');
 })().catch(err => { console.error(err); process.exit(1); });
