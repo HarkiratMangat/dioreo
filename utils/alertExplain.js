@@ -75,6 +75,50 @@ function displayTitle(title) { return DISPLAY_TITLE[title] || title; }
 function explain(title, detail = '') {
     const d = String(detail || '');
 
+    // The alerts added after the 2026-11-21 09:52 EST outage (2026-11-21 13:02 EST), whose titles carry a command or app name, so they are matched by shape before the exact-title switch. Without these they arrived as a bare title and a stack, with no "Does it fix itself?" or "What to do".
+    const t = String(title || '');
+    if (t.startsWith('Command failed: ')) return {
+        what: `Someone's ${t.slice('Command failed: '.length)} failed. They were shown a note saying it was on our side, with a Report button and the Ref below. ${STILL_RUNNING}`,
+        selfFix: 'No. The same input will fail the same way until the code is fixed. More failures of this one in the next 10 minutes go to the log only.',
+        action: 'Read the error below. If it is not obvious, search the server log for the Ref to see what led up to it.',
+    };
+    if (t === 'Many commands failing') return {
+        what: 'Five or more different commands failed within 10 minutes, which usually means something they all share is down: the database, Discord, or the bot token.',
+        selfFix: 'Sometimes, if it was Discord or the network.',
+        action: 'Check the VM (scripts/vmstatus.sh), Atlas and the alerts just before this one. The rest of this window is in the log only.',
+    };
+    if (/: bot token restored$/.test(t)) return {
+        what: 'A Discord 401 made the library wipe the bot token. Discord still accepted it, so it was put back and replies work again.',
+        selfFix: 'Yes, it already has.',
+        action: 'Find the 401 in the server log just before this. A raw call sending the bot token where it should not is the usual cause.',
+    };
+    if (/: bot token keeps getting wiped$/.test(t)) return {
+        what: 'The bot token was wiped and restored 5 times in an hour, so it was left off this time. Every reply fails until a restart.',
+        selfFix: 'No.',
+        action: 'Find what keeps getting a 401 in the server log, then restart the bot (scripts/deploy.sh manual).',
+    };
+    if (/: bot token REJECTED$/.test(t)) return {
+        what: 'Discord rejected the bot token itself, so it has been revoked or reset. Every reply fails.',
+        selfFix: 'No.',
+        action: 'Reset the token in the Discord Developer Portal, put it in the VM .env, and restart.',
+    };
+    if (/: bot token wiped, could not check it$/.test(t)) return {
+        what: 'The bot token was wiped and Discord did not answer the checks, so it is still off. Every reply fails.',
+        selfFix: 'No.',
+        action: 'Restart the bot (scripts/deploy.sh manual) once Discord is reachable.',
+    };
+    if (/: Discord calls failing$/.test(t)) return {
+        what: 'The 5-minute check could not reach Discord twice in a row. Replies are probably failing too.',
+        selfFix: 'Usually, if it is a Discord or network outage. A "reachable again" alert follows when it is back.',
+        action: 'Check discordstatus.com and the VM. If Discord is fine and this persists, restart the bot.',
+    };
+    if (/: Discord reachable again$/.test(t)) return null;
+    if (t === "Replies missing Discord's 3-second window") return {
+        what: 'Several commands or clicks answered after Discord\'s 3 seconds, so those people saw "The application did not respond".',
+        selfFix: 'Often, if it was a short spike.',
+        action: 'Check the VM memory and CPU (scripts/vmstatus.sh) and Atlas latency.',
+    };
+
     switch (title) {
         case 'Gateway shard error': {
             const cause = networkCause(d);

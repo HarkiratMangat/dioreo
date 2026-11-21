@@ -33,7 +33,9 @@ async function sendCard(interaction, components) {
     const { Routes } = require('discord.js');
     const hidden = interaction.message?.flags?.has?.(64) ?? true;
     try {
+        // auth: false: an interaction token is its own credential, so the bot token must not ride along. Sent with it, a 401 for an expired interaction token ("Invalid Webhook Token") reads to @discordjs/rest as a bad BOT token and it wipes the token for the whole client: on 2026-11-21 09:52 EST one idle panel's expiry did that and every panel reply failed for two hours (scripts/webhookAuth.test.js). discord.js's own interaction methods send auth: false for the same reason.
         await interaction.client.rest.post(Routes.webhook(interaction.applicationId, interaction.token), {
+            auth: false,
             body: { flags: 32768 | (hidden ? 64 : 0), components, allowed_mentions: { parse: [] } },
         });
     } catch (e) { console.error('/manage emojis: could not send the result message:', e?.message || e); }

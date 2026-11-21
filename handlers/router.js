@@ -303,7 +303,7 @@ async function handleInteractionInner(interaction) {
         try {
             return await require('../utils/autocomplete').runAutocomplete(interaction);
         } catch (error) {
-            console.error('Autocomplete Error:', error);
+            console.error(`Autocomplete Error ${require('../utils/interactionContext').whereLabel(interaction)}:`, error);
             return await interaction.respond([]);
         }
     }
@@ -337,17 +337,12 @@ async function handleInteractionInner(interaction) {
                 }
                 return;
             } catch (error) {
-                console.error(`Error executing modular slash command ${commandName}:`, error);
-                // NOTE (fixed during review): this used to `return interaction.reply(...)` unawaited. A `return <promise>` inside a try block exits the try/catch synchronously -- if that returned promise rejects later (e.g. the interaction token is ALSO already expired, which is exactly what happens after a 10062 on the original deferReply), nothing is listening for it anymore, not even the outer try/catch around this whole handler. That turned into a raw unhandled promise rejection and crashed the entire Node process (seen on Railway: 10062 Unknown interaction -> fallback reply -> 40060 already acknowledged -> process exit). Awaiting + catching here keeps a doubly-failed fallback reply from ever being able to crash the bot.
-                try {
-                    if (interaction.deferred || interaction.replied) {
-                        await interaction.editReply({ content: 'There was an error executing this command!' });
-                    } else {
-                        await interaction.reply({ content: 'There was an error executing this command!', ephemeral: true });
-                    }
-                } catch (notifyError) {
-                    console.error(`Failed to notify user of command error for ${commandName} (interaction likely expired):`, notifyError);
-                }
+                console.error(`Error executing modular slash command ${commandName} ${require('../utils/interactionContext').whereLabel(interaction)}:`, error);
+                // A caught failure is still a failure: before 2026-11-21 it was recorded as `ok`, so analytics showed that morning's failed /timestamp as a success. And it now reaches the alerts channel, not only the log.
+                markOutcome('error');
+                require('../utils/interactionContext').reportCommandError(interaction, `/${commandName}`, error);
+                // What the person sees: utils/commandError.js (since 2026-11-21, it was the bare "There was an error executing this command!"). NOTE (fixed during review): this used to `return interaction.reply(...)` unawaited. A `return <promise>` inside a try block exits the try/catch synchronously -- if that returned promise rejects later (e.g. the interaction token is ALSO already expired, which is exactly what happens after a 10062 on the original deferReply), nothing is listening for it anymore, not even the outer try/catch around this whole handler. That turned into a raw unhandled promise rejection and crashed the entire Node process (seen on Railway: 10062 Unknown interaction -> fallback reply -> 40060 already acknowledged -> process exit). Awaiting + catching here keeps a doubly-failed fallback reply from ever being able to crash the bot.
+                await require('../utils/commandError').tellUserItFailed(interaction, `/${commandName}`, error);
                 return;
             }
         }
@@ -369,16 +364,10 @@ async function handleInteractionInner(interaction) {
                 require('../utils/userStats').noteOwnCommandSafely(interaction);
                 await require('../utils/reminders').maybeShowReminderNote(interaction);
             } catch (error) {
-                console.error(`Error executing context menu command ${interaction.commandName}:`, error);
-                try {
-                    if (interaction.deferred || interaction.replied) {
-                        await interaction.editReply({ content: 'There was an error running this!' });
-                    } else {
-                        await interaction.reply({ content: 'There was an error running this!', ephemeral: true });
-                    }
-                } catch (notifyError) {
-                    console.error(`Failed to notify user of context menu error for ${interaction.commandName}:`, notifyError);
-                }
+                console.error(`Error executing context menu command ${interaction.commandName} ${require('../utils/interactionContext').whereLabel(interaction)}:`, error);
+                markOutcome('error');
+                require('../utils/interactionContext').reportCommandError(interaction, interaction.commandName, error);
+                await require('../utils/commandError').tellUserItFailed(interaction, interaction.commandName, error);
             }
             return;
         }
@@ -391,7 +380,13 @@ async function handleInteractionInner(interaction) {
   } catch (err) {
     // Any uncaught rejection in this handler (e.g. a button/select interaction whose token already expired -- Discord error 10062 "Unknown interaction") used to bubble up as an unhandled 'error' event and crash the entire process, taking the bot offline until a manual restart. Discord interaction tokens are only valid for a few seconds/minutes, so this is expected to happen occasionally under normal use, not just as a bug symptom -- log it and keep the bot alive instead of crashing.
     markOutcome('error');
-    console.error('Unhandled error in interactionCreate:', err);
+    console.error(`Unhandled error in interactionCreate ${require('../utils/interactionContext').whereLabel(interaction)}:`, err);
+    // A button, menu or form that threw used to leave Discord's "This interaction failed" or a frozen panel, and no alert (2026-11-21). Named by its custom_id's first word, so one broken panel is one alert.
+    if (interaction && !interaction.isAutocomplete?.()) {
+        const what = interaction.customId ? `${interaction.isModalSubmit?.() ? 'form' : 'button'} ${String(interaction.customId).split(/[_|:~]/)[0]}` : (interaction.commandName ? `/${interaction.commandName}` : 'interaction');
+        require('../utils/interactionContext').reportCommandError(interaction, what, err);
+        await require('../utils/commandError').tellUserItFailed(interaction, interaction.customId ? null : what, err).catch(() => {});
+    }
   }
 }
 

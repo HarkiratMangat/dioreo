@@ -17,7 +17,7 @@ async function sendV2Payload(interaction, components, { content = '', flags = 32
         );
     }
 
-    // Discord's component rules, checked here for every panel (2026-11-12 19:29 EST, utils/componentCheck.js): a break is named in the log (prod tees errors to the alerts webhook) before Discord refuses the send without saying which component.
+    // Discord's component rules, checked here for every panel (2026-11-12 19:29 EST, utils/componentCheck.js): a break is named in the log (it reaches Cloud Logging, not the alerts webhook: corrected 2026-11-21 13:16 EST, when that morning's two-hour outage posted no alert; a failed command alerts through `reportCommandError` since) before Discord refuses the send without saying which component.
     const problems = require('./componentCheck').checkComponents(outgoing);
     if (problems.length) console.error(`sendV2Payload: Discord will refuse this panel: ${problems.slice(0, 5).join('; ')}`);
 
@@ -59,15 +59,18 @@ async function sendV2Payload(interaction, components, { content = '', flags = 32
     }
 
     const { timeDependency, noteResponseFailure } = require('./eventStore');
+    // auth: false: an interaction token is its own credential, so the bot token must not ride along. Sent with it, a 401 for an expired interaction token ("Invalid Webhook Token") reads to @discordjs/rest as a bad BOT token and it wipes the token for the whole client: on 2026-11-21 09:52 EST one idle panel's expiry did that and every panel reply failed for two hours (scripts/webhookAuth.test.js). discord.js's own interaction methods send auth: false for the same reason.
     const response = await timeDependency('discord_rest', () => interaction.client.rest.patch(
         Routes.webhookMessage(interaction.applicationId, interaction.token, '@original'),
-        options
+        { ...options, auth: false }
     )).catch(async (err) => {
         noteResponseFailure(err);
         // A refused panel answers the person who clicked (2026-11-12 19:29 EST): before, the panel just did not move and only the log knew. `quietRefusal` is for a caller with a better note of its own (the /autobuild batch lists what saved).
         if (err?.code === 50035 && !quietRefusal) await tellRefused(interaction, problems, err);
         throw err;
     });
+    // This raw send leaves discord.js's `replied` false, so mark the answer as delivered (2026-11-21 13:14 EST): utils/commandError.js reads it so a failure AFTER the panel went out adds a private note under it instead of overwriting the person's working answer with "didn't work".
+    try { Object.defineProperty(interaction, '__dioreoAnswered', { value: true, configurable: true }); } catch { /* a frozen stand-in */ }
     // response?.id first, not knownMessageId first -- see this function's header comment above (finding #15).
     maybeSchedule(response?.id || knownMessageId);
     return response;

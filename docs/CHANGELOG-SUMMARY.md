@@ -12,6 +12,10 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.24.0 — November 21, 2026
+- **Fixed:** an idle panel can no longer stop Dioreo answering until a restart (it happened for two hours on November 21).
+- **Changed:** when something fails, Dioreo says it was on its side, what to try, and gives a Report button and a reference number.
+
 ## v3.23.0 — November 17, 2026
 - **Changed (owner):** the Draw Index home has Upload Draw (one poster, with its title and type typed in) and Bulk Upload, plus View Indexed Draws, Search Index and Needs My Eyes.
 - **Changed (owner):** a search with one result opens that draw, and each draw has one row of actions: Edit, Delete, Picture, Add.

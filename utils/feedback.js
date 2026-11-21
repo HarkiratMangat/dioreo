@@ -16,7 +16,17 @@ const KINDS = [
 const label = (text, description, component) => ({ type: 18, label: text, ...(description ? { description } : {}), component });
 const lastSent = new Map();
 
-function feedbackModal() {
+// `fromFailure`: opened from the Report button under a failed command's note (utils/commandError.js). Found in the 2026-11-21 12:45 EST click test: the form still asked "What is it?" with Bug report unpicked, though nobody reporting a failure means Feedback or an Idea. It is titled Report a problem, skips that question (the note is saved as a bug) and asks what they were doing.
+function feedbackModal({ fromFailure = false } = {}) {
+    if (fromFailure) {
+        return {
+            title: 'Report a problem', custom_id: FEEDBACK_MODAL_ID,
+            components: [
+                label('What were you doing?', 'What you ran or pressed, and what you expected to happen', { type: 4, custom_id: 'message', style: 2, required: true, min_length: 5, max_length: 2000 }),
+                label('Screenshot', 'Optional', { type: 19, custom_id: 'shot', min_values: 0, max_values: 1, required: false }),
+            ],
+        };
+    }
     return {
         title: 'Bugs & Suggestions', custom_id: FEEDBACK_MODAL_ID,
         components: [
@@ -28,11 +38,12 @@ function feedbackModal() {
 }
 
 // The owner's DM card: what kind, who sent it and when, then their words as a quote. `imageUrl` is the screenshot re-sent with the DM.
-function feedbackCard({ kind, message, userId, username, sentAt = new Date() }, imageUrl = null) {
+function feedbackCard({ kind, message, userId, username, sentAt = new Date(), ref = null }, imageUrl = null) {
     const k = KINDS.find(x => x.value === kind) || KINDS[1];
     const when = Math.floor(new Date(sentAt).getTime() / 1000);
     const parts = [
-        { type: 10, content: `## ${k.heading}\n-# From <@${userId}> · \`${username}\` · <t:${when}:R>` },
+        // `ref`: sent from the Report button under a failed command (utils/commandError.js), so the note names the failure it is about.
+        { type: 10, content: `## ${k.heading}\n-# From <@${userId}> · \`${username}\` · <t:${when}:R>${ref ? `\n-# About a failed command · Ref \`${ref}\`` : ''}` },
         { type: 14, spacing: 1, divider: true },
         { type: 10, content: String(message).split('\n').map(l => `> ${l}`).join('\n') },
     ];
@@ -52,7 +63,7 @@ async function openFeedback(interaction) {
         try { await interaction.reply({ content: `${emojis.cross} You can send one every 10 minutes. Try again <t:${wait}:R>.`, flags: 64 }); } catch (e) { console.error('Failed to answer a rate-limited feedback click:', e); }
         return;
     }
-    await interaction.showModal(feedbackModal());
+    await interaction.showModal(feedbackModal({ fromFailure: Boolean(require('./commandError').refFromMessage(interaction.message)) }));
 }
 
 async function handleFeedbackSave(interaction) {
@@ -64,12 +75,13 @@ async function handleFeedbackSave(interaction) {
             return;
         }
         await interaction.deferReply({ flags: 64 });
-        let kind = 'feedback', message = '';
+        const ref = require('./commandError').refFromMessage(interaction.message);
+        let kind = ref ? 'bug' : 'feedback', message = '';
         try { kind = require('../utils/formChoice').readChoice(interaction, 'kind')[0] || kind; } catch { /* keeps the default */ }
         try { message = (interaction.fields.getTextInputValue('message') || '').trim(); } catch { message = ''; }
         const shot = await fileFrom(interaction, 'shot');
         try {
-            const card = { kind, message, userId: interaction.user.id, username: interaction.user.username };
+            const card = { kind, message, userId: interaction.user.id, username: interaction.user.username, ref };
             await dmOwner(() => ({ flags: 32768, components: feedbackCard(card, shot ? `attachment://${shot.name}` : null) }), shot ? [shot] : []);
         } catch (err) {
             console.error('Could not DM the owner a feedback note:', err?.message || err);
@@ -77,7 +89,7 @@ async function handleFeedbackSave(interaction) {
             return;
         }
         lastSent.set(interaction.user.id, Date.now());
-        await interaction.editReply({ content: `${emojis.checkmark} Sent to Dioreo's developer, thanks!` });
+        await interaction.editReply({ content: `${emojis.checkmark} Sent to Dioreo's developer, thanks!${ref ? `\n-# Ref \`${ref}\`` : ''}` });
     });
 }
 
