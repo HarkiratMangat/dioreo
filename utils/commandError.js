@@ -29,8 +29,7 @@ async function tellUserItFailed(interaction, label, error = null) {
     let trouble = false;
     try { trouble = require('./restGuard').inTrouble(); } catch { /* no state yet */ }
     const payload = { content: failureText(label, errorRef(interaction), { trouble }), components: [reportRow()], allowedMentions: { parse: [] } };
-    // A button, menu or form: never edit — its "reply" is the panel itself, and the note would wipe the panel out. A private follow-up (or reply) sits under it instead.
-    // And a command whose answer already went out (discord.js `replied`, or sendV2Payload's raw send marking `__dioreoAnswered`) is treated the same way (2026-11-21 13:14 EST): something failing after the answer must not replace a working answer with "didn't work".
+    // A button, menu or form: never edit — its "reply" is the panel itself, and the note would wipe the panel out. A private follow-up (or reply) sits under it instead. And a command whose answer already went out (discord.js `replied`, or sendV2Payload's raw send marking `__dioreoAnswered`) is treated the same way (2026-11-21 13:14 EST): something failing after the answer must not replace a working answer with "didn't work".
     const onPanel = Boolean(interaction.isMessageComponent?.() || interaction.isModalSubmit?.() || interaction.replied || interaction.__dioreoAnswered);
     try {
         if (onPanel) {
