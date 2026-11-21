@@ -429,8 +429,15 @@ async function runTextCommand(message, verdict) {
             }
             // A crash line carries the Report button too (2026-11-21 13:02 EST), and stays a minute instead of 10 s so there is time to press it.
             const crashed = !(err instanceof TextCommandRefused);
-            const sent = await interaction.editReply(crashed ? { content: text, components: [require('../utils/commandError').reportRow()] } : { content: text }).catch(() => null);
-            if (sent && crashed) setTimeout(() => { interaction.deleteReply().catch(() => {}); }, 60_000).unref?.();
+            const payload = crashed ? { content: text, components: [require('../utils/commandError').reportRow()] } : { content: text };
+            // A command that already answered and THEN failed keeps its answer (2026-11-21 13:18 EST, found reading the diff): the crash line used to replace the reply and delete it, answer and all. It goes out as its own message instead, and only that one is deleted.
+            if (crashed && interaction.__firstSentAt) {
+                const note = await interaction.followUp(payload).catch(() => null);
+                if (note?.id) setTimeout(() => { message.client.rest.delete(Routes.channelMessage(message.channelId, note.id)).catch(() => {}); }, 60_000).unref?.();
+            } else {
+                const sent = await interaction.editReply(payload).catch(() => null);
+                if (sent && crashed) setTimeout(() => { interaction.deleteReply().catch(() => {}); }, 60_000).unref?.();
+            }
         } finally {
             recordInteractionEvent(interaction, ctx, message.author.id);
             logTextTiming(message, textCommand, t, interaction);

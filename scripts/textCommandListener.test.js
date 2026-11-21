@@ -318,6 +318,17 @@ async function check(name, fn) {
             assert.ok(/^<a?:\w+:\d+> \*\*`d draws` didn't work\*\*\nSomething went wrong on our side, not yours\.\n-# Try again in a minute\. Still failing\? Tap \*\*Report\*\*\. · Ref `\w{1,6}`$/.test(posts[0]?.content || ''), posts[0]?.content);
         } finally { console.error = err; commands.set('draws', record('draws')); }
     });
+    await check('a command that answered and then threw keeps its answer; the crash line is its own message (2026-11-21)', async () => {
+        const late = { async execute(i) { await i.reply({ content: 'the answer' }); throw new Error('late boom'); } };
+        commands.set('draws', late);
+        const err = console.error; console.error = () => {};
+        try {
+            const { message, posts } = fakeMessage('d draws');
+            await onMessage(message);
+            assert.strictEqual(posts[0]?.content, 'the answer', 'the answer stays');
+            assert.ok(/didn't work/.test(posts[1]?.content || ''), `a separate crash line: ${JSON.stringify(posts.map(p => p.content))}`);
+        } finally { console.error = err; commands.set('draws', record('draws')); }
+    });
     await check('a different command within 1 s: nothing, no warning', async (before) => {
         const a = fakeMessage('d draws'); a.message.author.id = 'quick';
         const b = fakeMessage('d calendar'); b.message.author.id = 'quick';
