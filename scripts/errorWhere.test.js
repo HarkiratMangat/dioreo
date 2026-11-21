@@ -8,7 +8,7 @@ const admin = { name: 'admin' };
 setClients({ public: pub, admin });
 
 const cases = [
-    [{ guildId: '333', client: pub, authorizingIntegrationOwners: { userId: '42' }, user: { id: '42' } }, '(user 42, server 333, user install, public app)'],
+    [{ id: '1573700000000456789', guildId: '333', client: pub, authorizingIntegrationOwners: { userId: '42' }, user: { id: '42' } }, '(user 42, server 333, user install, public app, ref 456789)'],
     [{ guildId: '333', client: pub, authorizingIntegrationOwners: { guildId: '333' }, user: { id: '42' } }, '(user 42, server 333, server install, public app)'],
     [{ guildId: null, client: admin, authorizingIntegrationOwners: { 1: '42' }, user: { id: '42' } }, '(user 42, DM, user install, admin app)'],
     [{ guildId: '7', client: pub, user: { id: '42' } }, '(user 42, server 7, install unknown, public app)'],
@@ -34,7 +34,7 @@ assert.strictEqual(reportCommandError(ix, '/timestamp', new Error('boom'), { ale
 assert.strictEqual(sent.length, 3);
 assert.strictEqual(sent[0].title, 'Command failed: /timestamp');
 assert.strictEqual(sent[0].level, 'error');
-assert.ok(sent[0].detail.startsWith('(user 42, server 333, user install, public app)'), sent[0].detail);
+assert.ok(sent[0].detail.startsWith('(user 42, server 333, user install, public app, ref 456789) · interaction 1573700000000456789'), sent[0].detail);
 assert.ok(sent[0].detail.includes('boom'));
 console.log('ok: reportCommandError alerts once per command per 10 minutes, with who and where');
 

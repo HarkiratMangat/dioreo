@@ -34,7 +34,9 @@ function whereLabel(interaction) {
     let app = 'public app';
     try { if (interaction.client && interaction.client === require('../bot/clients').clients.admin) app = 'admin app'; } catch { /* clients not set up (tests) */ }
     const who = interaction.user?.id ? `user ${interaction.user.id}, ` : '';
-    return `(${who}${place}, ${install}, ${app})`;
+    // The Ref the person was shown (utils/commandError.js), on every error line too (2026-11-21 12:39 EST): before, it reached only the alert, and a repeat inside the alert's 10-minute window reached no alert at all, so a reported Ref could match nothing in the log.
+    const ref = interaction.id ? `, ref ${String(interaction.id).slice(-6)}` : '';
+    return `(${who}${place}, ${install}, ${app}${ref})`;
 }
 
 // A failed command, to the alerts channel (added 2026-11-21 12:12 EST): the 2026-11-21 outage failed every reply for two hours and posted nothing there, because a command's error was only ever written to the server log. One alert per command every 10 minutes, so a burst cannot flood the channel; the log still gets every one. And a storm cap: past 5 such alerts in 10 minutes (an outage fails every command at once), ONE "many commands failing" alert stands in for the rest of that window.
@@ -56,8 +58,8 @@ function reportCommandError(interaction, name, error, { alert, now = Date.now() 
         return false;
     }
     stormSent.push(now);
-    const ref = interaction?.id ? ` · Ref ${String(interaction.id).slice(-6)} · interaction ${interaction.id}` : '';
-    send(`Command failed: ${name}`, `${whereLabel(interaction)}${ref}\n${error?.stack || error?.message || error}`, 'error');
+    const full = interaction?.id ? ` · interaction ${interaction.id}` : '';
+    send(`Command failed: ${name}`, `${whereLabel(interaction)}${full}\n${error?.stack || error?.message || error}`, 'error');
     return true;
 }
 
