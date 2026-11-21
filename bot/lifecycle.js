@@ -264,19 +264,23 @@ function registerLifecycle(client, commands) {
 
     // --- DAILY "STILL HEALTHY" HEARTBEAT (2026-07-17) --- An info-level, NON-pinging alert once every 24h so a long, quiet uptime is proven-alive rather than merely assumed. The other alerts only fire on trouble (crashes, gateway loss) or on (re)start ("Bot online"); with none of those, silence is ambiguous — "healthy" and "the alerter/VM is dead" look identical. This heartbeat resolves that: no daily green means something is wrong. Deliberately info+no-ping (routine, must not notify his phone); sendAlert's 1/min throttle never trips at a 24h cadence. NOT fired immediately on boot — "Bot online" already covers startup; the interval's whole value is the stretches with NO restart in between (a restart resets this timer but also emits its own "Bot online", so no health gap is left uncovered).
     const HEARTBEAT_MS = 24 * 60 * 60 * 1000;
-    function sendHeartbeat() {
+    async function sendHeartbeat() {
         // If the gateway is NOT currently ready, stay silent — that's a real problem the gateway/shard handlers alert on themselves; a heartbeat firing anyway would be misleading, and a green "healthy" during an outage is worse than no heartbeat at all.
         if (!client.isReady()) return;
         const mem = process.memoryUsage();
         const rss = Math.round(mem.rss / 1024 / 1024);
         const heap = Math.round(mem.heapUsed / 1024 / 1024);
+        // How the day went for the people using it, not only whether the process is up (utils/healthWatch.js, 2026-11-21). A failed read leaves the line out rather than the whole check.
+        const counts = await require('../utils/healthWatch').dayCounts().catch(() => null);
+        const countsLine = require('../utils/healthWatch').countsLine(counts);
         sendAlert(
             'Daily health check',
             `Still online and healthy.\n`
             + `• Uptime: ${formatUptime(process.uptime())}\n`
             + `• Servers: ${client.guilds.cache.size}\n`
             + `• Gateway latency: ${formatPing(client.ws.ping)}\n`
-            + `• Memory: ${rss}MB RSS · ${heap}MB heap`,
+            + `• Memory: ${rss}MB RSS · ${heap}MB heap`
+            + (countsLine ? `\n${countsLine}` : ''),
             'info'
         );
         // --- ROLL-UP CATCH-UP (2026-08-16, observability layer stage 4) --- Riding the existing daily heartbeat rather than adding a second scheduler, per the design's §6. Fire-and-forget/swallowed like every other write in this layer — utils/rollupStore.js's catchUpRollups() already catches its own errors internally, this call just avoids an unhandled-rejection warning if it somehow throws before that internal catch runs.
@@ -286,7 +290,7 @@ function registerLifecycle(client, commands) {
         // Also fired here directly, not just from the 24h interval below (v3-pre-release review, finding #20) -- the interval is created fresh on every ClientReady, so two deploys within 24h of each other meant the FIRST interval died with its process before ever firing and the second restarted the countdown, and RollupState.lastRolledUpDay never advanced. Past CATCH_UP_WINDOW_DAYS of that pattern, days before the window edge were skipped silently -- no log, no alert. Calling it here too closes that gap for good.
         require('../utils/rollupStore').catchUpRollups().catch(() => { /* never -- swallowed internally too */ });
         // .unref() so the heartbeat timer alone never keeps the process alive — the gateway connection is what keeps it running; same convention as the router's short-lived-store timers.
-        setInterval(sendHeartbeat, HEARTBEAT_MS).unref();
+        setInterval(() => { sendHeartbeat().catch(() => { /* never */ }); }, HEARTBEAT_MS).unref();
     });
 }
 

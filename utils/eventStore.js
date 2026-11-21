@@ -287,6 +287,8 @@ function noteAckDone(ctx) {
 function noteResponseFailure(err) {
     const code = err && (err.code ?? err.status);
     if (code === 10062 || code === 40060) markOutcome('expired');
+    // Only 10062 means "too slow" (40060 is a double answer, our bug, not slowness). Several in 10 minutes alert (utils/healthWatch.js, 2026-11-21).
+    if (code === 10062) { try { require('./healthWatch').noteSlowReply(); } catch { /* never let a signal break a response */ } }
 }
 
 // Wraps the interaction's own response methods so ackMs and the `expired` outcome need no cooperation from any handler. ⚠️ Applied AFTER utils/guildPolicy.js's forceEphemeralResponses() so this wrapper sits OUTSIDE that one: the clamp still runs, and the stamp happens whichever path the response takes.

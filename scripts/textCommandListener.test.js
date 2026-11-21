@@ -314,7 +314,8 @@ async function check(name, fn) {
         try {
             const { message, posts } = fakeMessage('d draws');
             await onMessage(message);
-            assert.ok(/<a?:\w+:\d+> Something went wrong running `d draws`\. Try again in a moment\.$/.test(posts[0]?.content || ''), posts[0]?.content);
+            // The Ref under it (2026-11-21) matches the alert and the error line: the message's id, last 6 characters.
+            assert.ok(/<a?:\w+:\d+> Something went wrong running `d draws`\. Try again in a moment\.\n-# Ref `\w{1,6}`$/.test(posts[0]?.content || ''), posts[0]?.content);
         } finally { console.error = err; commands.set('draws', record('draws')); }
     });
     await check('a different command within 1 s: nothing, no warning', async (before) => {

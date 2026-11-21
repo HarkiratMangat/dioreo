@@ -168,6 +168,7 @@ export const TESTS = [
     {"cmd": "node scripts/errorWhere.test.js", "lane": "unit"},
     {"cmd": "node scripts/restGuard.test.js", "lane": "unit"},
     {"cmd": "node scripts/commandError.test.js", "lane": "unit"},
+    {"cmd": "node scripts/healthWatch.test.js", "lane": "unit"},
     {"cmd": "node scripts/autobuildStart.test.js", "lane": "unit"},
     {"cmd": "node scripts/visionReads.test.js", "lane": "unit"},
     {"cmd": "node scripts/autobuildResume.test.js", "lane": "unit"},

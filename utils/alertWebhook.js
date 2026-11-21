@@ -24,6 +24,21 @@ const LEVEL_ICON = { info: '🟢', caution: '🟡', warn: '🟠', error: '🔴' 
 const THROTTLE_MS = 60 * 1000;
 const lastSent = new Map(); // key: `${level}:${title}` -> last-sent epoch ms
 
+// THE BACKUP ROUTE (2026-11-21 12:23 EST). If the webhook itself is gone (deleted, rotated, Discord refusing it), every alert used to vanish with no trace: the POST's failure is swallowed on purpose. Now a red or orange alert whose POST fails is sent once more through the bot as an owner notice (utils/ownerInbox.js: OWNER_CHANNEL, else a DM), naming the webhook as broken. At most one every 30 minutes, so a dead webhook cannot turn into a stream of pings. It needs the bot's own token, so it cannot cover a wiped token; utils/restGuard.js covers that.
+const FALLBACK_MS = 30 * 60 * 1000;
+let lastFallbackAt = 0;
+function alertFallback(level, title, rawDesc, why, { send, now = Date.now() } = {}) {
+    if (level !== 'error' && level !== 'warn') return false;
+    if (lastFallbackAt && now - lastFallbackAt < FALLBACK_MS) return false;
+    lastFallbackAt = now;
+    console.error(`Alerts webhook failed (${why}); sending "${title}" to the owner instead.`);
+    const emojis = require('./emojiMap');
+    const content = `${emojis.warn} **The alerts webhook is not working** (${why}), so this alert came here instead. Fix LOG_WEBHOOK_URL.\n**${title}**\n${String(rawDesc || '').slice(0, 1500)}`;
+    const deliver = send || ((body) => require('./buildSubmissions').dmOwner(() => body));
+    Promise.resolve().then(() => deliver({ content, allowed_mentions: { parse: [] } })).catch(() => { /* both routes down: the log line above is all that is left */ });
+    return true;
+}
+
 // Turn an error/object/value into an actionable description: for Errors, include the message AND the first few stack frames (so an alert points at WHERE), fenced for readability.
 function describe(v) {
     if (v == null) return '';
@@ -105,7 +120,8 @@ function sendAlert(title, detail = '', level = 'error', opts = {}) {
             body: JSON.stringify(body),
             signal: controller.signal,
         })
-            .catch(() => { /* alerting failure must never surface */ })
+            .then(res => { if (res && !res.ok) alertFallback(level, title, rawDesc, `HTTP ${res.status}`); })
+            .catch(err => { alertFallback(level, title, rawDesc, err?.name === 'AbortError' ? 'no answer in 8s' : 'network error'); /* alerting failure must never surface */ })
             .finally(() => clearTimeout(timeout));
     }
 
@@ -113,4 +129,4 @@ function sendAlert(title, detail = '', level = 'error', opts = {}) {
     if (opts.record !== false) recordAlert({ level, title, detail: rawDesc, pinged: shouldPing, host, rssMb: rss, uptimeSec, silent });
 }
 
-module.exports = { sendAlert };
+module.exports = { sendAlert, alertFallback, _resetFallback: () => { lastFallbackAt = 0; } };
