@@ -420,7 +420,8 @@ async function runTextCommand(message, verdict) {
             // A command that opens a form first cannot from a message: unreachable today (every such path has a text form), kept as a guard. The crash line is his #12 (B6, 2026-10-29 16:05 EDT): the Warn sign, the command as typed, gone after 10 s.
             const text = err instanceof TextCommandRefused
                 ? `That one opens a form, so it needs the slash command: \`/${textCommand.slash}${textCommand.sub ? ` ${textCommand.sub}` : ''}\`.`
-                : `${require('../utils/emojiMap').warn} Something went wrong running \`${verdict.typed || textCommand.name}\`. Try again in a moment.${interaction.id ? `\n-# Ref \`${String(interaction.id).slice(-6)}\`` : ''}`;
+                // The same layout as a slash command's failure note (2026-11-21 13:07 EST, his layout A): the command as typed in the title, whose fault, then what to try with the Ref.
+                : require('../utils/commandError').failureText(`\`${verdict.typed || textCommand.name}\``, interaction.id ? String(interaction.id).slice(-6) : null);
             if (!(err instanceof TextCommandRefused)) {
                 console.error(`Text command ${textCommand.name} failed ${require('../utils/interactionContext').whereLabel(interaction)}:`, err);
                 // The alerts channel too, and the Ref that matches it (2026-11-21, after a two-hour outage nobody was told about).
