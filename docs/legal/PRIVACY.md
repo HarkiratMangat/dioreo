@@ -6,8 +6,8 @@ published: true
 
 # Privacy Policy — Dioreo
 
-**Effective date:** 14 November 2026
-**Version:** 1.15
+**Effective date:** 21 November 2026
+**Version:** 1.16
 **Applies to:** the Dioreo Discord applications, the public **Dioreo** app and its companion **Dioreo Admin** app (together, the "Bot"), and this documentation website (the "Site")
 
 
@@ -218,7 +218,7 @@ Exists only in the server's memory while it runs, and is **lost on every restart
 
 The Bot keeps an **alert log** of technical events — crashes, database problems, gateway disconnects, daily health checks — recording the alert level, a description, timestamps, process memory use, and uptime. Alerts are also posted to a **private Discord channel** that only the administrator can see, via a Discord webhook.
 
-These concern the *bot's health*, not you. However, **an error captured in a crash report could incidentally contain a Discord user ID** if the failure happened while processing that person's command. This isn't deliberate, and these logs are never used to analyse users.
+These concern the *bot's health*, not you, with one deliberate exception: **when a command fails, the alert names the Discord user ID of the person whose command it was**, the server it ran in (or that it was a DM), how the Bot was installed there and which of its two apps answered, together with the error. That is so the administrator can tell who was affected and, where it helps, follow up. At most one such alert is sent per command every ten minutes. Separately, an error captured in a crash report could incidentally contain a Discord user ID. These logs are never used to analyse or profile users.
 
 **Alert logs are automatically deleted after 30 days.**
 
@@ -229,7 +229,7 @@ The server the Bot runs on ships its console output to **Google Cloud Logging**,
 
 From the v3 release (27 October 2026) each log line also carries the context of whatever the Bot was doing when it was written: an interaction ID, which command was running, which part of the Bot handled it, which source file emitted the line, and a **keyed hash** standing in for the person whose command it was. This is deliberate and systematic rather than incidental, and it is what makes a fault traceable to the thing that caused it. **The keyed hash is the same one described in §2.4b, and the same limits apply**: it is not your Discord ID, it cannot be reversed into one without a secret key held outside the database, and it is never used to build a picture of any individual. These logs still purge on the same 30-day schedule.
 
-As with alert logs, **an error or stack trace could additionally contain a raw Discord user ID** if the failure occurred while processing that person's command — an error object can carry one even though no log statement in the Bot writes one deliberately. These logs are readable only by the administrator, and are never used to analyse or profile users.
+**When a command fails, the error line deliberately names the Discord user ID of the person whose command it was**, the server it ran in (or that it was a DM), how the Bot was installed there and which app answered. A keyed hash cannot be turned back into a person, and after a fault the administrator needs to know who it affected. An error or stack trace could also contain a raw Discord user ID incidentally. These logs are readable only by the administrator, purge on the same 30-day schedule, and are never used to analyse or profile users.
 
 **Google Cloud Error Reporting** (enabled 6 August 2026) reads those same server logs and groups repeated errors together so the administrator can see that one fault occurred fifty times rather than scrolling fifty near-identical stack traces. It is a **view over the logs already described above** — the same data, in the same Google Cloud project, in the same region, processed by the same provider. It introduces **no new collection**: nothing is sent to it that was not already being logged, and no software from it runs inside the Bot. Error Reporting keeps its copy for **30 days**, the same period as the logs it reads.
 
@@ -560,6 +560,7 @@ Kept here as well as in git, because the repository's visibility can change and 
 
 | Version | Effective | What changed |
 |---|---|---|
+| 1.16 | 21 November 2026 | **Who a failed command affected.** When a command fails, the Bot's error log line and the alert to the developer's private channel now name the Discord user ID of the person whose command it was, the server (or a DM), how the Bot was installed there and which app answered, so a fault can be traced to the people it hit (§2.4, §2.4a). Both are kept 30 days, as before. **New recipients:** none. |
 | 1.15 | 14 November 2026 | **Where notes to the developer go.** Submit a Build, Dispute a Build, Bugs & Suggestions and the spam-penalty note now reach Dioreo's developer as a message in a private channel of the developer's own Discord server instead of a DM, and still as a DM if that message cannot be sent (§2.1g). What is sent, what is stored and for how long are unchanged. |
 | 1.14 | 4 November 2026 | **Game-news drafts.** Dioreo Admin now reads the posts of two Call of Duty: Mobile news channels it follows in the developer's own server, and sends the ones that name a draw, event, mode or patch to the Vertex AI model §5 already lists, to draft entries: the next season's into the staged Next Season Draft, which goes live only when the developer makes it so, and the current season's for the developer to check (§0, §5, §5.1). The posts come from the channels' announcement webhooks, not from users; only game details are kept (cards for 30 days, staged entries until the season goes live), never a post's text. **New recipients:** none. |
 | 1.13 | 3 November 2026 | **Build credit.** A gunsmith build's credit line can now name a Discord user by their @ or their username, a plain name, or a link, under "Submitted by", "Credit:" or "Build by", or read "By *anonymous*" (§2.1g). Submit a Build asks whether to credit you by your @, your username or not at all, and keeps your username only if you chose it. The developer and admins can also credit a build by hand, which stores the credited person's Discord user ID, name or link with the build without their doing anything; §2.1g says how to have it changed or removed. Appendix A lists the new fields (`credit`, `creditAs`, `username`). **New recipients:** none. |

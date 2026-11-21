@@ -338,6 +338,9 @@ async function handleInteractionInner(interaction) {
                 return;
             } catch (error) {
                 console.error(`Error executing modular slash command ${commandName} ${require('../utils/interactionContext').whereLabel(interaction)}:`, error);
+                // A caught failure is still a failure: before 2026-11-21 it was recorded as `ok`, so analytics showed that morning's failed /timestamp as a success. And it now reaches the alerts channel, not only the log.
+                markOutcome('error');
+                require('../utils/interactionContext').reportCommandError(interaction, commandName, error);
                 // NOTE (fixed during review): this used to `return interaction.reply(...)` unawaited. A `return <promise>` inside a try block exits the try/catch synchronously -- if that returned promise rejects later (e.g. the interaction token is ALSO already expired, which is exactly what happens after a 10062 on the original deferReply), nothing is listening for it anymore, not even the outer try/catch around this whole handler. That turned into a raw unhandled promise rejection and crashed the entire Node process (seen on Railway: 10062 Unknown interaction -> fallback reply -> 40060 already acknowledged -> process exit). Awaiting + catching here keeps a doubly-failed fallback reply from ever being able to crash the bot.
                 try {
                     if (interaction.deferred || interaction.replied) {
@@ -370,6 +373,8 @@ async function handleInteractionInner(interaction) {
                 await require('../utils/reminders').maybeShowReminderNote(interaction);
             } catch (error) {
                 console.error(`Error executing context menu command ${interaction.commandName} ${require('../utils/interactionContext').whereLabel(interaction)}:`, error);
+                markOutcome('error');
+                require('../utils/interactionContext').reportCommandError(interaction, interaction.commandName, error);
                 try {
                     if (interaction.deferred || interaction.replied) {
                         await interaction.editReply({ content: 'There was an error running this!' });

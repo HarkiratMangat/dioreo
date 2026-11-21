@@ -90,6 +90,9 @@ function restartContext() {
 // THE ONE ENTRY POINT
 // ==========================================
 function registerLifecycle(client, commands) {
+    // The REST token net and the 5-minute Discord check (utils/restGuard.js, after the 2026-11-21 09:52 EST outage).
+    require('../utils/restGuard').guardRestToken(client, 'Dioreo');
+    require('../utils/restGuard').startRestProbe(client, 'Dioreo');
     // `commands` is the PUBLIC app's list. With Dioreo Admin on, the admin and experimental commands were split out before this call (bot/registry.js splitCommands) and register from registerAdminLifecycle below.
     //
     // --- THE CLIENT `error` NET --- CRASH FIX (found live on Railway, 2026-07-07): discord.js's BaseClient constructs itself with `super({ captureRejections: true })` (node_modules/discord.js/src/client/BaseClient.js) -- this is a Node EventEmitter option that reroutes a rejected promise from an async event listener (e.g. the interactionCreate handler in handlers/router.js) into an `error` event emitted ON THE CLIENT ITSELF, instead of surfacing through Node's normal global `process.on('unhandledRejection')` mechanism. Since nothing was listening for a plain `error` event on the client, and EventEmitter's default behavior for an unhandled `error` event is to throw synchronously, ANY interaction handler code that ever let a rejection escape (even somewhere the router's top-level try/catch doesn't cover, or in a future edit that misses it) would crash the whole process — completely bypassing the `process.on('unhandledRejection')` net in index.js, since captureRejections intercepts it before it ever becomes a "global" unhandled rejection. This IS the standard discord.js gotcha their own guide warns about; the fix is simply to always have a listener here so EventEmitter's default "throw when no listener" never triggers. ⚠️ THIS IS NOT OPTIONAL AND IS NOT COVERED BY THE ROUTER'S try/catch. Removing it re-opens the crash. See .claude/rules/interaction-router.md.
@@ -292,6 +295,8 @@ function registerLifecycle(client, commands) {
 // ==========================================
 // Only what the second login needs: the `error` net (NOT optional -- same captureRejections crash as above, on this client's own emitter), loud alerts for its own disconnects, and on ready its emoji sync and its command registration. The heartbeat, the Cloudinary cleanup, the boot record, the restart marker and the hotpatch signal stay on the public client, once per process -- registering them twice would double every alert and consume the restart marker before the public client reads it.
 function registerAdminLifecycle(client, commands, token) {
+    require('../utils/restGuard').guardRestToken(client, 'Dioreo Admin');
+    require('../utils/restGuard').startRestProbe(client, 'Dioreo Admin');
     client.on('error', (error) => {
         console.error('Dioreo Admin client error (bot stays alive):', error);
         sendAlert('Dioreo Admin client error', error, 'error');

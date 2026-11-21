@@ -23,7 +23,7 @@ async function resolvePanelActor(interaction, targetUserId) {
     return interaction.client.users.fetch(targetUserId);
 }
 
-// Where an interaction came from, for error lines: the server id (or "DM"), how Dioreo was installed for it, and which app answered. Added 2026-11-21 12:03 EST (Harkirat: "yeah go with your pick"): the 2026-11-21 09:52 EST outage's only error line said "timestamp failed", and finding the server took a database read. Server ids and the app name are not personal data; no user id is written here, because PRIVACY §2.4a says no log statement writes one deliberately (the keyed hash already rides on every structured line, utils/logger.js).
+// Where an interaction came from, for error lines and command-failure alerts: the user id, the server id (or "DM"), how Dioreo was installed for it, and which app answered. Added 2026-11-21 12:03 EST (Harkirat: "yeah go with your pick"): the 2026-11-21 09:52 EST outage's only error line said "timestamp failed", and finding the server took a database read. The user id was added 2026-11-21 12:12 EST (Harkirat: "Stop constraining yourself to the policy"), with PRIVACY v1.16 §2.4 and §2.4a saying so: the scrambled id on each structured line cannot be turned back into a person when one needs reaching.
 function whereLabel(interaction) {
     if (!interaction) return '(no interaction)';
     const place = interaction.guildId ? `server ${interaction.guildId}` : 'DM';
@@ -33,7 +33,19 @@ function whereLabel(interaction) {
     const install = guildOwner && guildOwner === interaction.guildId ? 'server install' : (userOwner ? 'user install' : 'install unknown');
     let app = 'public app';
     try { if (interaction.client && interaction.client === require('../bot/clients').clients.admin) app = 'admin app'; } catch { /* clients not set up (tests) */ }
-    return `(${place}, ${install}, ${app})`;
+    const who = interaction.user?.id ? `user ${interaction.user.id}, ` : '';
+    return `(${who}${place}, ${install}, ${app})`;
 }
 
-module.exports = { buildSyntheticInteraction, resolvePanelActor, whereLabel };
+// A failed command, to the alerts channel (added 2026-11-21 12:12 EST): the 2026-11-21 outage failed every reply for two hours and posted nothing there, because a command's error was only ever written to the server log. One alert per command every 10 minutes, so a burst cannot flood the channel; the log still gets every one.
+const lastCommandAlert = new Map();
+const COMMAND_ALERT_MS = 10 * 60 * 1000;
+function reportCommandError(interaction, name, error, { alert, now = Date.now() } = {}) {
+    const send = alert || require('./alertWebhook').sendAlert;
+    if (now - (lastCommandAlert.get(name) || 0) < COMMAND_ALERT_MS) return false;
+    lastCommandAlert.set(name, now);
+    send(`Command failed: /${name}`, `${whereLabel(interaction)}\n${error?.stack || error?.message || error}`, 'error');
+    return true;
+}
+
+module.exports = { buildSyntheticInteraction, resolvePanelActor, whereLabel, reportCommandError };
