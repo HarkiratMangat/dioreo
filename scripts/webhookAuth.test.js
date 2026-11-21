@@ -20,7 +20,8 @@ const offenders = [];
 let sites = 0;
 for (const file of jsFiles(ROOT)) {
     const src = fs.readFileSync(file, 'utf8');
-    const re = /Routes\.webhook(Message)?\(/g;
+    // A hand-written `/webhooks/` route string counts too, so a raw path cannot slip past the Routes check.
+    const re = /Routes\.webhook(Message)?\(|[`'"]\/webhooks\//g;
     let m;
     while ((m = re.exec(src))) {
         const lineStart = src.lastIndexOf('\n', m.index) + 1;
