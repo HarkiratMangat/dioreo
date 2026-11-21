@@ -42,4 +42,13 @@ const { alertFallback, _resetFallback } = require('../utils/alertWebhook');
     assert.strictEqual(routed.length, 2);
     assert.ok(routed[0].includes('alerts webhook is not working') && routed[0].includes('HTTP 404') && routed[0].includes('Command failed: /draws'));
     console.log('ok: a failing alerts webhook falls back to the owner notice, once per 30 minutes');
+
+    // 4. The new alerts each come with a plain explanation (utils/alertExplain.js), not a bare title.
+    const { explain } = require('../utils/alertExplain');
+    for (const title of ['Command failed: /timestamp', 'Command failed: button help', 'Many commands failing', 'Dioreo: bot token restored', 'Dioreo Admin: bot token REJECTED', 'Dioreo: bot token keeps getting wiped', 'Dioreo: bot token wiped, could not check it', 'Dioreo: Discord calls failing', "Replies missing Discord's 3-second window"]) {
+        const e = explain(title, 'x');
+        assert.ok(e && e.what && e.selfFix && e.action, `no explanation for "${title}"`);
+    }
+    assert.strictEqual(explain('Dioreo: Discord reachable again', ''), null, 'a recovery needs no explanation');
+    console.log('ok: every new alert explains itself');
 })().catch(err => { console.error(err); process.exit(1); });

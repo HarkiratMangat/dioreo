@@ -426,8 +426,10 @@ async function runTextCommand(message, verdict) {
                 // The alerts channel too, and the Ref that matches it (2026-11-21, after a two-hour outage nobody was told about).
                 require('../utils/interactionContext').reportCommandError(interaction, `text ${textCommand.name}`, err);
             }
-            const sent = await interaction.editReply({ content: text }).catch(() => null);
-            if (sent && !(err instanceof TextCommandRefused)) setTimeout(() => { interaction.deleteReply().catch(() => {}); }, CARD_TTL_MS).unref?.();
+            // A crash line carries the Report button too (2026-11-21 13:02 EST), and stays a minute instead of 10 s so there is time to press it.
+            const crashed = !(err instanceof TextCommandRefused);
+            const sent = await interaction.editReply(crashed ? { content: text, components: [require('../utils/commandError').reportRow()] } : { content: text }).catch(() => null);
+            if (sent && crashed) setTimeout(() => { interaction.deleteReply().catch(() => {}); }, 60_000).unref?.();
         } finally {
             recordInteractionEvent(interaction, ctx, message.author.id);
             logTextTiming(message, textCommand, t, interaction);
