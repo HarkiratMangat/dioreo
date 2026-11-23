@@ -12,6 +12,9 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.24.1 — November 22, 2026
+- **Changed (internal):** thinking passes no longer use the sequential-thinking tool, which trips a safeguard; the rules and the pre-commit check changed to match. Nothing changes for server members.
+
 ## v3.24.0 — November 21, 2026
 - **Fixed:** an idle panel can no longer stop Dioreo answering until a restart (it happened for two hours on November 21).
 - **Changed:** when something fails, Dioreo says it was on its side, what to try, and gives a Report button and a reference number.
