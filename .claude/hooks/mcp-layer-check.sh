@@ -78,7 +78,7 @@ fi
 # --- MCP SERVER PRESENCE ------------------------------------------------------------------------ ADDED 2026-08-14 15:10 EDT. Every routing rule below is worthless if the server is not REGISTERED WITH CLAUDE CODE, and that failure is invisible from inside a session: an absent tool and a forgotten tool look identical. Measured that day — `sequential-thinking` had been fixed on 2026-08-13 (a JSON-Schema dialect shim, which works), but the fix was written into the Claude DESKTOP config only. Claude Code reads ~/.claude.json and never saw it. `perseus-vault` was worse: it surfaced in `claude mcp list` as "⏸ Pending approval", a state only an INTERACTIVE `claude` run can clear, so every non-interactive session silently ran without it — while memory-write-gate nagged about zero perseus writes that were impossible to make. Reads the config directly rather than shelling out to `claude mcp list`: that command runs health checks over every remote connector and takes tens of seconds, which is not payable on SessionStart.
 CC_CONFIG="${MCPCHECK_CC_CONFIG:-$HOME/.claude.json}"
 DESKTOP_CONFIG="${MCPCHECK_DESKTOP_CONFIG:-$HOME/Library/Application Support/Claude/claude_desktop_config.json}"
-EXPECTED="${MCPCHECK_EXPECTED:-linksee perseus-vault sequential-thinking codebase-memory-mcp jina-reader}"
+EXPECTED="${MCPCHECK_EXPECTED:-linksee perseus-vault codebase-memory-mcp jina-reader}"
 
 if [ -r "$CC_CONFIG" ] && command -v jq >/dev/null 2>&1; then
   have=" $(jq -r '(.mcpServers // {}) | keys[]' "$CC_CONFIG" 2>/dev/null | tr '\n' ' ')"

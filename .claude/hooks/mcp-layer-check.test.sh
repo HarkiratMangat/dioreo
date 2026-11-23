@@ -98,7 +98,7 @@ assert "healthy config: no divergence warning"     "Configured for Claude DESKTO
 # Broken: two expected servers absent from Claude Code's own config.
 out="$(prun "$CCBAD" "$CCBAD")"
 assert "missing servers detected"        "NOT REGISTERED WITH CLAUDE CODE" yes "$out"
-assert "names the missing server"        "sequential-thinking"             yes "$out"
+assert "names the missing server"        "perseus-vault"                   yes "$out"
 assert "gives the fix command"           "claude mcp add --scope user"     yes "$out"
 assert "warns the configs are separate"  "separate lists"                  yes "$out"
 assert "explains pending-approval trap"  "Pending approval"                yes "$out"
