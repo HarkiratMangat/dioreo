@@ -2,14 +2,13 @@
 kind: rule
 status: live
 unconditional: true
-tool: mcp__sequential-thinking__sequentialthinking
 ---
 
 # The thinking pass — HOW, not just when
 
 *Written 2026-09-06 14:53 EDT, after Harkirat asked how many times he has had to supply this. **Measured across 174 session transcripts: 599 instructions, in his own words.** The WHEN was already written down in three places. The HOW was written down nowhere, so he has supplied it by hand, every session, for over a month.*
 
-🔴 **THE TOOL THIS FILE MEANS, NAMED ONCE SO NOTHING BELOW HAS TO GUESS — flagged as an ambiguity gap 2026-09-07 12:28 EDT, after this file had already been read and cited several times in the same session without ever saying so.** Every "the tool"/"it" below refers to **`mcp__sequential-thinking__sequentialthinking`** — the sequential-thinking MCP tool, invoked directly as a tool call (`thought`, `nextThoughtNeeded`, `thoughtNumber`, `totalThoughts` parameters). It is NOT `superpowers:brainstorming`, not the `doc-coauthoring` reader-test lens, not `systematic-debugging`, and not a generic instruction to "think carefully" in prose — those are different mechanisms this repo also uses, for different jobs. This file governs one specific tool call.
+🔴 **No tool.** Since 2026-11-22 this pass runs without `sequentialthinking` (writing steps into it trips a Claude safeguard). Every "the tool", "thought" or "thought log" below now means a question asked silently in your own thinking; the checks and changes are the only visible trace. Everything else in this file stands.
 
 ## The count that made this file exist
 

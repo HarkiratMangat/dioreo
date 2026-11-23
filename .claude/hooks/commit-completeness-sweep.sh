@@ -236,45 +236,24 @@ fi
 
 # ══ PASS 5 — DERIVE THE ANGLES NOBODY REGISTERED ══════════════════════════════════════════════════ The layers above are still finite. This one asks for what none of them can enumerate, and it is the direct answer to "make it actually figure out the angles you should be verifying".
 #
-# ⚠️ AUTHORISATION, so a future session does not "fix" an apparent conflict by deleting this. ~/.claude/CLAUDE.md once planned to restrict sequential-thinking to EXPLICIT REQUEST ONLY when a measurement window closed, but Harkirat decided on 2026-08-09 23:08 EDT that it is UNRESTRICTED, PERMANENTLY, so nothing conflicts with this pass now. It was authorised by his standing request of 2026-08-08 12:45 EDT — "why not make it trigger sequential thinking for a run or two and make it actually figure out the angles" — which stays in force; do not remove this pass on the grounds that sequential-thinking is restricted, because it is not. (Corrected 2026-10-07 22:53 EDT: this comment still described the restriction as upcoming.)
+# ⚠️ AUTHORISATION, so a future session does not "fix" an apparent conflict by deleting this. It was authorised by Harkirat's standing request of 2026-08-08 12:45 EDT — "why not make it trigger sequential thinking for a run or two and make it actually figure out the angles" — which stays in force as a request for a derivation pass. CHANGED 2026-11-22: it no longer looks for, or asks for, the sequentialthinking tool. Writing steps into that tool trips a Claude safeguard (reasoning_extraction), so the ask is for a thinking pass with no tool and no written log, made ONCE per change state: the existing fingerprint stamp keeps it from repeating, and there is nothing to detect in the transcript.
 #
 # Scaled deliberately: a one-file typo fix must not trigger it, or this becomes the gate everyone disables — the fires-on-everything failure written into four other hooks in this directory.
 derive_needed=0
 [ "${n_changed:-0}" -ge 8 ] && derive_needed=1
 [ "${closed_lines:-0}" -gt 0 ] && derive_needed=1
 
-if [ "$derive_needed" -eq 1 ] && [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ]; then
-  # ⚠️ SELF-POISONING GUARD, the same trap pass 3 documents at length. This file's own source contains the detector string, so a Write/Edit of this hook puts it in the transcript inside a tool_use whose NAME is Write — which a naive match would read as "a derivation happened". Excluding file-writing tools removes that leak; the block message below deliberately never spells the tool id out.
-  st=$(rg '"type":"tool_use"' "$TRANSCRIPT" 2>/dev/null \
-       | rg -v '"name":"(Write|Edit|Read|NotebookEdit)"' \
-       | rg -c 'sequential-thinking__sequentialthinking' 2>/dev/null || echo 0)
-  if [ "${st:-0}" -eq 0 ]; then
-    DERIVE_STAMP="$STAMP.derive"
-    fires=$(cat "$DERIVE_STAMP" 2>/dev/null || echo 0)
-    case "$fires" in ''|*[!0-9]*) fires=0;; esac
-    fires=$((fires+1))
-    printf '%s' "$fires" > "$DERIVE_STAMP" 2>/dev/null
-    extra=""
-    [ "$fires" -gt 1 ] && extra="
-     ⚠️ This is ask #$fires. The previous one was not acted on."
-    demand "🧠 DERIVE THE ANGLES — the checks above are a finite list; this asks for what is NOT on it.
-     Run sequential-thinking (2+ thoughts) over THIS change specifically and work out what could be
-     wrong that nothing above would reveal. Ground it in the facts already computed here — $n_changed
+if [ "$derive_needed" -eq 1 ]; then
+  demand "🧠 DERIVE THE ANGLES — the checks above are a finite list; this asks for what is NOT on it.
+     Run a thinking pass (no tool, no written log) over THIS change specifically and work out what could
+     be wrong that nothing above would reveal. Ground it in the facts already computed here — $n_changed
      paths, the demands listed above — not in generic diligence.
      Report, per angle: what could be wrong · how you checked · the evidence — or 'not applicable
      because X'. Then TWO things that make this un-tickable:
        · at least ONE angle no automated check in this repo can see;
        · an explicit list of what you did NOT check, and why that is acceptable.
-     You cannot satisfy the first by running checks, which is the point.$extra"
-    # Withhold the stamp so this re-fires rather than being waited out — but release after two asks, because a gate that cannot be exhausted is a lock, and a lock gets disabled.
-    if [ "$fires" -le 2 ]; then
-      emit "$findings"
-      exit 0
-    fi
-    demand "     (Released after $fires asks — recorded here rather than blocking further.)"
-  else
-    rm -f "$STAMP.derive" 2>/dev/null
-  fi
+     You cannot satisfy the first by running checks, which is the point. Asked once for this change
+     state; the stamp below keeps it from repeating."
 fi
 
 # Stamped AFTER the work, so a crash mid-sweep re-runs instead of marking the state clean.

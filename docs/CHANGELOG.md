@@ -29,7 +29,17 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.24.0 — 2026-11-21 13:27 EST (#276) — An expired panel's 401 can no longer switch the bot off, and a failure is seen, explained and reportable
+## v3.24.1 — 2026-11-22 21:19 EST (#277) — Thinking passes run without the sequential-thinking tool
+
+Writing a pass's steps into the sequential-thinking tool trips a Claude safeguard (`reasoning_extraction`). The workstyle plugin (0.6.0) already runs every pass without it; this removes the requirement from Dioreo's own rules and hooks so sessions here stop tripping it too. Harkirat's go: 2026-11-22 15:59 EST for the proposal, 2026-11-22 20:06 EST for applying it.
+
+### Changed
+- `.claude/rules/thinking-pass.md`: the `tool:` key is gone and the "THE TOOL THIS FILE MEANS" paragraph is replaced by a no-tool note. Every "thought" there now means a question asked silently; the checks and changes are the only visible trace.
+- `.claude/rules/silent-mode.md` rule 5 and `.claude/rules/plan-drafting.md` item 3 now say "a thinking pass (no tool)".
+- `.claude/hooks/commit-completeness-sweep.sh`, pass 5: no longer looks for a `sequentialthinking` tool call. It asks once per change state for a no-tool pass (the existing fingerprint stamp ends the ask) and keeps its per-angle report. Its test now covers asking once, and a transcript that carries a tool call neither satisfying nor changing the demand.
+- `.claude/hooks/mcp-layer-check.sh`: the banner says passes run without the tool; `sequential-thinking` leaves the expected-servers list because it was removed from his Claude Code user config. Its test follows.
+
+## v3.24.0 — 2026-11-21 13:27 EST (#276 · `44ced3b8`) — An expired panel's 401 can no longer switch the bot off, and a failure is seen, explained and reportable
 
 His report: `/timestamp` in a DM said "There was an error executing this command". The DM was a coincidence: at 09:52 EST an idle /admin panel's expiry edit got a 401 from Discord, the raw call carried the bot token, `@discordjs/rest` read that as a bad bot token and wiped it, and every panel reply failed for two hours with no alert until a restart at 11:50 EST. Then his "what should we change so we're not in the dark next time", a think-pass, a click test in Discord and a line-by-line review.
 

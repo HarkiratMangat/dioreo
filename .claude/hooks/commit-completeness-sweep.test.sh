@@ -207,20 +207,21 @@ a "notes-file change demands PARSED BY SOMETHING" "PARSED BY SOMETHING" yes "$ou
 out=$(run "$(mkfiles wide $many)" "$TR" pr)
 a "wide change demands DERIVE THE ANGLES" "DERIVE THE ANGLES" yes "$out"
 
-# ---- ...and is SATISFIED when the transcript carries a real sequential-thinking tool_use ---- shellcheck disable=SC2086
-out=$(run "$(mkfiles wideok $many)" "$TR_OK" pr)
-a "a real derivation satisfies the demand" "DERIVE THE ANGLES" no "$out"
+# ---- ...asked ONCE per change state: the same state run again does not repeat it (the stamp, not a transcript call, ends the ask) ----
+d_once="$(mkfiles wideonce $many)"
+out=$(run "$d_once" "$TR" pr)
+a "wide change asks for DERIVE THE ANGLES the first time" "DERIVE THE ANGLES" yes "$out"
+out=$(run "$d_once" "$TR" pr)
+a "the same state does not ask for it a second time" "DERIVE THE ANGLES" no "$out"
+
+# ---- the demand names no tool: a transcript that carries a sequentialthinking call neither satisfies nor changes it ----
+out=$(run "$(mkfiles widetool $many)" "$TR_OK" pr)
+a "a sequentialthinking call in the transcript does NOT satisfy the demand" "DERIVE THE ANGLES" yes "$out"
+a "the demand asks for a pass with no tool and no written log" "no tool, no written log" yes "$out"
+a "the demand no longer names the tool" "sequential-thinking" no "$out"
 
 # ---- ...and a trivial change never triggers it (this is what stops it firing on everything) ----
 out=$(run "$(mkfiles tiny docs/one.md)" "$TR" pr)
 a "a 1-file change does NOT demand derivation" "DERIVE THE ANGLES" no "$out"
-
-# ---- SELF-POISONING GUARD: writing this hook's own source must not count as a derivation ----
-TR_WRITE="$TMP/derive-write.jsonl"
-{ printf '%s\n' "$FILLER"
-  printf '{"type":"tool_use","name":"Write","input":{"file_path":"x.sh","content":"rg -c sequential-thinking__sequentialthinking"}}\n'; } > "$TR_WRITE"
-# shellcheck disable=SC2086
-out=$(run "$(mkfiles poison $many)" "$TR_WRITE" pr)
-a "a Write containing the detector does NOT count as derivation" "DERIVE THE ANGLES" yes "$out"
 
 echo; echo "  $pass passed, $fail failed"; [ "$fail" -eq 0 ] || exit 1

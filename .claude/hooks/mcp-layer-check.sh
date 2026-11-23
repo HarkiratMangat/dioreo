@@ -78,7 +78,7 @@ fi
 # --- MCP SERVER PRESENCE ------------------------------------------------------------------------ ADDED 2026-08-14 15:10 EDT. Every routing rule below is worthless if the server is not REGISTERED WITH CLAUDE CODE, and that failure is invisible from inside a session: an absent tool and a forgotten tool look identical. Measured that day — `sequential-thinking` had been fixed on 2026-08-13 (a JSON-Schema dialect shim, which works), but the fix was written into the Claude DESKTOP config only. Claude Code reads ~/.claude.json and never saw it. `perseus-vault` was worse: it surfaced in `claude mcp list` as "⏸ Pending approval", a state only an INTERACTIVE `claude` run can clear, so every non-interactive session silently ran without it — while memory-write-gate nagged about zero perseus writes that were impossible to make. Reads the config directly rather than shelling out to `claude mcp list`: that command runs health checks over every remote connector and takes tens of seconds, which is not payable on SessionStart.
 CC_CONFIG="${MCPCHECK_CC_CONFIG:-$HOME/.claude.json}"
 DESKTOP_CONFIG="${MCPCHECK_DESKTOP_CONFIG:-$HOME/Library/Application Support/Claude/claude_desktop_config.json}"
-EXPECTED="${MCPCHECK_EXPECTED:-linksee perseus-vault sequential-thinking codebase-memory-mcp jina-reader}"
+EXPECTED="${MCPCHECK_EXPECTED:-linksee perseus-vault codebase-memory-mcp jina-reader}"
 
 if [ -r "$CC_CONFIG" ] && command -v jq >/dev/null 2>&1; then
   have=" $(jq -r '(.mcpServers // {}) | keys[]' "$CC_CONFIG" 2>/dev/null | tr '\n' ' ')"
@@ -110,13 +110,12 @@ fi
 
 # The routing RULES block that sat here was removed 2026-09-14 21:59 EDT, as the context-carriers plan's WP4 decided on 2026-09-08 ("restatement collapse": this hook keeps the fragmentation measurement and drops its RULES block) and nobody had done. Routing now lives AT THE CALL SITE (usage-guard.mjs, read-routing-nudge.sh, ctx-search-nudge.sh, codebase-memory-nudge.sh), in ONE short always-on form (~/.claude/WORKING-AGREEMENT.md, Tool routing) and in the inventory (~/.claude/TOOLING.md section 3). A session-start copy is the carrier the plan measured as not changing behaviour; do not restore it.
 
-# --- sequential-thinking: PERMANENTLY UNRESTRICTED ----------------------------------------------- ⚠️ THE MEASUREMENT WINDOW BLOCK THAT USED TO LIVE HERE WAS REMOVED 2026-08-14 15:10 EDT, AND IT WAS ACTIVELY WRONG, NOT MERELY STALE. It auto-expired on 2026-08-09 and from then on injected "the suspension has EXPIRED — explicit-request-only is in force again" into every single session. Harkirat closed the window that same day with the opposite verdict, on data: unrestricted, the trigger rate rose ~10x and every logged use was high-value, at a cost of ~4k tokens against a window total of 8.23 BILLION. So the hook spent five days telling sessions the tool was restricted when it had been permanently freed — a self-expiring block whose expiry text asserted a decision nobody had made.
+# --- sequential-thinking: NO LONGER USED FOR PASSES (2026-11-22; was PERMANENTLY UNRESTRICTED) ----------------------------------------------- ⚠️ THE MEASUREMENT WINDOW BLOCK THAT USED TO LIVE HERE WAS REMOVED 2026-08-14 15:10 EDT, AND IT WAS ACTIVELY WRONG, NOT MERELY STALE. It auto-expired on 2026-08-09 and from then on injected "the suspension has EXPIRED — explicit-request-only is in force again" into every single session. Harkirat closed the window that same day with the opposite verdict, on data: unrestricted, the trigger rate rose ~10x and every logged use was high-value, at a cost of ~4k tokens against a window total of 8.23 BILLION. So the hook spent five days telling sessions the tool was restricted when it had been permanently freed — a self-expiring block whose expiry text asserted a decision nobody had made.
 #
 # THE LESSON, kept because this hook's whole purpose is to stop stale state: an auto-expiring guard must expire into SILENCE or into "ask", never into a substantive claim about a decision. The expiry can only know that a date passed; it cannot know what was decided.
 window="
-🧠 sequential-thinking is UNRESTRICTED — permanently, decided 2026-08-09 23:08 EDT with data.
-   Use it on judgement, no permission needed, no observation log required. Do NOT restore the old
-   ask-first rule; the measurement that would justify it was already run and came out the other way."
+🧠 Thinking passes run WITHOUT the sequential-thinking tool (it trips a Claude safeguard, 2026-11-22):
+   questions asked silently, checks between them, no step log. Do NOT restore the old 'unrestricted' note."
 
 # The server verdict goes FIRST and the db counts are labelled as db counts, so the two claims can never again be read as one. An unreachable server is stated as loudly as an error, because from inside a session an absent tool and a forgotten tool look identical.
 case "$probe" in

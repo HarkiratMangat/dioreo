@@ -327,6 +327,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-11-16 19:02 EST — The owner's draw index: upload, find, and a picture kept 7 days (v3.22.0)
 - 2026-11-17 01:16 EST — Draw Index round 3: his list, then the twins a rename leaves behind (v3.23.0)
 - 2026-11-21 13:27 EST — The 401 that switched the bot off for two hours, and what now catches it (v3.24.0)
+- 2026-11-22 21:20 EST — Thinking passes stop using the sequential-thinking tool (v3.24.1)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -5196,6 +5197,15 @@ The night after v3.22.0 shipped, Harkirat sent a list. He wanted a single-draw u
 **What changed.** The cause is one option: interaction-webhook calls carry their own token, so they send `auth: false`, as discord.js's own methods do. Around it: a guard that notices a wiped token and checks it with Discord before putting it back, a 5-minute Discord check, an alert for every failing command (rate-limited, with a storm summary, silent for the normal expired clicks), alerts that explain themselves, a Ref that ties the user's note, the log line, the alert and a Report together, and a note to the user that says whose fault it was and what to do next.
 
 **What it taught.** "Verify" kept meaning "re-run what I built". Each time Harkirat asked "are you sure?", a new pass found more, and the last one, reading every changed line for what could break, found three bugs I had written that day, including one where the failure note would have overwritten a working answer. The useful question was not "does it pass" but "what would this do to someone it was not written for". Why Discord rejected a 10-minute-old token in the first place is still unconfirmed and filed with a test.
+
+## 2026-11-22 21:20 EST — Thinking passes stop using the sequential-thinking tool (v3.24.1)
+
+Harkirat's other sessions kept tripping Claude's `reasoning_extraction` safeguard. The cause is writing a pass's steps into the sequential-thinking tool: measured in the workstyle plugin's tests that day, a pass told to use the tool was stopped before its first step 2 of 2 times, and the same pass with nothing written out had 0 flags in 11 runs, with the same catches. workstyle 0.6.0 already runs every pass without the tool; Dioreo's rules and one hook still demanded it.
+
+- **Decision:** a thinking pass is still mandatory before any audit, review, verification, plan or falsification, but it is asked silently, with real checks between the questions and no written step log anywhere (not the tool, a message, a file or a tool input). The principles in `thinking-pass.md` stand word for word.
+- **The hook was the pressure point.** `commit-completeness-sweep.sh` pass 5 blocked a large commit until the transcript held a `sequentialthinking` call, which actively pushed sessions into the flag. It now asks once per change state for a no-tool pass; the existing stamp ends the ask, so there is nothing to detect.
+- **Tests:** the sweep test gained "asked once per state" and "a tool call in the transcript changes nothing" cases; both fail on the old hook. One new assertion ("the demand no longer names the tool") passes vacuously on the old hook, since the old hook's demand disappeared when the tool call was present, so it is weak.
+- **Also done the same day (2026-11-22 21:20 EST), outside this repo:** the working agreement, `~/.claude/CLAUDE.md` and `TOOLING.md` were edited, and the `sequential-thinking` server was removed from his Claude Code and Claude Desktop configs, which is why `mcp-layer-check` stopped expecting it.
 
 # Part B — Lessons Ledger (thematic)
 

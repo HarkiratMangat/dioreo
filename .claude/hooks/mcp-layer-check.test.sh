@@ -70,7 +70,8 @@ MCPCHECK_PROBE=0 MCPCHECK_LINKSEE_DB=/nonexistent/x.db bash "$CHECK" | jq -e . >
 # 6. The retired observation window must STAY retired. The block that lived here auto-expired on 2026-08-09 and then spent five days injecting "explicit-request-only is in force again" into every session -- asserting a decision that had been made the OTHER way, with data, the same day. These two assertions exist so restoring it is a test failure rather than a quiet regression.
 mkfixture 0
 out="$(run 0)"
-assert "sequential-thinking stated UNRESTRICTED" "UNRESTRICTED"                yes "$out"
+assert "thinking passes stated tool-free"       "WITHOUT the sequential-thinking tool" yes "$out"
+assert "the old UNRESTRICTED note is NOT back"    "UNRESTRICTED"                no  "$out"
 assert "the retired ask-first rule is NOT back"  "explicit-request-only"       no  "$out"
 assert "no auto-expiring window remains"         "OBSERVATION WINDOW"          no  "$out"
 
@@ -97,7 +98,7 @@ assert "healthy config: no divergence warning"     "Configured for Claude DESKTO
 # Broken: two expected servers absent from Claude Code's own config.
 out="$(prun "$CCBAD" "$CCBAD")"
 assert "missing servers detected"        "NOT REGISTERED WITH CLAUDE CODE" yes "$out"
-assert "names the missing server"        "sequential-thinking"             yes "$out"
+assert "names the missing server"        "perseus-vault"                   yes "$out"
 assert "gives the fix command"           "claude mcp add --scope user"     yes "$out"
 assert "warns the configs are separate"  "separate lists"                  yes "$out"
 assert "explains pending-approval trap"  "Pending approval"                yes "$out"
