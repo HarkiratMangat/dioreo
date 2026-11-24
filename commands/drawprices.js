@@ -125,8 +125,16 @@ const ARMORY_SPIN_CP = { region_10: 50, region_20: 80, region_30: 120 };
 const SERIES_ARMORY = {
     armoryMythicWeapon: { name: 'Mythic Weapon Series Armory', tier: 'mythic', spins: 120, noun: 'Weapon' },
     armoryLegendaryWeapon: { name: 'Legendary Weapon Series Armory', tier: 'legendary', spins: 75, noun: 'Weapon' },
-    armoryLegendaryCharacter: { name: 'Legendary Character Series Armory', tier: 'legendary', spins: 100, noun: 'Character' }
+    armoryLegendaryCharacter: { name: 'Legendary Character Series Armory', tier: 'legendary', spins: 100, noun: 'Character' },
+    // EPIC CHARACTERS SERIES ARMORY (2026-11-23 19:38 EST, Harkirat, Dark Ritual, the first of its kind): 85 pulls guarantee a character, and a pull costs 10 / 20 / 30 CP, not the 50 / 80 / 120 of the other armories, so it carries its own `spinCp`. His figures: "on 10 cp region: 1 pull is 10 cp. bundle of 10 pulls is 100 cp", 20/200 and 30/300, which is no discount for 10 at a time, the same rule as every armory. Dark Ritual holds 4 characters, the only count seen, so `itemCounts` lists just 4 until another armory shows a different one.
+    armoryEpicCharacter: { name: 'Epic Characters Series Armory', tier: 'epic', spins: 85, noun: 'Character', spinCp: { region_10: 10, region_20: 20, region_30: 30 }, itemCounts: [4] }
 };
+// What one spin costs in an armory at a region: its own `spinCp` when it has one (the Epic Characters armory), else the shared ARMORY_SPIN_CP. null for an unknown key or region, never an estimate.
+function armorySpinCp(key, regionKey) {
+    const a = SERIES_ARMORY[key];
+    if (!a) return null;
+    return (a.spinCp || ARMORY_SPIN_CP)[regionKey] ?? null;
+}
 // The item counts he has seen in a real armory ("havent seen less or more than that").
 const ARMORY_ITEM_COUNTS = [3, 4, 5, 6];
 // The 3rd page, his placement: "probably page #3, with page 4 and 5 being the advanced draws".
@@ -317,14 +325,14 @@ function buildAdvancedDoubleLegendaryCharacterEntry(regionKey) {
 
 // SERIES ARMORY ENTRIES, in the same two-block shape as buildDrawEntries (the heading with a quoted total, then the spin line with a small cumulative line), so the page reads like the rest of /draw prices. The quoted total is ONE item; the small line is the whole armory at each item count. No no-luck note (2026-10-18 10:46 EDT, Harkirat: "that's not needed. we dont mention it for the other draws anyway since the draw prices page is the full breakdown anyway.").
 function buildArmoryEntries(regionKey, keys) {
-    const perSpin = ARMORY_SPIN_CP[regionKey] || ARMORY_SPIN_CP.region_10;
     return keys.map(key => {
         const a = SERIES_ARMORY[key];
+        const perSpin = armorySpinCp(key, regionKey) || armorySpinCp(key, 'region_10');
         const perItem = perSpin * a.spins;
         return [
             // His wording (2026-10-18 11:21 EDT): the item is named for what the armory holds, "Per Weapon" / "Per Character", and the whole-armory line is its own heading over a bold count per total.
             `**${tierIcon(a.tier)} ${a.name.toUpperCase()}**\n> ${emojis.cp2} **\`${formatCP(perItem)} CP\`** Per ${a.noun}`,
-            `\`${formatCP(perSpin)} CP\` x ${a.spins} Spins ⌇ **\`${formatCP(perItem)} CP\`**\n-# **Full Armory by ${a.noun} Count:**\n-# ${ARMORY_ITEM_COUNTS.map(n => `**${n} ${a.noun}s** \`${formatCP(perItem * n)} CP\``).join(' • ')}`
+            `\`${formatCP(perSpin)} CP\` x ${a.spins} Spins ⌇ **\`${formatCP(perItem)} CP\`**\n-# **Full Armory by ${a.noun} Count:**\n-# ${(a.itemCounts || ARMORY_ITEM_COUNTS).map(n => `**${n} ${a.noun}s** \`${formatCP(perItem * n)} CP\``).join(' • ')}`
         ];
     });
 }
@@ -541,7 +549,7 @@ function addCalculatorShortcutOptions(sub) {
 module.exports = {
     // Exported so utils/drawCost.js can do remainder math over the same arrays rather than keeping a second copy -- a second copy is exactly the drift DRAW_DATA's own header comment exists to prevent. PRESET_ACCENT is exported so commands/drawCalculator.js inherits the same CP Emerald accent (design decision 1: the calculator "sits beside the pricing data it reads"). buildDrawEntries/UPGRADE_LABEL/formatCP exported 2026-08-26 17:25 EDT so the calculator's own per-draw summary block can reuse THIS command's exact rendering -- Harkirat's own mockup for the redesign was built by pasting a real /draw prices entry in verbatim, so the two must never drift apart into two similar-looking but independently-maintained copies.
     DRAW_DATA, DRAW_META, REGION_ORDER, REGION_EMOJI_KEY, PRESET_ACCENT,
-    buildDrawEntries, SERIES_ARMORY, ARMORY_SPIN_CP, JUMP_KEYS, jumpMeta, filterToken, filterOf, buildFilterModal, FILTER_GROUPS, MYTHIC_UPGRADE, upgradeFullAmount,
+    buildDrawEntries, SERIES_ARMORY, ARMORY_SPIN_CP, armorySpinCp, JUMP_KEYS, jumpMeta, filterToken, filterOf, buildFilterModal, FILTER_GROUPS, MYTHIC_UPGRADE, upgradeFullAmount,
     // The two Advanced pages' per-pull arrays, for /draw calculator (2026-10-18 21:51 EDT): priced from these same numbers, never a copy.
     ADVANCED_DOUBLE_LEGENDARY, ADVANCED_DOUBLE_LEGENDARY_CHARACTER,
 

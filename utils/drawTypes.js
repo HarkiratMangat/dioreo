@@ -19,6 +19,7 @@ const DRAW_TYPE_CODES = {
     armoryMythicWeapon: 'samw',
     armoryLegendaryWeapon: 'salw',
     armoryLegendaryCharacter: 'salc',
+    armoryEpicCharacter: 'saec',
     advancedWeapon: 'adlw',
     advancedCharacter: 'adlc'
 };
@@ -40,6 +41,7 @@ const DRAW_TYPES = [
     { key: 'armoryMythicWeapon', name: 'Mythic Weapon Series Armory', tier: 'mythic', armory: true },
     { key: 'armoryLegendaryWeapon', name: 'Legendary Weapon Series Armory', tier: 'legendary', armory: true },
     { key: 'armoryLegendaryCharacter', name: 'Legendary Character Series Armory', tier: 'legendary', armory: true },
+    { key: 'armoryEpicCharacter', name: 'Epic Characters Series Armory', tier: 'epic', armory: true },
     { key: 'advancedWeapon', name: 'Advanced Double Legendary Weapon Draw', tier: 'legendary' },
     { key: 'advancedCharacter', name: 'Advanced Double Legendary Character Draw', tier: 'legendary' }
 ];

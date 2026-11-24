@@ -6,7 +6,7 @@
 // ⚠️ PULL COUNTS ARE NOT UNIFORMLY TEN. sevenSpinLegendaryWeapon and pickYourRewardCard have SEVEN pulls. Every bound below derives from draws.length for that reason; a hardcoded 10 would pass testing on the seven common draws and silently overcount on the other two.
 //
 // ⚠️ ABSENT DATA RETURNS null, NEVER AN ESTIMATE. No draw is missing data any more (doubleEpicCharacters' 20 and 30 CP figures arrived 2026-10-27 21:59 EDT, the mythic upgrades at 20 CP on 2026-10-16), but the rule stands for the next draw type added with partial figures. The gaps were deliberate -- Harkirat refused to ship a speculative estimate as real pricing -- so callers render the existing "haven't done the research yet" placeholder rather than computing around them.
-const { DRAW_DATA, MYTHIC_UPGRADE, upgradeFullAmount, SERIES_ARMORY, ARMORY_SPIN_CP, ADVANCED_DOUBLE_LEGENDARY, ADVANCED_DOUBLE_LEGENDARY_CHARACTER } = require('../commands/drawprices');
+const { DRAW_DATA, MYTHIC_UPGRADE, upgradeFullAmount, SERIES_ARMORY, armorySpinCp, ADVANCED_DOUBLE_LEGENDARY, ADVANCED_DOUBLE_LEGENDARY_CHARACTER } = require('../commands/drawprices');
 
 // ==========================================
 // ADVANCED DOUBLE LEGENDARY DRAWS (2026-10-18 21:51 EDT, his go)
@@ -96,7 +96,7 @@ function armorySize(line) {
 }
 function armoryEntry(region, key, line) {
     const a = SERIES_ARMORY[key];
-    const perSpin = ARMORY_SPIN_CP[region];
+    const perSpin = armorySpinCp(key, region);
     if (!a || !perSpin) return null;
     if (armorySize({ ...(line || {}), drawKey: key }) === null) return null;
     return { draws: Array(armorySize({ ...(line || {}), drawKey: key })).fill(a.spins * perSpin), perSpin, spinsPerItem: a.spins };

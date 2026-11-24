@@ -12,7 +12,7 @@ const checkDatetime = text => Boolean(generateTimestamps(expandShorthand(text))?
 const v = (text, extra = {}) => parseTextCommand(text, { botId: BOT, prefixes: ['d', 'dior'], commands: TEXT_COMMANDS, checkDatetime, ...extra });
 const M = `<@${BOT}>`;
 const LEG = 'legendaryGunReactive,legendaryGunNonReactive';
-const ARM = 'armoryMythicWeapon,armoryLegendaryWeapon,armoryLegendaryCharacter';
+const ARM = 'armoryMythicWeapon,armoryLegendaryWeapon,armoryLegendaryCharacter,armoryEpicCharacter';
 
 // [message, expected (a partial verdict), parse options]
 const rows = [
@@ -120,6 +120,8 @@ const rows = [
     ['d prices legendary', { kind: 'run', values: { filter: LEG } }],
     ['d prices armory', { kind: 'run', values: { filter: ARM } }],
     ['d prices series armory', { kind: 'run', values: { filter: ARM } }],
+    ['d prices epic armory', { kind: 'run', values: { filter: 'armoryEpicCharacter' } }],
+    ['d prices epic', { kind: 'run', values: { filter: 'doubleEpicCharacters' } }],
     ['d prices legendary character', { kind: 'run', values: { filter: 'legendaryCharacterWeapon' } }],
     ['d prices mythic 30', { kind: 'run', values: { filter: 'mythicWeapon,mythicCharacter', region: 'region_30' } }],
     ['d prices type:mw', { kind: 'run', values: { filter: 'mythicWeapon' } }],

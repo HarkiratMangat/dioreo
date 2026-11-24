@@ -1330,6 +1330,34 @@ t('/draw prices: the Series Armory page is page 3, priced per item and per full 
     assert.ok(!Object.keys(DRAW_META).some(k => k in dp.SERIES_ARMORY), 'armories stay out of DRAW_META, so the calculator never prices one as a ladder');
 });
 
+t('the Epic Characters Series Armory: 85 pulls at 10 / 20 / 30 CP a pull, 4 characters, priced beside the other armories (2026-11-23 19:39 EST, Dark Ritual)', () => {
+    const dp = require('../commands/drawprices');
+    const { basketCost: bc, pullCount: pc } = require('../utils/drawCost');
+    const flat = c => [c, ...(c.components || []).flatMap(flat), ...(c.accessory ? [c.accessory] : [])];
+    const text = (region, view) => dp.buildContainer(region, 0, true, view, null).flatMap(flat).filter(c => c.type === 10).map(c => c.content).join('\n');
+    // His figures: a pull is 10 / 20 / 30 CP, 10 pulls 100 / 200 / 300 (no discount), 85 pulls guarantee one character, Dark Ritual holds 4.
+    const one = text('region_10', 'farmoryEpicCharacter');
+    assert.ok(one.includes('EPIC CHARACTERS SERIES ARMORY') && one.includes('**`850 CP`** Per Character') && one.includes('`10 CP` x 85 Spins ⌇ **`850 CP`**') && one.includes('-# **Full Armory by Character Count:**\n-# **4 Characters** `3,400 CP`'), one);
+    assert.ok(!one.includes('3 Characters') && !one.includes('6 Characters'), 'only the count seen, 4');
+    assert.ok(text('region_20', 'farmoryEpicCharacter').includes('`20 CP` x 85 Spins ⌇ **`1,700 CP`**') && text('region_30', 'farmoryEpicCharacter').includes('`30 CP` x 85 Spins ⌇ **`2,550 CP`**'));
+    // It sits on the Series Armory page after the three others, and the other three keep 50 / 80 / 120 a spin.
+    const page = text('region_10', 2);
+    assert.ok(page.indexOf('LEGENDARY CHARACTER SERIES ARMORY') < page.indexOf('EPIC CHARACTERS SERIES ARMORY'), 'last on its page');
+    assert.ok(page.includes('`50 CP` x 75 Spins ⌇ **`3,750 CP`**') && page.includes('`50 CP` x 100 Spins ⌇ **`5,000 CP`**'), 'the other armories are unchanged');
+    assert.strictEqual(dp.armorySpinCp('armoryEpicCharacter', 'region_30'), 30);
+    assert.strictEqual(dp.armorySpinCp('armoryLegendaryWeapon', 'region_30'), 120);
+    assert.strictEqual(dp.armorySpinCp('armoryEpicCharacter', 'region_99'), null, 'an unknown region is no data, never an estimate');
+    // The calculator: items left times 85 times the pull price, less the spins already in.
+    const line = { drawKey: 'armoryEpicCharacter', pullsDone: 0, size: 4 };
+    assert.strictEqual(pc('region_10', 'armoryEpicCharacter', line), 4);
+    assert.strictEqual(bc('region_10', [line], false).total, 4 * 85 * 10);
+    assert.strictEqual(bc('region_20', [line], false).total, 4 * 85 * 20);
+    assert.strictEqual(bc('region_30', [line], false).total, 4 * 85 * 30);
+    assert.strictEqual(bc('region_10', [{ ...line, pullsDone: 1, spinsIn: 40 }], false).total, 3 * 850 - 40 * 10);
+    assert.strictEqual(bc('region_10', [{ drawKey: 'armoryEpicCharacter', pullsDone: 0 }], false).total, 0, 'no size, not priced');
+    assert.ok(!Object.keys(DRAW_META).includes('armoryEpicCharacter'), 'stays out of DRAW_META like every armory');
+});
+
 t('/draw prices: the filter shows only the picked draws, pages them to fit, keeps them across a region switch, and every view fits Discord (2026-10-21 11:50 EDT)', () => {
     const dp = require('../commands/drawprices');
     const count = c => (c.components || []).reduce((n, x) => n + 1 + count(x), 0) + (c.accessory ? 1 : 0);

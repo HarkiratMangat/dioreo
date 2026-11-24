@@ -78,7 +78,7 @@ check('draw.add validates successfully when payload.date already arrives as a re
 check('draw types: every /draw prices type has a unique bulk code (2026-10-18 11:06 EDT)', () => {
     const { drawTypeOptions, DRAW_TYPE_CODES } = require('../utils/drawTypes');
     const opts = drawTypeOptions();
-    assert.strictEqual(opts.length, 14, opts.map(o => o.key).join(', '));
+    assert.strictEqual(opts.length, 15, opts.map(o => o.key).join(', '));
     assert.ok(opts.every(o => o.code), `no code for: ${opts.filter(o => !o.code).map(o => o.key).join(', ')}`);
     const codes = Object.values(DRAW_TYPE_CODES);
     assert.strictEqual(new Set(codes).size, codes.length, 'codes are unique');
@@ -137,7 +137,7 @@ check('Edit Draw: five Labels, and the Draw Type dropdown preselects the stored 
     assert.deepStrictEqual(m.components.map(c => c.component.custom_id), ['draw', 'items', 'url', 'price_type', 'shot']);
     const sel = m.components[3].component;
     assert.strictEqual(sel.custom_id, 'price_type');
-    assert.strictEqual(sel.options.length, 17, 'Unsure / Unknown, the 14 priced types, and the two free ones (Secret Cache, Event)');
+    assert.strictEqual(sel.options.length, 18, 'Unsure / Unknown, the 15 priced types, and the two free ones (Secret Cache, Event)');
     assert.strictEqual(sel.options[0].value, 'unknown', 'Unsure / Unknown sits first');
     assert.strictEqual(sel.required, true, 'a required field (his call, 2026-10-18 11:36 EDT)');
     assert.strictEqual(sel.min_values, 1);
