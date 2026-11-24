@@ -29,7 +29,22 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## v3.24.1 — 2026-11-22 21:19 EST (#277) — Thinking passes run without the sequential-thinking tool
+## v3.25.0 — 2026-11-23 20:21 EST (#278) — The Epic Characters Series Armory: a fourth armory type, priced at 10 / 20 / 30 CP a pull
+
+Dark Ritual (live since 2026-11-23 19:00 EST) is the first Series Armory of epic characters: 85 pulls guarantee one, a pull is 10 / 20 / 30 CP and 10 pulls cost ten times that, with no discount. Harkirat's ask, 2026-11-23 19:28 EST: "it also needs to be added as a new draw/price type".
+
+### Added
+- **`armoryEpicCharacter`** (`saec`, "Epic Characters Series Armory", tier epic) in `/draw prices` (its own entry on the Series Armory page: 850 / 1,700 / 2,550 CP a character, the four-character total only), `/draw calculator` (a season draw of this type prices from its own item count), `/manage`'s Draw Type lists and `type: saec` bulk tag, and the draw index's type rules (an all-epic poster that prints Series Armory is now settled by rule).
+- **Text commands:** `d prices armory` shows four armories; `d prices epic armory` (`ea`) shows this one; `d prices epic` is still Double Epic Characters. /help lists the new row (`+10 more in Detailed View`).
+
+### Changed
+- **`armorySpinCp(key, region)`** replaces direct reads of the shared 50 / 80 / 120 table in `utils/drawCost.js` and `commands/drawCalculator.js`; an armory with its own `spinCp` is priced from it, and an unknown region is no data, never an estimate.
+- `.claude/rules/draw-prices.md` records the type, and that a draw's `date` is its START and its end is the calendar row (found while click-testing: a draw dated at its end read "Releasing in a month").
+
+### Not in this release
+The Dark Ritual draw, its poster and its index entry are data written separately on Harkirat's word after the deploy.
+
+## v3.24.1 — 2026-11-22 21:19 EST (#277 · `71ba89a8`) — Thinking passes run without the sequential-thinking tool
 
 Writing a pass's steps into the sequential-thinking tool trips a Claude safeguard (`reasoning_extraction`). The workstyle plugin (0.6.0) already runs every pass without it; this removes the requirement from Dioreo's own rules and hooks so sessions here stop tripping it too. Harkirat's go: 2026-11-22 15:59 EST for the proposal, 2026-11-22 20:06 EST for applying it.
 

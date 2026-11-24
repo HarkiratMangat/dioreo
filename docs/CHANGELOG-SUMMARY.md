@@ -12,6 +12,9 @@ The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG
 
 ---
 
+## v3.25.0 — November 23, 2026
+- **Added:** the Epic Characters Series Armory (Dark Ritual's kind) on `/draw prices` and `/draw calculator`: 85 pulls for a character at 10 / 20 / 30 CP a pull. `d prices epic armory` shows it.
+
 ## v3.24.1 — November 22, 2026
 - **Changed (internal):** thinking passes no longer use the sequential-thinking tool, which trips a safeguard; the rules and the pre-commit check changed to match. Nothing changes for server members.
 
