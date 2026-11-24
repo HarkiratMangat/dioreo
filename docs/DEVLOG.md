@@ -328,6 +328,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-11-17 01:16 EST — Draw Index round 3: his list, then the twins a rename leaves behind (v3.23.0)
 - 2026-11-21 13:27 EST — The 401 that switched the bot off for two hours, and what now catches it (v3.24.0)
 - 2026-11-22 21:20 EST — Thinking passes stop using the sequential-thinking tool (v3.24.1)
+- 2026-11-23 20:47 EST — The Epic Characters Series Armory: a fourth armory type, and the click-test that found its draw dated at the wrong end (v3.25.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -5206,6 +5207,20 @@ Harkirat's other sessions kept tripping Claude's `reasoning_extraction` safeguar
 - **The hook was the pressure point.** `commit-completeness-sweep.sh` pass 5 blocked a large commit until the transcript held a `sequentialthinking` call, which actively pushed sessions into the flag. It now asks once per change state for a no-tool pass; the existing stamp ends the ask, so there is nothing to detect.
 - **Tests:** the sweep test gained "asked once per state" and "a tool call in the transcript changes nothing" cases; both fail on the old hook. One new assertion ("the demand no longer names the tool") passes vacuously on the old hook, since the old hook's demand disappeared when the tool call was present, so it is weak.
 - **Also done the same day (2026-11-22 21:20 EST), outside this repo:** the working agreement, `~/.claude/CLAUDE.md` and `TOOLING.md` were edited, and the `sequential-thinking` server was removed from his Claude Code and Claude Desktop configs, which is why `mcp-layer-check` stopped expecting it.
+
+## 2026-11-23 20:47 EST — The Epic Characters Series Armory: a fourth armory type, and the click-test that found its draw dated at the wrong end (v3.25.0)
+
+Dark Ritual went live on 2026-11-23 at 7 PM Toronto as the first Series Armory of epic characters, and the bot needed a price type for it before it could hold the draw. Harkirat's figures: 85 pulls guarantee a character, a pull costs 10 / 20 / 30 CP by region, and ten pulls cost ten times that.
+
+**The type itself was the easy half.** The three existing armories share one price table (50 / 80 / 120 CP a spin), so the Epic armory carries its own `spinCp` and every reader goes through `armorySpinCp(key, region)`. A reader that kept the old direct lookup would have priced a character at 4,250 CP instead of 850, which no existing test could have caught, so the new test pins 850 / 1,700 / 2,550 and the other three armories' numbers beside it.
+
+**The part tests could not see was the draw.** I first stored the draw with its date set to the END (Jan 3), because that is the date a person quotes. Every unit test passed. Driving the dev bot in Chrome showed "Releasing in a month": a draw's `date` is its START, and the end lives in a separate /calendar `draw` row (`planEndRow`). Fixed in the dev data and the prod script, and written into the rules file where the next author will meet it.
+
+**The end date itself was inferred, and the inference was checked.** "39d 23h left" read 27 minutes after launch means a 40-day run, so the end is 2027-01-03 00:00 UTC (Jan 2, 7 PM Toronto); the first estimate in the hand-off was a day early because it subtracted from the wrong end of the countdown. A midnight-UTC end 39 days out would have read 38d 23h.
+
+- **A green suite measures what the tests were written to ask.** The data semantics (start versus end) lived in how `/draws` reads a row, not in any assertion, so only looking at the real screen found it.
+- **Derive a date from the display's own arithmetic, and check which end of the countdown it came from.**
+- **Generated pages follow their catalog:** the new text-command alias changed `/commands`, so `public/commands.html` had to be rebuilt or CI's staleness check fails.
 
 # Part B — Lessons Ledger (thematic)
 
