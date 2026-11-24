@@ -190,6 +190,17 @@
               "default": false
             },
             {
+              "label": "Epic Characters Series Armory",
+              "value": "armoryEpicCharacter",
+              "description": "Bulk tag: type: saec",
+              "emoji": {
+                "id": "1523190104489857054",
+                "name": "4Epic_CODM",
+                "animated": false
+              },
+              "default": false
+            },
+            {
               "label": "Advanced Double Legendary Weapon Draw",
               "value": "advancedWeapon",
               "description": "Bulk tag: type: adlw",
@@ -432,6 +443,17 @@
               "emoji": {
                 "id": "1523190105152688158",
                 "name": "5Legendary_CODM",
+                "animated": false
+              },
+              "default": false
+            },
+            {
+              "label": "Epic Characters Series Armory",
+              "value": "armoryEpicCharacter",
+              "description": "Bulk tag: type: saec",
+              "emoji": {
+                "id": "1523190104489857054",
+                "name": "4Epic_CODM",
                 "animated": false
               },
               "default": false

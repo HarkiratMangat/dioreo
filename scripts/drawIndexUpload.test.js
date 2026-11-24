@@ -93,6 +93,8 @@ function limits(view, label) {
     await check('the draw type rules: armory, It Goes Two, character + weapon, two epics', () => {
         const it = (tier, kind) => ({ tier, kind, name: `${tier} ${kind} ${Math.random()}` });
         assert.strictEqual(R.typeByRule([it('mythic', 'weapon')], { seriesArmory: true }).type, 'armoryMythicWeapon');
+        assert.strictEqual(R.typeByRule([it('epic', 'character'), it('epic', 'character'), it('epic', 'character'), it('epic', 'character')], { seriesArmory: true }).type, 'armoryEpicCharacter', 'four epic characters on a Series Armory poster (Dark Ritual)');
+        assert.strictEqual(R.typeByRule([it('epic', 'character'), it('epic', 'character')], {}).type, 'doubleEpicCharacters', 'without the Series Armory words two epics stay a Double Epic draw');
         assert.strictEqual(R.typeByRule([it('legendary', 'character'), it('legendary', 'character')], { itGoesTwo: true }).type, 'advancedCharacter');
         assert.strictEqual(R.typeByRule([it('legendary', 'character'), it('legendary', 'weapon')], {}).type, 'legendaryCharacterWeapon');
         assert.strictEqual(R.typeByRule([it('epic', 'character'), it('epic', 'character')], {}).type, 'doubleEpicCharacters');

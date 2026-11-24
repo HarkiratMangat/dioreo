@@ -32,7 +32,7 @@ const CLASS_WORDS = {
     SECONDARIES: ['secondary', 'sec', 'pistol'],
 };
 
-const ARMORIES = ['armoryMythicWeapon', 'armoryLegendaryWeapon', 'armoryLegendaryCharacter'];
+const ARMORIES = ['armoryMythicWeapon', 'armoryLegendaryWeapon', 'armoryLegendaryCharacter', 'armoryEpicCharacter'];
 
 // A number alone, `s8` or `season 8` means that season's notes; /patch notes' autocomplete matches its titles with spaces removed, so `season 8` finds "Season 8 …" and never "Season 18".
 const seasonText = text => {
@@ -100,6 +100,7 @@ const TEXT_COMMANDS = [
                     { value: ['sevenSpinLegendaryWeapon'], aliases: ['7 spins', 'seven spins', '7 spin', '7spin', '7s'], shown: ['7s'], group: 'More' },
                     { value: ['pickYourRewardCard'], aliases: ['pick your reward', 'pick', 'pyr'], shown: ['pick', 'pyr'], group: 'More' },
                     { value: ['doubleEpicCharacters'], aliases: ['double epic', 'epic', 'de', 'dec'], shown: ['epic', 'de'], group: 'More' },
+                    { value: ['armoryEpicCharacter'], aliases: ['epic armory', 'epic armoury', 'epic series armory', 'epic characters armory', 'ea'], shown: ['ea'], group: 'Special' },
                     { value: ARMORIES, aliases: ['armory', 'armoury', 'series armory', 'series', 'sa', 'arm'], shown: ['series', 'sa', 'arm'], group: 'Special' },
                     { value: ['advancedWeapon', 'advancedCharacter'], aliases: ['advanced', 'adv'], shown: ['adv'], group: 'Special' },
                     { value: ['advancedWeapon'], aliases: ['advanced weapon', 'adv weapon', 'adv wep', 'aw'], shown: ['adv wep', 'aw'], group: 'Special' },

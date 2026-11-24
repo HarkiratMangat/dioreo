@@ -112,6 +112,7 @@ function typeByRule(items, printed = {}) {
         if (mW) return r('armoryMythicWeapon');
         if (lC && !lW) return r('armoryLegendaryCharacter');
         if (lW) return r('armoryLegendaryWeapon');
+        if (eC && !mC) return r('armoryEpicCharacter');
         return { type: '', settled: false };
     }
     if (mC) return r('mythicCharacter');

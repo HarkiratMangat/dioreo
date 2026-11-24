@@ -13,7 +13,7 @@ const { mentionCommand } = require('../utils/commandMentions');
 const { getAccentColorForCommand } = require('../utils/accentColor');
 const emojis = require('../utils/emojiMap');
 const UserPreference = require('../models/UserPreference');
-const { DRAW_META, REGION_ORDER, REGION_EMOJI_KEY, PRESET_ACCENT, MYTHIC_UPGRADE, upgradeFullAmount, SERIES_ARMORY, ARMORY_SPIN_CP } = require('./drawprices');
+const { DRAW_META, REGION_ORDER, REGION_EMOJI_KEY, PRESET_ACCENT, MYTHIC_UPGRADE, upgradeFullAmount, SERIES_ARMORY, armorySpinCp } = require('./drawprices');
 const { pullCount, upgradeCost, remainingToFinish, spentSoFar, basketCost, upgradePlan, upgradeState, characterPreset, isArmoryKey, armorySize, upgradeKeyOf, ARMORY_SIZES, MYTHIC_ARMORY_SIZE, ADVANCED_KEYS, ADVANCED_GOALS, isAdvancedKey, advancedGoal, advancedGoalTotals, advancedBoth, advancedLater } = require('../utils/drawCost');
 const crypto = require('crypto');
 const { CP_PACKAGES, CURRENCIES, STOCK_UP_RULES, PURCHASE_RULES, normalCp, priceCents, formatMoney, optimizePurchase } = require('../utils/cpPackages');
@@ -72,6 +72,7 @@ const SHORT_NAME = {
     armoryMythicWeapon: 'Mythic Weapon Armory',
     armoryLegendaryWeapon: 'Legendary Weapon Armory',
     armoryLegendaryCharacter: 'Legendary Character Armory',
+    armoryEpicCharacter: 'Epic Characters Armory',
     advancedWeapon: 'Advanced Double Legendary Weapon',
     advancedCharacter: 'Advanced Double Legendary Character'
 };
@@ -555,7 +556,7 @@ function freshDrawDescription(region, key) {
     // An armory is priced per item (his /draw prices wording, "Per Weapon").
     if (isArmoryKey(key)) {
         const a = SERIES_ARMORY[key];
-        return ARMORY_SPIN_CP[region] ? `${fmt(a.spins * ARMORY_SPIN_CP[region])} CP per ${a.noun} · ${a.spins} Spins Each` : `No Data at ${regionLabel(region)} Yet`;
+        return armorySpinCp(key, region) ? `${fmt(a.spins * armorySpinCp(key, region))} CP per ${a.noun} · ${a.spins} Spins Each` : `No Data at ${regionLabel(region)} Yet`;
     }
     const total = pullCount(region, key);
     if (total === null) return `No Data at ${regionLabel(region)} Yet`;
